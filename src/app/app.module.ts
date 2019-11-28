@@ -4,6 +4,12 @@ import {HttpClientModule} from '@angular/common/http';
 import {CrowdFormComponent} from "./crowdForm/crowdform.component";
 import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
 import {BrowserModule} from "@angular/platform-browser";
+import {MatCardModule} from '@angular/material/card';
+import {MatInputModule} from '@angular/material/input';
+import {MatStepperModule} from '@angular/material/stepper';
+import {MatButtonModule} from '@angular/material/button';
+import {MatRadioModule} from '@angular/material/radio';
+import {ReactiveFormsModule} from "@angular/forms";
 
 @NgModule({
   declarations: [
@@ -12,7 +18,13 @@ import {BrowserModule} from "@angular/platform-browser";
   imports: [
     BrowserModule,
     BrowserAnimationsModule,
+    MatCardModule,
+    MatInputModule,
+    MatButtonModule,
+    MatStepperModule,
+    MatRadioModule,
     HttpClientModule,
+    ReactiveFormsModule,
   ],
   entryComponents: [
     CrowdFormComponent
