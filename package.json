@@ -1,0 +1,38 @@
+{
+  "name": "crowdsourcing-skeleton",
+  "version": "0.0.0",
+  "scripts": {
+    "ng": "ng",
+    "start": "ng serve",
+    "build": "ng build",
+    "serve": "ng serve --open"
+  },
+  "private": true,
+  "dependencies": {
+    "@angular/animations": "~8.2.13",
+    "@angular/cdk": "~8.2.3",
+    "@angular/common": "~8.2.13",
+    "@angular/compiler": "~8.2.13",
+    "@angular/core": "~8.2.13",
+    "@angular/elements": "^8.2.14",
+    "@angular/forms": "~8.2.13",
+    "@angular/material": "^8.2.3",
+    "@angular/platform-browser": "~8.2.13",
+    "@angular/platform-browser-dynamic": "~8.2.13",
+    "@angular/router": "~8.2.13",
+    "hammerjs": "^2.0.8",
+    "rxjs": "~6.4.0",
+    "tslib": "^1.10.0",
+    "zone.js": "~0.9.1",
+    "document-register-element": "^1.7.2"
+  },
+  "devDependencies": {
+    "@angular-devkit/build-angular": "~0.803.18",
+    "@angular/cli": "~8.3.18",
+    "@angular/compiler-cli": "~8.2.13",
+    "@angular/language-service": "~8.2.13",
+    "ts-node": "~7.0.0",
+    "tslint": "~5.15.0",
+    "typescript": "~3.5.3"
+  }
+}
