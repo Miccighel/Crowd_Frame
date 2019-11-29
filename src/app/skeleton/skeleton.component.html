@@ -1,0 +1,65 @@
+<mat-horizontal-stepper #stepper>
+
+  <mat-step [stepControl]="crowdForm" [editable]="isEditable">
+    <div class="container">
+      <form [formGroup]="crowdForm">
+        <ng-template matStepLabel>Questionnaire</ng-template>
+        <mat-card>
+          <mat-card-content>
+            <mat-radio-group aria-labelledby="radio-button-label" class="radio-button-group">
+              <label>How old are you?</label>
+              <mat-radio-button class="radio-button" value="1">0-10</mat-radio-button>
+              <mat-radio-button class="radio-button" value="2">11-20</mat-radio-button>
+              <mat-radio-button class="radio-button" value="3">20+</mat-radio-button>
+            </mat-radio-group>
+            <mat-form-field>
+              <input matInput type="text" placeholder="First Name" formControlName="firstName">
+              <mat-error>This field is required</mat-error>
+            </mat-form-field>
+          </mat-card-content>
+          <mat-card-actions>
+            <button mat-flat-button color="primary" matStepperNext>Next</button>
+          </mat-card-actions>
+        </mat-card>
+      </form>
+    </div>
+  </mat-step>
+
+  <mat-step *ngFor="let page of documents;">
+    <form [formGroup]="crowdForm">
+      <ng-template matStepLabel> Page {{page.number + 1}}</ng-template>
+      <mat-card>
+        <mat-card-title>Title</mat-card-title>
+        <mat-card-content>
+          {{page.text}}
+        </mat-card-content>
+        <mat-card-actions>
+          <button mat-flat-button color="primary" matStepperPrevious>Back</button>
+          <button mat-flat-button color="primary" matStepperNext>Next</button>
+        </mat-card-actions>
+      </mat-card>
+    </form>
+  </mat-step>
+
+  <mat-step>
+    <form [formGroup]="crowdForm">
+      <ng-template matStepLabel>Done</ng-template>
+      <mat-card>
+        <mat-card-content>
+          Task completed.
+        </mat-card-content>
+        <mat-card-actions>
+          <button mat-flat-button color="primary" matStepperPrevious>Back</button>
+        </mat-card-actions>
+      </mat-card>
+    </form>
+  </mat-step>
+
+</mat-horizontal-stepper>
+
+<mat-card id="debug-card">
+  <mat-card-title>Debug</mat-card-title>
+  <mat-card-content>
+    <p>{{firstName.value}}</p>
+  </mat-card-content>
+</mat-card>

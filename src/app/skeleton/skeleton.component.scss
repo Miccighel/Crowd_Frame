@@ -1,0 +1,40 @@
+mat-horizontal-stepper {
+  background-color: rgba(0,0,0,.05);
+  height: 80%;
+}
+
+form {
+  margin: auto;
+  min-width: 30%;
+  max-width: 85%;
+  width: 100%;
+}
+
+form  mat-card-content, form mat-card-actions, form mat-card-title {
+  width: 50%;
+  margin: auto;
+  padding: 1%;
+}
+
+mat-form-field {
+  width: 100%;
+}
+
+.radio-button-group {
+  display: flex;
+  flex-direction: column;
+  margin: 15px 0;
+}
+
+.radio-button {
+  margin: 5px;
+}
+
+// Buttons within each page
+button:nth-child(2) {
+  margin-left: 5px;
+}
+
+#debug-card {
+  height: 20%;
+}

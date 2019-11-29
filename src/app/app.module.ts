@@ -1,7 +1,7 @@
 import {NgModule, Injector} from '@angular/core';
 import {createCustomElement} from '@angular/elements';
 import {HttpClientModule} from '@angular/common/http';
-import {CrowdFormComponent} from "./crowdForm/crowdform.component";
+import {Skeleton} from "./skeleton/skeleton.component";
 import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
 import {BrowserModule} from "@angular/platform-browser";
 import {MatCardModule} from '@angular/material/card';
@@ -9,11 +9,13 @@ import {MatInputModule} from '@angular/material/input';
 import {MatStepperModule} from '@angular/material/stepper';
 import {MatButtonModule} from '@angular/material/button';
 import {MatRadioModule} from '@angular/material/radio';
+import {MatGridListModule} from '@angular/material/grid-list';
 import {ReactiveFormsModule} from "@angular/forms";
+import {MatDividerModule} from "@angular/material/divider";
 
 @NgModule({
   declarations: [
-    CrowdFormComponent
+    Skeleton,
   ],
   imports: [
     BrowserModule,
@@ -23,11 +25,13 @@ import {ReactiveFormsModule} from "@angular/forms";
     MatButtonModule,
     MatStepperModule,
     MatRadioModule,
+    MatGridListModule,
+    MatDividerModule,
     HttpClientModule,
     ReactiveFormsModule,
   ],
   entryComponents: [
-    CrowdFormComponent
+    Skeleton
   ],
   providers: [],
 })
@@ -35,8 +39,8 @@ import {ReactiveFormsModule} from "@angular/forms";
 export class AppModule {
 
   constructor(injector: Injector) {
-    const custom = createCustomElement(CrowdFormComponent, {injector: injector});
-    customElements.define('app-crowd-form', custom);
+    const skeletonElement = createCustomElement(Skeleton, {injector: injector});
+    customElements.define('app-skeleton', skeletonElement);
   }
 
   ngDoBootstrap() {}
