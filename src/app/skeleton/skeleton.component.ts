@@ -1,60 +1,62 @@
-import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
+import {Component} from '@angular/core';
 import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms'
-import {S3Service} from "../s3.service";
+import {HitsService} from "../services/data.service";
+import {S3Service} from "../services/s3.service";
+import {ConfigService} from "../services/config.service";
 
 @Component({
   templateUrl: './skeleton.component.html',
   styleUrls: ['./skeleton.component.scss']
 })
 
-export class Skeleton implements OnInit {
+export class Skeleton {
 
+  // SERVICES
+
+  configService: ConfigService;
+  hitsService: HitsService;
   S3Service: S3Service;
 
-  isEditable = true;
-  documentsNumber = 3;
-  documents = new Array<Document>();
+  // FORM ATTRIBUTES
 
+  isEditable = true;
   crowdForm: FormGroup;
   firstName = new FormControl('', Validators.required);
 
+  // MODEL ATTRIBUTES
 
-  //@ViewChild("mturkCodes", {static: false}) mturkInput: ElementRef;
+  documentsNumber = 3;
+  documents = new Array<Document>();
 
-  constructor(formBuilder: FormBuilder, S3Service: S3Service) {
+  constructor(
+    formBuilder: FormBuilder,
+    configService: ConfigService,
+    hitsService: HitsService,
+    S3Service: S3Service
+  ) {
+
+    this.configService = configService;
+    this.hitsService = hitsService;
+    this.S3Service = S3Service;
+
+    this.hitsService.loadJSON(this.configService.environment.hitsPath).subscribe(
+      response => {
+        console.log(response[0].unit_id)
+      }
+    );
 
     this.crowdForm = formBuilder.group({
       "firstName": this.firstName,
     });
 
-    this.S3Service = S3Service;
+
     for (let number = 0; number < this.documentsNumber; number++) {
-      this.S3Service.retrieveDocument(`d${number+1}.json`).subscribe(
+      this.S3Service.retrieveDocument(`d${number + 1}.json`).subscribe(
         response => {
-          this.documents[number] = new Document(number, response.text)
         }
       );
     }
 
   }
-
-  ngOnInit() {}
-
-  ngAfterViewInit() {
-    // console.log(this.mturkInput.nativeElement.children[0]);
-  }
-
+  
 }
-
-class Document {
-
-  number: number;
-  text: string;
-
-  constructor(number: number, text: string) {
-    this.number = number;
-    this.text = text;
-  }
-
-}
-

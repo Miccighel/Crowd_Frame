@@ -4,8 +4,10 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
-    "serve": "ng serve --open"
+    "build-dev": "ng build",
+    "build-prod": "ng build --configuration=production",
+    "serve-dev": "ng serve --open",
+    "serve-prod": "ng serve --prod --open"
   },
   "private": true,
   "dependencies": {
@@ -20,11 +22,11 @@
     "@angular/platform-browser": "~8.2.13",
     "@angular/platform-browser-dynamic": "~8.2.13",
     "@angular/router": "~8.2.13",
+    "document-register-element": "^1.7.2",
     "hammerjs": "^2.0.8",
     "rxjs": "~6.4.0",
     "tslib": "^1.10.0",
-    "zone.js": "~0.9.1",
-    "document-register-element": "^1.7.2"
+    "zone.js": "~0.9.1"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "~0.803.18",
