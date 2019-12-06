@@ -1,20 +1,59 @@
+<ngx-ui-loader></ngx-ui-loader>
+
 <mat-horizontal-stepper #stepper>
 
-  <mat-step [stepControl]="crowdForm" [editable]="isEditable">
+  <mat-step [stepControl]="crowdForm" [editable]="false">
+    <div class="container">
+      <form [formGroup]="crowdForm">
+        <ng-template matStepLabel>Token Input</ng-template>
+        <mat-card>
+          <mat-card-content>
+            <mat-form-field>
+              <mat-label>
+                Insert your input token
+              </mat-label>
+              <input matInput type="text" placeholder="your_mturk_token" formControlName="tokenInput">
+              <mat-error *ngIf="checkError('tokenInput', 'required')">
+                This field is required
+              </mat-error>
+              <mat-error *ngIf="checkError('tokenInput', 'invalid')">
+                {{getErrorMessage("tokenInput", "invalid")}}
+              </mat-error>
+            </mat-form-field>
+          </mat-card-content>
+          <mat-card-actions>
+            <button mat-flat-button color="primary" matStepperNext [disabled]="!tokenInput.valid" (click)="loadHits()">Next
+            </button>
+          </mat-card-actions>
+        </mat-card>
+      </form>
+    </div>
+  </mat-step>
+
+  <mat-step [stepControl]="crowdForm" [editable]="false">
     <div class="container">
       <form [formGroup]="crowdForm">
         <ng-template matStepLabel>Questionnaire</ng-template>
         <mat-card>
           <mat-card-content>
-            <mat-radio-group aria-labelledby="radio-button-label" class="radio-button-group">
+            <mat-radio-group aria-labelledby="radio-button-label" class="radio-button-group" formControlName="age">
               <label>How old are you?</label>
               <mat-radio-button class="radio-button" value="1">0-10</mat-radio-button>
               <mat-radio-button class="radio-button" value="2">11-20</mat-radio-button>
               <mat-radio-button class="radio-button" value="3">20+</mat-radio-button>
             </mat-radio-group>
             <mat-form-field>
-              <input matInput type="text" placeholder="First Name" formControlName="firstName">
-              <mat-error>This field is required</mat-error>
+              <input matInput type="text" placeholder="Profession" formControlName="profession">
+              <mat-error *ngIf="checkError('profession', 'required')">
+                This field is required
+              </mat-error>
+            </mat-form-field>
+            <mat-form-field>
+              <textarea matInput placeholder="Tell us something about yourself" rows="10" cols="5"
+                        formControlName="about"></textarea>
+              <mat-error *ngIf="checkError('about', 'required')">
+                This field is required
+              </mat-error>
             </mat-form-field>
           </mat-card-content>
           <mat-card-actions>
@@ -25,13 +64,19 @@
     </div>
   </mat-step>
 
-  <mat-step *ngFor="let page of documents;">
+  <mat-step *ngFor="let document of documents; let i=index">
     <form [formGroup]="crowdForm">
-      <ng-template matStepLabel> Page {{page.number + 1}}</ng-template>
+      <ng-template matStepLabel> Document {{i + 1}}</ng-template>
       <mat-card>
-        <mat-card-title>Title</mat-card-title>
+        <mat-card-title>{{document.title}}</mat-card-title>
         <mat-card-content>
-          {{page.text}}
+          <p>{{document.text}}</p>
+          <mat-form-field>
+            <textarea matInput placeholder="Tell us your opinion" rows="10" cols="5" [formControl]="opinions.controls[i]"></textarea>
+            <mat-error>
+              This field is required
+            </mat-error>
+          </mat-form-field>
         </mat-card-content>
         <mat-card-actions>
           <button mat-flat-button color="primary" matStepperPrevious>Back</button>
@@ -43,7 +88,7 @@
 
   <mat-step>
     <form [formGroup]="crowdForm">
-      <ng-template matStepLabel>Done</ng-template>
+      <ng-template matStepLabel>End</ng-template>
       <mat-card>
         <mat-card-content>
           Task completed.
@@ -57,9 +102,31 @@
 
 </mat-horizontal-stepper>
 
-<mat-card id="debug-card">
-  <mat-card-title>Debug</mat-card-title>
-  <mat-card-content>
-    <p>{{firstName.value}}</p>
-  </mat-card-content>
-</mat-card>
+
+<div id="debug">
+  <span>Debug</span>
+  <mat-tab-group>
+    <mat-tab label="Token Input">
+      <mat-list>
+        <mat-list-item> Token Input | {{((tokenInput.value.length > 0) ? tokenInput.value : "#{value}")}}
+          | {{((tokenInput.valid) ? "Valid" : "Not Valid")}} </mat-list-item>
+      </mat-list>
+    </mat-tab>
+    <mat-tab label="Questionnaire">
+      <mat-list>
+        <mat-list-item> Age | {{((age.value) ? age.value : "#{value}")}}
+          | {{((age.valid) ? "Valid" : "Not Valid")}} </mat-list-item>
+        <mat-list-item> Profession | {{((profession.value.length > 0) ? profession.value : "#{value}")}}
+          | {{((profession.valid) ? "Valid" : "Not Valid")}} </mat-list-item>
+        <mat-list-item> About | {{((about.value.length > 0) ? about.value : "#{value}")}}
+          | {{((about.valid) ? "Valid" : "Not Valid")}} </mat-list-item>
+      </mat-list>
+    </mat-tab>
+    <mat-tab label="Document {{i+1}}" *ngFor="let document of documents; let i=index">
+      <mat-list>
+        <mat-list-item> Opinion | {{((opinions.controls[i].value) ? opinions.controls[i].value : "#{value}")}}</mat-list-item>
+      </mat-list>
+    </mat-tab>
+  </mat-tab-group>
+</div>
+

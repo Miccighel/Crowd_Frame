@@ -9,9 +9,11 @@ import {MatInputModule} from '@angular/material/input';
 import {MatStepperModule} from '@angular/material/stepper';
 import {MatButtonModule} from '@angular/material/button';
 import {MatRadioModule} from '@angular/material/radio';
-import {MatGridListModule} from '@angular/material/grid-list';
+import {MatTabsModule} from "@angular/material/tabs";
 import {ReactiveFormsModule} from "@angular/forms";
 import {MatDividerModule} from "@angular/material/divider";
+import {MatListModule} from "@angular/material/list";
+import {NgxUiLoaderModule} from "ngx-ui-loader";
 
 @NgModule({
   declarations: [
@@ -25,8 +27,10 @@ import {MatDividerModule} from "@angular/material/divider";
     MatButtonModule,
     MatStepperModule,
     MatRadioModule,
-    MatGridListModule,
     MatDividerModule,
+    MatTabsModule,
+    MatListModule,
+    NgxUiLoaderModule,
     HttpClientModule,
     ReactiveFormsModule,
   ],

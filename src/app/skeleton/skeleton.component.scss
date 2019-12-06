@@ -1,6 +1,6 @@
 mat-horizontal-stepper {
   background-color: rgba(0,0,0,.05);
-  height: 80%;
+  height: 70%;
 }
 
 form {
@@ -35,6 +35,23 @@ button:nth-child(2) {
   margin-left: 5px;
 }
 
-#debug-card {
-  height: 20%;
+mat-tab-group {
+  width: 85%;
+}
+
+#debug {
+  background-color: rgba(0,0,0,.05);
+  height: 30%;
+  width: 100%;
+}
+
+#debug span {
+  color:rgba(0,0,0,.87);
+  font-weight: 500;
+  margin-left: 4%;
+}
+#debug mat-tab-group {
+  margin: auto;
+  min-width: 30%;
+  max-width: 85%;
 }

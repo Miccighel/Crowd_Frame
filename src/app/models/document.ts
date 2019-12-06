@@ -1,11 +1,6 @@
-export class Document {
+export interface Document {
 
-  number: number;
   text: string;
-
-  constructor(number, text) {
-    this.number=number;
-    this.text=text;
-  }
+  title: string;
 
 }
