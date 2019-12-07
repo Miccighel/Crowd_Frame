@@ -1,39 +1,38 @@
 <ngx-ui-loader></ngx-ui-loader>
 
-<mat-horizontal-stepper #stepper>
+<div id="token-section" class="container" *ngIf="!tokenInputFound">
+  <form [formGroup]="tokenForm">
+    <mat-card>
+      <mat-card-content>
+        <mat-form-field>
+          <mat-label>
+            Insert your input token
+          </mat-label>
+          <input matInput type="text" placeholder="your_mturk_token" formControlName="tokenInput">
+          <mat-error *ngIf="checkError(tokenForm,'tokenInput', 'required')">
+            This field is required
+          </mat-error>
+          <mat-error *ngIf="checkError(tokenForm,'tokenInput', 'invalid')">
+            {{getErrorMessage(tokenForm, "tokenInput", "invalid")}}
+          </mat-error>
+        </mat-form-field>
+      </mat-card-content>
+      <mat-card-actions>
+        <button mat-flat-button color="primary" [disabled]="!tokenInput.valid" (click)="performCheckAndLoad()">Start
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </form>
+</div>
 
-  <mat-step [stepControl]="crowdForm" [editable]="false">
-    <div class="container">
-      <form [formGroup]="crowdForm">
-        <ng-template matStepLabel>Start</ng-template>
-        <mat-card>
-          <mat-card-content>
-            <mat-form-field>
-              <mat-label>
-                Insert your input token
-              </mat-label>
-              <input matInput type="text" placeholder="your_mturk_token" formControlName="tokenInput">
-              <mat-error *ngIf="checkError('tokenInput', 'required')">
-                This field is required
-              </mat-error>
-              <mat-error *ngIf="checkError('tokenInput', 'invalid')">
-                {{getErrorMessage("tokenInput", "invalid")}}
-              </mat-error>
-            </mat-form-field>
-          </mat-card-content>
-          <mat-card-actions>
-            <button mat-flat-button color="primary" matStepperNext [disabled]="!tokenInput.valid" (click)="loadHit()">
-              Next
-            </button>
-          </mat-card-actions>
-        </mat-card>
-      </form>
-    </div>
-  </mat-step>
 
-  <mat-step [stepControl]="crowdForm" [editable]="false" *ngIf="taskStarted">
+<div class="placeholder" *ngIf="!taskStarted && !taskCompleted"></div>
+
+<mat-horizontal-stepper #stepper *ngIf="taskStarted">
+
+  <mat-step [stepControl]="hitForm" [editable]="false">
     <div class="container">
-      <form [formGroup]="crowdForm">
+      <form [formGroup]="hitForm">
         <ng-template matStepLabel>Questionnaire</ng-template>
         <mat-card>
           <mat-card-content>
@@ -45,20 +44,20 @@
             </mat-radio-group>
             <mat-form-field>
               <input matInput type="text" placeholder="Profession" formControlName="profession">
-              <mat-error *ngIf="checkError('profession', 'required')">
+              <mat-error *ngIf="checkError(hitForm,'profession', 'required')">
                 This field is required
               </mat-error>
             </mat-form-field>
             <mat-form-field>
-              <textarea matInput placeholder="Tell us something about yourself" rows="10" cols="5"
+              <textarea matInput placeholder="Tell us something about yourself" rows="5" cols="5"
                         formControlName="about"></textarea>
-              <mat-error *ngIf="checkError('about', 'required')">
+              <mat-error *ngIf="checkError(hitForm,'about', 'required')">
                 This field is required
               </mat-error>
             </mat-form-field>
           </mat-card-content>
           <mat-card-actions>
-            <button mat-flat-button color="primary" matStepperNext>Next</button>
+            <button mat-flat-button color="primary" matStepperNext (click)="performLogging()">Next</button>
           </mat-card-actions>
         </mat-card>
       </form>
@@ -67,14 +66,14 @@
 
   <mat-step *ngFor="let document of documents; let i=index">
     <div class="container">
-      <form [formGroup]="crowdForm">
+      <form [formGroup]="hitForm">
         <ng-template matStepLabel> Document {{i + 1}}</ng-template>
         <mat-card>
           <mat-card-title>{{document.title}}</mat-card-title>
           <mat-card-content>
             <p>{{document.text}}</p>
             <mat-form-field>
-            <textarea matInput placeholder="Tell us your opinion" rows="10" cols="5"
+            <textarea matInput placeholder="Tell us your opinion" rows="5" cols="5"
                       [formControl]="opinions.controls[i]"></textarea>
               <mat-error>
                 This field is required
@@ -83,44 +82,71 @@
           </mat-card-content>
           <mat-card-actions>
             <button mat-flat-button color="primary" matStepperPrevious>Back</button>
-            <button mat-flat-button color="primary" matStepperNext *ngIf="i+1<this.hit.documents_number;else finalButton">
+            <button mat-flat-button color="primary" matStepperNext
+                    *ngIf="i+1<this.hit.documents_number;else finalButton">
               Next
             </button>
             <ng-template #finalButton>
-              <button mat-flat-button color="primary" matStepperNext (click)="taskCompleted=true;performFinalCheck()">Next</button>
+              <button mat-flat-button color="primary" matStepperNext (click)="taskCompleted=true;performFinalCheck()">
+                Next
+              </button>
             </ng-template>
           </mat-card-actions>
         </mat-card>
       </form>
     </div>
   </mat-step>
-
-  <mat-step [stepControl]="crowdForm">
-    <div class="container" *ngIf="taskCompleted">
-      <form [formGroup]="crowdForm">
-        <ng-template matStepLabel>Outcome</ng-template>
-        <mat-card *ngIf="taskSuccessful">
-          <mat-card-content>
-            <h4>Task completed successfully. Please copy your token output to Amazon Mechanical Turk Page</h4>
-          </mat-card-content>
-          <mat-card-actions>
-            <button mat-flat-button color="primary" matStepperPrevious>Back</button>
-          </mat-card-actions>
-        </mat-card>
-        <ng-template #taskFailure>
-          <mat-card *ngIf="taskSuccessful">
-            <mat-card-content>
-              <h4>Task completed sdgfr token output to Amazon Mechanical Turk Page</h4>
-            </mat-card-content>
-            <mat-card-actions>
-            </mat-card-actions>
-          </mat-card>
-        </ng-template>
-      </form>
-    </div>
-  </mat-step>
-
 </mat-horizontal-stepper>
+
+<div class="outcome-section container" *ngIf="taskCompleted && taskSuccessful">
+  <div>
+    <mat-card>
+      <mat-card-title class="success-title">
+        Success
+      </mat-card-title>
+      <mat-card-content>
+        <p>Copy on Amazon Mechanical Turk your output token:</p>
+        <h1>{{tokenOutput}}</h1>
+      </mat-card-content>
+      <mat-card-actions>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+</div>
+
+<div class="outcome-section container" *ngIf="taskCompleted && taskFailed && amountTry <= 0">
+  <div>
+    <mat-card>
+      <mat-card-title class="failure-title">
+        Failure
+      </mat-card-title>
+      <mat-card-content>
+        <p>Your work was not good enough.</p>
+      </mat-card-content>
+      <mat-card-actions>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+</div>
+
+<div class="outcome-section container" *ngIf="taskCompleted && taskFailed && amountTry>0">
+  <div>
+    <mat-card>
+      <mat-card-title class="retry-title">
+        Failure, but...
+      </mat-card-title>
+      <mat-card-content>
+        <p>You can try again:</p>
+        <h1>{{tokenOutput}}</h1>
+      </mat-card-content>
+      <mat-card-actions>
+        <button mat-button color="primary" (click)="performReset()">Reset</button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+</div>
+
+<div class="placeholder" *ngIf="taskCompleted"></div>
 
 
 <div id="debug">
@@ -145,9 +171,8 @@
     <mat-tab label="Document {{i+1}}" *ngFor="let document of documents; let i=index">
       <mat-list>
         <mat-list-item> Opinion
-          | {{((opinions.controls[i].value) ? opinions.controls[i].value : "#{value}")}}</mat-list-item>
+          | {{((opinions.controls[i].value.length > 0) ? (opinions.controls[i].value)  : "#{value}")}} | {{((opinions.controls[i].valid) ? "Valid" : "Not Valid")}}</mat-list-item>
       </mat-list>
     </mat-tab>
   </mat-tab-group>
 </div>
-

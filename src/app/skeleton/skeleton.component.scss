@@ -1,3 +1,31 @@
+.placeholder {
+  background-color: rgba(0,0,0,.05);
+  height: 55%;
+}
+
+// TOKEN SECTION
+
+#token-section {
+  background-color: rgba(0,0,0,.05);
+  min-height: 20%;
+  padding-top: 2%;;
+}
+
+#token-section form mat-card-content, #token-section form mat-card-actions{
+  width: 50%;
+  margin: auto;
+}
+
+#token-section mat-card-actions {
+  text-align: center;
+}
+
+#token-section mat-card-actions button{
+  width: 25%;
+}
+
+// TASK BODY
+
 mat-horizontal-stepper {
   background-color: rgba(0,0,0,.05);
   height: 70%;
@@ -5,12 +33,11 @@ mat-horizontal-stepper {
 
 form {
   margin: auto;
-  min-width: 30%;
-  max-width: 85%;
-  width: 100%;
+  width: 85%;
 }
 
-form  mat-card-content, form mat-card-actions, form mat-card-title {
+
+mat-step form mat-card-content, mat-step form mat-card-actions {
   width: 50%;
   margin: auto;
   padding: 1%;
@@ -20,24 +47,27 @@ mat-form-field {
   width: 100%;
 }
 
-.radio-button-group {
-  display: flex;
-  flex-direction: column;
-  margin: 15px 0;
+// OUTCOME SECTION
+
+.outcome-section {
+  background-color: rgba(0,0,0,.05);
+  min-height: 20%;
+  padding-top: 2%;
 }
 
-.radio-button {
-  margin: 5px;
-}
-
-// Buttons within each page
-button:nth-child(2) {
-  margin-left: 5px;
-}
-
-mat-tab-group {
+.outcome-section div {
+  margin: auto;
   width: 85%;
 }
+
+.outcome-section div mat-card-content, .outcome-section div mat-card-actions {
+  text-align: center;
+  width: 50%;
+  margin: auto;
+}
+
+// DEBUG SECTION
+
 
 #debug {
   background-color: rgba(0,0,0,.05);
@@ -55,3 +85,47 @@ mat-tab-group {
   min-width: 30%;
   max-width: 85%;
 }
+
+// VARIOUS
+
+.radio-button-group {
+  display: flex;
+  flex-direction: column;
+  margin: 15px 0;
+}
+
+.radio-button {
+  margin: 5px;
+}
+
+button:nth-child(2) {
+  margin-left: 5px;
+}
+
+.failure-title {
+  padding: 1%;
+  color:white;
+  background-color:#ef5350;
+  margin-bottom: 1.5%;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.success-title {
+  background-color: #66bb6a;
+  padding: 1%;
+  color:white;
+  margin-bottom: 1.5%;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.retry-title {
+  padding: 1%;
+  background-color: #3f51b5;
+  color:white;
+  margin-bottom: 1.5%;
+  text-align: center;
+  text-transform: uppercase;
+}
+
