@@ -1,4 +1,14 @@
-/* You can add global styles to this file, and also import other style files */
+html, body {
+  height: 100%;
+}
 
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  background-color: rgba(0, 0, 0, .10);
+}
+
+.mat-horizontal-content-container {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}

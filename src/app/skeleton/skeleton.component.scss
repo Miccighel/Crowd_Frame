@@ -1,17 +1,26 @@
-.placeholder {
-  background-color: rgba(0,0,0,.05);
-  height: 55%;
-}
-
 // TOKEN SECTION
 
 #token-section {
-  background-color: rgba(0,0,0,.05);
-  min-height: 20%;
-  padding-top: 2%;;
+  padding-top: 2%;
+  margin-bottom: 2%;
 }
 
-#token-section form mat-card-content, #token-section form mat-card-actions{
+#token-section form {
+  width: 83%;
+  margin: auto;
+}
+
+#token-section .mat-form-field {
+  width: 65%;
+}
+
+#token-section button {
+  width: 34%;
+  height: 2.3em;
+}
+
+#token-section form mat-card-content{
+  min-width: 50%;
   width: 50%;
   margin: auto;
 }
@@ -21,25 +30,20 @@
 }
 
 #token-section mat-card-actions button{
-  width: 25%;
+  width: 100%;
 }
 
 // TASK BODY
 
 mat-horizontal-stepper {
-  background-color: rgba(0,0,0,.05);
-  height: 70%;
+  background-color:transparent;
+  margin-left: auto;
+  margin-right: auto;
+  width: 83%;
+  margin-bottom: 2%;
 }
-
-form {
-  margin: auto;
-  width: 85%;
-}
-
 
 mat-step form mat-card-content, mat-step form mat-card-actions {
-  width: 50%;
-  margin: auto;
   padding: 1%;
 }
 
@@ -50,40 +54,90 @@ mat-form-field {
 // OUTCOME SECTION
 
 .outcome-section {
-  background-color: rgba(0,0,0,.05);
-  min-height: 20%;
-  padding-top: 2%;
+  margin-bottom: 2%;
 }
 
 .outcome-section div {
   margin: auto;
-  width: 85%;
+  width: 83%;
+}
+
+.outcome-section div mat-card {
+  padding-top: 0.01%;
+  padding-bottom: 1.5%;
 }
 
 .outcome-section div mat-card-content, .outcome-section div mat-card-actions {
-  text-align: center;
   width: 50%;
   margin: auto;
 }
 
+.success-title {
+  background-color: #66bb6a;
+  color:white;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+#success-section mat-card-content p {
+  width: 65%;
+  display: inline-block;
+  text-align: left;
+  margin-bottom: 0;
+}
+
+#success-section mat-card-content span{
+  padding-left: 2%;
+}
+
+#failure-section p {
+  font-weight: bold;
+  text-align: center;
+}
+
+.failure-title {
+  color:white;
+  background-color:#ef5350;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+#retry-section mat-card-content p {
+  width: 65%;
+  display: inline-block;
+  text-align: left;
+  margin-bottom: 0;
+  font-weight: bold;
+}
+
+#retry-section button {
+  margin-left: 0;
+  width: 34%;
+  height: 2.3em;
+}
+
+.retry-title {
+  background-color: #3f51b5;
+  color:white;
+  text-align: center;
+  text-transform: uppercase;
+}
+
 // DEBUG SECTION
 
-
 #debug {
-  background-color: rgba(0,0,0,.05);
   height: 30%;
-  width: 100%;
+  width: 83%;
+  margin: auto;
 }
 
 #debug span {
   color:rgba(0,0,0,.87);
   font-weight: 500;
-  margin-left: 4%;
+  margin-bottom: 1%;
 }
 #debug mat-tab-group {
   margin: auto;
-  min-width: 30%;
-  max-width: 85%;
 }
 
 // VARIOUS
@@ -102,30 +156,6 @@ button:nth-child(2) {
   margin-left: 5px;
 }
 
-.failure-title {
-  padding: 1%;
-  color:white;
-  background-color:#ef5350;
-  margin-bottom: 1.5%;
-  text-align: center;
-  text-transform: uppercase;
+mat-form-field {
+  margin-bottom: 1%;
 }
-
-.success-title {
-  background-color: #66bb6a;
-  padding: 1%;
-  color:white;
-  margin-bottom: 1.5%;
-  text-align: center;
-  text-transform: uppercase;
-}
-
-.retry-title {
-  padding: 1%;
-  background-color: #3f51b5;
-  color:white;
-  margin-bottom: 1.5%;
-  text-align: center;
-  text-transform: uppercase;
-}
-

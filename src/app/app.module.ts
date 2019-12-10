@@ -1,7 +1,7 @@
 import {NgModule, Injector} from '@angular/core';
 import {createCustomElement} from '@angular/elements';
 import {HttpClientModule} from '@angular/common/http';
-import {Skeleton} from "./skeleton/skeleton.component";
+import {SkeletonComponent} from "./skeleton/skeleton.component";
 import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
 import {BrowserModule} from "@angular/platform-browser";
 import {MatCardModule} from '@angular/material/card';
@@ -14,10 +14,11 @@ import {ReactiveFormsModule} from "@angular/forms";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatListModule} from "@angular/material/list";
 import {NgxUiLoaderModule} from "ngx-ui-loader";
+import {MatGridListModule} from "@angular/material/grid-list";
 
 @NgModule({
   declarations: [
-    Skeleton,
+    SkeletonComponent,
   ],
   imports: [
     BrowserModule,
@@ -29,13 +30,14 @@ import {NgxUiLoaderModule} from "ngx-ui-loader";
     MatRadioModule,
     MatDividerModule,
     MatTabsModule,
+    MatGridListModule,
     MatListModule,
+    ReactiveFormsModule,
     NgxUiLoaderModule,
     HttpClientModule,
-    ReactiveFormsModule,
   ],
   entryComponents: [
-    Skeleton
+    SkeletonComponent
   ],
   providers: [],
 })
@@ -43,7 +45,7 @@ import {NgxUiLoaderModule} from "ngx-ui-loader";
 export class AppModule {
 
   constructor(injector: Injector) {
-    const skeletonElement = createCustomElement(Skeleton, {injector: injector});
+    const skeletonElement = createCustomElement(SkeletonComponent, {injector: injector});
     customElements.define('app-skeleton', skeletonElement);
   }
 

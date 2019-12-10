@@ -1,12 +1,12 @@
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, ViewChild} from '@angular/core';
+import {MatStepper} from "@angular/material/stepper";
 import {FormArray, FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms'
+import {ConfigService} from "../services/config.service";
 import {HitsService,} from "../services/hits.service";
 import {S3Service} from "../services/s3.service";
-import {ConfigService} from "../services/config.service";
 import {NgxUiLoaderService} from 'ngx-ui-loader';
 import {Document} from "../models/document";
 import {Hit} from "../models/hit";
-import {MatStepper} from "@angular/material/stepper";
 
 @Component({
   templateUrl: './skeleton.component.html',
@@ -14,7 +14,7 @@ import {MatStepper} from "@angular/material/stepper";
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class Skeleton {
+export class SkeletonComponent {
 
   /* Change detector to manually intercept changes on DOM */
   changeDetector: ChangeDetectorRef;
@@ -54,7 +54,6 @@ export class Skeleton {
   hit: Hit;
 
   /* Task-specific attributes */
-
   documentsNumber: number;
   documents: Array<Document>;
 
@@ -84,9 +83,9 @@ export class Skeleton {
     this.about = new FormControl('', [Validators.required, Validators.minLength(10)]);
     this.age = new FormControl('', [Validators.required]);
     this.opinions = new FormArray([
-      new FormControl('', [Validators.required]),
-      new FormControl('', [Validators.required]),
-      new FormControl('', [Validators.required]),
+      new FormControl('', [Validators.required, Validators.minLength(10)]),
+      new FormControl('', [Validators.required, Validators.minLength(10)]),
+      new FormControl('', [Validators.required, Validators.minLength(10)]),
     ]);
 
     this.tokenForm = formBuilder.group({
@@ -100,46 +99,59 @@ export class Skeleton {
       "opinions": this.opinions,
     });
 
-    this.amountTry = 2;
+    this.amountTry = 3;
 
   }
 
-  // HIT FETCHING FUNCTION
-
+  /* Function to lookup the input token of the current worker; if it exists, the custom setup of the task shall begin */
   public performCheckAndLoad(): void {
 
+    /* The local JSON file is checked */
     this.hitsService.loadJSON(this.configService.environment.hitsPath).subscribe(
       hits => {
 
+        /* Start the spinner */
         this.ngxService.start();
 
-        let allowed = true;
-
+        /* Scan each entry for the token input */
+        let allowed = false;
         for (let currentHit of hits) {
           if (this.tokenInput.value === currentHit.token_input) {
             this.hit = currentHit;
             this.tokenOutput = currentHit.token_output;
+            allowed = true;
           }
         }
 
-        // HTTP GET TO CHECK
-
+        /* If the token input is found, the custom setup shall begin, else the worker cannot proceed further */
         if (allowed) {
+
+          /* Control variables to handle to start the task*/
+          this.tokenInputFound = true;
+          this.tokenInput.disable();
+          this.taskStarted = true;
+
+          /* THE CUSTOM SETUP MUST BE PERFORMED HERE*/
           this.documents = new Array<Document>();
           this.S3Service.retrieveDocument(this.hit.document_1).subscribe(document => this.documents.push(document));
           this.S3Service.retrieveDocument(this.hit.document_2).subscribe(document => this.documents.push(document));
           this.S3Service.retrieveDocument(this.hit.document_3).subscribe(document => this.documents.push(document));
-          this.tokenInputFound = true;
-          this.taskStarted = true;
+
         } else {
+
+          /* Control variables to handle to block the task*/
           this.tokenInputFound = true;
           this.taskStarted = false;
           this.taskCompleted = true;
           this.taskSuccessful = false;
           this.taskFailed = true;
+
         }
 
+        /* Detect changes within the DOM and stop the spinner */
         this.changeDetector.detectChanges();
+
+        /* Stop the spinner */
         this.ngxService.stop();
 
       }
@@ -147,10 +159,10 @@ export class Skeleton {
 
   }
 
-  // LOGGING FUNCTION
-
+  /* Function to log worker's work to an external server */
   public performLogging() {
 
+    /* Every value inserted by worker can be found in these two variables */
     console.log(this.tokenForm.value);
     console.log(this.hitForm.value);
 
@@ -160,59 +172,93 @@ export class Skeleton {
   public performFinalCheck() {
 
     /* Start the spinner */
-
     this.ngxService.start();
 
     /* Control variables to start final check */
-
-    this.taskStarted = false;
     this.taskCompleted = true;
 
-    /* The final check on the variables must be performed here */
-
+    /* THE FINAL CHECK ON THE VARIABLES MUST BE PERFORMED HERE... */
     console.log(this.tokenForm.value);
     console.log(this.hitForm.value);
-
-    /* Control variables to handle final check outcome */
-
+    /* ...AND SET THE CONTROL VARIABLES ACCORDINGLY */
     this.taskSuccessful = false;
     this.taskFailed = true;
 
     /* Detect changes within the DOM and stop the spinner */
-
     this.changeDetector.detectChanges();
+
+    /* Stop the spinner */
     this.ngxService.stop();
 
   }
 
-  // RESET FUNCTION
-
+  /* Function to restore the status of the task while keeping the token input saved */
   public performReset() {
 
+    /* Start the spinner */
     this.ngxService.start();
 
+    /* Control variables to restore the task */
     this.taskFailed = false;
     this.taskSuccessful = false;
     this.taskCompleted = false;
     this.taskStarted = true;
-    
-    this.stepper.selectedIndex=1;
 
+    /* Set stepper index to the first tab*/
+    this.stepper.selectedIndex = 1;
+
+    /* Decrease the remaining tries amount*/
     this.amountTry = this.amountTry - 1;
 
+    /* Stop the spinner */
     this.ngxService.stop();
 
   }
 
-  // UTILITY FUNCTIONS
+  /* Utility functions */
 
-  public checkError(form: FormGroup, field: string, key: string): boolean {
+  public checkFormControl(form: FormGroup, field: string, key: string): boolean {
     return form.get(field).hasError(key);
   }
 
-  public getErrorMessage(form: FormGroup, field: string, key: string): string {
-    return form.get(field).errors[key]
+  public formControlErrorMessage(form: FormGroup, field: string, key: string): string {
+    let message = "";
+    let error = form.get(field).errors[key];
+    switch (key) {
+      case "minlength": {
+        message = `The actual length is ${error['actualLength']}, but it should be at least ${error['requiredLength']}`;
+        break;
+      }
+      case "required": {
+        message = `This field is required`;
+        break;
+      }
+    }
+    return message
   }
+
+  public checkFormArray(form: FormGroup, field: string, key: string, index: number) {
+    let array = form.get(field) as FormArray;
+    return array.controls[index].hasError(key)
+  }
+
+  public forArrayErrorMessage(form: FormGroup, field: string, key: string, index: number) {
+    let message = "";
+    let array = form.get(field) as FormArray;
+    let error = array.controls[index].errors[key];
+    switch (key) {
+      case "minlength": {
+        message = `The actual length is ${error['actualLength']}, but it should be at least ${error['requiredLength']}`;
+        break;
+      }
+      case "required": {
+        message = `This field is required`;
+        break;
+      }
+    }
+    return message
+  }
+
 
 }
 
