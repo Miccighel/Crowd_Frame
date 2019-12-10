@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, ViewChild} from '@angular/core';
 import {FormArray, FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms'
 import {HitsService,} from "../services/hits.service";
 import {S3Service} from "../services/s3.service";
@@ -6,6 +6,7 @@ import {ConfigService} from "../services/config.service";
 import {NgxUiLoaderService} from 'ngx-ui-loader';
 import {Document} from "../models/document";
 import {Hit} from "../models/hit";
+import {MatStepper} from "@angular/material/stepper";
 
 @Component({
   templateUrl: './skeleton.component.html',
@@ -15,49 +16,47 @@ import {Hit} from "../models/hit";
 
 export class Skeleton {
 
-  // CHANGE DETECTOR
-
+  /* Change detector to manually intercept changes on DOM */
   changeDetector: ChangeDetectorRef;
 
-  // PROVIDER SERVICES
-
+  /*
+   Services to provide:
+   - A loader
+   - An environment-based configuration
+   - A models for Crowdsourcing hits
+   - A model to query Amazon S3
+   */
   ngxService: NgxUiLoaderService;
   configService: ConfigService;
   hitsService: HitsService;
   S3Service: S3Service;
 
-  // CONTROL BOOLEANS
-
+  /* Variables to handle the control flow of the task */
   tokenInputFound: boolean;
   taskStarted: boolean;
   taskCompleted: boolean;
   taskSuccessful: boolean;
   taskFailed: boolean;
 
-  // TOKEN INPUT ELEMENTS
-
+  /* References to the stepper of the task and to each form element */
+  @ViewChild('stepper', {static: false}) stepper: MatStepper;
   tokenForm: FormGroup;
   tokenInput: FormControl;
-
-  // HIT ATTRIBUTES AND ELEMENTS
-
-  hit: Hit;
-  amountTry: number;
-
   hitForm: FormGroup;
   profession: FormControl;
   about: FormControl;
   age: FormControl;
   opinions: FormArray;
+  tokenOutput: string;
 
-  // MODELS
+  /* Number of allowed tries and reference to the current hit */
+  amountTry: number;
+  hit: Hit;
+
+  /* Task-specific attributes */
 
   documentsNumber: number;
   documents: Array<Document>;
-
-  // TOKEN OUTPUT ELEMENTS
-
-  tokenOutput: string;
 
   constructor(
     changeDetector: ChangeDetectorRef,
@@ -80,8 +79,6 @@ export class Skeleton {
     this.taskCompleted = false;
     this.taskSuccessful = false;
 
-    this.amountTry = 2;
-
     this.tokenInput = new FormControl('', [Validators.required], this.hitsService.validateTokenInput(this.configService.environment.hitsPath));
     this.profession = new FormControl('', [Validators.required, Validators.minLength(5)]);
     this.about = new FormControl('', [Validators.required, Validators.minLength(10)]);
@@ -102,6 +99,8 @@ export class Skeleton {
       "about": this.about,
       "opinions": this.opinions,
     });
+
+    this.amountTry = 2;
 
   }
 
@@ -157,19 +156,29 @@ export class Skeleton {
 
   }
 
-  // FINAL CHECK FUNCTION
-
+  // Function to perform the final check on the current HIT and handle success/failure of the task
   public performFinalCheck() {
 
+    /* Start the spinner */
+
     this.ngxService.start();
+
+    /* Control variables to start final check */
+
     this.taskStarted = false;
     this.taskCompleted = true;
+
+    /* The final check on the variables must be performed here */
 
     console.log(this.tokenForm.value);
     console.log(this.hitForm.value);
 
-    this.taskSuccessful = true;
-    //this.taskFailed = true;
+    /* Control variables to handle final check outcome */
+
+    this.taskSuccessful = false;
+    this.taskFailed = true;
+
+    /* Detect changes within the DOM and stop the spinner */
 
     this.changeDetector.detectChanges();
     this.ngxService.stop();
@@ -182,14 +191,14 @@ export class Skeleton {
 
     this.ngxService.start();
 
-    this.amountTry = this.amountTry - 1;
-
     this.taskFailed = false;
     this.taskSuccessful = false;
     this.taskCompleted = false;
-    this.taskStarted=true;
+    this.taskStarted = true;
+    
+    this.stepper.selectedIndex=1;
 
-    this.hitForm.reset();
+    this.amountTry = this.amountTry - 1;
 
     this.ngxService.stop();
 
