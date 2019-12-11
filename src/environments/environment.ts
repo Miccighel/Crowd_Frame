@@ -1,4 +1,5 @@
 export const environment = {
   production: false,
-  hitsPath: "../assets/data.json"
+  hitsPath: "../assets/data.json",
+  debug: true,
 };

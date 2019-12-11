@@ -59,7 +59,6 @@
             </mat-form-field>
           </mat-card-content>
           <mat-card-actions>
-            <button mat-flat-button color="primary" matStepperPrevious>Back</button>
             <button mat-flat-button color="primary" matStepperNext *ngIf="age.valid && profession.valid && about.valid" (click)="performLogging()">
               Next
             </button>
@@ -149,7 +148,7 @@
   </div>
 </div>
 
-<div id="debug">
+<div id="debug" *ngIf="configService.environment.debug">
   <span>Debug</span>
   <mat-tab-group>
     <mat-tab label="Token Input">

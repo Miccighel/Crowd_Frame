@@ -23,7 +23,7 @@ export class SkeletonComponent {
    Services to provide:
    - A loader
    - An environment-based configuration
-   - A models for Crowdsourcing hits
+   - A model for worker's hits
    - A model to query Amazon S3
    */
   ngxService: NgxUiLoaderService;
@@ -38,20 +38,22 @@ export class SkeletonComponent {
   taskSuccessful: boolean;
   taskFailed: boolean;
 
-  /* References to the stepper of the task and to each form element */
+  /* References to the stepper of the task and to the token forms */
   @ViewChild('stepper', {static: false}) stepper: MatStepper;
   tokenForm: FormGroup;
   tokenInput: FormControl;
-  hitForm: FormGroup;
-  profession: FormControl;
-  about: FormControl;
-  age: FormControl;
-  opinions: FormArray;
   tokenOutput: string;
 
   /* Number of allowed tries and reference to the current hit */
   amountTry: number;
   hit: Hit;
+
+  /* Task-specific form controls */
+  hitForm: FormGroup;
+  profession: FormControl;
+  about: FormControl;
+  age: FormControl;
+  opinions: FormArray;
 
   /* Task-specific attributes */
   documentsNumber: number;
@@ -79,6 +81,12 @@ export class SkeletonComponent {
     this.taskSuccessful = false;
 
     this.tokenInput = new FormControl('', [Validators.required], this.hitsService.validateTokenInput(this.configService.environment.hitsPath));
+    this.tokenForm = formBuilder.group({
+      "tokenInput": this.tokenInput
+    });
+
+    this.amountTry = 2;
+
     this.profession = new FormControl('', [Validators.required, Validators.minLength(5)]);
     this.about = new FormControl('', [Validators.required, Validators.minLength(10)]);
     this.age = new FormControl('', [Validators.required]);
@@ -87,19 +95,12 @@ export class SkeletonComponent {
       new FormControl('', [Validators.required, Validators.minLength(10)]),
       new FormControl('', [Validators.required, Validators.minLength(10)]),
     ]);
-
-    this.tokenForm = formBuilder.group({
-      "tokenInput": this.tokenInput
-    });
-
     this.hitForm = formBuilder.group({
       "age": this.age,
       "profession": this.profession,
       "about": this.about,
       "opinions": this.opinions,
     });
-
-    this.amountTry = 3;
 
   }
 
@@ -182,6 +183,7 @@ export class SkeletonComponent {
     console.log(this.hitForm.value);
     /* ...AND SET THE CONTROL VARIABLES ACCORDINGLY */
     this.taskSuccessful = false;
+
     this.taskFailed = true;
 
     /* Detect changes within the DOM and stop the spinner */

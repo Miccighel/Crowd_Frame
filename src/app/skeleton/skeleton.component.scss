@@ -1,4 +1,4 @@
-// TOKEN SECTION
+/* Token input section CSS styles */
 
 #token-section {
   padding-top: 2%;
@@ -33,7 +33,7 @@
   width: 100%;
 }
 
-// TASK BODY
+/* Stepper section CSS styles */
 
 mat-horizontal-stepper {
   background-color:transparent;
@@ -51,7 +51,7 @@ mat-form-field {
   width: 100%;
 }
 
-// OUTCOME SECTION
+/* Outcome & token output section CSS styles */
 
 .outcome-section {
   margin-bottom: 2%;
@@ -123,7 +123,7 @@ mat-form-field {
   text-transform: uppercase;
 }
 
-// DEBUG SECTION
+/* Debug section styles */
 
 #debug {
   height: 30%;
@@ -140,7 +140,7 @@ mat-form-field {
   margin: auto;
 }
 
-// VARIOUS
+/* General styles */
 
 .radio-button-group {
   display: flex;
