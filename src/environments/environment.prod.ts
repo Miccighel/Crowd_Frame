@@ -1,5 +1,5 @@
 export const environment = {
   production: true,
-  hitsPath: "data.json",
+  hitsPath: "hits.json",
   debug: false
 };

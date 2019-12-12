@@ -13,8 +13,8 @@ import {MatTabsModule} from "@angular/material/tabs";
 import {ReactiveFormsModule} from "@angular/forms";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatListModule} from "@angular/material/list";
-import {NgxUiLoaderModule} from "ngx-ui-loader";
 import {MatGridListModule} from "@angular/material/grid-list";
+import {NgxUiLoaderModule} from "ngx-ui-loader";
 
 @NgModule({
   declarations: [

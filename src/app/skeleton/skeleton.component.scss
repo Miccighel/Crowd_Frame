@@ -80,7 +80,7 @@ mat-form-field {
 }
 
 #success-section mat-card-content p {
-  width: 65%;
+  width: 64%;
   display: inline-block;
   text-align: left;
   margin-bottom: 0;
@@ -117,7 +117,7 @@ mat-form-field {
 }
 
 .retry-title {
-  background-color: #3f51b5;
+  background-color: #ff4081;
   color:white;
   text-align: center;
   text-transform: uppercase;
@@ -158,4 +158,9 @@ button:nth-child(2) {
 
 mat-form-field {
   margin-bottom: 1%;
+}
+
+.form-note {
+  margin-left: 1%;
+  font-size: 0.75em;
 }

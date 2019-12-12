@@ -32,7 +32,6 @@ export class SkeletonComponent {
   S3Service: S3Service;
 
   /* Variables to handle the control flow of the task */
-  tokenInputFound: boolean;
   taskStarted: boolean;
   taskCompleted: boolean;
   taskSuccessful: boolean;
@@ -75,7 +74,6 @@ export class SkeletonComponent {
     this.hitsService = hitsService;
     this.S3Service = S3Service;
 
-    this.tokenInputFound = false;
     this.taskStarted = false;
     this.taskCompleted = false;
     this.taskSuccessful = false;
@@ -119,35 +117,19 @@ export class SkeletonComponent {
         for (let currentHit of hits) {
           if (this.tokenInput.value === currentHit.token_input) {
             this.hit = currentHit;
-            this.tokenOutput = currentHit.token_output;
-            allowed = true;
           }
         }
 
-        /* If the token input is found, the custom setup shall begin, else the worker cannot proceed further */
-        if (allowed) {
+        /* Control variables to handle to start the task*/
+        this.tokenInput.disable();
+        this.taskStarted = true;
 
-          /* Control variables to handle to start the task*/
-          this.tokenInputFound = true;
-          this.tokenInput.disable();
-          this.taskStarted = true;
-
-          /* THE CUSTOM SETUP MUST BE PERFORMED HERE*/
-          this.documents = new Array<Document>();
-          this.S3Service.retrieveDocument(this.hit.document_1).subscribe(document => this.documents.push(document));
-          this.S3Service.retrieveDocument(this.hit.document_2).subscribe(document => this.documents.push(document));
-          this.S3Service.retrieveDocument(this.hit.document_3).subscribe(document => this.documents.push(document));
-
-        } else {
-
-          /* Control variables to handle to block the task*/
-          this.tokenInputFound = true;
-          this.taskStarted = false;
-          this.taskCompleted = true;
-          this.taskSuccessful = false;
-          this.taskFailed = true;
-
-        }
+        /* THE CUSTOM SETUP MUST BE PERFORMED HERE*/
+        this.documents = new Array<Document>();
+        this.documentsNumber = 3;
+        this.S3Service.retrieveDocument(this.hit.document_1).subscribe(document => this.documents.push(document));
+        this.S3Service.retrieveDocument(this.hit.document_2).subscribe(document => this.documents.push(document));
+        this.S3Service.retrieveDocument(this.hit.document_3).subscribe(document => this.documents.push(document));
 
         /* Detect changes within the DOM and stop the spinner */
         this.changeDetector.detectChanges();
@@ -178,12 +160,14 @@ export class SkeletonComponent {
     /* Control variables to start final check */
     this.taskCompleted = true;
 
+    /* Each control in the hit form gets disabled */
+    this.hitForm.disable();
+
     /* THE FINAL CHECK ON THE VARIABLES MUST BE PERFORMED HERE... */
     console.log(this.tokenForm.value);
     console.log(this.hitForm.value);
     /* ...AND SET THE CONTROL VARIABLES ACCORDINGLY */
     this.taskSuccessful = false;
-
     this.taskFailed = true;
 
     /* Detect changes within the DOM and stop the spinner */
@@ -207,7 +191,10 @@ export class SkeletonComponent {
     this.taskStarted = true;
 
     /* Set stepper index to the first tab*/
-    this.stepper.selectedIndex = 1;
+    this.stepper.selectedIndex = 0;
+
+    /* Enable each hit form control */
+    this.hitForm.enable();
 
     /* Decrease the remaining tries amount*/
     this.amountTry = this.amountTry - 1;
@@ -260,7 +247,6 @@ export class SkeletonComponent {
     }
     return message
   }
-
 
 }
 

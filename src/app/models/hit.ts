@@ -6,6 +6,4 @@ export interface Hit {
   document_1: string
   document_2: string
   document_3: string
-  high: number
-  low: number
 }
