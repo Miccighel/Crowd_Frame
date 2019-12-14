@@ -160,15 +160,15 @@ export class SkeletonComponent {
     /* Control variables to start final check */
     this.taskCompleted = true;
 
-    /* Each control in the hit form gets disabled */
-    this.hitForm.disable();
-
     /* THE FINAL CHECK ON THE VARIABLES MUST BE PERFORMED HERE... */
     console.log(this.tokenForm.value);
     console.log(this.hitForm.value);
     /* ...AND SET THE CONTROL VARIABLES ACCORDINGLY */
     this.taskSuccessful = false;
     this.taskFailed = true;
+
+    /* Each control in the hit form gets disabled */
+    this.hitForm.disable();
 
     /* Detect changes within the DOM and stop the spinner */
     this.changeDetector.detectChanges();
