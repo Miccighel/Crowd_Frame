@@ -1,5 +1,5 @@
 export const environment = {
   production: true,
-  hitsPath: "hits.json",
-  debug: false
+  aws_id_key: "AKIAT5QYFVEAZZTM6IZC",
+  aws_secret_key: "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",
 };

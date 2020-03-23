@@ -1,13 +1,11 @@
 {
-  "name": "crowdsourcing-skeleton",
+  "name": "fake-news2020",
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build-dev": "ng build",
-    "build-prod": "ng build --configuration=production",
-    "serve-dev": "ng serve --open",
-    "serve-prod": "ng serve --prod --open"
+    "build": "ng build",
+    "serve": "ng serve --open"
   },
   "private": true,
   "dependencies": {
@@ -22,21 +20,19 @@
     "@angular/platform-browser": "~8.2.13",
     "@angular/platform-browser-dynamic": "~8.2.13",
     "@angular/router": "~8.2.13",
-    "document-register-element": "^1.7.2",
-    "g": "^2.0.1",
+    "aws-sdk": "^2.598.0",
+    "core-js": "^3.6.2",
     "hammerjs": "^2.0.8",
     "ngx-ui-loader": "^8.0.0",
     "rxjs": "~6.4.0",
-    "tslib": "^1.10.0",
     "zone.js": "~0.9.1"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "~0.803.18",
-    "@angular/cli": "~8.3.18",
+    "@angular-devkit/build-angular": "^0.803.21",
+    "@angular/cli": "^8.3.21",
     "@angular/compiler-cli": "~8.2.13",
-    "@angular/language-service": "~8.2.13",
+    "@types/node": "^8.10.59",
     "ts-node": "~7.0.0",
-    "tslint": "~5.15.0",
     "typescript": "~3.5.3"
   }
 }

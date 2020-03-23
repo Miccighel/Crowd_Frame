@@ -1,0 +1,36 @@
+/* STYLES: Loading screen spinner */
+
+mat-spinner {
+  margin: auto;
+}
+
+/* STYLES: Main body */
+
+mat-card.binger-body {
+  box-shadow: 0 0 0 0;
+  padding: 1%;
+  margin-top: 1%;
+  margin-bottom: 1%;
+  border: 1px solid rgba(0,0,0,.12);
+}
+
+/* STYLES: User query box */
+
+mat-form-field#search-textarea {
+  width: 100%;
+}
+
+button#search-button {
+  width: 100%;
+  margin-bottom: 1.49375em;
+}
+
+/* STYLES: Result table */
+
+mat-cell {
+  padding: 5px;
+  p {
+    width: 90%;
+    padding-right: 1%;
+  }
+}

@@ -1,0 +1,284 @@
+<ngx-ui-loader></ngx-ui-loader>
+
+<app-instructions [modality]="scale"></app-instructions>
+
+<div id="token-section" class="container" *ngIf="!taskStarted && taskAllowed;">
+  <form [formGroup]="tokenForm">
+    <mat-card>
+      <mat-card-content>
+        <mat-form-field>
+          <mat-label>
+            Insert your input token
+          </mat-label>
+          <input matInput type="text" placeholder="your_mturk_token" formControlName="tokenInput"
+                 (focus)="this.tokenForm.updateValueAndValidity()"
+                 (paste)="this.tokenForm.updateValueAndValidity()"
+                 (keyup)="this.tokenForm.updateValueAndValidity()"
+                 (keydown)="this.tokenForm.updateValueAndValidity()"
+                 (keyup.enter)="performCheckAndLoad()"
+          >
+          <mat-error *ngIf="checkFormControl(tokenForm,'tokenInput', 'required')">
+            This field is required
+          </mat-error>
+          <mat-error *ngIf="checkFormControl(tokenForm,'tokenInput', 'invalid')">
+            This token input is invalid
+          </mat-error>
+        </mat-form-field>
+      </mat-card-content>
+      <mat-card-actions>
+        <button id="start-button" mat-flat-button color="primary" [disabled]="!tokenForm.valid"
+                (click)="performCheckAndLoad()">Start
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </form>
+</div>
+
+<ng-template *ngIf="(taskAllowed); else alreadyStarted"></ng-template>
+
+<ng-template #alreadyStarted>
+  <div id="already-started-section" class="outcome-section container">
+    <div>
+      <mat-card>
+        <mat-card-title class="failure-title">
+          <h4>Failure</h4>
+        </mat-card-title>
+        <mat-card-content>
+          <h2>
+            Either you have already started this task without finishing it, or you have already participated to a
+            variant of this experiment.
+            For this reason, you are not allowed to take a part in this experiment. Sorry for the inconvenience.
+          </h2>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</ng-template>
+
+<div id="success-section" class="outcome-section container" *ngIf="taskCompleted && taskSuccessful">
+  <div>
+    <mat-card>
+      <mat-card-title class="success-title">
+        <h4>Success</h4>
+      </mat-card-title>
+      <mat-card-content>
+        <h2>
+          Congratulations, you have successfully completed this task. To be paid you now have to copy your output token
+          (shown below)
+          back to the Amazon Mechanical Turk task page. Feel free to leave any comment in the box below to help us
+          improve our research.
+        </h2>
+        <h1>{{tokenOutput}}</h1>
+        <form [formGroup]="commentForm" class="comment-form">
+          <mat-form-field appearance="fill">
+            <textarea matInput [disabled]="commentSent" placeholder="Your comment here"
+                      formControlName="comment" rows="5"></textarea>
+          </mat-form-field>
+        </form>
+        <button mat-flat-button color="primary" [disabled]="commentSent || !commentForm.valid "
+                (click)="performCommentSaving()"> Send
+        </button>
+        <span class="comment-sent-label" *ngIf="commentSent">Thank you!</span>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
+
+<div id="failure-section" class="outcome-section container" *ngIf="taskCompleted && taskFailed && allowedTries <= 0">
+  <div>
+    <mat-card>
+      <mat-card-title class="failure-title">
+        <h4>Failure</h4>
+      </mat-card-title>
+      <mat-card-content>
+        <h2>
+          Your work was not good enough, so you are not allowed to submit this task.
+          As stated in the instructions, some quality checks are performed in this task.
+          You see this message because you have not passed one or more of such checks.
+          Feel free to leave any comment in the box below.
+        </h2>
+        <form [formGroup]="commentForm" class="comment-form">
+          <mat-form-field appearance="fill">
+            <textarea matInput [disabled]="commentSent" placeholder="Your comment here" formControlName="comment"
+                      rows="5"></textarea>
+          </mat-form-field>
+        </form>
+        <button mat-flat-button color="primary" [disabled]="commentSent || !commentForm.valid "
+                (click)="performCommentSaving()"> Send
+        </button>
+        <span class="comment-sent-label" *ngIf="commentSent">Thank you!</span>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
+
+<div id="retry-section" class="outcome-section container" *ngIf="taskCompleted && taskFailed && allowedTries>0">
+  <div>
+    <mat-card>
+      <mat-card-title class="retry-title">
+        <h3>Failure, but...</h3>
+      </mat-card-title>
+      <mat-card-content>
+        <h2>
+          Your work was not good enough, so you are not allowed to submit this task.
+          As stated in the instructions, some quality checks are performed in this task.
+          You see this message because you have not passed one or more of such checks.
+          Nevertheless, you are allowed to retry this task. To do so, please click on the reset button below.
+          Feel free to leave any comment in the box below.
+        </h2>
+        <button mat-flat-button color="primary" (click)="performReset()">Reset</button>
+        <form [formGroup]="commentForm" class="comment-form">
+          <mat-form-field appearance="fill">
+            <textarea matInput [disabled]="commentSent" placeholder="Your comment here" formControlName="comment"
+                      rows="5"></textarea>
+          </mat-form-field>
+        </form>
+        <button mat-flat-button color="primary" [disabled]="commentSent || !commentForm.valid "
+                (click)="performCommentSaving()"> Send
+        </button>
+        <span class="comment-sent-label" *ngIf="commentSent">Thank you!</span>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
+
+<mat-horizontal-stepper [linear]="true" labelPosition="bottom" #stepper *ngIf="taskStarted">
+  <mat-step [stepControl]="questionnaireForm" [editable]="false">
+    <div class="container">
+      <form [formGroup]="questionnaireForm" class="questionnaire-form">
+        <ng-template matStepLabel>Questionnaire</ng-template>
+        <mat-card>
+          <mat-card-title>Please answer each question</mat-card-title>
+          <mat-card-content>
+            <mat-radio-group aria-labelledby="radio-button-label" class="radio-button-group" formControlName="age">
+              <label>1) What is your age range?</label>
+              <mat-radio-button class="radio-button" value="1">0-18</mat-radio-button>
+              <mat-radio-button class="radio-button" value="2">19-25</mat-radio-button>
+              <mat-radio-button class="radio-button" value="3">26-35</mat-radio-button>
+              <mat-radio-button class="radio-button" value="4">36-50</mat-radio-button>
+              <mat-radio-button class="radio-button" value="5">50-80</mat-radio-button>
+              <mat-radio-button class="radio-button" value="6">>80</mat-radio-button>
+            </mat-radio-group>
+            <mat-radio-group aria-labelledby="radio-button-label" class="radio-button-group" formControlName="degree">
+              <label>2) What is the highest level of school you have completed or the highest degree you have
+                received?</label>
+              <mat-radio-button class="radio-button" value="1">High school incomplete or less</mat-radio-button>
+              <mat-radio-button class="radio-button" value="2">High school graduate or GED (includes
+                technical/vocational training that doesn’t towards college credit)
+              </mat-radio-button>
+              <mat-radio-button class="radio-button" value="3">Some college (some community college, associate’s
+                degree)
+              </mat-radio-button>
+              <mat-radio-button class="radio-button" value="4">Four year college degree/bachelor’s degree
+              </mat-radio-button>
+              <mat-radio-button class="radio-button" value="5">Some postgraduate or professional schooling, no
+                postgraduate degree
+              </mat-radio-button>
+              <mat-radio-button class="radio-button" value="6">Postgraduate or professional degree, including master’s,
+                doctorate, medical or law degree
+              </mat-radio-button>
+            </mat-radio-group>
+            <mat-radio-group aria-labelledby="radio-button-label" class="radio-button-group" formControlName="money">
+              <label>3) Last year what was your total family income from all sources, before taxes?</label>
+              <mat-radio-button class="radio-button" value="1">Less than $10,000</mat-radio-button>
+              <mat-radio-button class="radio-button" value="2">$10,000 to less than $20,000</mat-radio-button>
+              <mat-radio-button class="radio-button" value="3">$20,000 to less than $30,000</mat-radio-button>
+              <mat-radio-button class="radio-button" value="4">$30,000 to less than $40,000</mat-radio-button>
+              <mat-radio-button class="radio-button" value="5">$40,000 to less than $50,000</mat-radio-button>
+              <mat-radio-button class="radio-button" value="6">$50,000 to less than $75,000</mat-radio-button>
+              <mat-radio-button class="radio-button" value="7">$75,000 to less than $100,000</mat-radio-button>
+              <mat-radio-button class="radio-button" value="8">$100,000 to less than $150,000</mat-radio-button>
+              <mat-radio-button class="radio-button" value="9">$150,000 or more</mat-radio-button>
+            </mat-radio-group>
+          </mat-card-content>
+          <mat-card-actions>
+            <button mat-flat-button color="primary" matStepperNext
+                    [disabled]="(!questionnaireForm.valid || taskCompleted)"
+                    (click)="performLogging('Next',false)">
+              Next
+            </button>
+            <span class="form-note">(*) you have to fill each field to proceed</span>
+          </mat-card-actions>
+        </mat-card>
+      </form>
+    </div>
+  </mat-step>
+
+  <mat-step *ngFor="let document of documents; let i=index" [editable]="true">
+    <div class="container">
+      <form [formGroup]="documentsForm[i]">
+        <mat-card>
+          <ng-template matStepLabel> Document {{i + 1}} </ng-template>
+          <mat-card-title>Please judge the truthfulness of the following statement</mat-card-title>
+          <mat-card-content>
+            <p><span class="hit-value">Speaker:</span> {{document.speaker}}</p>
+            <p><span class="hit-value">Year:</span> {{document.year.length > 0 ? document.year : "#"}}</p>
+            <p><span class="hit-value">Statement:</span> {{document.statement}}</p>
+            <label>Use this search engine to find evidence about the truthfulness of the statement</label>
+            <app-binger
+              id="binger-{{i}}"
+              (resultEmitter)="saveBingerResponse($event)"
+              (queryEmitter)="saveBingerQuery($event)"
+              (selectedRowEmitter)="saveBingerSelectedResult($event)"
+            ></app-binger>
+            <label *ngIf="this.scale=='S6'">Please select (or copy & paste) one of the URLs above to justify the
+              truthfulness value of the statement, then input the truth level as one from the six labels provided
+              below</label>
+            <label *ngIf="this.scale=='S3'">Please select (or copy & paste) one of the URLs above to justify the
+              truthfulness value of the statement, then input the truth level as one from the three labels provided
+              below</label>
+            <label *ngIf="this.scale=='S100'">Please select (or copy & paste) one of the URLs above to justify the
+              truthfulness value of the statement, then input the truth level using the slider provided below</label>
+            <mat-form-field id="url-field">
+              <input #urlField matInput type="text" [formControl]="documentsForm[i].controls['workerUrl']"  disabled="true">
+              <button mat-icon-button matPrefix>
+                <mat-icon>{{'arrow_right_alt'}}</mat-icon>
+              </button>
+              <mat-error *ngIf="checkFormControl(documentsForm[i],'workerUrl', 'required')">
+                This field is required
+              </mat-error>
+              <mat-error *ngIf="checkFormControl(documentsForm[i], 'workerUrl', 'invalidBingerUrl')">
+                Please select (or copy & paste) one of the URLs shown above.
+              </mat-error>
+            </mat-form-field>
+            <mat-radio-group *ngIf="scale=='S6'" aria-labelledby="radio-button-label" class="radio-button-group"
+                             [formControl]="documentsForm[i].controls['workerValue']">
+              <mat-radio-button class="radio-button" value="1">Lie</mat-radio-button>
+              <mat-radio-button class="radio-button" value="2">False</mat-radio-button>
+              <mat-radio-button class="radio-button" value="3">Barely True</mat-radio-button>
+              <mat-radio-button class="radio-button" value="4">Half True</mat-radio-button>
+              <mat-radio-button class="radio-button" value="5">Mostly True</mat-radio-button>
+              <mat-radio-button class="radio-button" value="6">True</mat-radio-button>
+            </mat-radio-group>
+            <mat-radio-group *ngIf="scale=='S3'" aria-labelledby="radio-button-label" class="radio-button-group"
+                             [formControl]="documentsForm[i].controls['workerValue']">
+              <mat-radio-button class="radio-button" value="1">Negative</mat-radio-button>
+              <mat-radio-button class="radio-button" value="2">In Between</mat-radio-button>
+              <mat-radio-button class="radio-button" value="3">Positive</mat-radio-button>
+            </mat-radio-group>
+            <label *ngIf="scale=='S100'">Selected value: {{documentsForm[i].controls['workerValue'].value}}</label>
+            <mat-slider *ngIf="scale=='S100'" min="0" max="100" step="1" thumbLabel tickInterval="1"
+                        [formControl]="documentsForm[i].controls['workerValue']"></mat-slider>
+          </mat-card-content>
+          <mat-card-actions>
+            <button mat-flat-button color="primary" matStepperPrevious *ngIf="i>0" [disabled]="taskCompleted"
+                    (click)="performLogging('Back', false)">Back
+            </button>
+            <button mat-flat-button color="primary" matStepperNext [disabled]="!documentsForm[i].valid || !this.searchEngineResponses[i] || taskCompleted"
+                    *ngIf="i+1<this.documentsAmount" (click)="performLogging('Next',false)">
+              Next
+            </button>
+            <!-- TODO ATTENZIONE: LOGGING DISABILITATO -->
+            <button mat-flat-button color="primary" matStepperNext
+                    [disabled]="(!performGlobalValidityCheck()) || taskCompleted"
+                    *ngIf="i+1>=this.documentsAmount">
+              Finish
+            </button>
+            <span class="form-note">(*) you have to fill each field to proceed</span>
+          </mat-card-actions>
+        </mat-card>
+      </form>
+    </div>
+  </mat-step>
+
+</mat-horizontal-stepper>

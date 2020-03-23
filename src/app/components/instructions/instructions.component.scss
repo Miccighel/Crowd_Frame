@@ -1,0 +1,23 @@
+/* Toolbar CSS styles */
+
+mat-toolbar {
+  width: 90%;
+  margin: auto;
+  background-color: transparent;
+  padding-left: 0;
+  padding-right: 0;
+  justify-content: space-between;
+}
+
+mat-toolbar button {
+  text-transform: uppercase;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+mat-toolbar h4 {
+  background-color: yellow;
+  padding-left: 1%;
+  padding-right: 1%;
+}
+
