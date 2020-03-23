@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "FakeNews2020": {
+    "CrowdsourcingSkeleton": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -36,7 +36,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/FakeNews2020",
+            "outputPath": "dist/CrodwsourcingSkeleton",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
@@ -86,18 +86,18 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "FakeNews2020:build"
+            "browserTarget": "CrowdsourcingSkeleton:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "FakeNews2020:build:production"
+              "browserTarget": "CrowdsourcingSkeleton:build:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "FakeNews2020:build"
+            "browserTarget": "CrowdsourcingSkeleton:build"
           }
         },
         "test": {
@@ -135,16 +135,16 @@
           "builder": "@angular-devkit/build-angular:protractor",
           "options": {
             "protractorConfig": "e2e/protractor.conf.js",
-            "devServerTarget": "FakeNews2020:serve"
+            "devServerTarget": "CrowdsourcingSkeleton:serve"
           },
           "configurations": {
             "production": {
-              "devServerTarget": "FakeNews2020:serve:production"
+              "devServerTarget": "CrowdsourcingSkeleton:serve:production"
             }
           }
         }
       }
     }
   },
-  "defaultProject": "FakeNews2020"
+  "defaultProject": "CrowdsourcingSkeleton"
 }

@@ -12,12 +12,12 @@ import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
 
 /* Reactive forms modules */
 import {BingService} from '../../services/bing.service';
-import {BingWebSearchResponse} from "../../models/bingWebSearchResponse";
+import {BingWebSearchResponse} from "../../models/binger/bingWebSearchResponse";
 import {FakerService} from "../../services/faker.service";
-import {FakerSearchResponse} from "../../models/fakerSearchResponse";
+import {FakerSearchResponse} from "../../models/binger/fakerSearchResponse";
 import {PubmedService} from "../../services/pudmed.service";
-import {PubmedSearchResponse} from "../../models/pubmedSearchResponse";
-import {PubmedSummaryResponse} from '../../models/pubmedSummaryResponse';
+import {PubmedSearchResponse} from "../../models/binger/pubmedSearchResponse";
+import {PubmedSummaryResponse} from '../../models/binger/pubmedSummaryResponse';
 
 @Component({
     selector: 'app-binger',

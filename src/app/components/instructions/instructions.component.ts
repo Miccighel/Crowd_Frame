@@ -11,19 +11,19 @@ export interface DialogData {}
 
 export class InstructionsComponent implements OnInit{
 
-  @Input() modality: string;
+  @Input() scale: string;
 
   constructor(public dialog: MatDialog) {}
 
   ngOnInit(): void {
-    this.openDialog(this.modality)
+    this.openDialog(this.scale)
   }
 
-  openDialog(modality: string): void {
+  openDialog(scale: string): void {
     this.dialog.open(InstructionsDialog, {
       width: '80%',
       minHeight: '86%',
-      data: {modality: modality}
+      data: {scale: scale}
     });
   }
 }
@@ -36,10 +36,10 @@ export class InstructionsComponent implements OnInit{
 
 export class InstructionsDialog {
 
-  modality: string;
+  scale: string;
 
   constructor(public dialogRef: MatDialogRef<InstructionsDialog>, @Inject(MAT_DIALOG_DATA) public data: DialogData) {
-    this.modality = data["scale"]
+    this.scale = data["scale"]
   }
 
   closeInstructions(): void {

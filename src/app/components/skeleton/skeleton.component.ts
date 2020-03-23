@@ -8,8 +8,8 @@ import {MatStepper} from "@angular/material/stepper";
 import {NgxUiLoaderService} from 'ngx-ui-loader';
 import {ConfigService} from "../../services/config.service";
 
-import {Document} from "../../models/document";
-import {Hit} from "../../models/hit";
+import {Document} from "../../models/skeleton/document";
+import {Hit} from "../../models/skeleton/hit";
 
 import * as AWS from 'aws-sdk';
 
@@ -29,7 +29,7 @@ import * as AWS from 'aws-sdk';
 
 export class SkeletonComponent {
 
-  // |--------- GENERAL ELEMENTS ---------|
+  // |--------- GENERAL ELEMENTS - DECLARATION ---------|
 
   /* Name of the current task */
   experimentId: string;
@@ -57,6 +57,7 @@ export class SkeletonComponent {
   taskSuccessful: boolean;
   taskFailed: boolean;
 
+  /* // EDIT: Set the following attributes accordingly */
   /* Rating scale to be used */
   scale: string;
   /* Flag to launch a batch of experiments for multiple rating scales */
@@ -77,8 +78,9 @@ export class SkeletonComponent {
   /* Number of allowed tries */
   allowedTries: number;
 
-  // |--------- AMAZON AWS INTEGRATION ---------|
+  // |--------- AMAZON AWS INTEGRATION - DECLARATION ---------|
 
+  /* // EDIT: Set these fields within each environment in ../environments/ folder */
   /* AWS S3 Integration*/
   s3: AWS.S3;
   /* Region identifier */
@@ -92,21 +94,21 @@ export class SkeletonComponent {
   /* File where each hit is stored */
   hitsFile: string;
 
-  // |--------- QUESTIONNAIRE ELEMENTS ---------|
+  // |--------- QUESTIONNAIRE ELEMENTS - DECLARATION ---------|
   /* Attributes to handle the questionnaire part of a Crowdsourcing task */
 
   /* Number of different questionnaires inserted within task's body
   * (i.e., a standard questionnaire and two cognitive questionnaires  */
   questionnaireOffset: number;
 
-  /* Form controls */
   /* // EDIT: Add your own questionnaires and their fields here */
+  /* Form controls */
   questionnaireForm: FormGroup;
   age: FormControl;
   degree: FormControl;
   money: FormControl;
 
-  // |--------- HIT ELEMENTS ---------|
+  // |--------- HIT ELEMENTS - DECLARATION ---------|
   /* Attributes to handle each Hit of a Crowdsourcing task */
 
   /* Array of form references, one for each document within a Hit */
@@ -117,7 +119,7 @@ export class SkeletonComponent {
   /* Array of documents */
   documents: Array<Document>;
 
-  // |--------- SEARCH ENGINE INTEGRATION ---------|
+  // |--------- SEARCH ENGINE INTEGRATION - DECLARATION ---------|
   /* https://github.com/Miccighel/Binger */
 
   /* Array to store search engine queries and responses, one for each document within a Hit */
@@ -126,7 +128,7 @@ export class SkeletonComponent {
   /* Flag to check if the query returned some results */
   resultsFound: boolean;
 
-  // |--------- QUALITY CHECKS ---------|
+  // |--------- QUALITY CHECKS - DECLARATION ---------|
 
   /* Indexes of the gold questions within a Hit */
   goldIndexHigh: number;
@@ -137,7 +139,7 @@ export class SkeletonComponent {
   timestampsEnd: Array<Array<number>>;
   timestampsElapsed: Array<number>;
 
-  // |--------- COMMENT ELEMENTS ---------|
+  // |--------- COMMENT ELEMENTS - DECLARATION ---------|
   /* Attributes to handle the final comments part of a Crowdsourcing task */
 
   /* Comment form reference */
@@ -147,16 +149,8 @@ export class SkeletonComponent {
   /* Flag to check if the comment has been correctly sent */
   commentSent: boolean;
 
-
-
-
-
-  /* Task-specific attributes */
-
-
-
-
-
+  // |--------- CONSTRUCTOR ---------|
+  /* */
 
   constructor(
     changeDetector: ChangeDetectorRef,
@@ -165,41 +159,38 @@ export class SkeletonComponent {
     formBuilder: FormBuilder,
   ) {
 
-    this.experimentId = "PubMedder";
-    this.scale = "S3";
-    this.useEachModality = false;
+    // |--------- GENERAL ELEMENTS - INITIALIZATION ---------|
+
+    this.experimentId = "CrowdsourcingSkeleton";
+
+    let url = new URL(window.location.href);
+    this.workerID = url.searchParams.get("workerID");
 
     this.changeDetector = changeDetector;
-
     this.ngxService = ngxService;
     this.configService = configService;
-
     this.formBuilder = formBuilder;
+
+    this.taskAllowed = true;
 
     this.taskStarted = false;
     this.taskCompleted = false;
     this.taskSuccessful = false;
+    this.taskFailed = false;
+
+    /* // EDIT: Set the two following attributes accordingly */
+    this.scale="S3";
+    this.useEachModality = false;
 
     this.tokenInput = new FormControl('', [Validators.required], this.validateTokenInput.bind(this));
     this.tokenForm = formBuilder.group({
-      "tokenInput": this.tokenInput
+      "tokenInput":  new FormControl('', [Validators.required], this.validateTokenInput.bind(this))
     });
+    this.tokenInputValid = false;
 
     this.allowedTries = 10;
 
-    this.age = new FormControl('', [Validators.required]);
-    this.degree = new FormControl('', [Validators.required]);
-    this.money = new FormControl('', [Validators.required]);
-
-    this.questionnaireForm = formBuilder.group({
-      "age": this.age,
-      "degree": this.degree,
-      "money": this.money
-    });
-
-    let url = new URL(window.location.href);
-    this.workerID = url.searchParams.get("workerID");
-    this.taskAllowed = true;
+    // |--------- AMAZON AWS INTEGRATION - INITIALIZATION ---------|
 
     this.region = 'eu-west-1';
     this.bucket = 'crowdsourcing-tasks';
@@ -219,21 +210,46 @@ export class SkeletonComponent {
       })
     }
 
+    // |--------- QUESTIONNAIRE ELEMENTS - INITIALIZATION ---------|
+
+    this.age = new FormControl('', [Validators.required]);
+    this.degree = new FormControl('', [Validators.required]);
+    this.money = new FormControl('', [Validators.required]);
+    this.questionnaireForm = formBuilder.group({
+      "age": this.age,
+      "degree": this.degree,
+      "money": this.money
+    });
+
+    // |--------- SEARCH ENGINE INTEGRATION - INITIALIZATION ---------|
+
     this.resultsFound = false;
-    this.tokenInputValid = false;
 
   }
 
+  // |--------- GENERAL ELEMENTS - FUNCTIONS ---------|
+
+  /*
+  * This function interacts with an Amazon S3 bucket to search the token input
+  * typed by the user inside within the hits.json file stored in the bucket.
+  * If such token cannot be found, an error message is returned.
+  */
   public async validateTokenInput(control: FormControl) {
-    let hits = JSON.parse((await (this.s3.getObject({
-      Bucket: this.bucket,
-      Key: this.hitsFile
-    }).promise())).Body.toString('utf-8'));
-    for (let hit of hits) {
-      if (hit.token_input === control.value) return null
-    }
+    let hits = await this.download(this.hitsFile);
+    for (let hit of hits) if (hit.token_input === control.value) return null;
     return {"invalid": "This token is not valid."}
   }
+
+  // |--------- AMAZON AWS INTEGRATION - FUNCTIONS ---------|
+
+  public async download(path: string): Promise<Array<Hit>> {
+    return JSON.parse(
+      (await (this.s3.getObject({
+        Bucket: this.bucket,
+        Key: path
+      }).promise())).Body.toString('utf-8'));
+  }
+
 
   public async performWorkerStatusCheck() {
     if (this.useEachModality) {
@@ -255,13 +271,10 @@ export class SkeletonComponent {
         return false
       }
     } else {
-      let workers = JSON.parse((await (this.s3.getObject({
-        Bucket: this.bucket,
-        Key: this.workersFile
-      }).promise())).Body.toString('utf-8'));
-      let already_present = false;
-      for (let active_worker of workers['started']) if (active_worker == this.workerID) already_present = true;
-      if (!already_present) {
+      let workers = await this.download(this.workersFile);
+      let taskAlreadyStarted = false;
+      for (let currentWorker of workers['started']) if (currentWorker == this.workerID) taskAlreadyStarted = true;
+      if (!taskAlreadyStarted) {
         workers['started'].push(this.workerID);
         this.s3.upload({
           Key: this.workersFile,

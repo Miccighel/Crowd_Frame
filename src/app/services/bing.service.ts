@@ -4,8 +4,8 @@ import {Observable} from "rxjs";
 
 /* HTTP handling modules */
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { BingWebSearchResponse } from '../models/bingWebSearchResponse';
-import {BaseResponse} from "../models/baseResponse";
+import { BingWebSearchResponse } from '../models/binger/bingWebSearchResponse';
+import {BaseResponse} from "../models/binger/baseResponse";
 
 @Injectable({
   providedIn: 'root'

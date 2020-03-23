@@ -4,10 +4,10 @@ import {Observable} from "rxjs";
 
 /* HTTP handling modules */
 import {HttpClient, HttpHeaders} from '@angular/common/http';
-import {PubmedSearchResponse} from "../models/pubmedSearchResponse";
-import {BaseResponse} from "../models/baseResponse";
-import {BingWebSearchResponse} from "../models/bingWebSearchResponse";
-import { PubmedSummaryResponse } from '../models/pubmedSummaryResponse';
+import {PubmedSearchResponse} from "../models/binger/pubmedSearchResponse";
+import {BaseResponse} from "../models/binger/baseResponse";
+import {BingWebSearchResponse} from "../models/binger/bingWebSearchResponse";
+import { PubmedSummaryResponse } from '../models/binger/pubmedSummaryResponse';
 
 @Injectable({
     providedIn: 'root'

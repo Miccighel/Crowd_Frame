@@ -4,8 +4,8 @@ import {Observable} from "rxjs";
 
 /* HTTP handling modules */
 import {HttpClient, HttpHeaders} from '@angular/common/http';
-import {FakerSearchResponse} from "../models/fakerSearchResponse";
-import {BaseResponse} from "../models/baseResponse";
+import {FakerSearchResponse} from "../models/binger/fakerSearchResponse";
+import {BaseResponse} from "../models/binger/baseResponse";
 
 @Injectable({
     providedIn: 'root'
