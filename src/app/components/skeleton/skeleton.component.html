@@ -261,8 +261,7 @@
                         [formControl]="documentsForm[i].controls['workerValue']"></mat-slider>
           </mat-card-content>
           <mat-card-actions>
-            <button mat-flat-button color="primary" matStepperPrevious *ngIf="i>0" [disabled]="taskCompleted"
-                    (click)="performLogging('Back', false)">Back
+            <button mat-flat-button color="primary" matStepperPrevious *ngIf="i>0" [disabled]="taskCompleted" (click)="performLogging('Back', false)">Back
             </button>
             <button mat-flat-button color="primary" matStepperNext [disabled]="!documentsForm[i].valid || !this.searchEngineResponses[i] || taskCompleted"
                     *ngIf="i+1<this.documentsAmount" (click)="performLogging('Next',false)">

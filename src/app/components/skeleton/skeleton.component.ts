@@ -12,6 +12,8 @@ import {Document} from "../../models/skeleton/document";
 import {Hit} from "../../models/skeleton/hit";
 
 import * as AWS from 'aws-sdk';
+import {ManagedUpload} from "aws-sdk/clients/s3";
+import {bool} from "aws-sdk/clients/signer";
 
 @Component({
   selector: 'app-skeleton',
@@ -57,11 +59,12 @@ export class SkeletonComponent {
   taskSuccessful: boolean;
   taskFailed: boolean;
 
-  /* // EDIT: Set the following attributes accordingly */
   /* Rating scale to be used */
   scale: string;
+  /* Each possible rating scale */
+  allScales: Array<string>;
   /* Flag to launch a batch of experiments for multiple rating scales */
-  useEachModality: boolean;
+  useEachScale: boolean;
 
   /* References to task stepper and token forms */
   @ViewChild('stepper', {static: false}) stepper: MatStepper;
@@ -77,22 +80,6 @@ export class SkeletonComponent {
   unitId: string;
   /* Number of allowed tries */
   allowedTries: number;
-
-  // |--------- AMAZON AWS INTEGRATION - DECLARATION ---------|
-
-  /* // EDIT: Set these fields within each environment in ../environments/ folder */
-  /* AWS S3 Integration*/
-  s3: AWS.S3;
-  /* Region identifier */
-  region: string;
-  /* Bucket identifier */
-  bucket: string;
-  /* Folder to use within the bucket */
-  folder: string;
-  /* File where each worker identifier is stored */
-  workersFile: string;
-  /* File where each hit is stored */
-  hitsFile: string;
 
   // |--------- QUESTIONNAIRE ELEMENTS - DECLARATION ---------|
   /* Attributes to handle the questionnaire part of a Crowdsourcing task */
@@ -149,8 +136,22 @@ export class SkeletonComponent {
   /* Flag to check if the comment has been correctly sent */
   commentSent: boolean;
 
+  // |--------- AMAZON AWS INTEGRATION - DECLARATION ---------|
+
+  /* AWS S3 Integration*/
+  s3: AWS.S3;
+  /* Region identifier */
+  region: string;
+  /* Bucket identifier */
+  bucket: string;
+  /* Folder to use within the bucket */
+  folder: string;
+  /* File where each worker identifier is stored */
+  workersFile: string;
+  /* File where each hit is stored */
+  hitsFile: string;
+
   // |--------- CONSTRUCTOR ---------|
-  /* */
 
   constructor(
     changeDetector: ChangeDetectorRef,
@@ -159,17 +160,17 @@ export class SkeletonComponent {
     formBuilder: FormBuilder,
   ) {
 
-    // |--------- GENERAL ELEMENTS - INITIALIZATION ---------|
-
-    this.experimentId = "CrowdsourcingSkeleton";
-
-    let url = new URL(window.location.href);
-    this.workerID = url.searchParams.get("workerID");
-
     this.changeDetector = changeDetector;
     this.ngxService = ngxService;
     this.configService = configService;
     this.formBuilder = formBuilder;
+
+    // |--------- GENERAL ELEMENTS - INITIALIZATION ---------|
+
+    this.experimentId = this.configService.environment.experimentId;
+
+    let url = new URL(window.location.href);
+    this.workerID = url.searchParams.get("workerID");
 
     this.taskAllowed = true;
 
@@ -178,39 +179,21 @@ export class SkeletonComponent {
     this.taskSuccessful = false;
     this.taskFailed = false;
 
-    /* // EDIT: Set the two following attributes accordingly */
-    this.scale="S3";
-    this.useEachModality = false;
+    this.scale = this.configService.environment.scale;
+    this.allScales = this.configService.environment.allScales;
+    this.useEachScale = this.configService.environment.useEachScale;
 
     this.tokenInput = new FormControl('', [Validators.required], this.validateTokenInput.bind(this));
     this.tokenForm = formBuilder.group({
-      "tokenInput":  new FormControl('', [Validators.required], this.validateTokenInput.bind(this))
+      "tokenInput": this.tokenInput
     });
     this.tokenInputValid = false;
 
-    this.allowedTries = 10;
-
-    // |--------- AMAZON AWS INTEGRATION - INITIALIZATION ---------|
-
-    this.region = 'eu-west-1';
-    this.bucket = 'crowdsourcing-tasks';
-    this.folder = `${this.experimentId}/`;
-    this.workersFile = `${this.folder}workers.json`;
-    this.hitsFile = `${this.folder}hits.json`;
-    this.s3 = new AWS.S3({
-      region: this.region,
-      params: {Bucket: this.bucket},
-      credentials: new AWS.Credentials(this.configService.environment.aws_id_key, this.configService.environment.aws_secret_key)
-    });
-
-    if (!(this.workerID === null)) {
-      this.performWorkerStatusCheck().then(outcome => {
-        this.taskAllowed = outcome;
-        this.changeDetector.detectChanges()
-      })
-    }
+    this.allowedTries = this.configService.environment.allowedTries;
 
     // |--------- QUESTIONNAIRE ELEMENTS - INITIALIZATION ---------|
+
+    this.questionnaireOffset = this.configService.environment.questionnaireOffset;
 
     this.age = new FormControl('', [Validators.required]);
     this.degree = new FormControl('', [Validators.required]);
@@ -224,6 +207,30 @@ export class SkeletonComponent {
     // |--------- SEARCH ENGINE INTEGRATION - INITIALIZATION ---------|
 
     this.resultsFound = false;
+
+    // |--------- AMAZON AWS INTEGRATION - INITIALIZATION ---------|
+
+    this.region = this.configService.environment.region;
+    this.bucket = this.configService.environment.bucket;
+    if(this.useEachScale) {
+      this.folder = `${this.experimentId}/Multi/`;
+    } else {
+      this.folder = `${this.experimentId}/Single/`;
+    }
+    this.workersFile = `${this.folder}${this.scale}/workers.json`;
+    this.hitsFile = `${this.folder}${this.scale}/hits.json`;
+    this.s3 = new AWS.S3({
+      region: this.region,
+      params: {Bucket: this.bucket},
+      credentials: new AWS.Credentials(this.configService.environment.aws_id_key, this.configService.environment.aws_secret_key)
+    });
+
+    if (!(this.workerID === null)) {
+      this.performWorkerStatusCheck().then(outcome => {
+        this.taskAllowed = outcome;
+        this.changeDetector.detectChanges()
+      })
+    }
 
   }
 
@@ -240,52 +247,65 @@ export class SkeletonComponent {
     return {"invalid": "This token is not valid."}
   }
 
-  // |--------- AMAZON AWS INTEGRATION - FUNCTIONS ---------|
-
-  public async download(path: string): Promise<Array<Hit>> {
-    return JSON.parse(
-      (await (this.s3.getObject({
-        Bucket: this.bucket,
-        Key: path
-      }).promise())).Body.toString('utf-8'));
-  }
-
-
+  /*
+  * This function interacts with an Amazon S3 bucket to perform a check on the current worker identifier.
+  * If the worker has already started the task in the past (i.e., it's present in the workers.json
+  * file within the current scale folder of the experiment's bucket) he is not allowed to continue the task.
+  * If there is a task for each rating scale within the experiment, three different checks are made.
+  * This behavior is controlled by setting the useEachScale flag.
+  */
   public async performWorkerStatusCheck() {
-    if (this.useEachModality) {
-      let workers = JSON.parse((await (this.s3.getObject({
-        Bucket: this.bucket,
-        Key: this.workersFile
-      }).promise())).Body.toString('utf-8'));
-      let already_present = false;
-      if (!already_present) {
-        workers['started'].push(this.workerID);
-        this.s3.upload({
-          Key: this.workersFile,
-          Bucket: this.bucket,
-          Body: JSON.stringify(workers)
-        }, function (err, data) {
-        });
-        return true
-      } else {
-        return false
+    /* Only one scale must be checked or each one of them */
+    if (this.useEachScale) {
+      /* At the start, any worker identifier has been found */
+      let existingWorkerFoundForAScale = false;
+      /* Variable which contains the upload result */
+      let uploadStatus = null;
+      /* Each scale is tested */
+      for (let currentScale of this.allScales) {
+        /* If a worker identifier has been found for a scale, the task must be blocked */
+        if (existingWorkerFoundForAScale) {
+          break
+        } else {
+          /* The worker identifiers of the current scale are downloaded */
+          let workers = await this.download(`${this.folder}${currentScale}/workers.json`);
+          /* Check to verify if one of the workers which have already started the task is the current one */
+          let taskAlreadyStarted = false;
+          for (let currentWorker of workers['started']) if (currentWorker == this.workerID) taskAlreadyStarted = true;
+          /* If the current worker has not started the task */
+          if (!taskAlreadyStarted) {
+            /* His identifier is uploaded to the file of the scale to which he is assigned */
+            if (this.scale == currentScale) {
+              workers['started'].push(this.workerID);
+              uploadStatus = await (this.upload(this.workersFile, workers));
+            }
+            /* The current one is a brand new worker */
+            existingWorkerFoundForAScale = false;
+          } else {
+            /* The current one is a returning worker */
+            existingWorkerFoundForAScale = true;
+          }
+        }
       }
+      /* If a returning worker has been found, the task must be blocked, otherwise he is free to proceed */
+      if (existingWorkerFoundForAScale) return false;
+      return !uploadStatus["failed"];
     } else {
+      /* The worker identifiers of the current scale are downloaded */
       let workers = await this.download(this.workersFile);
+      /* Check to verify if one of the workers which have already started the task is the current one */
       let taskAlreadyStarted = false;
       for (let currentWorker of workers['started']) if (currentWorker == this.workerID) taskAlreadyStarted = true;
+      /* If the current worker has not started the task */
       if (!taskAlreadyStarted) {
+        /* His identifier is uploaded to the file of the scale to which he is assigned */
         workers['started'].push(this.workerID);
-        this.s3.upload({
-          Key: this.workersFile,
-          Bucket: this.bucket,
-          Body: JSON.stringify(workers)
-        }, function (err, data) {
-        });
-        return true
-      } else {
-        return false
+        let uploadStatus = await (this.upload(this.workersFile, workers));
+        /* If the current worker is a brand new one he is free to proceed */
+        return !uploadStatus["failed"];
       }
+      /* If a returning worker has been found, the task must be blocked */
+      return false
     }
   }
 
@@ -296,10 +316,7 @@ export class SkeletonComponent {
       /* Start the spinner */
       this.ngxService.start();
 
-      let hits = JSON.parse((await (this.s3.getObject({
-        Bucket: this.bucket,
-        Key: this.hitsFile
-      }).promise())).Body.toString('utf-8'));
+      let hits = await this.download(this.hitsFile);
 
       /* Scan each entry for the token input */
       for (let currentHit of hits) {
@@ -462,7 +479,7 @@ export class SkeletonComponent {
     let taskData = {
       experiment_id: this.experimentId,
       current_modality: this.scale,
-      all_modalities: this.useEachModality,
+      all_modalities: this.useEachScale,
       worker_id: this.workerID,
       unit_id: this.unitId,
       token_input: this.tokenInput.value,
@@ -632,7 +649,29 @@ export class SkeletonComponent {
 
   }
 
-  /* Utility functions */
+  // |--------- AMAZON AWS INTEGRATION - FUNCTIONS ---------|
+
+  /* This function performs a GetObject operation to Amazon S3 and returns a parsed JSON which is the requested resource
+  * https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html */
+  public async download(path: string) {
+    return JSON.parse(
+      (await (this.s3.getObject({
+        Bucket: this.bucket,
+        Key: path
+      }).promise())).Body.toString('utf-8'));
+  }
+
+  /* This function performs an Upload operation to Amazon S3 and returns a JSON object which contains info about the outcome
+  * https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#upload-property */
+  public async upload(path: string, payload: Array<String>): Promise<ManagedUpload> {
+    return this.s3.upload({
+      Key: path,
+      Bucket: this.bucket,
+      Body: JSON.stringify(payload)
+    }, function (err, data) {})
+  }
+
+  // |--------- UTILITIES - FUNCTIONS ---------|
 
   public checkFormControl(form: FormGroup, field: string, key: string): boolean {
     return form.get(field).hasError(key);
