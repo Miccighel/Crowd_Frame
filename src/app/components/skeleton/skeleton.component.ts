@@ -357,7 +357,7 @@ export class SkeletonComponent {
       /* Validators are initialized for each field to ensure data consistency */
       let workerValue = null;
       if (this.scale != "S100") workerValue = new FormControl('', [Validators.required]); else workerValue = new FormControl(50, [Validators.required]);
-      let workerUrl = new FormControl({value: ''}, [Validators.required, this.validateBingerURL.bind(this)]);
+      let workerUrl = new FormControl('', [Validators.required, this.validateBingerURL.bind(this)]);
       this.documentsForm[index] = this.formBuilder.group({
         "workerValue": workerValue,
         "workerUrl": workerUrl,
