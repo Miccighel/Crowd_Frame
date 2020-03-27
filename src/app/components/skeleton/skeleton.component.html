@@ -15,7 +15,7 @@
                  (paste)="this.tokenForm.updateValueAndValidity()"
                  (keyup)="this.tokenForm.updateValueAndValidity()"
                  (keydown)="this.tokenForm.updateValueAndValidity()"
-                 (keyup.enter)="performCheckAndLoad()"
+                 (keyup.enter)="performHitRetrieval()"
           >
           <mat-error *ngIf="checkFormControl(tokenForm,'tokenInput', 'required')">
             This field is required
@@ -27,7 +27,7 @@
       </mat-card-content>
       <mat-card-actions>
         <button id="start-button" mat-flat-button color="primary" [disabled]="!tokenForm.valid"
-                (click)="performCheckAndLoad()">Start
+                (click)="performHitRetrieval()">Start
         </button>
       </mat-card-actions>
     </mat-card>

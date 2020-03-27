@@ -1,5 +1,7 @@
 export class Document {
 
+  index: number;
+
   id_par: string;
   name_unique: string;
   statement: string;
@@ -11,25 +13,23 @@ export class Document {
   source: string;
 
   constructor(
-    id_par: string,
-    name_unique: string,
-    statement: string,
-    speaker: string,
-    job: string,
-    context: string,
-    year: string,
-    party: string,
-    source: string
+    index: number,
+    data: JSON
   ) {
-    this.id_par = id_par;
-    this.name_unique = name_unique;
-    this.statement = statement;
-    this.speaker = speaker;
-    this.job = job;
-    this.context = context;
-    this.year = year;
-    this.party = party;
-    this.source = source;
+    this.index =        index;
+    this.id_par =       data["id_par"];
+    this.name_unique =  data["name_unique"];
+    this.statement =    data["statement"];
+    this.speaker =      data["speaker"];
+    this.job =          data["job"];
+    this.context =      data["context"];
+    this.year =         data["year"];
+    this.party =        data["party"];
+    this.source =       data["source"];
+  }
+
+  public getGoldQuestionIndex(kind: string) {
+    if (this.id_par == kind) return this.index
   }
 
 }

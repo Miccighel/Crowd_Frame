@@ -37,7 +37,7 @@ export class SkeletonComponent {
   experimentId: string;
 
   /* Unique identifier of the current worker */
-  workerID: string;
+  workerIdentifier: string;
 
   /* Flag to unlock the task for the worker */
   taskAllowed: boolean;
@@ -170,7 +170,7 @@ export class SkeletonComponent {
     this.experimentId = this.configService.environment.experimentId;
 
     let url = new URL(window.location.href);
-    this.workerID = url.searchParams.get("workerID");
+    this.workerIdentifier = url.searchParams.get("workerID");
 
     this.taskAllowed = true;
 
@@ -212,7 +212,7 @@ export class SkeletonComponent {
 
     this.region = this.configService.environment.region;
     this.bucket = this.configService.environment.bucket;
-    if(this.useEachScale) {
+    if (this.useEachScale) {
       this.folder = `${this.experimentId}/Multi/`;
     } else {
       this.folder = `${this.experimentId}/Single/`;
@@ -225,7 +225,7 @@ export class SkeletonComponent {
       credentials: new AWS.Credentials(this.configService.environment.aws_id_key, this.configService.environment.aws_secret_key)
     });
 
-    if (!(this.workerID === null)) {
+    if (!(this.workerIdentifier === null)) {
       this.performWorkerStatusCheck().then(outcome => {
         this.taskAllowed = outcome;
         this.changeDetector.detectChanges()
@@ -271,12 +271,12 @@ export class SkeletonComponent {
           let workers = await this.download(`${this.folder}${currentScale}/workers.json`);
           /* Check to verify if one of the workers which have already started the task is the current one */
           let taskAlreadyStarted = false;
-          for (let currentWorker of workers['started']) if (currentWorker == this.workerID) taskAlreadyStarted = true;
+          for (let currentWorker of workers['started']) if (currentWorker == this.workerIdentifier) taskAlreadyStarted = true;
           /* If the current worker has not started the task */
           if (!taskAlreadyStarted) {
             /* His identifier is uploaded to the file of the scale to which he is assigned */
             if (this.scale == currentScale) {
-              workers['started'].push(this.workerID);
+              workers['started'].push(this.workerIdentifier);
               uploadStatus = await (this.upload(this.workersFile, workers));
             }
             /* The current one is a brand new worker */
@@ -295,11 +295,11 @@ export class SkeletonComponent {
       let workers = await this.download(this.workersFile);
       /* Check to verify if one of the workers which have already started the task is the current one */
       let taskAlreadyStarted = false;
-      for (let currentWorker of workers['started']) if (currentWorker == this.workerID) taskAlreadyStarted = true;
+      for (let currentWorker of workers['started']) if (currentWorker == this.workerIdentifier) taskAlreadyStarted = true;
       /* If the current worker has not started the task */
       if (!taskAlreadyStarted) {
         /* His identifier is uploaded to the file of the scale to which he is assigned */
-        workers['started'].push(this.workerID);
+        workers['started'].push(this.workerIdentifier);
         let uploadStatus = await (this.upload(this.workersFile, workers));
         /* If the current worker is a brand new one he is free to proceed */
         return !uploadStatus["failed"];
@@ -309,17 +309,29 @@ export class SkeletonComponent {
     }
   }
 
-  /* Function to lookup the input token of the current worker; if it exists, the custom setup of the task shall begin */
-  public async performCheckAndLoad() {
+  /*
+  *  This function retrieves the hit identified by the validated token input inserted by the current worker.
+  *  Such hit is represented by an Hit object. After that, the task is initialized by setting each required
+  *  variables and by parsing hit content as an Array of Document objects. Therefore, to use a custom hit format
+  *  the Hit and Document interfaces must be adapted; the former to match a different number of documents within each hit,
+  *  the latter to correctly parse each document's field.
+  *  The Hit interface can be found at this path: ../models/skeleton/hit.ts
+  *  The Document interface can be found at this path: ../models/skeleton/document.ts
+  */
+  public async performHitRetrieval() {
+
+    /* The token input has been already validated, this is just to be sure */
     if (this.tokenForm.valid) {
 
-      /* Start the spinner */
+      /* The loading spinner is started */
       this.ngxService.start();
 
+      /* The hits stored on Amazon S3 are retrieved */
       let hits = await this.download(this.hitsFile);
 
       /* Scan each entry for the token input */
       for (let currentHit of hits) {
+        /* If the token input of the current hit matches with the one inserted by the worker the right hit has been found */
         if (this.tokenInput.value === currentHit.token_input) {
           this.hit = currentHit;
           this.tokenOutput = currentHit.token_output;
@@ -327,72 +339,67 @@ export class SkeletonComponent {
         }
       }
 
-      /* Control variables to handle to start the task*/
+      /* The token input field is disabled and the task can start */
       this.tokenInput.disable();
       this.taskStarted = true;
 
-      this.documents = new Array<Document>();
-      this.documentsAmount = this.hit.documents_number;
-      this.searchEngineQueries = new Array<object>(this.documentsAmount);
-      this.searchEngineResponses = new Array<object>(this.documentsAmount);
-      this.timestampsStart = new Array<Array<number>>(this.documentsAmount + 1);
-      for (let i = 0; i < this.timestampsStart.length; i++) {
-        this.timestampsStart[i] = []
-      }
-      this.timestampsStart[0].push(Math.round(Date.now() / 1000));
-      this.timestampsEnd = new Array<Array<number>>(this.documentsAmount + 1);
-      for (let i = 0; i < this.timestampsEnd.length; i++) {
-        this.timestampsEnd[i] = []
-      }
-      this.timestampsElapsed = new Array<number>(this.documentsAmount + 1);
-      this.documentsForm = new Array<FormGroup>();
-      for (let index = 0; index < this.documentsAmount; index++) {
-        if (this.scale == "S100") {
-          let workerValue = new FormControl(50, [Validators.required]);
-          let workerUrl = new FormControl({value: ''}, [Validators.required, this.validateBingerURL.bind(this)]);
-          this.documentsForm[index] = this.formBuilder.group({
-            "workerValue": workerValue,
-            "workerUrl": workerUrl,
-          })
-        } else {
-          let workerValue = new FormControl('', [Validators.required]);
-          let workerUrl = new FormControl('', [Validators.required, this.validateBingerURL.bind(this)]);
-          this.documentsForm[index] = this.formBuilder.group({
-            "workerValue": workerValue,
-            "workerUrl": workerUrl,
-          })
-        }
-      }
-
-      for (let index = 1; index <= this.documentsAmount; index++) {
-        let current_document = this.hit[`document_${index}`];
-        this.documents.push(
-          new Document(
-            current_document["id_par"],
-            current_document["name_unique"],
-            current_document["statement"],
-            current_document["speaker"],
-            current_document["job"],
-            current_document["context"],
-            current_document["year"],
-            current_document["party"],
-            current_document["source"],
-          )
-        );
-        if (current_document["id_par"] == "HIGH") {
-          this.goldIndexHigh = index - 1
-        }
-        if (current_document["id_par"] == "LOW") {
-          this.goldIndexLow = index - 1
-        }
-      }
     }
 
-    /* Detect changes within the DOM and stop the spinner */
+    /* |- HIT DOCUMENTS - INITIALIZATION-| */
+
+    /* The array of documents is initialized */
+    this.documents = new Array<Document>();
+    this.documentsAmount = this.hit.documents_number;
+
+    /* A form for each document with the fields that must be filled by current worker is initialized */
+    this.documentsForm = new Array<FormGroup>();
+    for (let index = 0; index < this.documentsAmount; index++) {
+      /* Validators are initialized for each field to ensure data consistency */
+      let workerValue = null;
+      if (this.scale != "S100") workerValue = new FormControl('', [Validators.required]); else workerValue = new FormControl(50, [Validators.required]);
+      let workerUrl = new FormControl({value: ''}, [Validators.required, this.validateBingerURL.bind(this)]);
+      this.documentsForm[index] = this.formBuilder.group({
+        "workerValue": workerValue,
+        "workerUrl": workerUrl,
+      })
+    }
+
+    /*  Each document of the current hit is parsed using the Document interface.  */
+    for (let index = 1; index <= this.documentsAmount; index++) {
+      let current_document = this.hit[`document_${index}`];
+      let documentIndex = index - 1;
+      this.documents.push(new Document(documentIndex, current_document));
+    }
+
+    /* |- HIT SEARCH ENGINE - INITIALIZATION-| */
+
+    this.searchEngineQueries = new Array<object>(this.documentsAmount);
+    this.searchEngineResponses = new Array<object>(this.documentsAmount);
+
+    /* |- HIT QUALITY CHECKS - INITIALIZATION-| */
+
+    /* Indexes of high and low gold questions are retrieved */
+    for (let index = 0; index < this.documentsAmount; index++) {
+      if (!this.goldIndexHigh) this.goldIndexHigh = this.documents[index].getGoldQuestionIndex("HIGH");
+      if (!this.goldIndexLow) this.goldIndexLow = this.documents[index].getGoldQuestionIndex("LOW");
+    }
+
+    /*
+     * Arrays of start, end and elapsed timestamps are initialized to track how much time the worker spends
+     * on each document, including each questionnaire
+     */
+    this.timestampsStart = new Array<Array<number>>(this.documentsAmount + this.questionnaireOffset);
+    this.timestampsEnd = new Array<Array<number>>(this.documentsAmount + this.questionnaireOffset);
+    this.timestampsElapsed = new Array<number>(this.documentsAmount + this.questionnaireOffset);
+    for (let i = 0; i < this.timestampsStart.length; i++) this.timestampsStart[i] = [];
+    for (let i = 0; i < this.timestampsEnd.length; i++) this.timestampsEnd[i] = [];
+    /* The task is now started and the worker is looking at the first questionnaire, so the first start timestamp is saved */
+    this.timestampsStart[0].push(Math.round(Date.now() / 1000));
+
+    /* Detect changes within the DOM and update the page */
     this.changeDetector.detectChanges();
 
-
-    /* Stop the spinner */
+    /* The loading spinner is stopped */
     this.ngxService.stop();
 
   }
@@ -480,7 +487,7 @@ export class SkeletonComponent {
       experiment_id: this.experimentId,
       current_modality: this.scale,
       all_modalities: this.useEachScale,
-      worker_id: this.workerID,
+      worker_id: this.workerIdentifier,
       unit_id: this.unitId,
       token_input: this.tokenInput.value,
       token_output: this.tokenOutput,
@@ -515,9 +522,9 @@ export class SkeletonComponent {
     taskData["timestamps_elapsed"] = this.timestampsElapsed;
     bingerData["queries"] = this.searchEngineQueries;
     bingerData["responses"] = this.searchEngineResponses;
-    if (!(this.workerID === null)) {
-      let taskDataKey = isFinal ? `${this.folder}hits/${this.workerID}/TRIES-${this.allowedTries}-ITEM-${this.stepper.selectedIndex}-TIMESTAMP-${Date.now()}-HIT-FINAL.json` : `${this.folder}hits/${this.workerID}/TRIES-${this.allowedTries}-ITEM-${this.stepper.selectedIndex}-TIMESTAMP-${Date.now()}-HIT.json`;
-      let bingerDataKey = isFinal ? `${this.folder}hits/${this.workerID}/TRIES-${this.allowedTries}-ITEM-${this.stepper.selectedIndex}-TIMESTAMP-${Date.now()}-BINGER-FINAL.json` : `${this.folder}hits/${this.workerID}/TRIES-${this.allowedTries}-ITEM-${this.stepper.selectedIndex}-TIMESTAMP-${Date.now()}-BINGER.json`;
+    if (!(this.workerIdentifier === null)) {
+      let taskDataKey = isFinal ? `${this.folder}hits/${this.workerIdentifier}/TRIES-${this.allowedTries}-ITEM-${this.stepper.selectedIndex}-TIMESTAMP-${Date.now()}-HIT-FINAL.json` : `${this.folder}hits/${this.workerIdentifier}/TRIES-${this.allowedTries}-ITEM-${this.stepper.selectedIndex}-TIMESTAMP-${Date.now()}-HIT.json`;
+      let bingerDataKey = isFinal ? `${this.folder}hits/${this.workerIdentifier}/TRIES-${this.allowedTries}-ITEM-${this.stepper.selectedIndex}-TIMESTAMP-${Date.now()}-BINGER-FINAL.json` : `${this.folder}hits/${this.workerIdentifier}/TRIES-${this.allowedTries}-ITEM-${this.stepper.selectedIndex}-TIMESTAMP-${Date.now()}-BINGER.json`;
       this.s3.upload({
         Key: taskDataKey,
         Bucket: this.bucket,
@@ -539,9 +546,9 @@ export class SkeletonComponent {
   performCommentSaving() {
 
     /* console.log(this.commentForm.value); */
-    if (!(this.workerID === null)) {
+    if (!(this.workerIdentifier === null)) {
       this.s3.upload({
-        Key: `${this.folder}hits/${this.workerID}/TRIES-${this.allowedTries}-COMMENT.json`,
+        Key: `${this.folder}hits/${this.workerIdentifier}/TRIES-${this.allowedTries}-COMMENT.json`,
         Bucket: this.bucket,
         Body: JSON.stringify(this.commentForm.value)
       }, function (err, data) {
@@ -591,9 +598,9 @@ export class SkeletonComponent {
       timeSpentCheck: timeSpentCheck
     };
 
-    if (!(this.workerID === null)) {
+    if (!(this.workerIdentifier === null)) {
       let key: string;
-      key = `${this.folder}hits/${this.workerID}/TRIES-${this.allowedTries}-CHECKS.json`;
+      key = `${this.folder}hits/${this.workerIdentifier}/TRIES-${this.allowedTries}-CHECKS.json`;
       this.s3.upload({
         Key: key,
         Bucket: this.bucket,
@@ -668,7 +675,8 @@ export class SkeletonComponent {
       Key: path,
       Bucket: this.bucket,
       Body: JSON.stringify(payload)
-    }, function (err, data) {})
+    }, function (err, data) {
+    })
   }
 
   // |--------- UTILITIES - FUNCTIONS ---------|
