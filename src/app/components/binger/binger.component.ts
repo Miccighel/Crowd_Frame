@@ -201,7 +201,6 @@ export class BingerComponent {
                                         decodedResponses.push(this.pubmedService.decodeResponse(summaryResponse))
                                     }
                                 );
-                                this.resultEmitter.emit(decodedResponses);
                                 /* Some results exist */
                                 this.resultsFound = true;
                                 /* The results amount is saved*/
@@ -210,9 +209,10 @@ export class BingerComponent {
                                 this.dataSource.data = decodedResponses;
                                 await this.delay(750)
                             }
-
+                            this.resultEmitter.emit(decodedResponses);
                         } else {
                             /* There are not any result */
+                            this.resultEmitter.emit([]);
                             this.resultsFound = false;
                             this.resultsAmount = 0;
                             this.dataSource.data = [];

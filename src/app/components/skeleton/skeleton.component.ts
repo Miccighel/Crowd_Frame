@@ -111,7 +111,9 @@ export class SkeletonComponent {
 
   /* Array to store search engine queries and responses, one for each document within a Hit */
   searchEngineQueries: Array<object>;
-  searchEngineResponses: Array<object>;
+  searchEngineRetrievedResponses: Array<object>;
+  /* Array to store the responses selected by workers within search engine results, one for each document within a Hit */
+  searchEngineSelectedResponses: Array<object>;
   /* Flag to check if the query returned some results */
   resultsFound: boolean;
 
@@ -357,7 +359,7 @@ export class SkeletonComponent {
       /* Validators are initialized for each field to ensure data consistency */
       let workerValue = null;
       if (this.scale != "S100") workerValue = new FormControl('', [Validators.required]); else workerValue = new FormControl(50, [Validators.required]);
-      let workerUrl = new FormControl('', [Validators.required, this.validateBingerURL.bind(this)]);
+      let workerUrl = new FormControl('', [Validators.required, this.validateSearchEngineUrl.bind(this)]);
       this.documentsForm[index] = this.formBuilder.group({
         "workerValue": workerValue,
         "workerUrl": workerUrl,
@@ -374,7 +376,8 @@ export class SkeletonComponent {
     /* |- HIT SEARCH ENGINE - INITIALIZATION-| */
 
     this.searchEngineQueries = new Array<object>(this.documentsAmount);
-    this.searchEngineResponses = new Array<object>(this.documentsAmount);
+    this.searchEngineRetrievedResponses = new Array<object>(this.documentsAmount);
+    this.searchEngineSelectedResponses = new Array<object>(this.documentsAmount);
 
     /* |- HIT QUALITY CHECKS - INITIALIZATION-| */
 
@@ -404,53 +407,156 @@ export class SkeletonComponent {
 
   }
 
-  public saveBingerQuery(bingerData: string) {
+  // |--------- SEARCH ENGINE INTEGRATION - FUNCTIONS ---------|
 
-    let currentDocument = parseInt(bingerData['target']['id'].split("-")[1]);
-    let currentQuery = bingerData['detail'];
-    let entry = {"documentNumber": currentDocument, "query": currentQuery.trim()};
-    this.searchEngineQueries[currentDocument] = entry;
-
-    /* console.log(this.searchEngineQueries) */
-
+  /*
+   * This function intercepts a <queryEmitter> triggered by an instance of the search engine.
+   * The parameter is a JSON object which holds the query typed by the worker within a given document.
+   * These information are parsed and stored in the corresponding data structure.
+   */
+  public storeSearchEngineUserQuery(queryData: Object) {
+    /* The current document and user query are parsed from the JSON object */
+    let currentDocument = parseInt(queryData['target']['id'].split("-")[1]);
+    let currentUserQuery = queryData['detail'];
+    let timeInSeconds = Date.now() / 1000;
+    /* If some data for the current document already exists*/
+    if (this.searchEngineQueries[currentDocument]) {
+      /* The new query is pushed into current document data array along with a index used to identify such query*/
+      let storedQueries = Object.values(this.searchEngineQueries[currentDocument]['data']);
+      storedQueries.push({
+        "index": storedQueries.length,
+        "timestamp": timeInSeconds,
+        "text": currentUserQuery
+      });
+      /* The data array within the data structure is updated */
+      this.searchEngineQueries[currentDocument]['data'] = storedQueries;
+      /* The total amount of query for the current document is updated */
+      this.searchEngineQueries[currentDocument]['amount'] = storedQueries.length;
+    } else {
+      /* The data slot for the current document is created */
+      this.searchEngineQueries[currentDocument] = {};
+      /* A new data array for the current document is created and the fist query is pushed */
+      this.searchEngineQueries[currentDocument]['data'] = [{
+        "index": 0,
+        "timestamp": timeInSeconds,
+        "text": currentUserQuery
+      }];
+      /* The total amount of query for the current document is set to 1 */
+      /* IMPORTANT: the index of the last query inserted for a document will be <amount -1> */
+      this.searchEngineQueries[currentDocument]['amount'] = 1
+    }
   }
 
-  public saveBingerResponse(bingerData: Object) {
-
-    let currentDocument = parseInt(bingerData['target']['id'].split("-")[1]);
-    let currentResponse = bingerData['detail'];
-    let entry = {"document": currentDocument, "response": currentResponse};
-    this.searchEngineResponses[currentDocument] = entry;
-    this.documentsForm[this.stepper.selectedIndex - 1].controls["workerUrl"].enable();
+  /*
+   * This function intercepts a <resultEmitter> triggered by an instance of the search engine.
+   * The parameter is a JSON object which holds an array of <BaseResponse> objects, one for each search result.
+   * This array CAN BE EMPTY, if the search engine does not find anything for the current query.
+   * These information are parsed and stored in the corresponding data structure.
+   */
+  public storeSearchEngineRetrievedResponse(retrievedResponseData: Object) {
+    /* The current document and user search engine retrieved response are parsed from the JSON object */
+    let currentDocument = parseInt(retrievedResponseData['target']['id'].split("-")[1]);
+    let currentRetrievedResponse = retrievedResponseData['detail'];
+    let timeInSeconds = Date.now() / 1000;
+    /* If some responses for the current document already exists*/
+    if (this.searchEngineRetrievedResponses[currentDocument]) {
+      /* The new response is pushed into current document data array along with its query index */
+      let storedResponses = Object.values(this.searchEngineRetrievedResponses[currentDocument]['data']);
+      storedResponses.push({
+        "query": this.searchEngineQueries[currentDocument]['amount'] -1,
+        "timestamp": timeInSeconds,
+        "response": currentRetrievedResponse,
+      });
+      /* The data array within the data structure is updated */
+      this.searchEngineRetrievedResponses[currentDocument]['data'] = storedResponses;
+      /* The total amount of retrieved responses for the current document is updated */
+      this.searchEngineRetrievedResponses[currentDocument]['amount'] = storedResponses.length;
+    } else {
+      /* The data slot for the current document is created */
+      this.searchEngineRetrievedResponses[currentDocument] = {};
+      /* A new data array for the current document is created and the fist response is pushed */
+      this.searchEngineRetrievedResponses[currentDocument]['data'] = [{
+        "query": this.searchEngineQueries[currentDocument]['amount'] -1,
+        "timestamp": timeInSeconds,
+        "response": currentRetrievedResponse
+      }];
+      /* The total amount of retrieved responses for the current document is set to 1 */
+      /* IMPORTANT: the index of the last retrieved response for a document will be <amount -1> */
+      this.searchEngineRetrievedResponses[currentDocument]['amount'] = 1
+    }
+    /* The form control to set the url of the selected search result is enabled */
+    this.documentsForm[currentDocument].controls["workerUrl"].enable();
   }
 
-  public saveBingerSelectedResult(bingerData: Object) {
-    let currentDocument = parseInt(bingerData['target']['id'].split("-")[1]);
-    this.searchEngineResponses[currentDocument]["selectedUrl"] = bingerData["detail"]["url"];
-    this.documentsForm[currentDocument].controls["workerUrl"].setValue(bingerData["detail"]["url"])
+  /*
+   * This function intercepts a <selectedRowEmitter> triggered by an instance of the search engine.
+   * The parameter is a JSON object which holds the selected search engine result within a given document.
+   * This array CAN BE EMPTY, if the search engine does not find anything for the current query.
+   * These information are parsed and stored in the corresponding data structure.
+   */
+  public storeSearchEngineSelectedResponse(selectedResponseData: Object) {
+    /* The current document and user search engine retrieved response are parsed from the JSON object */
+    let currentDocument = parseInt(selectedResponseData['target']['id'].split("-")[1]);
+    let currentSelectedResponse = selectedResponseData['detail'];
+    let timeInSeconds = Date.now() / 1000;
+    /* If some responses for the current document already exists*/
+    if (this.searchEngineSelectedResponses[currentDocument]) {
+      /* The new response is pushed into current document data array along with its query index */
+      let storedResponses = Object.values(this.searchEngineSelectedResponses[currentDocument]['data']);
+      storedResponses.push({
+        "query": this.searchEngineQueries[currentDocument]['amount'] -1,
+        "timestamp": timeInSeconds,
+        "response": currentSelectedResponse,
+      });
+      /* The data array within the data structure is updated */
+      this.searchEngineSelectedResponses[currentDocument]['data'] = storedResponses;
+      /* The total amount of selected responses for the current document is updated */
+      this.searchEngineSelectedResponses[currentDocument]['amount'] = storedResponses.length;
+    } else {
+      /* The data slot for the current document is created */
+      this.searchEngineSelectedResponses[currentDocument] = {};
+      /* A new data array for the current document is created and the fist response is pushed */
+      this.searchEngineSelectedResponses[currentDocument]['data'] = [{
+        "query": this.searchEngineQueries[currentDocument]['amount'] -1,
+        "timestamp": timeInSeconds,
+        "response": currentSelectedResponse
+      }];
+      /* The total amount of retrieved responses for the current document is set to 1 */
+      /* IMPORTANT: the index of the last retrieved response for a document will be <amount -1> */
+      this.searchEngineSelectedResponses[currentDocument]['amount'] = 1
+    }
+    this.documentsForm[currentDocument].controls["workerUrl"].setValue(currentSelectedResponse['url']);
   }
 
-  public validateBingerURL(c: FormControl) {
-    let workerUrl = c.value;
-    if (typeof this.stepper !== "undefined") {
-      if (typeof this.searchEngineResponses[this.stepper.selectedIndex - 1] !== "undefined") {
-        if (this.searchEngineResponses[this.stepper.selectedIndex - 1].hasOwnProperty("response")) {
-          let currentResults = this.searchEngineResponses[this.stepper.selectedIndex - 1]["response"];
-          for (let index = 0; index < currentResults.length; index++) {
-            if (workerUrl == currentResults[index].url) {
-              return null;
-            }
+  /*
+   * This function performs a validation of the worker url field each time the current worker types or pastes in its inside
+   * or when he selects one of the responses retrieved by the search engine. If the url present in the field is not equal
+   * to an url retrieved by the search engine an <invalidSearchEngineUrl> error is raised.
+   * IMPORTANT: the <return null> part means: THE FIELD IS VALID
+   */
+  public validateSearchEngineUrl(workerUrlFormControl: FormControl) {
+    /* If the stepped is initialized to something the task is started */
+    if (this.stepper) {
+      let currentDocument = this.stepper.selectedIndex - this.questionnaireOffset;
+      /* If there are data for the current document */
+      if (this.searchEngineRetrievedResponses[currentDocument]) {
+        let retrievedResponses = this.searchEngineRetrievedResponses[currentDocument];
+        if (retrievedResponses.hasOwnProperty("data")) {
+          /* The responses retrieved by search engine are selected */
+          let currentResponses = retrievedResponses["data"][currentDocument]["response"];
+          /* Each response is scanned */
+          for (let index = 0; index < currentResponses.length; index++) {
+            /* As soon as an url that matches with the one selected/typed by the worker the validation is successful */
+            if (workerUrlFormControl.value == currentResponses[index].url) return null;
           }
-          return {invalidBingerUrl: "Select (or copy & paste) one of the URLs shown above."}
-        } else {
-          return null
+          /* If no matching url has been found, raise the error */
+          return {invalidSearchEngineUrl: "Select (or copy & paste) one of the URLs shown above."}
         }
-      } else {
         return null
       }
-    } else {
       return null
     }
+    return null
   }
 
   /* Function to log worker's work to an external server */
@@ -521,7 +627,7 @@ export class SkeletonComponent {
     taskData["timestamps_end"] = this.timestampsEnd;
     taskData["timestamps_elapsed"] = this.timestampsElapsed;
     bingerData["queries"] = this.searchEngineQueries;
-    bingerData["responses"] = this.searchEngineResponses;
+    bingerData["responses"] = this.searchEngineRetrievedResponses;
     if (!(this.workerIdentifier === null)) {
       let taskDataKey = isFinal ? `${this.folder}hits/${this.workerIdentifier}/TRIES-${this.allowedTries}-ITEM-${this.stepper.selectedIndex}-TIMESTAMP-${Date.now()}-HIT-FINAL.json` : `${this.folder}hits/${this.workerIdentifier}/TRIES-${this.allowedTries}-ITEM-${this.stepper.selectedIndex}-TIMESTAMP-${Date.now()}-HIT.json`;
       let bingerDataKey = isFinal ? `${this.folder}hits/${this.workerIdentifier}/TRIES-${this.allowedTries}-ITEM-${this.stepper.selectedIndex}-TIMESTAMP-${Date.now()}-BINGER-FINAL.json` : `${this.folder}hits/${this.workerIdentifier}/TRIES-${this.allowedTries}-ITEM-${this.stepper.selectedIndex}-TIMESTAMP-${Date.now()}-BINGER.json`;

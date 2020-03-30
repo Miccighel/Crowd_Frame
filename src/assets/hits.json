@@ -1,27 +1,27 @@
 [
   {
     "unit_id": "unit_0",
-    "token_input": "USEGWSBTSQI",
-    "token_output": "ZVRRSTFTYXP",
-    "documents_number": 8,
+    "token_input": "RGDKPMSSUJW",
+    "token_output": "MMKVJIWHAMI",
+    "documents_number": 2,
     "document_1": {
-      "id_par": "9574.json",
-      "name_unique": "REP_HALFTRUE_doc9",
-      "statement": "Says Alison Lundergan Grimes supports Obamacare, which cuts $700 billion from seniors Medicare.",
-      "speaker": "Mitch Mcconnell",
-      "job": "Senate minority leader",
-      "context": "a YouTube video",
+      "id_par": "10092.json",
+      "name_unique": "DEM_LIE_doc9",
+      "statement": "In 2013, Dan Patrick voted against funding to test the backlog of rape kits, allowing rapists to walk free.",
+      "speaker": "Leticia Van De Putte",
+      "job": "Pharmacist",
+      "context": "a video ad",
       "year": "nan",
-      "party": "REP",
+      "party": "DEM",
       "source": "Politifact"
     },
     "document_2": {
-      "id_par": "1146.json",
-      "name_unique": "DEM_BARELYTRUE_doc5",
-      "statement": "Its costing every American who is insured $1,100 to pick up the cost of uncompensated care that goes on at the emergency room.",
-      "speaker": "Barbara Boxer",
-      "job": "U.S. Senator",
-      "context": "an interview with Rachel Maddow",
+      "id_par": "3672.json",
+      "name_unique": "DEM_HALFTRUE_doc5",
+      "statement": "Rep. Paul Ryans Medicare plan lines the pockets of the private insurance companies, increases costs for seniors and does not reduce the deficit.",
+      "speaker": "Gerry Connolly",
+      "job": "U.S. Representative",
+      "context": "a press release.",
       "year": "nan",
       "party": "DEM",
       "source": "Politifact"
@@ -38,56 +38,12 @@
       "source": "Politifact"
     },
     "document_4": {
-      "id_par": "11772.json",
-      "name_unique": "DEM_FALSE_doc2",
-      "statement": "We now have driven (health care) costs down to the lowest theyve been in 50 years.",
-      "speaker": "Hillary Clinton",
-      "job": "Presidential candidate",
-      "context": "comments during the South Carolina Democratic presidential debate",
-      "year": "nan",
-      "party": "DEM",
-      "source": "Politifact"
-    },
-    "document_5": {
-      "id_par": "8499.json",
-      "name_unique": "REP_MOSTLYTRUE_doc7",
-      "statement": "Health insurance is more expensive in Massachusetts than anywhere else in the country.",
-      "speaker": "Mitt Romney",
-      "job": "Former governor",
-      "context": "comments on NBC's \"Meet the Press\"",
-      "year": "nan",
-      "party": "REP",
-      "source": "Politifact"
-    },
-    "document_6": {
-      "id_par": "5422.json",
-      "name_unique": "REP_TRUE_doc8",
-      "statement": "On mandatory ultrasounds before abortions.",
-      "speaker": "Bob Mcdonnell",
-      "job": "Governor",
-      "context": "a written statement.",
-      "year": "nan",
-      "party": "REP",
-      "source": "Politifact"
-    },
-    "document_7": {
       "id_par": "HIGH",
       "name_unique": "HIGH",
       "statement": "Yes, We can!",
       "speaker": "Barack Obama",
       "job": "Former U.S. President",
       "context": "Public appearance",
-      "year": "nan",
-      "party": "DEM",
-      "source": "Politifact"
-    },
-    "document_8": {
-      "id_par": "10092.json",
-      "name_unique": "DEM_LIE_doc9",
-      "statement": "In 2013, Dan Patrick voted against funding to test the backlog of rape kits, allowing rapists to walk free.",
-      "speaker": "Leticia Van De Putte",
-      "job": "Pharmacist",
-      "context": "a video ad",
       "year": "nan",
       "party": "DEM",
       "source": "Politifact"
@@ -95,43 +51,32 @@
   },
   {
     "unit_id": "unit_1",
-    "token_input": "DRACORTAUYY",
-    "token_output": "EHQHYBMGOKO",
-    "documents_number": 8,
+    "token_input": "PBFPIXEAJPU",
+    "token_output": "WGTTPDEIETH",
+    "documents_number": 2,
     "document_1": {
-      "id_par": "4811.json",
-      "name_unique": "DEM_TRUE_doc4",
-      "statement": "The American healthcare system burns 18 percent of our national GDP. Nobody else is close.",
-      "speaker": "Sheldon Whitehouse",
-      "job": "U.S. Senator",
-      "context": "a speech",
+      "id_par": "2311.json",
+      "name_unique": "REP_TRUE_doc1",
+      "statement": "Says a highway was closed in El Paso because of bullets flying across the border.",
+      "speaker": "Greg Abbott",
+      "job": "governor",
+      "context": "an interview",
       "year": "nan",
-      "party": "DEM",
+      "party": "REP",
       "source": "Politifact"
     },
     "document_2": {
-      "id_par": "4504.json",
-      "name_unique": "REP_BARELYTRUE_doc4",
-      "statement": "Says Rick Perry wrote a letter supporting Hillarycare.",
-      "speaker": "Ron Paul",
-      "job": "U.S. representative",
-      "context": "a presidential debate",
+      "id_par": "9421.json",
+      "name_unique": "REP_LIE_doc2",
+      "statement": "Ken Block supports Obamacare.",
+      "speaker": "Allan Fung",
+      "job": "mayor, city of Cranston, R.I.",
+      "context": "a TV commercial",
       "year": "nan",
       "party": "REP",
       "source": "Politifact"
     },
     "document_3": {
-      "id_par": "7848.json",
-      "name_unique": "DEM_HALFTRUE_doc2",
-      "statement": "Since Gina Raimondo took office, investment fees on the states pension portfolio have gone up from about $12 million annually to about $50 million.",
-      "speaker": "Frank Caprio",
-      "job": "R.I. General Treasurer",
-      "context": "an appearance on \"10 News Conference\"",
-      "year": "nan",
-      "party": "DEM",
-      "source": "Politifact"
-    },
-    "document_4": {
       "id_par": "LOW",
       "name_unique": "LOW",
       "statement": "If I were not a Formula One pilot, I would be a football player.",
@@ -142,18 +87,7 @@
       "party": "REP",
       "source": "Politifact"
     },
-    "document_5": {
-      "id_par": "10487.json",
-      "name_unique": "DEM_MOSTLYTRUE_doc6",
-      "statement": "Says a lawmaker seeks to defund Planned Parenthood for cutting children into small pieces.",
-      "speaker": "Miscellany Blue",
-      "job": "Blog site",
-      "context": "a web post",
-      "year": "nan",
-      "party": "DEM",
-      "source": "Politifact"
-    },
-    "document_6": {
+    "document_4": {
       "id_par": "HIGH",
       "name_unique": "HIGH",
       "statement": "Yes, We can!",
@@ -162,70 +96,37 @@
       "context": "Public appearance",
       "year": "nan",
       "party": "DEM",
-      "source": "Politifact"
-    },
-    "document_7": {
-      "id_par": "1297.json",
-      "name_unique": "REP_LIE_doc5",
-      "statement": "Page 92 of the House health care bill \"says specifically that people cant purchase private health insurance after a date certain.\"",
-      "speaker": "Michele Bachmann",
-      "job": "Congresswoman",
-      "context": "an interview on Sean Hannity's show on the Fox News Channel.",
-      "year": "nan",
-      "party": "REP",
-      "source": "Politifact"
-    },
-    "document_8": {
-      "id_par": "4064.json",
-      "name_unique": "REP_FALSE_doc8",
-      "statement": "On repeal of Wisconsins smoking ban",
-      "speaker": "Scott Walker",
-      "job": "Milwaukee County Executive",
-      "context": "a news release",
-      "year": "nan",
-      "party": "REP",
       "source": "Politifact"
     }
   },
   {
     "unit_id": "unit_2",
-    "token_input": "XMWYPTWXTOS",
-    "token_output": "WFJZVRDHWGG",
-    "documents_number": 8,
+    "token_input": "FGXRAYCYKZA",
+    "token_output": "IMYWOTMYEXO",
+    "documents_number": 2,
     "document_1": {
-      "id_par": "10092.json",
-      "name_unique": "DEM_LIE_doc9",
-      "statement": "In 2013, Dan Patrick voted against funding to test the backlog of rape kits, allowing rapists to walk free.",
-      "speaker": "Leticia Van De Putte",
-      "job": "Pharmacist",
-      "context": "a video ad",
+      "id_par": "3672.json",
+      "name_unique": "DEM_HALFTRUE_doc5",
+      "statement": "Rep. Paul Ryans Medicare plan lines the pockets of the private insurance companies, increases costs for seniors and does not reduce the deficit.",
+      "speaker": "Gerry Connolly",
+      "job": "U.S. Representative",
+      "context": "a press release.",
       "year": "nan",
       "party": "DEM",
       "source": "Politifact"
     },
     "document_2": {
-      "id_par": "11772.json",
-      "name_unique": "DEM_FALSE_doc2",
-      "statement": "We now have driven (health care) costs down to the lowest theyve been in 50 years.",
-      "speaker": "Hillary Clinton",
-      "job": "Presidential candidate",
-      "context": "comments during the South Carolina Democratic presidential debate",
-      "year": "nan",
-      "party": "DEM",
-      "source": "Politifact"
-    },
-    "document_3": {
-      "id_par": "9574.json",
-      "name_unique": "REP_HALFTRUE_doc9",
-      "statement": "Says Alison Lundergan Grimes supports Obamacare, which cuts $700 billion from seniors Medicare.",
-      "speaker": "Mitch Mcconnell",
-      "job": "Senate minority leader",
-      "context": "a YouTube video",
+      "id_par": "1509.json",
+      "name_unique": "REP_MOSTLYTRUE_doc5",
+      "statement": "One of the most recent polls said 75 percent of the American people have said either dont do anything or start over (on health care reform).",
+      "speaker": "Jon Kyl",
+      "job": "U.S. Senator",
+      "context": "an interview on Fox News",
       "year": "nan",
       "party": "REP",
       "source": "Politifact"
     },
-    "document_4": {
+    "document_3": {
       "id_par": "LOW",
       "name_unique": "LOW",
       "statement": "If I were not a Formula One pilot, I would be a football player.",
@@ -236,18 +137,7 @@
       "party": "REP",
       "source": "Politifact"
     },
-    "document_5": {
-      "id_par": "1146.json",
-      "name_unique": "DEM_BARELYTRUE_doc5",
-      "statement": "Its costing every American who is insured $1,100 to pick up the cost of uncompensated care that goes on at the emergency room.",
-      "speaker": "Barbara Boxer",
-      "job": "U.S. Senator",
-      "context": "an interview with Rachel Maddow",
-      "year": "nan",
-      "party": "DEM",
-      "source": "Politifact"
-    },
-    "document_6": {
+    "document_4": {
       "id_par": "HIGH",
       "name_unique": "HIGH",
       "statement": "Yes, We can!",
@@ -256,28 +146,6 @@
       "context": "Public appearance",
       "year": "nan",
       "party": "DEM",
-      "source": "Politifact"
-    },
-    "document_7": {
-      "id_par": "5422.json",
-      "name_unique": "REP_TRUE_doc8",
-      "statement": "On mandatory ultrasounds before abortions.",
-      "speaker": "Bob Mcdonnell",
-      "job": "Governor",
-      "context": "a written statement.",
-      "year": "nan",
-      "party": "REP",
-      "source": "Politifact"
-    },
-    "document_8": {
-      "id_par": "8499.json",
-      "name_unique": "REP_MOSTLYTRUE_doc7",
-      "statement": "Health insurance is more expensive in Massachusetts than anywhere else in the country.",
-      "speaker": "Mitt Romney",
-      "job": "Former governor",
-      "context": "comments on NBC's \"Meet the Press\"",
-      "year": "nan",
-      "party": "REP",
       "source": "Politifact"
     }
   }

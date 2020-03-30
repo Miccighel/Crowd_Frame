@@ -217,9 +217,9 @@
             <label>Use this search engine to find evidence about the truthfulness of the statement</label>
             <app-binger
               id="binger-{{i}}"
-              (resultEmitter)="saveBingerResponse($event)"
-              (queryEmitter)="saveBingerQuery($event)"
-              (selectedRowEmitter)="saveBingerSelectedResult($event)"
+              (resultEmitter)="storeSearchEngineRetrievedResponse($event)"
+              (queryEmitter)="storeSearchEngineUserQuery($event)"
+              (selectedRowEmitter)="storeSearchEngineSelectedResponse($event)"
             ></app-binger>
             <label *ngIf="this.scale=='S6'">Please select (or copy & paste) one of the URLs above to justify the
               truthfulness value of the statement, then input the truth level as one from the six labels provided
@@ -263,7 +263,7 @@
           <mat-card-actions>
             <button mat-flat-button color="primary" matStepperPrevious *ngIf="i>0" [disabled]="taskCompleted" (click)="performLogging('Back', false)">Back
             </button>
-            <button mat-flat-button color="primary" matStepperNext [disabled]="!documentsForm[i].valid || !this.searchEngineResponses[i] || taskCompleted"
+            <button mat-flat-button color="primary" matStepperNext [disabled]="!documentsForm[i].valid || !this.searchEngineRetrievedResponses[i] || taskCompleted"
                     *ngIf="i+1<this.documentsAmount" (click)="performLogging('Next',false)">
               Next
             </button>
