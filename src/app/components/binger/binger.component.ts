@@ -83,7 +83,7 @@ export class BingerComponent {
         formBuilder: FormBuilder
     ) {
 
-        this.source = "PubmedSearch";
+        this.source = "BingWebSearch";
 
         /* Service initialization */
         this.ngxService = ngxService;
@@ -125,7 +125,6 @@ export class BingerComponent {
             case "BingWebSearch": {
                 this.bingService.performWebSearch(query).subscribe(
                     searchResponse => {
-
                         /* We are interested in parsing the webPages property of a BingWebSearchResponse */
                         if (searchResponse.hasOwnProperty("webPages")) {
                             /* Some results exist */
@@ -134,13 +133,14 @@ export class BingerComponent {
                             this.bingWebSearchResponse = searchResponse;
                             let decodedResponse = this.bingService.decodeResponse(this.bingWebSearchResponse);
                             /* EMITTER: The matching response is emitted to provide it to an eventual parent component*/
-                            this.resultEmitter.emit(this.bingWebSearchResponse);
+                            this.resultEmitter.emit(decodedResponse);
                             /* The results amount is saved*/
                             this.resultsAmount = decodedResponse.length;
                             /* Each <webPage> item is saved into results table */
                             this.dataSource.data = decodedResponse;
                         } else {
                             /* There are not any result */
+                            this.resultEmitter.emit([]);
                             this.resultsFound = false;
                             this.resultsAmount = 0;
                             this.dataSource.data = [];
@@ -164,13 +164,14 @@ export class BingerComponent {
                             this.fakerSearchResponse = searchResponse;
                             let decodedResponse = this.fakerService.decodeResponse(searchResponse);
                             /* EMITTER: The matching response is emitted to provide it to an eventual parent component*/
-                            this.resultEmitter.emit(this.fakerSearchResponse);
+                            this.resultEmitter.emit(decodedResponse);
                             /* The results amount is saved*/
                             this.resultsAmount = decodedResponse.length;
                             /* Each <webPage> item is saved into results table */
                             this.dataSource.data = decodedResponse;
                         } else {
                             /* There are not any result */
+                            this.resultEmitter.emit([]);
                             this.resultsFound = false;
                             this.resultsAmount = 0;
                             this.dataSource.data = [];

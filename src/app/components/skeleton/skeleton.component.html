@@ -26,8 +26,7 @@
         </mat-form-field>
       </mat-card-content>
       <mat-card-actions>
-        <button id="start-button" mat-flat-button color="primary" [disabled]="!tokenForm.valid"
-                (click)="performHitRetrieval()">Start
+        <button id="start-button" mat-flat-button color="primary" (click)="performHitRetrieval()">Start
         </button>
       </mat-card-actions>
     </mat-card>
@@ -194,7 +193,7 @@
           <mat-card-actions>
             <button mat-flat-button color="primary" matStepperNext
                     [disabled]="(!questionnaireForm.valid || taskCompleted)"
-                    (click)="performLogging('Next',false)">
+                    (click)="performLogging('Next',true, false)">
               Next
             </button>
             <span class="form-note">(*) you have to fill each field to proceed</span>
@@ -230,19 +229,19 @@
             <label *ngIf="this.scale=='S100'">Please select (or copy & paste) one of the URLs above to justify the
               truthfulness value of the statement, then input the truth level using the slider provided below</label>
             <mat-form-field id="url-field">
-              <input #urlField matInput type="text" [formControl]="documentsForm[i].controls['workerUrl']"  disabled="true">
+              <input #urlField matInput type="text" [formControl]="documentsForm[i].controls['worker_url']"  disabled="true">
               <button mat-icon-button matPrefix>
                 <mat-icon>{{'arrow_right_alt'}}</mat-icon>
               </button>
-              <mat-error *ngIf="checkFormControl(documentsForm[i],'workerUrl', 'required')">
+              <mat-error *ngIf="checkFormControl(documentsForm[i],'worker_url', 'required')">
                 This field is required
               </mat-error>
-              <mat-error *ngIf="checkFormControl(documentsForm[i], 'workerUrl', 'invalidBingerUrl')">
+              <mat-error *ngIf="checkFormControl(documentsForm[i], 'worker_url', 'invalidSearchEngineUrl')">
                 Please select (or copy & paste) one of the URLs shown above.
               </mat-error>
             </mat-form-field>
             <mat-radio-group *ngIf="scale=='S6'" aria-labelledby="radio-button-label" class="radio-button-group"
-                             [formControl]="documentsForm[i].controls['workerValue']">
+                             [formControl]="documentsForm[i].controls['worker_value']">
               <mat-radio-button class="radio-button" value="1">Lie</mat-radio-button>
               <mat-radio-button class="radio-button" value="2">False</mat-radio-button>
               <mat-radio-button class="radio-button" value="3">Barely True</mat-radio-button>
@@ -251,26 +250,27 @@
               <mat-radio-button class="radio-button" value="6">True</mat-radio-button>
             </mat-radio-group>
             <mat-radio-group *ngIf="scale=='S3'" aria-labelledby="radio-button-label" class="radio-button-group"
-                             [formControl]="documentsForm[i].controls['workerValue']">
+                             [formControl]="documentsForm[i].controls['worker_value']">
               <mat-radio-button class="radio-button" value="1">Negative</mat-radio-button>
               <mat-radio-button class="radio-button" value="2">In Between</mat-radio-button>
               <mat-radio-button class="radio-button" value="3">Positive</mat-radio-button>
             </mat-radio-group>
-            <label *ngIf="scale=='S100'">Selected value: {{documentsForm[i].controls['workerValue'].value}}</label>
+            <label *ngIf="scale=='S100'">Selected value: {{documentsForm[i].controls['worker_value'].value}}</label>
             <mat-slider *ngIf="scale=='S100'" min="0" max="100" step="1" thumbLabel tickInterval="1"
-                        [formControl]="documentsForm[i].controls['workerValue']"></mat-slider>
+                        [formControl]="documentsForm[i].controls['worker_value']"></mat-slider>
           </mat-card-content>
           <mat-card-actions>
-            <button mat-flat-button color="primary" matStepperPrevious *ngIf="i>0" [disabled]="taskCompleted" (click)="performLogging('Back', false)">Back
+            <button mat-flat-button color="primary" matStepperPrevious *ngIf="i>0" [disabled]="taskCompleted" (click)="performLogging('Back', false, false)">Back
             </button>
             <button mat-flat-button color="primary" matStepperNext [disabled]="!documentsForm[i].valid || !this.searchEngineRetrievedResponses[i] || taskCompleted"
-                    *ngIf="i+1<this.documentsAmount" (click)="performLogging('Next',false)">
+                    *ngIf="i+1<this.documentsAmount" (click)="performLogging('Next',false, false)">
               Next
             </button>
             <!-- TODO ATTENZIONE: LOGGING DISABILITATO -->
             <button mat-flat-button color="primary" matStepperNext
                     [disabled]="(!performGlobalValidityCheck()) || taskCompleted"
-                    *ngIf="i+1>=this.documentsAmount">
+                    *ngIf="i+1>=this.documentsAmount"
+                    (click)="performLogging('Finish',false, true)">
               Finish
             </button>
             <span class="form-note">(*) you have to fill each field to proceed</span>

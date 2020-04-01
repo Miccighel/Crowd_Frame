@@ -18,7 +18,7 @@ export class BingService {
   /* ATTRIBUTES */
 
   /* Microsoft Search API key */
-  apiKey = 'ac83cded05f3449a83e8d551084083db';
+  apiKey = 'dd0c33c397494b6198494684a5cdad09';
   /* Microsoft Bing Web Search endpoint */
   endPoint = "https://api.cognitive.microsoft.com/bing/v7.0/search?q=";
 

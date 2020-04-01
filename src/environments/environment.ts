@@ -9,7 +9,7 @@ export const environment = {
   useEachScale: false,
   allowedTries: 10,
 
-  questionnaireOffset: 1,
+  questionnaireAmount: 1,
 
   region: 'eu-west-1',
   bucket: 'crowdsourcing-tasks',

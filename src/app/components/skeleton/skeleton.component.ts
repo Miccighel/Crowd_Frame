@@ -12,8 +12,9 @@ import {Document} from "../../models/skeleton/document";
 import {Hit} from "../../models/skeleton/hit";
 
 import * as AWS from 'aws-sdk';
-import {ManagedUpload} from "aws-sdk/clients/s3";
+import {HeadObjectOutput, ManagedUpload} from "aws-sdk/clients/s3";
 import {bool} from "aws-sdk/clients/signer";
+import {PromiseResult} from "aws-sdk/lib/request";
 
 @Component({
   selector: 'app-skeleton',
@@ -80,13 +81,15 @@ export class SkeletonComponent {
   unitId: string;
   /* Number of allowed tries */
   allowedTries: number;
+  /* Number of the current try */
+  currentTry: number;
 
   // |--------- QUESTIONNAIRE ELEMENTS - DECLARATION ---------|
   /* Attributes to handle the questionnaire part of a Crowdsourcing task */
 
   /* Number of different questionnaires inserted within task's body
   * (i.e., a standard questionnaire and two cognitive questionnaires  */
-  questionnaireOffset: number;
+  questionnaireAmount: number;
 
   /* // EDIT: Add your own questionnaires and their fields here */
   /* Form controls */
@@ -105,6 +108,8 @@ export class SkeletonComponent {
   documentsAmount: number;
   /* Array of documents */
   documents: Array<Document>;
+  /* Array of accesses counters, one for each document within a Hit */
+  documentsAccesses: Array<number>;
 
   // |--------- SEARCH ENGINE INTEGRATION - DECLARATION ---------|
   /* https://github.com/Miccighel/Binger */
@@ -152,6 +157,8 @@ export class SkeletonComponent {
   workersFile: string;
   /* File where each hit is stored */
   hitsFile: string;
+  /* Folder in which upload data produced within the task by current worker */
+  workerFolder: string;
 
   // |--------- CONSTRUCTOR ---------|
 
@@ -192,10 +199,11 @@ export class SkeletonComponent {
     this.tokenInputValid = false;
 
     this.allowedTries = this.configService.environment.allowedTries;
+    this.currentTry = 1;
 
     // |--------- QUESTIONNAIRE ELEMENTS - INITIALIZATION ---------|
 
-    this.questionnaireOffset = this.configService.environment.questionnaireOffset;
+    this.questionnaireAmount = this.configService.environment.questionnaireAmount;
 
     this.age = new FormControl('', [Validators.required]);
     this.degree = new FormControl('', [Validators.required]);
@@ -221,6 +229,7 @@ export class SkeletonComponent {
     }
     this.workersFile = `${this.folder}${this.scale}/workers.json`;
     this.hitsFile = `${this.folder}${this.scale}/hits.json`;
+    this.workerFolder = `${this.folder}${this.scale}/Data/${this.workerIdentifier}`;
     this.s3 = new AWS.S3({
       region: this.region,
       params: {Bucket: this.bucket},
@@ -345,65 +354,83 @@ export class SkeletonComponent {
       this.tokenInput.disable();
       this.taskStarted = true;
 
+      /* |- HIT DOCUMENTS - INITIALIZATION-| */
+
+      /* The array of documents is initialized */
+      this.documents = new Array<Document>();
+      this.documentsAmount = this.hit.documents_number;
+      /* The array of accesses counter is initialized */
+      this.documentsAccesses = new Array<number>(this.documentsAmount);
+      for (let index = 0; index < this.documentsAccesses.length; index++) this.documentsAccesses[index] = 0;
+
+      /* A form for each document with the fields that must be filled by current worker is initialized */
+      this.documentsForm = new Array<FormGroup>();
+      for (let index = 0; index < this.documentsAmount; index++) {
+        /* Validators are initialized for each field to ensure data consistency */
+        let workerValue = null;
+        if (this.scale != "S100") workerValue = new FormControl('', [Validators.required]); else workerValue = new FormControl(50, [Validators.required]);
+        let workerUrl = new FormControl('', [Validators.required, this.validateSearchEngineUrl.bind(this)]);
+        this.documentsForm[index] = this.formBuilder.group({
+          "worker_value": workerValue,
+          "worker_url": workerUrl,
+        })
+      }
+
+      /*  Each document of the current hit is parsed using the Document interface.  */
+      for (let index = 1; index <= this.documentsAmount; index++) {
+        let current_document = this.hit[`document_${index}`];
+        let documentIndex = index - 1;
+        this.documents.push(new Document(documentIndex, current_document));
+      }
+
+      /* |- HIT SEARCH ENGINE - INITIALIZATION-| */
+
+      this.searchEngineQueries = new Array<object>(this.documentsAmount);
+      for (let index = 0; index < this.searchEngineQueries.length; index++) {
+        this.searchEngineQueries[index] = {};
+        this.searchEngineQueries[index]["data"] = [];
+        this.searchEngineQueries[index]["amount"] = 0;
+      }
+      this.searchEngineRetrievedResponses = new Array<object>(this.documentsAmount);
+      for (let index = 0; index < this.searchEngineRetrievedResponses.length; index++) {
+        this.searchEngineRetrievedResponses[index] = {};
+        this.searchEngineRetrievedResponses[index]["data"] = [];
+        this.searchEngineRetrievedResponses[index]["amount"] = 0;
+      }
+      this.searchEngineSelectedResponses = new Array<object>(this.documentsAmount);
+      for (let index = 0; index < this.searchEngineSelectedResponses.length; index++) {
+        this.searchEngineSelectedResponses[index] = {};
+        this.searchEngineSelectedResponses[index]["data"] = [];
+        this.searchEngineSelectedResponses[index]["amount"] = 0;
+      }
+
+      /* |- HIT QUALITY CHECKS - INITIALIZATION-| */
+
+      /* Indexes of high and low gold questions are retrieved */
+      for (let index = 0; index < this.documentsAmount; index++) {
+        if (!this.goldIndexHigh) this.goldIndexHigh = this.documents[index].getGoldQuestionIndex("HIGH");
+        if (!this.goldIndexLow) this.goldIndexLow = this.documents[index].getGoldQuestionIndex("LOW");
+      }
+
+      /*
+       * Arrays of start, end and elapsed timestamps are initialized to track how much time the worker spends
+       * on each document, including each questionnaire
+       */
+      this.timestampsStart = new Array<Array<number>>(this.documentsAmount + this.questionnaireAmount);
+      this.timestampsEnd = new Array<Array<number>>(this.documentsAmount + this.questionnaireAmount);
+      this.timestampsElapsed = new Array<number>(this.documentsAmount + this.questionnaireAmount);
+      for (let i = 0; i < this.timestampsStart.length; i++) this.timestampsStart[i] = [];
+      for (let i = 0; i < this.timestampsEnd.length; i++) this.timestampsEnd[i] = [];
+      /* The task is now started and the worker is looking at the first questionnaire, so the first start timestamp is saved */
+      this.timestampsStart[0].push(Math.round(Date.now() / 1000));
+
+      /* Detect changes within the DOM and update the page */
+      this.changeDetector.detectChanges();
+
+      /* The loading spinner is stopped */
+      this.ngxService.stop();
+
     }
-
-    /* |- HIT DOCUMENTS - INITIALIZATION-| */
-
-    /* The array of documents is initialized */
-    this.documents = new Array<Document>();
-    this.documentsAmount = this.hit.documents_number;
-
-    /* A form for each document with the fields that must be filled by current worker is initialized */
-    this.documentsForm = new Array<FormGroup>();
-    for (let index = 0; index < this.documentsAmount; index++) {
-      /* Validators are initialized for each field to ensure data consistency */
-      let workerValue = null;
-      if (this.scale != "S100") workerValue = new FormControl('', [Validators.required]); else workerValue = new FormControl(50, [Validators.required]);
-      let workerUrl = new FormControl('', [Validators.required, this.validateSearchEngineUrl.bind(this)]);
-      this.documentsForm[index] = this.formBuilder.group({
-        "workerValue": workerValue,
-        "workerUrl": workerUrl,
-      })
-    }
-
-    /*  Each document of the current hit is parsed using the Document interface.  */
-    for (let index = 1; index <= this.documentsAmount; index++) {
-      let current_document = this.hit[`document_${index}`];
-      let documentIndex = index - 1;
-      this.documents.push(new Document(documentIndex, current_document));
-    }
-
-    /* |- HIT SEARCH ENGINE - INITIALIZATION-| */
-
-    this.searchEngineQueries = new Array<object>(this.documentsAmount);
-    this.searchEngineRetrievedResponses = new Array<object>(this.documentsAmount);
-    this.searchEngineSelectedResponses = new Array<object>(this.documentsAmount);
-
-    /* |- HIT QUALITY CHECKS - INITIALIZATION-| */
-
-    /* Indexes of high and low gold questions are retrieved */
-    for (let index = 0; index < this.documentsAmount; index++) {
-      if (!this.goldIndexHigh) this.goldIndexHigh = this.documents[index].getGoldQuestionIndex("HIGH");
-      if (!this.goldIndexLow) this.goldIndexLow = this.documents[index].getGoldQuestionIndex("LOW");
-    }
-
-    /*
-     * Arrays of start, end and elapsed timestamps are initialized to track how much time the worker spends
-     * on each document, including each questionnaire
-     */
-    this.timestampsStart = new Array<Array<number>>(this.documentsAmount + this.questionnaireOffset);
-    this.timestampsEnd = new Array<Array<number>>(this.documentsAmount + this.questionnaireOffset);
-    this.timestampsElapsed = new Array<number>(this.documentsAmount + this.questionnaireOffset);
-    for (let i = 0; i < this.timestampsStart.length; i++) this.timestampsStart[i] = [];
-    for (let i = 0; i < this.timestampsEnd.length; i++) this.timestampsEnd[i] = [];
-    /* The task is now started and the worker is looking at the first questionnaire, so the first start timestamp is saved */
-    this.timestampsStart[0].push(Math.round(Date.now() / 1000));
-
-    /* Detect changes within the DOM and update the page */
-    this.changeDetector.detectChanges();
-
-    /* The loading spinner is stopped */
-    this.ngxService.stop();
 
   }
 
@@ -420,7 +447,7 @@ export class SkeletonComponent {
     let currentUserQuery = queryData['detail'];
     let timeInSeconds = Date.now() / 1000;
     /* If some data for the current document already exists*/
-    if (this.searchEngineQueries[currentDocument]) {
+    if (this.searchEngineQueries[currentDocument]['amount'] > 0) {
       /* The new query is pushed into current document data array along with a index used to identify such query*/
       let storedQueries = Object.values(this.searchEngineQueries[currentDocument]['data']);
       storedQueries.push({
@@ -459,11 +486,11 @@ export class SkeletonComponent {
     let currentRetrievedResponse = retrievedResponseData['detail'];
     let timeInSeconds = Date.now() / 1000;
     /* If some responses for the current document already exists*/
-    if (this.searchEngineRetrievedResponses[currentDocument]) {
+    if (this.searchEngineRetrievedResponses[currentDocument]['amount'] > 0) {
       /* The new response is pushed into current document data array along with its query index */
       let storedResponses = Object.values(this.searchEngineRetrievedResponses[currentDocument]['data']);
       storedResponses.push({
-        "query": this.searchEngineQueries[currentDocument]['amount'] -1,
+        "query": this.searchEngineQueries[currentDocument]['amount'] - 1,
         "timestamp": timeInSeconds,
         "response": currentRetrievedResponse,
       });
@@ -476,7 +503,7 @@ export class SkeletonComponent {
       this.searchEngineRetrievedResponses[currentDocument] = {};
       /* A new data array for the current document is created and the fist response is pushed */
       this.searchEngineRetrievedResponses[currentDocument]['data'] = [{
-        "query": this.searchEngineQueries[currentDocument]['amount'] -1,
+        "query": this.searchEngineQueries[currentDocument]['amount'] - 1,
         "timestamp": timeInSeconds,
         "response": currentRetrievedResponse
       }];
@@ -485,7 +512,7 @@ export class SkeletonComponent {
       this.searchEngineRetrievedResponses[currentDocument]['amount'] = 1
     }
     /* The form control to set the url of the selected search result is enabled */
-    this.documentsForm[currentDocument].controls["workerUrl"].enable();
+    this.documentsForm[currentDocument].controls["worker_url"].enable();
   }
 
   /*
@@ -500,11 +527,11 @@ export class SkeletonComponent {
     let currentSelectedResponse = selectedResponseData['detail'];
     let timeInSeconds = Date.now() / 1000;
     /* If some responses for the current document already exists*/
-    if (this.searchEngineSelectedResponses[currentDocument]) {
+    if (this.searchEngineSelectedResponses[currentDocument]['amount'] > 0) {
       /* The new response is pushed into current document data array along with its query index */
       let storedResponses = Object.values(this.searchEngineSelectedResponses[currentDocument]['data']);
       storedResponses.push({
-        "query": this.searchEngineQueries[currentDocument]['amount'] -1,
+        "query": this.searchEngineQueries[currentDocument]['amount'] - 1,
         "timestamp": timeInSeconds,
         "response": currentSelectedResponse,
       });
@@ -517,7 +544,7 @@ export class SkeletonComponent {
       this.searchEngineSelectedResponses[currentDocument] = {};
       /* A new data array for the current document is created and the fist response is pushed */
       this.searchEngineSelectedResponses[currentDocument]['data'] = [{
-        "query": this.searchEngineQueries[currentDocument]['amount'] -1,
+        "query": this.searchEngineQueries[currentDocument]['amount'] - 1,
         "timestamp": timeInSeconds,
         "response": currentSelectedResponse
       }];
@@ -525,7 +552,7 @@ export class SkeletonComponent {
       /* IMPORTANT: the index of the last retrieved response for a document will be <amount -1> */
       this.searchEngineSelectedResponses[currentDocument]['amount'] = 1
     }
-    this.documentsForm[currentDocument].controls["workerUrl"].setValue(currentSelectedResponse['url']);
+    this.documentsForm[currentDocument].controls["worker_url"].setValue(currentSelectedResponse['url']);
   }
 
   /*
@@ -537,13 +564,15 @@ export class SkeletonComponent {
   public validateSearchEngineUrl(workerUrlFormControl: FormControl) {
     /* If the stepped is initialized to something the task is started */
     if (this.stepper) {
-      let currentDocument = this.stepper.selectedIndex - this.questionnaireOffset;
+      let currentDocument = this.stepper.selectedIndex - this.questionnaireAmount;
       /* If there are data for the current document */
       if (this.searchEngineRetrievedResponses[currentDocument]) {
         let retrievedResponses = this.searchEngineRetrievedResponses[currentDocument];
         if (retrievedResponses.hasOwnProperty("data")) {
+          /* The current set of responses is the total amount - 1 */
+          let currentSet = retrievedResponses["amount"] - 1;
           /* The responses retrieved by search engine are selected */
-          let currentResponses = retrievedResponses["data"][currentDocument]["response"];
+          let currentResponses = retrievedResponses["data"][currentSet]["response"];
           /* Each response is scanned */
           for (let index = 0; index < currentResponses.length; index++) {
             /* As soon as an url that matches with the one selected/typed by the worker the validation is successful */
@@ -559,96 +588,6 @@ export class SkeletonComponent {
     return null
   }
 
-  /* Function to log worker's work to an external server */
-  public performLogging(action: string, isFinal: boolean) {
-
-    /* Every value inserted by worker can be found in these variables */
-
-    let timeInSeconds = Date.now() / 1000;
-    switch (action) {
-      case "Next":
-        this.timestampsStart[this.stepper.selectedIndex].push(timeInSeconds);
-        this.timestampsEnd[this.stepper.selectedIndex - 1].push(timeInSeconds);
-        break;
-      case "Back":
-        this.timestampsStart[this.stepper.selectedIndex].push(timeInSeconds);
-        this.timestampsEnd[this.stepper.selectedIndex + 1].push(timeInSeconds);
-        break;
-      case "Finish":
-        this.timestampsEnd[this.stepper.selectedIndex].push(timeInSeconds);
-        break;
-    }
-
-    for (let i = 0; i < this.documentsAmount + 1; i++) {
-      let totalSecondsElapsed = 0;
-      for (let k = 0; k < this.timestampsEnd[i].length; k++) {
-        if (this.timestampsStart[i][k] !== null && this.timestampsEnd[i][k] !== null) {
-          totalSecondsElapsed = totalSecondsElapsed + (Number(this.timestampsEnd[i][k]) - Number(this.timestampsStart[i][k]))
-        }
-      }
-      this.timestampsElapsed[i] = totalSecondsElapsed
-    }
-
-    let taskData = {
-      experiment_id: this.experimentId,
-      current_modality: this.scale,
-      all_modalities: this.useEachScale,
-      worker_id: this.workerIdentifier,
-      unit_id: this.unitId,
-      token_input: this.tokenInput.value,
-      token_output: this.tokenOutput,
-      amount_try: this.allowedTries,
-      current_item: this.stepper.selectedIndex,
-      documents: [],
-      action: action,
-      isFinal: isFinal
-    };
-    let bingerData = {};
-    /* console.log(data) */
-    for (let index = 0; index < this.documentsForm.length; index++) {
-      let answers = this.documentsForm[index].value;
-      answers["document_number"] = index;
-      answers["id_par"] = this.documents[index].id_par;
-      if (this.documents[index].hasOwnProperty("name_unique")) {
-        answers["name_unique"] = this.documents[index].name_unique;
-      } else {
-        answers["name_unique"] = this.documents[index].id_par;
-      }
-      answers["speaker"] = this.documents[index].speaker;
-      answers["job"] = this.documents[index].job;
-      answers["context"] = this.documents[index].context;
-      answers["year"] = this.documents[index].year;
-      answers["party"] = this.documents[index].party;
-      answers["source"] = this.documents[index].source;
-      answers["statement"] = this.documents[index].statement;
-      taskData["documents"].push(answers)
-    }
-    taskData["timestamps_start"] = this.timestampsStart;
-    taskData["timestamps_end"] = this.timestampsEnd;
-    taskData["timestamps_elapsed"] = this.timestampsElapsed;
-    bingerData["queries"] = this.searchEngineQueries;
-    bingerData["responses"] = this.searchEngineRetrievedResponses;
-    if (!(this.workerIdentifier === null)) {
-      let taskDataKey = isFinal ? `${this.folder}hits/${this.workerIdentifier}/TRIES-${this.allowedTries}-ITEM-${this.stepper.selectedIndex}-TIMESTAMP-${Date.now()}-HIT-FINAL.json` : `${this.folder}hits/${this.workerIdentifier}/TRIES-${this.allowedTries}-ITEM-${this.stepper.selectedIndex}-TIMESTAMP-${Date.now()}-HIT.json`;
-      let bingerDataKey = isFinal ? `${this.folder}hits/${this.workerIdentifier}/TRIES-${this.allowedTries}-ITEM-${this.stepper.selectedIndex}-TIMESTAMP-${Date.now()}-BINGER-FINAL.json` : `${this.folder}hits/${this.workerIdentifier}/TRIES-${this.allowedTries}-ITEM-${this.stepper.selectedIndex}-TIMESTAMP-${Date.now()}-BINGER.json`;
-      this.s3.upload({
-        Key: taskDataKey,
-        Bucket: this.bucket,
-        Body: JSON.stringify(taskData)
-      }, function (err, data) {
-        console.log(err);
-      });
-      this.s3.upload({
-        Key: bingerDataKey,
-        Bucket: this.bucket,
-        Body: JSON.stringify(bingerData)
-      }, function (err, data) {
-        console.log(err);
-      });
-    }
-
-  }
-
   performCommentSaving() {
 
     /* console.log(this.commentForm.value); */
@@ -656,7 +595,7 @@ export class SkeletonComponent {
       this.s3.upload({
         Key: `${this.folder}hits/${this.workerIdentifier}/TRIES-${this.allowedTries}-COMMENT.json`,
         Bucket: this.bucket,
-        Body: JSON.stringify(this.commentForm.value)
+        Body: JSON.stringify(this.commentForm.value, null, "\t")
       }, function (err, data) {
 
       });
@@ -687,7 +626,7 @@ export class SkeletonComponent {
     let goldQuestionCheck: boolean;
     let timeSpentCheck: boolean;
 
-    goldQuestionCheck = this.documentsForm[this.goldIndexLow].controls["workerValue"].value < this.documentsForm[this.goldIndexHigh].controls["workerValue"].value;
+    goldQuestionCheck = this.documentsForm[this.goldIndexLow].controls["worker_value"].value < this.documentsForm[this.goldIndexHigh].controls["worker_value"].value;
 
     timeSpentCheck = true;
     for (let i = 0; i < this.timestampsElapsed.length; i++) {
@@ -710,7 +649,7 @@ export class SkeletonComponent {
       this.s3.upload({
         Key: key,
         Bucket: this.bucket,
-        Body: JSON.stringify(data)
+        Body: JSON.stringify(data, null, "\t")
       }, function (err, data) {
         console.log(err);
       });
@@ -753,9 +692,11 @@ export class SkeletonComponent {
     /* Set stepper index to the first tab*/
     this.stepper.selectedIndex = 1;
 
-
     /* Decrease the remaining tries amount*/
     this.allowedTries = this.allowedTries - 1;
+
+    /* Increases current try index */
+    this.currentTry = this.currentTry + 1;
 
     /* Stop the spinner */
     this.ngxService.stop();
@@ -764,7 +705,173 @@ export class SkeletonComponent {
 
   // |--------- AMAZON AWS INTEGRATION - FUNCTIONS ---------|
 
-  /* This function performs a GetObject operation to Amazon S3 and returns a parsed JSON which is the requested resource
+  /*
+   * This function interacts with an Amazon S3 bucket to store each data produced within the task.
+   * A folder on the bucket is created for each worker identifier and such folders contain .json files.
+   * The data include questionnaire results, quality checks, worker hit, search engine results, etc.
+   * Moreover, this function stores the timestamps used to check how much time the worker spends on each document.
+   */
+  public async performLogging(action: string, isQuestionnaire: boolean, isFinal: boolean) {
+
+    if (!(this.workerIdentifier === null)) {
+
+      /*
+       * IMPORTANT: The current document index is the stepper current index AFTER the transition
+       * If a NEXT action is performed at document 3, the stepper current index is 4.
+       * If a BACK action is performed at document 3, the stepper current index is 2.
+       * This is tricky only for the following switch which has to set the start/end
+       * timestamps for the previous/following document.
+       */
+      let currentElement = this.stepper.selectedIndex;
+      let otherElement = this.stepper.selectedIndex;
+      let completedDocument = this.stepper.selectedIndex;
+      switch (action) {
+        case "Next":
+          otherElement = currentElement - 1;
+          completedDocument = otherElement - this.questionnaireAmount;
+          break;
+        case "Back":
+          otherElement = currentElement + 1;
+          completedDocument = otherElement - this.questionnaireAmount;
+          break;
+        case "Finish":
+          otherElement = this.documentsAmount - 1;
+          completedDocument = otherElement;
+          break;
+      }
+
+      let timeInSeconds = Date.now() / 1000;
+      switch (action) {
+        case "Next":
+          /*
+           * If a transition to the following document is performed the current timestamp is:
+           * the start timestamp for the document at <stepper.selectedIndex>
+           * the end timestamps for the document at <stepper.selectedIndex - 1>
+           */
+          this.timestampsStart[currentElement].push(timeInSeconds);
+          this.timestampsEnd[otherElement].push(timeInSeconds);
+          break;
+        case "Back":
+          /*
+           * If a transition to the previous document is performed the current timestamp is:
+           * the start timestamp for the document at <stepper.selectedIndex>
+           * the end timestamps for the document at <stepper.selectedIndex + 1>
+           */
+          this.timestampsStart[currentElement].push(timeInSeconds);
+          this.timestampsEnd[otherElement].push(timeInSeconds);
+          break;
+        case "Finish":
+          /* If the task finishes, the current timestamp is the end timestamp for the last document. */
+          this.timestampsEnd[currentElement].push(timeInSeconds);
+          break;
+      }
+
+      /*
+       * The general idea with start and end timestamps is that each time a worker goes to
+       * the next document, the current timestamp is the start timestamp for such document
+       * and the end timestamp for the previous and vicecersa
+       */
+
+      /* In the corresponding array the elapsed timestamps for each document are computed */
+      for (let i = 0; i < this.documentsAmount + 1; i++) {
+        let totalSecondsElapsed = 0;
+        for (let k = 0; k < this.timestampsEnd[i].length; k++) {
+          if (this.timestampsStart[i][k] !== null && this.timestampsEnd[i][k] !== null) {
+            totalSecondsElapsed = totalSecondsElapsed + (Number(this.timestampsEnd[i][k]) - Number(this.timestampsStart[i][k]))
+          }
+        }
+        this.timestampsElapsed[i] = totalSecondsElapsed
+      }
+
+      if (isQuestionnaire) {
+
+        let taskData = {
+          experiment_id: this.experimentId,
+          current_scale: this.scale,
+          use_each_scale: this.useEachScale,
+          worker_id: this.workerIdentifier,
+          unit_id: this.unitId,
+          token_input: this.tokenInput.value,
+          token_output: this.tokenOutput,
+          tries_amount: this.allowedTries,
+          questionnaire_amount: this.questionnaireAmount,
+          documents_amount: this.documentsAmount
+        };
+        await (this.upload(`${this.workerFolder}/task.json`, taskData));
+
+        await (this.upload(`${this.workerFolder}/Final/documents.json`, this.documents));
+
+        await (this.upload(`${this.workerFolder}/Final/questionnaire.json`, this.questionnaireForm.value));
+
+      } else {
+
+        let accessesAmount = this.documentsAccesses[completedDocument];
+
+        let actionInfo = {
+          action: action,
+          is_final: isFinal,
+          current_access: accessesAmount,
+          current_try: this.currentTry,
+          current_document: completedDocument,
+        };
+        await (this.upload(`${this.workerFolder}/Partials/Info/Try-${this.currentTry}/info_${completedDocument}_access_${accessesAmount}.json`, actionInfo));
+
+        let answers = this.documentsForm[completedDocument].value;
+        await (this.upload(`${this.workerFolder}/Partials/Answers/Try-${this.currentTry}/answer_${completedDocument}_access_${accessesAmount}.json`, answers));
+
+        let searchEngineQueries = this.searchEngineQueries[completedDocument];
+        await (this.upload(`${this.workerFolder}/Partials/Queries/Try-${this.currentTry}/queries_${completedDocument}_access_${accessesAmount}.json`, searchEngineQueries));
+
+        let responsesRetrieved = this.searchEngineRetrievedResponses[completedDocument];
+        await (this.upload(`${this.workerFolder}/Partials/Responses/Retrieved/Try-${this.currentTry}/retrieved_${completedDocument}_access_${accessesAmount}.json`, responsesRetrieved));
+
+        let responsesSelected = this.searchEngineSelectedResponses[completedDocument];
+        await (this.upload(`${this.workerFolder}/Partials/Responses/Selected/Try-${this.currentTry}/selected_${completedDocument}_access_${accessesAmount}.json`, responsesSelected));
+
+        let timestampsStart = this.timestampsStart[completedDocument];
+        await (this.upload(`${this.workerFolder}/Partials/Timestamps/Start/Try-${this.currentTry}/start_${completedDocument}_access_${accessesAmount}.json`, timestampsStart));
+
+        let timestampsEnd = this.timestampsEnd[completedDocument];
+        await (this.upload(`${this.workerFolder}/Partials/Timestamps/End/Try-${this.currentTry}/end_${completedDocument}_access_${accessesAmount}.json`, timestampsEnd));
+
+        let timestampsElapsed = this.timestampsElapsed[completedDocument];
+        await (this.upload(`${this.workerFolder}/Partials/Timestamps/Elapsed/Try-${this.currentTry}/elapsed_${completedDocument}_access_${accessesAmount}.json`, timestampsElapsed));
+
+        let accesses = this.documentsAccesses[completedDocument];
+        await (this.upload(`${this.workerFolder}/Partials/Accesses/Try-${this.currentTry}/accesses_${completedDocument}_access_${accessesAmount}.json`, accesses));
+
+        if (isFinal) {
+
+          let actionInfo = {
+            action: action,
+            is_final: isFinal,
+            current_access: accessesAmount,
+            current_try: this.currentTry,
+            current_document: completedDocument,
+          };
+          await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/info.json`, actionInfo));
+          let answers = [];
+          for (let index = 0; index < this.documentsForm.length; index++) answers.push(this.documentsForm[index].value);
+          await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/answers.json`, answers));
+          await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/queries.json`, this.searchEngineQueries));
+          await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/responses_retrieved.json`, this.searchEngineRetrievedResponses));
+          await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/responses_selected.json`, this.searchEngineSelectedResponses));
+          await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/timestamps_start.json`, this.timestampsStart));
+          await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/timestamps_end.json`, this.timestampsEnd));
+          await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/timestamps_elapsed.json`, this.timestampsElapsed));
+          await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/accesses.json`, this.documentsAccesses));
+
+        }
+
+        this.documentsAccesses[completedDocument] = accessesAmount + 1;
+
+      }
+
+    }
+
+  }
+
+  /* This function performs a GetObject operation to Amazon S3 and returns a parsed JSON which is the requested resource.
   * https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html */
   public async download(path: string) {
     return JSON.parse(
@@ -774,13 +881,13 @@ export class SkeletonComponent {
       }).promise())).Body.toString('utf-8'));
   }
 
-  /* This function performs an Upload operation to Amazon S3 and returns a JSON object which contains info about the outcome
+  /* This function performs an Upload operation to Amazon S3 and returns a JSON object which contains info about the outcome.
   * https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#upload-property */
-  public async upload(path: string, payload: Array<String>): Promise<ManagedUpload> {
+  public async upload(path: string, payload: Object): Promise<ManagedUpload> {
     return this.s3.upload({
       Key: path,
       Bucket: this.bucket,
-      Body: JSON.stringify(payload)
+      Body: JSON.stringify(payload, null, "\t")
     }, function (err, data) {
     })
   }
