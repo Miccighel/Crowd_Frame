@@ -1,176 +1,8 @@
+/* |--- GENERAL STYLES  --| */
+
 ::ng-deep .mat-horizontal-stepper-header{
   pointer-events: none !important;
 }
-
-/* Token input section CSS styles */
-
-#token-section {
-  margin-bottom: 2%;
-}
-
-#token-section form {
-  width: 90%;
-  margin: auto;
-}
-
-#token-section input {
-  text-transform: uppercase;
-}
-
-#token-section form mat-card-content{
-  margin: auto;
-
-  max-width: 45%;
-}
-
-#token-section mat-card-actions {
-  text-align: center;
-}
-
-
-/* Stepper section CSS styles */
-
-mat-horizontal-stepper {
-  background-color:transparent;
-  margin-left: auto;
-  margin-right: auto;
-  width: 90%;
-  margin-bottom: 2%;
-}
-
-mat-horizontal-stepper mat-card-content, mat-horizontal-stepper mat-card-title, mat-horizontal-stepper mat-card-actions {
-  width: 65%;
-  margin: auto;
-}
-
-mat-step form mat-card-content, mat-step form mat-card-actions {
-  padding: 1%;
-}
-
-mat-form-field {
-  width: 100%;
-}
-
-/* Outcome & token output section CSS styles */
-
-.outcome-section {
-  margin-bottom: 2%;
-}
-
-.outcome-section div {
-  margin: auto;
-  width: 90%;
-}
-
-.outcome-section div mat-card {
-  padding-top: 0.01%;
-  padding-bottom: 1.5%;
-}
-
-.outcome-section div mat-card-content, .outcome-section div mat-card-actions {
-  width: 50%;
-  margin: auto;
-}
-
-.outcome-section mat-card-content{
-  width: 65%;
-  margin: auto;
-}
-
-.success-title {
-  background-color: #66bb6a;
-  color:white;
-  text-align: center;
-  text-transform: uppercase;
-  width: 65%;
-  margin: auto;
-}
-
-#success-section mat-card-content {
-  text-align: center;
-}
-
-#success-section mat-card-content h2 {
-  text-align: justify;
-  font-weight: bold;
-}
-
-#failure-section mat-card-content {
-  text-align: center;
-}
-
-#failure-section mat-card-content h2 {
-  text-align: justify;
-  font-weight: bold;
-}
-
-.failure-title {
-  color:white;
-  background-color:#ef5350;
-  text-align: center;
-  text-transform: uppercase;
-  width: 65%;
-  margin: auto;
-}
-
-#failure-section button {
-  margin: auto;
-  width: 10%;
-  height: 2.3em;
-}
-
-#retry-section mat-card-content {
-  text-align: center;
-}
-
-#retry-section mat-card-content h2 {
-  text-align: justify;
-  font-weight: bold;
-}
-
-#retry-section button {
-  margin: auto;
-  width: 10%;
-  height: 2.3em;
-}
-
-.retry-title {
-  background-color: #ff4081;
-  color:white;
-  text-align: center;
-  text-transform: uppercase;
-  width: 65%;
-  margin: auto;
-}
-
-#already-started-section {
-  margin-top: 2%;
-}
-
-#already-started-section h2{
-  text-align: justify;
-  font-weight: bold;
-}
-
-/* Debug section styles */
-
-#debug {
-  height: 30%;
-  width: 90%;
-  margin: auto;
-}
-
-#debug span {
-  color:rgba(0,0,0,.87);
-  font-weight: 500;
-  margin-bottom: 1%;
-}
-
-#debug mat-tab-group {
-  margin: auto;
-}
-
-/* General styles */
 
 .radio-button-group {
   display: flex;
@@ -272,4 +104,165 @@ button{
 
 .mat-slider {
   width: 100%;
+}
+
+/* |--- TOKEN INPUT SECTION STYLES --| */
+
+#token-section {
+  margin-bottom: 2%;
+}
+
+#token-section form {
+  width: 90%;
+  margin: auto;
+}
+
+#token-section input {
+  text-transform: uppercase;
+}
+
+#token-section form mat-card-content{
+  margin: auto;
+
+  max-width: 45%;
+}
+
+#token-section mat-card-actions {
+  text-align: center;
+}
+
+/* |--- TASK BODY SECTION STYLES --| */
+
+/* Stepper */
+
+mat-horizontal-stepper {
+  background-color:transparent;
+  margin-left: auto;
+  margin-right: auto;
+  width: 90%;
+  margin-bottom: 2%;
+}
+
+mat-horizontal-stepper mat-card-content, mat-horizontal-stepper mat-card-title, mat-horizontal-stepper mat-card-actions {
+  width: 65%;
+  margin: auto;
+}
+
+mat-step form mat-card-content, mat-step form mat-card-actions {
+  padding: 1%;
+}
+
+mat-form-field {
+  width: 100%;
+}
+
+/* |--- OUTCOME SECTION STYLES ---| */
+
+/* |--- General ---| */
+
+.outcome-section {
+  margin-bottom: 2%;
+}
+
+.outcome-section div {
+  margin: auto;
+  width: 90%;
+}
+
+.outcome-section div mat-card {
+  padding-top: 0.01%;
+  padding-bottom: 1.5%;
+}
+
+.outcome-section div mat-card-content, .outcome-section div mat-card-actions {
+  width: 50%;
+  margin: auto;
+}
+
+.outcome-section mat-card-content{
+  width: 65%;
+  margin: auto;
+}
+
+/* |--- Success section ---| */
+
+.success-title {
+  background-color: #66bb6a;
+  color:white;
+  text-align: center;
+  text-transform: uppercase;
+  width: 65%;
+  margin: auto;
+}
+
+#success-section mat-card-content {
+  text-align: center;
+}
+
+#success-section mat-card-content h2 {
+  text-align: justify;
+  font-weight: bold;
+}
+
+/* |--- Failure section ---| */
+
+#failure-section mat-card-content {
+  text-align: center;
+}
+
+#failure-section mat-card-content h2 {
+  text-align: justify;
+  font-weight: bold;
+}
+
+.failure-title {
+  color:white;
+  background-color:#ef5350;
+  text-align: center;
+  text-transform: uppercase;
+  width: 65%;
+  margin: auto;
+}
+
+#failure-section button {
+  margin: auto;
+  width: 10%;
+  height: 2.3em;
+}
+
+/* |--- Retry section ---| */
+
+#retry-section mat-card-content {
+  text-align: center;
+}
+
+#retry-section mat-card-content h2 {
+  text-align: justify;
+  font-weight: bold;
+}
+
+#retry-section button {
+  margin: auto;
+  width: 10%;
+  height: 2.3em;
+}
+
+.retry-title {
+  background-color: #ff4081;
+  color:white;
+  text-align: center;
+  text-transform: uppercase;
+  width: 65%;
+  margin: auto;
+}
+
+/* |--- ALREADY STARTED SECTION STYLES ---| */
+
+#already-started-section {
+  margin-top: 2%;
+}
+
+#already-started-section h2{
+  text-align: justify;
+  font-weight: bold;
 }

@@ -7,7 +7,10 @@
         </mat-form-field>
     </form>
 
-    <button mat-flat-button color="primary" class="search-button" [disabled]="!searchForm.valid || searchInProgress" (click)="performWebSearch(searchInput.value)">{{searchInProgress === true ? 'Searching...' : 'Search'}}</button>
+    <button mat-flat-button color="primary" class="search-button"
+            [disabled]="!searchForm.valid || searchInProgress"
+            (click)="performWebSearch(searchInput.value)">{{searchInProgress === true ? 'Searching...' : 'Search'}}
+    </button>
 
     <mat-table [dataSource]="dataSource">
         <ng-container matColumnDef="{{displayedColumns}}">

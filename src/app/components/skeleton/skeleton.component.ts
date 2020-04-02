@@ -1,21 +1,20 @@
+/* Core modules */
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, ViewChild} from '@angular/core';
-
+/* Reactive forms modules */
 import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms'
-
 import {MatFormField} from "@angular/material/form-field";
 import {MatStepper} from "@angular/material/stepper";
-
+/* Services */
 import {NgxUiLoaderService} from 'ngx-ui-loader';
 import {ConfigService} from "../../services/config.service";
-
+/* Task models */
 import {Document} from "../../models/skeleton/document";
 import {Hit} from "../../models/skeleton/hit";
-
+/* AWS Integration*/
 import * as AWS from 'aws-sdk';
-import {HeadObjectOutput, ManagedUpload} from "aws-sdk/clients/s3";
-import {bool} from "aws-sdk/clients/signer";
-import {PromiseResult} from "aws-sdk/lib/request";
+import {ManagedUpload} from "aws-sdk/clients/s3";
 
+/* Component HTML Tag definition */
 @Component({
   selector: 'app-skeleton',
   templateUrl: './skeleton.component.html',
@@ -24,10 +23,10 @@ import {PromiseResult} from "aws-sdk/lib/request";
 })
 
 /*
-* This class implements a skeleton for Crowdsourcing tasks. If you want to use this code to launch a Crowdsourcing task you will find some points in this code that you can edit.
-* Such editing points are labelled with a comment like this:
-* // EDIT: <<explanation>>
-* And they will allow you to use your own document attributes, for example.
+* This class implements a skeleton for Crowdsourcing tasks. If you want to use this code to launch a Crowdsourcing task
+* you have to set the environment variables in ../environments/ folder.
+* File environment.ts --- DEVELOPMENT ENVIRONMENT
+* File environment.prod.ts --- PRODUCTION ENVIRONMENT
 * */
 
 export class SkeletonComponent {
@@ -217,6 +216,13 @@ export class SkeletonComponent {
     // |--------- SEARCH ENGINE INTEGRATION - INITIALIZATION ---------|
 
     this.resultsFound = false;
+
+    // |--------- COMMENT ELEMENTS - INITIALIZATION ---------|
+
+    this.comment = new FormControl('', [Validators.required]);
+    this.commentForm = formBuilder.group({
+      "comment": this.comment,
+    });
 
     // |--------- AMAZON AWS INTEGRATION - INITIALIZATION ---------|
 
@@ -588,117 +594,111 @@ export class SkeletonComponent {
     return null
   }
 
-  performCommentSaving() {
+  // |--------- QUALITY CHECKS INTEGRATION - FUNCTIONS ---------|
 
-    /* console.log(this.commentForm.value); */
-    if (!(this.workerIdentifier === null)) {
-      this.s3.upload({
-        Key: `${this.folder}hits/${this.workerIdentifier}/TRIES-${this.allowedTries}-COMMENT.json`,
-        Bucket: this.bucket,
-        Body: JSON.stringify(this.commentForm.value, null, "\t")
-      }, function (err, data) {
-
-      });
-    }
-    this.commentSent = true;
-
-  }
-
+  /*
+   * This function performs and scan of each form filled by the current worker (i.e., questionnaires + document answers)
+   * to ensure that each form posses the validation step (i.e., each field is filled, the url provided as a justification
+   * is an url retrieved by search engine, a truth level is selected, etc.)
+   */
   public performGlobalValidityCheck() {
+    /* The "valid" flag of each questionnaire or document form must be true to pass this check. */
     let documentsFormValidity = true;
-    for (let index = 0; index < this.documentsForm.length; index++) {
-      if (this.documentsForm[index].valid == false) {
-        documentsFormValidity = false
-      }
-    }
+    for (let index = 0; index < this.documentsForm.length; index++) if (this.documentsForm[index].valid == false) documentsFormValidity = false;
     return (this.questionnaireForm.valid && documentsFormValidity)
   }
 
-  // Function to perform the final check on the current HIT and handle success/failure of the task
-  public performFinalCheck() {
+  /*
+   * This function performs the checks needed to ensure that the worker has made a quality work.
+   * Three checks are performed:
+   * 1) GLOBAL VALIDITY CHECK (QUESTIONNAIRE + DOCUMENTS): Verifies that each field of each form has valid values
+   * 2) GOLD QUESTION CHECK:   Verifies if the truth value selected by worker for the gold question obviously false
+   *                           is lower that the value selected for the gold question obviously true
+   * 3) TIME SPENT CHECK:      Verifies if the time spent by worker on each document and questionnaire is higher than
+   *                           two seconds, using the <timestampsElapsed> array
+   * If each check is successful, the task can end. If the worker has some tries left, the task is reset.
+   */
+  public async performFinalCheck() {
 
-    /* Start the spinner */
+    /* The loading spinner is started */
     this.ngxService.start();
 
-    /* Control variables to start final check */
+    /* The current try is completed and the final can shall begin */
     this.taskCompleted = true;
 
+    /* Booleans to hold result of checks */
+    let globalValidityCheck: boolean;
     let goldQuestionCheck: boolean;
     let timeSpentCheck: boolean;
 
+    /* 1) GLOBAL VALIDITY CHECK performed here */
+    globalValidityCheck = this.performGlobalValidityCheck();
+
+    /* 2) GOLD QUESTION CHECK performed here */
     goldQuestionCheck = this.documentsForm[this.goldIndexLow].controls["worker_value"].value < this.documentsForm[this.goldIndexHigh].controls["worker_value"].value;
 
+    /* 3) TIME SPENT CHECK performed here */
     timeSpentCheck = true;
-    for (let i = 0; i < this.timestampsElapsed.length; i++) {
-      if (this.timestampsElapsed[i] < 2) {
-        timeSpentCheck = false
-      }
-    }
+    for (let i = 0; i < this.timestampsElapsed.length; i++) if (this.timestampsElapsed[i] < 2) timeSpentCheck = false;
 
-    let data = {
-      tokenInputFormValid: this.tokenForm.valid,
-      questionnaireForm: this.questionnaireForm.valid,
-      globalFormValidity: this.performGlobalValidityCheck(),
-      goldQuestionCheck: goldQuestionCheck,
-      timeSpentCheck: timeSpentCheck
-    };
-
-    if (!(this.workerIdentifier === null)) {
-      let key: string;
-      key = `${this.folder}hits/${this.workerIdentifier}/TRIES-${this.allowedTries}-CHECKS.json`;
-      this.s3.upload({
-        Key: key,
-        Bucket: this.bucket,
-        Body: JSON.stringify(data, null, "\t")
-      }, function (err, data) {
-        console.log(err);
-      });
-    }
-
-    /* console.log("Global Validity Check: " + this.performGlobalValidityCheck()); */
-    /* console.log("Gold Question Check: " + goldQuestionCheck); */
-    /* console.log("Time Spent Check: " + timeSpentCheck); */
-
-    if (this.performGlobalValidityCheck() && goldQuestionCheck && timeSpentCheck) {
+    /* If each check is true, the task is successful, otherwise the task is failed (but not over if there are more tries) */
+    if (globalValidityCheck && goldQuestionCheck && timeSpentCheck) {
       this.taskSuccessful = true;
       this.taskFailed = false;
     } else {
-      this.taskFailed = true;
       this.taskSuccessful = false;
+      this.taskFailed = true;
+    }
+
+    /* The result of quality check control for the current try is uploaded to the Amazon S3 bucket. */
+    if (!(this.workerIdentifier === null)) {
+      let qualityCheckData = {
+        globalFormValidity: globalValidityCheck,
+        goldQuestionCheck: goldQuestionCheck,
+        timeSpentCheck: timeSpentCheck,
+        questionnaireForm: this.questionnaireForm.valid
+      };
+      await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/checks.json`, qualityCheckData));
     }
 
     /* Detect changes within the DOM and stop the spinner */
     this.changeDetector.detectChanges();
 
+    /* The browser window is scrolled to the outcome section of the page, where the outcome of the current try is shown */
     document.querySelector('.outcome-section').scrollIntoView({behavior: 'smooth', block: 'start'});
 
-    /* Stop the spinner */
+    /* The loading spinner is stopped */
     this.ngxService.stop();
 
   }
 
-  /* Function to restore the status of the task while keeping the token input saved */
+  /*
+   * This function resets the task by bringing the worker to the first document if he still has some available tries.
+   * The worker can trigger this operation by clicking the "Reset" button when quality checks are completed and the outcome is shown.
+   */
   public performReset() {
 
-    /* Start the spinner */
+    /* The loading spinner is started */
     this.ngxService.start();
 
-    /* Control variables to restore the task */
+    /* Control variables to restore the state of task */
     this.taskFailed = false;
     this.taskSuccessful = false;
     this.taskCompleted = false;
     this.taskStarted = true;
+    this.comment.setValue("");
+    this.commentSent = false;
 
-    /* Set stepper index to the first tab*/
-    this.stepper.selectedIndex = 1;
+    /* Set stepper index to the first tab (i.e., bring the worker to the first document after the questionnaire) */
+    this.stepper.selectedIndex = this.questionnaireAmount;
 
     /* Decrease the remaining tries amount*/
     this.allowedTries = this.allowedTries - 1;
 
-    /* Increases current try index */
+    /* Increases the current try index */
     this.currentTry = this.currentTry + 1;
 
-    /* Stop the spinner */
+    /* The loading spinner is stopped */
     this.ngxService.stop();
 
   }
@@ -710,6 +710,8 @@ export class SkeletonComponent {
    * A folder on the bucket is created for each worker identifier and such folders contain .json files.
    * The data include questionnaire results, quality checks, worker hit, search engine results, etc.
    * Moreover, this function stores the timestamps used to check how much time the worker spends on each document.
+   * The "Final" folder is filled with a full task snapshot at the end of each allowed try.
+   * The "Partial" folder contains a snapshot of the current document each time a user clicks on a "Back" or "Next" button.
    */
   public async performLogging(action: string, isQuestionnaire: boolean, isFinal: boolean) {
 
@@ -723,7 +725,9 @@ export class SkeletonComponent {
        * timestamps for the previous/following document.
        */
       let currentElement = this.stepper.selectedIndex;
+      /* otheElement is the index of the document/questionnaire in which the user was before */
       let otherElement = this.stepper.selectedIndex;
+      /* the "completed" document is <otherElement> minus the amount of questionnaires */
       let completedDocument = this.stepper.selectedIndex;
       switch (action) {
         case "Next":
@@ -761,7 +765,7 @@ export class SkeletonComponent {
           this.timestampsEnd[otherElement].push(timeInSeconds);
           break;
         case "Finish":
-          /* If the task finishes, the current timestamp is the end timestamp for the last document. */
+          /* If the task finishes, the current timestamp is the end timestamp for the current document. */
           this.timestampsEnd[currentElement].push(timeInSeconds);
           break;
       }
@@ -783,6 +787,7 @@ export class SkeletonComponent {
         this.timestampsElapsed[i] = totalSecondsElapsed
       }
 
+      /* If the worker has completed the questionnaire */
       if (isQuestionnaire) {
 
         let taskData = {
@@ -797,14 +802,17 @@ export class SkeletonComponent {
           questionnaire_amount: this.questionnaireAmount,
           documents_amount: this.documentsAmount
         };
+        /* General info about task */
         await (this.upload(`${this.workerFolder}/task.json`, taskData));
-
+        /* The parsed document contained in current worker's hit */
         await (this.upload(`${this.workerFolder}/Final/documents.json`, this.documents));
-
+        /* The answers of the current worker to the questionnaire */
         await (this.upload(`${this.workerFolder}/Final/questionnaire.json`, this.questionnaireForm.value));
 
+      /* If the worker performed a transition to a previous or a following document */
       } else {
 
+        /* Each partial partial piece of data must be distinguished using the "access number" and the current try number */
         let accessesAmount = this.documentsAccesses[completedDocument];
 
         let actionInfo = {
@@ -814,32 +822,32 @@ export class SkeletonComponent {
           current_try: this.currentTry,
           current_document: completedDocument,
         };
+        /* Info about the performed action ("Next"? "Back"? From where?) */
         await (this.upload(`${this.workerFolder}/Partials/Info/Try-${this.currentTry}/info_${completedDocument}_access_${accessesAmount}.json`, actionInfo));
-
+        /* Worker's truth level and justification for the current document */
         let answers = this.documentsForm[completedDocument].value;
         await (this.upload(`${this.workerFolder}/Partials/Answers/Try-${this.currentTry}/answer_${completedDocument}_access_${accessesAmount}.json`, answers));
-
+        /* Worker's search engine queries for the current document */
         let searchEngineQueries = this.searchEngineQueries[completedDocument];
         await (this.upload(`${this.workerFolder}/Partials/Queries/Try-${this.currentTry}/queries_${completedDocument}_access_${accessesAmount}.json`, searchEngineQueries));
-
+        /* Responses retrieved by search engine for each worker's query for the current document */
         let responsesRetrieved = this.searchEngineRetrievedResponses[completedDocument];
         await (this.upload(`${this.workerFolder}/Partials/Responses/Retrieved/Try-${this.currentTry}/retrieved_${completedDocument}_access_${accessesAmount}.json`, responsesRetrieved));
-
+        /* Responses by search engine ordered by worker's click for the current document */
         let responsesSelected = this.searchEngineSelectedResponses[completedDocument];
         await (this.upload(`${this.workerFolder}/Partials/Responses/Selected/Try-${this.currentTry}/selected_${completedDocument}_access_${accessesAmount}.json`, responsesSelected));
-
+        /* Start, end and elapsed timestamps for the current document */
         let timestampsStart = this.timestampsStart[completedDocument];
         await (this.upload(`${this.workerFolder}/Partials/Timestamps/Start/Try-${this.currentTry}/start_${completedDocument}_access_${accessesAmount}.json`, timestampsStart));
-
         let timestampsEnd = this.timestampsEnd[completedDocument];
         await (this.upload(`${this.workerFolder}/Partials/Timestamps/End/Try-${this.currentTry}/end_${completedDocument}_access_${accessesAmount}.json`, timestampsEnd));
-
         let timestampsElapsed = this.timestampsElapsed[completedDocument];
         await (this.upload(`${this.workerFolder}/Partials/Timestamps/Elapsed/Try-${this.currentTry}/elapsed_${completedDocument}_access_${accessesAmount}.json`, timestampsElapsed));
-
+        /* Number of accesses to the current document (i.e., how many times the worker reached the document with a "Back" or "Next" action */
         let accesses = this.documentsAccesses[completedDocument];
         await (this.upload(`${this.workerFolder}/Partials/Accesses/Try-${this.currentTry}/accesses_${completedDocument}_access_${accessesAmount}.json`, accesses));
 
+        /* If the worker has reached the end of the current try (if he fails the current try but has more tries it's not the end of the task) */
         if (isFinal) {
 
           let actionInfo = {
@@ -849,30 +857,47 @@ export class SkeletonComponent {
             current_try: this.currentTry,
             current_document: completedDocument,
           };
+          /* Info about each performed action ("Next"? "Back"? From where?) */
           await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/info.json`, actionInfo));
+          /* Worker's truth level and justification for each document */
           let answers = [];
           for (let index = 0; index < this.documentsForm.length; index++) answers.push(this.documentsForm[index].value);
           await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/answers.json`, answers));
+          /* Worker's search engine queries for each document */
           await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/queries.json`, this.searchEngineQueries));
+          /* Responses retrieved by search engine for each worker's query for each document */
           await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/responses_retrieved.json`, this.searchEngineRetrievedResponses));
+          /* Responses by search engine ordered by worker's click for the current document */
           await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/responses_selected.json`, this.searchEngineSelectedResponses));
+          /* Start, end and elapsed timestamps for each document */
           await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/timestamps_start.json`, this.timestampsStart));
           await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/timestamps_end.json`, this.timestampsEnd));
           await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/timestamps_elapsed.json`, this.timestampsElapsed));
+          /* Number of accesses to each document (i.e., how many times the worker reached the document with a "Back" or "Next" action */
           await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/accesses.json`, this.documentsAccesses));
 
         }
 
+        /* Now that each upload is complete, the new access to the document is registered */
         this.documentsAccesses[completedDocument] = accessesAmount + 1;
 
       }
-
     }
-
   }
 
-  /* This function performs a GetObject operation to Amazon S3 and returns a parsed JSON which is the requested resource.
-  * https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html */
+  /*
+   * This function gives the possibility to the worker to provide a comment when a try is finished, successfully or not.
+   * The comment can be typed in a textarea and when the worker clicks the "Send" button such comment is uploaded to an Amazon S3 bucket.
+   */
+  async performCommentSaving() {
+    if (!(this.workerIdentifier === null)) await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/comment.json`, this.commentForm.value));
+    this.commentSent = true;
+  }
+
+  /*
+   * This function performs a GetObject operation to Amazon S3 and returns a parsed JSON which is the requested resource.
+   * https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html
+   * */
   public async download(path: string) {
     return JSON.parse(
       (await (this.s3.getObject({
@@ -881,8 +906,10 @@ export class SkeletonComponent {
       }).promise())).Body.toString('utf-8'));
   }
 
-  /* This function performs an Upload operation to Amazon S3 and returns a JSON object which contains info about the outcome.
-  * https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#upload-property */
+  /*
+   * This function performs an Upload operation to Amazon S3 and returns a JSON object which contains info about the outcome.
+   * https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#upload-property
+   * */
   public async upload(path: string, payload: Object): Promise<ManagedUpload> {
     return this.s3.upload({
       Key: path,
@@ -892,11 +919,13 @@ export class SkeletonComponent {
     })
   }
 
-  // |--------- UTILITIES - FUNCTIONS ---------|
+  // |--------- UTILITIES ELEMENTS - FUNCTIONS ---------|
 
+  /*
+   * This function retrieves the string associated to an error code thrown by a form field validator.
+   */
   public checkFormControl(form: FormGroup, field: string, key: string): boolean {
     return form.get(field).hasError(key);
   }
 
 }
-

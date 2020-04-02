@@ -13,7 +13,7 @@ export const environment = {
 
   region: 'eu-west-1',
   bucket: 'crowdsourcing-tasks',
-  aws_id_key: "AKIAT5QYFVEAZZTM6IZC",
-  aws_secret_key: "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",
+  aws_id_key: "AKIAJZPMGNZEXCRQHNGQ",
+  aws_secret_key: "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",
 
 };

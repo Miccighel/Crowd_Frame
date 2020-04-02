@@ -1,7 +1,10 @@
+<!-- |--------- PAGE LOADER - MARKUP ---------| -->
 <ngx-ui-loader></ngx-ui-loader>
 
+<!-- |--------- APP-INSTRUCTIONS COMPONENT - MARKUP ---------| -->
 <app-instructions [scale]="scale"></app-instructions>
 
+<!-- |--------- TOKEN INPUT SECTION - MARKUP ---------| -->
 <div id="token-section" class="container" *ngIf="!taskStarted && taskAllowed;">
   <form [formGroup]="tokenForm">
     <mat-card>
@@ -33,8 +36,15 @@
   </form>
 </div>
 
+
+<!--
+     If the worker has a valid token input and has not started the task
+     render the task's body section and do not render the <alreadyStarted>
+     section. This behavior depends on <taskAllowed> flag
+-->
 <ng-template *ngIf="(taskAllowed); else alreadyStarted"></ng-template>
 
+<!-- |--------- ALREADY STARTED SECTION - MARKUP ---------| -->
 <ng-template #alreadyStarted>
   <div id="already-started-section" class="outcome-section container">
     <div>
@@ -45,7 +55,7 @@
         <mat-card-content>
           <h2>
             Either you have already started this task without finishing it, or you have already participated to a
-            variant of this experiment.
+            variant of this experiment.<br />
             For this reason, you are not allowed to take a part in this experiment. Sorry for the inconvenience.
           </h2>
         </mat-card-content>
@@ -54,6 +64,8 @@
   </div>
 </ng-template>
 
+<!-- |---------  OUTCOME SECTION - MARKUP ---------| -->
+<!-- Success section - shown when the worker successfully completes the task -->
 <div id="success-section" class="outcome-section container" *ngIf="taskCompleted && taskSuccessful">
   <div>
     <mat-card>
@@ -82,7 +94,7 @@
     </mat-card>
   </div>
 </div>
-
+<!-- Failure section - shown when the worker does not pass the quality checks and does not has tries left -->
 <div id="failure-section" class="outcome-section container" *ngIf="taskCompleted && taskFailed && allowedTries <= 0">
   <div>
     <mat-card>
@@ -98,8 +110,7 @@
         </h2>
         <form [formGroup]="commentForm" class="comment-form">
           <mat-form-field appearance="fill">
-            <textarea matInput [disabled]="commentSent" placeholder="Your comment here" formControlName="comment"
-                      rows="5"></textarea>
+            <textarea matInput [disabled]="commentSent" placeholder="Your comment here" formControlName="comment" rows="5"></textarea>
           </mat-form-field>
         </form>
         <button mat-flat-button color="primary" [disabled]="commentSent || !commentForm.valid "
@@ -110,7 +121,7 @@
     </mat-card>
   </div>
 </div>
-
+<!-- Retry section - shown when the worker does not pass the quality checks but has some tries left -->
 <div id="retry-section" class="outcome-section container" *ngIf="taskCompleted && taskFailed && allowedTries>0">
   <div>
     <mat-card>
@@ -141,7 +152,10 @@
   </div>
 </div>
 
+<!-- |---------  TASK BODY SECTION - MARKUP ---------| -->
 <mat-horizontal-stepper [linear]="true" labelPosition="bottom" #stepper *ngIf="taskStarted">
+
+  <!-- Questionnaire markup -->
   <mat-step [stepControl]="questionnaireForm" [editable]="false">
     <div class="container">
       <form [formGroup]="questionnaireForm" class="questionnaire-form">
@@ -159,23 +173,14 @@
               <mat-radio-button class="radio-button" value="6">>80</mat-radio-button>
             </mat-radio-group>
             <mat-radio-group aria-labelledby="radio-button-label" class="radio-button-group" formControlName="degree">
-              <label>2) What is the highest level of school you have completed or the highest degree you have
-                received?</label>
+              <label>2) What is the highest level of school you have completed or the highest degree you have received?</label>
               <mat-radio-button class="radio-button" value="1">High school incomplete or less</mat-radio-button>
-              <mat-radio-button class="radio-button" value="2">High school graduate or GED (includes
-                technical/vocational training that doesn’t towards college credit)
-              </mat-radio-button>
-              <mat-radio-button class="radio-button" value="3">Some college (some community college, associate’s
-                degree)
-              </mat-radio-button>
+              <mat-radio-button class="radio-button" value="2">High school graduate or GED (includes technical/vocational training that doesn’t towards college credit)</mat-radio-button>
+              <mat-radio-button class="radio-button" value="3">Some college (some community college, associate’s degree)</mat-radio-button>
               <mat-radio-button class="radio-button" value="4">Four year college degree/bachelor’s degree
               </mat-radio-button>
-              <mat-radio-button class="radio-button" value="5">Some postgraduate or professional schooling, no
-                postgraduate degree
-              </mat-radio-button>
-              <mat-radio-button class="radio-button" value="6">Postgraduate or professional degree, including master’s,
-                doctorate, medical or law degree
-              </mat-radio-button>
+              <mat-radio-button class="radio-button" value="5">Some postgraduate or professional schooling, no postgraduate degree</mat-radio-button>
+              <mat-radio-button class="radio-button" value="6">Postgraduate or professional degree, including master’s, doctorate, medical or law degree</mat-radio-button>
             </mat-radio-group>
             <mat-radio-group aria-labelledby="radio-button-label" class="radio-button-group" formControlName="money">
               <label>3) Last year what was your total family income from all sources, before taxes?</label>
@@ -203,31 +208,36 @@
     </div>
   </mat-step>
 
+  <!-- Documents markup -->
   <mat-step *ngFor="let document of documents; let i=index" [editable]="true">
     <div class="container">
       <form [formGroup]="documentsForm[i]">
         <mat-card>
-          <ng-template matStepLabel> Document {{i + 1}} </ng-template>
+          <ng-template matStepLabel> Document {{i + this.questionnaireAmount}} </ng-template>
           <mat-card-title>Please judge the truthfulness of the following statement</mat-card-title>
           <mat-card-content>
             <p><span class="hit-value">Speaker:</span> {{document.speaker}}</p>
             <p><span class="hit-value">Year:</span> {{document.year.length > 0 ? document.year : "#"}}</p>
             <p><span class="hit-value">Statement:</span> {{document.statement}}</p>
             <label>Use this search engine to find evidence about the truthfulness of the statement</label>
-            <app-binger
-              id="binger-{{i}}"
+            <app-binger id="binger-{{i}}"
               (resultEmitter)="storeSearchEngineRetrievedResponse($event)"
               (queryEmitter)="storeSearchEngineUserQuery($event)"
               (selectedRowEmitter)="storeSearchEngineSelectedResponse($event)"
             ></app-binger>
-            <label *ngIf="this.scale=='S6'">Please select (or copy & paste) one of the URLs above to justify the
+            <label *ngIf="this.scale=='S6'">
+              Please select (or copy & paste) one of the URLs above to justify the
               truthfulness value of the statement, then input the truth level as one from the six labels provided
-              below</label>
-            <label *ngIf="this.scale=='S3'">Please select (or copy & paste) one of the URLs above to justify the
+              below
+            </label>
+            <label *ngIf="this.scale=='S3'">
+              Please select (or copy & paste) one of the URLs above to justify the
               truthfulness value of the statement, then input the truth level as one from the three labels provided
               below</label>
-            <label *ngIf="this.scale=='S100'">Please select (or copy & paste) one of the URLs above to justify the
-              truthfulness value of the statement, then input the truth level using the slider provided below</label>
+            <label *ngIf="this.scale=='S100'">
+              Please select (or copy & paste) one of the URLs above to justify the
+              truthfulness value of the statement, then input the truth level using the slider provided below
+            </label>
             <mat-form-field id="url-field">
               <input #urlField matInput type="text" [formControl]="documentsForm[i].controls['worker_url']"  disabled="true">
               <button mat-icon-button matPrefix>
@@ -240,8 +250,7 @@
                 Please select (or copy & paste) one of the URLs shown above.
               </mat-error>
             </mat-form-field>
-            <mat-radio-group *ngIf="scale=='S6'" aria-labelledby="radio-button-label" class="radio-button-group"
-                             [formControl]="documentsForm[i].controls['worker_value']">
+            <mat-radio-group *ngIf="scale=='S6'" aria-labelledby="radio-button-label" class="radio-button-group" [formControl]="documentsForm[i].controls['worker_value']">
               <mat-radio-button class="radio-button" value="1">Lie</mat-radio-button>
               <mat-radio-button class="radio-button" value="2">False</mat-radio-button>
               <mat-radio-button class="radio-button" value="3">Barely True</mat-radio-button>
@@ -249,28 +258,30 @@
               <mat-radio-button class="radio-button" value="5">Mostly True</mat-radio-button>
               <mat-radio-button class="radio-button" value="6">True</mat-radio-button>
             </mat-radio-group>
-            <mat-radio-group *ngIf="scale=='S3'" aria-labelledby="radio-button-label" class="radio-button-group"
-                             [formControl]="documentsForm[i].controls['worker_value']">
+            <mat-radio-group *ngIf="scale=='S3'" aria-labelledby="radio-button-label" class="radio-button-group" [formControl]="documentsForm[i].controls['worker_value']">
               <mat-radio-button class="radio-button" value="1">Negative</mat-radio-button>
               <mat-radio-button class="radio-button" value="2">In Between</mat-radio-button>
               <mat-radio-button class="radio-button" value="3">Positive</mat-radio-button>
             </mat-radio-group>
             <label *ngIf="scale=='S100'">Selected value: {{documentsForm[i].controls['worker_value'].value}}</label>
-            <mat-slider *ngIf="scale=='S100'" min="0" max="100" step="1" thumbLabel tickInterval="1"
-                        [formControl]="documentsForm[i].controls['worker_value']"></mat-slider>
+            <mat-slider *ngIf="scale=='S100'" min="0" max="100" step="1" thumbLabel tickInterval="1" [formControl]="documentsForm[i].controls['worker_value']"></mat-slider>
           </mat-card-content>
           <mat-card-actions>
-            <button mat-flat-button color="primary" matStepperPrevious *ngIf="i>0" [disabled]="taskCompleted" (click)="performLogging('Back', false, false)">Back
+            <button mat-flat-button color="primary" matStepperPrevious *ngIf="i>0"
+                    [disabled]="taskCompleted"
+                    (click)="performLogging('Back', false, false)">
+              Back
             </button>
-            <button mat-flat-button color="primary" matStepperNext [disabled]="!documentsForm[i].valid || !this.searchEngineRetrievedResponses[i] || taskCompleted"
-                    *ngIf="i+1<this.documentsAmount" (click)="performLogging('Next',false, false)">
+            <button mat-flat-button color="primary" matStepperNext
+                    *ngIf="i+1<this.documentsAmount"
+                    [disabled]="!documentsForm[i].valid || !this.searchEngineRetrievedResponses[i] || taskCompleted"
+                    (click)="performLogging('Next',false, false);">
               Next
             </button>
-            <!-- TODO ATTENZIONE: LOGGING DISABILITATO -->
             <button mat-flat-button color="primary" matStepperNext
-                    [disabled]="(!performGlobalValidityCheck()) || taskCompleted"
                     *ngIf="i+1>=this.documentsAmount"
-                    (click)="performLogging('Finish',false, true)">
+                    [disabled]="(!performGlobalValidityCheck()) || taskCompleted"
+                    (click)="performLogging('Finish',false, true); performFinalCheck()">
               Finish
             </button>
             <span class="form-note">(*) you have to fill each field to proceed</span>

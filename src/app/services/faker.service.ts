@@ -3,7 +3,7 @@ import {Injectable} from '@angular/core';
 import {Observable} from "rxjs";
 
 /* HTTP handling modules */
-import {HttpClient, HttpHeaders} from '@angular/common/http';
+import {HttpClient} from '@angular/common/http';
 import {FakerSearchResponse} from "../models/binger/fakerSearchResponse";
 import {BaseResponse} from "../models/binger/baseResponse";
 

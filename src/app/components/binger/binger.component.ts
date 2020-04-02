@@ -8,9 +8,10 @@ import {NgxUiLoaderService} from "ngx-ui-loader";
 import {MatTableDataSource} from '@angular/material';
 import {MatPaginator} from "@angular/material/paginator";
 
+/* Reactive forms modules */
 import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
 
-/* Reactive forms modules */
+
 import {BingService} from '../../services/bing.service';
 import {BingWebSearchResponse} from "../../models/binger/bingWebSearchResponse";
 import {FakerService} from "../../services/faker.service";
