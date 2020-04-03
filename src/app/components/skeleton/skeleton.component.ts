@@ -27,11 +27,10 @@ import {ManagedUpload} from "aws-sdk/clients/s3";
 * you have to set the environment variables in ../environments/ folder.
 * File environment.ts --- DEVELOPMENT ENVIRONMENT
 * File environment.prod.ts --- PRODUCTION ENVIRONMENT
-* */
-
+*/
 export class SkeletonComponent {
 
-  // |--------- GENERAL ELEMENTS - DECLARATION ---------|
+  /* |--------- GENERAL ELEMENTS - DECLARATION ---------| */
 
   /* Name of the current task */
   experimentId: string;
@@ -449,7 +448,7 @@ export class SkeletonComponent {
    */
   public storeSearchEngineUserQuery(queryData: Object) {
     /* The current document and user query are parsed from the JSON object */
-    let currentDocument = parseInt(queryData['target']['id'].split("-")[1]);
+    let currentDocument = parseInt(queryData['target']['id'].split("-")[3]);
     let currentUserQuery = queryData['detail'];
     let timeInSeconds = Date.now() / 1000;
     /* If some data for the current document already exists*/
@@ -488,7 +487,7 @@ export class SkeletonComponent {
    */
   public storeSearchEngineRetrievedResponse(retrievedResponseData: Object) {
     /* The current document and user search engine retrieved response are parsed from the JSON object */
-    let currentDocument = parseInt(retrievedResponseData['target']['id'].split("-")[1]);
+    let currentDocument = parseInt(retrievedResponseData['target']['id'].split("-")[3]);
     let currentRetrievedResponse = retrievedResponseData['detail'];
     let timeInSeconds = Date.now() / 1000;
     /* If some responses for the current document already exists*/
@@ -529,7 +528,7 @@ export class SkeletonComponent {
    */
   public storeSearchEngineSelectedResponse(selectedResponseData: Object) {
     /* The current document and user search engine retrieved response are parsed from the JSON object */
-    let currentDocument = parseInt(selectedResponseData['target']['id'].split("-")[1]);
+    let currentDocument = parseInt(selectedResponseData['target']['id'].split("-")[3]);
     let currentSelectedResponse = selectedResponseData['detail'];
     let timeInSeconds = Date.now() / 1000;
     /* If some responses for the current document already exists*/

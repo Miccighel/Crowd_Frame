@@ -10,6 +10,7 @@ export const environment = {
   allowedTries: 10,
 
   questionnaireAmount: 1,
+  domainsToFiler: ["politifact"],
 
   region: 'eu-west-1',
   bucket: 'crowdsourcing-tasks',

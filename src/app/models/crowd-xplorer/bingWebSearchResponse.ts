@@ -1,6 +1,8 @@
-/* JSON REST Response Sample */
-/* https://azure.microsoft.com/it-it/services/cognitive-services/bing-web-search-api/ */
-
+/*
+ * This interface provides a representation of the raw response returned by a request to Bing Web Search.
+ * Documentation:
+ * https://azure.microsoft.com/it-it/services/cognitive-services/bing-web-search-api/
+ */
 export interface BingWebSearchResponse {
   entities: Entities
   images: Images

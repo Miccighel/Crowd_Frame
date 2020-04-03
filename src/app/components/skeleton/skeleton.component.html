@@ -2,7 +2,7 @@
 <ngx-ui-loader></ngx-ui-loader>
 
 <!-- |--------- APP-INSTRUCTIONS COMPONENT - MARKUP ---------| -->
-<app-instructions [scale]="scale"></app-instructions>
+<app-instructions [scale]="scale" [instructions]="this.scale"></app-instructions>
 
 <!-- |--------- TOKEN INPUT SECTION - MARKUP ---------| -->
 <div id="token-section" class="container" *ngIf="!taskStarted && taskAllowed;">
@@ -220,11 +220,11 @@
             <p><span class="hit-value">Year:</span> {{document.year.length > 0 ? document.year : "#"}}</p>
             <p><span class="hit-value">Statement:</span> {{document.statement}}</p>
             <label>Use this search engine to find evidence about the truthfulness of the statement</label>
-            <app-binger id="binger-{{i}}"
+            <app-crowd-xplorer id="app-crowd-xplorer-{{i}}"
               (resultEmitter)="storeSearchEngineRetrievedResponse($event)"
               (queryEmitter)="storeSearchEngineUserQuery($event)"
               (selectedRowEmitter)="storeSearchEngineSelectedResponse($event)"
-            ></app-binger>
+            ></app-crowd-xplorer>
             <label *ngIf="this.scale=='S6'">
               Please select (or copy & paste) one of the URLs above to justify the
               truthfulness value of the statement, then input the truth level as one from the six labels provided

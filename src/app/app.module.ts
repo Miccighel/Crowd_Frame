@@ -14,7 +14,7 @@ import {MatListModule} from "@angular/material/list";
 import {ReactiveFormsModule} from "@angular/forms";
 import {NgxUiLoaderModule} from "ngx-ui-loader";
 import {HttpClientModule} from "@angular/common/http";
-import {BingerComponent} from "./components/binger/binger.component";
+import {CrowdXplorer} from "./components/crowd-xplorer/crowd-xplorer.component";
 import {createCustomElement} from "@angular/elements";
 import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
 import {MatBadgeModule} from "@angular/material/badge";
@@ -32,7 +32,7 @@ import {MatSliderModule} from "@angular/material/slider";
 @NgModule({
   declarations: [
     SkeletonComponent,
-    BingerComponent,
+    CrowdXplorer,
     TruncatePipe,
     InstructionsComponent,
     InstructionsDialog
@@ -73,7 +73,7 @@ import {MatSliderModule} from "@angular/material/slider";
     ],
   entryComponents: [
     SkeletonComponent,
-    BingerComponent,
+    CrowdXplorer,
     InstructionsComponent,
     InstructionsDialog
   ],
@@ -85,8 +85,8 @@ export class AppModule {
   constructor(injector: Injector) {
     const skeletonElement = createCustomElement(SkeletonComponent, {injector: injector});
     customElements.define('app-skeleton', skeletonElement);
-    const bingerElement = createCustomElement(BingerComponent, {injector: injector});
-    customElements.define('app-binger', bingerElement);
+    const bingerElement = createCustomElement(CrowdXplorer, {injector: injector});
+    customElements.define('app-crowd-xplorer', bingerElement);
   }
 
   ngDoBootstrap() {}
