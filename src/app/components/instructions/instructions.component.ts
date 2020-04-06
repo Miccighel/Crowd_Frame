@@ -2,6 +2,7 @@
 import {Component, Inject, Input, OnInit} from '@angular/core';
 /* Material design modules */
 import {MatDialog, MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
+import * as AWS from "aws-sdk";
 /* Data inteface for the underlying dialog component */
 export interface DialogData {}
 
@@ -24,7 +25,10 @@ export class InstructionsComponent implements OnInit {
   @Input() scale: string;
   /* Instruction of the current scale of the current instance of the task */
   /* @INPUT: Received form Skeleton component */
-  @Input() instructions: string;
+  @Input() s3: AWS.S3;
+  @Input() bucket: string;
+  @Input() instructionsFile: string;
+  instructions : string;
 
   /* |--------- CONSTRUCTOR ---------| */
 
@@ -36,10 +40,13 @@ export class InstructionsComponent implements OnInit {
    * This function inits an instance of the instruction modal after main view init.
    */
   ngOnInit(): void {
-    this.openDialog(
-      this.scale,
-      this.instructions
+    this.performInstructionsLoading().then(outcome => {
+      this.instructions = outcome;
+      this.openDialog(
+        this.scale,
+        this.instructions
       )
+    })
   }
 
   /*
@@ -55,6 +62,22 @@ export class InstructionsComponent implements OnInit {
       }
     });
   }
+
+  public async performInstructionsLoading() {
+    return await this.download(this.instructionsFile);
+  }
+
+  /*
+   * This function performs a GetObject operation to Amazon S3 and returns a raw HTML string which is the requested resource.
+   * https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html
+   * */
+  public async download(path: string) {
+    return (await (this.s3.getObject({
+        Bucket: this.bucket,
+        Key: path
+      }).promise())).Body.toString('utf-8');
+  }
+
 }
 
 /* Component HTML Tag definition */

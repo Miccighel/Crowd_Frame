@@ -82,8 +82,7 @@ export class SkeletonComponent {
   /* Number of the current try */
   currentTry: number;
 
-  // |--------- QUESTIONNAIRE ELEMENTS - DECLARATION ---------|
-  /* Attributes to handle the questionnaire part of a Crowdsourcing task */
+  /* |--------- QUESTIONNAIRE ELEMENTS - DECLARATION ---------| */
 
   /* Number of different questionnaires inserted within task's body
   * (i.e., a standard questionnaire and two cognitive questionnaires  */
@@ -96,8 +95,7 @@ export class SkeletonComponent {
   degree: FormControl;
   money: FormControl;
 
-  // |--------- HIT ELEMENTS - DECLARATION ---------|
-  /* Attributes to handle each Hit of a Crowdsourcing task */
+  /* |--------- HIT ELEMENTS - DECLARATION ---------| */
 
   /* Array of form references, one for each document within a Hit */
   documentsForm: FormGroup[];
@@ -109,8 +107,8 @@ export class SkeletonComponent {
   /* Array of accesses counters, one for each document within a Hit */
   documentsAccesses: Array<number>;
 
-  // |--------- SEARCH ENGINE INTEGRATION - DECLARATION ---------|
-  /* https://github.com/Miccighel/Binger */
+  /* |--------- SEARCH ENGINE INTEGRATION - DECLARATION ---------| */
+  /* https://github.com/Miccighel/CrowdXplorer */
 
   /* Array to store search engine queries and responses, one for each document within a Hit */
   searchEngineQueries: Array<object>;
@@ -120,7 +118,7 @@ export class SkeletonComponent {
   /* Flag to check if the query returned some results */
   resultsFound: boolean;
 
-  // |--------- QUALITY CHECKS - DECLARATION ---------|
+  /* |--------- QUALITY CHECKS - DECLARATION ---------| */
 
   /* Indexes of the gold questions within a Hit */
   goldIndexHigh: number;
@@ -131,8 +129,7 @@ export class SkeletonComponent {
   timestampsEnd: Array<Array<number>>;
   timestampsElapsed: Array<number>;
 
-  // |--------- COMMENT ELEMENTS - DECLARATION ---------|
-  /* Attributes to handle the final comments part of a Crowdsourcing task */
+  /* |--------- COMMENT ELEMENTS - DECLARATION ---------| */
 
   /* Comment form reference */
   commentForm: FormGroup;
@@ -141,7 +138,7 @@ export class SkeletonComponent {
   /* Flag to check if the comment has been correctly sent */
   commentSent: boolean;
 
-  // |--------- AMAZON AWS INTEGRATION - DECLARATION ---------|
+  /* |--------- AMAZON AWS INTEGRATION - DECLARATION ---------| */
 
   /* AWS S3 Integration*/
   s3: AWS.S3;
@@ -151,6 +148,8 @@ export class SkeletonComponent {
   bucket: string;
   /* Folder to use within the bucket */
   folder: string;
+  /* File where task instructions are stored */
+  instructionsFile: string;
   /* File where each worker identifier is stored */
   workersFile: string;
   /* File where each hit is stored */
@@ -158,7 +157,7 @@ export class SkeletonComponent {
   /* Folder in which upload data produced within the task by current worker */
   workerFolder: string;
 
-  // |--------- CONSTRUCTOR ---------|
+  /* |--------- CONSTRUCTOR ---------| */
 
   constructor(
     changeDetector: ChangeDetectorRef,
@@ -172,7 +171,7 @@ export class SkeletonComponent {
     this.configService = configService;
     this.formBuilder = formBuilder;
 
-    // |--------- GENERAL ELEMENTS - INITIALIZATION ---------|
+    /* |--------- GENERAL ELEMENTS - INITIALIZATION ---------| */
 
     this.experimentId = this.configService.environment.experimentId;
 
@@ -232,6 +231,7 @@ export class SkeletonComponent {
     } else {
       this.folder = `${this.experimentId}/Single/`;
     }
+    this.instructionsFile = `${this.folder}${this.scale}/instructions.html`;
     this.workersFile = `${this.folder}${this.scale}/workers.json`;
     this.hitsFile = `${this.folder}${this.scale}/hits.json`;
     this.workerFolder = `${this.folder}${this.scale}/Data/${this.workerIdentifier}`;
@@ -808,7 +808,7 @@ export class SkeletonComponent {
         /* The answers of the current worker to the questionnaire */
         await (this.upload(`${this.workerFolder}/Final/questionnaire.json`, this.questionnaireForm.value));
 
-      /* If the worker performed a transition to a previous or a following document */
+        /* If the worker performed a transition to a previous or a following document */
       } else {
 
         /* Each partial partial piece of data must be distinguished using the "access number" and the current try number */
