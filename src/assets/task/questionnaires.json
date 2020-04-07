@@ -1,0 +1,52 @@
+[
+  {
+    "type": "standard",
+    "questions": [
+      {
+        "text": "What is your age range?",
+        "answers": [
+          "0-18",
+          "19-25",
+          "26-35",
+          "36-50",
+          "50-80",
+          "80"
+        ]
+      },
+      {
+        "text": "What is the highest level of school you have completed or the highest degree you have received?",
+        "answers": [
+          "High school incomplete or less",
+          "High school graduate or GED (includes technical/vocational training that doesn’t towards college credit)",
+          "Some college (some community college, associate’s degree)",
+          "Four year college degree/bachelor’s degree",
+          "Some postgraduate or professional schooling, no postgraduate degree",
+          "Postgraduate or professional degree, including master’s, doctorate, medical or law degree"
+        ]
+      },
+      {
+        "text": "Last year what was your total family income from all sources, before taxes?",
+        "answers": [
+          "Less than 10,000",
+          "10,000 to less than 20,000",
+          "20,000 to less than 30,000",
+          "30,000 to less than 40,000",
+          "40,000 to less than 50,000",
+          "50,000 to less than 75,000",
+          "75,000 to less than 100,000",
+          "100,000 to less than 150,000",
+          "150,000 or more"
+        ]
+      }
+    ]
+  },
+  {
+    "type": "crt",
+    "questions": [
+      {
+        "text": "If three farmers can plant three trees in three hours, how long would it take nine farmers to plant nine trees?",
+        "answers": []
+      }
+    ]
+  }
+]

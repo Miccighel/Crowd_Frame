@@ -13,6 +13,7 @@ import {Hit} from "../../models/skeleton/hit";
 /* AWS Integration*/
 import * as AWS from 'aws-sdk';
 import {ManagedUpload} from "aws-sdk/clients/s3";
+import {Questionnaire} from "../../models/skeleton/questionnaire";
 
 /* Component HTML Tag definition */
 @Component({
@@ -82,18 +83,37 @@ export class SkeletonComponent {
   /* Number of the current try */
   currentTry: number;
 
+  /* |--------- AMAZON AWS INTEGRATION - DECLARATION ---------| */
+
+  /* AWS S3 Integration*/
+  s3: AWS.S3;
+  /* Region identifier */
+  region: string;
+  /* Bucket identifier */
+  bucket: string;
+  /* Folder to use within the bucket */
+  folder: string;
+  /* File where task instructions are stored */
+  instructionsFile: string;
+  /* File where each worker identifier is stored */
+  workersFile: string;
+  /* File where each questionnaire is stored */
+  questionnairesFile: string;
+  /* File where each hit is stored */
+  hitsFile: string;
+  /* Folder in which upload data produced within the task by current worker */
+  workerFolder: string;
+
   /* |--------- QUESTIONNAIRE ELEMENTS - DECLARATION ---------| */
+
+  questionnairesForm: FormGroup[];
+
+  /* Reference to the current questionnaires */
+  questionnaires: Array<Questionnaire>;
 
   /* Number of different questionnaires inserted within task's body
   * (i.e., a standard questionnaire and two cognitive questionnaires  */
   questionnaireAmount: number;
-
-  /* // EDIT: Add your own questionnaires and their fields here */
-  /* Form controls */
-  questionnaireForm: FormGroup;
-  age: FormControl;
-  degree: FormControl;
-  money: FormControl;
 
   /* |--------- HIT ELEMENTS - DECLARATION ---------| */
 
@@ -138,25 +158,6 @@ export class SkeletonComponent {
   /* Flag to check if the comment has been correctly sent */
   commentSent: boolean;
 
-  /* |--------- AMAZON AWS INTEGRATION - DECLARATION ---------| */
-
-  /* AWS S3 Integration*/
-  s3: AWS.S3;
-  /* Region identifier */
-  region: string;
-  /* Bucket identifier */
-  bucket: string;
-  /* Folder to use within the bucket */
-  folder: string;
-  /* File where task instructions are stored */
-  instructionsFile: string;
-  /* File where each worker identifier is stored */
-  workersFile: string;
-  /* File where each hit is stored */
-  hitsFile: string;
-  /* Folder in which upload data produced within the task by current worker */
-  workerFolder: string;
-
   /* |--------- CONSTRUCTOR ---------| */
 
   constructor(
@@ -165,6 +166,8 @@ export class SkeletonComponent {
     configService: ConfigService,
     formBuilder: FormBuilder,
   ) {
+
+    /* |--------- SERVICES - INITIALIZATION ---------| */
 
     this.changeDetector = changeDetector;
     this.ngxService = ngxService;
@@ -189,7 +192,7 @@ export class SkeletonComponent {
     this.allScales = this.configService.environment.allScales;
     this.useEachScale = this.configService.environment.useEachScale;
 
-    this.tokenInput = new FormControl('', [Validators.required], this.validateTokenInput.bind(this));
+    this.tokenInput = new FormControl('PBFPIXEAJPU', [Validators.required], this.validateTokenInput.bind(this));
     this.tokenForm = formBuilder.group({
       "tokenInput": this.tokenInput
     });
@@ -198,31 +201,7 @@ export class SkeletonComponent {
     this.allowedTries = this.configService.environment.allowedTries;
     this.currentTry = 1;
 
-    // |--------- QUESTIONNAIRE ELEMENTS - INITIALIZATION ---------|
-
-    this.questionnaireAmount = this.configService.environment.questionnaireAmount;
-
-    this.age = new FormControl('', [Validators.required]);
-    this.degree = new FormControl('', [Validators.required]);
-    this.money = new FormControl('', [Validators.required]);
-    this.questionnaireForm = formBuilder.group({
-      "age": this.age,
-      "degree": this.degree,
-      "money": this.money
-    });
-
-    // |--------- SEARCH ENGINE INTEGRATION - INITIALIZATION ---------|
-
-    this.resultsFound = false;
-
-    // |--------- COMMENT ELEMENTS - INITIALIZATION ---------|
-
-    this.comment = new FormControl('', [Validators.required]);
-    this.commentForm = formBuilder.group({
-      "comment": this.comment,
-    });
-
-    // |--------- AMAZON AWS INTEGRATION - INITIALIZATION ---------|
+    /* |--------- AMAZON AWS INTEGRATION - INITIALIZATION ---------| */
 
     this.region = this.configService.environment.region;
     this.bucket = this.configService.environment.bucket;
@@ -233,6 +212,7 @@ export class SkeletonComponent {
     }
     this.instructionsFile = `${this.folder}${this.scale}/instructions.html`;
     this.workersFile = `${this.folder}${this.scale}/workers.json`;
+    this.questionnairesFile = `${this.folder}${this.scale}/questionnaires.json`;
     this.hitsFile = `${this.folder}${this.scale}/hits.json`;
     this.workerFolder = `${this.folder}${this.scale}/Data/${this.workerIdentifier}`;
     this.s3 = new AWS.S3({
@@ -241,6 +221,18 @@ export class SkeletonComponent {
       credentials: new AWS.Credentials(this.configService.environment.aws_id_key, this.configService.environment.aws_secret_key)
     });
 
+    /* |--------- SEARCH ENGINE INTEGRATION - INITIALIZATION ---------| */
+
+    this.resultsFound = false;
+
+    /* |--------- COMMENT ELEMENTS - INITIALIZATION ---------| */
+
+    this.comment = new FormControl('', [Validators.required]);
+    this.commentForm = formBuilder.group({
+      "comment": this.comment,
+    });
+
+    /* If there is an external worker which is trying to perform the task, check its status */
     if (!(this.workerIdentifier === null)) {
       this.performWorkerStatusCheck().then(outcome => {
         this.taskAllowed = outcome;
@@ -250,7 +242,7 @@ export class SkeletonComponent {
 
   }
 
-  // |--------- GENERAL ELEMENTS - FUNCTIONS ---------|
+  /* |--------- GENERAL ELEMENTS - FUNCTIONS ---------| */
 
   /*
   * This function interacts with an Amazon S3 bucket to search the token input
@@ -341,6 +333,31 @@ export class SkeletonComponent {
 
       /* The loading spinner is started */
       this.ngxService.start();
+
+      /* |- QUESTIONNAIRE ELEMENTS - INITIALIZATION -| */
+
+      this.questionnaires = new Array<Questionnaire>();
+
+      let rawQuestionnaires = await this.download(this.questionnairesFile);
+      this.questionnaireAmount = rawQuestionnaires.length;
+
+      for (let index = 0; index < this.questionnaireAmount; index++) {
+        this.questionnaires.push(new Questionnaire(index, rawQuestionnaires[index]));
+      }
+
+      this.questionnairesForm = new Array<FormGroup>();
+      for (let index = 0; index < this.questionnaires.length; index++) {
+        let questionnaire = this.questionnaires[index];
+        if (questionnaire.type == "standard") {
+          let controlsConfig = {};
+          for (let index_question = 0; index_question < questionnaire.questions.length; index_question++) controlsConfig[`control_${index_question}`] = new FormControl('', [Validators.required])
+          this.questionnairesForm[index] = this.formBuilder.group(controlsConfig)
+        } else {
+          let controlsConfig = {};
+          for (let index_question = 0; index_question < questionnaire.questions.length; index_question++) controlsConfig[`control_${index_question}`] = new FormControl('', [Validators.max(100), Validators.min(0), Validators.required])
+          this.questionnairesForm[index] = this.formBuilder.group(controlsConfig)
+        }
+      }
 
       /* The hits stored on Amazon S3 are retrieved */
       let hits = await this.download(this.hitsFile);
@@ -602,9 +619,11 @@ export class SkeletonComponent {
    */
   public performGlobalValidityCheck() {
     /* The "valid" flag of each questionnaire or document form must be true to pass this check. */
+    let questionnaireFormValidity = true;
     let documentsFormValidity = true;
+    for (let index = 0; index < this.questionnairesForm.length; index++) if (this.questionnairesForm[index].valid == false) questionnaireFormValidity = false;
     for (let index = 0; index < this.documentsForm.length; index++) if (this.documentsForm[index].valid == false) documentsFormValidity = false;
-    return (this.questionnaireForm.valid && documentsFormValidity)
+    return (questionnaireFormValidity && documentsFormValidity)
   }
 
   /*
@@ -655,7 +674,6 @@ export class SkeletonComponent {
         globalFormValidity: globalValidityCheck,
         goldQuestionCheck: goldQuestionCheck,
         timeSpentCheck: timeSpentCheck,
-        questionnaireForm: this.questionnaireForm.valid
       };
       await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/checks.json`, qualityCheckData));
     }
@@ -806,7 +824,7 @@ export class SkeletonComponent {
         /* The parsed document contained in current worker's hit */
         await (this.upload(`${this.workerFolder}/Final/documents.json`, this.documents));
         /* The answers of the current worker to the questionnaire */
-        await (this.upload(`${this.workerFolder}/Final/questionnaire.json`, this.questionnaireForm.value));
+        await (this.upload(`${this.workerFolder}/Final/questionnaires.json`, this.questionnaires));
 
         /* If the worker performed a transition to a previous or a following document */
       } else {

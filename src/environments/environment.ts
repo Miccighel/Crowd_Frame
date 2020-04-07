@@ -9,7 +9,6 @@ export const environment = {
   useEachScale: false,
   allowedTries: 10,
 
-  questionnaireAmount: 1,
   domainsToFiler: ["politifact"],
 
   region: 'eu-west-1',

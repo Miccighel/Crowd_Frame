@@ -3,8 +3,10 @@ import {Component, Inject, Input, OnInit} from '@angular/core';
 /* Material design modules */
 import {MatDialog, MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
 import * as AWS from "aws-sdk";
+
 /* Data inteface for the underlying dialog component */
-export interface DialogData {}
+export interface DialogData {
+}
 
 /* Component HTML Tag definition */
 @Component({
@@ -25,10 +27,16 @@ export class InstructionsComponent implements OnInit {
   @Input() scale: string;
   /* Instruction of the current scale of the current instance of the task */
   /* @INPUT: Received form Skeleton component */
+  /* Reference to the S3 component of AWS SDK */
   @Input() s3: AWS.S3;
+  /* Reference to the current bucket identifier */
+  /* @INPUT: Received form Skeleton component */
   @Input() bucket: string;
+  /* Reference to the file where task instructions are stored */
+  /* @INPUT: Received form Skeleton component */
   @Input() instructionsFile: string;
-  instructions : string;
+  /* Raw HTML instructions downloaded from S3 bucket */
+  instructions: string;
 
   /* |--------- CONSTRUCTOR ---------| */
 
@@ -56,13 +64,14 @@ export class InstructionsComponent implements OnInit {
     this.dialog.open(InstructionsDialog, {
       width: '80%',
       minHeight: '86%',
-      data: {
-        scale: scale,
-        instructions: instructions
-      }
+      data: {scale: scale, instructions: instructions}
     });
   }
 
+  /*
+   * This function interacts with an Amazon S3 bucket to retrieve the instructions for the current task.
+   * It performs a download operation using the references received from the main component.
+   */
   public async performInstructionsLoading() {
     return await this.download(this.instructionsFile);
   }
@@ -73,9 +82,9 @@ export class InstructionsComponent implements OnInit {
    * */
   public async download(path: string) {
     return (await (this.s3.getObject({
-        Bucket: this.bucket,
-        Key: path
-      }).promise())).Body.toString('utf-8');
+      Bucket: this.bucket,
+      Key: path
+    }).promise())).Body.toString('utf-8');
   }
 
 }

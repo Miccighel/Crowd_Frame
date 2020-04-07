@@ -60,7 +60,7 @@
         <mat-card-content>
           <h2>
             Either you have already started this task without finishing it, or you have already participated to a
-            variant of this experiment.<br />
+            variant of this experiment.<br/>
             For this reason, you are not allowed to take a part in this experiment. Sorry for the inconvenience.
           </h2>
         </mat-card-content>
@@ -70,6 +70,7 @@
 </ng-template>
 
 <!-- |---------  OUTCOME SECTION - MARKUP ---------| -->
+
 <!-- Success section - shown when the worker successfully completes the task -->
 <div id="success-section" class="outcome-section container" *ngIf="taskCompleted && taskSuccessful">
   <div>
@@ -99,6 +100,7 @@
     </mat-card>
   </div>
 </div>
+
 <!-- Failure section - shown when the worker does not pass the quality checks and does not has tries left -->
 <div id="failure-section" class="outcome-section container" *ngIf="taskCompleted && taskFailed && allowedTries <= 0">
   <div>
@@ -126,6 +128,7 @@
     </mat-card>
   </div>
 </div>
+
 <!-- Retry section - shown when the worker does not pass the quality checks but has some tries left -->
 <div id="retry-section" class="outcome-section container" *ngIf="taskCompleted && taskFailed && allowedTries>0">
   <div>
@@ -161,48 +164,36 @@
 <mat-horizontal-stepper [linear]="true" labelPosition="bottom" #stepper *ngIf="taskStarted">
 
   <!-- Questionnaire markup -->
-  <mat-step [stepControl]="questionnaireForm" [editable]="false">
+  <mat-step *ngFor="let questionnaire of questionnaires; let i=index" [stepControl]="questionnairesForm[i]" [editable]="false">
     <div class="container">
-      <form [formGroup]="questionnaireForm" class="questionnaire-form">
-        <ng-template matStepLabel>Questionnaire</ng-template>
+      <form [formGroup]="questionnairesForm[i]" class="questionnaire-form">
+        <ng-template matStepLabel>Questionnaire {{i + 1}}</ng-template>
         <mat-card>
           <mat-card-title>Please answer each question</mat-card-title>
-          <mat-card-content>
-            <mat-radio-group aria-labelledby="radio-button-label" class="radio-button-group" formControlName="age">
-              <label>1) What is your age range?</label>
-              <mat-radio-button class="radio-button" value="1">0-18</mat-radio-button>
-              <mat-radio-button class="radio-button" value="2">19-25</mat-radio-button>
-              <mat-radio-button class="radio-button" value="3">26-35</mat-radio-button>
-              <mat-radio-button class="radio-button" value="4">36-50</mat-radio-button>
-              <mat-radio-button class="radio-button" value="5">50-80</mat-radio-button>
-              <mat-radio-button class="radio-button" value="6">>80</mat-radio-button>
+          <mat-card-content *ngIf="questionnaire.type=='standard'">
+            <mat-radio-group *ngFor="let question of questionnaire.questions; let j=index" aria-labelledby="radio-button-label" class="radio-button-group" formControlName="control_{{j}}">
+              <label>{{j}}) {{question.text}}</label>
+              <mat-radio-button *ngFor="let answer of question.answers; let k=index" class="radio-button" value="{{k}}">{{answer}}</mat-radio-button>
             </mat-radio-group>
-            <mat-radio-group aria-labelledby="radio-button-label" class="radio-button-group" formControlName="degree">
-              <label>2) What is the highest level of school you have completed or the highest degree you have received?</label>
-              <mat-radio-button class="radio-button" value="1">High school incomplete or less</mat-radio-button>
-              <mat-radio-button class="radio-button" value="2">High school graduate or GED (includes technical/vocational training that doesn’t towards college credit)</mat-radio-button>
-              <mat-radio-button class="radio-button" value="3">Some college (some community college, associate’s degree)</mat-radio-button>
-              <mat-radio-button class="radio-button" value="4">Four year college degree/bachelor’s degree
-              </mat-radio-button>
-              <mat-radio-button class="radio-button" value="5">Some postgraduate or professional schooling, no postgraduate degree</mat-radio-button>
-              <mat-radio-button class="radio-button" value="6">Postgraduate or professional degree, including master’s, doctorate, medical or law degree</mat-radio-button>
-            </mat-radio-group>
-            <mat-radio-group aria-labelledby="radio-button-label" class="radio-button-group" formControlName="money">
-              <label>3) Last year what was your total family income from all sources, before taxes?</label>
-              <mat-radio-button class="radio-button" value="1">Less than $10,000</mat-radio-button>
-              <mat-radio-button class="radio-button" value="2">$10,000 to less than $20,000</mat-radio-button>
-              <mat-radio-button class="radio-button" value="3">$20,000 to less than $30,000</mat-radio-button>
-              <mat-radio-button class="radio-button" value="4">$30,000 to less than $40,000</mat-radio-button>
-              <mat-radio-button class="radio-button" value="5">$40,000 to less than $50,000</mat-radio-button>
-              <mat-radio-button class="radio-button" value="6">$50,000 to less than $75,000</mat-radio-button>
-              <mat-radio-button class="radio-button" value="7">$75,000 to less than $100,000</mat-radio-button>
-              <mat-radio-button class="radio-button" value="8">$100,000 to less than $150,000</mat-radio-button>
-              <mat-radio-button class="radio-button" value="9">$150,000 or more</mat-radio-button>
-            </mat-radio-group>
+          </mat-card-content>
+          <mat-card-content *ngIf="questionnaire.type=='crt'">
+            <mat-form-field *ngFor="let question of questionnaire.questions; let j=index">
+              <label>{{j}}) {{question.text}}</label>
+              <input matInput type="number" placeholder="" formControlName="control_{{j}}">
+              <mat-error *ngIf="checkFormControl(questionnairesForm[i],'control_'.concat(j.toString()), 'required')">
+                This field is required
+              </mat-error>
+              <mat-error *ngIf="checkFormControl(questionnairesForm[i],'control_'.concat(j.toString()), 'min')">
+                Min value allowed: 0
+              </mat-error>
+              <mat-error *ngIf="checkFormControl(questionnairesForm[i],'control_'.concat(j.toString()), 'max')">
+                Max value allowed: 100
+              </mat-error>
+            </mat-form-field>
           </mat-card-content>
           <mat-card-actions>
             <button mat-flat-button color="primary" matStepperNext
-                    [disabled]="(!questionnaireForm.valid || taskCompleted)"
+                    [disabled]="(!questionnairesForm[i].valid || taskCompleted)"
                     (click)="performLogging('Next',true, false)">
               Next
             </button>
@@ -226,9 +217,9 @@
             <p><span class="hit-value">Statement:</span> {{document.statement}}</p>
             <label>Use this search engine to find evidence about the truthfulness of the statement</label>
             <app-crowd-xplorer id="app-crowd-xplorer-{{i}}"
-              (resultEmitter)="storeSearchEngineRetrievedResponse($event)"
-              (queryEmitter)="storeSearchEngineUserQuery($event)"
-              (selectedRowEmitter)="storeSearchEngineSelectedResponse($event)"
+                               (resultEmitter)="storeSearchEngineRetrievedResponse($event)"
+                               (queryEmitter)="storeSearchEngineUserQuery($event)"
+                               (selectedRowEmitter)="storeSearchEngineSelectedResponse($event)"
             ></app-crowd-xplorer>
             <label *ngIf="this.scale=='S6'">
               Please select (or copy & paste) one of the URLs above to justify the
@@ -244,7 +235,7 @@
               truthfulness value of the statement, then input the truth level using the slider provided below
             </label>
             <mat-form-field id="url-field">
-              <input #urlField matInput type="text" [formControl]="documentsForm[i].controls['worker_url']"  disabled="true">
+              <input #urlField matInput type="text" [formControl]="documentsForm[i].controls['worker_url']" disabled="true">
               <button mat-icon-button matPrefix>
                 <mat-icon>{{'arrow_right_alt'}}</mat-icon>
               </button>
