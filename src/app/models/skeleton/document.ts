@@ -9,32 +9,24 @@ export class Document {
   /* DO NOT REMOVE THIS ATTRIBUTE */
   index: number;
 
-  id_par: string;
-  name_unique: string;
+  name: string;
   statement: string;
-  speaker: string;
-  job: string;
-  context: string;
-  year: string;
-  party: string;
-  source: string;
+  claimant: string;
+  date: string;
+  originatedFrom: string;
 
   constructor(
     index: number,
     data: JSON
   ) {
     /* DO NOT REMOVE THIS LINE */
-    this.index =        index;
+    this.index =          index;
 
-    this.id_par =       data["id_par"];
-    this.name_unique =  data["name_unique"];
-    this.statement =    data["statement"];
-    this.speaker =      data["speaker"];
-    this.job =          data["job"];
-    this.context =      data["context"];
-    this.year =         data["year"];
-    this.party =        data["party"];
-    this.source =       data["source"];
+    this.name =           data["name"];
+    this.statement =      data["statement"];
+    this.claimant =       data["claimant"];
+    this.date =           data["date"];
+    this.originatedFrom = data["originated-from"];
   }
 
   /*
@@ -44,7 +36,7 @@ export class Document {
    * the document is the HIGH (LOW) gold question
    */
   public getGoldQuestionIndex(kind: string) {
-    if (this.id_par == kind) return this.index
+    if (this.name == kind) return this.index
   }
 
 }

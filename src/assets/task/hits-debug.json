@@ -1,0 +1,104 @@
+[
+  {
+    "unit_id": "unit_0",
+    "token_input": "DBVYHMCXQQD",
+    "token_output": "OHTZXHCYGPF",
+    "documents_number": 2,
+    "document_1": {
+      "name": "pants-on-fire_doc3",
+      "statement": "We inherited a broken test\u201d for COVID-19.",
+      "claimant": "Donald Trump",
+      "date": "2020-30-03",
+      "originated-from": "Interview on \"Fox and Friends\""
+    },
+    "document_2": {
+      "name": "half-true_doc1",
+      "statement": "Ron Johnson said Americans should go back to work, because \u201cdeath is an unavoidable part of life.\u201d",
+      "claimant": "Facebook Post",
+      "date": "2020-31-03",
+      "originated-from": "Facebook Posts"
+    },
+    "document_3": {
+      "name": "LOW",
+      "statement": "If I were not a Formula One pilot, I would be a football player.",
+      "claimant": "Abraham Lincoln",
+      "date": "2020-04-01",
+      "originated-from": "Facebook Post"
+    },
+    "document_4": {
+      "name": "HIGH",
+      "statement": "Yes, We can!",
+      "claimant": "Barack Obama",
+      "date": "2020-04-01",
+      "originated-from": "Facebook Post"
+    }
+  },
+  {
+    "unit_id": "unit_1",
+    "token_input": "UDURHOOZQWX",
+    "token_output": "UMNQQGUFYDV",
+    "documents_number": 2,
+    "document_1": {
+      "name": "LOW",
+      "statement": "If I were not a Formula One pilot, I would be a football player.",
+      "claimant": "Abraham Lincoln",
+      "date": "2020-04-01",
+      "originated-from": "Facebook Post"
+    },
+    "document_2": {
+      "name": "false_doc3",
+      "statement": "Slices of lemon in a cup of hot water can save your life. The hot lemon can kill the proliferation of\u201d the novel coronavirus.",
+      "claimant": "Facebook Post",
+      "date": "2020-23-03",
+      "originated-from": "Chain Message"
+    },
+    "document_3": {
+      "name": "LOW",
+      "statement": "If I were not a Formula One pilot, I would be a football player.",
+      "claimant": "Abraham Lincoln",
+      "date": "2020-04-01",
+      "originated-from": "Facebook Post"
+    },
+    "document_4": {
+      "name": "HIGH",
+      "statement": "Yes, We can!",
+      "claimant": "Barack Obama",
+      "date": "2020-04-01",
+      "originated-from": "Facebook Post"
+    }
+  },
+  {
+    "unit_id": "unit_2",
+    "token_input": "WVWNHXFVNGN",
+    "token_output": "WSMQYJJBCGB",
+    "documents_number": 2,
+    "document_1": {
+      "name": "LOW",
+      "statement": "If I were not a Formula One pilot, I would be a football player.",
+      "claimant": "Abraham Lincoln",
+      "date": "2020-04-01",
+      "originated-from": "Facebook Post"
+    },
+    "document_2": {
+      "name": "mostly-true_doc1",
+      "statement": "Says a study projects Wisconsin\u2019s coronavirus cases will peak on April 26, 2020.",
+      "claimant": "Facebook Post",
+      "date": "2020-29-03",
+      "originated-from": "Facebook Posts"
+    },
+    "document_3": {
+      "name": "LOW",
+      "statement": "If I were not a Formula One pilot, I would be a football player.",
+      "claimant": "Abraham Lincoln",
+      "date": "2020-04-01",
+      "originated-from": "Facebook Post"
+    },
+    "document_4": {
+      "name": "HIGH",
+      "statement": "Yes, We can!",
+      "claimant": "Barack Obama",
+      "date": "2020-04-01",
+      "originated-from": "Facebook Post"
+    }
+  }
+]

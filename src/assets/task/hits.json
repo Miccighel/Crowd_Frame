@@ -1,152 +1,188 @@
 [
   {
     "unit_id": "unit_0",
-    "token_input": "RGDKPMSSUJW",
-    "token_output": "MMKVJIWHAMI",
-    "documents_number": 4,
+    "token_input": "XKETEAQOKNI",
+    "token_output": "LKPFZICHNDU",
+    "documents_number": 8,
     "document_1": {
-      "id_par": "10092.json",
-      "name_unique": "DEM_LIE_doc9",
-      "statement": "In 2013, Dan Patrick voted against funding to test the backlog of rape kits, allowing rapists to walk free.",
-      "speaker": "Leticia Van De Putte",
-      "job": "Pharmacist",
-      "context": "a video ad",
-      "year": "nan",
-      "party": "DEM",
-      "source": "Politifact"
+      "name": "pants-on-fire_doc3",
+      "statement": "We inherited a broken test\u201d for COVID-19.",
+      "claimant": "Donald Trump",
+      "date": "2020-30-03",
+      "originated-from": "Interview on \"Fox and Friends\""
     },
     "document_2": {
-      "id_par": "3672.json",
-      "name_unique": "DEM_HALFTRUE_doc5",
-      "statement": "Rep. Paul Ryans Medicare plan lines the pockets of the private insurance companies, increases costs for seniors and does not reduce the deficit.",
-      "speaker": "Gerry Connolly",
-      "job": "U.S. Representative",
-      "context": "a press release.",
-      "year": "nan",
-      "party": "DEM",
-      "source": "Politifact"
+      "name": "half-true_doc1",
+      "statement": "Ron Johnson said Americans should go back to work, because \u201cdeath is an unavoidable part of life.\u201d",
+      "claimant": "Facebook Post",
+      "date": "2020-31-03",
+      "originated-from": "Facebook Posts"
     },
     "document_3": {
-      "id_par": "LOW",
-      "name_unique": "LOW",
-      "statement": "If I were not a Formula One pilot, I would be a football player.",
-      "speaker": "Abraham Lincoln",
-      "job": "Former U.S. President",
-      "context": "Public appearance",
-      "year": "nan",
-      "party": "REP",
-      "source": "Politifact"
+      "name": "mostly-true_doc1",
+      "statement": "Says a study projects Wisconsin\u2019s coronavirus cases will peak on April 26, 2020.",
+      "claimant": "Facebook Post",
+      "date": "2020-29-03",
+      "originated-from": "Facebook Posts"
     },
     "document_4": {
-      "id_par": "HIGH",
-      "name_unique": "HIGH",
+      "name": "false_doc3",
+      "statement": "Slices of lemon in a cup of hot water can save your life. The hot lemon can kill the proliferation of\u201d the novel coronavirus.",
+      "claimant": "Facebook Post",
+      "date": "2020-23-03",
+      "originated-from": "Chain Message"
+    },
+    "document_5": {
+      "name": "true_doc2",
+      "statement": "My mask will keep someone else safe and their mask will keep me safe.",
+      "claimant": "Pat Toomey",
+      "date": NaN,
+      "originated-from": NaN
+    },
+    "document_6": {
+      "name": "LOW",
+      "statement": "If I were not a Formula One pilot, I would be a football player.",
+      "claimant": "Abraham Lincoln",
+      "date": "2020-04-01",
+      "originated-from": "Facebook Post"
+    },
+    "document_7": {
+      "name": "mostly-false_doc2",
+      "statement": "Now, as it stands, our health care system has adequate ventilators, ICU beds, medical professionals.",
+      "claimant": "Sean Hannity",
+      "date": "2020-16-03",
+      "originated-from": "TV Segment"
+    },
+    "document_8": {
+      "name": "HIGH",
       "statement": "Yes, We can!",
-      "speaker": "Barack Obama",
-      "job": "Former U.S. President",
-      "context": "Public appearance",
-      "year": "nan",
-      "party": "DEM",
-      "source": "Politifact"
+      "claimant": "Barack Obama",
+      "date": "2020-04-01",
+      "originated-from": "Facebook Post"
     }
   },
   {
     "unit_id": "unit_1",
-    "token_input": "PBFPIXEAJPU",
-    "token_output": "WGTTPDEIETH",
-    "documents_number": 2,
+    "token_input": "YZAWWBRBQZO",
+    "token_output": "QAQFVJSLEHB",
+    "documents_number": 8,
     "document_1": {
-      "id_par": "2311.json",
-      "name_unique": "REP_TRUE_doc1",
-      "statement": "Says a highway was closed in El Paso because of bullets flying across the border.",
-      "speaker": "Greg Abbott",
-      "job": "governor",
-      "context": "an interview",
-      "year": "nan",
-      "party": "REP",
-      "source": "Politifact"
+      "name": "LOW",
+      "statement": "If I were not a Formula One pilot, I would be a football player.",
+      "claimant": "Abraham Lincoln",
+      "date": "2020-04-01",
+      "originated-from": "Facebook Post"
     },
     "document_2": {
-      "id_par": "9421.json",
-      "name_unique": "REP_LIE_doc2",
-      "statement": "Ken Block supports Obamacare.",
-      "speaker": "Allan Fung",
-      "job": "mayor, city of Cranston, R.I.",
-      "context": "a TV commercial",
-      "year": "nan",
-      "party": "REP",
-      "source": "Politifact"
+      "name": "false_doc3",
+      "statement": "Slices of lemon in a cup of hot water can save your life. The hot lemon can kill the proliferation of\u201d the novel coronavirus.",
+      "claimant": "Facebook Post",
+      "date": "2020-23-03",
+      "originated-from": "Chain Message"
     },
     "document_3": {
-      "id_par": "LOW",
-      "name_unique": "LOW",
-      "statement": "If I were not a Formula One pilot, I would be a football player.",
-      "speaker": "Abraham Lincoln",
-      "job": "Former U.S. President",
-      "context": "Public appearance",
-      "year": "nan",
-      "party": "REP",
-      "source": "Politifact"
+      "name": "mostly-true_doc1",
+      "statement": "Says a study projects Wisconsin\u2019s coronavirus cases will peak on April 26, 2020.",
+      "claimant": "Facebook Post",
+      "date": "2020-29-03",
+      "originated-from": "Facebook Posts"
     },
     "document_4": {
-      "id_par": "HIGH",
-      "name_unique": "HIGH",
+      "name": "true_doc2",
+      "statement": "My mask will keep someone else safe and their mask will keep me safe.",
+      "claimant": "Pat Toomey",
+      "date": NaN,
+      "originated-from": NaN
+    },
+    "document_5": {
+      "name": "mostly-false_doc2",
+      "statement": "Now, as it stands, our health care system has adequate ventilators, ICU beds, medical professionals.",
+      "claimant": "Sean Hannity",
+      "date": "2020-16-03",
+      "originated-from": "TV Segment"
+    },
+    "document_6": {
+      "name": "half-true_doc1",
+      "statement": "Ron Johnson said Americans should go back to work, because \u201cdeath is an unavoidable part of life.\u201d",
+      "claimant": "Facebook Post",
+      "date": "2020-31-03",
+      "originated-from": "Facebook Posts"
+    },
+    "document_7": {
+      "name": "HIGH",
       "statement": "Yes, We can!",
-      "speaker": "Barack Obama",
-      "job": "Former U.S. President",
-      "context": "Public appearance",
-      "year": "nan",
-      "party": "DEM",
-      "source": "Politifact"
+      "claimant": "Barack Obama",
+      "date": "2020-04-01",
+      "originated-from": "Facebook Post"
+    },
+    "document_8": {
+      "name": "pants-on-fire_doc3",
+      "statement": "We inherited a broken test\u201d for COVID-19.",
+      "claimant": "Donald Trump",
+      "date": "2020-30-03",
+      "originated-from": "Interview on \"Fox and Friends\""
     }
   },
   {
     "unit_id": "unit_2",
-    "token_input": "FGXRAYCYKZA",
-    "token_output": "IMYWOTMYEXO",
-    "documents_number": 4,
+    "token_input": "OXEKYVGXPLM",
+    "token_output": "OLCZDMDEFBQ",
+    "documents_number": 8,
     "document_1": {
-      "id_par": "3672.json",
-      "name_unique": "DEM_HALFTRUE_doc5",
-      "statement": "Rep. Paul Ryans Medicare plan lines the pockets of the private insurance companies, increases costs for seniors and does not reduce the deficit.",
-      "speaker": "Gerry Connolly",
-      "job": "U.S. Representative",
-      "context": "a press release.",
-      "year": "nan",
-      "party": "DEM",
-      "source": "Politifact"
+      "name": "LOW",
+      "statement": "If I were not a Formula One pilot, I would be a football player.",
+      "claimant": "Abraham Lincoln",
+      "date": "2020-04-01",
+      "originated-from": "Facebook Post"
     },
     "document_2": {
-      "id_par": "1509.json",
-      "name_unique": "REP_MOSTLYTRUE_doc5",
-      "statement": "One of the most recent polls said 75 percent of the American people have said either dont do anything or start over (on health care reform).",
-      "speaker": "Jon Kyl",
-      "job": "U.S. Senator",
-      "context": "an interview on Fox News",
-      "year": "nan",
-      "party": "REP",
-      "source": "Politifact"
+      "name": "mostly-true_doc1",
+      "statement": "Says a study projects Wisconsin\u2019s coronavirus cases will peak on April 26, 2020.",
+      "claimant": "Facebook Post",
+      "date": "2020-29-03",
+      "originated-from": "Facebook Posts"
     },
     "document_3": {
-      "id_par": "LOW",
-      "name_unique": "LOW",
-      "statement": "If I were not a Formula One pilot, I would be a football player.",
-      "speaker": "Abraham Lincoln",
-      "job": "Former U.S. President",
-      "context": "Public appearance",
-      "year": "nan",
-      "party": "REP",
-      "source": "Politifact"
+      "name": "true_doc2",
+      "statement": "My mask will keep someone else safe and their mask will keep me safe.",
+      "claimant": "Pat Toomey",
+      "date": NaN,
+      "originated-from": NaN
     },
     "document_4": {
-      "id_par": "HIGH",
-      "name_unique": "HIGH",
+      "name": "false_doc3",
+      "statement": "Slices of lemon in a cup of hot water can save your life. The hot lemon can kill the proliferation of\u201d the novel coronavirus.",
+      "claimant": "Facebook Post",
+      "date": "2020-23-03",
+      "originated-from": "Chain Message"
+    },
+    "document_5": {
+      "name": "HIGH",
       "statement": "Yes, We can!",
-      "speaker": "Barack Obama",
-      "job": "Former U.S. President",
-      "context": "Public appearance",
-      "year": "nan",
-      "party": "DEM",
-      "source": "Politifact"
+      "claimant": "Barack Obama",
+      "date": "2020-04-01",
+      "originated-from": "Facebook Post"
+    },
+    "document_6": {
+      "name": "pants-on-fire_doc3",
+      "statement": "We inherited a broken test\u201d for COVID-19.",
+      "claimant": "Donald Trump",
+      "date": "2020-30-03",
+      "originated-from": "Interview on \"Fox and Friends\""
+    },
+    "document_7": {
+      "name": "mostly-false_doc2",
+      "statement": "Now, as it stands, our health care system has adequate ventilators, ICU beds, medical professionals.",
+      "claimant": "Sean Hannity",
+      "date": "2020-16-03",
+      "originated-from": "TV Segment"
+    },
+    "document_8": {
+      "name": "half-true_doc1",
+      "statement": "Ron Johnson said Americans should go back to work, because \u201cdeath is an unavoidable part of life.\u201d",
+      "claimant": "Facebook Post",
+      "date": "2020-31-03",
+      "originated-from": "Facebook Posts"
     }
   }
 ]

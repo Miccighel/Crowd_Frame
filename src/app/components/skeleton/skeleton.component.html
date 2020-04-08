@@ -23,8 +23,9 @@
                  (paste)="this.tokenForm.updateValueAndValidity()"
                  (keyup)="this.tokenForm.updateValueAndValidity()"
                  (keydown)="this.tokenForm.updateValueAndValidity()"
-                 (keyup.enter)="performHitRetrieval()"
+                 (keyup.enter)="performTaskSetup()"
           >
+          <mat-label *ngIf="this.tokenForm.pending">{{"df"}}</mat-label>
           <mat-error *ngIf="checkFormControl(tokenForm,'tokenInput', 'required')">
             This field is required
           </mat-error>
@@ -34,7 +35,7 @@
         </mat-form-field>
       </mat-card-content>
       <mat-card-actions>
-        <button id="start-button" mat-flat-button color="primary" (click)="performHitRetrieval()">Start
+        <button id="start-button" mat-flat-button color="primary" (click)="performTaskSetup()">Start
         </button>
       </mat-card-actions>
     </mat-card>
@@ -167,7 +168,7 @@
   <mat-step *ngFor="let questionnaire of questionnaires; let i=index" [stepControl]="questionnairesForm[i]" [editable]="false">
     <div class="container">
       <form [formGroup]="questionnairesForm[i]" class="questionnaire-form">
-        <ng-template matStepLabel>Questionnaire {{i + 1}}</ng-template>
+        <ng-template matStepLabel>Questionnaire {{i + 1}}/{{this.questionnaireAmount}}</ng-template>
         <mat-card>
           <mat-card-title>Please answer each question</mat-card-title>
           <mat-card-content *ngIf="questionnaire.type=='standard'">
@@ -194,7 +195,7 @@
           <mat-card-actions>
             <button mat-flat-button color="primary" matStepperNext
                     [disabled]="(!questionnairesForm[i].valid || taskCompleted)"
-                    (click)="performLogging('Next',true, false)">
+                    (click)="performLogging('Next')">
               Next
             </button>
             <span class="form-note">(*) you have to fill each field to proceed</span>
@@ -209,11 +210,11 @@
     <div class="container">
       <form [formGroup]="documentsForm[i]">
         <mat-card>
-          <ng-template matStepLabel> Document {{i + this.questionnaireAmount}} </ng-template>
+          <ng-template matStepLabel> Document {{i + 1}}/{{this.documentsAmount}} </ng-template>
           <mat-card-title>Please judge the truthfulness of the following statement</mat-card-title>
           <mat-card-content>
-            <p><span class="hit-value">Speaker:</span> {{document.speaker}}</p>
-            <p><span class="hit-value">Year:</span> {{document.year.length > 0 ? document.year : "#"}}</p>
+            <p><span class="hit-value">Claiman:</span> {{document.claimant}}</p>
+            <p><span class="hit-value">Date:</span> {{document.date}}</p>
             <p><span class="hit-value">Statement:</span> {{document.statement}}</p>
             <label>Use this search engine to find evidence about the truthfulness of the statement</label>
             <app-crowd-xplorer id="app-crowd-xplorer-{{i}}"
@@ -265,19 +266,19 @@
           <mat-card-actions>
             <button mat-flat-button color="primary" matStepperPrevious *ngIf="i>0"
                     [disabled]="taskCompleted"
-                    (click)="performLogging('Back', false, false)">
+                    (click)="performLogging('Back')">
               Back
             </button>
             <button mat-flat-button color="primary" matStepperNext
                     *ngIf="i+1<this.documentsAmount"
                     [disabled]="!documentsForm[i].valid || !this.searchEngineRetrievedResponses[i] || taskCompleted"
-                    (click)="performLogging('Next',false, false);">
+                    (click)="performLogging('Next');">
               Next
             </button>
             <button mat-flat-button color="primary" matStepperNext
                     *ngIf="i+1>=this.documentsAmount"
                     [disabled]="(!performGlobalValidityCheck()) || taskCompleted"
-                    (click)="performLogging('Finish',false, true); performFinalCheck()">
+                    (click)="performLogging('Finish'); performQualityCheck()">
               Finish
             </button>
             <span class="form-note">(*) you have to fill each field to proceed</span>

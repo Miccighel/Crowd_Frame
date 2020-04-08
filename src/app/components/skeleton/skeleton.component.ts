@@ -125,7 +125,7 @@ export class SkeletonComponent {
   /* Array of documents */
   documents: Array<Document>;
   /* Array of accesses counters, one for each document within a Hit */
-  documentsAccesses: Array<number>;
+  elementsAccesses: Array<number>;
 
   /* |--------- SEARCH ENGINE INTEGRATION - DECLARATION ---------| */
   /* https://github.com/Miccighel/CrowdXplorer */
@@ -192,7 +192,7 @@ export class SkeletonComponent {
     this.allScales = this.configService.environment.allScales;
     this.useEachScale = this.configService.environment.useEachScale;
 
-    this.tokenInput = new FormControl('PBFPIXEAJPU', [Validators.required], this.validateTokenInput.bind(this));
+    this.tokenInput = new FormControl('DBVYHMCXQQD', [Validators.required], this.validateTokenInput.bind(this));
     this.tokenForm = formBuilder.group({
       "tokenInput": this.tokenInput
     });
@@ -326,38 +326,13 @@ export class SkeletonComponent {
   *  The Hit interface can be found at this path: ../models/skeleton/hit.ts
   *  The Document interface can be found at this path: ../models/skeleton/document.ts
   */
-  public async performHitRetrieval() {
+  public async performTaskSetup() {
 
     /* The token input has been already validated, this is just to be sure */
     if (this.tokenForm.valid) {
 
       /* The loading spinner is started */
       this.ngxService.start();
-
-      /* |- QUESTIONNAIRE ELEMENTS - INITIALIZATION -| */
-
-      this.questionnaires = new Array<Questionnaire>();
-
-      let rawQuestionnaires = await this.download(this.questionnairesFile);
-      this.questionnaireAmount = rawQuestionnaires.length;
-
-      for (let index = 0; index < this.questionnaireAmount; index++) {
-        this.questionnaires.push(new Questionnaire(index, rawQuestionnaires[index]));
-      }
-
-      this.questionnairesForm = new Array<FormGroup>();
-      for (let index = 0; index < this.questionnaires.length; index++) {
-        let questionnaire = this.questionnaires[index];
-        if (questionnaire.type == "standard") {
-          let controlsConfig = {};
-          for (let index_question = 0; index_question < questionnaire.questions.length; index_question++) controlsConfig[`control_${index_question}`] = new FormControl('', [Validators.required])
-          this.questionnairesForm[index] = this.formBuilder.group(controlsConfig)
-        } else {
-          let controlsConfig = {};
-          for (let index_question = 0; index_question < questionnaire.questions.length; index_question++) controlsConfig[`control_${index_question}`] = new FormControl('', [Validators.max(100), Validators.min(0), Validators.required])
-          this.questionnairesForm[index] = this.formBuilder.group(controlsConfig)
-        }
-      }
 
       /* The hits stored on Amazon S3 are retrieved */
       let hits = await this.download(this.hitsFile);
@@ -376,16 +351,46 @@ export class SkeletonComponent {
       this.tokenInput.disable();
       this.taskStarted = true;
 
+      /* |- QUESTIONNAIRE ELEMENTS - INITIALIZATION -| */
+
+      /* The array of questionnaires is initialized */
+      this.questionnaires = new Array<Questionnaire>();
+
+      /* The questionnaires stored on Amazon S3 are retrieved */
+      let rawQuestionnaires = await this.download(this.questionnairesFile);
+      this.questionnaireAmount = rawQuestionnaires.length;
+
+      /*  Each questionnaire is parsed using the Questionnaire class.  */
+      for (let index = 0; index < this.questionnaireAmount; index++) this.questionnaires.push(new Questionnaire(index, rawQuestionnaires[index]));
+
+      /* A form for each questionnaire is initialized */
+      this.questionnairesForm = new Array<FormGroup>();
+      for (let index = 0; index < this.questionnaires.length; index++) {
+        let questionnaire = this.questionnaires[index];
+        if (questionnaire.type == "standard") {
+          /* If the questionnaire is a standard one it means that it has only questions where answers must be selected within a group of radio buttons.
+           * This means that only a required validator is required to check answer presence
+           */
+          let controlsConfig = {};
+          for (let index_question = 0; index_question < questionnaire.questions.length; index_question++) controlsConfig[`control_${index_question}`] = new FormControl('', [Validators.required])
+          this.questionnairesForm[index] = this.formBuilder.group(controlsConfig)
+        } else {
+          /* If the questionnaire is a crt one it means that it has only one question where the answer must be a number between 0 and 100 chosen by user.
+           * This means that required, max and min validators are needed
+           */
+          let controlsConfig = {};
+          for (let index_question = 0; index_question < questionnaire.questions.length; index_question++) controlsConfig[`control_${index_question}`] = new FormControl('', [Validators.max(100), Validators.min(0), Validators.required])
+          this.questionnairesForm[index] = this.formBuilder.group(controlsConfig)
+        }
+      }
+
       /* |- HIT DOCUMENTS - INITIALIZATION-| */
 
       /* The array of documents is initialized */
       this.documents = new Array<Document>();
       this.documentsAmount = this.hit.documents_number;
-      /* The array of accesses counter is initialized */
-      this.documentsAccesses = new Array<number>(this.documentsAmount);
-      for (let index = 0; index < this.documentsAccesses.length; index++) this.documentsAccesses[index] = 0;
 
-      /* A form for each document with the fields that must be filled by current worker is initialized */
+      /* A form for each document is initialized */
       this.documentsForm = new Array<FormGroup>();
       for (let index = 0; index < this.documentsAmount; index++) {
         /* Validators are initialized for each field to ensure data consistency */
@@ -404,6 +409,10 @@ export class SkeletonComponent {
         let documentIndex = index - 1;
         this.documents.push(new Document(documentIndex, current_document));
       }
+
+      /* The array of accesses counter is initialized */
+      this.elementsAccesses = new Array<number>(this.documentsAmount + this.questionnaireAmount);
+      for (let index = 0; index < this.elementsAccesses.length; index++) this.elementsAccesses[index] = 1;
 
       /* |- HIT SEARCH ENGINE - INITIALIZATION-| */
 
@@ -586,22 +595,25 @@ export class SkeletonComponent {
   public validateSearchEngineUrl(workerUrlFormControl: FormControl) {
     /* If the stepped is initialized to something the task is started */
     if (this.stepper) {
-      let currentDocument = this.stepper.selectedIndex - this.questionnaireAmount;
-      /* If there are data for the current document */
-      if (this.searchEngineRetrievedResponses[currentDocument]) {
-        let retrievedResponses = this.searchEngineRetrievedResponses[currentDocument];
-        if (retrievedResponses.hasOwnProperty("data")) {
-          /* The current set of responses is the total amount - 1 */
-          let currentSet = retrievedResponses["amount"] - 1;
-          /* The responses retrieved by search engine are selected */
-          let currentResponses = retrievedResponses["data"][currentSet]["response"];
-          /* Each response is scanned */
-          for (let index = 0; index < currentResponses.length; index++) {
-            /* As soon as an url that matches with the one selected/typed by the worker the validation is successful */
-            if (workerUrlFormControl.value == currentResponses[index].url) return null;
+      if(this.stepper.selectedIndex >= this.questionnaireAmount) {
+        let currentDocument = this.stepper.selectedIndex - this.questionnaireAmount;
+        /* If there are data for the current document */
+        if (this.searchEngineRetrievedResponses[currentDocument]) {
+          let retrievedResponses = this.searchEngineRetrievedResponses[currentDocument];
+          if (retrievedResponses.hasOwnProperty("data")) {
+            /* The current set of responses is the total amount - 1 */
+            let currentSet = retrievedResponses["amount"] - 1;
+            /* The responses retrieved by search engine are selected */
+            let currentResponses = retrievedResponses["data"][currentSet]["response"];
+            /* Each response is scanned */
+            for (let index = 0; index < currentResponses.length; index++) {
+              /* As soon as an url that matches with the one selected/typed by the worker the validation is successful */
+              if (workerUrlFormControl.value == currentResponses[index].url) return null;
+            }
+            /* If no matching url has been found, raise the error */
+            return {invalidSearchEngineUrl: "Select (or copy & paste) one of the URLs shown above."}
           }
-          /* If no matching url has been found, raise the error */
-          return {invalidSearchEngineUrl: "Select (or copy & paste) one of the URLs shown above."}
+          return null
         }
         return null
       }
@@ -610,7 +622,7 @@ export class SkeletonComponent {
     return null
   }
 
-  // |--------- QUALITY CHECKS INTEGRATION - FUNCTIONS ---------|
+  /* |--------- QUALITY CHECKS INTEGRATION - FUNCTIONS ---------| */
 
   /*
    * This function performs and scan of each form filled by the current worker (i.e., questionnaires + document answers)
@@ -636,7 +648,7 @@ export class SkeletonComponent {
    *                           two seconds, using the <timestampsElapsed> array
    * If each check is successful, the task can end. If the worker has some tries left, the task is reset.
    */
-  public async performFinalCheck() {
+  public async performQualityCheck() {
 
     /* The loading spinner is started */
     this.ngxService.start();
@@ -730,7 +742,7 @@ export class SkeletonComponent {
    * The "Final" folder is filled with a full task snapshot at the end of each allowed try.
    * The "Partial" folder contains a snapshot of the current document each time a user clicks on a "Back" or "Next" button.
    */
-  public async performLogging(action: string, isQuestionnaire: boolean, isFinal: boolean) {
+  public async performLogging(action: string) {
 
     if (!(this.workerIdentifier === null)) {
 
@@ -742,22 +754,18 @@ export class SkeletonComponent {
        * timestamps for the previous/following document.
        */
       let currentElement = this.stepper.selectedIndex;
-      /* otheElement is the index of the document/questionnaire in which the user was before */
-      let otherElement = this.stepper.selectedIndex;
-      /* the "completed" document is <otherElement> minus the amount of questionnaires */
-      let completedDocument = this.stepper.selectedIndex;
+      /* completedElement is the index of the document/questionnaire in which the user was before */
+      let completedElement = this.stepper.selectedIndex;
+
       switch (action) {
         case "Next":
-          otherElement = currentElement - 1;
-          completedDocument = otherElement - this.questionnaireAmount;
+          completedElement = currentElement - 1;
           break;
         case "Back":
-          otherElement = currentElement + 1;
-          completedDocument = otherElement - this.questionnaireAmount;
+          completedElement = currentElement + 1;
           break;
         case "Finish":
-          otherElement = this.documentsAmount - 1;
-          completedDocument = otherElement;
+          completedElement = this.questionnaireAmount + this.documentsAmount - 1;
           break;
       }
 
@@ -770,7 +778,7 @@ export class SkeletonComponent {
            * the end timestamps for the document at <stepper.selectedIndex - 1>
            */
           this.timestampsStart[currentElement].push(timeInSeconds);
-          this.timestampsEnd[otherElement].push(timeInSeconds);
+          this.timestampsEnd[completedElement].push(timeInSeconds);
           break;
         case "Back":
           /*
@@ -779,7 +787,7 @@ export class SkeletonComponent {
            * the end timestamps for the document at <stepper.selectedIndex + 1>
            */
           this.timestampsStart[currentElement].push(timeInSeconds);
-          this.timestampsEnd[otherElement].push(timeInSeconds);
+          this.timestampsEnd[completedElement].push(timeInSeconds);
           break;
         case "Finish":
           /* If the task finishes, the current timestamp is the end timestamp for the current document. */
@@ -794,7 +802,7 @@ export class SkeletonComponent {
        */
 
       /* In the corresponding array the elapsed timestamps for each document are computed */
-      for (let i = 0; i < this.documentsAmount + 1; i++) {
+      for (let i = 0; i < this.documentsAmount + this.questionnaireAmount; i++) {
         let totalSecondsElapsed = 0;
         for (let k = 0; k < this.timestampsEnd[i].length; k++) {
           if (this.timestampsStart[i][k] !== null && this.timestampsEnd[i][k] !== null) {
@@ -804,46 +812,97 @@ export class SkeletonComponent {
         this.timestampsElapsed[i] = totalSecondsElapsed
       }
 
-      /* If the worker has completed the questionnaire */
-      if (isQuestionnaire) {
+      /* If the worker has completed a questionnaire */
+      if (completedElement < this.questionnaireAmount) {
 
-        let taskData = {
-          experiment_id: this.experimentId,
-          current_scale: this.scale,
-          use_each_scale: this.useEachScale,
-          worker_id: this.workerIdentifier,
-          unit_id: this.unitId,
-          token_input: this.tokenInput.value,
-          token_output: this.tokenOutput,
-          tries_amount: this.allowedTries,
-          questionnaire_amount: this.questionnaireAmount,
-          documents_amount: this.documentsAmount
-        };
-        /* General info about task */
-        await (this.upload(`${this.workerFolder}/task.json`, taskData));
-        /* The parsed document contained in current worker's hit */
-        await (this.upload(`${this.workerFolder}/Final/documents.json`, this.documents));
-        /* The answers of the current worker to the questionnaire */
-        await (this.upload(`${this.workerFolder}/Final/questionnaires.json`, this.questionnaires));
+        /* The amount of accesses to the current questionnaire is retrieved */
+        let accessesAmount = this.elementsAccesses[completedElement];
 
-        /* If the worker performed a transition to a previous or a following document */
-      } else {
+        /* If the worker has completed the first questionnaire */
+        if (completedElement == 0) {
 
-        /* Each partial partial piece of data must be distinguished using the "access number" and the current try number */
-        let accessesAmount = this.documentsAccesses[completedDocument];
+          /* The full information about task setup (i.e., its document and questionnaire structures) are uploaded, only once */
+          let taskData = {
+            experiment_id: this.experimentId,
+            current_scale: this.scale,
+            use_each_scale: this.useEachScale,
+            worker_id: this.workerIdentifier,
+            unit_id: this.unitId,
+            token_input: this.tokenInput.value,
+            token_output: this.tokenOutput,
+            tries_amount: this.allowedTries,
+            questionnaire_amount: this.questionnaireAmount,
+            documents_amount: this.documentsAmount
+          };
+          /* General info about task */
+          await (this.upload(`${this.workerFolder}/task.json`, taskData));
+          /* The parsed document contained in current worker's hit */
+          await (this.upload(`${this.workerFolder}/documents.json`, this.documents));
+          /* The answers of the current worker to the questionnaire */
+          await (this.upload(`${this.workerFolder}/questionnaires.json`, this.questionnaires));
+
+        }
+
+        /* The partial data about the completed questionnaire are uploaded */
 
         let actionInfo = {
           action: action,
-          is_final: isFinal,
-          current_access: accessesAmount,
-          current_try: this.currentTry,
-          current_document: completedDocument,
+          access: accessesAmount,
+          try: this.currentTry,
+          index: completedElement,
+          element: "questionnaire"
         };
         /* Info about the performed action ("Next"? "Back"? From where?) */
-        await (this.upload(`${this.workerFolder}/Partials/Info/Try-${this.currentTry}/info_${completedDocument}_access_${accessesAmount}.json`, actionInfo));
+        await (this.upload(`${this.workerFolder}/Partials/Info/Try-${this.currentTry}/info_${completedElement}_access_${accessesAmount}.json`, actionInfo));
+        /* Worker's answers to the current questionnaire */
+        let answers = this.questionnairesForm[completedElement].value;
+        await (this.upload(`${this.workerFolder}/Partials/Answers/Questionnaires/answer_${completedElement}.json`, answers));
+        /* Start, end and elapsed timestamps for the current questionnaire */
+        let timestampsStart = this.timestampsStart[completedElement];
+        await (this.upload(`${this.workerFolder}/Partials/Timestamps/Start/Try-${this.currentTry}/start_${completedElement}_access_${accessesAmount}.json`, timestampsStart));
+        let timestampsEnd = this.timestampsEnd[completedElement];
+        await (this.upload(`${this.workerFolder}/Partials/Timestamps/End/Try-${this.currentTry}/end_${completedElement}_access_${accessesAmount}.json`, timestampsEnd));
+        let timestampsElapsed = this.timestampsElapsed[completedElement];
+        await (this.upload(`${this.workerFolder}/Partials/Timestamps/Elapsed/Try-${this.currentTry}/elapsed_${completedElement}_access_${accessesAmount}.json`, timestampsElapsed));
+        /* Number of accesses to the current questionnaire (which must be always 1, since the worker cannot go back */
+        let accesses = this.elementsAccesses[completedElement];
+        await (this.upload(`${this.workerFolder}/Partials/Accesses/Try-${this.currentTry}/accesses_${completedElement}_access_${accessesAmount}.json`, accesses));
+
+        /* If the worker has completed the last questionnaire */
+
+        if (completedElement == this.questionnaireAmount - 1) {
+
+          /* All questionnaire answers are uploaded, only once */
+          let answers = [];
+          for (let index = 0; index < this.questionnairesForm.length; index++) answers.push(this.questionnairesForm[index].value);
+          await (this.upload(`${this.workerFolder}/Final/answers_questionnaires.json`, answers));
+
+        }
+
+        /* The amount of accesses to the current questionnaire is incremented */
+        this.elementsAccesses[completedElement] = accessesAmount + 1;
+
+        /* If the worker has completed a document */
+      } else {
+
+        /* The amount of accesses to the current document is retrieved */
+        let accessesAmount = this.elementsAccesses[completedElement];
+
+        /* The index of the completed document is the completed element minus the questionnaire amount */
+        let completedDocument = completedElement - this.questionnaireAmount;
+
+        let actionInfo = {
+          action: action,
+          access: accessesAmount,
+          try: this.currentTry,
+          index: completedElement,
+          element: "document"
+        };
+        /* Info about the performed action ("Next"? "Back"? From where?) */
+        await (this.upload(`${this.workerFolder}/Partials/Info/Try-${this.currentTry}/info_${completedElement}_access_${accessesAmount}.json`, actionInfo));
         /* Worker's truth level and justification for the current document */
         let answers = this.documentsForm[completedDocument].value;
-        await (this.upload(`${this.workerFolder}/Partials/Answers/Try-${this.currentTry}/answer_${completedDocument}_access_${accessesAmount}.json`, answers));
+        await (this.upload(`${this.workerFolder}/Partials/Answers/Documents/Try-${this.currentTry}/answer_${completedDocument}_access_${accessesAmount}.json`, answers));
         /* Worker's search engine queries for the current document */
         let searchEngineQueries = this.searchEngineQueries[completedDocument];
         await (this.upload(`${this.workerFolder}/Partials/Queries/Try-${this.currentTry}/queries_${completedDocument}_access_${accessesAmount}.json`, searchEngineQueries));
@@ -854,32 +913,32 @@ export class SkeletonComponent {
         let responsesSelected = this.searchEngineSelectedResponses[completedDocument];
         await (this.upload(`${this.workerFolder}/Partials/Responses/Selected/Try-${this.currentTry}/selected_${completedDocument}_access_${accessesAmount}.json`, responsesSelected));
         /* Start, end and elapsed timestamps for the current document */
-        let timestampsStart = this.timestampsStart[completedDocument];
-        await (this.upload(`${this.workerFolder}/Partials/Timestamps/Start/Try-${this.currentTry}/start_${completedDocument}_access_${accessesAmount}.json`, timestampsStart));
-        let timestampsEnd = this.timestampsEnd[completedDocument];
-        await (this.upload(`${this.workerFolder}/Partials/Timestamps/End/Try-${this.currentTry}/end_${completedDocument}_access_${accessesAmount}.json`, timestampsEnd));
-        let timestampsElapsed = this.timestampsElapsed[completedDocument];
-        await (this.upload(`${this.workerFolder}/Partials/Timestamps/Elapsed/Try-${this.currentTry}/elapsed_${completedDocument}_access_${accessesAmount}.json`, timestampsElapsed));
+        let timestampsStart = this.timestampsStart[completedElement];
+        await (this.upload(`${this.workerFolder}/Partials/Timestamps/Start/Try-${this.currentTry}/start_${completedElement}_access_${accessesAmount}.json`, timestampsStart));
+        let timestampsEnd = this.timestampsEnd[completedElement];
+        await (this.upload(`${this.workerFolder}/Partials/Timestamps/End/Try-${this.currentTry}/end_${completedElement}_access_${accessesAmount}.json`, timestampsEnd));
+        let timestampsElapsed = this.timestampsElapsed[completedElement];
+        await (this.upload(`${this.workerFolder}/Partials/Timestamps/Elapsed/Try-${this.currentTry}/elapsed_${completedElement}_access_${accessesAmount}.json`, timestampsElapsed));
         /* Number of accesses to the current document (i.e., how many times the worker reached the document with a "Back" or "Next" action */
-        let accesses = this.documentsAccesses[completedDocument];
-        await (this.upload(`${this.workerFolder}/Partials/Accesses/Try-${this.currentTry}/accesses_${completedDocument}_access_${accessesAmount}.json`, accesses));
+        let accesses = this.elementsAccesses[completedElement];
+        await (this.upload(`${this.workerFolder}/Partials/Accesses/Try-${this.currentTry}/accesses_${completedElement}_access_${accessesAmount}.json`, accesses));
 
-        /* If the worker has reached the end of the current try (if he fails the current try but has more tries it's not the end of the task) */
-        if (isFinal) {
+        /* If the worker has completed the last document */
+        if (completedElement == this.questionnaireAmount + this.documentsAmount - 1) {
 
+          /* All data about documents are uploaded, only once */
           let actionInfo = {
             action: action,
-            is_final: isFinal,
             current_access: accessesAmount,
             current_try: this.currentTry,
-            current_document: completedDocument,
+            current_document: completedElement,
           };
           /* Info about each performed action ("Next"? "Back"? From where?) */
           await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/info.json`, actionInfo));
           /* Worker's truth level and justification for each document */
           let answers = [];
           for (let index = 0; index < this.documentsForm.length; index++) answers.push(this.documentsForm[index].value);
-          await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/answers.json`, answers));
+          await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/answers_documents.json`, answers));
           /* Worker's search engine queries for each document */
           await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/queries.json`, this.searchEngineQueries));
           /* Responses retrieved by search engine for each worker's query for each document */
@@ -891,12 +950,12 @@ export class SkeletonComponent {
           await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/timestamps_end.json`, this.timestampsEnd));
           await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/timestamps_elapsed.json`, this.timestampsElapsed));
           /* Number of accesses to each document (i.e., how many times the worker reached the document with a "Back" or "Next" action */
-          await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/accesses.json`, this.documentsAccesses));
+          await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/accesses.json`, this.elementsAccesses));
 
         }
 
-        /* Now that each upload is complete, the new access to the document is registered */
-        this.documentsAccesses[completedDocument] = accessesAmount + 1;
+        /* The amount of accesses to the current document is incremented */
+        this.elementsAccesses[completedElement] = accessesAmount + 1;
 
       }
     }
@@ -906,7 +965,7 @@ export class SkeletonComponent {
    * This function gives the possibility to the worker to provide a comment when a try is finished, successfully or not.
    * The comment can be typed in a textarea and when the worker clicks the "Send" button such comment is uploaded to an Amazon S3 bucket.
    */
-  async performCommentSaving() {
+  public async performCommentSaving() {
     if (!(this.workerIdentifier === null)) await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/comment.json`, this.commentForm.value));
     this.commentSent = true;
   }
@@ -914,7 +973,7 @@ export class SkeletonComponent {
   /*
    * This function performs a GetObject operation to Amazon S3 and returns a parsed JSON which is the requested resource.
    * https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html
-   * */
+   */
   public async download(path: string) {
     return JSON.parse(
       (await (this.s3.getObject({
@@ -926,8 +985,9 @@ export class SkeletonComponent {
   /*
    * This function performs an Upload operation to Amazon S3 and returns a JSON object which contains info about the outcome.
    * https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#upload-property
-   * */
-  public async upload(path: string, payload: Object): Promise<ManagedUpload> {
+   */
+  public async upload(path: string, payload: Object):
+    Promise<ManagedUpload> {
     return this.s3.upload({
       Key: path,
       Bucket: this.bucket,
@@ -936,7 +996,7 @@ export class SkeletonComponent {
     })
   }
 
-  // |--------- UTILITIES ELEMENTS - FUNCTIONS ---------|
+  /* |--------- UTILITIES ELEMENTS - FUNCTIONS ---------| */
 
   /*
    * This function retrieves the string associated to an error code thrown by a form field validator.

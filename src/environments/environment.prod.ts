@@ -4,12 +4,11 @@ export const environment = {
 
   experimentId: "CrowdsourcingSkeleton",
 
-  scale: "S3",
+  scale: "S6",
   allScales: ["S3", "S6", "S100"],
   useEachScale: false,
   allowedTries: 10,
 
-  questionnaireAmount: 1,
   domainsToFiler: ["politifact"],
 
   region: 'eu-west-1',
