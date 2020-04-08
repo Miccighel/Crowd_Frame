@@ -22,7 +22,7 @@
     "@angular/router": "~9.1.1",
     "aws-sdk": "^2.647.0",
     "core-js": "^3.6.4",
-    "ngx-ui-loader": "^8.0.0",
+    "ngx-ui-loader": "^9.1.1",
     "rxjs": "~6.5.5",
     "tslib": "^1.10.0",
     "zone.js": "~0.10.2"
