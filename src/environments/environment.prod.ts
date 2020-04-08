@@ -2,7 +2,7 @@ export const environment = {
 
   production: true,
 
-  experimentId: "CrowdsourcingSkeleton",
+  experimentId: "MedicalSample",
 
   scale: "S6",
   allScales: ["S3", "S6", "S100"],

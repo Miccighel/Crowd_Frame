@@ -135,7 +135,7 @@ export class CrowdXplorer {
   public performWebSearch(query: string) {
 
     /* The loading screen is shown */
-    this.ngxService.start();
+    this.ngxService.startBackground();
 
     /* A search has been started */
     this.searchInProgress = true;
@@ -171,7 +171,7 @@ export class CrowdXplorer {
             }
             this.searchInProgress = false;
             /* The loading screen is hidden */
-            this.ngxService.stop();
+            this.ngxService.stopBackground();
           }
         );
         break;
@@ -202,7 +202,7 @@ export class CrowdXplorer {
 
             this.searchInProgress = false;
             /* The loading screen is hidden */
-            this.ngxService.stop();
+            this.ngxService.stopBackground();
           }
         );
         break;
@@ -246,7 +246,7 @@ export class CrowdXplorer {
             /* The loading screen is hidden */
 
             this.searchInProgress = false;
-            this.ngxService.stop();
+            this.ngxService.stopBackground();
           }
         );
         break;

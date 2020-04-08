@@ -37,6 +37,41 @@
           "100,000 to less than 150,000",
           "150,000 or more"
         ]
+      },
+      {
+        "text": "In general, would you describe your political views as",
+        "answers": [
+          "Very conservative",
+          "Conservative",
+          "Moderate",
+          "Liberal",
+          "Very liberal"
+        ]
+      },
+      {
+        "text": "In politics today, do you consider yourself a",
+        "answers": [
+          "Republican",
+          "Democrat",
+          "Independent",
+          "Something else"
+        ]
+      },
+      {
+        "text": "Should the U.S. build a wall along the southern border?",
+        "answers": [
+          "Agree",
+          "Disagree",
+          "No opinion either way"
+        ]
+      },
+      {
+        "text": "Should the government increase environmental regulations to prevent climate change?",
+        "answers": [
+          "Agree",
+          "Disagree",
+          "No opinion either way"
+        ]
       }
     ]
   },
@@ -45,6 +80,24 @@
     "questions": [
       {
         "text": "If three farmers can plant three trees in three hours, how long would it take nine farmers to plant nine trees?",
+        "answers": []
+      }
+    ]
+  },
+  {
+    "type": "crt",
+    "questions": [
+      {
+        "text": "Sean received both the 5th highest and the 5th lowest mark in the class. How many students are there in the class?",
+        "answers": []
+      }
+    ]
+  },
+  {
+    "type": "crt",
+    "questions": [
+      {
+        "text": "Sean received both the 5th highest and the 5th lowest mark in the class. How many students are there in the class?",
         "answers": []
       }
     ]

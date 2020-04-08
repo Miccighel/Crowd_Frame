@@ -1,22 +1,22 @@
 [
   {
     "unit_id": "unit_0",
-    "token_input": "DBVYHMCXQQD",
-    "token_output": "OHTZXHCYGPF",
-    "documents_number": 2,
+    "token_input": "LFOALEMWNEO",
+    "token_output": "NAROJBWXYKT",
+    "documents_number": 4,
     "document_1": {
-      "name": "pants-on-fire_doc3",
-      "statement": "We inherited a broken test\u201d for COVID-19.",
-      "claimant": "Donald Trump",
-      "date": "2020-30-03",
-      "originated-from": "Interview on \"Fox and Friends\""
+      "name": "mostly-false_doc6",
+      "statement": "Italy has decided not to treat their elderly for this virus.",
+      "claimant": "Facebook Post",
+      "date": "2020-14-03",
+      "originated-from": "Facebook Posts"
     },
     "document_2": {
-      "name": "half-true_doc1",
-      "statement": "Ron Johnson said Americans should go back to work, because \u201cdeath is an unavoidable part of life.\u201d",
-      "claimant": "Facebook Post",
-      "date": "2020-31-03",
-      "originated-from": "Facebook Posts"
+      "name": "LOW",
+      "statement": "If I were not a Formula One pilot, I would be a football player.",
+      "claimant": "Abraham Lincoln",
+      "date": "2020-04-01",
+      "originated-from": "Facebook Post"
     },
     "document_3": {
       "name": "LOW",
@@ -35,8 +35,8 @@
   },
   {
     "unit_id": "unit_1",
-    "token_input": "UDURHOOZQWX",
-    "token_output": "UMNQQGUFYDV",
+    "token_input": "WRXQXMERYOG",
+    "token_output": "JUUDROCKYJM",
     "documents_number": 2,
     "document_1": {
       "name": "LOW",
@@ -46,11 +46,11 @@
       "originated-from": "Facebook Post"
     },
     "document_2": {
-      "name": "false_doc3",
-      "statement": "Slices of lemon in a cup of hot water can save your life. The hot lemon can kill the proliferation of\u201d the novel coronavirus.",
-      "claimant": "Facebook Post",
+      "name": "half-true_doc4",
+      "statement": "We\u2019ve got to give the American public a rough estimate of how long we think this is going to take, based mostly on the South Korean model, which seems to be the trajectory that we are on, thankfully, and not the Italian model.",
+      "claimant": "Brian Fitzpatrick",
       "date": "2020-23-03",
-      "originated-from": "Chain Message"
+      "originated-from": "Comments On The Radio"
     },
     "document_3": {
       "name": "LOW",
@@ -69,22 +69,22 @@
   },
   {
     "unit_id": "unit_2",
-    "token_input": "WVWNHXFVNGN",
-    "token_output": "WSMQYJJBCGB",
+    "token_input": "FKUQGNHHOJD",
+    "token_output": "UTUEITYARPU",
     "documents_number": 2,
     "document_1": {
-      "name": "LOW",
-      "statement": "If I were not a Formula One pilot, I would be a football player.",
-      "claimant": "Abraham Lincoln",
-      "date": "2020-04-01",
-      "originated-from": "Facebook Post"
+      "name": "true_doc6",
+      "statement": "Some states are only getting 50 tests per day, and the Utah Jazz got 58.",
+      "claimant": "Michael Dougherty",
+      "date": "Not-Available",
+      "originated-from": "Not-Available"
     },
     "document_2": {
-      "name": "mostly-true_doc1",
-      "statement": "Says a study projects Wisconsin\u2019s coronavirus cases will peak on April 26, 2020.",
-      "claimant": "Facebook Post",
-      "date": "2020-29-03",
-      "originated-from": "Facebook Posts"
+      "name": "half-true_doc4",
+      "statement": "We\u2019ve got to give the American public a rough estimate of how long we think this is going to take, based mostly on the South Korean model, which seems to be the trajectory that we are on, thankfully, and not the Italian model.",
+      "claimant": "Brian Fitzpatrick",
+      "date": "2020-23-03",
+      "originated-from": "Comments On The Radio"
     },
     "document_3": {
       "name": "LOW",

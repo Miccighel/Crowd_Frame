@@ -14,6 +14,7 @@ import {Hit} from "../../models/skeleton/hit";
 import * as AWS from 'aws-sdk';
 import {ManagedUpload} from "aws-sdk/clients/s3";
 import {Questionnaire} from "../../models/skeleton/questionnaire";
+import {faSpinner} from "@fortawesome/free-solid-svg-icons";
 
 /* Component HTML Tag definition */
 @Component({
@@ -124,7 +125,8 @@ export class SkeletonComponent {
   documentsAmount: number;
   /* Array of documents */
   documents: Array<Document>;
-  /* Array of accesses counters, one for each document within a Hit */
+
+  /* Array of accesses counters, one for each element (questionnaire + documents) */
   elementsAccesses: Array<number>;
 
   /* |--------- SEARCH ENGINE INTEGRATION - DECLARATION ---------| */
@@ -158,6 +160,11 @@ export class SkeletonComponent {
   /* Flag to check if the comment has been correctly sent */
   commentSent: boolean;
 
+  /* |--------- OTHER ELEMENTS - DECLARATION ---------| */
+
+  /* Font awesome spinner icon */
+  faSpinner: Object;
+
   /* |--------- CONSTRUCTOR ---------| */
 
   constructor(
@@ -173,6 +180,8 @@ export class SkeletonComponent {
     this.ngxService = ngxService;
     this.configService = configService;
     this.formBuilder = formBuilder;
+
+    this.ngxService.start();
 
     /* |--------- GENERAL ELEMENTS - INITIALIZATION ---------| */
 
@@ -192,7 +201,7 @@ export class SkeletonComponent {
     this.allScales = this.configService.environment.allScales;
     this.useEachScale = this.configService.environment.useEachScale;
 
-    this.tokenInput = new FormControl('DBVYHMCXQQD', [Validators.required], this.validateTokenInput.bind(this));
+    this.tokenInput = new FormControl('', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
     this.tokenForm = formBuilder.group({
       "tokenInput": this.tokenInput
     });
@@ -240,6 +249,10 @@ export class SkeletonComponent {
       })
     }
 
+    /* Font awesome spinner icon initialization */
+    this.faSpinner = faSpinner;
+
+    this.ngxService.stop();
   }
 
   /* |--------- GENERAL ELEMENTS - FUNCTIONS ---------| */
@@ -439,8 +452,8 @@ export class SkeletonComponent {
 
       /* Indexes of high and low gold questions are retrieved */
       for (let index = 0; index < this.documentsAmount; index++) {
-        if (!this.goldIndexHigh) this.goldIndexHigh = this.documents[index].getGoldQuestionIndex("HIGH");
-        if (!this.goldIndexLow) this.goldIndexLow = this.documents[index].getGoldQuestionIndex("LOW");
+        if (this.documents[index].getGoldQuestionIndex("HIGH")!=null) this.goldIndexHigh = this.documents[index].getGoldQuestionIndex("HIGH");
+        if (this.documents[index].getGoldQuestionIndex("LOW")!=null) this.goldIndexLow = this.documents[index].getGoldQuestionIndex("LOW");
       }
 
       /*

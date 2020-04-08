@@ -18,26 +18,28 @@
           <mat-label>
             Insert your input token
           </mat-label>
-          <input matInput type="text" placeholder="your_mturk_token" formControlName="tokenInput"
+          <input matInput type="text" placeholder="your_mturk_token" formControlName="tokenInput" maxlength="11"
                  (focus)="this.tokenForm.updateValueAndValidity()"
                  (paste)="this.tokenForm.updateValueAndValidity()"
                  (keyup)="this.tokenForm.updateValueAndValidity()"
                  (keydown)="this.tokenForm.updateValueAndValidity()"
                  (keyup.enter)="performTaskSetup()"
           >
-          <mat-label *ngIf="this.tokenForm.pending">{{"df"}}</mat-label>
           <mat-error *ngIf="checkFormControl(tokenForm,'tokenInput', 'required')">
             This field is required
           </mat-error>
           <mat-error *ngIf="checkFormControl(tokenForm,'tokenInput', 'invalid')">
             This token input is invalid
           </mat-error>
+          <mat-error *ngIf="checkFormControl(tokenForm,'tokenInput', 'maxlength')">
+            This token input should be 11 characters long
+          </mat-error>
         </mat-form-field>
       </mat-card-content>
       <mat-card-actions>
-        <button id="start-button" mat-flat-button color="primary" (click)="performTaskSetup()">Start
-        </button>
+        <button id="start-button" mat-flat-button color="primary" (click)="performTaskSetup()">Start</button>
       </mat-card-actions>
+      <span class="form-note"><small>(*) If you have a very slow internet connection please wait a few seconds before clicking "Start".</small></span>
     </mat-card>
   </form>
 </div>
@@ -173,13 +175,13 @@
           <mat-card-title>Please answer each question</mat-card-title>
           <mat-card-content *ngIf="questionnaire.type=='standard'">
             <mat-radio-group *ngFor="let question of questionnaire.questions; let j=index" aria-labelledby="radio-button-label" class="radio-button-group" formControlName="control_{{j}}">
-              <label>{{j}}) {{question.text}}</label>
+              <label>{{j + 1}}) {{question.text}}</label>
               <mat-radio-button *ngFor="let answer of question.answers; let k=index" class="radio-button" value="{{k}}">{{answer}}</mat-radio-button>
             </mat-radio-group>
           </mat-card-content>
           <mat-card-content *ngIf="questionnaire.type=='crt'">
             <mat-form-field *ngFor="let question of questionnaire.questions; let j=index">
-              <label>{{j}}) {{question.text}}</label>
+              <label>{{j + 1}}) {{question.text}}</label>
               <input matInput type="number" placeholder="" formControlName="control_{{j}}">
               <mat-error *ngIf="checkFormControl(questionnairesForm[i],'control_'.concat(j.toString()), 'required')">
                 This field is required
@@ -213,7 +215,7 @@
           <ng-template matStepLabel> Document {{i + 1}}/{{this.documentsAmount}} </ng-template>
           <mat-card-title>Please judge the truthfulness of the following statement</mat-card-title>
           <mat-card-content>
-            <p><span class="hit-value">Claiman:</span> {{document.claimant}}</p>
+            <p><span class="hit-value">Claimant/Source:</span> {{document.claimant}}</p>
             <p><span class="hit-value">Date:</span> {{document.date}}</p>
             <p><span class="hit-value">Statement:</span> {{document.statement}}</p>
             <label>Use this search engine to find evidence about the truthfulness of the statement</label>

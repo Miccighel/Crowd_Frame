@@ -9,7 +9,7 @@
 
     <button mat-flat-button color="primary" class="search-button"
             [disabled]="!searchForm.valid || searchInProgress"
-            (click)="performWebSearch(searchInput.value)">{{searchInProgress === true ? 'Searching...' : 'Search'}}
+            (click)="performWebSearch(searchInput.value)">{{searchInProgress === true ? 'SEARCHING...' : 'SEARCH'}}
     </button>
 
     <mat-table [dataSource]="dataSource">

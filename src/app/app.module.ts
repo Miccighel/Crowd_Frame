@@ -12,7 +12,7 @@ import {MatTabsModule} from "@angular/material/tabs";
 import {MatGridListModule} from "@angular/material/grid-list";
 import {MatListModule} from "@angular/material/list";
 import {ReactiveFormsModule} from "@angular/forms";
-import {NgxUiLoaderModule} from "ngx-ui-loader";
+import {NgxUiLoaderConfig, NgxUiLoaderModule} from "ngx-ui-loader";
 import {HttpClientModule} from "@angular/common/http";
 import {CrowdXplorer} from "./components/crowd-xplorer/crowd-xplorer.component";
 import {createCustomElement} from "@angular/elements";
@@ -28,6 +28,38 @@ import {InstructionsComponent, InstructionsDialog} from "./components/instructio
 import {MatDialogModule} from "@angular/material/dialog";
 import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MatSliderModule} from "@angular/material/slider";
+import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
+
+const ngxUiLoaderConfig: NgxUiLoaderConfig = {
+  bgsColor: "#3f51b5",
+  bgsOpacity: 0.7,
+  bgsPosition: "bottom-right",
+  bgsSize: 150,
+  bgsType: "ball-spin-clockwise",
+  blur: 15,
+  delay: 0,
+  fastFadeOut: true,
+  fgsColor: "#3f51b5",
+  fgsPosition: "center-center",
+  fgsSize: 150,
+  fgsType: "ball-spin-clockwise",
+  gap: 24,
+  logoPosition: "center-center",
+  logoSize: 120,
+  logoUrl: "",
+  masterLoaderId: "master",
+  overlayBorderRadius: "0",
+  overlayColor: "rgba(40,40,40,0.64)",
+  pbColor: "#3f51b5",
+  pbDirection: "ltr",
+  pbThickness: 3,
+  hasProgressBar: true,
+  text: "Loading...",
+  textColor: "#FFFFFF",
+  textPosition: "bottom-center",
+  maxTime: -1,
+  minTime: 300
+};
 
 @NgModule({
   declarations: [
@@ -37,45 +69,40 @@ import {MatSliderModule} from "@angular/material/slider";
     InstructionsComponent,
     InstructionsDialog
   ],
-    imports: [
-        BrowserModule,
-        BrowserAnimationsModule,
-        MatCardModule,
-        MatInputModule,
-        MatButtonModule,
-        MatStepperModule,
-        MatRadioModule,
-        MatDividerModule,
-        MatTabsModule,
-        MatGridListModule,
-        MatListModule,
-        MatToolbarModule,
-        ReactiveFormsModule,
-        NgxUiLoaderModule,
-        HttpClientModule,
-        BrowserModule,
-        BrowserAnimationsModule,
-        MatButtonModule,
-        MatIconModule,
-        MatPaginatorModule,
-        MatTableModule,
-        MatPaginatorModule,
-        MatExpansionModule,
-        MatBadgeModule,
-        MatProgressSpinnerModule,
-        MatSliderModule,
-        MatDividerModule,
-        NgxUiLoaderModule,
-        HttpClientModule,
-        ReactiveFormsModule,
-        MatDialogModule,
-        MatCheckboxModule
-    ],
-  entryComponents: [
-    SkeletonComponent,
-    CrowdXplorer,
-    InstructionsComponent,
-    InstructionsDialog
+  imports: [
+    BrowserModule,
+    BrowserAnimationsModule,
+    MatCardModule,
+    MatInputModule,
+    MatButtonModule,
+    MatStepperModule,
+    MatRadioModule,
+    MatDividerModule,
+    MatTabsModule,
+    MatGridListModule,
+    MatListModule,
+    MatToolbarModule,
+    ReactiveFormsModule,
+    NgxUiLoaderModule.forRoot(ngxUiLoaderConfig),
+    HttpClientModule,
+    BrowserModule,
+    BrowserAnimationsModule,
+    MatButtonModule,
+    MatIconModule,
+    MatPaginatorModule,
+    MatTableModule,
+    MatPaginatorModule,
+    MatExpansionModule,
+    MatBadgeModule,
+    MatProgressSpinnerModule,
+    MatSliderModule,
+    MatDividerModule,
+    NgxUiLoaderModule,
+    HttpClientModule,
+    ReactiveFormsModule,
+    MatDialogModule,
+    MatCheckboxModule,
+    FontAwesomeModule
   ],
   providers: [],
 })
@@ -89,6 +116,7 @@ export class AppModule {
     customElements.define('app-crowd-xplorer', bingerElement);
   }
 
-  ngDoBootstrap() {}
+  ngDoBootstrap() {
+  }
 
 }

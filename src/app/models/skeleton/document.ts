@@ -37,6 +37,7 @@ export class Document {
    */
   public getGoldQuestionIndex(kind: string) {
     if (this.name == kind) return this.index
+    return null
   }
 
 }

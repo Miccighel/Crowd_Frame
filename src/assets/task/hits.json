@@ -1,57 +1,57 @@
 [
   {
     "unit_id": "unit_0",
-    "token_input": "XKETEAQOKNI",
-    "token_output": "LKPFZICHNDU",
+    "token_input": "KUVGXUAEIDO",
+    "token_output": "HGGOSLXTSFJ",
     "documents_number": 8,
     "document_1": {
-      "name": "pants-on-fire_doc3",
-      "statement": "We inherited a broken test\u201d for COVID-19.",
-      "claimant": "Donald Trump",
-      "date": "2020-30-03",
-      "originated-from": "Interview on \"Fox and Friends\""
+      "name": "mostly-false_doc6",
+      "statement": "Italy has decided not to treat their elderly for this virus.",
+      "claimant": "Facebook Post",
+      "date": "2020-14-03",
+      "originated-from": "Facebook Posts"
     },
     "document_2": {
-      "name": "half-true_doc1",
-      "statement": "Ron Johnson said Americans should go back to work, because \u201cdeath is an unavoidable part of life.\u201d",
-      "claimant": "Facebook Post",
-      "date": "2020-31-03",
-      "originated-from": "Facebook Posts"
-    },
-    "document_3": {
-      "name": "mostly-true_doc1",
-      "statement": "Says a study projects Wisconsin\u2019s coronavirus cases will peak on April 26, 2020.",
-      "claimant": "Facebook Post",
-      "date": "2020-29-03",
-      "originated-from": "Facebook Posts"
-    },
-    "document_4": {
-      "name": "false_doc3",
-      "statement": "Slices of lemon in a cup of hot water can save your life. The hot lemon can kill the proliferation of\u201d the novel coronavirus.",
-      "claimant": "Facebook Post",
-      "date": "2020-23-03",
-      "originated-from": "Chain Message"
-    },
-    "document_5": {
-      "name": "true_doc2",
-      "statement": "My mask will keep someone else safe and their mask will keep me safe.",
-      "claimant": "Pat Toomey",
-      "date": NaN,
-      "originated-from": NaN
-    },
-    "document_6": {
       "name": "LOW",
       "statement": "If I were not a Formula One pilot, I would be a football player.",
       "claimant": "Abraham Lincoln",
       "date": "2020-04-01",
       "originated-from": "Facebook Post"
     },
+    "document_3": {
+      "name": "mostly-true_doc4",
+      "statement": "Wisconsin is the only state where all Republicans voted against protecting its citizens.",
+      "claimant": "Facebook Post",
+      "date": "2020-19-03",
+      "originated-from": "Facebook Posts"
+    },
+    "document_4": {
+      "name": "pants-on-fire_doc1",
+      "statement": "If your child gets this virus their going to hospital alone in a van with people they don\u2019t know\u2026to be with people they don\u2019t know\u2026 you will be at home without them in their time of need.",
+      "claimant": "Facebook Post",
+      "date": "2020-25-03",
+      "originated-from": "Viral Image"
+    },
+    "document_5": {
+      "name": "false_doc3",
+      "statement": "Slices of lemon in a cup of hot water can save your life. The hot lemon can kill the proliferation of\u201d the novel coronavirus.",
+      "claimant": "Facebook Post",
+      "date": "2020-23-03",
+      "originated-from": "Chain Message"
+    },
+    "document_6": {
+      "name": "true_doc6",
+      "statement": "Some states are only getting 50 tests per day, and the Utah Jazz got 58.",
+      "claimant": "Michael Dougherty",
+      "date": "Not-Available",
+      "originated-from": "Not-Available"
+    },
     "document_7": {
-      "name": "mostly-false_doc2",
-      "statement": "Now, as it stands, our health care system has adequate ventilators, ICU beds, medical professionals.",
-      "claimant": "Sean Hannity",
-      "date": "2020-16-03",
-      "originated-from": "TV Segment"
+      "name": "half-true_doc4",
+      "statement": "We\u2019ve got to give the American public a rough estimate of how long we think this is going to take, based mostly on the South Korean model, which seems to be the trajectory that we are on, thankfully, and not the Italian model.",
+      "claimant": "Brian Fitzpatrick",
+      "date": "2020-23-03",
+      "originated-from": "Comments On The Radio"
     },
     "document_8": {
       "name": "HIGH",
@@ -63,8 +63,8 @@
   },
   {
     "unit_id": "unit_1",
-    "token_input": "YZAWWBRBQZO",
-    "token_output": "QAQFVJSLEHB",
+    "token_input": "BZEDUKJKXPQ",
+    "token_output": "IMMUVCDCBIF",
     "documents_number": 8,
     "document_1": {
       "name": "LOW",
@@ -74,80 +74,80 @@
       "originated-from": "Facebook Post"
     },
     "document_2": {
+      "name": "half-true_doc4",
+      "statement": "We\u2019ve got to give the American public a rough estimate of how long we think this is going to take, based mostly on the South Korean model, which seems to be the trajectory that we are on, thankfully, and not the Italian model.",
+      "claimant": "Brian Fitzpatrick",
+      "date": "2020-23-03",
+      "originated-from": "Comments On The Radio"
+    },
+    "document_3": {
+      "name": "true_doc6",
+      "statement": "Some states are only getting 50 tests per day, and the Utah Jazz got 58.",
+      "claimant": "Michael Dougherty",
+      "date": "Not-Available",
+      "originated-from": "Not-Available"
+    },
+    "document_4": {
+      "name": "mostly-false_doc6",
+      "statement": "Italy has decided not to treat their elderly for this virus.",
+      "claimant": "Facebook Post",
+      "date": "2020-14-03",
+      "originated-from": "Facebook Posts"
+    },
+    "document_5": {
+      "name": "pants-on-fire_doc1",
+      "statement": "If your child gets this virus their going to hospital alone in a van with people they don\u2019t know\u2026to be with people they don\u2019t know\u2026 you will be at home without them in their time of need.",
+      "claimant": "Facebook Post",
+      "date": "2020-25-03",
+      "originated-from": "Viral Image"
+    },
+    "document_6": {
+      "name": "mostly-true_doc4",
+      "statement": "Wisconsin is the only state where all Republicans voted against protecting its citizens.",
+      "claimant": "Facebook Post",
+      "date": "2020-19-03",
+      "originated-from": "Facebook Posts"
+    },
+    "document_7": {
       "name": "false_doc3",
       "statement": "Slices of lemon in a cup of hot water can save your life. The hot lemon can kill the proliferation of\u201d the novel coronavirus.",
       "claimant": "Facebook Post",
       "date": "2020-23-03",
       "originated-from": "Chain Message"
     },
-    "document_3": {
-      "name": "mostly-true_doc1",
-      "statement": "Says a study projects Wisconsin\u2019s coronavirus cases will peak on April 26, 2020.",
-      "claimant": "Facebook Post",
-      "date": "2020-29-03",
-      "originated-from": "Facebook Posts"
-    },
-    "document_4": {
-      "name": "true_doc2",
-      "statement": "My mask will keep someone else safe and their mask will keep me safe.",
-      "claimant": "Pat Toomey",
-      "date": NaN,
-      "originated-from": NaN
-    },
-    "document_5": {
-      "name": "mostly-false_doc2",
-      "statement": "Now, as it stands, our health care system has adequate ventilators, ICU beds, medical professionals.",
-      "claimant": "Sean Hannity",
-      "date": "2020-16-03",
-      "originated-from": "TV Segment"
-    },
-    "document_6": {
-      "name": "half-true_doc1",
-      "statement": "Ron Johnson said Americans should go back to work, because \u201cdeath is an unavoidable part of life.\u201d",
-      "claimant": "Facebook Post",
-      "date": "2020-31-03",
-      "originated-from": "Facebook Posts"
-    },
-    "document_7": {
+    "document_8": {
       "name": "HIGH",
       "statement": "Yes, We can!",
       "claimant": "Barack Obama",
       "date": "2020-04-01",
       "originated-from": "Facebook Post"
-    },
-    "document_8": {
-      "name": "pants-on-fire_doc3",
-      "statement": "We inherited a broken test\u201d for COVID-19.",
-      "claimant": "Donald Trump",
-      "date": "2020-30-03",
-      "originated-from": "Interview on \"Fox and Friends\""
     }
   },
   {
     "unit_id": "unit_2",
-    "token_input": "OXEKYVGXPLM",
-    "token_output": "OLCZDMDEFBQ",
+    "token_input": "AUNFSRKAEWE",
+    "token_output": "OLFWYQFEHRI",
     "documents_number": 8,
     "document_1": {
-      "name": "LOW",
-      "statement": "If I were not a Formula One pilot, I would be a football player.",
-      "claimant": "Abraham Lincoln",
-      "date": "2020-04-01",
-      "originated-from": "Facebook Post"
+      "name": "true_doc6",
+      "statement": "Some states are only getting 50 tests per day, and the Utah Jazz got 58.",
+      "claimant": "Michael Dougherty",
+      "date": "Not-Available",
+      "originated-from": "Not-Available"
     },
     "document_2": {
-      "name": "mostly-true_doc1",
-      "statement": "Says a study projects Wisconsin\u2019s coronavirus cases will peak on April 26, 2020.",
-      "claimant": "Facebook Post",
-      "date": "2020-29-03",
-      "originated-from": "Facebook Posts"
+      "name": "half-true_doc4",
+      "statement": "We\u2019ve got to give the American public a rough estimate of how long we think this is going to take, based mostly on the South Korean model, which seems to be the trajectory that we are on, thankfully, and not the Italian model.",
+      "claimant": "Brian Fitzpatrick",
+      "date": "2020-23-03",
+      "originated-from": "Comments On The Radio"
     },
     "document_3": {
-      "name": "true_doc2",
-      "statement": "My mask will keep someone else safe and their mask will keep me safe.",
-      "claimant": "Pat Toomey",
-      "date": NaN,
-      "originated-from": NaN
+      "name": "HIGH",
+      "statement": "Yes, We can!",
+      "claimant": "Barack Obama",
+      "date": "2020-04-01",
+      "originated-from": "Facebook Post"
     },
     "document_4": {
       "name": "false_doc3",
@@ -157,31 +157,31 @@
       "originated-from": "Chain Message"
     },
     "document_5": {
-      "name": "HIGH",
-      "statement": "Yes, We can!",
-      "claimant": "Barack Obama",
+      "name": "pants-on-fire_doc1",
+      "statement": "If your child gets this virus their going to hospital alone in a van with people they don\u2019t know\u2026to be with people they don\u2019t know\u2026 you will be at home without them in their time of need.",
+      "claimant": "Facebook Post",
+      "date": "2020-25-03",
+      "originated-from": "Viral Image"
+    },
+    "document_6": {
+      "name": "LOW",
+      "statement": "If I were not a Formula One pilot, I would be a football player.",
+      "claimant": "Abraham Lincoln",
       "date": "2020-04-01",
       "originated-from": "Facebook Post"
     },
-    "document_6": {
-      "name": "pants-on-fire_doc3",
-      "statement": "We inherited a broken test\u201d for COVID-19.",
-      "claimant": "Donald Trump",
-      "date": "2020-30-03",
-      "originated-from": "Interview on \"Fox and Friends\""
-    },
     "document_7": {
-      "name": "mostly-false_doc2",
-      "statement": "Now, as it stands, our health care system has adequate ventilators, ICU beds, medical professionals.",
-      "claimant": "Sean Hannity",
-      "date": "2020-16-03",
-      "originated-from": "TV Segment"
+      "name": "mostly-true_doc4",
+      "statement": "Wisconsin is the only state where all Republicans voted against protecting its citizens.",
+      "claimant": "Facebook Post",
+      "date": "2020-19-03",
+      "originated-from": "Facebook Posts"
     },
     "document_8": {
-      "name": "half-true_doc1",
-      "statement": "Ron Johnson said Americans should go back to work, because \u201cdeath is an unavoidable part of life.\u201d",
+      "name": "mostly-false_doc6",
+      "statement": "Italy has decided not to treat their elderly for this virus.",
       "claimant": "Facebook Post",
-      "date": "2020-31-03",
+      "date": "2020-14-03",
       "originated-from": "Facebook Posts"
     }
   }
