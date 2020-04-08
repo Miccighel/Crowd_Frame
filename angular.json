@@ -145,5 +145,8 @@
       }
     }
   },
-  "defaultProject": "CrowdsourcingSkeleton"
+  "defaultProject": "CrowdsourcingSkeleton",
+  "cli": {
+    "analytics": "cd7f909b-9efe-4371-bb20-b49ab5fe8710"
+  }
 }
