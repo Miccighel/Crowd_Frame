@@ -255,7 +255,7 @@ export class CrowdXplorer {
   }
 
   /* VIEWCHILD: A reference to a mat-paginator html element is created and bound with the result table */
-  @ViewChild(MatPaginator, {static: false}) set matPaginator(matPaginator: MatPaginator) {
+  @ViewChild(MatPaginator) set matPaginator(matPaginator: MatPaginator) {
     this.dataSource.paginator = matPaginator
   }
 

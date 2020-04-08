@@ -67,8 +67,8 @@ export class SkeletonComponent {
   useEachScale: boolean;
 
   /* References to task stepper and token forms */
-  @ViewChild('stepper', {static: false}) stepper: MatStepper;
-  @ViewChild('urlField', {static: false}) urlField: MatFormField;
+  @ViewChild('stepper') stepper: MatStepper;
+  @ViewChild('urlField') urlField: MatFormField;
   tokenForm: FormGroup;
   tokenInput: FormControl;
   tokenOutput: string;
