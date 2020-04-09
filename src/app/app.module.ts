@@ -34,7 +34,7 @@ const ngxUiLoaderConfig: NgxUiLoaderConfig = {
   bgsColor: "#3f51b5",
   bgsOpacity: 0.7,
   bgsPosition: "bottom-right",
-  bgsSize: 150,
+  bgsSize: 80,
   bgsType: "ball-spin-clockwise",
   blur: 15,
   delay: 0,

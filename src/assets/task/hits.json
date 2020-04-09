@@ -1,188 +1,194 @@
 [
   {
     "unit_id": "unit_0",
-    "token_input": "KUVGXUAEIDO",
-    "token_output": "HGGOSLXTSFJ",
+    "token_input": "RQJRYSGUYJN",
+    "token_output": "NVJWQQWGUWM",
     "documents_number": 8,
-    "document_1": {
-      "name": "mostly-false_doc6",
-      "statement": "Italy has decided not to treat their elderly for this virus.",
-      "claimant": "Facebook Post",
-      "date": "2020-14-03",
-      "originated-from": "Facebook Posts"
-    },
-    "document_2": {
-      "name": "LOW",
-      "statement": "If I were not a Formula One pilot, I would be a football player.",
-      "claimant": "Abraham Lincoln",
-      "date": "2020-04-01",
-      "originated-from": "Facebook Post"
-    },
-    "document_3": {
-      "name": "mostly-true_doc4",
-      "statement": "Wisconsin is the only state where all Republicans voted against protecting its citizens.",
-      "claimant": "Facebook Post",
-      "date": "2020-19-03",
-      "originated-from": "Facebook Posts"
-    },
-    "document_4": {
-      "name": "pants-on-fire_doc1",
-      "statement": "If your child gets this virus their going to hospital alone in a van with people they don\u2019t know\u2026to be with people they don\u2019t know\u2026 you will be at home without them in their time of need.",
-      "claimant": "Facebook Post",
-      "date": "2020-25-03",
-      "originated-from": "Viral Image"
-    },
-    "document_5": {
-      "name": "false_doc3",
-      "statement": "Slices of lemon in a cup of hot water can save your life. The hot lemon can kill the proliferation of\u201d the novel coronavirus.",
-      "claimant": "Facebook Post",
-      "date": "2020-23-03",
-      "originated-from": "Chain Message"
-    },
-    "document_6": {
-      "name": "true_doc6",
-      "statement": "Some states are only getting 50 tests per day, and the Utah Jazz got 58.",
-      "claimant": "Michael Dougherty",
-      "date": "Not-Available",
-      "originated-from": "Not-Available"
-    },
-    "document_7": {
-      "name": "half-true_doc4",
-      "statement": "We\u2019ve got to give the American public a rough estimate of how long we think this is going to take, based mostly on the South Korean model, which seems to be the trajectory that we are on, thankfully, and not the Italian model.",
-      "claimant": "Brian Fitzpatrick",
-      "date": "2020-23-03",
-      "originated-from": "Comments On The Radio"
-    },
-    "document_8": {
-      "name": "HIGH",
-      "statement": "Yes, We can!",
-      "claimant": "Barack Obama",
-      "date": "2020-04-01",
-      "originated-from": "Facebook Post"
-    }
+    "documents": [
+      {
+        "name": "false_doc5",
+        "statement": "Says the CDC now says that the coronavirus can survive on surfaces for up to 17 days.",
+        "claimant": "Facebook Post",
+        "date": "2020-23-03",
+        "originated-from": "Facebook Posts"
+      },
+      {
+        "name": "half-true_doc3",
+        "statement": "So Oscar Health, the company tapped by Trump to profit from covid tests, is a Kushner company. Imagine that, profits over national safety.",
+        "claimant": "Facebook Post",
+        "date": "2020-15-03",
+        "originated-from": "Facebook Posts"
+      },
+      {
+        "name": "true_doc5",
+        "statement": "Says Spectrum will provide free internet to students during coronavirus school closures.",
+        "claimant": "Viral Image",
+        "date": "2020-13-03",
+        "originated-from": "Facebook Post"
+      },
+      {
+        "name": "pants-on-fire_doc3",
+        "statement": "We inherited a broken test\u201d for COVID-19.",
+        "claimant": "Donald Trump",
+        "date": "2020-30-03",
+        "originated-from": "Interview on \"Fox and Friends\""
+      },
+      {
+        "name": "HIGH",
+        "statement": "Yes, We can!",
+        "claimant": "Barack Obama",
+        "date": "2008-01-08.",
+        "originated-from": "Facebook Post"
+      },
+      {
+        "name": "mostly-true_doc4",
+        "statement": "Wisconsin is the only state where all Republicans voted against protecting its citizens.",
+        "claimant": "Facebook Post",
+        "date": "2020-19-03",
+        "originated-from": "Facebook Posts"
+      },
+      {
+        "name": "LOW",
+        "statement": "If I were not a Formula One pilot, I would be a football player.",
+        "claimant": "Abraham Lincoln",
+        "date": "2020-04-01",
+        "originated-from": "Facebook Post"
+      },
+      {
+        "name": "mostly-false_doc7",
+        "statement": "Post says \u201cPresident Trump has come into contact with a potential coronavirus sufferer!",
+        "claimant": "Facebook Post",
+        "date": "2020-09-03",
+        "originated-from": "Facebook Posts"
+      }
+    ]
   },
   {
     "unit_id": "unit_1",
-    "token_input": "BZEDUKJKXPQ",
-    "token_output": "IMMUVCDCBIF",
+    "token_input": "XEQBLNLHUSO",
+    "token_output": "KHZTDSAONNW",
     "documents_number": 8,
-    "document_1": {
-      "name": "LOW",
-      "statement": "If I were not a Formula One pilot, I would be a football player.",
-      "claimant": "Abraham Lincoln",
-      "date": "2020-04-01",
-      "originated-from": "Facebook Post"
-    },
-    "document_2": {
-      "name": "half-true_doc4",
-      "statement": "We\u2019ve got to give the American public a rough estimate of how long we think this is going to take, based mostly on the South Korean model, which seems to be the trajectory that we are on, thankfully, and not the Italian model.",
-      "claimant": "Brian Fitzpatrick",
-      "date": "2020-23-03",
-      "originated-from": "Comments On The Radio"
-    },
-    "document_3": {
-      "name": "true_doc6",
-      "statement": "Some states are only getting 50 tests per day, and the Utah Jazz got 58.",
-      "claimant": "Michael Dougherty",
-      "date": "Not-Available",
-      "originated-from": "Not-Available"
-    },
-    "document_4": {
-      "name": "mostly-false_doc6",
-      "statement": "Italy has decided not to treat their elderly for this virus.",
-      "claimant": "Facebook Post",
-      "date": "2020-14-03",
-      "originated-from": "Facebook Posts"
-    },
-    "document_5": {
-      "name": "pants-on-fire_doc1",
-      "statement": "If your child gets this virus their going to hospital alone in a van with people they don\u2019t know\u2026to be with people they don\u2019t know\u2026 you will be at home without them in their time of need.",
-      "claimant": "Facebook Post",
-      "date": "2020-25-03",
-      "originated-from": "Viral Image"
-    },
-    "document_6": {
-      "name": "mostly-true_doc4",
-      "statement": "Wisconsin is the only state where all Republicans voted against protecting its citizens.",
-      "claimant": "Facebook Post",
-      "date": "2020-19-03",
-      "originated-from": "Facebook Posts"
-    },
-    "document_7": {
-      "name": "false_doc3",
-      "statement": "Slices of lemon in a cup of hot water can save your life. The hot lemon can kill the proliferation of\u201d the novel coronavirus.",
-      "claimant": "Facebook Post",
-      "date": "2020-23-03",
-      "originated-from": "Chain Message"
-    },
-    "document_8": {
-      "name": "HIGH",
-      "statement": "Yes, We can!",
-      "claimant": "Barack Obama",
-      "date": "2020-04-01",
-      "originated-from": "Facebook Post"
-    }
+    "documents": [
+      {
+        "name": "pants-on-fire_doc3",
+        "statement": "We inherited a broken test\u201d for COVID-19.",
+        "claimant": "Donald Trump",
+        "date": "2020-30-03",
+        "originated-from": "Interview on \"Fox and Friends\""
+      },
+      {
+        "name": "false_doc5",
+        "statement": "Says the CDC now says that the coronavirus can survive on surfaces for up to 17 days.",
+        "claimant": "Facebook Post",
+        "date": "2020-23-03",
+        "originated-from": "Facebook Posts"
+      },
+      {
+        "name": "half-true_doc3",
+        "statement": "So Oscar Health, the company tapped by Trump to profit from covid tests, is a Kushner company. Imagine that, profits over national safety.",
+        "claimant": "Facebook Post",
+        "date": "2020-15-03",
+        "originated-from": "Facebook Posts"
+      },
+      {
+        "name": "mostly-true_doc4",
+        "statement": "Wisconsin is the only state where all Republicans voted against protecting its citizens.",
+        "claimant": "Facebook Post",
+        "date": "2020-19-03",
+        "originated-from": "Facebook Posts"
+      },
+      {
+        "name": "true_doc5",
+        "statement": "Says Spectrum will provide free internet to students during coronavirus school closures.",
+        "claimant": "Viral Image",
+        "date": "2020-13-03",
+        "originated-from": "Facebook Post"
+      },
+      {
+        "name": "LOW",
+        "statement": "If I were not a Formula One pilot, I would be a football player.",
+        "claimant": "Abraham Lincoln",
+        "date": "2020-04-01",
+        "originated-from": "Facebook Post"
+      },
+      {
+        "name": "HIGH",
+        "statement": "Yes, We can!",
+        "claimant": "Barack Obama",
+        "date": "2008-01-08.",
+        "originated-from": "Facebook Post"
+      },
+      {
+        "name": "mostly-false_doc7",
+        "statement": "Post says \u201cPresident Trump has come into contact with a potential coronavirus sufferer!",
+        "claimant": "Facebook Post",
+        "date": "2020-09-03",
+        "originated-from": "Facebook Posts"
+      }
+    ]
   },
   {
     "unit_id": "unit_2",
-    "token_input": "AUNFSRKAEWE",
-    "token_output": "OLFWYQFEHRI",
+    "token_input": "OLEHHDIONKR",
+    "token_output": "HZRDSQJWOFG",
     "documents_number": 8,
-    "document_1": {
-      "name": "true_doc6",
-      "statement": "Some states are only getting 50 tests per day, and the Utah Jazz got 58.",
-      "claimant": "Michael Dougherty",
-      "date": "Not-Available",
-      "originated-from": "Not-Available"
-    },
-    "document_2": {
-      "name": "half-true_doc4",
-      "statement": "We\u2019ve got to give the American public a rough estimate of how long we think this is going to take, based mostly on the South Korean model, which seems to be the trajectory that we are on, thankfully, and not the Italian model.",
-      "claimant": "Brian Fitzpatrick",
-      "date": "2020-23-03",
-      "originated-from": "Comments On The Radio"
-    },
-    "document_3": {
-      "name": "HIGH",
-      "statement": "Yes, We can!",
-      "claimant": "Barack Obama",
-      "date": "2020-04-01",
-      "originated-from": "Facebook Post"
-    },
-    "document_4": {
-      "name": "false_doc3",
-      "statement": "Slices of lemon in a cup of hot water can save your life. The hot lemon can kill the proliferation of\u201d the novel coronavirus.",
-      "claimant": "Facebook Post",
-      "date": "2020-23-03",
-      "originated-from": "Chain Message"
-    },
-    "document_5": {
-      "name": "pants-on-fire_doc1",
-      "statement": "If your child gets this virus their going to hospital alone in a van with people they don\u2019t know\u2026to be with people they don\u2019t know\u2026 you will be at home without them in their time of need.",
-      "claimant": "Facebook Post",
-      "date": "2020-25-03",
-      "originated-from": "Viral Image"
-    },
-    "document_6": {
-      "name": "LOW",
-      "statement": "If I were not a Formula One pilot, I would be a football player.",
-      "claimant": "Abraham Lincoln",
-      "date": "2020-04-01",
-      "originated-from": "Facebook Post"
-    },
-    "document_7": {
-      "name": "mostly-true_doc4",
-      "statement": "Wisconsin is the only state where all Republicans voted against protecting its citizens.",
-      "claimant": "Facebook Post",
-      "date": "2020-19-03",
-      "originated-from": "Facebook Posts"
-    },
-    "document_8": {
-      "name": "mostly-false_doc6",
-      "statement": "Italy has decided not to treat their elderly for this virus.",
-      "claimant": "Facebook Post",
-      "date": "2020-14-03",
-      "originated-from": "Facebook Posts"
-    }
+    "documents": [
+      {
+        "name": "HIGH",
+        "statement": "Yes, We can!",
+        "claimant": "Barack Obama",
+        "date": "2008-01-08.",
+        "originated-from": "Facebook Post"
+      },
+      {
+        "name": "false_doc5",
+        "statement": "Says the CDC now says that the coronavirus can survive on surfaces for up to 17 days.",
+        "claimant": "Facebook Post",
+        "date": "2020-23-03",
+        "originated-from": "Facebook Posts"
+      },
+      {
+        "name": "half-true_doc3",
+        "statement": "So Oscar Health, the company tapped by Trump to profit from covid tests, is a Kushner company. Imagine that, profits over national safety.",
+        "claimant": "Facebook Post",
+        "date": "2020-15-03",
+        "originated-from": "Facebook Posts"
+      },
+      {
+        "name": "mostly-true_doc4",
+        "statement": "Wisconsin is the only state where all Republicans voted against protecting its citizens.",
+        "claimant": "Facebook Post",
+        "date": "2020-19-03",
+        "originated-from": "Facebook Posts"
+      },
+      {
+        "name": "mostly-false_doc7",
+        "statement": "Post says \u201cPresident Trump has come into contact with a potential coronavirus sufferer!",
+        "claimant": "Facebook Post",
+        "date": "2020-09-03",
+        "originated-from": "Facebook Posts"
+      },
+      {
+        "name": "true_doc5",
+        "statement": "Says Spectrum will provide free internet to students during coronavirus school closures.",
+        "claimant": "Viral Image",
+        "date": "2020-13-03",
+        "originated-from": "Facebook Post"
+      },
+      {
+        "name": "pants-on-fire_doc3",
+        "statement": "We inherited a broken test\u201d for COVID-19.",
+        "claimant": "Donald Trump",
+        "date": "2020-30-03",
+        "originated-from": "Interview on \"Fox and Friends\""
+      },
+      {
+        "name": "LOW",
+        "statement": "If I were not a Formula One pilot, I would be a football player.",
+        "claimant": "Abraham Lincoln",
+        "date": "2020-04-01",
+        "originated-from": "Facebook Post"
+      }
+    ]
   }
 ]

@@ -1,104 +1,89 @@
 [
   {
     "unit_id": "unit_0",
-    "token_input": "LFOALEMWNEO",
-    "token_output": "NAROJBWXYKT",
-    "documents_number": 4,
-    "document_1": {
-      "name": "mostly-false_doc6",
-      "statement": "Italy has decided not to treat their elderly for this virus.",
-      "claimant": "Facebook Post",
-      "date": "2020-14-03",
-      "originated-from": "Facebook Posts"
-    },
-    "document_2": {
-      "name": "LOW",
-      "statement": "If I were not a Formula One pilot, I would be a football player.",
-      "claimant": "Abraham Lincoln",
-      "date": "2020-04-01",
-      "originated-from": "Facebook Post"
-    },
-    "document_3": {
-      "name": "LOW",
-      "statement": "If I were not a Formula One pilot, I would be a football player.",
-      "claimant": "Abraham Lincoln",
-      "date": "2020-04-01",
-      "originated-from": "Facebook Post"
-    },
-    "document_4": {
-      "name": "HIGH",
-      "statement": "Yes, We can!",
-      "claimant": "Barack Obama",
-      "date": "2020-04-01",
-      "originated-from": "Facebook Post"
-    }
+    "token_input": "IQPUWRABEKO",
+    "token_output": "UNKULEMLUPH",
+    "documents_number": 3,
+    "documents": [
+      {
+        "name": "false_doc5",
+        "statement": "Says the CDC now says that the coronavirus can survive on surfaces for up to 17 days.",
+        "claimant": "Facebook Post",
+        "date": "2020-23-03",
+        "originated-from": "Facebook Posts"
+      },
+      {
+        "name": "HIGH",
+        "statement": "Yes, We can!",
+        "claimant": "Barack Obama",
+        "date": "2008-01-08.",
+        "originated-from": "Facebook Post"
+      },
+      {
+        "name": "LOW",
+        "statement": "If I were not a Formula One pilot, I would be a football player.",
+        "claimant": "Abraham Lincoln",
+        "date": "2020-04-01",
+        "originated-from": "Facebook Post"
+      }
+    ]
   },
   {
     "unit_id": "unit_1",
-    "token_input": "WRXQXMERYOG",
-    "token_output": "JUUDROCKYJM",
-    "documents_number": 2,
-    "document_1": {
-      "name": "LOW",
-      "statement": "If I were not a Formula One pilot, I would be a football player.",
-      "claimant": "Abraham Lincoln",
-      "date": "2020-04-01",
-      "originated-from": "Facebook Post"
-    },
-    "document_2": {
-      "name": "half-true_doc4",
-      "statement": "We\u2019ve got to give the American public a rough estimate of how long we think this is going to take, based mostly on the South Korean model, which seems to be the trajectory that we are on, thankfully, and not the Italian model.",
-      "claimant": "Brian Fitzpatrick",
-      "date": "2020-23-03",
-      "originated-from": "Comments On The Radio"
-    },
-    "document_3": {
-      "name": "LOW",
-      "statement": "If I were not a Formula One pilot, I would be a football player.",
-      "claimant": "Abraham Lincoln",
-      "date": "2020-04-01",
-      "originated-from": "Facebook Post"
-    },
-    "document_4": {
-      "name": "HIGH",
-      "statement": "Yes, We can!",
-      "claimant": "Barack Obama",
-      "date": "2020-04-01",
-      "originated-from": "Facebook Post"
-    }
+    "token_input": "ZNISGNFHZIM",
+    "token_output": "IEGYMZLQBAK",
+    "documents_number": 3,
+    "documents": [
+      {
+        "name": "pants-on-fire_doc3",
+        "statement": "We inherited a broken test\u201d for COVID-19.",
+        "claimant": "Donald Trump",
+        "date": "2020-30-03",
+        "originated-from": "Interview on \"Fox and Friends\""
+      },
+      {
+        "name": "LOW",
+        "statement": "If I were not a Formula One pilot, I would be a football player.",
+        "claimant": "Abraham Lincoln",
+        "date": "2020-04-01",
+        "originated-from": "Facebook Post"
+      },
+      {
+        "name": "HIGH",
+        "statement": "Yes, We can!",
+        "claimant": "Barack Obama",
+        "date": "2008-01-08.",
+        "originated-from": "Facebook Post"
+      }
+    ]
   },
   {
     "unit_id": "unit_2",
-    "token_input": "FKUQGNHHOJD",
-    "token_output": "UTUEITYARPU",
-    "documents_number": 2,
-    "document_1": {
-      "name": "true_doc6",
-      "statement": "Some states are only getting 50 tests per day, and the Utah Jazz got 58.",
-      "claimant": "Michael Dougherty",
-      "date": "Not-Available",
-      "originated-from": "Not-Available"
-    },
-    "document_2": {
-      "name": "half-true_doc4",
-      "statement": "We\u2019ve got to give the American public a rough estimate of how long we think this is going to take, based mostly on the South Korean model, which seems to be the trajectory that we are on, thankfully, and not the Italian model.",
-      "claimant": "Brian Fitzpatrick",
-      "date": "2020-23-03",
-      "originated-from": "Comments On The Radio"
-    },
-    "document_3": {
-      "name": "LOW",
-      "statement": "If I were not a Formula One pilot, I would be a football player.",
-      "claimant": "Abraham Lincoln",
-      "date": "2020-04-01",
-      "originated-from": "Facebook Post"
-    },
-    "document_4": {
-      "name": "HIGH",
-      "statement": "Yes, We can!",
-      "claimant": "Barack Obama",
-      "date": "2020-04-01",
-      "originated-from": "Facebook Post"
-    }
+    "token_input": "SKTYNWTOEMV",
+    "token_output": "IUXTBYVLWJF",
+    "documents_number": 3,
+    "documents": [
+      {
+        "name": "HIGH",
+        "statement": "Yes, We can!",
+        "claimant": "Barack Obama",
+        "date": "2008-01-08.",
+        "originated-from": "Facebook Post"
+      },
+      {
+        "name": "false_doc5",
+        "statement": "Says the CDC now says that the coronavirus can survive on surfaces for up to 17 days.",
+        "claimant": "Facebook Post",
+        "date": "2020-23-03",
+        "originated-from": "Facebook Posts"
+      },
+      {
+        "name": "LOW",
+        "statement": "If I were not a Formula One pilot, I would be a football player.",
+        "claimant": "Abraham Lincoln",
+        "date": "2020-04-01",
+        "originated-from": "Facebook Post"
+      }
+    ]
   }
 ]

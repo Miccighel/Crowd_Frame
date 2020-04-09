@@ -201,7 +201,7 @@ export class SkeletonComponent {
     this.allScales = this.configService.environment.allScales;
     this.useEachScale = this.configService.environment.useEachScale;
 
-    this.tokenInput = new FormControl('', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
+    this.tokenInput = new FormControl('RQJRYSGUYJN', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
     this.tokenForm = formBuilder.group({
       "tokenInput": this.tokenInput
     });
@@ -236,7 +236,7 @@ export class SkeletonComponent {
 
     /* |--------- COMMENT ELEMENTS - INITIALIZATION ---------| */
 
-    this.comment = new FormControl('', [Validators.required]);
+    this.comment = new FormControl('' );
     this.commentForm = formBuilder.group({
       "comment": this.comment,
     });
@@ -417,10 +417,10 @@ export class SkeletonComponent {
       }
 
       /*  Each document of the current hit is parsed using the Document interface.  */
-      for (let index = 1; index <= this.documentsAmount; index++) {
-        let current_document = this.hit[`document_${index}`];
-        let documentIndex = index - 1;
-        this.documents.push(new Document(documentIndex, current_document));
+      let rawDocuments = this.hit.documents;
+      for (let index = 0; index < rawDocuments.length; index++) {
+        let currentDocument = rawDocuments[index];
+        this.documents.push(new Document(index, currentDocument));
       }
 
       /* The array of accesses counter is initialized */
@@ -705,9 +705,6 @@ export class SkeletonComponent {
 
     /* Detect changes within the DOM and stop the spinner */
     this.changeDetector.detectChanges();
-
-    /* The browser window is scrolled to the outcome section of the page, where the outcome of the current try is shown */
-    document.querySelector('.outcome-section').scrollIntoView({behavior: 'smooth', block: 'start'});
 
     /* The loading spinner is stopped */
     this.ngxService.stop();
