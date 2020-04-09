@@ -97,9 +97,11 @@
     "type": "crt",
     "questions": [
       {
-        "text": "Sean received both the 5th highest and the 5th lowest mark in the class. How many students are there in the class?",
+        "text": "In an athletics team, females are four times more likely to win a medal than males. This year the team has won 20 medals so far. How many of these have been won by males?",
         "answers": []
       }
     ]
   }
 ]
+
+

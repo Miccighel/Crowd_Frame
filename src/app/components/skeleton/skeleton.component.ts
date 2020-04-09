@@ -201,7 +201,7 @@ export class SkeletonComponent {
     this.allScales = this.configService.environment.allScales;
     this.useEachScale = this.configService.environment.useEachScale;
 
-    this.tokenInput = new FormControl('', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
+    this.tokenInput = new FormControl('BZEDUKJKXPQ', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
     this.tokenForm = formBuilder.group({
       "tokenInput": this.tokenInput
     });
