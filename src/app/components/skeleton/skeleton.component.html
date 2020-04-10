@@ -83,7 +83,7 @@
         <mat-card>
           <mat-card-title>Please answer each question</mat-card-title>
           <mat-card-content *ngIf="questionnaire.type=='standard'">
-            <mat-radio-group *ngFor="let question of questionnaire.questions; let j=index" aria-labelledby="radio-button-label" class="radio-button-group" formControlName="control_{{j}}">
+            <mat-radio-group *ngFor="let question of questionnaire.questions; let j=index" aria-labelledby="radio-button-label" class="radio-button-group" formControlName="{{question.name}}">
               <label>{{j + 1}}) {{question.text}}</label>
               <mat-radio-button *ngFor="let answer of question.answers; let k=index" class="radio-button" value="{{k}}">{{answer}}</mat-radio-button>
             </mat-radio-group>
@@ -92,13 +92,13 @@
             <mat-form-field *ngFor="let question of questionnaire.questions; let j=index">
               <label>{{j + 1}}) {{question.text}}</label>
               <input matInput type="number" placeholder="" formControlName="control_{{j}}">
-              <mat-error *ngIf="checkFormControl(questionnairesForm[i],'control_'.concat(j.toString()), 'required')">
+              <mat-error *ngIf="checkFormControl(questionnairesForm[i],question.name, 'required')">
                 This field is required
               </mat-error>
-              <mat-error *ngIf="checkFormControl(questionnairesForm[i],'control_'.concat(j.toString()), 'min')">
+              <mat-error *ngIf="checkFormControl(questionnairesForm[i],question.name, 'min')">
                 Min value allowed: 0
               </mat-error>
-              <mat-error *ngIf="checkFormControl(questionnairesForm[i],'control_'.concat(j.toString()), 'max')">
+              <mat-error *ngIf="checkFormControl(questionnairesForm[i],question.name, 'max')">
                 Max value allowed: 100
               </mat-error>
             </mat-form-field>
@@ -127,52 +127,34 @@
             <p><span class="hit-value">Claimant/Source:</span> {{document.claimant}}</p>
             <p><span class="hit-value">Date:</span> {{document.date}}</p>
             <p><span class="hit-value">Statement:</span> {{document.statement}}</p>
-            <label>Use this search engine to find evidence about the truthfulness of the statement</label>
             <app-crowd-xplorer id="app-crowd-xplorer-{{i}}"
                                (resultEmitter)="storeSearchEngineRetrievedResponse($event)"
                                (queryEmitter)="storeSearchEngineUserQuery($event)"
                                (selectedRowEmitter)="storeSearchEngineSelectedResponse($event)"
             ></app-crowd-xplorer>
-            <label *ngIf="this.scale=='S6'">
-              Please select (or copy & paste) one of the URLs above to justify the
-              truthfulness value of the statement, then input the truth level as one from the six labels provided
-              below
-            </label>
-            <label *ngIf="this.scale=='S3'">
-              Please select (or copy & paste) one of the URLs above to justify the
-              truthfulness value of the statement, then input the truth level as one from the three labels provided
-              below</label>
-            <label *ngIf="this.scale=='S100'">
-              Please select (or copy & paste) one of the URLs above to justify the
-              truthfulness value of the statement, then input the truth level using the slider provided below
-            </label>
-            <mat-form-field id="url-field">
-              <input #urlField matInput type="text" [formControl]="documentsForm[i].controls['worker_url']" disabled="true">
-              <button mat-icon-button matPrefix>
-                <mat-icon>{{'arrow_right_alt'}}</mat-icon>
-              </button>
-              <mat-error *ngIf="checkFormControl(documentsForm[i],'worker_url', 'required')">
-                This field is required
-              </mat-error>
-              <mat-error *ngIf="checkFormControl(documentsForm[i], 'worker_url', 'invalidSearchEngineUrl')">
-                Please select (or copy & paste) one of the URLs shown above.
-              </mat-error>
-            </mat-form-field>
-            <mat-radio-group *ngIf="scale=='S6'" aria-labelledby="radio-button-label" class="radio-button-group" [formControl]="documentsForm[i].controls['worker_value']">
-              <mat-radio-button class="radio-button" value="1">Lie</mat-radio-button>
-              <mat-radio-button class="radio-button" value="2">False</mat-radio-button>
-              <mat-radio-button class="radio-button" value="3">Barely True</mat-radio-button>
-              <mat-radio-button class="radio-button" value="4">Half True</mat-radio-button>
-              <mat-radio-button class="radio-button" value="5">Mostly True</mat-radio-button>
-              <mat-radio-button class="radio-button" value="6">True</mat-radio-button>
-            </mat-radio-group>
-            <mat-radio-group *ngIf="scale=='S3'" aria-labelledby="radio-button-label" class="radio-button-group" [formControl]="documentsForm[i].controls['worker_value']">
-              <mat-radio-button class="radio-button" value="1">Negative</mat-radio-button>
-              <mat-radio-button class="radio-button" value="2">In Between</mat-radio-button>
-              <mat-radio-button class="radio-button" value="3">Positive</mat-radio-button>
-            </mat-radio-group>
-            <label *ngIf="scale=='S100'">Selected value: {{documentsForm[i].controls['worker_value'].value}}</label>
-            <mat-slider *ngIf="scale=='S100'" min="0" max="100" step="1" thumbLabel tickInterval="1" [formControl]="documentsForm[i].controls['worker_value']"></mat-slider>
+            <div *ngFor="let dimension of this.dimensions; let j=index" class="dimension-text">
+              <mat-radio-group *ngIf="this.scale=='S6'" aria-labelledby="radio-button-label" class="radio-button-group">
+                <mat-radio-button class="radio-button" value="1">Lie</mat-radio-button>
+                <mat-radio-button class="radio-button" value="2">False</mat-radio-button>
+                <mat-radio-button class="radio-button" value="3">Barely True</mat-radio-button>
+                <mat-radio-button class="radio-button" value="4">Half True</mat-radio-button>
+                <mat-radio-button class="radio-button" value="5">Mostly True</mat-radio-button>
+                <mat-radio-button class="radio-button" value="6">True</mat-radio-button>
+              </mat-radio-group>
+              <div *ngIf="dimension.justification==true" class="dimension-text-primary">
+                <div class="dimension-text-field">
+                  <mat-form-field appearance="fill">
+                    <mat-label>Your justification here</mat-label>
+                    <textarea matInput formControlName="{{dimension.name}}_justification" rows="3"></textarea>
+                    <mat-error *ngIf="checkFormControl(documentsForm[i],(dimension.name).concat('_justification'), 'required')">
+                      This field is required
+                    </mat-error>
+                  </mat-form-field>
+                </div>
+
+              </div>
+            </div>
+
           </mat-card-content>
           <mat-card-actions>
             <button mat-flat-button color="primary" matStepperPrevious *ngIf="i>0"
@@ -201,7 +183,7 @@
 
   <!-- Outcome markup -->
   <mat-step *ngIf="documents" [editable]="false">
-    <ng-template matStepLabel> Outcome </ng-template>
+    <ng-template matStepLabel> Outcome</ng-template>
     <!-- Success section - shown when the worker successfully completes the task -->
     <div id="success-section" class="outcome-section container" *ngIf="taskCompleted && taskSuccessful">
       <mat-card>

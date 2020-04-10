@@ -15,6 +15,7 @@ import * as AWS from 'aws-sdk';
 import {ManagedUpload} from "aws-sdk/clients/s3";
 import {Questionnaire} from "../../models/skeleton/questionnaire";
 import {faSpinner} from "@fortawesome/free-solid-svg-icons";
+import {Dimension} from "../../models/skeleton/dimension";
 
 /* Component HTML Tag definition */
 @Component({
@@ -100,6 +101,7 @@ export class SkeletonComponent {
   workersFile: string;
   /* File where each questionnaire is stored */
   questionnairesFile: string;
+  dimensionsFile: string;
   /* File where each hit is stored */
   hitsFile: string;
   /* Folder in which upload data produced within the task by current worker */
@@ -117,6 +119,9 @@ export class SkeletonComponent {
   questionnaireAmount: number;
 
   /* |--------- HIT ELEMENTS - DECLARATION ---------| */
+
+  dimensions: Array<Dimension>;
+  dimensionsAmount: number;
 
   /* Array of form references, one for each document within a Hit */
   documentsForm: FormGroup[];
@@ -201,7 +206,7 @@ export class SkeletonComponent {
     this.allScales = this.configService.environment.allScales;
     this.useEachScale = this.configService.environment.useEachScale;
 
-    this.tokenInput = new FormControl('RQJRYSGUYJN', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
+    this.tokenInput = new FormControl('IQPUWRABEKO', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
     this.tokenForm = formBuilder.group({
       "tokenInput": this.tokenInput
     });
@@ -222,6 +227,7 @@ export class SkeletonComponent {
     this.instructionsFile = `${this.folder}${this.scale}/instructions.html`;
     this.workersFile = `${this.folder}${this.scale}/workers.json`;
     this.questionnairesFile = `${this.folder}${this.scale}/questionnaires.json`;
+    this.dimensionsFile = `${this.folder}${this.scale}/dimensions.json`;
     this.hitsFile = `${this.folder}${this.scale}/hits.json`;
     this.workerFolder = `${this.folder}${this.scale}/Data/${this.workerIdentifier}`;
     this.s3 = new AWS.S3({
@@ -252,6 +258,7 @@ export class SkeletonComponent {
     /* Font awesome spinner icon initialization */
     this.faSpinner = faSpinner;
 
+    /* The loading spinner is stopped */
     this.ngxService.stop();
   }
 
@@ -385,35 +392,42 @@ export class SkeletonComponent {
            * This means that only a required validator is required to check answer presence
            */
           let controlsConfig = {};
-          for (let index_question = 0; index_question < questionnaire.questions.length; index_question++) controlsConfig[`control_${index_question}`] = new FormControl('', [Validators.required])
+          for (let index_question = 0; index_question < questionnaire.questions.length; index_question++) controlsConfig[`${this.questionnaires[index].questions[index_question].name}`] = new FormControl('', [Validators.required])
           this.questionnairesForm[index] = this.formBuilder.group(controlsConfig)
         } else {
           /* If the questionnaire is a crt one it means that it has only one question where the answer must be a number between 0 and 100 chosen by user.
            * This means that required, max and min validators are needed
            */
           let controlsConfig = {};
-          for (let index_question = 0; index_question < questionnaire.questions.length; index_question++) controlsConfig[`control_${index_question}`] = new FormControl('', [Validators.max(100), Validators.min(0), Validators.required])
+          for (let index_question = 0; index_question < questionnaire.questions.length; index_question++) controlsConfig[`${this.questionnaires[index].questions[index_question].name}`] = new FormControl('', [Validators.max(100), Validators.min(0), Validators.required])
           this.questionnairesForm[index] = this.formBuilder.group(controlsConfig)
         }
       }
 
       /* |- HIT DOCUMENTS - INITIALIZATION-| */
 
+      this.documentsAmount = this.hit.documents_number;
+
+      /* The array of documents is initialized */
+      this.dimensions = new Array<Dimension>();
+
+      let rawDimensions = await this.download(this.dimensionsFile);
+      this.dimensionsAmount = rawDimensions.length;
+
+      for (let index = 0; index < this.dimensionsAmount; index++) this.dimensions.push(new Dimension(index, rawDimensions[index]));
+
       /* The array of documents is initialized */
       this.documents = new Array<Document>();
-      this.documentsAmount = this.hit.documents_number;
 
       /* A form for each document is initialized */
       this.documentsForm = new Array<FormGroup>();
       for (let index = 0; index < this.documentsAmount; index++) {
-        /* Validators are initialized for each field to ensure data consistency */
-        let workerValue = null;
-        if (this.scale != "S100") workerValue = new FormControl('', [Validators.required]); else workerValue = new FormControl(50, [Validators.required]);
-        let workerUrl = new FormControl('', [Validators.required, this.validateSearchEngineUrl.bind(this)]);
-        this.documentsForm[index] = this.formBuilder.group({
-          "worker_value": workerValue,
-          "worker_url": workerUrl,
-        })
+        let controlsConfig = {};
+        for (let index_dimension = 0; index_dimension < this.dimensions.length; index_dimension++) {
+          let dimension = this.dimensions[index_dimension];
+          if(dimension.justification) controlsConfig[`${dimension.name}_justification`] = new FormControl('', [Validators.required])
+        }
+        this.documentsForm[index] = this.formBuilder.group(controlsConfig)
       }
 
       /*  Each document of the current hit is parsed using the Document interface.  */

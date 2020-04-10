@@ -28,6 +28,7 @@ export class Question {
   /* DO NOT REMOVE THIS ATTRIBUTE */
   index: number;
 
+  name: string;
   text: string;
   answers: Array<string>;
 
@@ -38,6 +39,7 @@ export class Question {
     /* DO NOT REMOVE THIS LINE */
     this.index = index;
 
+    this.name = data["name"];
     this.text = data["text"];
     this.answers = new Array<string>();
     for (const [_, answer] of data["answers"].entries()) this.answers.push(answer)

@@ -3,6 +3,7 @@
     "type": "standard",
     "questions": [
       {
+        "name": "age",
         "text": "What is your age range?",
         "answers": [
           "0-18",
@@ -14,6 +15,7 @@
         ]
       },
       {
+        "name": "school",
         "text": "What is the highest level of school you have completed or the highest degree you have received?",
         "answers": [
           "High school incomplete or less",
@@ -25,6 +27,7 @@
         ]
       },
       {
+        "name": "taxes",
         "text": "Last year what was your total family income from all sources, before taxes?",
         "answers": [
           "Less than 10,000",
@@ -39,6 +42,7 @@
         ]
       },
       {
+        "name": "political_views",
         "text": "In general, would you describe your political views as",
         "answers": [
           "Very conservative",
@@ -49,6 +53,7 @@
         ]
       },
       {
+        "name": "consideration",
         "text": "In politics today, do you consider yourself a",
         "answers": [
           "Republican",
@@ -58,6 +63,7 @@
         ]
       },
       {
+        "name": "southern_border",
         "text": "Should the U.S. build a wall along the southern border?",
         "answers": [
           "Agree",
@@ -66,6 +72,7 @@
         ]
       },
       {
+        "name": "environment",
         "text": "Should the government increase environmental regulations to prevent climate change?",
         "answers": [
           "Agree",
@@ -76,6 +83,7 @@
     ]
   },
   {
+    "name": "farmers",
     "type": "crt",
     "questions": [
       {
@@ -85,6 +93,7 @@
     ]
   },
   {
+    "name": "marks",
     "type": "crt",
     "questions": [
       {
@@ -94,6 +103,7 @@
     ]
   },
   {
+    "name": "athletics",
     "type": "crt",
     "questions": [
       {

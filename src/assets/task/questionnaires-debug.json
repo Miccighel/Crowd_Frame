@@ -3,6 +3,7 @@
     "type": "standard",
     "questions": [
       {
+        "name": "age",
         "text": "What is your age range?",
         "answers": [
           "0-18",
@@ -14,6 +15,7 @@
         ]
       },
       {
+        "name": "school",
         "text": "What is the highest level of school you have completed or the highest degree you have received?",
         "answers": [
           "High school incomplete or less",
@@ -23,15 +25,6 @@
           "Some postgraduate or professional schooling, no postgraduate degree",
           "Postgraduate or professional degree, including master’s, doctorate, medical or law degree"
         ]
-      }
-    ]
-  },
-  {
-    "type": "crt",
-    "questions": [
-      {
-        "text": "If three farmers can plant three trees in three hours, how long would it take nine farmers to plant nine trees?",
-        "answers": []
       }
     ]
   }
