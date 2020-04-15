@@ -34,18 +34,12 @@ button:nth-child(2) {
 
 /* Task specific styles */
 
-.questionnaire-section mat-card-content mat-radio-group {
-  padding-bottom: 0.5%;
-  padding-top: 0.5%;
-}
-
-.questionnaire-section mat-card-content mat-radio-group label {
+.question label {
   font-weight: bold;
-  padding-bottom: 0.5%;
 }
 
-.questionnaire-section mat-card-content mat-radio-group input {
-  margin-top: 1%;
+.question .question-text {
+  margin-bottom: 1%;
 }
 
 mat-card-content mat-form-field label {
@@ -64,9 +58,18 @@ mat-card-content label {
   font-weight: bold;
 }
 
-#url-field {
+.url-field {
+  display: none;
   padding-top: 0;
   margin-top: 0;
+  margin-bottom: 1%;
+}
+
+.dimension {
+  margin-bottom: 1%;
+}
+
+.dimension-description {
   margin-bottom: 1%;
 }
 
@@ -74,13 +77,12 @@ mat-card-content label {
   margin-bottom: 1%;
 }
 
-.dimension-text div.dimension-text-primary:last-child {
-  margin-bottom: 0;
-}
-
-
 .dimension-text div.dimension-text-field {
   margin-top: 1%;
+}
+
+.dimension mat-radio-group:last-child {
+  margin-bottom: 0 !important;
 }
 
 .mat-card-title {

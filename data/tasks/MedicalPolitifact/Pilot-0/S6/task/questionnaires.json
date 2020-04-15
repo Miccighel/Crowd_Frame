@@ -83,30 +83,30 @@
     ]
   },
   {
-    "name": "farmers",
     "type": "crt",
     "questions": [
       {
+        "name": "farmers",
         "text": "If three farmers can plant three trees in three hours, how long would it take nine farmers to plant nine trees?",
         "answers": []
       }
     ]
   },
   {
-    "name": "marks",
     "type": "crt",
     "questions": [
       {
+        "name": "marks",
         "text": "Sean received both the 5th highest and the 5th lowest mark in the class. How many students are there in the class?",
         "answers": []
       }
     ]
   },
   {
-    "name": "athletics",
     "type": "crt",
     "questions": [
       {
+        "name": "athletics",
         "text": "In an athletics team, females are four times more likely to win a medal than males. This year the team has won 20 medals so far. How many of these have been won by males?",
         "answers": []
       }

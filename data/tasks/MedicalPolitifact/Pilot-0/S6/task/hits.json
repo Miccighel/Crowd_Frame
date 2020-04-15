@@ -1,0 +1,194 @@
+[
+  {
+    "unit_id": "unit_0",
+    "token_input": "HRROZNUIUAY",
+    "token_output": "CIIPNJIMKTL",
+    "documents_number": 8,
+    "documents": [
+      {
+        "name": "true_doc1",
+        "statement": "On February 7, the WHO warned about the limited stock of PPE. That same day, the Trump administration announced it was sending 18 tons of masks, gowns and respirators to China.",
+        "claimant": "Facebook Post",
+        "date": "2020-02-04",
+        "originated-from": "Facebook Posts"
+      },
+      {
+        "name": "LOW",
+        "statement": "If I were not a Formula One pilot, I would be a football player.",
+        "claimant": "Abraham Lincoln",
+        "date": "2020-04-01",
+        "originated-from": "Facebook Post"
+      },
+      {
+        "name": "mostly-false_doc8",
+        "statement": "Says Joe Biden \u201cwas in charge of the H1N1 Swine Flu epidemic which killed thousands of people. The response was one of the worst on record. Our response is one of the best, with fast action of border closings & a 78% Approval Rating, the highest on record. His was lowest!\u201d",
+        "claimant": "Donald Trump",
+        "date": "2020-12-03",
+        "originated-from": "Tweet"
+      },
+      {
+        "name": "HIGH",
+        "statement": "Yes, We can!",
+        "claimant": "Barack Obama",
+        "date": "2008-01-08.",
+        "originated-from": "Facebook Post"
+      },
+      {
+        "name": "mostly-true_doc6",
+        "statement": "Says it was \u201cunquestionably\u201d not within his \u201clegal authority\u201d to postpone Illinois\u2019 primary election by changing the date or shifting to vote-by-mail.",
+        "claimant": "Jb Pritzker",
+        "date": "2020-17-03",
+        "originated-from": "Press Conference"
+      },
+      {
+        "name": "pants-on-fire_doc10",
+        "statement": "A video says that the Vatican confirmed that Pope Francis and two aides tested positive for coronavirus.",
+        "claimant": "Youtube Video",
+        "date": "2020-29-02",
+        "originated-from": "Youtube Videos"
+      },
+      {
+        "name": "false_doc6",
+        "statement": "Drinking \u201cwater a lot and gargling with warm water & salt or vinegar eliminates\u201d the coronavirus.",
+        "claimant": "Viral Image",
+        "date": "2020-13-03",
+        "originated-from": "Viral Image"
+      },
+      {
+        "name": "half-true_doc7",
+        "statement": "Harvard scientists say the coronavirus is \u201cspreading so fast that it will infect 70% of humanity this year.\u201d",
+        "claimant": "Facebook Post",
+        "date": "2020-10-03",
+        "originated-from": "Viral Image"
+      }
+    ]
+  },
+  {
+    "unit_id": "unit_1",
+    "token_input": "STCEGNTHKPQ",
+    "token_output": "TSQUMUYMZKG",
+    "documents_number": 8,
+    "documents": [
+      {
+        "name": "HIGH",
+        "statement": "Yes, We can!",
+        "claimant": "Barack Obama",
+        "date": "2008-01-08.",
+        "originated-from": "Facebook Post"
+      },
+      {
+        "name": "true_doc1",
+        "statement": "On February 7, the WHO warned about the limited stock of PPE. That same day, the Trump administration announced it was sending 18 tons of masks, gowns and respirators to China.",
+        "claimant": "Facebook Post",
+        "date": "2020-02-04",
+        "originated-from": "Facebook Posts"
+      },
+      {
+        "name": "pants-on-fire_doc10",
+        "statement": "A video says that the Vatican confirmed that Pope Francis and two aides tested positive for coronavirus.",
+        "claimant": "Youtube Video",
+        "date": "2020-29-02",
+        "originated-from": "Youtube Videos"
+      },
+      {
+        "name": "LOW",
+        "statement": "If I were not a Formula One pilot, I would be a football player.",
+        "claimant": "Abraham Lincoln",
+        "date": "2020-04-01",
+        "originated-from": "Facebook Post"
+      },
+      {
+        "name": "mostly-false_doc8",
+        "statement": "Says Joe Biden \u201cwas in charge of the H1N1 Swine Flu epidemic which killed thousands of people. The response was one of the worst on record. Our response is one of the best, with fast action of border closings & a 78% Approval Rating, the highest on record. His was lowest!\u201d",
+        "claimant": "Donald Trump",
+        "date": "2020-12-03",
+        "originated-from": "Tweet"
+      },
+      {
+        "name": "mostly-true_doc6",
+        "statement": "Says it was \u201cunquestionably\u201d not within his \u201clegal authority\u201d to postpone Illinois\u2019 primary election by changing the date or shifting to vote-by-mail.",
+        "claimant": "Jb Pritzker",
+        "date": "2020-17-03",
+        "originated-from": "Press Conference"
+      },
+      {
+        "name": "half-true_doc7",
+        "statement": "Harvard scientists say the coronavirus is \u201cspreading so fast that it will infect 70% of humanity this year.\u201d",
+        "claimant": "Facebook Post",
+        "date": "2020-10-03",
+        "originated-from": "Viral Image"
+      },
+      {
+        "name": "false_doc6",
+        "statement": "Drinking \u201cwater a lot and gargling with warm water & salt or vinegar eliminates\u201d the coronavirus.",
+        "claimant": "Viral Image",
+        "date": "2020-13-03",
+        "originated-from": "Viral Image"
+      }
+    ]
+  },
+  {
+    "unit_id": "unit_2",
+    "token_input": "TGWAAPZLEEL",
+    "token_output": "RCZYHRLSXCW",
+    "documents_number": 8,
+    "documents": [
+      {
+        "name": "true_doc1",
+        "statement": "On February 7, the WHO warned about the limited stock of PPE. That same day, the Trump administration announced it was sending 18 tons of masks, gowns and respirators to China.",
+        "claimant": "Facebook Post",
+        "date": "2020-02-04",
+        "originated-from": "Facebook Posts"
+      },
+      {
+        "name": "pants-on-fire_doc10",
+        "statement": "A video says that the Vatican confirmed that Pope Francis and two aides tested positive for coronavirus.",
+        "claimant": "Youtube Video",
+        "date": "2020-29-02",
+        "originated-from": "Youtube Videos"
+      },
+      {
+        "name": "false_doc6",
+        "statement": "Drinking \u201cwater a lot and gargling with warm water & salt or vinegar eliminates\u201d the coronavirus.",
+        "claimant": "Viral Image",
+        "date": "2020-13-03",
+        "originated-from": "Viral Image"
+      },
+      {
+        "name": "half-true_doc7",
+        "statement": "Harvard scientists say the coronavirus is \u201cspreading so fast that it will infect 70% of humanity this year.\u201d",
+        "claimant": "Facebook Post",
+        "date": "2020-10-03",
+        "originated-from": "Viral Image"
+      },
+      {
+        "name": "HIGH",
+        "statement": "Yes, We can!",
+        "claimant": "Barack Obama",
+        "date": "2008-01-08.",
+        "originated-from": "Facebook Post"
+      },
+      {
+        "name": "mostly-true_doc6",
+        "statement": "Says it was \u201cunquestionably\u201d not within his \u201clegal authority\u201d to postpone Illinois\u2019 primary election by changing the date or shifting to vote-by-mail.",
+        "claimant": "Jb Pritzker",
+        "date": "2020-17-03",
+        "originated-from": "Press Conference"
+      },
+      {
+        "name": "LOW",
+        "statement": "If I were not a Formula One pilot, I would be a football player.",
+        "claimant": "Abraham Lincoln",
+        "date": "2020-04-01",
+        "originated-from": "Facebook Post"
+      },
+      {
+        "name": "mostly-false_doc8",
+        "statement": "Says Joe Biden \u201cwas in charge of the H1N1 Swine Flu epidemic which killed thousands of people. The response was one of the worst on record. Our response is one of the best, with fast action of border closings & a 78% Approval Rating, the highest on record. His was lowest!\u201d",
+        "claimant": "Donald Trump",
+        "date": "2020-12-03",
+        "originated-from": "Tweet"
+      }
+    ]
+  }
+]

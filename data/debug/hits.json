@@ -1,0 +1,89 @@
+[
+  {
+    "unit_id": "unit_0",
+    "token_input": "NJLVKULQOWA",
+    "token_output": "QVTIEUTZZBT",
+    "documents_number": 3,
+    "documents": [
+      {
+        "name": "true_doc1",
+        "statement": "On February 7, the WHO warned about the limited stock of PPE. That same day, the Trump administration announced it was sending 18 tons of masks, gowns and respirators to China.",
+        "claimant": "Facebook Post",
+        "date": "2020-02-04",
+        "originated-from": "Facebook Posts"
+      },
+      {
+        "name": "LOW",
+        "statement": "If I were not a Formula One pilot, I would be a football player.",
+        "claimant": "Abraham Lincoln",
+        "date": "2020-04-01",
+        "originated-from": "Facebook Post"
+      },
+      {
+        "name": "HIGH",
+        "statement": "Yes, We can!",
+        "claimant": "Barack Obama",
+        "date": "2008-01-08.",
+        "originated-from": "Facebook Post"
+      }
+    ]
+  },
+  {
+    "unit_id": "unit_1",
+    "token_input": "LPVMOQLUSNA",
+    "token_output": "IXGMJWBQNVS",
+    "documents_number": 3,
+    "documents": [
+      {
+        "name": "HIGH",
+        "statement": "Yes, We can!",
+        "claimant": "Barack Obama",
+        "date": "2008-01-08.",
+        "originated-from": "Facebook Post"
+      },
+      {
+        "name": "true_doc1",
+        "statement": "On February 7, the WHO warned about the limited stock of PPE. That same day, the Trump administration announced it was sending 18 tons of masks, gowns and respirators to China.",
+        "claimant": "Facebook Post",
+        "date": "2020-02-04",
+        "originated-from": "Facebook Posts"
+      },
+      {
+        "name": "LOW",
+        "statement": "If I were not a Formula One pilot, I would be a football player.",
+        "claimant": "Abraham Lincoln",
+        "date": "2020-04-01",
+        "originated-from": "Facebook Post"
+      }
+    ]
+  },
+  {
+    "unit_id": "unit_2",
+    "token_input": "GWBWHGXRNQD",
+    "token_output": "ILSZEZOMSXU",
+    "documents_number": 3,
+    "documents": [
+      {
+        "name": "true_doc1",
+        "statement": "On February 7, the WHO warned about the limited stock of PPE. That same day, the Trump administration announced it was sending 18 tons of masks, gowns and respirators to China.",
+        "claimant": "Facebook Post",
+        "date": "2020-02-04",
+        "originated-from": "Facebook Posts"
+      },
+      {
+        "name": "HIGH",
+        "statement": "Yes, We can!",
+        "claimant": "Barack Obama",
+        "date": "2008-01-08.",
+        "originated-from": "Facebook Post"
+      },
+      {
+        "name": "LOW",
+        "statement": "If I were not a Formula One pilot, I would be a football player.",
+        "claimant": "Abraham Lincoln",
+        "date": "2020-04-01",
+        "originated-from": "Facebook Post"
+      }
+    ]
+  }
+]

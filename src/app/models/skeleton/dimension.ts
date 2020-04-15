@@ -8,7 +8,6 @@ export class Dimension {
 
   name: string;
   description: string;
-  input: string;
   justification: boolean;
   url: boolean;
 
@@ -21,7 +20,6 @@ export class Dimension {
 
     this.name =           data["name"];
     this.description =    data["description"];
-    this.input =          data["input"];
     this.justification =  data["justification"];
     this.url =            data["url"]
   }

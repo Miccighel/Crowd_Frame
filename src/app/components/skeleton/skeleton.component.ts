@@ -16,6 +16,7 @@ import {ManagedUpload} from "aws-sdk/clients/s3";
 import {Questionnaire} from "../../models/skeleton/questionnaire";
 import {faSpinner} from "@fortawesome/free-solid-svg-icons";
 import {Dimension} from "../../models/skeleton/dimension";
+import {createLogErrorHandler} from "@angular/compiler-cli/ngcc/src/execution/tasks/completion";
 
 /* Component HTML Tag definition */
 @Component({
@@ -109,23 +110,25 @@ export class SkeletonComponent {
 
   /* |--------- QUESTIONNAIRE ELEMENTS - DECLARATION ---------| */
 
+  /* Array of form references, one for each questionnaire within a Hit */
   questionnairesForm: FormGroup[];
-
   /* Reference to the current questionnaires */
   questionnaires: Array<Questionnaire>;
-
   /* Number of different questionnaires inserted within task's body
   * (i.e., a standard questionnaire and two cognitive questionnaires  */
   questionnaireAmount: number;
 
   /* |--------- HIT ELEMENTS - DECLARATION ---------| */
 
+  /* Array of worker answers dimensions */
   dimensions: Array<Dimension>;
+  /* Amount of asked dimensions */
   dimensionsAmount: number;
+  /* Reference to the current dimension */
+  currentDimension: number;
 
   /* Array of form references, one for each document within a Hit */
   documentsForm: FormGroup[];
-
   /* Amount of documents within a hit */
   documentsAmount: number;
   /* Array of documents */
@@ -206,7 +209,7 @@ export class SkeletonComponent {
     this.allScales = this.configService.environment.allScales;
     this.useEachScale = this.configService.environment.useEachScale;
 
-    this.tokenInput = new FormControl('IQPUWRABEKO', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
+    this.tokenInput = new FormControl('NJLVKULQOWA', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
     this.tokenForm = formBuilder.group({
       "tokenInput": this.tokenInput
     });
@@ -219,10 +222,15 @@ export class SkeletonComponent {
 
     this.region = this.configService.environment.region;
     this.bucket = this.configService.environment.bucket;
-    if (this.useEachScale) {
-      this.folder = `${this.experimentId}/Multi/`;
+    if(this.configService.environment.subFolder != "") {
+      this.folder = `${this.experimentId}/${this.configService.environment.subFolder}`
     } else {
-      this.folder = `${this.experimentId}/Single/`;
+      this.folder = `${this.experimentId}`
+    }
+    if (this.useEachScale) {
+      this.folder = `${this.folder}/Multi/`;
+    } else {
+      this.folder = `${this.folder}/Single/`;
     }
     this.instructionsFile = `${this.folder}${this.scale}/instructions.html`;
     this.workersFile = `${this.folder}${this.scale}/workers.json`;
@@ -242,7 +250,7 @@ export class SkeletonComponent {
 
     /* |--------- COMMENT ELEMENTS - INITIALIZATION ---------| */
 
-    this.comment = new FormControl('' );
+    this.comment = new FormControl('');
     this.commentForm = formBuilder.group({
       "comment": this.comment,
     });
@@ -380,7 +388,7 @@ export class SkeletonComponent {
       let rawQuestionnaires = await this.download(this.questionnairesFile);
       this.questionnaireAmount = rawQuestionnaires.length;
 
-      /*  Each questionnaire is parsed using the Questionnaire class.  */
+      /* Each questionnaire is parsed using the Questionnaire class */
       for (let index = 0; index < this.questionnaireAmount; index++) this.questionnaires.push(new Questionnaire(index, rawQuestionnaires[index]));
 
       /* A form for each questionnaire is initialized */
@@ -404,17 +412,21 @@ export class SkeletonComponent {
         }
       }
 
-      /* |- HIT DOCUMENTS - INITIALIZATION-| */
+      /* |- HIT DIMENSIONS - INITIALIZATION -| */
 
-      this.documentsAmount = this.hit.documents_number;
-
-      /* The array of documents is initialized */
+      /* The array of dimensions is initialized */
       this.dimensions = new Array<Dimension>();
 
+      /* The dimensions stored on Amazon S3 are retrieved */
       let rawDimensions = await this.download(this.dimensionsFile);
       this.dimensionsAmount = rawDimensions.length;
 
+      /* Each dimension is parsed using the Dimension class */
       for (let index = 0; index < this.dimensionsAmount; index++) this.dimensions.push(new Dimension(index, rawDimensions[index]));
+
+      /* |- HIT DOCUMENTS - INITIALIZATION-| */
+
+      this.documentsAmount = this.hit.documents_number;
 
       /* The array of documents is initialized */
       this.documents = new Array<Document>();
@@ -425,7 +437,9 @@ export class SkeletonComponent {
         let controlsConfig = {};
         for (let index_dimension = 0; index_dimension < this.dimensions.length; index_dimension++) {
           let dimension = this.dimensions[index_dimension];
-          if(dimension.justification) controlsConfig[`${dimension.name}_justification`] = new FormControl('', [Validators.required])
+          if (this.scale != "S100") controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.required]); else controlsConfig[`${dimension.name}_value`] = new FormControl(50, [Validators.required]);
+          if (dimension.justification) controlsConfig[`${dimension.name}_justification`] = new FormControl('', [Validators.required])
+          if (dimension.url) controlsConfig[`${dimension.name}_url`] = new FormControl('', [Validators.required, this.validateSearchEngineUrl.bind(this)]);
         }
         this.documentsForm[index] = this.formBuilder.group(controlsConfig)
       }
@@ -466,8 +480,8 @@ export class SkeletonComponent {
 
       /* Indexes of high and low gold questions are retrieved */
       for (let index = 0; index < this.documentsAmount; index++) {
-        if (this.documents[index].getGoldQuestionIndex("HIGH")!=null) this.goldIndexHigh = this.documents[index].getGoldQuestionIndex("HIGH");
-        if (this.documents[index].getGoldQuestionIndex("LOW")!=null) this.goldIndexLow = this.documents[index].getGoldQuestionIndex("LOW");
+        if (this.documents[index].getGoldQuestionIndex("HIGH") != null) this.goldIndexHigh = this.documents[index].getGoldQuestionIndex("HIGH");
+        if (this.documents[index].getGoldQuestionIndex("LOW") != null) this.goldIndexLow = this.documents[index].getGoldQuestionIndex("LOW");
       }
 
       /*
@@ -500,8 +514,11 @@ export class SkeletonComponent {
    * These information are parsed and stored in the corresponding data structure.
    */
   public storeSearchEngineUserQuery(queryData: Object) {
-    /* The current document and user query are parsed from the JSON object */
+    /* The current document, dimension and user query are parsed from the JSON object */
     let currentDocument = parseInt(queryData['target']['id'].split("-")[3]);
+    let currentDimension = parseInt(queryData['target']['id'].split("-")[4]);
+    /* A reference to the current dimension is saved */
+    this.currentDimension = currentDimension;
     let currentUserQuery = queryData['detail'];
     let timeInSeconds = Date.now() / 1000;
     /* If some data for the current document already exists*/
@@ -509,6 +526,7 @@ export class SkeletonComponent {
       /* The new query is pushed into current document data array along with a index used to identify such query*/
       let storedQueries = Object.values(this.searchEngineQueries[currentDocument]['data']);
       storedQueries.push({
+        "dimension": currentDimension,
         "index": storedQueries.length,
         "timestamp": timeInSeconds,
         "text": currentUserQuery
@@ -522,6 +540,7 @@ export class SkeletonComponent {
       this.searchEngineQueries[currentDocument] = {};
       /* A new data array for the current document is created and the fist query is pushed */
       this.searchEngineQueries[currentDocument]['data'] = [{
+        "dimension": currentDimension,
         "index": 0,
         "timestamp": timeInSeconds,
         "text": currentUserQuery
@@ -539,8 +558,11 @@ export class SkeletonComponent {
    * These information are parsed and stored in the corresponding data structure.
    */
   public storeSearchEngineRetrievedResponse(retrievedResponseData: Object) {
-    /* The current document and user search engine retrieved response are parsed from the JSON object */
+    /* The current document, dimension and user search engine retrieved response are parsed from the JSON object */
     let currentDocument = parseInt(retrievedResponseData['target']['id'].split("-")[3]);
+    let currentDimension = parseInt(retrievedResponseData['target']['id'].split("-")[4]);
+    /* A reference to the current dimension is saved */
+    this.currentDimension = currentDimension;
     let currentRetrievedResponse = retrievedResponseData['detail'];
     let timeInSeconds = Date.now() / 1000;
     /* If some responses for the current document already exists*/
@@ -548,6 +570,7 @@ export class SkeletonComponent {
       /* The new response is pushed into current document data array along with its query index */
       let storedResponses = Object.values(this.searchEngineRetrievedResponses[currentDocument]['data']);
       storedResponses.push({
+        "dimension": currentDimension,
         "query": this.searchEngineQueries[currentDocument]['amount'] - 1,
         "timestamp": timeInSeconds,
         "response": currentRetrievedResponse,
@@ -561,6 +584,7 @@ export class SkeletonComponent {
       this.searchEngineRetrievedResponses[currentDocument] = {};
       /* A new data array for the current document is created and the fist response is pushed */
       this.searchEngineRetrievedResponses[currentDocument]['data'] = [{
+        "dimension": currentDimension,
         "query": this.searchEngineQueries[currentDocument]['amount'] - 1,
         "timestamp": timeInSeconds,
         "response": currentRetrievedResponse
@@ -570,7 +594,7 @@ export class SkeletonComponent {
       this.searchEngineRetrievedResponses[currentDocument]['amount'] = 1
     }
     /* The form control to set the url of the selected search result is enabled */
-    this.documentsForm[currentDocument].controls["worker_url"].enable();
+    this.documentsForm[currentDocument].controls[this.dimensions[this.currentDimension].name.concat("_url")].enable();
   }
 
   /*
@@ -580,8 +604,11 @@ export class SkeletonComponent {
    * These information are parsed and stored in the corresponding data structure.
    */
   public storeSearchEngineSelectedResponse(selectedResponseData: Object) {
-    /* The current document and user search engine retrieved response are parsed from the JSON object */
+    /* The current document, dimension and user search engine retrieved response are parsed from the JSON object */
     let currentDocument = parseInt(selectedResponseData['target']['id'].split("-")[3]);
+    let currentDimension = parseInt(selectedResponseData['target']['id'].split("-")[4]);
+    /* A reference to the current dimension is saved */
+    this.currentDimension = currentDimension;
     let currentSelectedResponse = selectedResponseData['detail'];
     let timeInSeconds = Date.now() / 1000;
     /* If some responses for the current document already exists*/
@@ -589,6 +616,7 @@ export class SkeletonComponent {
       /* The new response is pushed into current document data array along with its query index */
       let storedResponses = Object.values(this.searchEngineSelectedResponses[currentDocument]['data']);
       storedResponses.push({
+        "dimension": currentDimension,
         "query": this.searchEngineQueries[currentDocument]['amount'] - 1,
         "timestamp": timeInSeconds,
         "response": currentSelectedResponse,
@@ -602,6 +630,7 @@ export class SkeletonComponent {
       this.searchEngineSelectedResponses[currentDocument] = {};
       /* A new data array for the current document is created and the fist response is pushed */
       this.searchEngineSelectedResponses[currentDocument]['data'] = [{
+        "dimension": currentDimension,
         "query": this.searchEngineQueries[currentDocument]['amount'] - 1,
         "timestamp": timeInSeconds,
         "response": currentSelectedResponse
@@ -610,7 +639,7 @@ export class SkeletonComponent {
       /* IMPORTANT: the index of the last retrieved response for a document will be <amount -1> */
       this.searchEngineSelectedResponses[currentDocument]['amount'] = 1
     }
-    this.documentsForm[currentDocument].controls["worker_url"].setValue(currentSelectedResponse['url']);
+    this.documentsForm[currentDocument].controls[this.dimensions[this.currentDimension].name.concat("_url")].setValue(currentSelectedResponse['url']);
   }
 
   /*
@@ -622,23 +651,28 @@ export class SkeletonComponent {
   public validateSearchEngineUrl(workerUrlFormControl: FormControl) {
     /* If the stepped is initialized to something the task is started */
     if (this.stepper) {
-      if(this.stepper.selectedIndex >= this.questionnaireAmount) {
-        let currentDocument = this.stepper.selectedIndex - this.questionnaireAmount;
-        /* If there are data for the current document */
-        if (this.searchEngineRetrievedResponses[currentDocument]) {
-          let retrievedResponses = this.searchEngineRetrievedResponses[currentDocument];
-          if (retrievedResponses.hasOwnProperty("data")) {
-            /* The current set of responses is the total amount - 1 */
-            let currentSet = retrievedResponses["amount"] - 1;
-            /* The responses retrieved by search engine are selected */
-            let currentResponses = retrievedResponses["data"][currentSet]["response"];
-            /* Each response is scanned */
-            for (let index = 0; index < currentResponses.length; index++) {
-              /* As soon as an url that matches with the one selected/typed by the worker the validation is successful */
-              if (workerUrlFormControl.value == currentResponses[index].url) return null;
+      if (this.stepper.selectedIndex >= this.questionnaireAmount) {
+        /* If the worker has interacted with the form control of a dimension */
+        if (this.currentDimension) {
+          let currentDocument = this.stepper.selectedIndex - this.questionnaireAmount;
+          /* If there are data for the current document */
+          if (this.searchEngineRetrievedResponses[currentDocument]) {
+            let retrievedResponses = this.searchEngineRetrievedResponses[currentDocument];
+            if (retrievedResponses.hasOwnProperty("data")) {
+              /* The current set of responses is the total amount - 1 */
+              let currentSet = retrievedResponses["amount"] - 1;
+              /* The responses retrieved by search engine are selected */
+              let currentResponses = retrievedResponses["data"][currentSet]["response"];
+              let currentDimension = retrievedResponses["data"][currentSet]["dimension"];
+              /* Each response is scanned */
+              for (let index = 0; index < currentResponses.length; index++) {
+                /* As soon as an url that matches with the one selected/typed by the worker for the current dimension the validation is successful */
+                if (workerUrlFormControl.value == currentResponses[index].url && this.currentDimension == currentDimension) return null;
+              }
+              /* If no matching url has been found, raise the error */
+              return {invalidSearchEngineUrl: "Select (or copy & paste) one of the URLs shown above."}
             }
-            /* If no matching url has been found, raise the error */
-            return {invalidSearchEngineUrl: "Select (or copy & paste) one of the URLs shown above."}
+            return null
           }
           return null
         }
@@ -670,7 +704,7 @@ export class SkeletonComponent {
    * Three checks are performed:
    * 1) GLOBAL VALIDITY CHECK (QUESTIONNAIRE + DOCUMENTS): Verifies that each field of each form has valid values
    * 2) GOLD QUESTION CHECK:   Verifies if the truth value selected by worker for the gold question obviously false
-   *                           is lower that the value selected for the gold question obviously true
+   *                           is lower that the value selected for the gold question obviously true, for each dimension
    * 3) TIME SPENT CHECK:      Verifies if the time spent by worker on each document and questionnaire is higher than
    *                           two seconds, using the <timestampsElapsed> array
    * If each check is successful, the task can end. If the worker has some tries left, the task is reset.
@@ -692,7 +726,7 @@ export class SkeletonComponent {
     globalValidityCheck = this.performGlobalValidityCheck();
 
     /* 2) GOLD QUESTION CHECK performed here */
-    goldQuestionCheck = this.documentsForm[this.goldIndexLow].controls["worker_value"].value < this.documentsForm[this.goldIndexHigh].controls["worker_value"].value;
+    for (let dimension of this.dimensions) goldQuestionCheck = this.documentsForm[this.goldIndexLow].controls[dimension.name.concat('_value')].value < this.documentsForm[this.goldIndexHigh].controls[dimension.name.concat('_value')].value;
 
     /* 3) TIME SPENT CHECK performed here */
     timeSpentCheck = true;
@@ -790,6 +824,7 @@ export class SkeletonComponent {
           break;
         case "Finish":
           completedElement = this.questionnaireAmount + this.documentsAmount - 1;
+          currentElement = this.questionnaireAmount + this.documentsAmount - 1;
           break;
       }
 
@@ -856,14 +891,17 @@ export class SkeletonComponent {
             token_output: this.tokenOutput,
             tries_amount: this.allowedTries,
             questionnaire_amount: this.questionnaireAmount,
-            documents_amount: this.documentsAmount
+            documents_amount: this.documentsAmount,
+            dimensions_amount: this.dimensionsAmount
           };
           /* General info about task */
           await (this.upload(`${this.workerFolder}/task.json`, taskData));
-          /* The parsed document contained in current worker's hit */
-          await (this.upload(`${this.workerFolder}/documents.json`, this.documents));
           /* The answers of the current worker to the questionnaire */
           await (this.upload(`${this.workerFolder}/questionnaires.json`, this.questionnaires));
+          /* The parsed document contained in current worker's hit */
+          await (this.upload(`${this.workerFolder}/documents.json`, this.documents));
+          /* The dimensions of the answers of each worker */
+          await (this.upload(`${this.workerFolder}/dimensions.json`, this.dimensions));
 
         }
 
