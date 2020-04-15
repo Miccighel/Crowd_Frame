@@ -16,7 +16,6 @@ import {ManagedUpload} from "aws-sdk/clients/s3";
 import {Questionnaire} from "../../models/skeleton/questionnaire";
 import {faSpinner} from "@fortawesome/free-solid-svg-icons";
 import {Dimension} from "../../models/skeleton/dimension";
-import {createLogErrorHandler} from "@angular/compiler-cli/ngcc/src/execution/tasks/completion";
 
 /* Component HTML Tag definition */
 @Component({
@@ -209,7 +208,7 @@ export class SkeletonComponent {
     this.allScales = this.configService.environment.allScales;
     this.useEachScale = this.configService.environment.useEachScale;
 
-    this.tokenInput = new FormControl('NJLVKULQOWA', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
+    this.tokenInput = new FormControl('HRROZNUIUAY', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
     this.tokenForm = formBuilder.group({
       "tokenInput": this.tokenInput
     });

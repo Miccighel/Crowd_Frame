@@ -75,7 +75,7 @@ export class CrowdXplorer {
   /* Search results table UI variables and controls */
   resultsAmount = 0;
   resultsFound = false;
-  resultPageSize = 5;
+  resultPageSize = 10;
   resultPageSizeOptions = [5, 10, 15, 20];
   dataSource = new MatTableDataSource<any>();
   displayedColumns = ['name'];
