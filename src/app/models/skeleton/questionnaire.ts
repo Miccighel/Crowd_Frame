@@ -1,5 +1,7 @@
 /*
- * This class provides...
+ * This class provides a representation of a single questionnaire stored in the Amazon S3 bucket.
+ * The attribute <index> is additional and should not be touched and passed in the constructor.
+ * Each field of such Questionnaire must be mapped to an attribute of this class and set up in the constructor as it is shown.
  */
 export class Questionnaire {
 

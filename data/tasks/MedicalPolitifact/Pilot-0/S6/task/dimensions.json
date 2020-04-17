@@ -1,7 +1,7 @@
 [
   {
     "name": "truthfulness",
-    "description": "Please select one of the URLs below to justify the truthfulness value of the statement, then input the truth level as one from the six labels provided and write your justification.",
+    "description": "",
     "justification": true,
     "url": true
   }

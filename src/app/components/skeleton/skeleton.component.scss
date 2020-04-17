@@ -32,6 +32,12 @@ button:nth-child(2) {
   font-size: 0.50em !important;
 }
 
+mat-card-title {
+  padding-top: 1%;
+  padding-bottom: 1%;
+  margin-bottom: 1%;
+}
+
 /* Task specific styles */
 
 .question label {
@@ -58,6 +64,27 @@ mat-card-content label {
   font-weight: bold;
 }
 
+.statement {
+  margin-bottom: 1.5%;
+}
+
+.statement mat-expansion-panel {
+  border: 0;
+  box-shadow: 0 0 0 0;
+  border-radius: 0;
+  background-color: rgba(0,0,0,.03)
+}
+
+.statement mat-expansion-panel-header {
+  margin-bottom: 1.5%;
+}
+
+.statement .mat-expansion-panel-header-title {
+  display: inline;
+  width: 20%;
+  flex-grow: 0;
+}
+
 .url-field {
   display: none;
   padding-top: 0;
@@ -73,24 +100,21 @@ mat-card-content label {
   margin-bottom: 1%;
 }
 
-.dimension-text div.dimension-text-primary {
+.justification div.dimension-text-field {
+  margin-top: 1.5%;
+}
+
+.dimension mat-radio-group {
+  margin-top: 1%;
   margin-bottom: 1%;
 }
 
-.dimension-text div.dimension-text-field {
-  margin-top: 1%;
-}
-
-.dimension mat-radio-group:last-child {
-  margin-bottom: 0 !important;
-}
-
-.mat-card-title {
+.mat-card-title, .dimension h2, .instructions h2 {
   font-weight: lighter;
 }
 
 mat-card-content {
-  padding-top: 0.5%;
+  padding-top: 1%;
   padding-bottom: 0.5%;
 }
 
@@ -108,10 +132,6 @@ button {
   margin-left: 1%;
   font-weight: bold;
   color: #66bb6a;
-}
-
-.mat-stepper-horizontal mat-radio-group {
-  margin-top: 0;
 }
 
 .result-cell {
@@ -133,7 +153,7 @@ button {
 }
 
 #token-section form {
-  width: 90%;
+  width: 96%;
   margin: auto;
 }
 
@@ -158,7 +178,7 @@ mat-horizontal-stepper {
   background-color: transparent;
   margin-left: auto;
   margin-right: auto;
-  width: 90%;
+  width: 96%;
   margin-bottom: 2%;
 }
 
@@ -185,7 +205,7 @@ mat-form-field {
 
 .outcome-section div {
   margin: auto;
-  width: 90%;
+  width: 96%;
 }
 
 .outcome-section div mat-card {

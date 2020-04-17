@@ -1,5 +1,6 @@
 /*
- * This class provides...
+ * This class provides a representation of a single dimension which must be asked to each worker stored in the Amazon S3 bucket.
+ * Each field of such dimensions must be mapped to an attribute of this class and set up in the constructor as it is shown.
  */
 export class Dimension {
 

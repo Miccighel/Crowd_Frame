@@ -6,7 +6,7 @@
   [scale]="this.scale"
   [s3]="this.s3"
   [bucket]="this.bucket"
-  [instructionsFile]="this.instructionsFile">
+  [instructionsFile]="this.taskInstructionsFile">
 </app-instructions>
 
 <!-- |--------- TOKEN INPUT SECTION - MARKUP ---------| -->
@@ -79,9 +79,11 @@
   <mat-step *ngFor="let questionnaire of questionnaires; let i=index" [stepControl]="questionnairesForm[i]" [editable]="false">
     <div class="container">
       <form [formGroup]="questionnairesForm[i]" class="questionnaire-form">
-        <ng-template matStepLabel>Questionnaire {{i + 1}}/{{this.questionnaireAmount}}</ng-template>
+        <ng-template matStepLabel>Q{{i + 1}}</ng-template>
         <mat-card>
+          <mat-divider [inset]="true"></mat-divider>
           <mat-card-title>Please answer each question</mat-card-title>
+          <mat-divider [inset]="true"></mat-divider>
           <mat-card-content *ngIf="questionnaire.type=='standard'">
             <mat-radio-group *ngFor="let question of questionnaire.questions; let j=index" aria-labelledby="radio-button-label" class="radio-button-group question" formControlName="{{question.name}}">
               <div class="question-text">
@@ -123,28 +125,67 @@
     <div class="container">
       <form [formGroup]="documentsForm[i]">
         <mat-card>
-          <ng-template matStepLabel> Document {{i + 1}}/{{this.documentsAmount}} </ng-template>
+          <ng-template matStepLabel> S{{i + 1}}</ng-template>
+          <mat-divider [inset]="true"></mat-divider>
           <mat-card-title>Please judge the truthfulness of the following statement</mat-card-title>
+          <mat-divider [inset]="true"></mat-divider>
           <mat-card-content>
             <!-- Statement markup -->
             <div class="statement">
-              <p><span class="hit-value">Claimant/Source:</span> {{document.claimant}}</p>
-              <p><span class="hit-value">Date:</span> {{document.date}}</p>
-              <p><span class="hit-value">Statement:</span> {{document.statement}}</p>
+              <mat-expansion-panel [expanded]="true">
+                <mat-expansion-panel-header>
+                  <mat-panel-title>Claimant / Source</mat-panel-title>
+                  <mat-panel-description>Who made the statement</mat-panel-description>
+                </mat-expansion-panel-header>
+                <i>{{document.claimant}}</i>
+              </mat-expansion-panel>
+              <mat-expansion-panel [expanded]="true">
+                <mat-expansion-panel-header>
+                  <mat-panel-title>Date</mat-panel-title>
+                  <mat-panel-description>When the statement has been made</mat-panel-description>
+                </mat-expansion-panel-header>
+                <i>{{document.date}}</i>
+              </mat-expansion-panel>
+              <mat-expansion-panel [expanded]="true">
+                <mat-expansion-panel-header>
+                  <mat-panel-title>Text</mat-panel-title>
+                  <mat-panel-description>Content of the statement</mat-panel-description>
+                </mat-expansion-panel-header>
+                <i>{{document.statement}}</i>
+              </mat-expansion-panel>
+            </div>
+            <!-- Instructions markup -->
+            <div class="instructions">
+              <mat-divider [inset]="true"></mat-divider>
+              <h2>Instructions</h2>
+              <mat-divider [inset]="true"></mat-divider>
+              <p>{{instructions.caption}}</p>
+              <ol *ngIf="instructions.steps.length>0">
+                <li *ngFor="let step of this.instructions.steps"><p>{{step}}</p></li>
+              </ol>
             </div>
             <!-- Dimensions markup -->
             <div *ngFor="let dimension of this.dimensions; let j=index" class="dimension">
               <!-- Dimension description markup -->
-              <div class="dimension-description">
-                <label *ngIf="this.dimensions.length>1">{{j + 1}}) {{dimension.description}}</label>
-                <label *ngIf="this.dimensions.length<=1">{{dimension.description}}</label>
+              <div *ngIf="dimension.description != ''" class="dimension-description">
+                <mat-divider [inset]="true"></mat-divider>
+                <h2>Question</h2>
+                <mat-divider [inset]="true"></mat-divider>
+                <p>{{dimension.description}}</p>
               </div>
               <!-- Dimension search engine interface markup -->
-              <app-crowd-xplorer *ngIf="dimension.url" id="app-crowd-xplorer-{{i}}-{{j}}"
-                                 (resultEmitter)="storeSearchEngineRetrievedResponse($event)"
-                                 (queryEmitter)="storeSearchEngineUserQuery($event)"
-                                 (selectedRowEmitter)="storeSearchEngineSelectedResponse($event)"
-              ></app-crowd-xplorer>
+              <div class="search-engine">
+                <div *ngIf="dimension.url">
+                  <mat-divider [inset]="true"></mat-divider>
+                  <h2>Step 1</h2>
+                </div>
+                <mat-divider [inset]="true"></mat-divider>
+                <app-crowd-xplorer *ngIf="dimension.url" id="app-crowd-xplorer-{{i}}-{{j}}"
+                                   (resultEmitter)="storeSearchEngineRetrievedResponse($event)"
+                                   (queryEmitter)="storeSearchEngineUserQuery($event)"
+                                   (selectedRowEmitter)="storeSearchEngineSelectedResponse($event)"
+                ></app-crowd-xplorer>
+              </div>
               <!-- Dimension search engine url field markup (hidden) -->
               <mat-form-field *ngIf="dimension.url" class="url-field">
                 <input #urlField matInput type="text" formControlName="{{(dimension.name).concat('_url')}}">
@@ -159,26 +200,65 @@
                 </mat-error>
               </mat-form-field>
               <!-- Dimension truth level field markup -->
-              <mat-radio-group *ngIf="this.scale=='S6'" aria-labelledby="radio-button-label" class="radio-button-group" formControlName="{{(dimension.name).concat('_value')}}">
-                <mat-radio-button class="radio-button" value="1">Lie</mat-radio-button>
-                <mat-radio-button class="radio-button" value="2">False</mat-radio-button>
-                <mat-radio-button class="radio-button" value="3">Barely True</mat-radio-button>
-                <mat-radio-button class="radio-button" value="4">Half True</mat-radio-button>
-                <mat-radio-button class="radio-button" value="5">Mostly True</mat-radio-button>
-                <mat-radio-button class="radio-button" value="6">True</mat-radio-button>
-              </mat-radio-group>
-              <mat-radio-group *ngIf="this.scale=='S3'" aria-labelledby="radio-button-label" class="radio-button-group" formControlName="{{(dimension.name).concat('_value')}}">
-                <mat-radio-button class="radio-button" value="1">Negative</mat-radio-button>
-                <mat-radio-button class="radio-button" value="2">In Between</mat-radio-button>
-                <mat-radio-button class="radio-button" value="3">Positive</mat-radio-button>
-              </mat-radio-group>
-              <label *ngIf="this.scale=='S100'">Selected value: {{documentsForm[i].controls[(dimension.name).concat('_value')].value}}</label>
-              <mat-slider *ngIf="this.scale=='S100'" min="0" max="100" step="1" thumbLabel tickInterval="1" formControlName="{{(dimension.name).concat('_value')}}"></mat-slider>
+              <div class="truth-level">
+                <div *ngIf="!dimension.url">
+                  <mat-divider [inset]="true"></mat-divider>
+                  <h2>Step 1</h2>
+                  <mat-divider [inset]="true"></mat-divider>
+                </div>
+                <div *ngIf="dimension.url">
+                  <mat-divider [inset]="true"></mat-divider>
+                  <h2>Step 2</h2>
+                  <mat-divider [inset]="true"></mat-divider>
+                </div>
+                <mat-radio-group *ngIf="this.scale=='S6'" aria-labelledby="radio-button-label" class="radio-button-group" formControlName="{{(dimension.name).concat('_value')}}">
+                  <mat-radio-button class="radio-button" value="1">
+                    Lie <fa-icon matTooltip="The statement is not accurate and makes a ridicolous claim" [icon]="faInfoCircle"></fa-icon>
+                  </mat-radio-button>
+                  <mat-radio-button class="radio-button" value="2">
+                    False
+                    <fa-icon matTooltip="The statement is not accurate" [icon]="faInfoCircle"></fa-icon>
+                  </mat-radio-button>
+                  <mat-radio-button class="radio-button" value="3">
+                    Mostly False
+                    <fa-icon matTooltip="The statement contains an element of truth but ignores critical facts that would give a different impression" [icon]="faInfoCircle"></fa-icon>
+                  </mat-radio-button>
+                  <mat-radio-button class="radio-button" value="4">
+                    Half True
+                    <fa-icon matTooltip="The statement is partially accurate but leaves out important details or takes things out of context" [icon]="faInfoCircle"></fa-icon>
+                  </mat-radio-button>
+                  <mat-radio-button class="radio-button" value="5">
+                    Mostly True
+                    <fa-icon matTooltip="The statement is accurate but needs clarification or additional information" [icon]="faInfoCircle"></fa-icon>
+                  </mat-radio-button>
+                  <mat-radio-button class="radio-button" value="6">
+                    True
+                    <fa-icon matTooltip="The statement is accurate and there is nothing significant missing" [icon]="faInfoCircle"></fa-icon>
+                  </mat-radio-button>
+                </mat-radio-group>
+                <mat-radio-group *ngIf="this.scale=='S3'" aria-labelledby="radio-button-label" class="radio-button-group" formControlName="{{(dimension.name).concat('_value')}}">
+                  <mat-radio-button class="radio-button" value="1">Negative</mat-radio-button>
+                  <mat-radio-button class="radio-button" value="2">In Between</mat-radio-button>
+                  <mat-radio-button class="radio-button" value="3">Positive</mat-radio-button>
+                </mat-radio-group>
+                <label *ngIf="this.scale=='S100'">Selected value: {{documentsForm[i].controls[(dimension.name).concat('_value')].value}}</label>
+                <mat-slider *ngIf="this.scale=='S100'" min="0" max="100" step="1" thumbLabel tickInterval="1" formControlName="{{(dimension.name).concat('_value')}}"></mat-slider>
+              </div>
               <!-- Dimension text justification field markup -->
-              <div *ngIf="dimension.justification==true" class="dimension-text-primary">
+              <div *ngIf="dimension.justification==true" class="justification">
+                <div *ngIf="!dimension.url">
+                  <mat-divider [inset]="true"></mat-divider>
+                  <h2>Step 2</h2>
+                  <mat-divider [inset]="true"></mat-divider>
+                </div>
+                <div *ngIf="dimension.url">
+                  <mat-divider [inset]="true"></mat-divider>
+                  <h2>Step 3</h2>
+                  <mat-divider [inset]="true"></mat-divider>
+                </div>
                 <div class="dimension-text-field">
                   <mat-form-field appearance="fill">
-                    <mat-label>Your justification here</mat-label>
+                    <mat-label>Your justification here (You can use/copy text from the selected url)</mat-label>
                     <textarea matInput formControlName="{{dimension.name}}_justification" rows="3"></textarea>
                     <mat-error *ngIf="checkFormControl(documentsForm[i],(dimension.name).concat('_justification'), 'required')">
                       This field is required

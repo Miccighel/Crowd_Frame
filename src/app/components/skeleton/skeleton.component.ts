@@ -10,12 +10,15 @@ import {ConfigService} from "../../services/config.service";
 /* Task models */
 import {Document} from "../../models/skeleton/document";
 import {Hit} from "../../models/skeleton/hit";
+import {Questionnaire} from "../../models/skeleton/questionnaire";
+import {Dimension} from "../../models/skeleton/dimension";
+import {Instruction} from "../../models/skeleton/instructions";
 /* AWS Integration*/
 import * as AWS from 'aws-sdk';
 import {ManagedUpload} from "aws-sdk/clients/s3";
-import {Questionnaire} from "../../models/skeleton/questionnaire";
+/* Font Awesome icons */
 import {faSpinner} from "@fortawesome/free-solid-svg-icons";
-import {Dimension} from "../../models/skeleton/dimension";
+import {faInfoCircle} from "@fortawesome/free-solid-svg-icons";
 
 /* Component HTML Tag definition */
 @Component({
@@ -96,11 +99,14 @@ export class SkeletonComponent {
   /* Folder to use within the bucket */
   folder: string;
   /* File where task instructions are stored */
-  instructionsFile: string;
+  taskInstructionsFile: string;
   /* File where each worker identifier is stored */
   workersFile: string;
   /* File where each questionnaire is stored */
   questionnairesFile: string;
+  /* File where each instruction for dimension assessing is stored */
+  dimensionsInstructionsFile: string;
+  /* File where each dimension to assess is stored */
   dimensionsFile: string;
   /* File where each hit is stored */
   hitsFile: string;
@@ -118,6 +124,11 @@ export class SkeletonComponent {
   questionnaireAmount: number;
 
   /* |--------- HIT ELEMENTS - DECLARATION ---------| */
+
+  /* Instructions for dimension assessing */
+  instructions: Instruction;
+  /* Amount of instructions sentences */
+  instructionsAmount: number;
 
   /* Array of worker answers dimensions */
   dimensions: Array<Dimension>;
@@ -171,6 +182,8 @@ export class SkeletonComponent {
 
   /* Font awesome spinner icon */
   faSpinner: Object;
+  /* Font awesome inforCircle icon */
+  faInfoCircle: Object;
 
   /* |--------- CONSTRUCTOR ---------| */
 
@@ -231,9 +244,10 @@ export class SkeletonComponent {
     } else {
       this.folder = `${this.folder}/Single/`;
     }
-    this.instructionsFile = `${this.folder}${this.scale}/instructions.html`;
+    this.taskInstructionsFile = `${this.folder}${this.scale}/instructions.html`;
     this.workersFile = `${this.folder}${this.scale}/workers.json`;
     this.questionnairesFile = `${this.folder}${this.scale}/questionnaires.json`;
+    this.dimensionsInstructionsFile = `${this.folder}${this.scale}/instructions.json`;
     this.dimensionsFile = `${this.folder}${this.scale}/dimensions.json`;
     this.hitsFile = `${this.folder}${this.scale}/hits.json`;
     this.workerFolder = `${this.folder}${this.scale}/Data/${this.workerIdentifier}`;
@@ -264,6 +278,8 @@ export class SkeletonComponent {
 
     /* Font awesome spinner icon initialization */
     this.faSpinner = faSpinner;
+    /* Font awesome info circle icon initialization */
+    this.faInfoCircle = faInfoCircle
 
     /* The loading spinner is stopped */
     this.ngxService.stop();
@@ -412,6 +428,13 @@ export class SkeletonComponent {
       }
 
       /* |- HIT DIMENSIONS - INITIALIZATION -| */
+
+      /* The dimensions stored on Amazon S3 are retrieved */
+      let rawInstructions = await this.download(this.dimensionsInstructionsFile);
+      this.instructionsAmount = rawInstructions["steps"].length;
+
+      /* The instructions are parsed using the Instruction class */
+      this.instructions = new Instruction(rawInstructions);
 
       /* The array of dimensions is initialized */
       this.dimensions = new Array<Dimension>();

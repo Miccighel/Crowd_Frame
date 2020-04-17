@@ -29,6 +29,7 @@ import {MatDialogModule} from "@angular/material/dialog";
 import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MatSliderModule} from "@angular/material/slider";
 import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
+import {MatTooltipModule} from "@angular/material/tooltip";
 
 const ngxUiLoaderConfig: NgxUiLoaderConfig = {
   bgsColor: "#3f51b5",
@@ -102,7 +103,8 @@ const ngxUiLoaderConfig: NgxUiLoaderConfig = {
     ReactiveFormsModule,
     MatDialogModule,
     MatCheckboxModule,
-    FontAwesomeModule
+    FontAwesomeModule,
+    MatTooltipModule
   ],
   providers: [],
 })
