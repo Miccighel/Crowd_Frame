@@ -64,15 +64,21 @@ mat-card-content label {
   font-weight: bold;
 }
 
-.statement {
+.statement  {
   margin-bottom: 1.5%;
-}
-
-.statement mat-expansion-panel {
   border: 0;
   box-shadow: 0 0 0 0;
   border-radius: 0;
   background-color: rgba(0,0,0,.03)
+}
+
+.statement ul {
+  list-style: none;
+}
+
+.statement ul li {
+  padding-top: 1%;
+  padding-bottom: 1%;
 }
 
 .statement mat-expansion-panel-header {
@@ -221,6 +227,11 @@ mat-form-field {
 .outcome-section mat-card-content {
   width: 75%;
   margin: auto;
+}
+
+.outcome-section h4 {
+  padding-top: 0;
+  padding-bottom: 0;
 }
 
 /* |--- Success section ---| */

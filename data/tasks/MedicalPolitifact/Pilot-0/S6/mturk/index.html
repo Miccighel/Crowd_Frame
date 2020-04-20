@@ -61,6 +61,11 @@
       margin: auto;
     }
 
+    #submit-note {
+      display: block;
+      margin-top: 2%;
+    }
+
   </style>
   <script src="https://assets.crowd.aws/crowd-html-elements.js"></script>
 </head>
@@ -84,13 +89,14 @@
        </li>
     </ol>
     <hr class="my-4">
-    <p id="task-link-container" class="lead"><a target="_blank" id="task-link" href="https://crowdsourcing-deploy.s3-eu-west-1.amazonaws.com/MedicalPolitifact/Pilot-0/S6/index.html">https://crowdsourcing-deploy.s3-eu-west-1.amazonaws.com/Pilot-0/S6/index.html</a></p>
+    <p id="task-link-container" class="lead"><a target="_blank" id="task-link" href="https://crowdsourcing-deploy.s3-eu-west-1.amazonaws.com/MedicalTask/Pilot-0/Single/S6/index.html">https://crowdsourcing-deploy.s3-eu-west-1.amazonaws.com/MedicalTask/Pilot-0/Single/S6/index.html</a></p>
     <div id="token-output-container" class="lead">
       <input type="text" id="token-output" name="token_output" class="form-control" placeholder="your_output_token_here">
     </div>
     <div id="submit-button-container">
       <button id="submit-button" class="btn btn-lg btn-primary btn-block" disabled="true" value="submit" type="submit">Submit</button>
     </div>
+    <small id="submit-note">(*) If you paste the output token and the "Submit" button is not enabled, please perform a mouse click.</small>
   </div>
 </crowd-form>
 

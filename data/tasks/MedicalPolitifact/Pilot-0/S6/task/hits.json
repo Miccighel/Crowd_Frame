@@ -1,51 +1,16 @@
 [
   {
     "unit_id": "unit_0",
-    "token_input": "HRROZNUIUAY",
-    "token_output": "CIIPNJIMKTL",
+    "token_input": "KHFIWSNSWED",
+    "token_output": "JNIFEKWDAOH",
     "documents_number": 8,
     "documents": [
-      {
-        "name": "true_doc1",
-        "statement": "On February 7, the WHO warned about the limited stock of PPE. That same day, the Trump administration announced it was sending 18 tons of masks, gowns and respirators to China.",
-        "claimant": "Facebook Post",
-        "date": "2020-02-04",
-        "originated-from": "Facebook Posts"
-      },
-      {
-        "name": "LOW",
-        "statement": "Give me twelve hours to chop down a tree and I will spend the last six sharpening the axe",
-        "claimant": "Abraham Lincoln",
-        "date": "1862-03-01",
-        "originated-from": "Facebook Post"
-      },
-      {
-        "name": "mostly-false_doc8",
-        "statement": "Says Joe Biden \u201cwas in charge of the H1N1 Swine Flu epidemic which killed thousands of people. The response was one of the worst on record. Our response is one of the best, with fast action of border closings & a 78% Approval Rating, the highest on record. His was lowest!\u201d",
-        "claimant": "Donald Trump",
-        "date": "2020-12-03",
-        "originated-from": "Tweet"
-      },
       {
         "name": "HIGH",
         "statement": "Yes, We can!",
         "claimant": "Barack Obama",
-        "date": "2008-01-08.",
+        "date": "2008-01-08",
         "originated-from": "Facebook Post"
-      },
-      {
-        "name": "mostly-true_doc6",
-        "statement": "Says it was \u201cunquestionably\u201d not within his \u201clegal authority\u201d to postpone Illinois\u2019 primary election by changing the date or shifting to vote-by-mail.",
-        "claimant": "Jb Pritzker",
-        "date": "2020-17-03",
-        "originated-from": "Press Conference"
-      },
-      {
-        "name": "pants-on-fire_doc10",
-        "statement": "A video says that the Vatican confirmed that Pope Francis and two aides tested positive for coronavirus.",
-        "claimant": "Youtube Video",
-        "date": "2020-29-02",
-        "originated-from": "Youtube Videos"
       },
       {
         "name": "false_doc6",
@@ -55,54 +20,125 @@
         "originated-from": "Viral Image"
       },
       {
-        "name": "half-true_doc7",
-        "statement": "Harvard scientists say the coronavirus is \u201cspreading so fast that it will infect 70% of humanity this year.\u201d",
+        "name": "true_doc6",
+        "statement": "Some states are only getting 50 tests per day, and the Utah Jazz got 58.",
+        "claimant": "Michael Dougherty",
+        "date": "2020-12-03",
+        "originated-from": "Tweet"
+      },
+      {
+        "name": "pants-on-fire_doc4",
+        "statement": "Says \u201cthere is no\u201d COVID-19 virus.",
+        "claimant": "Facebook User",
+        "date": "2020-19-03",
+        "originated-from": "Facebook Post"
+      },
+      {
+        "name": "half-true_doc5",
+        "statement": "Says that \u201cover a 45-minute period that we had the press conference\u201d on the coronavirus on March 13, 2020, the stock market set \u201can all-time record.\u201d",
+        "claimant": "Donald Trump",
+        "date": "2020-14-03",
+        "originated-from": "News Conference"
+      },
+      {
+        "name": "mostly-false_doc5",
+        "statement": "U.S. deaths since 1/22 (2020): COVID-19: 27, flu, 4,700; abortion: 118,000.",
         "claimant": "Facebook Post",
-        "date": "2020-10-03",
-        "originated-from": "Viral Image"
+        "date": "2020-17-03",
+        "originated-from": "Facebook Posts"
+      },
+      {
+        "name": "LOW",
+        "statement": "If I were not a Formula One pilot, I would be a football player.",
+        "claimant": "Abraham Lincoln",
+        "date": "1862-03-01",
+        "originated-from": "Press Conference"
+      },
+      {
+        "name": "mostly-true_doc6",
+        "statement": "Says it was \u201cunquestionably\u201d not within his \u201clegal authority\u201d to postpone Illinois\u2019 primary election by changing the date or shifting to vote-by-mail.",
+        "claimant": "Jb Pritzker",
+        "date": "2020-17-03",
+        "originated-from": "Press Conference"
       }
     ]
   },
   {
     "unit_id": "unit_1",
-    "token_input": "STCEGNTHKPQ",
-    "token_output": "TSQUMUYMZKG",
+    "token_input": "QOQSQGHHDUO",
+    "token_output": "QTIMHKCWEYI",
     "documents_number": 8,
     "documents": [
+      {
+        "name": "mostly-true_doc6",
+        "statement": "Says it was \u201cunquestionably\u201d not within his \u201clegal authority\u201d to postpone Illinois\u2019 primary election by changing the date or shifting to vote-by-mail.",
+        "claimant": "Jb Pritzker",
+        "date": "2020-17-03",
+        "originated-from": "Press Conference"
+      },
       {
         "name": "HIGH",
         "statement": "Yes, We can!",
         "claimant": "Barack Obama",
-        "date": "2008-01-08.",
+        "date": "2008-01-08",
         "originated-from": "Facebook Post"
-      },
-      {
-        "name": "true_doc1",
-        "statement": "On February 7, the WHO warned about the limited stock of PPE. That same day, the Trump administration announced it was sending 18 tons of masks, gowns and respirators to China.",
-        "claimant": "Facebook Post",
-        "date": "2020-02-04",
-        "originated-from": "Facebook Posts"
-      },
-      {
-        "name": "pants-on-fire_doc10",
-        "statement": "A video says that the Vatican confirmed that Pope Francis and two aides tested positive for coronavirus.",
-        "claimant": "Youtube Video",
-        "date": "2020-29-02",
-        "originated-from": "Youtube Videos"
       },
       {
         "name": "LOW",
         "statement": "If I were not a Formula One pilot, I would be a football player.",
         "claimant": "Abraham Lincoln",
         "date": "1862-03-01",
+        "originated-from": "Press Conference"
+      },
+      {
+        "name": "true_doc6",
+        "statement": "Some states are only getting 50 tests per day, and the Utah Jazz got 58.",
+        "claimant": "Michael Dougherty",
+        "date": "2020-12-03",
+        "originated-from": "Tweet"
+      },
+      {
+        "name": "pants-on-fire_doc4",
+        "statement": "Says \u201cthere is no\u201d COVID-19 virus.",
+        "claimant": "Facebook User",
+        "date": "2020-19-03",
         "originated-from": "Facebook Post"
       },
       {
-        "name": "mostly-false_doc8",
-        "statement": "Says Joe Biden \u201cwas in charge of the H1N1 Swine Flu epidemic which killed thousands of people. The response was one of the worst on record. Our response is one of the best, with fast action of border closings & a 78% Approval Rating, the highest on record. His was lowest!\u201d",
+        "name": "false_doc6",
+        "statement": "Drinking \u201cwater a lot and gargling with warm water & salt or vinegar eliminates\u201d the coronavirus.",
+        "claimant": "Viral Image",
+        "date": "2020-13-03",
+        "originated-from": "Viral Image"
+      },
+      {
+        "name": "mostly-false_doc5",
+        "statement": "U.S. deaths since 1/22 (2020): COVID-19: 27, flu, 4,700; abortion: 118,000.",
+        "claimant": "Facebook Post",
+        "date": "2020-17-03",
+        "originated-from": "Facebook Posts"
+      },
+      {
+        "name": "half-true_doc5",
+        "statement": "Says that \u201cover a 45-minute period that we had the press conference\u201d on the coronavirus on March 13, 2020, the stock market set \u201can all-time record.\u201d",
         "claimant": "Donald Trump",
-        "date": "2020-12-03",
-        "originated-from": "Tweet"
+        "date": "2020-14-03",
+        "originated-from": "News Conference"
+      }
+    ]
+  },
+  {
+    "unit_id": "unit_2",
+    "token_input": "QWNECFUMAJS",
+    "token_output": "SLOGANSIBZZ",
+    "documents_number": 8,
+    "documents": [
+      {
+        "name": "mostly-false_doc5",
+        "statement": "U.S. deaths since 1/22 (2020): COVID-19: 27, flu, 4,700; abortion: 118,000.",
+        "claimant": "Facebook Post",
+        "date": "2020-17-03",
+        "originated-from": "Facebook Posts"
       },
       {
         "name": "mostly-true_doc6",
@@ -112,11 +148,167 @@
         "originated-from": "Press Conference"
       },
       {
-        "name": "half-true_doc7",
-        "statement": "Harvard scientists say the coronavirus is \u201cspreading so fast that it will infect 70% of humanity this year.\u201d",
-        "claimant": "Facebook Post",
-        "date": "2020-10-03",
+        "name": "LOW",
+        "statement": "If I were not a Formula One pilot, I would be a football player.",
+        "claimant": "Abraham Lincoln",
+        "date": "1862-03-01",
+        "originated-from": "Press Conference"
+      },
+      {
+        "name": "true_doc6",
+        "statement": "Some states are only getting 50 tests per day, and the Utah Jazz got 58.",
+        "claimant": "Michael Dougherty",
+        "date": "2020-12-03",
+        "originated-from": "Tweet"
+      },
+      {
+        "name": "half-true_doc5",
+        "statement": "Says that \u201cover a 45-minute period that we had the press conference\u201d on the coronavirus on March 13, 2020, the stock market set \u201can all-time record.\u201d",
+        "claimant": "Donald Trump",
+        "date": "2020-14-03",
+        "originated-from": "News Conference"
+      },
+      {
+        "name": "false_doc6",
+        "statement": "Drinking \u201cwater a lot and gargling with warm water & salt or vinegar eliminates\u201d the coronavirus.",
+        "claimant": "Viral Image",
+        "date": "2020-13-03",
         "originated-from": "Viral Image"
+      },
+      {
+        "name": "HIGH",
+        "statement": "Yes, We can!",
+        "claimant": "Barack Obama",
+        "date": "2008-01-08",
+        "originated-from": "Facebook Post"
+      },
+      {
+        "name": "pants-on-fire_doc4",
+        "statement": "Says \u201cthere is no\u201d COVID-19 virus.",
+        "claimant": "Facebook User",
+        "date": "2020-19-03",
+        "originated-from": "Facebook Post"
+      }
+    ]
+  },
+  {
+    "unit_id": "unit_3",
+    "token_input": "PKTUHQVNNWJ",
+    "token_output": "JYQKPHEVZXS",
+    "documents_number": 8,
+    "documents": [
+      {
+        "name": "false_doc6",
+        "statement": "Drinking \u201cwater a lot and gargling with warm water & salt or vinegar eliminates\u201d the coronavirus.",
+        "claimant": "Viral Image",
+        "date": "2020-13-03",
+        "originated-from": "Viral Image"
+      },
+      {
+        "name": "HIGH",
+        "statement": "Yes, We can!",
+        "claimant": "Barack Obama",
+        "date": "2008-01-08",
+        "originated-from": "Facebook Post"
+      },
+      {
+        "name": "true_doc6",
+        "statement": "Some states are only getting 50 tests per day, and the Utah Jazz got 58.",
+        "claimant": "Michael Dougherty",
+        "date": "2020-12-03",
+        "originated-from": "Tweet"
+      },
+      {
+        "name": "half-true_doc5",
+        "statement": "Says that \u201cover a 45-minute period that we had the press conference\u201d on the coronavirus on March 13, 2020, the stock market set \u201can all-time record.\u201d",
+        "claimant": "Donald Trump",
+        "date": "2020-14-03",
+        "originated-from": "News Conference"
+      },
+      {
+        "name": "pants-on-fire_doc4",
+        "statement": "Says \u201cthere is no\u201d COVID-19 virus.",
+        "claimant": "Facebook User",
+        "date": "2020-19-03",
+        "originated-from": "Facebook Post"
+      },
+      {
+        "name": "LOW",
+        "statement": "If I were not a Formula One pilot, I would be a football player.",
+        "claimant": "Abraham Lincoln",
+        "date": "1862-03-01",
+        "originated-from": "Press Conference"
+      },
+      {
+        "name": "mostly-false_doc5",
+        "statement": "U.S. deaths since 1/22 (2020): COVID-19: 27, flu, 4,700; abortion: 118,000.",
+        "claimant": "Facebook Post",
+        "date": "2020-17-03",
+        "originated-from": "Facebook Posts"
+      },
+      {
+        "name": "mostly-true_doc6",
+        "statement": "Says it was \u201cunquestionably\u201d not within his \u201clegal authority\u201d to postpone Illinois\u2019 primary election by changing the date or shifting to vote-by-mail.",
+        "claimant": "Jb Pritzker",
+        "date": "2020-17-03",
+        "originated-from": "Press Conference"
+      }
+    ]
+  },
+  {
+    "unit_id": "unit_4",
+    "token_input": "APBHTEMQRNK",
+    "token_output": "EIVZZEURIYC",
+    "documents_number": 8,
+    "documents": [
+      {
+        "name": "true_doc6",
+        "statement": "Some states are only getting 50 tests per day, and the Utah Jazz got 58.",
+        "claimant": "Michael Dougherty",
+        "date": "2020-12-03",
+        "originated-from": "Tweet"
+      },
+      {
+        "name": "half-true_doc5",
+        "statement": "Says that \u201cover a 45-minute period that we had the press conference\u201d on the coronavirus on March 13, 2020, the stock market set \u201can all-time record.\u201d",
+        "claimant": "Donald Trump",
+        "date": "2020-14-03",
+        "originated-from": "News Conference"
+      },
+      {
+        "name": "pants-on-fire_doc4",
+        "statement": "Says \u201cthere is no\u201d COVID-19 virus.",
+        "claimant": "Facebook User",
+        "date": "2020-19-03",
+        "originated-from": "Facebook Post"
+      },
+      {
+        "name": "mostly-false_doc5",
+        "statement": "U.S. deaths since 1/22 (2020): COVID-19: 27, flu, 4,700; abortion: 118,000.",
+        "claimant": "Facebook Post",
+        "date": "2020-17-03",
+        "originated-from": "Facebook Posts"
+      },
+      {
+        "name": "mostly-true_doc6",
+        "statement": "Says it was \u201cunquestionably\u201d not within his \u201clegal authority\u201d to postpone Illinois\u2019 primary election by changing the date or shifting to vote-by-mail.",
+        "claimant": "Jb Pritzker",
+        "date": "2020-17-03",
+        "originated-from": "Press Conference"
+      },
+      {
+        "name": "LOW",
+        "statement": "If I were not a Formula One pilot, I would be a football player.",
+        "claimant": "Abraham Lincoln",
+        "date": "1862-03-01",
+        "originated-from": "Press Conference"
+      },
+      {
+        "name": "HIGH",
+        "statement": "Yes, We can!",
+        "claimant": "Barack Obama",
+        "date": "2008-01-08",
+        "originated-from": "Facebook Post"
       },
       {
         "name": "false_doc6",
@@ -128,24 +320,31 @@
     ]
   },
   {
-    "unit_id": "unit_2",
-    "token_input": "TGWAAPZLEEL",
-    "token_output": "RCZYHRLSXCW",
+    "unit_id": "unit_5",
+    "token_input": "JGHLSFJARJB",
+    "token_output": "QWQYPQBVYDJ",
     "documents_number": 8,
     "documents": [
       {
-        "name": "true_doc1",
-        "statement": "On February 7, the WHO warned about the limited stock of PPE. That same day, the Trump administration announced it was sending 18 tons of masks, gowns and respirators to China.",
-        "claimant": "Facebook Post",
-        "date": "2020-02-04",
-        "originated-from": "Facebook Posts"
+        "name": "HIGH",
+        "statement": "Yes, We can!",
+        "claimant": "Barack Obama",
+        "date": "2008-01-08",
+        "originated-from": "Facebook Post"
       },
       {
-        "name": "pants-on-fire_doc10",
-        "statement": "A video says that the Vatican confirmed that Pope Francis and two aides tested positive for coronavirus.",
-        "claimant": "Youtube Video",
-        "date": "2020-29-02",
-        "originated-from": "Youtube Videos"
+        "name": "true_doc6",
+        "statement": "Some states are only getting 50 tests per day, and the Utah Jazz got 58.",
+        "claimant": "Michael Dougherty",
+        "date": "2020-12-03",
+        "originated-from": "Tweet"
+      },
+      {
+        "name": "LOW",
+        "statement": "If I were not a Formula One pilot, I would be a football player.",
+        "claimant": "Abraham Lincoln",
+        "date": "1862-03-01",
+        "originated-from": "Press Conference"
       },
       {
         "name": "false_doc6",
@@ -155,17 +354,67 @@
         "originated-from": "Viral Image"
       },
       {
-        "name": "half-true_doc7",
-        "statement": "Harvard scientists say the coronavirus is \u201cspreading so fast that it will infect 70% of humanity this year.\u201d",
+        "name": "half-true_doc5",
+        "statement": "Says that \u201cover a 45-minute period that we had the press conference\u201d on the coronavirus on March 13, 2020, the stock market set \u201can all-time record.\u201d",
+        "claimant": "Donald Trump",
+        "date": "2020-14-03",
+        "originated-from": "News Conference"
+      },
+      {
+        "name": "mostly-false_doc5",
+        "statement": "U.S. deaths since 1/22 (2020): COVID-19: 27, flu, 4,700; abortion: 118,000.",
         "claimant": "Facebook Post",
-        "date": "2020-10-03",
-        "originated-from": "Viral Image"
+        "date": "2020-17-03",
+        "originated-from": "Facebook Posts"
+      },
+      {
+        "name": "mostly-true_doc6",
+        "statement": "Says it was \u201cunquestionably\u201d not within his \u201clegal authority\u201d to postpone Illinois\u2019 primary election by changing the date or shifting to vote-by-mail.",
+        "claimant": "Jb Pritzker",
+        "date": "2020-17-03",
+        "originated-from": "Press Conference"
+      },
+      {
+        "name": "pants-on-fire_doc4",
+        "statement": "Says \u201cthere is no\u201d COVID-19 virus.",
+        "claimant": "Facebook User",
+        "date": "2020-19-03",
+        "originated-from": "Facebook Post"
+      }
+    ]
+  },
+  {
+    "unit_id": "unit_6",
+    "token_input": "KKMNWAGBEPD",
+    "token_output": "LMALISNVNJJ",
+    "documents_number": 8,
+    "documents": [
+      {
+        "name": "half-true_doc5",
+        "statement": "Says that \u201cover a 45-minute period that we had the press conference\u201d on the coronavirus on March 13, 2020, the stock market set \u201can all-time record.\u201d",
+        "claimant": "Donald Trump",
+        "date": "2020-14-03",
+        "originated-from": "News Conference"
+      },
+      {
+        "name": "LOW",
+        "statement": "If I were not a Formula One pilot, I would be a football player.",
+        "claimant": "Abraham Lincoln",
+        "date": "1862-03-01",
+        "originated-from": "Press Conference"
       },
       {
         "name": "HIGH",
         "statement": "Yes, We can!",
         "claimant": "Barack Obama",
-        "date": "2008-01-08.",
+        "date": "2008-01-08",
+        "originated-from": "Facebook Post"
+      },
+      {
+        "name": "pants-on-fire_doc4",
+        "statement": "Says \u201cthere is no\u201d COVID-19 virus.",
+        "claimant": "Facebook User",
+        "date": "2020-19-03",
         "originated-from": "Facebook Post"
       },
       {
@@ -176,16 +425,215 @@
         "originated-from": "Press Conference"
       },
       {
+        "name": "mostly-false_doc5",
+        "statement": "U.S. deaths since 1/22 (2020): COVID-19: 27, flu, 4,700; abortion: 118,000.",
+        "claimant": "Facebook Post",
+        "date": "2020-17-03",
+        "originated-from": "Facebook Posts"
+      },
+      {
+        "name": "true_doc6",
+        "statement": "Some states are only getting 50 tests per day, and the Utah Jazz got 58.",
+        "claimant": "Michael Dougherty",
+        "date": "2020-12-03",
+        "originated-from": "Tweet"
+      },
+      {
+        "name": "false_doc6",
+        "statement": "Drinking \u201cwater a lot and gargling with warm water & salt or vinegar eliminates\u201d the coronavirus.",
+        "claimant": "Viral Image",
+        "date": "2020-13-03",
+        "originated-from": "Viral Image"
+      }
+    ]
+  },
+  {
+    "unit_id": "unit_7",
+    "token_input": "RUSHFATXJQE",
+    "token_output": "YMWDTYCTJNB",
+    "documents_number": 8,
+    "documents": [
+      {
+        "name": "HIGH",
+        "statement": "Yes, We can!",
+        "claimant": "Barack Obama",
+        "date": "2008-01-08",
+        "originated-from": "Facebook Post"
+      },
+      {
         "name": "LOW",
         "statement": "If I were not a Formula One pilot, I would be a football player.",
         "claimant": "Abraham Lincoln",
         "date": "1862-03-01",
+        "originated-from": "Press Conference"
+      },
+      {
+        "name": "true_doc6",
+        "statement": "Some states are only getting 50 tests per day, and the Utah Jazz got 58.",
+        "claimant": "Michael Dougherty",
+        "date": "2020-12-03",
+        "originated-from": "Tweet"
+      },
+      {
+        "name": "pants-on-fire_doc4",
+        "statement": "Says \u201cthere is no\u201d COVID-19 virus.",
+        "claimant": "Facebook User",
+        "date": "2020-19-03",
         "originated-from": "Facebook Post"
       },
       {
-        "name": "mostly-false_doc8",
-        "statement": "Says Joe Biden \u201cwas in charge of the H1N1 Swine Flu epidemic which killed thousands of people. The response was one of the worst on record. Our response is one of the best, with fast action of border closings & a 78% Approval Rating, the highest on record. His was lowest!\u201d",
+        "name": "false_doc6",
+        "statement": "Drinking \u201cwater a lot and gargling with warm water & salt or vinegar eliminates\u201d the coronavirus.",
+        "claimant": "Viral Image",
+        "date": "2020-13-03",
+        "originated-from": "Viral Image"
+      },
+      {
+        "name": "half-true_doc5",
+        "statement": "Says that \u201cover a 45-minute period that we had the press conference\u201d on the coronavirus on March 13, 2020, the stock market set \u201can all-time record.\u201d",
         "claimant": "Donald Trump",
+        "date": "2020-14-03",
+        "originated-from": "News Conference"
+      },
+      {
+        "name": "mostly-true_doc6",
+        "statement": "Says it was \u201cunquestionably\u201d not within his \u201clegal authority\u201d to postpone Illinois\u2019 primary election by changing the date or shifting to vote-by-mail.",
+        "claimant": "Jb Pritzker",
+        "date": "2020-17-03",
+        "originated-from": "Press Conference"
+      },
+      {
+        "name": "mostly-false_doc5",
+        "statement": "U.S. deaths since 1/22 (2020): COVID-19: 27, flu, 4,700; abortion: 118,000.",
+        "claimant": "Facebook Post",
+        "date": "2020-17-03",
+        "originated-from": "Facebook Posts"
+      }
+    ]
+  },
+  {
+    "unit_id": "unit_8",
+    "token_input": "UPABCOHBCYV",
+    "token_output": "TPIWWJPFRCL",
+    "documents_number": 8,
+    "documents": [
+      {
+        "name": "true_doc6",
+        "statement": "Some states are only getting 50 tests per day, and the Utah Jazz got 58.",
+        "claimant": "Michael Dougherty",
+        "date": "2020-12-03",
+        "originated-from": "Tweet"
+      },
+      {
+        "name": "HIGH",
+        "statement": "Yes, We can!",
+        "claimant": "Barack Obama",
+        "date": "2008-01-08",
+        "originated-from": "Facebook Post"
+      },
+      {
+        "name": "half-true_doc5",
+        "statement": "Says that \u201cover a 45-minute period that we had the press conference\u201d on the coronavirus on March 13, 2020, the stock market set \u201can all-time record.\u201d",
+        "claimant": "Donald Trump",
+        "date": "2020-14-03",
+        "originated-from": "News Conference"
+      },
+      {
+        "name": "pants-on-fire_doc4",
+        "statement": "Says \u201cthere is no\u201d COVID-19 virus.",
+        "claimant": "Facebook User",
+        "date": "2020-19-03",
+        "originated-from": "Facebook Post"
+      },
+      {
+        "name": "mostly-false_doc5",
+        "statement": "U.S. deaths since 1/22 (2020): COVID-19: 27, flu, 4,700; abortion: 118,000.",
+        "claimant": "Facebook Post",
+        "date": "2020-17-03",
+        "originated-from": "Facebook Posts"
+      },
+      {
+        "name": "false_doc6",
+        "statement": "Drinking \u201cwater a lot and gargling with warm water & salt or vinegar eliminates\u201d the coronavirus.",
+        "claimant": "Viral Image",
+        "date": "2020-13-03",
+        "originated-from": "Viral Image"
+      },
+      {
+        "name": "LOW",
+        "statement": "If I were not a Formula One pilot, I would be a football player.",
+        "claimant": "Abraham Lincoln",
+        "date": "1862-03-01",
+        "originated-from": "Press Conference"
+      },
+      {
+        "name": "mostly-true_doc6",
+        "statement": "Says it was \u201cunquestionably\u201d not within his \u201clegal authority\u201d to postpone Illinois\u2019 primary election by changing the date or shifting to vote-by-mail.",
+        "claimant": "Jb Pritzker",
+        "date": "2020-17-03",
+        "originated-from": "Press Conference"
+      }
+    ]
+  },
+  {
+    "unit_id": "unit_9",
+    "token_input": "ZPOQGPXFTOT",
+    "token_output": "RPMDADIEYFW",
+    "documents_number": 8,
+    "documents": [
+      {
+        "name": "false_doc6",
+        "statement": "Drinking \u201cwater a lot and gargling with warm water & salt or vinegar eliminates\u201d the coronavirus.",
+        "claimant": "Viral Image",
+        "date": "2020-13-03",
+        "originated-from": "Viral Image"
+      },
+      {
+        "name": "LOW",
+        "statement": "If I were not a Formula One pilot, I would be a football player.",
+        "claimant": "Abraham Lincoln",
+        "date": "1862-03-01",
+        "originated-from": "Press Conference"
+      },
+      {
+        "name": "mostly-true_doc6",
+        "statement": "Says it was \u201cunquestionably\u201d not within his \u201clegal authority\u201d to postpone Illinois\u2019 primary election by changing the date or shifting to vote-by-mail.",
+        "claimant": "Jb Pritzker",
+        "date": "2020-17-03",
+        "originated-from": "Press Conference"
+      },
+      {
+        "name": "HIGH",
+        "statement": "Yes, We can!",
+        "claimant": "Barack Obama",
+        "date": "2008-01-08",
+        "originated-from": "Facebook Post"
+      },
+      {
+        "name": "mostly-false_doc5",
+        "statement": "U.S. deaths since 1/22 (2020): COVID-19: 27, flu, 4,700; abortion: 118,000.",
+        "claimant": "Facebook Post",
+        "date": "2020-17-03",
+        "originated-from": "Facebook Posts"
+      },
+      {
+        "name": "half-true_doc5",
+        "statement": "Says that \u201cover a 45-minute period that we had the press conference\u201d on the coronavirus on March 13, 2020, the stock market set \u201can all-time record.\u201d",
+        "claimant": "Donald Trump",
+        "date": "2020-14-03",
+        "originated-from": "News Conference"
+      },
+      {
+        "name": "pants-on-fire_doc4",
+        "statement": "Says \u201cthere is no\u201d COVID-19 virus.",
+        "claimant": "Facebook User",
+        "date": "2020-19-03",
+        "originated-from": "Facebook Post"
+      },
+      {
+        "name": "true_doc6",
+        "statement": "Some states are only getting 50 tests per day, and the Utah Jazz got 58.",
+        "claimant": "Michael Dougherty",
         "date": "2020-12-03",
         "originated-from": "Tweet"
       }

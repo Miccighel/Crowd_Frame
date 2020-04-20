@@ -1,87 +1,87 @@
 [
   {
     "unit_id": "unit_0",
-    "token_input": "NJLVKULQOWA",
-    "token_output": "QVTIEUTZZBT",
+    "token_input": "LEWNAUGBRUC",
+    "token_output": "FEWKSIDWQEA",
     "documents_number": 3,
     "documents": [
       {
-        "name": "true_doc1",
-        "statement": "On February 7, the WHO warned about the limited stock of PPE. That same day, the Trump administration announced it was sending 18 tons of masks, gowns and respirators to China.",
-        "claimant": "Facebook Post",
-        "date": "2020-02-04",
-        "originated-from": "Facebook Posts"
-      },
-      {
-        "name": "LOW",
-        "statement": "If I were not a Formula One pilot, I would be a football player.",
-        "claimant": "Abraham Lincoln",
-        "date": "2020-04-01",
-        "originated-from": "Facebook Post"
+        "name": "false_doc6",
+        "statement": "Drinking \u201cwater a lot and gargling with warm water & salt or vinegar eliminates\u201d the coronavirus.",
+        "claimant": "Viral Image",
+        "date": "2020-13-03",
+        "originated-from": "Viral Image"
       },
       {
         "name": "HIGH",
         "statement": "Yes, We can!",
         "claimant": "Barack Obama",
-        "date": "2008-01-08.",
+        "date": "2008-01-08",
         "originated-from": "Facebook Post"
+      },
+      {
+        "name": "LOW",
+        "statement": "If I were not a Formula One pilot, I would be a football player.",
+        "claimant": "Abraham Lincoln",
+        "date": "1862-03-01",
+        "originated-from": "Press Conference"
       }
     ]
   },
   {
     "unit_id": "unit_1",
-    "token_input": "LPVMOQLUSNA",
-    "token_output": "IXGMJWBQNVS",
+    "token_input": "UBBZEFTWIZA",
+    "token_output": "XIGALGPVBPC",
     "documents_number": 3,
     "documents": [
       {
-        "name": "HIGH",
-        "statement": "Yes, We can!",
-        "claimant": "Barack Obama",
-        "date": "2008-01-08.",
-        "originated-from": "Facebook Post"
-      },
-      {
-        "name": "true_doc1",
-        "statement": "On February 7, the WHO warned about the limited stock of PPE. That same day, the Trump administration announced it was sending 18 tons of masks, gowns and respirators to China.",
-        "claimant": "Facebook Post",
-        "date": "2020-02-04",
-        "originated-from": "Facebook Posts"
+        "name": "false_doc6",
+        "statement": "Drinking \u201cwater a lot and gargling with warm water & salt or vinegar eliminates\u201d the coronavirus.",
+        "claimant": "Viral Image",
+        "date": "2020-13-03",
+        "originated-from": "Viral Image"
       },
       {
         "name": "LOW",
         "statement": "If I were not a Formula One pilot, I would be a football player.",
         "claimant": "Abraham Lincoln",
-        "date": "2020-04-01",
+        "date": "1862-03-01",
+        "originated-from": "Press Conference"
+      },
+      {
+        "name": "HIGH",
+        "statement": "Yes, We can!",
+        "claimant": "Barack Obama",
+        "date": "2008-01-08",
         "originated-from": "Facebook Post"
       }
     ]
   },
   {
     "unit_id": "unit_2",
-    "token_input": "GWBWHGXRNQD",
-    "token_output": "ILSZEZOMSXU",
+    "token_input": "BFSVFTYIKCI",
+    "token_output": "OKFYFKLFCVF",
     "documents_number": 3,
     "documents": [
       {
-        "name": "true_doc1",
-        "statement": "On February 7, the WHO warned about the limited stock of PPE. That same day, the Trump administration announced it was sending 18 tons of masks, gowns and respirators to China.",
-        "claimant": "Facebook Post",
-        "date": "2020-02-04",
-        "originated-from": "Facebook Posts"
+        "name": "LOW",
+        "statement": "If I were not a Formula One pilot, I would be a football player.",
+        "claimant": "Abraham Lincoln",
+        "date": "1862-03-01",
+        "originated-from": "Press Conference"
+      },
+      {
+        "name": "half-true_doc5",
+        "statement": "Says that \u201cover a 45-minute period that we had the press conference\u201d on the coronavirus on March 13, 2020, the stock market set \u201can all-time record.\u201d",
+        "claimant": "Donald Trump",
+        "date": "2020-14-03",
+        "originated-from": "News Conference"
       },
       {
         "name": "HIGH",
         "statement": "Yes, We can!",
         "claimant": "Barack Obama",
-        "date": "2008-01-08.",
-        "originated-from": "Facebook Post"
-      },
-      {
-        "name": "LOW",
-        "statement": "If I were not a Formula One pilot, I would be a football player.",
-        "claimant": "Abraham Lincoln",
-        "date": "2020-04-01",
+        "date": "2008-01-08",
         "originated-from": "Facebook Post"
       }
     ]

@@ -2,7 +2,7 @@ export const environment = {
 
   production: true,
 
-  experimentId: "MedicalPolitifact",
+  experimentId: "MedicalTask",
   subFolder: "Pilot-0",
 
   scale: "S6",

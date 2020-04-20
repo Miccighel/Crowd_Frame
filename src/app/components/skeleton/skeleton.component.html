@@ -82,19 +82,20 @@
         <ng-template matStepLabel>Q{{i + 1}}</ng-template>
         <mat-card>
           <mat-divider [inset]="true"></mat-divider>
-          <mat-card-title>Please answer each question</mat-card-title>
+          <mat-card-title *ngIf="questionnaire.type=='standard'">Please answer the following questions</mat-card-title>
+          <mat-card-title *ngIf="questionnaire.type=='crt'">Please answer the following question</mat-card-title>
           <mat-divider [inset]="true"></mat-divider>
           <mat-card-content *ngIf="questionnaire.type=='standard'">
             <mat-radio-group *ngFor="let question of questionnaire.questions; let j=index" aria-labelledby="radio-button-label" class="radio-button-group question" formControlName="{{question.name}}">
               <div class="question-text">
-                <label>{{j + 1}}) {{question.text}}</label>
+                <label>{{question.text}}</label>
               </div>
               <mat-radio-button *ngFor="let answer of question.answers; let k=index" class="radio-button" value="{{k}}">{{answer}}</mat-radio-button>
             </mat-radio-group>
           </mat-card-content>
           <mat-card-content *ngIf="questionnaire.type=='crt'">
             <mat-form-field *ngFor="let question of questionnaire.questions; let j=index">
-              <label>{{j + 1}}) {{question.text}}</label>
+              <label>{{question.text}}</label>
               <input matInput type="number" placeholder="" formControlName="{{question.name}}">
               <mat-error *ngIf="checkFormControl(questionnairesForm[i],question.name, 'required')">
                 This field is required
@@ -132,27 +133,11 @@
           <mat-card-content>
             <!-- Statement markup -->
             <div class="statement">
-              <mat-expansion-panel [expanded]="true">
-                <mat-expansion-panel-header>
-                  <mat-panel-title>Claimant / Source</mat-panel-title>
-                  <mat-panel-description>Who made the statement</mat-panel-description>
-                </mat-expansion-panel-header>
-                <i>{{document.claimant}}</i>
-              </mat-expansion-panel>
-              <mat-expansion-panel [expanded]="true">
-                <mat-expansion-panel-header>
-                  <mat-panel-title>Date</mat-panel-title>
-                  <mat-panel-description>When the statement has been made</mat-panel-description>
-                </mat-expansion-panel-header>
-                <i>{{document.date}}</i>
-              </mat-expansion-panel>
-              <mat-expansion-panel [expanded]="true">
-                <mat-expansion-panel-header>
-                  <mat-panel-title>Text</mat-panel-title>
-                  <mat-panel-description>Content of the statement</mat-panel-description>
-                </mat-expansion-panel-header>
-                <i>{{document.statement}}</i>
-              </mat-expansion-panel>
+              <ul>
+                <li><strong>Claimant/Source</strong> (who made the statement): {{document.claimant}}</li>
+                <li><strong>Date</strong> (when the statement was made): {{document.date}}</li>
+                <li><strong>Text</strong> (content of the statement): {{document.statement}}</li>
+              </ul>
             </div>
             <!-- Instructions markup -->
             <div class="instructions">
@@ -213,27 +198,22 @@
                 </div>
                 <mat-radio-group *ngIf="this.scale=='S6'" aria-labelledby="radio-button-label" class="radio-button-group" formControlName="{{(dimension.name).concat('_value')}}">
                   <mat-radio-button class="radio-button" value="1">
-                    Lie <fa-icon matTooltip="The statement is not accurate and makes a ridicolous claim" [icon]="faInfoCircle"></fa-icon>
+                    <strong>Lie</strong> (The statement is not accurate and makes a ridicolous claim)
                   </mat-radio-button>
                   <mat-radio-button class="radio-button" value="2">
-                    False
-                    <fa-icon matTooltip="The statement is not accurate" [icon]="faInfoCircle"></fa-icon>
+                    <strong>False</strong> (The statement is not accurate)
                   </mat-radio-button>
                   <mat-radio-button class="radio-button" value="3">
-                    Mostly False
-                    <fa-icon matTooltip="The statement contains an element of truth but ignores critical facts that would give a different impression" [icon]="faInfoCircle"></fa-icon>
+                    <strong>Mostly False</strong> (The statement contains an element of truth but ignores critical facts that would give a different impression)
                   </mat-radio-button>
                   <mat-radio-button class="radio-button" value="4">
-                    Half True
-                    <fa-icon matTooltip="The statement is partially accurate but leaves out important details or takes things out of context" [icon]="faInfoCircle"></fa-icon>
+                    <strong>Half True</strong> (The statement is partially accurate but leaves out important details or takes things out of context)
                   </mat-radio-button>
                   <mat-radio-button class="radio-button" value="5">
-                    Mostly True
-                    <fa-icon matTooltip="The statement is accurate but needs clarification or additional information" [icon]="faInfoCircle"></fa-icon>
+                    <strong>Mostly True</strong> (The statement is accurate but needs clarification or additional information)
                   </mat-radio-button>
                   <mat-radio-button class="radio-button" value="6">
-                    True
-                    <fa-icon matTooltip="The statement is accurate and there is nothing significant missing" [icon]="faInfoCircle"></fa-icon>
+                    <strong>True</strong> (The statement is accurate and there is nothing significant missing)
                   </mat-radio-button>
                 </mat-radio-group>
                 <mat-radio-group *ngIf="this.scale=='S3'" aria-labelledby="radio-button-label" class="radio-button-group" formControlName="{{(dimension.name).concat('_value')}}">
