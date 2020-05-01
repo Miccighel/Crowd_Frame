@@ -196,33 +196,13 @@
                   <h2>Step 2</h2>
                   <mat-divider [inset]="true"></mat-divider>
                 </div>
-                <mat-radio-group *ngIf="this.scale=='S6'" aria-labelledby="radio-button-label" class="radio-button-group" formControlName="{{(dimension.name).concat('_value')}}">
-                  <mat-radio-button class="radio-button" value="1">
-                    <strong>Lie</strong> (The statement is not accurate and makes a ridicolous claim)
-                  </mat-radio-button>
-                  <mat-radio-button class="radio-button" value="2">
-                    <strong>False</strong> (The statement is not accurate)
-                  </mat-radio-button>
-                  <mat-radio-button class="radio-button" value="3">
-                    <strong>Mostly False</strong> (The statement contains an element of truth but ignores critical facts that would give a different impression)
-                  </mat-radio-button>
-                  <mat-radio-button class="radio-button" value="4">
-                    <strong>Half True</strong> (The statement is partially accurate but leaves out important details or takes things out of context)
-                  </mat-radio-button>
-                  <mat-radio-button class="radio-button" value="5">
-                    <strong>Mostly True</strong> (The statement is accurate but needs clarification or additional information)
-                  </mat-radio-button>
-                  <mat-radio-button class="radio-button" value="6">
-                    <strong>True</strong> (The statement is accurate and there is nothing significant missing)
+                <mat-radio-group *ngIf="dimension.scale=='discrete'" aria-labelledby="radio-button-label" class="radio-button-group" formControlName="{{(dimension.name).concat('_value')}}">
+                  <mat-radio-button *ngFor="let mapping of dimension.mappings; let k=index" class="radio-button" value="{{mapping.value}}">
+                    <strong>{{mapping.label}}</strong> ({{mapping.description}})
                   </mat-radio-button>
                 </mat-radio-group>
-                <mat-radio-group *ngIf="this.scale=='S3'" aria-labelledby="radio-button-label" class="radio-button-group" formControlName="{{(dimension.name).concat('_value')}}">
-                  <mat-radio-button class="radio-button" value="1">Negative</mat-radio-button>
-                  <mat-radio-button class="radio-button" value="2">In Between</mat-radio-button>
-                  <mat-radio-button class="radio-button" value="3">Positive</mat-radio-button>
-                </mat-radio-group>
-                <label *ngIf="this.scale=='S100'">Selected value: {{documentsForm[i].controls[(dimension.name).concat('_value')].value}}</label>
-                <mat-slider *ngIf="this.scale=='S100'" min="0" max="100" step="1" thumbLabel tickInterval="1" formControlName="{{(dimension.name).concat('_value')}}"></mat-slider>
+                <label *ngIf="dimension.scale=='continue'">Selected value: {{documentsForm[i].controls[(dimension.name).concat('_value')].value}}</label>
+                <mat-slider *ngIf="dimension.scale=='continue'" min="0" max="100" step="1" thumbLabel tickInterval="1" formControlName="{{(dimension.name).concat('_value')}}"></mat-slider>
               </div>
               <!-- Dimension text justification field markup -->
               <div *ngIf="dimension.justification==true" class="justification">
@@ -238,10 +218,16 @@
                 </div>
                 <div class="dimension-text-field">
                   <mat-form-field appearance="fill">
-                    <mat-label>Your justification here (You can use/copy text from the selected url)</mat-label>
+                    <mat-label>Your justification here (You can use your own words or, even better, copy/paste from the selected URL; you cannot use the selected search engine url as part of the justification).</mat-label>
                     <textarea matInput formControlName="{{dimension.name}}_justification" rows="3"></textarea>
                     <mat-error *ngIf="checkFormControl(documentsForm[i],(dimension.name).concat('_justification'), 'required')">
                       This field is required
+                    </mat-error>
+                    <mat-error *ngIf="checkFormControl(documentsForm[i],(dimension.name).concat('_justification'), 'longer')">
+                      This justification must have at least 15 words.
+                    </mat-error>
+                    <mat-error *ngIf="checkFormControl(documentsForm[i],(dimension.name).concat('_justification'), 'invalid')">
+                      You cannot use the selected search engine url as part of the justification.
                     </mat-error>
                   </mat-form-field>
                 </div>

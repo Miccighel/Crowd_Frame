@@ -154,7 +154,7 @@ export class CrowdXplorer {
               /* Some results exist */
               this.resultsFound = true;
               /* The matching response is saved and filtered if the environment variable is not an empty array */
-              this.bingWebSearchResponse = this.bingService.filterResponse(searchResponse, this.configService.environment.domainsToFiler);
+              this.bingWebSearchResponse = this.bingService.filterResponse(searchResponse, this.configService.environment.domainsToFilter);
               let decodedResponse = this.bingService.decodeResponse(this.bingWebSearchResponse);
               /* EMITTER: The matching response is emitted to provide it to an eventual parent component*/
               this.resultEmitter.emit(decodedResponse);

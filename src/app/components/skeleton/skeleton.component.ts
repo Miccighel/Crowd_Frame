@@ -19,6 +19,7 @@ import {ManagedUpload} from "aws-sdk/clients/s3";
 /* Font Awesome icons */
 import {faSpinner} from "@fortawesome/free-solid-svg-icons";
 import {faInfoCircle} from "@fortawesome/free-solid-svg-icons";
+import {log} from "util";
 
 /* Component HTML Tag definition */
 @Component({
@@ -152,6 +153,7 @@ export class SkeletonComponent {
 
   /* Array to store search engine queries and responses, one for each document within a Hit */
   searchEngineQueries: Array<object>;
+  currentQuery: number
   searchEngineRetrievedResponses: Array<object>;
   /* Array to store the responses selected by workers within search engine results, one for each document within a Hit */
   searchEngineSelectedResponses: Array<object>;
@@ -182,7 +184,7 @@ export class SkeletonComponent {
 
   /* Font awesome spinner icon */
   faSpinner: Object;
-  /* Font awesome inforCircle icon */
+  /* Font awesome infoCircle icon */
   faInfoCircle: Object;
 
   /* |--------- CONSTRUCTOR ---------| */
@@ -234,7 +236,7 @@ export class SkeletonComponent {
 
     this.region = this.configService.environment.region;
     this.bucket = this.configService.environment.bucket;
-    if(this.configService.environment.subFolder != "") {
+    if (this.configService.environment.subFolder != "") {
       this.folder = `${this.experimentId}/${this.configService.environment.subFolder}`
     } else {
       this.folder = `${this.experimentId}`
@@ -448,7 +450,7 @@ export class SkeletonComponent {
 
       /* |- HIT DOCUMENTS - INITIALIZATION-| */
 
-      this.documentsAmount = this.hit.documents_number;
+      this.documentsAmount = this.hit.documents.length;
 
       /* The array of documents is initialized */
       this.documents = new Array<Document>();
@@ -460,7 +462,7 @@ export class SkeletonComponent {
         for (let index_dimension = 0; index_dimension < this.dimensions.length; index_dimension++) {
           let dimension = this.dimensions[index_dimension];
           if (this.scale != "S100") controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.required]); else controlsConfig[`${dimension.name}_value`] = new FormControl(50, [Validators.required]);
-          if (dimension.justification) controlsConfig[`${dimension.name}_justification`] = new FormControl('', [Validators.required])
+          if (dimension.justification) controlsConfig[`${dimension.name}_justification`] = new FormControl('', [Validators.required, this.validateJustification.bind(this)])
           if (dimension.url) controlsConfig[`${dimension.name}_url`] = new FormControl('', [Validators.required, this.validateSearchEngineUrl.bind(this)]);
         }
         this.documentsForm[index] = this.formBuilder.group(controlsConfig)
@@ -475,7 +477,7 @@ export class SkeletonComponent {
 
       /* The array of accesses counter is initialized */
       this.elementsAccesses = new Array<number>(this.documentsAmount + this.questionnaireAmount);
-      for (let index = 0; index < this.elementsAccesses.length; index++) this.elementsAccesses[index] = 1;
+      for (let index = 0; index < this.elementsAccesses.length; index++) this.elementsAccesses[index] = 0;
 
       /* |- HIT SEARCH ENGINE - INITIALIZATION-| */
 
@@ -485,6 +487,7 @@ export class SkeletonComponent {
         this.searchEngineQueries[index]["data"] = [];
         this.searchEngineQueries[index]["amount"] = 0;
       }
+      this.currentQuery = 0;
       this.searchEngineRetrievedResponses = new Array<object>(this.documentsAmount);
       for (let index = 0; index < this.searchEngineRetrievedResponses.length; index++) {
         this.searchEngineRetrievedResponses[index] = {};
@@ -528,6 +531,42 @@ export class SkeletonComponent {
 
   }
 
+  /*
+   * This function performs a validation of the worker justification field each time the current worker types or pastes in its inside
+   * if the worker types the selected url as part of the justification an <invalid> error is raised
+   * if the worker types a justification which has lesser than 15 words a <longer> error is raised
+   * IMPORTANT: the <return null> part means: THE FIELD IS VALID
+   */
+  public validateJustification(control: FormControl) {
+    /* The justification is divided into words */
+    let words = control.value.split(' ')
+    let cleanedWords = new Array<string>()
+    for (let word of words) {
+      let trimmedWord = word.trim()
+      if (trimmedWord.length > 0) {
+        cleanedWords.push(trimmedWord)
+      }
+    }
+    /* If at least the first document has been reached */
+    if (this.stepper.selectedIndex >= this.questionnaireAmount) {
+      /* The current document index is selected */
+      let currentDocument = this.stepper.selectedIndex - this.questionnaireAmount;
+      /* If the user has selected some search engine responses for the current document */
+      if (this.searchEngineSelectedResponses[currentDocument]) {
+        if (this.searchEngineSelectedResponses[currentDocument]['amount'] > 0) {
+          let selectedUrl = Object.values(this.searchEngineSelectedResponses[currentDocument]["data"]).pop()
+          let response = selectedUrl["response"]
+          /* The controls are performed */
+          for (let word of cleanedWords) {
+            if (word == response["url"]) return {"invalid": "You cannot use the selected search engine url as part of the justification."}
+          }
+        }
+
+      }
+    }
+    return cleanedWords.length > 15 ? null : {"longer": "This just is not valid."};
+  }
+
   // |--------- SEARCH ENGINE INTEGRATION - FUNCTIONS ---------|
 
   /*
@@ -541,7 +580,7 @@ export class SkeletonComponent {
     let currentDimension = parseInt(queryData['target']['id'].split("-")[4]);
     /* A reference to the current dimension is saved */
     this.currentDimension = currentDimension;
-    let currentUserQuery = queryData['detail'];
+    let currentQueryText = queryData['detail'];
     let timeInSeconds = Date.now() / 1000;
     /* If some data for the current document already exists*/
     if (this.searchEngineQueries[currentDocument]['amount'] > 0) {
@@ -551,8 +590,9 @@ export class SkeletonComponent {
         "dimension": currentDimension,
         "index": storedQueries.length,
         "timestamp": timeInSeconds,
-        "text": currentUserQuery
+        "text": currentQueryText
       });
+      this.currentQuery = storedQueries.length - 1
       /* The data array within the data structure is updated */
       this.searchEngineQueries[currentDocument]['data'] = storedQueries;
       /* The total amount of query for the current document is updated */
@@ -565,8 +605,9 @@ export class SkeletonComponent {
         "dimension": currentDimension,
         "index": 0,
         "timestamp": timeInSeconds,
-        "text": currentUserQuery
+        "text": currentQueryText
       }];
+      this.currentQuery = 0
       /* The total amount of query for the current document is set to 1 */
       /* IMPORTANT: the index of the last query inserted for a document will be <amount -1> */
       this.searchEngineQueries[currentDocument]['amount'] = 1
@@ -660,6 +701,7 @@ export class SkeletonComponent {
       /* The total amount of retrieved responses for the current document is set to 1 */
       /* IMPORTANT: the index of the last retrieved response for a document will be <amount -1> */
       this.searchEngineSelectedResponses[currentDocument]['amount'] = 1
+
     }
     this.documentsForm[currentDocument].controls[this.dimensions[this.currentDimension].name.concat("_url")].setValue(currentSelectedResponse['url']);
   }
@@ -743,6 +785,7 @@ export class SkeletonComponent {
     let globalValidityCheck: boolean;
     let goldQuestionCheck: boolean;
     let timeSpentCheck: boolean;
+    let timeCheckAmount = 10;
 
     /* 1) GLOBAL VALIDITY CHECK performed here */
     globalValidityCheck = this.performGlobalValidityCheck();
@@ -752,7 +795,7 @@ export class SkeletonComponent {
 
     /* 3) TIME SPENT CHECK performed here */
     timeSpentCheck = true;
-    for (let i = 0; i < this.timestampsElapsed.length; i++) if (this.timestampsElapsed[i] < 2) timeSpentCheck = false;
+    for (let i = 0; i < this.timestampsElapsed.length; i++) if (this.timestampsElapsed[i] < timeCheckAmount) timeSpentCheck = false;
 
     /* If each check is true, the task is successful, otherwise the task is failed (but not over if there are more tries) */
     if (globalValidityCheck && goldQuestionCheck && timeSpentCheck) {
@@ -769,6 +812,7 @@ export class SkeletonComponent {
         globalFormValidity: globalValidityCheck,
         goldQuestionCheck: goldQuestionCheck,
         timeSpentCheck: timeSpentCheck,
+        timeCheckAmount: timeCheckAmount,
       };
       await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/checks.json`, qualityCheckData));
     }

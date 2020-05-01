@@ -10,7 +10,7 @@ export const environment = {
   useEachScale: false,
   allowedTries: 10,
 
-  domainsToFiler: [],
+  domainsToFilter: [],
 
   region: 'eu-west-1',
   bucket: 'crowdsourcing-tasks',

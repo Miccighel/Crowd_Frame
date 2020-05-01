@@ -3,14 +3,14 @@ export const environment = {
   production: true,
 
   experimentId: "MedicalTask",
-  subFolder: "Pilot-0",
+  subFolder: "Big-0",
 
   scale: "S6",
   allScales: ["S3", "S6", "S100"],
   useEachScale: false,
   allowedTries: 10,
 
-  domainsToFiler: ["politifact"],
+  domainsToFilter: ["politifact", "poynter", "fullfact"],
 
   region: 'eu-west-1',
   bucket: 'crowdsourcing-tasks',
