@@ -311,53 +311,74 @@ export class SkeletonComponent {
     /* Only one scale must be checked or each one of them */
     if (this.useEachScale) {
       /* At the start, any worker identifier has been found */
-      let existingWorkerFoundForAScale = false;
+      let existingWorkerFound = false;
       /* Variable which contains the upload result */
       let uploadStatus = null;
       /* Each scale is tested */
       for (let currentScale of this.allScales) {
         /* If a worker identifier has been found for a scale, the task must be blocked */
-        if (existingWorkerFoundForAScale) {
+        if (existingWorkerFound) {
           break
         } else {
           /* The worker identifiers of the current scale are downloaded */
           let workers = await this.download(`${this.folder}${currentScale}/workers.json`);
           /* Check to verify if one of the workers which have already started the task is the current one */
-          let taskAlreadyStarted = false;
-          for (let currentWorker of workers['started']) if (currentWorker == this.workerIdentifier) taskAlreadyStarted = true;
+          let taskAlreadyStartedForTheCurrentScale = false;
+          for (let currentWorker of workers['started']) if (currentWorker == this.workerIdentifier) taskAlreadyStartedForTheCurrentScale = true;
           /* If the current worker has not started the task */
-          if (!taskAlreadyStarted) {
-            /* His identifier is uploaded to the file of the scale to which he is assigned */
-            if (this.scale == currentScale) {
-              workers['started'].push(this.workerIdentifier);
-              uploadStatus = await (this.upload(this.workersFile, workers));
+          if (!taskAlreadyStartedForTheCurrentScale) {
+            let taskAlreadyStartedInAPastExperiment = false
+            /* The workers file of each past experiment is scanned */
+            for(let pastExperimentSubFolder of this.configService.environment.pastExperiments) {
+              let pastWorkers = await this.download(`${this.experimentId}/${pastExperimentSubFolder}/Multi/${this.scale}/workers.json`);
+              for (let currentWorker of pastWorkers['started']) if (currentWorker == this.workerIdentifier) taskAlreadyStartedInAPastExperiment = true;
+            }
+            if(!taskAlreadyStartedInAPastExperiment) {
+              /* His identifier is uploaded to the file of the scale to which he is assigned */
+              if (this.scale == currentScale) {
+                workers['started'].push(this.workerIdentifier);
+                uploadStatus = await (this.upload(this.workersFile, workers));
+              }
+              /* The current one is a brand new worker */
+              existingWorkerFound = false;
             }
             /* The current one is a brand new worker */
-            existingWorkerFoundForAScale = false;
+            existingWorkerFound = false;
           } else {
             /* The current one is a returning worker */
-            existingWorkerFoundForAScale = true;
+            existingWorkerFound = true;
           }
         }
       }
       /* If a returning worker has been found, the task must be blocked, otherwise he is free to proceed */
-      if (existingWorkerFoundForAScale) return false;
+      if (existingWorkerFound) return false;
       return !uploadStatus["failed"];
     } else {
       /* The worker identifiers of the current scale are downloaded */
       let workers = await this.download(this.workersFile);
       /* Check to verify if one of the workers which have already started the task is the current one */
-      let taskAlreadyStarted = false;
-      for (let currentWorker of workers['started']) if (currentWorker == this.workerIdentifier) taskAlreadyStarted = true;
-      /* If the current worker has not started the task */
-      if (!taskAlreadyStarted) {
-        /* His identifier is uploaded to the file of the scale to which he is assigned */
-        workers['started'].push(this.workerIdentifier);
-        let uploadStatus = await (this.upload(this.workersFile, workers));
-        /* If the current worker is a brand new one he is free to proceed */
-        return !uploadStatus["failed"];
+      let taskAlreadyStartedInCurrentExperiment = false;
+      for (let currentWorker of workers['started']) if (currentWorker == this.workerIdentifier) taskAlreadyStartedInCurrentExperiment = true;
+      /* If the current worker has not started the task within the current experiment */
+      if (!taskAlreadyStartedInCurrentExperiment) {
+        /* Check to verify if one of the workers which have already started the task in a past experiment */
+        let taskAlreadyStartedInAPastExperiment = false
+        /* The workers file of each past experiment is scanned */
+        for(let pastExperimentSubFolder of this.configService.environment.pastExperiments) {
+          let pastWorkers = await this.download(`${this.experimentId}/${pastExperimentSubFolder}/Single/${this.scale}/workers.json`);
+          for (let currentWorker of pastWorkers['started']) if (currentWorker == this.workerIdentifier) taskAlreadyStartedInAPastExperiment = true;
+        }
+        if (!taskAlreadyStartedInAPastExperiment) {
+          /* His identifier is uploaded to the file of the scale to which he is assigned */
+          workers['started'].push(this.workerIdentifier);
+          let uploadStatus = await (this.upload(this.workersFile, workers));
+          /* If the current worker is a brand new one he is free to proceed */
+          return !uploadStatus["failed"];
+        }
+        /* If a returning worker for a past experiment has been found, the task must be blocked */
+        return false
       }
-      /* If a returning worker has been found, the task must be blocked */
+      /* If a returning worker for the current experiment has been found, the task must be blocked */
       return false
     }
   }

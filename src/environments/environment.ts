@@ -12,6 +12,8 @@ export const environment = {
 
   domainsToFilter: [],
 
+  pastExperiments: [],
+
   region: 'eu-west-1',
   bucket: 'crowdsourcing-tasks',
   aws_id_key: "AKIAJZPMGNZEXCRQHNGQ",
