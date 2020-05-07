@@ -3,7 +3,7 @@ export const environment = {
   production: true,
 
   experimentId: "MedicalTask",
-  subFolder: "Big-1",
+  subFolder: "Big-3",
 
   scale: "S6",
   allScales: ["S3", "S6", "S100"],
@@ -12,7 +12,7 @@ export const environment = {
 
   domainsToFilter: ["politifact", "poynter", "fullfact"],
 
-  pastExperiments: ["Big-0", "Pilot-0"],
+  pastExperiments: ["Big-0", "Pilot-0", "Big-1", "Big-2"],
 
   region: 'eu-west-1',
   bucket: 'crowdsourcing-tasks',
