@@ -1,41 +1,316 @@
 [
   {
     "name": "truthfulness",
-    "description": "",
-    "justification": true,
-    "url": true,
-    "scale": "discrete",
-    "mapping": [
-      {
-        "label": "Lie",
-        "description": "The statement is not accurate and makes a ridicolous claim",
-        "value": "1"
-      },
-      {
-        "label": "False",
-        "description": "The statement is not accurate",
-        "value": "2"
-      },
-      {
-        "label": "Mostly False",
-        "description": "The statement contains an element of truth but ignores critical facts that would give a different impression",
-        "value": "3"
-      },
-      {
-        "label": "Half True",
-        "description": "The statement is accurate but needs clarification or additional information",
-        "value": "4"
-      },
-      {
-        "label": "Mostly True",
-        "description": "The statement contains an element of truth but ignores critical facts that would give a different impression",
-        "value": "5"
-      },
-      {
-        "label": "True",
-        "description": "The statement is accurate and there is nothing significant missing",
-        "value": "6"
-      }
-    ]
+    "description": "State if the statement is in general true (+2), as opposed to false (-2)",
+    "scale": {
+      "type": "discrete",
+      "mapping": [
+        {
+          "label": "Completely Disagree",
+          "description": "",
+          "value": "-2"
+        },
+        {
+          "label": "Disagree",
+          "description": "",
+          "value": "-1"
+        },
+        {
+          "label": "Neither Agree Nor Disagree",
+          "description": "",
+          "value": "0"
+        },
+        {
+          "label": "Agree",
+          "description": "",
+          "value": "1"
+        },
+        {
+          "label": "Completely Agree",
+          "description": "",
+          "value": "2"
+        }
+      ]
+    }
+  },
+  {
+    "name": "confidence",
+    "description": "You consider yourself knowledgeable/expert (+2) about the topic, as opposed to novice/beginner (-2)",
+    "scale": {
+      "type": "discrete",
+      "mapping": [
+        {
+          "label": "Completely Disagree",
+          "description": "",
+          "value": "-2"
+        },
+        {
+          "label": "Disagree",
+          "description": "",
+          "value": "-1"
+        },
+        {
+          "label": "Neither Agree Nor Disagree",
+          "description": "",
+          "value": "0"
+        },
+        {
+          "label": "Agree",
+          "description": "",
+          "value": "1"
+        },
+        {
+          "label": "Completely Agree",
+          "description": "",
+          "value": "2"
+        }
+      ]
+    }
+  },
+  {
+    "name": "correctness",
+    "description": "The statement is expressed in an accurate way (+2), as opposed to being incorrect and/or reporting  mistaken information (-2)",
+    "scale": {
+      "type": "discrete",
+      "mapping": [
+        {
+          "label": "Completely Disagree",
+          "description": "",
+          "value": "-2"
+        },
+        {
+          "label": "Disagree",
+          "description": "",
+          "value": "-1"
+        },
+        {
+          "label": "Neither Agree Nor Disagree",
+          "description": "",
+          "value": "0"
+        },
+        {
+          "label": "Agree",
+          "description": "",
+          "value": "1"
+        },
+        {
+          "label": "Completely Agree",
+          "description": "",
+          "value": "2"
+        }
+      ]
+    }
+  },
+  {
+    "name": "neutrality",
+    "description": "The statement is expressed in a neutral / objective way (+2), as opposed to subjective / biased (-2)",
+    "scale": {
+      "type": "discrete",
+      "mapping": [
+        {
+          "label": "Completely Disagree",
+          "description": "",
+          "value": "-2"
+        },
+        {
+          "label": "Disagree",
+          "description": "",
+          "value": "-1"
+        },
+        {
+          "label": "Neither Agree Nor Disagree",
+          "description": "",
+          "value": "0"
+        },
+        {
+          "label": "Agree",
+          "description": "",
+          "value": "1"
+        },
+        {
+          "label": "Completely Agree",
+          "description": "",
+          "value": "2"
+        }
+      ]
+    }
+  },
+  {
+    "name": "comprehensibility",
+    "description": "The statement is comprehensible / understandable / readable (+2) as opposed to difficult to understand (-2)",
+    "scale": {
+      "type": "discrete",
+      "mapping": [
+        {
+          "label": "Completely Disagree",
+          "description": "",
+          "value": "-2"
+        },
+        {
+          "label": "Disagree",
+          "description": "",
+          "value": "-1"
+        },
+        {
+          "label": "Neither Agree Nor Disagree",
+          "description": "",
+          "value": "0"
+        },
+        {
+          "label": "Agree",
+          "description": "",
+          "value": "1"
+        },
+        {
+          "label": "Completely Agree",
+          "description": "",
+          "value": "2"
+        }
+      ]
+    }
+  },
+  {
+    "name": "precision",
+    "description": "The information provided in the statement is precise, specific (+2), as opposed to vague (-2)",
+    "scale": {
+      "type": "discrete",
+      "mapping": [
+        {
+          "label": "Completely Disagree",
+          "description": "",
+          "value": "-2"
+        },
+        {
+          "label": "Disagree",
+          "description": "",
+          "value": "-1"
+        },
+        {
+          "label": "Neither Agree Nor Disagree",
+          "description": "",
+          "value": "0"
+        },
+        {
+          "label": "Agree",
+          "description": "",
+          "value": "1"
+        },
+        {
+          "label": "Completely Agree",
+          "description": "",
+          "value": "2"
+        }
+      ]
+    }
+  },
+  {
+    "name": "completeness",
+    "description": "The information reported in the statement is complete (+2) as opposed to telling only a part of the story (-2)",
+    "scale": {
+      "type": "discrete",
+      "mapping": [
+        {
+          "label": "Completely Disagree",
+          "description": "",
+          "value": "-2"
+        },
+        {
+          "label": "Disagree",
+          "description": "",
+          "value": "-1"
+        },
+        {
+          "label": "Neither Agree Nor Disagree",
+          "description": "",
+          "value": "0"
+        },
+        {
+          "label": "Agree",
+          "description": "",
+          "value": "1"
+        },
+        {
+          "label": "Completely Agree",
+          "description": "",
+          "value": "2"
+        }
+      ]
+    }
+  },
+  {
+    "name": "speaker-trustworthiness",
+    "description": "The speaker is generally trustworthy / reliable (+2) as opposed to untrustworthy / unreliable / malicious (-2)",
+    "scale": {
+      "type": "discrete",
+      "mapping": [
+        {
+          "label": "Completely Disagree",
+          "description": "",
+          "value": "-2"
+        },
+        {
+          "label": "Disagree",
+          "description": "",
+          "value": "-1"
+        },
+        {
+          "label": "Neither Agree Nor Disagree",
+          "description": "",
+          "value": "0"
+        },
+        {
+          "label": "Agree",
+          "description": "",
+          "value": "1"
+        },
+        {
+          "label": "Completely Agree",
+          "description": "",
+          "value": "2"
+        }
+      ]
+    }
+  },
+  {
+    "name": "informativeness",
+    "description": "The statement allows us to derive useful information (+2) as opposed to simply stating well known facts and/or tautologies (-2)",
+    "scale": {
+      "type": "discrete",
+      "mapping": [
+        {
+          "label": "Completely Disagree",
+          "description": "",
+          "value": "-2"
+        },
+        {
+          "label": "Disagree",
+          "description": "",
+          "value": "-1"
+        },
+        {
+          "label": "Neither Agree Nor Disagree",
+          "description": "",
+          "value": "0"
+        },
+        {
+          "label": "Agree",
+          "description": "",
+          "value": "1"
+        },
+        {
+          "label": "Completely Agree",
+          "description": "",
+          "value": "2"
+        }
+      ]
+    }
+  },
+  {
+    "name": "justification",
+    "description": "Please describe the rationale behind your assessments and how confident you feel on the seven dimensions and how the dimensions have influenced your overall assessment and which dimensions have influenced your overall assessment the most.",
+    "justification": {
+      "text": "Your justification here",
+      "min_words": 15
+    }
   }
 ]

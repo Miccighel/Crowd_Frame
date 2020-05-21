@@ -102,6 +102,22 @@ mat-card-content label {
   margin-bottom: 1%;
 }
 
+.dimension-container {
+  display: flex;
+}
+
+.dimension-counter {
+  flex-grow: 0;
+  justify-content: center;
+  align-self: center;
+  vertical-align: top;
+  margin-right: 1%;
+}
+
+.dimension-content{
+  flex-grow: 1;
+}
+
 .dimension-description {
   margin-bottom: 1%;
 }

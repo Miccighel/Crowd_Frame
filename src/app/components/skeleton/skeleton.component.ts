@@ -1,7 +1,7 @@
 /* Core modules */
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, ViewChild} from '@angular/core';
 /* Reactive forms modules */
-import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms'
+import {AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms'
 import {MatFormField} from "@angular/material/form-field";
 import {MatStepper} from "@angular/material/stepper";
 /* Services */
@@ -11,7 +11,7 @@ import {ConfigService} from "../../services/config.service";
 import {Document} from "../../models/skeleton/document";
 import {Hit} from "../../models/skeleton/hit";
 import {Questionnaire} from "../../models/skeleton/questionnaire";
-import {Dimension} from "../../models/skeleton/dimension";
+import {Dimension, ScaleContinue} from "../../models/skeleton/dimension";
 import {Instruction} from "../../models/skeleton/instructions";
 /* AWS Integration*/
 import * as AWS from 'aws-sdk';
@@ -42,6 +42,9 @@ export class SkeletonComponent {
   /* Name of the current task */
   experimentId: string;
 
+  /* Sub name of the current task */
+  subExperimentId: string;
+
   /* Unique identifier of the current worker */
   workerIdentifier: string;
 
@@ -64,13 +67,6 @@ export class SkeletonComponent {
   taskCompleted: boolean;
   taskSuccessful: boolean;
   taskFailed: boolean;
-
-  /* Rating scale to be used */
-  scale: string;
-  /* Each possible rating scale */
-  allScales: Array<string>;
-  /* Flag to launch a batch of experiments for multiple rating scales */
-  useEachScale: boolean;
 
   /* References to task stepper and token forms */
   @ViewChild('stepper') stepper: MatStepper;
@@ -208,6 +204,7 @@ export class SkeletonComponent {
     /* |--------- GENERAL ELEMENTS - INITIALIZATION ---------| */
 
     this.experimentId = this.configService.environment.experimentId;
+    this.subExperimentId = this.configService.environment.subExperiment;
 
     let url = new URL(window.location.href);
     this.workerIdentifier = url.searchParams.get("workerID");
@@ -219,11 +216,7 @@ export class SkeletonComponent {
     this.taskSuccessful = false;
     this.taskFailed = false;
 
-    this.scale = this.configService.environment.scale;
-    this.allScales = this.configService.environment.allScales;
-    this.useEachScale = this.configService.environment.useEachScale;
-
-    this.tokenInput = new FormControl('', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
+    this.tokenInput = new FormControl('LEWNAUGBRUC', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
     this.tokenForm = formBuilder.group({
       "tokenInput": this.tokenInput
     });
@@ -236,23 +229,18 @@ export class SkeletonComponent {
 
     this.region = this.configService.environment.region;
     this.bucket = this.configService.environment.bucket;
-    if (this.configService.environment.subFolder != "") {
-      this.folder = `${this.experimentId}/${this.configService.environment.subFolder}`
+    if (this.configService.environment.subExperiment) {
+      this.folder = `${this.experimentId}/${this.subExperimentId}`
     } else {
       this.folder = `${this.experimentId}`
     }
-    if (this.useEachScale) {
-      this.folder = `${this.folder}/Multi/`;
-    } else {
-      this.folder = `${this.folder}/Single/`;
-    }
-    this.taskInstructionsFile = `${this.folder}${this.scale}/instructions.html`;
-    this.workersFile = `${this.folder}${this.scale}/workers.json`;
-    this.questionnairesFile = `${this.folder}${this.scale}/questionnaires.json`;
-    this.dimensionsInstructionsFile = `${this.folder}${this.scale}/instructions.json`;
-    this.dimensionsFile = `${this.folder}${this.scale}/dimensions.json`;
-    this.hitsFile = `${this.folder}${this.scale}/hits.json`;
-    this.workerFolder = `${this.folder}${this.scale}/Data/${this.workerIdentifier}`;
+    this.taskInstructionsFile = `${this.folder}/instructions.html`;
+    this.workersFile = `${this.folder}/workers.json`;
+    this.questionnairesFile = `${this.folder}/questionnaires.json`;
+    this.dimensionsInstructionsFile = `${this.folder}/instructions.json`;
+    this.dimensionsFile = `${this.folder}/dimensions.json`;
+    this.hitsFile = `${this.folder}/hits.json`;
+    this.workerFolder = `${this.folder}/Data/${this.workerIdentifier}`;
     this.s3 = new AWS.S3({
       region: this.region,
       params: {Bucket: this.bucket},
@@ -308,80 +296,34 @@ export class SkeletonComponent {
   * This behavior is controlled by setting the useEachScale flag.
   */
   public async performWorkerStatusCheck() {
-    /* Only one scale must be checked or each one of them */
-    if (this.useEachScale) {
-      /* At the start, any worker identifier has been found */
-      let existingWorkerFound = false;
-      /* Variable which contains the upload result */
-      let uploadStatus = null;
-      /* Each scale is tested */
-      for (let currentScale of this.allScales) {
-        /* If a worker identifier has been found for a scale, the task must be blocked */
-        if (existingWorkerFound) {
-          break
-        } else {
-          /* The worker identifiers of the current scale are downloaded */
-          let workers = await this.download(`${this.folder}${currentScale}/workers.json`);
-          /* Check to verify if one of the workers which have already started the task is the current one */
-          let taskAlreadyStartedForTheCurrentScale = false;
-          for (let currentWorker of workers['started']) if (currentWorker == this.workerIdentifier) taskAlreadyStartedForTheCurrentScale = true;
-          /* If the current worker has not started the task */
-          if (!taskAlreadyStartedForTheCurrentScale) {
-            let taskAlreadyStartedInAPastExperiment = false
-            /* The workers file of each past experiment is scanned */
-            for(let pastExperimentSubFolder of this.configService.environment.pastExperiments) {
-              let pastWorkers = await this.download(`${this.experimentId}/${pastExperimentSubFolder}/Multi/${this.scale}/workers.json`);
-              for (let currentWorker of pastWorkers['started']) if (currentWorker == this.workerIdentifier) taskAlreadyStartedInAPastExperiment = true;
-            }
-            if(!taskAlreadyStartedInAPastExperiment) {
-              /* His identifier is uploaded to the file of the scale to which he is assigned */
-              if (this.scale == currentScale) {
-                workers['started'].push(this.workerIdentifier);
-                uploadStatus = await (this.upload(this.workersFile, workers));
-              }
-              /* The current one is a brand new worker */
-              existingWorkerFound = false;
-            }
-            /* The current one is a brand new worker */
-            existingWorkerFound = false;
-          } else {
-            /* The current one is a returning worker */
-            existingWorkerFound = true;
-          }
-        }
+    /* The worker identifiers of the current experiment are downloaded */
+    let workers = await this.download(this.workersFile);
+    /* Check to verify if one of the workers which have already started the task is the current one */
+    let taskAlreadyStartedInCurrentExperiment = false;
+    for (let currentWorker of workers['started']) if (currentWorker == this.workerIdentifier) taskAlreadyStartedInCurrentExperiment = true;
+    /* If the current worker has not started the task within the current experiment */
+    if (!taskAlreadyStartedInCurrentExperiment) {
+      /* Check to verify if one of the workers which have already started the task in a past experiment */
+      let taskAlreadyStartedInAPastExperiment = false
+      /* The workers file of each past experiment is scanned */
+      for (let pastExperimentSubFolder of this.configService.environment.pastExperiments) {
+        let pastWorkers = await this.download(`${this.experimentId}/${pastExperimentSubFolder}/workers.json`);
+        for (let currentWorker of pastWorkers['started']) if (currentWorker == this.workerIdentifier) taskAlreadyStartedInAPastExperiment = true;
       }
-      /* If a returning worker has been found, the task must be blocked, otherwise he is free to proceed */
-      if (existingWorkerFound) return false;
-      return !uploadStatus["failed"];
-    } else {
-      /* The worker identifiers of the current scale are downloaded */
-      let workers = await this.download(this.workersFile);
-      /* Check to verify if one of the workers which have already started the task is the current one */
-      let taskAlreadyStartedInCurrentExperiment = false;
-      for (let currentWorker of workers['started']) if (currentWorker == this.workerIdentifier) taskAlreadyStartedInCurrentExperiment = true;
-      /* If the current worker has not started the task within the current experiment */
-      if (!taskAlreadyStartedInCurrentExperiment) {
-        /* Check to verify if one of the workers which have already started the task in a past experiment */
-        let taskAlreadyStartedInAPastExperiment = false
-        /* The workers file of each past experiment is scanned */
-        for(let pastExperimentSubFolder of this.configService.environment.pastExperiments) {
-          let pastWorkers = await this.download(`${this.experimentId}/${pastExperimentSubFolder}/Single/${this.scale}/workers.json`);
-          for (let currentWorker of pastWorkers['started']) if (currentWorker == this.workerIdentifier) taskAlreadyStartedInAPastExperiment = true;
-        }
-        if (!taskAlreadyStartedInAPastExperiment) {
-          /* His identifier is uploaded to the file of the scale to which he is assigned */
-          workers['started'].push(this.workerIdentifier);
-          let uploadStatus = await (this.upload(this.workersFile, workers));
-          /* If the current worker is a brand new one he is free to proceed */
-          return !uploadStatus["failed"];
-        }
-        /* If a returning worker for a past experiment has been found, the task must be blocked */
-        return false
+      if (!taskAlreadyStartedInAPastExperiment) {
+        /* His identifier is uploaded to the file of the scale to which he is assigned */
+        workers['started'].push(this.workerIdentifier);
+        let uploadStatus = await (this.upload(this.workersFile, workers));
+        /* If the current worker is a brand new one he is free to proceed */
+        return !uploadStatus["failed"];
       }
-      /* If a returning worker for the current experiment has been found, the task must be blocked */
+      /* If a returning worker for a past experiment has been found, the task must be blocked */
       return false
     }
+    /* If a returning worker for the current experiment has been found, the task must be blocked */
+    return false
   }
+
 
   /*
   *  This function retrieves the hit identified by the validated token input inserted by the current worker.
@@ -482,7 +424,7 @@ export class SkeletonComponent {
         let controlsConfig = {};
         for (let index_dimension = 0; index_dimension < this.dimensions.length; index_dimension++) {
           let dimension = this.dimensions[index_dimension];
-          if (this.scale != "S100") controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.required]); else controlsConfig[`${dimension.name}_value`] = new FormControl(50, [Validators.required]);
+          if (dimension.scale) if (dimension.scale.type != "continue") controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.required]); else controlsConfig[`${dimension.name}_value`] = new FormControl((Math.round(((<ScaleContinue>dimension.scale).min + (<ScaleContinue>dimension.scale).max) / 2)), [Validators.required]);
           if (dimension.justification) controlsConfig[`${dimension.name}_justification`] = new FormControl('', [Validators.required, this.validateJustification.bind(this)])
           if (dimension.url) controlsConfig[`${dimension.name}_url`] = new FormControl('', [Validators.required, this.validateSearchEngineUrl.bind(this)]);
         }
@@ -560,6 +502,7 @@ export class SkeletonComponent {
    */
   public validateJustification(control: FormControl) {
     /* The justification is divided into words */
+    let minWords = 0
     let words = control.value.split(' ')
     let cleanedWords = new Array<string>()
     for (let word of words) {
@@ -582,10 +525,17 @@ export class SkeletonComponent {
             if (word == response["url"]) return {"invalid": "You cannot use the selected search engine url as part of the justification."}
           }
         }
-
       }
+      const allControls = this.getControlGroup(control).controls;
+      let currentControl = Object.keys(allControls).find(name => control === allControls[name])
+      let currentDimensionName = currentControl.split("_")[0]
+      for (let dimension of this.dimensions) if (dimension.name == currentDimensionName) if (dimension.justification.minWords) minWords = dimension.justification.minWords
     }
-    return cleanedWords.length > 15 ? null : {"longer": "This just is not valid."};
+    return cleanedWords.length > minWords ? null : {"longer": "This is not valid."};
+  }
+
+  protected getControlGroup(c: AbstractControl): FormGroup | FormArray {
+    return c.parent;
   }
 
   // |--------- SEARCH ENGINE INTEGRATION - FUNCTIONS ---------|
@@ -650,7 +600,7 @@ export class SkeletonComponent {
     let currentRetrievedResponse = retrievedResponseData['detail'];
     let timeInSeconds = Date.now() / 1000;
     /* If some responses for the current document already exists*/
-    if (this.searchEngineRetrievedResponses[currentDocument]['amount'] > 0) {
+    if (this.searchEngineRetrievedResponses[currentDocument]['groups'] > 0) {
       /* The new response is pushed into current document data array along with its query index */
       let storedResponses = Object.values(this.searchEngineRetrievedResponses[currentDocument]['data']);
       storedResponses.push({
@@ -661,8 +611,10 @@ export class SkeletonComponent {
       });
       /* The data array within the data structure is updated */
       this.searchEngineRetrievedResponses[currentDocument]['data'] = storedResponses;
-      /* The total amount of retrieved responses for the current document is updated */
-      this.searchEngineRetrievedResponses[currentDocument]['amount'] = storedResponses.length;
+      /* The total amount retrieved responses for the current document is updated */
+      this.searchEngineRetrievedResponses[currentDocument]['amount'] = this.searchEngineRetrievedResponses[currentDocument]['amount'] + currentRetrievedResponse.length
+      /* The total amount of groups of retrieved responses for the current document is updated */
+      this.searchEngineRetrievedResponses[currentDocument]['groups'] = storedResponses.length;
     } else {
       /* The data slot for the current document is created */
       this.searchEngineRetrievedResponses[currentDocument] = {};
@@ -673,9 +625,11 @@ export class SkeletonComponent {
         "timestamp": timeInSeconds,
         "response": currentRetrievedResponse
       }];
-      /* The total amount of retrieved responses for the current document is set to 1 */
+      /* The total amount of retrieved responses for the current document is set to the length of the first group */
       /* IMPORTANT: the index of the last retrieved response for a document will be <amount -1> */
-      this.searchEngineRetrievedResponses[currentDocument]['amount'] = 1
+      this.searchEngineRetrievedResponses[currentDocument]['amount'] = currentRetrievedResponse.length
+      /* The total amount of groups retrieved responses for the current document is set to 1 */
+      this.searchEngineRetrievedResponses[currentDocument]['groups'] = 1
     }
     /* The form control to set the url of the selected search result is enabled */
     this.documentsForm[currentDocument].controls[this.dimensions[this.currentDimension].name.concat("_url")].enable();
@@ -719,10 +673,9 @@ export class SkeletonComponent {
         "timestamp": timeInSeconds,
         "response": currentSelectedResponse
       }];
-      /* The total amount of retrieved responses for the current document is set to 1 */
-      /* IMPORTANT: the index of the last retrieved response for a document will be <amount -1> */
+      /* The total amount of selected responses for the current document is set to 1 */
+      /* IMPORTANT: the index of the last selected response for a document will be <amount -1> */
       this.searchEngineSelectedResponses[currentDocument]['amount'] = 1
-
     }
     this.documentsForm[currentDocument].controls[this.dimensions[this.currentDimension].name.concat("_url")].setValue(currentSelectedResponse['url']);
   }
@@ -970,8 +923,7 @@ export class SkeletonComponent {
           /* The full information about task setup (i.e., its document and questionnaire structures) are uploaded, only once */
           let taskData = {
             experiment_id: this.experimentId,
-            current_scale: this.scale,
-            use_each_scale: this.useEachScale,
+            sub_experiment_id: this.subExperimentId,
             worker_id: this.workerIdentifier,
             unit_id: this.unitId,
             token_input: this.tokenInput.value,
@@ -1152,6 +1104,14 @@ export class SkeletonComponent {
    */
   public checkFormControl(form: FormGroup, field: string, key: string): boolean {
     return form.get(field).hasError(key);
+  }
+
+  public capitalize(word: string) {
+    if (!word) return word;
+    let text = word.split("-")
+    let str = ""
+    for (word of text) str = str + " " + word[0].toUpperCase() + word.substr(1).toLowerCase();
+    return str.trim()
   }
 
 }
