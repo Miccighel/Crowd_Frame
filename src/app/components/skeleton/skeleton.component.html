@@ -143,10 +143,14 @@
               <mat-divider [inset]="true"></mat-divider>
               <h2>Instructions</h2>
               <mat-divider [inset]="true"></mat-divider>
-              <p>{{instructions.caption}}</p>
-              <ol *ngIf="instructions.steps.length>0">
-                <li *ngFor="let step of this.instructions.steps"><p>{{step}}</p></li>
-              </ol>
+              <div *ngFor="let instruction of this.instructions">
+                <p>{{instruction.caption}}</p>
+                <ol *ngIf="instruction.steps.length>0" type="a">
+                  <li *ngFor="let step of instruction.steps">
+                    <p>{{step}}</p>
+                  </li>
+                </ol>
+              </div>
             </div>
             <!-- Dimensions markup -->
             <div *ngFor="let dimension of this.dimensions; let j=index" class="dimension">

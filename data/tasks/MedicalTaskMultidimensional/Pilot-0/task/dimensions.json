@@ -32,8 +32,7 @@
         }
       ]
     },
-    "gold_question_check": true,
-    "style": "matrix"
+    "gold_question_check": true
   },
   {
     "name": "confidence",
@@ -67,8 +66,7 @@
           "value": "2"
         }
       ]
-    },
-    "style": "matrix"
+    }
   },
   {
     "name": "correctness",
@@ -102,8 +100,7 @@
           "value": "2"
         }
       ]
-    },
-    "style": "matrix"
+    }
   },
   {
     "name": "neutrality",
@@ -137,8 +134,7 @@
           "value": "2"
         }
       ]
-    },
-    "style": "matrix"
+    }
   },
   {
     "name": "comprehensibility",
@@ -172,8 +168,7 @@
           "value": "2"
         }
       ]
-    },
-    "style": "matrix"
+    }
   },
   {
     "name": "precision",
@@ -207,8 +202,7 @@
           "value": "2"
         }
       ]
-    },
-    "style": "matrix"
+    }
   },
   {
     "name": "completeness",
@@ -242,8 +236,7 @@
           "value": "2"
         }
       ]
-    },
-    "style": "matrix"
+    }
   },
   {
     "name": "speaker-trustworthiness",
@@ -277,8 +270,7 @@
           "value": "2"
         }
       ]
-    },
-    "style": "matrix"
+    }
   },
   {
     "name": "informativeness",
@@ -312,8 +304,7 @@
           "value": "2"
         }
       ]
-    },
-    "style": "matrix"
+    }
   },
   {
     "name": "justification",
@@ -321,7 +312,6 @@
     "justification": {
       "text": "Your justification here (at least 15 words)",
       "min_words": 15
-    },
-    "style": "plain"
+    }
   }
 ]

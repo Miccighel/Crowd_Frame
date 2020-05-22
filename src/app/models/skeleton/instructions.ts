@@ -4,12 +4,19 @@
  */
 export class Instruction {
 
+  /* DO NOT REMOVE THIS ATTRIBUTE */
+  index: number;
+
   caption: string;
   steps: Array<string>;
 
   constructor(
+    index: number,
     data: JSON
   ) {
+    /* DO NOT REMOVE THIS LINE */
+    this.index = index;
+
     this.caption =    data["caption"];
     this.steps = new Array<string>();
     for (const [_, step] of data["steps"].entries()) this.steps.push(step)

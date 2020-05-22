@@ -13,6 +13,8 @@ export class Dimension {
   justification?: Justification;
   url?: boolean;
   scale?: ScaleDiscrete | ScaleContinue;
+  goldQuestionCheck?: boolean;
+  style: string;
 
   constructor(
     index: number,
@@ -21,11 +23,13 @@ export class Dimension {
     /* DO NOT REMOVE THIS LINE */
     this.index = index;
 
-    this.name =           data["name"];
-    this.description =    data["description"];
-    this.justification =  data['justification'] ? new Justification(data['justification']) : null;
-    this.url =            data['url'] ? data["url"] : null;
-    this.scale =          data['scale'] ? data['scale']['type'] == "discrete" ? new ScaleDiscrete(data['scale']) : new ScaleContinue(data['scale']) : null;
+    this.name =               data["name"];
+    this.description =        data["description"];
+    this.justification =      data['justification'] ? new Justification(data['justification']) : null;
+    this.url =                data['url'] ? data["url"] : null;
+    this.scale =              data['scale'] ? data['scale']['type'] == "discrete" ? new ScaleDiscrete(data['scale']) : new ScaleContinue(data['scale']) : null;
+    this.goldQuestionCheck =  data['gold_question_check'] ? data['gold_question_check'] : null;
+    this.style =              data['style'];
   }
 
 }

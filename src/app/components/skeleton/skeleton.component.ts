@@ -123,7 +123,7 @@ export class SkeletonComponent {
   /* |--------- HIT ELEMENTS - DECLARATION ---------| */
 
   /* Instructions for dimension assessing */
-  instructions: Instruction;
+  instructions: Array<Instruction>;
   /* Amount of instructions sentences */
   instructionsAmount: number;
 
@@ -216,7 +216,7 @@ export class SkeletonComponent {
     this.taskSuccessful = false;
     this.taskFailed = false;
 
-    this.tokenInput = new FormControl('LEWNAUGBRUC', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
+    this.tokenInput = new FormControl('MBYTZQGSXYP', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
     this.tokenForm = formBuilder.group({
       "tokenInput": this.tokenInput
     });
@@ -396,10 +396,12 @@ export class SkeletonComponent {
 
       /* The dimensions stored on Amazon S3 are retrieved */
       let rawInstructions = await this.download(this.dimensionsInstructionsFile);
-      this.instructionsAmount = rawInstructions["steps"].length;
+      this.instructionsAmount = rawInstructions.length;
 
       /* The instructions are parsed using the Instruction class */
-      this.instructions = new Instruction(rawInstructions);
+      this.instructions = new Array<Instruction>();
+      for (let index = 0; index < this.instructionsAmount; index++) this.instructions.push(new Instruction(index, rawInstructions[index]));
+
 
       /* The array of dimensions is initialized */
       this.dimensions = new Array<Dimension>();
@@ -765,7 +767,10 @@ export class SkeletonComponent {
     globalValidityCheck = this.performGlobalValidityCheck();
 
     /* 2) GOLD QUESTION CHECK performed here */
-    for (let dimension of this.dimensions) goldQuestionCheck = this.documentsForm[this.goldIndexLow].controls[dimension.name.concat('_value')].value < this.documentsForm[this.goldIndexHigh].controls[dimension.name.concat('_value')].value;
+    for (let dimension of this.dimensions) {
+      if(dimension.goldQuestionCheck)
+        goldQuestionCheck = this.documentsForm[this.goldIndexLow].controls[dimension.name.concat('_value')].value < this.documentsForm[this.goldIndexHigh].controls[dimension.name.concat('_value')].value;
+    }
 
     /* 3) TIME SPENT CHECK performed here */
     timeSpentCheck = true;
