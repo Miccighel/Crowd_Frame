@@ -1,7 +1,8 @@
 [
   {
-    "name": "truthfulness",
+    "name": "overall-truthfulness",
     "description": "State if the statement is in general true (+2), as opposed to false (-2)",
+    "url": true,
     "scale": {
       "type": "discrete",
       "mapping": [
@@ -33,7 +34,11 @@
       ]
     },
     "gold_question_check": true,
-    "style": "matrix"
+    "style": {
+      "type": "list",
+      "position": "top",
+      "orientation": "horizontal"
+    }
   },
   {
     "name": "confidence",
@@ -68,7 +73,11 @@
         }
       ]
     },
-    "style": "matrix"
+    "style": {
+      "type": "list",
+      "position": "top",
+      "orientation": "horizontal"
+    }
   },
   {
     "name": "correctness",
@@ -103,7 +112,10 @@
         }
       ]
     },
-    "style": "matrix"
+    "style": {
+      "type": "matrix",
+      "position": "middle"
+    }
   },
   {
     "name": "neutrality",
@@ -138,7 +150,10 @@
         }
       ]
     },
-    "style": "matrix"
+    "style": {
+      "type": "matrix",
+      "position": "middle"
+    }
   },
   {
     "name": "comprehensibility",
@@ -173,7 +188,10 @@
         }
       ]
     },
-    "style": "matrix"
+    "style": {
+      "type": "matrix",
+      "position": "middle"
+    }
   },
   {
     "name": "precision",
@@ -208,7 +226,10 @@
         }
       ]
     },
-    "style": "matrix"
+    "style": {
+      "type": "matrix",
+      "position": "middle"
+    }
   },
   {
     "name": "completeness",
@@ -243,10 +264,13 @@
         }
       ]
     },
-    "style": "matrix"
+    "style": {
+      "type": "matrix",
+      "position": "middle"
+    }
   },
   {
-    "name": "speaker-trustworthiness",
+    "name": "speaker's-trustworthiness",
     "description": "The speaker is generally trustworthy / reliable (+2) as opposed to untrustworthy / unreliable / malicious (-2)",
     "scale": {
       "type": "discrete",
@@ -278,7 +302,10 @@
         }
       ]
     },
-    "style": "matrix"
+    "style": {
+      "type": "matrix",
+      "position": "middle"
+    }
   },
   {
     "name": "informativeness",
@@ -313,7 +340,10 @@
         }
       ]
     },
-    "style": "matrix"
+    "style": {
+      "type": "matrix",
+      "position": "middle"
+    }
   },
   {
     "name": "justification",
@@ -322,6 +352,9 @@
       "text": "Your justification here (at least 15 words)",
       "min_words": 15
     },
-    "style": "plain"
+    "style": {
+      "type": "list",
+      "position": "bottom"
+    }
   }
 ]

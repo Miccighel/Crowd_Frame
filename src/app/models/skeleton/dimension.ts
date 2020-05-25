@@ -14,7 +14,7 @@ export class Dimension {
   url?: boolean;
   scale?: ScaleDiscrete | ScaleContinue;
   goldQuestionCheck?: boolean;
-  style: string;
+  style: Style;
 
   constructor(
     index: number,
@@ -29,7 +29,7 @@ export class Dimension {
     this.url =                data['url'] ? data["url"] : null;
     this.scale =              data['scale'] ? data['scale']['type'] == "discrete" ? new ScaleDiscrete(data['scale']) : new ScaleContinue(data['scale']) : null;
     this.goldQuestionCheck =  data['gold_question_check'] ? data['gold_question_check'] : null;
-    this.style =              data['style'];
+    this.style =              data['justification'] = new Style(data['style']);
   }
 
 }
@@ -120,3 +120,18 @@ export class ScaleContinue extends Scale{
 
 }
 
+export class Style {
+
+  type: string;
+  position: string;
+  orientation?: string;
+
+  constructor(
+    data: JSON
+  ) {
+    this.type =         data['type']
+    this.position =     data['position']
+    this.orientation =  data['orientation'] ? data["orientation"] : null;
+  }
+
+}

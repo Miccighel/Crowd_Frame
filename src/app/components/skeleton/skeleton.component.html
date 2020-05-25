@@ -139,7 +139,7 @@
               </ul>
             </div>
             <!-- Instructions markup -->
-            <div class="instructions">
+            <div *ngIf="this.instructionsAmount>0" class="instructions">
               <mat-divider [inset]="true"></mat-divider>
               <h2>Instructions</h2>
               <mat-divider [inset]="true"></mat-divider>
@@ -152,81 +152,125 @@
                 </ol>
               </div>
             </div>
-            <!-- Dimensions markup -->
-            <div *ngFor="let dimension of this.dimensions; let j=index" class="dimension">
-              <mat-divider [inset]="true"></mat-divider>
-              <h2>Step {{j + 1}}: {{capitalize(dimension.name)}}</h2>
-              <mat-divider [inset]="true"></mat-divider>
-              <div *ngIf="dimension.description != ''" class="dimension-container">
-                <div class="dimension-counter">a.</div>
-                <!-- Dimension description markup -->
-                <div class="dimension-content">
-                  <p>{{dimension.description}}</p>
+            <!-- Dimensions markup (list style) -->
+            <ng-template #dimensionList let-dimensions="dimensions" let-i="i">
+              <div *ngFor="let dimension of dimensions; let j=index" class="dimension">
+                <mat-divider [inset]="true"></mat-divider>
+                <h2>{{capitalize(dimension.name)}}</h2>
+                <mat-divider [inset]="true"></mat-divider>
+                <div *ngIf="dimension.description != ''" class="dimension-container">
+                  <!-- Dimension description markup -->
+                  <div class="dimension-counter"></div>
+                  <div class="dimension-content">
+                    <p>{{dimension.description}}</p>
+                  </div>
                 </div>
-              </div>
-              <div *ngIf="dimension.url" class="dimension-container">
-                <div class="dimension-counter">b.</div>
-                <!-- Dimension search engine interface markup -->
-                <div class="dimension-content search-engine">
-                  <app-crowd-xplorer *ngIf="dimension.url" id="app-crowd-xplorer-{{i}}-{{j}}"
-                                     (resultEmitter)="storeSearchEngineRetrievedResponse($event)"
-                                     (queryEmitter)="storeSearchEngineUserQuery($event)"
-                                     (selectedRowEmitter)="storeSearchEngineSelectedResponse($event)"
-                  ></app-crowd-xplorer>
-                  <!-- Dimension search engine url field markup (hidden) -->
-                  <mat-form-field *ngIf="dimension.url" class="url-field">
-                    <input #urlField matInput type="text" formControlName="{{(dimension.name).concat('_url')}}">
-                    <button mat-icon-button matPrefix>
-                      <mat-icon>{{'arrow_right_alt'}}</mat-icon>
-                    </button>
-                    <mat-error *ngIf="checkFormControl(documentsForm[i],(dimension.name).concat('_url'), 'required')">
-                      This field is required
-                    </mat-error>
-                    <mat-error *ngIf="checkFormControl(documentsForm[i], (dimension.name).concat('_url'), 'invalidSearchEngineUrl')">
-                      Please select (or copy & paste) one of the URLs shown above.
-                    </mat-error>
-                  </mat-form-field>
+                <div *ngIf="dimension.scale" class="dimension-container dimension-scale">
+                  <!-- Dimension truth level field markup -->
+                  <div class="dimension-counter">a.</div>
+                  <div class="dimension-content truth-level">
+                    <ng-container *ngIf="dimension.style.orientation=='vertical'">
+                      <mat-radio-group *ngIf="dimension.scale.type=='discrete'" aria-labelledby="radio-button-label" class="radio-button-group" formControlName="{{(dimension.name).concat('_value')}}">
+                        <mat-radio-button *ngFor="let mapping of dimension.scale.mappings let k=index" class="radio-button" value="{{mapping.value}}">
+                          <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0">({{mapping.description}}</span>
+                        </mat-radio-button>
+                      </mat-radio-group>
+                    </ng-container>
+                    <ng-container *ngIf="dimension.style.orientation=='horizontal'">
+                      <mat-radio-group *ngIf="dimension.scale.type=='discrete'" aria-labelledby="radio-button-label" formControlName="{{(dimension.name).concat('_value')}}">
+                        <mat-radio-button *ngFor="let mapping of dimension.scale.mappings let k=index" class="radio-button" value="{{mapping.value}}">
+                          <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0">({{mapping.description}}</span>
+                        </mat-radio-button>
+                      </mat-radio-group>
+                    </ng-container>
+                    <label *ngIf="dimension.scale.type=='continue'">Selected value: {{documentsForm[i].controls[(dimension.name).concat('_value')].value}}</label>
+                    <mat-slider *ngIf="dimension.scale.type=='continue'" min="{{dimension.scale.min}}" max="{{dimension.scale.max}}" step="{{dimension.scale.step}}" thumbLabel tickInterval="{{dimension.scale.step}}"
+                                formControlName="{{(dimension.name).concat('_value')}}"></mat-slider>
+                  </div>
                 </div>
-              </div>
-              <div *ngIf="dimension.scale" class="dimension-container">
-                <div *ngIf="dimension.url" class="dimension-counter">c.</div>
-                <div *ngIf="!dimension.url" class="dimension-counter">b.</div>
-                <!-- Dimension truth level field markup -->
-                <div class="dimension-content truth-level">
-                  <mat-radio-group *ngIf="dimension.scale.type=='discrete'" aria-labelledby="radio-button-label" class="radio-button-group" formControlName="{{(dimension.name).concat('_value')}}">
-                    <mat-radio-button *ngFor="let mapping of dimension.scale.mappings; let k=index" class="radio-button" value="{{mapping.value}}">
-                      <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0">({{mapping.description}}</span>
-                    </mat-radio-button>
-                  </mat-radio-group>
-                  <label *ngIf="dimension.scale.type=='continue'">Selected value: {{documentsForm[i].controls[(dimension.name).concat('_value')].value}}</label>
-                  <mat-slider *ngIf="dimension.scale.type=='continue'" min="{{dimension.scale.min}}" max="{{dimension.scale.max}}" step="{{dimension.scale.step}}" thumbLabel tickInterval="{{dimension.scale.step}}" formControlName="{{(dimension.name).concat('_value')}}"></mat-slider>
-                </div>
-              </div>
-              <div *ngIf="dimension.justification" class="dimension-container">
-                <div *ngIf="dimension.url && dimension.scale" class="dimension-counter">d.</div>
-                <div *ngIf="!dimension.url && dimension.scale" class="dimension-counter">c.</div>
-                <div *ngIf="dimension.url && !dimension.scale" class="dimension-counter">c.</div>
-                <div *ngIf="!dimension.url && !dimension.scale" class="dimension-counter">b.</div>
-                <!-- Dimension text justification field markup -->
-                <div *ngIf="dimension.justification" class="dimension-content justification">
-                  <div class="dimension-text-field">
-                    <mat-form-field appearance="fill">
-                      <mat-label>{{dimension.justification.text}}</mat-label>
-                      <textarea matInput formControlName="{{dimension.name}}_justification" rows="3"></textarea>
-                      <mat-error *ngIf="checkFormControl(documentsForm[i],(dimension.name).concat('_justification'), 'required')">
+                <div *ngIf="dimension.url" class="dimension-container dimension-url">
+                  <!-- Dimension search engine interface markup -->
+                  <div *ngIf="dimension.url" class="dimension-counter">b.</div>
+                  <div *ngIf="!dimension.url" class="dimension-counter">c.</div>
+                  <div class="dimension-content search-engine">
+                    <app-crowd-xplorer *ngIf="dimension.url" id="app-crowd-xplorer-{{i}}-{{j}}"
+                                       (resultEmitter)="storeSearchEngineRetrievedResponse($event)"
+                                       (queryEmitter)="storeSearchEngineUserQuery($event)"
+                                       (selectedRowEmitter)="storeSearchEngineSelectedResponse($event)"
+                    ></app-crowd-xplorer>
+                    <!-- Dimension search engine url field markup (hidden) -->
+                    <mat-form-field *ngIf="dimension.url" class="url-field">
+                      <input #urlField matInput type="text" formControlName="{{(dimension.name).concat('_url')}}">
+                      <button mat-icon-button matPrefix>
+                        <mat-icon>{{'arrow_right_alt'}}</mat-icon>
+                      </button>
+                      <mat-error *ngIf="checkFormControl(documentsForm[i],(dimension.name).concat('_url'), 'required')">
                         This field is required
                       </mat-error>
-                      <mat-error *ngIf="checkFormControl(documentsForm[i],(dimension.name).concat('_justification'), 'longer')">
-                        This justification must have at least 15 words.
-                      </mat-error>
-                      <mat-error *ngIf="checkFormControl(documentsForm[i],(dimension.name).concat('_justification'), 'invalid')">
-                        You cannot use the selected search engine url as part of the justification.
+                      <mat-error *ngIf="checkFormControl(documentsForm[i], (dimension.name).concat('_url'), 'invalidSearchEngineUrl')">
+                        Please select (or copy & paste) one of the URLs shown above.
                       </mat-error>
                     </mat-form-field>
                   </div>
                 </div>
+                <div *ngIf="dimension.justification" class="dimension-container dimension-justification">
+                  <!-- Dimension text justification field markup -->
+                  <div *ngIf="dimension.url && dimension.scale" class="dimension-counter">c.</div>
+                  <div *ngIf="!dimension.url && dimension.scale" class="dimension-counter">b.</div>
+                  <div *ngIf="dimension.url && !dimension.scale" class="dimension-counter">b.</div>
+                  <div *ngIf="!dimension.url && !dimension.scale" class="dimension-counter">a.</div>
+                  <div *ngIf="dimension.justification" class="dimension-content justification">
+                    <div class="dimension-text-field">
+                      <mat-form-field appearance="fill">
+                        <mat-label>{{dimension.justification.text}}</mat-label>
+                        <textarea matInput formControlName="{{dimension.name}}_justification" rows="3"></textarea>
+                        <mat-error *ngIf="checkFormControl(documentsForm[i],(dimension.name).concat('_justification'), 'required')">
+                          This field is required
+                        </mat-error>
+                        <mat-error *ngIf="checkFormControl(documentsForm[i],(dimension.name).concat('_justification'), 'longer')">
+                          This justification must have at least {{dimension.justification.minWords}} words.
+                        </mat-error>
+                        <mat-error *ngIf="checkFormControl(documentsForm[i],(dimension.name).concat('_justification'), 'invalid')">
+                          You cannot use the selected search engine url as part of the justification.
+                        </mat-error>
+                      </mat-form-field>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
+            </ng-template>
+            <!-- Dimensions markup (matrix style) -->
+            <ng-template #dimensionMatrix let-dimensions="dimensions" let-i="i">
+              <mat-divider [inset]="true"></mat-divider>
+              <h2 class="text-lighter">Assessment Sheet</h2>
+              <mat-divider [inset]="true"></mat-divider>
+              <div *ngFor="let dimension of dimensions; let j=index" class="dimension-matrix">
+                <mat-radio-group *ngIf="j==0">
+                  <div></div>
+                  <div *ngFor="let mapping of dimension.scale.mappings; let k=index">
+                    <div>
+                      <p>({{mapping.value}})</p>
+                      <p> {{mapping.label}}</p>
+                    </div>
+                  </div>
+                </mat-radio-group>
+                <mat-radio-group aria-labelledby="radio-button-label" formControlName="{{(dimension.name).concat('_value')}}">
+                  <div>
+                    <p><strong>{{this.capitalize(dimension.name)}}</strong>: {{dimension.description.toLowerCase()}}</p>
+                  </div>
+                  <div *ngFor="let mapping of dimension.scale.mappings; let k=index">
+                    <mat-radio-button class="radio-button" value="{{mapping.value}}"></mat-radio-button>
+                  </div>
+                </mat-radio-group>
+              </div>
+            </ng-template>
+            <!-- Dimensions are then shown -->
+            <ng-template *ngIf="this.filterDimensions('list', 'top').length>0" [ngTemplateOutlet]="dimensionList" [ngTemplateOutletContext]="{dimensions: this.filterDimensions('list', 'top'), i:i}"></ng-template>
+            <ng-template *ngIf="this.filterDimensions('matrix', 'top').length>0" [ngTemplateOutlet]="dimensionMatrix" [ngTemplateOutletContext]="{dimensions: this.filterDimensions('matrix', 'top'), i:i}"></ng-template>
+            <ng-template *ngIf="this.filterDimensions('list', 'middle').length>0" [ngTemplateOutlet]="dimensionList" [ngTemplateOutletContext]="{dimensions: this.filterDimensions('list', 'middle'), i:i}"></ng-template>
+            <ng-template *ngIf="this.filterDimensions('matrix', 'middle').length>0" [ngTemplateOutlet]="dimensionMatrix" [ngTemplateOutletContext]="{dimensions: this.filterDimensions('matrix', 'middle'), i:i}"></ng-template>
+            <ng-template *ngIf="this.filterDimensions('list', 'bottom').length>0" [ngTemplateOutlet]="dimensionList" [ngTemplateOutletContext]="{dimensions: this.filterDimensions('list', 'bottom'), i:i}"></ng-template>
+            <ng-template *ngIf="this.filterDimensions('matrix', 'bottom').length>0" [ngTemplateOutlet]="dimensionMatrix" [ngTemplateOutletContext]="{dimensions: this.filterDimensions('matrix', 'bottom'), i:i}"></ng-template>
           </mat-card-content>
           <!-- Actions markup -->
           <mat-card-actions>

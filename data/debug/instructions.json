@@ -1,24 +1,2 @@
-[
-  {
-    "caption": "Steps 1-2: assess the overall truthfulness of the statement and your confidence",
-    "steps": [
-      "Read the description",
-      "Input as value one of the five labels"
-    ]
-  },
-  {
-    "caption": "Steps 3-9: assess seven different statement's dimensions",
-    "steps": [
-      "Read the description",
-      "Input as value one of the five labels"
-    ]
-  },
-  {
-    "caption": "Step 10: provide a textual justification",
-    "steps": [
-      "Read the description",
-      "Write your justification"
-    ]
-  }
-]
+[]
 

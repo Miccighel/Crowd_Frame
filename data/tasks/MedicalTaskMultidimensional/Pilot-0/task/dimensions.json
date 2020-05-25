@@ -239,7 +239,7 @@
     }
   },
   {
-    "name": "speaker-trustworthiness",
+    "name": "speaker's-trustworthiness",
     "description": "The speaker is generally trustworthy / reliable (+2) as opposed to untrustworthy / unreliable / malicious (-2)",
     "scale": {
       "type": "discrete",

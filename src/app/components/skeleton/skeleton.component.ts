@@ -216,7 +216,7 @@ export class SkeletonComponent {
     this.taskSuccessful = false;
     this.taskFailed = false;
 
-    this.tokenInput = new FormControl('MBYTZQGSXYP', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
+    this.tokenInput = new FormControl('LEWNAUGBRUC', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
     this.tokenForm = formBuilder.group({
       "tokenInput": this.tokenInput
     });
@@ -496,6 +496,12 @@ export class SkeletonComponent {
 
   }
 
+  public filterDimensions(type: string, position: string) {
+    let filteredDimensions = []
+    for (let dimension of this.dimensions) if (dimension.style.type == type && dimension.style.position == position) filteredDimensions.push(dimension)
+    return filteredDimensions
+  }
+
   /*
    * This function performs a validation of the worker justification field each time the current worker types or pastes in its inside
    * if the worker types the selected url as part of the justification an <invalid> error is raised
@@ -768,7 +774,7 @@ export class SkeletonComponent {
 
     /* 2) GOLD QUESTION CHECK performed here */
     for (let dimension of this.dimensions) {
-      if(dimension.goldQuestionCheck)
+      if (dimension.goldQuestionCheck)
         goldQuestionCheck = this.documentsForm[this.goldIndexLow].controls[dimension.name.concat('_value')].value < this.documentsForm[this.goldIndexHigh].controls[dimension.name.concat('_value')].value;
     }
 
