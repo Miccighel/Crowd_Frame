@@ -1,5 +1,5 @@
 /* Core modules */
-import {Component, EventEmitter, Output, ViewChild} from '@angular/core';
+import {Component, EventEmitter, Input, Output, ViewChild} from '@angular/core';
 /* Loading screen module */
 import {NgxUiLoaderService} from "ngx-ui-loader";
 /* Material design modules */
@@ -16,6 +16,8 @@ import {PubmedService} from "../../services/pudmed.service";
 import {PubmedSearchResponse} from "../../models/crowd-xplorer/pubmedSearchResponse";
 import {PubmedSummaryResponse} from '../../models/crowd-xplorer/pubmedSummaryResponse';
 import {ConfigService} from "../../services/config.service";
+import * as AWS from "aws-sdk";
+import {Settings} from "../../models/crowd-xplorer/settings";
 
 /* Component HTML Tag definition */
 @Component({
@@ -32,9 +34,15 @@ import {ConfigService} from "../../services/config.service";
 */
 export class CrowdXplorer {
 
-  /* |--------- ELEMENTS - DECLARATION ---------| */
+  /* |--------- GENERAL ELEMENTS - DECLARATION ---------| */
 
-  /* Service to query */
+  /* Microsoft Search API key */
+  apiKey: string
+
+  /*
+   * Service to query:
+   * Possible values are "BingWebSearch", "PubmedSearch", "FakerSearch"
+   */
   source: string;
 
   /* Loading screen service */
@@ -61,6 +69,8 @@ export class CrowdXplorer {
   searchInProgress: boolean;
   query: FormControl;
 
+  domainsToFilter: Array<string>
+
   /* Boolean flag */
   searchPerformed: boolean;
 
@@ -84,6 +94,26 @@ export class CrowdXplorer {
   /* Random digits to generate unique CSS ids when multiple instances of the search engine are used */
   digits: string;
 
+  settings: Settings
+
+  /* |--------- AMAZON AWS INTEGRATION - DECLARATION ---------| */
+
+  /* Name of the current task */
+  taskName: string;
+  /* Sub name of the current task */
+  batchName: string;
+
+  /* AWS S3 Integration*/
+  s3: AWS.S3;
+  /* Region identifier */
+  region: string;
+  /* Bucket identifier */
+  bucket: string;
+  /* Folder to use within the bucket */
+  folder: string;
+  /* File where some general settings are stored */
+  settingsFile: string;
+
   // |--------- CONSTRUCTOR ---------|
 
   constructor(
@@ -95,11 +125,7 @@ export class CrowdXplorer {
     formBuilder: FormBuilder
   ) {
 
-    /*
-     * Service to query:
-     * Possible values are "BingWebSearch", "PubmedSearch", "FakerSearch"
-     */
-    this.source = "BingWebSearch";
+    /* |--------- GENERAL ELEMENTS - INITIALIZATION ---------| */
 
     /* Service initialization */
     this.ngxService = ngxService;
@@ -107,6 +133,8 @@ export class CrowdXplorer {
     this.fakerService = fakerService;
     this.pubmedService = pubmedService;
     this.configService = configService;
+
+    this.apiKey = this.configService.environment.bing_api_key
 
     /* The form control for user query is initialized and bound with its synchronous validator(s) */
     this.query = new FormControl('', [Validators.required]);
@@ -125,6 +153,34 @@ export class CrowdXplorer {
     /* The random digits for the current Binger instances are generated */
     this.digits = this.randomDigits();
 
+    /* |--------- AMAZON AWS INTEGRATION - INITIALIZATION ---------| */
+
+    this.taskName = this.configService.environment.taskName;
+    this.batchName = this.configService.environment.batchName;
+
+    this.region = this.configService.environment.region;
+    this.bucket = this.configService.environment.bucket;
+    if (this.configService.environment.batchName) {
+      this.folder = `${this.taskName}/${this.batchName}`
+    } else {
+      this.folder = `${this.taskName}`
+    }
+    this.settingsFile = `${this.folder}/search_engine.json`;
+    this.s3 = new AWS.S3({
+      region: this.region,
+      params: {Bucket: this.bucket},
+      credentials: new AWS.Credentials(this.configService.environment.aws_id_key, this.configService.environment.aws_secret_key)
+    });
+
+    this.loadSettings().then(() => {})
+
+  }
+
+  public async loadSettings() {
+    let rawSettings = await this.download(this.settingsFile);
+    this.settings = new Settings(rawSettings)
+    this.source = this.settings.source
+    this.domainsToFilter = this.settings.domainsToFilter
   }
 
   /* |--------- GENERAL ELEMENTS - FUNCTIONS ---------| */
@@ -147,14 +203,14 @@ export class CrowdXplorer {
       /* The search operation for Bing Web Search is performed */
       /* This is done by subscribing to an Observable of <BingWebSearchResponse> items */
       case "BingWebSearch": {
-        this.bingService.performWebSearch(query).subscribe(
+        this.bingService.performWebSearch(this.apiKey, query).subscribe(
           searchResponse => {
             /* We are interested in parsing the webPages property of a <BingWebSearchResponse> */
             if (searchResponse.hasOwnProperty("webPages")) {
               /* Some results exist */
               this.resultsFound = true;
               /* The matching response is saved and filtered if the environment variable is not an empty array */
-              this.bingWebSearchResponse = this.bingService.filterResponse(searchResponse, this.configService.environment.domainsToFilter);
+              this.bingWebSearchResponse = this.bingService.filterResponse(searchResponse, this.domainsToFilter);
               let decodedResponse = this.bingService.decodeResponse(this.bingWebSearchResponse);
               /* EMITTER: The matching response is emitted to provide it to an eventual parent component*/
               this.resultEmitter.emit(decodedResponse);
@@ -263,6 +319,20 @@ export class CrowdXplorer {
   /* EMITTER: The result item clicked by user is emitted to provide it to an eventual parent component */
   public selectRow(row: Object) {
     this.selectedRowEmitter.emit(row)
+  }
+
+  // |--------- AMAZON AWS INTEGRATION - FUNCTIONS ---------|
+
+  /*
+   * This function performs a GetObject operation to Amazon S3 and returns a parsed JSON which is the requested resource.
+   * https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html
+   */
+  public async download(path: string) {
+    return JSON.parse(
+      (await (this.s3.getObject({
+        Bucket: this.bucket,
+        Key: path
+      }).promise())).Body.toString('utf-8'));
   }
 
   /* |--------- UTILITY - FUNCTIONS ---------| */

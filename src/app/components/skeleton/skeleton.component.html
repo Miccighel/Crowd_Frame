@@ -171,21 +171,20 @@
                   <div class="dimension-content truth-level">
                     <ng-container *ngIf="dimension.style.orientation=='vertical'">
                       <mat-radio-group *ngIf="dimension.scale.type=='discrete'" aria-labelledby="radio-button-label" class="radio-button-group" formControlName="{{(dimension.name).concat('_value')}}">
-                        <mat-radio-button *ngFor="let mapping of dimension.scale.mappings let k=index" class="radio-button" value="{{mapping.value}}">
+                        <mat-radio-button *ngFor="let mapping of dimension.scale.mappings let k=index" class="radio-button" value="{{mapping.value}}" (change)="storeDimensionValue($event, i, dimension.index)">
                           <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0">({{mapping.description}}</span>
                         </mat-radio-button>
                       </mat-radio-group>
                     </ng-container>
                     <ng-container *ngIf="dimension.style.orientation=='horizontal'">
                       <mat-radio-group *ngIf="dimension.scale.type=='discrete'" aria-labelledby="radio-button-label" formControlName="{{(dimension.name).concat('_value')}}">
-                        <mat-radio-button *ngFor="let mapping of dimension.scale.mappings let k=index" class="radio-button" value="{{mapping.value}}">
+                        <mat-radio-button *ngFor="let mapping of dimension.scale.mappings let k=index" class="radio-button" value="{{mapping.value}}" (change)="storeDimensionValue($event, i,dimension.index)">
                           <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0">({{mapping.description}}</span>
                         </mat-radio-button>
                       </mat-radio-group>
                     </ng-container>
                     <label *ngIf="dimension.scale.type=='continue'">Selected value: {{documentsForm[i].controls[(dimension.name).concat('_value')].value}}</label>
-                    <mat-slider *ngIf="dimension.scale.type=='continue'" min="{{dimension.scale.min}}" max="{{dimension.scale.max}}" step="{{dimension.scale.step}}" thumbLabel tickInterval="{{dimension.scale.step}}"
-                                formControlName="{{(dimension.name).concat('_value')}}"></mat-slider>
+                    <mat-slider *ngIf="dimension.scale.type=='continue'" min="{{dimension.scale.min}}" max="{{dimension.scale.max}}" step="{{dimension.scale.step}}" thumbLabel tickInterval="{{dimension.scale.step}}" formControlName="{{(dimension.name).concat('_value')}}" (change)="storeDimensionValue($event, i,dimension.index)"></mat-slider>
                   </div>
                 </div>
                 <div *ngIf="dimension.url" class="dimension-container dimension-url">
@@ -193,10 +192,11 @@
                   <div *ngIf="dimension.url" class="dimension-counter">b.</div>
                   <div *ngIf="!dimension.url" class="dimension-counter">c.</div>
                   <div class="dimension-content search-engine">
-                    <app-crowd-xplorer *ngIf="dimension.url" id="app-crowd-xplorer-{{i}}-{{j}}"
-                                       (resultEmitter)="storeSearchEngineRetrievedResponse($event)"
-                                       (queryEmitter)="storeSearchEngineUserQuery($event)"
-                                       (selectedRowEmitter)="storeSearchEngineSelectedResponse($event)"
+                    <app-crowd-xplorer
+                      *ngIf="dimension.url" id="app-crowd-xplorer-{{i}}-{{j}}"
+                      (resultEmitter)="storeSearchEngineRetrievedResponse($event)"
+                      (queryEmitter)="storeSearchEngineUserQuery($event)"
+                      (selectedRowEmitter)="storeSearchEngineSelectedResponse($event)"
                     ></app-crowd-xplorer>
                     <!-- Dimension search engine url field markup (hidden) -->
                     <mat-form-field *ngIf="dimension.url" class="url-field">
@@ -259,7 +259,7 @@
                     <p><strong>{{this.capitalize(dimension.name)}}</strong>: {{dimension.description.toLowerCase()}}</p>
                   </div>
                   <div *ngFor="let mapping of dimension.scale.mappings; let k=index">
-                    <mat-radio-button class="radio-button" value="{{mapping.value}}"></mat-radio-button>
+                    <mat-radio-button class="radio-button" value="{{mapping.value}}" (change)="storeDimensionValue($event, i,dimension.index)"></mat-radio-button>
                   </div>
                 </mat-radio-group>
               </div>

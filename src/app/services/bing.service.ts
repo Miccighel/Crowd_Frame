@@ -23,7 +23,7 @@ export class BingService {
   // |--------- ELEMENTS - DECLARATION ---------|
 
   /* Microsoft Search API key */
-  apiKey = 'dd0c33c397494b6198494684a5cdad09';
+  apiKey: string
   /* Microsoft Bing Web Search endpoint */
   endPoint = "https://api.cognitive.microsoft.com/bing/v7.0/search?q=";
 
@@ -39,9 +39,6 @@ export class BingService {
   constructor(client: HttpClient) {
     /* The HTTP client is initialized along with its headers */
     this.client = client;
-    this.headers = new HttpHeaders();
-    /* The special header Ocp-Apim-Subscription-Key is required by Bing Search API and its value must be a valid apy key */
-    this.headers = this.headers.set('Ocp-Apim-Subscription-Key', this.apiKey);
   }
 
   // |--------- ELEMENTS - FUNCTIONS ---------|
@@ -49,9 +46,12 @@ export class BingService {
   /*
    * This function uses the text received as a parameter to perform a request to Bing Web Search
    */
-  public performWebSearch(query: string): Observable<BingWebSearchResponse> {
+  public performWebSearch(apiKey:string, query: string): Observable<BingWebSearchResponse> {
     /* The user query is saved */
     this.query = query;
+    this.headers = new HttpHeaders();
+    /* The special header Ocp-Apim-Subscription-Key is required by Bing Search API and its value must be a valid apy key */
+    this.headers = this.headers.set('Ocp-Apim-Subscription-Key', apiKey);
     /* A request to BingWebSearch API is performed and an Observable of <BingWebSearchResponse> items is returned */
     return this.client.get<BingWebSearchResponse>(`${this.endPoint}${this.query}&count=100&mkt=en-us`, {headers: this.headers})
   }

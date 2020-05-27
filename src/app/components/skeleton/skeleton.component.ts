@@ -20,6 +20,7 @@ import {ManagedUpload} from "aws-sdk/clients/s3";
 import {faSpinner} from "@fortawesome/free-solid-svg-icons";
 import {faInfoCircle} from "@fortawesome/free-solid-svg-icons";
 import {log} from "util";
+import {Settings} from "../../models/skeleton/settings";
 
 /* Component HTML Tag definition */
 @Component({
@@ -40,10 +41,10 @@ export class SkeletonComponent {
   /* |--------- GENERAL ELEMENTS - DECLARATION ---------| */
 
   /* Name of the current task */
-  experimentId: string;
+  taskName: string;
 
   /* Sub name of the current task */
-  subExperimentId: string;
+  batchName: string;
 
   /* Unique identifier of the current worker */
   workerIdentifier: string;
@@ -80,10 +81,15 @@ export class SkeletonComponent {
   hit: Hit;
   /* Identifier of the current hit */
   unitId: string;
-  /* Number of allowed tries */
-  allowedTries: number;
   /* Number of the current try */
   currentTry: number;
+
+  settings: Settings
+
+  /* Number of allowed tries */
+  allowedTries: number;
+  timeCheckAmount: number;
+  otherBatches: Array<string>
 
   /* |--------- AMAZON AWS INTEGRATION - DECLARATION ---------| */
 
@@ -95,6 +101,8 @@ export class SkeletonComponent {
   bucket: string;
   /* Folder to use within the bucket */
   folder: string;
+  /* File where some general settings are stored */
+  settingsFile: string;
   /* File where task instructions are stored */
   taskInstructionsFile: string;
   /* File where each worker identifier is stored */
@@ -110,6 +118,7 @@ export class SkeletonComponent {
   /* Folder in which upload data produced within the task by current worker */
   workerFolder: string;
 
+
   /* |--------- QUESTIONNAIRE ELEMENTS - DECLARATION ---------| */
 
   /* Array of form references, one for each questionnaire within a Hit */
@@ -117,7 +126,7 @@ export class SkeletonComponent {
   /* Reference to the current questionnaires */
   questionnaires: Array<Questionnaire>;
   /* Number of different questionnaires inserted within task's body
-  * (i.e., a standard questionnaire and two cognitive questionnaires  */
+  * (currentDocument.e., a standard questionnaire and two cognitive questionnaires  */
   questionnaireAmount: number;
 
   /* |--------- HIT ELEMENTS - DECLARATION ---------| */
@@ -131,6 +140,7 @@ export class SkeletonComponent {
   dimensions: Array<Dimension>;
   /* Amount of asked dimensions */
   dimensionsAmount: number;
+  dimensionsSelectedValues: Array<object>;
   /* Reference to the current dimension */
   currentDimension: number;
 
@@ -203,8 +213,8 @@ export class SkeletonComponent {
 
     /* |--------- GENERAL ELEMENTS - INITIALIZATION ---------| */
 
-    this.experimentId = this.configService.environment.experimentId;
-    this.subExperimentId = this.configService.environment.subExperiment;
+    this.taskName = this.configService.environment.taskName;
+    this.batchName = this.configService.environment.batchName;
 
     let url = new URL(window.location.href);
     this.workerIdentifier = url.searchParams.get("workerID");
@@ -222,18 +232,18 @@ export class SkeletonComponent {
     });
     this.tokenInputValid = false;
 
-    this.allowedTries = this.configService.environment.allowedTries;
     this.currentTry = 1;
 
     /* |--------- AMAZON AWS INTEGRATION - INITIALIZATION ---------| */
 
     this.region = this.configService.environment.region;
     this.bucket = this.configService.environment.bucket;
-    if (this.configService.environment.subExperiment) {
-      this.folder = `${this.experimentId}/${this.subExperimentId}`
+    if (this.configService.environment.batchName) {
+      this.folder = `${this.taskName}/${this.batchName}`
     } else {
-      this.folder = `${this.experimentId}`
+      this.folder = `${this.taskName}`
     }
+    this.settingsFile = `${this.folder}/task.json`;
     this.taskInstructionsFile = `${this.folder}/instructions.html`;
     this.workersFile = `${this.folder}/workers.json`;
     this.questionnairesFile = `${this.folder}/questionnaires.json`;
@@ -259,12 +269,14 @@ export class SkeletonComponent {
     });
 
     /* If there is an external worker which is trying to perform the task, check its status */
-    if (!(this.workerIdentifier === null)) {
-      this.performWorkerStatusCheck().then(outcome => {
-        this.taskAllowed = outcome;
-        this.changeDetector.detectChanges()
-      })
-    }
+    this.loadSettings().then(() => {
+      if (!(this.workerIdentifier === null)) {
+        this.performWorkerStatusCheck().then(outcome => {
+          this.taskAllowed = outcome;
+          this.changeDetector.detectChanges()
+        })
+      }
+    })
 
     /* Font awesome spinner icon initialization */
     this.faSpinner = faSpinner;
@@ -276,6 +288,60 @@ export class SkeletonComponent {
   }
 
   /* |--------- GENERAL ELEMENTS - FUNCTIONS ---------| */
+
+  public async loadSettings() {
+    let rawSettings = await this.download(this.settingsFile);
+    this.settings = new Settings(rawSettings)
+    this.allowedTries = this.settings.allowedTries
+    this.timeCheckAmount = this.settings.timeCheckAmount
+    this.otherBatches = this.settings.otherBatches
+  }
+
+  /*
+  * This function interacts with an Amazon S3 bucket to perform a check on the current worker identifier.
+  * If the worker has already started the task in the past (currentDocument.e., it's present in the workers.json
+  * file within the current scale folder of the task's bucket) he is not allowed to continue the task.
+  * If there is a task for each rating scale within the task, three different checks are made.
+  * This behavior is controlled by setting the useEachScale flag.
+  */
+  public async performWorkerStatusCheck() {
+    /* The worker identifiers of the current task are downloaded */
+    let workers = await this.download(this.workersFile);
+    if ('started' in workers) {
+      workers['blacklist'] = workers['started']
+      delete workers['started']
+    }
+    /* Check to verify if one of the workers which have already started the task is the current one */
+    let blacklistedInCurrentTask = false;
+    let whitelistedInCurrentTask = false;
+    for (let currentWorker of workers['blacklist']) if (currentWorker == this.workerIdentifier) blacklistedInCurrentTask = true;
+    for (let currentWorker of workers['whitelist']) if (currentWorker == this.workerIdentifier) whitelistedInCurrentTask = true;
+    /* If the current worker has not started the task within the current task */
+    if (!blacklistedInCurrentTask) {
+      /* Check to verify if one of the workers which have already started the task in a past task */
+      let blacklistedInOtherBatch = false
+      /* The workers file of each past task is scanned */
+      for (let otherBatch of this.otherBatches) {
+        let otherWorkers = await this.download(`${otherBatch}workers.json`);
+        if ('started' in otherWorkers) {
+          otherWorkers['blacklist'] = otherWorkers['started']
+          delete otherWorkers['started']
+        }
+        for (let currentWorker of otherWorkers['blacklist']) if (currentWorker == this.workerIdentifier) blacklistedInOtherBatch = true;
+      }
+      if (!blacklistedInOtherBatch || (blacklistedInOtherBatch && whitelistedInCurrentTask)) {
+        /* His identifier is uploaded to the file of the scale to which he is assigned */
+        workers['blacklist'].push(this.workerIdentifier);
+        let uploadStatus = await (this.upload(this.workersFile, workers));
+        /* If the current worker is a brand new one he is free to proceed */
+        return !uploadStatus["failed"];
+      }
+      /* If a returning worker for a past task has been found, the task must be blocked */
+      return false
+    }
+    /* If a returning worker for the current task has been found, the task must be blocked */
+    return false
+  }
 
   /*
   * This function interacts with an Amazon S3 bucket to search the token input
@@ -289,43 +355,6 @@ export class SkeletonComponent {
   }
 
   /*
-  * This function interacts with an Amazon S3 bucket to perform a check on the current worker identifier.
-  * If the worker has already started the task in the past (i.e., it's present in the workers.json
-  * file within the current scale folder of the experiment's bucket) he is not allowed to continue the task.
-  * If there is a task for each rating scale within the experiment, three different checks are made.
-  * This behavior is controlled by setting the useEachScale flag.
-  */
-  public async performWorkerStatusCheck() {
-    /* The worker identifiers of the current experiment are downloaded */
-    let workers = await this.download(this.workersFile);
-    /* Check to verify if one of the workers which have already started the task is the current one */
-    let taskAlreadyStartedInCurrentExperiment = false;
-    for (let currentWorker of workers['started']) if (currentWorker == this.workerIdentifier) taskAlreadyStartedInCurrentExperiment = true;
-    /* If the current worker has not started the task within the current experiment */
-    if (!taskAlreadyStartedInCurrentExperiment) {
-      /* Check to verify if one of the workers which have already started the task in a past experiment */
-      let taskAlreadyStartedInAPastExperiment = false
-      /* The workers file of each past experiment is scanned */
-      for (let pastExperimentSubFolder of this.configService.environment.pastExperiments) {
-        let pastWorkers = await this.download(`${this.experimentId}/${pastExperimentSubFolder}/workers.json`);
-        for (let currentWorker of pastWorkers['started']) if (currentWorker == this.workerIdentifier) taskAlreadyStartedInAPastExperiment = true;
-      }
-      if (!taskAlreadyStartedInAPastExperiment) {
-        /* His identifier is uploaded to the file of the scale to which he is assigned */
-        workers['started'].push(this.workerIdentifier);
-        let uploadStatus = await (this.upload(this.workersFile, workers));
-        /* If the current worker is a brand new one he is free to proceed */
-        return !uploadStatus["failed"];
-      }
-      /* If a returning worker for a past experiment has been found, the task must be blocked */
-      return false
-    }
-    /* If a returning worker for the current experiment has been found, the task must be blocked */
-    return false
-  }
-
-
-  /*
   *  This function retrieves the hit identified by the validated token input inserted by the current worker.
   *  Such hit is represented by an Hit object. After that, the task is initialized by setting each required
   *  variables and by parsing hit content as an Array of Document objects. Therefore, to use a custom hit format
@@ -335,7 +364,6 @@ export class SkeletonComponent {
   *  The Document interface can be found at this path: ../models/skeleton/document.ts
   */
   public async performTaskSetup() {
-
     /* The token input has been already validated, this is just to be sure */
     if (this.tokenForm.valid) {
 
@@ -433,6 +461,13 @@ export class SkeletonComponent {
         this.documentsForm[index] = this.formBuilder.group(controlsConfig)
       }
 
+      this.dimensionsSelectedValues = new Array<object>(this.documentsAmount);
+      for (let index = 0; index < this.dimensionsSelectedValues.length; index++) {
+        this.dimensionsSelectedValues[index] = {};
+        this.dimensionsSelectedValues[index]["data"] = [];
+        this.dimensionsSelectedValues[index]["amount"] = 0;
+      }
+
       /*  Each document of the current hit is parsed using the Document interface.  */
       let rawDocuments = this.hit.documents;
       for (let index = 0; index < rawDocuments.length; index++) {
@@ -493,13 +528,59 @@ export class SkeletonComponent {
       this.ngxService.stop();
 
     }
-
   }
 
   public filterDimensions(type: string, position: string) {
     let filteredDimensions = []
     for (let dimension of this.dimensions) if (dimension.style.type == type && dimension.style.position == position) filteredDimensions.push(dimension)
     return filteredDimensions
+  }
+
+  /*
+   * This function intercepts a <changeEvent> triggered by the value controls of a dimension.
+   * The parameters are:
+   * - a JSON object which holds the selected selected value.
+   * - a reference to the current document
+   * - a reference to the current dimension
+   * This array CAN BE EMPTY, if the worker does not select any value and leaves the task or if a dimension does not require a value.
+   * These information are parsed and stored in the corresponding data structure.
+   */
+  public storeDimensionValue(valueData: Object, document: number, dimension: number) {
+    /* The current document, dimension and user query are copied from parameters */
+    let currentDocument = document
+    let currentDimension = dimension
+    /* A reference to the current dimension is saved */
+    this.currentDimension = currentDimension;
+    let currentValue = valueData['value'];
+    let timeInSeconds = Date.now() / 1000;
+    /* If some data for the current document already exists*/
+    if (this.dimensionsSelectedValues[currentDocument]['amount'] > 0) {
+      /* The new query is pushed into current document data array along with a index used to identify such query*/
+      let selectedValues = Object.values(this.dimensionsSelectedValues[currentDocument]['data']);
+      selectedValues.push({
+        "dimension": currentDimension,
+        "index": selectedValues.length,
+        "timestamp": timeInSeconds,
+        "value": currentValue
+      });
+      /* The data array within the data structure is updated */
+      this.dimensionsSelectedValues[currentDocument]['data'] = selectedValues;
+      /* The total amount of selected values for the current document is updated */
+      this.dimensionsSelectedValues[currentDocument]['amount'] = selectedValues.length;
+    } else {
+      /* The data slot for the current document is created */
+      this.dimensionsSelectedValues[currentDocument] = {};
+      /* A new data array for the current document is created and the fist selected value is pushed */
+      this.dimensionsSelectedValues[currentDocument]['data'] = [{
+        "dimension": currentDimension,
+        "index": 0,
+        "timestamp": timeInSeconds,
+        "value": currentValue
+      }];
+      /* The total amount of selected values for the current document is set to 1 */
+      /* IMPORTANT: the index of the last selected value for a document will be <amount -1> */
+      this.dimensionsSelectedValues[currentDocument]['amount'] = 1
+    }
   }
 
   /*
@@ -540,10 +621,6 @@ export class SkeletonComponent {
       for (let dimension of this.dimensions) if (dimension.name == currentDimensionName) if (dimension.justification.minWords) minWords = dimension.justification.minWords
     }
     return cleanedWords.length > minWords ? null : {"longer": "This is not valid."};
-  }
-
-  protected getControlGroup(c: AbstractControl): FormGroup | FormArray {
-    return c.parent;
   }
 
   // |--------- SEARCH ENGINE INTEGRATION - FUNCTIONS ---------|
@@ -614,6 +691,7 @@ export class SkeletonComponent {
       storedResponses.push({
         "dimension": currentDimension,
         "query": this.searchEngineQueries[currentDocument]['amount'] - 1,
+        "index": storedResponses.length,
         "timestamp": timeInSeconds,
         "response": currentRetrievedResponse,
       });
@@ -630,6 +708,7 @@ export class SkeletonComponent {
       this.searchEngineRetrievedResponses[currentDocument]['data'] = [{
         "dimension": currentDimension,
         "query": this.searchEngineQueries[currentDocument]['amount'] - 1,
+        "index": 0,
         "timestamp": timeInSeconds,
         "response": currentRetrievedResponse
       }];
@@ -664,6 +743,7 @@ export class SkeletonComponent {
       storedResponses.push({
         "dimension": currentDimension,
         "query": this.searchEngineQueries[currentDocument]['amount'] - 1,
+        "index": storedResponses.length,
         "timestamp": timeInSeconds,
         "response": currentSelectedResponse,
       });
@@ -678,6 +758,7 @@ export class SkeletonComponent {
       this.searchEngineSelectedResponses[currentDocument]['data'] = [{
         "dimension": currentDimension,
         "query": this.searchEngineQueries[currentDocument]['amount'] - 1,
+        "index": 0,
         "timestamp": timeInSeconds,
         "response": currentSelectedResponse
       }];
@@ -732,8 +813,8 @@ export class SkeletonComponent {
   /* |--------- QUALITY CHECKS INTEGRATION - FUNCTIONS ---------| */
 
   /*
-   * This function performs and scan of each form filled by the current worker (i.e., questionnaires + document answers)
-   * to ensure that each form posses the validation step (i.e., each field is filled, the url provided as a justification
+   * This function performs and scan of each form filled by the current worker (currentDocument.e., questionnaires + document answers)
+   * to ensure that each form posses the validation step (currentDocument.e., each field is filled, the url provided as a justification
    * is an url retrieved by search engine, a truth level is selected, etc.)
    */
   public performGlobalValidityCheck() {
@@ -752,7 +833,7 @@ export class SkeletonComponent {
    * 2) GOLD QUESTION CHECK:   Verifies if the truth value selected by worker for the gold question obviously false
    *                           is lower that the value selected for the gold question obviously true, for each dimension
    * 3) TIME SPENT CHECK:      Verifies if the time spent by worker on each document and questionnaire is higher than
-   *                           two seconds, using the <timestampsElapsed> array
+   *                           <timeCheckAmount> seconds, using the <timestampsElapsed> array
    * If each check is successful, the task can end. If the worker has some tries left, the task is reset.
    */
   public async performQualityCheck() {
@@ -767,7 +848,7 @@ export class SkeletonComponent {
     let globalValidityCheck: boolean;
     let goldQuestionCheck: boolean;
     let timeSpentCheck: boolean;
-    let timeCheckAmount = 10;
+    let timeCheckAmount = this.timeCheckAmount;
 
     /* 1) GLOBAL VALIDITY CHECK performed here */
     globalValidityCheck = this.performGlobalValidityCheck();
@@ -827,7 +908,7 @@ export class SkeletonComponent {
     this.comment.setValue("");
     this.commentSent = false;
 
-    /* Set stepper index to the first tab (i.e., bring the worker to the first document after the questionnaire) */
+    /* Set stepper index to the first tab (currentDocument.e., bring the worker to the first document after the questionnaire) */
     this.stepper.selectedIndex = this.questionnaireAmount;
 
     /* Decrease the remaining tries amount*/
@@ -931,10 +1012,10 @@ export class SkeletonComponent {
         /* If the worker has completed the first questionnaire */
         if (completedElement == 0) {
 
-          /* The full information about task setup (i.e., its document and questionnaire structures) are uploaded, only once */
+          /* The full information about task setup (currentDocument.e., its document and questionnaire structures) are uploaded, only once */
           let taskData = {
-            experiment_id: this.experimentId,
-            sub_experiment_id: this.subExperimentId,
+            task_id: this.taskName,
+            batch_name: this.batchName,
             worker_id: this.workerIdentifier,
             unit_id: this.unitId,
             token_input: this.tokenInput.value,
@@ -942,7 +1023,7 @@ export class SkeletonComponent {
             tries_amount: this.allowedTries,
             questionnaire_amount: this.questionnaireAmount,
             documents_amount: this.documentsAmount,
-            dimensions_amount: this.dimensionsAmount
+            dimensions_amount: this.dimensionsAmount,
           };
           /* General info about task */
           await (this.upload(`${this.workerFolder}/task.json`, taskData));
@@ -987,7 +1068,7 @@ export class SkeletonComponent {
           /* All questionnaire answers are uploaded, only once */
           let answers = [];
           for (let index = 0; index < this.questionnairesForm.length; index++) answers.push(this.questionnairesForm[index].value);
-          await (this.upload(`${this.workerFolder}/Final/answers_questionnaires.json`, answers));
+          await (this.upload(`${this.workerFolder}/Final/questionnaires_answers.json`, answers));
 
         }
 
@@ -1015,6 +1096,9 @@ export class SkeletonComponent {
         /* Worker's truth level and justification for the current document */
         let answers = this.documentsForm[completedDocument].value;
         await (this.upload(`${this.workerFolder}/Partials/Answers/Documents/Try-${this.currentTry}/answer_${completedDocument}_access_${accessesAmount}.json`, answers));
+        /* Worker's dimensions selected values for the current document */
+        let dimensionsSelectedValues = this.dimensionsSelectedValues[completedDocument];
+        await (this.upload(`${this.workerFolder}/Partials/Dimensions/Try-${this.currentTry}/selected_${completedDocument}_access_${accessesAmount}.json`, dimensionsSelectedValues));
         /* Worker's search engine queries for the current document */
         let searchEngineQueries = this.searchEngineQueries[completedDocument];
         await (this.upload(`${this.workerFolder}/Partials/Queries/Try-${this.currentTry}/queries_${completedDocument}_access_${accessesAmount}.json`, searchEngineQueries));
@@ -1031,7 +1115,7 @@ export class SkeletonComponent {
         await (this.upload(`${this.workerFolder}/Partials/Timestamps/End/Try-${this.currentTry}/end_${completedElement}_access_${accessesAmount}.json`, timestampsEnd));
         let timestampsElapsed = this.timestampsElapsed[completedElement];
         await (this.upload(`${this.workerFolder}/Partials/Timestamps/Elapsed/Try-${this.currentTry}/elapsed_${completedElement}_access_${accessesAmount}.json`, timestampsElapsed));
-        /* Number of accesses to the current document (i.e., how many times the worker reached the document with a "Back" or "Next" action */
+        /* Number of accesses to the current document (currentDocument.e., how many times the worker reached the document with a "Back" or "Next" action */
         let accesses = this.elementsAccesses[completedElement];
         await (this.upload(`${this.workerFolder}/Partials/Accesses/Try-${this.currentTry}/accesses_${completedElement}_access_${accessesAmount}.json`, accesses));
 
@@ -1050,7 +1134,9 @@ export class SkeletonComponent {
           /* Worker's truth level and justification for each document */
           let answers = [];
           for (let index = 0; index < this.documentsForm.length; index++) answers.push(this.documentsForm[index].value);
-          await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/answers_documents.json`, answers));
+          await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/documents_answers.json`, answers));
+          /* Worker's dimensions selected values for the current document */
+          await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/dimensions_selected.json`, this.dimensionsSelectedValues));
           /* Worker's search engine queries for each document */
           await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/queries.json`, this.searchEngineQueries));
           /* Responses retrieved by search engine for each worker's query for each document */
@@ -1061,7 +1147,7 @@ export class SkeletonComponent {
           await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/timestamps_start.json`, this.timestampsStart));
           await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/timestamps_end.json`, this.timestampsEnd));
           await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/timestamps_elapsed.json`, this.timestampsElapsed));
-          /* Number of accesses to each document (i.e., how many times the worker reached the document with a "Back" or "Next" action */
+          /* Number of accesses to each document (currentDocument.e., how many times the worker reached the document with a "Back" or "Next" action */
           await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/accesses.json`, this.elementsAccesses));
 
         }
@@ -1109,6 +1195,10 @@ export class SkeletonComponent {
   }
 
   /* |--------- UTILITIES ELEMENTS - FUNCTIONS ---------| */
+
+  protected getControlGroup(c: AbstractControl): FormGroup | FormArray {
+    return c.parent;
+  }
 
   /*
    * This function retrieves the string associated to an error code thrown by a form field validator.
