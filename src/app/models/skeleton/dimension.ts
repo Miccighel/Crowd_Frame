@@ -125,6 +125,7 @@ export class Style {
   type: string;
   position: string;
   orientation?: string;
+  separator?: string;
 
   constructor(
     data: JSON
@@ -132,6 +133,7 @@ export class Style {
     this.type =         data['type']
     this.position =     data['position']
     this.orientation =  data['orientation'] ? data["orientation"] : null;
+    this.separator =  data['separator'] ? data["separator"] : null;
   }
 
 }

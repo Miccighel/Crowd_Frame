@@ -47,11 +47,12 @@ export class BingService {
    * This function uses the text received as a parameter to perform a request to Bing Web Search
    */
   public performWebSearch(apiKey:string, query: string): Observable<BingWebSearchResponse> {
+    this.apiKey = apiKey
     /* The user query is saved */
     this.query = query;
     this.headers = new HttpHeaders();
     /* The special header Ocp-Apim-Subscription-Key is required by Bing Search API and its value must be a valid apy key */
-    this.headers = this.headers.set('Ocp-Apim-Subscription-Key', apiKey);
+    this.headers = this.headers.set('Ocp-Apim-Subscription-Key', this.apiKey);
     /* A request to BingWebSearch API is performed and an Observable of <BingWebSearchResponse> items is returned */
     return this.client.get<BingWebSearchResponse>(`${this.endPoint}${this.query}&count=100&mkt=en-us`, {headers: this.headers})
   }

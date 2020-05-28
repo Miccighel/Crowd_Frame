@@ -204,6 +204,7 @@ export class SkeletonComponent {
 
     /* |--------- SERVICES - INITIALIZATION ---------| */
 
+
     this.changeDetector = changeDetector;
     this.ngxService = ngxService;
     this.configService = configService;
@@ -1034,6 +1035,9 @@ export class SkeletonComponent {
           /* The dimensions of the answers of each worker */
           await (this.upload(`${this.workerFolder}/dimensions.json`, this.dimensions));
 
+          // @ts-ignore
+          send_log("message", taskData)
+
         }
 
         /* The partial data about the completed questionnaire are uploaded */
@@ -1074,6 +1078,9 @@ export class SkeletonComponent {
 
         /* The amount of accesses to the current questionnaire is incremented */
         this.elementsAccesses[completedElement] = accessesAmount + 1;
+
+        // @ts-ignore
+        send_log("message", taskData)
 
         /* If the worker has completed a document */
       } else {
@@ -1154,6 +1161,9 @@ export class SkeletonComponent {
 
         /* The amount of accesses to the current document is incremented */
         this.elementsAccesses[completedElement] = accessesAmount + 1;
+
+        // @ts-ignore
+        send_log("message", taskData)
 
       }
     }

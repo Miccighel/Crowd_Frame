@@ -1,5 +1,5 @@
 {
   "allowed_tries": 10,
-  "time_check_amount": 10,
+  "time_check_amount": 2,
   "other_batches": []
 }

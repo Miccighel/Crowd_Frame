@@ -1,7 +1,7 @@
 [
   {
     "name": "overall-truthfulness",
-    "description": "State if the statement is in general true (+2), as opposed to false (-2)",
+    "description": "State if the statement is true (+2), as opposed to false (-2)",
     "url": true,
     "scale": {
       "type": "discrete",
@@ -35,9 +35,8 @@
     },
     "gold_question_check": true,
     "style": {
-      "type": "list",
-      "position": "top",
-      "orientation": "horizontal"
+      "type": "matrix",
+      "position": "middle"
     }
   },
   {
@@ -74,9 +73,9 @@
       ]
     },
     "style": {
-      "type": "list",
-      "position": "top",
-      "orientation": "horizontal"
+      "type": "matrix",
+      "position": "middle",
+      "separator": true
     }
   },
   {

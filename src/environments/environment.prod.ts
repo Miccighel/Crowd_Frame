@@ -6,7 +6,7 @@ export const environment = {
   batchName: "Pilot-0",
 
   region: 'us-east-2',
-  bucket: 'crowdsourcing-tasks',
+  bucket: 'crowdsourcing-tasks-us',
   aws_id_key: "AKIAJZPMGNZEXCRQHNGQ",
   aws_secret_key: "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",
 

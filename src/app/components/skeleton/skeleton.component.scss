@@ -73,7 +73,10 @@ mat-card-content label {
   border: 0;
   box-shadow: 0 0 0 0;
   border-radius: 0;
-  background-color: rgba(0,0,0,.03)
+  background-color: #F0F0F0	;
+  position:sticky;
+  top:0;
+  z-index: 1000;
 }
 
 .statement ul {
@@ -135,9 +138,19 @@ mat-card-content label {
   margin-bottom: 1%;
 }
 
+.dimension-url {
+  margin-bottom: 1%;
+}
+
 .dimension mat-radio-group {
   margin-top: 0;
   margin-bottom: 0;
+}
+
+.dimension-matrix .matrix-header .matrix-header-value, .dimension-matrix .matrix-header .matrix-header-text {
+  position: relative;
+  right: 5px;
+  text-align: center;
 }
 
 .dimension-matrix mat-radio-group {
@@ -145,12 +158,12 @@ mat-card-content label {
   margin-bottom: 1%;
   display: flex;
   align-items: center;
-  justify-content: start;
-  flex-basis: 100%;
+  justify-content: flex-start;
 }
 
 .dimension-matrix mat-radio-group > div:first-child {
-  text-align: left;
+  text-align: justify;
+  flex-basis: 25%;
 }
 
 .dimension-matrix mat-radio-group > div {

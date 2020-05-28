@@ -1,12 +1,11 @@
 /* Core modules*/
-import {Component, Inject, Input, OnInit} from '@angular/core';
+import {Component, Inject, Input, OnInit, ViewEncapsulation} from '@angular/core';
 /* Material design modules */
 import {MatDialog, MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
 import * as AWS from "aws-sdk";
 
 /* Data inteface for the underlying dialog component */
-export interface DialogData {
-}
+export interface DialogData {}
 
 /* Component HTML Tag definition */
 @Component({
@@ -93,6 +92,7 @@ export class InstructionsComponent implements OnInit {
   selector: 'app-instructions-dialog',
   styleUrls: ['instructions-dialog.component.scss'],
   templateUrl: 'instructions-dialog.component.html',
+  encapsulation: ViewEncapsulation.None
 })
 
 /*
