@@ -227,7 +227,7 @@ export class SkeletonComponent {
     this.taskSuccessful = false;
     this.taskFailed = false;
 
-    this.tokenInput = new FormControl('LEWNAUGBRUC', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
+    this.tokenInput = new FormControl('WJMRANQPLEG', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
     this.tokenForm = formBuilder.group({
       "tokenInput": this.tokenInput
     });
