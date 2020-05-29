@@ -126,12 +126,17 @@ mat-card-content label {
   flex-grow: 1;
 }
 
+.dimension-name {
+  margin-bottom: 1%;
+}
+
 .dimension-description {
   margin-bottom: 1%;
 }
 
 .dimension-description p {
   margin-bottom: 0;
+  margin-top: 0.5%;
 }
 
 .dimension-scale {

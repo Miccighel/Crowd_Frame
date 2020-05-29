@@ -19,7 +19,6 @@ import {ManagedUpload} from "aws-sdk/clients/s3";
 /* Font Awesome icons */
 import {faSpinner} from "@fortawesome/free-solid-svg-icons";
 import {faInfoCircle} from "@fortawesome/free-solid-svg-icons";
-import {log} from "util";
 import {Settings} from "../../models/skeleton/settings";
 
 /* Component HTML Tag definition */
@@ -29,6 +28,7 @@ import {Settings} from "../../models/skeleton/settings";
   styleUrls: ['./skeleton.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
+
 
 /*
 * This class implements a skeleton for Crowdsourcing tasks. If you want to use this code to launch a Crowdsourcing task
@@ -227,7 +227,7 @@ export class SkeletonComponent {
     this.taskSuccessful = false;
     this.taskFailed = false;
 
-    this.tokenInput = new FormControl('WJMRANQPLEG', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
+    this.tokenInput = new FormControl('', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
     this.tokenForm = formBuilder.group({
       "tokenInput": this.tokenInput
     });
@@ -330,15 +330,25 @@ export class SkeletonComponent {
         }
         for (let currentWorker of otherWorkers['blacklist']) if (currentWorker == this.workerIdentifier) blacklistedInOtherBatch = true;
       }
-      if (!blacklistedInOtherBatch || (blacklistedInOtherBatch && whitelistedInCurrentTask)) {
-        /* His identifier is uploaded to the file of the scale to which he is assigned */
-        workers['blacklist'].push(this.workerIdentifier);
-        let uploadStatus = await (this.upload(this.workersFile, workers));
-        /* If the current worker is a brand new one he is free to proceed */
-        return !uploadStatus["failed"];
+      if(workers['whitelist'].length>0) {
+        if (whitelistedInCurrentTask) {
+          /* His identifier is uploaded to the file of the scale to which he is assigned */
+          workers['blacklist'].push(this.workerIdentifier);
+          let uploadStatus = await (this.upload(this.workersFile, workers));
+          /* If the current worker is a brand new one he is free to proceed */
+          return !uploadStatus["failed"];
+        }
+        return false
+      } else {
+        if (!blacklistedInOtherBatch) {
+          /* His identifier is uploaded to the file of the scale to which he is assigned */
+          workers['blacklist'].push(this.workerIdentifier);
+          let uploadStatus = await (this.upload(this.workersFile, workers));
+          /* If the current worker is a brand new one he is free to proceed */
+          return !uploadStatus["failed"];
+        }
+        return false
       }
-      /* If a returning worker for a past task has been found, the task must be blocked */
-      return false
     }
     /* If a returning worker for the current task has been found, the task must be blocked */
     return false
@@ -1036,7 +1046,7 @@ export class SkeletonComponent {
           await (this.upload(`${this.workerFolder}/dimensions.json`, this.dimensions));
 
           // @ts-ignore
-          send_log("message", taskData)
+          send_log("message", this.taskName, taskData)
 
         }
 
@@ -1080,7 +1090,7 @@ export class SkeletonComponent {
         this.elementsAccesses[completedElement] = accessesAmount + 1;
 
         // @ts-ignore
-        send_log("message", taskData)
+        send_log("message", this.taskName, actionInfo)
 
         /* If the worker has completed a document */
       } else {
@@ -1163,7 +1173,7 @@ export class SkeletonComponent {
         this.elementsAccesses[completedElement] = accessesAmount + 1;
 
         // @ts-ignore
-        send_log("message", taskData)
+        send_log("message", this.taskName, actionInfo)
 
       }
     }

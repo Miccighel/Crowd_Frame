@@ -1,30 +1,11 @@
 [
   {
-    "type": "standard",
+    "type": "crt",
     "questions": [
       {
-        "name": "age",
-        "text": "What is your age range?",
-        "answers": [
-          "0-18",
-          "19-25",
-          "26-35",
-          "36-50",
-          "50-80",
-          "80"
-        ]
-      },
-      {
-        "name": "school",
-        "text": "What is the highest level of school you have completed or the highest degree you have received?",
-        "answers": [
-          "High school incomplete or less",
-          "High school graduate or GED (includes technical/vocational training that doesn’t towards college credit)",
-          "Some college (some community college, associate’s degree)",
-          "Four year college degree/bachelor’s degree",
-          "Some postgraduate or professional schooling, no postgraduate degree",
-          "Postgraduate or professional degree, including master’s, doctorate, medical or law degree"
-        ]
+        "name": "athletics",
+        "text": "In an athletics team, females are four times more likely to win a medal than males. This year the team has won 20 medals so far. How many of these have been won by males?",
+        "answers": []
       }
     ]
   }

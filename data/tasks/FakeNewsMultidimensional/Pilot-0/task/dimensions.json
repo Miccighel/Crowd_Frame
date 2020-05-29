@@ -348,7 +348,7 @@
     "name": "justification",
     "description": "Please describe the rationale behind your assessments and how confident you feel on the seven dimensions and how the dimensions have influenced your overall assessment and which dimensions have influenced your overall assessment the most.",
     "justification": {
-      "text": "Your justification here (at least 15 words)",
+      "text": "Your justification here (You cannot use the selected search engine url as part of the justification).",
       "min_words": 15
     },
     "style": {

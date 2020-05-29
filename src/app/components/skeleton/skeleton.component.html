@@ -155,10 +155,12 @@
             <!-- Dimensions markup (list style) -->
             <ng-template #dimensionList let-dimensions="dimensions" let-i="i">
               <div *ngFor="let dimension of dimensions; let j=index" class="dimension">
-                <mat-divider [inset]="true"></mat-divider>
-                <h2>{{capitalize(dimension.name)}}</h2>
-                <mat-divider [inset]="true"></mat-divider>
-                <div *ngIf="dimension.description != ''" class="dimension-container">
+                <div class="dimension-name">
+                  <mat-divider [inset]="true"></mat-divider>
+                  <h2>{{capitalize(dimension.name)}}</h2>
+                  <mat-divider [inset]="true"></mat-divider>
+                </div>
+                <div *ngIf="dimension.description" class="dimension-container dimension-description">
                   <!-- Dimension description markup -->
                   <div class="dimension-content">
                     <p>{{dimension.description}}</p>
@@ -197,14 +199,14 @@
                     <ng-container *ngIf="dimension.style.orientation=='vertical'">
                       <mat-radio-group *ngIf="dimension.scale.type=='discrete'" aria-labelledby="radio-button-label" class="radio-button-group" formControlName="{{(dimension.name).concat('_value')}}">
                         <mat-radio-button *ngFor="let mapping of dimension.scale.mappings let k=index" class="radio-button" value="{{mapping.value}}" (change)="storeDimensionValue($event, i, dimension.index)">
-                          <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0">({{mapping.description}}</span>
+                          <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0"> ({{mapping.description}})</span>
                         </mat-radio-button>
                       </mat-radio-group>
                     </ng-container>
                     <ng-container *ngIf="dimension.style.orientation=='horizontal'">
                       <mat-radio-group *ngIf="dimension.scale.type=='discrete'" aria-labelledby="radio-button-label" formControlName="{{(dimension.name).concat('_value')}}">
                         <mat-radio-button *ngFor="let mapping of dimension.scale.mappings let k=index" class="radio-button" value="{{mapping.value}}" (change)="storeDimensionValue($event, i,dimension.index)">
-                          <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0">({{mapping.description}}</span>
+                          <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0"> ({{mapping.description}})</span>
                         </mat-radio-button>
                       </mat-radio-group>
                     </ng-container>
@@ -274,7 +276,7 @@
                       <ng-container>
                         <span class="matrix-header-text">{{mapping.label}}</span>
                       </ng-container>
-                      <br />
+                      <br/>
                       <ng-container *ngIf="mapping.value<=0">
                         <span class="matrix-header-value">({{mapping.value}})</span>
                       </ng-container>

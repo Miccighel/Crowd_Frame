@@ -9,7 +9,7 @@ export class Dimension {
   index: number;
 
   name: string;
-  description: string;
+  description?: string;
   justification?: Justification;
   url?: boolean;
   scale?: ScaleDiscrete | ScaleContinue;
@@ -24,7 +24,7 @@ export class Dimension {
     this.index = index;
 
     this.name =               data["name"];
-    this.description =        data["description"];
+    this.description =        data['description'] ? data["description"] : null;
     this.justification =      data['justification'] ? new Justification(data['justification']) : null;
     this.url =                data['url'] ? data["url"] : null;
     this.scale =              data['scale'] ? data['scale']['type'] == "discrete" ? new ScaleDiscrete(data['scale']) : new ScaleContinue(data['scale']) : null;
