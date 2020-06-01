@@ -3,6 +3,13 @@
   "time_check_amount": 2,
   "other_batches": [
     "FakeNewsMultidimensional/Pilot-0/",
+    "FakeNewsMultidimensional/Pilot-1/",
+    "FakeNewsMultidimensional/Big-0/",
+    "MedicalTask/Pilot-0/",
+    "MedicalTask/Big-0/",
+    "MedicalTask/Big-1/",
+    "MedicalTask/Big-2/",
+    "MedicalTask/Big-3/",
     "MedicalTask-2/Big-0/"
   ]
 }

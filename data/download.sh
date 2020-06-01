@@ -1,1 +1,1 @@
-aws s3 sync s3://crowdsourcing-tasks/MedicalTask/Big-3 E:/Download/
+aws s3 sync s3://crowdsourcing-tasks-us/FakeNewsMultidimensional/Pilot-1 E:/Download/
