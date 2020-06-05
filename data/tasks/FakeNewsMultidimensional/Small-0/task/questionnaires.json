@@ -87,7 +87,7 @@
     "questions": [
       {
         "name": "farmers",
-        "text": "If three farmers can plant three trees in three hours, how long would it take nine farmers to plant nine trees?",
+        "text": "If three farmers can plant three trees in three hours, how long (i.e., how many hours) would it take nine farmers to plant nine trees?",
         "answers": []
       }
     ]

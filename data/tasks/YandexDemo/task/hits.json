@@ -1,0 +1,54 @@
+[
+  {
+    "unit_id": "unit_0",
+    "token_input": "PMJGPFVIAOC",
+    "token_output": "BQURNXAWZSI",
+    "documents_number": 4,
+    "documents": [
+      {
+        "name": "REP_BARELYTRUE_doc10",
+        "statement": "(Assembly Democrats) wanted to raise the gas tax by $2.4 billion. We said no to that....Theyre down on the ground. Theyre sweating. Theyre twitching. Its ugly, cause I keep saying no.",
+        "claimant": "Chris Christie",
+        "date": "2012",
+        "originated-from": "social media",
+        "id_par": "6121.json",
+        "job": "Governor of New Jersey",
+        "party": "REP",
+        "source": "Politifact"
+      },
+      {
+        "name": "LOW",
+        "statement": "If I were not a Formula One pilot, I would be a football player.",
+        "claimant": "Abraham Lincoln",
+        "date": "2006",
+        "originated-from": "Public appearance",
+        "id_par": "LOW",
+        "job": "Former U.S. President",
+        "party": "REP",
+        "source": "gold_question"
+      },
+      {
+        "name": "DEM_TRUE_doc10",
+        "statement": "Says Rep. Jim Weidner proposed a bill taking away health care for 80,000 of Oregons children.",
+        "claimant": "Blue Oregon",
+        "date": "2010",
+        "originated-from": "social media",
+        "id_par": "2550.json",
+        "job": "liberal blog",
+        "party": "DEM",
+        "source": "Politifact"
+      },
+      {
+        "name": "HIGH",
+        "statement": "Yes, We can!",
+        "claimant": "Barack Obama",
+        "date": "2008",
+        "originated-from": "Public appearance",
+        "id_par": "HIGH",
+        "job": "Former U.S. President",
+        "party": "DEM",
+        "source": "gold_question"
+      }
+    ]
+  }
+]
