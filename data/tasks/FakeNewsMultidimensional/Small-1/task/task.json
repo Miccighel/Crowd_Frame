@@ -1,0 +1,13 @@
+{
+  "allowed_tries": 10,
+  "time_check_amount": 2,
+  "other_batches": [
+    "MedicalTask-2/Big-0/",
+    "MedicalTask-3/Big-0/",
+    "FakeNewsMultidimensional/Pilot-0/",
+    "FakeNewsMultidimensional/Pilot-1/",
+    "FakeNewsMultidimensional/Big-0/",
+    "FakeNewsMultidimensional/Big-1/",
+    "FakeNewsMultidimensional/Small-0/"
+  ]
+}
