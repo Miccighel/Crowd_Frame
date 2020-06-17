@@ -227,7 +227,7 @@ export class SkeletonComponent {
     this.taskSuccessful = false;
     this.taskFailed = false;
 
-    this.tokenInput = new FormControl('', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
+    this.tokenInput = new FormControl('MBYTZQGSXYP', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
     this.tokenForm = formBuilder.group({
       "tokenInput": this.tokenInput
     });
@@ -330,7 +330,7 @@ export class SkeletonComponent {
         }
         for (let currentWorker of otherWorkers['blacklist']) if (currentWorker == this.workerIdentifier) blacklistedInOtherBatch = true;
       }
-      if(workers['whitelist'].length>0) {
+      if (workers['whitelist'].length > 0) {
         if (whitelistedInCurrentTask) {
           /* His identifier is uploaded to the file of the scale to which he is assigned */
           workers['blacklist'].push(this.workerIdentifier);
@@ -1195,14 +1195,12 @@ export class SkeletonComponent {
    * This function performs an Upload operation to Amazon S3 and returns a JSON object which contains info about the outcome.
    * https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#upload-property
    */
-  public async upload(path: string, payload: Object):
-    Promise<ManagedUpload> {
-    return this.s3.upload({
-      Key: path,
-      Bucket: this.bucket,
-      Body: JSON.stringify(payload, null, "\t")
-    }, function (err, data) {
-    })
+  public async upload(path: string, payload: Object): Promise<ManagedUpload> {
+      return this.s3.upload({
+        Key: path,
+        Bucket: this.bucket,
+        Body: JSON.stringify(payload, null, "\t")
+      }, function (err, data) {})
   }
 
   /* |--------- UTILITIES ELEMENTS - FUNCTIONS ---------| */
