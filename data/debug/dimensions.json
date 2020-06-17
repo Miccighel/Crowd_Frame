@@ -4,7 +4,7 @@
     "url": true,
     "justification": {
       "text": "Your justification here (You can use your own words or, even better, copy/paste from the selected URL; you cannot use the selected search engine url as part of the justification).",
-      "min_words": 15
+      "min_words": 5
     },
     "scale": {
       "type": "discrete",
