@@ -165,7 +165,7 @@ export class CrowdXplorer {
     } else {
       this.folder = `${this.taskName}`
     }
-    this.settingsFile = `${this.folder}/search_engine.json`;
+    this.settingsFile = `${this.folder}/Task/search_engine.json`;
     this.s3 = new AWS.S3({
       region: this.region,
       params: {Bucket: this.bucket},

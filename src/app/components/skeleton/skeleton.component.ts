@@ -227,7 +227,7 @@ export class SkeletonComponent {
     this.taskSuccessful = false;
     this.taskFailed = false;
 
-    this.tokenInput = new FormControl('MBYTZQGSXYP', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
+    this.tokenInput = new FormControl('', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
     this.tokenForm = formBuilder.group({
       "tokenInput": this.tokenInput
     });
@@ -244,13 +244,13 @@ export class SkeletonComponent {
     } else {
       this.folder = `${this.taskName}`
     }
-    this.settingsFile = `${this.folder}/task.json`;
-    this.taskInstructionsFile = `${this.folder}/instructions.html`;
-    this.workersFile = `${this.folder}/workers.json`;
-    this.questionnairesFile = `${this.folder}/questionnaires.json`;
-    this.dimensionsInstructionsFile = `${this.folder}/instructions.json`;
-    this.dimensionsFile = `${this.folder}/dimensions.json`;
-    this.hitsFile = `${this.folder}/hits.json`;
+    this.settingsFile = `${this.folder}/Task/task.json`;
+    this.taskInstructionsFile = `${this.folder}/Task/instructions.html`;
+    this.workersFile = `${this.folder}/Task/workers.json`;
+    this.questionnairesFile = `${this.folder}/Task/questionnaires.json`;
+    this.dimensionsInstructionsFile = `${this.folder}/Task/instructions.json`;
+    this.dimensionsFile = `${this.folder}/Task/dimensions.json`;
+    this.hitsFile = `${this.folder}/Task/hits.json`;
     this.workerFolder = `${this.folder}/Data/${this.workerIdentifier}`;
     this.s3 = new AWS.S3({
       region: this.region,
@@ -323,7 +323,7 @@ export class SkeletonComponent {
       let blacklistedInOtherBatch = false
       /* The workers file of each past task is scanned */
       for (let otherBatch of this.otherBatches) {
-        let otherWorkers = await this.download(`${otherBatch}workers.json`);
+        let otherWorkers = await this.download(`${otherBatch}Task/workers.json`);
         if ('started' in otherWorkers) {
           otherWorkers['blacklist'] = otherWorkers['started']
           delete otherWorkers['started']
