@@ -20,6 +20,10 @@ import {ManagedUpload} from "aws-sdk/clients/s3";
 import {faSpinner} from "@fortawesome/free-solid-svg-icons";
 import {faInfoCircle} from "@fortawesome/free-solid-svg-icons";
 import {Settings} from "../../models/skeleton/settings";
+import {Worker} from "../../models/skeleton/worker";
+import {BingWebSearchResponse} from "../../models/crowd-xplorer/bingWebSearchResponse";
+import {HttpClient, HttpHeaders} from "@angular/common/http";
+import {log} from "util";
 
 /* Component HTML Tag definition */
 @Component({
@@ -49,6 +53,8 @@ export class SkeletonComponent {
   /* Unique identifier of the current worker */
   workerIdentifier: string;
 
+  worker: Worker
+
   /* Flag to unlock the task for the worker */
   taskAllowed: boolean;
 
@@ -59,6 +65,10 @@ export class SkeletonComponent {
   ngxService: NgxUiLoaderService;
   /* Service to provide an environment-based configuration */
   configService: ConfigService;
+
+  /* HTTP client and headers */
+  client: HttpClient;
+  headers: HttpHeaders;
 
   /* Angular Reactive Form builder (see https://angular.io/guide/reactive-forms) */
   formBuilder: FormBuilder;
@@ -117,7 +127,6 @@ export class SkeletonComponent {
   hitsFile: string;
   /* Folder in which upload data produced within the task by current worker */
   workerFolder: string;
-
 
   /* |--------- QUESTIONNAIRE ELEMENTS - DECLARATION ---------| */
 
@@ -199,6 +208,7 @@ export class SkeletonComponent {
     changeDetector: ChangeDetectorRef,
     ngxService: NgxUiLoaderService,
     configService: ConfigService,
+    client: HttpClient,
     formBuilder: FormBuilder,
   ) {
 
@@ -208,6 +218,7 @@ export class SkeletonComponent {
     this.changeDetector = changeDetector;
     this.ngxService = ngxService;
     this.configService = configService;
+    this.client = client;
     this.formBuilder = formBuilder;
 
     this.ngxService.start();
@@ -273,8 +284,12 @@ export class SkeletonComponent {
     this.loadSettings().then(() => {
       if (!(this.workerIdentifier === null)) {
         this.performWorkerStatusCheck().then(outcome => {
-          this.taskAllowed = outcome;
-          this.changeDetector.detectChanges()
+          this.client.get('https://www.cloudflare.com/cdn-cgi/trace', {responseType: 'text'}).subscribe(cloudflareData => {
+            this.worker = new Worker(this.workerIdentifier, cloudflareData, window.navigator)
+            console.log(this.worker)
+            this.taskAllowed = outcome;
+            this.changeDetector.detectChanges()
+          })
         })
       }
     })
@@ -1038,6 +1053,8 @@ export class SkeletonComponent {
           };
           /* General info about task */
           await (this.upload(`${this.workerFolder}/task.json`, taskData));
+          /* General info about worker */
+          await (this.upload(`${this.workerFolder}/worker.json`, this.worker));
           /* The answers of the current worker to the questionnaire */
           await (this.upload(`${this.workerFolder}/questionnaires.json`, this.questionnaires));
           /* The parsed document contained in current worker's hit */
