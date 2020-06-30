@@ -52,6 +52,35 @@ mat-card-title {
   margin-bottom: 1%;
 }
 
+.questionnaire-matrix .matrix-header .matrix-header-value, .questionnaire-matrix .matrix-header .matrix-header-text {
+  position: relative;
+  right: 5px;
+  text-align: center;
+}
+
+.questionnaire-matrix mat-radio-group {
+  margin-top: 1%;
+  margin-bottom: 1%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.questionnaire-matrix mat-radio-group > div:first-child {
+  text-align: justify;
+  flex-basis: 10%;
+}
+
+.questionnaire-matrix mat-radio-group > div {
+  order: 6;
+  text-align: center;
+  flex: 1;
+}
+
+.questionnaire-matrix mat-radio-group > div p{
+  margin: 0;
+}
+
 mat-card-content mat-form-field label {
   font-weight: bold;
 }
@@ -294,9 +323,26 @@ mat-form-field {
   margin: auto;
 }
 
+.outcome-section mat-card-title {
+  margin-top: 1%;
+  margin-bottom: 0.5%;
+}
+
+.outcome-section h2 {
+  margin-bottom: 0;
+}
+
 .outcome-section h4 {
-  padding-top: 0;
-  padding-bottom: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.outcome-section h6 {
+  margin-top: 0;
+}
+
+.outcome-section ul {
+  list-style-type: none;
 }
 
 /* |--- Success section ---| */

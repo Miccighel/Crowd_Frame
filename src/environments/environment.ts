@@ -10,6 +10,6 @@ export const environment = {
   aws_id_key: "AKIAJZPMGNZEXCRQHNGQ",
   aws_secret_key: "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",
 
-  bing_api_key: "dd0c33c397494b6198494684a5cdad09"
+  bing_api_key: "2cd7c847841743b8accb35e9f6c0eebc"
 
 };

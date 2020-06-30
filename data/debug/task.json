@@ -3,5 +3,10 @@
   "time_check_amount": 2,
   "other_batches": [
     "CrowdsourcingSkeleton/Batch-1/"
+  ],
+  "messages": [
+    "You have already started this task without finishing it",
+    "You have already participated to a variant of this experiment",
+    "This experiment is restricted to workers who already done it in the past"
   ]
 }

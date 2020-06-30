@@ -21,9 +21,7 @@ import {faSpinner} from "@fortawesome/free-solid-svg-icons";
 import {faInfoCircle} from "@fortawesome/free-solid-svg-icons";
 import {Settings} from "../../models/skeleton/settings";
 import {Worker} from "../../models/skeleton/worker";
-import {BingWebSearchResponse} from "../../models/crowd-xplorer/bingWebSearchResponse";
 import {HttpClient, HttpHeaders} from "@angular/common/http";
-import {log} from "util";
 
 /* Component HTML Tag definition */
 @Component({
@@ -32,7 +30,6 @@ import {log} from "util";
   styleUrls: ['./skeleton.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-
 
 /*
 * This class implements a skeleton for Crowdsourcing tasks. If you want to use this code to launch a Crowdsourcing task
@@ -286,7 +283,6 @@ export class SkeletonComponent {
         this.performWorkerStatusCheck().then(outcome => {
           this.client.get('https://www.cloudflare.com/cdn-cgi/trace', {responseType: 'text'}).subscribe(cloudflareData => {
             this.worker = new Worker(this.workerIdentifier, cloudflareData, window.navigator)
-            console.log(this.worker)
             this.taskAllowed = outcome;
             this.changeDetector.detectChanges()
           })
@@ -301,6 +297,7 @@ export class SkeletonComponent {
 
     /* The loading spinner is stopped */
     this.ngxService.stop();
+
   }
 
   /* |--------- GENERAL ELEMENTS - FUNCTIONS ---------| */
@@ -429,7 +426,7 @@ export class SkeletonComponent {
       this.questionnairesForm = new Array<FormGroup>();
       for (let index = 0; index < this.questionnaires.length; index++) {
         let questionnaire = this.questionnaires[index];
-        if (questionnaire.type == "standard") {
+        if (questionnaire.type == "standard" || questionnaire.type == "likert") {
           /* If the questionnaire is a standard one it means that it has only questions where answers must be selected within a group of radio buttons.
            * This means that only a required validator is required to check answer presence
            */
@@ -1062,6 +1059,9 @@ export class SkeletonComponent {
           /* The dimensions of the answers of each worker */
           await (this.upload(`${this.workerFolder}/dimensions.json`, this.dimensions));
 
+          // @ts-ignore
+          send_log("message", taskData)
+
         }
 
         /* The partial data about the completed questionnaire are uploaded */
@@ -1089,6 +1089,9 @@ export class SkeletonComponent {
         let accesses = this.elementsAccesses[completedElement];
         await (this.upload(`${this.workerFolder}/Partials/Accesses/Try-${this.currentTry}/accesses_${completedElement}_access_${accessesAmount}.json`, accesses));
 
+        // @ts-ignore
+        send_log("message", actionInfo)
+
         /* If the worker has completed the last questionnaire */
 
         if (completedElement == this.questionnaireAmount - 1) {
@@ -1097,6 +1100,9 @@ export class SkeletonComponent {
           let answers = [];
           for (let index = 0; index < this.questionnairesForm.length; index++) answers.push(this.questionnairesForm[index].value);
           await (this.upload(`${this.workerFolder}/Final/questionnaires_answers.json`, answers));
+
+          // @ts-ignore
+          send_log("message", answers)
 
         }
 
@@ -1147,6 +1153,9 @@ export class SkeletonComponent {
         let accesses = this.elementsAccesses[completedElement];
         await (this.upload(`${this.workerFolder}/Partials/Accesses/Try-${this.currentTry}/accesses_${completedElement}_access_${accessesAmount}.json`, accesses));
 
+        // @ts-ignore
+        send_log("message", actionInfo)
+
         /* If the worker has completed the last document */
         if (completedElement == this.questionnaireAmount + this.documentsAmount - 1) {
 
@@ -1178,12 +1187,16 @@ export class SkeletonComponent {
           /* Number of accesses to each document (currentDocument.e., how many times the worker reached the document with a "Back" or "Next" action */
           await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/accesses.json`, this.elementsAccesses));
 
+          // @ts-ignore
+          send_log("message", answers)
+
         }
 
         /* The amount of accesses to the current document is incremented */
         this.elementsAccesses[completedElement] = accessesAmount + 1;
 
       }
+
     }
   }
 
@@ -1217,7 +1230,8 @@ export class SkeletonComponent {
         Key: path,
         Bucket: this.bucket,
         Body: JSON.stringify(payload, null, "\t")
-      }, function (err, data) {})
+      }, function (err, data) {
+      })
   }
 
   /* |--------- UTILITIES ELEMENTS - FUNCTIONS ---------| */

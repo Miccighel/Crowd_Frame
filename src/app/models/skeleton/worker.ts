@@ -12,16 +12,27 @@ export class Worker {
     navigator: Navigator
   ) {
     this.mturkId = mturkId
+    let unwantedProperties = [
+      "registerProtocolHandler",
+      "requestMediaKeySystemAccess",
+      "sendBeacon",
+      "unregisterProtocolHandler",
+      "vibrate",
+      "getUserMedia",
+      "webkitGetUserMedia"
+    ]
     let properties = {}
     for (let property of cloudflareData.split(/\n/)) {
-      if (property.length > 0) {
+      if (property.length > 0 && !unwantedProperties.includes(property)) {
         properties[property.split("=")[0]] = property.split("=")[1]
       }
     }
-    for(var property in navigator){
-      var str = navigator[property]
-      if(str && str.length>0) {
-        properties[property] = str
+    for (let property in navigator) {
+      if(!unwantedProperties.includes(property)) {
+        let str = navigator[property];
+        if (str && str.length > 0) {
+          properties[property] = str
+        }
       }
     }
     this.properties = properties

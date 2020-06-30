@@ -43,7 +43,6 @@
   </form>
 </div>
 
-
 <!--
      If the worker has a valid token input and has not started the task
      render the task's body section and do not render the <alreadyStarted>
@@ -59,13 +58,21 @@
         <mat-card-title class="failure-title">
           <h4>Failure</h4>
         </mat-card-title>
-        <mat-card-content>
+        <mat-card-content *ngIf="this.settings.messages">
+          <h2>You are not allowed to participate to this experiment because either:</h2>
+          <ul>
+            <li *ngFor="let message of this.settings.messages; let i=index">- {{message}}</li>
+          </ul>
+          <h6>If you believe that this is an error, please contact us through Amazon MTurk. Sorry for the inconvenience.</h6>
+        </mat-card-content>
+        <mat-card-content *ngIf="!this.settings.messages">
           <h2>
             Either you have already started this task without finishing it, or you have already participated to a
-            variant of this experiment.<br/>
-            For this reason, you are not allowed to take a part in this experiment. Sorry for the inconvenience.
+            variant of this experiment.<br/> For this reason, you are not allowed to take a part in this experiment.
+            If you believe that this is an error, please contact us through Amazon MTurk. Sorry for the inconvenience.
           </h2>
         </mat-card-content>
+
       </mat-card>
     </div>
   </div>
@@ -83,6 +90,7 @@
           <mat-divider [inset]="true"></mat-divider>
           <mat-card-title *ngIf="questionnaire.type=='standard'">Please answer the following questions</mat-card-title>
           <mat-card-title *ngIf="questionnaire.type=='crt'">Please answer the following question</mat-card-title>
+          <mat-card-title *ngIf="questionnaire.type=='likert'">Please answer the following questions</mat-card-title>
           <mat-divider [inset]="true"></mat-divider>
           <mat-card-content *ngIf="questionnaire.type=='standard'">
             <mat-radio-group *ngFor="let question of questionnaire.questions; let j=index" aria-labelledby="radio-button-label" class="radio-button-group question" formControlName="{{question.name}}">
@@ -106,6 +114,33 @@
                 Max value allowed: 100
               </mat-error>
             </mat-form-field>
+          </mat-card-content>
+          <mat-card-content *ngIf="questionnaire.type=='likert'" class="questionnaire-matrix">
+            <mat-radio-group>
+              <div></div>
+              <div *ngFor="let mapping of questionnaire.mappings; let k=index">
+                <div class="matrix-header">
+                  <ng-container>
+                    <span class="matrix-header-text">{{mapping.label}}</span>
+                  </ng-container>
+                  <br/>
+                  <ng-container *ngIf="mapping.value<=0">
+                    <span class="matrix-header-value">({{mapping.value}})</span>
+                  </ng-container>
+                  <ng-container *ngIf="mapping.value>0">
+                    <span class="matrix-header-value">(+{{mapping.value}})</span>
+                  </ng-container>
+                </div>
+              </div>
+            </mat-radio-group>
+            <mat-radio-group aria-labelledby="radio-button-label" *ngFor="let question of questionnaire.questions; let m=index" formControlName="{{question.name}}" >
+              <div>
+                <p><strong>{{m+1}}) {{question.text}}</strong></p>
+              </div>
+              <div *ngFor="let mapping of questionnaire.mappings">
+                <mat-radio-button class="radio-button" value="{{mapping.value}}"></mat-radio-button>
+              </div>
+            </mat-radio-group>
           </mat-card-content>
           <mat-card-actions>
             <button mat-flat-button color="primary" matStepperNext
