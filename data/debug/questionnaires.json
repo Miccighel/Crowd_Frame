@@ -1,6 +1,7 @@
 [
   {
     "type": "likert",
+    "description": "Select the most appropriate option by thinking about how much do you believe these statements describe yourself. Indicate for each statement whether it is Very Inaccurate, Moderately Inaccurate, Neither Accurate Nor Inaccurate, Moderately Accurate, or Very Accurate as a description of you.",
     "questions": [
       {
         "name": "life_party",

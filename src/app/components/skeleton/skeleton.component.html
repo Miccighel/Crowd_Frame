@@ -90,7 +90,7 @@
           <mat-divider [inset]="true"></mat-divider>
           <mat-card-title *ngIf="questionnaire.type=='standard'">Please answer the following questions</mat-card-title>
           <mat-card-title *ngIf="questionnaire.type=='crt'">Please answer the following question</mat-card-title>
-          <mat-card-title *ngIf="questionnaire.type=='likert'">Please answer the following questions</mat-card-title>
+          <mat-card-title *ngIf="questionnaire.type=='likert'">Please assess the following statements</mat-card-title>
           <mat-divider [inset]="true"></mat-divider>
           <mat-card-content *ngIf="questionnaire.type=='standard'">
             <mat-radio-group *ngFor="let question of questionnaire.questions; let j=index" aria-labelledby="radio-button-label" class="radio-button-group question" formControlName="{{question.name}}">
@@ -116,19 +116,14 @@
             </mat-form-field>
           </mat-card-content>
           <mat-card-content *ngIf="questionnaire.type=='likert'" class="questionnaire-matrix">
+            <p *ngIf="questionnaire.description">{{questionnaire.description}}</p>
+            <mat-divider [inset]="true"></mat-divider>
             <mat-radio-group>
               <div></div>
               <div *ngFor="let mapping of questionnaire.mappings; let k=index">
                 <div class="matrix-header">
                   <ng-container>
                     <span class="matrix-header-text">{{mapping.label}}</span>
-                  </ng-container>
-                  <br/>
-                  <ng-container *ngIf="mapping.value<=0">
-                    <span class="matrix-header-value">({{mapping.value}})</span>
-                  </ng-container>
-                  <ng-container *ngIf="mapping.value>0">
-                    <span class="matrix-header-value">(+{{mapping.value}})</span>
                   </ng-container>
                 </div>
               </div>

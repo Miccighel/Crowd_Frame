@@ -2,7 +2,7 @@ export const environment = {
 
   production: true,
 
-  taskName: "MedicalTask-Old-2",
+  taskName: "MedicalTask-DataLiteracy",
   batchName: "Big-0",
 
   region: 'us-east-2',
