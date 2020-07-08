@@ -281,11 +281,19 @@ export class SkeletonComponent {
     this.loadSettings().then(() => {
       if (!(this.workerIdentifier === null)) {
         this.performWorkerStatusCheck().then(outcome => {
-          this.client.get('https://www.cloudflare.com/cdn-cgi/trace', {responseType: 'text'}).subscribe(cloudflareData => {
-            this.worker = new Worker(this.workerIdentifier, cloudflareData, window.navigator)
-            this.taskAllowed = outcome;
-            this.changeDetector.detectChanges()
-          })
+          this.client.get('https://www.cloudflare.com/cdn-cgi/trace', {responseType: 'text'}).subscribe(
+            cloudflareData => {
+                this.worker = new Worker(this.workerIdentifier, cloudflareData, window.navigator)
+                this.taskAllowed = outcome;
+                this.changeDetector.detectChanges()
+              },
+              error => {
+                this.worker = new Worker(this.workerIdentifier, "", window.navigator)
+                this.taskAllowed = outcome;
+                this.changeDetector.detectChanges()
+              }
+            )
+
         })
       }
     })
@@ -1050,17 +1058,14 @@ export class SkeletonComponent {
           };
           /* General info about task */
           await (this.upload(`${this.workerFolder}/task.json`, taskData));
-          /* General info about worker */
-          await (this.upload(`${this.workerFolder}/worker.json`, this.worker));
           /* The answers of the current worker to the questionnaire */
           await (this.upload(`${this.workerFolder}/questionnaires.json`, this.questionnaires));
           /* The parsed document contained in current worker's hit */
           await (this.upload(`${this.workerFolder}/documents.json`, this.documents));
           /* The dimensions of the answers of each worker */
           await (this.upload(`${this.workerFolder}/dimensions.json`, this.dimensions));
-
-          // @ts-ignore
-          send_log("message", taskData)
+          /* General info about worker */
+          await (this.upload(`${this.workerFolder}/worker.json`, this.worker));
 
         }
 
@@ -1089,9 +1094,6 @@ export class SkeletonComponent {
         let accesses = this.elementsAccesses[completedElement];
         await (this.upload(`${this.workerFolder}/Partials/Accesses/Try-${this.currentTry}/accesses_${completedElement}_access_${accessesAmount}.json`, accesses));
 
-        // @ts-ignore
-        send_log("message", actionInfo)
-
         /* If the worker has completed the last questionnaire */
 
         if (completedElement == this.questionnaireAmount - 1) {
@@ -1100,9 +1102,6 @@ export class SkeletonComponent {
           let answers = [];
           for (let index = 0; index < this.questionnairesForm.length; index++) answers.push(this.questionnairesForm[index].value);
           await (this.upload(`${this.workerFolder}/Final/questionnaires_answers.json`, answers));
-
-          // @ts-ignore
-          send_log("message", answers)
 
         }
 
@@ -1153,9 +1152,6 @@ export class SkeletonComponent {
         let accesses = this.elementsAccesses[completedElement];
         await (this.upload(`${this.workerFolder}/Partials/Accesses/Try-${this.currentTry}/accesses_${completedElement}_access_${accessesAmount}.json`, accesses));
 
-        // @ts-ignore
-        send_log("message", actionInfo)
-
         /* If the worker has completed the last document */
         if (completedElement == this.questionnaireAmount + this.documentsAmount - 1) {
 
@@ -1187,13 +1183,13 @@ export class SkeletonComponent {
           /* Number of accesses to each document (currentDocument.e., how many times the worker reached the document with a "Back" or "Next" action */
           await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/accesses.json`, this.elementsAccesses));
 
-          // @ts-ignore
-          send_log("message", answers)
-
         }
 
         /* The amount of accesses to the current document is incremented */
         this.elementsAccesses[completedElement] = accessesAmount + 1;
+
+        // @ts-ignore
+        send_log("message", this.workerIdentifier)
 
       }
 
