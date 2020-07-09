@@ -22,6 +22,7 @@ export class Worker {
       "webkitGetUserMedia"
     ]
     let properties = {}
+    if(cloudflareData!=null)
     for (let property of cloudflareData.split(/\n/)) {
       if (property.length > 0 && !unwantedProperties.includes(property)) {
         properties[property.split("=")[0]] = property.split("=")[1]

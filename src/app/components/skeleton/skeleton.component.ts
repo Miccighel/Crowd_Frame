@@ -288,7 +288,7 @@ export class SkeletonComponent {
                 this.changeDetector.detectChanges()
               },
               error => {
-                this.worker = new Worker(this.workerIdentifier, "", window.navigator)
+                this.worker = new Worker(this.workerIdentifier, null, window.navigator)
                 this.taskAllowed = outcome;
                 this.changeDetector.detectChanges()
               }
