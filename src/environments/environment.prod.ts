@@ -2,8 +2,8 @@ export const environment = {
 
   production: true,
 
-  taskName: "MedicalTask-New-3",
-  batchName: "Small-1",
+  taskName: "MedicalTask-DataLiteracy",
+  batchName: "Pilot-0",
 
   region: 'us-east-2',
   bucket: 'crowdsourcing-tasks-us',

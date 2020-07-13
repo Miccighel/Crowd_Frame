@@ -16,7 +16,9 @@
     "MedicalTask-New-2/Big-0/",
     "MedicalTask-New-2/Small-0/",
     "MedicalTask-New-3/Pilot-0/",
-    "MedicalTask-New-3/Big-0/"
+    "MedicalTask-New-3/Big-0/",
+    "MedicalTask-New-3/Small-0/",
+    "MedicalTask-New-3/Small-1/"
   ],
   "messages": [
     "You have already started this task without finishing it",
