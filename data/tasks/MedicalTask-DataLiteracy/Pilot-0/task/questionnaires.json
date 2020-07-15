@@ -307,6 +307,46 @@
           "Disagree",
           "No opinion either way"
         ]
+      },
+      {
+        "name": "language_proficiency",
+        "text": "What is your language proficiency in English?",
+        "answers": [
+          "A1 - Breakthrough or beginner",
+          "A2 - Waystage or elementary",
+          "B1 - Threshold or intermediate",
+          "B2 - Vantage or upper intermediate",
+          "C1 - Effective operational proficiency or advanced",
+          "C2 - Mastery or proficiency"
+        ],
+        "details": [
+          {
+            "items": [
+              "Can understand and use familiar everyday expressions and very basic phrases aimed at the satisfaction of needs of a concrete type",
+              "Can introduce him/herself and others and can ask and answer questions about personal details such as where he/she lives, people he/she knows and things he/she has",
+              "Can interact in a simple way provided the other person talks slowly and clearly and is prepared to help."
+            ]
+          },
+          {
+            "items": [
+              "Can understand sentences and frequently used expressions related to areas of most immediate relevance (e.g. very basic personal and family information, shopping, local geography, employment)",
+              "Can communicate in simple and routine tasks requiring a simple and direct exchange of information on familiar and routine matters",
+              "Can describe in simple terms aspects of his/her background, immediate environment and matters in areas of immediate need."
+            ]
+          }
+        ]
+      },
+      {
+        "name": "translator",
+        "text": "Will you use any of the following translators in this task?",
+        "answers": [
+          "Google Translate",
+          "Translator by Microsoft",
+          "Yandex Translate",
+          "LEXILOGOS",
+          "SYSTRAN ",
+          "etranslator"
+        ]
       }
     ]
   },
