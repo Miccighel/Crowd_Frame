@@ -40,6 +40,7 @@ export class Question {
   name: string;
   text?: string;
   answers?: Array<string>;
+  details?: Array<Detail>;
 
   constructor(
     index: number,
@@ -54,9 +55,35 @@ export class Question {
       this.answers = new Array<string>();
       for (const [_, answer] of data["answers"].entries()) this.answers.push(answer)
     }
+    if (data['details']) {
+      this.details = new Array<Detail>();
+      for (let index = 0; index < data["details"].length; index++) this.details.push(new Detail(index, data["details"][index]))
+    }
   }
 
 }
+
+export class Detail {
+
+  /* DO NOT REMOVE THIS ATTRIBUTE */
+  index: number;
+
+  items?: Array<string>;
+
+  constructor(
+    index: number,
+    data: JSON
+  ) {
+    /* DO NOT REMOVE THIS LINE */
+    this.index = index;
+
+    if (data['items']) {
+      this.items = new Array<string>();
+      for (const [_, item] of data["items"].entries()) this.items.push(item)
+    }
+  }
+}
+
 
 export class Mapping {
 
