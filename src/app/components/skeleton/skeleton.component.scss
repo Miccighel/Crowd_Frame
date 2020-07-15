@@ -48,8 +48,22 @@ mat-card-title {
   font-weight: bold;
 }
 
-.question .question-text {
-  margin-bottom: 1%;
+.question .question-detail {
+  box-shadow: none;
+}
+
+.question-detail mat-panel-title  {
+  text-transform: uppercase;
+  flex-grow: 0;
+}
+
+.question-detail mat-panel-description {
+  font-weight: normal;
+  text-align: left;
+}
+
+.question-detail mat-expansion-panel-header, .question-detail mat-expansion-panel {
+  padding-left: 0.75%;
 }
 
 .questionnaire-matrix .matrix-header .matrix-header-value, .questionnaire-matrix .matrix-header .matrix-header-text {

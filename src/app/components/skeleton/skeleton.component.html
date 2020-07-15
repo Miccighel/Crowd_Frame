@@ -98,6 +98,28 @@
                 <label>{{question.text}}</label>
               </div>
               <mat-radio-button *ngFor="let answer of question.answers; let k=index" class="radio-button" value="{{k}}">{{answer}}</mat-radio-button>
+              <mat-expansion-panel
+                hideToggle
+                *ngIf="question.detail"
+                class="question-detail"
+                (opened)="question.showDetail = true"
+                (closed)="question.showDetail = false"
+              >
+                <mat-expansion-panel-header class="mat-button">
+                  <mat-panel-title>
+                    {{question.showDetail ? 'Hide details' : 'Show details'}}
+                  </mat-panel-title>
+                  <mat-panel-description>
+                     {{question.detail.text}}
+                  </mat-panel-description>
+                </mat-expansion-panel-header>
+                <div class="question-detail-element" *ngFor="let element of question.detail.elements; let m=index">
+                  {{element.key}}
+                  <ul>
+                    <li *ngFor="let item of element.items; let n=index">{{item}}</li>
+                  </ul>
+                </div>
+              </mat-expansion-panel>
             </mat-radio-group>
           </mat-card-content>
           <mat-card-content *ngIf="questionnaire.type=='crt'">

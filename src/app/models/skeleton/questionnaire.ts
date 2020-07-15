@@ -40,7 +40,8 @@ export class Question {
   name: string;
   text?: string;
   answers?: Array<string>;
-  details?: Array<Detail>;
+  detail?: Detail;
+  showDetail: boolean
 
   constructor(
     index: number,
@@ -55,20 +56,37 @@ export class Question {
       this.answers = new Array<string>();
       for (const [_, answer] of data["answers"].entries()) this.answers.push(answer)
     }
-    if (data['details']) {
-      this.details = new Array<Detail>();
-      for (let index = 0; index < data["details"].length; index++) this.details.push(new Detail(index, data["details"][index]))
-    }
+    this.detail = data['detail'] ? new Detail(data["detail"]) : null;
+    this.showDetail = false
+
   }
 
 }
 
 export class Detail {
 
+  text: string;
+  elements: Array<Element>
+
+  constructor(
+    data: JSON
+  ) {
+
+    this.text = data["text"];
+    this.elements = new Array<Element>();
+    for (let index = 0; index < data["elements"].length; index++) this.elements.push(new Element(index, data["elements"][index]))
+
+  }
+
+}
+
+export class Element {
+
   /* DO NOT REMOVE THIS ATTRIBUTE */
   index: number;
 
-  items?: Array<string>;
+  key: string;
+  items: Array<string>;
 
   constructor(
     index: number,
@@ -77,13 +95,13 @@ export class Detail {
     /* DO NOT REMOVE THIS LINE */
     this.index = index;
 
-    if (data['items']) {
-      this.items = new Array<string>();
-      for (const [_, item] of data["items"].entries()) this.items.push(item)
-    }
-  }
-}
+    this.key = data['key'];
+    this.items = new Array<string>();
+    for (const [_, item] of data["items"].entries()) this.items.push(item)
 
+  }
+
+}
 
 export class Mapping {
 

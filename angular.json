@@ -36,6 +36,9 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
+            "allowedCommonJsDependencies": [
+              "aws-sdk"
+            ],
             "outputPath": "dist/CrowdsourcingSkeleton",
             "index": "src/index.html",
             "main": "src/main.ts",
