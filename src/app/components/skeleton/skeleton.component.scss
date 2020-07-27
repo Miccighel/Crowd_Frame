@@ -66,10 +66,28 @@ mat-card-title {
   padding-left: 0.75%;
 }
 
-.questionnaire-matrix .matrix-header .matrix-header-value, .questionnaire-matrix .matrix-header .matrix-header-text {
-  position: relative;
-  right: 5px;
+.questionnaire-matrix .matrix-header  {
+  padding-top:  1.5%;
+  padding-bottom: 1.5%;
+  border: 0;
+  box-shadow: 0 0 0 0;
+  border-radius: 0;
+  position:sticky;
+  background-color: white;
+  top:0;
+  z-index: 1000;
+  display: flex;
+  vertical-align: middle;
+}
+
+.questionnaire-matrix .matrix-header div {
   text-align: center;
+  flex: 1 0;
+}
+
+.questionnaire-matrix .matrix-header > div:first-child {
+  flex-basis: 20%;
+  text-align: justify;
 }
 
 .questionnaire-matrix mat-radio-group {
@@ -82,7 +100,7 @@ mat-card-title {
 
 .questionnaire-matrix mat-radio-group > div:first-child {
   text-align: justify;
-  flex-basis: 10%;
+  flex-basis: 20%;
 }
 
 .questionnaire-matrix mat-radio-group > div {

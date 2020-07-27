@@ -110,7 +110,7 @@
                     {{question.showDetail ? 'Hide details' : 'Show details'}}
                   </mat-panel-title>
                   <mat-panel-description>
-                     {{question.detail.text}}
+                    {{question.detail.text}}
                   </mat-panel-description>
                 </mat-expansion-panel-header>
                 <div class="question-detail-element" *ngFor="let element of question.detail.elements; let m=index">
@@ -140,19 +140,15 @@
           <mat-card-content *ngIf="questionnaire.type=='likert'" class="questionnaire-matrix">
             <p *ngIf="questionnaire.description">{{questionnaire.description}}</p>
             <mat-divider [inset]="true"></mat-divider>
-            <mat-radio-group>
+            <div class="matrix-header">
               <div></div>
               <div *ngFor="let mapping of questionnaire.mappings; let k=index">
-                <div class="matrix-header">
-                  <ng-container>
-                    <span class="matrix-header-text">{{mapping.label}}</span>
-                  </ng-container>
-                </div>
+                <span class="matrix-header-text">{{mapping.label}}</span>
               </div>
-            </mat-radio-group>
-            <mat-radio-group aria-labelledby="radio-button-label" *ngFor="let question of questionnaire.questions; let m=index" formControlName="{{question.name}}" >
+            </div>
+            <mat-radio-group aria-labelledby="radio-button-label" *ngFor="let question of questionnaire.questions; let m=index" formControlName="{{question.name}}">
               <div>
-                <p><strong>{{m+1}}) {{question.text}}</strong></p>
+                <p>{{m + 1}}) {{question.text}}</p>
               </div>
               <div *ngFor="let mapping of questionnaire.mappings">
                 <mat-radio-button class="radio-button" value="{{mapping.value}}"></mat-radio-button>
