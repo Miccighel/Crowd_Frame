@@ -877,25 +877,18 @@ export class SkeletonComponent {
 
     /* Booleans to hold result of checks */
     let globalValidityCheck: boolean;
-    let goldQuestionCheck: boolean;
     let timeSpentCheck: boolean;
     let timeCheckAmount = this.timeCheckAmount;
 
     /* 1) GLOBAL VALIDITY CHECK performed here */
     globalValidityCheck = this.performGlobalValidityCheck();
 
-    /* 2) GOLD QUESTION CHECK performed here */
-    for (let dimension of this.dimensions) {
-      if (dimension.goldQuestionCheck)
-        goldQuestionCheck = this.documentsForm[this.goldIndexLow].controls[dimension.name.concat('_value')].value < this.documentsForm[this.goldIndexHigh].controls[dimension.name.concat('_value')].value;
-    }
-
     /* 3) TIME SPENT CHECK performed here */
     timeSpentCheck = true;
     for (let i = 0; i < this.timestampsElapsed.length; i++) if (this.timestampsElapsed[i] < timeCheckAmount) timeSpentCheck = false;
 
     /* If each check is true, the task is successful, otherwise the task is failed (but not over if there are more tries) */
-    if (globalValidityCheck && goldQuestionCheck && timeSpentCheck) {
+    if (globalValidityCheck && timeSpentCheck) {
       this.taskSuccessful = true;
       this.taskFailed = false;
     } else {
@@ -907,7 +900,6 @@ export class SkeletonComponent {
     if (!(this.workerIdentifier === null)) {
       let qualityCheckData = {
         globalFormValidity: globalValidityCheck,
-        goldQuestionCheck: goldQuestionCheck,
         timeSpentCheck: timeSpentCheck,
         timeCheckAmount: timeCheckAmount,
       };
@@ -1210,6 +1202,7 @@ export class SkeletonComponent {
    * https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html
    */
   public async download(path: string) {
+    console.log(path)
     return JSON.parse(
       (await (this.s3.getObject({
         Bucket: this.bucket,

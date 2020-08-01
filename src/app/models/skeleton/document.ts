@@ -10,10 +10,10 @@ export class Document {
   index: number;
 
   name: string;
-  statement: string;
-  claimant: string;
-  date: string;
-  originatedFrom: string;
+  product_description: string;
+  review: string;
+  reviewTime: string;
+  reviewerName: string;
 
   constructor(
     index: number,
@@ -23,10 +23,10 @@ export class Document {
     this.index =          index;
 
     this.name =           data["name"];
-    this.statement =      data["statement"];
-    this.claimant =       data["claimant"];
-    this.date =           data["date"];
-    this.originatedFrom = data["originated-from"];
+    this.product_description =      data["product_description"];
+    this.review =       data["review"];
+    this.reviewTime =           data["reviewTime"];
+    this.reviewerName = data["reviewerName"];
   }
 
   /*

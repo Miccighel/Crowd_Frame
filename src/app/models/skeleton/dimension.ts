@@ -43,7 +43,7 @@ export class Justification {
     data: JSON
   ) {
     this.text =     data["text"];
-    this.minWords = data["min_words"];
+    this.minWords = data["minWords"];
   }
 
 }
