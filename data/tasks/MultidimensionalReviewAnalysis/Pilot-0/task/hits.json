@@ -1,771 +1,771 @@
 [
   {
     "unit_id": "unit_0",
-    "token_input": "KZNETXEZBTV",
-    "token_output": "FLXRLDBVUGF",
+    "token_input": "TXPNYQOPNEZ",
+    "token_output": "FUVCMYWBRBT",
     "documents": [
       {
-        "name": "doc_0_758",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "Very lightweight. Normal Nike quality. Pink is very bright , colors look great together.",
-        "reviewTime": "01 18, 2017",
-        "reviewerName": "Tara S."
+        "name": "doc_0_2355",
+        "product_description": "MJ Metals Jewelry 2mm to 10mm White Tungsten Carbide Mirror Polished Classic Wedding Ring",
+        "review": "Love the mirror finish - very comfortable - scratchproof. Pairs beautifully with my white gold engagement ring.",
+        "reviewTime": "02 5, 2018",
+        "reviewerName": "Foxymoma82"
       },
       {
-        "name": "doc_0_2867",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "Oops! I returned these because I ordered wrong size!",
-        "reviewTime": "08 29, 2017",
-        "reviewerName": "Marie"
+        "name": "doc_0_19",
+        "product_description": "Powerstep Pinnacle Orthotic Shoe Insoles",
+        "review": "We have used these inserts for years.  They provide great support.",
+        "reviewTime": "10 17, 2016",
+        "reviewerName": "William_Jasper"
       },
       {
-        "name": "doc_0_520",
+        "name": "doc_0_3120",
         "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "I always get a half size up in my tennis shoes. For some reason these feel to big in the heel area and wide.",
-        "reviewTime": "03 23, 2016",
-        "reviewerName": "Elizabeth Gravesen"
+        "review": "Comfortable",
+        "reviewTime": "05 16, 2018",
+        "reviewerName": "k"
       },
       {
-        "name": "doc_0_1510",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "Comfortable shoe.  I would buy again",
-        "reviewTime": "12 4, 2016",
-        "reviewerName": "Andrea Valdez"
+        "name": "doc_0_2352",
+        "product_description": "Epoint EGC1B01-03 Multi Mens Paisley Waistcoat Woven Microfiber S-5XL Vest",
+        "review": "I used this for a costume and it worked well.",
+        "reviewTime": "06 25, 2017",
+        "reviewerName": "Seth Hanson"
       },
       {
-        "name": "doc_0_1260",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "It looks a bit nicer on the picture. Its very light in such a way that when I held the box I wondered if there was just paper filling inside. They are comfortable for the most. Good looking training shoes overall.",
-        "reviewTime": "04 3, 2018",
-        "reviewerName": "Natasha Henry"
+        "name": "doc_0_3",
+        "product_description": "Calvin Klein Boy's Assorted Boxer Briefs (Pack of 2)",
+        "review": "Great product and price!",
+        "reviewTime": "09 4, 2015",
+        "reviewerName": "Tonya B."
       },
       {
-        "name": "doc_0_306",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "they are very comfortable feel like you have nothing on.",
-        "reviewTime": "06 15, 2017",
-        "reviewerName": "Dawn Houston"
+        "name": "doc_0_75",
+        "product_description": "Leg Avenue Women's Athletic Thigh High Socks",
+        "review": "I just wish they would not roll down.",
+        "reviewTime": "10 31, 2015",
+        "reviewerName": "AvidShopper"
       },
       {
-        "name": "doc_0_2461",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "Nice fit",
-        "reviewTime": "11 7, 2017",
-        "reviewerName": "Mellany Upshaw"
+        "name": "doc_0_3117",
+        "product_description": "FORTINO LANDI Men's Long-sleeve Banded Collar Shirt - Many Colors Available",
+        "review": "Largely my fault for not reading carefully, but the high synthetic fiber content made the shirt uncomfortable to the touch.  Not the manufacturer's fault, of course.",
+        "reviewTime": "07 19, 2017",
+        "reviewerName": "TDL Chicago"
       },
       {
-        "name": "doc_0_2681",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "I got a hot spot on the bottom of my foot the first day I wore them.",
-        "reviewTime": "10 9, 2016",
-        "reviewerName": "Beverly Neal"
+        "name": "doc_0_3115",
+        "product_description": "PajamaJeans Women's Petite Bootcut Stretch Knit Denim Jeans, Black, 4X (28W)",
+        "review": "Very comfortable and fits perfectly",
+        "reviewTime": "02 8, 2018",
+        "reviewerName": "Amazon Customer"
       },
       {
-        "name": "doc_0_497",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "The picture makes the shoe look like it has a \"boxier\" toe rather than the \"pointier\" toe that it actually has. I have wider feet and generally need to buy a size or half size longer to get a comfortable width (in any brand of shoe). I was shooting for a rounder, broader toe design which is more comfortable for me, and I feel that the pictures of this shoe didn't accurately depict what I received, in that one detail. Otherwise, \"the shoe fits.\" So I am wearing it.",
-        "reviewTime": "05 11, 2016",
-        "reviewerName": "Mark S"
+        "name": "doc_0_2363",
+        "product_description": "Zmart Men's Colorful Patterned Casual Crew Socks 4 Pack,Color-2,Medium,Color-2,Medium",
+        "review": "I am changing my review after a second washing.\nI am a male size 9 wide and after washing  they are a very tight fit. They are mid calf, wide enough at the toe, but snug from toe to heel. That said I think a male size 8 is about it. Larger size feet might have a problem. Quality is OK for the price. You will see these socks sold singly on other sites at $12.99 each!  I like the socks and ordered a second set to put in my daughters Christmas stocking.",
+        "reviewTime": "11 5, 2017",
+        "reviewerName": "Fhteacher"
       },
       {
-        "name": "doc_0_3138",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "The shoe is too large. When you do lunges it hurts the heel. The shoe size from a local store is the size I ordered from Amazon however the size or fitting seems to be large",
-        "reviewTime": "05 15, 2018",
-        "reviewerName": "amazonuser"
+        "name": "doc_0_71",
+        "product_description": "Havaianas Women's Top Flip Flop Sandal",
+        "review": "Perfect color!",
+        "reviewTime": "08 6, 2014",
+        "reviewerName": "DD"
       }
     ]
   },
   {
     "unit_id": "unit_1",
-    "token_input": "ZJHLKEZAPGU",
-    "token_output": "HWYNZWISXDB",
+    "token_input": "LSMCTJBPMQL",
+    "token_output": "GYTFMEXIKYI",
     "documents": [
       {
-        "name": "doc_1_816",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "Not a fan. Shoes looked great but too narrow for most feet.",
-        "reviewTime": "10 1, 2016",
-        "reviewerName": "JMcQ"
+        "name": "doc_1_0",
+        "product_description": "Calvin Klein Boy's Assorted Boxer Briefs (Pack of 2)",
+        "review": "Great product and price!",
+        "reviewTime": "09 4, 2015",
+        "reviewerName": "Tonya B."
       },
       {
-        "name": "doc_1_2861",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "Great shoe, very comfortable",
-        "reviewTime": "09 13, 2017",
-        "reviewerName": "Robbin"
+        "name": "doc_1_2349",
+        "product_description": "90 Degree By Reflex Power Flex Yoga Capri \u2013 Cationic Heather Activewear Pants",
+        "review": "WOW!  I love these capris!  I ordered the deep teal and they are a very dark blue/teal (a much deeper prettier color than shown).  I received many compliments the first time I wore them to the gym.  They are super soft and comfortable from the leg all the way to the waist...COMFORTABLE.  They never slip down at the waist and give me full coverage (not see through at all). I am 5' 4\" and 159 pounds and I ordered a medium.  The size fit perfectly although that being said they are longer on me than the photo (probably my short legs) but came 2 inches above my ankle so just below my calf.  Given that I have weight to loose these are very flattering on as well.  They are also a nice stretchy fabric (thus the comfort) and cool.  We are in the high 90's and 100 degree summer weather and I am cool!  Purchase these as you won't be disappointed especially at this price.  I like these better than my Lululemon and Athleta capris!!!  I am back to purchase more!",
+        "reviewTime": "06 26, 2015",
+        "reviewerName": "vp22"
       },
       {
-        "name": "doc_1_849",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "Comfortable and lightweight. Need a good training shoe that's also supportive and flexible.  I really like the fit, but had to get 1/2 size larger as this style in my size is too perfect from heel to toe.",
-        "reviewTime": "06 10, 2016",
-        "reviewerName": "Cheryl A Stoneham"
-      },
-      {
-        "name": "doc_1_1877",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "I actually have 3 pairs of these trainers.  They are very comfortable, there is a neoprene sleeve that goes around your ankle that makes them the most comfortable for me compared to normal athletic shoes.  They run a little narrow - for me this is perfect, but you may want to round up on the size or try on in the store first if your feet are on the wider side.",
-        "reviewTime": "12 12, 2016",
-        "reviewerName": "Lisa (Hartford CT)"
-      },
-      {
-        "name": "doc_1_314",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "I have wide feet and these were too narrow but very nice looking.",
-        "reviewTime": "05 29, 2017",
-        "reviewerName": "Carol-Anne Quinn"
-      },
-      {
-        "name": "doc_1_399",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "The lines don't really show up unless there is a bright light on them. But other than that they are perfect. They are very true to size and are comfortable the first time you put them on.",
-        "reviewTime": "01 13, 2017",
-        "reviewerName": "Amazon Customer"
-      },
-      {
-        "name": "doc_1_1390",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "I got the impression it's cushiony and comfy by reading the reviews on this product, when i tried it on it was a much firmer than my other work shoes, i'm standing all day and need enough support and comfort, this isn't the right product for that.\nSo i had to return it, but i would assume it would work fine for training.\n\nIt looks decent and clean. and seems sturdy.  just not the right thing for me.\nI was refunded instantly upon returning so.. credit for that.",
+        "name": "doc_1_58",
+        "product_description": "Hanes Mens EcoSmart Fleece Sweatpant",
+        "review": "Typical Hanes quality. Good weight, sized just right, made pretty well",
         "reviewTime": "06 16, 2017",
-        "reviewerName": "Hassnaa"
+        "reviewerName": "wayne ereira"
       },
       {
-        "name": "doc_1_551",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "The fit is as expected",
-        "reviewTime": "03 5, 2018",
+        "name": "doc_1_137",
+        "product_description": "Leg Avenue Women's Athletic Thigh High Socks",
+        "review": "Constantly rolls down",
+        "reviewTime": "02 19, 2018",
+        "reviewerName": "AvidShopper"
+      },
+      {
+        "name": "doc_1_3116",
+        "product_description": "SERMAN BRANDS- Carbon Fiber Money Clip Credit Card holder Slim Business Card Holder Clips for men Glossy",
+        "review": "Super.",
+        "reviewTime": "02 1, 2018",
+        "reviewerName": "sporting road"
+      },
+      {
+        "name": "doc_1_2351",
+        "product_description": "Senchanting Women Winter Warm Ski Knitted Crochet Baggy Skullies Cap Beret Hat",
+        "review": "I like it. I wasn't sure if I could pull off this kind of hat, but it looks good and fits nicely.",
+        "reviewTime": "12 31, 2014",
+        "reviewerName": "Heather Devine"
+      },
+      {
+        "name": "doc_1_2350",
+        "product_description": "Baby Headbands Turban Knotted, Girl's Hairbands for Newborn,Toddler and Childrens",
+        "review": "SO CUTE!!  Very good value. Cute style, pretty colors and soft material.",
+        "reviewTime": "05 7, 2018",
+        "reviewerName": "C. Schmitt"
+      },
+      {
+        "name": "doc_1_2345",
+        "product_description": "Forum Novelties Light-Up Ugly Christmas Sweater",
+        "review": "Very nice",
+        "reviewTime": "12 14, 2014",
+        "reviewerName": "phil bensinger"
+      },
+      {
+        "name": "doc_1_2346",
+        "product_description": "90 Degree By Reflex Power Flex Yoga Capri \u2013 Cationic Heather Activewear Pants",
+        "review": "Would recomend",
+        "reviewTime": "03 12, 2018",
         "reviewerName": "Amazon Customer"
       },
       {
-        "name": "doc_1_1278",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "These are so cute and comfortable and very light. I just received them today and the fit is perfect. I normally wear an 8 1/2 and they are true to size!",
-        "reviewTime": "02 27, 2018",
-        "reviewerName": "Brittany C."
-      },
-      {
-        "name": "doc_1_2050",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "Perfect!",
-        "reviewTime": "11 27, 2017",
-        "reviewerName": "Chelsea"
+        "name": "doc_1_74",
+        "product_description": "Leg Avenue Women's Athletic Thigh High Socks",
+        "review": "Superrrr thigh high. Im 54 and it easily reaches 3/4 up my thigh!!",
+        "reviewTime": "09 26, 2017",
+        "reviewerName": "j.morris"
       }
     ]
   },
   {
     "unit_id": "unit_2",
-    "token_input": "TIPIJFJHYDQ",
-    "token_output": "CXHVNDVOXUN",
+    "token_input": "HENNJOCZEUN",
+    "token_output": "ABIXXOXLWTL",
     "documents": [
       {
-        "name": "doc_2_520",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "I always get a half size up in my tennis shoes. For some reason these feel to big in the heel area and wide.",
-        "reviewTime": "03 23, 2016",
-        "reviewerName": "Elizabeth Gravesen"
-      },
-      {
-        "name": "doc_2_758",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "Very lightweight. Normal Nike quality. Pink is very bright , colors look great together.",
-        "reviewTime": "01 18, 2017",
-        "reviewerName": "Tara S."
-      },
-      {
-        "name": "doc_2_1260",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "It looks a bit nicer on the picture. Its very light in such a way that when I held the box I wondered if there was just paper filling inside. They are comfortable for the most. Good looking training shoes overall.",
-        "reviewTime": "04 3, 2018",
-        "reviewerName": "Natasha Henry"
-      },
-      {
-        "name": "doc_2_816",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "Not a fan. Shoes looked great but too narrow for most feet.",
-        "reviewTime": "10 1, 2016",
-        "reviewerName": "JMcQ"
-      },
-      {
-        "name": "doc_2_1278",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "These are so cute and comfortable and very light. I just received them today and the fit is perfect. I normally wear an 8 1/2 and they are true to size!",
-        "reviewTime": "02 27, 2018",
-        "reviewerName": "Brittany C."
-      },
-      {
-        "name": "doc_2_314",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "I have wide feet and these were too narrow but very nice looking.",
-        "reviewTime": "05 29, 2017",
-        "reviewerName": "Carol-Anne Quinn"
-      },
-      {
-        "name": "doc_2_399",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "The lines don't really show up unless there is a bright light on them. But other than that they are perfect. They are very true to size and are comfortable the first time you put them on.",
-        "reviewTime": "01 13, 2017",
+        "name": "doc_2_3115",
+        "product_description": "PajamaJeans Women's Petite Bootcut Stretch Knit Denim Jeans, Black, 4X (28W)",
+        "review": "Very comfortable and fits perfectly",
+        "reviewTime": "02 8, 2018",
         "reviewerName": "Amazon Customer"
       },
       {
-        "name": "doc_2_551",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "The fit is as expected",
-        "reviewTime": "03 5, 2018",
+        "name": "doc_2_0",
+        "product_description": "Calvin Klein Boy's Assorted Boxer Briefs (Pack of 2)",
+        "review": "Great product and price!",
+        "reviewTime": "09 4, 2015",
+        "reviewerName": "Tonya B."
+      },
+      {
+        "name": "doc_2_2352",
+        "product_description": "Epoint EGC1B01-03 Multi Mens Paisley Waistcoat Woven Microfiber S-5XL Vest",
+        "review": "I used this for a costume and it worked well.",
+        "reviewTime": "06 25, 2017",
+        "reviewerName": "Seth Hanson"
+      },
+      {
+        "name": "doc_2_71",
+        "product_description": "Havaianas Women's Top Flip Flop Sandal",
+        "review": "Perfect color!",
+        "reviewTime": "08 6, 2014",
+        "reviewerName": "DD"
+      },
+      {
+        "name": "doc_2_74",
+        "product_description": "Leg Avenue Women's Athletic Thigh High Socks",
+        "review": "Superrrr thigh high. Im 54 and it easily reaches 3/4 up my thigh!!",
+        "reviewTime": "09 26, 2017",
+        "reviewerName": "j.morris"
+      },
+      {
+        "name": "doc_2_2346",
+        "product_description": "90 Degree By Reflex Power Flex Yoga Capri \u2013 Cationic Heather Activewear Pants",
+        "review": "Would recomend",
+        "reviewTime": "03 12, 2018",
         "reviewerName": "Amazon Customer"
       },
       {
-        "name": "doc_2_2867",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "Oops! I returned these because I ordered wrong size!",
-        "reviewTime": "08 29, 2017",
-        "reviewerName": "Marie"
+        "name": "doc_2_3",
+        "product_description": "Calvin Klein Boy's Assorted Boxer Briefs (Pack of 2)",
+        "review": "Great product and price!",
+        "reviewTime": "09 4, 2015",
+        "reviewerName": "Tonya B."
       },
       {
-        "name": "doc_2_2861",
+        "name": "doc_2_2351",
+        "product_description": "Senchanting Women Winter Warm Ski Knitted Crochet Baggy Skullies Cap Beret Hat",
+        "review": "I like it. I wasn't sure if I could pull off this kind of hat, but it looks good and fits nicely.",
+        "reviewTime": "12 31, 2014",
+        "reviewerName": "Heather Devine"
+      },
+      {
+        "name": "doc_2_19",
+        "product_description": "Powerstep Pinnacle Orthotic Shoe Insoles",
+        "review": "We have used these inserts for years.  They provide great support.",
+        "reviewTime": "10 17, 2016",
+        "reviewerName": "William_Jasper"
+      },
+      {
+        "name": "doc_2_3120",
         "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "Great shoe, very comfortable",
-        "reviewTime": "09 13, 2017",
-        "reviewerName": "Robbin"
+        "review": "Comfortable",
+        "reviewTime": "05 16, 2018",
+        "reviewerName": "k"
       }
     ]
   },
   {
     "unit_id": "unit_3",
-    "token_input": "UKZXBLYNODX",
-    "token_output": "UFBUPYGNTRQ",
+    "token_input": "ONVQQNRZHIJ",
+    "token_output": "HXHIWCFSYAW",
     "documents": [
       {
-        "name": "doc_3_2461",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "Nice fit",
-        "reviewTime": "11 7, 2017",
-        "reviewerName": "Mellany Upshaw"
+        "name": "doc_3_75",
+        "product_description": "Leg Avenue Women's Athletic Thigh High Socks",
+        "review": "I just wish they would not roll down.",
+        "reviewTime": "10 31, 2015",
+        "reviewerName": "AvidShopper"
       },
       {
-        "name": "doc_3_1390",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "I got the impression it's cushiony and comfy by reading the reviews on this product, when i tried it on it was a much firmer than my other work shoes, i'm standing all day and need enough support and comfort, this isn't the right product for that.\nSo i had to return it, but i would assume it would work fine for training.\n\nIt looks decent and clean. and seems sturdy.  just not the right thing for me.\nI was refunded instantly upon returning so.. credit for that.",
+        "name": "doc_3_2363",
+        "product_description": "Zmart Men's Colorful Patterned Casual Crew Socks 4 Pack,Color-2,Medium,Color-2,Medium",
+        "review": "I am changing my review after a second washing.\nI am a male size 9 wide and after washing  they are a very tight fit. They are mid calf, wide enough at the toe, but snug from toe to heel. That said I think a male size 8 is about it. Larger size feet might have a problem. Quality is OK for the price. You will see these socks sold singly on other sites at $12.99 each!  I like the socks and ordered a second set to put in my daughters Christmas stocking.",
+        "reviewTime": "11 5, 2017",
+        "reviewerName": "Fhteacher"
+      },
+      {
+        "name": "doc_3_2350",
+        "product_description": "Baby Headbands Turban Knotted, Girl's Hairbands for Newborn,Toddler and Childrens",
+        "review": "SO CUTE!!  Very good value. Cute style, pretty colors and soft material.",
+        "reviewTime": "05 7, 2018",
+        "reviewerName": "C. Schmitt"
+      },
+      {
+        "name": "doc_3_2355",
+        "product_description": "MJ Metals Jewelry 2mm to 10mm White Tungsten Carbide Mirror Polished Classic Wedding Ring",
+        "review": "Love the mirror finish - very comfortable - scratchproof. Pairs beautifully with my white gold engagement ring.",
+        "reviewTime": "02 5, 2018",
+        "reviewerName": "Foxymoma82"
+      },
+      {
+        "name": "doc_3_137",
+        "product_description": "Leg Avenue Women's Athletic Thigh High Socks",
+        "review": "Constantly rolls down",
+        "reviewTime": "02 19, 2018",
+        "reviewerName": "AvidShopper"
+      },
+      {
+        "name": "doc_3_3117",
+        "product_description": "FORTINO LANDI Men's Long-sleeve Banded Collar Shirt - Many Colors Available",
+        "review": "Largely my fault for not reading carefully, but the high synthetic fiber content made the shirt uncomfortable to the touch.  Not the manufacturer's fault, of course.",
+        "reviewTime": "07 19, 2017",
+        "reviewerName": "TDL Chicago"
+      },
+      {
+        "name": "doc_3_2345",
+        "product_description": "Forum Novelties Light-Up Ugly Christmas Sweater",
+        "review": "Very nice",
+        "reviewTime": "12 14, 2014",
+        "reviewerName": "phil bensinger"
+      },
+      {
+        "name": "doc_3_2349",
+        "product_description": "90 Degree By Reflex Power Flex Yoga Capri \u2013 Cationic Heather Activewear Pants",
+        "review": "WOW!  I love these capris!  I ordered the deep teal and they are a very dark blue/teal (a much deeper prettier color than shown).  I received many compliments the first time I wore them to the gym.  They are super soft and comfortable from the leg all the way to the waist...COMFORTABLE.  They never slip down at the waist and give me full coverage (not see through at all). I am 5' 4\" and 159 pounds and I ordered a medium.  The size fit perfectly although that being said they are longer on me than the photo (probably my short legs) but came 2 inches above my ankle so just below my calf.  Given that I have weight to loose these are very flattering on as well.  They are also a nice stretchy fabric (thus the comfort) and cool.  We are in the high 90's and 100 degree summer weather and I am cool!  Purchase these as you won't be disappointed especially at this price.  I like these better than my Lululemon and Athleta capris!!!  I am back to purchase more!",
+        "reviewTime": "06 26, 2015",
+        "reviewerName": "vp22"
+      },
+      {
+        "name": "doc_3_3116",
+        "product_description": "SERMAN BRANDS- Carbon Fiber Money Clip Credit Card holder Slim Business Card Holder Clips for men Glossy",
+        "review": "Super.",
+        "reviewTime": "02 1, 2018",
+        "reviewerName": "sporting road"
+      },
+      {
+        "name": "doc_3_58",
+        "product_description": "Hanes Mens EcoSmart Fleece Sweatpant",
+        "review": "Typical Hanes quality. Good weight, sized just right, made pretty well",
         "reviewTime": "06 16, 2017",
-        "reviewerName": "Hassnaa"
-      },
-      {
-        "name": "doc_3_1877",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "I actually have 3 pairs of these trainers.  They are very comfortable, there is a neoprene sleeve that goes around your ankle that makes them the most comfortable for me compared to normal athletic shoes.  They run a little narrow - for me this is perfect, but you may want to round up on the size or try on in the store first if your feet are on the wider side.",
-        "reviewTime": "12 12, 2016",
-        "reviewerName": "Lisa (Hartford CT)"
-      },
-      {
-        "name": "doc_3_3138",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "The shoe is too large. When you do lunges it hurts the heel. The shoe size from a local store is the size I ordered from Amazon however the size or fitting seems to be large",
-        "reviewTime": "05 15, 2018",
-        "reviewerName": "amazonuser"
-      },
-      {
-        "name": "doc_3_849",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "Comfortable and lightweight. Need a good training shoe that's also supportive and flexible.  I really like the fit, but had to get 1/2 size larger as this style in my size is too perfect from heel to toe.",
-        "reviewTime": "06 10, 2016",
-        "reviewerName": "Cheryl A Stoneham"
-      },
-      {
-        "name": "doc_3_1510",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "Comfortable shoe.  I would buy again",
-        "reviewTime": "12 4, 2016",
-        "reviewerName": "Andrea Valdez"
-      },
-      {
-        "name": "doc_3_306",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "they are very comfortable feel like you have nothing on.",
-        "reviewTime": "06 15, 2017",
-        "reviewerName": "Dawn Houston"
-      },
-      {
-        "name": "doc_3_497",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "The picture makes the shoe look like it has a \"boxier\" toe rather than the \"pointier\" toe that it actually has. I have wider feet and generally need to buy a size or half size longer to get a comfortable width (in any brand of shoe). I was shooting for a rounder, broader toe design which is more comfortable for me, and I feel that the pictures of this shoe didn't accurately depict what I received, in that one detail. Otherwise, \"the shoe fits.\" So I am wearing it.",
-        "reviewTime": "05 11, 2016",
-        "reviewerName": "Mark S"
-      },
-      {
-        "name": "doc_3_2681",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "I got a hot spot on the bottom of my foot the first day I wore them.",
-        "reviewTime": "10 9, 2016",
-        "reviewerName": "Beverly Neal"
-      },
-      {
-        "name": "doc_3_2050",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "Perfect!",
-        "reviewTime": "11 27, 2017",
-        "reviewerName": "Chelsea"
+        "reviewerName": "wayne ereira"
       }
     ]
   },
   {
     "unit_id": "unit_4",
-    "token_input": "XDOREJOWBFJ",
-    "token_output": "WJHCQOOZFQG",
+    "token_input": "TXGNNVJTDJQ",
+    "token_output": "DOONUAKDCSU",
     "documents": [
       {
-        "name": "doc_4_1260",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "It looks a bit nicer on the picture. Its very light in such a way that when I held the box I wondered if there was just paper filling inside. They are comfortable for the most. Good looking training shoes overall.",
-        "reviewTime": "04 3, 2018",
-        "reviewerName": "Natasha Henry"
+        "name": "doc_4_2352",
+        "product_description": "Epoint EGC1B01-03 Multi Mens Paisley Waistcoat Woven Microfiber S-5XL Vest",
+        "review": "I used this for a costume and it worked well.",
+        "reviewTime": "06 25, 2017",
+        "reviewerName": "Seth Hanson"
       },
       {
-        "name": "doc_4_2681",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "I got a hot spot on the bottom of my foot the first day I wore them.",
-        "reviewTime": "10 9, 2016",
-        "reviewerName": "Beverly Neal"
+        "name": "doc_4_3117",
+        "product_description": "FORTINO LANDI Men's Long-sleeve Banded Collar Shirt - Many Colors Available",
+        "review": "Largely my fault for not reading carefully, but the high synthetic fiber content made the shirt uncomfortable to the touch.  Not the manufacturer's fault, of course.",
+        "reviewTime": "07 19, 2017",
+        "reviewerName": "TDL Chicago"
       },
       {
-        "name": "doc_4_2867",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "Oops! I returned these because I ordered wrong size!",
-        "reviewTime": "08 29, 2017",
-        "reviewerName": "Marie"
+        "name": "doc_4_2350",
+        "product_description": "Baby Headbands Turban Knotted, Girl's Hairbands for Newborn,Toddler and Childrens",
+        "review": "SO CUTE!!  Very good value. Cute style, pretty colors and soft material.",
+        "reviewTime": "05 7, 2018",
+        "reviewerName": "C. Schmitt"
       },
       {
-        "name": "doc_4_551",
+        "name": "doc_4_58",
+        "product_description": "Hanes Mens EcoSmart Fleece Sweatpant",
+        "review": "Typical Hanes quality. Good weight, sized just right, made pretty well",
+        "reviewTime": "06 16, 2017",
+        "reviewerName": "wayne ereira"
+      },
+      {
+        "name": "doc_4_19",
+        "product_description": "Powerstep Pinnacle Orthotic Shoe Insoles",
+        "review": "We have used these inserts for years.  They provide great support.",
+        "reviewTime": "10 17, 2016",
+        "reviewerName": "William_Jasper"
+      },
+      {
+        "name": "doc_4_3120",
         "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "The fit is as expected",
-        "reviewTime": "03 5, 2018",
+        "review": "Comfortable",
+        "reviewTime": "05 16, 2018",
+        "reviewerName": "k"
+      },
+      {
+        "name": "doc_4_3115",
+        "product_description": "PajamaJeans Women's Petite Bootcut Stretch Knit Denim Jeans, Black, 4X (28W)",
+        "review": "Very comfortable and fits perfectly",
+        "reviewTime": "02 8, 2018",
         "reviewerName": "Amazon Customer"
       },
       {
-        "name": "doc_4_399",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "The lines don't really show up unless there is a bright light on them. But other than that they are perfect. They are very true to size and are comfortable the first time you put them on.",
-        "reviewTime": "01 13, 2017",
-        "reviewerName": "Amazon Customer"
+        "name": "doc_4_75",
+        "product_description": "Leg Avenue Women's Athletic Thigh High Socks",
+        "review": "I just wish they would not roll down.",
+        "reviewTime": "10 31, 2015",
+        "reviewerName": "AvidShopper"
       },
       {
-        "name": "doc_4_3138",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "The shoe is too large. When you do lunges it hurts the heel. The shoe size from a local store is the size I ordered from Amazon however the size or fitting seems to be large",
-        "reviewTime": "05 15, 2018",
-        "reviewerName": "amazonuser"
+        "name": "doc_4_2345",
+        "product_description": "Forum Novelties Light-Up Ugly Christmas Sweater",
+        "review": "Very nice",
+        "reviewTime": "12 14, 2014",
+        "reviewerName": "phil bensinger"
       },
       {
-        "name": "doc_4_314",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "I have wide feet and these were too narrow but very nice looking.",
-        "reviewTime": "05 29, 2017",
-        "reviewerName": "Carol-Anne Quinn"
-      },
-      {
-        "name": "doc_4_849",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "Comfortable and lightweight. Need a good training shoe that's also supportive and flexible.  I really like the fit, but had to get 1/2 size larger as this style in my size is too perfect from heel to toe.",
-        "reviewTime": "06 10, 2016",
-        "reviewerName": "Cheryl A Stoneham"
-      },
-      {
-        "name": "doc_4_2461",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "Nice fit",
-        "reviewTime": "11 7, 2017",
-        "reviewerName": "Mellany Upshaw"
-      },
-      {
-        "name": "doc_4_2861",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "Great shoe, very comfortable",
-        "reviewTime": "09 13, 2017",
-        "reviewerName": "Robbin"
+        "name": "doc_4_2355",
+        "product_description": "MJ Metals Jewelry 2mm to 10mm White Tungsten Carbide Mirror Polished Classic Wedding Ring",
+        "review": "Love the mirror finish - very comfortable - scratchproof. Pairs beautifully with my white gold engagement ring.",
+        "reviewTime": "02 5, 2018",
+        "reviewerName": "Foxymoma82"
       }
     ]
   },
   {
     "unit_id": "unit_5",
-    "token_input": "JNTYUAUITIU",
-    "token_output": "BDLKRPYJUCA",
+    "token_input": "QURBHITFCSH",
+    "token_output": "KAZMPOVPQEQ",
     "documents": [
       {
-        "name": "doc_5_1510",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "Comfortable shoe.  I would buy again",
-        "reviewTime": "12 4, 2016",
-        "reviewerName": "Andrea Valdez"
+        "name": "doc_5_3",
+        "product_description": "Calvin Klein Boy's Assorted Boxer Briefs (Pack of 2)",
+        "review": "Great product and price!",
+        "reviewTime": "09 4, 2015",
+        "reviewerName": "Tonya B."
       },
       {
-        "name": "doc_5_1877",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "I actually have 3 pairs of these trainers.  They are very comfortable, there is a neoprene sleeve that goes around your ankle that makes them the most comfortable for me compared to normal athletic shoes.  They run a little narrow - for me this is perfect, but you may want to round up on the size or try on in the store first if your feet are on the wider side.",
-        "reviewTime": "12 12, 2016",
-        "reviewerName": "Lisa (Hartford CT)"
+        "name": "doc_5_0",
+        "product_description": "Calvin Klein Boy's Assorted Boxer Briefs (Pack of 2)",
+        "review": "Great product and price!",
+        "reviewTime": "09 4, 2015",
+        "reviewerName": "Tonya B."
       },
       {
-        "name": "doc_5_1390",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "I got the impression it's cushiony and comfy by reading the reviews on this product, when i tried it on it was a much firmer than my other work shoes, i'm standing all day and need enough support and comfort, this isn't the right product for that.\nSo i had to return it, but i would assume it would work fine for training.\n\nIt looks decent and clean. and seems sturdy.  just not the right thing for me.\nI was refunded instantly upon returning so.. credit for that.",
-        "reviewTime": "06 16, 2017",
-        "reviewerName": "Hassnaa"
+        "name": "doc_5_74",
+        "product_description": "Leg Avenue Women's Athletic Thigh High Socks",
+        "review": "Superrrr thigh high. Im 54 and it easily reaches 3/4 up my thigh!!",
+        "reviewTime": "09 26, 2017",
+        "reviewerName": "j.morris"
       },
       {
-        "name": "doc_5_758",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "Very lightweight. Normal Nike quality. Pink is very bright , colors look great together.",
-        "reviewTime": "01 18, 2017",
-        "reviewerName": "Tara S."
+        "name": "doc_5_2351",
+        "product_description": "Senchanting Women Winter Warm Ski Knitted Crochet Baggy Skullies Cap Beret Hat",
+        "review": "I like it. I wasn't sure if I could pull off this kind of hat, but it looks good and fits nicely.",
+        "reviewTime": "12 31, 2014",
+        "reviewerName": "Heather Devine"
       },
       {
-        "name": "doc_5_816",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "Not a fan. Shoes looked great but too narrow for most feet.",
-        "reviewTime": "10 1, 2016",
-        "reviewerName": "JMcQ"
+        "name": "doc_5_3116",
+        "product_description": "SERMAN BRANDS- Carbon Fiber Money Clip Credit Card holder Slim Business Card Holder Clips for men Glossy",
+        "review": "Super.",
+        "reviewTime": "02 1, 2018",
+        "reviewerName": "sporting road"
       },
       {
-        "name": "doc_5_2050",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "Perfect!",
-        "reviewTime": "11 27, 2017",
-        "reviewerName": "Chelsea"
+        "name": "doc_5_2346",
+        "product_description": "90 Degree By Reflex Power Flex Yoga Capri \u2013 Cationic Heather Activewear Pants",
+        "review": "Would recomend",
+        "reviewTime": "03 12, 2018",
+        "reviewerName": "Amazon Customer"
       },
       {
-        "name": "doc_5_520",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "I always get a half size up in my tennis shoes. For some reason these feel to big in the heel area and wide.",
-        "reviewTime": "03 23, 2016",
-        "reviewerName": "Elizabeth Gravesen"
+        "name": "doc_5_2349",
+        "product_description": "90 Degree By Reflex Power Flex Yoga Capri \u2013 Cationic Heather Activewear Pants",
+        "review": "WOW!  I love these capris!  I ordered the deep teal and they are a very dark blue/teal (a much deeper prettier color than shown).  I received many compliments the first time I wore them to the gym.  They are super soft and comfortable from the leg all the way to the waist...COMFORTABLE.  They never slip down at the waist and give me full coverage (not see through at all). I am 5' 4\" and 159 pounds and I ordered a medium.  The size fit perfectly although that being said they are longer on me than the photo (probably my short legs) but came 2 inches above my ankle so just below my calf.  Given that I have weight to loose these are very flattering on as well.  They are also a nice stretchy fabric (thus the comfort) and cool.  We are in the high 90's and 100 degree summer weather and I am cool!  Purchase these as you won't be disappointed especially at this price.  I like these better than my Lululemon and Athleta capris!!!  I am back to purchase more!",
+        "reviewTime": "06 26, 2015",
+        "reviewerName": "vp22"
       },
       {
-        "name": "doc_5_497",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "The picture makes the shoe look like it has a \"boxier\" toe rather than the \"pointier\" toe that it actually has. I have wider feet and generally need to buy a size or half size longer to get a comfortable width (in any brand of shoe). I was shooting for a rounder, broader toe design which is more comfortable for me, and I feel that the pictures of this shoe didn't accurately depict what I received, in that one detail. Otherwise, \"the shoe fits.\" So I am wearing it.",
-        "reviewTime": "05 11, 2016",
-        "reviewerName": "Mark S"
+        "name": "doc_5_2363",
+        "product_description": "Zmart Men's Colorful Patterned Casual Crew Socks 4 Pack,Color-2,Medium,Color-2,Medium",
+        "review": "I am changing my review after a second washing.\nI am a male size 9 wide and after washing  they are a very tight fit. They are mid calf, wide enough at the toe, but snug from toe to heel. That said I think a male size 8 is about it. Larger size feet might have a problem. Quality is OK for the price. You will see these socks sold singly on other sites at $12.99 each!  I like the socks and ordered a second set to put in my daughters Christmas stocking.",
+        "reviewTime": "11 5, 2017",
+        "reviewerName": "Fhteacher"
       },
       {
-        "name": "doc_5_306",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "they are very comfortable feel like you have nothing on.",
-        "reviewTime": "06 15, 2017",
-        "reviewerName": "Dawn Houston"
+        "name": "doc_5_71",
+        "product_description": "Havaianas Women's Top Flip Flop Sandal",
+        "review": "Perfect color!",
+        "reviewTime": "08 6, 2014",
+        "reviewerName": "DD"
       },
       {
-        "name": "doc_5_1278",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "These are so cute and comfortable and very light. I just received them today and the fit is perfect. I normally wear an 8 1/2 and they are true to size!",
-        "reviewTime": "02 27, 2018",
-        "reviewerName": "Brittany C."
+        "name": "doc_5_137",
+        "product_description": "Leg Avenue Women's Athletic Thigh High Socks",
+        "review": "Constantly rolls down",
+        "reviewTime": "02 19, 2018",
+        "reviewerName": "AvidShopper"
       }
     ]
   },
   {
     "unit_id": "unit_6",
-    "token_input": "XLAHPWFIKGY",
-    "token_output": "AOHVJEKWYQP",
+    "token_input": "QCWJFPGZVOA",
+    "token_output": "DWMXVOIMMZA",
     "documents": [
       {
-        "name": "doc_6_497",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "The picture makes the shoe look like it has a \"boxier\" toe rather than the \"pointier\" toe that it actually has. I have wider feet and generally need to buy a size or half size longer to get a comfortable width (in any brand of shoe). I was shooting for a rounder, broader toe design which is more comfortable for me, and I feel that the pictures of this shoe didn't accurately depict what I received, in that one detail. Otherwise, \"the shoe fits.\" So I am wearing it.",
-        "reviewTime": "05 11, 2016",
-        "reviewerName": "Mark S"
+        "name": "doc_6_2355",
+        "product_description": "MJ Metals Jewelry 2mm to 10mm White Tungsten Carbide Mirror Polished Classic Wedding Ring",
+        "review": "Love the mirror finish - very comfortable - scratchproof. Pairs beautifully with my white gold engagement ring.",
+        "reviewTime": "02 5, 2018",
+        "reviewerName": "Foxymoma82"
       },
       {
-        "name": "doc_6_3138",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "The shoe is too large. When you do lunges it hurts the heel. The shoe size from a local store is the size I ordered from Amazon however the size or fitting seems to be large",
-        "reviewTime": "05 15, 2018",
-        "reviewerName": "amazonuser"
+        "name": "doc_6_2345",
+        "product_description": "Forum Novelties Light-Up Ugly Christmas Sweater",
+        "review": "Very nice",
+        "reviewTime": "12 14, 2014",
+        "reviewerName": "phil bensinger"
       },
       {
-        "name": "doc_6_2861",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "Great shoe, very comfortable",
-        "reviewTime": "09 13, 2017",
-        "reviewerName": "Robbin"
+        "name": "doc_6_3116",
+        "product_description": "SERMAN BRANDS- Carbon Fiber Money Clip Credit Card holder Slim Business Card Holder Clips for men Glossy",
+        "review": "Super.",
+        "reviewTime": "02 1, 2018",
+        "reviewerName": "sporting road"
       },
       {
-        "name": "doc_6_314",
+        "name": "doc_6_3120",
         "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "I have wide feet and these were too narrow but very nice looking.",
-        "reviewTime": "05 29, 2017",
-        "reviewerName": "Carol-Anne Quinn"
+        "review": "Comfortable",
+        "reviewTime": "05 16, 2018",
+        "reviewerName": "k"
       },
       {
-        "name": "doc_6_1390",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "I got the impression it's cushiony and comfy by reading the reviews on this product, when i tried it on it was a much firmer than my other work shoes, i'm standing all day and need enough support and comfort, this isn't the right product for that.\nSo i had to return it, but i would assume it would work fine for training.\n\nIt looks decent and clean. and seems sturdy.  just not the right thing for me.\nI was refunded instantly upon returning so.. credit for that.",
-        "reviewTime": "06 16, 2017",
-        "reviewerName": "Hassnaa"
+        "name": "doc_6_3",
+        "product_description": "Calvin Klein Boy's Assorted Boxer Briefs (Pack of 2)",
+        "review": "Great product and price!",
+        "reviewTime": "09 4, 2015",
+        "reviewerName": "Tonya B."
       },
       {
-        "name": "doc_6_1260",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "It looks a bit nicer on the picture. Its very light in such a way that when I held the box I wondered if there was just paper filling inside. They are comfortable for the most. Good looking training shoes overall.",
-        "reviewTime": "04 3, 2018",
-        "reviewerName": "Natasha Henry"
+        "name": "doc_6_75",
+        "product_description": "Leg Avenue Women's Athletic Thigh High Socks",
+        "review": "I just wish they would not roll down.",
+        "reviewTime": "10 31, 2015",
+        "reviewerName": "AvidShopper"
       },
       {
-        "name": "doc_6_1510",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "Comfortable shoe.  I would buy again",
-        "reviewTime": "12 4, 2016",
-        "reviewerName": "Andrea Valdez"
+        "name": "doc_6_2352",
+        "product_description": "Epoint EGC1B01-03 Multi Mens Paisley Waistcoat Woven Microfiber S-5XL Vest",
+        "review": "I used this for a costume and it worked well.",
+        "reviewTime": "06 25, 2017",
+        "reviewerName": "Seth Hanson"
       },
       {
-        "name": "doc_6_758",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "Very lightweight. Normal Nike quality. Pink is very bright , colors look great together.",
-        "reviewTime": "01 18, 2017",
-        "reviewerName": "Tara S."
+        "name": "doc_6_74",
+        "product_description": "Leg Avenue Women's Athletic Thigh High Socks",
+        "review": "Superrrr thigh high. Im 54 and it easily reaches 3/4 up my thigh!!",
+        "reviewTime": "09 26, 2017",
+        "reviewerName": "j.morris"
       },
       {
-        "name": "doc_6_2681",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "I got a hot spot on the bottom of my foot the first day I wore them.",
-        "reviewTime": "10 9, 2016",
-        "reviewerName": "Beverly Neal"
+        "name": "doc_6_19",
+        "product_description": "Powerstep Pinnacle Orthotic Shoe Insoles",
+        "review": "We have used these inserts for years.  They provide great support.",
+        "reviewTime": "10 17, 2016",
+        "reviewerName": "William_Jasper"
       },
       {
-        "name": "doc_6_2050",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "Perfect!",
-        "reviewTime": "11 27, 2017",
-        "reviewerName": "Chelsea"
+        "name": "doc_6_2363",
+        "product_description": "Zmart Men's Colorful Patterned Casual Crew Socks 4 Pack,Color-2,Medium,Color-2,Medium",
+        "review": "I am changing my review after a second washing.\nI am a male size 9 wide and after washing  they are a very tight fit. They are mid calf, wide enough at the toe, but snug from toe to heel. That said I think a male size 8 is about it. Larger size feet might have a problem. Quality is OK for the price. You will see these socks sold singly on other sites at $12.99 each!  I like the socks and ordered a second set to put in my daughters Christmas stocking.",
+        "reviewTime": "11 5, 2017",
+        "reviewerName": "Fhteacher"
       }
     ]
   },
   {
     "unit_id": "unit_7",
-    "token_input": "PHRCIBMJBAV",
-    "token_output": "LHXEHFLCBUB",
+    "token_input": "LVWNDFWLOLZ",
+    "token_output": "LKHXJOOUBSC",
     "documents": [
       {
-        "name": "doc_7_2867",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "Oops! I returned these because I ordered wrong size!",
-        "reviewTime": "08 29, 2017",
-        "reviewerName": "Marie"
+        "name": "doc_7_3117",
+        "product_description": "FORTINO LANDI Men's Long-sleeve Banded Collar Shirt - Many Colors Available",
+        "review": "Largely my fault for not reading carefully, but the high synthetic fiber content made the shirt uncomfortable to the touch.  Not the manufacturer's fault, of course.",
+        "reviewTime": "07 19, 2017",
+        "reviewerName": "TDL Chicago"
       },
       {
-        "name": "doc_7_816",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "Not a fan. Shoes looked great but too narrow for most feet.",
-        "reviewTime": "10 1, 2016",
-        "reviewerName": "JMcQ"
+        "name": "doc_7_0",
+        "product_description": "Calvin Klein Boy's Assorted Boxer Briefs (Pack of 2)",
+        "review": "Great product and price!",
+        "reviewTime": "09 4, 2015",
+        "reviewerName": "Tonya B."
       },
       {
-        "name": "doc_7_1877",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "I actually have 3 pairs of these trainers.  They are very comfortable, there is a neoprene sleeve that goes around your ankle that makes them the most comfortable for me compared to normal athletic shoes.  They run a little narrow - for me this is perfect, but you may want to round up on the size or try on in the store first if your feet are on the wider side.",
-        "reviewTime": "12 12, 2016",
-        "reviewerName": "Lisa (Hartford CT)"
-      },
-      {
-        "name": "doc_7_399",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "The lines don't really show up unless there is a bright light on them. But other than that they are perfect. They are very true to size and are comfortable the first time you put them on.",
-        "reviewTime": "01 13, 2017",
+        "name": "doc_7_3115",
+        "product_description": "PajamaJeans Women's Petite Bootcut Stretch Knit Denim Jeans, Black, 4X (28W)",
+        "review": "Very comfortable and fits perfectly",
+        "reviewTime": "02 8, 2018",
         "reviewerName": "Amazon Customer"
       },
       {
-        "name": "doc_7_306",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "they are very comfortable feel like you have nothing on.",
-        "reviewTime": "06 15, 2017",
-        "reviewerName": "Dawn Houston"
-      },
-      {
-        "name": "doc_7_551",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "The fit is as expected",
-        "reviewTime": "03 5, 2018",
+        "name": "doc_7_2346",
+        "product_description": "90 Degree By Reflex Power Flex Yoga Capri \u2013 Cationic Heather Activewear Pants",
+        "review": "Would recomend",
+        "reviewTime": "03 12, 2018",
         "reviewerName": "Amazon Customer"
       },
       {
-        "name": "doc_7_1278",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "These are so cute and comfortable and very light. I just received them today and the fit is perfect. I normally wear an 8 1/2 and they are true to size!",
-        "reviewTime": "02 27, 2018",
-        "reviewerName": "Brittany C."
+        "name": "doc_7_58",
+        "product_description": "Hanes Mens EcoSmart Fleece Sweatpant",
+        "review": "Typical Hanes quality. Good weight, sized just right, made pretty well",
+        "reviewTime": "06 16, 2017",
+        "reviewerName": "wayne ereira"
       },
       {
-        "name": "doc_7_2461",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "Nice fit",
-        "reviewTime": "11 7, 2017",
-        "reviewerName": "Mellany Upshaw"
+        "name": "doc_7_2350",
+        "product_description": "Baby Headbands Turban Knotted, Girl's Hairbands for Newborn,Toddler and Childrens",
+        "review": "SO CUTE!!  Very good value. Cute style, pretty colors and soft material.",
+        "reviewTime": "05 7, 2018",
+        "reviewerName": "C. Schmitt"
       },
       {
-        "name": "doc_7_849",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "Comfortable and lightweight. Need a good training shoe that's also supportive and flexible.  I really like the fit, but had to get 1/2 size larger as this style in my size is too perfect from heel to toe.",
-        "reviewTime": "06 10, 2016",
-        "reviewerName": "Cheryl A Stoneham"
+        "name": "doc_7_137",
+        "product_description": "Leg Avenue Women's Athletic Thigh High Socks",
+        "review": "Constantly rolls down",
+        "reviewTime": "02 19, 2018",
+        "reviewerName": "AvidShopper"
       },
       {
-        "name": "doc_7_520",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "I always get a half size up in my tennis shoes. For some reason these feel to big in the heel area and wide.",
-        "reviewTime": "03 23, 2016",
-        "reviewerName": "Elizabeth Gravesen"
+        "name": "doc_7_2351",
+        "product_description": "Senchanting Women Winter Warm Ski Knitted Crochet Baggy Skullies Cap Beret Hat",
+        "review": "I like it. I wasn't sure if I could pull off this kind of hat, but it looks good and fits nicely.",
+        "reviewTime": "12 31, 2014",
+        "reviewerName": "Heather Devine"
+      },
+      {
+        "name": "doc_7_2349",
+        "product_description": "90 Degree By Reflex Power Flex Yoga Capri \u2013 Cationic Heather Activewear Pants",
+        "review": "WOW!  I love these capris!  I ordered the deep teal and they are a very dark blue/teal (a much deeper prettier color than shown).  I received many compliments the first time I wore them to the gym.  They are super soft and comfortable from the leg all the way to the waist...COMFORTABLE.  They never slip down at the waist and give me full coverage (not see through at all). I am 5' 4\" and 159 pounds and I ordered a medium.  The size fit perfectly although that being said they are longer on me than the photo (probably my short legs) but came 2 inches above my ankle so just below my calf.  Given that I have weight to loose these are very flattering on as well.  They are also a nice stretchy fabric (thus the comfort) and cool.  We are in the high 90's and 100 degree summer weather and I am cool!  Purchase these as you won't be disappointed especially at this price.  I like these better than my Lululemon and Athleta capris!!!  I am back to purchase more!",
+        "reviewTime": "06 26, 2015",
+        "reviewerName": "vp22"
+      },
+      {
+        "name": "doc_7_71",
+        "product_description": "Havaianas Women's Top Flip Flop Sandal",
+        "review": "Perfect color!",
+        "reviewTime": "08 6, 2014",
+        "reviewerName": "DD"
       }
     ]
   },
   {
     "unit_id": "unit_8",
-    "token_input": "NJVKTAQISEB",
-    "token_output": "LFWYARTONVZ",
+    "token_input": "GZVWCJZZHAH",
+    "token_output": "ZIVITHKSZTN",
     "documents": [
       {
-        "name": "doc_8_1877",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "I actually have 3 pairs of these trainers.  They are very comfortable, there is a neoprene sleeve that goes around your ankle that makes them the most comfortable for me compared to normal athletic shoes.  They run a little narrow - for me this is perfect, but you may want to round up on the size or try on in the store first if your feet are on the wider side.",
-        "reviewTime": "12 12, 2016",
-        "reviewerName": "Lisa (Hartford CT)"
+        "name": "doc_8_3116",
+        "product_description": "SERMAN BRANDS- Carbon Fiber Money Clip Credit Card holder Slim Business Card Holder Clips for men Glossy",
+        "review": "Super.",
+        "reviewTime": "02 1, 2018",
+        "reviewerName": "sporting road"
       },
       {
-        "name": "doc_8_1510",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "Comfortable shoe.  I would buy again",
-        "reviewTime": "12 4, 2016",
-        "reviewerName": "Andrea Valdez"
+        "name": "doc_8_71",
+        "product_description": "Havaianas Women's Top Flip Flop Sandal",
+        "review": "Perfect color!",
+        "reviewTime": "08 6, 2014",
+        "reviewerName": "DD"
       },
       {
-        "name": "doc_8_306",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "they are very comfortable feel like you have nothing on.",
-        "reviewTime": "06 15, 2017",
-        "reviewerName": "Dawn Houston"
+        "name": "doc_8_19",
+        "product_description": "Powerstep Pinnacle Orthotic Shoe Insoles",
+        "review": "We have used these inserts for years.  They provide great support.",
+        "reviewTime": "10 17, 2016",
+        "reviewerName": "William_Jasper"
       },
       {
-        "name": "doc_8_551",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "The fit is as expected",
-        "reviewTime": "03 5, 2018",
-        "reviewerName": "Amazon Customer"
+        "name": "doc_8_2355",
+        "product_description": "MJ Metals Jewelry 2mm to 10mm White Tungsten Carbide Mirror Polished Classic Wedding Ring",
+        "review": "Love the mirror finish - very comfortable - scratchproof. Pairs beautifully with my white gold engagement ring.",
+        "reviewTime": "02 5, 2018",
+        "reviewerName": "Foxymoma82"
       },
       {
-        "name": "doc_8_2461",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "Nice fit",
-        "reviewTime": "11 7, 2017",
-        "reviewerName": "Mellany Upshaw"
+        "name": "doc_8_0",
+        "product_description": "Calvin Klein Boy's Assorted Boxer Briefs (Pack of 2)",
+        "review": "Great product and price!",
+        "reviewTime": "09 4, 2015",
+        "reviewerName": "Tonya B."
       },
       {
-        "name": "doc_8_520",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "I always get a half size up in my tennis shoes. For some reason these feel to big in the heel area and wide.",
-        "reviewTime": "03 23, 2016",
-        "reviewerName": "Elizabeth Gravesen"
+        "name": "doc_8_137",
+        "product_description": "Leg Avenue Women's Athletic Thigh High Socks",
+        "review": "Constantly rolls down",
+        "reviewTime": "02 19, 2018",
+        "reviewerName": "AvidShopper"
       },
       {
-        "name": "doc_8_497",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "The picture makes the shoe look like it has a \"boxier\" toe rather than the \"pointier\" toe that it actually has. I have wider feet and generally need to buy a size or half size longer to get a comfortable width (in any brand of shoe). I was shooting for a rounder, broader toe design which is more comfortable for me, and I feel that the pictures of this shoe didn't accurately depict what I received, in that one detail. Otherwise, \"the shoe fits.\" So I am wearing it.",
-        "reviewTime": "05 11, 2016",
-        "reviewerName": "Mark S"
+        "name": "doc_8_75",
+        "product_description": "Leg Avenue Women's Athletic Thigh High Socks",
+        "review": "I just wish they would not roll down.",
+        "reviewTime": "10 31, 2015",
+        "reviewerName": "AvidShopper"
       },
       {
-        "name": "doc_8_849",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "Comfortable and lightweight. Need a good training shoe that's also supportive and flexible.  I really like the fit, but had to get 1/2 size larger as this style in my size is too perfect from heel to toe.",
-        "reviewTime": "06 10, 2016",
-        "reviewerName": "Cheryl A Stoneham"
+        "name": "doc_8_74",
+        "product_description": "Leg Avenue Women's Athletic Thigh High Socks",
+        "review": "Superrrr thigh high. Im 54 and it easily reaches 3/4 up my thigh!!",
+        "reviewTime": "09 26, 2017",
+        "reviewerName": "j.morris"
       },
       {
-        "name": "doc_8_816",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "Not a fan. Shoes looked great but too narrow for most feet.",
-        "reviewTime": "10 1, 2016",
-        "reviewerName": "JMcQ"
+        "name": "doc_8_2351",
+        "product_description": "Senchanting Women Winter Warm Ski Knitted Crochet Baggy Skullies Cap Beret Hat",
+        "review": "I like it. I wasn't sure if I could pull off this kind of hat, but it looks good and fits nicely.",
+        "reviewTime": "12 31, 2014",
+        "reviewerName": "Heather Devine"
       },
       {
-        "name": "doc_8_314",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "I have wide feet and these were too narrow but very nice looking.",
-        "reviewTime": "05 29, 2017",
-        "reviewerName": "Carol-Anne Quinn"
+        "name": "doc_8_3",
+        "product_description": "Calvin Klein Boy's Assorted Boxer Briefs (Pack of 2)",
+        "review": "Great product and price!",
+        "reviewTime": "09 4, 2015",
+        "reviewerName": "Tonya B."
       }
     ]
   },
   {
     "unit_id": "unit_9",
-    "token_input": "HLWIUIXKOMW",
-    "token_output": "HLWIUIXKOMW",
+    "token_input": "UICGGWDXSDE",
+    "token_output": "OQAPKOUIEFJ",
     "documents": [
       {
-        "name": "doc_9_1260",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "It looks a bit nicer on the picture. Its very light in such a way that when I held the box I wondered if there was just paper filling inside. They are comfortable for the most. Good looking training shoes overall.",
-        "reviewTime": "04 3, 2018",
-        "reviewerName": "Natasha Henry"
+        "name": "doc_9_2349",
+        "product_description": "90 Degree By Reflex Power Flex Yoga Capri \u2013 Cationic Heather Activewear Pants",
+        "review": "WOW!  I love these capris!  I ordered the deep teal and they are a very dark blue/teal (a much deeper prettier color than shown).  I received many compliments the first time I wore them to the gym.  They are super soft and comfortable from the leg all the way to the waist...COMFORTABLE.  They never slip down at the waist and give me full coverage (not see through at all). I am 5' 4\" and 159 pounds and I ordered a medium.  The size fit perfectly although that being said they are longer on me than the photo (probably my short legs) but came 2 inches above my ankle so just below my calf.  Given that I have weight to loose these are very flattering on as well.  They are also a nice stretchy fabric (thus the comfort) and cool.  We are in the high 90's and 100 degree summer weather and I am cool!  Purchase these as you won't be disappointed especially at this price.  I like these better than my Lululemon and Athleta capris!!!  I am back to purchase more!",
+        "reviewTime": "06 26, 2015",
+        "reviewerName": "vp22"
       },
       {
-        "name": "doc_9_2867",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "Oops! I returned these because I ordered wrong size!",
-        "reviewTime": "08 29, 2017",
-        "reviewerName": "Marie"
+        "name": "doc_9_2350",
+        "product_description": "Baby Headbands Turban Knotted, Girl's Hairbands for Newborn,Toddler and Childrens",
+        "review": "SO CUTE!!  Very good value. Cute style, pretty colors and soft material.",
+        "reviewTime": "05 7, 2018",
+        "reviewerName": "C. Schmitt"
       },
       {
-        "name": "doc_9_1390",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "I got the impression it's cushiony and comfy by reading the reviews on this product, when i tried it on it was a much firmer than my other work shoes, i'm standing all day and need enough support and comfort, this isn't the right product for that.\nSo i had to return it, but i would assume it would work fine for training.\n\nIt looks decent and clean. and seems sturdy.  just not the right thing for me.\nI was refunded instantly upon returning so.. credit for that.",
-        "reviewTime": "06 16, 2017",
-        "reviewerName": "Hassnaa"
+        "name": "doc_9_2363",
+        "product_description": "Zmart Men's Colorful Patterned Casual Crew Socks 4 Pack,Color-2,Medium,Color-2,Medium",
+        "review": "I am changing my review after a second washing.\nI am a male size 9 wide and after washing  they are a very tight fit. They are mid calf, wide enough at the toe, but snug from toe to heel. That said I think a male size 8 is about it. Larger size feet might have a problem. Quality is OK for the price. You will see these socks sold singly on other sites at $12.99 each!  I like the socks and ordered a second set to put in my daughters Christmas stocking.",
+        "reviewTime": "11 5, 2017",
+        "reviewerName": "Fhteacher"
       },
       {
-        "name": "doc_9_399",
+        "name": "doc_9_2345",
+        "product_description": "Forum Novelties Light-Up Ugly Christmas Sweater",
+        "review": "Very nice",
+        "reviewTime": "12 14, 2014",
+        "reviewerName": "phil bensinger"
+      },
+      {
+        "name": "doc_9_3120",
         "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "The lines don't really show up unless there is a bright light on them. But other than that they are perfect. They are very true to size and are comfortable the first time you put them on.",
-        "reviewTime": "01 13, 2017",
+        "review": "Comfortable",
+        "reviewTime": "05 16, 2018",
+        "reviewerName": "k"
+      },
+      {
+        "name": "doc_9_3115",
+        "product_description": "PajamaJeans Women's Petite Bootcut Stretch Knit Denim Jeans, Black, 4X (28W)",
+        "review": "Very comfortable and fits perfectly",
+        "reviewTime": "02 8, 2018",
         "reviewerName": "Amazon Customer"
       },
       {
-        "name": "doc_9_3138",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "The shoe is too large. When you do lunges it hurts the heel. The shoe size from a local store is the size I ordered from Amazon however the size or fitting seems to be large",
-        "reviewTime": "05 15, 2018",
-        "reviewerName": "amazonuser"
+        "name": "doc_9_2346",
+        "product_description": "90 Degree By Reflex Power Flex Yoga Capri \u2013 Cationic Heather Activewear Pants",
+        "review": "Would recomend",
+        "reviewTime": "03 12, 2018",
+        "reviewerName": "Amazon Customer"
       },
       {
-        "name": "doc_9_2861",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "Great shoe, very comfortable",
-        "reviewTime": "09 13, 2017",
-        "reviewerName": "Robbin"
+        "name": "doc_9_58",
+        "product_description": "Hanes Mens EcoSmart Fleece Sweatpant",
+        "review": "Typical Hanes quality. Good weight, sized just right, made pretty well",
+        "reviewTime": "06 16, 2017",
+        "reviewerName": "wayne ereira"
       },
       {
-        "name": "doc_9_758",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "Very lightweight. Normal Nike quality. Pink is very bright , colors look great together.",
-        "reviewTime": "01 18, 2017",
-        "reviewerName": "Tara S."
+        "name": "doc_9_3117",
+        "product_description": "FORTINO LANDI Men's Long-sleeve Banded Collar Shirt - Many Colors Available",
+        "review": "Largely my fault for not reading carefully, but the high synthetic fiber content made the shirt uncomfortable to the touch.  Not the manufacturer's fault, of course.",
+        "reviewTime": "07 19, 2017",
+        "reviewerName": "TDL Chicago"
       },
       {
-        "name": "doc_9_1278",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "These are so cute and comfortable and very light. I just received them today and the fit is perfect. I normally wear an 8 1/2 and they are true to size!",
-        "reviewTime": "02 27, 2018",
-        "reviewerName": "Brittany C."
-      },
-      {
-        "name": "doc_9_2681",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "I got a hot spot on the bottom of my foot the first day I wore them.",
-        "reviewTime": "10 9, 2016",
-        "reviewerName": "Beverly Neal"
-      },
-      {
-        "name": "doc_9_2050",
-        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
-        "review": "Perfect!",
-        "reviewTime": "11 27, 2017",
-        "reviewerName": "Chelsea"
+        "name": "doc_9_2352",
+        "product_description": "Epoint EGC1B01-03 Multi Mens Paisley Waistcoat Woven Microfiber S-5XL Vest",
+        "review": "I used this for a costume and it worked well.",
+        "reviewTime": "06 25, 2017",
+        "reviewerName": "Seth Hanson"
       }
     ]
   }

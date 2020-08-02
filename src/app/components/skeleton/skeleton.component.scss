@@ -4,6 +4,12 @@
   pointer-events: none !important;
 }
 
+.highlight {
+  border: 1px solid black;
+  background-color: lightgoldenrodyellow;
+  padding: 3px;
+}
+
 .radio-button-group {
   display: flex;
   flex-direction: column;

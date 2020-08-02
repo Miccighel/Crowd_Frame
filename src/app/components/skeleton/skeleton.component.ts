@@ -1202,7 +1202,6 @@ export class SkeletonComponent {
    * https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html
    */
   public async download(path: string) {
-    console.log(path)
     return JSON.parse(
       (await (this.s3.getObject({
         Bucket: this.bucket,

@@ -175,15 +175,15 @@
         <mat-card>
           <ng-template matStepLabel> S{{i + 1}}</ng-template>
           <mat-divider [inset]="true"></mat-divider>
-          <mat-card-title>Please judge the following statement</mat-card-title>
+          <mat-card-title>Please judge the following review</mat-card-title>
           <mat-divider [inset]="true"></mat-divider>
           <mat-card-content>
             <!-- Statement markup -->
             <div class="statement">
               <ul>
-                <li><strong>Date</strong> (when the review was made): {{document.reviewTime}}</li>
-                <li><strong>Text</strong> (content of the review): {{document.review}}</li>
+                <li><span class="highlight"><strong>Text</strong> (content of the review): {{document.review}}</span></li>
                 <li><strong>Product Description</strong> (description of the reviewed product): {{document.product_description}}</li>
+                <li><strong>Date</strong> (when the review was made): {{document.reviewTime}}</li>
               </ul>
             </div>
             <!-- Instructions markup -->
