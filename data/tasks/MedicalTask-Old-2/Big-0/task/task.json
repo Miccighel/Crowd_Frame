@@ -4,7 +4,19 @@
   "other_batches": [
     "FakeNewsMultidimensional/Pilot-0/",
     "FakeNewsMultidimensional/Pilot-1/",
-    "FakeNewsMultidimensional/Big-0/"
+    "FakeNewsMultidimensional/Big-0/",
+    "MedicalTask-New-1/Pilot-0/",
+    "MedicalTask-New-1/Big-0/",
+    "MedicalTask-New-1/Big-1/",
+    "MedicalTask-New-1/Big-2/",
+    "MedicalTask-New-1/Big-3/",
+    "MedicalTask-New-2/Big-0/",
+    "MedicalTask-New-2/Small-0/",
+    "MedicalTask-New-3/Pilot-0/",
+    "MedicalTask-New-3/Big-0/",
+    "MedicalTask-New-3/Small-0/",
+    "MedicalTask-New-3/Small-1/",
+    "MedicalTask-New-3/Small-2/"
   ],
   "messages": [
     "You have already started this task without finishing it",
