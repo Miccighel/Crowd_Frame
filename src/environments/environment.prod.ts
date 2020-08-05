@@ -3,7 +3,7 @@ export const environment = {
   production: true,
 
   taskName: "MultidimensionalReviewAnalysis",
-  batchName: "Big-0",
+  batchName: "Small-0",
 
   region: 'us-east-2',
   bucket: 'crowdsourcing-tasks-us',
