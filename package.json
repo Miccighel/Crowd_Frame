@@ -13,7 +13,7 @@
     "@angular/cdk": "~10.0.2",
     "@angular/common": "~10.0.3",
     "@angular/compiler": "~10.0.3",
-    "@angular/core": "10.0.3",
+    "@angular/core": "10.0.8",
     "@angular/elements": "^10.0.3",
     "@angular/forms": "~10.0.3",
     "@angular/material": "^10.0.2",
