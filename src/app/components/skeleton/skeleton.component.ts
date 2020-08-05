@@ -326,6 +326,8 @@ export class SkeletonComponent {
   * This behavior is controlled by setting the useEachScale flag.
   */
   public async performWorkerStatusCheck() {
+    /* The loading spinner is started */
+    this.ngxService.start();
     /* The worker identifiers of the current task are downloaded */
     let workers = await this.download(this.workersFile);
     if ('started' in workers) {
@@ -358,6 +360,8 @@ export class SkeletonComponent {
           /* If the current worker is a brand new one he is free to proceed */
           return !uploadStatus["failed"];
         }
+        /* The loading spinner is stopped */
+        this.ngxService.stop();
         return false
       } else {
         if (!blacklistedInOtherBatch) {
@@ -367,9 +371,13 @@ export class SkeletonComponent {
           /* If the current worker is a brand new one he is free to proceed */
           return !uploadStatus["failed"];
         }
+        /* The loading spinner is stopped */
+        this.ngxService.stop();
         return false
       }
     }
+    /* The loading spinner is stopped */
+    this.ngxService.stop();
     /* If a returning worker for the current task has been found, the task must be blocked */
     return false
   }
