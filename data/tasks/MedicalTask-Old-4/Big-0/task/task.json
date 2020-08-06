@@ -1,26 +1,20 @@
 {
   "allowed_tries": 10,
   "time_check_amount": 2,
-  "other_batches": [
-    "FakeNewsMultidimensional/Pilot-0/",
-    "FakeNewsMultidimensional/Pilot-1/",
-    "FakeNewsMultidimensional/Big-0/",
+  "blacklist_batches": [],
+  "whitelist_batches": [
     "MedicalTask-New-1/Pilot-0/",
     "MedicalTask-New-1/Big-0/",
     "MedicalTask-New-1/Big-1/",
     "MedicalTask-New-1/Big-2/",
     "MedicalTask-New-1/Big-3/",
-    "MedicalTask-Old-1/Big-0/",
-    "MedicalTask-Old-1/Big-1/",
-    "MedicalTask-Old-2/Big-0/",
     "MedicalTask-New-2/Big-0/",
     "MedicalTask-New-2/Small-0/",
     "MedicalTask-New-3/Pilot-0/",
     "MedicalTask-New-3/Big-0/",
     "MedicalTask-New-3/Small-0/",
     "MedicalTask-New-3/Small-1/",
-    "MedicalTask-New-3/Small-2/",
-    "MedicalTask-New-4/Big-0/"
+    "MedicalTask-New-3/Small-2/"
   ],
   "messages": [
     "You have already started this task without finishing it",

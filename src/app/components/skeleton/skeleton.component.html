@@ -9,7 +9,7 @@
 </app-instructions>
 
 <!-- |--------- TOKEN INPUT SECTION - MARKUP ---------| -->
-<div id="token-section" class="container" *ngIf="!taskStarted && taskAllowed;">
+<div id="token-section" class="container" *ngIf="!taskStarted && taskAllowed && checkCompleted;">
   <form [formGroup]="tokenForm">
     <mat-card>
       <mat-card-content>
