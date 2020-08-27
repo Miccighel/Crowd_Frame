@@ -1,7 +1,4 @@
 {
-<<<<<<< HEAD
-	"blacklist": [],
-=======
 	"blacklist": [
 		"AODN040O2XDU",
 		"A4LXHEOKP4MRO",
@@ -282,6 +279,5 @@
 		"A1P8K83P1987GB",
 		"A1SB7WCCO6W8JJ"
 	],
->>>>>>> 70cba965eafa03c79889cf5a2fa6c83d157f83f0
 	"whitelist": []
 }

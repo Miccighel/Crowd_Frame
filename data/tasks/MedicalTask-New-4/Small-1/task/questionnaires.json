@@ -13,8 +13,6 @@
           "50-80",
           "80"
         ]
-<<<<<<< HEAD
-=======
       },
       {
         "name": "school",
@@ -111,7 +109,6 @@
         "name": "athletics",
         "text": "In an athletics team, females are four times more likely to win a medal than males. This year the team has won 20 medals so far. How many of these have been won by males?",
         "answers": []
->>>>>>> 70cba965eafa03c79889cf5a2fa6c83d157f83f0
       }
     ]
   }
