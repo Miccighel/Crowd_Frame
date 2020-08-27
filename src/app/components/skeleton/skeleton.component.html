@@ -9,7 +9,7 @@
 </app-instructions>
 
 <!-- |--------- TOKEN INPUT SECTION - MARKUP ---------| -->
-<div id="token-section" class="container" *ngIf="!taskStarted && taskAllowed;">
+<div id="token-section" class="container" *ngIf="!taskStarted && taskAllowed && checkCompleted;">
   <form [formGroup]="tokenForm">
     <mat-card>
       <mat-card-content>
@@ -175,15 +175,15 @@
         <mat-card>
           <ng-template matStepLabel> S{{i + 1}}</ng-template>
           <mat-divider [inset]="true"></mat-divider>
-          <mat-card-title>Please judge the following review</mat-card-title>
+          <mat-card-title>Please judge the following statement</mat-card-title>
           <mat-divider [inset]="true"></mat-divider>
           <mat-card-content>
             <!-- Statement markup -->
             <div class="statement">
               <ul>
-                <li><span class="highlight"><strong>Review Text</strong>: {{document.review}}</span></li>
-                <li><strong>Description of the Reviewed Product</strong>: {{document.product_description}}</li>
-                <li><strong>Date</strong> (when the review was made): {{document.reviewTime}}</li>
+                <li><strong>Claimant/Source</strong> (who made the statement): {{document.claimant}}</li>
+                <li><strong>Date</strong> (when the statement was made): {{document.date}}</li>
+                <li><strong>Text</strong> (content of the statement): {{document.statement}}</li>
               </ul>
             </div>
             <!-- Instructions markup -->

@@ -1,0 +1,13 @@
+{
+  "allowed_tries": 10,
+  "time_check_amount": 2,
+  "other_batches": [
+    "MultidimensionalReviewAnalysis/Pilot-0/",
+    "MultidimensionalReviewAnalysis/Big-0/",
+    "MultidimensionalReviewAnalysis/Small-0/"
+  ],
+  "messages": [
+    "You have already started this task without finishing it",
+    "You have already participated to a variant of this experiment"
+  ]
+}

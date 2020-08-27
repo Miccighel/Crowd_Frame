@@ -75,6 +75,7 @@ export class SkeletonComponent {
   taskCompleted: boolean;
   taskSuccessful: boolean;
   taskFailed: boolean;
+  checkCompleted: boolean;
 
   /* References to task stepper and token forms */
   @ViewChild('stepper') stepper: MatStepper;
@@ -96,7 +97,8 @@ export class SkeletonComponent {
   /* Number of allowed tries */
   allowedTries: number;
   timeCheckAmount: number;
-  otherBatches: Array<string>
+  blacklistBatches: Array<string>
+  whitelistBatches: Array<string>
 
   /* |--------- AMAZON AWS INTEGRATION - DECLARATION ---------| */
 
@@ -234,6 +236,7 @@ export class SkeletonComponent {
     this.taskCompleted = false;
     this.taskSuccessful = false;
     this.taskFailed = false;
+    this.checkCompleted = false;
 
     this.tokenInput = new FormControl('', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
     this.tokenForm = formBuilder.group({
@@ -286,15 +289,23 @@ export class SkeletonComponent {
                 this.worker = new Worker(this.workerIdentifier, cloudflareData, window.navigator)
                 this.taskAllowed = outcome;
                 this.changeDetector.detectChanges()
-              },
+                this.checkCompleted = true
+                /* The loading spinner is stopped */
+                this.ngxService.stop();
+            },
               error => {
                 this.worker = new Worker(this.workerIdentifier, null, window.navigator)
                 this.taskAllowed = outcome;
                 this.changeDetector.detectChanges()
+                this.checkCompleted = true
+                /* The loading spinner is stopped */
+                this.ngxService.stop();
               }
             )
-
         })
+      } else {
+        this.checkCompleted = true
+        this.ngxService.stop();
       }
     })
 
@@ -302,9 +313,6 @@ export class SkeletonComponent {
     this.faSpinner = faSpinner;
     /* Font awesome info circle icon initialization */
     this.faInfoCircle = faInfoCircle
-
-    /* The loading spinner is stopped */
-    this.ngxService.stop();
 
   }
 
@@ -315,7 +323,8 @@ export class SkeletonComponent {
     this.settings = new Settings(rawSettings)
     this.allowedTries = this.settings.allowedTries
     this.timeCheckAmount = this.settings.timeCheckAmount
-    this.otherBatches = this.settings.otherBatches
+    this.blacklistBatches = this.settings.blacklistBatches
+    this.whitelistBatches = this.settings.whitelistBatches
   }
 
   /*
@@ -326,62 +335,57 @@ export class SkeletonComponent {
   * This behavior is controlled by setting the useEachScale flag.
   */
   public async performWorkerStatusCheck() {
-
-    /* The loading spinner is started */
-    this.ngxService.start();
-
     /* The worker identifiers of the current task are downloaded */
     let workers = await this.download(this.workersFile);
     if ('started' in workers) {
       workers['blacklist'] = workers['started']
       delete workers['started']
     }
-    /* Check to verify if one of the workers which have already started the task is the current one */
     let blacklistedInCurrentTask = false;
-    let whitelistedInCurrentTask = false;
     for (let currentWorker of workers['blacklist']) if (currentWorker == this.workerIdentifier) blacklistedInCurrentTask = true;
-    for (let currentWorker of workers['whitelist']) if (currentWorker == this.workerIdentifier) whitelistedInCurrentTask = true;
-    /* If the current worker has not started the task within the current task */
     if (!blacklistedInCurrentTask) {
-      /* Check to verify if one of the workers which have already started the task in a past task */
-      let blacklistedInOtherBatch = false
-      /* The workers file of each past task is scanned */
-      for (let otherBatch of this.otherBatches) {
-        let otherWorkers = await this.download(`${otherBatch}Task/workers.json`);
-        if ('started' in otherWorkers) {
-          otherWorkers['blacklist'] = otherWorkers['started']
-          delete otherWorkers['started']
+
+      for (let blacklistBatch of this.blacklistBatches) {
+        let blacklistedWorkers = await this.download(`${blacklistBatch}Task/workers.json`);
+        if ('started' in blacklistedWorkers) {
+          blacklistedWorkers['blacklist'] = blacklistedWorkers['started']
+          delete blacklistedWorkers['started']
         }
-        for (let currentWorker of otherWorkers['blacklist']) if (currentWorker == this.workerIdentifier) blacklistedInOtherBatch = true;
+        for (let currentWorker of blacklistedWorkers['blacklist']) {
+          if (currentWorker == this.workerIdentifier) {
+            return false
+          }
+        }
       }
-      if (workers['whitelist'].length > 0) {
-        if (whitelistedInCurrentTask) {
-          /* His identifier is uploaded to the file of the scale to which he is assigned */
-          workers['blacklist'].push(this.workerIdentifier);
-          let uploadStatus = await (this.upload(this.workersFile, workers));
-          /* If the current worker is a brand new one he is free to proceed */
-          return !uploadStatus["failed"];
+
+      for (let whitelistBatch of this.whitelistBatches) {
+        let whitelistedWorkers = await this.download(`${whitelistBatch}Task/workers.json`);
+        if ('started' in whitelistedWorkers) {
+          whitelistedWorkers['blacklist'] = whitelistedWorkers['started']
+          delete whitelistedWorkers['started']
         }
-        /* The loading spinner is stopped */
-        this.ngxService.stop();
+        for (let currentWorker of whitelistedWorkers['blacklist']) {
+          if (currentWorker == this.workerIdentifier) {
+            workers['blacklist'].push(this.workerIdentifier);
+            workers['whitelist'].push(this.workerIdentifier);
+            let uploadStatus = await (this.upload(this.workersFile, workers));
+            return !uploadStatus["failed"];
+          }
+        }
+      }
+
+      if(this.whitelistBatches.length>0) {
         return false
       } else {
-        if (!blacklistedInOtherBatch) {
-          /* His identifier is uploaded to the file of the scale to which he is assigned */
-          workers['blacklist'].push(this.workerIdentifier);
-          let uploadStatus = await (this.upload(this.workersFile, workers));
-          /* If the current worker is a brand new one he is free to proceed */
-          return !uploadStatus["failed"];
-        }
-        /* The loading spinner is stopped */
-        this.ngxService.stop();
-        return false
+        workers['blacklist'].push(this.workerIdentifier);
+        let uploadStatus = await (this.upload(this.workersFile, workers));
+        return !uploadStatus["failed"];
       }
+
+    } else {
+      /* If a returning worker for the current task has been found, the task must be blocked */
+      return false
     }
-    /* The loading spinner is stopped */
-    this.ngxService.stop();
-    /* If a returning worker for the current task has been found, the task must be blocked */
-    return false
   }
 
   /*
@@ -887,18 +891,25 @@ export class SkeletonComponent {
 
     /* Booleans to hold result of checks */
     let globalValidityCheck: boolean;
+    let goldQuestionCheck: boolean;
     let timeSpentCheck: boolean;
     let timeCheckAmount = this.timeCheckAmount;
 
     /* 1) GLOBAL VALIDITY CHECK performed here */
     globalValidityCheck = this.performGlobalValidityCheck();
 
+    /* 2) GOLD QUESTION CHECK performed here */
+    for (let dimension of this.dimensions) {
+      if (dimension.goldQuestionCheck)
+        goldQuestionCheck = this.documentsForm[this.goldIndexLow].controls[dimension.name.concat('_value')].value < this.documentsForm[this.goldIndexHigh].controls[dimension.name.concat('_value')].value;
+    }
+
     /* 3) TIME SPENT CHECK performed here */
     timeSpentCheck = true;
     for (let i = 0; i < this.timestampsElapsed.length; i++) if (this.timestampsElapsed[i] < timeCheckAmount) timeSpentCheck = false;
 
     /* If each check is true, the task is successful, otherwise the task is failed (but not over if there are more tries) */
-    if (globalValidityCheck && timeSpentCheck) {
+    if (globalValidityCheck && goldQuestionCheck && timeSpentCheck) {
       this.taskSuccessful = true;
       this.taskFailed = false;
     } else {
@@ -910,6 +921,7 @@ export class SkeletonComponent {
     if (!(this.workerIdentifier === null)) {
       let qualityCheckData = {
         globalFormValidity: globalValidityCheck,
+        goldQuestionCheck: goldQuestionCheck,
         timeSpentCheck: timeSpentCheck,
         timeCheckAmount: timeCheckAmount,
       };
