@@ -2,7 +2,7 @@ export const environment = {
 
   production: false,
 
-  taskName: "CrowdsourcingSkeleton",
+  taskName: "Sample",
   batchName: "Batch-1",
 
   region: 'us-east-2',
@@ -13,3 +13,4 @@ export const environment = {
   bing_api_key: "2cd7c847841743b8accb35e9f6c0eebc"
 
 };
+

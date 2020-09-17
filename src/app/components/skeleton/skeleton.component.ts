@@ -22,6 +22,7 @@ import {faInfoCircle} from "@fortawesome/free-solid-svg-icons";
 import {Settings} from "../../models/skeleton/settings";
 import {Worker} from "../../models/skeleton/worker";
 import {HttpClient, HttpHeaders} from "@angular/common/http";
+import {log} from "util";
 
 /* Component HTML Tag definition */
 @Component({
