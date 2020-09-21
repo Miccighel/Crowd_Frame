@@ -7,12 +7,12 @@
         {
           "label": "True",
           "description": "This means true",
-          "value": "2"
+          "value": "1"
         },
         {
           "label": "False",
           "description": "This means false",
-          "value": "1"
+          "value": "0"
         }
       ]
     },
