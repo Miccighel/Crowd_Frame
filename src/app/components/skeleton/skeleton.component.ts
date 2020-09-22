@@ -22,7 +22,8 @@ import {faInfoCircle} from "@fortawesome/free-solid-svg-icons";
 import {Settings} from "../../models/skeleton/settings";
 import {Worker} from "../../models/skeleton/worker";
 import {HttpClient, HttpHeaders} from "@angular/common/http";
-import {log} from "util";
+/* Debug config import */
+import * as dimensions from '../../../../data/debug/dimensions.json';
 
 /* Component HTML Tag definition */
 @Component({
@@ -254,7 +255,7 @@ export class SkeletonComponent {
     if (this.configService.environment.batchName) {
       this.folder = `${this.taskName}/${this.batchName}`
     } else {
-      this.folder = `${this.taskName}`
+      this.folder = `${this.taskName}/`
     }
     this.settingsFile = `${this.folder}/Task/task.json`;
     this.taskInstructionsFile = `${this.folder}/Task/instructions.html`;
@@ -287,22 +288,22 @@ export class SkeletonComponent {
         this.performWorkerStatusCheck().then(outcome => {
           this.client.get('https://www.cloudflare.com/cdn-cgi/trace', {responseType: 'text'}).subscribe(
             cloudflareData => {
-                this.worker = new Worker(this.workerIdentifier, cloudflareData, window.navigator)
-                this.taskAllowed = outcome;
-                this.changeDetector.detectChanges()
-                this.checkCompleted = true
-                /* The loading spinner is stopped */
-                this.ngxService.stop();
+              this.worker = new Worker(this.workerIdentifier, cloudflareData, window.navigator)
+              this.taskAllowed = outcome;
+              this.changeDetector.detectChanges()
+              this.checkCompleted = true
+              /* The loading spinner is stopped */
+              this.ngxService.stop();
             },
-              error => {
-                this.worker = new Worker(this.workerIdentifier, null, window.navigator)
-                this.taskAllowed = outcome;
-                this.changeDetector.detectChanges()
-                this.checkCompleted = true
-                /* The loading spinner is stopped */
-                this.ngxService.stop();
-              }
-            )
+            error => {
+              this.worker = new Worker(this.workerIdentifier, null, window.navigator)
+              this.taskAllowed = outcome;
+              this.changeDetector.detectChanges()
+              this.checkCompleted = true
+              /* The loading spinner is stopped */
+              this.ngxService.stop();
+            }
+          )
         })
       } else {
         this.checkCompleted = true
@@ -375,7 +376,7 @@ export class SkeletonComponent {
         }
       }
 
-      if(this.whitelistBatches.length>0) {
+      if (this.whitelistBatches.length > 0) {
         return false
       } else {
         workers['blacklist'].push(this.workerIdentifier);
@@ -896,21 +897,28 @@ export class SkeletonComponent {
     let timeSpentCheck: boolean;
     let timeCheckAmount = this.timeCheckAmount;
 
-    /* 1) GLOBAL VALIDITY CHECK performed here */
-    globalValidityCheck = this.performGlobalValidityCheck();
+    let computedChecks = []
 
-    /* 2) GOLD QUESTION CHECK performed here */
+    /* 1) GLOBAL VALIDITY CHECK performed here - MANDATORY CHECK */
+    globalValidityCheck = this.performGlobalValidityCheck();
+    computedChecks.push(globalValidityCheck)
+
+    /* 2) GOLD QUESTION CHECK performed here - OPTIONAL CHECK */
     for (let dimension of this.dimensions) {
-      if (dimension.goldQuestionCheck)
+      if (dimension.goldQuestionCheck) {
         goldQuestionCheck = this.documentsForm[this.goldIndexLow].controls[dimension.name.concat('_value')].value < this.documentsForm[this.goldIndexHigh].controls[dimension.name.concat('_value')].value;
+        computedChecks.push(goldQuestionCheck)
+      }
     }
 
-    /* 3) TIME SPENT CHECK performed here */
+    /* 3) TIME SPENT CHECK performed here - MANDATORY CHECK */
     timeSpentCheck = true;
     for (let i = 0; i < this.timestampsElapsed.length; i++) if (this.timestampsElapsed[i] < timeCheckAmount) timeSpentCheck = false;
+    computedChecks.push(timeSpentCheck)
 
     /* If each check is true, the task is successful, otherwise the task is failed (but not over if there are more tries) */
-    if (globalValidityCheck && goldQuestionCheck && timeSpentCheck) {
+    let checker = array => array.every(Boolean);
+    if (checker(computedChecks)) {
       this.taskSuccessful = true;
       this.taskFailed = false;
     } else {
@@ -1237,12 +1245,12 @@ export class SkeletonComponent {
    * https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#upload-property
    */
   public async upload(path: string, payload: Object): Promise<ManagedUpload> {
-      return this.s3.upload({
-        Key: path,
-        Bucket: this.bucket,
-        Body: JSON.stringify(payload, null, "\t")
-      }, function (err, data) {
-      })
+    return this.s3.upload({
+      Key: path,
+      Bucket: this.bucket,
+      Body: JSON.stringify(payload, null, "\t")
+    }, function (err, data) {
+    })
   }
 
   /* |--------- UTILITIES ELEMENTS - FUNCTIONS ---------| */

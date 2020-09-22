@@ -1,6 +1,7 @@
 export const environment = {
 
   production: true,
+  configuration_local: false,
 
   taskName: "Sample",
   batchName: "Batch-1",
