@@ -3,7 +3,10 @@ import {Component, Inject, Input, OnInit, ViewEncapsulation} from '@angular/core
 /* Material design modules */
 import {MatDialog, MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
 import * as AWS from "aws-sdk";
-
+/* Debug config import */
+import * as localRawInstructionsMain from '../../../../data/debug/instructions_main.json';
+/* Task models*/
+import {Instruction} from "../../models/shared/instructions";
 /* Data inteface for the underlying dialog component */
 export interface DialogData {}
 
@@ -22,11 +25,13 @@ export class InstructionsComponent implements OnInit {
   /* |---------  ELEMENTS - DECLARATION ---------| */
 
   /* Ground truth  of the current scale of the current instance of the task */
-  /* @INPUT: Received form Skeleton component */
+  /* @INPUT: Received from Skeleton component */
   @Input() scale: string;
-  /* Instruction of the current scale of the current instance of the task */
+  /* Reference to check if the local debug config should be used */
   /* @INPUT: Received form Skeleton component */
+  @Input() configurationLocal: boolean;
   /* Reference to the S3 component of AWS SDK */
+  /* @INPUT: Received form Skeleton component */
   @Input() s3: AWS.S3;
   /* Reference to the current bucket identifier */
   /* @INPUT: Received form Skeleton component */
@@ -34,8 +39,11 @@ export class InstructionsComponent implements OnInit {
   /* Reference to the file where task instructions are stored */
   /* @INPUT: Received form Skeleton component */
   @Input() instructionsFile: string;
-  /* Raw HTML instructions downloaded from S3 bucket */
-  instructions: string;
+
+  /* Instructions to perform the task */
+  instructions: Array<Instruction>;
+  /* Amount of instructions sentences */
+  instructionsAmount: number;
 
   /* |--------- CONSTRUCTOR ---------| */
 
@@ -48,17 +56,14 @@ export class InstructionsComponent implements OnInit {
    */
   ngOnInit(): void {
     this.performInstructionsLoading().then(outcome => {
-      this.instructions = outcome;
-      this.openDialog(
-        this.instructions
-      )
+      this.openDialog(this.instructions)
     })
   }
 
   /*
    * This function opens the modal and loads its look&feel and content.
    */
-  openDialog(instructions: string): void {
+  openDialog(instructions: Array<Instruction>): void {
     this.dialog.open(InstructionsDialog, {
       width: '80%',
       minHeight: '86%',
@@ -71,7 +76,13 @@ export class InstructionsComponent implements OnInit {
    * It performs a download operation using the references received from the main component.
    */
   public async performInstructionsLoading() {
-    return await this.download(this.instructionsFile);
+    let rawInstructions = (this.configurationLocal) ? localRawInstructionsMain["default"] : await this.download(this.instructionsFile);
+    this.instructionsAmount = rawInstructions.length;
+    /* The instructions are parsed using the Instruction class */
+    this.instructions = new Array<Instruction>();
+    for (let index = 0; index < this.instructionsAmount; index++){
+      this.instructions.push(new Instruction(index, rawInstructions[index]));
+    }
   }
 
   /*
@@ -79,10 +90,12 @@ export class InstructionsComponent implements OnInit {
    * https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html
    * */
   public async download(path: string) {
-    return (await (this.s3.getObject({
-      Bucket: this.bucket,
-      Key: path
-    }).promise())).Body.toString('utf-8');
+    return JSON.parse(
+      (await (this.s3.getObject({
+        Bucket: this.bucket,
+        Key: path
+      }).promise())).Body.toString('utf-8')
+    );
   }
 
 }

@@ -7,7 +7,7 @@ export class Instruction {
   /* DO NOT REMOVE THIS ATTRIBUTE */
   index: number;
 
-  caption: string;
+  caption?: string;
   steps: Array<string>;
 
   constructor(
@@ -17,7 +17,7 @@ export class Instruction {
     /* DO NOT REMOVE THIS LINE */
     this.index = index;
 
-    this.caption =    data["caption"];
+    this.caption =    data['caption'] ? data["caption"] : null;
     this.steps = new Array<string>();
     for (const [_, step] of data["steps"].entries()) this.steps.push(step)
   }

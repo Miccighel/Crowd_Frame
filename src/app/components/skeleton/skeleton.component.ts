@@ -12,7 +12,7 @@ import {Document} from "../../models/skeleton/document";
 import {Hit} from "../../models/skeleton/hit";
 import {Questionnaire} from "../../models/skeleton/questionnaire";
 import {Dimension, ScaleContinue} from "../../models/skeleton/dimension";
-import {Instruction} from "../../models/skeleton/instructions";
+import {Instruction} from "../../models/shared/instructions";
 /* AWS Integration*/
 import * as AWS from 'aws-sdk';
 import {ManagedUpload} from "aws-sdk/clients/s3";
@@ -23,7 +23,12 @@ import {Settings} from "../../models/skeleton/settings";
 import {Worker} from "../../models/skeleton/worker";
 import {HttpClient, HttpHeaders} from "@angular/common/http";
 /* Debug config import */
-import * as dimensions from '../../../../data/debug/dimensions.json';
+import * as localRawDimensions from '../../../../data/debug/dimensions.json';
+import * as localRawHits from '../../../../data/debug/hits.json';
+import * as localRawInstructionsDimensions from '../../../../data/debug/instructions_dimensions.json';
+import * as localRawQuestionnaires from '../../../../data/debug/questionnaires.json';
+import * as localRawSettings from '../../../../data/debug/task.json';
+import * as localRawWorkers from '../../../../data/debug/workers.json';
 
 /* Component HTML Tag definition */
 @Component({
@@ -258,10 +263,10 @@ export class SkeletonComponent {
       this.folder = `${this.taskName}/`
     }
     this.settingsFile = `${this.folder}/Task/task.json`;
-    this.taskInstructionsFile = `${this.folder}/Task/instructions.html`;
+    this.taskInstructionsFile = `${this.folder}/Task/instructions_main.json`;
     this.workersFile = `${this.folder}/Task/workers.json`;
     this.questionnairesFile = `${this.folder}/Task/questionnaires.json`;
-    this.dimensionsInstructionsFile = `${this.folder}/Task/instructions.json`;
+    this.dimensionsInstructionsFile = `${this.folder}/Task/instructions_dimensions.json`;
     this.dimensionsFile = `${this.folder}/Task/dimensions.json`;
     this.hitsFile = `${this.folder}/Task/hits.json`;
     this.workerFolder = `${this.folder}/Data/${this.workerIdentifier}`;
@@ -321,7 +326,7 @@ export class SkeletonComponent {
   /* |--------- GENERAL ELEMENTS - FUNCTIONS ---------| */
 
   public async loadSettings() {
-    let rawSettings = await this.download(this.settingsFile);
+    let rawSettings = (this.configService.environment.configuration_local) ? localRawSettings["default"] : await this.download(this.settingsFile);
     this.settings = new Settings(rawSettings)
     this.allowedTries = this.settings.allowedTries
     this.timeCheckAmount = this.settings.timeCheckAmount
@@ -338,7 +343,7 @@ export class SkeletonComponent {
   */
   public async performWorkerStatusCheck() {
     /* The worker identifiers of the current task are downloaded */
-    let workers = await this.download(this.workersFile);
+    let workers =  (this.configService.environment.configuration_local) ? localRawWorkers["default"] : await this.download(this.workersFile);
     if ('started' in workers) {
       workers['blacklist'] = workers['started']
       delete workers['started']
@@ -396,7 +401,7 @@ export class SkeletonComponent {
   * If such token cannot be found, an error message is returned.
   */
   public async validateTokenInput(control: FormControl) {
-    let hits = await this.download(this.hitsFile);
+    let hits = (this.configService.environment.configuration_local) ? localRawHits["default"] : await this.download(this.hitsFile);
     for (let hit of hits) if (hit.token_input === control.value) return null;
     return {"invalid": "This token is not valid."}
   }
@@ -418,7 +423,7 @@ export class SkeletonComponent {
       this.ngxService.start();
 
       /* The hits stored on Amazon S3 are retrieved */
-      let hits = await this.download(this.hitsFile);
+      let hits = (this.configService.environment.configuration_local) ? localRawHits["default"] : await this.download(this.hitsFile);
 
       /* Scan each entry for the token input */
       for (let currentHit of hits) {
@@ -440,7 +445,7 @@ export class SkeletonComponent {
       this.questionnaires = new Array<Questionnaire>();
 
       /* The questionnaires stored on Amazon S3 are retrieved */
-      let rawQuestionnaires = await this.download(this.questionnairesFile);
+      let rawQuestionnaires = (this.configService.environment.configuration_local) ? localRawQuestionnaires["default"] : await this.download(this.questionnairesFile);
       this.questionnaireAmount = rawQuestionnaires.length;
 
       /* Each questionnaire is parsed using the Questionnaire class */
@@ -470,7 +475,7 @@ export class SkeletonComponent {
       /* |- HIT DIMENSIONS - INITIALIZATION -| */
 
       /* The dimensions stored on Amazon S3 are retrieved */
-      let rawInstructions = await this.download(this.dimensionsInstructionsFile);
+      let rawInstructions = (this.configService.environment.configuration_local) ? localRawInstructionsDimensions["default"] : await this.download(this.dimensionsInstructionsFile);
       this.instructionsAmount = rawInstructions.length;
 
       /* The instructions are parsed using the Instruction class */
@@ -482,7 +487,7 @@ export class SkeletonComponent {
       this.dimensions = new Array<Dimension>();
 
       /* The dimensions stored on Amazon S3 are retrieved */
-      let rawDimensions = await this.download(this.dimensionsFile);
+      let rawDimensions = (this.configService.environment.configuration_local) ? localRawDimensions["default"] : await this.download(this.dimensionsFile);
       this.dimensionsAmount = rawDimensions.length;
 
       /* Each dimension is parsed using the Dimension class */
@@ -1043,7 +1048,7 @@ export class SkeletonComponent {
       /*
        * The general idea with start and end timestamps is that each time a worker goes to
        * the next document, the current timestamp is the start timestamp for such document
-       * and the end timestamp for the previous and vicecersa
+       * and the end timestamp for the previous and viceversa
        */
 
       /* In the corresponding array the elapsed timestamps for each document are computed */
@@ -1237,7 +1242,8 @@ export class SkeletonComponent {
       (await (this.s3.getObject({
         Bucket: this.bucket,
         Key: path
-      }).promise())).Body.toString('utf-8'));
+      }).promise())).Body.toString('utf-8')
+    );
   }
 
   /*

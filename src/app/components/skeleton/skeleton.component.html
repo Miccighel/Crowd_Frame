@@ -5,7 +5,9 @@
 <app-instructions
   [s3]="this.s3"
   [bucket]="this.bucket"
-  [instructionsFile]="this.taskInstructionsFile">
+  [instructionsFile]="this.taskInstructionsFile"
+  [configurationLocal]="this.configService.environment.configuration_local"
+>
 </app-instructions>
 
 <!-- |--------- TOKEN INPUT SECTION - MARKUP ---------| -->

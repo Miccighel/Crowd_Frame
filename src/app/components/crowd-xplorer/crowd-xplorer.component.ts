@@ -18,6 +18,8 @@ import {PubmedSummaryResponse} from '../../models/crowd-xplorer/pubmedSummaryRes
 import {ConfigService} from "../../services/config.service";
 import * as AWS from "aws-sdk";
 import {Settings} from "../../models/crowd-xplorer/settings";
+/* Debug config import */
+import * as localRawSettings from '../../../../data/debug/search_engine.json';
 
 /* Component HTML Tag definition */
 @Component({
@@ -177,7 +179,7 @@ export class CrowdXplorer {
   }
 
   public async loadSettings() {
-    let rawSettings = await this.download(this.settingsFile);
+    let rawSettings = (this.configService.environment.configuration_local) ? localRawSettings["default"] : await this.download(this.settingsFile);
     this.settings = new Settings(rawSettings)
     this.source = this.settings.source
     this.domainsToFilter = this.settings.domainsToFilter
@@ -332,7 +334,8 @@ export class CrowdXplorer {
       (await (this.s3.getObject({
         Bucket: this.bucket,
         Key: path
-      }).promise())).Body.toString('utf-8'));
+      }).promise())).Body.toString('utf-8')
+    );
   }
 
   /* |--------- UTILITY - FUNCTIONS ---------| */
