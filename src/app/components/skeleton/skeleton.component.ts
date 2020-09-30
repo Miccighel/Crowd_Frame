@@ -1071,6 +1071,8 @@ export class SkeletonComponent {
         /* If the worker has completed the first questionnaire */
         if (completedElement == 0) {
 
+          let data = {}
+
           /* The full information about task setup (currentDocument.e., its document and questionnaire structures) are uploaded, only once */
           let taskData = {
             task_id: this.taskName,
@@ -1085,19 +1087,28 @@ export class SkeletonComponent {
             dimensions_amount: this.dimensionsAmount,
           };
           /* General info about task */
-          await (this.upload(`${this.workerFolder}/task.json`, taskData));
+          data["task"] = taskData
+          /* await (this.upload(`${this.workerFolder}/task.json`, taskData)); */
           /* The answers of the current worker to the questionnaire */
-          await (this.upload(`${this.workerFolder}/questionnaires.json`, this.questionnaires));
+          data["questionnaires"] = this.questionnaires
+          /* await (this.upload(`${this.workerFolder}/questionnaires.json`, this.questionnaires)); */
           /* The parsed document contained in current worker's hit */
-          await (this.upload(`${this.workerFolder}/documents.json`, this.documents));
+          data["documents"] = this.documents
+          /* await (this.upload(`${this.workerFolder}/documents.json`, this.documents)); */
           /* The dimensions of the answers of each worker */
-          await (this.upload(`${this.workerFolder}/dimensions.json`, this.dimensions));
+          data["dimensions"] = this.dimensions
+          /* await (this.upload(`${this.workerFolder}/dimensions.json`, this.dimensions)); */
           /* General info about worker */
-          await (this.upload(`${this.workerFolder}/worker.json`, this.worker));
+          data["worker"] = this.worker
+          /* await (this.upload(`${this.workerFolder}/worker.json`, this.worker)); */
+
+          await (this.upload(`${this.workerFolder}/hit.json`, data));
 
         }
 
         /* The partial data about the completed questionnaire are uploaded */
+
+        let data = {}
 
         let actionInfo = {
           action: action,
@@ -1107,20 +1118,28 @@ export class SkeletonComponent {
           element: "questionnaire"
         };
         /* Info about the performed action ("Next"? "Back"? From where?) */
-        await (this.upload(`${this.workerFolder}/Partials/Info/Try-${this.currentTry}/info_${completedElement}_access_${accessesAmount}.json`, actionInfo));
+        data["info"] = actionInfo
+        /* await (this.upload(`${this.workerFolder}/Partials/Info/Try-${this.currentTry}/info_${completedElement}_access_${accessesAmount}.json`, actionInfo)); */
         /* Worker's answers to the current questionnaire */
         let answers = this.questionnairesForm[completedElement].value;
-        await (this.upload(`${this.workerFolder}/Partials/Answers/Questionnaires/answer_${completedElement}.json`, answers));
+        data["answers"] = answers
+        /* await (this.upload(`${this.workerFolder}/Partials/Answers/Questionnaires/answer_${completedElement}.json`, answers)); */
         /* Start, end and elapsed timestamps for the current questionnaire */
         let timestampsStart = this.timestampsStart[completedElement];
-        await (this.upload(`${this.workerFolder}/Partials/Timestamps/Start/Try-${this.currentTry}/start_${completedElement}_access_${accessesAmount}.json`, timestampsStart));
+        data["timestamps_start"] = timestampsStart
+        /* await (this.upload(`${this.workerFolder}/Partials/Timestamps/Start/Try-${this.currentTry}/start_${completedElement}_access_${accessesAmount}.json`, timestampsStart)); */
         let timestampsEnd = this.timestampsEnd[completedElement];
-        await (this.upload(`${this.workerFolder}/Partials/Timestamps/End/Try-${this.currentTry}/end_${completedElement}_access_${accessesAmount}.json`, timestampsEnd));
+        data["timestamps_end"] = timestampsEnd
+        /* await (this.upload(`${this.workerFolder}/Partials/Timestamps/End/Try-${this.currentTry}/end_${completedElement}_access_${accessesAmount}.json`, timestampsEnd)); */
         let timestampsElapsed = this.timestampsElapsed[completedElement];
-        await (this.upload(`${this.workerFolder}/Partials/Timestamps/Elapsed/Try-${this.currentTry}/elapsed_${completedElement}_access_${accessesAmount}.json`, timestampsElapsed));
+        data["timestamps_elapsed"] = timestampsElapsed
+        /* await (this.upload(`${this.workerFolder}/Partials/Timestamps/Elapsed/Try-${this.currentTry}/elapsed_${completedElement}_access_${accessesAmount}.json`, timestampsElapsed)); */
         /* Number of accesses to the current questionnaire (which must be always 1, since the worker cannot go back */
         let accesses = this.elementsAccesses[completedElement];
-        await (this.upload(`${this.workerFolder}/Partials/Accesses/Try-${this.currentTry}/accesses_${completedElement}_access_${accessesAmount}.json`, accesses));
+        data["accesses"] = accesses
+        /* await (this.upload(`${this.workerFolder}/Partials/Accesses/Try-${this.currentTry}/accesses_${completedElement}_access_${accessesAmount}.json`, accesses)); */
+
+        await (this.upload(`${this.workerFolder}/Partials/Try-${this.currentTry}/questionnaire_${completedElement}_accesses_${accessesAmount}.json`, data));
 
         /* If the worker has completed the last questionnaire */
 
@@ -1129,7 +1148,7 @@ export class SkeletonComponent {
           /* All questionnaire answers are uploaded, only once */
           let answers = [];
           for (let index = 0; index < this.questionnairesForm.length; index++) answers.push(this.questionnairesForm[index].value);
-          await (this.upload(`${this.workerFolder}/Final/questionnaires_answers.json`, answers));
+          await (this.upload(`${this.workerFolder}/Final/questionnaires.json`, answers));
 
         }
 
@@ -1145,6 +1164,8 @@ export class SkeletonComponent {
         /* The index of the completed document is the completed element minus the questionnaire amount */
         let completedDocument = completedElement - this.questionnaireAmount;
 
+        let data = {}
+
         let actionInfo = {
           action: action,
           access: accessesAmount,
@@ -1153,35 +1174,49 @@ export class SkeletonComponent {
           element: "document"
         };
         /* Info about the performed action ("Next"? "Back"? From where?) */
-        await (this.upload(`${this.workerFolder}/Partials/Info/Try-${this.currentTry}/info_${completedElement}_access_${accessesAmount}.json`, actionInfo));
+        data["info"] = actionInfo
+        /* await (this.upload(`${this.workerFolder}/Partials/Info/Try-${this.currentTry}/info_${completedElement}_access_${accessesAmount}.json`, actionInfo)); */
         /* Worker's truth level and justification for the current document */
         let answers = this.documentsForm[completedDocument].value;
-        await (this.upload(`${this.workerFolder}/Partials/Answers/Documents/Try-${this.currentTry}/answer_${completedDocument}_access_${accessesAmount}.json`, answers));
+        data["answers"] = answers
+        /* await (this.upload(`${this.workerFolder}/Partials/Answers/Documents/Try-${this.currentTry}/answer_${completedDocument}_access_${accessesAmount}.json`, answers)); */
         /* Worker's dimensions selected values for the current document */
         let dimensionsSelectedValues = this.dimensionsSelectedValues[completedDocument];
-        await (this.upload(`${this.workerFolder}/Partials/Dimensions/Try-${this.currentTry}/selected_${completedDocument}_access_${accessesAmount}.json`, dimensionsSelectedValues));
+        data["dimensions_selected"] = dimensionsSelectedValues
+        /* await (this.upload(`${this.workerFolder}/Partials/Dimensions/Try-${this.currentTry}/selected_${completedDocument}_access_${accessesAmount}.json`, dimensionsSelectedValues)); */
         /* Worker's search engine queries for the current document */
         let searchEngineQueries = this.searchEngineQueries[completedDocument];
-        await (this.upload(`${this.workerFolder}/Partials/Queries/Try-${this.currentTry}/queries_${completedDocument}_access_${accessesAmount}.json`, searchEngineQueries));
+        data["queries"] = searchEngineQueries
+        /* await (this.upload(`${this.workerFolder}/Partials/Queries/Try-${this.currentTry}/queries_${completedDocument}_access_${accessesAmount}.json`, searchEngineQueries)); */
         /* Responses retrieved by search engine for each worker's query for the current document */
         let responsesRetrieved = this.searchEngineRetrievedResponses[completedDocument];
-        await (this.upload(`${this.workerFolder}/Partials/Responses/Retrieved/Try-${this.currentTry}/retrieved_${completedDocument}_access_${accessesAmount}.json`, responsesRetrieved));
+        data["responses_retrieved"] = responsesRetrieved
+        /* await (this.upload(`${this.workerFolder}/Partials/Responses/Retrieved/Try-${this.currentTry}/retrieved_${completedDocument}_access_${accessesAmount}.json`, responsesRetrieved)); */
         /* Responses by search engine ordered by worker's click for the current document */
         let responsesSelected = this.searchEngineSelectedResponses[completedDocument];
-        await (this.upload(`${this.workerFolder}/Partials/Responses/Selected/Try-${this.currentTry}/selected_${completedDocument}_access_${accessesAmount}.json`, responsesSelected));
+        data["responses_selected"] = responsesSelected
+        /* await (this.upload(`${this.workerFolder}/Partials/Responses/Selected/Try-${this.currentTry}/selected_${completedDocument}_access_${accessesAmount}.json`, responsesSelected)); */
         /* Start, end and elapsed timestamps for the current document */
         let timestampsStart = this.timestampsStart[completedElement];
-        await (this.upload(`${this.workerFolder}/Partials/Timestamps/Start/Try-${this.currentTry}/start_${completedElement}_access_${accessesAmount}.json`, timestampsStart));
+        data["timestamps_start"] = timestampsStart
+        /* await (this.upload(`${this.workerFolder}/Partials/Timestamps/Start/Try-${this.currentTry}/start_${completedElement}_access_${accessesAmount}.json`, timestampsStart)); */
         let timestampsEnd = this.timestampsEnd[completedElement];
-        await (this.upload(`${this.workerFolder}/Partials/Timestamps/End/Try-${this.currentTry}/end_${completedElement}_access_${accessesAmount}.json`, timestampsEnd));
+        data["timestamps_end"] = timestampsEnd
+        /* await (this.upload(`${this.workerFolder}/Partials/Timestamps/End/Try-${this.currentTry}/end_${completedElement}_access_${accessesAmount}.json`, timestampsEnd)); */
         let timestampsElapsed = this.timestampsElapsed[completedElement];
-        await (this.upload(`${this.workerFolder}/Partials/Timestamps/Elapsed/Try-${this.currentTry}/elapsed_${completedElement}_access_${accessesAmount}.json`, timestampsElapsed));
+        data["timestamps_elapsed"] = timestampsElapsed
+        /* await (this.upload(`${this.workerFolder}/Partials/Timestamps/Elapsed/Try-${this.currentTry}/elapsed_${completedElement}_access_${accessesAmount}.json`, timestampsElapsed)); */
         /* Number of accesses to the current document (currentDocument.e., how many times the worker reached the document with a "Back" or "Next" action */
         let accesses = this.elementsAccesses[completedElement];
-        await (this.upload(`${this.workerFolder}/Partials/Accesses/Try-${this.currentTry}/accesses_${completedElement}_access_${accessesAmount}.json`, accesses));
+        data["accesses"] = accesses
+        /* await (this.upload(`${this.workerFolder}/Partials/Accesses/Try-${this.currentTry}/accesses_${completedElement}_access_${accessesAmount}.json`, accesses)); */
+
+        await (this.upload(`${this.workerFolder}/Partials/Try-${this.currentTry}/document_${completedElement}_accesses_${accessesAmount}.json`, data));
 
         /* If the worker has completed the last document */
         if (completedElement == this.questionnaireAmount + this.documentsAmount - 1) {
+
+          data = {}
 
           /* All data about documents are uploaded, only once */
           let actionInfo = {
@@ -1191,25 +1226,37 @@ export class SkeletonComponent {
             current_document: completedElement,
           };
           /* Info about each performed action ("Next"? "Back"? From where?) */
-          await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/info.json`, actionInfo));
+          data["info"] = actionInfo
+          /* await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/info.json`, actionInfo)); */
           /* Worker's truth level and justification for each document */
           let answers = [];
           for (let index = 0; index < this.documentsForm.length; index++) answers.push(this.documentsForm[index].value);
-          await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/documents_answers.json`, answers));
+          data["answers"] = answers
+          /* await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/documents_answers.json`, answers)); */
           /* Worker's dimensions selected values for the current document */
-          await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/dimensions_selected.json`, this.dimensionsSelectedValues));
+          data["dimensions_selected"] = this.dimensionsSelectedValues
+          /* await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/dimensions_selected.json`, this.dimensionsSelectedValues)); */
           /* Worker's search engine queries for each document */
-          await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/queries.json`, this.searchEngineQueries));
+          data["queries"] = this.searchEngineQueries
+          /* await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/queries.json`, this.searchEngineQueries)); */
           /* Responses retrieved by search engine for each worker's query for each document */
-          await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/responses_retrieved.json`, this.searchEngineRetrievedResponses));
+          data["responses_retrieved"] = this.searchEngineRetrievedResponses
+          /* await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/responses_retrieved.json`, this.searchEngineRetrievedResponses)); */
           /* Responses by search engine ordered by worker's click for the current document */
-          await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/responses_selected.json`, this.searchEngineSelectedResponses));
+          data["responses_selected"] = this.searchEngineSelectedResponses
+          /* await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/responses_selected.json`, this.searchEngineSelectedResponses)); */
           /* Start, end and elapsed timestamps for each document */
-          await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/timestamps_start.json`, this.timestampsStart));
-          await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/timestamps_end.json`, this.timestampsEnd));
-          await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/timestamps_elapsed.json`, this.timestampsElapsed));
+          data["timestamps_start"] = this.timestampsStart
+          /* await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/timestamps_start.json`, this.timestampsStart)); */
+          data["timestamps_end"] = this.timestampsStart
+          /* await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/timestamps_end.json`, this.timestampsEnd)); */
+          data["timestamps_elapsed"] = this.timestampsStart
+          /* await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/timestamps_elapsed.json`, this.timestampsElapsed)); */
           /* Number of accesses to each document (currentDocument.e., how many times the worker reached the document with a "Back" or "Next" action */
-          await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/accesses.json`, this.elementsAccesses));
+          data["accesses"] = this.elementsAccesses
+         /* await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/accesses.json`, this.elementsAccesses)); */
+
+         await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/documents.json`, data))
 
         }
 
