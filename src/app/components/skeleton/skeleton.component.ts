@@ -1,5 +1,5 @@
 /* Core modules */
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, ViewChild} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, ViewChild, ViewChildren, QueryList} from '@angular/core';
 /* Reactive forms modules */
 import {AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
 import {MatFormField} from "@angular/material/form-field";
@@ -84,7 +84,6 @@ export class SkeletonComponent {
   taskSuccessful: boolean;
   taskFailed: boolean;
   checkCompleted: boolean;
-  countdownExpired: boolean;
 
   /* References to task stepper and token forms */
   @ViewChild('stepper') stepper: MatStepper;
@@ -210,6 +209,10 @@ export class SkeletonComponent {
   /* Font awesome infoCircle icon */
   faInfoCircle: Object;
 
+  /* |--- COUNTDOWN ---| */
+  @ViewChildren('cd') countdown: QueryList<CountdownComponent>;
+  countdownsExpired: Array<boolean>;
+
   /* |--------- CONSTRUCTOR ---------| */
 
   constructor(
@@ -246,7 +249,6 @@ export class SkeletonComponent {
     this.taskSuccessful = false;
     this.taskFailed = false;
     this.checkCompleted = false;
-    this.countdownExpired = false;
 
     this.tokenInput = new FormControl('', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
     this.tokenForm = formBuilder.group({
@@ -533,6 +535,10 @@ export class SkeletonComponent {
       /* The array of accesses counter is initialized */
       this.elementsAccesses = new Array<number>(this.documentsAmount + this.questionnaireAmount);
       for (let index = 0; index < this.elementsAccesses.length; index++) this.elementsAccesses[index] = 0;
+
+      /* |--- COUNTDOWN ---| */
+      this.countdownsExpired = new Array<boolean>(this.documentsAmount);
+      for (let index = 0; index < this.documentsAmount; index++) this.countdownsExpired[index] = false;
 
       /* |- HIT SEARCH ENGINE - INITIALIZATION-| */
 
@@ -959,6 +965,11 @@ export class SkeletonComponent {
    */
   public performReset() {
 
+    /* |--- COUNTDOWN ---| */
+    if (this.countdown.toArray()[0].left > 0) {
+      this.countdown.toArray()[0].resume();
+    }
+
     /* The loading spinner is started */
     this.ngxService.start();
 
@@ -969,7 +980,6 @@ export class SkeletonComponent {
     this.taskStarted = true;
     this.comment.setValue("");
     this.commentSent = false;
-    this.countdownExpired = false;
 
     /* Set stepper index to the first tab (currentDocument.e., bring the worker to the first document after the questionnaire) */
     this.stepper.selectedIndex = this.questionnaireAmount;
@@ -997,8 +1007,36 @@ export class SkeletonComponent {
    */
   public async performLogging(action: string) {
 
-    if (this.stepper.selectedIndex >= this.questionnaireAmount) {
-      this.countdownExpired = false;
+    /* |--- COUNTDOWN ---| */
+    if(this.stepper.selectedIndex >= this.questionnaireAmount){
+      let currentIndex = this.stepper.selectedIndex - this.questionnaireAmount;
+      switch (action) {
+        case "Next":
+          if (currentIndex > 0 && this.countdown.toArray()[currentIndex - 1].left > 0) {
+            this.countdown.toArray()[currentIndex - 1].pause();
+          }
+          if (this.countdown.toArray()[currentIndex].left == 30) {
+            this.countdown.toArray()[currentIndex].begin();
+          } else if (this.countdown.toArray()[currentIndex].left > 0) {
+            this.countdown.toArray()[currentIndex].resume();
+          }
+          break;
+        case "Back":
+          if (this.countdown.toArray()[currentIndex + 1].left > 0) {
+            this.countdown.toArray()[currentIndex + 1].pause();
+          }
+          if (this.countdown.toArray()[currentIndex].left == 30) {
+            this.countdown.toArray()[currentIndex].begin();
+          } else if (this.countdown.toArray()[currentIndex].left > 0) {
+            this.countdown.toArray()[currentIndex].resume();
+          }
+          break;
+        case "Finish":
+          if (this.countdown.toArray()[currentIndex - 1].left > 0) {
+            this.countdown.toArray()[currentIndex - 1].pause();
+          }
+          break;
+      }
     }
 
     if (!(this.workerIdentifier === null)) {
@@ -1335,11 +1373,10 @@ export class SkeletonComponent {
     return str.trim()
   }
 
-  /* |--------- COUNTDOWN UTILITIES - FUNCTIONS ---------| */
-
-  public handleCountdown(event) {
-    if (event.action == 'done') {
-      this.countdownExpired = true;
+  /* |--- COUNTDOWN ---| */
+  public handleCountdown(event, i) {
+    if (event.left == 0) {
+      this.countdownsExpired[i] = true
     }
   }
 
