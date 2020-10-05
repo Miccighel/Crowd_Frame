@@ -1,9 +1,10 @@
 /* Core modules */
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, ViewChild} from '@angular/core';
 /* Reactive forms modules */
-import {AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms'
+import {AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
 import {MatFormField} from "@angular/material/form-field";
 import {MatStepper} from "@angular/material/stepper";
+import {CountdownComponent} from 'ngx-countdown';
 /* Services */
 import {NgxUiLoaderService} from 'ngx-ui-loader';
 import {ConfigService} from "../../services/config.service";
@@ -83,6 +84,7 @@ export class SkeletonComponent {
   taskSuccessful: boolean;
   taskFailed: boolean;
   checkCompleted: boolean;
+  countdownExpired: boolean;
 
   /* References to task stepper and token forms */
   @ViewChild('stepper') stepper: MatStepper;
@@ -244,6 +246,7 @@ export class SkeletonComponent {
     this.taskSuccessful = false;
     this.taskFailed = false;
     this.checkCompleted = false;
+    this.countdownExpired = false;
 
     this.tokenInput = new FormControl('', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
     this.tokenForm = formBuilder.group({
@@ -966,6 +969,7 @@ export class SkeletonComponent {
     this.taskStarted = true;
     this.comment.setValue("");
     this.commentSent = false;
+    this.countdownExpired = false;
 
     /* Set stepper index to the first tab (currentDocument.e., bring the worker to the first document after the questionnaire) */
     this.stepper.selectedIndex = this.questionnaireAmount;
@@ -992,6 +996,10 @@ export class SkeletonComponent {
    * The "Partial" folder contains a snapshot of the current document each time a user clicks on a "Back" or "Next" button.
    */
   public async performLogging(action: string) {
+
+    if (this.stepper.selectedIndex >= this.questionnaireAmount) {
+      this.countdownExpired = false;
+    }
 
     if (!(this.workerIdentifier === null)) {
 
@@ -1278,6 +1286,14 @@ export class SkeletonComponent {
     let str = ""
     for (word of text) str = str + " " + word[0].toUpperCase() + word.substr(1).toLowerCase();
     return str.trim()
+  }
+
+  /* |--------- COUNTDOWN UTILITIES - FUNCTIONS ---------| */
+
+  public handleCountdown(event) {
+    if (event.action == 'done') {
+      this.countdownExpired = true;
+    }
   }
 
 }

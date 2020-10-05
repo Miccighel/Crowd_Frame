@@ -248,21 +248,21 @@
                   <div class="dimension-content truth-level">
                     <ng-container *ngIf="dimension.style.orientation=='vertical'">
                       <mat-radio-group *ngIf="dimension.scale.type=='discrete'" aria-labelledby="radio-button-label" class="radio-button-group" formControlName="{{(dimension.name).concat('_value')}}">
-                        <mat-radio-button *ngFor="let mapping of dimension.scale.mappings let k=index" class="radio-button" value="{{mapping.value}}" (change)="storeDimensionValue($event, i, dimension.index)">
+                        <mat-radio-button *ngFor="let mapping of dimension.scale.mappings let k=index" class="radio-button" value="{{mapping.value}}" (change)="storeDimensionValue($event, i, dimension.index)" [disabled]="countdownExpired">
                           <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0"> ({{mapping.description}})</span>
                         </mat-radio-button>
                       </mat-radio-group>
                     </ng-container>
                     <ng-container *ngIf="dimension.style.orientation=='horizontal'">
                       <mat-radio-group *ngIf="dimension.scale.type=='discrete'" aria-labelledby="radio-button-label" formControlName="{{(dimension.name).concat('_value')}}">
-                        <mat-radio-button *ngFor="let mapping of dimension.scale.mappings let k=index" class="radio-button" value="{{mapping.value}}" (change)="storeDimensionValue($event, i,dimension.index)">
+                        <mat-radio-button *ngFor="let mapping of dimension.scale.mappings let k=index" class="radio-button" value="{{mapping.value}}" (change)="storeDimensionValue($event, i,dimension.index)" [disabled]="countdownExpired">
                           <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0"> ({{mapping.description}})</span>
                         </mat-radio-button>
                       </mat-radio-group>
                     </ng-container>
                     <label *ngIf="dimension.scale.type=='continue'">Selected value: {{documentsForm[i].controls[(dimension.name).concat('_value')].value}}</label>
                     <mat-slider *ngIf="dimension.scale.type=='continue'" min="{{dimension.scale.min}}" max="{{dimension.scale.max}}" step="{{dimension.scale.step}}" thumbLabel tickInterval="{{dimension.scale.step}}"
-                                formControlName="{{(dimension.name).concat('_value')}}" (change)="storeDimensionValue($event, i,dimension.index)"></mat-slider>
+                                formControlName="{{(dimension.name).concat('_value')}}" (change)="storeDimensionValue($event, i,dimension.index)" [disabled]="countdownExpired"></mat-slider>
                   </div>
                 </div>
                 <div *ngIf="dimension.justification" class="dimension-container dimension-justification">
@@ -355,24 +355,36 @@
             <ng-template *ngIf="this.filterDimensions('matrix', 'middle').length>0" [ngTemplateOutlet]="dimensionMatrix" [ngTemplateOutletContext]="{dimensions: this.filterDimensions('matrix', 'middle'), i:i}"></ng-template>
             <ng-template *ngIf="this.filterDimensions('list', 'bottom').length>0" [ngTemplateOutlet]="dimensionList" [ngTemplateOutletContext]="{dimensions: this.filterDimensions('list', 'bottom'), i:i}"></ng-template>
             <ng-template *ngIf="this.filterDimensions('matrix', 'bottom').length>0" [ngTemplateOutlet]="dimensionMatrix" [ngTemplateOutletContext]="{dimensions: this.filterDimensions('matrix', 'bottom'), i:i}"></ng-template>
+
+            <div>
+              <mat-divider [inset]="true"></mat-divider>
+              <p>
+                <strong>Time left: </strong>
+                <countdown *ngIf="i == (stepper.selectedIndex - questionnaireAmount)"
+                           [config]="{ demand: false, leftTime: 30, format: 's' }"
+                           (event)="handleCountdown($event)"></countdown> seconds
+              </p>
+              <mat-divider [inset]="true"></mat-divider>
+            </div>
+
           </mat-card-content>
 
           <!-- Actions markup -->
           <mat-card-actions>
-            <button mat-flat-button color="primary" matStepperPrevious *ngIf="i>0"
+            <button mat-flat-button color="primary" matStepperPrevious *ngIf="i>0 && false"
                     [disabled]="taskCompleted"
                     (click)="performLogging('Back')">
               Back
             </button>
             <button mat-flat-button color="primary" matStepperNext
                     *ngIf="i+1<this.documentsAmount"
-                    [disabled]="!documentsForm[i].valid || !this.searchEngineRetrievedResponses[i] || taskCompleted"
-                    (click)="performLogging('Next');">
+                    [disabled]="(!documentsForm[i].valid || !this.searchEngineRetrievedResponses[i] || taskCompleted) && !countdownExpired"
+                    (click)="performLogging('Next')">
               Next
             </button>
             <button mat-flat-button color="primary" matStepperNext
                     *ngIf="i+1>=this.documentsAmount"
-                    [disabled]="(!performGlobalValidityCheck()) || taskCompleted"
+                    [disabled]="!documentsForm[i].valid && !countdownExpired"
                     (click)="performLogging('Finish'); performQualityCheck()">
               Finish
             </button>
