@@ -3,7 +3,7 @@ export const environment = {
   production: false,
   configuration_local: true,
 
-  taskName: "Sample",
+  taskName: "CrowdsourcingSkeleton",
   batchName: "Batch-1",
 
   region: 'us-east-2',
