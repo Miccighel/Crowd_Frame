@@ -31,6 +31,7 @@ import {MatSliderModule} from "@angular/material/slider";
 import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import { CountdownModule } from 'ngx-countdown';
+import { GeneratorComponent } from './components/generator/generator.component';
 
 const ngxUiLoaderConfig: NgxUiLoaderConfig = {
   bgsColor: "#3f51b5",
@@ -69,7 +70,8 @@ const ngxUiLoaderConfig: NgxUiLoaderConfig = {
     CrowdXplorer,
     TruncatePipe,
     InstructionsComponent,
-    InstructionsDialog
+    InstructionsDialog,
+    GeneratorComponent
   ],
   imports: [
     BrowserModule,
