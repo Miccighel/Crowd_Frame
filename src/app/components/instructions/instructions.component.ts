@@ -1,5 +1,5 @@
 /* Core modules*/
-import {Component, Inject, Input, OnInit, ViewEncapsulation} from '@angular/core';
+import {Component, Inject, Input, Output, OnInit, ViewEncapsulation, EventEmitter} from '@angular/core';
 /* Material design modules */
 import {MatDialog, MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
 import * as AWS from "aws-sdk";
@@ -40,6 +40,11 @@ export class InstructionsComponent implements OnInit {
   /* @INPUT: Received form Skeleton component */
   @Input() instructionsFile: string;
 
+  /* |--- TASK GENERATOR ---| */
+  @Input() public generator: boolean;
+  @Input() public taskStarted: boolean;
+  @Output() private toggleGenerator: EventEmitter<boolean>;
+
   /* Instructions to perform the task */
   instructions: Array<Instruction>;
   /* Amount of instructions sentences */
@@ -47,7 +52,16 @@ export class InstructionsComponent implements OnInit {
 
   /* |--------- CONSTRUCTOR ---------| */
 
-  constructor(public dialog: MatDialog) {}
+  constructor(public dialog: MatDialog) {
+
+    /* |--- TASK GENERATOR ---| */
+    this.toggleGenerator = new EventEmitter<boolean>();
+  }
+
+  /* |--- TASK GENERATOR ---| */
+  onToggleGenerator(event) {
+    this.toggleGenerator.emit(this.generator);
+  }
 
   /* |--------- ELEMENTS - FUNCTIONS ---------| */
 

@@ -213,6 +213,9 @@ export class SkeletonComponent {
   @ViewChildren('cd') countdown: QueryList<CountdownComponent>;
   countdownsExpired: Array<boolean>;
 
+  /* |--- TASK GENERATOR ---| */
+  generator: boolean;
+
   /* |--------- CONSTRUCTOR ---------| */
 
   constructor(
@@ -249,6 +252,9 @@ export class SkeletonComponent {
     this.taskSuccessful = false;
     this.taskFailed = false;
     this.checkCompleted = false;
+
+    /* |--- TASK GENERATOR ---| */
+    this.generator = false;
 
     this.tokenInput = new FormControl('', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
     this.tokenForm = formBuilder.group({
@@ -1378,6 +1384,11 @@ export class SkeletonComponent {
     if (event.left == 0) {
       this.countdownsExpired[i] = true
     }
+  }
+
+  /* |--- TASK GENERATOR ---| */
+  public onToggleGenerator(event) {
+    this.generator = !this.generator;
   }
 
 }

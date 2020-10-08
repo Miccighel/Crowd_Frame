@@ -7,11 +7,19 @@
   [bucket]="this.bucket"
   [instructionsFile]="this.taskInstructionsFile"
   [configurationLocal]="this.configService.environment.configuration_local"
->
+
+  [generator]="this.generator"
+  [taskStarted]="this.taskStarted"
+  (toggleGenerator)="onToggleGenerator($event)">
 </app-instructions>
 
+<!-- |--- TASK GENERATOR ---| -->
+<app-generator
+  *ngIf="this.generator">
+</app-generator>
+
 <!-- |--------- TOKEN INPUT SECTION - MARKUP ---------| -->
-<div id="token-section" class="container" *ngIf="!taskStarted && taskAllowed && checkCompleted;">
+<div id="token-section" class="container" *ngIf="!generator && !taskStarted && taskAllowed && checkCompleted;">
   <form [formGroup]="tokenForm">
     <mat-card>
       <mat-card-content>

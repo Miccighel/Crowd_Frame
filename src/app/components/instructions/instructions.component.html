@@ -1,6 +1,22 @@
 <mat-toolbar>
-  <button mat-flat-button color="primary" (click)="openDialog(this.instructions)">
+  <button mat-flat-button
+          color="primary"
+          (click)="openDialog(this.instructions)"
+          *ngIf="!this.generator">
     Task Instructions
   </button>
+  <button mat-flat-button
+          color="primary"
+          (click)="onToggleGenerator($event)"
+          *ngIf="!this.generator && !this.taskStarted">
+    Generate Task
+  </button>
+  <button mat-flat-button
+          color="primary"
+          (click)="onToggleGenerator($event)"
+          *ngIf="this.generator">
+    Cancel Generation
+  </button>
+  <span class="example-spacer"></span>
   <h4>NO RETAKES</h4>
 </mat-toolbar>
