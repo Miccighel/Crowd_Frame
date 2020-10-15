@@ -1,6 +1,4 @@
-/*
- * Generic Style
- */
+
 mat-horizontal-stepper {
   width: 96%;
   background-color: transparent;
@@ -27,17 +25,42 @@ button {
   margin-right: 16px;
 }
 
-table {
-  width: 100%;
-  text-align: center;
-}
-
-th, td {
-  padding: 16px 16px 0 16px;
+mat-slide-toggle {
+  margin-left: 16px;
 }
 
 .lighter {
   font-weight: lighter;
+}
+
+.border {
+  border: 1px solid #ddd;
+}
+
+.subsection {
+  border-left: 1px solid #ddd;
+  border-right: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
+}
+
+.indent {
+  margin-left: 16px;
+}
+
+.double-indent {
+  margin-left: 32px;
+}
+
+.left {
+  text-align: left;
+}
+
+.center {
+  text-align: center;
+}
+
+.right {
+  text-align: right;
 }
 
 .width-100 {
@@ -50,6 +73,10 @@ th, td {
 
 .p-16px {
   padding: 16px;
+}
+
+.pr-16px {
+  padding-right: 16px;
 }
 
 .mt-0 {
@@ -75,29 +102,3 @@ th, td {
 .mb-16px {
   margin-bottom: 16px;
 }
-
-/*
- * Step #1 - Questionnaires
- */
-.questionnaireContent {
-  margin-top: 8px;
-  padding-bottom: 16px;
-}
-
-.questionnaireActions {
-  text-align: right;
-}
-
-.questionContent {
-  border: 1px solid #ddd;
-  margin-top: 8px;
-}
-
-.mappingContent {
-  border: 1px solid #ddd;
-  margin-top: 8px;
-}
-
-/*
- * Step #2 - Dimensions
- */

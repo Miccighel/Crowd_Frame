@@ -33,6 +33,7 @@ import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import { CountdownModule } from 'ngx-countdown';
 import { GeneratorComponent } from './components/generator/generator.component';
+import {MatSlideToggleModule} from '@angular/material/slide-toggle';
 
 const ngxUiLoaderConfig: NgxUiLoaderConfig = {
   bgsColor: "#3f51b5",
@@ -110,7 +111,8 @@ const ngxUiLoaderConfig: NgxUiLoaderConfig = {
     MatCheckboxModule,
     FontAwesomeModule,
     MatTooltipModule,
-    CountdownModule
+    CountdownModule,
+    MatSlideToggleModule
   ],
   providers: [],
 })

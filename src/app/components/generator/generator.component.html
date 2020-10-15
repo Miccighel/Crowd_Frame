@@ -18,160 +18,169 @@
             <div *ngFor="let questionnaire of questionnaires().controls; let questionnaireIndex = index"
                  [formGroupName]="questionnaireIndex">
 
-              <!-- Questionnaire -->
+              <!-- Questionnaire START -->
               <mat-card [class.mat-elevation-z3]="true">
                 <mat-card-header>
                   <mat-card-title class="lighter">Questionnaire {{questionnaireIndex + 1}}</mat-card-title>
                 </mat-card-header>
                 <mat-divider></mat-divider>
-                <mat-card-content class="questionnaireContent">
+                <mat-card-content>
 
-                  <!-- QuestionnaireType -->
-                  <mat-form-field [hideRequiredMarker]="questionnaire.get('type').valid">
-                    <mat-label>Type</mat-label>
-                    <mat-select formControlName="type" required (selectionChange)="updateQuestionnaire(questionnaireIndex)">
-                      <mat-option *ngFor="let questionnaireType of questionnaireTypes" [value]="questionnaireType.value">
-                        {{questionnaireType.viewValue}}
-                      </mat-option>
-                    </mat-select>
-                  </mat-form-field>
+                  <!-- Type -->
+                  <table class="width-100 mt-8px">
+                    <tr>
+                      <td class="p-0">
+                        <mat-form-field matLine class="width-100" [hideRequiredMarker]="questionnaire.get('type').valid" appearance="fill">
+                          <mat-label>Type</mat-label>
+                          <mat-select matInput formControlName="type" required (selectionChange)="updateQuestionnaire(questionnaireIndex)">
+                            <mat-option *ngFor="let questionnaireType of questionnaireTypes" [value]="questionnaireType.value">
+                              {{questionnaireType.viewValue}}
+                            </mat-option>
+                          </mat-select>
+                        </mat-form-field>
+                      </td>
+                    </tr>
+                  </table>
 
-                  <!-- QuestionnaireDescription -->
-                  <mat-form-field *ngIf="questionnaire.get('type').value == 'likert'" class="width-100"
-                                  [hideRequiredMarker]="questionnaire.get('description').valid">
-                    <mat-label>Description</mat-label>
-                    <textarea matInput formControlName="description" required></textarea>
-                  </mat-form-field>
+                  <!-- Description -->
+                  <div *ngIf="questionnaire.get('type').value == 'likert'">
+                    <mat-divider [inset]="true"></mat-divider>
 
-                  <!-- QuestionnaireQuestions -->
-                  <div *ngIf="questionnaire.get('type').valid">
-                    <h3 class="lighter mt-8px">Questions:</h3>
-
-                    <div formArrayName="questions">
-                      <div *ngFor="let question of questions(questionnaireIndex).controls; let questionIndex = index"
-                           [formGroupName]="questionIndex" class="questionContent">
-
-                        <table>
-                          <tr>
-                            <td>
-                              <mat-form-field matLine class="width-100" [hideRequiredMarker]="question.get('name').valid">
-                                <mat-label>Name</mat-label>
-                                <input matInput formControlName="name" required>
-                              </mat-form-field>
-                            </td>
-                            <td>
-                              <mat-form-field matLine class="width-100" [hideRequiredMarker]="question.get('text').valid">
-                                <mat-label>Text</mat-label>
-                                <input matInput formControlName="text" required>
-                              </mat-form-field>
-                            </td>
-                            <td>
-                              <button mat-flat-button
-                                      color="primary" class="mb-16px"
-                                      (click)="removeQuestion(questionnaireIndex, questionIndex)">
-                                Remove Question
-                              </button>
-                            </td>
-                          </tr>
-                        </table>
-
-                        <mat-divider *ngIf="questionnaire.get('type').value == 'standard'" [inset]="true"></mat-divider>
-
-                        <div *ngIf="questionnaire.get('type').value == 'standard'" class="p-16px">
-                          <h3 class="lighter mb-8px">Answers:</h3>
-                          <div formArrayName="answers">
-                            <div *ngFor="let answer of answers(questionnaireIndex, questionIndex).controls; let answerIndex = index"
-                                 [formGroupName]="answerIndex">
-                             <table>
-                               <tr>
-                                 <td class="p-0">
-                                   <mat-form-field matLine class="width-100" [hideRequiredMarker]="answer.get('answer').valid">
-                                     <mat-label>Answer</mat-label>
-                                     <input matInput formControlName="answer" required>
-                                   </mat-form-field>
-                                 </td>
-                                 <td class="p-0">
-                                   <button mat-flat-button
-                                           color="primary"
-                                           (click)="removeAnswer(questionnaireIndex, questionIndex, answerIndex)">
-                                     Remove Answer
-                                   </button>
-                                 </td>
-                               </tr>
-                             </table>
-                            </div>
-                          </div>
-                          <button mat-flat-button
-                                  color="primary"
-                                  (click)="addAnswer(questionnaireIndex, questionIndex)">
-                            Add Answer
-                          </button>
-                        </div>
-
-                      </div>
-                    </div>
-                    <button mat-flat-button
-                            color="primary" class="mt-8px mb-8px"
-                            (click)="addQuestion(questionnaireIndex)">
-                      Add Question
-                    </button>
+                    <table class="width-100 mt-16px">
+                      <tr>
+                        <td class="p-0">
+                          <mat-form-field class="width-100" [hideRequiredMarker]="questionnaire.get('description').valid" appearance="fill">
+                            <mat-label>Description</mat-label>
+                            <textarea matInput formControlName="description" required></textarea>
+                          </mat-form-field>
+                        </td>
+                      </tr>
+                    </table>
                   </div>
 
-                  <!-- QuestionnaireMappings -->
-                  <div *ngIf="questionnaire.get('type').value == 'likert'">
-                    <h3 class="lighter mt-16px">Mappings:</h3>
-                    <div formArrayName="mappings">
-                      <div *ngFor="let mapping of mappings(questionnaireIndex).controls; let mappingIndex = index"
-                           [formGroupName]="mappingIndex" class="mappingContent">
-                        <table>
-                          <tr>
-                            <td>
-                              <mat-form-field matLine class="width-100" [hideRequiredMarker]="mapping.get('label').valid">
-                                <mat-label>Label</mat-label>
-                                <input matInput formControlName="label" required>
-                              </mat-form-field>
-                            </td>
-                            <td>
-                              <mat-form-field matLine class="width-100" [hideRequiredMarker]="mapping.get('value').valid">
-                                <mat-label>Value</mat-label>
-                                <input matInput formControlName="value" required>
-                              </mat-form-field>
-                            </td>
-                            <td>
-                              <button mat-flat-button
-                                      color="primary" class="mb-16px"
-                                      (click)="removeMapping(questionnaireIndex, mappingIndex)">
-                                Remove Mapping
-                              </button>
-                            </td>
-                          </tr>
-                        </table>
+                  <!-- Questions -->
+                  <div *ngIf="questionnaire.get('type').value != ''"
+                       formArrayName="questions">
+                    <mat-divider [inset]="true"></mat-divider>
+                    <button mat-flat-button
+                           color="primary" class="mt-16px mb-16px indent"
+                           (click)="addQuestion(questionnaireIndex)">
+                     Add Question
+                    </button>
+                    <div *ngFor="let question of questions(questionnaireIndex).controls; let questionIndex = index"
+                         [formGroupName]="questionIndex">
+                      <table class="width-100">
+                        <tr>
+                          <td class="p-0 pr-16px">
+                            <mat-form-field matLine class="width-100" [hideRequiredMarker]="question.get('name').valid" appearance="fill">
+                              <mat-label>Name</mat-label>
+                              <input matInput type="text" formControlName="name" required>
+                            </mat-form-field>
+                          </td>
+                          <td class="p-0 pr-16px">
+                            <mat-form-field matLine class="width-100" [hideRequiredMarker]="question.get('text').valid" appearance="fill">
+                              <mat-label>Text</mat-label>
+                              <input matInput type="text" formControlName="text" required>
+                            </mat-form-field>
+                          </td>
+                          <td class="p-0 center">
+                            <button mat-flat-button
+                                    color="primary" class="mb-16px"
+                                    [disabled]="questionIndex == '0' && questions(questionnaireIndex).length == 1"
+                                    (click)="removeQuestion(questionnaireIndex, questionIndex)">
+                              Remove Question
+                            </button>
+                          </td>
+                        </tr>
+                      </table>
+                      <div *ngIf="questionnaire.get('type').value == 'standard'" class="mb-16px subsection"
+                           formArrayName="answers">
+                        <button mat-flat-button
+                               color="primary" class="mb-16px double-indent"
+                               (click)="addAnswer(questionnaireIndex, questionIndex)">
+                         Add Answer
+                        </button>
+                        <div *ngFor="let answer of answers(questionnaireIndex, questionIndex).controls; let answerIndex = index"
+                             [formGroupName]="answerIndex">
+                          <table class="width-100 indent">
+                            <tr>
+                              <td class="p-0 pr-16px">
+                                <mat-form-field matLine class="width-100" [hideRequiredMarker]="answer.get('answer').valid" appearance="fill">
+                                  <mat-label>Answer</mat-label>
+                                  <input matInput type="text" formControlName="answer" required>
+                                </mat-form-field>
+                              </td>
+                              <td class="p-0 center">
+                                <button mat-flat-button
+                                        color="primary" class="mb-16px"
+                                        [disabled]="answerIndex == '0' && answers(questionnaireIndex, questionIndex).length == 1"
+                                        (click)="removeAnswer(questionnaireIndex, questionIndex, answerIndex)">
+                                  Remove Answer
+                                </button>
+                              </td>
+                            </tr>
+                          </table>
+                        </div>
                       </div>
                     </div>
+                  </div>
+
+                  <!-- Mapping -->
+                  <div *ngIf="questionnaire.get('type').value == 'likert'"
+                       formArrayName="mapping">
+                    <mat-divider [inset]="true"></mat-divider>
                     <button mat-flat-button
-                            color="primary" class="mt-8px mb-8px"
-                            (click)="addMapping(questionnaireIndex)">
-                      Add Mapping
+                           color="primary" class="mt-16px mb-16px indent"
+                           (click)="addMapping(questionnaireIndex)">
+                     Add Mapping
                     </button>
+                    <div *ngFor="let map of mapping(questionnaireIndex).controls; let mappingIndex = index"
+                         [formGroupName]="mappingIndex">
+                      <table class="width-100">
+                        <tr>
+                          <td class="p-0 pr-16px">
+                            <mat-form-field matLine class="width-100" [hideRequiredMarker]="map.get('label').valid" appearance="fill">
+                              <mat-label>Label</mat-label>
+                              <input matInput type="text" formControlName="label" required>
+                            </mat-form-field>
+                          </td>
+                          <td class="p-0 pr-16px">
+                            <mat-form-field matLine class="width-100" [hideRequiredMarker]="map.get('value').valid" appearance="fill">
+                              <mat-label>Value</mat-label>
+                              <input matInput type="text" formControlName="value" required>
+                            </mat-form-field>
+                          </td>
+                          <td class="p-0 center">
+                            <button mat-flat-button
+                                    color="primary" class="mb-16px"
+                                    [disabled]="mappingIndex == '0' && mapping(questionnaireIndex).length == 1"
+                                    (click)="removeMapping(questionnaireIndex, mappingIndex)">
+                              Remove Mapping
+                            </button>
+                          </td>
+                        </tr>
+                      </table>
+                    </div>
                   </div>
 
                 </mat-card-content>
                 <mat-divider></mat-divider>
-                <mat-card-actions class="questionnaireActions">
-                    <button mat-flat-button
-                            color="primary"
-                            (click)="removeQuestionnaire(questionnaireIndex)">
-                      Remove Questionnaire
-                    </button>
+                <mat-card-actions class="right">
+                  <button mat-flat-button
+                          color="primary"
+                          (click)="removeQuestionnaire(questionnaireIndex)">
+                    Remove Questionnaire
+                  </button>
                 </mat-card-actions>
               </mat-card>
+              <!-- Questionnaire END -->
 
             </div>
           </div>
           <button mat-flat-button
-                  color="primary"
-                  (click)="addQuestionnaire()">
-            Add Questionnaire
+                 color="primary"
+                 (click)="addQuestionnaire()">
+           Add Questionnaire
           </button>
 
         </mat-card-content>
@@ -197,8 +206,275 @@
         <mat-divider></mat-divider>
         <mat-card-content>
 
-          <p>Form Control value: {{ dimensionsForm.value | json }}</p>
-          <p>Form Control status: {{ dimensionsForm.status | json }}</p>
+          <div formArrayName="dimensions">
+            <div *ngFor="let dimension of dimensions().controls; let dimensionIndex = index"
+                 [formGroupName]="dimensionIndex">
+
+              <!-- Dimension START -->
+              <mat-card [class.mat-elevation-z3]="true">
+                <mat-card-header>
+                  <mat-card-title class="lighter">Dimension {{dimensionIndex + 1}}</mat-card-title>
+                </mat-card-header>
+                <mat-divider></mat-divider>
+                <mat-card-content>
+
+                  <!-- Name, Description -->
+                  <table class="width-100 mt-8px">
+                    <tr>
+                      <td class="p-0 pr-16px">
+                        <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimension.get('name').valid" appearance="fill">
+                          <mat-label>Name</mat-label>
+                          <input matInput type="text" formControlName="name" required>
+                        </mat-form-field>
+                      </td>
+                      <td class="p-0">
+                        <mat-form-field class="width-100" appearance="fill">
+                          <mat-label>Description</mat-label>
+                          <textarea matInput formControlName="dimensionDescription"></textarea>
+                        </mat-form-field>
+                      </td>
+                    </tr>
+                  </table>
+
+                  <mat-divider [inset]="true"></mat-divider>
+
+                  <!-- Justification: Text, Min_Words -->
+                  <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="setJustification" (change)="resetJustification(dimensionIndex)">
+                    Justification
+                  </mat-slide-toggle>
+
+                  <div *ngIf="dimension.get('setJustification').value"
+                       formGroupName="justification">
+                    <table class="width-100">
+                      <tr>
+                        <td class="p-0 pr-16px">
+                          <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimension.get('justification').get('text').valid" appearance="fill">
+                            <mat-label>Text</mat-label>
+                            <input matInput type="text" formControlName="text" required>
+                          </mat-form-field>
+                        </td>
+                        <td class="p-0">
+                          <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimension.get('justification').get('min_words').valid" appearance="fill">
+                            <mat-label>Minimum Words</mat-label>
+                            <input matInput type="number" min="0" formControlName="min_words" required>
+                          </mat-form-field>
+                        </td>
+                      </tr>
+                    </table>
+                  </div>
+
+                  <mat-divider [inset]="true"></mat-divider>
+
+                  <!-- Url -->
+                  <table class="width-100 mt-16px">
+                    <tr>
+                      <td class="p-0">
+                        <mat-form-field matLine class="width-100" appearance="fill">
+                          <mat-label>Url</mat-label>
+                          <mat-select matInput formControlName="url">
+                            <mat-option></mat-option>
+                            <mat-option value="true">
+                              True
+                            </mat-option>
+                            <mat-option value="false">
+                              False
+                            </mat-option>
+                          </mat-select>
+                        </mat-form-field>
+                      </td>
+                    </tr>
+                  </table>
+
+                  <mat-divider [inset]="true"></mat-divider>
+
+                  <!-- Scale: Type, {Min, Max, Step} or [Mapping] -->
+                  <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="setScale" (change)="resetScale(dimensionIndex)">
+                    Scale
+                  </mat-slide-toggle>
+
+                  <div *ngIf="dimension.get('setScale').value"
+                       formGroupName="scale">
+                    <table class="width-100">
+                      <tr>
+                        <td class="p-0">
+                          <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimension.get('scale').get('type').valid" appearance="fill">
+                            <mat-label>Type</mat-label>
+                            <mat-select matInput formControlName="type" required (selectionChange)="updateScale(dimensionIndex)">
+                              <mat-option *ngFor="let scaleType of scaleTypes" [value]="scaleType.value">
+                                {{scaleType.viewValue}}
+                              </mat-option>
+                            </mat-select>
+                          </mat-form-field>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <table class="width-100" *ngIf="dimension.get('scale').get('type').value == 'continue'">
+                      <tr>
+                        <td class="p-0 pr-16px">
+                          <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimension.get('scale').get('min').valid" appearance="fill">
+                            <mat-label>Minimum</mat-label>
+                            <input matInput type="number" formControlName="min" required>
+                          </mat-form-field>
+                        </td>
+                        <td class="p-0 pr-16px">
+                          <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimension.get('scale').get('max').valid" appearance="fill">
+                            <mat-label>Maximum</mat-label>
+                            <input matInput type="number" formControlName="max" required>
+                          </mat-form-field>
+                        </td>
+                        <td class="p-0">
+                          <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimension.get('scale').get('step').valid" appearance="fill">
+                            <mat-label>Step</mat-label>
+                            <input matInput type="number" formControlName="step" required>
+                          </mat-form-field>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <div *ngIf="dimension.get('scale').get('type').value == 'discrete'"
+                         formArrayName="mapping">
+                      <button mat-flat-button
+                             color="primary" class="mb-16px indent"
+                             (click)="addDimensionMapping(dimensionIndex)">
+                       Add Mapping
+                      </button>
+                      <div *ngFor="let dimensionMap of dimensionMapping(dimensionIndex).controls; let dimensionMappingIndex = index"
+                           [formGroupName]="dimensionMappingIndex">
+                        <table class="width-100">
+                          <tr>
+                            <td class="p-0 pr-16px">
+                              <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimensionMap.get('label').valid" appearance="fill">
+                                <mat-label>Label</mat-label>
+                                <input matInput type="text" formControlName="label" required>
+                              </mat-form-field>
+                            </td>
+                            <td class="p-0 pr-16px">
+                              <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimensionMap.get('description').valid" appearance="fill">
+                                <mat-label>Description</mat-label>
+                                <input matInput type="text" formControlName="description" required>
+                              </mat-form-field>
+                            </td>
+                            <td class="p-0 pr-16px">
+                              <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimensionMap.get('value').valid" appearance="fill">
+                                <mat-label>Value</mat-label>
+                                <input matInput type="text" formControlName="value" required>
+                              </mat-form-field>
+                            </td>
+                            <td class="p-0 center">
+                              <button mat-flat-button
+                                      color="primary" class="mb-16px"
+                                      [disabled]="dimensionMappingIndex == '0' && dimensionMapping(dimensionIndex).length == 1"
+                                      (click)="removeDimensionMapping(dimensionIndex, dimensionMappingIndex)">
+                                Remove Mapping
+                              </button>
+                            </td>
+                          </tr>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+
+                  <mat-divider [inset]="true"></mat-divider>
+
+                  <!-- Gold Question Check -->
+                  <table class="width-100 mt-16px">
+                    <tr>
+                      <td class="p-0">
+                        <mat-form-field matLine class="width-100" appearance="fill">
+                          <mat-label>Gold Question Check</mat-label>
+                          <mat-select matInput formControlName="gold_question_check">
+                            <mat-option></mat-option>
+                            <mat-option value="true">
+                              True
+                            </mat-option>
+                            <mat-option value="false">
+                              False
+                            </mat-option>
+                          </mat-select>
+                        </mat-form-field>
+                      </td>
+                    </tr>
+                  </table>
+
+                  <mat-divider [inset]="true"></mat-divider>
+
+                  <!-- Style: Type, Position, Orientation, Separator -->
+                  <mat-slide-toggle color="primary" class="mt-16px mb-16px" checked disabled>
+                    Style
+                  </mat-slide-toggle>
+
+                  <div formGroupName="style">
+                    <table class="width-100">
+                      <tr>
+                        <td class="p-0 pr-16px">
+                          <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimension.get('style').get('styleType').valid" appearance="fill">
+                            <mat-label>Type</mat-label>
+                            <mat-select matInput formControlName="styleType" required>
+                              <mat-option *ngFor="let styleType of styleTypes" [value]="styleType.value">
+                                {{styleType.viewValue}}
+                              </mat-option>
+                            </mat-select>
+                          </mat-form-field>
+                        </td>
+                        <td class="p-0 pr-16px">
+                          <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimension.get('style').get('position').valid" appearance="fill">
+                            <mat-label>Position</mat-label>
+                            <mat-select matInput formControlName="position" required>
+                              <mat-option *ngFor="let positionType of positionTypes" [value]="positionType.value">
+                                {{positionType.viewValue}}
+                              </mat-option>
+                            </mat-select>
+                          </mat-form-field>
+                        </td>
+                        <td class="p-0 pr-16px">
+                          <mat-form-field matLine class="width-100" appearance="fill">
+                            <mat-label>Orientation</mat-label>
+                            <mat-select matInput formControlName="orientation">
+                              <mat-option></mat-option>
+                              <mat-option *ngFor="let orientationType of orientationTypes" [value]="orientationType.value">
+                                {{orientationType.viewValue}}
+                              </mat-option>
+                            </mat-select>
+                          </mat-form-field>
+                        </td>
+                        <td class="p-0">
+                          <mat-form-field matLine class="width-100" appearance="fill">
+                            <mat-label>Separator</mat-label>
+                            <mat-select matInput formControlName="separator">
+                              <mat-option></mat-option>
+                              <mat-option value="true">
+                                True
+                              </mat-option>
+                              <mat-option value="false">
+                                False
+                              </mat-option>
+                            </mat-select>
+                          </mat-form-field>
+                        </td>
+                      </tr>
+                    </table>
+                  </div>
+
+                </mat-card-content>
+                <mat-divider></mat-divider>
+                <mat-card-actions class="right">
+                  <button mat-flat-button
+                          color="primary"
+                          (click)="removeDimension(dimensionIndex)">
+                    Remove Dimension
+                  </button>
+                </mat-card-actions>
+              </mat-card>
+              <!-- Dimension END -->
+
+            </div>
+          </div>
+          <button mat-flat-button
+                  color="primary"
+                  (click)="addDimension()">
+            Add Dimension
+          </button>
 
         </mat-card-content>
         <mat-divider></mat-divider>
@@ -223,6 +499,9 @@
         </mat-card-header>
         <mat-divider></mat-divider>
         <mat-card-content>
+
+          <p>Form Control value: {{ dimensionsForm.value | json }}</p>
+          <p>Form Control status: {{ dimensionsForm.status | json }}</p>
 
         </mat-card-content>
         <mat-divider></mat-divider>
@@ -343,7 +622,7 @@
       <mat-divider></mat-divider>
       <mat-card-content>
         <p>Step #1 - Questionnaires: {{ questionnairesJSON() }}</p>
-        <p>Step #2 - Dimensions: </p>
+        <p>Step #2 - Dimensions: {{ dimensionsJSON() }}</p>
         <p>Step #3 - General Instructions: </p>
         <p>Step #4 - Evaluation Instructions: </p>
         <p>Step #5 - Search Engine: </p>
