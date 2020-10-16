@@ -94,15 +94,20 @@ export class GeneratorComponent implements OnInit {
    */
    searchEngineForm: FormGroup;
    sourceTypes: SourceType[] = [
-     {value: 'BingWebSearch', viewValue: 'BingWebSearch'},
-     {value: 'FakerWebSearch', viewValue: 'FakerWebSearch'},
-     {value: 'PubmedSearch', viewValue: 'PubmedSearch'}
+     {value: 'BingWebSearch', viewValue: 'Bing Web'},
+     {value: 'FakerWebSearch', viewValue: 'Faker Web'},
+     {value: 'PubmedSearch', viewValue: 'Pubmed'}
    ];
 
    /*
     * STEP #6 - Task Settings
     */
+   taskSettingsForm: FormGroup;
 
+   /*
+    * STEP #7 - Worker Checks
+    */
+   workerChecksForm: FormGroup;
 
   constructor(private _formBuilder: FormBuilder) {}
 
@@ -147,7 +152,23 @@ export class GeneratorComponent implements OnInit {
     /*
      * STEP #6 - Task Settings
      */
+    this.taskSettingsForm = this._formBuilder.group({
+      allowed_tries: [''],
+      time_check_amount: [''],
+      blacklist_batches: this._formBuilder.array([]),
+      whitelist_batches: this._formBuilder.array([]),
+      messages: this._formBuilder.array([])
+    });
+    this.taskSettingsForm.get('allowed_tries').markAsTouched();
+    this.taskSettingsForm.get('time_check_amount').markAsTouched();
 
+    /*
+     * STEP #7 - Worker Checks
+     */
+    this.workerChecksForm = this._formBuilder.group({
+      blacklist: this._formBuilder.array([]),
+      whitelist: this._formBuilder.array([])
+    });
   }
 
   /*
@@ -553,6 +574,7 @@ export class GeneratorComponent implements OnInit {
   /*
    * STEP #5 - Search Engine
    */
+  /* Domains To Filter */
   domains(): FormArray {
     return this.searchEngineForm.get('domains_to_filter') as FormArray;
   }
@@ -583,5 +605,130 @@ export class GeneratorComponent implements OnInit {
   /*
    * STEP #6 - Task Settings
    */
+   /* Blacklist Batches */
+   blacklistBatches(): FormArray {
+     return this.taskSettingsForm.get('blacklist_batches') as FormArray;
+   }
+
+   addBlacklistBatch() {
+     this.blacklistBatches().push(this._formBuilder.group({
+       blacklist_batch: ['']
+     }))
+   }
+
+   removeBlacklistBatch(blacklistBatchIndex: number) {
+     this.blacklistBatches().removeAt(blacklistBatchIndex);
+   }
+
+   /* Whitelist Batches */
+   whitelistBatches(): FormArray {
+     return this.taskSettingsForm.get('whitelist_batches') as FormArray;
+   }
+
+   addWhitelistBatch() {
+     this.whitelistBatches().push(this._formBuilder.group({
+       whitelist_batch: ['']
+     }))
+   }
+
+   removeWhitelistBatch(whitelistBatchIndex: number) {
+     this.whitelistBatches().removeAt(whitelistBatchIndex);
+   }
+
+   /* Messages */
+   messages(): FormArray {
+     return this.taskSettingsForm.get('messages') as FormArray;
+   }
+
+   addMessage() {
+     this.messages().push(this._formBuilder.group({
+       message: ['']
+     }))
+   }
+
+   removeMessage(messageIndex: number) {
+     this.messages().removeAt(messageIndex);
+   }
+
+   /* Other Functions */
+   taskSettingsJSON() {
+     let taskSettingsJSON = JSON.parse(JSON.stringify(this.taskSettingsForm.value));
+
+     let blacklistBatchesStringArray = [];
+     for (let blacklistBatchIndex in taskSettingsJSON.blacklist_batches) {
+       blacklistBatchesStringArray.push(taskSettingsJSON.blacklist_batches[blacklistBatchIndex].blacklist_batch);
+     }
+     taskSettingsJSON.blacklist_batches = blacklistBatchesStringArray;
+
+     let whitelistBatchesStringArray = [];
+     for (let whitelistBatchIndex in taskSettingsJSON.whitelist_batches) {
+       whitelistBatchesStringArray.push(taskSettingsJSON.whitelist_batches[whitelistBatchIndex].whitelist_batch);
+     }
+     taskSettingsJSON.whitelist_batches = whitelistBatchesStringArray;
+
+     if (taskSettingsJSON.messages.length == 0) {
+       delete taskSettingsJSON.messages;
+     } else {
+       let messagesStringArray = [];
+       for (let messageIndex in taskSettingsJSON.messages) {
+         messagesStringArray.push(taskSettingsJSON.messages[messageIndex].message);
+       }
+       taskSettingsJSON.messages = messagesStringArray;
+     }
+
+     return JSON.stringify(taskSettingsJSON);
+   }
+
+  /*
+   * STEP #7 - Worker Checks
+   */
+  /* Blacklist */
+  blacklistWorkers(): FormArray {
+    return this.workerChecksForm.get('blacklist') as FormArray;
+  }
+
+  addBlacklistWorker() {
+    this.blacklistWorkers().push(this._formBuilder.group({
+      blacklist_worker: ['']
+    }))
+  }
+
+  removeBlacklistWorker(blacklistWorkerIndex: number) {
+    this.blacklistWorkers().removeAt(blacklistWorkerIndex);
+  }
+
+  /* Whitelist */
+  whitelistWorkers(): FormArray {
+    return this.workerChecksForm.get('whitelist') as FormArray;
+  }
+
+  addWhitelistWorker() {
+    this.whitelistWorkers().push(this._formBuilder.group({
+      whitelist_worker: ['']
+    }))
+  }
+
+  removeWhitelistWorker(whitelistWorkerIndex: number) {
+    this.whitelistWorkers().removeAt(whitelistWorkerIndex);
+  }
+
+  /* Other Functions */
+  workerChecksJSON() {
+    let workerChecksJSON = JSON.parse(JSON.stringify(this.workerChecksForm.value));
+
+    let blacklistWorkersStringArray = [];
+    for (let blacklistWorkerIndex in workerChecksJSON.blacklist) {
+      blacklistWorkersStringArray.push(workerChecksJSON.blacklist[blacklistWorkerIndex].blacklist_worker);
+    }
+    workerChecksJSON.blacklist = blacklistWorkersStringArray;
+
+    let whitelistWorkersStringArray = [];
+    for (let whitelistWorkerIndex in workerChecksJSON.whitelist) {
+      whitelistWorkersStringArray.push(workerChecksJSON.whitelist[whitelistWorkerIndex].whitelist_worker);
+    }
+    workerChecksJSON.whitelist = whitelistWorkersStringArray;
+
+    return JSON.stringify(workerChecksJSON);
+  }
 
 }

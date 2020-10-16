@@ -760,8 +760,8 @@
   <!--
     -- Step #6 - Task Settings
     -->
-  <mat-step [stepControl]="dimensionsForm">
-    <form [formGroup]="dimensionsForm">
+  <mat-step [stepControl]="taskSettingsForm">
+    <form [formGroup]="taskSettingsForm">
       <ng-template matStepLabel>Task Settings</ng-template>
       <mat-card [class.mat-elevation-z3]="true">
         <mat-card-header>
@@ -771,9 +771,117 @@
         <mat-divider></mat-divider>
         <mat-card-content>
 
-                              <p>Form Control value: {{ searchEngineForm.value | json }}</p>
-                              <p>Form Control status: {{ searchEngineForm.status | json }}</p>
-                              
+          <!-- Allowed Tries, Time Check Amount-->
+          <table class="width-100 mt-8px">
+            <tr>
+              <td class="p-0 pr-16px">
+                <mat-form-field matLine class="width-100" [hideRequiredMarker]="taskSettingsForm.get('allowed_tries').valid" appearance="fill">
+                  <mat-label>Allowed Tries</mat-label>
+                  <input matInput type="number" min="0" formControlName="allowed_tries" required>
+                </mat-form-field>
+              </td>
+              <td class="p-0">
+                <mat-form-field matLine class="width-100" [hideRequiredMarker]="taskSettingsForm.get('time_check_amount').valid" appearance="fill">
+                  <mat-label>Time Check Amount</mat-label>
+                  <input matInput type="number" min="0" formControlName="time_check_amount" required>
+                </mat-form-field>
+              </td>
+            </tr>
+          </table>
+
+          <mat-divider [inset]="true"></mat-divider>
+
+          <!-- Blacklist Batches -->
+          <div formArrayName="blacklist_batches">
+            <button mat-flat-button
+                   color="primary" class="mt-16px mb-16px indent"
+                   (click)="addBlacklistBatch()">
+             Add Blacklist Batch
+            </button>
+            <div *ngFor="let blacklistBatch of blacklistBatches().controls; let blacklistBatchIndex = index"
+                 [formGroupName]="blacklistBatchIndex">
+              <table class="width-100">
+                <tr>
+                  <td class="p-0 pr-16px">
+                    <mat-form-field matLine class="width-100" [hideRequiredMarker]="blacklistBatch.get('blacklist_batch').valid" appearance="fill">
+                      <mat-label>Blacklist Batch</mat-label>
+                      <input matInput type="text" formControlName="blacklist_batch" required>
+                    </mat-form-field>
+                  </td>
+                  <td class="p-0 center">
+                    <button mat-flat-button
+                            color="primary" class="mb-16px"
+                            (click)="removeBlacklistBatch(blacklistBatchIndex)">
+                      Remove Batch
+                    </button>
+                  </td>
+                </tr>
+              </table>
+            </div>
+          </div>
+
+          <mat-divider [inset]="true"></mat-divider>
+
+          <!-- Whitelist Batches -->
+          <div formArrayName="whitelist_batches">
+            <button mat-flat-button
+                   color="primary" class="mt-16px mb-16px indent"
+                   (click)="addWhitelistBatch()">
+             Add Whitelist Batch
+            </button>
+            <div *ngFor="let whitelistBatch of whitelistBatches().controls; let whitelistBatchIndex = index"
+                 [formGroupName]="whitelistBatchIndex">
+              <table class="width-100">
+                <tr>
+                  <td class="p-0 pr-16px">
+                    <mat-form-field matLine class="width-100" [hideRequiredMarker]="whitelistBatch.get('whitelist_batch').valid" appearance="fill">
+                      <mat-label>Whitelist Batch</mat-label>
+                      <input matInput type="text" formControlName="whitelist_batch" required>
+                    </mat-form-field>
+                  </td>
+                  <td class="p-0 center">
+                    <button mat-flat-button
+                            color="primary" class="mb-16px"
+                            (click)="removeWhitelistBatch(whitelistBatchIndex)">
+                      Remove Batch
+                    </button>
+                  </td>
+                </tr>
+              </table>
+            </div>
+          </div>
+
+          <mat-divider [inset]="true"></mat-divider>
+
+          <!-- Messages -->
+          <div formArrayName="messages">
+            <button mat-flat-button
+                   color="primary" class="mt-16px mb-16px indent"
+                   (click)="addMessage()">
+             Add Message
+            </button>
+            <div *ngFor="let msg of messages().controls; let messageIndex = index"
+                 [formGroupName]="messageIndex">
+              <table class="width-100">
+                <tr>
+                  <td class="p-0 pr-16px">
+                    <mat-form-field matLine class="width-100" [hideRequiredMarker]="msg.get('message').valid" appearance="fill">
+                      <mat-label>Message</mat-label>
+                      <input matInput type="text" formControlName="message" required>
+                    </mat-form-field>
+                  </td>
+                  <td class="p-0 center">
+                    <button mat-flat-button
+                            color="primary" class="mb-16px"
+                            (click)="removeMessage(messageIndex)">
+                      Remove Message
+                    </button>
+                  </td>
+                </tr>
+              </table>
+            </div>
+          </div>
+
         </mat-card-content>
         <mat-divider></mat-divider>
         <mat-card-actions>
@@ -787,8 +895,8 @@
   <!--
     -- Step #7 - Worker Checks
     -->
-  <mat-step [stepControl]="dimensionsForm">
-    <form [formGroup]="dimensionsForm">
+  <mat-step [stepControl]="workerChecksForm">
+    <form [formGroup]="workerChecksForm">
       <ng-template matStepLabel>Worker Checks</ng-template>
       <mat-card [class.mat-elevation-z3]="true">
         <mat-card-header>
@@ -797,6 +905,66 @@
         </mat-card-header>
         <mat-divider></mat-divider>
         <mat-card-content>
+
+          <!-- Blacklist -->
+          <div formArrayName="blacklist">
+            <button mat-flat-button
+                   color="primary" class="mt-8px mb-16px indent"
+                   (click)="addBlacklistWorker()">
+             Add Blacklist Worker
+            </button>
+            <div *ngFor="let blacklistWorker of blacklistWorkers().controls; let blacklistWorkerIndex = index"
+                 [formGroupName]="blacklistWorkerIndex">
+              <table class="width-100">
+                <tr>
+                  <td class="p-0 pr-16px">
+                    <mat-form-field matLine class="width-100" [hideRequiredMarker]="blacklistWorker.get('blacklist_worker').valid" appearance="fill">
+                      <mat-label>Blacklist Worker</mat-label>
+                      <input matInput type="text" formControlName="blacklist_worker" required>
+                    </mat-form-field>
+                  </td>
+                  <td class="p-0 center">
+                    <button mat-flat-button
+                            color="primary" class="mb-16px"
+                            (click)="removeBlacklistWorker(blacklistWorkerIndex)">
+                      Remove Worker
+                    </button>
+                  </td>
+                </tr>
+              </table>
+            </div>
+          </div>
+
+          <mat-divider [inset]="true"></mat-divider>
+
+          <!-- Whitelist -->
+          <div formArrayName="whitelist">
+            <button mat-flat-button
+                   color="primary" class="mt-16px mb-16px indent"
+                   (click)="addWhitelistWorker()">
+             Add Whitelist Worker
+            </button>
+            <div *ngFor="let whitelistWorker of whitelistWorkers().controls; let whitelistWorkerIndex = index"
+                 [formGroupName]="whitelistWorkerIndex">
+              <table class="width-100">
+                <tr>
+                  <td class="p-0 pr-16px">
+                    <mat-form-field matLine class="width-100" [hideRequiredMarker]="whitelistWorker.get('whitelist_worker').valid" appearance="fill">
+                      <mat-label>Whitelist Worker</mat-label>
+                      <input matInput type="text" formControlName="whitelist_worker" required>
+                    </mat-form-field>
+                  </td>
+                  <td class="p-0 center">
+                    <button mat-flat-button
+                            color="primary" class="mb-16px"
+                            (click)="removeWhitelistWorker(whitelistWorkerIndex)">
+                      Remove Worker
+                    </button>
+                  </td>
+                </tr>
+              </table>
+            </div>
+          </div>
 
         </mat-card-content>
         <mat-divider></mat-divider>
@@ -820,18 +988,17 @@
       </mat-card-header>
       <mat-divider></mat-divider>
       <mat-card-content>
-        <p>Step #1 - Questionnaires: {{ questionnairesJSON() }}</p>
-        <p>Step #2 - Dimensions: {{ dimensionsJSON() }}</p>
-        <p>Step #3 - General Instructions: {{ generalInstructionsJSON() }}</p>
-        <p>Step #4 - Evaluation Instructions: {{ evaluationInstructionsJSON() }}</p>
-        <p>Step #5 - Search Engine:  {{ searchEngineJSON() }}</p>
-        <p>Step #6 - Task Settings: </p>
-        <p>Step #7 - Worker Checks: </p>
+        <p>Step #1 - <strong>Questionnaires</strong>: {{ questionnairesJSON() }}</p>
+        <p>Step #2 - <strong>Dimensions</strong>: {{ dimensionsJSON() }}</p>
+        <p>Step #3 - <strong>General Instructions</strong>: {{ generalInstructionsJSON() }}</p>
+        <p>Step #4 - <strong>Evaluation Instructions</strong>: {{ evaluationInstructionsJSON() }}</p>
+        <p>Step #5 - <strong>Search Engine</strong>: {{ searchEngineJSON() }}</p>
+        <p>Step #6 - <strong>Task Settings</strong>: {{ taskSettingsJSON() }}</p>
+        <p>Step #7 - <strong>Worker Checks</strong>: {{ workerChecksJSON() }}</p>
       </mat-card-content>
       <mat-divider></mat-divider>
       <mat-card-actions>
         <button mat-flat-button color="primary" matStepperPrevious>Back</button>
-        <button mat-flat-button color="primary">Finish</button>
       </mat-card-actions>
     </mat-card>
   </mat-step>
