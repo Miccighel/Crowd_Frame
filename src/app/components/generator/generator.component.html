@@ -988,13 +988,38 @@
       </mat-card-header>
       <mat-divider></mat-divider>
       <mat-card-content>
-        <p>Step #1 - <strong>Questionnaires</strong>: {{ questionnairesJSON() }}</p>
-        <p>Step #2 - <strong>Dimensions</strong>: {{ dimensionsJSON() }}</p>
-        <p>Step #3 - <strong>General Instructions</strong>: {{ generalInstructionsJSON() }}</p>
-        <p>Step #4 - <strong>Evaluation Instructions</strong>: {{ evaluationInstructionsJSON() }}</p>
-        <p>Step #5 - <strong>Search Engine</strong>: {{ searchEngineJSON() }}</p>
-        <p>Step #6 - <strong>Task Settings</strong>: {{ taskSettingsJSON() }}</p>
-        <p>Step #7 - <strong>Worker Checks</strong>: {{ workerChecksJSON() }}</p>
+        <h4 class="mb-0">Step #1 - Questionnaires:</h4>
+        <p><code>{{ questionnairesJSON() }}</code></p>
+
+        <mat-divider [inset]="true"></mat-divider>
+
+        <h4 class="mb-0">Step #2 - <strong>Dimensions</strong>:</h4>
+        <p><code>{{ dimensionsJSON() }}</code></p>
+
+        <mat-divider [inset]="true"></mat-divider>
+
+        <h4 class="mb-0">Step #3 - <strong>General Instructions</strong>:</h4>
+        <p><code>{{ generalInstructionsJSON() }}</code></p>
+
+        <mat-divider [inset]="true"></mat-divider>
+
+        <h4 class="mb-0">Step #4 - <strong>Evaluation Instructions</strong>:</h4>
+        <p><code>{{ evaluationInstructionsJSON() }}</code></p>
+
+        <mat-divider [inset]="true"></mat-divider>
+
+        <h4 class="mb-0">Step #5 - <strong>Search Engine</strong>:</h4>
+        <p><code>{{ searchEngineJSON() }}</code></p>
+
+        <mat-divider [inset]="true"></mat-divider>
+
+        <h4 class="mb-0">Step #6 - <strong>Task Settings</strong>:</h4>
+        <p><code>{{ taskSettingsJSON() }}</code></p>
+
+        <mat-divider [inset]="true"></mat-divider>
+
+        <h4 class="mb-0">Step #7 - <strong>Worker Checks</strong>:</h4>
+        <p><code>{{ workerChecksJSON() }}</code></p>
       </mat-card-content>
       <mat-divider></mat-divider>
       <mat-card-actions>
