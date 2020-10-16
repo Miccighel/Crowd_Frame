@@ -489,8 +489,8 @@
   <!--
     -- Step #3 - General Instructions
     -->
-  <mat-step [stepControl]="dimensionsForm">
-    <form [formGroup]="dimensionsForm">
+  <mat-step [stepControl]="generalInstructionsForm">
+    <form [formGroup]="generalInstructionsForm">
       <ng-template matStepLabel>General Instructions</ng-template>
       <mat-card [class.mat-elevation-z3]="true">
         <mat-card-header>
@@ -500,8 +500,81 @@
         <mat-divider></mat-divider>
         <mat-card-content>
 
-          <p>Form Control value: {{ dimensionsForm.value | json }}</p>
-          <p>Form Control status: {{ dimensionsForm.status | json }}</p>
+          <div formArrayName="generalInstructions">
+            <div *ngFor="let generalInstruction of generalInstructions().controls; let generalInstructionIndex = index"
+                 [formGroupName]="generalInstructionIndex">
+
+              <!-- General Instruction START -->
+              <mat-card [class.mat-elevation-z3]="true">
+                <mat-card-header>
+                  <mat-card-title class="lighter">General Instruction {{generalInstructionIndex + 1}}</mat-card-title>
+                </mat-card-header>
+                <mat-divider></mat-divider>
+                <mat-card-content>
+
+                  <!-- Caption -->
+                  <table class="width-100 mt-8px">
+                    <tr>
+                      <td class="p-0">
+                        <mat-form-field matLine class="width-100" appearance="fill">
+                          <mat-label>Caption</mat-label>
+                          <input matInput type="text" formControlName="caption">
+                        </mat-form-field>
+                      </td>
+                    </tr>
+                  </table>
+
+                  <mat-divider [inset]="true"></mat-divider>
+
+                  <!-- Steps -->
+                  <div formArrayName="steps">
+                    <button mat-flat-button
+                            color="primary" class="mt-16px mb-16px indent"
+                            (click)="addGeneralInstructionStep(generalInstructionIndex)">
+                     Add Step
+                    </button>
+                    <div *ngFor="let generalInstructionStep of generalInstructionSteps(generalInstructionIndex).controls; let generalInstructionStepIndex = index"
+                         [formGroupName]="generalInstructionStepIndex">
+                      <table class="width-100">
+                        <tr>
+                          <td class="p-0 pr-16px">
+                            <mat-form-field matLine class="width-100" [hideRequiredMarker]="generalInstructionStep.get('step').valid" appearance="fill">
+                              <mat-label>Step</mat-label>
+                              <input matInput type="text" formControlName="step" required>
+                            </mat-form-field>
+                          </td>
+                          <td class="p-0 center">
+                            <button mat-flat-button
+                                    color="primary" class="mb-16px"
+                                    [disabled]="generalInstructionStepIndex == '0' && generalInstructionSteps(generalInstructionIndex).length == 1"
+                                    (click)="removeGeneralInstructionStep(generalInstructionIndex, generalInstructionStepIndex)">
+                              Remove Step
+                            </button>
+                          </td>
+                        </tr>
+                      </table>
+                    </div>
+                  </div>
+
+                </mat-card-content>
+                <mat-divider></mat-divider>
+                <mat-card-actions class="right">
+                  <button mat-flat-button
+                          color="primary"
+                          (click)="removeGeneralInstruction(generalInstructionIndex)">
+                    Remove General Instruction
+                  </button>
+                </mat-card-actions>
+              </mat-card>
+              <!-- General Instruction END -->
+
+            </div>
+          </div>
+          <button mat-flat-button
+                 color="primary"
+                 (click)="addGeneralInstruction()">
+           Add General Instruction
+          </button>
 
         </mat-card-content>
         <mat-divider></mat-divider>
@@ -526,6 +599,11 @@
         </mat-card-header>
         <mat-divider></mat-divider>
         <mat-card-content>
+
+          
+
+                    <p>Form Control value: {{ generalInstructionsForm.value | json }}</p>
+                    <p>Form Control status: {{ generalInstructionsForm.status | json }}</p>
 
         </mat-card-content>
         <mat-divider></mat-divider>
@@ -623,7 +701,7 @@
       <mat-card-content>
         <p>Step #1 - Questionnaires: {{ questionnairesJSON() }}</p>
         <p>Step #2 - Dimensions: {{ dimensionsJSON() }}</p>
-        <p>Step #3 - General Instructions: </p>
+        <p>Step #3 - General Instructions: {{ generalInstructionsJSON() }}</p>
         <p>Step #4 - Evaluation Instructions: </p>
         <p>Step #5 - Search Engine: </p>
         <p>Step #6 - Task Settings: </p>

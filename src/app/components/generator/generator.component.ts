@@ -52,24 +52,34 @@ export class GeneratorComponent implements OnInit {
   /*
    * STEP #2 - Dimensions
    */
-   dimensionsForm: FormGroup;
-   scaleTypes: ScaleType[] = [
-     {value: 'continue', viewValue: 'Continue'},
-     {value: 'discrete', viewValue: 'Discrete'}
-   ];
-   styleTypes: StyleType[] = [
-     {value: 'list', viewValue: 'List'},
-     {value: 'matrix', viewValue: 'Matrix'}
-   ];
-   positionTypes: PositionType[] = [
-     {value: 'top', viewValue: 'Top'},
-     {value: 'middle', viewValue: 'Middle'},
-     {value: 'bottom', viewValue: 'Bottom'}
-   ];
-   orientationTypes: OrientationType[] = [
-     {value: 'horizontal', viewValue: 'Horizontal'},
-     {value: 'vertical', viewValue: 'Vertical'}
-   ];
+  dimensionsForm: FormGroup;
+  scaleTypes: ScaleType[] = [
+   {value: 'continue', viewValue: 'Continue'},
+   {value: 'discrete', viewValue: 'Discrete'}
+  ];
+  styleTypes: StyleType[] = [
+   {value: 'list', viewValue: 'List'},
+   {value: 'matrix', viewValue: 'Matrix'}
+  ];
+  positionTypes: PositionType[] = [
+   {value: 'top', viewValue: 'Top'},
+   {value: 'middle', viewValue: 'Middle'},
+   {value: 'bottom', viewValue: 'Bottom'}
+  ];
+  orientationTypes: OrientationType[] = [
+   {value: 'horizontal', viewValue: 'Horizontal'},
+   {value: 'vertical', viewValue: 'Vertical'}
+  ];
+
+  /*
+   * STEP #3 - General Instructions
+   */
+  generalInstructionsForm: FormGroup;
+
+  /*
+   * STEP #4 - Evaluation Instructions
+   */
+
 
   constructor(private _formBuilder: FormBuilder) {}
 
@@ -87,6 +97,18 @@ export class GeneratorComponent implements OnInit {
     this.dimensionsForm = this._formBuilder.group({
      dimensions: this._formBuilder.array([])
     });
+
+    /*
+     * STEP #3 - General Instructions
+     */
+    this.generalInstructionsForm = this._formBuilder.group({
+     generalInstructions: this._formBuilder.array([])
+    });
+
+    /*
+     * STEP #4 - Evaluation Instructions
+     */
+
   }
 
   /*
@@ -246,7 +268,7 @@ export class GeneratorComponent implements OnInit {
            position: [''],
            orientation: [''],
            separator: ['']
-         }),
+         })
      }))
    }
 
@@ -385,6 +407,59 @@ export class GeneratorComponent implements OnInit {
 
   /*
    * STEP #3 - General Instructions
+   */
+  generalInstructions(): FormArray {
+   return this.generalInstructionsForm.get('generalInstructions') as FormArray;
+  }
+
+  addGeneralInstruction() {
+   this.generalInstructions().push(this._formBuilder.group({
+     caption: [''],
+     steps: this._formBuilder.array([])
+   }));
+   this.addGeneralInstructionStep(this.generalInstructions().length - 1);
+  }
+
+  removeGeneralInstruction(generalInstructionIndex: number) {
+   this.generalInstructions().removeAt(generalInstructionIndex);
+  }
+
+  /* Steps */
+  generalInstructionSteps(generalInstructionIndex: number): FormArray {
+    return this.generalInstructions().at(generalInstructionIndex).get('steps') as FormArray;
+  }
+
+  addGeneralInstructionStep(generalInstructionIndex: number) {
+    this.generalInstructionSteps(generalInstructionIndex).push(this._formBuilder.group({
+      step: ['']
+    }))
+  }
+
+  removeGeneralInstructionStep(generalInstructionIndex: number, generalInstructionStepIndex: number) {
+    this.generalInstructionSteps(generalInstructionIndex).removeAt(generalInstructionStepIndex);
+  }
+
+  /* Other Functions */
+  generalInstructionsJSON() {
+    let generalInstructionsJSON = JSON.parse(JSON.stringify(this.generalInstructionsForm.get('generalInstructions').value));
+    for (let generalInstructionIndex in generalInstructionsJSON) {
+
+      if (generalInstructionsJSON[generalInstructionIndex].caption == '') {
+       delete generalInstructionsJSON[generalInstructionIndex].caption;
+      }
+
+      let stepsStringArray = [];
+      for (let generalInstructionStepIndex in generalInstructionsJSON[generalInstructionIndex].steps) {
+        stepsStringArray.push(generalInstructionsJSON[generalInstructionIndex].steps[generalInstructionStepIndex].step);
+      }
+      generalInstructionsJSON[generalInstructionIndex].steps = stepsStringArray;
+    }
+
+    return JSON.stringify(generalInstructionsJSON);
+  }
+
+  /*
+   * STEP #4 - Evaluation Instructions
    */
 
 }
