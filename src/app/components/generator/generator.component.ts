@@ -32,6 +32,14 @@ interface OrientationType {
   viewValue: string;
 }
 
+/*
+ * STEP #5 - Search Engine
+ */
+interface SourceType {
+  value: string;
+  viewValue: string;
+}
+
 @Component({
   selector: 'app-generator',
   templateUrl: './generator.component.html',
@@ -79,6 +87,21 @@ export class GeneratorComponent implements OnInit {
   /*
    * STEP #4 - Evaluation Instructions
    */
+  evaluationInstructionsForm: FormGroup;
+
+  /*
+   * STEP #5 - Search Engine
+   */
+   searchEngineForm: FormGroup;
+   sourceTypes: SourceType[] = [
+     {value: 'BingWebSearch', viewValue: 'BingWebSearch'},
+     {value: 'FakerWebSearch', viewValue: 'FakerWebSearch'},
+     {value: 'PubmedSearch', viewValue: 'PubmedSearch'}
+   ];
+
+   /*
+    * STEP #6 - Task Settings
+    */
 
 
   constructor(private _formBuilder: FormBuilder) {}
@@ -107,6 +130,22 @@ export class GeneratorComponent implements OnInit {
 
     /*
      * STEP #4 - Evaluation Instructions
+     */
+    this.evaluationInstructionsForm = this._formBuilder.group({
+     evaluationInstructions: this._formBuilder.array([])
+    });
+
+    /*
+     * STEP #5 - Search Engine
+     */
+    this.searchEngineForm = this._formBuilder.group({
+      source: [''],
+      domains_to_filter: this._formBuilder.array([])
+    });
+    this.searchEngineForm.get('source').markAsTouched();
+
+    /*
+     * STEP #6 - Task Settings
      */
 
   }
@@ -460,6 +499,89 @@ export class GeneratorComponent implements OnInit {
 
   /*
    * STEP #4 - Evaluation Instructions
+   */
+  evaluationInstructions(): FormArray {
+   return this.evaluationInstructionsForm.get('evaluationInstructions') as FormArray;
+  }
+
+  addEvaluationInstruction() {
+   this.evaluationInstructions().push(this._formBuilder.group({
+     caption: [''],
+     steps: this._formBuilder.array([])
+   }));
+   this.addEvaluationInstructionStep(this.evaluationInstructions().length - 1);
+  }
+
+  removeEvaluationInstruction(evaluationInstructionIndex: number) {
+   this.evaluationInstructions().removeAt(evaluationInstructionIndex);
+  }
+
+  /* Steps */
+  evaluationInstructionSteps(evaluationInstructionIndex: number): FormArray {
+    return this.evaluationInstructions().at(evaluationInstructionIndex).get('steps') as FormArray;
+  }
+
+  addEvaluationInstructionStep(evaluationInstructionIndex: number) {
+    this.evaluationInstructionSteps(evaluationInstructionIndex).push(this._formBuilder.group({
+      step: ['']
+    }))
+  }
+
+  removeEvaluationInstructionStep(evaluationInstructionIndex: number, evaluationInstructionStepIndex: number) {
+    this.evaluationInstructionSteps(evaluationInstructionIndex).removeAt(evaluationInstructionStepIndex);
+  }
+
+  /* Other Functions */
+  evaluationInstructionsJSON() {
+    let evaluationInstructionsJSON = JSON.parse(JSON.stringify(this.evaluationInstructionsForm.get('evaluationInstructions').value));
+    for (let evaluationInstructionIndex in evaluationInstructionsJSON) {
+
+      if (evaluationInstructionsJSON[evaluationInstructionIndex].caption == '') {
+       delete evaluationInstructionsJSON[evaluationInstructionIndex].caption;
+      }
+
+      let stepsStringArray = [];
+      for (let evaluationInstructionStepIndex in evaluationInstructionsJSON[evaluationInstructionIndex].steps) {
+        stepsStringArray.push(evaluationInstructionsJSON[evaluationInstructionIndex].steps[evaluationInstructionStepIndex].step);
+      }
+      evaluationInstructionsJSON[evaluationInstructionIndex].steps = stepsStringArray;
+    }
+
+    return JSON.stringify(evaluationInstructionsJSON);
+  }
+
+  /*
+   * STEP #5 - Search Engine
+   */
+  domains(): FormArray {
+    return this.searchEngineForm.get('domains_to_filter') as FormArray;
+  }
+
+  addDomain() {
+    this.domains().push(this._formBuilder.group({
+      url: ['']
+    }))
+  }
+
+  removeDomain(domainIndex: number) {
+    this.domains().removeAt(domainIndex);
+  }
+
+  /* Other Functions */
+  searchEngineJSON() {
+    let searchEngineJSON = JSON.parse(JSON.stringify(this.searchEngineForm.value));
+
+    let domainsStringArray = [];
+    for (let domainIndex in searchEngineJSON.domains_to_filter) {
+      domainsStringArray.push(searchEngineJSON.domains_to_filter[domainIndex].url);
+    }
+    searchEngineJSON.domains_to_filter = domainsStringArray;
+
+    return JSON.stringify(searchEngineJSON);
+  }
+
+  /*
+   * STEP #6 - Task Settings
    */
 
 }
