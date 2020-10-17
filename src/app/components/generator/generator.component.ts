@@ -413,19 +413,30 @@ export class GeneratorComponent implements OnInit {
     for (let dimensionIndex in dimensionsJSON) {
 
       if (dimensionsJSON[dimensionIndex].dimensionDescription == '') {
-       delete dimensionsJSON[dimensionIndex].dimensionDescription;
+        delete dimensionsJSON[dimensionIndex].dimensionDescription;
       } else {
-       dimensionsJSON[dimensionIndex].description = dimensionsJSON[dimensionIndex].dimensionDescription;
-       delete dimensionsJSON[dimensionIndex].dimensionDescription;
+        dimensionsJSON[dimensionIndex].description = dimensionsJSON[dimensionIndex].dimensionDescription;
+        delete dimensionsJSON[dimensionIndex].dimensionDescription;
       }
 
       if (dimensionsJSON[dimensionIndex].setJustification == false) {
-       delete dimensionsJSON[dimensionIndex].justification;
+        delete dimensionsJSON[dimensionIndex].justification;
       }
       delete dimensionsJSON[dimensionIndex].setJustification;
 
       if (dimensionsJSON[dimensionIndex].url == '') {
-       delete dimensionsJSON[dimensionIndex].url;
+        delete dimensionsJSON[dimensionIndex].url;
+      } else {
+        switch (dimensionsJSON[dimensionIndex].url) {
+          case 'true':
+            dimensionsJSON[dimensionIndex].url = true;
+            break;
+          case 'false':
+            dimensionsJSON[dimensionIndex].url = false;
+            break;
+          default:
+            break;
+        }
       }
 
       if (dimensionsJSON[dimensionIndex].setScale == false) {
@@ -447,18 +458,40 @@ export class GeneratorComponent implements OnInit {
       delete dimensionsJSON[dimensionIndex].setScale;
 
       if (dimensionsJSON[dimensionIndex].gold_question_check == '') {
-       delete dimensionsJSON[dimensionIndex].gold_question_check;
+        delete dimensionsJSON[dimensionIndex].gold_question_check;
+      } else {
+        switch (dimensionsJSON[dimensionIndex].gold_question_check) {
+          case 'true':
+            dimensionsJSON[dimensionIndex].gold_question_check = true;
+            break;
+          case 'false':
+            dimensionsJSON[dimensionIndex].gold_question_check = false;
+            break;
+          default:
+            break;
+        }
       }
 
       dimensionsJSON[dimensionIndex].style.type = dimensionsJSON[dimensionIndex].style.styleType;
       delete dimensionsJSON[dimensionIndex].style.styleType;
 
       if (dimensionsJSON[dimensionIndex].style.orientation == '') {
-       delete dimensionsJSON[dimensionIndex].style.orientation;
+        delete dimensionsJSON[dimensionIndex].style.orientation;
       }
 
       if (dimensionsJSON[dimensionIndex].style.separator == '') {
-       delete dimensionsJSON[dimensionIndex].style.separator;
+        delete dimensionsJSON[dimensionIndex].style.separator;
+      } else {
+        switch (dimensionsJSON[dimensionIndex].style.separator) {
+          case 'true':
+            dimensionsJSON[dimensionIndex].style.separator = true;
+            break;
+          case 'false':
+            dimensionsJSON[dimensionIndex].style.separator = false;
+            break;
+          default:
+            break;
+        }
       }
     }
 
