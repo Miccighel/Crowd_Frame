@@ -25,7 +25,7 @@ import {MatExpansionModule} from "@angular/material/expansion";
 import {TruncatePipe} from "./pipes/truncatePipe";
 import {MatIconModule} from "@angular/material/icon";
 import {MatToolbarModule} from "@angular/material/toolbar";
-import {InstructionsComponent, InstructionsDialog} from "./components/instructions/instructions.component";
+import {InstructionsComponent, InstructionsDialog, GeneratorDialog} from "./components/instructions/instructions.component";
 import {MatDialogModule} from "@angular/material/dialog";
 import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MatSliderModule} from "@angular/material/slider";
@@ -73,7 +73,8 @@ const ngxUiLoaderConfig: NgxUiLoaderConfig = {
     TruncatePipe,
     InstructionsComponent,
     InstructionsDialog,
-    GeneratorComponent
+    GeneratorComponent,
+    GeneratorDialog
   ],
   imports: [
     BrowserModule,

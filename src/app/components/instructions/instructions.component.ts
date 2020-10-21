@@ -52,14 +52,23 @@ export class InstructionsComponent implements OnInit {
 
   /* |--------- CONSTRUCTOR ---------| */
 
-  constructor(public dialog: MatDialog) {
+  constructor(public dialog: MatDialog, public generatorDialog: MatDialog) {
 
     /* |--- TASK GENERATOR ---| */
     this.toggleGenerator = new EventEmitter<boolean>();
   }
 
   /* |--- TASK GENERATOR ---| */
-  onToggleGenerator(event) {
+  openGeneratorDialog(): void {
+    const dialogRef = this.generatorDialog.open(GeneratorDialog);
+    dialogRef.afterClosed().subscribe(closeGenerator => {
+      if(closeGenerator) {
+        this.onToggleGenerator();
+      }
+    });
+  }
+
+  onToggleGenerator() {
     this.toggleGenerator.emit(this.generator);
   }
 
@@ -148,3 +157,10 @@ export class InstructionsDialog {
   }
 
 }
+
+/* |--- TASK GENERATOR ---| */
+@Component({
+  selector: 'app-generator-dialog',
+  templateUrl: 'generator-dialog.component.html',
+})
+export class GeneratorDialog {}
