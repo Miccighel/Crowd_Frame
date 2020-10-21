@@ -704,9 +704,10 @@
           <table class="width-100 mt-8px">
             <tr>
               <td class="p-0">
-                <mat-form-field matLine class="width-100" [hideRequiredMarker]="searchEngineForm.get('source').valid" appearance="fill">
+                <mat-form-field matLine class="width-100" appearance="fill">
                   <mat-label>Source</mat-label>
-                  <mat-select matInput formControlName="source" required>
+                  <mat-select matInput formControlName="source">
+                    <mat-option></mat-option>
                     <mat-option *ngFor="let sourceType of sourceTypes" [value]="sourceType.value">
                       {{sourceType.viewValue}}
                     </mat-option>

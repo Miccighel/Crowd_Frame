@@ -94,8 +94,8 @@ export class GeneratorComponent implements OnInit {
    */
    searchEngineForm: FormGroup;
    sourceTypes: SourceType[] = [
-     {value: 'BingWebSearch', viewValue: 'Bing Web'},
-     {value: 'FakerWebSearch', viewValue: 'Faker Web'},
+     {value: 'BingWebSearch', viewValue: 'BingWeb'},
+     {value: 'FakerWebSearch', viewValue: 'FakerWeb'},
      {value: 'PubmedSearch', viewValue: 'Pubmed'}
    ];
 
@@ -294,7 +294,7 @@ export class GeneratorComponent implements OnInit {
           break;
       }
     }
-    return JSON.stringify(questionnairesJSON);
+    return JSON.stringify(questionnairesJSON, null, 1);
   }
 
   /*
@@ -495,7 +495,8 @@ export class GeneratorComponent implements OnInit {
       }
     }
 
-    return JSON.stringify(dimensionsJSON);
+    return JSON.stringify(dimensionsJSON, ['name', 'label', 'description', 'value', 'justification', 'text', 'min_words', 'url', 'scale', 'type', 'min',
+                                           'max', 'step', 'mapping', 'gold_question_check', 'style', 'position', 'orientation', 'separator'], 1);
   }
 
   /*
@@ -548,7 +549,7 @@ export class GeneratorComponent implements OnInit {
       generalInstructionsJSON[generalInstructionIndex].steps = stepsStringArray;
     }
 
-    return JSON.stringify(generalInstructionsJSON);
+    return JSON.stringify(generalInstructionsJSON, null, 1);
   }
 
   /*
@@ -601,7 +602,7 @@ export class GeneratorComponent implements OnInit {
       evaluationInstructionsJSON[evaluationInstructionIndex].steps = stepsStringArray;
     }
 
-    return JSON.stringify(evaluationInstructionsJSON);
+    return JSON.stringify(evaluationInstructionsJSON, null, 1);
   }
 
   /*
@@ -626,13 +627,17 @@ export class GeneratorComponent implements OnInit {
   searchEngineJSON() {
     let searchEngineJSON = JSON.parse(JSON.stringify(this.searchEngineForm.value));
 
+    if (searchEngineJSON.source == undefined) {
+      searchEngineJSON.source = "";
+    }
+
     let domainsStringArray = [];
     for (let domainIndex in searchEngineJSON.domains_to_filter) {
       domainsStringArray.push(searchEngineJSON.domains_to_filter[domainIndex].url);
     }
     searchEngineJSON.domains_to_filter = domainsStringArray;
 
-    return JSON.stringify(searchEngineJSON);
+    return JSON.stringify(searchEngineJSON, ['source', 'domains_to_filter'], 1);
   }
 
   /*
@@ -709,7 +714,7 @@ export class GeneratorComponent implements OnInit {
        taskSettingsJSON.messages = messagesStringArray;
      }
 
-     return JSON.stringify(taskSettingsJSON);
+     return JSON.stringify(taskSettingsJSON, null, 1);
    }
 
   /*
@@ -761,7 +766,7 @@ export class GeneratorComponent implements OnInit {
     }
     workerChecksJSON.whitelist = whitelistWorkersStringArray;
 
-    return JSON.stringify(workerChecksJSON);
+    return JSON.stringify(workerChecksJSON, null, 1);
   }
 
 }
