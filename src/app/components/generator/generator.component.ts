@@ -166,8 +166,8 @@ export class GeneratorComponent implements OnInit {
      * STEP #7 - Worker Checks
      */
     this.workerChecksForm = this._formBuilder.group({
-      blacklist: this._formBuilder.array([]),
-      whitelist: this._formBuilder.array([])
+      blacklist: [''],
+      whitelist: ['']
     });
   }
 
@@ -720,53 +720,23 @@ export class GeneratorComponent implements OnInit {
   /*
    * STEP #7 - Worker Checks
    */
-  /* Blacklist */
-  blacklistWorkers(): FormArray {
-    return this.workerChecksForm.get('blacklist') as FormArray;
-  }
-
-  addBlacklistWorker() {
-    this.blacklistWorkers().push(this._formBuilder.group({
-      blacklist_worker: ['']
-    }))
-  }
-
-  removeBlacklistWorker(blacklistWorkerIndex: number) {
-    this.blacklistWorkers().removeAt(blacklistWorkerIndex);
-  }
-
-  /* Whitelist */
-  whitelistWorkers(): FormArray {
-    return this.workerChecksForm.get('whitelist') as FormArray;
-  }
-
-  addWhitelistWorker() {
-    this.whitelistWorkers().push(this._formBuilder.group({
-      whitelist_worker: ['']
-    }))
-  }
-
-  removeWhitelistWorker(whitelistWorkerIndex: number) {
-    this.whitelistWorkers().removeAt(whitelistWorkerIndex);
-  }
-
   /* Other Functions */
   workerChecksJSON() {
     let workerChecksJSON = JSON.parse(JSON.stringify(this.workerChecksForm.value));
 
-    let blacklistWorkersStringArray = [];
-    for (let blacklistWorkerIndex in workerChecksJSON.blacklist) {
-      blacklistWorkersStringArray.push(workerChecksJSON.blacklist[blacklistWorkerIndex].blacklist_worker);
+    if (workerChecksJSON.blacklist == '') {
+      workerChecksJSON.blacklist = [];
+    } else {
+      workerChecksJSON.blacklist = workerChecksJSON.blacklist.split(";");
     }
-    workerChecksJSON.blacklist = blacklistWorkersStringArray;
 
-    let whitelistWorkersStringArray = [];
-    for (let whitelistWorkerIndex in workerChecksJSON.whitelist) {
-      whitelistWorkersStringArray.push(workerChecksJSON.whitelist[whitelistWorkerIndex].whitelist_worker);
+    if (workerChecksJSON.whitelist == '') {
+      workerChecksJSON.whitelist = [];
+    } else {
+      workerChecksJSON.whitelist = workerChecksJSON.whitelist.split(";");
     }
-    workerChecksJSON.whitelist = whitelistWorkersStringArray;
 
-    return JSON.stringify(workerChecksJSON, null, 1);
+    return JSON.stringify(workerChecksJSON, ['blacklist', 'whitelist'], 1);
   }
 
 }

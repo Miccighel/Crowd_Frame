@@ -908,64 +908,30 @@
         <mat-card-content>
 
           <!-- Blacklist -->
-          <div formArrayName="blacklist">
-            <button mat-flat-button
-                   color="primary" class="mt-8px mb-16px indent"
-                   (click)="addBlacklistWorker()">
-             Add Blacklist Worker
-            </button>
-            <div *ngFor="let blacklistWorker of blacklistWorkers().controls; let blacklistWorkerIndex = index"
-                 [formGroupName]="blacklistWorkerIndex">
-              <table class="width-100">
-                <tr>
-                  <td class="p-0 pr-16px">
-                    <mat-form-field matLine class="width-100" [hideRequiredMarker]="blacklistWorker.get('blacklist_worker').valid" appearance="fill">
-                      <mat-label>Blacklist Worker</mat-label>
-                      <input matInput type="text" formControlName="blacklist_worker" required>
-                    </mat-form-field>
-                  </td>
-                  <td class="p-0 center">
-                    <button mat-flat-button
-                            color="primary" class="mb-16px"
-                            (click)="removeBlacklistWorker(blacklistWorkerIndex)">
-                      Remove Worker
-                    </button>
-                  </td>
-                </tr>
-              </table>
-            </div>
-          </div>
+          <table class="width-100 mt-8px">
+            <tr>
+              <td class="p-0">
+                <mat-form-field class="width-100" appearance="fill">
+                  <mat-label>Blacklist Workers</mat-label>
+                  <textarea matInput formControlName="blacklist" placeholder="blacklistWorker1;blacklistWorker2;etc."></textarea>
+                </mat-form-field>
+              </td>
+            </tr>
+          </table>
 
           <mat-divider [inset]="true"></mat-divider>
 
           <!-- Whitelist -->
-          <div formArrayName="whitelist">
-            <button mat-flat-button
-                   color="primary" class="mt-16px mb-16px indent"
-                   (click)="addWhitelistWorker()">
-             Add Whitelist Worker
-            </button>
-            <div *ngFor="let whitelistWorker of whitelistWorkers().controls; let whitelistWorkerIndex = index"
-                 [formGroupName]="whitelistWorkerIndex">
-              <table class="width-100">
-                <tr>
-                  <td class="p-0 pr-16px">
-                    <mat-form-field matLine class="width-100" [hideRequiredMarker]="whitelistWorker.get('whitelist_worker').valid" appearance="fill">
-                      <mat-label>Whitelist Worker</mat-label>
-                      <input matInput type="text" formControlName="whitelist_worker" required>
-                    </mat-form-field>
-                  </td>
-                  <td class="p-0 center">
-                    <button mat-flat-button
-                            color="primary" class="mb-16px"
-                            (click)="removeWhitelistWorker(whitelistWorkerIndex)">
-                      Remove Worker
-                    </button>
-                  </td>
-                </tr>
-              </table>
-            </div>
-          </div>
+          <table class="width-100 mt-16px">
+            <tr>
+              <td class="p-0">
+                <mat-form-field class="width-100" appearance="fill">
+                  <mat-label>Whitelist Workers</mat-label>
+                  <textarea matInput formControlName="whitelist" placeholder="whitelistWorker1;whitelistWorker2;etc."></textarea>
+                </mat-form-field>
+              </td>
+            </tr>
+          </table>
 
         </mat-card-content>
         <mat-divider></mat-divider>
