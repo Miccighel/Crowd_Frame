@@ -516,9 +516,9 @@
                   <table class="width-100 mt-8px">
                     <tr>
                       <td class="p-0">
-                        <mat-form-field class="width-100" appearance="fill">
+                        <mat-form-field matLine class="width-100" appearance="fill">
                           <mat-label>Caption</mat-label>
-                          <textarea matInput formControlName="caption"></textarea>
+                          <input matInput type="text" formControlName="caption">
                         </mat-form-field>
                       </td>
                     </tr>
@@ -538,9 +538,9 @@
                       <table class="width-100">
                         <tr>
                           <td class="p-0 pr-16px">
-                            <mat-form-field matLine class="width-100" [hideRequiredMarker]="generalInstructionStep.get('step').valid" appearance="fill">
+                            <mat-form-field class="width-100" [hideRequiredMarker]="generalInstructionStep.get('step').valid" appearance="fill">
                               <mat-label>Step</mat-label>
-                              <input matInput type="text" formControlName="step" required>
+                              <textarea matInput formControlName="step" required></textarea>
                             </mat-form-field>
                           </td>
                           <td class="p-0 center">
@@ -616,9 +616,9 @@
                   <table class="width-100 mt-8px">
                     <tr>
                       <td class="p-0">
-                        <mat-form-field class="width-100" appearance="fill">
+                        <mat-form-field matLine class="width-100" appearance="fill">
                           <mat-label>Caption</mat-label>
-                          <textarea matInput formControlName="caption"></textarea>
+                          <input matInput type="text" formControlName="caption">
                         </mat-form-field>
                       </td>
                     </tr>
@@ -638,9 +638,9 @@
                       <table class="width-100">
                         <tr>
                           <td class="p-0 pr-16px">
-                            <mat-form-field matLine class="width-100" [hideRequiredMarker]="evaluationInstructionStep.get('step').valid" appearance="fill">
+                            <mat-form-field class="width-100" [hideRequiredMarker]="evaluationInstructionStep.get('step').valid" appearance="fill">
                               <mat-label>Step</mat-label>
-                              <input matInput type="text" formControlName="step" required>
+                              <textarea matInput formControlName="step" required></textarea>
                             </mat-form-field>
                           </td>
                           <td class="p-0 center">
