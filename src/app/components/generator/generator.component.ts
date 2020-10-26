@@ -62,8 +62,9 @@ export class GeneratorComponent implements OnInit {
    */
   dimensionsForm: FormGroup;
   scaleTypes: ScaleType[] = [
-   {value: 'continue', viewValue: 'Continue'},
-   {value: 'discrete', viewValue: 'Discrete'}
+   {value: 'continue', viewValue: 'Interval'},
+   {value: 'discrete', viewValue: 'Categorical'},
+   {value: 'magnitude_estimation', viewValue: 'Magnitude Estimation'}
   ];
   styleTypes: StyleType[] = [
    {value: 'list', viewValue: 'List'},
@@ -320,7 +321,9 @@ export class GeneratorComponent implements OnInit {
            min: [''],
            max: [''],
            step: [''],
-           mapping: this._formBuilder.array([])
+           mapping: this._formBuilder.array([]),
+           include_lower_bound: [true],
+           include_upper_bound: [true]
          }),
        gold_question_check: [''],
        style: this._formBuilder.group({
@@ -403,6 +406,9 @@ export class GeneratorComponent implements OnInit {
 
      this.dimensionMapping(dimensionIndex).clear();
 
+     dim.get('scale').get('include_lower_bound').setValue(true);
+     dim.get('scale').get('include_upper_bound').setValue(true);
+
      if (dim.get('setScale').value == true && dim.get('scale').get('type').value == 'discrete') {
        this.addDimensionMapping(dimensionIndex);
      }
@@ -445,11 +451,31 @@ export class GeneratorComponent implements OnInit {
         switch (dimensionsJSON[dimensionIndex].scale.type) {
           case 'continue':
             delete dimensionsJSON[dimensionIndex].scale.mapping;
+            delete dimensionsJSON[dimensionIndex].scale.include_lower_bound;
+            delete dimensionsJSON[dimensionIndex].scale.include_upper_bound;
             break;
           case 'discrete':
             delete dimensionsJSON[dimensionIndex].scale.min;
             delete dimensionsJSON[dimensionIndex].scale.max;
             delete dimensionsJSON[dimensionIndex].scale.step;
+            delete dimensionsJSON[dimensionIndex].scale.include_lower_bound;
+            delete dimensionsJSON[dimensionIndex].scale.include_upper_bound;
+            break;
+          case 'magnitude_estimation':
+            if (dimensionsJSON[dimensionIndex].scale.min == null) {
+              dimensionsJSON[dimensionIndex].scale.min = '';
+            }
+            if (dimensionsJSON[dimensionIndex].scale.max == null) {
+              dimensionsJSON[dimensionIndex].scale.max = '';
+            }
+            delete dimensionsJSON[dimensionIndex].scale.step;
+            delete dimensionsJSON[dimensionIndex].scale.mapping;
+            if (dimensionsJSON[dimensionIndex].scale.min == '') {
+              delete dimensionsJSON[dimensionIndex].scale.include_lower_bound;
+            }
+            if (dimensionsJSON[dimensionIndex].scale.max == '') {
+              delete dimensionsJSON[dimensionIndex].scale.include_upper_bound;
+            }
             break;
           default:
             break;
@@ -495,8 +521,8 @@ export class GeneratorComponent implements OnInit {
       }
     }
 
-    return JSON.stringify(dimensionsJSON, ['name', 'label', 'description', 'value', 'justification', 'text', 'min_words', 'url', 'scale', 'type', 'min',
-                                           'max', 'step', 'mapping', 'gold_question_check', 'style', 'position', 'orientation', 'separator'], 1);
+    return JSON.stringify(dimensionsJSON, ['name', 'label', 'description', 'value', 'justification', 'text', 'min_words', 'url', 'scale', 'type', 'min', 'max', 'step',
+                                           'mapping', 'include_lower_bound', 'include_upper_bound', 'gold_question_check', 'style', 'position', 'orientation', 'separator'], 1);
   }
 
   /*

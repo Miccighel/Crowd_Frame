@@ -287,7 +287,7 @@
 
                   <mat-divider [inset]="true"></mat-divider>
 
-                  <!-- Scale: Type, {Min, Max, Step} or [Mapping] -->
+                  <!-- Scale: Type, {Min, Max, Step} or [Mapping] or {Min, Max, IncludeLowerBound, IncludeUpperBound} -->
                   <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="setScale" (change)="resetScale(dimensionIndex)">
                     Scale
                   </mat-slide-toggle>
@@ -373,6 +373,35 @@
                         </table>
                       </div>
                     </div>
+
+                    <table class="width-100" *ngIf="dimension.get('scale').get('type').value == 'magnitude_estimation'">
+                      <tr>
+                        <td class="p-0 pr-16px">
+                          <mat-form-field matLine class="width-100" appearance="fill">
+                            <mat-label>Minimum</mat-label>
+                            <input matInput type="number" formControlName="min">
+                          </mat-form-field>
+                        </td>
+                        <td class="pr-16px checkbox">
+                          <mat-checkbox formControlName="include_lower_bound" color="primary"
+                                        [disabled]="dimension.get('scale').get('min').value == '' || dimension.get('scale').get('min').value == null">
+                            Include Lower Bound
+                          </mat-checkbox>
+                        </td>
+                        <td class="p-0 pr-16px">
+                          <mat-form-field matLine class="width-100" appearance="fill">
+                            <mat-label>Maximum</mat-label>
+                            <input matInput type="number" formControlName="max">
+                          </mat-form-field>
+                        </td>
+                        <td class="checkbox">
+                          <mat-checkbox formControlName="include_upper_bound" color="primary"
+                                        [disabled]="dimension.get('scale').get('max').value == '' || dimension.get('scale').get('max').value == null">
+                            Include Upper Bound
+                          </mat-checkbox>
+                        </td>
+                      </tr>
+                    </table>
                   </div>
 
                   <mat-divider [inset]="true"></mat-divider>
