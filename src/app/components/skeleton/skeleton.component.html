@@ -7,19 +7,11 @@
   [bucket]="this.bucket"
   [instructionsFile]="this.taskInstructionsFile"
   [configurationLocal]="this.configService.environment.configuration_local"
-
-  [generator]="this.generator"
-  [taskStarted]="this.taskStarted"
-  (toggleGenerator)="onToggleGenerator($event)">
+>
 </app-instructions>
 
-<!-- |--- TASK GENERATOR ---| -->
-<app-generator
-  *ngIf="this.generator">
-</app-generator>
-
 <!-- |--------- TOKEN INPUT SECTION - MARKUP ---------| -->
-<div id="token-section" class="container" *ngIf="!generator && !taskStarted && taskAllowed && checkCompleted;">
+<div id="token-section" class="container" *ngIf="!taskStarted && taskAllowed && checkCompleted;">
   <form [formGroup]="tokenForm">
     <mat-card>
       <mat-card-content>
@@ -187,18 +179,7 @@
           <mat-divider [inset]="true"></mat-divider>
           <mat-card-title>Please judge the following statement</mat-card-title>
           <mat-divider [inset]="true"></mat-divider>
-          <mat-card-content class="pt-16px">
-
-            <!--- COUNTDOWN --->
-            <div class="instructions sticky">
-              <h2 class="m-0">
-                Time left:
-                  <countdown #cd
-                             [config]="{ demand: true, leftTime: 30, format: 's' }"
-                             (event)="handleCountdown($event, i)"></countdown> seconds
-              </h2>
-            </div>
-
+          <mat-card-content>
             <!-- Statement markup -->
             <div class="statement">
               <ul>
@@ -267,21 +248,21 @@
                   <div class="dimension-content truth-level">
                     <ng-container *ngIf="dimension.style.orientation=='vertical'">
                       <mat-radio-group *ngIf="dimension.scale.type=='discrete'" aria-labelledby="radio-button-label" class="radio-button-group" formControlName="{{(dimension.name).concat('_value')}}">
-                        <mat-radio-button *ngFor="let mapping of dimension.scale.mappings let k=index" class="radio-button" value="{{mapping.value}}" (change)="storeDimensionValue($event, i, dimension.index)" [disabled]="this.countdownsExpired[i]">
+                        <mat-radio-button *ngFor="let mapping of dimension.scale.mappings let k=index" class="radio-button" value="{{mapping.value}}" (change)="storeDimensionValue($event, i, dimension.index)">
                           <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0"> ({{mapping.description}})</span>
                         </mat-radio-button>
                       </mat-radio-group>
                     </ng-container>
                     <ng-container *ngIf="dimension.style.orientation=='horizontal'">
                       <mat-radio-group *ngIf="dimension.scale.type=='discrete'" aria-labelledby="radio-button-label" formControlName="{{(dimension.name).concat('_value')}}">
-                        <mat-radio-button *ngFor="let mapping of dimension.scale.mappings let k=index" class="radio-button" value="{{mapping.value}}" (change)="storeDimensionValue($event, i,dimension.index)" [disabled]="this.countdownsExpired[i]">
+                        <mat-radio-button *ngFor="let mapping of dimension.scale.mappings let k=index" class="radio-button" value="{{mapping.value}}" (change)="storeDimensionValue($event, i,dimension.index)">
                           <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0"> ({{mapping.description}})</span>
                         </mat-radio-button>
                       </mat-radio-group>
                     </ng-container>
                     <label *ngIf="dimension.scale.type=='continue'">Selected value: {{documentsForm[i].controls[(dimension.name).concat('_value')].value}}</label>
                     <mat-slider *ngIf="dimension.scale.type=='continue'" min="{{dimension.scale.min}}" max="{{dimension.scale.max}}" step="{{dimension.scale.step}}" thumbLabel tickInterval="{{dimension.scale.step}}"
-                                formControlName="{{(dimension.name).concat('_value')}}" (change)="storeDimensionValue($event, i,dimension.index)" [disabled]="this.countdownsExpired[i]"></mat-slider>
+                                formControlName="{{(dimension.name).concat('_value')}}" (change)="storeDimensionValue($event, i,dimension.index)"></mat-slider>
                   </div>
                 </div>
                 <div *ngIf="dimension.justification" class="dimension-container dimension-justification">
@@ -385,13 +366,13 @@
             </button>
             <button mat-flat-button color="primary" matStepperNext
                     *ngIf="i+1<this.documentsAmount"
-                    [disabled]="(!documentsForm[i].valid || !this.searchEngineRetrievedResponses[i] || taskCompleted) && !this.countdownsExpired[i]"
-                    (click)="performLogging('Next')">
+                    [disabled]="!documentsForm[i].valid || !this.searchEngineRetrievedResponses[i] || taskCompleted"
+                    (click)="performLogging('Next');">
               Next
             </button>
             <button mat-flat-button color="primary" matStepperNext
                     *ngIf="i+1>=this.documentsAmount"
-                    [disabled]="!documentsForm[i].valid && !this.countdownsExpired[i]"
+                    [disabled]="(!performGlobalValidityCheck()) || taskCompleted"
                     (click)="performLogging('Finish'); performQualityCheck()">
               Finish
             </button>

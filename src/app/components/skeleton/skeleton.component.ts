@@ -135,6 +135,7 @@ export class SkeletonComponent {
   /* Folder in which upload data produced within the task by current worker */
   workerFolder: string;
 
+
   /* |--------- QUESTIONNAIRE ELEMENTS - DECLARATION ---------| */
 
   /* Array of form references, one for each questionnaire within a Hit */
@@ -228,7 +229,6 @@ export class SkeletonComponent {
 
     /* |--------- SERVICES - INITIALIZATION ---------| */
 
-
     this.changeDetector = changeDetector;
     this.ngxService = ngxService;
     this.configService = configService;
@@ -263,29 +263,6 @@ export class SkeletonComponent {
     this.tokenInputValid = false;
 
     this.currentTry = 1;
-
-    /* |--------- AMAZON AWS INTEGRATION - INITIALIZATION ---------| */
-
-    this.region = this.configService.environment.region;
-    this.bucket = this.configService.environment.bucket;
-    if (this.configService.environment.batchName) {
-      this.folder = `${this.taskName}/${this.batchName}`
-    } else {
-      this.folder = `${this.taskName}/`
-    }
-    this.settingsFile = `${this.folder}/Task/task.json`;
-    this.taskInstructionsFile = `${this.folder}/Task/instructions_main.json`;
-    this.workersFile = `${this.folder}/Task/workers.json`;
-    this.questionnairesFile = `${this.folder}/Task/questionnaires.json`;
-    this.dimensionsInstructionsFile = `${this.folder}/Task/instructions_dimensions.json`;
-    this.dimensionsFile = `${this.folder}/Task/dimensions.json`;
-    this.hitsFile = `${this.folder}/Task/hits.json`;
-    this.workerFolder = `${this.folder}/Data/${this.workerIdentifier}`;
-    this.s3 = new AWS.S3({
-      region: this.region,
-      params: {Bucket: this.bucket},
-      credentials: new AWS.Credentials(this.configService.environment.aws_id_key, this.configService.environment.aws_secret_key)
-    });
 
     /* |--------- SEARCH ENGINE INTEGRATION - INITIALIZATION ---------| */
 
@@ -1384,11 +1361,6 @@ export class SkeletonComponent {
     if (event.left == 0) {
       this.countdownsExpired[i] = true
     }
-  }
-
-  /* |--- TASK GENERATOR ---| */
-  public onToggleGenerator(event) {
-    this.generator = !this.generator;
   }
 
 }

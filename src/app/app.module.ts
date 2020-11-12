@@ -25,7 +25,7 @@ import {MatExpansionModule} from "@angular/material/expansion";
 import {TruncatePipe} from "./pipes/truncatePipe";
 import {MatIconModule} from "@angular/material/icon";
 import {MatToolbarModule} from "@angular/material/toolbar";
-import {InstructionsComponent, InstructionsDialog, GeneratorDialog} from "./components/instructions/instructions.component";
+import {InstructionsComponent, InstructionsDialog} from "./components/instructions/instructions.component";
 import {MatDialogModule} from "@angular/material/dialog";
 import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MatSliderModule} from "@angular/material/slider";
@@ -34,6 +34,7 @@ import {MatTooltipModule} from "@angular/material/tooltip";
 import { CountdownModule } from 'ngx-countdown';
 import { GeneratorComponent } from './components/generator/generator.component';
 import {MatSlideToggleModule} from '@angular/material/slide-toggle';
+import { LoaderComponent } from './components/loader/loader.component';
 
 const ngxUiLoaderConfig: NgxUiLoaderConfig = {
   bgsColor: "#3f51b5",
@@ -74,7 +75,7 @@ const ngxUiLoaderConfig: NgxUiLoaderConfig = {
     InstructionsComponent,
     InstructionsDialog,
     GeneratorComponent,
-    GeneratorDialog
+    LoaderComponent,
   ],
   imports: [
     BrowserModule,
@@ -121,6 +122,8 @@ const ngxUiLoaderConfig: NgxUiLoaderConfig = {
 export class AppModule {
 
   constructor(injector: Injector) {
+    const loaderElement = createCustomElement(LoaderComponent, {injector: injector});
+    customElements.define('app-loader', loaderElement);
     const skeletonElement = createCustomElement(SkeletonComponent, {injector: injector});
     customElements.define('app-skeleton', skeletonElement);
     const bingerElement = createCustomElement(CrowdXplorer, {injector: injector});

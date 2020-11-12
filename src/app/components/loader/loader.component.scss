@@ -1,0 +1,24 @@
+mat-grid-list {
+  height: 100%;
+}
+
+button {
+  text-transform: uppercase;
+  width: 50%;
+  height: 10%;
+  font-size: 3em;
+}
+
+mat-card {
+  width: 96%;
+  margin: 2% auto auto;
+}
+
+mat-card-content, mat-card-actions {
+  padding: 1%;
+}
+
+mat-card-title {
+  margin-top: 1%;
+  margin-bottom: 0.5%;
+}
