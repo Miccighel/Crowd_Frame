@@ -28,7 +28,7 @@
     "core-js": "^3.6.4",
     "favicon": "^0.0.2",
     "ngx-countdown": "^11.0.0",
-    "ngx-ui-loader": "9.1.1",
+    "ngx-ui-loader": "10.0.0",
     "rxjs": "^6.6.3",
     "tslib": "^2.0.0",
     "zone.js": "~0.10.2"
