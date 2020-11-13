@@ -8,8 +8,8 @@ export const environment = {
 
   region: 'us-east-2',
   bucket: 'crowdsourcing-tasks-us',
-  aws_id_key: "AKIAT5QYFVEA4HC2FL7N",
-  aws_secret_key: "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",
+  aws_id_key: "AKIAT5QYFVEAWK54XWUT",
+  aws_secret_key: "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",
 
   bing_api_key: "2cd7c847841743b8accb35e9f6c0eebc"
 

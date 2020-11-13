@@ -314,6 +314,19 @@ mat-horizontal-stepper {
   margin-bottom: 2%;
 }
 
+mat-horizontal-stepper mat-card-content, mat-horizontal-stepper mat-card-title, mat-horizontal-stepper mat-card-actions {
+  width: 75%;
+  margin: auto;
+}
+
+mat-step form mat-card-content, mat-step form mat-card-actions {
+  padding: 1%;
+}
+
+mat-form-field {
+  width: 100%;
+}
+
 /* |--- OUTCOME SECTION STYLES ---| */
 
 /* |--- General ---| */

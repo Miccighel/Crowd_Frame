@@ -3,15 +3,17 @@
  */
 export class Worker {
 
-  mturkId: string;
+  identifier: string;
   properties: Object;
+  folder: string
 
   constructor(
     mturkId: string,
+    folder: string,
     cloudflareData: string,
     navigator: Navigator
   ) {
-    this.mturkId = mturkId
+    this.identifier = mturkId
     let unwantedProperties = [
       "registerProtocolHandler",
       "requestMediaKeySystemAccess",
@@ -37,6 +39,8 @@ export class Worker {
       }
     }
     this.properties = properties
+    this.folder = folder
+
   }
 
 }

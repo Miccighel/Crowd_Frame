@@ -1,5 +1,12 @@
 /* Core modules */
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, ViewChild, ViewChildren, QueryList} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  ViewChild,
+  ViewChildren,
+  QueryList,
+} from '@angular/core';
 /* Reactive forms modules */
 import {AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
 import {MatFormField} from "@angular/material/form-field";
@@ -8,35 +15,26 @@ import {CountdownComponent} from 'ngx-countdown';
 /* Services */
 import {NgxUiLoaderService} from 'ngx-ui-loader';
 import {ConfigService} from "../../services/config.service";
+import {S3Service} from "../../services/s3.service";
 /* Task models */
 import {Document} from "../../models/skeleton/document";
 import {Hit} from "../../models/skeleton/hit";
 import {Questionnaire} from "../../models/skeleton/questionnaire";
 import {Dimension, ScaleContinue} from "../../models/skeleton/dimension";
 import {Instruction} from "../../models/shared/instructions";
-/* AWS Integration*/
-import * as AWS from 'aws-sdk';
-import {ManagedUpload} from "aws-sdk/clients/s3";
 /* Font Awesome icons */
 import {faSpinner} from "@fortawesome/free-solid-svg-icons";
 import {faInfoCircle} from "@fortawesome/free-solid-svg-icons";
 import {Settings} from "../../models/skeleton/settings";
 import {Worker} from "../../models/skeleton/worker";
 import {HttpClient, HttpHeaders} from "@angular/common/http";
-/* Debug config import */
-import * as localRawDimensions from '../../../../data/debug/dimensions.json';
-import * as localRawHits from '../../../../data/debug/hits.json';
-import * as localRawInstructionsDimensions from '../../../../data/debug/instructions_dimensions.json';
-import * as localRawQuestionnaires from '../../../../data/debug/questionnaires.json';
-import * as localRawSettings from '../../../../data/debug/task.json';
-import * as localRawWorkers from '../../../../data/debug/workers.json';
+
 
 /* Component HTML Tag definition */
 @Component({
   selector: 'app-skeleton',
   templateUrl: './skeleton.component.html',
   styleUrls: ['./skeleton.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 /*
@@ -70,6 +68,7 @@ export class SkeletonComponent {
   ngxService: NgxUiLoaderService;
   /* Service to provide an environment-based configuration */
   configService: ConfigService;
+  S3Service: S3Service;
 
   /* HTTP client and headers */
   client: HttpClient;
@@ -107,34 +106,6 @@ export class SkeletonComponent {
   timeCheckAmount: number;
   blacklistBatches: Array<string>
   whitelistBatches: Array<string>
-
-  /* |--------- AMAZON AWS INTEGRATION - DECLARATION ---------| */
-
-  /* AWS S3 Integration*/
-  s3: AWS.S3;
-  /* Region identifier */
-  region: string;
-  /* Bucket identifier */
-  bucket: string;
-  /* Folder to use within the bucket */
-  folder: string;
-  /* File where some general settings are stored */
-  settingsFile: string;
-  /* File where task instructions are stored */
-  taskInstructionsFile: string;
-  /* File where each worker identifier is stored */
-  workersFile: string;
-  /* File where each questionnaire is stored */
-  questionnairesFile: string;
-  /* File where each instruction for dimension assessing is stored */
-  dimensionsInstructionsFile: string;
-  /* File where each dimension to assess is stored */
-  dimensionsFile: string;
-  /* File where each hit is stored */
-  hitsFile: string;
-  /* Folder in which upload data produced within the task by current worker */
-  workerFolder: string;
-
 
   /* |--------- QUESTIONNAIRE ELEMENTS - DECLARATION ---------| */
 
@@ -223,6 +194,7 @@ export class SkeletonComponent {
     changeDetector: ChangeDetectorRef,
     ngxService: NgxUiLoaderService,
     configService: ConfigService,
+    S3Service: S3Service,
     client: HttpClient,
     formBuilder: FormBuilder,
   ) {
@@ -232,6 +204,7 @@ export class SkeletonComponent {
     this.changeDetector = changeDetector;
     this.ngxService = ngxService;
     this.configService = configService;
+    this.S3Service = S3Service;
     this.client = client;
     this.formBuilder = formBuilder;
 
@@ -243,7 +216,6 @@ export class SkeletonComponent {
     this.batchName = this.configService.environment.batchName;
 
     let url = new URL(window.location.href);
-    this.workerIdentifier = url.searchParams.get("workerID");
 
     this.taskAllowed = true;
 
@@ -275,13 +247,15 @@ export class SkeletonComponent {
       "comment": this.comment,
     });
 
+
     /* If there is an external worker which is trying to perform the task, check its status */
     this.loadSettings().then(() => {
+      this.workerIdentifier = url.searchParams.get("workerID");
       if (!(this.workerIdentifier === null)) {
         this.performWorkerStatusCheck().then(outcome => {
           this.client.get('https://www.cloudflare.com/cdn-cgi/trace', {responseType: 'text'}).subscribe(
             cloudflareData => {
-              this.worker = new Worker(this.workerIdentifier, cloudflareData, window.navigator)
+              this.worker = new Worker(this.workerIdentifier, this.S3Service.getWorkerFolder(this.configService.environment, null, this.workerIdentifier), cloudflareData, window.navigator)
               this.taskAllowed = outcome;
               this.changeDetector.detectChanges()
               this.checkCompleted = true
@@ -289,7 +263,7 @@ export class SkeletonComponent {
               this.ngxService.stop();
             },
             error => {
-              this.worker = new Worker(this.workerIdentifier, null, window.navigator)
+              this.worker = new Worker(this.workerIdentifier, this.S3Service.getWorkerFolder(this.configService.environment, null, this.workerIdentifier), null, window.navigator)
               this.taskAllowed = outcome;
               this.changeDetector.detectChanges()
               this.checkCompleted = true
@@ -299,23 +273,26 @@ export class SkeletonComponent {
           )
         })
       } else {
+        this.worker = new Worker(null, null, null, null)
         this.checkCompleted = true
-        this.ngxService.stop();
+        this.ngxService.stop()
+
       }
     })
+
 
     /* Font awesome spinner icon initialization */
     this.faSpinner = faSpinner;
     /* Font awesome info circle icon initialization */
     this.faInfoCircle = faInfoCircle
 
+
   }
 
   /* |--------- GENERAL ELEMENTS - FUNCTIONS ---------| */
 
   public async loadSettings() {
-    let rawSettings = (this.configService.environment.configuration_local) ? localRawSettings["default"] : await this.download(this.settingsFile);
-    this.settings = new Settings(rawSettings)
+    this.settings = new Settings(await this.S3Service.downloadTaskSettings(this.configService.environment))
     this.allowedTries = this.settings.allowedTries
     this.timeCheckAmount = this.settings.timeCheckAmount
     this.blacklistBatches = this.settings.blacklistBatches
@@ -331,7 +308,7 @@ export class SkeletonComponent {
   */
   public async performWorkerStatusCheck() {
     /* The worker identifiers of the current task are downloaded */
-    let workers =  (this.configService.environment.configuration_local) ? localRawWorkers["default"] : await this.download(this.workersFile);
+    let workers = await this.S3Service.downloadWorkers(this.configService.environment)
     if ('started' in workers) {
       workers['blacklist'] = workers['started']
       delete workers['started']
@@ -341,7 +318,7 @@ export class SkeletonComponent {
     if (!blacklistedInCurrentTask) {
 
       for (let blacklistBatch of this.blacklistBatches) {
-        let blacklistedWorkers = await this.download(`${blacklistBatch}Task/workers.json`);
+        let blacklistedWorkers = await this.S3Service.downloadWorkers(this.configService.environment, blacklistBatch)
         if ('started' in blacklistedWorkers) {
           blacklistedWorkers['blacklist'] = blacklistedWorkers['started']
           delete blacklistedWorkers['started']
@@ -354,7 +331,7 @@ export class SkeletonComponent {
       }
 
       for (let whitelistBatch of this.whitelistBatches) {
-        let whitelistedWorkers = await this.download(`${whitelistBatch}Task/workers.json`);
+        let whitelistedWorkers = await this.S3Service.downloadWorkers(this.configService.environment, whitelistBatch)
         if ('started' in whitelistedWorkers) {
           whitelistedWorkers['blacklist'] = whitelistedWorkers['started']
           delete whitelistedWorkers['started']
@@ -363,7 +340,7 @@ export class SkeletonComponent {
           if (currentWorker == this.workerIdentifier) {
             workers['blacklist'].push(this.workerIdentifier);
             workers['whitelist'].push(this.workerIdentifier);
-            let uploadStatus = await (this.upload(this.workersFile, workers));
+            let uploadStatus = await this.S3Service.uploadWorkers(this.configService.environment, workers);
             return !uploadStatus["failed"];
           }
         }
@@ -373,7 +350,7 @@ export class SkeletonComponent {
         return false
       } else {
         workers['blacklist'].push(this.workerIdentifier);
-        let uploadStatus = await (this.upload(this.workersFile, workers));
+        let uploadStatus =  await this.S3Service.uploadWorkers(this.configService.environment, workers);
         return !uploadStatus["failed"];
       }
 
@@ -389,7 +366,7 @@ export class SkeletonComponent {
   * If such token cannot be found, an error message is returned.
   */
   public async validateTokenInput(control: FormControl) {
-    let hits = (this.configService.environment.configuration_local) ? localRawHits["default"] : await this.download(this.hitsFile);
+    let hits = await this.S3Service.downloadHits(this.configService.environment)
     for (let hit of hits) if (hit.token_input === control.value) return null;
     return {"invalid": "This token is not valid."}
   }
@@ -408,10 +385,10 @@ export class SkeletonComponent {
     if (this.tokenForm.valid) {
 
       /* The loading spinner is started */
-      this.ngxService.start();
+      this.ngxService.start('loader-setup');
 
       /* The hits stored on Amazon S3 are retrieved */
-      let hits = (this.configService.environment.configuration_local) ? localRawHits["default"] : await this.download(this.hitsFile);
+      let hits = await this.S3Service.downloadHits(this.configService.environment)
 
       /* Scan each entry for the token input */
       for (let currentHit of hits) {
@@ -433,7 +410,7 @@ export class SkeletonComponent {
       this.questionnaires = new Array<Questionnaire>();
 
       /* The questionnaires stored on Amazon S3 are retrieved */
-      let rawQuestionnaires = (this.configService.environment.configuration_local) ? localRawQuestionnaires["default"] : await this.download(this.questionnairesFile);
+      let rawQuestionnaires = await this.S3Service.downloadQuestionnaires(this.configService.environment)
       this.questionnaireAmount = rawQuestionnaires.length;
 
       /* Each questionnaire is parsed using the Questionnaire class */
@@ -463,7 +440,7 @@ export class SkeletonComponent {
       /* |- HIT DIMENSIONS - INITIALIZATION -| */
 
       /* The dimensions stored on Amazon S3 are retrieved */
-      let rawInstructions = (this.configService.environment.configuration_local) ? localRawInstructionsDimensions["default"] : await this.download(this.dimensionsInstructionsFile);
+      let rawInstructions = await this.S3Service.downloadDimensionsInstructions(this.configService.environment)
       this.instructionsAmount = rawInstructions.length;
 
       /* The instructions are parsed using the Instruction class */
@@ -475,7 +452,7 @@ export class SkeletonComponent {
       this.dimensions = new Array<Dimension>();
 
       /* The dimensions stored on Amazon S3 are retrieved */
-      let rawDimensions = (this.configService.environment.configuration_local) ? localRawDimensions["default"] : await this.download(this.dimensionsFile);
+      let rawDimensions = await this.S3Service.downloadDimensions(this.configService.environment)
       this.dimensionsAmount = rawDimensions.length;
 
       /* Each dimension is parsed using the Dimension class */
@@ -569,7 +546,7 @@ export class SkeletonComponent {
       this.changeDetector.detectChanges();
 
       /* The loading spinner is stopped */
-      this.ngxService.stop();
+      this.ngxService.stop('loader-setup');
 
     }
   }
@@ -883,7 +860,7 @@ export class SkeletonComponent {
   public async performQualityCheck() {
 
     /* The loading spinner is started */
-    this.ngxService.start();
+    this.ngxService.start('loader-quality-check');
 
     /* The current try is completed and the final can shall begin */
     this.taskCompleted = true;
@@ -924,21 +901,26 @@ export class SkeletonComponent {
     }
 
     /* The result of quality check control for the current try is uploaded to the Amazon S3 bucket. */
-    if (!(this.workerIdentifier === null)) {
+    if (!(this.worker.identifier === null)) {
       let qualityCheckData = {
         globalFormValidity: globalValidityCheck,
         goldQuestionCheck: goldQuestionCheck,
         timeSpentCheck: timeSpentCheck,
         timeCheckAmount: timeCheckAmount,
       };
-      await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/checks.json`, qualityCheckData));
+      let uploadStatus = await this.S3Service.uploadQualityCheck(
+        this.configService.environment,
+        this.worker,
+        qualityCheckData,
+        this.currentTry
+      )
     }
 
     /* Detect changes within the DOM and stop the spinner */
     this.changeDetector.detectChanges();
 
     /* The loading spinner is stopped */
-    this.ngxService.stop();
+    this.ngxService.stop('loader-quality-check');
 
   }
 
@@ -954,7 +936,7 @@ export class SkeletonComponent {
     }
 
     /* The loading spinner is started */
-    this.ngxService.start();
+    this.ngxService.start('loader-reset');
 
     /* Control variables to restore the state of task */
     this.taskFailed = false;
@@ -974,7 +956,7 @@ export class SkeletonComponent {
     this.currentTry = this.currentTry + 1;
 
     /* The loading spinner is stopped */
-    this.ngxService.stop();
+    this.ngxService.stop('loader-reset');
 
   }
 
@@ -1022,7 +1004,7 @@ export class SkeletonComponent {
       }
     }
 
-    if (!(this.workerIdentifier === null)) {
+    if (!(this.worker.identifier === null)) {
 
       /*
        * IMPORTANT: The current document index is the stepper current index AFTER the transition
@@ -1106,7 +1088,7 @@ export class SkeletonComponent {
           let taskData = {
             task_id: this.taskName,
             batch_name: this.batchName,
-            worker_id: this.workerIdentifier,
+            worker_id: this.worker.identifier,
             unit_id: this.unitId,
             token_input: this.tokenInput.value,
             token_output: this.tokenOutput,
@@ -1131,7 +1113,7 @@ export class SkeletonComponent {
           data["worker"] = this.worker
           /* await (this.upload(`${this.workerFolder}/worker.json`, this.worker)); */
 
-          await (this.upload(`${this.workerFolder}/hit.json`, data));
+          let uploadStatus = await this.S3Service.uploadTaskData(this.configService.environment, this.worker, data)
 
         }
 
@@ -1148,27 +1130,21 @@ export class SkeletonComponent {
         };
         /* Info about the performed action ("Next"? "Back"? From where?) */
         data["info"] = actionInfo
-        /* await (this.upload(`${this.workerFolder}/Partials/Info/Try-${this.currentTry}/info_${completedElement}_access_${accessesAmount}.json`, actionInfo)); */
         /* Worker's answers to the current questionnaire */
         let answers = this.questionnairesForm[completedElement].value;
         data["answers"] = answers
-        /* await (this.upload(`${this.workerFolder}/Partials/Answers/Questionnaires/answer_${completedElement}.json`, answers)); */
         /* Start, end and elapsed timestamps for the current questionnaire */
         let timestampsStart = this.timestampsStart[completedElement];
         data["timestamps_start"] = timestampsStart
-        /* await (this.upload(`${this.workerFolder}/Partials/Timestamps/Start/Try-${this.currentTry}/start_${completedElement}_access_${accessesAmount}.json`, timestampsStart)); */
         let timestampsEnd = this.timestampsEnd[completedElement];
         data["timestamps_end"] = timestampsEnd
-        /* await (this.upload(`${this.workerFolder}/Partials/Timestamps/End/Try-${this.currentTry}/end_${completedElement}_access_${accessesAmount}.json`, timestampsEnd)); */
         let timestampsElapsed = this.timestampsElapsed[completedElement];
         data["timestamps_elapsed"] = timestampsElapsed
-        /* await (this.upload(`${this.workerFolder}/Partials/Timestamps/Elapsed/Try-${this.currentTry}/elapsed_${completedElement}_access_${accessesAmount}.json`, timestampsElapsed)); */
         /* Number of accesses to the current questionnaire (which must be always 1, since the worker cannot go back */
         let accesses = this.elementsAccesses[completedElement];
         data["accesses"] = accesses
-        /* await (this.upload(`${this.workerFolder}/Partials/Accesses/Try-${this.currentTry}/accesses_${completedElement}_access_${accessesAmount}.json`, accesses)); */
 
-        await (this.upload(`${this.workerFolder}/Partials/Try-${this.currentTry}/questionnaire_${completedElement}_accesses_${accessesAmount}.json`, data));
+        let uploadStatus = await this.S3Service.uploadQuestionnaire(this.configService.environment, this.worker, data, false, this.currentTry, completedElement, accessesAmount)
 
         /* If the worker has completed the last questionnaire */
 
@@ -1177,7 +1153,7 @@ export class SkeletonComponent {
           /* All questionnaire answers are uploaded, only once */
           let answers = [];
           for (let index = 0; index < this.questionnairesForm.length; index++) answers.push(this.questionnairesForm[index].value);
-          await (this.upload(`${this.workerFolder}/Final/questionnaires.json`, answers));
+          let uploadStatus = await this.S3Service.uploadQuestionnaire(this.configService.environment, this.worker, data, true)
 
         }
 
@@ -1240,7 +1216,7 @@ export class SkeletonComponent {
         data["accesses"] = accesses
         /* await (this.upload(`${this.workerFolder}/Partials/Accesses/Try-${this.currentTry}/accesses_${completedElement}_access_${accessesAmount}.json`, accesses)); */
 
-        await (this.upload(`${this.workerFolder}/Partials/Try-${this.currentTry}/document_${completedElement}_accesses_${accessesAmount}.json`, data));
+        let uploadStatus = await this.S3Service.uploadDocument(this.configService.environment, this.worker, data, false, this.currentTry, completedElement, accessesAmount)
 
         /* If the worker has completed the last document */
         if (completedElement == this.questionnaireAmount + this.documentsAmount - 1) {
@@ -1285,15 +1261,12 @@ export class SkeletonComponent {
           data["accesses"] = this.elementsAccesses
          /* await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/accesses.json`, this.elementsAccesses)); */
 
-         await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/documents.json`, data))
+          let uploadStatus = await this.S3Service.uploadDocument(this.configService.environment, this.worker, data, true, this.currentTry)
 
         }
 
         /* The amount of accesses to the current document is incremented */
         this.elementsAccesses[completedElement] = accessesAmount + 1;
-
-        // @ts-ignore
-        send_log("message", this.workerIdentifier)
 
       }
 
@@ -1305,34 +1278,8 @@ export class SkeletonComponent {
    * The comment can be typed in a textarea and when the worker clicks the "Send" button such comment is uploaded to an Amazon S3 bucket.
    */
   public async performCommentSaving() {
-    if (!(this.workerIdentifier === null)) await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/comment.json`, this.commentForm.value));
+    let uploadStatus = await this.S3Service.uploadComment(this.configService.environment, this.worker, this.commentForm.value, this.currentTry)
     this.commentSent = true;
-  }
-
-  /*
-   * This function performs a GetObject operation to Amazon S3 and returns a parsed JSON which is the requested resource.
-   * https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html
-   */
-  public async download(path: string) {
-    return JSON.parse(
-      (await (this.s3.getObject({
-        Bucket: this.bucket,
-        Key: path
-      }).promise())).Body.toString('utf-8')
-    );
-  }
-
-  /*
-   * This function performs an Upload operation to Amazon S3 and returns a JSON object which contains info about the outcome.
-   * https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#upload-property
-   */
-  public async upload(path: string, payload: Object): Promise<ManagedUpload> {
-    return this.s3.upload({
-      Key: path,
-      Bucket: this.bucket,
-      Body: JSON.stringify(payload, null, "\t")
-    }, function (err, data) {
-    })
   }
 
   /* |--------- UTILITIES ELEMENTS - FUNCTIONS ---------| */

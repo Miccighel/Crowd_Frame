@@ -1,21 +1,10 @@
-<mat-grid-list *ngIf="!this.selectionPerformed" cols="2" rowHeight="fit">
+<mat-grid-list cols="2" rowHeight="fit">
   <mat-grid-tile class="green-theme">
-    <button id="generate-button" mat-raised-button color="primary" (click)="loadAction('generate')" >Generate</button>
+    <button id="generate-button" mat-raised-button color="primary" >Generate</button>
   </mat-grid-tile>
   <mat-grid-tile>
-    <button id="perform-button" mat-raised-button color="primary" (click)="loadAction('perform')">Perform</button>
+    <button id="perform-button" mat-raised-button color="primary">Perform</button>
   </mat-grid-tile>
 </mat-grid-list>
-<app-generator *ngIf="this.selectionPerformed && this.actionChosen=='generate'"></app-generator>
-<mat-card  *ngIf="this.selectionPerformed && this.actionChosen=='perform'" id="skeleton-loading-screen">
-  <mat-card-title>
-    Failure
-  </mat-card-title>
-  <mat-card-content>
-
-  </mat-card-content>
-  <mat-card-content>
-
-  </mat-card-content>
-
-</mat-card>
+<app-generator ></app-generator>
+<app-skeleton></app-skeleton>

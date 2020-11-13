@@ -16,6 +16,7 @@
         }
       ]
     },
+    "url": true,
     "gold_question_check": true,
     "style": {
       "type": "list",

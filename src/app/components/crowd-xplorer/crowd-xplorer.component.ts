@@ -19,7 +19,7 @@ import {ConfigService} from "../../services/config.service";
 import * as AWS from "aws-sdk";
 import {Settings} from "../../models/crowd-xplorer/settings";
 /* Debug config import */
-import * as localRawSettings from '../../../../data/debug/search_engine.json';
+import {S3Service} from "../../services/s3.service";
 
 /* Component HTML Tag definition */
 @Component({
@@ -49,6 +49,9 @@ export class CrowdXplorer {
 
   /* Loading screen service */
   ngxService: NgxUiLoaderService;
+  /* Service to provide an environment-based configuration */
+  configService: ConfigService;
+  S3Service: S3Service;
 
   /* Implementation to query Bing Web Search (Service + REST Interface)*/
   bingService: BingService;
@@ -62,8 +65,6 @@ export class CrowdXplorer {
   pubmedSearchResponse: PubmedSearchResponse;
   pubmedSummaryResponse: PubmedSummaryResponse;
 
-  /* Service to provide an environment-based configuration */
-  configService: ConfigService;
 
   /* Search form UI controls */
   searchForm: FormGroup;
@@ -120,6 +121,7 @@ export class CrowdXplorer {
 
   constructor(
     ngxService: NgxUiLoaderService,
+    S3Service: S3Service,
     bingService: BingService,
     fakerService: FakerService,
     pubmedService: PubmedService,
@@ -131,6 +133,7 @@ export class CrowdXplorer {
 
     /* Service initialization */
     this.ngxService = ngxService;
+    this.S3Service = S3Service;
     this.bingService = bingService;
     this.fakerService = fakerService;
     this.pubmedService = pubmedService;
@@ -152,34 +155,15 @@ export class CrowdXplorer {
     this.resultEmitter = new EventEmitter<Object>();
     this.selectedRowEmitter = new EventEmitter<Object>();
 
-    /* The random digits for the current Binger instances are generated */
+    /* The random digits for the current instances are generated */
     this.digits = this.randomDigits();
-
-    /* |--------- AMAZON AWS INTEGRATION - INITIALIZATION ---------| */
-
-    this.taskName = this.configService.environment.taskName;
-    this.batchName = this.configService.environment.batchName;
-
-    this.region = this.configService.environment.region;
-    this.bucket = this.configService.environment.bucket;
-    if (this.configService.environment.batchName) {
-      this.folder = `${this.taskName}/${this.batchName}`
-    } else {
-      this.folder = `${this.taskName}`
-    }
-    this.settingsFile = `${this.folder}/Task/search_engine.json`;
-    this.s3 = new AWS.S3({
-      region: this.region,
-      params: {Bucket: this.bucket},
-      credentials: new AWS.Credentials(this.configService.environment.aws_id_key, this.configService.environment.aws_secret_key)
-    });
 
     this.loadSettings().then(() => {})
 
   }
 
   public async loadSettings() {
-    let rawSettings = (this.configService.environment.configuration_local) ? localRawSettings["default"] : await this.download(this.settingsFile);
+    let rawSettings = await this.S3Service.downloadSearchEngineSettings(this.configService.environment)
     this.settings = new Settings(rawSettings)
     this.source = this.settings.source
     this.domainsToFilter = this.settings.domainsToFilter
@@ -321,21 +305,6 @@ export class CrowdXplorer {
   /* EMITTER: The result item clicked by user is emitted to provide it to an eventual parent component */
   public selectRow(row: Object) {
     this.selectedRowEmitter.emit(row)
-  }
-
-  // |--------- AMAZON AWS INTEGRATION - FUNCTIONS ---------|
-
-  /*
-   * This function performs a GetObject operation to Amazon S3 and returns a parsed JSON which is the requested resource.
-   * https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html
-   */
-  public async download(path: string) {
-    return JSON.parse(
-      (await (this.s3.getObject({
-        Bucket: this.bucket,
-        Key: path
-      }).promise())).Body.toString('utf-8')
-    );
   }
 
   /* |--------- UTILITY - FUNCTIONS ---------| */

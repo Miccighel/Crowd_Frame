@@ -4,9 +4,11 @@ import {Component, Inject, Input, OnInit, ViewEncapsulation} from '@angular/core
 import {MatDialog, MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
 import * as AWS from "aws-sdk";
 /* Debug config import */
-import * as localRawInstructionsMain from '../../../../data/debug/instructions_main.json';
+
 /* Task models*/
 import {Instruction} from "../../models/shared/instructions";
+import {S3Service} from "../../services/s3.service";
+import {ConfigService} from "../../services/config.service";
 /* Data inteface for the underlying dialog component */
 export interface DialogData {}
 
@@ -22,23 +24,10 @@ export interface DialogData {}
  */
 export class InstructionsComponent implements OnInit {
 
-  /* |---------  ELEMENTS - DECLARATION ---------| */
+  configService: ConfigService
+  S3Service: S3Service
 
-  /* Ground truth  of the current scale of the current instance of the task */
-  /* @INPUT: Received from Skeleton component */
-  @Input() scale: string;
-  /* Reference to check if the local debug config should be used */
-  /* @INPUT: Received form Skeleton component */
-  @Input() configurationLocal: boolean;
-  /* Reference to the S3 component of AWS SDK */
-  /* @INPUT: Received form Skeleton component */
-  @Input() s3: AWS.S3;
-  /* Reference to the current bucket identifier */
-  /* @INPUT: Received form Skeleton component */
-  @Input() bucket: string;
-  /* Reference to the file where task instructions are stored */
-  /* @INPUT: Received form Skeleton component */
-  @Input() instructionsFile: string;
+  /* |---------  ELEMENTS - DECLARATION ---------| */
 
   /* Instructions to perform the task */
   instructions: Array<Instruction>;
@@ -47,7 +36,14 @@ export class InstructionsComponent implements OnInit {
 
   /* |--------- CONSTRUCTOR ---------| */
 
-  constructor(public dialog: MatDialog) {}
+  constructor(
+    public dialog: MatDialog,
+    S3Service: S3Service,
+    configService: ConfigService
+  ) {
+    this.S3Service = S3Service
+    this.configService = configService
+  }
 
   /* |--------- ELEMENTS - FUNCTIONS ---------| */
 
@@ -55,9 +51,7 @@ export class InstructionsComponent implements OnInit {
    * This function inits an instance of the instruction modal after main view init.
    */
   ngOnInit(): void {
-    this.performInstructionsLoading().then(outcome => {
-      this.openDialog(this.instructions)
-    })
+    this.performInstructionsLoading().then(outcome => {})
   }
 
   /*
@@ -76,26 +70,13 @@ export class InstructionsComponent implements OnInit {
    * It performs a download operation using the references received from the main component.
    */
   public async performInstructionsLoading() {
-    let rawInstructions = (this.configurationLocal) ? localRawInstructionsMain["default"] : await this.download(this.instructionsFile);
+    let rawInstructions = await this.S3Service.downloadTaskInstructions(this.configService.environment);
     this.instructionsAmount = rawInstructions.length;
     /* The instructions are parsed using the Instruction class */
     this.instructions = new Array<Instruction>();
     for (let index = 0; index < this.instructionsAmount; index++){
       this.instructions.push(new Instruction(index, rawInstructions[index]));
     }
-  }
-
-  /*
-   * This function performs a GetObject operation to Amazon S3 and returns a raw HTML string which is the requested resource.
-   * https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html
-   * */
-  public async download(path: string) {
-    return JSON.parse(
-      (await (this.s3.getObject({
-        Bucket: this.bucket,
-        Key: path
-      }).promise())).Body.toString('utf-8')
-    );
   }
 
 }
