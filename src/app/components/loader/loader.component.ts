@@ -75,7 +75,7 @@ export class LoaderComponent {
     this.adminAccess = url.pathname.indexOf("admin") != -1;
 
     this.username = new FormControl('kevin_roitero', [Validators.required]);
-    this.password = new FormControl('DBegSUGED5zmXb9J', [Validators.required]);
+    this.password = new FormControl('', [Validators.required]);
     this.loginForm = formBuilder.group({
       "username": this.username,
       "password": this.password
