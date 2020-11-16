@@ -1,10 +1,38 @@
-mat-grid-list {
+#selection-grid {
   height: 100%;
 }
 
-button {
+#selection-grid button {
   text-transform: uppercase;
   width: 50%;
   height: 10%;
   font-size: 3em;
+}
+
+.login-section {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: auto;
+}
+
+.login-section form {
+  width: 25%;
+}
+
+.login-section mat-form-field {
+  width: 100%;
+}
+
+.login-section mat-card-content {
+  text-align: center;
+}
+
+.login-section mat-card-actions {
+  text-align: center;
+}
+
+.login-section mat-card-actions button {
+  text-transform: uppercase;
 }

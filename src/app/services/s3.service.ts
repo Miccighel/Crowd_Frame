@@ -1,14 +1,15 @@
 import {Inject, Injectable} from '@angular/core';
 import * as AWS from "aws-sdk";
 /* Debug config import */
-import * as localRawDimensions from '../../../data/debug/dimensions.json';
-import * as localRawHits from '../../../data/debug/hits.json';
-import * as localRawInstructionsDimensions from '../../../data/debug/instructions_dimensions.json';
-import * as localRawQuestionnaires from '../../../data/debug/questionnaires.json';
-import * as localRawTaskSettings from '../../../data/debug/task.json';
-import * as localRawSearchEngineSettings from '../../../data/debug/search_engine.json';
-import * as localRawWorkers from '../../../data/debug/workers.json';
-import * as localRawInstructionsMain from '../../../data/debug/instructions_main.json';
+import * as localRawDimensions from '../../../data/debug/sample_task/dimensions.json';
+import * as localRawHits from '../../../data/debug/sample_task/hits.json';
+import * as localRawInstructionsDimensions from '../../../data/debug/sample_task/instructions_dimensions.json';
+import * as localRawQuestionnaires from '../../../data/debug/sample_task/questionnaires.json';
+import * as localRawTaskSettings from '../../../data/debug/sample_task/task.json';
+import * as localRawSearchEngineSettings from '../../../data/debug/sample_task/search_engine.json';
+import * as localRawWorkers from '../../../data/debug/sample_task/workers.json';
+import * as localRawInstructionsMain from '../../../data/debug/sample_task/instructions_main.json';
+import * as localRawAdmin from '../../../data/debug/admin.json';
 import {ManagedUpload} from "aws-sdk/clients/s3";
 import {Worker} from "../models/skeleton/worker";
 
@@ -92,8 +93,13 @@ export class S3Service {
     return `${this.getFolder(config)}Task/workers.json`
   }
 
+  public downloadAdministrators(config) {
+    let administratorsFile = `admin.json`;
+    return (config["configuration_local"]) ? localRawAdmin["default"] : this.download(config, administratorsFile);
+  }
+
   public downloadTaskSettings(config) {
-    let taskSettingsFile = `${this.getFolder(config)}Task/settings.json`;
+    let taskSettingsFile = `${this.getFolder(config)}Task/task.json`;
     return (config["configuration_local"]) ? localRawTaskSettings["default"] : this.download(config, taskSettingsFile);
   }
 

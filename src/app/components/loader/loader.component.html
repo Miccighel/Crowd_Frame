@@ -1,10 +1,39 @@
-<mat-grid-list cols="2" rowHeight="fit">
+<mat-grid-list *ngIf="(this.adminAccess && this.actionChosen == null)" cols="2" rowHeight="fit" id="selection-grid">
   <mat-grid-tile class="green-theme">
-    <button id="generate-button" mat-raised-button color="primary" >Generate</button>
+    <button id="generate-button" mat-raised-button color="primary" (click)="loadAction('generate')">Generate</button>
   </mat-grid-tile>
   <mat-grid-tile>
-    <button id="perform-button" mat-raised-button color="primary">Perform</button>
+    <button id="perform-button" mat-raised-button color="primary" (click)="loadAction('perform')">Perform</button>
   </mat-grid-tile>
 </mat-grid-list>
-<app-generator ></app-generator>
-<app-skeleton></app-skeleton>
+<div class="login-section green-theme" *ngIf="(this.adminAccess && this.actionChosen=='generate' && !this.loginSuccessful)" >
+  <form [formGroup]="loginForm">
+    <mat-card>
+      <mat-card-content>
+        <mat-form-field>
+          <mat-label>
+            Insert your username
+          </mat-label>
+          <input matInput type="text" placeholder="your_username" formControlName="username">
+          <mat-error *ngIf="checkFormControl(loginForm,'username', 'required')">
+            This field is required
+          </mat-error>
+        </mat-form-field>
+        <mat-form-field>
+          <mat-label>
+            Insert your password
+          </mat-label>
+          <input matInput type="password" placeholder="your_password" formControlName="password">
+          <mat-error *ngIf="checkFormControl(loginForm,'password', 'required')">
+            This field is required
+          </mat-error>
+        </mat-form-field>
+      </mat-card-content>
+      <mat-card-actions>
+        <button id="start-button" mat-flat-button color="primary" (click)="checkAdmin()">Login</button>
+      </mat-card-actions>
+    </mat-card>
+  </form>
+</div>
+<app-generator *ngIf="(this.adminAccess && this.loginSuccessful)"></app-generator>
+<app-skeleton *ngIf="(this.adminAccess && this.actionChosen=='perform') || (!this.adminAccess)"></app-skeleton>

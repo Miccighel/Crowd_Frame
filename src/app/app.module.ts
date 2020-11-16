@@ -34,7 +34,7 @@ import {MatTooltipModule} from "@angular/material/tooltip";
 import { CountdownModule } from 'ngx-countdown';
 import { GeneratorComponent } from './components/generator/generator.component';
 import {MatSlideToggleModule} from '@angular/material/slide-toggle';
-import { LoaderComponent } from './components/loader/loader.component';
+import {LoaderComponent} from './components/loader/loader.component';
 
 const ngxUiLoaderConfig: NgxUiLoaderConfig = {
   bgsColor: "#3f51b5",
@@ -75,7 +75,7 @@ const ngxUiLoaderConfig: NgxUiLoaderConfig = {
     InstructionsComponent,
     InstructionsDialog,
     GeneratorComponent,
-    LoaderComponent,
+    LoaderComponent
   ],
   imports: [
     BrowserModule,
