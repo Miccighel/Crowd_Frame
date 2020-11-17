@@ -37,7 +37,8 @@
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
             "allowedCommonJsDependencies": [
-              "aws-sdk"
+              "aws-sdk",
+              "crypto-js"
             ],
             "outputPath": "dist/CrowdsourcingSkeleton",
             "index": "src/index.html",
@@ -121,8 +122,7 @@
               "src/theme.scss"
             ],
             "scripts": [
-              "src/assets/lib/logger.js",
-              "src/assets/lib/fingerprint.js"
+
             ]
           }
         },

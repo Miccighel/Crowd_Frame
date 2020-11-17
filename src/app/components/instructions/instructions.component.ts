@@ -7,7 +7,6 @@ import * as AWS from "aws-sdk";
 
 /* Task models*/
 import {Instruction} from "../../models/shared/instructions";
-import {S3Service} from "../../services/s3.service";
 import {ConfigService} from "../../services/config.service";
 /* Data inteface for the underlying dialog component */
 export interface DialogData {}
@@ -25,12 +24,11 @@ export interface DialogData {}
 export class InstructionsComponent implements OnInit {
 
   configService: ConfigService
-  S3Service: S3Service
 
   /* |---------  ELEMENTS - DECLARATION ---------| */
 
   /* Instructions to perform the task */
-  instructions: Array<Instruction>;
+  @Input() instructions: Array<Instruction>;
   /* Amount of instructions sentences */
   instructionsAmount: number;
 
@@ -38,10 +36,8 @@ export class InstructionsComponent implements OnInit {
 
   constructor(
     public dialog: MatDialog,
-    S3Service: S3Service,
     configService: ConfigService
   ) {
-    this.S3Service = S3Service
     this.configService = configService
   }
 
@@ -51,7 +47,7 @@ export class InstructionsComponent implements OnInit {
    * This function inits an instance of the instruction modal after main view init.
    */
   ngOnInit(): void {
-    this.performInstructionsLoading().then(outcome => {})
+    this.instructionsAmount = this.instructions.length
   }
 
   /*
@@ -63,20 +59,6 @@ export class InstructionsComponent implements OnInit {
       minHeight: '86%',
       data: {instructions: instructions}
     });
-  }
-
-  /*
-   * This function interacts with an Amazon S3 bucket to retrieve the instructions for the current task.
-   * It performs a download operation using the references received from the main component.
-   */
-  public async performInstructionsLoading() {
-    let rawInstructions = await this.S3Service.downloadTaskInstructions(this.configService.environment);
-    this.instructionsAmount = rawInstructions.length;
-    /* The instructions are parsed using the Instruction class */
-    this.instructions = new Array<Instruction>();
-    for (let index = 0; index < this.instructionsAmount; index++){
-      this.instructions.push(new Instruction(index, rawInstructions[index]));
-    }
   }
 
 }

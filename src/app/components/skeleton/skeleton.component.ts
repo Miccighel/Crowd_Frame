@@ -5,7 +5,7 @@ import {
   Component,
   ViewChild,
   ViewChildren,
-  QueryList,
+  QueryList, OnInit,
 } from '@angular/core';
 /* Reactive forms modules */
 import {AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
@@ -28,6 +28,7 @@ import {faInfoCircle} from "@fortawesome/free-solid-svg-icons";
 import {Settings} from "../../models/skeleton/settings";
 import {Worker} from "../../models/skeleton/worker";
 import {HttpClient, HttpHeaders} from "@angular/common/http";
+import {MatSnackBar} from "@angular/material/snack-bar";
 
 
 /* Component HTML Tag definition */
@@ -44,7 +45,7 @@ import {HttpClient, HttpHeaders} from "@angular/common/http";
 * File environment.ts --- DEVELOPMENT ENVIRONMENT
 * File environment.prod.ts --- PRODUCTION ENVIRONMENT
 */
-export class SkeletonComponent {
+export class SkeletonComponent implements OnInit{
 
   /* |--------- GENERAL ELEMENTS - DECLARATION ---------| */
 
@@ -120,6 +121,10 @@ export class SkeletonComponent {
 
   /* |--------- HIT ELEMENTS - DECLARATION ---------| */
 
+  taskInstructions: Array<Instruction>;
+  taskInstructionsAmount: number;
+  taskInstructionsRead: boolean;
+
   /* Instructions for dimension assessing */
   instructions: Array<Instruction>;
   /* Amount of instructions sentences */
@@ -189,6 +194,8 @@ export class SkeletonComponent {
   /* |--- TASK GENERATOR ---| */
   generator: boolean;
 
+  snackBar: MatSnackBar;
+
   /* |--------- CONSTRUCTOR ---------| */
 
   constructor(
@@ -198,6 +205,7 @@ export class SkeletonComponent {
     S3Service: S3Service,
     client: HttpClient,
     formBuilder: FormBuilder,
+    snackBar: MatSnackBar
   ) {
 
     /* |--------- SERVICES - INITIALIZATION ---------| */
@@ -209,14 +217,14 @@ export class SkeletonComponent {
     this.client = client;
     this.formBuilder = formBuilder;
 
+    this.snackBar = snackBar
+
     this.ngxService.start();
 
     /* |--------- GENERAL ELEMENTS - INITIALIZATION ---------| */
 
     this.taskName = this.configService.environment.taskName;
     this.batchName = this.configService.environment.batchName;
-
-    let url = new URL(window.location.href);
 
     this.taskAllowed = true;
 
@@ -249,6 +257,25 @@ export class SkeletonComponent {
     });
 
 
+    /* Font awesome spinner icon initialization */
+    this.faSpinner = faSpinner;
+    /* Font awesome info circle icon initialization */
+    this.faInfoCircle = faInfoCircle
+
+  }
+
+  public async ngOnInit() {
+
+    let url = new URL(window.location.href);
+
+    let rawTaskInstructions = await this.S3Service.downloadTaskInstructions(this.configService.environment);
+    this.taskInstructionsAmount = rawTaskInstructions.length;
+    /* The instructions are parsed using the Instruction class */
+    this.taskInstructions = new Array<Instruction>();
+    for (let index = 0; index < this.taskInstructionsAmount; index++){
+      this.taskInstructions.push(new Instruction(index, rawTaskInstructions[index]));
+    }
+
     /* If there is an external worker which is trying to perform the task, check its status */
     this.loadSettings().then(() => {
       this.workerIdentifier = url.searchParams.get("workerID");
@@ -258,16 +285,16 @@ export class SkeletonComponent {
             cloudflareData => {
               this.worker = new Worker(this.workerIdentifier, this.S3Service.getWorkerFolder(this.configService.environment, null, this.workerIdentifier), cloudflareData, window.navigator)
               this.taskAllowed = outcome;
-              this.changeDetector.detectChanges()
               this.checkCompleted = true
+              this.changeDetector.detectChanges()
               /* The loading spinner is stopped */
               this.ngxService.stop();
             },
             error => {
               this.worker = new Worker(this.workerIdentifier, this.S3Service.getWorkerFolder(this.configService.environment, null, this.workerIdentifier), null, window.navigator)
               this.taskAllowed = outcome;
-              this.changeDetector.detectChanges()
               this.checkCompleted = true
+              this.changeDetector.detectChanges()
               /* The loading spinner is stopped */
               this.ngxService.stop();
             }
@@ -276,19 +303,21 @@ export class SkeletonComponent {
       } else {
         this.worker = new Worker(null, null, null, null)
         this.checkCompleted = true
+        this.changeDetector.detectChanges()
         this.ngxService.stop()
-
       }
     })
-
-
-    /* Font awesome spinner icon initialization */
-    this.faSpinner = faSpinner;
-    /* Font awesome info circle icon initialization */
-    this.faInfoCircle = faInfoCircle
-
+    this.changeDetector.detectChanges()
 
   }
+
+  public enableTask() {
+
+    this.taskInstructionsRead=true
+    this.showSnackbar("If you have a very slow internet connection please wait a few seconds before clicking \"Start\".", "Dismiss", 15000)
+
+  }
+
 
   /* |--------- GENERAL ELEMENTS - FUNCTIONS ---------| */
 
@@ -1309,6 +1338,12 @@ export class SkeletonComponent {
     if (event.left == 0) {
       this.countdownsExpired[i] = true
     }
+  }
+
+  public showSnackbar(message, action, duration) {
+    this.snackBar.open(message, action, {
+      duration: duration,
+    });
   }
 
 }

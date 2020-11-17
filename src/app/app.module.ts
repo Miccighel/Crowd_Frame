@@ -5,6 +5,7 @@ import {SkeletonComponent} from "./components/skeleton/skeleton.component";
 import {MatRadioModule} from "@angular/material/radio";
 import {MatCardModule} from "@angular/material/card";
 import {MatInputModule} from "@angular/material/input";
+import { MatFormFieldModule } from '@angular/material/form-field';
 import {MatSelectModule} from "@angular/material/select";
 import {MatButtonModule} from "@angular/material/button";
 import {MatStepperModule} from "@angular/material/stepper";
@@ -12,6 +13,7 @@ import {MatDividerModule} from "@angular/material/divider";
 import {MatTabsModule} from "@angular/material/tabs";
 import {MatGridListModule} from "@angular/material/grid-list";
 import {MatListModule} from "@angular/material/list";
+import {MatSnackBarModule} from '@angular/material/snack-bar';
 import {ReactiveFormsModule} from "@angular/forms";
 import {NgxUiLoaderConfig, NgxUiLoaderModule} from "ngx-ui-loader";
 import {HttpClientModule} from "@angular/common/http";
@@ -88,6 +90,7 @@ const ngxUiLoaderConfig: NgxUiLoaderConfig = {
     MatRadioModule,
     MatDividerModule,
     MatTabsModule,
+    MatFormFieldModule,
     MatGridListModule,
     MatListModule,
     MatToolbarModule,
@@ -102,6 +105,7 @@ const ngxUiLoaderConfig: NgxUiLoaderConfig = {
     MatTableModule,
     MatPaginatorModule,
     MatExpansionModule,
+    MatSnackBarModule,
     MatBadgeModule,
     MatProgressSpinnerModule,
     MatSliderModule,

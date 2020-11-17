@@ -156,12 +156,14 @@ export class GeneratorComponent implements OnInit {
     this.taskSettingsForm = this._formBuilder.group({
       allowed_tries: [''],
       time_check_amount: [''],
+      countdown_time: [''],
       blacklist_batches: this._formBuilder.array([]),
       whitelist_batches: this._formBuilder.array([]),
       messages: this._formBuilder.array([])
     });
     this.taskSettingsForm.get('allowed_tries').markAsTouched();
     this.taskSettingsForm.get('time_check_amount').markAsTouched();
+    this.taskSettingsForm.get('countdown_time').markAsTouched();
 
     /*
      * STEP #7 - Worker Checks

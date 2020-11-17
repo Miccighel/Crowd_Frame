@@ -477,3 +477,31 @@ mat-form-field {
 .pt-16px {
   padding-top: 16px;
 }
+
+
+
+
+.instructions-section {
+  max-width: 80%;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: auto;
+}
+
+.instructions-section mat-card-actions {
+  text-align: center;
+}
+
+.instructions-section mat-card-actions button {
+  text-transform: uppercase;
+}
+
+.instructions-section h2 {
+  padding-top: 1% !important;
+  padding-bottom: 1% !important;
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  font-weight: lighter !important;
+}

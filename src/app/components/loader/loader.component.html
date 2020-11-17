@@ -1,4 +1,4 @@
-<mat-grid-list *ngIf="(this.adminAccess && this.actionChosen == null)" cols="2" rowHeight="fit" id="selection-grid">
+<mat-grid-list *ngIf="(this.adminAccess && this.actionChosen == null)" cols="1" rowHeight="fit" id="selection-grid">
   <mat-grid-tile class="green-theme">
     <button id="generate-button" mat-raised-button color="primary" (click)="loadAction('generate')">Generate</button>
   </mat-grid-tile>
@@ -28,12 +28,15 @@
             This field is required
           </mat-error>
         </mat-form-field>
+        <mat-error *ngIf="this.loginPerformed && !loginSuccessful">
+          Invalid credentials
+        </mat-error>
       </mat-card-content>
       <mat-card-actions>
-        <button id="start-button" mat-flat-button color="primary" (click)="checkAdmin()">Login</button>
+        <button id="start-button" mat-flat-button color="primary" (click)="performAdminCheck()">Login</button>
       </mat-card-actions>
     </mat-card>
   </form>
 </div>
 <app-generator *ngIf="(this.adminAccess && this.loginSuccessful)"></app-generator>
-<app-skeleton *ngIf="(this.adminAccess && this.actionChosen=='perform') || (!this.adminAccess)"></app-skeleton>
+<app-skeleton *ngIf="(this.adminAccess && this.actionChosen=='perform' ) || (!this.adminAccess)"></app-skeleton>

@@ -820,6 +820,11 @@
 
           <mat-divider [inset]="true"></mat-divider>
 
+          <mat-form-field matLine class="width-100" [hideRequiredMarker]="taskSettingsForm.get('countdown_time').valid" appearance="fill">
+            <mat-label>Time Check Amount</mat-label>
+            <input matInput type="number" min="0" formControlName="countdown_time" required>
+          </mat-form-field>
+
           <!-- Blacklist Batches -->
           <div formArrayName="blacklist_batches">
             <button mat-flat-button
