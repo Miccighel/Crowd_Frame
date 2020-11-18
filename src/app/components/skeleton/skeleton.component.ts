@@ -1003,14 +1003,14 @@ export class SkeletonComponent implements OnInit{
   public async performLogging(action: string) {
 
     /* |--- COUNTDOWN ---| */
-    if(this.stepper.selectedIndex >= this.questionnaireAmount){
+    if((this.stepper.selectedIndex >= this.questionnaireAmount) && this.settings.countdownTime){
       let currentIndex = this.stepper.selectedIndex - this.questionnaireAmount;
       switch (action) {
         case "Next":
           if (currentIndex > 0 && this.countdown.toArray()[currentIndex - 1].left > 0) {
             this.countdown.toArray()[currentIndex - 1].pause();
           }
-          if (this.countdown.toArray()[currentIndex].left == 30) {
+          if (this.countdown.toArray()[currentIndex].left == this.settings.countdownTime) {
             this.countdown.toArray()[currentIndex].begin();
           } else if (this.countdown.toArray()[currentIndex].left > 0) {
             this.countdown.toArray()[currentIndex].resume();
@@ -1020,7 +1020,7 @@ export class SkeletonComponent implements OnInit{
           if (this.countdown.toArray()[currentIndex + 1].left > 0) {
             this.countdown.toArray()[currentIndex + 1].pause();
           }
-          if (this.countdown.toArray()[currentIndex].left == 30) {
+          if (this.countdown.toArray()[currentIndex].left == this.settings.countdownTime) {
             this.countdown.toArray()[currentIndex].begin();
           } else if (this.countdown.toArray()[currentIndex].left > 0) {
             this.countdown.toArray()[currentIndex].resume();
@@ -1033,6 +1033,10 @@ export class SkeletonComponent implements OnInit{
           break;
       }
     }
+
+
+    console.log(this.countdown.toArray()[0]["i"])
+    console.log(this.countdownsExpired)
 
     if (!(this.worker.identifier === null)) {
 
@@ -1210,41 +1214,35 @@ export class SkeletonComponent implements OnInit{
         };
         /* Info about the performed action ("Next"? "Back"? From where?) */
         data["info"] = actionInfo
-        /* await (this.upload(`${this.workerFolder}/Partials/Info/Try-${this.currentTry}/info_${completedElement}_access_${accessesAmount}.json`, actionInfo)); */
         /* Worker's truth level and justification for the current document */
         let answers = this.documentsForm[completedDocument].value;
         data["answers"] = answers
-        /* await (this.upload(`${this.workerFolder}/Partials/Answers/Documents/Try-${this.currentTry}/answer_${completedDocument}_access_${accessesAmount}.json`, answers)); */
         /* Worker's dimensions selected values for the current document */
         let dimensionsSelectedValues = this.dimensionsSelectedValues[completedDocument];
         data["dimensions_selected"] = dimensionsSelectedValues
-        /* await (this.upload(`${this.workerFolder}/Partials/Dimensions/Try-${this.currentTry}/selected_${completedDocument}_access_${accessesAmount}.json`, dimensionsSelectedValues)); */
         /* Worker's search engine queries for the current document */
         let searchEngineQueries = this.searchEngineQueries[completedDocument];
         data["queries"] = searchEngineQueries
-        /* await (this.upload(`${this.workerFolder}/Partials/Queries/Try-${this.currentTry}/queries_${completedDocument}_access_${accessesAmount}.json`, searchEngineQueries)); */
         /* Responses retrieved by search engine for each worker's query for the current document */
         let responsesRetrieved = this.searchEngineRetrievedResponses[completedDocument];
         data["responses_retrieved"] = responsesRetrieved
-        /* await (this.upload(`${this.workerFolder}/Partials/Responses/Retrieved/Try-${this.currentTry}/retrieved_${completedDocument}_access_${accessesAmount}.json`, responsesRetrieved)); */
         /* Responses by search engine ordered by worker's click for the current document */
         let responsesSelected = this.searchEngineSelectedResponses[completedDocument];
         data["responses_selected"] = responsesSelected
-        /* await (this.upload(`${this.workerFolder}/Partials/Responses/Selected/Try-${this.currentTry}/selected_${completedDocument}_access_${accessesAmount}.json`, responsesSelected)); */
         /* Start, end and elapsed timestamps for the current document */
         let timestampsStart = this.timestampsStart[completedElement];
         data["timestamps_start"] = timestampsStart
-        /* await (this.upload(`${this.workerFolder}/Partials/Timestamps/Start/Try-${this.currentTry}/start_${completedElement}_access_${accessesAmount}.json`, timestampsStart)); */
         let timestampsEnd = this.timestampsEnd[completedElement];
         data["timestamps_end"] = timestampsEnd
-        /* await (this.upload(`${this.workerFolder}/Partials/Timestamps/End/Try-${this.currentTry}/end_${completedElement}_access_${accessesAmount}.json`, timestampsEnd)); */
         let timestampsElapsed = this.timestampsElapsed[completedElement];
         data["timestamps_elapsed"] = timestampsElapsed
-        /* await (this.upload(`${this.workerFolder}/Partials/Timestamps/Elapsed/Try-${this.currentTry}/elapsed_${completedElement}_access_${accessesAmount}.json`, timestampsElapsed)); */
+        let countdownTime = Number(this.countdown[completedElement]["i"]["text"])
+        data["countdown_times"] = countdownTime
+        let countdown_expired = this.countdownsExpired[completedElement]
+        data["countdowns_expired"] = countdown_expired
         /* Number of accesses to the current document (currentDocument.e., how many times the worker reached the document with a "Back" or "Next" action */
         let accesses = this.elementsAccesses[completedElement];
         data["accesses"] = accesses
-        /* await (this.upload(`${this.workerFolder}/Partials/Accesses/Try-${this.currentTry}/accesses_${completedElement}_access_${accessesAmount}.json`, accesses)); */
 
         let uploadStatus = await this.S3Service.uploadDocument(this.configService.environment, this.worker, data, false, this.currentTry, completedElement, accessesAmount)
 
@@ -1262,34 +1260,30 @@ export class SkeletonComponent implements OnInit{
           };
           /* Info about each performed action ("Next"? "Back"? From where?) */
           data["info"] = actionInfo
-          /* await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/info.json`, actionInfo)); */
           /* Worker's truth level and justification for each document */
           let answers = [];
           for (let index = 0; index < this.documentsForm.length; index++) answers.push(this.documentsForm[index].value);
           data["answers"] = answers
-          /* await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/documents_answers.json`, answers)); */
           /* Worker's dimensions selected values for the current document */
           data["dimensions_selected"] = this.dimensionsSelectedValues
-          /* await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/dimensions_selected.json`, this.dimensionsSelectedValues)); */
           /* Worker's search engine queries for each document */
           data["queries"] = this.searchEngineQueries
-          /* await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/queries.json`, this.searchEngineQueries)); */
           /* Responses retrieved by search engine for each worker's query for each document */
           data["responses_retrieved"] = this.searchEngineRetrievedResponses
-          /* await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/responses_retrieved.json`, this.searchEngineRetrievedResponses)); */
           /* Responses by search engine ordered by worker's click for the current document */
           data["responses_selected"] = this.searchEngineSelectedResponses
-          /* await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/responses_selected.json`, this.searchEngineSelectedResponses)); */
           /* Start, end and elapsed timestamps for each document */
           data["timestamps_start"] = this.timestampsStart
           /* await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/timestamps_start.json`, this.timestampsStart)); */
           data["timestamps_end"] = this.timestampsStart
           /* await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/timestamps_end.json`, this.timestampsEnd)); */
           data["timestamps_elapsed"] = this.timestampsStart
-          /* await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/timestamps_elapsed.json`, this.timestampsElapsed)); */
+          let countdownTimes = [];
+          for (let index = 0; index < this.countdown.length; index++) countdownTimes.push(Number(this.countdown[index]["i"]["text"]));
+          data["countdown_times"] = countdownTimes
+          data["countdowns_expired"] = this.countdownsExpired
           /* Number of accesses to each document (currentDocument.e., how many times the worker reached the document with a "Back" or "Next" action */
           data["accesses"] = this.elementsAccesses
-         /* await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/accesses.json`, this.elementsAccesses)); */
 
           let uploadStatus = await this.S3Service.uploadDocument(this.configService.environment, this.worker, data, true, this.currentTry)
 

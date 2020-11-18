@@ -2,6 +2,7 @@ export class Settings {
 
   allowedTries: number;
   timeCheckAmount: number;
+  countdownTime: number;
   blacklistBatches: Array<string>;
   whitelistBatches: Array<string>;
   messages?: Array<string>;
@@ -11,6 +12,7 @@ export class Settings {
   ) {
     this.allowedTries =         parseInt((data["allowed_tries"]));
     this.timeCheckAmount =      parseInt((data["time_check_amount"]));
+    this.countdownTime =      parseInt((data["countdown_time"]));
     this.blacklistBatches = new Array<string>();
     for (const [_, otherBatch]  of data["blacklist_batches"].entries()) this.blacklistBatches.push(otherBatch)
     this.whitelistBatches = new Array<string>();

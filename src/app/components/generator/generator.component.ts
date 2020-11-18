@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
+import {Component, OnInit, ViewChild} from '@angular/core';
+import {FormBuilder, FormGroup, FormArray, Validators, ValidatorFn, AbstractControl, FormControl} from '@angular/forms';
+import {MatStepper} from "@angular/material/stepper";
 
 /*
  * STEP #1 - Questionnaires
@@ -62,22 +63,22 @@ export class GeneratorComponent implements OnInit {
    */
   dimensionsForm: FormGroup;
   scaleTypes: ScaleType[] = [
-   {value: 'continue', viewValue: 'Interval'},
-   {value: 'discrete', viewValue: 'Categorical'},
-   {value: 'magnitude_estimation', viewValue: 'Magnitude Estimation'}
+    {value: 'continue', viewValue: 'Interval'},
+    {value: 'discrete', viewValue: 'Categorical'},
+    {value: 'magnitude_estimation', viewValue: 'Magnitude Estimation'}
   ];
   styleTypes: StyleType[] = [
-   {value: 'list', viewValue: 'List'},
-   {value: 'matrix', viewValue: 'Matrix'}
+    {value: 'list', viewValue: 'List'},
+    {value: 'matrix', viewValue: 'Matrix'}
   ];
   positionTypes: PositionType[] = [
-   {value: 'top', viewValue: 'Top'},
-   {value: 'middle', viewValue: 'Middle'},
-   {value: 'bottom', viewValue: 'Bottom'}
+    {value: 'top', viewValue: 'Top'},
+    {value: 'middle', viewValue: 'Middle'},
+    {value: 'bottom', viewValue: 'Bottom'}
   ];
   orientationTypes: OrientationType[] = [
-   {value: 'horizontal', viewValue: 'Horizontal'},
-   {value: 'vertical', viewValue: 'Vertical'}
+    {value: 'horizontal', viewValue: 'Horizontal'},
+    {value: 'vertical', viewValue: 'Vertical'}
   ];
 
   /*
@@ -93,26 +94,28 @@ export class GeneratorComponent implements OnInit {
   /*
    * STEP #5 - Search Engine
    */
-   searchEngineForm: FormGroup;
-   sourceTypes: SourceType[] = [
-     {value: 'BingWebSearch', viewValue: 'BingWeb'},
-     {value: 'FakerWebSearch', viewValue: 'FakerWeb'},
-     {value: 'PubmedSearch', viewValue: 'Pubmed'}
-   ];
+  searchEngineForm: FormGroup;
+  sourceTypes: SourceType[] = [
+    {value: 'BingWebSearch', viewValue: 'BingWeb'},
+    {value: 'FakerWebSearch', viewValue: 'FakerWeb'},
+    {value: 'PubmedSearch', viewValue: 'Pubmed'}
+  ];
 
-   /*
-    * STEP #6 - Task Settings
-    */
-   taskSettingsForm: FormGroup;
+  /*
+   * STEP #6 - Task Settings
+   */
+  taskSettingsForm: FormGroup;
 
-   /*
-    * STEP #7 - Worker Checks
-    */
-   workerChecksForm: FormGroup;
+  /*
+   * STEP #7 - Worker Checks
+   */
+  workerChecksForm: FormGroup;
 
-  constructor(private _formBuilder: FormBuilder) {}
+  constructor(private _formBuilder: FormBuilder) {
+  }
 
   ngOnInit() {
+
     /*
      * STEP #1 - Questionnaires
      */
@@ -124,21 +127,21 @@ export class GeneratorComponent implements OnInit {
      * STEP #2 - Dimensions
      */
     this.dimensionsForm = this._formBuilder.group({
-     dimensions: this._formBuilder.array([])
+      dimensions: this._formBuilder.array([])
     });
 
     /*
      * STEP #3 - General Instructions
      */
     this.generalInstructionsForm = this._formBuilder.group({
-     generalInstructions: this._formBuilder.array([])
+      generalInstructions: this._formBuilder.array([])
     });
 
     /*
      * STEP #4 - Evaluation Instructions
      */
     this.evaluationInstructionsForm = this._formBuilder.group({
-     evaluationInstructions: this._formBuilder.array([])
+      evaluationInstructions: this._formBuilder.array([])
     });
 
     /*
@@ -148,7 +151,6 @@ export class GeneratorComponent implements OnInit {
       source: [''],
       domains_to_filter: this._formBuilder.array([])
     });
-    this.searchEngineForm.get('source').markAsTouched();
 
     /*
      * STEP #6 - Task Settings
@@ -156,14 +158,12 @@ export class GeneratorComponent implements OnInit {
     this.taskSettingsForm = this._formBuilder.group({
       allowed_tries: [''],
       time_check_amount: [''],
+      setCountdownTime: [''],
       countdown_time: [''],
       blacklist_batches: this._formBuilder.array([]),
       whitelist_batches: this._formBuilder.array([]),
       messages: this._formBuilder.array([])
     });
-    this.taskSettingsForm.get('allowed_tries').markAsTouched();
-    this.taskSettingsForm.get('time_check_amount').markAsTouched();
-    this.taskSettingsForm.get('countdown_time').markAsTouched();
 
     /*
      * STEP #7 - Worker Checks
@@ -225,7 +225,7 @@ export class GeneratorComponent implements OnInit {
     }))
   }
 
-  removeAnswer(questionnaireIndex: number, questionIndex: number, answerIndex:number) {
+  removeAnswer(questionnaireIndex: number, questionIndex: number, answerIndex: number) {
     this.answers(questionnaireIndex, questionIndex).removeAt(answerIndex);
   }
 
@@ -303,118 +303,118 @@ export class GeneratorComponent implements OnInit {
   /*
    * STEP #2 - Dimensions
    */
-   dimensions(): FormArray {
-     return this.dimensionsForm.get('dimensions') as FormArray;
-   }
+  dimensions(): FormArray {
+    return this.dimensionsForm.get('dimensions') as FormArray;
+  }
 
-   addDimension() {
-     this.dimensions().push(this._formBuilder.group({
-       name: [''],
-       dimensionDescription: [''],
-       setJustification: [''],
-       justification: this._formBuilder.group({
-           text: [''],
-           min_words: ['']
-         }),
-       url: [''],
-       setScale: [''],
-       scale: this._formBuilder.group({
-           type: [''],
-           min: [''],
-           max: [''],
-           step: [''],
-           mapping: this._formBuilder.array([]),
-           include_lower_bound: [true],
-           include_upper_bound: [true]
-         }),
-       gold_question_check: [''],
-       style: this._formBuilder.group({
-           styleType: [''],
-           position: [''],
-           orientation: [''],
-           separator: ['']
-         })
-     }))
-   }
+  addDimension() {
+    this.dimensions().push(this._formBuilder.group({
+      name: [''],
+      dimensionDescription: [''],
+      setJustification: [''],
+      justification: this._formBuilder.group({
+        text: [''],
+        min_words: ['']
+      }),
+      url: [''],
+      setScale: [''],
+      scale: this._formBuilder.group({
+        type: [''],
+        min: [''],
+        max: [''],
+        step: [''],
+        mapping: this._formBuilder.array([]),
+        include_lower_bound: [true],
+        include_upper_bound: [true]
+      }),
+      gold_question_check: [''],
+      style: this._formBuilder.group({
+        styleType: [''],
+        position: [''],
+        orientation: [''],
+        separator: ['']
+      })
+    }))
+  }
 
-   removeDimension(dimensionIndex: number) {
-     this.dimensions().removeAt(dimensionIndex);
-   }
+  removeDimension(dimensionIndex: number) {
+    this.dimensions().removeAt(dimensionIndex);
+  }
 
-   /* Mapping */
-   dimensionMapping(dimensionIndex: number): FormArray {
-     return this.dimensions().at(dimensionIndex).get('scale').get('mapping') as FormArray;
-   }
+  /* Mapping */
+  dimensionMapping(dimensionIndex: number): FormArray {
+    return this.dimensions().at(dimensionIndex).get('scale').get('mapping') as FormArray;
+  }
 
-   addDimensionMapping(dimensionIndex: number) {
-     this.dimensionMapping(dimensionIndex).push(this._formBuilder.group({
-       label: [''],
-       description: [''],
-       value: ['']
-     }))
-   }
+  addDimensionMapping(dimensionIndex: number) {
+    this.dimensionMapping(dimensionIndex).push(this._formBuilder.group({
+      label: [''],
+      description: [''],
+      value: ['']
+    }))
+  }
 
-   removeDimensionMapping(dimensionIndex: number, dimensionMappingIndex: number) {
-     this.dimensionMapping(dimensionIndex).removeAt(dimensionMappingIndex);
-   }
+  removeDimensionMapping(dimensionIndex: number, dimensionMappingIndex: number) {
+    this.dimensionMapping(dimensionIndex).removeAt(dimensionMappingIndex);
+  }
 
-   /* Other Functions */
-   resetJustification(dimensionIndex) {
-     let dim = this.dimensions().at(dimensionIndex);
+  /* Other Functions */
+  resetJustification(dimensionIndex) {
+    let dim = this.dimensions().at(dimensionIndex);
 
-     dim.get('justification').get('text').setValue('');
-     dim.get('justification').get('min_words').setValue('');
+    dim.get('justification').get('text').setValue('');
+    dim.get('justification').get('min_words').setValue('');
 
-     if (dim.get('setJustification').value == false) {
-       dim.get('justification').get('text').clearValidators();
-       dim.get('justification').get('min_words').clearValidators();
-     } else {
-       dim.get('justification').get('text').setValidators(Validators.required);
-       dim.get('justification').get('min_words').setValidators(Validators.required);
-     }
-     dim.get('justification').get('text').updateValueAndValidity();
-     dim.get('justification').get('min_words').updateValueAndValidity();
-   }
+    if (dim.get('setJustification').value == false) {
+      dim.get('justification').get('text').clearValidators();
+      dim.get('justification').get('min_words').clearValidators();
+    } else {
+      dim.get('justification').get('text').setValidators(Validators.required);
+      dim.get('justification').get('min_words').setValidators(Validators.required);
+    }
+    dim.get('justification').get('text').updateValueAndValidity();
+    dim.get('justification').get('min_words').updateValueAndValidity();
+  }
 
-   resetScale(dimensionIndex) {
-     let dim = this.dimensions().at(dimensionIndex);
+  resetScale(dimensionIndex) {
+    let dim = this.dimensions().at(dimensionIndex);
 
-     dim.get('scale').get('type').setValue('');
+    dim.get('scale').get('type').setValue('');
 
-     if (dim.get('setScale').value == false) {
-       dim.get('scale').get('type').clearValidators();
-     } else {
-       dim.get('scale').get('type').setValidators(Validators.required);
-     }
-     dim.get('scale').get('type').updateValueAndValidity();
+    if (dim.get('setScale').value == false) {
+      dim.get('scale').get('type').clearValidators();
+    } else {
+      dim.get('scale').get('type').setValidators(Validators.required);
+    }
+    dim.get('scale').get('type').updateValueAndValidity();
 
-     this.updateScale(dimensionIndex);
-   }
+    this.updateScale(dimensionIndex);
+  }
 
-   updateScale(dimensionIndex) {
-     let dim = this.dimensions().at(dimensionIndex);
+  updateScale(dimensionIndex) {
+    let dim = this.dimensions().at(dimensionIndex);
 
-     dim.get('scale').get('min').setValue('');
-     dim.get('scale').get('min').clearValidators();
-     dim.get('scale').get('min').updateValueAndValidity();
+    dim.get('scale').get('min').setValue('');
+    dim.get('scale').get('min').clearValidators();
+    dim.get('scale').get('min').updateValueAndValidity();
 
-     dim.get('scale').get('max').setValue('');
-     dim.get('scale').get('max').clearValidators();
-     dim.get('scale').get('max').updateValueAndValidity();
+    dim.get('scale').get('max').setValue('');
+    dim.get('scale').get('max').clearValidators();
+    dim.get('scale').get('max').updateValueAndValidity();
 
-     dim.get('scale').get('step').setValue('');
-     dim.get('scale').get('step').clearValidators();
-     dim.get('scale').get('step').updateValueAndValidity();
+    dim.get('scale').get('step').setValue('');
+    dim.get('scale').get('step').clearValidators();
+    dim.get('scale').get('step').updateValueAndValidity();
 
-     this.dimensionMapping(dimensionIndex).clear();
+    this.dimensionMapping(dimensionIndex).clear();
 
-     dim.get('scale').get('include_lower_bound').setValue(true);
-     dim.get('scale').get('include_upper_bound').setValue(true);
+    dim.get('scale').get('include_lower_bound').setValue(true);
+    dim.get('scale').get('include_upper_bound').setValue(true);
 
-     if (dim.get('setScale').value == true && dim.get('scale').get('type').value == 'discrete') {
-       this.addDimensionMapping(dimensionIndex);
-     }
-   }
+    if (dim.get('setScale').value == true && dim.get('scale').get('type').value == 'discrete') {
+      this.addDimensionMapping(dimensionIndex);
+    }
+  }
 
   dimensionsJSON() {
     let dimensionsJSON = JSON.parse(JSON.stringify(this.dimensionsForm.get('dimensions').value));
@@ -524,26 +524,26 @@ export class GeneratorComponent implements OnInit {
     }
 
     return JSON.stringify(dimensionsJSON, ['name', 'label', 'description', 'value', 'justification', 'text', 'min_words', 'url', 'scale', 'type', 'min', 'max', 'step',
-                                           'mapping', 'include_lower_bound', 'include_upper_bound', 'gold_question_check', 'style', 'position', 'orientation', 'separator'], 1);
+      'mapping', 'include_lower_bound', 'include_upper_bound', 'gold_question_check', 'style', 'position', 'orientation', 'separator'], 1);
   }
 
   /*
    * STEP #3 - General Instructions
    */
   generalInstructions(): FormArray {
-   return this.generalInstructionsForm.get('generalInstructions') as FormArray;
+    return this.generalInstructionsForm.get('generalInstructions') as FormArray;
   }
 
   addGeneralInstruction() {
-   this.generalInstructions().push(this._formBuilder.group({
-     caption: [''],
-     steps: this._formBuilder.array([])
-   }));
-   this.addGeneralInstructionStep(this.generalInstructions().length - 1);
+    this.generalInstructions().push(this._formBuilder.group({
+      caption: [''],
+      steps: this._formBuilder.array([])
+    }));
+    this.addGeneralInstructionStep(this.generalInstructions().length - 1);
   }
 
   removeGeneralInstruction(generalInstructionIndex: number) {
-   this.generalInstructions().removeAt(generalInstructionIndex);
+    this.generalInstructions().removeAt(generalInstructionIndex);
   }
 
   /* Steps */
@@ -567,7 +567,7 @@ export class GeneratorComponent implements OnInit {
     for (let generalInstructionIndex in generalInstructionsJSON) {
 
       if (generalInstructionsJSON[generalInstructionIndex].caption == '') {
-       delete generalInstructionsJSON[generalInstructionIndex].caption;
+        delete generalInstructionsJSON[generalInstructionIndex].caption;
       }
 
       let stepsStringArray = [];
@@ -584,19 +584,19 @@ export class GeneratorComponent implements OnInit {
    * STEP #4 - Evaluation Instructions
    */
   evaluationInstructions(): FormArray {
-   return this.evaluationInstructionsForm.get('evaluationInstructions') as FormArray;
+    return this.evaluationInstructionsForm.get('evaluationInstructions') as FormArray;
   }
 
   addEvaluationInstruction() {
-   this.evaluationInstructions().push(this._formBuilder.group({
-     caption: [''],
-     steps: this._formBuilder.array([])
-   }));
-   this.addEvaluationInstructionStep(this.evaluationInstructions().length - 1);
+    this.evaluationInstructions().push(this._formBuilder.group({
+      caption: [''],
+      steps: this._formBuilder.array([])
+    }));
+    this.addEvaluationInstructionStep(this.evaluationInstructions().length - 1);
   }
 
   removeEvaluationInstruction(evaluationInstructionIndex: number) {
-   this.evaluationInstructions().removeAt(evaluationInstructionIndex);
+    this.evaluationInstructions().removeAt(evaluationInstructionIndex);
   }
 
   /* Steps */
@@ -620,7 +620,7 @@ export class GeneratorComponent implements OnInit {
     for (let evaluationInstructionIndex in evaluationInstructionsJSON) {
 
       if (evaluationInstructionsJSON[evaluationInstructionIndex].caption == '') {
-       delete evaluationInstructionsJSON[evaluationInstructionIndex].caption;
+        delete evaluationInstructionsJSON[evaluationInstructionIndex].caption;
       }
 
       let stepsStringArray = [];
@@ -636,6 +636,7 @@ export class GeneratorComponent implements OnInit {
   /*
    * STEP #5 - Search Engine
    */
+
   /* Domains To Filter */
   domains(): FormArray {
     return this.searchEngineForm.get('domains_to_filter') as FormArray;
@@ -671,83 +672,97 @@ export class GeneratorComponent implements OnInit {
   /*
    * STEP #6 - Task Settings
    */
-   /* Blacklist Batches */
-   blacklistBatches(): FormArray {
-     return this.taskSettingsForm.get('blacklist_batches') as FormArray;
-   }
 
-   addBlacklistBatch() {
-     this.blacklistBatches().push(this._formBuilder.group({
-       blacklist_batch: ['']
-     }))
-   }
+  /* Blacklist Batches */
+  blacklistBatches(): FormArray {
+    return this.taskSettingsForm.get('blacklist_batches') as FormArray;
+  }
 
-   removeBlacklistBatch(blacklistBatchIndex: number) {
-     this.blacklistBatches().removeAt(blacklistBatchIndex);
-   }
+  /* Countdown Time */
 
-   /* Whitelist Batches */
-   whitelistBatches(): FormArray {
-     return this.taskSettingsForm.get('whitelist_batches') as FormArray;
-   }
+  resetCountdown() {
+    this.taskSettingsForm.get('countdown_time').setValue('')
+    if (this.taskSettingsForm.get('setCountdownTime').value == false) {
+      this.taskSettingsForm.get('countdown_time').clearValidators();
+    } else {
+      this.taskSettingsForm.get('countdown_time').setValidators([Validators.required, this.positiveNumber.bind(this)]);
+    }
+    this.taskSettingsForm.get('countdown_time').updateValueAndValidity();
+  }
 
-   addWhitelistBatch() {
-     this.whitelistBatches().push(this._formBuilder.group({
-       whitelist_batch: ['']
-     }))
-   }
+  addBlacklistBatch() {
+    this.blacklistBatches().push(this._formBuilder.group({
+      blacklist_batch: ['']
+    }))
+  }
 
-   removeWhitelistBatch(whitelistBatchIndex: number) {
-     this.whitelistBatches().removeAt(whitelistBatchIndex);
-   }
+  removeBlacklistBatch(blacklistBatchIndex: number) {
+    this.blacklistBatches().removeAt(blacklistBatchIndex);
+  }
 
-   /* Messages */
-   messages(): FormArray {
-     return this.taskSettingsForm.get('messages') as FormArray;
-   }
+  /* Whitelist Batches */
+  whitelistBatches(): FormArray {
+    return this.taskSettingsForm.get('whitelist_batches') as FormArray;
+  }
 
-   addMessage() {
-     this.messages().push(this._formBuilder.group({
-       message: ['']
-     }))
-   }
+  addWhitelistBatch() {
+    this.whitelistBatches().push(this._formBuilder.group({
+      whitelist_batch: ['']
+    }))
+  }
 
-   removeMessage(messageIndex: number) {
-     this.messages().removeAt(messageIndex);
-   }
+  removeWhitelistBatch(whitelistBatchIndex: number) {
+    this.whitelistBatches().removeAt(whitelistBatchIndex);
+  }
 
-   /* Other Functions */
-   taskSettingsJSON() {
-     let taskSettingsJSON = JSON.parse(JSON.stringify(this.taskSettingsForm.value));
+  /* Messages */
+  messages(): FormArray {
+    return this.taskSettingsForm.get('messages') as FormArray;
+  }
 
-     let blacklistBatchesStringArray = [];
-     for (let blacklistBatchIndex in taskSettingsJSON.blacklist_batches) {
-       blacklistBatchesStringArray.push(taskSettingsJSON.blacklist_batches[blacklistBatchIndex].blacklist_batch);
-     }
-     taskSettingsJSON.blacklist_batches = blacklistBatchesStringArray;
+  addMessage() {
+    this.messages().push(this._formBuilder.group({
+      message: ['']
+    }))
+  }
 
-     let whitelistBatchesStringArray = [];
-     for (let whitelistBatchIndex in taskSettingsJSON.whitelist_batches) {
-       whitelistBatchesStringArray.push(taskSettingsJSON.whitelist_batches[whitelistBatchIndex].whitelist_batch);
-     }
-     taskSettingsJSON.whitelist_batches = whitelistBatchesStringArray;
+  removeMessage(messageIndex: number) {
+    this.messages().removeAt(messageIndex);
+  }
 
-     if (taskSettingsJSON.messages.length == 0) {
-       delete taskSettingsJSON.messages;
-     } else {
-       let messagesStringArray = [];
-       for (let messageIndex in taskSettingsJSON.messages) {
-         messagesStringArray.push(taskSettingsJSON.messages[messageIndex].message);
-       }
-       taskSettingsJSON.messages = messagesStringArray;
-     }
+  /* Other Functions */
+  taskSettingsJSON() {
+    let taskSettingsJSON = JSON.parse(JSON.stringify(this.taskSettingsForm.value));
 
-     return JSON.stringify(taskSettingsJSON, null, 1);
-   }
+    let blacklistBatchesStringArray = [];
+    for (let blacklistBatchIndex in taskSettingsJSON.blacklist_batches) {
+      blacklistBatchesStringArray.push(taskSettingsJSON.blacklist_batches[blacklistBatchIndex].blacklist_batch);
+    }
+    taskSettingsJSON.blacklist_batches = blacklistBatchesStringArray;
+
+    let whitelistBatchesStringArray = [];
+    for (let whitelistBatchIndex in taskSettingsJSON.whitelist_batches) {
+      whitelistBatchesStringArray.push(taskSettingsJSON.whitelist_batches[whitelistBatchIndex].whitelist_batch);
+    }
+    taskSettingsJSON.whitelist_batches = whitelistBatchesStringArray;
+
+    if (taskSettingsJSON.messages.length == 0) {
+      delete taskSettingsJSON.messages;
+    } else {
+      let messagesStringArray = [];
+      for (let messageIndex in taskSettingsJSON.messages) {
+        messagesStringArray.push(taskSettingsJSON.messages[messageIndex].message);
+      }
+      taskSettingsJSON.messages = messagesStringArray;
+    }
+
+    return JSON.stringify(taskSettingsJSON, null, 1);
+  }
 
   /*
    * STEP #7 - Worker Checks
    */
+
   /* Other Functions */
   workerChecksJSON() {
     let workerChecksJSON = JSON.parse(JSON.stringify(this.workerChecksForm.value));
@@ -765,6 +780,18 @@ export class GeneratorComponent implements OnInit {
     }
 
     return JSON.stringify(workerChecksJSON, ['blacklist', 'whitelist'], 1);
+  }
+
+  public checkFormControl(form: FormGroup, field: string, key: string): boolean {
+    return form.get(field).hasError(key);
+  }
+
+  public positiveNumber(control: FormControl) {
+    if (Number(control.value) < 1) {
+      return {invalid: true};
+    } else {
+      return null;
+    }
   }
 
 }

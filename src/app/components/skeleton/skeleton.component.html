@@ -189,7 +189,7 @@
           <mat-card-content class="pt-16px">
 
             <!--- COUNTDOWN --->
-            <div class="instructions sticky">
+            <div class="instructions sticky" *ngIf="this.settings.countdownTime">
               <h2 class="m-0">
                 Time left:
                 <countdown #cd

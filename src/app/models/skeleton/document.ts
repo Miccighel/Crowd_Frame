@@ -8,6 +8,7 @@ export class Document {
 
   /* DO NOT REMOVE THIS ATTRIBUTE */
   index: number;
+  countdownExpired: boolean;
 
   name: string;
   statement: string;

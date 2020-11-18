@@ -1,4 +1,4 @@
-<mat-horizontal-stepper [linear]="true" labelPosition="bottom" #generator class="green-theme">
+<mat-horizontal-stepper labelPosition="bottom" #generator class="green-theme">
   <!--
     -- Step #1 - Questionnaires
     -->
@@ -820,10 +820,20 @@
 
           <mat-divider [inset]="true"></mat-divider>
 
-          <mat-form-field matLine class="width-100" [hideRequiredMarker]="taskSettingsForm.get('countdown_time').valid" appearance="fill">
-            <mat-label>Time Check Amount</mat-label>
-            <input matInput type="number" min="0" formControlName="countdown_time" required>
+          <!-- Countdown Time -->
+          <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="setCountdownTime" (change)="resetCountdown()">
+            Countdown
+          </mat-slide-toggle>
+
+          <mat-form-field matLine class="width-100" [hideRequiredMarker]="taskSettingsForm.get('countdown_time').valid" appearance="fill" *ngIf="this.taskSettingsForm.get('setCountdownTime').value">
+            <mat-label>Time</mat-label>
+            <input matInput type="number" min="1" formControlName="countdown_time" required>
+            <mat-error *ngIf="checkFormControl(taskSettingsForm,'countdown_time', 'invalid')">
+              A positive number greater than zero is required
+            </mat-error>
           </mat-form-field>
+
+          <mat-divider [inset]="true"></mat-divider>
 
           <!-- Blacklist Batches -->
           <div formArrayName="blacklist_batches">
