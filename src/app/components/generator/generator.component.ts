@@ -421,19 +421,19 @@ export class GeneratorComponent implements OnInit {
     for (let dimensionIndex in dimensionsJSON) {
 
       if (dimensionsJSON[dimensionIndex].dimensionDescription == '') {
-        delete dimensionsJSON[dimensionIndex].dimensionDescription;
+        dimensionsJSON[dimensionIndex].dimensionDescription = false
       } else {
         dimensionsJSON[dimensionIndex].description = dimensionsJSON[dimensionIndex].dimensionDescription;
         delete dimensionsJSON[dimensionIndex].dimensionDescription;
       }
 
       if (dimensionsJSON[dimensionIndex].setJustification == false) {
-        delete dimensionsJSON[dimensionIndex].justification;
+        dimensionsJSON[dimensionIndex].justification = false
       }
       delete dimensionsJSON[dimensionIndex].setJustification;
 
       if (dimensionsJSON[dimensionIndex].url == '') {
-        delete dimensionsJSON[dimensionIndex].url;
+        dimensionsJSON[dimensionIndex].url = false
       } else {
         switch (dimensionsJSON[dimensionIndex].url) {
           case 'true':
@@ -448,7 +448,7 @@ export class GeneratorComponent implements OnInit {
       }
 
       if (dimensionsJSON[dimensionIndex].setScale == false) {
-        delete dimensionsJSON[dimensionIndex].scale;
+        dimensionsJSON[dimensionIndex].scale = false
       } else {
         switch (dimensionsJSON[dimensionIndex].scale.type) {
           case 'continue':
@@ -486,7 +486,7 @@ export class GeneratorComponent implements OnInit {
       delete dimensionsJSON[dimensionIndex].setScale;
 
       if (dimensionsJSON[dimensionIndex].gold_question_check == '') {
-        delete dimensionsJSON[dimensionIndex].gold_question_check;
+        dimensionsJSON[dimensionIndex].gold_question_check = false
       } else {
         switch (dimensionsJSON[dimensionIndex].gold_question_check) {
           case 'true':
@@ -504,11 +504,11 @@ export class GeneratorComponent implements OnInit {
       delete dimensionsJSON[dimensionIndex].style.styleType;
 
       if (dimensionsJSON[dimensionIndex].style.orientation == '') {
-        delete dimensionsJSON[dimensionIndex].style.orientation;
+        dimensionsJSON[dimensionIndex].style.orientation = false
       }
 
       if (dimensionsJSON[dimensionIndex].style.separator == '') {
-        delete dimensionsJSON[dimensionIndex].style.separator;
+        dimensionsJSON[dimensionIndex].style.separator = false
       } else {
         switch (dimensionsJSON[dimensionIndex].style.separator) {
           case 'true':
@@ -567,7 +567,7 @@ export class GeneratorComponent implements OnInit {
     for (let generalInstructionIndex in generalInstructionsJSON) {
 
       if (generalInstructionsJSON[generalInstructionIndex].caption == '') {
-        delete generalInstructionsJSON[generalInstructionIndex].caption;
+        generalInstructionsJSON[generalInstructionIndex].caption = false
       }
 
       let stepsStringArray = [];
@@ -620,7 +620,7 @@ export class GeneratorComponent implements OnInit {
     for (let evaluationInstructionIndex in evaluationInstructionsJSON) {
 
       if (evaluationInstructionsJSON[evaluationInstructionIndex].caption == '') {
-        delete evaluationInstructionsJSON[evaluationInstructionIndex].caption;
+        evaluationInstructionsJSON[evaluationInstructionIndex].caption = false
       }
 
       let stepsStringArray = [];
@@ -733,6 +733,12 @@ export class GeneratorComponent implements OnInit {
   /* Other Functions */
   taskSettingsJSON() {
     let taskSettingsJSON = JSON.parse(JSON.stringify(this.taskSettingsForm.value));
+
+    delete taskSettingsJSON.setCountdownTime;
+
+    if (taskSettingsJSON.countdown_time == '') {
+      taskSettingsJSON.countdown_time = false
+    }
 
     let blacklistBatchesStringArray = [];
     for (let blacklistBatchIndex in taskSettingsJSON.blacklist_batches) {

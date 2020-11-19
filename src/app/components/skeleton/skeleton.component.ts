@@ -266,6 +266,8 @@ export class SkeletonComponent implements OnInit{
 
   public async ngOnInit() {
 
+    this.ngxService.start()
+
     let url = new URL(window.location.href);
 
     let rawTaskInstructions = await this.S3Service.downloadTaskInstructions(this.configService.environment);
@@ -961,8 +963,10 @@ export class SkeletonComponent implements OnInit{
   public performReset() {
 
     /* |--- COUNTDOWN ---| */
-    if (this.countdown.toArray()[0].left > 0) {
-      this.countdown.toArray()[0].resume();
+    if(this.settings.countdownTime) {
+      if (this.countdown.toArray()[0].left > 0) {
+        this.countdown.toArray()[0].resume();
+      }
     }
 
     /* The loading spinner is started */
@@ -1033,10 +1037,6 @@ export class SkeletonComponent implements OnInit{
           break;
       }
     }
-
-
-    console.log(this.countdown.toArray()[0]["i"])
-    console.log(this.countdownsExpired)
 
     if (!(this.worker.identifier === null)) {
 
@@ -1236,8 +1236,8 @@ export class SkeletonComponent implements OnInit{
         data["timestamps_end"] = timestampsEnd
         let timestampsElapsed = this.timestampsElapsed[completedElement];
         data["timestamps_elapsed"] = timestampsElapsed
-        let countdownTime = Number(this.countdown[completedElement]["i"]["text"])
-        data["countdown_times"] = countdownTime
+        let countdownTime = (this.settings.countdownTime) ? Number(this.countdown[completedElement]["i"]["text"]) : null
+        data["countdowns_times"] = countdownTime
         let countdown_expired = this.countdownsExpired[completedElement]
         data["countdowns_expired"] = countdown_expired
         /* Number of accesses to the current document (currentDocument.e., how many times the worker reached the document with a "Back" or "Next" action */
@@ -1248,6 +1248,9 @@ export class SkeletonComponent implements OnInit{
 
         /* If the worker has completed the last document */
         if (completedElement == this.questionnaireAmount + this.documentsAmount - 1) {
+
+          /* The amount of accesses to the current document is incremented */
+          this.elementsAccesses[completedElement] = accessesAmount + 1;
 
           data = {}
 
@@ -1279,8 +1282,9 @@ export class SkeletonComponent implements OnInit{
           /* await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/timestamps_end.json`, this.timestampsEnd)); */
           data["timestamps_elapsed"] = this.timestampsStart
           let countdownTimes = [];
-          for (let index = 0; index < this.countdown.length; index++) countdownTimes.push(Number(this.countdown[index]["i"]["text"]));
-          data["countdown_times"] = countdownTimes
+          if(this.settings.countdownTime)
+            for (let index = 0; index < this.countdown.length; index++) countdownTimes.push(Number(this.countdown[index]["i"]["text"]));
+          data["countdowns_times"] = countdownTimes
           data["countdowns_expired"] = this.countdownsExpired
           /* Number of accesses to each document (currentDocument.e., how many times the worker reached the document with a "Back" or "Next" action */
           data["accesses"] = this.elementsAccesses
@@ -1288,9 +1292,6 @@ export class SkeletonComponent implements OnInit{
           let uploadStatus = await this.S3Service.uploadDocument(this.configService.environment, this.worker, data, true, this.currentTry)
 
         }
-
-        /* The amount of accesses to the current document is incremented */
-        this.elementsAccesses[completedElement] = accessesAmount + 1;
 
       }
 
