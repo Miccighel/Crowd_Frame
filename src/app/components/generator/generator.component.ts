@@ -1,6 +1,8 @@
 import {Component, OnInit, ViewChild} from '@angular/core';
 import {FormBuilder, FormGroup, FormArray, Validators, ValidatorFn, AbstractControl, FormControl} from '@angular/forms';
 import {MatStepper} from "@angular/material/stepper";
+import {S3Service} from "../../services/s3.service";
+import {ConfigService} from "../../services/config.service";
 
 /*
  * STEP #1 - Questionnaires
@@ -111,11 +113,37 @@ export class GeneratorComponent implements OnInit {
    */
   workerChecksForm: FormGroup;
 
-  constructor(private _formBuilder: FormBuilder) {
+  configService: ConfigService
+  S3Service: S3Service
+
+  batchesList: Array<string>
+
+  constructor(
+    private _formBuilder: FormBuilder,
+    configService: ConfigService,
+    S3Service: S3Service
+  ) {
+    this.configService = configService
+    this.S3Service = S3Service
+
+
   }
 
   ngOnInit() {
 
+    let tasksPromise = this.S3Service.listFolders(this.configService.environment)
+    let completeList = []
+    tasksPromise.then(tasks => {
+      for(let task of tasks){
+        let batches = this.S3Service.listFolders(this.configService.environment, task["Prefix"])
+        batches.then(batches => {
+          for(let batch of batches) {
+            completeList.push(batch["Prefix"])
+          }
+        })
+      }
+    })
+    this.batchesList = completeList
     /*
      * STEP #1 - Questionnaires
      */
@@ -691,13 +719,21 @@ export class GeneratorComponent implements OnInit {
   }
 
   addBlacklistBatch() {
-    this.blacklistBatches().push(this._formBuilder.group({
-      blacklist_batch: ['']
-    }))
+    for (let item of this.batchesList) {
+      this.blacklistBatches().push(this._formBuilder.group({
+        blacklist_batch: ['']
+      }))
+    }
   }
 
-  removeBlacklistBatch(blacklistBatchIndex: number) {
-    this.blacklistBatches().removeAt(blacklistBatchIndex);
+  removeBlacklistBatch(blacklistBatchIndex = null) {
+    if (blacklistBatchIndex) {
+      this.blacklistBatches().removeAt(blacklistBatchIndex);
+    } else {
+      while (this.blacklistBatches().length !== 0) {
+        this.blacklistBatches().removeAt(0)
+      }
+    }
   }
 
   /* Whitelist Batches */
@@ -706,13 +742,21 @@ export class GeneratorComponent implements OnInit {
   }
 
   addWhitelistBatch() {
-    this.whitelistBatches().push(this._formBuilder.group({
-      whitelist_batch: ['']
-    }))
+    for (let item of this.batchesList) {
+      this.whitelistBatches().push(this._formBuilder.group({
+        whitelist_batch: ['']
+      }))
+    }
   }
 
-  removeWhitelistBatch(whitelistBatchIndex: number) {
-    this.whitelistBatches().removeAt(whitelistBatchIndex);
+  removeWhitelistBatch(whitelistBatchIndex = null) {
+    if (whitelistBatchIndex) {
+      this.whitelistBatches().removeAt(whitelistBatchIndex);
+    } else {
+      while (this.whitelistBatches().length !== 0) {
+        this.whitelistBatches().removeAt(0)
+      }
+    }
   }
 
   /* Messages */
@@ -742,13 +786,15 @@ export class GeneratorComponent implements OnInit {
 
     let blacklistBatchesStringArray = [];
     for (let blacklistBatchIndex in taskSettingsJSON.blacklist_batches) {
-      blacklistBatchesStringArray.push(taskSettingsJSON.blacklist_batches[blacklistBatchIndex].blacklist_batch);
+      if(taskSettingsJSON.blacklist_batches[blacklistBatchIndex].blacklist_batch)
+      blacklistBatchesStringArray.push(this.batchesList[blacklistBatchIndex]);
     }
     taskSettingsJSON.blacklist_batches = blacklistBatchesStringArray;
 
     let whitelistBatchesStringArray = [];
     for (let whitelistBatchIndex in taskSettingsJSON.whitelist_batches) {
-      whitelistBatchesStringArray.push(taskSettingsJSON.whitelist_batches[whitelistBatchIndex].whitelist_batch);
+      if(taskSettingsJSON.whitelist_batches[whitelistBatchIndex].whitelist_batch)
+        whitelistBatchesStringArray.push(this.batchesList[whitelistBatchIndex]);
     }
     taskSettingsJSON.whitelist_batches = whitelistBatchesStringArray;
 

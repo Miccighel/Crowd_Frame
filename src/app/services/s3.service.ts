@@ -61,6 +61,27 @@ export class S3Service {
     })
   }
 
+  public async listFolders(config, key = null) {
+    let s3 = this.loadS3(config)
+    if(key) {
+      return Object(
+        (await (s3.listObjectsV2({
+          Bucket: config["bucket"],
+          Prefix: `${key}`,
+          Delimiter: '/'
+        }).promise())).CommonPrefixes
+      );
+    } else {
+      return Object(
+        (await (s3.listObjectsV2({
+          Bucket: config["bucket"],
+          Delimiter: '/'
+        }).promise())).CommonPrefixes
+      );
+    }
+
+  }
+
   public getFolder(config) {
     if (config["batchName"]) {
       return `${config["taskName"]}/${config["batchName"]}/`
