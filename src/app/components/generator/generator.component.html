@@ -232,8 +232,7 @@
                   <table class="width-100 mt-8px">
                     <tr>
                       <td class="p-0 pr-16px">
-                        <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimension.get('name').valid"
-                                        appearance="fill">
+                        <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimension.get('name').valid" appearance="fill">
                           <mat-label>Name</mat-label>
                           <input matInput type="text" formControlName="name" required>
                         </mat-form-field>
@@ -241,7 +240,7 @@
                       <td class="p-0">
                         <mat-form-field class="width-100" appearance="fill">
                           <mat-label>Description</mat-label>
-                          <textarea matInput formControlName="dimensionDescription"></textarea>
+                          <textarea matInput formControlName="description"></textarea>
                         </mat-form-field>
                       </td>
                     </tr>
@@ -250,27 +249,21 @@
                   <mat-divider [inset]="true"></mat-divider>
 
                   <!-- Justification: Text, Min_Words -->
-                  <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="setJustification"
-                                    (change)="resetJustification(dimensionIndex)">
+                  <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="setJustification" (change)="resetJustification(dimensionIndex)">
                     Justification
                   </mat-slide-toggle>
 
-                  <div *ngIf="dimension.get('setJustification').value"
-                       formGroupName="justification">
+                  <div *ngIf="dimension.get('setJustification').value" formGroupName="justification">
                     <table class="width-100">
                       <tr>
                         <td class="p-0 pr-16px">
-                          <mat-form-field matLine class="width-100"
-                                          [hideRequiredMarker]="dimension.get('justification').get('text').valid"
-                                          appearance="fill">
+                          <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimension.get('justification').get('text').valid" appearance="fill">
                             <mat-label>Text</mat-label>
                             <input matInput type="text" formControlName="text" required>
                           </mat-form-field>
                         </td>
                         <td class="p-0">
-                          <mat-form-field matLine class="width-100"
-                                          [hideRequiredMarker]="dimension.get('justification').get('min_words').valid"
-                                          appearance="fill">
+                          <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimension.get('justification').get('min_words').valid" appearance="fill">
                             <mat-label>Minimum Words</mat-label>
                             <input matInput type="number" min="0" formControlName="min_words" required>
                           </mat-form-field>
@@ -304,8 +297,7 @@
                   <mat-divider [inset]="true"></mat-divider>
 
                   <!-- Scale: Type, {Min, Max, Step} or [Mapping] or {Min, Max, IncludeLowerBound, IncludeUpperBound} -->
-                  <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="setScale"
-                                    (change)="resetScale(dimensionIndex)">
+                  <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="setScale" (change)="resetScale(dimensionIndex)">
                     Scale
                   </mat-slide-toggle>
 
@@ -314,9 +306,7 @@
                     <table class="width-100">
                       <tr>
                         <td class="p-0">
-                          <mat-form-field matLine class="width-100"
-                                          [hideRequiredMarker]="dimension.get('scale').get('type').valid"
-                                          appearance="fill">
+                          <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimension.get('scale').get('type').valid" appearance="fill">
                             <mat-label>Type</mat-label>
                             <mat-select matInput formControlName="type" required
                                         (selectionChange)="updateScale(dimensionIndex)">
@@ -332,25 +322,19 @@
                     <table class="width-100" *ngIf="dimension.get('scale').get('type').value == 'continue'">
                       <tr>
                         <td class="p-0 pr-16px">
-                          <mat-form-field matLine class="width-100"
-                                          [hideRequiredMarker]="dimension.get('scale').get('min').valid"
-                                          appearance="fill">
+                          <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimension.get('scale').get('min').valid" appearance="fill">
                             <mat-label>Minimum</mat-label>
                             <input matInput type="number" formControlName="min" required>
                           </mat-form-field>
                         </td>
                         <td class="p-0 pr-16px">
-                          <mat-form-field matLine class="width-100"
-                                          [hideRequiredMarker]="dimension.get('scale').get('max').valid"
-                                          appearance="fill">
+                          <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimension.get('scale').get('max').valid" appearance="fill">
                             <mat-label>Maximum</mat-label>
                             <input matInput type="number" formControlName="max" required>
                           </mat-form-field>
                         </td>
                         <td class="p-0">
-                          <mat-form-field matLine class="width-100"
-                                          [hideRequiredMarker]="dimension.get('scale').get('step').valid"
-                                          appearance="fill">
+                          <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimension.get('scale').get('step').valid" appearance="fill">
                             <mat-label>Step</mat-label>
                             <input matInput type="number" formControlName="step" required>
                           </mat-form-field>
@@ -360,9 +344,7 @@
 
                     <div *ngIf="dimension.get('scale').get('type').value == 'discrete'"
                          formArrayName="mapping">
-                      <button mat-flat-button
-                              color="primary" class="mb-16px indent"
-                              (click)="addDimensionMapping(dimensionIndex)">
+                      <button mat-flat-button color="primary" class="mb-16px indent" (click)="addDimensionMapping(dimensionIndex)">
                         Add Mapping
                       </button>
                       <div
@@ -371,30 +353,25 @@
                         <table class="width-100">
                           <tr>
                             <td class="p-0 pr-16px">
-                              <mat-form-field matLine class="width-100"
-                                              [hideRequiredMarker]="dimensionMap.get('label').valid" appearance="fill">
+                              <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimensionMap.get('label').valid" appearance="fill">
                                 <mat-label>Label</mat-label>
                                 <input matInput type="text" formControlName="label" required>
                               </mat-form-field>
                             </td>
                             <td class="p-0 pr-16px">
-                              <mat-form-field matLine class="width-100"
-                                              [hideRequiredMarker]="dimensionMap.get('description').valid"
-                                              appearance="fill">
+                              <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimensionMap.get('description').valid" appearance="fill">
                                 <mat-label>Description</mat-label>
                                 <input matInput type="text" formControlName="description" required>
                               </mat-form-field>
                             </td>
                             <td class="p-0 pr-16px">
-                              <mat-form-field matLine class="width-100"
-                                              [hideRequiredMarker]="dimensionMap.get('value').valid" appearance="fill">
+                              <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimensionMap.get('value').valid" appearance="fill">
                                 <mat-label>Value</mat-label>
                                 <input matInput type="text" formControlName="value" required>
                               </mat-form-field>
                             </td>
                             <td class="p-0 center">
-                              <button mat-flat-button
-                                      color="primary" class="mb-16px"
+                              <button mat-flat-button color="primary" class="mb-16px"
                                       [disabled]="dimensionMappingIndex == '0' && dimensionMapping(dimensionIndex).length == 1"
                                       (click)="removeDimensionMapping(dimensionIndex, dimensionMappingIndex)">
                                 Remove Mapping
@@ -437,6 +414,30 @@
 
                   <mat-divider [inset]="true"></mat-divider>
 
+                  <!-- Annotator: Type -->
+                  <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="setAnnotator" (change)="resetAnnotator(dimensionIndex)">
+                    Annotator
+                  </mat-slide-toggle>
+
+                  <div *ngIf="dimension.get('setAnnotator').value" formGroupName="annotator">
+                    <table class="width-100">
+                      <tr>
+                        <td class="p-0 pr-16px">
+                          <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimension.get('annotator').get('type').valid" appearance="fill">
+                            <mat-label>Type</mat-label>
+                            <mat-select matInput formControlName="type" required>
+                              <mat-option *ngFor="let annotatorType of annotatorTypes" [value]="annotatorType.value">
+                                {{annotatorType.viewValue}}
+                              </mat-option>
+                            </mat-select>
+                          </mat-form-field>
+                        </td>
+                      </tr>
+                    </table>
+                  </div>
+
+                  <mat-divider [inset]="true"></mat-divider>
+
                   <!-- Gold Question Check -->
                   <table class="width-100 mt-16px">
                     <tr>
@@ -468,9 +469,7 @@
                     <table class="width-100">
                       <tr>
                         <td class="p-0 pr-16px">
-                          <mat-form-field matLine class="width-100"
-                                          [hideRequiredMarker]="dimension.get('style').get('styleType').valid"
-                                          appearance="fill">
+                          <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimension.get('style').get('styleType').valid" appearance="fill">
                             <mat-label>Type</mat-label>
                             <mat-select matInput formControlName="styleType" required>
                               <mat-option *ngFor="let styleType of styleTypes" [value]="styleType.value">
@@ -804,16 +803,13 @@
               <table class="width-100">
                 <tr>
                   <td class="p-0 pr-16px">
-                    <mat-form-field matLine class="width-100" [hideRequiredMarker]="domain.get('url').valid"
-                                    appearance="fill">
-                      <mat-label>Url</mat-label>
+                    <mat-form-field matLine class="width-100" [hideRequiredMarker]="domain.get('url').valid" appearance="fill">
+                      <mat-label>Domain</mat-label>
                       <input matInput type="text" formControlName="url" required>
                     </mat-form-field>
                   </td>
                   <td class="p-0 center">
-                    <button mat-flat-button
-                            color="primary" class="mb-16px"
-                            (click)="removeDomain(domainIndex)">
+                    <button mat-flat-button color="primary" class="mb-16px" (click)="removeDomain(domainIndex)">
                       Remove Domain
                     </button>
                   </td>
@@ -846,20 +842,35 @@
         <mat-divider></mat-divider>
         <mat-card-content>
 
+          <!-- Task Name, Batch Name-->
+          <table class="width-100 mt-8px">
+            <tr>
+              <td class="p-0 pr-16px">
+                <mat-form-field matLine class="width-100" [hideRequiredMarker]="taskSettingsForm.get('task_name').valid" appearance="fill">
+                  <mat-label>Task Name</mat-label>
+                  <input matInput type="text" formControlName="task_name" (change)="updateFullPath()" required>
+                </mat-form-field>
+              </td>
+              <td class="p-0">
+                <mat-form-field matLine class="width-100" [hideRequiredMarker]="taskSettingsForm.get('batch_name').valid" appearance="fill">
+                  <mat-label>Batch Name</mat-label>
+                  <input matInput type="text" min="0" formControlName="batch_name" (change)="updateFullPath()" required>
+                </mat-form-field>
+              </td>
+            </tr>
+          </table>
+
           <!-- Allowed Tries, Time Check Amount-->
           <table class="width-100 mt-8px">
             <tr>
               <td class="p-0 pr-16px">
-                <mat-form-field matLine class="width-100"
-                                [hideRequiredMarker]="taskSettingsForm.get('allowed_tries').valid" appearance="fill">
+                <mat-form-field matLine class="width-100" [hideRequiredMarker]="taskSettingsForm.get('allowed_tries').valid" appearance="fill">
                   <mat-label>Allowed Tries</mat-label>
                   <input matInput type="number" min="0" formControlName="allowed_tries" required>
                 </mat-form-field>
               </td>
               <td class="p-0">
-                <mat-form-field matLine class="width-100"
-                                [hideRequiredMarker]="taskSettingsForm.get('time_check_amount').valid"
-                                appearance="fill">
+                <mat-form-field matLine class="width-100" [hideRequiredMarker]="taskSettingsForm.get('time_check_amount').valid" appearance="fill">
                   <mat-label>Time Check Amount</mat-label>
                   <input matInput type="number" min="0" formControlName="time_check_amount" required>
                 </mat-form-field>
@@ -870,13 +881,11 @@
           <mat-divider [inset]="true"></mat-divider>
 
           <!-- Countdown Time -->
-          <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="setCountdownTime"
-                            (change)="resetCountdown()">
+          <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="setCountdownTime" (change)="resetCountdown()">
             Countdown
           </mat-slide-toggle>
 
-          <mat-form-field matLine class="width-100" [hideRequiredMarker]="taskSettingsForm.get('countdown_time').valid"
-                          appearance="fill" *ngIf="this.taskSettingsForm.get('setCountdownTime').value">
+          <mat-form-field matLine class="width-100" [hideRequiredMarker]="taskSettingsForm.get('countdown_time').valid" appearance="fill" *ngIf="this.taskSettingsForm.get('setCountdownTime').value">
             <mat-label>Time</mat-label>
             <input matInput type="number" min="1" formControlName="countdown_time" required>
             <mat-error *ngIf="checkFormControl(taskSettingsForm,'countdown_time', 'invalid')">
@@ -888,53 +897,65 @@
 
           <!-- Blacklist Batches -->
           <div formArrayName="blacklist_batches">
-            <button mat-flat-button
-                    color="primary" class="mt-16px mb-16px indent"
-                    (click)="addBlacklistBatch()">
+            <button mat-flat-button color="primary" class="mt-16px mb-16px indent" (click)="addBlacklistBatch()">
               Blacklist Batches
             </button>
-            <button mat-flat-button
-                    color="primary" class="mb-16px"
-                    (click)="removeBlacklistBatch()" *ngIf="blacklistBatches().controls.length>0">
+            <button mat-flat-button color="primary" class="mb-16px" (click)="removeBlacklistBatch()" *ngIf="blacklistBatches().controls.length>0">
               Remove Batches
             </button>
-            <div *ngFor="let blacklistBatch of blacklistBatches().controls; let blacklistBatchIndex = index"
-                 [formGroupName]="blacklistBatchIndex">
-              <table class="width-100 mt-8px">
-                <tr>
-                  <td>
-                    <mat-checkbox formControlName="blacklist_batch">{{this.batchesList[blacklistBatchIndex]}}</mat-checkbox>
-                  </td>
-                </tr>
-              </table>
-            </div>
+            <ng-container *ngIf="this.blacklistBatches().controls.length>0">
+              <div *ngFor="let task of batchesTree; let taskIndex = index">
+                <mat-accordion class="generator-accordion">
+                  <mat-expansion-panel>
+                    <mat-expansion-panel-header>
+                      <mat-panel-title>
+                        {{task.name}}
+                      </mat-panel-title>
+                      <mat-panel-description>
+                      </mat-panel-description>
+                    </mat-expansion-panel-header>
+                    <ng-container *ngFor="let batch of task.batches; let blacklistBatchIndex = index" [formGroupName]="taskIndex+blacklistBatchIndex">
+                      <p>
+                        <mat-checkbox formControlName="blacklist_batch">{{task.batches[blacklistBatchIndex]}}</mat-checkbox>
+                      </p>
+                    </ng-container>
+                  </mat-expansion-panel>
+                </mat-accordion>
+              </div>
+            </ng-container>
           </div>
+
 
           <mat-divider [inset]="true"></mat-divider>
 
           <!-- Whitelist Batches -->
           <div formArrayName="whitelist_batches">
-            <button mat-flat-button
-                    color="primary" class="mt-16px mb-16px indent"
-                    (click)="addWhitelistBatch()">
+            <button mat-flat-button color="primary" class="mt-16px mb-16px indent" (click)="addWhitelistBatch()">
               Whitelist Batches
             </button>
-            <button mat-flat-button
-                    color="primary" class="mb-16px"
-                    (click)="removeWhitelistBatch()" *ngIf="whitelistBatches().controls.length>0">
+            <button mat-flat-button color="primary" class="mb-16px" (click)="removeWhitelistBatch()" *ngIf="whitelistBatches().controls.length>0">
               Remove Batches
             </button>
-            <div *ngFor="let whitelistBatch of whitelistBatches().controls; let whitelistBatchIndex = index"
-                 [formGroupName]="whitelistBatchIndex">
-              <table class="width-100 mt-8px">
-                <tr>
-                  <td>
-                    <mat-checkbox
-                      formControlName="whitelist_batch">{{this.batchesList[whitelistBatchIndex]}}</mat-checkbox>
-                  </td>
-                </tr>
-              </table>
-            </div>
+            <ng-container *ngIf="this.whitelistBatches().controls.length>0">
+              <div *ngFor="let task of batchesTree; let taskIndex = index">
+                <mat-accordion class="generator-accordion">
+                  <mat-expansion-panel>
+                    <mat-expansion-panel-header>
+                      <mat-panel-title>
+                        {{task.name}}
+                      </mat-panel-title>
+                      <mat-panel-description>
+                      </mat-panel-description>
+                    </mat-expansion-panel-header>
+                    <ng-container *ngFor="let batch of task.batches; let whitelistBatchIndex = index" [formGroupName]="taskIndex+whitelistBatchIndex">
+                      <p>
+                        <mat-checkbox formControlName="whitelist_batch">{{task.batches[whitelistBatchIndex]}}</mat-checkbox>
+                      </p>
+                    </ng-container>
+                  </mat-expansion-panel>
+                </mat-accordion>
+              </div>
+            </ng-container>
           </div>
 
           <mat-divider [inset]="true"></mat-divider>
@@ -1075,10 +1096,64 @@
 
         <h4 class="mb-0">Step #7 - <strong>Worker Checks</strong>:</h4>
         <p><code>{{ workerChecksJSON() }}</code></p>
+
+        <mat-divider [inset]="true"></mat-divider>
+        <h4 class="mb-0"><strong>Validity Check</strong>:</h4>
+
+        <mat-list>
+          <mat-list-item *ngIf="this.questionnairesForm.valid" class="step-valid"><span>Step #1 - Questionnaires: <span class="step-validity-check">valid</span></span>
+          </mat-list-item>
+          <mat-list-item *ngIf="!this.questionnairesForm.valid" class="step-invalid"><span>Step #1 - Questionnaires: <span class="step-validity-check">invalid</span></span>
+          </mat-list-item>
+          <mat-list-item *ngIf="this.dimensionsForm.valid" class="step-valid"><span>Step #2 - Dimensions: <span class="step-validity-check">valid</span></span></mat-list-item>
+          <mat-list-item *ngIf="!this.dimensionsForm.valid" class="step-invalid"><span>Step #2 - Dimensions: <span class="step-validity-check">invalid</span></span></mat-list-item>
+          <mat-list-item *ngIf="this.generalInstructionsForm.valid" class="step-valid"><span>Step #3 - General Instructions: <span class="step-validity-check">valid</span></span>
+          </mat-list-item>
+          <mat-list-item *ngIf="!this.generalInstructionsForm.valid" class="step-invalid"><span>Step #3 - General Instructions: <span
+            class="step-validity-check">invalid</span></span></mat-list-item>
+          <mat-list-item *ngIf="this.evaluationInstructionsForm.valid" class="step-valid"><span>Step #4 - Evaluation Instructions: <span
+            class="step-validity-check">valid</span></span></mat-list-item>
+          <mat-list-item *ngIf="!this.evaluationInstructionsForm.valid" class="step-invalid"><span>Step #4 - Evaluation Instructions: <span
+            class="step-validity-check">invalid</span></span></mat-list-item>
+          <mat-list-item *ngIf="this.searchEngineForm.valid" class="step-valid"><span>Step #5 - Search Engine: <span class="step-validity-check">valid</span></span></mat-list-item>
+          <mat-list-item *ngIf="!this.searchEngineForm.valid" class="step-invalid"><span>Step #5 - Search Engine: <span class="step-validity-check">invalid</span></span>
+          </mat-list-item>
+          <mat-list-item *ngIf="this.taskSettingsForm.valid" class="step-valid"><span>Step #6 - Task Settings: <span class="step-validity-check">valid</span></span></mat-list-item>
+          <mat-list-item *ngIf="!this.taskSettingsForm.valid" class="step-invalid"><span>Step #6 - Task Settings: <span class="step-validity-check">invalid</span></span>
+          </mat-list-item>
+          <mat-list-item *ngIf="this.workerChecksForm.valid" class="step-valid"><span>Step #7 - Worker Checks: <span class="step-validity-check">valid</span></span></mat-list-item>
+          <mat-list-item *ngIf="!this.workerChecksForm.valid" class="step-invalid"><span>Step #7 - Worker Checks: <span class="step-validity-check">invalid</span></span>
+          </mat-list-item>
+        </mat-list>
+
+        <h4 class="mb-0">Upload Path:</h4>
+        <p><code [innerHTML]="fullS3Path"></code></p>
+
+        <ng-container>
+          <mat-divider [inset]="true"></mat-divider>
+          <h4 class="mb-0">Upload result:</h4>
+          <mat-list>
+            <mat-list-item *ngIf="this.questionnairesPath" class="step-valid"><span>Questionnaire configuration uploaded at path: <code>{{this.questionnairesPath}}</code></span>
+            </mat-list-item>
+          </mat-list>
+        </ng-container>
+
       </mat-card-content>
       <mat-divider></mat-divider>
+
       <mat-card-actions>
         <button mat-flat-button color="primary" matStepperPrevious>Back</button>
+        <button mat-flat-button color="accent" [disabled]="
+        !(this.questionnairesForm.valid &&
+        this.questionnairesForm.valid &&
+        this.dimensionsForm.valid &&
+        this.generalInstructionsForm.valid &&
+        this.evaluationInstructionsForm.valid &&
+        this.searchEngineForm.valid &&
+        this.taskSettingsForm.valid &&
+        this.workerChecksForm.valid)" (click)="uploadConfiguration()">
+          Upload
+        </button>
       </mat-card-actions>
     </mat-card>
   </mat-step>

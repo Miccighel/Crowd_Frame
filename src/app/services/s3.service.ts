@@ -82,6 +82,10 @@ export class S3Service {
 
   }
 
+  public getTaskDataS3Path(config, name, batch) {
+    return `${config["region"]}/${config["bucket"]}/${name}/${batch}`
+  }
+
   public getFolder(config) {
     if (config["batchName"]) {
       return `${config["taskName"]}/${config["batchName"]}/`
@@ -162,6 +166,14 @@ export class S3Service {
       let workersFile = `${batch}/Task/workers.json`;
       return this.download(config, workersFile);
     }
+  }
+
+  public getQuestionnairesConfigPath(config, task, batch) {
+    return `${task}/${batch}/Task/questionnaires.json`
+  }
+
+  public uploadQuestionnairesConfig(config, data, task, batch) {
+    return this.upload(config, `${task}/${batch}/Task/questionnaires.json`, data)
   }
 
   public uploadWorkers(config, data) {

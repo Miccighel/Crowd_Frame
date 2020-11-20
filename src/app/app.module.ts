@@ -5,7 +5,7 @@ import {SkeletonComponent} from "./components/skeleton/skeleton.component";
 import {MatRadioModule} from "@angular/material/radio";
 import {MatCardModule} from "@angular/material/card";
 import {MatInputModule} from "@angular/material/input";
-import { MatFormFieldModule } from '@angular/material/form-field';
+import {MatFormFieldModule } from '@angular/material/form-field';
 import {MatSelectModule} from "@angular/material/select";
 import {MatButtonModule} from "@angular/material/button";
 import {MatStepperModule} from "@angular/material/stepper";
@@ -26,6 +26,7 @@ import {MatTableModule} from "@angular/material/table";
 import {MatExpansionModule} from "@angular/material/expansion";
 import {TruncatePipe} from "./pipes/truncatePipe";
 import {MatIconModule} from "@angular/material/icon";
+import {MatTreeModule} from '@angular/material/tree';
 import {MatToolbarModule} from "@angular/material/toolbar";
 import {InstructionsComponent, InstructionsDialog} from "./components/instructions/instructions.component";
 import {MatDialogModule} from "@angular/material/dialog";
@@ -102,6 +103,7 @@ const ngxUiLoaderConfig: NgxUiLoaderConfig = {
     MatButtonModule,
     MatIconModule,
     MatPaginatorModule,
+    MatTreeModule,
     MatTableModule,
     MatPaginatorModule,
     MatExpansionModule,

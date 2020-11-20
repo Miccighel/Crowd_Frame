@@ -116,3 +116,25 @@ mat-slide-toggle {
 button {
   text-transform: uppercase;
 }
+
+mat-list-item.step-valid {
+  background-color:green;
+  color: white;
+}
+
+mat-list-item.step-invalid {
+  background-color:darkred;
+  color: white;
+}
+
+mat-list-item span {
+  color: white ;
+}
+
+mat-list-item span.step-validity-check {
+  text-transform: uppercase;
+}
+
+.generator-accordion mat-expansion-panel {
+  border-radius: 0;
+}

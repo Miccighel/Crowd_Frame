@@ -20,6 +20,11 @@ interface ScaleType {
   viewValue: string;
 }
 
+interface AnnotatorType {
+  value: string;
+  viewValue: string;
+}
+
 interface StyleType {
   value: string;
   viewValue: string;
@@ -41,6 +46,11 @@ interface OrientationType {
 interface SourceType {
   value: string;
   viewValue: string;
+}
+
+interface BatchNode {
+  name: string;
+  batches?: BatchNode[];
 }
 
 @Component({
@@ -68,6 +78,10 @@ export class GeneratorComponent implements OnInit {
     {value: 'continue', viewValue: 'Interval'},
     {value: 'discrete', viewValue: 'Categorical'},
     {value: 'magnitude_estimation', viewValue: 'Magnitude Estimation'}
+  ];
+  annotatorTypes: AnnotatorType[] = [
+    {value: 'free_text', viewValue: 'Free Text'},
+    {value: 'tags', viewValue: 'Tags'},
   ];
   styleTypes: StyleType[] = [
     {value: 'list', viewValue: 'List'},
@@ -117,6 +131,12 @@ export class GeneratorComponent implements OnInit {
   S3Service: S3Service
 
   batchesList: Array<string>
+  taskNames: Array<string>
+  batchesTree
+
+  fullS3Path: string
+
+  questionnairesPath: string
 
   constructor(
     private _formBuilder: FormBuilder,
@@ -126,24 +146,38 @@ export class GeneratorComponent implements OnInit {
     this.configService = configService
     this.S3Service = S3Service
 
+    this.batchesTree = {}
+    let tasksPromise = this.S3Service.listFolders(this.configService.environment)
+    let nodes = []
+    let completeList = []
+    tasksPromise.then(tasks => {
+      for (let task of tasks) {
+        let taskName = task["Prefix"].split("/")[0]
+        let batches = this.S3Service.listFolders(this.configService.environment, task["Prefix"])
+        batches.then(batches => {
+          let node = {}
+          node["name"] = taskName
+          node["batches"] = []
+          for (let batch of batches) {
+            completeList.push(batch["Prefix"])
+            node["batches"].push(batch["Prefix"])
+          }
+          nodes.push(node)
+        })
+      }
+    })
+    this.batchesTree = nodes
+    console.log(this.batchesTree)
+    this.batchesList = completeList
 
+
+    this.fullS3Path = "&lt;region&gt;/&lt;bucket&gt;/&lt;task_name&gt;/&lt;bucket_name&gt;"
+    this.questionnairesPath = null
   }
 
   ngOnInit() {
 
-    let tasksPromise = this.S3Service.listFolders(this.configService.environment)
-    let completeList = []
-    tasksPromise.then(tasks => {
-      for(let task of tasks){
-        let batches = this.S3Service.listFolders(this.configService.environment, task["Prefix"])
-        batches.then(batches => {
-          for(let batch of batches) {
-            completeList.push(batch["Prefix"])
-          }
-        })
-      }
-    })
-    this.batchesList = completeList
+
     /*
      * STEP #1 - Questionnaires
      */
@@ -184,6 +218,8 @@ export class GeneratorComponent implements OnInit {
      * STEP #6 - Task Settings
      */
     this.taskSettingsForm = this._formBuilder.group({
+      task_name: [''],
+      batch_name: [''],
       allowed_tries: [''],
       time_check_amount: [''],
       setCountdownTime: [''],
@@ -199,7 +235,9 @@ export class GeneratorComponent implements OnInit {
     this.workerChecksForm = this._formBuilder.group({
       blacklist: [''],
       whitelist: ['']
-    });
+    })
+
+
   }
 
   /*
@@ -338,7 +376,7 @@ export class GeneratorComponent implements OnInit {
   addDimension() {
     this.dimensions().push(this._formBuilder.group({
       name: [''],
-      dimensionDescription: [''],
+      description: [''],
       setJustification: [''],
       justification: this._formBuilder.group({
         text: [''],
@@ -354,6 +392,10 @@ export class GeneratorComponent implements OnInit {
         mapping: this._formBuilder.array([]),
         include_lower_bound: [true],
         include_upper_bound: [true]
+      }),
+      setAnnotator: [''],
+      annotator: this._formBuilder.group({
+        type: [''],
       }),
       gold_question_check: [''],
       style: this._formBuilder.group({
@@ -419,6 +461,21 @@ export class GeneratorComponent implements OnInit {
     this.updateScale(dimensionIndex);
   }
 
+  resetAnnotator(dimensionIndex) {
+    let dim = this.dimensions().at(dimensionIndex);
+
+    dim.get('annotator').get('type').setValue('');
+
+    if (dim.get('setAnnotator').value == false) {
+      dim.get('annotator').get('type').clearValidators();
+    } else {
+      dim.get('annotator').get('type').setValidators(Validators.required);
+    }
+    dim.get('annotator').get('type').updateValueAndValidity();
+
+    this.updateScale(dimensionIndex);
+  }
+
   updateScale(dimensionIndex) {
     let dim = this.dimensions().at(dimensionIndex);
 
@@ -445,14 +502,14 @@ export class GeneratorComponent implements OnInit {
   }
 
   dimensionsJSON() {
+
     let dimensionsJSON = JSON.parse(JSON.stringify(this.dimensionsForm.get('dimensions').value));
+
+
     for (let dimensionIndex in dimensionsJSON) {
 
-      if (dimensionsJSON[dimensionIndex].dimensionDescription == '') {
-        dimensionsJSON[dimensionIndex].dimensionDescription = false
-      } else {
-        dimensionsJSON[dimensionIndex].description = dimensionsJSON[dimensionIndex].dimensionDescription;
-        delete dimensionsJSON[dimensionIndex].dimensionDescription;
+      if (dimensionsJSON[dimensionIndex].description == '') {
+        dimensionsJSON[dimensionIndex].description = false
       }
 
       if (dimensionsJSON[dimensionIndex].setJustification == false) {
@@ -513,6 +570,11 @@ export class GeneratorComponent implements OnInit {
       }
       delete dimensionsJSON[dimensionIndex].setScale;
 
+      if (dimensionsJSON[dimensionIndex].setAnnotator == false) {
+        dimensionsJSON[dimensionIndex].annotator = false
+      }
+      delete dimensionsJSON[dimensionIndex].setAnnotator;
+
       if (dimensionsJSON[dimensionIndex].gold_question_check == '') {
         dimensionsJSON[dimensionIndex].gold_question_check = false
       } else {
@@ -551,8 +613,7 @@ export class GeneratorComponent implements OnInit {
       }
     }
 
-    return JSON.stringify(dimensionsJSON, ['name', 'label', 'description', 'value', 'justification', 'text', 'min_words', 'url', 'scale', 'type', 'min', 'max', 'step',
-      'mapping', 'include_lower_bound', 'include_upper_bound', 'gold_question_check', 'style', 'position', 'orientation', 'separator'], 1);
+    return JSON.stringify(dimensionsJSON, null, 1);
   }
 
   /*
@@ -685,7 +746,7 @@ export class GeneratorComponent implements OnInit {
     let searchEngineJSON = JSON.parse(JSON.stringify(this.searchEngineForm.value));
 
     if (searchEngineJSON.source == undefined) {
-      searchEngineJSON.source = "";
+      searchEngineJSON.source = false;
     }
 
     let domainsStringArray = [];
@@ -694,7 +755,7 @@ export class GeneratorComponent implements OnInit {
     }
     searchEngineJSON.domains_to_filter = domainsStringArray;
 
-    return JSON.stringify(searchEngineJSON, ['source', 'domains_to_filter'], 1);
+    return JSON.stringify(searchEngineJSON, null, 1);
   }
 
   /*
@@ -786,14 +847,14 @@ export class GeneratorComponent implements OnInit {
 
     let blacklistBatchesStringArray = [];
     for (let blacklistBatchIndex in taskSettingsJSON.blacklist_batches) {
-      if(taskSettingsJSON.blacklist_batches[blacklistBatchIndex].blacklist_batch)
-      blacklistBatchesStringArray.push(this.batchesList[blacklistBatchIndex]);
+      if (taskSettingsJSON.blacklist_batches[blacklistBatchIndex].blacklist_batch)
+        blacklistBatchesStringArray.push(this.batchesList[blacklistBatchIndex]);
     }
     taskSettingsJSON.blacklist_batches = blacklistBatchesStringArray;
 
     let whitelistBatchesStringArray = [];
     for (let whitelistBatchIndex in taskSettingsJSON.whitelist_batches) {
-      if(taskSettingsJSON.whitelist_batches[whitelistBatchIndex].whitelist_batch)
+      if (taskSettingsJSON.whitelist_batches[whitelistBatchIndex].whitelist_batch)
         whitelistBatchesStringArray.push(this.batchesList[whitelistBatchIndex]);
     }
     taskSettingsJSON.whitelist_batches = whitelistBatchesStringArray;
@@ -831,7 +892,20 @@ export class GeneratorComponent implements OnInit {
       workerChecksJSON.whitelist = workerChecksJSON.whitelist.split(";");
     }
 
-    return JSON.stringify(workerChecksJSON, ['blacklist', 'whitelist'], 1);
+    return JSON.stringify(workerChecksJSON, null, 1);
+  }
+
+  public updateFullPath() {
+    this.fullS3Path = this.S3Service.getTaskDataS3Path(this.configService.environment, this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
+  }
+
+  public uploadConfiguration() {
+    let questionnairePromise = this.S3Service.uploadQuestionnairesConfig(this.configService.environment, this.questionnairesJSON(), this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
+    questionnairePromise.then(result => {
+      if (!result["failed"]) {
+        this.questionnairesPath = this.S3Service.getQuestionnairesConfigPath(this.configService.environment, this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
+      }
+    })
   }
 
   public checkFormControl(form: FormGroup, field: string, key: string): boolean {

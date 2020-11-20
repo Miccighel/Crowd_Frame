@@ -1,5 +1,7 @@
 export class Settings {
 
+  task_name: string;
+  batch_name: string;
   allowedTries: number;
   timeCheckAmount: number;
   countdownTime: number;
@@ -10,6 +12,8 @@ export class Settings {
   constructor(
     data: JSON
   ) {
+    this.task_name =         data["task_name"];
+    this.batch_name =         data["batch_name"];
     this.allowedTries =         parseInt((data["allowed_tries"]));
     this.timeCheckAmount =      parseInt((data["time_check_amount"]));
     this.countdownTime =      parseInt((data["countdown_time"]));
