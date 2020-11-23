@@ -3,7 +3,7 @@
 
 .green-theme {
   $green-theme-primary: mat-palette($mat-light-green, A400);
-  $green-theme-accent:  mat-palette($mat-light-green, A400);
+  $green-theme-accent:  mat-palette($mat-yellow, 700);
 
   $green-theme: mat-light-theme($green-theme-primary, $green-theme-accent);
 

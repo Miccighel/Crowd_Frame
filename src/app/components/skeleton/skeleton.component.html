@@ -265,22 +265,29 @@
                   <div *ngIf="!dimension.url" class="dimension-counter">a.</div>
                   <div class="dimension-content truth-level">
                     <ng-container *ngIf="dimension.style.orientation=='vertical'">
-                      <mat-radio-group *ngIf="dimension.scale.type=='discrete'" aria-labelledby="radio-button-label" class="radio-button-group" formControlName="{{(dimension.name).concat('_value')}}">
-                        <mat-radio-button *ngFor="let mapping of dimension.scale.mappings let k=index" class="radio-button" value="{{mapping.value}}" (change)="storeDimensionValue($event, i, dimension.index)" [disabled]="this.countdownsExpired[i]">
-                          <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0"> ({{mapping.description}})</span>
-                        </mat-radio-button>
-                      </mat-radio-group>
+                      <ng-container *ngIf="dimension.scale.type=='categorical'" >
+                        <mat-radio-group aria-labelledby="radio-button-label" class="radio-button-group" formControlName="{{(dimension.name).concat('_value')}}">
+                          <mat-radio-button *ngFor="let mapping of dimension.scale.mappings let k=index" class="radio-button" value="{{mapping.value}}" (change)="storeDimensionValue($event, i, dimension.index)" [disabled]="this.countdownsExpired[i]">
+                            <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0"> ({{mapping.description}})</span>
+                          </mat-radio-button>
+                        </mat-radio-group>
+                      </ng-container>
+                      <ng-container *ngIf="dimension.scale.type=='interval'">
+                        <label>Selected value: {{documentsForm[i].controls[(dimension.name).concat('_value')].value}}</label>
+                        <mat-slider  min="{{dimension.scale.min}}" max="{{dimension.scale.max}}" step="{{dimension.scale.step}}" thumbLabel tickInterval="{{dimension.scale.step}}"
+                                     formControlName="{{(dimension.name).concat('_value')}}" (change)="storeDimensionValue($event, i,dimension.index)" [disabled]="this.countdownsExpired[i]"></mat-slider>
+                      </ng-container>
+                      <ng-container *ngIf="dimension.scale.type=='magnitude_estimation'">
+                        <h2>TO BE IMPLEMENTED</h2>
+                      </ng-container>
                     </ng-container>
                     <ng-container *ngIf="dimension.style.orientation=='horizontal'">
-                      <mat-radio-group *ngIf="dimension.scale.type=='discrete'" aria-labelledby="radio-button-label" formControlName="{{(dimension.name).concat('_value')}}">
+                      <mat-radio-group *ngIf="dimension.scale.type=='categorical'" aria-labelledby="radio-button-label" formControlName="{{(dimension.name).concat('_value')}}">
                         <mat-radio-button *ngFor="let mapping of dimension.scale.mappings let k=index" class="radio-button" value="{{mapping.value}}" (change)="storeDimensionValue($event, i,dimension.index)" [disabled]="this.countdownsExpired[i]">
                           <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0"> ({{mapping.description}})</span>
                         </mat-radio-button>
                       </mat-radio-group>
                     </ng-container>
-                    <label *ngIf="dimension.scale.type=='continue'">Selected value: {{documentsForm[i].controls[(dimension.name).concat('_value')].value}}</label>
-                    <mat-slider *ngIf="dimension.scale.type=='continue'" min="{{dimension.scale.min}}" max="{{dimension.scale.max}}" step="{{dimension.scale.step}}" thumbLabel tickInterval="{{dimension.scale.step}}"
-                                formControlName="{{(dimension.name).concat('_value')}}" (change)="storeDimensionValue($event, i,dimension.index)" [disabled]="this.countdownsExpired[i]"></mat-slider>
                   </div>
                 </div>
                 <div *ngIf="dimension.justification" class="dimension-container dimension-justification">

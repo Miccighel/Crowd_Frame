@@ -29,6 +29,7 @@ import {Settings} from "../../models/skeleton/settings";
 import {Worker} from "../../models/skeleton/worker";
 import {HttpClient, HttpHeaders} from "@angular/common/http";
 import {MatSnackBar} from "@angular/material/snack-bar";
+import * as annotator from '../../../assets/lib/annotator.js';
 
 
 /* Component HTML Tag definition */
@@ -256,6 +257,14 @@ export class SkeletonComponent implements OnInit{
       "comment": this.comment,
     });
 
+
+    let anno = new annotator.App()
+    anno.include(annotator.ui.main, {
+      editorExtensions: [annotator.ui.tags.editorExtension],
+      viewerExtensions: [annotator.ui.tags.viewerExtension]
+    })
+
+    anno.start()
 
     /* Font awesome spinner icon initialization */
     this.faSpinner = faSpinner;

@@ -172,8 +172,56 @@ export class S3Service {
     return `${task}/${batch}/Task/questionnaires.json`
   }
 
+  public getDimensionsConfigPath(config, task, batch) {
+    return `${task}/${batch}/Task/dimensions.json`
+  }
+
+  public getTaskInstructionsConfigPath(config, task, batch) {
+    return `${task}/${batch}/Task/instructions_main.json`
+  }
+
+  public getDimensionsInstructionsConfigPath(config, task, batch) {
+    return `${task}/${batch}/Task/instructions_dimensions.json`
+  }
+
+  public getSearchEngineSettingsConfigPath(config, task, batch) {
+    return `${task}/${batch}/Task/search_engine.json`
+  }
+
+  public getTaskSettingsConfigPath(config, task, batch) {
+    return `${task}/${batch}/Task/task.json`
+  }
+
+  public getWorkerChecksConfigPath(config, task, batch) {
+    return `${task}/${batch}/Task/workers.json`
+  }
+
   public uploadQuestionnairesConfig(config, data, task, batch) {
     return this.upload(config, `${task}/${batch}/Task/questionnaires.json`, data)
+  }
+
+  public uploadDimensionsConfig(config, data, task, batch) {
+    return this.upload(config, `${task}/${batch}/Task/dimensions.json`, data)
+  }
+
+  public uploadTaskInstructionsConfig(config, data, task, batch) {
+    return this.upload(config, `${task}/${batch}/Task/instructions_main.json`, data)
+  }
+
+  public uploadDimensionsInstructionsConfig(config, data, task, batch) {
+    return this.upload(config, `${task}/${batch}/Task/instructions_dimensions.json`, data)
+  }
+
+  public uploadSearchEngineSettings(config, data, task, batch) {
+    return this.upload(config, `${task}/${batch}/Task/search_engine.json`, data)
+  }
+
+  public uploadTaskSettings(config, data, task, batch) {
+    return this.upload(config, `${task}/${batch}/Task/task.json`, data)
+  }
+
+  public uploadWorkersCheck(config, data, task, batch) {
+    return this.upload(config, `${task}/${batch}/Task/workers.json`, data)
   }
 
   public uploadWorkers(config, data) {

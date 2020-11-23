@@ -1,8 +1,9 @@
-import {Component, OnInit, ViewChild} from '@angular/core';
+import {ChangeDetectorRef, Component, ContentChild, OnInit, ViewChild} from '@angular/core';
 import {FormBuilder, FormGroup, FormArray, Validators, ValidatorFn, AbstractControl, FormControl} from '@angular/forms';
 import {MatStepper} from "@angular/material/stepper";
 import {S3Service} from "../../services/s3.service";
 import {ConfigService} from "../../services/config.service";
+import {switchAll} from "rxjs/operators";
 
 /*
  * STEP #1 - Questionnaires
@@ -75,8 +76,8 @@ export class GeneratorComponent implements OnInit {
    */
   dimensionsForm: FormGroup;
   scaleTypes: ScaleType[] = [
-    {value: 'continue', viewValue: 'Interval'},
-    {value: 'discrete', viewValue: 'Categorical'},
+    {value: 'categorical', viewValue: 'Categorical'},
+    {value: 'interval', viewValue: 'Interval'},
     {value: 'magnitude_estimation', viewValue: 'Magnitude Estimation'}
   ];
   annotatorTypes: AnnotatorType[] = [
@@ -134,15 +135,30 @@ export class GeneratorComponent implements OnInit {
   taskNames: Array<string>
   batchesTree
 
+  @ViewChild('generator') generator: MatStepper;
+
   fullS3Path: string
 
+  uploadStarted: boolean
+  uploadCompleted: boolean
   questionnairesPath: string
+  dimensionsPath: string
+  taskInstructionsPath: string
+  dimensionsInstructionsPath: string
+  searchEngineSettingsPath: string
+  taskSettingsPath: string
+  workerChecksPath: string
+
+  /* Change detector to manually intercept changes on DOM */
+  changeDetector: ChangeDetectorRef;
 
   constructor(
+    changeDetector: ChangeDetectorRef,
     private _formBuilder: FormBuilder,
     configService: ConfigService,
     S3Service: S3Service
   ) {
+    this.changeDetector = changeDetector;
     this.configService = configService
     this.S3Service = S3Service
 
@@ -167,12 +183,13 @@ export class GeneratorComponent implements OnInit {
       }
     })
     this.batchesTree = nodes
-    console.log(this.batchesTree)
     this.batchesList = completeList
 
 
     this.fullS3Path = "&lt;region&gt;/&lt;bucket&gt;/&lt;task_name&gt;/&lt;bucket_name&gt;"
     this.questionnairesPath = null
+    this.uploadCompleted = false
+    this.uploadStarted = false
   }
 
   ngOnInit() {
@@ -237,6 +254,7 @@ export class GeneratorComponent implements OnInit {
       whitelist: ['']
     })
 
+    this.changeDetector.detectChanges()
 
   }
 
@@ -399,10 +417,10 @@ export class GeneratorComponent implements OnInit {
       }),
       gold_question_check: [''],
       style: this._formBuilder.group({
-        styleType: [''],
-        position: [''],
-        orientation: [''],
-        separator: ['']
+        styleType: [{value: '', disabled: true}],
+        position: [{value: '', disabled: true}],
+        orientation: [{value: '', disabled: true}],
+        separator: [{value: '', disabled: true}]
       })
     }))
   }
@@ -496,10 +514,66 @@ export class GeneratorComponent implements OnInit {
     dim.get('scale').get('include_lower_bound').setValue(true);
     dim.get('scale').get('include_upper_bound').setValue(true);
 
-    if (dim.get('setScale').value == true && dim.get('scale').get('type').value == 'discrete') {
+    if (dim.get('setScale').value == true && dim.get('scale').get('type').value == 'categorical') {
       this.addDimensionMapping(dimensionIndex);
     }
+
+    if (dim.get('setScale').value == true) {
+      switch (dim.get('scale').get('type').value) {
+        case "categorical":
+          dim.get('style').get('styleType').enable()
+          dim.get('style').get('styleType').setValue('')
+          dim.get('style').get('position').enable()
+          dim.get('style').get('orientation').enable()
+          dim.get('style').get('orientation').setValue('')
+          this.updateStyleType(dimensionIndex)
+          break;
+        case "interval":
+          dim.get('style').get('styleType').setValue("list")
+          dim.get('style').get('styleType').disable()
+          dim.get('style').get('position').enable()
+          dim.get('style').get('orientation').setValue("vertical")
+          dim.get('style').get('orientation').disable()
+          this.updateStyleType(dimensionIndex)
+          break;
+        case "magnitude_estimation":
+          dim.get('style').get('styleType').setValue("list")
+          dim.get('style').get('styleType').disable()
+          dim.get('style').get('position').enable()
+          dim.get('style').get('orientation').setValue("vertical")
+          dim.get('style').get('orientation').disable()
+          this.updateStyleType(dimensionIndex)
+          break;
+      }
+    } else {
+      dim.get('style').get('position').disable()
+      dim.get('style').get('orientation').disable()
+      dim.get('style').get('separator').disable()
+      dim.get('style').get('styleType').disable()
+    }
   }
+
+  updateStyleType(dimensionIndex) {
+    let dim = this.dimensions().at(dimensionIndex);
+    let styleType = dim.get('style').get('styleType').value;
+    switch (styleType) {
+      case "matrix":
+        dim.get('style').get('orientation').setValue('')
+        dim.get('style').get('orientation').disable()
+        dim.get("style").get('separator').enable()
+        break;
+      case "list":
+        if (dim.get('scale').get('type').value == "categorical") {
+          dim.get('style').get('orientation').enable()
+        } else {
+          dim.get('style').get('orientation').disable()
+        }
+        dim.get("style").get('separator').disable()
+        dim.get("style").get('separator').setValue("")
+        break;
+    }
+  }
+
 
   dimensionsJSON() {
 
@@ -536,12 +610,12 @@ export class GeneratorComponent implements OnInit {
         dimensionsJSON[dimensionIndex].scale = false
       } else {
         switch (dimensionsJSON[dimensionIndex].scale.type) {
-          case 'continue':
+          case 'categorical':
             delete dimensionsJSON[dimensionIndex].scale.mapping;
             delete dimensionsJSON[dimensionIndex].scale.include_lower_bound;
             delete dimensionsJSON[dimensionIndex].scale.include_upper_bound;
             break;
-          case 'discrete':
+          case 'interval':
             delete dimensionsJSON[dimensionIndex].scale.min;
             delete dimensionsJSON[dimensionIndex].scale.max;
             delete dimensionsJSON[dimensionIndex].scale.step;
@@ -558,10 +632,10 @@ export class GeneratorComponent implements OnInit {
             delete dimensionsJSON[dimensionIndex].scale.step;
             delete dimensionsJSON[dimensionIndex].scale.mapping;
             if (dimensionsJSON[dimensionIndex].scale.min == '') {
-              delete dimensionsJSON[dimensionIndex].scale.include_lower_bound;
+              dimensionsJSON[dimensionIndex].scale.include_lower_bound = true;
             }
             if (dimensionsJSON[dimensionIndex].scale.max == '') {
-              delete dimensionsJSON[dimensionIndex].scale.include_upper_bound;
+              dimensionsJSON[dimensionIndex].scale.include_upper_bound = true;
             }
             break;
           default:
@@ -590,26 +664,49 @@ export class GeneratorComponent implements OnInit {
         }
       }
 
-      dimensionsJSON[dimensionIndex].style.type = dimensionsJSON[dimensionIndex].style.styleType;
-      delete dimensionsJSON[dimensionIndex].style.styleType;
+      if (dimensionsJSON[dimensionIndex].hasOwnProperty('style')) {
+        dimensionsJSON[dimensionIndex].style.type = dimensionsJSON[dimensionIndex].style.styleType;
+        delete dimensionsJSON[dimensionIndex].style.styleType;
 
-      if (dimensionsJSON[dimensionIndex].style.orientation == '') {
-        dimensionsJSON[dimensionIndex].style.orientation = false
-      }
-
-      if (dimensionsJSON[dimensionIndex].style.separator == '') {
-        dimensionsJSON[dimensionIndex].style.separator = false
-      } else {
-        switch (dimensionsJSON[dimensionIndex].style.separator) {
-          case 'true':
-            dimensionsJSON[dimensionIndex].style.separator = true;
-            break;
-          case 'false':
-            dimensionsJSON[dimensionIndex].style.separator = false;
-            break;
-          default:
-            break;
+        if (!dimensionsJSON[dimensionIndex].style.type) {
+          dimensionsJSON[dimensionIndex].style.type = ''
         }
+
+        if (!dimensionsJSON[dimensionIndex].style.position) {
+          dimensionsJSON[dimensionIndex].style.position = ''
+        }
+
+        if (dimensionsJSON[dimensionIndex].scale.type == 'interval' || dimensionsJSON[dimensionIndex].scale.type == 'magnitude_estimation') {
+          dimensionsJSON[dimensionIndex].style.type = 'list'
+          dimensionsJSON[dimensionIndex].style.orientation = 'vertical'
+        }
+        if(dimensionsJSON[dimensionIndex].scale.type == 'categorical' && dimensionsJSON[dimensionIndex].style.type == 'matrix') {
+          dimensionsJSON[dimensionIndex].style.orientation = false
+        }
+
+        if (!dimensionsJSON[dimensionIndex].style.separator) {
+          dimensionsJSON[dimensionIndex].style.separator = false
+        }
+        if (dimensionsJSON[dimensionIndex].style.separator == '') {
+          dimensionsJSON[dimensionIndex].style.separator = false
+        } else {
+          switch (dimensionsJSON[dimensionIndex].style.separator) {
+            case 'true':
+              dimensionsJSON[dimensionIndex].style.separator = true;
+              break;
+            case 'false':
+              dimensionsJSON[dimensionIndex].style.separator = false;
+              break;
+            default:
+              break;
+          }
+        }
+      } else {
+        dimensionsJSON[dimensionIndex].style = {}
+        dimensionsJSON[dimensionIndex].style.type = ''
+        dimensionsJSON[dimensionIndex].style.position = ''
+        dimensionsJSON[dimensionIndex].style.orientation = false
+        dimensionsJSON[dimensionIndex].style.separator = false;
       }
     }
 
@@ -900,12 +997,56 @@ export class GeneratorComponent implements OnInit {
   }
 
   public uploadConfiguration() {
+    this.uploadStarted = true
     let questionnairePromise = this.S3Service.uploadQuestionnairesConfig(this.configService.environment, this.questionnairesJSON(), this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
+    let dimensionsPromise = this.S3Service.uploadDimensionsConfig(this.configService.environment, this.dimensionsJSON(), this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
+    let taskInstructionsPromise = this.S3Service.uploadTaskInstructionsConfig(this.configService.environment, this.generalInstructionsJSON(), this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
+    let dimensionsInstructionsPromise = this.S3Service.uploadDimensionsInstructionsConfig(this.configService.environment, this.evaluationInstructionsJSON(), this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
+    let searchEngineSettingsPromise = this.S3Service.uploadSearchEngineSettings(this.configService.environment, this.searchEngineJSON(), this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
+    let taskSettingsPromise = this.S3Service.uploadTaskSettings(this.configService.environment, this.taskSettingsJSON(), this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
+    let workerChecksPromise = this.S3Service.uploadWorkersCheck(this.configService.environment, this.workerChecksJSON(), this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
     questionnairePromise.then(result => {
       if (!result["failed"]) {
         this.questionnairesPath = this.S3Service.getQuestionnairesConfigPath(this.configService.environment, this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
-      }
+      } else this.questionnairesPath = "Failure"
     })
+    dimensionsPromise.then(result => {
+      if (!result["failed"]) {
+        this.dimensionsPath = this.S3Service.getDimensionsConfigPath(this.configService.environment, this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
+      } else this.dimensionsPath = "Failure"
+    })
+    taskInstructionsPromise.then(result => {
+      if (!result["failed"]) {
+        this.taskInstructionsPath = this.S3Service.getTaskInstructionsConfigPath(this.configService.environment, this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
+      } else this.taskInstructionsPath = "Failure"
+    })
+    dimensionsInstructionsPromise.then(result => {
+      if (!result["failed"]) {
+        this.dimensionsInstructionsPath = this.S3Service.getDimensionsInstructionsConfigPath(this.configService.environment, this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
+      } else this.dimensionsInstructionsPath = "Failure"
+    })
+    searchEngineSettingsPromise.then(result => {
+      if (!result["failed"]) {
+        this.searchEngineSettingsPath = this.S3Service.getSearchEngineSettingsConfigPath(this.configService.environment, this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
+      } else this.searchEngineSettingsPath = "Failure"
+    })
+    taskSettingsPromise.then(result => {
+      if (!result["failed"]) {
+        this.taskSettingsPath = this.S3Service.getTaskSettingsConfigPath(this.configService.environment, this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
+      } else this.taskSettingsPath = "Failure"
+    })
+    workerChecksPromise.then(result => {
+      if (!result["failed"]) {
+        this.workerChecksPath = this.S3Service.getWorkerChecksConfigPath(this.configService.environment, this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
+      } else this.workerChecksPath = "Failure"
+    })
+    this.uploadCompleted = true
+  }
+
+  public resetConfiguration() {
+    this.uploadStarted = false
+    this.uploadCompleted = false
+    this.generator.selectedIndex = 0
   }
 
   public checkFormControl(form: FormGroup, field: string, key: string): boolean {

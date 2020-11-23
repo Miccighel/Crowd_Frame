@@ -301,15 +301,13 @@
                     Scale
                   </mat-slide-toggle>
 
-                  <div *ngIf="dimension.get('setScale').value"
-                       formGroupName="scale">
+                  <div *ngIf="dimension.get('setScale').value" formGroupName="scale">
                     <table class="width-100">
                       <tr>
                         <td class="p-0">
                           <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimension.get('scale').get('type').valid" appearance="fill">
                             <mat-label>Type</mat-label>
-                            <mat-select matInput formControlName="type" required
-                                        (selectionChange)="updateScale(dimensionIndex)">
+                            <mat-select matInput formControlName="type" required (selectionChange)="updateScale(dimensionIndex)">
                               <mat-option *ngFor="let scaleType of scaleTypes" [value]="scaleType.value">
                                 {{scaleType.viewValue}}
                               </mat-option>
@@ -319,7 +317,7 @@
                       </tr>
                     </table>
 
-                    <table class="width-100" *ngIf="dimension.get('scale').get('type').value == 'continue'">
+                    <table class="width-100" *ngIf="dimension.get('scale').get('type').value == 'interval'">
                       <tr>
                         <td class="p-0 pr-16px">
                           <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimension.get('scale').get('min').valid" appearance="fill">
@@ -342,7 +340,7 @@
                       </tr>
                     </table>
 
-                    <div *ngIf="dimension.get('scale').get('type').value == 'discrete'"
+                    <div *ngIf="dimension.get('scale').get('type').value == 'categorical'"
                          formArrayName="mapping">
                       <button mat-flat-button color="primary" class="mb-16px indent" (click)="addDimensionMapping(dimensionIndex)">
                         Add Mapping
@@ -391,8 +389,7 @@
                           </mat-form-field>
                         </td>
                         <td class="pr-16px checkbox">
-                          <mat-checkbox formControlName="include_lower_bound" color="primary"
-                                        [disabled]="dimension.get('scale').get('min').value == '' || dimension.get('scale').get('min').value == null">
+                          <mat-checkbox formControlName="include_lower_bound" color="primary" [disabled]="dimension.get('scale').get('min').value == '' || dimension.get('scale').get('min').value == null">
                             Include Lower Bound
                           </mat-checkbox>
                         </td>
@@ -403,8 +400,7 @@
                           </mat-form-field>
                         </td>
                         <td class="checkbox">
-                          <mat-checkbox formControlName="include_upper_bound" color="primary"
-                                        [disabled]="dimension.get('scale').get('max').value == '' || dimension.get('scale').get('max').value == null">
+                          <mat-checkbox formControlName="include_upper_bound" color="primary" [disabled]="dimension.get('scale').get('max').value == '' || dimension.get('scale').get('max').value == null">
                             Include Upper Bound
                           </mat-checkbox>
                         </td>
@@ -445,7 +441,6 @@
                         <mat-form-field matLine class="width-100" appearance="fill">
                           <mat-label>Gold Question Check</mat-label>
                           <mat-select matInput formControlName="gold_question_check">
-                            <mat-option></mat-option>
                             <mat-option value="true">
                               True
                             </mat-option>
@@ -471,7 +466,7 @@
                         <td class="p-0 pr-16px">
                           <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimension.get('style').get('styleType').valid" appearance="fill">
                             <mat-label>Type</mat-label>
-                            <mat-select matInput formControlName="styleType" required>
+                            <mat-select matInput formControlName="styleType" required (selectionChange)="updateStyleType(dimensionIndex)">
                               <mat-option *ngFor="let styleType of styleTypes" [value]="styleType.value">
                                 {{styleType.viewValue}}
                               </mat-option>
@@ -479,9 +474,7 @@
                           </mat-form-field>
                         </td>
                         <td class="p-0 pr-16px">
-                          <mat-form-field matLine class="width-100"
-                                          [hideRequiredMarker]="dimension.get('style').get('position').valid"
-                                          appearance="fill">
+                          <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimension.get('style').get('position').valid" appearance="fill">
                             <mat-label>Position</mat-label>
                             <mat-select matInput formControlName="position" required>
                               <mat-option *ngFor="let positionType of positionTypes" [value]="positionType.value">
@@ -491,12 +484,10 @@
                           </mat-form-field>
                         </td>
                         <td class="p-0 pr-16px">
-                          <mat-form-field matLine class="width-100" appearance="fill">
+                          <mat-form-field matLine class="width-100" appearance="fill" [hideRequiredMarker]="dimension.get('style').get('position').valid">
                             <mat-label>Orientation</mat-label>
-                            <mat-select matInput formControlName="orientation">
-                              <mat-option></mat-option>
-                              <mat-option *ngFor="let orientationType of orientationTypes"
-                                          [value]="orientationType.value">
+                            <mat-select matInput formControlName="orientation" required>
+                              <mat-option *ngFor="let orientationType of orientationTypes" [value]="orientationType.value">
                                 {{orientationType.viewValue}}
                               </mat-option>
                             </mat-select>
@@ -506,7 +497,6 @@
                           <mat-form-field matLine class="width-100" appearance="fill">
                             <mat-label>Separator</mat-label>
                             <mat-select matInput formControlName="separator">
-                              <mat-option></mat-option>
                               <mat-option value="true">
                                 True
                               </mat-option>
@@ -1101,26 +1091,18 @@
         <h4 class="mb-0"><strong>Validity Check</strong>:</h4>
 
         <mat-list>
-          <mat-list-item *ngIf="this.questionnairesForm.valid" class="step-valid"><span>Step #1 - Questionnaires: <span class="step-validity-check">valid</span></span>
-          </mat-list-item>
-          <mat-list-item *ngIf="!this.questionnairesForm.valid" class="step-invalid"><span>Step #1 - Questionnaires: <span class="step-validity-check">invalid</span></span>
-          </mat-list-item>
+          <mat-list-item *ngIf="this.questionnairesForm.valid" class="step-valid"><span>Step #1 - Questionnaires: <span class="step-validity-check">valid</span></span></mat-list-item>
+          <mat-list-item *ngIf="!this.questionnairesForm.valid" class="step-invalid"><span>Step #1 - Questionnaires: <span class="step-validity-check">invalid</span></span></mat-list-item>
           <mat-list-item *ngIf="this.dimensionsForm.valid" class="step-valid"><span>Step #2 - Dimensions: <span class="step-validity-check">valid</span></span></mat-list-item>
           <mat-list-item *ngIf="!this.dimensionsForm.valid" class="step-invalid"><span>Step #2 - Dimensions: <span class="step-validity-check">invalid</span></span></mat-list-item>
-          <mat-list-item *ngIf="this.generalInstructionsForm.valid" class="step-valid"><span>Step #3 - General Instructions: <span class="step-validity-check">valid</span></span>
-          </mat-list-item>
-          <mat-list-item *ngIf="!this.generalInstructionsForm.valid" class="step-invalid"><span>Step #3 - General Instructions: <span
-            class="step-validity-check">invalid</span></span></mat-list-item>
-          <mat-list-item *ngIf="this.evaluationInstructionsForm.valid" class="step-valid"><span>Step #4 - Evaluation Instructions: <span
-            class="step-validity-check">valid</span></span></mat-list-item>
-          <mat-list-item *ngIf="!this.evaluationInstructionsForm.valid" class="step-invalid"><span>Step #4 - Evaluation Instructions: <span
-            class="step-validity-check">invalid</span></span></mat-list-item>
+          <mat-list-item *ngIf="this.generalInstructionsForm.valid" class="step-valid"><span>Step #3 - General Instructions: <span class="step-validity-check">valid</span></span></mat-list-item>
+          <mat-list-item *ngIf="!this.generalInstructionsForm.valid" class="step-invalid"><span>Step #3 - General Instructions: <span class="step-validity-check">invalid</span></span></mat-list-item>
+          <mat-list-item *ngIf="this.evaluationInstructionsForm.valid" class="step-valid"><span>Step #4 - Evaluation Instructions: <span class="step-validity-check">valid</span></span></mat-list-item>
+          <mat-list-item *ngIf="!this.evaluationInstructionsForm.valid" class="step-invalid"><span>Step #4 - Evaluation Instructions: <span class="step-validity-check">invalid</span></span></mat-list-item>
           <mat-list-item *ngIf="this.searchEngineForm.valid" class="step-valid"><span>Step #5 - Search Engine: <span class="step-validity-check">valid</span></span></mat-list-item>
-          <mat-list-item *ngIf="!this.searchEngineForm.valid" class="step-invalid"><span>Step #5 - Search Engine: <span class="step-validity-check">invalid</span></span>
-          </mat-list-item>
+          <mat-list-item *ngIf="!this.searchEngineForm.valid" class="step-invalid"><span>Step #5 - Search Engine: <span class="step-validity-check">invalid</span></span></mat-list-item>
           <mat-list-item *ngIf="this.taskSettingsForm.valid" class="step-valid"><span>Step #6 - Task Settings: <span class="step-validity-check">valid</span></span></mat-list-item>
-          <mat-list-item *ngIf="!this.taskSettingsForm.valid" class="step-invalid"><span>Step #6 - Task Settings: <span class="step-validity-check">invalid</span></span>
-          </mat-list-item>
+          <mat-list-item *ngIf="!this.taskSettingsForm.valid" class="step-invalid"><span>Step #6 - Task Settings: <span class="step-validity-check">invalid</span></span></mat-list-item>
           <mat-list-item *ngIf="this.workerChecksForm.valid" class="step-valid"><span>Step #7 - Worker Checks: <span class="step-validity-check">valid</span></span></mat-list-item>
           <mat-list-item *ngIf="!this.workerChecksForm.valid" class="step-invalid"><span>Step #7 - Worker Checks: <span class="step-validity-check">invalid</span></span>
           </mat-list-item>
@@ -1129,12 +1111,18 @@
         <h4 class="mb-0">Upload Path:</h4>
         <p><code [innerHTML]="fullS3Path"></code></p>
 
-        <ng-container>
+        <ng-container *ngIf="this.uploadStarted">
           <mat-divider [inset]="true"></mat-divider>
           <h4 class="mb-0">Upload result:</h4>
           <mat-list>
-            <mat-list-item *ngIf="this.questionnairesPath" class="step-valid"><span>Questionnaire configuration uploaded at path: <code>{{this.questionnairesPath}}</code></span>
+            <mat-list-item *ngIf="this.questionnairesPath" class="step-valid"><span>Step #1 - Questionnaire configuration uploaded at path: <code>{{this.questionnairesPath}}</code></span></mat-list-item>
+            <mat-list-item *ngIf="this.dimensionsPath" class="step-valid"><span>Step #2 - Dimensions configuration uploaded at path: <code>{{this.dimensionsPath}}</code></span></mat-list-item>
+            <mat-list-item *ngIf="this.taskInstructionsPath" class="step-valid"><span>Step #3 - General instructions configuration uploaded at path: <code>{{this.taskInstructionsPath}}</code></span></mat-list-item>
+            <mat-list-item *ngIf="this.dimensionsInstructionsPath" class="step-valid"><span>Step #4 - Evaluation instructions configuration uploaded at path: <code>{{this.dimensionsInstructionsPath}}</code></span>
             </mat-list-item>
+            <mat-list-item *ngIf="this.searchEngineSettingsPath" class="step-valid"><span>Step #5 - Search engine configuration uploaded at path: <code>{{this.searchEngineSettingsPath}}</code></span></mat-list-item>
+            <mat-list-item *ngIf="this.taskSettingsPath" class="step-valid"><span>Step #6 - Task settings configuration uploaded at path: <code>{{this.taskSettingsPath}}</code></span></mat-list-item>
+            <mat-list-item *ngIf="this.workerChecksPath" class="step-valid"><span>Step #7 - Worker checks configuration uploaded at path: <code>{{this.workerChecksPath}}</code></span></mat-list-item>
           </mat-list>
         </ng-container>
 
@@ -1143,7 +1131,7 @@
 
       <mat-card-actions>
         <button mat-flat-button color="primary" matStepperPrevious>Back</button>
-        <button mat-flat-button color="accent" [disabled]="
+        <button mat-flat-button color="accent" *ngIf="!this.uploadCompleted" [disabled]="
         !(this.questionnairesForm.valid &&
         this.questionnairesForm.valid &&
         this.dimensionsForm.valid &&
@@ -1153,6 +1141,9 @@
         this.taskSettingsForm.valid &&
         this.workerChecksForm.valid)" (click)="uploadConfiguration()">
           Upload
+        </button>
+        <button mat-flat-button color="warn" *ngIf="this.uploadCompleted" (click)="resetConfiguration()">
+          Start Over
         </button>
       </mat-card-actions>
     </mat-card>
