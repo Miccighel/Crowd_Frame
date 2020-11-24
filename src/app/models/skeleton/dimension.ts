@@ -12,7 +12,7 @@ export class Dimension {
   description?: string;
   justification?: Justification;
   url?: boolean;
-  scale?: ScaleDiscrete | ScaleContinue;
+  scale?: ScaleCategorical | ScaleInterval;
   goldQuestionCheck?: boolean;
   style: Style;
 
@@ -27,9 +27,9 @@ export class Dimension {
     this.description =        data['description'] ? data["description"] : null;
     this.justification =      data['justification'] ? new Justification(data['justification']) : null;
     this.url =                data['url'] ? data["url"] : null;
-    this.scale =              data['scale'] ? data['scale']['type'] == "discrete" ? new ScaleDiscrete(data['scale']) : new ScaleContinue(data['scale']) : null;
+    this.scale =              data['scale'] ? data['scale']['type'] == "categorical" ? new ScaleCategorical(data['scale']) : new ScaleInterval(data['scale']) : null;
     this.goldQuestionCheck =  data['gold_question_check'] ? data['gold_question_check'] : null;
-    this.style =              data['justification'] = new Style(data['style']);
+    this.style =              data['style'] = new Style(data['style']);
   }
 
 }
@@ -61,7 +61,7 @@ export class Scale {
 
 }
 
-export class ScaleDiscrete extends Scale{
+export class ScaleCategorical extends Scale{
 
   mappings: Array<Mapping>;
 
@@ -101,7 +101,7 @@ export class Mapping {
 
 }
 
-export class ScaleContinue extends Scale{
+export class ScaleInterval extends Scale{
 
   min: number;
   max: number;

@@ -3,6 +3,9 @@
   "batch_name": "Batch-1",
   "allowed_tries": 10,
   "time_check_amount": 2,
+  "annotator": {
+    "type": "tags"
+  },
   "countdown_time": false,
   "blacklist_batches": [],
   "whitelist_batches": [],

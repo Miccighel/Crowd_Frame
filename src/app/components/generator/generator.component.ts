@@ -239,6 +239,10 @@ export class GeneratorComponent implements OnInit {
       batch_name: [''],
       allowed_tries: [''],
       time_check_amount: [''],
+      setAnnotator: [''],
+      annotator: this._formBuilder.group({
+        type: [''],
+      }),
       setCountdownTime: [''],
       countdown_time: [''],
       blacklist_batches: this._formBuilder.array([]),
@@ -411,10 +415,6 @@ export class GeneratorComponent implements OnInit {
         include_lower_bound: [true],
         include_upper_bound: [true]
       }),
-      setAnnotator: [''],
-      annotator: this._formBuilder.group({
-        type: [''],
-      }),
       gold_question_check: [''],
       style: this._formBuilder.group({
         styleType: [{value: '', disabled: true}],
@@ -479,19 +479,14 @@ export class GeneratorComponent implements OnInit {
     this.updateScale(dimensionIndex);
   }
 
-  resetAnnotator(dimensionIndex) {
-    let dim = this.dimensions().at(dimensionIndex);
-
-    dim.get('annotator').get('type').setValue('');
-
-    if (dim.get('setAnnotator').value == false) {
-      dim.get('annotator').get('type').clearValidators();
+  resetAnnotator() {
+    this.taskSettingsForm.get('annotator').get('type').setValue('')
+    if (this.taskSettingsForm.get('setAnnotator').value == false) {
+      this.taskSettingsForm.get('annotator').get('type').clearValidators();
     } else {
-      dim.get('annotator').get('type').setValidators(Validators.required);
+      this.taskSettingsForm.get('annotator').get('type').setValidators([Validators.required, this.positiveNumber.bind(this)]);
     }
-    dim.get('annotator').get('type').updateValueAndValidity();
-
-    this.updateScale(dimensionIndex);
+    this.taskSettingsForm.get('annotator').get('type').updateValueAndValidity();
   }
 
   updateScale(dimensionIndex) {
@@ -643,11 +638,6 @@ export class GeneratorComponent implements OnInit {
         }
       }
       delete dimensionsJSON[dimensionIndex].setScale;
-
-      if (dimensionsJSON[dimensionIndex].setAnnotator == false) {
-        dimensionsJSON[dimensionIndex].annotator = false
-      }
-      delete dimensionsJSON[dimensionIndex].setAnnotator;
 
       if (dimensionsJSON[dimensionIndex].gold_question_check == '') {
         dimensionsJSON[dimensionIndex].gold_question_check = false
@@ -936,11 +926,15 @@ export class GeneratorComponent implements OnInit {
   taskSettingsJSON() {
     let taskSettingsJSON = JSON.parse(JSON.stringify(this.taskSettingsForm.value));
 
-    delete taskSettingsJSON.setCountdownTime;
+    if (taskSettingsJSON.setAnnotator == false) {
+      taskSettingsJSON.annotator = false
+    }
+    delete taskSettingsJSON.setAnnotator
 
-    if (taskSettingsJSON.countdown_time == '') {
+    if (taskSettingsJSON.setCountdownTime == false) {
       taskSettingsJSON.countdown_time = false
     }
+    delete taskSettingsJSON.setCountdownTime
 
     let blacklistBatchesStringArray = [];
     for (let blacklistBatchIndex in taskSettingsJSON.blacklist_batches) {

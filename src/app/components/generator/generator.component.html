@@ -410,30 +410,6 @@
 
                   <mat-divider [inset]="true"></mat-divider>
 
-                  <!-- Annotator: Type -->
-                  <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="setAnnotator" (change)="resetAnnotator(dimensionIndex)">
-                    Annotator
-                  </mat-slide-toggle>
-
-                  <div *ngIf="dimension.get('setAnnotator').value" formGroupName="annotator">
-                    <table class="width-100">
-                      <tr>
-                        <td class="p-0 pr-16px">
-                          <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimension.get('annotator').get('type').valid" appearance="fill">
-                            <mat-label>Type</mat-label>
-                            <mat-select matInput formControlName="type" required>
-                              <mat-option *ngFor="let annotatorType of annotatorTypes" [value]="annotatorType.value">
-                                {{annotatorType.viewValue}}
-                              </mat-option>
-                            </mat-select>
-                          </mat-form-field>
-                        </td>
-                      </tr>
-                    </table>
-                  </div>
-
-                  <mat-divider [inset]="true"></mat-divider>
-
                   <!-- Gold Question Check -->
                   <table class="width-100 mt-16px">
                     <tr>
@@ -867,6 +843,30 @@
               </td>
             </tr>
           </table>
+
+          <mat-divider [inset]="true"></mat-divider>
+
+          <!-- Annotator: Type -->
+          <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="setAnnotator" (change)="resetAnnotator()">
+            Annotator
+          </mat-slide-toggle>
+
+          <div *ngIf="taskSettingsForm.get('setAnnotator').value" formGroupName="annotator">
+            <table class="width-100">
+              <tr>
+                <td class="p-0 pr-16px">
+                  <mat-form-field matLine class="width-100" [hideRequiredMarker]="taskSettingsForm.get('annotator').valid" appearance="fill">
+                    <mat-label>Type</mat-label>
+                    <mat-select matInput formControlName="type" required>
+                      <mat-option *ngFor="let annotatorType of annotatorTypes" [value]="annotatorType.value">
+                        {{annotatorType.viewValue}}
+                      </mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </td>
+              </tr>
+            </table>
+          </div>
 
           <mat-divider [inset]="true"></mat-divider>
 

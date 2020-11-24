@@ -5,7 +5,7 @@ import {
   Component,
   ViewChild,
   ViewChildren,
-  QueryList, OnInit,
+  QueryList, OnInit, ElementRef, AfterViewInit,
 } from '@angular/core';
 /* Reactive forms modules */
 import {AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
@@ -20,17 +20,17 @@ import {S3Service} from "../../services/s3.service";
 import {Document} from "../../models/skeleton/document";
 import {Hit} from "../../models/skeleton/hit";
 import {Questionnaire} from "../../models/skeleton/questionnaire";
-import {Dimension, ScaleContinue} from "../../models/skeleton/dimension";
+import {Dimension, ScaleInterval} from "../../models/skeleton/dimension";
 import {Instruction} from "../../models/shared/instructions";
 /* Font Awesome icons */
 import {faSpinner} from "@fortawesome/free-solid-svg-icons";
 import {faInfoCircle} from "@fortawesome/free-solid-svg-icons";
-import {Settings} from "../../models/skeleton/settings";
+import {Annotator, Settings} from "../../models/skeleton/settings";
 import {Worker} from "../../models/skeleton/worker";
 import {HttpClient, HttpHeaders} from "@angular/common/http";
 import {MatSnackBar} from "@angular/material/snack-bar";
-import * as annotator from '../../../assets/lib/annotator.js';
-
+import * as annotatorjs from '../../../assets/lib/annotator.js';
+import {log} from "util";
 
 /* Component HTML Tag definition */
 @Component({
@@ -39,6 +39,8 @@ import * as annotator from '../../../assets/lib/annotator.js';
   styleUrls: ['./skeleton.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
+
+
 
 /*
 * This class implements a skeleton for Crowdsourcing tasks. If you want to use this code to launch a Crowdsourcing task
@@ -109,6 +111,8 @@ export class SkeletonComponent implements OnInit{
   timeCheckAmount: number;
   blacklistBatches: Array<string>
   whitelistBatches: Array<string>
+  countdownTime: number
+  annotator: Annotator
 
   /* |--------- QUESTIONNAIRE ELEMENTS - DECLARATION ---------| */
 
@@ -197,6 +201,9 @@ export class SkeletonComponent implements OnInit{
 
   snackBar: MatSnackBar;
 
+  crowdAnnotator: any
+  @ViewChildren(".annotator-hl", {read: ElementRef}) notes: ElementRef;
+
   /* |--------- CONSTRUCTOR ---------| */
 
   constructor(
@@ -238,7 +245,7 @@ export class SkeletonComponent implements OnInit{
     /* |--- TASK GENERATOR ---| */
     this.generator = false;
 
-    this.tokenInput = new FormControl('', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
+    this.tokenInput = new FormControl('ABCDEFGHI', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
     this.tokenForm = formBuilder.group({
       "tokenInput": this.tokenInput
     });
@@ -257,21 +264,14 @@ export class SkeletonComponent implements OnInit{
       "comment": this.comment,
     });
 
-
-    let anno = new annotator.App()
-    anno.include(annotator.ui.main, {
-      editorExtensions: [annotator.ui.tags.editorExtension],
-      viewerExtensions: [annotator.ui.tags.viewerExtension]
-    })
-
-    anno.start()
-
     /* Font awesome spinner icon initialization */
     this.faSpinner = faSpinner;
     /* Font awesome info circle icon initialization */
     this.faInfoCircle = faInfoCircle
 
   }
+
+
 
   public async ngOnInit() {
 
@@ -338,6 +338,8 @@ export class SkeletonComponent implements OnInit{
     this.timeCheckAmount = this.settings.timeCheckAmount
     this.blacklistBatches = this.settings.blacklistBatches
     this.whitelistBatches = this.settings.whitelistBatches
+    this.countdownTime = this.settings.countdownTime
+    this.annotator = this.settings.annotator
   }
 
   /*
@@ -426,7 +428,7 @@ export class SkeletonComponent implements OnInit{
     if (this.tokenForm.valid) {
 
       /* The loading spinner is started */
-      this.ngxService.start('loader-setup');
+      this.ngxService.start();
 
       /* The hits stored on Amazon S3 are retrieved */
       let hits = await this.S3Service.downloadHits(this.configService.environment)
@@ -512,7 +514,7 @@ export class SkeletonComponent implements OnInit{
         let controlsConfig = {};
         for (let index_dimension = 0; index_dimension < this.dimensions.length; index_dimension++) {
           let dimension = this.dimensions[index_dimension];
-          if (dimension.scale) if (dimension.scale.type != "continue") controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.required]); else controlsConfig[`${dimension.name}_value`] = new FormControl((Math.round(((<ScaleContinue>dimension.scale).min + (<ScaleContinue>dimension.scale).max) / 2)), [Validators.required]);
+          if (dimension.scale) if (dimension.scale.type != "continue") controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.required]); else controlsConfig[`${dimension.name}_value`] = new FormControl((Math.round(((<ScaleInterval>dimension.scale).min + (<ScaleInterval>dimension.scale).max) / 2)), [Validators.required]);
           if (dimension.justification) controlsConfig[`${dimension.name}_justification`] = new FormControl('', [Validators.required, this.validateJustification.bind(this)])
           if (dimension.url) controlsConfig[`${dimension.name}_url`] = new FormControl('', [Validators.required, this.validateSearchEngineUrl.bind(this)]);
         }
@@ -583,11 +585,36 @@ export class SkeletonComponent implements OnInit{
       /* The task is now started and the worker is looking at the first questionnaire, so the first start timestamp is saved */
       this.timestampsStart[0].push(Math.round(Date.now() / 1000));
 
+      if (this.annotator) {
+        switch (this.annotator.type) {
+          case "free_text":
+            this.crowdAnnotator = new annotatorjs.App()
+            this.crowdAnnotator.start()
+            break;
+          case "tags":
+            this.crowdAnnotator = new annotatorjs.App()
+            this.crowdAnnotator.include(annotatorjs.ui.main, {
+              editorExtensions: [annotatorjs.ui.tags.editorExtension],
+              viewerExtensions: [annotatorjs.ui.tags.viewerExtension]
+            })
+            this.crowdAnnotator.include(
+              function () {
+                return {
+                  annotationCreated: (annotation) =>  console.log(annotation),
+                  annotationUpdated: (annotation) => console.log(annotation)
+                }
+              }
+            )
+            this.crowdAnnotator.start()
+            break;
+        }
+      }
+
       /* Detect changes within the DOM and update the page */
       this.changeDetector.detectChanges();
 
       /* The loading spinner is stopped */
-      this.ngxService.stop('loader-setup');
+      this.ngxService.stop();
 
     }
   }
@@ -1003,6 +1030,11 @@ export class SkeletonComponent implements OnInit{
 
   }
 
+  public extractNotes(highlights, comments) {
+    console.log(highlights)
+    console.log(comments)
+  }
+
   // |--------- AMAZON AWS INTEGRATION - FUNCTIONS ---------|
 
   /*
@@ -1014,6 +1046,8 @@ export class SkeletonComponent implements OnInit{
    * The "Partial" folder contains a snapshot of the current document each time a user clicks on a "Back" or "Next" button.
    */
   public async performLogging(action: string) {
+
+    let notes = this.extractNotes(document.querySelector(".annotator-hl"), document.querySelector(".annotator-annotation"))
 
     /* |--- COUNTDOWN ---| */
     if((this.stepper.selectedIndex >= this.questionnaireAmount) && this.settings.countdownTime){
