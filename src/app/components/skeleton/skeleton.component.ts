@@ -30,7 +30,7 @@ import {Worker} from "../../models/skeleton/worker";
 import {HttpClient, HttpHeaders} from "@angular/common/http";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import * as annotatorjs from '../../../assets/lib/annotator.js';
-import {log} from "util";
+import {Note} from "../../models/skeleton/notes";
 
 /* Component HTML Tag definition */
 @Component({
@@ -39,8 +39,6 @@ import {log} from "util";
   styleUrls: ['./skeleton.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-
-
 
 /*
 * This class implements a skeleton for Crowdsourcing tasks. If you want to use this code to launch a Crowdsourcing task
@@ -202,7 +200,7 @@ export class SkeletonComponent implements OnInit{
   snackBar: MatSnackBar;
 
   crowdAnnotator: any
-  @ViewChildren(".annotator-hl", {read: ElementRef}) notes: ElementRef;
+  notes: Array<Array<Note>>
 
   /* |--------- CONSTRUCTOR ---------| */
 
@@ -270,8 +268,6 @@ export class SkeletonComponent implements OnInit{
     this.faInfoCircle = faInfoCircle
 
   }
-
-
 
   public async ngOnInit() {
 
@@ -585,10 +581,20 @@ export class SkeletonComponent implements OnInit{
       /* The task is now started and the worker is looking at the first questionnaire, so the first start timestamp is saved */
       this.timestampsStart[0].push(Math.round(Date.now() / 1000));
 
+      this.notes = new Array<Array<Note>>(this.documentsAmount);
+      for (let i = 0; i < this.notes.length; i++) this.notes[i] = [];
+
       if (this.annotator) {
         switch (this.annotator.type) {
           case "free_text":
             this.crowdAnnotator = new annotatorjs.App()
+            this.crowdAnnotator.include(
+              () => ({
+                annotationCreated: (annotation) => this.storeAnnotation(annotation, "created"),
+                annotationUpdated: (annotation) => this.storeAnnotation(annotation, "updated"),
+                annotationDeleted: (annotation) => this.storeAnnotation(annotation, "deleted")
+              })
+            )
             this.crowdAnnotator.start()
             break;
           case "tags":
@@ -598,12 +604,11 @@ export class SkeletonComponent implements OnInit{
               viewerExtensions: [annotatorjs.ui.tags.viewerExtension]
             })
             this.crowdAnnotator.include(
-              function () {
-                return {
-                  annotationCreated: (annotation) =>  console.log(annotation),
-                  annotationUpdated: (annotation) => console.log(annotation)
-                }
-              }
+              () => ({
+                annotationCreated: (annotation) => this.storeAnnotation(annotation, "created"),
+                annotationUpdated: (annotation) => this.storeAnnotation(annotation, "updated"),
+                annotationDeleted: (annotation) => this.storeAnnotation(annotation, "deleted")
+              })
             )
             this.crowdAnnotator.start()
             break;
@@ -899,6 +904,16 @@ export class SkeletonComponent implements OnInit{
     return null
   }
 
+  public storeAnnotation(annotation: Object, event: string) {
+    if (this.stepper.selectedIndex >= this.questionnaireAmount) {
+      let documentIndex = this.stepper.selectedIndex - this.questionnaireAmount
+      let availableNotes = this.notes[documentIndex]
+
+    }
+    console.log(this.stepper.selectedIndex)
+    console.log(annotation)
+  }
+
   /* |--------- QUALITY CHECKS INTEGRATION - FUNCTIONS ---------| */
 
   /*
@@ -1030,11 +1045,6 @@ export class SkeletonComponent implements OnInit{
 
   }
 
-  public extractNotes(highlights, comments) {
-    console.log(highlights)
-    console.log(comments)
-  }
-
   // |--------- AMAZON AWS INTEGRATION - FUNCTIONS ---------|
 
   /*
@@ -1046,8 +1056,6 @@ export class SkeletonComponent implements OnInit{
    * The "Partial" folder contains a snapshot of the current document each time a user clicks on a "Back" or "Next" button.
    */
   public async performLogging(action: string) {
-
-    let notes = this.extractNotes(document.querySelector(".annotator-hl"), document.querySelector(".annotator-annotation"))
 
     /* |--- COUNTDOWN ---| */
     if((this.stepper.selectedIndex >= this.questionnaireAmount) && this.settings.countdownTime){

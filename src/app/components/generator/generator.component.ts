@@ -3,7 +3,6 @@ import {FormBuilder, FormGroup, FormArray, Validators, ValidatorFn, AbstractCont
 import {MatStepper} from "@angular/material/stepper";
 import {S3Service} from "../../services/s3.service";
 import {ConfigService} from "../../services/config.service";
-import {switchAll} from "rxjs/operators";
 
 /*
  * STEP #1 - Questionnaires
