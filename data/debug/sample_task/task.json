@@ -1,5 +1,5 @@
 {
-  "task_name": "CrowdsourcingSkeleton",
+  "task_name": "AdversalDrugEvent",
   "batch_name": "Batch-1",
   "allowed_tries": 10,
   "time_check_amount": 2,

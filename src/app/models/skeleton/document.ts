@@ -10,11 +10,13 @@ export class Document {
   index: number;
   countdownExpired: boolean;
 
-  name: string;
-  statement: string;
-  claimant: string;
-  date: string;
-  originatedFrom: string;
+  id: string;
+  text: string;
+  adr_spans: string;
+  adr_text: string;
+  drug_spans: string;
+  drug_text: string;
+  url: string;
 
   constructor(
     index: number,
@@ -23,11 +25,12 @@ export class Document {
     /* DO NOT REMOVE THIS LINE */
     this.index =          index;
 
-    this.name =           data["name"];
-    this.statement =      data["statement"];
-    this.claimant =       data["claimant"];
-    this.date =           data["date"];
-    this.originatedFrom = data["originated-from"];
+    this.text =           data["text"];
+    this.adr_spans =      data["adr_spans"];
+    this.adr_text =       data["adr_text"];
+    this.drug_spans =           data["drug_spans"];
+    this.drug_text = data["drug_text-from"];
+    this.url = data["url"];
   }
 
   /*
@@ -37,8 +40,7 @@ export class Document {
    * the document is the HIGH (LOW) gold question
    */
   public getGoldQuestionIndex(kind: string) {
-    if (this.name == kind) return this.index;
-    return null
+    return this.index
   }
 
 }

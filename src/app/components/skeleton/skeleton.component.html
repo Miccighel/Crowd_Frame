@@ -184,7 +184,7 @@
         <mat-card>
           <ng-template matStepLabel> S{{i + 1}}</ng-template>
           <mat-divider [inset]="true"></mat-divider>
-          <mat-card-title>Please judge the following statement</mat-card-title>
+          <mat-card-title>Please study the following Tweet</mat-card-title>
           <mat-divider [inset]="true"></mat-divider>
           <mat-card-content class="pt-16px">
 
@@ -201,9 +201,7 @@
             <!-- Statement markup -->
             <div class="statement">
               <ul>
-                <li><strong>Claimant/Source</strong> (who made the statement): {{document.claimant}}</li>
-                <li><strong>Date</strong> (when the statement was made): {{document.date}}</li>
-                <li><strong>Text</strong> (content of the statement): <span #statementText class="statement-text">{{document.statement}}</span></li>
+                <li><strong>Text</strong> (content of the tweet): <span #statementText class="statement-text">{{document.text}}</span></li>
               </ul>
             </div>
             <!-- Instructions markup -->

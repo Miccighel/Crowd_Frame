@@ -2,7 +2,8 @@
   {
     "caption": "Please, do the following step:",
     "steps": [
-      "Select a value"
+      "Highlight the text",
+      "Annotate it"
     ]
   }
 ]

@@ -29,6 +29,7 @@ import {HttpClient, HttpHeaders} from "@angular/common/http";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import * as annotatorjs from '../../../assets/lib/annotator.js';
 import {Note} from "../../models/skeleton/notes";
+import {absoluteFrom} from "@angular/compiler-cli/src/ngtsc/file_system";
 
 /* Component HTML Tag definition */
 @Component({
@@ -241,7 +242,7 @@ export class SkeletonComponent implements OnInit{
     /* |--- TASK GENERATOR ---| */
     this.generator = false;
 
-    this.tokenInput = new FormControl('ABCDEFGHI', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
+    this.tokenInput = new FormControl('TQONDNHBUP', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
     this.tokenForm = formBuilder.group({
       "tokenInput": this.tokenInput
     });
@@ -897,14 +898,31 @@ export class SkeletonComponent implements OnInit{
     return null
   }
 
-  public storeAnnotation(annotation: Object, event: string) {
+  public storeAnnotation(annotation: JSON, event: string) {
     if (this.stepper.selectedIndex >= this.questionnaireAmount) {
       let documentIndex = this.stepper.selectedIndex - this.questionnaireAmount
       let availableNotes = this.notes[documentIndex]
-
+      if(event=="created") {
+        availableNotes.push(new Note(documentIndex, annotation))
+      }
+      if(event=="updated") {
+        for (let [index, note] of availableNotes.entries()) {
+          if(note.id == annotation["id"]) {
+            note.updateNote(annotation)
+            availableNotes[index] = note
+          }
+        }
+      }
+      if(event=="deleted") {
+        for (let [index, note] of availableNotes.entries()) {
+          if (note.id == annotation["id"]) {
+            note.markDeleted()
+            availableNotes[index] = note
+          }
+        }
+      }
+      this.notes[documentIndex] = availableNotes
     }
-    console.log(this.stepper.selectedIndex)
-    console.log(annotation)
   }
 
   /* |--------- QUALITY CHECKS INTEGRATION - FUNCTIONS ---------| */
@@ -1261,18 +1279,14 @@ export class SkeletonComponent implements OnInit{
         /* Worker's truth level and justification for the current document */
         let answers = this.documentsForm[completedDocument].value;
         data["answers"] = answers
+        let notes = this.notes[completedDocument]
+        data["notes"] = notes
         /* Worker's dimensions selected values for the current document */
         let dimensionsSelectedValues = this.dimensionsSelectedValues[completedDocument];
         data["dimensions_selected"] = dimensionsSelectedValues
         /* Worker's search engine queries for the current document */
         let searchEngineQueries = this.searchEngineQueries[completedDocument];
         data["queries"] = searchEngineQueries
-        /* Responses retrieved by search engine for each worker's query for the current document */
-        let responsesRetrieved = this.searchEngineRetrievedResponses[completedDocument];
-        data["responses_retrieved"] = responsesRetrieved
-        /* Responses by search engine ordered by worker's click for the current document */
-        let responsesSelected = this.searchEngineSelectedResponses[completedDocument];
-        data["responses_selected"] = responsesSelected
         /* Start, end and elapsed timestamps for the current document */
         let timestampsStart = this.timestampsStart[completedElement];
         data["timestamps_start"] = timestampsStart
@@ -1287,6 +1301,12 @@ export class SkeletonComponent implements OnInit{
         /* Number of accesses to the current document (currentDocument.e., how many times the worker reached the document with a "Back" or "Next" action */
         let accesses = this.elementsAccesses[completedElement];
         data["accesses"] = accesses
+        /* Responses retrieved by search engine for each worker's query for the current document */
+        let responsesRetrieved = this.searchEngineRetrievedResponses[completedDocument];
+        data["responses_retrieved"] = responsesRetrieved
+        /* Responses by search engine ordered by worker's click for the current document */
+        let responsesSelected = this.searchEngineSelectedResponses[completedDocument];
+        data["responses_selected"] = responsesSelected
 
         let uploadStatus = await this.S3Service.uploadDocument(this.configService.environment, this.worker, data, false, this.currentTry, completedElement, accessesAmount)
 
@@ -1311,14 +1331,10 @@ export class SkeletonComponent implements OnInit{
           let answers = [];
           for (let index = 0; index < this.documentsForm.length; index++) answers.push(this.documentsForm[index].value);
           data["answers"] = answers
+          let notes = this.notes[completedDocument]
+          data["notes"] = notes
           /* Worker's dimensions selected values for the current document */
           data["dimensions_selected"] = this.dimensionsSelectedValues
-          /* Worker's search engine queries for each document */
-          data["queries"] = this.searchEngineQueries
-          /* Responses retrieved by search engine for each worker's query for each document */
-          data["responses_retrieved"] = this.searchEngineRetrievedResponses
-          /* Responses by search engine ordered by worker's click for the current document */
-          data["responses_selected"] = this.searchEngineSelectedResponses
           /* Start, end and elapsed timestamps for each document */
           data["timestamps_start"] = this.timestampsStart
           /* await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/timestamps_start.json`, this.timestampsStart)); */
@@ -1332,6 +1348,12 @@ export class SkeletonComponent implements OnInit{
           data["countdowns_expired"] = this.countdownsExpired
           /* Number of accesses to each document (currentDocument.e., how many times the worker reached the document with a "Back" or "Next" action */
           data["accesses"] = this.elementsAccesses
+          /* Worker's search engine queries for each document */
+          data["queries"] = this.searchEngineQueries
+          /* Responses retrieved by search engine for each worker's query for each document */
+          data["responses_retrieved"] = this.searchEngineRetrievedResponses
+          /* Responses by search engine ordered by worker's click for the current document */
+          data["responses_selected"] = this.searchEngineSelectedResponses
 
           let uploadStatus = await this.S3Service.uploadDocument(this.configService.environment, this.worker, data, true, this.currentTry)
 
