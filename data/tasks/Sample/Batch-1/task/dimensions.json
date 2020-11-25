@@ -2,7 +2,7 @@
   {
     "name": "value",
     "scale": {
-      "type": "discrete",
+      "type": "categorical",
       "mapping": [
         {
           "label": "True",

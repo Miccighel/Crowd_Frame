@@ -32,7 +32,6 @@ import {InstructionsComponent, InstructionsDialog} from "./components/instructio
 import {MatDialogModule} from "@angular/material/dialog";
 import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MatSliderModule} from "@angular/material/slider";
-import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import { CountdownModule } from 'ngx-countdown';
 import { GeneratorComponent } from './components/generator/generator.component';
@@ -99,7 +98,6 @@ const ngxUiLoaderConfig: NgxUiLoaderConfig = {
     NgxUiLoaderModule.forRoot(ngxUiLoaderConfig),
     HttpClientModule,
     BrowserModule,
-    BrowserAnimationsModule,
     MatButtonModule,
     MatIconModule,
     MatPaginatorModule,
@@ -113,11 +111,9 @@ const ngxUiLoaderConfig: NgxUiLoaderConfig = {
     MatSliderModule,
     MatDividerModule,
     NgxUiLoaderModule,
-    HttpClientModule,
     ReactiveFormsModule,
     MatDialogModule,
     MatCheckboxModule,
-    FontAwesomeModule,
     MatTooltipModule,
     CountdownModule,
     MatSlideToggleModule

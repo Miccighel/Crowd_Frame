@@ -109,7 +109,7 @@ export class LoaderComponent {
       let admins = await this.S3Service.downloadAdministrators(this.configService.environment)
       for (let admin of admins) {
         let decrypted = crypto.AES.decrypt(admin["crypt"], this.password.value)
-        let decryptedData = decrypted.toString()
+        let decryptedData = decrypted.toString(crypto.enc.Utf8)
         if (decryptedData != "") {
           let adminData = JSON.parse(decryptedData)
           if (adminData['username'] == this.username.value) {

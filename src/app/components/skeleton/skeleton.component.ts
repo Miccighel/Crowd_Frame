@@ -23,8 +23,6 @@ import {Questionnaire} from "../../models/skeleton/questionnaire";
 import {Dimension, ScaleInterval} from "../../models/skeleton/dimension";
 import {Instruction} from "../../models/shared/instructions";
 /* Font Awesome icons */
-import {faSpinner} from "@fortawesome/free-solid-svg-icons";
-import {faInfoCircle} from "@fortawesome/free-solid-svg-icons";
 import {Annotator, Settings} from "../../models/skeleton/settings";
 import {Worker} from "../../models/skeleton/worker";
 import {HttpClient, HttpHeaders} from "@angular/common/http";
@@ -261,11 +259,6 @@ export class SkeletonComponent implements OnInit{
     this.commentForm = formBuilder.group({
       "comment": this.comment,
     });
-
-    /* Font awesome spinner icon initialization */
-    this.faSpinner = faSpinner;
-    /* Font awesome info circle icon initialization */
-    this.faInfoCircle = faInfoCircle
 
   }
 
