@@ -29,7 +29,6 @@ import {HttpClient, HttpHeaders} from "@angular/common/http";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import * as annotatorjs from '../../../assets/lib/annotator.js';
 import {Note} from "../../models/skeleton/notes";
-import {absoluteFrom} from "@angular/compiler-cli/src/ngtsc/file_system";
 
 /* Component HTML Tag definition */
 @Component({
@@ -201,6 +200,8 @@ export class SkeletonComponent implements OnInit{
   crowdAnnotator: any
   notes: Array<Array<Note>>
 
+  sequenceNumber: number
+
   /* |--------- CONSTRUCTOR ---------| */
 
   constructor(
@@ -261,6 +262,7 @@ export class SkeletonComponent implements OnInit{
       "comment": this.comment,
     });
 
+    this.sequenceNumber = 0
   }
 
   public async ngOnInit() {
@@ -1222,6 +1224,7 @@ export class SkeletonComponent implements OnInit{
           access: accessesAmount,
           try: this.currentTry,
           index: completedElement,
+          sequence: this.sequenceNumber,
           element: "questionnaire"
         };
         /* Info about the performed action ("Next"? "Back"? From where?) */
@@ -1240,7 +1243,7 @@ export class SkeletonComponent implements OnInit{
         let accesses = this.elementsAccesses[completedElement];
         data["accesses"] = accesses
 
-        let uploadStatus = await this.S3Service.uploadQuestionnaire(this.configService.environment, this.worker, data, false, this.currentTry, completedElement, accessesAmount)
+        let uploadStatus = await this.S3Service.uploadQuestionnaire(this.configService.environment, this.worker, data, false, this.currentTry, completedElement, accessesAmount, this.sequenceNumber)
 
         /* If the worker has completed the last questionnaire */
 
@@ -1272,6 +1275,7 @@ export class SkeletonComponent implements OnInit{
           access: accessesAmount,
           try: this.currentTry,
           index: completedElement,
+          sequence: this.sequenceNumber,
           element: "document"
         };
         /* Info about the performed action ("Next"? "Back"? From where?) */
@@ -1308,22 +1312,29 @@ export class SkeletonComponent implements OnInit{
         let responsesSelected = this.searchEngineSelectedResponses[completedDocument];
         data["responses_selected"] = responsesSelected
 
-        let uploadStatus = await this.S3Service.uploadDocument(this.configService.environment, this.worker, data, false, this.currentTry, completedElement, accessesAmount)
+        let uploadStatus = await this.S3Service.uploadDocument(this.configService.environment, this.worker, data, false, this.currentTry, completedElement, accessesAmount, this.sequenceNumber)
+
+        /* The amount of accesses to the current document is incremented */
+        this.elementsAccesses[completedElement] = accessesAmount + 1;
+        this.sequenceNumber = this.sequenceNumber + 1
 
         /* If the worker has completed the last document */
         if (completedElement == this.questionnaireAmount + this.documentsAmount - 1) {
 
           /* The amount of accesses to the current document is incremented */
           this.elementsAccesses[completedElement] = accessesAmount + 1;
+          this.sequenceNumber = this.sequenceNumber + 1
 
           data = {}
 
           /* All data about documents are uploaded, only once */
           let actionInfo = {
             action: action,
-            current_access: accessesAmount,
-            current_try: this.currentTry,
-            current_document: completedElement,
+            access: accessesAmount,
+            try: this.currentTry,
+            index: completedElement,
+            sequence: this.sequenceNumber,
+            element: "document"
           };
           /* Info about each performed action ("Next"? "Back"? From where?) */
           data["info"] = actionInfo

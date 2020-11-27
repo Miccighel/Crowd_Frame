@@ -1,15 +1,15 @@
 import {Inject, Injectable} from '@angular/core';
 import * as AWS from "aws-sdk";
 /* Debug config import */
-import * as localRawDimensions from '../../../data/debug/sample_task/dimensions.json';
-import * as localRawHits from '../../../data/debug/sample_task/hits.json';
-import * as localRawInstructionsDimensions from '../../../data/debug/sample_task/instructions_dimensions.json';
-import * as localRawQuestionnaires from '../../../data/debug/sample_task/questionnaires.json';
-import * as localRawTaskSettings from '../../../data/debug/sample_task/task.json';
-import * as localRawSearchEngineSettings from '../../../data/debug/sample_task/search_engine.json';
-import * as localRawWorkers from '../../../data/debug/sample_task/workers.json';
-import * as localRawInstructionsMain from '../../../data/debug/sample_task/instructions_main.json';
-import * as localRawAdmin from '../../../data/debug/admin.json';
+import * as localRawDimensions from '../../../data/build/task/dimensions.json';
+import * as localRawHits from '../../../data/build/task/hits.json';
+import * as localRawInstructionsDimensions from '.../../../data/build/task/instructions_dimensions.json';
+import * as localRawQuestionnaires from '../../../data/build/task/questionnaires.json';
+import * as localRawTaskSettings from '../../../data/build/task/task.json';
+import * as localRawSearchEngineSettings from '../../../data/build/task/search_engine.json';
+import * as localRawWorkers from '../../../data/build/task/workers.json';
+import * as localRawInstructionsMain from '../../../data/build/task/instructions_main.json';
+import * as localRawAdmin from '../../../data/build/admin.json';
 import {ManagedUpload} from "aws-sdk/clients/s3";
 import {Worker} from "../models/skeleton/worker";
 
@@ -236,19 +236,19 @@ export class S3Service {
     return this.upload(config, `${this.getWorkerFinalFolder(config, worker, currentTry)}checks.json`, data)
   }
 
-  public uploadQuestionnaire(config, worker, data, isFinal, currentTry = null, completedElement = null, accessesAmount = null) {
+  public uploadQuestionnaire(config, worker, data, isFinal, currentTry = null, completedElement = null, accessesAmount = null, sequenceNumber = null) {
     if (isFinal) {
       return this.upload(config, `${this.getWorkerFinalFolder(config, worker)}questionnaires.json`, data)
     } else {
-      return this.upload(config, `${this.getWorkerPartialsFolder(config, worker, currentTry)}questionnaire_${completedElement}_accesses_${accessesAmount}.json`, data)
+      return this.upload(config, `${this.getWorkerPartialsFolder(config, worker, currentTry)}quest_${completedElement}_acc_${accessesAmount}_seq_${sequenceNumber}.json`, data)
     }
   }
 
-  public uploadDocument(config, worker, data, isFinal, currentTry, completedElement = null, accessesAmount = null) {
+  public uploadDocument(config, worker, data, isFinal, currentTry, completedElement = null, accessesAmount = null, sequenceNumber = null) {
     if (isFinal) {
       return this.upload(config, `${this.getWorkerFinalFolder(config, worker, currentTry)}documents.json`, data)
     } else {
-      return this.upload(config, `${this.getWorkerPartialsFolder(config, worker, currentTry)}document_${completedElement}_accesses_${accessesAmount}.json`, data)
+      return this.upload(config, `${this.getWorkerPartialsFolder(config, worker, currentTry)}doc_${completedElement}_acc_${accessesAmount}_seq_${sequenceNumber}.json`, data)
     }
   }
 
