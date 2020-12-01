@@ -225,7 +225,7 @@ export class SkeletonComponent implements OnInit{
 
     this.snackBar = snackBar
 
-    this.ngxService.start();
+    this.ngxService.startLoader('skeleton');
 
     /* |--------- GENERAL ELEMENTS - INITIALIZATION ---------| */
 
@@ -267,7 +267,7 @@ export class SkeletonComponent implements OnInit{
 
   public async ngOnInit() {
 
-    this.ngxService.start()
+    this.ngxService.startLoader('skeleton')
 
     let url = new URL(window.location.href);
 
@@ -291,7 +291,7 @@ export class SkeletonComponent implements OnInit{
               this.checkCompleted = true
               this.changeDetector.detectChanges()
               /* The loading spinner is stopped */
-              this.ngxService.stop();
+              this.ngxService.stopLoader('skeleton');
             },
             error => {
               this.worker = new Worker(this.workerIdentifier, this.S3Service.getWorkerFolder(this.configService.environment, null, this.workerIdentifier), null, window.navigator)
@@ -299,7 +299,7 @@ export class SkeletonComponent implements OnInit{
               this.checkCompleted = true
               this.changeDetector.detectChanges()
               /* The loading spinner is stopped */
-              this.ngxService.stop();
+              this.ngxService.stopLoader('skeleton');
             }
           )
         })
@@ -307,10 +307,10 @@ export class SkeletonComponent implements OnInit{
         this.worker = new Worker(null, null, null, null)
         this.checkCompleted = true
         this.changeDetector.detectChanges()
-        this.ngxService.stop()
+        this.ngxService.stopLoader('skeleton')
       }
     })
-    this.changeDetector.detectChanges()
+
 
   }
 
@@ -318,7 +318,7 @@ export class SkeletonComponent implements OnInit{
 
     this.taskInstructionsRead=true
     this.showSnackbar("If you have a very slow internet connection please wait a few seconds before clicking \"Start\".", "Dismiss", 15000)
-
+    this.changeDetector.detectChanges()
   }
 
 
@@ -420,7 +420,7 @@ export class SkeletonComponent implements OnInit{
     if (this.tokenForm.valid) {
 
       /* The loading spinner is started */
-      this.ngxService.start();
+      this.ngxService.startLoader('skeleton');
 
       /* The hits stored on Amazon S3 are retrieved */
       let hits = await this.S3Service.downloadHits(this.configService.environment)
@@ -615,7 +615,7 @@ export class SkeletonComponent implements OnInit{
       this.changeDetector.detectChanges();
 
       /* The loading spinner is stopped */
-      this.ngxService.stop();
+      this.ngxService.stopLoader('skeleton');
 
     }
   }
@@ -956,7 +956,7 @@ export class SkeletonComponent implements OnInit{
   public async performQualityCheck() {
 
     /* The loading spinner is started */
-    this.ngxService.start('loader-quality-check');
+    this.ngxService.startLoader('skeleton');
 
     /* The current try is completed and the final can shall begin */
     this.taskCompleted = true;
@@ -1016,7 +1016,7 @@ export class SkeletonComponent implements OnInit{
     this.changeDetector.detectChanges();
 
     /* The loading spinner is stopped */
-    this.ngxService.stop('loader-quality-check');
+    this.ngxService.stopLoader('skeleton');
 
   }
 
@@ -1034,7 +1034,7 @@ export class SkeletonComponent implements OnInit{
     }
 
     /* The loading spinner is started */
-    this.ngxService.start('loader-reset');
+    this.ngxService.startLoader('skeleton');
 
     /* Control variables to restore the state of task */
     this.taskFailed = false;
@@ -1054,7 +1054,7 @@ export class SkeletonComponent implements OnInit{
     this.currentTry = this.currentTry + 1;
 
     /* The loading spinner is stopped */
-    this.ngxService.stop('loader-reset');
+    this.ngxService.stopLoader('skeleton');
 
   }
 

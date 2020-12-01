@@ -3,6 +3,7 @@ import {FormBuilder, FormGroup, FormArray, Validators, ValidatorFn, AbstractCont
 import {MatStepper} from "@angular/material/stepper";
 import {S3Service} from "../../services/s3.service";
 import {ConfigService} from "../../services/config.service";
+import {NgxUiLoaderService} from "ngx-ui-loader";
 
 /*
  * STEP #1 - Questionnaires
@@ -127,6 +128,8 @@ export class GeneratorComponent implements OnInit {
    */
   workerChecksForm: FormGroup;
 
+  /* Service to provide loading screens */
+  ngxService: NgxUiLoaderService;
   configService: ConfigService
   S3Service: S3Service
 
@@ -154,12 +157,16 @@ export class GeneratorComponent implements OnInit {
   constructor(
     changeDetector: ChangeDetectorRef,
     private _formBuilder: FormBuilder,
+    ngxService: NgxUiLoaderService,
     configService: ConfigService,
     S3Service: S3Service
   ) {
-    this.changeDetector = changeDetector;
+    this.changeDetector = changeDetector
+    this.ngxService = ngxService
     this.configService = configService
     this.S3Service = S3Service
+
+    this.ngxService.startLoader('generator')
 
     this.batchesTree = {}
     let tasksPromise = this.S3Service.listFolders(this.configService.environment)
@@ -180,6 +187,7 @@ export class GeneratorComponent implements OnInit {
           nodes.push(node)
         })
       }
+      this.ngxService.stopLoader('generator')
     })
     this.batchesTree = nodes
     this.batchesList = completeList

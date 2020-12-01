@@ -99,11 +99,8 @@
                           </td>
                         </tr>
                       </table>
-                      <div *ngIf="questionnaire.get('type').value == 'standard'" class="mb-16px subsection"
-                           formArrayName="answers">
-                        <button mat-flat-button
-                                color="primary" class="mb-16px double-indent"
-                                (click)="addAnswer(questionnaireIndex, questionIndex)">
+                      <div *ngIf="questionnaire.get('type').value == 'standard'" class="mb-16px subsection" formArrayName="answers">
+                        <button mat-flat-button color="primary" class="mb-16px double-indent" (click)="addAnswer(questionnaireIndex, questionIndex)">
                           Add Answer
                         </button>
                         <div
@@ -112,16 +109,13 @@
                           <table class="width-100 indent">
                             <tr>
                               <td class="p-0 pr-16px">
-                                <mat-form-field matLine class="width-100"
-                                                [hideRequiredMarker]="answer.get('answer').valid" appearance="fill">
+                                <mat-form-field matLine class="width-100" [hideRequiredMarker]="answer.get('answer').valid" appearance="fill">
                                   <mat-label>Answer</mat-label>
                                   <input matInput type="text" formControlName="answer" required>
                                 </mat-form-field>
                               </td>
                               <td class="p-0 center">
-                                <button mat-flat-button
-                                        color="primary" class="mb-16px"
-                                        [disabled]="answerIndex == '0' && answers(questionnaireIndex, questionIndex).length == 1"
+                                <button mat-flat-button color="primary" class="mb-16px" [disabled]="answerIndex == '0' && answers(questionnaireIndex, questionIndex).length == 1"
                                         (click)="removeAnswer(questionnaireIndex, questionIndex, answerIndex)">
                                   Remove Answer
                                 </button>

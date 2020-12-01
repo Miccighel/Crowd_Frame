@@ -36,38 +36,8 @@ import {MatTooltipModule} from "@angular/material/tooltip";
 import { CountdownModule } from 'ngx-countdown';
 import { GeneratorComponent } from './components/generator/generator.component';
 import {MatSlideToggleModule} from '@angular/material/slide-toggle';
+import { NgxFileHelpersModule } from 'ngx-file-helpers';
 import {LoaderComponent} from './components/loader/loader.component';
-
-const ngxUiLoaderConfig: NgxUiLoaderConfig = {
-  bgsColor: "#3f51b5",
-  bgsOpacity: 0.7,
-  bgsPosition: "bottom-right",
-  bgsSize: 80,
-  bgsType: "ball-spin-clockwise",
-  blur: 15,
-  delay: 0,
-  fastFadeOut: true,
-  fgsColor: "#3f51b5",
-  fgsPosition: "center-center",
-  fgsSize: 150,
-  fgsType: "ball-spin-clockwise",
-  gap: 24,
-  logoPosition: "center-center",
-  logoSize: 120,
-  logoUrl: "",
-  masterLoaderId: "master",
-  overlayBorderRadius: "0",
-  overlayColor: "rgba(40,40,40,0.64)",
-  pbColor: "#3f51b5",
-  pbDirection: "ltr",
-  pbThickness: 3,
-  hasProgressBar: true,
-  text: "Loading...",
-  textColor: "#FFFFFF",
-  textPosition: "bottom-center",
-  maxTime: -1,
-  minTime: 300
-};
 
 @NgModule({
   declarations: [
@@ -95,7 +65,7 @@ const ngxUiLoaderConfig: NgxUiLoaderConfig = {
     MatListModule,
     MatToolbarModule,
     ReactiveFormsModule,
-    NgxUiLoaderModule.forRoot(ngxUiLoaderConfig),
+    NgxUiLoaderModule,
     HttpClientModule,
     BrowserModule,
     MatButtonModule,
@@ -116,7 +86,8 @@ const ngxUiLoaderConfig: NgxUiLoaderConfig = {
     MatCheckboxModule,
     MatTooltipModule,
     CountdownModule,
-    MatSlideToggleModule
+    MatSlideToggleModule,
+    NgxFileHelpersModule
   ],
   providers: [],
 })

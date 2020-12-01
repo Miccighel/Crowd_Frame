@@ -78,6 +78,8 @@ export class LoaderComponent {
     /* |--------- GENERAL ELEMENTS - INITIALIZATION ---------| */
 
     this.adminAccess = false
+
+
     this.loginSuccessful = false
     this.loginPerformed = false
     this.actionChosen = null
@@ -89,6 +91,8 @@ export class LoaderComponent {
     this.workerIdentifier = url.searchParams.get("workerID");
     this.adminAccess = url.pathname.indexOf("admin") != -1;
 
+    if(this.adminAccess) this.ngxService.startLoader("loader")
+
     this.username = new FormControl('kevin_roitero', [Validators.required]);
     this.password = new FormControl('DBegSUGED5zmXb9J', [Validators.required]);
     this.loginForm = formBuilder.group({
@@ -96,6 +100,7 @@ export class LoaderComponent {
       "password": this.password
     });
 
+    this.ngxService.stopLoader("loader")
   }
 
   public async loadAction(actionChosen: string) {
@@ -104,6 +109,7 @@ export class LoaderComponent {
   }
 
   public async performAdminCheck() {
+    this.ngxService.startLoader('generator');
     //let res = crypto.AES.encrypt(JSON.stringify({"username": "kevin_roitero"}), "DBegSUGED5zmXb9J")
     if (this.loginForm.valid) {
       let admins = await this.S3Service.downloadAdministrators(this.configService.environment)
@@ -120,7 +126,7 @@ export class LoaderComponent {
         }
       }
       this.loginPerformed = true
-      this.changeDetector.detectChanges()
+      this.ngxService.stopLoader('generator');
       if (this.loginSuccessful) {
         this.showSnackbar(`Login successful. Welcome back, ${this.username.value}.`, "Dismiss", 5000)
       } else {

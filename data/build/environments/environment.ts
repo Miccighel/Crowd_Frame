@@ -1,15 +1,15 @@
 export const environment = {
 
   production: false,
-  configuration_local: true,
+  configuration_local: false,
 
-  taskName: "CrowdsourcingSkeleton",
+  taskName: "AdversalDrugEvent",
   batchName: "Batch-1",
 
   region: 'us-east-2',
   bucket: 'crowdsourcing-tasks-us',
-  aws_id_key: "AKIAT5QYFVEAQW5MH2QW",
-  aws_secret_key: "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",
+  aws_id_key: "AKIAT5QYFVEAY25FPXOO",
+  aws_secret_key: "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",
 
   bing_api_key: "2cd7c847841743b8accb35e9f6c0eebc"
 
