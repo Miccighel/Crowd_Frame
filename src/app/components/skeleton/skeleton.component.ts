@@ -5,7 +5,7 @@ import {
   Component,
   ViewChild,
   ViewChildren,
-  QueryList, OnInit, ElementRef, AfterViewInit,
+  QueryList, OnInit, ElementRef, AfterViewInit, ViewEncapsulation, Inject,
 } from '@angular/core';
 /* Reactive forms modules */
 import {AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
@@ -29,6 +29,8 @@ import {HttpClient, HttpHeaders} from "@angular/common/http";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import * as annotatorjs from '../../../assets/lib/annotator.js';
 import {Note} from "../../models/skeleton/notes";
+import {MatDialog, MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
+import {DialogData, InstructionsDialog} from "../instructions/instructions.component";
 
 /* Component HTML Tag definition */
 @Component({
@@ -44,7 +46,7 @@ import {Note} from "../../models/skeleton/notes";
 * File environment.ts --- DEVELOPMENT ENVIRONMENT
 * File environment.prod.ts --- PRODUCTION ENVIRONMENT
 */
-export class SkeletonComponent implements OnInit{
+export class SkeletonComponent implements OnInit {
 
   /* |--------- GENERAL ELEMENTS - DECLARATION ---------| */
 
@@ -205,6 +207,7 @@ export class SkeletonComponent implements OnInit{
   /* |--------- CONSTRUCTOR ---------| */
 
   constructor(
+    public annotationDialog: MatDialog,
     changeDetector: ChangeDetectorRef,
     ngxService: NgxUiLoaderService,
     configService: ConfigService,
@@ -275,7 +278,7 @@ export class SkeletonComponent implements OnInit{
     this.taskInstructionsAmount = rawTaskInstructions.length;
     /* The instructions are parsed using the Instruction class */
     this.taskInstructions = new Array<Instruction>();
-    for (let index = 0; index < this.taskInstructionsAmount; index++){
+    for (let index = 0; index < this.taskInstructionsAmount; index++) {
       this.taskInstructions.push(new Instruction(index, rawTaskInstructions[index]));
     }
 
@@ -316,7 +319,7 @@ export class SkeletonComponent implements OnInit{
 
   public enableTask() {
 
-    this.taskInstructionsRead=true
+    this.taskInstructionsRead = true
     this.showSnackbar("If you have a very slow internet connection please wait a few seconds before clicking \"Start\".", "Dismiss", 15000)
     this.changeDetector.detectChanges()
   }
@@ -385,7 +388,7 @@ export class SkeletonComponent implements OnInit{
         return false
       } else {
         workers['blacklist'].push(this.workerIdentifier);
-        let uploadStatus =  await this.S3Service.uploadWorkers(this.configService.environment, workers);
+        let uploadStatus = await this.S3Service.uploadWorkers(this.configService.environment, workers);
         return !uploadStatus["failed"];
       }
 
@@ -602,6 +605,20 @@ export class SkeletonComponent implements OnInit{
             this.crowdAnnotator.include(
               () => ({
                 annotationCreated: (annotation) => this.storeAnnotation(annotation, "created"),
+                annotationUpdated: (annotation) => this.storeAnnotation(annotation, "updated"),
+                annotationDeleted: (annotation) => this.storeAnnotation(annotation, "deleted")
+              })
+            )
+            this.crowdAnnotator.start()
+            break;
+          case "options":
+            this.crowdAnnotator = new annotatorjs.App()
+            this.crowdAnnotator.include(annotatorjs.ui.main, {})
+            this.crowdAnnotator.include(
+              () => ({
+                annotationCreated: (annotation) => {
+                  this.storeAnnotation(annotation, "created");
+                },
                 annotationUpdated: (annotation) => this.storeAnnotation(annotation, "updated"),
                 annotationDeleted: (annotation) => this.storeAnnotation(annotation, "deleted")
               })
@@ -904,18 +921,25 @@ export class SkeletonComponent implements OnInit{
     if (this.stepper.selectedIndex >= this.questionnaireAmount) {
       let documentIndex = this.stepper.selectedIndex - this.questionnaireAmount
       let availableNotes = this.notes[documentIndex]
-      if(event=="created") {
-        availableNotes.push(new Note(documentIndex, annotation))
+      if (event == "created") {
+        let newAnnotation  = new Note(documentIndex, annotation)
+        this.annotationDialog.open(AnnotationDialog, {
+          width: '80%',
+          minHeight: '86%',
+          data: {annotation: newAnnotation}
+        });
+        console.log(("HERE"))
+        availableNotes.push(newAnnotation)
       }
-      if(event=="updated") {
+      if (event == "updated") {
         for (let [index, note] of availableNotes.entries()) {
-          if(note.id == annotation["id"]) {
+          if (note.id == annotation["id"]) {
             note.updateNote(annotation)
             availableNotes[index] = note
           }
         }
       }
-      if(event=="deleted") {
+      if (event == "deleted") {
         for (let [index, note] of availableNotes.entries()) {
           if (note.id == annotation["id"]) {
             note.markDeleted()
@@ -1027,7 +1051,7 @@ export class SkeletonComponent implements OnInit{
   public performReset() {
 
     /* |--- COUNTDOWN ---| */
-    if(this.settings.countdownTime) {
+    if (this.settings.countdownTime) {
       if (this.countdown.toArray()[0].left > 0) {
         this.countdown.toArray()[0].resume();
       }
@@ -1071,7 +1095,7 @@ export class SkeletonComponent implements OnInit{
   public async performLogging(action: string) {
 
     /* |--- COUNTDOWN ---| */
-    if((this.stepper.selectedIndex >= this.questionnaireAmount) && this.settings.countdownTime){
+    if ((this.stepper.selectedIndex >= this.questionnaireAmount) && this.settings.countdownTime) {
       let currentIndex = this.stepper.selectedIndex - this.questionnaireAmount;
       switch (action) {
         case "Next":
@@ -1353,7 +1377,7 @@ export class SkeletonComponent implements OnInit{
           /* await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/timestamps_end.json`, this.timestampsEnd)); */
           data["timestamps_elapsed"] = this.timestampsStart
           let countdownTimes = [];
-          if(this.settings.countdownTime)
+          if (this.settings.countdownTime)
             for (let index = 0; index < this.countdown.length; index++) countdownTimes.push(Number(this.countdown[index]["i"]["text"]));
           data["countdowns_times"] = countdownTimes
           data["countdowns_expired"] = this.countdownsExpired
@@ -1416,6 +1440,38 @@ export class SkeletonComponent implements OnInit{
     this.snackBar.open(message, action, {
       duration: duration,
     });
+  }
+
+}
+
+/* Component HTML Tag definition */
+@Component({
+  selector: 'app-annotation-dialog',
+  styleUrls: ['annotation-dialog.component.scss'],
+  templateUrl: 'annotation-dialog.component.html',
+  encapsulation: ViewEncapsulation.None
+})
+
+export class AnnotationDialog {
+
+  annotation: Note
+
+  /* |---------  ELEMENTS - DECLARATION ---------| */
+
+  /* |--------- CONSTRUCTOR ---------| */
+
+  constructor(public dialogRef: MatDialogRef<AnnotationDialog>, @Inject(MAT_DIALOG_DATA) public data: DialogData) {
+    this.annotation = data["annotation"]
+    console.log(this.annotation)
+  }
+
+  /* |--------- ELEMENTS - FUNCTIONS ---------| */
+
+  /*
+   * This function closes the modal previously opened.
+   */
+  closeDialog(): void {
+    this.dialogRef.close();
   }
 
 }

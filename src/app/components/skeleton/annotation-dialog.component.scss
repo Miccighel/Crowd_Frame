@@ -1,0 +1,53 @@
+/* |--- DIALOG STYLES  --| */
+
+h3 {
+  margin: 0;
+}
+
+.close-button {
+  text-align: center;
+}
+
+button{
+  text-transform: uppercase;
+  margin: auto;
+}
+
+p {
+  text-align: justify;
+}
+
+ul p {
+  margin-bottom: 0.5%;
+}
+
+.mat-dialog-title {
+  margin-bottom: 0;
+}
+
+.annotation  {
+  margin-bottom: 1%;
+  border: 0;
+  box-shadow: 0 0 0 0;
+  border-radius: 0;
+  position:sticky;
+  top: 42px;
+  z-index: 1000;
+}
+
+.annotation ul {
+  list-style: none;
+}
+
+.annotation ul li {
+  background-color: rgba(255,255,10,.3);
+  padding: 1% 5px;
+}
+
+.annotation .options {
+  text-align: center;
+}
+
+.annotation .options button {
+  margin: 5px;
+}

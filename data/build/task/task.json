@@ -4,7 +4,8 @@
   "allowed_tries": 10,
   "time_check_amount": 2,
   "annotator": {
-    "type": "tags"
+    "type": "options",
+    "values": ["drug", "adv"]
   },
   "countdown_time": false,
   "blacklist_batches": [],

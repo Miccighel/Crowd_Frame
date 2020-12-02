@@ -1,7 +1,7 @@
 import {BrowserModule} from '@angular/platform-browser';
 import {Injector, NgModule} from '@angular/core';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
-import {SkeletonComponent} from "./components/skeleton/skeleton.component";
+import {SkeletonComponent, AnnotationDialog} from "./components/skeleton/skeleton.component";
 import {MatRadioModule} from "@angular/material/radio";
 import {MatCardModule} from "@angular/material/card";
 import {MatInputModule} from "@angular/material/input";
@@ -39,6 +39,7 @@ import {MatSlideToggleModule} from '@angular/material/slide-toggle';
 import { NgxFileHelpersModule } from 'ngx-file-helpers';
 import {LoaderComponent} from './components/loader/loader.component';
 
+
 @NgModule({
   declarations: [
     SkeletonComponent,
@@ -47,7 +48,8 @@ import {LoaderComponent} from './components/loader/loader.component';
     InstructionsComponent,
     InstructionsDialog,
     GeneratorComponent,
-    LoaderComponent
+    LoaderComponent,
+    AnnotationDialog
   ],
   imports: [
     BrowserModule,
