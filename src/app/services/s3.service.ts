@@ -172,6 +172,10 @@ export class S3Service {
     return `${task}/${batch}/Task/questionnaires.json`
   }
 
+  public getHitsConfigPath(config, task, batch) {
+    return `${task}/${batch}/Task/hits.json`
+  }
+
   public getDimensionsConfigPath(config, task, batch) {
     return `${task}/${batch}/Task/dimensions.json`
   }
@@ -197,31 +201,35 @@ export class S3Service {
   }
 
   public uploadQuestionnairesConfig(config, data, task, batch) {
-    return this.upload(config, `${task}/${batch}/Task/questionnaires.json`, data)
+    return this.upload(config, `${task}/${batch}/Task/questionnaires.json`, JSON.parse(data))
+  }
+
+  public uploadHitsConfig(config, data, task, batch) {
+    return this.upload(config, `${task}/${batch}/Task/hits.json`, JSON.parse(data))
   }
 
   public uploadDimensionsConfig(config, data, task, batch) {
-    return this.upload(config, `${task}/${batch}/Task/dimensions.json`, data)
+    return this.upload(config, `${task}/${batch}/Task/dimensions.json`, JSON.parse(data))
   }
 
   public uploadTaskInstructionsConfig(config, data, task, batch) {
-    return this.upload(config, `${task}/${batch}/Task/instructions_main.json`, data)
+    return this.upload(config, `${task}/${batch}/Task/instructions_main.json`, JSON.parse(data))
   }
 
   public uploadDimensionsInstructionsConfig(config, data, task, batch) {
-    return this.upload(config, `${task}/${batch}/Task/instructions_dimensions.json`, data)
+    return this.upload(config, `${task}/${batch}/Task/instructions_dimensions.json`, JSON.parse(data))
   }
 
   public uploadSearchEngineSettings(config, data, task, batch) {
-    return this.upload(config, `${task}/${batch}/Task/search_engine.json`, data)
+    return this.upload(config, `${task}/${batch}/Task/search_engine.json`, JSON.parse(data))
   }
 
   public uploadTaskSettings(config, data, task, batch) {
-    return this.upload(config, `${task}/${batch}/Task/task.json`, data)
+    return this.upload(config, `${task}/${batch}/Task/task.json`, JSON.parse(data))
   }
 
   public uploadWorkersCheck(config, data, task, batch) {
-    return this.upload(config, `${task}/${batch}/Task/workers.json`, data)
+    return this.upload(config, `${task}/${batch}/Task/workers.json`, JSON.parse(data))
   }
 
   public uploadWorkers(config, data) {

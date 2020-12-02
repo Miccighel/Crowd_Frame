@@ -1,9 +1,10 @@
-import {ChangeDetectorRef, Component, ContentChild, OnInit, ViewChild} from '@angular/core';
-import {FormBuilder, FormGroup, FormArray, Validators, ValidatorFn, AbstractControl, FormControl} from '@angular/forms';
+import {ChangeDetectorRef, Component, OnInit, ViewChild} from '@angular/core';
+import {FormArray, FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
 import {MatStepper} from "@angular/material/stepper";
 import {S3Service} from "../../services/s3.service";
 import {ConfigService} from "../../services/config.service";
 import {NgxUiLoaderService} from "ngx-ui-loader";
+import {ReadFile, ReadMode} from "ngx-file-helpers";
 
 /*
  * STEP #1 - Questionnaires
@@ -144,12 +145,19 @@ export class GeneratorComponent implements OnInit {
   uploadStarted: boolean
   uploadCompleted: boolean
   questionnairesPath: string
+  hitsPath: string
   dimensionsPath: string
   taskInstructionsPath: string
   dimensionsInstructionsPath: string
   searchEngineSettingsPath: string
   taskSettingsPath: string
   workerChecksPath: string
+
+  localHitsFile: ReadFile
+  hitsDetected: number
+  localHistFileSize: number
+  parsedHits: Array<JSON>
+  readMode: ReadMode
 
   /* Change detector to manually intercept changes on DOM */
   changeDetector: ChangeDetectorRef;
@@ -177,14 +185,16 @@ export class GeneratorComponent implements OnInit {
         let taskName = task["Prefix"].split("/")[0]
         let batches = this.S3Service.listFolders(this.configService.environment, task["Prefix"])
         batches.then(batches => {
-          let node = {}
-          node["name"] = taskName
-          node["batches"] = []
-          for (let batch of batches) {
-            completeList.push(batch["Prefix"])
-            node["batches"].push(batch["Prefix"])
+          if (batches.length > 0) {
+            let node = {}
+            node["name"] = taskName
+            node["batches"] = []
+            for (let batch of batches) {
+              completeList.push(batch["Prefix"])
+              node["batches"].push(batch["Prefix"])
+            }
+            nodes.push(node)
           }
-          nodes.push(node)
         })
       }
       this.ngxService.stopLoader('generator')
@@ -197,6 +207,8 @@ export class GeneratorComponent implements OnInit {
     this.questionnairesPath = null
     this.uploadCompleted = false
     this.uploadStarted = false
+
+    this.readMode = ReadMode.text
   }
 
   ngOnInit() {
@@ -246,6 +258,7 @@ export class GeneratorComponent implements OnInit {
       batch_name: [''],
       allowed_tries: [''],
       time_check_amount: [''],
+      hits: [''],
       setAnnotator: [''],
       annotator: this._formBuilder.group({
         type: [''],
@@ -486,16 +499,6 @@ export class GeneratorComponent implements OnInit {
     this.updateScale(dimensionIndex);
   }
 
-  resetAnnotator() {
-    this.taskSettingsForm.get('annotator').get('type').setValue('')
-    if (this.taskSettingsForm.get('setAnnotator').value == false) {
-      this.taskSettingsForm.get('annotator').get('type').clearValidators();
-    } else {
-      this.taskSettingsForm.get('annotator').get('type').setValidators([Validators.required, this.positiveNumber.bind(this)]);
-    }
-    this.taskSettingsForm.get('annotator').get('type').updateValueAndValidity();
-  }
-
   updateScale(dimensionIndex) {
     let dim = this.dimensions().at(dimensionIndex);
 
@@ -677,7 +680,7 @@ export class GeneratorComponent implements OnInit {
           dimensionsJSON[dimensionIndex].style.type = 'list'
           dimensionsJSON[dimensionIndex].style.orientation = 'vertical'
         }
-        if(dimensionsJSON[dimensionIndex].scale.type == 'categorical' && dimensionsJSON[dimensionIndex].style.type == 'matrix') {
+        if (dimensionsJSON[dimensionIndex].scale.type == 'categorical' && dimensionsJSON[dimensionIndex].style.type == 'matrix') {
           dimensionsJSON[dimensionIndex].style.orientation = false
         }
 
@@ -856,6 +859,28 @@ export class GeneratorComponent implements OnInit {
    * STEP #6 - Task Settings
    */
 
+  updateHitsFile() {
+    this.parsedHits = JSON.parse(this.localHitsFile.content)
+    if (this.parsedHits.length > 0) {
+      console.log(this.parsedHits[0])
+      if (("documents" in this.parsedHits[0]) && ("token_input" in this.parsedHits[0]) && ("token_output" in this.parsedHits[0]) && ("unit_id" in this.parsedHits[0])) {
+        this.hitsDetected = this.parsedHits.length
+      } else {
+        this.hitsDetected = 0
+      }
+    } else {
+      this.hitsDetected = 0
+    }
+    this.localHistFileSize = Math.round(this.localHitsFile.size / 1024)
+    this.taskSettingsForm.get('hits').setValue('')
+    if (this.hitsDetected > 0) {
+      this.taskSettingsForm.get('hits').setValue(this.localHitsFile.content)
+    } else {
+      this.taskSettingsForm.get('hits').setValidators([Validators.required])
+    }
+    this.taskSettingsForm.get('hits').updateValueAndValidity();
+  }
+
   /* Blacklist Batches */
   blacklistBatches(): FormArray {
     return this.taskSettingsForm.get('blacklist_batches') as FormArray;
@@ -872,6 +897,17 @@ export class GeneratorComponent implements OnInit {
     }
     this.taskSettingsForm.get('countdown_time').updateValueAndValidity();
   }
+
+  resetAnnotator() {
+    this.taskSettingsForm.get('annotator').get('type').setValue('')
+    if (this.taskSettingsForm.get('setAnnotator').value == false) {
+      this.taskSettingsForm.get('annotator').get('type').clearValidators();
+    } else {
+      this.taskSettingsForm.get('annotator').get('type').setValidators([Validators.required, this.positiveNumber.bind(this)]);
+    }
+    this.taskSettingsForm.get('annotator').get('type').updateValueAndValidity();
+  }
+
 
   addBlacklistBatch() {
     for (let item of this.batchesList) {
@@ -929,9 +965,14 @@ export class GeneratorComponent implements OnInit {
     this.messages().removeAt(messageIndex);
   }
 
+
   /* Other Functions */
-  taskSettingsJSON() {
+  taskSettingsJSON(verbose = true) {
     let taskSettingsJSON = JSON.parse(JSON.stringify(this.taskSettingsForm.value));
+
+    if (!verbose) {
+      taskSettingsJSON["hits"] = "..."
+    }
 
     if (taskSettingsJSON.setAnnotator == false) {
       taskSettingsJSON.annotator = false
@@ -1000,6 +1041,7 @@ export class GeneratorComponent implements OnInit {
   public uploadConfiguration() {
     this.uploadStarted = true
     let questionnairePromise = this.S3Service.uploadQuestionnairesConfig(this.configService.environment, this.questionnairesJSON(), this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
+    let hitsPromise = this.S3Service.uploadHitsConfig(this.configService.environment, this.taskSettingsForm.get('hits').value, this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
     let dimensionsPromise = this.S3Service.uploadDimensionsConfig(this.configService.environment, this.dimensionsJSON(), this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
     let taskInstructionsPromise = this.S3Service.uploadTaskInstructionsConfig(this.configService.environment, this.generalInstructionsJSON(), this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
     let dimensionsInstructionsPromise = this.S3Service.uploadDimensionsInstructionsConfig(this.configService.environment, this.evaluationInstructionsJSON(), this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
@@ -1010,6 +1052,11 @@ export class GeneratorComponent implements OnInit {
       if (!result["failed"]) {
         this.questionnairesPath = this.S3Service.getQuestionnairesConfigPath(this.configService.environment, this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
       } else this.questionnairesPath = "Failure"
+    })
+    hitsPromise.then(result => {
+      if (!result["failed"]) {
+        this.hitsPath = this.S3Service.getHitsConfigPath(this.configService.environment, this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
+      } else this.hitsPath = "Failure"
     })
     dimensionsPromise.then(result => {
       if (!result["failed"]) {

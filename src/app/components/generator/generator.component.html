@@ -840,6 +840,27 @@
 
           <mat-divider [inset]="true"></mat-divider>
 
+          <!-- Hits file-->
+          <table class="width-100 mt-8px">
+            <button mat-flat-button color="primary" class="mt-16px mb-16px indent" ngxFilePicker [readMode]="readMode" (filePick)="localHitsFile = $event" (readEnd)="updateHitsFile()" accept="application/json">
+              Select Hits File
+            </button>
+            <ng-container *ngIf="this.hitsDetected > 0">
+              <code>Filename: {{this.localHitsFile.name}}, Hits detected: {{this.hitsDetected}}, Filesize: {{this.localHistFileSize}} Kb</code>
+            </ng-container>
+            <tr *ngIf="this.hitsDetected<=0">
+              <td>
+                <mat-error class="mb-8px indent">
+                  This JSON file does not contain any valid hit. Please, review your selection.
+                </mat-error>
+              </td>
+            </tr>
+          </table>
+
+
+          <mat-divider [inset]="true"></mat-divider>
+
+
           <!-- Annotator: Type -->
           <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="setAnnotator" (change)="resetAnnotator()">
             Annotator
@@ -1074,7 +1095,7 @@
         <mat-divider [inset]="true"></mat-divider>
 
         <h4 class="mb-0">Step #6 - <strong>Task Settings</strong>:</h4>
-        <p><code>{{ taskSettingsJSON() }}</code></p>
+        <p><code>{{ taskSettingsJSON(false) }}</code></p>
 
         <mat-divider [inset]="true"></mat-divider>
 
@@ -1095,8 +1116,12 @@
           <mat-list-item *ngIf="!this.evaluationInstructionsForm.valid" class="step-invalid"><span>Step #4 - Evaluation Instructions: <span class="step-validity-check">invalid</span></span></mat-list-item>
           <mat-list-item *ngIf="this.searchEngineForm.valid" class="step-valid"><span>Step #5 - Search Engine: <span class="step-validity-check">valid</span></span></mat-list-item>
           <mat-list-item *ngIf="!this.searchEngineForm.valid" class="step-invalid"><span>Step #5 - Search Engine: <span class="step-validity-check">invalid</span></span></mat-list-item>
-          <mat-list-item *ngIf="this.taskSettingsForm.valid" class="step-valid"><span>Step #6 - Task Settings: <span class="step-validity-check">valid</span></span></mat-list-item>
-          <mat-list-item *ngIf="!this.taskSettingsForm.valid" class="step-invalid"><span>Step #6 - Task Settings: <span class="step-validity-check">invalid</span></span></mat-list-item>
+          <div *ngIf="this.taskSettingsForm.valid && this.hitsDetected>0; else invalidTaskSettings">
+            <mat-list-item class="step-valid"><span>Step #6 - Task Settings: <span class="step-validity-check">valid</span></span></mat-list-item>
+          </div>
+          <ng-template #invalidTaskSettings>
+            <mat-list-item class="step-invalid"><span>Step #6 - Task Settings: <span class="step-validity-check">invalid</span></span></mat-list-item>
+          </ng-template>
           <mat-list-item *ngIf="this.workerChecksForm.valid" class="step-valid"><span>Step #7 - Worker Checks: <span class="step-validity-check">valid</span></span></mat-list-item>
           <mat-list-item *ngIf="!this.workerChecksForm.valid" class="step-invalid"><span>Step #7 - Worker Checks: <span class="step-validity-check">invalid</span></span>
           </mat-list-item>
@@ -1132,7 +1157,7 @@
         this.generalInstructionsForm.valid &&
         this.evaluationInstructionsForm.valid &&
         this.searchEngineForm.valid &&
-        this.taskSettingsForm.valid &&
+        (this.taskSettingsForm.valid && this.hitsDetected>0) &&
         this.workerChecksForm.valid)" (click)="uploadConfiguration()">
           Upload
         </button>

@@ -192,9 +192,7 @@
             <div class="instructions sticky" *ngIf="this.settings.countdownTime">
               <h2 class="m-0">
                 Time left:
-                <countdown #cd
-                           [config]="{ demand: true, leftTime: 30, format: 's' }"
-                           (event)="handleCountdown($event, i)"></countdown> seconds
+                <countdown #cd [config]="{ demand: true, leftTime: 30, format: 's' }" (event)="handleCountdown($event, i)"></countdown> seconds
               </h2>
             </div>
 
