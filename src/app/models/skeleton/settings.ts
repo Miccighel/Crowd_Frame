@@ -34,11 +34,13 @@ export class Settings {
 export class Annotator {
 
   type: string;
+  values?: string
 
   constructor(
     data: JSON
   ) {
     this.type =     data["type"];
+    this.values =     data["values"] ? data["values"]  : null;
   }
 
 }

@@ -20,6 +20,7 @@
     "@angular/platform-browser": "~11.0.2",
     "@angular/platform-browser-dynamic": "~11.0.2",
     "@angular/router": "~11.0.2",
+    "@funktechno/texthighlighter": "^2.0.10",
     "@types/crypto-js": "^4.0.1",
     "angular": "^1.7.9",
     "aws-sdk": "^2.647.0",

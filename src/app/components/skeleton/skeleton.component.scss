@@ -465,7 +465,7 @@ mat-form-field {
 .sticky {
   position: -webkit-sticky; /* Safari */
   position: sticky;
-  background-color: #ffd95a;
+  background-color: rgb(255, 255, 123);
   padding: 8px 0 8px 40px;
   top: 0;
 }
@@ -504,4 +504,36 @@ mat-form-field {
   border-top: 1px solid rgba(0, 0, 0, 0.12);
   border-bottom: 1px solid rgba(0, 0, 0, 0.12);
   font-weight: lighter !important;
+}
+
+.annotations {
+  margin-bottom: 1%;
+}
+
+.annotations table {
+  width: 100%;
+  text-align: center;
+}
+
+.annotations tr:first-child {
+  text-align: center;
+}
+
+.annotations tr {
+  display: flex;
+}
+
+.annotations th {
+  flex-grow: 1;
+  text-align: center;
+  padding: 1%;
+}
+
+.annotations td {
+  flex: 1 1 0px;
+  padding: 1%;
+}
+
+.annotations .mat-row td span {
+  background-color: rgb(255, 255, 123)
 }

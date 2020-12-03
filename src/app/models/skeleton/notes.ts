@@ -1,52 +1,45 @@
-  export class Note {
+import {Annotator} from "./settings";
+
+export class Note {
 
     index: number;
-    id: number;
     version: number;
-
+    timestamp_created: number;
+    timestamp_deleted?: number;
     deleted: boolean;
 
-    quote: string;
-    comment?: Array<string>;
-    tags?: Array<Array<string>>;
-    ranges: Array<Object>;
+    range: Object
+    data: Object
 
+    quote: string
+
+    option: string
+
+    annotator: Annotator;
 
     constructor(
       index: number,
+      range: JSON,
       data: JSON
     ) {
       /* DO NOT REMOVE THIS LINE */
-      this.index =          index;
-      this.id =             parseInt(data["id"])
-      this.version =        0
+      this.index   = index;
+      this.version = 0
       this.deleted = false
-      this.quote  = data["quote"]
-      this.comment = new Array<string>()
-      if (data["text"]) {
-        this.comment.push(data["text"])
-      } else {
-        this.comment.push("")
-      }
-      this.tags = new Array<Array<string>>()
-      if (data["tags"]) {
-        this.tags.push(data["tags"])
-      }
-      if (data["ranges"]) {
-        this.ranges = data["ranges"]
-      }
+      this.range   = range
+      this.data    = data
+      this.timestamp_created = parseInt(data[0]["dataset"]["timestamp"])
+      this.timestamp_deleted = null
+      this.quote   = data[0]["outerText"]
+      this.option   = "not_selected"
+    }
+
+    public checkEquality(note: Note) {
+      return (this.quote == note.quote)
     }
 
     public updateNote(data) {
       this.version = this.version + 1
-      if (data["text"]) {
-        this.comment.push(data["text"])
-      } else {
-        this.comment.push("")
-      }
-      if (data["tags"]) {
-        this.tags.push(data["tags"])
-      }
     }
 
     public markDeleted() {

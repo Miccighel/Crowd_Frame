@@ -27,10 +27,12 @@ import {Annotator, Settings} from "../../models/skeleton/settings";
 import {Worker} from "../../models/skeleton/worker";
 import {HttpClient, HttpHeaders} from "@angular/common/http";
 import {MatSnackBar} from "@angular/material/snack-bar";
-import * as annotatorjs from '../../../assets/lib/annotator.js';
 import {Note} from "../../models/skeleton/notes";
 import {MatDialog, MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
 import {DialogData, InstructionsDialog} from "../instructions/instructions.component";
+import {doHighlight, deserializeHighlights, serializeHighlights, removeHighlights, optionsImpl} from "@funktechno/texthighlighter/lib";
+import {TextHighlighter} from "@funktechno/texthighlighter/lib/TextHighlighter";
+
 
 /* Component HTML Tag definition */
 @Component({
@@ -111,6 +113,7 @@ export class SkeletonComponent implements OnInit {
   whitelistBatches: Array<string>
   countdownTime: number
   annotator: Annotator
+  annotationOptions: FormGroup;
 
   /* |--------- QUESTIONNAIRE ELEMENTS - DECLARATION ---------| */
 
@@ -199,7 +202,7 @@ export class SkeletonComponent implements OnInit {
 
   snackBar: MatSnackBar;
 
-  crowdAnnotator: any
+  highlighter: any
   notes: Array<Array<Note>>
 
   sequenceNumber: number
@@ -585,45 +588,10 @@ export class SkeletonComponent implements OnInit {
 
       if (this.annotator) {
         switch (this.annotator.type) {
-          case "free_text":
-            this.crowdAnnotator = new annotatorjs.App()
-            this.crowdAnnotator.include(
-              () => ({
-                annotationCreated: (annotation) => this.storeAnnotation(annotation, "created"),
-                annotationUpdated: (annotation) => this.storeAnnotation(annotation, "updated"),
-                annotationDeleted: (annotation) => this.storeAnnotation(annotation, "deleted")
-              })
-            )
-            this.crowdAnnotator.start()
-            break;
-          case "tags":
-            this.crowdAnnotator = new annotatorjs.App()
-            this.crowdAnnotator.include(annotatorjs.ui.main, {
-              editorExtensions: [annotatorjs.ui.tags.editorExtension],
-              viewerExtensions: [annotatorjs.ui.tags.viewerExtension]
-            })
-            this.crowdAnnotator.include(
-              () => ({
-                annotationCreated: (annotation) => this.storeAnnotation(annotation, "created"),
-                annotationUpdated: (annotation) => this.storeAnnotation(annotation, "updated"),
-                annotationDeleted: (annotation) => this.storeAnnotation(annotation, "deleted")
-              })
-            )
-            this.crowdAnnotator.start()
-            break;
           case "options":
-            this.crowdAnnotator = new annotatorjs.App()
-            this.crowdAnnotator.include(annotatorjs.ui.main, {})
-            this.crowdAnnotator.include(
-              () => ({
-                annotationCreated: (annotation) => {
-                  this.storeAnnotation(annotation, "created");
-                },
-                annotationUpdated: (annotation) => this.storeAnnotation(annotation, "updated"),
-                annotationDeleted: (annotation) => this.storeAnnotation(annotation, "deleted")
-              })
-            )
-            this.crowdAnnotator.start()
+            this.annotationOptions = this.formBuilder.group({
+              label: new FormControl('')
+            });
             break;
         }
       }
@@ -917,39 +885,76 @@ export class SkeletonComponent implements OnInit {
     return null
   }
 
-  public storeAnnotation(annotation: JSON, event: string) {
-    if (this.stepper.selectedIndex >= this.questionnaireAmount) {
-      let documentIndex = this.stepper.selectedIndex - this.questionnaireAmount
-      let availableNotes = this.notes[documentIndex]
-      if (event == "created") {
-        let newAnnotation  = new Note(documentIndex, annotation)
-        this.annotationDialog.open(AnnotationDialog, {
-          width: '80%',
-          minHeight: '86%',
-          data: {annotation: newAnnotation}
-        });
-        console.log(("HERE"))
-        availableNotes.push(newAnnotation)
-      }
-      if (event == "updated") {
-        for (let [index, note] of availableNotes.entries()) {
-          if (note.id == annotation["id"]) {
-            note.updateNote(annotation)
-            availableNotes[index] = note
+  public performHighlighting(changeDetector, event: Object, documentIndex: number, annotationDialog, notes, annotator: Annotator) {
+
+    const domEle = document.getElementById(`statement-${documentIndex}`);
+    const options: optionsImpl = new optionsImpl();
+
+    if (domEle) {
+      const highlightMade = doHighlight(domEle, true, {
+        onAfterHighlight(range, highlight) {
+          console.log(highlight)
+          if (highlight[0]["outerText"]) {
+            let notesForDocument = notes[documentIndex]
+            let newAnnotation = new Note(documentIndex, range, highlight)
+            let noteAlreadyFound = false
+            for (let note of notesForDocument) {
+              noteAlreadyFound = newAnnotation.checkEquality(note)
+              if (noteAlreadyFound)
+                break
+            }
+            if (noteAlreadyFound) {
+              return true
+            } else {
+              for (let index = 0; index < notesForDocument.length; ++index) {
+                if (newAnnotation.timestamp_created == notesForDocument[index].timestamp_created) {
+                  if (newAnnotation.quote.length > notesForDocument[index].quote.length) {
+                    notesForDocument.splice(index, 1);
+                  }
+                }
+              }
+              notes[documentIndex] = notesForDocument
+              annotationDialog.open(AnnotationDialog, {
+                width: '80%',
+                minHeight: '86%',
+                data: {
+                  annotation: newAnnotation,
+                  annotator: annotator
+                }
+              }).afterClosed().subscribe(result => {
+                newAnnotation.option = result
+                notesForDocument.push(newAnnotation)
+                notes[documentIndex] = notesForDocument
+                changeDetector.detectChanges()
+                return true
+              });
+            }
+
           }
         }
-      }
-      if (event == "deleted") {
-        for (let [index, note] of availableNotes.entries()) {
-          if (note.id == annotation["id"]) {
-            note.markDeleted()
-            availableNotes[index] = note
-          }
-        }
-      }
-      this.notes[documentIndex] = availableNotes
+      });
     }
   }
+
+  public removeAnnotation(documentIndex: number, noteIndex: number) {
+    this.notes[documentIndex][noteIndex].markDeleted()
+    this.notes[documentIndex][noteIndex].timestamp_deleted = Date.now()
+    let element = document.querySelector(`[data-timestamp='${this.notes[documentIndex][noteIndex].timestamp_created}']`)
+    element.parentNode.insertBefore(document.createTextNode(this.notes[documentIndex][noteIndex].quote), element);
+    element.remove()
+  }
+
+  public checkUndeletedNotesPresence(notes) {
+    let undeletedNotes = false
+    for (let note of notes) {
+      if (note.deleted == false) {
+        undeletedNotes = true
+        break
+      }
+    }
+    return undeletedNotes
+  }
+
 
   /* |--------- QUALITY CHECKS INTEGRATION - FUNCTIONS ---------| */
 
@@ -1455,6 +1460,7 @@ export class SkeletonComponent implements OnInit {
 export class AnnotationDialog {
 
   annotation: Note
+  annotator: Annotator
 
   /* |---------  ELEMENTS - DECLARATION ---------| */
 
@@ -1462,7 +1468,7 @@ export class AnnotationDialog {
 
   constructor(public dialogRef: MatDialogRef<AnnotationDialog>, @Inject(MAT_DIALOG_DATA) public data: DialogData) {
     this.annotation = data["annotation"]
-    console.log(this.annotation)
+    this.annotator = data["annotator"]
   }
 
   /* |--------- ELEMENTS - FUNCTIONS ---------| */

@@ -54,9 +54,7 @@
               "src/styles.scss",
               "src/theme.scss"
             ],
-            "scripts": [
-              "src/assets/lib/annotator.js"
-            ]
+            "scripts": []
           },
           "configurations": {
             "production": {
@@ -121,9 +119,7 @@
               "src/styles.scss",
               "src/theme.scss"
             ],
-            "scripts": [
-              "src/assets/lib/annotator.js"
-            ]
+            "scripts": []
           }
         },
         "lint": {

@@ -192,16 +192,44 @@
             <div class="instructions sticky" *ngIf="this.settings.countdownTime">
               <h2 class="m-0">
                 Time left:
-                <countdown #cd [config]="{ demand: true, leftTime: 30, format: 's' }" (event)="handleCountdown($event, i)"></countdown> seconds
+                <countdown #cd [config]="{ demand: true, leftTime: 30, format: 's' }" (event)="handleCountdown($event, i)"></countdown>
+                seconds
               </h2>
             </div>
 
             <!-- Statement markup -->
             <div class="statement">
               <ul>
-                <li><strong>Text</strong> (content of the tweet): <span #statementText class="statement-text">{{document.text}}</span></li>
+                <li><strong>Text</strong> (content of the tweet):
+                  <span #statementText
+                        id="statement-{{i}}"
+                        (mouseup)="performHighlighting(this.changeDetector, $event, i, this.annotationDialog, this.notes, this.annotator)"
+                        (touchend)="performHighlighting(this.changeDetector, $event, i, this.annotationDialog, this.notes, this.annotator)"
+                        class="statement-text"
+                  >{{document.text}}</span></li>
               </ul>
             </div>
+
+            <div *ngIf="checkUndeletedNotesPresence(this.notes[i])" class="annotations">
+              <table class="mat-table">
+                <tr class="mat-header-row">
+                  <th class="mat-header-cell">Quote</th>
+                  <th class="mat-header-cell">Option</th>
+                  <th class="mat-header-cell">Actions</th>
+                </tr>
+                <tr *ngFor="let note of this.notes[i]; let noteIndex = index" class="mat-row">
+                  <ng-container *ngIf="note.deleted == false">
+                    <td class="mat-cell"><span>{{note.quote}}</span></td>
+                    <td class="mat-cell"><code>{{note.option}}</code></td>
+                    <td class="mat-cell">
+                      <button (click)="removeAnnotation(i, noteIndex)" mat-flat-button color="primary">Delete
+                      </button>
+                    </td>
+                  </ng-container>
+                </tr>
+              </table>
+            </div>
+
             <!-- Instructions markup -->
             <div *ngIf="this.instructionsAmount>0" class="instructions">
               <mat-divider [inset]="true"></mat-divider>
@@ -261,17 +289,18 @@
                   <div *ngIf="!dimension.url" class="dimension-counter">a.</div>
                   <div class="dimension-content truth-level">
                     <ng-container *ngIf="dimension.style.orientation=='vertical'">
-                      <ng-container *ngIf="dimension.scale.type=='categorical'" >
+                      <ng-container *ngIf="dimension.scale.type=='categorical'">
                         <mat-radio-group aria-labelledby="radio-button-label" class="radio-button-group" formControlName="{{(dimension.name).concat('_value')}}">
-                          <mat-radio-button *ngFor="let mapping of dimension.scale.mappings let k=index" class="radio-button" value="{{mapping.value}}" (change)="storeDimensionValue($event, i, dimension.index)" [disabled]="this.countdownsExpired[i]">
+                          <mat-radio-button *ngFor="let mapping of dimension.scale.mappings let k=index" class="radio-button" value="{{mapping.value}}" (change)="storeDimensionValue($event, i, dimension.index)"
+                                            [disabled]="this.countdownsExpired[i]">
                             <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0"> ({{mapping.description}})</span>
                           </mat-radio-button>
                         </mat-radio-group>
                       </ng-container>
                       <ng-container *ngIf="dimension.scale.type=='interval'">
                         <label>Selected value: {{documentsForm[i].controls[(dimension.name).concat('_value')].value}}</label>
-                        <mat-slider  min="{{dimension.scale.min}}" max="{{dimension.scale.max}}" step="{{dimension.scale.step}}" thumbLabel tickInterval="{{dimension.scale.step}}"
-                                     formControlName="{{(dimension.name).concat('_value')}}" (change)="storeDimensionValue($event, i,dimension.index)" [disabled]="this.countdownsExpired[i]"></mat-slider>
+                        <mat-slider min="{{dimension.scale.min}}" max="{{dimension.scale.max}}" step="{{dimension.scale.step}}" thumbLabel tickInterval="{{dimension.scale.step}}"
+                                    formControlName="{{(dimension.name).concat('_value')}}" (change)="storeDimensionValue($event, i,dimension.index)" [disabled]="this.countdownsExpired[i]"></mat-slider>
                       </ng-container>
                       <ng-container *ngIf="dimension.scale.type=='magnitude_estimation'">
                         <h2>TO BE IMPLEMENTED</h2>
@@ -279,7 +308,8 @@
                     </ng-container>
                     <ng-container *ngIf="dimension.style.orientation=='horizontal'">
                       <mat-radio-group *ngIf="dimension.scale.type=='categorical'" aria-labelledby="radio-button-label" formControlName="{{(dimension.name).concat('_value')}}">
-                        <mat-radio-button *ngFor="let mapping of dimension.scale.mappings let k=index" class="radio-button" value="{{mapping.value}}" (change)="storeDimensionValue($event, i,dimension.index)" [disabled]="this.countdownsExpired[i]">
+                        <mat-radio-button *ngFor="let mapping of dimension.scale.mappings let k=index" class="radio-button" value="{{mapping.value}}" (change)="storeDimensionValue($event, i,dimension.index)"
+                                          [disabled]="this.countdownsExpired[i]">
                           <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0"> ({{mapping.description}})</span>
                         </mat-radio-button>
                       </mat-radio-group>
@@ -373,9 +403,11 @@
             <ng-template *ngIf="this.filterDimensions('list', 'top').length>0" [ngTemplateOutlet]="dimensionList" [ngTemplateOutletContext]="{dimensions: this.filterDimensions('list', 'top'), i:i}"></ng-template>
             <ng-template *ngIf="this.filterDimensions('matrix', 'top').length>0" [ngTemplateOutlet]="dimensionMatrix" [ngTemplateOutletContext]="{dimensions: this.filterDimensions('matrix', 'top'), i:i}"></ng-template>
             <ng-template *ngIf="this.filterDimensions('list', 'middle').length>0" [ngTemplateOutlet]="dimensionList" [ngTemplateOutletContext]="{dimensions: this.filterDimensions('list', 'middle'), i:i}"></ng-template>
-            <ng-template *ngIf="this.filterDimensions('matrix', 'middle').length>0" [ngTemplateOutlet]="dimensionMatrix" [ngTemplateOutletContext]="{dimensions: this.filterDimensions('matrix', 'middle'), i:i}"></ng-template>
+            <ng-template *ngIf="this.filterDimensions('matrix', 'middle').length>0" [ngTemplateOutlet]="dimensionMatrix"
+                         [ngTemplateOutletContext]="{dimensions: this.filterDimensions('matrix', 'middle'), i:i}"></ng-template>
             <ng-template *ngIf="this.filterDimensions('list', 'bottom').length>0" [ngTemplateOutlet]="dimensionList" [ngTemplateOutletContext]="{dimensions: this.filterDimensions('list', 'bottom'), i:i}"></ng-template>
-            <ng-template *ngIf="this.filterDimensions('matrix', 'bottom').length>0" [ngTemplateOutlet]="dimensionMatrix" [ngTemplateOutletContext]="{dimensions: this.filterDimensions('matrix', 'bottom'), i:i}"></ng-template>
+            <ng-template *ngIf="this.filterDimensions('matrix', 'bottom').length>0" [ngTemplateOutlet]="dimensionMatrix"
+                         [ngTemplateOutletContext]="{dimensions: this.filterDimensions('matrix', 'bottom'), i:i}"></ng-template>
           </mat-card-content>
 
           <!-- Actions markup -->
