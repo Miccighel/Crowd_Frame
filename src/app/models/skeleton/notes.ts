@@ -7,6 +7,7 @@ export class Note {
     timestamp_created: number;
     timestamp_deleted?: number;
     deleted: boolean;
+    color: string;
 
     range: Object
     data: Object
@@ -20,13 +21,15 @@ export class Note {
     constructor(
       index: number,
       range: JSON,
-      data: JSON
+      data: JSON,
+      color = "#ffff7b"
     ) {
       /* DO NOT REMOVE THIS LINE */
       this.index   = index;
       this.version = 0
       this.deleted = false
       this.range   = range
+      this.color   = color
       this.data    = data
       this.timestamp_created = parseInt(data[0]["dataset"]["timestamp"])
       this.timestamp_deleted = null

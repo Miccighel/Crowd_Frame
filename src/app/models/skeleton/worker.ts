@@ -4,16 +4,20 @@
 export class Worker {
 
   identifier: string;
-  properties: Object;
   folder: string
+  cloudflareProperties: Object;
+  navigatorProperties: Object;
+  ngxDeviceDetectorProperties: Object;
 
   constructor(
     mturkId: string,
     folder: string,
     cloudflareData: string,
-    navigator: Navigator
+    navigator: Navigator,
+    ngxDeviceDetectorData: Object,
   ) {
     this.identifier = mturkId
+    this.folder = folder
     let unwantedProperties = [
       "registerProtocolHandler",
       "requestMediaKeySystemAccess",
@@ -30,6 +34,8 @@ export class Worker {
         properties[property.split("=")[0]] = property.split("=")[1]
       }
     }
+    this.cloudflareProperties = properties
+    properties = {}
     for (let property in navigator) {
       if(!unwantedProperties.includes(property)) {
         let str = navigator[property];
@@ -38,8 +44,8 @@ export class Worker {
         }
       }
     }
-    this.properties = properties
-    this.folder = folder
+    this.navigatorProperties = properties
+    this.ngxDeviceDetectorProperties = ngxDeviceDetectorData
 
   }
 

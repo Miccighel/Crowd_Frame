@@ -26,7 +26,7 @@ ul p {
 }
 
 .annotation  {
-  margin-bottom: 1%;
+  margin-bottom: 0;
   border: 0;
   box-shadow: 0 0 0 0;
   border-radius: 0;
@@ -37,14 +37,8 @@ ul p {
 
 .annotation ul {
   list-style: none;
-}
-
-.annotation ul li {
-  padding: 1% 5px;
-}
-
-.annotation ul li:first-child {
-  background-color: rgb(255, 255, 123);
+  text-align: center;
+  margin-bottom: 0;
 }
 
 .annotation .options {
@@ -53,4 +47,9 @@ ul p {
 
 .annotation .options button {
   margin: 5px;
+}
+
+.mat-dialog-actions {
+  align-items: center;
+  justify-content: center;
 }

@@ -82,8 +82,7 @@ export class GeneratorComponent implements OnInit {
     {value: 'magnitude_estimation', viewValue: 'Magnitude Estimation'}
   ];
   annotatorTypes: AnnotatorType[] = [
-    {value: 'free_text', viewValue: 'Free Text'},
-    {value: 'tags', viewValue: 'Tags'},
+    {value: 'options', viewValue: 'Options'},
   ];
   styleTypes: StyleType[] = [
     {value: 'list', viewValue: 'List'},
@@ -262,6 +261,7 @@ export class GeneratorComponent implements OnInit {
       setAnnotator: [''],
       annotator: this._formBuilder.group({
         type: [''],
+        values: this._formBuilder.array([]),
       }),
       setCountdownTime: [''],
       countdown_time: [''],
@@ -898,6 +898,15 @@ export class GeneratorComponent implements OnInit {
     this.taskSettingsForm.get('countdown_time').updateValueAndValidity();
   }
 
+  setAnnotatorType() {
+    if(this.taskSettingsForm.get('annotator').get('type').value=='options') {
+      this.annotatorOptionValues().push(this._formBuilder.group({
+        label: [''],
+        color: ['']
+      }))
+    }
+  }
+
   resetAnnotator() {
     this.taskSettingsForm.get('annotator').get('type').setValue('')
     if (this.taskSettingsForm.get('setAnnotator').value == false) {
@@ -908,6 +917,20 @@ export class GeneratorComponent implements OnInit {
     this.taskSettingsForm.get('annotator').get('type').updateValueAndValidity();
   }
 
+  annotatorOptionValues(): FormArray {
+    return this.taskSettingsForm.get('annotator').get('values') as FormArray;
+  }
+
+  addOptionValue() {
+    this.annotatorOptionValues().push(this._formBuilder.group({
+      label: [''],
+      color: ['']
+    }))
+  }
+
+  removeAnnotatorOptionValue(valueIndex) {
+    this.annotatorOptionValues().removeAt(valueIndex);
+  }
 
   addBlacklistBatch() {
     for (let item of this.batchesList) {

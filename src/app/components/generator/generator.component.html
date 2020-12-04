@@ -34,8 +34,7 @@
                           <mat-label>Type</mat-label>
                           <mat-select matInput formControlName="type" required
                                       (selectionChange)="updateQuestionnaire(questionnaireIndex)">
-                            <mat-option *ngFor="let questionnaireType of questionnaireTypes"
-                                        [value]="questionnaireType.value">
+                            <mat-option *ngFor="let questionnaireType of questionnaireTypes" [value]="questionnaireType.value">
                               {{questionnaireType.viewValue}}
                             </mat-option>
                           </mat-select>
@@ -128,37 +127,28 @@
                   </div>
 
                   <!-- Mapping -->
-                  <div *ngIf="questionnaire.get('type').value == 'likert'"
-                       formArrayName="mapping">
+                  <div *ngIf="questionnaire.get('type').value == 'likert'" formArrayName="mapping">
                     <mat-divider [inset]="true"></mat-divider>
-                    <button mat-flat-button
-                            color="primary" class="mt-16px mb-16px indent"
-                            (click)="addMapping(questionnaireIndex)">
+                    <button mat-flat-button color="primary" class="mt-16px mb-16px indent" (click)="addMapping(questionnaireIndex)">
                       Add Mapping
                     </button>
-                    <div *ngFor="let map of mapping(questionnaireIndex).controls; let mappingIndex = index"
-                         [formGroupName]="mappingIndex">
+                    <div *ngFor="let map of mapping(questionnaireIndex).controls; let mappingIndex = index" [formGroupName]="mappingIndex">
                       <table class="width-100">
                         <tr>
                           <td class="p-0 pr-16px">
-                            <mat-form-field matLine class="width-100" [hideRequiredMarker]="map.get('label').valid"
-                                            appearance="fill">
+                            <mat-form-field matLine class="width-100" [hideRequiredMarker]="map.get('label').valid" appearance="fill">
                               <mat-label>Label</mat-label>
                               <input matInput type="text" formControlName="label" required>
                             </mat-form-field>
                           </td>
                           <td class="p-0 pr-16px">
-                            <mat-form-field matLine class="width-100" [hideRequiredMarker]="map.get('value').valid"
-                                            appearance="fill">
+                            <mat-form-field matLine class="width-100" [hideRequiredMarker]="map.get('value').valid" appearance="fill">
                               <mat-label>Value</mat-label>
                               <input matInput type="text" formControlName="value" required>
                             </mat-form-field>
                           </td>
                           <td class="p-0 center">
-                            <button mat-flat-button
-                                    color="primary" class="mb-16px"
-                                    [disabled]="mappingIndex == '0' && mapping(questionnaireIndex).length == 1"
-                                    (click)="removeMapping(questionnaireIndex, mappingIndex)">
+                            <button mat-flat-button color="primary" class="mb-16px" [disabled]="mappingIndex == '0' && mapping(questionnaireIndex).length == 1" (click)="removeMapping(questionnaireIndex, mappingIndex)">
                               Remove Mapping
                             </button>
                           </td>
@@ -334,14 +324,11 @@
                       </tr>
                     </table>
 
-                    <div *ngIf="dimension.get('scale').get('type').value == 'categorical'"
-                         formArrayName="mapping">
+                    <div *ngIf="dimension.get('scale').get('type').value == 'categorical'" formArrayName="mapping">
                       <button mat-flat-button color="primary" class="mb-16px indent" (click)="addDimensionMapping(dimensionIndex)">
                         Add Mapping
                       </button>
-                      <div
-                        *ngFor="let dimensionMap of dimensionMapping(dimensionIndex).controls; let dimensionMappingIndex = index"
-                        [formGroupName]="dimensionMappingIndex">
+                      <div *ngFor="let dimensionMap of dimensionMapping(dimensionIndex).controls; let dimensionMappingIndex = index" [formGroupName]="dimensionMappingIndex">
                         <table class="width-100">
                           <tr>
                             <td class="p-0 pr-16px">
@@ -842,9 +829,15 @@
 
           <!-- Hits file-->
           <table class="width-100 mt-8px">
-            <button mat-flat-button color="primary" class="mt-16px mb-16px indent" ngxFilePicker [readMode]="readMode" (filePick)="localHitsFile = $event" (readEnd)="updateHitsFile()" accept="application/json">
+            <button mat-flat-button color="primary" class="mt-8px mb-16px indent" ngxFilePicker [readMode]="readMode" (filePick)="localHitsFile = $event" (readEnd)="updateHitsFile()" accept="application/json">
               Select Hits File
             </button>
+            <ng-container *ngIf="!this.localHitsFile">
+              <code>your_file.json</code>
+            </ng-container>
+            <ng-container *ngIf="this.hitsDetected <= 0">
+              <code>invalid file</code>
+            </ng-container>
             <ng-container *ngIf="this.hitsDetected > 0">
               <code>Filename: {{this.localHitsFile.name}}, Hits detected: {{this.hitsDetected}}, Filesize: {{this.localHistFileSize}} Kb</code>
             </ng-container>
@@ -872,7 +865,7 @@
                 <td class="p-0 pr-16px">
                   <mat-form-field matLine class="width-100" [hideRequiredMarker]="taskSettingsForm.get('annotator').valid" appearance="fill">
                     <mat-label>Type</mat-label>
-                    <mat-select matInput formControlName="type" required>
+                    <mat-select matInput formControlName="type" (selectionChange)="setAnnotatorType()" required>
                       <mat-option *ngFor="let annotatorType of annotatorTypes" [value]="annotatorType.value">
                         {{annotatorType.viewValue}}
                       </mat-option>
@@ -883,6 +876,36 @@
             </table>
           </div>
 
+          <!-- Mapping -->
+          <div *ngIf="taskSettingsForm.get('annotator').get('type').value == 'options'" formGroupName="annotator">
+            <button mat-flat-button color="primary" class="mb-16px indent" (click)="addOptionValue()">
+              Add Option
+            </button>
+            <div *ngFor="let value of annotatorOptionValues().controls; let valueIndex = index" formArrayName="values">
+              <table class="width-100">
+                <tr>
+                  <td class="p-0 pr-16px" [formGroupName]="valueIndex">
+                    <mat-form-field class="width-100" matLine [hideRequiredMarker]="value.valid" appearance="fill">
+                      <mat-label>Label</mat-label>
+                      <input matInput type="text" formControlName="label" required>
+                    </mat-form-field>
+                  </td>
+                  <td class="p-0 pr-16px">
+                    <mat-form-field class="width-100" matLine [hideRequiredMarker]="value.valid" appearance="fill">
+                      <mat-label>HTML Color (#123456)</mat-label>
+                      <input matInput type="text" formControlName="color" required>
+                    </mat-form-field>
+                  </td>
+                  <td class="p-0 center">
+                    <button mat-flat-button color="primary" class="mb-16px" (click)="removeAnnotatorOptionValue(valueIndex)" [disabled]="valueIndex == '0' && annotatorOptionValues().controls.length == 1">
+                      Remove Option
+                    </button>
+                  </td>
+                </tr>
+              </table>
+            </div>
+          </div>
+
           <mat-divider [inset]="true"></mat-divider>
 
           <!-- Countdown Time -->
@@ -890,7 +913,7 @@
             Countdown
           </mat-slide-toggle>
 
-          <mat-form-field matLine class="width-100" [hideRequiredMarker]="taskSettingsForm.get('countdown_time').valid" appearance="fill" *ngIf="this.taskSettingsForm.get('setCountdownTime').value">
+          <mat-form-field matLine class="width-100 mb-16px" [hideRequiredMarker]="taskSettingsForm.get('countdown_time').valid" appearance="fill" *ngIf="this.taskSettingsForm.get('setCountdownTime').value">
             <mat-label>Time</mat-label>
             <input matInput type="number" min="1" formControlName="countdown_time" required>
             <mat-error *ngIf="checkFormControl(taskSettingsForm,'countdown_time', 'invalid')">

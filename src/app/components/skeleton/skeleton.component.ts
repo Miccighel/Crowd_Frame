@@ -31,7 +31,7 @@ import {Note} from "../../models/skeleton/notes";
 import {MatDialog, MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
 import {DialogData, InstructionsDialog} from "../instructions/instructions.component";
 import {doHighlight, deserializeHighlights, serializeHighlights, removeHighlights, optionsImpl} from "@funktechno/texthighlighter/lib";
-import {TextHighlighter} from "@funktechno/texthighlighter/lib/TextHighlighter";
+import { DeviceDetectorService } from 'ngx-device-detector';
 
 
 /* Component HTML Tag definition */
@@ -74,6 +74,7 @@ export class SkeletonComponent implements OnInit {
   /* Service to provide an environment-based configuration */
   configService: ConfigService;
   S3Service: S3Service;
+  deviceDetectorService: DeviceDetectorService;
 
   /* HTTP client and headers */
   client: HttpClient;
@@ -215,6 +216,7 @@ export class SkeletonComponent implements OnInit {
     ngxService: NgxUiLoaderService,
     configService: ConfigService,
     S3Service: S3Service,
+    deviceDetectorService: DeviceDetectorService,
     client: HttpClient,
     formBuilder: FormBuilder,
     snackBar: MatSnackBar
@@ -226,6 +228,7 @@ export class SkeletonComponent implements OnInit {
     this.ngxService = ngxService;
     this.configService = configService;
     this.S3Service = S3Service;
+    this.deviceDetectorService = deviceDetectorService;
     this.client = client;
     this.formBuilder = formBuilder;
 
@@ -292,7 +295,7 @@ export class SkeletonComponent implements OnInit {
         this.performWorkerStatusCheck().then(outcome => {
           this.client.get('https://www.cloudflare.com/cdn-cgi/trace', {responseType: 'text'}).subscribe(
             cloudflareData => {
-              this.worker = new Worker(this.workerIdentifier, this.S3Service.getWorkerFolder(this.configService.environment, null, this.workerIdentifier), cloudflareData, window.navigator)
+              this.worker = new Worker(this.workerIdentifier, this.S3Service.getWorkerFolder(this.configService.environment, null, this.workerIdentifier), cloudflareData, window.navigator, this.deviceDetectorService.getDeviceInfo())
               this.taskAllowed = outcome;
               this.checkCompleted = true
               this.changeDetector.detectChanges()
@@ -300,7 +303,7 @@ export class SkeletonComponent implements OnInit {
               this.ngxService.stopLoader('skeleton');
             },
             error => {
-              this.worker = new Worker(this.workerIdentifier, this.S3Service.getWorkerFolder(this.configService.environment, null, this.workerIdentifier), null, window.navigator)
+              this.worker = new Worker(this.workerIdentifier, this.S3Service.getWorkerFolder(this.configService.environment, null, this.workerIdentifier), null, window.navigator, this.deviceDetectorService.getDeviceInfo())
               this.taskAllowed = outcome;
               this.checkCompleted = true
               this.changeDetector.detectChanges()
@@ -310,7 +313,7 @@ export class SkeletonComponent implements OnInit {
           )
         })
       } else {
-        this.worker = new Worker(null, null, null, null)
+        this.worker = new Worker(null, null, null, null, null)
         this.checkCompleted = true
         this.changeDetector.detectChanges()
         this.ngxService.stopLoader('skeleton')
@@ -886,14 +889,19 @@ export class SkeletonComponent implements OnInit {
   }
 
   public performHighlighting(changeDetector, event: Object, documentIndex: number, annotationDialog, notes, annotator: Annotator) {
-
-    const domEle = document.getElementById(`statement-${documentIndex}`);
-    const options: optionsImpl = new optionsImpl();
-
-    if (domEle) {
-      const highlightMade = doHighlight(domEle, true, {
+    let domElement  = null
+    let optionChosen = null
+    if(this.deviceDetectorService.isMobile() || this.deviceDetectorService.isTablet()) {
+      const selection = document.getSelection();
+      if (selection) {
+        domElement = document.getElementById(`statement-${documentIndex}`);
+      }
+    } else {
+      domElement = document.getElementById(`statement-${documentIndex}`);
+    }
+    if (domElement) {
+      const highlightMade = doHighlight(domElement, true, {
         onAfterHighlight(range, highlight) {
-          console.log(highlight)
           if (highlight[0]["outerText"]) {
             let notesForDocument = notes[documentIndex]
             let newAnnotation = new Note(documentIndex, range, highlight)
@@ -908,9 +916,7 @@ export class SkeletonComponent implements OnInit {
             } else {
               for (let index = 0; index < notesForDocument.length; ++index) {
                 if (newAnnotation.timestamp_created == notesForDocument[index].timestamp_created) {
-                  if (newAnnotation.quote.length > notesForDocument[index].quote.length) {
-                    notesForDocument.splice(index, 1);
-                  }
+                  if (newAnnotation.quote.length > notesForDocument[index].quote.length) notesForDocument.splice(index, 1);
                 }
               }
               notes[documentIndex] = notesForDocument
@@ -922,14 +928,16 @@ export class SkeletonComponent implements OnInit {
                   annotator: annotator
                 }
               }).afterClosed().subscribe(result => {
-                newAnnotation.option = result
+                newAnnotation.option = result.label
+                newAnnotation.color = result.color
+                let element = <HTMLElement>document.querySelector(`[data-timestamp='${newAnnotation.timestamp_created}']`)
+                element.style.backgroundColor=result.color
                 notesForDocument.push(newAnnotation)
                 notes[documentIndex] = notesForDocument
                 changeDetector.detectChanges()
                 return true
-              });
+              })
             }
-
           }
         }
       });
@@ -937,10 +945,11 @@ export class SkeletonComponent implements OnInit {
   }
 
   public removeAnnotation(documentIndex: number, noteIndex: number) {
-    this.notes[documentIndex][noteIndex].markDeleted()
-    this.notes[documentIndex][noteIndex].timestamp_deleted = Date.now()
-    let element = document.querySelector(`[data-timestamp='${this.notes[documentIndex][noteIndex].timestamp_created}']`)
-    element.parentNode.insertBefore(document.createTextNode(this.notes[documentIndex][noteIndex].quote), element);
+    let currentNote = this.notes[documentIndex][noteIndex]
+    currentNote.markDeleted()
+    currentNote.timestamp_deleted = Date.now()
+    let element = document.querySelector(`[data-timestamp='${currentNote.timestamp_created}']`)
+    element.parentNode.insertBefore(document.createTextNode(currentNote.quote), element);
     element.remove()
   }
 
@@ -1290,6 +1299,43 @@ export class SkeletonComponent implements OnInit {
 
         /* If the worker has completed a document */
       } else {
+
+        if (this.questionnaireAmount == 0) {
+
+          let data = {}
+
+          /* The full information about task setup (currentDocument.e., its document and questionnaire structures) are uploaded, only once */
+          let taskData = {
+            task_id: this.taskName,
+            batch_name: this.batchName,
+            worker_id: this.worker.identifier,
+            unit_id: this.unitId,
+            token_input: this.tokenInput.value,
+            token_output: this.tokenOutput,
+            tries_amount: this.allowedTries,
+            questionnaire_amount: this.questionnaireAmount,
+            documents_amount: this.documentsAmount,
+            dimensions_amount: this.dimensionsAmount,
+          };
+          /* General info about task */
+          data["task"] = taskData
+          /* await (this.upload(`${this.workerFolder}/task.json`, taskData)); */
+          /* The answers of the current worker to the questionnaire */
+          data["questionnaires"] = this.questionnaires
+          /* await (this.upload(`${this.workerFolder}/questionnaires.json`, this.questionnaires)); */
+          /* The parsed document contained in current worker's hit */
+          data["documents"] = this.documents
+          /* await (this.upload(`${this.workerFolder}/documents.json`, this.documents)); */
+          /* The dimensions of the answers of each worker */
+          data["dimensions"] = this.dimensions
+          /* await (this.upload(`${this.workerFolder}/dimensions.json`, this.dimensions)); */
+          /* General info about worker */
+          data["worker"] = this.worker
+          /* await (this.upload(`${this.workerFolder}/worker.json`, this.worker)); */
+
+          let uploadStatus = await this.S3Service.uploadTaskData(this.configService.environment, this.worker, data)
+
+        }
 
         /* The amount of accesses to the current document is retrieved */
         let accessesAmount = this.elementsAccesses[completedElement];

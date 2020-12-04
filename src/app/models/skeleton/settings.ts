@@ -34,7 +34,7 @@ export class Settings {
 export class Annotator {
 
   type: string;
-  values?: string
+  values?: Array<Object>
 
   constructor(
     data: JSON

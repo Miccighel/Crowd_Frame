@@ -5212,6 +5212,13 @@ ngx-countdown@^11.0.0:
   dependencies:
     tslib "^2.0.0"
 
+ngx-device-detector@^2.0.4:
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/ngx-device-detector/-/ngx-device-detector-2.0.4.tgz#891ee088f12e8b2b521dab92d2941dc5f7f7fdb9"
+  integrity sha512-3OE5B9Dzr2gWowD98VeHxTrv+nwiFYGLrZyYpa/Vzq/Pb7/OagyVGH1KzJ9nX5SnOus1s6PQovx7EhgR/9N+RA==
+  dependencies:
+    tslib "^2.0.0"
+
 ngx-file-helpers@^4.0.1:
   version "4.0.1"
   resolved "https://registry.yarnpkg.com/ngx-file-helpers/-/ngx-file-helpers-4.0.1.tgz#077e42376659a5addae7f26a6776256405843b0d"
