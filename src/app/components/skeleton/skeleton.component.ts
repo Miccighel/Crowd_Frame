@@ -252,7 +252,7 @@ export class SkeletonComponent implements OnInit {
     /* |--- TASK GENERATOR ---| */
     this.generator = false;
 
-    this.tokenInput = new FormControl('TQONDNHBUP', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
+    this.tokenInput = new FormControl('MBYTZQGSXYP', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
     this.tokenForm = formBuilder.group({
       "tokenInput": this.tokenInput
     });
@@ -678,27 +678,29 @@ export class SkeletonComponent implements OnInit {
         cleanedWords.push(trimmedWord)
       }
     }
-    /* If at least the first document has been reached */
-    if (this.stepper.selectedIndex >= this.questionnaireAmount) {
-      /* The current document index is selected */
-      let currentDocument = this.stepper.selectedIndex - this.questionnaireAmount;
-      /* If the user has selected some search engine responses for the current document */
-      if (this.searchEngineSelectedResponses[currentDocument]) {
-        if (this.searchEngineSelectedResponses[currentDocument]['amount'] > 0) {
-          let selectedUrl = Object.values(this.searchEngineSelectedResponses[currentDocument]["data"]).pop()
-          let response = selectedUrl["response"]
-          /* The controls are performed */
-          for (let word of cleanedWords) {
-            if (word == response["url"]) return {"invalid": "You cannot use the selected search engine url as part of the justification."}
+    if(this.stepper) {
+      /* If at least the first document has been reached */
+      if (this.stepper.selectedIndex >= this.questionnaireAmount) {
+        /* The current document index is selected */
+        let currentDocument = this.stepper.selectedIndex - this.questionnaireAmount;
+        /* If the user has selected some search engine responses for the current document */
+        if (this.searchEngineSelectedResponses[currentDocument]) {
+          if (this.searchEngineSelectedResponses[currentDocument]['amount'] > 0) {
+            let selectedUrl = Object.values(this.searchEngineSelectedResponses[currentDocument]["data"]).pop()
+            let response = selectedUrl["response"]
+            /* The controls are performed */
+            for (let word of cleanedWords) {
+              if (word == response["url"]) return {"invalid": "You cannot use the selected search engine url as part of the justification."}
+            }
           }
         }
+        const allControls = this.getControlGroup(control).controls;
+        let currentControl = Object.keys(allControls).find(name => control === allControls[name])
+        let currentDimensionName = currentControl.split("_")[0]
+        for (let dimension of this.dimensions) if (dimension.name == currentDimensionName) if (dimension.justification.minWords) minWords = dimension.justification.minWords
       }
-      const allControls = this.getControlGroup(control).controls;
-      let currentControl = Object.keys(allControls).find(name => control === allControls[name])
-      let currentDimensionName = currentControl.split("_")[0]
-      for (let dimension of this.dimensions) if (dimension.name == currentDimensionName) if (dimension.justification.minWords) minWords = dimension.justification.minWords
+      return cleanedWords.length > minWords ? null : {"longer": "This is not valid."};
     }
-    return cleanedWords.length > minWords ? null : {"longer": "This is not valid."};
   }
 
   // |--------- SEARCH ENGINE INTEGRATION - FUNCTIONS ---------|
@@ -1278,23 +1280,12 @@ export class SkeletonComponent implements OnInit {
         let timestampsElapsed = this.timestampsElapsed[completedElement];
         data["timestamps_elapsed"] = timestampsElapsed
         /* Number of accesses to the current questionnaire (which must be always 1, since the worker cannot go back */
-        let accesses = this.elementsAccesses[completedElement];
-        data["accesses"] = accesses
+        data["accesses"] = accessesAmount + 1
 
-        let uploadStatus = await this.S3Service.uploadQuestionnaire(this.configService.environment, this.worker, data, false, this.currentTry, completedElement, accessesAmount, this.sequenceNumber)
-
-        /* If the worker has completed the last questionnaire */
-
-        if (completedElement == this.questionnaireAmount - 1) {
-
-          /* All questionnaire answers are uploaded, only once */
-          let answers = [];
-          for (let index = 0; index < this.questionnairesForm.length; index++) answers.push(this.questionnairesForm[index].value);
-          let uploadStatus = await this.S3Service.uploadQuestionnaire(this.configService.environment, this.worker, answers, true)
-
-        }
+        let uploadStatus = await this.S3Service.uploadQuestionnaire(this.configService.environment, this.worker, data, false, this.currentTry, completedElement, accessesAmount+1, this.sequenceNumber)
 
         /* The amount of accesses to the current questionnaire is incremented */
+        this.sequenceNumber = this.sequenceNumber + 1
         this.elementsAccesses[completedElement] = accessesAmount + 1;
 
         /* If the worker has completed a document */
@@ -1378,7 +1369,7 @@ export class SkeletonComponent implements OnInit {
         let countdown_expired = this.countdownsExpired[completedElement]
         data["countdowns_expired"] = countdown_expired
         /* Number of accesses to the current document (currentDocument.e., how many times the worker reached the document with a "Back" or "Next" action */
-        let accesses = this.elementsAccesses[completedElement];
+        let accesses = accessesAmount + 1
         data["accesses"] = accesses
         /* Responses retrieved by search engine for each worker's query for the current document */
         let responsesRetrieved = this.searchEngineRetrievedResponses[completedDocument];
@@ -1387,7 +1378,7 @@ export class SkeletonComponent implements OnInit {
         let responsesSelected = this.searchEngineSelectedResponses[completedDocument];
         data["responses_selected"] = responsesSelected
 
-        let uploadStatus = await this.S3Service.uploadDocument(this.configService.environment, this.worker, data, false, this.currentTry, completedElement, accessesAmount, this.sequenceNumber)
+        let uploadStatus = await this.S3Service.uploadDocument(this.configService.environment, this.worker, data, false, this.currentTry, completedElement, accessesAmount+1, this.sequenceNumber)
 
         /* The amount of accesses to the current document is incremented */
         this.elementsAccesses[completedElement] = accessesAmount + 1;
@@ -1405,7 +1396,7 @@ export class SkeletonComponent implements OnInit {
           /* All data about documents are uploaded, only once */
           let actionInfo = {
             action: action,
-            access: accessesAmount,
+            access: accessesAmount + 1,
             try: this.currentTry,
             index: completedElement,
             sequence: this.sequenceNumber,
@@ -1413,11 +1404,13 @@ export class SkeletonComponent implements OnInit {
           };
           /* Info about each performed action ("Next"? "Back"? From where?) */
           data["info"] = actionInfo
-          /* Worker's truth level and justification for each document */
           let answers = [];
+          for (let index = 0; index < this.questionnairesForm.length; index++) answers.push(this.questionnairesForm[index].value);
+          data["questionnaires_answers"] = answers
+          answers = [];
           for (let index = 0; index < this.documentsForm.length; index++) answers.push(this.documentsForm[index].value);
-          data["answers"] = answers
-          let notes = this.notes[completedDocument]
+          data["documents_answers"] = answers
+          let notes = this.notes
           data["notes"] = notes
           /* Worker's dimensions selected values for the current document */
           data["dimensions_selected"] = this.dimensionsSelectedValues

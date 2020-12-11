@@ -242,7 +242,7 @@ export class S3Service {
 
   public uploadDocument(config, worker, data, isFinal, currentTry, completedElement = null, accessesAmount = null, sequenceNumber = null) {
     if (isFinal) {
-      return this.upload(config, `${this.getWorkerFolder(config, worker)}documents_try_${currentTry}.json`, data)
+      return this.upload(config, `${this.getWorkerFolder(config, worker)}data_try_${currentTry}.json`, data)
     } else {
       return this.upload(config, `${this.getWorkerFolder(config, worker)}doc_${completedElement}_try_${currentTry}_acc_${accessesAmount}_seq_${sequenceNumber}.json`, data)
     }
