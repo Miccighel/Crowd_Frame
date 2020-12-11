@@ -1290,7 +1290,7 @@ export class SkeletonComponent implements OnInit {
           /* All questionnaire answers are uploaded, only once */
           let answers = [];
           for (let index = 0; index < this.questionnairesForm.length; index++) answers.push(this.questionnairesForm[index].value);
-          let uploadStatus = await this.S3Service.uploadQuestionnaire(this.configService.environment, this.worker, data, true)
+          let uploadStatus = await this.S3Service.uploadQuestionnaire(this.configService.environment, this.worker, answers, true)
 
         }
 
