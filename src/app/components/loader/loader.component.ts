@@ -89,12 +89,12 @@ export class LoaderComponent {
 
     let url = new URL(window.location.href);
     this.workerIdentifier = url.searchParams.get("workerID");
-    this.adminAccess = url.pathname.indexOf("admin") != -1;
+    this.adminAccess = url.searchParams.get("admin") == 'true'
 
     if(this.adminAccess) this.ngxService.startLoader("loader")
 
-    this.username = new FormControl('kevin_roitero', [Validators.required]);
-    this.password = new FormControl('DBegSUGED5zmXb9J', [Validators.required]);
+    this.username = new FormControl('admin', [Validators.required]);
+    this.password = new FormControl('DBegSUGED5', [Validators.required]);
     this.loginForm = formBuilder.group({
       "username": this.username,
       "password": this.password
@@ -110,7 +110,6 @@ export class LoaderComponent {
 
   public async performAdminCheck() {
     this.ngxService.startLoader('generator');
-    //let res = crypto.AES.encrypt(JSON.stringify({"username": "kevin_roitero"}), "DBegSUGED5zmXb9J")
     if (this.loginForm.valid) {
       let admins = await this.S3Service.downloadAdministrators(this.configService.environment)
       for (let admin of admins) {

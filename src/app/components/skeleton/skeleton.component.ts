@@ -17,7 +17,7 @@ import {NgxUiLoaderService} from 'ngx-ui-loader';
 import {ConfigService} from "../../services/config.service";
 import {S3Service} from "../../services/s3.service";
 /* Task models */
-import {Document} from "../../models/skeleton/document";
+import {Document} from "../../../../data/build/document";
 import {Hit} from "../../models/skeleton/hit";
 import {Questionnaire} from "../../models/skeleton/questionnaire";
 import {Dimension, ScaleInterval} from "../../models/skeleton/dimension";
