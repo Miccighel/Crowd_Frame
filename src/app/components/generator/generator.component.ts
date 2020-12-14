@@ -616,18 +616,19 @@ export class GeneratorComponent implements OnInit {
       } else {
         switch (dimensionsJSON[dimensionIndex].scale.type) {
           case 'categorical':
-            delete dimensionsJSON[dimensionIndex].scale.mapping;
-            delete dimensionsJSON[dimensionIndex].scale.include_lower_bound;
-            delete dimensionsJSON[dimensionIndex].scale.include_upper_bound;
-            break;
-          case 'interval':
             delete dimensionsJSON[dimensionIndex].scale.min;
             delete dimensionsJSON[dimensionIndex].scale.max;
             delete dimensionsJSON[dimensionIndex].scale.step;
             delete dimensionsJSON[dimensionIndex].scale.include_lower_bound;
             delete dimensionsJSON[dimensionIndex].scale.include_upper_bound;
             break;
+          case 'interval':
+            delete dimensionsJSON[dimensionIndex].scale.mapping;
+            delete dimensionsJSON[dimensionIndex].scale.include_lower_bound;
+            delete dimensionsJSON[dimensionIndex].scale.include_upper_bound;
+            break;
           case 'magnitude_estimation':
+            delete dimensionsJSON[dimensionIndex].scale.mapping;
             if (dimensionsJSON[dimensionIndex].scale.min == null) {
               dimensionsJSON[dimensionIndex].scale.min = '';
             }
@@ -997,7 +998,7 @@ export class GeneratorComponent implements OnInit {
       taskSettingsJSON["hits"] = "..."
     }
 
-    if (taskSettingsJSON.setAnnotator == false) {
+    if (taskSettingsJSON.setAnnotator == false || taskSettingsJSON.setAnnotator == null) {
       taskSettingsJSON.annotator = false
     }
     delete taskSettingsJSON.setAnnotator
