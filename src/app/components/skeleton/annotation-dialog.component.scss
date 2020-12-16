@@ -30,6 +30,7 @@ ul p {
   border: 0;
   box-shadow: 0 0 0 0;
   border-radius: 0;
+  position:-webkit-sticky;
   position:sticky;
   top: 42px;
   z-index: 1000;
@@ -53,3 +54,10 @@ ul p {
   align-items: center;
   justify-content: center;
 }
+
+.close-button{
+  float: right;
+  top:-20px;
+  right:-20px;
+}
+

@@ -1,3 +1,7 @@
+<button mat-mini-fab mat-dialog-close color="primary" class="close-button"
+  aria-label="Example icon button with a bookmark icon">
+  <mat-icon>close</mat-icon>
+</button>
 <div class="annotation-dialog" mat-dialog-title>
   Annotation
 </div>
@@ -5,7 +9,9 @@
   <div class="annotation">
     <h2>Quoted text</h2>
     <ul>
-      <li><h3 #quotedText >{{annotation.quote}}</h3></li>
+      <li>
+        <h3 #quotedText>{{annotation.quote}}</h3>
+      </li>
     </ul>
   </div>
 </mat-dialog-content>
@@ -14,8 +20,8 @@
     Select an option
   </h2>
   <mat-dialog-actions>
-    <button *ngFor="let value of annotator.values" mat-flat-button color="primary" [mat-dialog-close]="value">{{value.label}}</button>
+    <button *ngFor="let value of annotator.values" mat-flat-button color="primary"
+      [mat-dialog-close]="value">{{value.label}}</button>
   </mat-dialog-actions>
 
 </ng-container>
-
