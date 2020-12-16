@@ -252,7 +252,7 @@ export class SkeletonComponent implements OnInit {
     /* |--- TASK GENERATOR ---| */
     this.generator = false;
 
-    this.tokenInput = new FormControl('MBYTZQGSXYP', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
+    this.tokenInput = new FormControl('TQONDNHBUP', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
     this.tokenForm = formBuilder.group({
       "tokenInput": this.tokenInput
     });
@@ -916,11 +916,14 @@ export class SkeletonComponent implements OnInit {
             if (noteAlreadyFound) {
               return true
             } else {
+              /*
+              DA VERIFICARE
               for (let index = 0; index < notesForDocument.length; ++index) {
                 if (newAnnotation.timestamp_created == notesForDocument[index].timestamp_created) {
                   if (newAnnotation.quote.length > notesForDocument[index].quote.length) notesForDocument.splice(index, 1);
                 }
               }
+              */
               notes[documentIndex] = notesForDocument
               annotationDialog.open(AnnotationDialog, {
                 width: '80%',
