@@ -891,6 +891,7 @@ export class SkeletonComponent implements OnInit {
   }
 
   public performHighlighting(changeDetector, event: Object, documentIndex: number, annotationDialog, notes, annotator: Annotator) {
+
     let domElement = null
     let optionChosen = null
     if (this.deviceDetectorService.isMobile() || this.deviceDetectorService.isTablet()) {
@@ -904,20 +905,26 @@ export class SkeletonComponent implements OnInit {
     if (domElement) {
       const highlightMade = doHighlight(domElement, true, {
         onAfterHighlight(range, highlight) {
-          console.log(highlight[0]["outerText"])
-
+          const selection = document.getSelection();
           if (highlight[0]["outerText"]) { //If something is selected
+
             let notesForDocument = notes[documentIndex]
             let newAnnotation = new Note(documentIndex, range, highlight) //create new note
-            let noteAlreadyFound = false
-            for (let note of notesForDocument) { //check if the note is already annotated
-              noteAlreadyFound = newAnnotation.checkEquality(note)
-              if (noteAlreadyFound)
-                break
-            }
-            if (noteAlreadyFound) {
-              return true
-            } else { //else check if the note is a subnote of an exist note
+            selection.empty() //clear the selection
+            let noteAlreadyFound = false//to remove
+            //REMOVED
+            // for (let note of notesForDocument) { //check if the note is already annotated
+            //   noteAlreadyFound = newAnnotation.checkEquality(note)
+
+            //   if (noteAlreadyFound)
+            //     break
+            // }
+
+            if (noteAlreadyFound) { //to remove
+              return false//to remove
+
+
+            } else {//to remove
               /*
               DA VERIFICARE
               for (let index = 0; index < notesForDocument.length; ++index) {
@@ -926,11 +933,11 @@ export class SkeletonComponent implements OnInit {
                 }
               }
               */
-
               notes[documentIndex] = notesForDocument //update the notes of the document 
               annotationDialog.open(AnnotationDialog, { //then open the annotation dialog
                 width: '80%',
                 minHeight: '86%',
+                disableClose: true,
                 data: {
                   annotation: newAnnotation,
                   annotator: annotator
@@ -941,6 +948,13 @@ export class SkeletonComponent implements OnInit {
                   newAnnotation.color = result.color
                   let element = <HTMLElement>document.querySelector(`[data-timestamp='${newAnnotation.timestamp_created}']`)
                   element.style.backgroundColor = result.color
+
+                  element.style.userSelect = "none" //disable user select to avoid over selection!
+                  element.style.webkitUserSelect = "none"
+                  element.style.pointerEvents = "none"
+                  element.style.touchAction = "none"
+                  element.style.cursor = "no-drop"
+
                   notesForDocument.push(newAnnotation)
                   notes[documentIndex] = notesForDocument
                   changeDetector.detectChanges()
@@ -965,10 +979,13 @@ export class SkeletonComponent implements OnInit {
   public removeAnnotation(documentIndex: number, noteIndex: number) {
     let currentNote = this.notes[documentIndex][noteIndex]
     currentNote.markDeleted()
+
     currentNote.timestamp_deleted = Date.now()
     let element = document.querySelector(`[data-timestamp='${currentNote.timestamp_created}']`)
     element.parentNode.insertBefore(document.createTextNode(currentNote.quote), element);
     element.remove()
+
+
   }
 
   public checkUndeletedNotesPresence(notes) {
