@@ -21,7 +21,7 @@
   </h2>
   <mat-dialog-actions>
     <button *ngFor="let value of annotator.values" [style.background-color]="value.color" [style.color]="'black'"
-      mat-flat-button color="primary" [mat-dialog-close]="value">{{value.label}}</button>
+      mat-flat-button [mat-dialog-close]="value">{{value.label}}</button>
   </mat-dialog-actions>
 
 </ng-container>
