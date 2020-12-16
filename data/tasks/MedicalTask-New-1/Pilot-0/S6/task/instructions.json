@@ -1,8 +1,0 @@
-{
-  "caption": "Please, do the following three steps:",
-  "steps": [
-    "Use the search engine below to retrieve some evidence about the truthfulness of the statement and select one of the retrieved URLs to justify the truthfulness value.",
-    "Input as truthfulness value one of the six labels.",
-    "Write a text justification (you can use your own words or, even better, copy/paste from the selected URL."
-  ]
-}
