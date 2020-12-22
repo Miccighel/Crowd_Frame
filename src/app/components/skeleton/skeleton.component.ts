@@ -902,8 +902,17 @@ export class SkeletonComponent implements OnInit {
     } else {
       domElement = document.getElementById(`statement-${documentIndex}`);
     }
+
+    //check if the selection is an overlay
     if (domElement) {
+
+      let first_clone = document.querySelector(".statement-text").cloneNode(true)
+      first_clone.addEventListener('mouseup', (e) => this.performHighlighting(changeDetector, event, documentIndex, annotationDialog, notes, annotator))
+      first_clone.addEventListener('touchend', (e) => this.performHighlighting(changeDetector, event, documentIndex, annotationDialog, notes, annotator))
+      console.log(first_clone)
+
       const highlightMade = doHighlight(domElement, true, {
+
         onAfterHighlight(range, highlight) {
           const selection = document.getSelection();
           if (highlight[0]["outerText"]) { //If something is selected
@@ -912,13 +921,24 @@ export class SkeletonComponent implements OnInit {
             let newAnnotation = new Note(documentIndex, range, highlight) //create new note
             selection.empty() //clear the selection
             let noteAlreadyFound = false//to remove
-            //REMOVED
-            // for (let note of notesForDocument) { //check if the note is already annotated
-            //   noteAlreadyFound = newAnnotation.checkEquality(note)
 
-            //   if (noteAlreadyFound)
-            //     break
-            // }
+            //Check if the selected text is an overlap of another annotation
+            for (let note of notesForDocument) { //check if the note is already annotated
+              //noteAlreadyFound = newAnnotation.checkEquality(note)
+
+              if (!note.deleted && newAnnotation.quote.includes(note.quote)) { //if the note is arleady annotated
+                newAnnotation.markDeleted()
+                newAnnotation.timestamp_deleted = Date.now()
+                let element = document.querySelector(".statement-text") //select the main element
+                document.querySelector(".tweet_content_li").append(first_clone) //append the element bukupped... 
+                element.remove()
+
+                return true
+
+              }
+
+            }
+
 
             if (noteAlreadyFound) { //to remove
               return false//to remove
