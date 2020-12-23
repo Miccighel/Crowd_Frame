@@ -922,6 +922,11 @@ export class SkeletonComponent implements OnInit {
             let notesForDocument = notes[documentIndex]
             let newAnnotation = new Note(documentIndex, range, highlight) //create new note
 
+            //Remove the default yellow background
+            let element = <HTMLElement>document.querySelector(`[data-timestamp='${newAnnotation.timestamp_created}']`)
+            element.style.backgroundColor = ""
+            //
+
             //Check if the selected text is an overlap of another annotation
             for (let note of notesForDocument) { //check if the note is already annotated
               //
