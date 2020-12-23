@@ -906,90 +906,69 @@ export class SkeletonComponent implements OnInit {
     //check if the selection is an overlay
     if (domElement) {
 
-      let first_clone = document.querySelector(".statement-text").cloneNode(true)
+      let first_clone = document.querySelector(".statement-text").cloneNode(true) //clone the element
+      //Attach the event bindings
       first_clone.addEventListener('mouseup', (e) => this.performHighlighting(changeDetector, event, documentIndex, annotationDialog, notes, annotator))
       first_clone.addEventListener('touchend', (e) => this.performHighlighting(changeDetector, event, documentIndex, annotationDialog, notes, annotator))
-      console.log(first_clone)
+
 
       const highlightMade = doHighlight(domElement, true, {
 
         onAfterHighlight(range, highlight) {
           const selection = document.getSelection();
           if (highlight[0]["outerText"]) { //If something is selected
+            selection.empty() //clear the selection
 
             let notesForDocument = notes[documentIndex]
             let newAnnotation = new Note(documentIndex, range, highlight) //create new note
-            selection.empty() //clear the selection
-            let noteAlreadyFound = false//to remove
 
             //Check if the selected text is an overlap of another annotation
             for (let note of notesForDocument) { //check if the note is already annotated
-              //noteAlreadyFound = newAnnotation.checkEquality(note)
-
+              //
               if (!note.deleted && newAnnotation.quote.includes(note.quote)) { //if the note is arleady annotated
-                newAnnotation.markDeleted()
-                newAnnotation.timestamp_deleted = Date.now()
                 let element = document.querySelector(".statement-text") //select the main element
                 document.querySelector(".tweet_content_li").append(first_clone) //append the element bukupped... 
                 element.remove()
+                return true //Exit from the callback!
+              }
+              //
 
+            }
+
+            notes[documentIndex] = notesForDocument //update the notes of the document 
+            annotationDialog.open(AnnotationDialog, { //then open the annotation dialog
+              width: '80%',
+              minHeight: '86%',
+              disableClose: true,
+              data: {
+                annotation: newAnnotation,
+                annotator: annotator
+              }
+            }).afterClosed().subscribe(result => {
+              if (result) { //
+                newAnnotation.option = result.label
+                newAnnotation.color = result.color
+                let element = <HTMLElement>document.querySelector(`[data-timestamp='${newAnnotation.timestamp_created}']`)
+                element.style.backgroundColor = result.color
+
+                element.style.userSelect = "none" //disable user select to avoid over selection!
+                element.style.webkitUserSelect = "none"
+                element.style.pointerEvents = "none"
+                element.style.touchAction = "none"
+                element.style.cursor = "no-drop"
+
+                notesForDocument.push(newAnnotation)
+                notes[documentIndex] = notesForDocument
+                changeDetector.detectChanges()
                 return true
-
+              } else {// if the user click on cancel button, mark the annotation as deleted and remove the highlight
+                let element = document.querySelector(`[data-timestamp='${newAnnotation.timestamp_created}']`)
+                element.parentNode.insertBefore(document.createTextNode(newAnnotation.quote), element);
+                element.remove()
+                return true
               }
 
-            }
-
-
-            if (noteAlreadyFound) { //to remove
-              return false//to remove
-
-
-            } else {//to remove
-              /*
-              DA VERIFICARE
-              for (let index = 0; index < notesForDocument.length; ++index) {
-                if (newAnnotation.timestamp_created == notesForDocument[index].timestamp_created) {
-                  if (newAnnotation.quote.length > notesForDocument[index].quote.length) notesForDocument.splice(index, 1);
-                }
-              }
-              */
-              notes[documentIndex] = notesForDocument //update the notes of the document 
-              annotationDialog.open(AnnotationDialog, { //then open the annotation dialog
-                width: '80%',
-                minHeight: '86%',
-                disableClose: true,
-                data: {
-                  annotation: newAnnotation,
-                  annotator: annotator
-                }
-              }).afterClosed().subscribe(result => {
-                if (result) { //
-                  newAnnotation.option = result.label
-                  newAnnotation.color = result.color
-                  let element = <HTMLElement>document.querySelector(`[data-timestamp='${newAnnotation.timestamp_created}']`)
-                  element.style.backgroundColor = result.color
-
-                  element.style.userSelect = "none" //disable user select to avoid over selection!
-                  element.style.webkitUserSelect = "none"
-                  element.style.pointerEvents = "none"
-                  element.style.touchAction = "none"
-                  element.style.cursor = "no-drop"
-
-                  notesForDocument.push(newAnnotation)
-                  notes[documentIndex] = notesForDocument
-                  changeDetector.detectChanges()
-                  return true
-                } else {// if the user click on cancel button, mark the annotation as deleted and remove the highlight
-                  newAnnotation.markDeleted()
-                  newAnnotation.timestamp_deleted = Date.now()
-                  let element = document.querySelector(`[data-timestamp='${newAnnotation.timestamp_created}']`)
-                  element.parentNode.insertBefore(document.createTextNode(newAnnotation.quote), element);
-                  element.remove()
-                  return true
-                }
-
-              })
-            }
+            })
           }
         }
       });
