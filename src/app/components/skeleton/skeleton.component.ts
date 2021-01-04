@@ -1417,9 +1417,9 @@ export class SkeletonComponent implements OnInit {
           /* Start, end and elapsed timestamps for each document */
           data["timestamps_start"] = this.timestampsStart
           /* await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/timestamps_start.json`, this.timestampsStart)); */
-          data["timestamps_end"] = this.timestampsStart
+          data["timestamps_end"] = this.timestampsEnd
           /* await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/timestamps_end.json`, this.timestampsEnd)); */
-          data["timestamps_elapsed"] = this.timestampsStart
+          data["timestamps_elapsed"] = this.timestampsElapsed
           let countdownTimes = [];
           if (this.settings.countdownTime)
             for (let index = 0; index < this.countdown.length; index++) countdownTimes.push(Number(this.countdown[index]["i"]["text"]));
