@@ -135,7 +135,7 @@ mat-card-content label {
   box-shadow: 0 0 0 0;
   border-radius: 0;
   background-color: #F0F0F0	;
-  position:sticky;
+  position: static;
   top: 42px;
   z-index: 1000;
 }
@@ -157,6 +157,26 @@ mat-card-content label {
   display: inline;
   width: 20%;
   flex-grow: 0;
+}
+
+.annotation-recap {
+  display: flex;
+  height: 0%;
+  align-items: center;
+}
+
+.annotation-quote {
+  display: flex;
+  height: 0%;
+  align-items: center;
+}
+
+.annotation-options {
+  display: flex;
+  padding: 1%;
+  justify-content: space-between;
+  height: 0%;
+  align-items: center;
 }
 
 .url-field {

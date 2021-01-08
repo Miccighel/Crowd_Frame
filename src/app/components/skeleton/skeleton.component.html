@@ -17,7 +17,8 @@
 </div>
 
 <!-- |--------- APP-INSTRUCTIONS COMPONENT - MARKUP ---------| -->
-<app-instructions [instructions]="this.taskInstructions" *ngIf="taskAllowed && checkCompleted && taskInstructionsRead"></app-instructions>
+<app-instructions [instructions]="this.taskInstructions" *ngIf="taskAllowed && checkCompleted && taskInstructionsRead">
+</app-instructions>
 
 <!-- |--------- TOKEN INPUT SECTION - MARKUP ---------| -->
 <div id="token-section" class="container" *ngIf="!taskStarted && taskAllowed && checkCompleted && taskInstructionsRead">
@@ -29,12 +30,9 @@
             Insert your input token
           </mat-label>
           <input matInput type="text" placeholder="your_mturk_token" formControlName="tokenInput" maxlength="11"
-                 (focus)="this.tokenForm.updateValueAndValidity()"
-                 (paste)="this.tokenForm.updateValueAndValidity()"
-                 (keyup)="this.tokenForm.updateValueAndValidity()"
-                 (keydown)="this.tokenForm.updateValueAndValidity()"
-                 (keyup.enter)="performTaskSetup()"
-          >
+            (focus)="this.tokenForm.updateValueAndValidity()" (paste)="this.tokenForm.updateValueAndValidity()"
+            (keyup)="this.tokenForm.updateValueAndValidity()" (keydown)="this.tokenForm.updateValueAndValidity()"
+            (keyup.enter)="performTaskSetup()">
           <mat-error *ngIf="checkFormControl(tokenForm,'tokenInput', 'required')">
             This field is required
           </mat-error>
@@ -73,12 +71,13 @@
           <ul>
             <li *ngFor="let message of this.settings.messages; let i=index">- {{message}}</li>
           </ul>
-          <h6>If you believe that this is an error, please contact us through Amazon MTurk. Sorry for the inconvenience.</h6>
+          <h6>If you believe that this is an error, please contact us through Amazon MTurk. Sorry for the inconvenience.
+          </h6>
         </mat-card-content>
         <mat-card-content *ngIf="!this.settings.messages">
           <h2>
             Either you have already started this task without finishing it, or you have already participated to a
-            variant of this experiment.<br/> For this reason, you are not allowed to take a part in this experiment.
+            variant of this experiment.<br /> For this reason, you are not allowed to take a part in this experiment.
             If you believe that this is an error, please contact us through Amazon MTurk. Sorry for the inconvenience.
           </h2>
         </mat-card-content>
@@ -91,7 +90,8 @@
 <mat-horizontal-stepper [linear]="true" labelPosition="bottom" #stepper *ngIf="taskStarted">
 
   <!-- Questionnaire markup -->
-  <mat-step *ngFor="let questionnaire of questionnaires; let i=index" [stepControl]="questionnairesForm[i]" [editable]="false">
+  <mat-step *ngFor="let questionnaire of questionnaires; let i=index" [stepControl]="questionnairesForm[i]"
+    [editable]="false">
     <div class="container">
       <form [formGroup]="questionnairesForm[i]" class="questionnaire-form">
         <ng-template matStepLabel>Q{{i + 1}}</ng-template>
@@ -102,18 +102,16 @@
           <mat-card-title *ngIf="questionnaire.type=='likert'">Please assess the following statements</mat-card-title>
           <mat-divider [inset]="true"></mat-divider>
           <mat-card-content *ngIf="questionnaire.type=='standard'">
-            <mat-radio-group *ngFor="let question of questionnaire.questions; let j=index" aria-labelledby="radio-button-label" class="radio-button-group question" formControlName="{{question.name}}">
+            <mat-radio-group *ngFor="let question of questionnaire.questions; let j=index"
+              aria-labelledby="radio-button-label" class="radio-button-group question"
+              formControlName="{{question.name}}">
               <div class="question-text">
                 <label>{{question.text}}</label>
               </div>
-              <mat-radio-button *ngFor="let answer of question.answers; let k=index" class="radio-button" value="{{k}}">{{answer}}</mat-radio-button>
-              <mat-expansion-panel
-                hideToggle
-                *ngIf="question.detail"
-                class="question-detail"
-                (opened)="question.showDetail = true"
-                (closed)="question.showDetail = false"
-              >
+              <mat-radio-button *ngFor="let answer of question.answers; let k=index" class="radio-button" value="{{k}}">
+                {{answer}}</mat-radio-button>
+              <mat-expansion-panel hideToggle *ngIf="question.detail" class="question-detail"
+                (opened)="question.showDetail = true" (closed)="question.showDetail = false">
                 <mat-expansion-panel-header class="mat-button">
                   <mat-panel-title>
                     {{question.showDetail ? 'Hide details' : 'Show details'}}
@@ -155,7 +153,8 @@
                 <span class="matrix-header-text">{{mapping.label}}</span>
               </div>
             </div>
-            <mat-radio-group aria-labelledby="radio-button-label" *ngFor="let question of questionnaire.questions; let m=index" formControlName="{{question.name}}">
+            <mat-radio-group aria-labelledby="radio-button-label"
+              *ngFor="let question of questionnaire.questions; let m=index" formControlName="{{question.name}}">
               <div>
                 <p>{{m + 1}}) {{question.text}}</p>
               </div>
@@ -166,8 +165,7 @@
           </mat-card-content>
           <mat-card-actions>
             <button mat-flat-button color="primary" matStepperNext
-                    [disabled]="(!questionnairesForm[i].valid || taskCompleted)"
-                    (click)="performLogging('Next')">
+              [disabled]="(!questionnairesForm[i].valid || taskCompleted)" (click)="performLogging('Next')">
               Next
             </button>
             <span class="form-note">(*) you have to fill each field to proceed</span>
@@ -184,7 +182,7 @@
         <mat-card>
           <ng-template matStepLabel> S{{i + 1}}</ng-template>
           <mat-divider [inset]="true"></mat-divider>
-          <mat-card-title>Please study the following Tweet</mat-card-title>
+          <mat-card-title>Please highlight in the following law</mat-card-title>
           <mat-divider [inset]="true"></mat-divider>
           <mat-card-content class="pt-16px">
 
@@ -192,7 +190,8 @@
             <div class="instructions sticky" *ngIf="this.settings.countdownTime">
               <h2 class="m-0">
                 Time left:
-                <countdown #cd [config]="{ demand: true, leftTime: this.settings.countdownTime, format: 's' }" (event)="handleCountdown($event, i)"></countdown>
+                <countdown #cd [config]="{ demand: true, leftTime: this.settings.countdownTime, format: 's' }"
+                  (event)="handleCountdown($event, i)"></countdown>
                 seconds
               </h2>
             </div>
@@ -200,34 +199,38 @@
             <!-- Statement markup -->
             <div class="statement">
               <ul>
-                <li><strong>Text</strong> (content of the tweet):
-                  <span #statementText
-                        id="statement-{{i}}"
-                        (mouseup)="performHighlighting(this.changeDetector, $event, i, this.annotationDialog, this.notes, this.annotator)"
-                        (touchend)="performHighlighting(this.changeDetector, $event, i, this.annotationDialog, this.notes, this.annotator)"
-                        class="statement-text"
-                  >{{document.text}}</span></li>
+                <li class="law_content_li"><strong>Law text:</strong>
+                  <span #statementText id="statement-{{i}}"
+                    (mouseup)="performHighlighting(this.changeDetector, $event, i, this.notes, this.annotator)"
+                    (touchend)="performHighlighting(this.changeDetector, $event, i, this.notes, this.annotator)"
+                    class="statement-text">{{document.text}}</span>
+                </li>
               </ul>
             </div>
 
-            <div *ngIf="checkUndeletedNotesPresence(this.notes[i])" class="annotations">
-              <table class="mat-table">
-                <tr class="mat-header-row">
-                  <th class="mat-header-cell">Quote</th>
-                  <th class="mat-header-cell">Option</th>
-                  <th class="mat-header-cell">Actions</th>
-                </tr>
-                <tr *ngFor="let note of this.notes[i]; let noteIndex = index" class="mat-row">
-                  <ng-container *ngIf="note.deleted == false">
-                    <td class="mat-cell"><span [style.background-color]="note.color">{{note.quote}}</span></td>
-                    <td class="mat-cell"><code>{{note.option}}</code></td>
-                    <td class="mat-cell">
-                      <button (click)="removeAnnotation(i, noteIndex)" mat-flat-button color="primary">Delete
+            <!-- Annotation recap -->
+            <div class="annotation-recap" *ngIf="checkUndeletedNotesPresence(this.notes[i])" class="annotations">
+              <div *ngFor="let note of this.notes[i]; let noteIndex = index">
+                <ng-container *ngIf="note.deleted == false">
+                  <div class="annotation-quote">
+                    <b>You selected:</b>
+                    &nbsp;<span [style.background-color]="note.color">{{note.quote}}</span>
+                  </div>
+                  <div class="annotation-options">
+                    <div>
+                      Law number: <input type="text" name="number-{{noteIndex}}.{{i}}" id="number-{{noteIndex}}.{{i}}" placeholder="00" (change)="checkIfSaved(i, noteIndex)"><br /><br />
+                      Law year: <input type="text" name="year-{{noteIndex}}.{{i}}" id="year-{{noteIndex}}.{{i}}" placeholder="0000" (change)="checkIfSaved(i, noteIndex)">
+                    </div>
+                    <div>
+                      <button (click)="performAnnotation(i, noteIndex)" mat-flat-button color="primary" id="save_button-{{noteIndex}}.{{i}}" [disabled]="checkIfSaved(i, noteIndex)">Save
                       </button>
-                    </td>
-                  </ng-container>
-                </tr>
-              </table>
+                      <button (click)="removeAnnotation(i, noteIndex)" mat-flat-button color="warn">Delete
+                      </button>
+                    </div>
+                  </div>
+                  <hr />
+                </ng-container>
+              </div>
             </div>
 
             <!-- Instructions markup -->
@@ -262,12 +265,10 @@
                   <!-- Dimension search engine interface markup -->
                   <div class="dimension-counter">a.</div>
                   <div class="dimension-content search-engine">
-                    <app-crowd-xplorer
-                      *ngIf="dimension.url" id="app-crowd-xplorer-{{i}}-{{j}}"
+                    <app-crowd-xplorer *ngIf="dimension.url" id="app-crowd-xplorer-{{i}}-{{j}}"
                       (resultEmitter)="storeSearchEngineRetrievedResponse($event)"
                       (queryEmitter)="storeSearchEngineUserQuery($event)"
-                      (selectedRowEmitter)="storeSearchEngineSelectedResponse($event)"
-                    ></app-crowd-xplorer>
+                      (selectedRowEmitter)="storeSearchEngineSelectedResponse($event)"></app-crowd-xplorer>
                     <!-- Dimension search engine url field markup (hidden) -->
                     <mat-form-field *ngIf="dimension.url" class="url-field">
                       <input #urlField matInput type="text" formControlName="{{(dimension.name).concat('_url')}}">
@@ -277,7 +278,8 @@
                       <mat-error *ngIf="checkFormControl(documentsForm[i],(dimension.name).concat('_url'), 'required')">
                         This field is required
                       </mat-error>
-                      <mat-error *ngIf="checkFormControl(documentsForm[i], (dimension.name).concat('_url'), 'invalidSearchEngineUrl')">
+                      <mat-error
+                        *ngIf="checkFormControl(documentsForm[i], (dimension.name).concat('_url'), 'invalidSearchEngineUrl')">
                         Please select (or copy & paste) one of the URLs shown above.
                       </mat-error>
                     </mat-form-field>
@@ -290,27 +292,39 @@
                   <div class="dimension-content truth-level">
                     <ng-container *ngIf="dimension.style.orientation=='vertical'">
                       <ng-container *ngIf="dimension.scale.type=='categorical'">
-                        <mat-radio-group aria-labelledby="radio-button-label" class="radio-button-group" formControlName="{{(dimension.name).concat('_value')}}">
-                          <mat-radio-button *ngFor="let mapping of dimension.scale.mappings let k=index" class="radio-button" value="{{mapping.value}}" (change)="storeDimensionValue($event, i, dimension.index)"
-                                            [disabled]="this.countdownsExpired[i]">
-                            <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0"> ({{mapping.description}})</span>
+                        <mat-radio-group aria-labelledby="radio-button-label" class="radio-button-group"
+                          formControlName="{{(dimension.name).concat('_value')}}">
+                          <mat-radio-button *ngFor="let mapping of dimension.scale.mappings let k=index"
+                            class="radio-button" value="{{mapping.value}}"
+                            (change)="storeDimensionValue($event, i, dimension.index)"
+                            [disabled]="this.countdownsExpired[i]">
+                            <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0">
+                              ({{mapping.description}})</span>
                           </mat-radio-button>
                         </mat-radio-group>
                       </ng-container>
                       <ng-container *ngIf="dimension.scale.type=='interval'">
-                        <label>Selected value: {{documentsForm[i].controls[(dimension.name).concat('_value')].value}}</label>
-                        <mat-slider min="{{dimension.scale.min}}" max="{{dimension.scale.max}}" step="{{dimension.scale.step}}" thumbLabel tickInterval="{{dimension.scale.step}}"
-                                    formControlName="{{(dimension.name).concat('_value')}}" (change)="storeDimensionValue($event, i,dimension.index)" [disabled]="this.countdownsExpired[i]"></mat-slider>
+                        <label>Selected value:
+                          {{documentsForm[i].controls[(dimension.name).concat('_value')].value}}</label>
+                        <mat-slider min="{{dimension.scale.min}}" max="{{dimension.scale.max}}"
+                          step="{{dimension.scale.step}}" thumbLabel tickInterval="{{dimension.scale.step}}"
+                          formControlName="{{(dimension.name).concat('_value')}}"
+                          (change)="storeDimensionValue($event, i,dimension.index)"
+                          [disabled]="this.countdownsExpired[i]"></mat-slider>
                       </ng-container>
                       <ng-container *ngIf="dimension.scale.type=='magnitude_estimation'">
                         <h2>TO BE IMPLEMENTED</h2>
                       </ng-container>
                     </ng-container>
                     <ng-container *ngIf="dimension.style.orientation=='horizontal'">
-                      <mat-radio-group *ngIf="dimension.scale.type=='categorical'" aria-labelledby="radio-button-label" formControlName="{{(dimension.name).concat('_value')}}">
-                        <mat-radio-button *ngFor="let mapping of dimension.scale.mappings let k=index" class="radio-button" value="{{mapping.value}}" (change)="storeDimensionValue($event, i,dimension.index)"
-                                          [disabled]="this.countdownsExpired[i]">
-                          <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0"> ({{mapping.description}})</span>
+                      <mat-radio-group *ngIf="dimension.scale.type=='categorical'" aria-labelledby="radio-button-label"
+                        formControlName="{{(dimension.name).concat('_value')}}">
+                        <mat-radio-button *ngFor="let mapping of dimension.scale.mappings let k=index"
+                          class="radio-button" value="{{mapping.value}}"
+                          (change)="storeDimensionValue($event, i,dimension.index)"
+                          [disabled]="this.countdownsExpired[i]">
+                          <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0">
+                            ({{mapping.description}})</span>
                         </mat-radio-button>
                       </mat-radio-group>
                     </ng-container>
@@ -327,13 +341,16 @@
                       <mat-form-field appearance="fill">
                         <mat-label>{{dimension.justification.text}}</mat-label>
                         <textarea matInput formControlName="{{dimension.name}}_justification" rows="3"></textarea>
-                        <mat-error *ngIf="checkFormControl(documentsForm[i],(dimension.name).concat('_justification'), 'required')">
+                        <mat-error
+                          *ngIf="checkFormControl(documentsForm[i],(dimension.name).concat('_justification'), 'required')">
                           This field is required
                         </mat-error>
-                        <mat-error *ngIf="checkFormControl(documentsForm[i],(dimension.name).concat('_justification'), 'longer')">
+                        <mat-error
+                          *ngIf="checkFormControl(documentsForm[i],(dimension.name).concat('_justification'), 'longer')">
                           This justification must have at least {{dimension.justification.minWords}} words.
                         </mat-error>
-                        <mat-error *ngIf="checkFormControl(documentsForm[i],(dimension.name).concat('_justification'), 'invalid')">
+                        <mat-error
+                          *ngIf="checkFormControl(documentsForm[i],(dimension.name).concat('_justification'), 'invalid')">
                           You cannot use the selected search engine url as part of the justification.
                         </mat-error>
                       </mat-form-field>
@@ -348,12 +365,10 @@
                 <div *ngIf="dimension.url" class="dimension-container dimension-url">
                   <!-- Dimension search engine interface markup -->
                   <div class="dimension-content search-engine">
-                    <app-crowd-xplorer
-                      *ngIf="dimension.url" id="app-crowd-xplorer-{{i}}-{{j}}"
+                    <app-crowd-xplorer *ngIf="dimension.url" id="app-crowd-xplorer-{{i}}-{{j}}"
                       (resultEmitter)="storeSearchEngineRetrievedResponse($event)"
                       (queryEmitter)="storeSearchEngineUserQuery($event)"
-                      (selectedRowEmitter)="storeSearchEngineSelectedResponse($event)"
-                    ></app-crowd-xplorer>
+                      (selectedRowEmitter)="storeSearchEngineSelectedResponse($event)"></app-crowd-xplorer>
                     <!-- Dimension search engine url field markup (hidden) -->
                     <mat-form-field *ngIf="dimension.url" class="url-field">
                       <input #urlField matInput type="text" formControlName="{{(dimension.name).concat('_url')}}">
@@ -363,7 +378,8 @@
                       <mat-error *ngIf="checkFormControl(documentsForm[i],(dimension.name).concat('_url'), 'required')">
                         This field is required
                       </mat-error>
-                      <mat-error *ngIf="checkFormControl(documentsForm[i], (dimension.name).concat('_url'), 'invalidSearchEngineUrl')">
+                      <mat-error
+                        *ngIf="checkFormControl(documentsForm[i], (dimension.name).concat('_url'), 'invalidSearchEngineUrl')">
                         Please select (or copy & paste) one of the URLs shown above.
                       </mat-error>
                     </mat-form-field>
@@ -377,7 +393,7 @@
                       <ng-container>
                         <span class="matrix-header-text">{{mapping.label}}</span>
                       </ng-container>
-                      <br/>
+                      <br />
                       <ng-container *ngIf="mapping.value<=0">
                         <span class="matrix-header-value">({{mapping.value}})</span>
                       </ng-container>
@@ -388,45 +404,50 @@
                   </div>
                 </mat-radio-group>
                 <!-- Dimension value field markup -->
-                <mat-radio-group aria-labelledby="radio-button-label" formControlName="{{(dimension.name).concat('_value')}}">
+                <mat-radio-group aria-labelledby="radio-button-label"
+                  formControlName="{{(dimension.name).concat('_value')}}">
                   <div>
-                    <p><strong>{{this.capitalize(dimension.name)}}: </strong><strong>{{dimension.description.toLowerCase().split(")")[0]}})</strong>{{dimension.description.toLowerCase().split(")")[1]}})</p>
+                    <p><strong>{{this.capitalize(dimension.name)}}:
+                      </strong><strong>{{dimension.description.toLowerCase().split(")")[0]}})</strong>{{dimension.description.toLowerCase().split(")")[1]}})
+                    </p>
                   </div>
                   <div *ngFor="let mapping of dimension.scale.mappings; let k=index">
-                    <mat-radio-button class="radio-button" value="{{mapping.value}}" (change)="storeDimensionValue($event, i,dimension.index)"></mat-radio-button>
+                    <mat-radio-button class="radio-button" value="{{mapping.value}}"
+                      (change)="storeDimensionValue($event, i,dimension.index)"></mat-radio-button>
                   </div>
                 </mat-radio-group>
                 <mat-divider *ngIf="dimension.style.separator" [inset]="true"></mat-divider>
               </div>
             </ng-template>
             <!-- Dimensions are then shown -->
-            <ng-template *ngIf="this.filterDimensions('list', 'top').length>0" [ngTemplateOutlet]="dimensionList" [ngTemplateOutletContext]="{dimensions: this.filterDimensions('list', 'top'), i:i}"></ng-template>
-            <ng-template *ngIf="this.filterDimensions('matrix', 'top').length>0" [ngTemplateOutlet]="dimensionMatrix" [ngTemplateOutletContext]="{dimensions: this.filterDimensions('matrix', 'top'), i:i}"></ng-template>
-            <ng-template *ngIf="this.filterDimensions('list', 'middle').length>0" [ngTemplateOutlet]="dimensionList" [ngTemplateOutletContext]="{dimensions: this.filterDimensions('list', 'middle'), i:i}"></ng-template>
+            <ng-template *ngIf="this.filterDimensions('list', 'top').length>0" [ngTemplateOutlet]="dimensionList"
+              [ngTemplateOutletContext]="{dimensions: this.filterDimensions('list', 'top'), i:i}"></ng-template>
+            <ng-template *ngIf="this.filterDimensions('matrix', 'top').length>0" [ngTemplateOutlet]="dimensionMatrix"
+              [ngTemplateOutletContext]="{dimensions: this.filterDimensions('matrix', 'top'), i:i}"></ng-template>
+            <ng-template *ngIf="this.filterDimensions('list', 'middle').length>0" [ngTemplateOutlet]="dimensionList"
+              [ngTemplateOutletContext]="{dimensions: this.filterDimensions('list', 'middle'), i:i}"></ng-template>
             <ng-template *ngIf="this.filterDimensions('matrix', 'middle').length>0" [ngTemplateOutlet]="dimensionMatrix"
-                         [ngTemplateOutletContext]="{dimensions: this.filterDimensions('matrix', 'middle'), i:i}"></ng-template>
-            <ng-template *ngIf="this.filterDimensions('list', 'bottom').length>0" [ngTemplateOutlet]="dimensionList" [ngTemplateOutletContext]="{dimensions: this.filterDimensions('list', 'bottom'), i:i}"></ng-template>
+              [ngTemplateOutletContext]="{dimensions: this.filterDimensions('matrix', 'middle'), i:i}"></ng-template>
+            <ng-template *ngIf="this.filterDimensions('list', 'bottom').length>0" [ngTemplateOutlet]="dimensionList"
+              [ngTemplateOutletContext]="{dimensions: this.filterDimensions('list', 'bottom'), i:i}"></ng-template>
             <ng-template *ngIf="this.filterDimensions('matrix', 'bottom').length>0" [ngTemplateOutlet]="dimensionMatrix"
-                         [ngTemplateOutletContext]="{dimensions: this.filterDimensions('matrix', 'bottom'), i:i}"></ng-template>
+              [ngTemplateOutletContext]="{dimensions: this.filterDimensions('matrix', 'bottom'), i:i}"></ng-template>
           </mat-card-content>
 
           <!-- Actions markup -->
           <mat-card-actions>
-            <button mat-flat-button color="primary" matStepperPrevious *ngIf="i>0"
-                    [disabled]="taskCompleted"
-                    (click)="performLogging('Back')">
+            <button mat-flat-button color="primary" matStepperPrevious *ngIf="i>0" [disabled]="taskCompleted"
+              (click)="performLogging('Back')">
               Back
             </button>
-            <button mat-flat-button color="primary" matStepperNext
-                    *ngIf="i+1<this.documentsAmount"
-                    [disabled]="(!documentsForm[i].valid || !this.searchEngineRetrievedResponses[i] || taskCompleted) && !this.countdownsExpired[i]"
-                    (click)="performLogging('Next')">
+            <button mat-flat-button color="primary" matStepperNext *ngIf="i+1<this.documentsAmount"
+              [disabled]="(!documentsForm[i].valid || !this.searchEngineRetrievedResponses[i] || taskCompleted) && !this.countdownsExpired[i]"
+              (click)="performLogging('Next')">
               Next
             </button>
-            <button mat-flat-button color="primary" matStepperNext
-                    *ngIf="i+1>=this.documentsAmount"
-                    [disabled]="!documentsForm[i].valid && !this.countdownsExpired[i]"
-                    (click)="performLogging('Finish'); performQualityCheck()">
+            <button mat-flat-button color="primary" matStepperNext *ngIf="i+1>=this.documentsAmount"
+              [disabled]="!documentsForm[i].valid && !this.countdownsExpired[i]"
+              (click)="performLogging('Finish'); performQualityCheck()">
               Finish
             </button>
             <span class="form-note">(*) you have to fill each field to proceed</span>
@@ -447,7 +468,8 @@
         </mat-card-title>
         <mat-card-content>
           <h2>
-            Congratulations, you have successfully completed this task. To be paid you now have to copy your output token
+            Congratulations, you have successfully completed this task. To be paid you now have to copy your output
+            token
             (shown below)
             back to the Amazon Mechanical Turk task page. Feel free to leave any comment in the box below to help us
             improve our research.
@@ -455,10 +477,12 @@
           <h1>{{tokenOutput}}</h1>
           <form [formGroup]="commentForm" class="comment-form">
             <mat-form-field appearance="fill">
-              <textarea matInput [disabled]="commentSent" placeholder="Your comment here" formControlName="comment" rows="5"></textarea>
+              <textarea matInput [disabled]="commentSent" placeholder="Your comment here" formControlName="comment"
+                rows="5"></textarea>
             </mat-form-field>
           </form>
-          <button mat-flat-button color="primary" [disabled]="commentSent || !commentForm.valid " (click)="performCommentSaving()"> Send
+          <button mat-flat-button color="primary" [disabled]="commentSent || !commentForm.valid "
+            (click)="performCommentSaving()"> Send
           </button>
           <span class="comment-sent-label" *ngIf="commentSent">Thank you!</span>
         </mat-card-content>
@@ -481,19 +505,20 @@
           <button mat-flat-button color="primary" (click)="performReset()">Reset</button>
           <form [formGroup]="commentForm" class="comment-form">
             <mat-form-field appearance="fill">
-            <textarea matInput [disabled]="commentSent" placeholder="Your comment here" formControlName="comment"
-                      rows="5"></textarea>
+              <textarea matInput [disabled]="commentSent" placeholder="Your comment here" formControlName="comment"
+                rows="5"></textarea>
             </mat-form-field>
           </form>
           <button mat-flat-button color="primary" [disabled]="commentSent || !commentForm.valid "
-                  (click)="performCommentSaving()"> Send
+            (click)="performCommentSaving()"> Send
           </button>
           <span class="comment-sent-label" *ngIf="commentSent">Thank you!</span>
         </mat-card-content>
       </mat-card>
     </div>
     <!-- Failure section - shown when the worker does not pass the quality checks and does not has tries left -->
-    <div id="failure-section" class="outcome-section container" *ngIf="taskCompleted && taskFailed && allowedTries <= 0">
+    <div id="failure-section" class="outcome-section container"
+      *ngIf="taskCompleted && taskFailed && allowedTries <= 0">
       <mat-card>
         <mat-card-title class="failure-title">
           <h4>Failure</h4>
@@ -507,11 +532,12 @@
           </h2>
           <form [formGroup]="commentForm" class="comment-form">
             <mat-form-field appearance="fill">
-              <textarea matInput [disabled]="commentSent" placeholder="Your comment here" formControlName="comment" rows="5"></textarea>
+              <textarea matInput [disabled]="commentSent" placeholder="Your comment here" formControlName="comment"
+                rows="5"></textarea>
             </mat-form-field>
           </form>
           <button mat-flat-button color="primary" [disabled]="commentSent || !commentForm.valid "
-                  (click)="performCommentSaving()"> Send
+            (click)="performCommentSaving()"> Send
           </button>
           <span class="comment-sent-label" *ngIf="commentSent">Thank you!</span>
         </mat-card-content>

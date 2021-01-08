@@ -8,30 +8,31 @@ import {
   QueryList, OnInit, ElementRef, AfterViewInit, ViewEncapsulation, Inject,
 } from '@angular/core';
 /* Reactive forms modules */
-import {AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
-import {MatFormField} from "@angular/material/form-field";
-import {MatStepper} from "@angular/material/stepper";
-import {CountdownComponent} from 'ngx-countdown';
+import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { MatFormField } from "@angular/material/form-field";
+import { MatStepper } from "@angular/material/stepper";
+import { CountdownComponent } from 'ngx-countdown';
 /* Services */
-import {NgxUiLoaderService} from 'ngx-ui-loader';
-import {ConfigService} from "../../services/config.service";
-import {S3Service} from "../../services/s3.service";
+import { NgxUiLoaderService } from 'ngx-ui-loader';
+import { ConfigService } from "../../services/config.service";
+import { S3Service } from "../../services/s3.service";
 /* Task models */
-import {Document} from "../../../../data/build/document";
-import {Hit} from "../../models/skeleton/hit";
-import {Questionnaire} from "../../models/skeleton/questionnaire";
-import {Dimension, ScaleInterval} from "../../models/skeleton/dimension";
-import {Instruction} from "../../models/shared/instructions";
+import { Document } from "../../../../data/build/document";
+import { Hit } from "../../models/skeleton/hit";
+import { Questionnaire } from "../../models/skeleton/questionnaire";
+import { Dimension, ScaleInterval } from "../../models/skeleton/dimension";
+import { Instruction } from "../../models/shared/instructions";
 /* Font Awesome icons */
-import {Annotator, Settings} from "../../models/skeleton/settings";
-import {Worker} from "../../models/skeleton/worker";
-import {HttpClient, HttpHeaders} from "@angular/common/http";
-import {MatSnackBar} from "@angular/material/snack-bar";
-import {Note} from "../../models/skeleton/notes";
-import {MatDialog, MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
-import {DialogData, InstructionsDialog} from "../instructions/instructions.component";
-import {doHighlight, deserializeHighlights, serializeHighlights, removeHighlights, optionsImpl} from "@funktechno/texthighlighter/lib";
+import { Annotator, Settings } from "../../models/skeleton/settings";
+import { Worker } from "../../models/skeleton/worker";
+import { HttpClient, HttpHeaders } from "@angular/common/http";
+import { MatSnackBar } from "@angular/material/snack-bar";
+import { Note } from "../../models/skeleton/notes";
+import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { DialogData, InstructionsDialog } from "../instructions/instructions.component";
+import { doHighlight, deserializeHighlights, serializeHighlights, removeHighlights, optionsImpl } from "@funktechno/texthighlighter/lib";
 import { DeviceDetectorService } from 'ngx-device-detector';
+import { flatten } from '@angular/compiler';
 
 
 /* Component HTML Tag definition */
@@ -293,7 +294,7 @@ export class SkeletonComponent implements OnInit {
       this.workerIdentifier = url.searchParams.get("workerID");
       if (!(this.workerIdentifier === null)) {
         this.performWorkerStatusCheck().then(outcome => {
-          this.client.get('https://www.cloudflare.com/cdn-cgi/trace', {responseType: 'text'}).subscribe(
+          this.client.get('https://www.cloudflare.com/cdn-cgi/trace', { responseType: 'text' }).subscribe(
             cloudflareData => {
               this.worker = new Worker(this.workerIdentifier, this.S3Service.getWorkerFolder(this.configService.environment, null, this.workerIdentifier), cloudflareData, window.navigator, this.deviceDetectorService.getDeviceInfo())
               this.taskAllowed = outcome;
@@ -412,7 +413,7 @@ export class SkeletonComponent implements OnInit {
   public async validateTokenInput(control: FormControl) {
     let hits = await this.S3Service.downloadHits(this.configService.environment)
     for (let hit of hits) if (hit.token_input === control.value) return null;
-    return {"invalid": "This token is not valid."}
+    return { "invalid": "This token is not valid." }
   }
 
   /*
@@ -678,7 +679,7 @@ export class SkeletonComponent implements OnInit {
         cleanedWords.push(trimmedWord)
       }
     }
-    if(this.stepper) {
+    if (this.stepper) {
       /* If at least the first document has been reached */
       if (this.stepper.selectedIndex >= this.questionnaireAmount) {
         /* The current document index is selected */
@@ -690,7 +691,7 @@ export class SkeletonComponent implements OnInit {
             let response = selectedUrl["response"]
             /* The controls are performed */
             for (let word of cleanedWords) {
-              if (word == response["url"]) return {"invalid": "You cannot use the selected search engine url as part of the justification."}
+              if (word == response["url"]) return { "invalid": "You cannot use the selected search engine url as part of the justification." }
             }
           }
         }
@@ -699,7 +700,7 @@ export class SkeletonComponent implements OnInit {
         let currentDimensionName = currentControl.split("_")[0]
         for (let dimension of this.dimensions) if (dimension.name == currentDimensionName) if (dimension.justification.minWords) minWords = dimension.justification.minWords
       }
-      return cleanedWords.length > minWords ? null : {"longer": "This is not valid."};
+      return cleanedWords.length > minWords ? null : { "longer": "This is not valid." };
     }
   }
 
@@ -877,7 +878,7 @@ export class SkeletonComponent implements OnInit {
                 if (workerUrlFormControl.value == currentResponses[index].url && this.currentDimension == currentDimension) return null;
               }
               /* If no matching url has been found, raise the error */
-              return {invalidSearchEngineUrl: "Select (or copy & paste) one of the URLs shown above."}
+              return { invalidSearchEngineUrl: "Select (or copy & paste) one of the URLs shown above." }
             }
             return null
           }
@@ -890,10 +891,9 @@ export class SkeletonComponent implements OnInit {
     return null
   }
 
-  public performHighlighting(changeDetector, event: Object, documentIndex: number, annotationDialog, notes, annotator: Annotator) {
-    let domElement  = null
-    let optionChosen = null
-    if(this.deviceDetectorService.isMobile() || this.deviceDetectorService.isTablet()) {
+  public performHighlighting(changeDetector, event: Object, documentIndex: number, notes, annotator: Annotator) {
+    let domElement = null
+    if (this.deviceDetectorService.isMobile() || this.deviceDetectorService.isTablet()) {
       const selection = document.getSelection();
       if (selection) {
         domElement = document.getElementById(`statement-${documentIndex}`);
@@ -902,16 +902,26 @@ export class SkeletonComponent implements OnInit {
       domElement = document.getElementById(`statement-${documentIndex}`);
     }
     if (domElement) {
+      let first_clone = document.querySelectorAll(`.statement-text`)[documentIndex].cloneNode(true)
+      first_clone.addEventListener('mouseup', (e) => this.performHighlighting(changeDetector, event, documentIndex, notes, annotator))
+      first_clone.addEventListener('touchend', (e) => this.performHighlighting(changeDetector, event, documentIndex, notes, annotator))
+      console.log(first_clone)
       const highlightMade = doHighlight(domElement, true, {
         onAfterHighlight(range, highlight) {
+          const selection = document.getSelection();
           if (highlight[0]["outerText"]) {
+            selection.empty()
             let notesForDocument = notes[documentIndex]
             let newAnnotation = new Note(documentIndex, range, highlight)
+            console.log(newAnnotation.range)
             let noteAlreadyFound = false
             for (let note of notesForDocument) {
-              noteAlreadyFound = newAnnotation.checkEquality(note)
-              if (noteAlreadyFound)
-                break
+              if (!note.deleted && newAnnotation.quote.includes(note.quote)) {
+                let element = document.querySelectorAll(`.statement-text`)[documentIndex]
+                document.querySelectorAll(".law_content_li")[documentIndex].append(first_clone)
+                element.remove()
+                return true
+              }
             }
             if (noteAlreadyFound) {
               return true
@@ -922,28 +932,37 @@ export class SkeletonComponent implements OnInit {
                 }
               }
               notes[documentIndex] = notesForDocument
-              annotationDialog.open(AnnotationDialog, {
-                width: '80%',
-                minHeight: '86%',
-                data: {
-                  annotation: newAnnotation,
-                  annotator: annotator
-                }
-              }).afterClosed().subscribe(result => {
-                newAnnotation.option = result.label
-                newAnnotation.color = result.color
-                let element = <HTMLElement>document.querySelector(`[data-timestamp='${newAnnotation.timestamp_created}']`)
-                element.style.backgroundColor=result.color
-                notesForDocument.push(newAnnotation)
-                notes[documentIndex] = notesForDocument
-                changeDetector.detectChanges()
-                return true
-              })
+              notesForDocument.push(newAnnotation)
+              notes[documentIndex] = notesForDocument
+              changeDetector.detectChanges()
+              console.log(newAnnotation)
+              return true
             }
           }
         }
       });
     }
+  }
+
+  public checkIfSaved(documentIndex: number, noteIndex: number) {
+    let currentNote = this.notes[documentIndex][noteIndex]
+    let year = (<HTMLInputElement>document.getElementById("year-" + noteIndex + "." + documentIndex)).value
+    let number = (<HTMLInputElement>document.getElementById("number-" + noteIndex + "." + documentIndex)).value
+    if (currentNote.year == Number(year) && currentNote.number == Number(number)) {
+      return true
+    } else {
+      return false
+    }
+  }
+
+  public performAnnotation(documentIndex: number, noteIndex: number) {
+    let currentNote = this.notes[documentIndex][noteIndex]
+    let year = (<HTMLInputElement>document.getElementById("year-" + noteIndex + "." + documentIndex)).value
+    let number = (<HTMLInputElement>document.getElementById("number-" + noteIndex + "." + documentIndex)).value
+    currentNote.year = Number(year)
+    currentNote.number = Number(number)
+    currentNote.updateNote()
+    console.log("ANNO INSERITO: " + year + ", NUMERO INSERITO: " + number + ". Versione nota: " + currentNote.version)
   }
 
   public removeAnnotation(documentIndex: number, noteIndex: number) {
@@ -1282,7 +1301,7 @@ export class SkeletonComponent implements OnInit {
         /* Number of accesses to the current questionnaire (which must be always 1, since the worker cannot go back */
         data["accesses"] = accessesAmount + 1
 
-        let uploadStatus = await this.S3Service.uploadQuestionnaire(this.configService.environment, this.worker, data, false, this.currentTry, completedElement, accessesAmount+1, this.sequenceNumber)
+        let uploadStatus = await this.S3Service.uploadQuestionnaire(this.configService.environment, this.worker, data, false, this.currentTry, completedElement, accessesAmount + 1, this.sequenceNumber)
 
         /* The amount of accesses to the current questionnaire is incremented */
         this.sequenceNumber = this.sequenceNumber + 1
@@ -1378,7 +1397,7 @@ export class SkeletonComponent implements OnInit {
         let responsesSelected = this.searchEngineSelectedResponses[completedDocument];
         data["responses_selected"] = responsesSelected
 
-        let uploadStatus = await this.S3Service.uploadDocument(this.configService.environment, this.worker, data, false, this.currentTry, completedElement, accessesAmount+1, this.sequenceNumber)
+        let uploadStatus = await this.S3Service.uploadDocument(this.configService.environment, this.worker, data, false, this.currentTry, completedElement, accessesAmount + 1, this.sequenceNumber)
 
         /* The amount of accesses to the current document is incremented */
         this.elementsAccesses[completedElement] = accessesAmount + 1;

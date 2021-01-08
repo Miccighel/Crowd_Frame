@@ -1,8 +1,15 @@
 [
   {
     "caption": "Instructions",
-    "steps": [
-      "In this task you will be asked to assess tweets."
+    "steps": ["In this task you are asked to highlight references to laws within the text of other laws that will be proposed to you.",
+      "The right way to proceed involves:",
+      "1) highlighting, in the way provided by the device you are using (smartphone, computer, tablet...) the references to laws (e.g. Article 7, Regional Law 20/2000) in each proposed text.",
+      "2) adding, scrolling down the page, the required details for each annotation (if you do not think they are necessary, skip this point).",
+      "3) saving, with the save button, the new details of each annotation (if you have not added any, skip this point).",
+      "4) proceeding, by clicking on the next button, to the next text.",
+      "Please note that you can always:",
+      "1) delete an annotation you have created with the delete button present in the section where you insert the additional details related to it.",
+      "2) modify the details of an annotation, even after saving it, by changing the values in the two text fields and pressing the save button again."
     ]
   }
 ]

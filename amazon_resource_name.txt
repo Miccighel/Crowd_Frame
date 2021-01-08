@@ -1,0 +1,2 @@
+arn:aws:iam::559842226490:user/task-leggi UTENTE
+arn:aws:s3:::leggi-task-coianiz BUCKET ARCHIVIAZIONE

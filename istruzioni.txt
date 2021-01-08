@@ -1,0 +1,25 @@
+ITALIANO:
+In questo task ti viene richiesto di evidenziare i riferimenti a leggi all'interno del testo di altre leggi che ti verranno proposte.
+
+Il giusto modo in cui procedere prevede:
+1) evidenziare, nel modo previsto dal dispositivo che stai usando (smartphone, computer, tablet...) i riferimenti a leggi (ad esempio articolo 7, legge regionale 20/2000) in ciascun testo proposto.
+2) aggiungere, scorrendo la pagina, i dettagli richiesti per ciascuna annotazione (se non li ritieni necessari, salta questo punto).
+3) salvare, con l'apposito tasto save, i nuovi dettagli (se non ne hai aggiunto nessuno, salta questo punto).
+4) procedere, cliccando sul tasto next, al successivo testo.
+
+Ricordati che puoi sempre:
+1) cancellare un'annotazione che hai creato con il tasto delete presente nella sezione in cui inserire i dettagli aggiuntivi relativi a questa.
+2) modificare i dettagli relativi ad un'annotazione, anche dopo averli salvati, cambiando i valori nei due campi di testo e premendo nuovamente sul tasto save.
+
+INGLESE:
+In this task you are asked to highlight references to laws within the text of other laws that will be proposed to you.
+
+The right way to proceed involves:
+1) highlight, in the way provided by the device you are using (smartphone, computer, tablet...) the references to laws (e.g. Article 7, Regional Law 20/2000) in each proposed text.
+2) add, scrolling down the page, the required details for each annotation (if you do not think they are necessary, skip this point).
+3) save, with the save button, the new details (if you have not added any, skip this point).
+4) proceed, by clicking on the next button, to the next text.
+
+Remember that you can always:
+1) delete an annotation you have created with the delete button present in the section where you insert the additional details related to it.
+2) modify the details of an annotation, even after saving it, by changing the values in the two text fields and pressing the save button again.

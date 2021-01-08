@@ -14,7 +14,8 @@ export class Note {
 
     quote: string
 
-    option: string
+    year: number
+    number: number
 
     annotator: Annotator;
 
@@ -34,14 +35,15 @@ export class Note {
       this.timestamp_created = parseInt(data[0]["dataset"]["timestamp"])
       this.timestamp_deleted = null
       this.quote   = data[0]["outerText"]
-      this.option   = "not_selected"
+      this.year   = 0
+      this.number = 0
     }
 
     public checkEquality(note: Note) {
       return (this.quote == note.quote)
     }
 
-    public updateNote(data) {
+    public updateNote() {
       this.version = this.version + 1
     }
 

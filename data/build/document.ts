@@ -12,11 +12,8 @@ export class Document {
 
   id: string;
   text: string;
-  adr_spans: string;
-  adr_text: string;
-  drug_spans: string;
-  drug_text: string;
-  url: string;
+  law_spans: string;
+  law_quotes: string;
 
   constructor(
     index: number,
@@ -26,11 +23,7 @@ export class Document {
     this.index =          index;
 
     this.text =           data["text"];
-    this.adr_spans =      data["adr_spans"];
-    this.adr_text =       data["adr_text"];
-    this.drug_spans =           data["drug_spans"];
-    this.drug_text = data["drug_text-from"];
-    this.url = data["url"];
+    this.law_quotes =       data["law_quote"];
   }
 
   /*
