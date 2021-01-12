@@ -199,11 +199,11 @@
             <!-- Statement markup -->
             <div class="statement">
               <ul>
-                <li class="tweet_content_li"><strong>Text</strong> (content of the tweet):
+                <li class="tweet_content_li_{{i}}"><strong>Text</strong> (content of the tweet):
                   <span #statementText id="statement-{{i}}"
                     (mouseup)="performHighlighting(this.changeDetector, $event, i, this.annotationDialog, this.notes, this.annotator)"
                     (touchend)="performHighlighting(this.changeDetector, $event, i, this.annotationDialog, this.notes, this.annotator)"
-                    class="statement-text">{{document.text}}</span>
+                    class="statement-text statement-text-{{i}}">{{document.text}}</span>
 
                 </li>
               </ul>

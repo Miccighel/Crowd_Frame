@@ -32,6 +32,7 @@ import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dial
 import { DialogData, InstructionsDialog } from "../instructions/instructions.component";
 import { doHighlight, deserializeHighlights, serializeHighlights, removeHighlights, optionsImpl } from "@funktechno/texthighlighter/lib";
 import { DeviceDetectorService } from 'ngx-device-detector';
+import { Amplify } from 'aws-sdk';
 
 
 /* Component HTML Tag definition */
@@ -170,6 +171,7 @@ export class SkeletonComponent implements OnInit {
   /* |--------- QUALITY CHECKS - DECLARATION ---------| */
 
   /* Indexes of the gold questions within a Hit */
+  goldIndex: number;
   goldIndexHigh: number;
   goldIndexLow: number;
 
@@ -252,7 +254,7 @@ export class SkeletonComponent implements OnInit {
     /* |--- TASK GENERATOR ---| */
     this.generator = false;
 
-    this.tokenInput = new FormControl('TQONDNHBUP', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
+    this.tokenInput = new FormControl('PJMYDLCIWD', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
     this.tokenForm = formBuilder.group({
       "tokenInput": this.tokenInput
     });
@@ -570,8 +572,9 @@ export class SkeletonComponent implements OnInit {
 
       /* Indexes of high and low gold questions are retrieved */
       for (let index = 0; index < this.documentsAmount; index++) {
-        if (this.documents[index].getGoldQuestionIndex("HIGH") != null) this.goldIndexHigh = this.documents[index].getGoldQuestionIndex("HIGH");
-        if (this.documents[index].getGoldQuestionIndex("LOW") != null) this.goldIndexLow = this.documents[index].getGoldQuestionIndex("LOW");
+        // if (this.documents[index].getGoldQuestionIndex("HIGH") != null) this.goldIndexHigh = this.documents[index].getGoldQuestionIndex("HIGH");
+        // if (this.documents[index].getGoldQuestionIndex("LOW") != null) this.goldIndexLow = this.documents[index].getGoldQuestionIndex("LOW");
+        if (this.documents[index].getGoldQuestionIndex("GOLD-") != null) this.goldIndex = this.documents[index].getGoldQuestionIndex("GOLD-")
       }
 
       /*
@@ -905,8 +908,8 @@ export class SkeletonComponent implements OnInit {
 
     //check if the selection is an overlay
     if (domElement) {
+      let first_clone = document.querySelector(`.statement-text-${documentIndex}`).cloneNode(true) //clone the element
 
-      let first_clone = document.querySelector(".statement-text").cloneNode(true) //clone the element
       //Attach the event bindings
       first_clone.addEventListener('mouseup', (e) => this.performHighlighting(changeDetector, event, documentIndex, annotationDialog, notes, annotator))
       first_clone.addEventListener('touchend', (e) => this.performHighlighting(changeDetector, event, documentIndex, annotationDialog, notes, annotator))
@@ -931,9 +934,10 @@ export class SkeletonComponent implements OnInit {
             for (let note of notesForDocument) { //check if the note is already annotated
               //
               if (!note.deleted && newAnnotation.quote.includes(note.quote)) { //if the note is arleady annotated
-                let element = document.querySelector(".statement-text") //select the main element
-                document.querySelector(".tweet_content_li").append(first_clone) //append the element bukupped...
+                let element = document.querySelector(`.statement-text-${documentIndex}`) //select the main element
                 element.remove()
+                document.querySelector(`.tweet_content_li_${documentIndex}`).append(first_clone) //append the element bukupped...
+
                 return true //Exit from the callback!
               }
               //
@@ -1051,12 +1055,39 @@ export class SkeletonComponent implements OnInit {
     computedChecks.push(globalValidityCheck)
 
     /* 2) GOLD QUESTION CHECK performed here - OPTIONAL CHECK */
-    for (let dimension of this.dimensions) {
-      if (dimension.goldQuestionCheck) {
-        goldQuestionCheck = this.documentsForm[this.goldIndexLow].controls[dimension.name.concat('_value')].value < this.documentsForm[this.goldIndexHigh].controls[dimension.name.concat('_value')].value;
-        computedChecks.push(goldQuestionCheck)
+
+    // console.log(this.goldIndex)
+    // console.log("DOCUMENT: " + JSON.stringify(this.documents[this.goldIndex]))
+
+    this.notes[this.goldIndex].forEach(item => {
+
+      if (item.option == 'ade') {
+        "['" + item.quote.replace(/\s+/g, '') + "']" == this.documents[this.goldIndex].adr_text
+          ? goldQuestionCheck = true
+          : goldQuestionCheck = false
+
+      } else if (item.option == 'drug') {
+
+        "['" + item.quote.replace(/\s+/g, '') + "']" == this.documents[this.goldIndex].drug_text
+          ? goldQuestionCheck = true
+          : goldQuestionCheck = false
+
       }
-    }
+      computedChecks.push(goldQuestionCheck)
+    });
+
+
+    // for (let dimension of this.dimensions) {
+
+    //   if (dimension.goldQuestionCheck) {
+    //     goldQuestionCheck = this.documentsForm[this.goldIndexLow].controls[dimension.name.concat('_value')].value < this.documentsForm[this.goldIndexHigh].controls[dimension.name.concat('_value')].value;
+
+    //     // goldQuestionCheck = this.documentsForm[this.goldIndex].controls[dimension.]
+
+    //     //console.log("goldCheck: " + goldQuestionCheck)
+    //     computedChecks.push(goldQuestionCheck)
+    //   }
+    // }
 
     /* 3) TIME SPENT CHECK performed here - MANDATORY CHECK */
     timeSpentCheck = true;

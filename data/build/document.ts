@@ -23,13 +23,16 @@ export class Document {
     data: JSON
   ) {
     /* DO NOT REMOVE THIS LINE */
-    this.index =          index;
+    this.index = index;
 
-    this.text =           data["text"];
-    this.adr_spans =      data["adr_spans"];
-    this.adr_text =       data["adr_text"];
-    this.drug_spans =           data["drug_spans"];
-    this.drug_text = data["drug_text-from"];
+    this.id = data['id']
+    this.text = data["text"];
+    this.adr_spans = data["adr_spans"];
+    this.adr_text = data["adr_text"];
+
+    this.drug_spans = data["drug_spans"];
+    this.drug_text = data["drug_text"];
+
     this.url = data["url"];
   }
 
@@ -40,7 +43,9 @@ export class Document {
    * the document is the HIGH (LOW) gold question
    */
   public getGoldQuestionIndex(kind: string) {
-    return this.index
+    if (this.id.includes(kind)) {
+      return this.index
+    }
   }
 
 }
