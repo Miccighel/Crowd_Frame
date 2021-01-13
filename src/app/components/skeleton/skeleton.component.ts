@@ -172,8 +172,8 @@ export class SkeletonComponent implements OnInit {
 
   /* Indexes of the gold questions within a Hit */
   goldIndex: number;
-  goldIndexHigh: number;
-  goldIndexLow: number;
+  // goldIndexHigh: number;
+  // goldIndexLow: number;
 
   /* Arrays to record timestamps, one for each document within a Hit */
   timestampsStart: Array<Array<number>>;
@@ -572,8 +572,6 @@ export class SkeletonComponent implements OnInit {
 
       /* Indexes of high and low gold questions are retrieved */
       for (let index = 0; index < this.documentsAmount; index++) {
-        // if (this.documents[index].getGoldQuestionIndex("HIGH") != null) this.goldIndexHigh = this.documents[index].getGoldQuestionIndex("HIGH");
-        // if (this.documents[index].getGoldQuestionIndex("LOW") != null) this.goldIndexLow = this.documents[index].getGoldQuestionIndex("LOW");
         if (this.documents[index].getGoldQuestionIndex("GOLD-") != null) this.goldIndex = this.documents[index].getGoldQuestionIndex("GOLD-")
       }
 
@@ -1056,8 +1054,6 @@ export class SkeletonComponent implements OnInit {
 
     /* 2) GOLD QUESTION CHECK performed here - OPTIONAL CHECK */
 
-    // console.log(this.goldIndex)
-    // console.log("DOCUMENT: " + JSON.stringify(this.documents[this.goldIndex]))
 
     this.notes[this.goldIndex].forEach(item => {
 
@@ -1076,18 +1072,6 @@ export class SkeletonComponent implements OnInit {
       computedChecks.push(goldQuestionCheck)
     });
 
-
-    // for (let dimension of this.dimensions) {
-
-    //   if (dimension.goldQuestionCheck) {
-    //     goldQuestionCheck = this.documentsForm[this.goldIndexLow].controls[dimension.name.concat('_value')].value < this.documentsForm[this.goldIndexHigh].controls[dimension.name.concat('_value')].value;
-
-    //     // goldQuestionCheck = this.documentsForm[this.goldIndex].controls[dimension.]
-
-    //     //console.log("goldCheck: " + goldQuestionCheck)
-    //     computedChecks.push(goldQuestionCheck)
-    //   }
-    // }
 
     /* 3) TIME SPENT CHECK performed here - MANDATORY CHECK */
     timeSpentCheck = true;
