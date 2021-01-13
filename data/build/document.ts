@@ -12,8 +12,9 @@ export class Document {
 
   id: string;
   text: string;
-  law_spans: string;
   law_quotes: string;
+  law_years: Number;
+  law_numbers: Number;
 
   constructor(
     index: number,
@@ -22,8 +23,11 @@ export class Document {
     /* DO NOT REMOVE THIS LINE */
     this.index =          index;
 
+    this.id =             data["id"]
     this.text =           data["text"];
-    this.law_quotes =       data["law_quote"];
+    this.law_quotes =     data["law_quote"];
+    this.law_years =      data["law_year"];
+    this.law_numbers =    data["law_number"];
   }
 
   /*
@@ -32,8 +36,12 @@ export class Document {
    * In this case, for example, if the id_par field is HIGH (LOW) then
    * the document is the HIGH (LOW) gold question
    */
-  public getGoldQuestionIndex(kind: string) {
-    return this.index
+  public getGoldQuestionIndex() {
+    if (this.id === "GOLD") {
+      return this.index
+    } else {
+      return null
+    }
   }
 
 }

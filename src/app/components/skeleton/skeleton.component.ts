@@ -33,6 +33,8 @@ import { DialogData, InstructionsDialog } from "../instructions/instructions.com
 import { doHighlight, deserializeHighlights, serializeHighlights, removeHighlights, optionsImpl } from "@funktechno/texthighlighter/lib";
 import { DeviceDetectorService } from 'ngx-device-detector';
 import { flatten } from '@angular/compiler';
+import { type } from 'os';
+import { equal } from 'assert';
 
 
 /* Component HTML Tag definition */
@@ -171,8 +173,7 @@ export class SkeletonComponent implements OnInit {
   /* |--------- QUALITY CHECKS - DECLARATION ---------| */
 
   /* Indexes of the gold questions within a Hit */
-  goldIndexHigh: number;
-  goldIndexLow: number;
+  goldIndex: number;
 
   /* Arrays to record timestamps, one for each document within a Hit */
   timestampsStart: Array<Array<number>>;
@@ -571,8 +572,7 @@ export class SkeletonComponent implements OnInit {
 
       /* Indexes of high and low gold questions are retrieved */
       for (let index = 0; index < this.documentsAmount; index++) {
-        if (this.documents[index].getGoldQuestionIndex("HIGH") != null) this.goldIndexHigh = this.documents[index].getGoldQuestionIndex("HIGH");
-        if (this.documents[index].getGoldQuestionIndex("LOW") != null) this.goldIndexLow = this.documents[index].getGoldQuestionIndex("LOW");
+        if (this.documents[index].getGoldQuestionIndex() != null) this.goldIndex = this.documents[index].getGoldQuestionIndex();
       }
 
       /*
@@ -1033,12 +1033,47 @@ export class SkeletonComponent implements OnInit {
     computedChecks.push(globalValidityCheck)
 
     /* 2) GOLD QUESTION CHECK performed here - OPTIONAL CHECK */
-    for (let dimension of this.dimensions) {
-      if (dimension.goldQuestionCheck) {
-        goldQuestionCheck = this.documentsForm[this.goldIndexLow].controls[dimension.name.concat('_value')].value < this.documentsForm[this.goldIndexHigh].controls[dimension.name.concat('_value')].value;
-        computedChecks.push(goldQuestionCheck)
+    console.log("ARRIVATO A GOLD QUESTION CHECK. Documento numero " + this.goldIndex)
+    let AUX_user: Note[] = []
+    type goldNotes = [String, Number, Number] // [quote, year, number]
+    let AUX_gold: goldNotes[] = []
+    let AUX_check = 0;
+
+    for(let userNote of this.notes[this.goldIndex]) {
+      if (userNote.deleted != true) {
+        AUX_user.push(userNote)
       }
     }
+
+    console.log(AUX_user)
+
+    for(let i = 0; i < this.documents[this.goldIndex].law_quotes.length; i++) {
+      let actualGoldNote: goldNotes = [this.documents[this.goldIndex].law_quotes[i], this.documents[this.goldIndex].law_years[i], this.documents[this.goldIndex].law_numbers[i]]
+      AUX_gold.push(actualGoldNote)
+    }
+
+    console.log(AUX_gold)
+
+    for(let i_g = 0; i_g < AUX_gold.length; i_g++) {
+      for (let i_u = 0; i_u < AUX_user.length; i_u++) {
+        let equality = AUX_gold[i_g][0] == AUX_user[i_u].quote &&
+        AUX_gold[i_g][1] == AUX_user[i_u].year &&
+        AUX_gold[i_g][2] == AUX_user[i_u].number
+        if (equality) {
+          AUX_check += 1
+        }
+      }
+    }
+
+    console.log(AUX_check)
+
+    if (AUX_check == AUX_gold.length) {
+      goldQuestionCheck = true
+    } else {
+      goldQuestionCheck = false
+    }
+
+    computedChecks.push(goldQuestionCheck)
 
     /* 3) TIME SPENT CHECK performed here - MANDATORY CHECK */
     timeSpentCheck = true;
