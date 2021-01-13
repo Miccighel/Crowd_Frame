@@ -173,7 +173,7 @@ export class SkeletonComponent implements OnInit {
   /* |--------- QUALITY CHECKS - DECLARATION ---------| */
 
   /* Indexes of the gold questions within a Hit */
-  goldIndex: number;
+  goldIndex: number[] = [];
 
   /* Arrays to record timestamps, one for each document within a Hit */
   timestampsStart: Array<Array<number>>;
@@ -572,7 +572,9 @@ export class SkeletonComponent implements OnInit {
 
       /* Indexes of high and low gold questions are retrieved */
       for (let index = 0; index < this.documentsAmount; index++) {
-        if (this.documents[index].getGoldQuestionIndex() != null) this.goldIndex = this.documents[index].getGoldQuestionIndex();
+        if (this.documents[index].getGoldQuestionIndex() != null) {
+          this.goldIndex.push(this.documents[index].getGoldQuestionIndex())
+        }
       }
 
       /*
@@ -1033,44 +1035,48 @@ export class SkeletonComponent implements OnInit {
     computedChecks.push(globalValidityCheck)
 
     /* 2) GOLD QUESTION CHECK performed here - OPTIONAL CHECK */
-    console.log("ARRIVATO A GOLD QUESTION CHECK. Documento numero " + this.goldIndex)
-    let AUX_user: Note[] = []
-    type goldNotes = [String, Number, Number] // [quote, year, number]
-    let AUX_gold: goldNotes[] = []
-    let AUX_check = 0;
+    let AUX_booleans: Boolean[] = []
 
-    for(let userNote of this.notes[this.goldIndex]) {
-      if (userNote.deleted != true) {
-        AUX_user.push(userNote)
-      }
-    }
-
-    console.log(AUX_user)
-
-    for(let i = 0; i < this.documents[this.goldIndex].law_quotes.length; i++) {
-      let actualGoldNote: goldNotes = [this.documents[this.goldIndex].law_quotes[i], this.documents[this.goldIndex].law_years[i], this.documents[this.goldIndex].law_numbers[i]]
-      AUX_gold.push(actualGoldNote)
-    }
-
-    console.log(AUX_gold)
-
-    for(let i_g = 0; i_g < AUX_gold.length; i_g++) {
-      for (let i_u = 0; i_u < AUX_user.length; i_u++) {
-        let equality = AUX_gold[i_g][0] == AUX_user[i_u].quote &&
-        AUX_gold[i_g][1] == AUX_user[i_u].year &&
-        AUX_gold[i_g][2] == AUX_user[i_u].number
-        if (equality) {
-          AUX_check += 1
+    for (let index of this.goldIndex) {
+      console.log("ARRIVATO A GOLD QUESTION CHECK. Documento numero " + this.goldIndex)
+      let AUX_user: Note[] = []
+      type goldNotes = [String, Number, Number] // [quote, year, number]
+      let AUX_gold: goldNotes[] = []
+      let AUX_check = 0;
+      for (let userNote of this.notes[index]) {
+        if (userNote.deleted != true) {
+          AUX_user.push(userNote)
         }
       }
+
+      for (let i = 0; i < this.documents[index].law_quotes.length; i++) {
+        let actualGoldNote: goldNotes = [this.documents[index].law_quotes[i], this.documents[index].law_years[i], this.documents[index].law_numbers[i]]
+        AUX_gold.push(actualGoldNote)
+      }
+
+      for (let i_g = 0; i_g < AUX_gold.length; i_g++) {
+        for (let i_u = 0; i_u < AUX_user.length; i_u++) {
+          let equality = AUX_gold[i_g][0] == AUX_user[i_u].quote &&
+            AUX_gold[i_g][1] == AUX_user[i_u].year &&
+            AUX_gold[i_g][2] == AUX_user[i_u].number
+          if (equality) {
+            AUX_check += 1
+          }
+        }
+      }
+
+      if (AUX_check == AUX_gold.length) {
+        AUX_booleans.push(true)
+      } else {
+        AUX_booleans.push(false)
+      }
     }
 
-    console.log(AUX_check)
-
-    if (AUX_check == AUX_gold.length) {
-      goldQuestionCheck = true
+    let goldQuestionChecker = array => array.every(Boolean);
+    if (goldQuestionChecker(AUX_booleans)) {
+      goldQuestionCheck = true;
     } else {
-      goldQuestionCheck = false
+      goldQuestionCheck = false;
     }
 
     computedChecks.push(goldQuestionCheck)

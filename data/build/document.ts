@@ -37,7 +37,7 @@ export class Document {
    * the document is the HIGH (LOW) gold question
    */
   public getGoldQuestionIndex() {
-    if (this.id === "GOLD") {
+    if (this.id.includes("GOLD")) {
       return this.index
     } else {
       return null
