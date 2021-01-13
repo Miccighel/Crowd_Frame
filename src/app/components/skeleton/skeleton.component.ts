@@ -254,7 +254,7 @@ export class SkeletonComponent implements OnInit {
     /* |--- TASK GENERATOR ---| */
     this.generator = false;
 
-    this.tokenInput = new FormControl('PJMYDLCIWD', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
+    this.tokenInput = new FormControl('IXYIDZOZAB', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
     this.tokenForm = formBuilder.group({
       "tokenInput": this.tokenInput
     });
