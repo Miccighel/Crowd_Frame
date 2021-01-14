@@ -1,9 +1,15 @@
 [
   {
-    "caption": "Please, do the following step:",
+    "caption": "Please, do the following steps:",
     "steps": [
-      "Highlight the text",
-      "Annotate it"
+      "Highlight the DRUG and the ADE (Adverse Drug Event) that you find in the tweet",
+      "Annotate it using the correct button in the opened dialog",
+      "Use the DRUG button to annotate a DRUG",
+      "Use the ADE button to annotate an ADE (Adverse Drug Event)",
+      "REMEBER --> For ADE we mean a collateral effect of a DRUG"
+    ],
+    "steps2": [
+      ""
     ]
   }
 ]

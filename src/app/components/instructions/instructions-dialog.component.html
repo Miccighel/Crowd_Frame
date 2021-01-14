@@ -4,6 +4,10 @@
     <p *ngFor="let step of instruction['steps']; let j=index">
       {{step}}
     </p>
+    <h2>{{instruction["title"]}}</h2>
+    <p *ngFor="let step2 of instruction['steps2']; let j=index">
+      {{step2}}
+    </p>
   </ng-container>
 </div>
 <div class="close-button">

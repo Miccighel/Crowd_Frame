@@ -1,7 +1,7 @@
 [
     {
         "name": "Sentiment",
-        "description": "This tweet describes a positive effect or a negative effect?",
+        "description": "The ADE (Adverse Drug Event) highlighted is a negative or positive event? *",
         "justification": false,
         "url": false,
         "scale": {
@@ -9,12 +9,12 @@
             "mapping": [
                 {
                     "label": "Positive",
-                    "description": "",
+                    "description": "Positive event",
                     "value": "1"
                 },
                 {
                     "label": "Negative",
-                    "description": "",
+                    "description": "Negative event",
                     "value": "2"
                 }
             ]

@@ -8,7 +8,9 @@ export class Instruction {
   index: number;
 
   caption?: string;
+  title?: string;
   steps: Array<string>;
+  steps2: Array<string>;
 
   constructor(
     index: number,
@@ -17,9 +19,14 @@ export class Instruction {
     /* DO NOT REMOVE THIS LINE */
     this.index = index;
 
-    this.caption =    data['caption'] ? data["caption"] : null;
+    this.caption = data['caption'] ? data["caption"] : null;
+    this.title = data['title'] ? data["title"] : null
+
     this.steps = new Array<string>();
     for (const [_, step] of data["steps"].entries()) this.steps.push(step)
+
+    this.steps2 = new Array<string>()
+    for (const [_, step2] of data["steps2"].entries()) this.steps2.push(step2)
   }
 
 }

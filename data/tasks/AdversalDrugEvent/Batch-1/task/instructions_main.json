@@ -1,0 +1,16 @@
+[
+  {
+    "caption": "Instructions",
+    "steps": [
+      "In this task you will have to read the displayed text and then highlight the word/words if there is a DRUG or an ADE (Adverse Drug Event)",
+      "Steps:",
+      "1) Read carefully the Twitter tweet displayed",
+      "2) If in the displayed text there is a DRUG, select it and then tag it using the button displayed in the dialog -> 'DRUG'",
+      "3) If in the displayed text there is an ADE (Adverse Drug Event), select it and then tag it using the button displayed in the dialog -> 'ADE'",
+      "4) Check if you have annotated correctly",
+      "5) Procede, by clicking on the next button, to the next text.",
+      "Please note that you can always:",
+      "1) Delete an annotation you have created with the delete button."
+    ]
+  }
+]
