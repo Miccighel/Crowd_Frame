@@ -1,0 +1,30 @@
+[
+    {
+        "name": "Sentiment",
+        "description": "This tweet describes a positive effect or a negative effect?",
+        "justification": false,
+        "url": false,
+        "scale": {
+            "type": "categorical",
+            "mapping": [
+                {
+                    "label": "Positive",
+                    "description": "",
+                    "value": "1"
+                },
+                {
+                    "label": "Negative",
+                    "description": "",
+                    "value": "2"
+                }
+            ]
+        },
+        "gold_question_check": false,
+        "style": {
+            "position": "middle",
+            "orientation": "vertical",
+            "type": "list",
+            "separator": false
+        }
+    }
+]

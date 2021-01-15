@@ -1,0 +1,24 @@
+[
+  {
+    "caption": "Instructions",
+    "steps": [
+      "In this task you will have to read the displayed text and then highlight the DRUG and the ADE (Adverse Drug Event), for ADE we mean the collateral effect of a DRUG ",
+      "1) We will show you 11 Twitter tweets written by random people that contain statements about DRUGS and their collateral effects (ADE). For each tweet, we ask you to tell us which is the DRUG and which is the ADE (Adverse Drug Event) in the statement.",
+      "2) For each judgment, you will also be asked to tell us if the displayed tweet describes a positive or a negative effect",
+      "Note that there are some check throughout the task, and if you dont perform these correctly you will not be able to terminate and get paid. The data from this task is being gathered for research purposes. No personally-identifying information is recorded. Participation is entirely voluntary, and you are free to discontinue at any point"
+    ],
+    "title": "Task Description",
+    "steps2": [
+      "Annotation Steps:",
+      "1) Read carefully the Twitter tweet displayed",
+      "2) Find the DRUG in the displayed tweet, highlight it and then tag it using the button displayed in the dialog -> 'DRUG'",
+      "3) Find the ADE (Adverse Drug Event) in the displayed tweet, highlight it and then tag it using the button displayed in the dialog -> 'ADE'",
+      "4) Check if you have annotated correctly",
+      "5) In the last question select POSITIVE if the tweet describes a positive effect, otherwise select NEGATIVE ",
+      "6) Proceed, by clicking on the next button, to the next text.",
+      "-------",
+      "Please note that you can always:",
+      "1) Delete an annotation you have created by using the delete button."
+    ]
+  }
+]
