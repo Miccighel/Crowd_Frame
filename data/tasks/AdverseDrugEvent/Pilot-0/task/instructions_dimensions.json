@@ -2,11 +2,12 @@
   {
     "caption": "Please, do the following steps:",
     "steps": [
-      "Highlight the DRUG and the ADE (Adverse Drug Event) that you find in the tweet",
-      "Annotate it using the correct button in the opened dialog",
+      "Clicking the left button of your mouse and drag the pointer over the portion of text to annotate",
+      "Choose the desired option by clicking the correct button in the new window",
       "Use the DRUG button to annotate a DRUG",
       "Use the ADE button to annotate an ADE (Adverse Drug Event)",
-      "REMEMBER --> For ADE we mean a collateral effect of a DRUG"
+      "If you need to revise your annotation, delete it by clicking the DELETE button and repeat the process",
+      "Answer to the question written below by selecting the correct alternative using the radio buttons"
     ],
     "steps2": [
       ""

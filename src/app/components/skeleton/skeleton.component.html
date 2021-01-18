@@ -3,13 +3,7 @@
     <mat-card-content>
       <ng-container *ngFor="let instruction of this.taskInstructions; let i=index">
         <h2 *ngIf="instruction['caption']">{{instruction["caption"]}}</h2>
-        <p *ngFor="let step of instruction['steps']; let j=index">
-          {{step}}
-        </p>
-        <h2>{{instruction["title"]}}</h2>
-        <p *ngFor="let step2 of instruction['steps2']; let j=index">
-          {{step2}}
-        </p>
+        <p [innerHTML]="step" *ngFor="let step of instruction['steps']; let j=index"></p>
       </ng-container>
     </mat-card-content>
     <mat-card-actions>
