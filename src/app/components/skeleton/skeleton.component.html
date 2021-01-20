@@ -219,7 +219,8 @@
                     <td class="mat-cell"><span [style.background-color]="note.color">{{note.quote}}</span></td>
                     <td class="mat-cell"><code>{{note.option}}</code></td>
                     <td class="mat-cell">
-                      <button (click)="removeAnnotation(i, noteIndex)" mat-flat-button color="primary">Delete
+                      <button (click)="removeAnnotation(i, noteIndex, this.changeDetector)" mat-flat-button
+                        color="primary">Delete
                       </button>
                     </td>
                   </ng-container>
@@ -435,7 +436,7 @@
               Back
             </button>
             <button mat-flat-button color="primary" matStepperNext *ngIf="i+1<this.documentsAmount"
-              [disabled]="(!documentsForm[i].valid || !this.searchEngineRetrievedResponses[i] || taskCompleted) && !this.countdownsExpired[i]"
+              [disabled]="(!documentsForm[i].valid || !this.searchEngineRetrievedResponses[i] || taskCompleted || !canINext(i)) && !this.countdownsExpired[i]"
               (click)="performLogging('Next')">
               Next
             </button>
@@ -444,7 +445,7 @@
               (click)="performLogging('Finish'); performQualityCheck()">
               Finish
             </button>
-            <span class="form-note">(*) you have to fill each field to proceed</span>
+            <span class="form-note">(*) you have to annotate at least one DRUG</span>
           </mat-card-actions>
         </mat-card>
       </form>

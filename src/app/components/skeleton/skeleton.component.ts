@@ -91,6 +91,8 @@ export class SkeletonComponent implements OnInit {
   taskFailed: boolean;
   checkCompleted: boolean;
 
+
+
   /* References to task stepper and token forms */
   @ViewChild('stepper') stepper: MatStepper;
   @ViewChild('urlField') urlField: MatFormField;
@@ -250,6 +252,7 @@ export class SkeletonComponent implements OnInit {
     this.taskSuccessful = false;
     this.taskFailed = false;
     this.checkCompleted = false;
+
 
     /* |--- TASK GENERATOR ---| */
     this.generator = false;
@@ -891,6 +894,7 @@ export class SkeletonComponent implements OnInit {
     return null
   }
 
+
   public performHighlighting(changeDetector, event: Object, documentIndex: number, annotationDialog, notes, annotator: Annotator) {
 
     let domElement = null
@@ -921,12 +925,14 @@ export class SkeletonComponent implements OnInit {
             selection.empty() //clear the selection
 
             let notesForDocument = notes[documentIndex]
+
             let newAnnotation = new Note(documentIndex, range, highlight) //create new note
 
             //Remove the default yellow background
             let element = <HTMLElement>document.querySelector(`[data-timestamp='${newAnnotation.timestamp_created}']`)
             element.style.backgroundColor = ""
             //
+            console.log(notes[documentIndex])
 
             //Check if the selected text is an overlap of another annotation
             for (let note of notesForDocument) { //check if the note is already annotated
@@ -935,7 +941,6 @@ export class SkeletonComponent implements OnInit {
                 let element = document.querySelector(`.statement-text-${documentIndex}`) //select the main element
                 element.remove()
                 document.querySelector(`.tweet_content_li_${documentIndex}`).append(first_clone) //append the element bukupped...
-
                 return true //Exit from the callback!
               }
               //
@@ -966,13 +971,18 @@ export class SkeletonComponent implements OnInit {
 
                 notesForDocument.push(newAnnotation)
                 notes[documentIndex] = notesForDocument
+
                 changeDetector.detectChanges()
+
                 return true
+
               } else {// if the user click on cancel button, mark the annotation as deleted and remove the highlight
                 let element = document.querySelector(`[data-timestamp='${newAnnotation.timestamp_created}']`)
                 element.parentNode.insertBefore(document.createTextNode(newAnnotation.quote), element);
                 element.remove()
+                changeDetector.detectChanges()
                 return true
+
               }
 
             })
@@ -982,7 +992,18 @@ export class SkeletonComponent implements OnInit {
     }
   }
 
-  public removeAnnotation(documentIndex: number, noteIndex: number) {
+  public canINext(documentIndex: number) { //Returns true if there is at least one drug annotated
+    let omg = false
+    this.notes[documentIndex].forEach(element => {
+      if (!element.deleted && element.option == "drug") {
+        omg = true
+      }
+    })
+    return omg
+  }
+
+
+  public removeAnnotation(documentIndex: number, noteIndex: number, changeDetector) {
     let currentNote = this.notes[documentIndex][noteIndex]
     currentNote.markDeleted()
 
@@ -990,7 +1011,7 @@ export class SkeletonComponent implements OnInit {
     let element = document.querySelector(`[data-timestamp='${currentNote.timestamp_created}']`)
     element.parentNode.insertBefore(document.createTextNode(currentNote.quote), element);
     element.remove()
-
+    changeDetector.detectChanges()
 
   }
 
