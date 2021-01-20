@@ -180,7 +180,7 @@
         <mat-card>
           <ng-template matStepLabel> S{{i + 1}}</ng-template>
           <mat-divider [inset]="true"></mat-divider>
-          <mat-card-title>Please study the following Tweet</mat-card-title>
+          <mat-card-title>Consider the following Tweet</mat-card-title>
           <mat-divider [inset]="true"></mat-divider>
           <mat-card-content class="pt-16px">
 
@@ -197,7 +197,7 @@
             <!-- Statement markup -->
             <div class="statement">
               <ul>
-                <li class="tweet_content_li_{{i}}"><strong>Text</strong> (content of the tweet):
+                <li class="tweet_content_li_{{i}}">
                   <span #statementText id="statement-{{i}}"
                     (mouseup)="performHighlighting(this.changeDetector, $event, i, this.annotationDialog, this.notes, this.annotator)"
                     (touchend)="performHighlighting(this.changeDetector, $event, i, this.annotationDialog, this.notes, this.annotator)"
