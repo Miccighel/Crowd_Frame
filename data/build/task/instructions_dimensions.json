@@ -2,12 +2,9 @@
   {
     "caption": "Please, do the following steps:",
     "steps": [
-      "Clicking the left button of your mouse and drag the pointer over the portion of text to annotate",
-      "Choose the desired option by clicking the correct button in the new window",
-      "Use the DRUG button to annotate a DRUG",
-      "Use the ADE button to annotate an ADE (Adverse Drug Event)",
-      "If you need to revise your annotation, delete it by clicking the DELETE button and repeat the process",
-      "Answer to the question written below by selecting the correct alternative using the radio buttons"
+      "Select the portion of the text you want to annotate by highlighting it.",
+      "Choose the desired option (either DRUG or ADV.EFFECT) by clicking on the corresponding  button.",
+      "Use the DELETE button to remove an existing annotation."
     ],
     "steps2": [
       ""

@@ -195,7 +195,7 @@
             </div>
 
             <!-- Statement markup -->
-            <div class="statement">
+            <div class="statement general-tweet-div">
               <ul>
                 <li class="tweet_content_li_{{i}}">
                   <span #statementText id="statement-{{i}}"
@@ -206,6 +206,12 @@
                 </li>
               </ul>
             </div>
+            <div class="annotation-buttons-{{i}}"
+              style="display: flex; pointer-events: none; opacity:0.3; justify-content: center">
+              <button class="ann-button-{{i}}" *ngFor="let value of annotator.values"
+                [style.background-color]="value.color" [style.color]="'black'" mat-flat-button
+                (click)="annotateThis(value,i)">{{value.label}}</button>
+            </div><br />
 
             <div *ngIf="checkUndeletedNotesPresence(this.notes[i])" class="annotations">
               <table class="mat-table">
@@ -215,7 +221,7 @@
                   <th class="mat-header-cell">Actions</th>
                 </tr>
                 <tr *ngFor="let note of this.notes[i]; let noteIndex = index" class="mat-row">
-                  <ng-container *ngIf="note.deleted == false">
+                  <ng-container *ngIf="note.deleted == false && note.option != 'not_selected'">
                     <td class="mat-cell"><span [style.background-color]="note.color">{{note.quote}}</span></td>
                     <td class="mat-cell"><code>{{note.option}}</code></td>
                     <td class="mat-cell">

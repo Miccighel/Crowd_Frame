@@ -5,7 +5,7 @@ import {
   Component,
   ViewChild,
   ViewChildren,
-  QueryList, OnInit, ElementRef, AfterViewInit, ViewEncapsulation, Inject,
+  QueryList, OnInit, ElementRef, AfterViewInit, ViewEncapsulation, Inject, NgZone
 } from '@angular/core';
 /* Reactive forms modules */
 import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
@@ -223,7 +223,8 @@ export class SkeletonComponent implements OnInit {
     deviceDetectorService: DeviceDetectorService,
     client: HttpClient,
     formBuilder: FormBuilder,
-    snackBar: MatSnackBar
+    snackBar: MatSnackBar,
+    private zone: NgZone
   ) {
 
     /* |--------- SERVICES - INITIALIZATION ---------| */
@@ -280,7 +281,6 @@ export class SkeletonComponent implements OnInit {
   }
 
   public async ngOnInit() {
-
     this.ngxService.startLoader('skeleton')
 
     let url = new URL(window.location.href);
@@ -916,83 +916,103 @@ export class SkeletonComponent implements OnInit {
       first_clone.addEventListener('mouseup', (e) => this.performHighlighting(changeDetector, event, documentIndex, annotationDialog, notes, annotator))
       first_clone.addEventListener('touchend', (e) => this.performHighlighting(changeDetector, event, documentIndex, annotationDialog, notes, annotator))
 
-
       const highlightMade = doHighlight(domElement, true, {
-
         onAfterHighlight(range, highlight) {
+
           const selection = document.getSelection();
           if (highlight[0]["outerText"]) { //If something is selected
             selection.empty() //clear the selection
 
             let notesForDocument = notes[documentIndex]
-
             let newAnnotation = new Note(documentIndex, range, highlight) //create new note
 
-            //Remove the default yellow background
-            let element = <HTMLElement>document.querySelector(`[data-timestamp='${newAnnotation.timestamp_created}']`)
-            element.style.backgroundColor = ""
-            //
-            console.log(notes[documentIndex])
-
-            //Check if the selected text is an overlap of another annotation
-            for (let note of notesForDocument) { //check if the note is already annotated
+            //Check if the selected text is an overlay of another annotation
+            for (let note of notesForDocument) {
               //
               if (!note.deleted && newAnnotation.quote.includes(note.quote)) { //if the note is arleady annotated
                 let element = document.querySelector(`.statement-text-${documentIndex}`) //select the main element
                 element.remove()
                 document.querySelector(`.tweet_content_li_${documentIndex}`).append(first_clone) //append the element bukupped...
+
+                //Disable the user to click on the buttons
+                let ann_button = <HTMLElement>document.querySelector(`.annotation-buttons-${documentIndex}`)
+                ann_button.style.pointerEvents = "none"
+                ann_button.style.opacity = "0.3"
+                ////
+
+                changeDetector.detectChanges()
                 return true //Exit from the callback!
               }
-              //
 
             }
 
-            notes[documentIndex] = notesForDocument //update the notes of the document
-            annotationDialog.open(AnnotationDialog, { //then open the annotation dialog
-              width: '80%',
-              minHeight: '86%',
-              disableClose: true,
-              data: {
-                annotation: newAnnotation,
-                annotator: annotator
-              }
-            }).afterClosed().subscribe(result => {
-              if (result) { //
-                newAnnotation.option = result.label
-                newAnnotation.color = result.color
-                let element = <HTMLElement>document.querySelector(`[data-timestamp='${newAnnotation.timestamp_created}']`)
-                element.style.backgroundColor = result.color
+            //Ok enable the user to click on the buttons
+            let ann_button = <HTMLElement>document.querySelector(`.annotation-buttons-${documentIndex}`)
+            ann_button.style.pointerEvents = "auto"
+            ann_button.style.opacity = "1"
+            ////
 
-                element.style.userSelect = "none" //disable user select to avoid over selection!
-                element.style.webkitUserSelect = "none"
-                element.style.pointerEvents = "none"
-                element.style.touchAction = "none"
-                element.style.cursor = "no-drop"
+            changeDetector.detectChanges()
+            notesForDocument.push(newAnnotation)
+            notes[documentIndex] = notesForDocument
+            let main_div = <HTMLElement>document.querySelector('.general-tweet-div')
+            //
 
-                notesForDocument.push(newAnnotation)
-                notes[documentIndex] = notesForDocument
-
-                changeDetector.detectChanges()
-
-                return true
-
-              } else {// if the user click on cancel button, mark the annotation as deleted and remove the highlight
-                let element = document.querySelector(`[data-timestamp='${newAnnotation.timestamp_created}']`)
-                element.parentNode.insertBefore(document.createTextNode(newAnnotation.quote), element);
-                element.remove()
-                changeDetector.detectChanges()
-                return true
-
-              }
-
-            })
+            //Disable the main DIV after highlight, until the highlighted text is annotated
+            main_div.style.userSelect = "none"
+            main_div.style.webkitUserSelect = "none"
+            main_div.style.pointerEvents = "none"
+            main_div.style.touchAction = "none"
+            main_div.style.cursor = "no-drop"
           }
         }
-      });
+      })
     }
   }
 
-  public canINext(documentIndex: number) { //Returns true if there is at least one drug annotated
+
+  //onClick this function annotated the last text highlighted
+  public annotateThis(value, documentIndex: number) {
+    this.notes[documentIndex].forEach((element, index) => {
+      if (index === this.notes[documentIndex].length - 1) {
+        if (!element.deleted) {
+          element.color = value.color
+          element.option = value.label
+          let current_note = <HTMLElement>document.querySelector(`[data-timestamp='${element.timestamp_created}']`)
+          current_note.style.backgroundColor = value.color
+
+          //disable user events to avoid over selection!
+          current_note.style.userSelect = "none"
+          current_note.style.webkitUserSelect = "none"
+          current_note.style.pointerEvents = "none"
+          current_note.style.touchAction = "none"
+          current_note.style.cursor = "no-drop"
+        }
+      }
+    })
+    const selection = document.getSelection();
+    selection.empty()
+
+    console.log(value.label + " // " + JSON.stringify(this.notes[documentIndex]))
+    let main_div = <HTMLElement>document.querySelector('.general-tweet-div')
+    //Enable the user events on the main DIV
+    main_div.style.userSelect = "auto"
+    main_div.style.webkitUserSelect = "auto"
+    main_div.style.pointerEvents = "auto"
+    main_div.style.touchAction = "auto"
+    main_div.style.cursor = "auto"
+
+    //Disable the user to click on the buttons
+    let ann_button = <HTMLElement>document.querySelector(`.annotation-buttons-${documentIndex}`)
+    ann_button.style.pointerEvents = "none"
+    ann_button.style.opacity = "0.3"
+    ////
+
+  }
+
+
+  //Returns true if there is at least one drug annotated in the document
+  public canINext(documentIndex: number) {
     let omg = false
     this.notes[documentIndex].forEach(element => {
       if (!element.deleted && element.option == "drug") {
@@ -1001,6 +1021,8 @@ export class SkeletonComponent implements OnInit {
     })
     return omg
   }
+
+
 
 
   public removeAnnotation(documentIndex: number, noteIndex: number, changeDetector) {
