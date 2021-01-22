@@ -955,7 +955,7 @@ export class SkeletonComponent implements OnInit {
             changeDetector.detectChanges()
             notesForDocument.push(newAnnotation)
             notes[documentIndex] = notesForDocument
-            let main_div = <HTMLElement>document.querySelector('.general-tweet-div')
+            let main_div = <HTMLElement>document.querySelector(`.general-tweet-div-${documentIndex}`)
             //
 
             //Disable the main DIV after highlight, until the highlighted text is annotated
@@ -994,7 +994,7 @@ export class SkeletonComponent implements OnInit {
     selection.empty()
 
     console.log(value.label + " // " + JSON.stringify(this.notes[documentIndex]))
-    let main_div = <HTMLElement>document.querySelector('.general-tweet-div')
+    let main_div = <HTMLElement>document.querySelector(`.general-tweet-div-${documentIndex}`)
     //Enable the user events on the main DIV
     main_div.style.userSelect = "auto"
     main_div.style.webkitUserSelect = "auto"
