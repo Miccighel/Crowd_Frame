@@ -1,15 +1,21 @@
 [
   {
     "caption": "Instructions",
-    "steps": ["In this task you are asked to highlight references to laws within the text of other laws that will be proposed to you.",
-      "The right way to proceed involves:",
-      "1) highlighting, in the way provided by the device you are using (smartphone, computer, tablet...) the references to laws (e.g. Article 7, Regional Law 20/2000) in each proposed text.",
-      "2) adding, scrolling down the page, the required details for each annotation (if you do not think they are necessary, skip this point).",
-      "3) saving, with the save button, the new details of each annotation (if you have not added any, skip this point).",
-      "4) proceeding, by clicking on the next button, to the next text.",
-      "Please note that you can always:",
-      "1) delete an annotation you have created with the delete button present in the section where you insert the additional details related to it.",
-      "2) modify the details of an annotation, even after saving it, by changing the values in the two text fields and pressing the save button again."
+    "steps": ["In this task, you are asked to highlight, using the methods provided by the device you are using, the references to laws in the proposed texts.",
+      "Examples of references include:",
+      "- articolo N, comma N della L.R. NUMERO/ANNO",
+      "- articolo N, comma N della legge del GIORNO MESE ANNO, n. NUMERO.",
+      "- articolo N, comma N della L.R. ANNO/NUMERO",
+      "Some references may omit certain parts, so you may find:",
+      "- articolo N della L.R. XX/XXXX",
+      "Or just:",
+      "- legge del GIORNO MESE ANNO, n. NUMERO",
+      "When a highlight is created, under the text of the document you are working on, a form will appear (one for each annotation you have made) for the insertion of further details, i.e. the year and the number of the law contained in the identified reference, also shown. After entering the required details, you will have to press the SAVE button to confirm your work. If you don't think it is necessary to enter further details, you can skip this step.",
+      "If you realize that you have made a mistake in entering the details after saving, you can edit the two input fields and press the corresponding SAVE button again. If you realize that the created annotation contains errors (e.g. words that are only partially highlighted), you can delete it by pressing its DELETE button.",
+      "When you have finished these steps, you can move on to the next document (or terminate the task) by pressing the NEXT (or FINISH) button at the bottom of the page. You can also return to the previous document by pressing the BACK button, also at the bottom of the page.",
+      "During the execution of the task, checks will be made on the quality of the work you are doing which, if it is not satisfactory, will lead you:",
+      "- To have to repeat the task",
+      "- Being excluded from participation in the task"
     ]
   }
 ]

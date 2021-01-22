@@ -907,7 +907,6 @@ export class SkeletonComponent implements OnInit {
       let first_clone = document.querySelectorAll(`.statement-text`)[documentIndex].cloneNode(true)
       first_clone.addEventListener('mouseup', (e) => this.performHighlighting(changeDetector, event, documentIndex, notes, annotator))
       first_clone.addEventListener('touchend', (e) => this.performHighlighting(changeDetector, event, documentIndex, notes, annotator))
-      console.log(first_clone)
       const highlightMade = doHighlight(domElement, true, {
         onAfterHighlight(range, highlight) {
           const selection = document.getSelection();
@@ -915,7 +914,6 @@ export class SkeletonComponent implements OnInit {
             selection.empty()
             let notesForDocument = notes[documentIndex]
             let newAnnotation = new Note(documentIndex, range, highlight)
-            console.log(newAnnotation.range)
             let noteAlreadyFound = false
             for (let note of notesForDocument) {
               if (!note.deleted && newAnnotation.quote.includes(note.quote)) {
@@ -937,7 +935,6 @@ export class SkeletonComponent implements OnInit {
               notesForDocument.push(newAnnotation)
               notes[documentIndex] = notesForDocument
               changeDetector.detectChanges()
-              console.log(newAnnotation)
               return true
             }
           }
@@ -1053,6 +1050,9 @@ export class SkeletonComponent implements OnInit {
         let actualGoldNote: goldNotes = [this.documents[index].law_quotes[i], this.documents[index].law_years[i], this.documents[index].law_numbers[i]]
         AUX_gold.push(actualGoldNote)
       }
+
+      console.log(AUX_gold)
+      console.log(AUX_user)
 
       for (let i_g = 0; i_g < AUX_gold.length; i_g++) {
         for (let i_u = 0; i_u < AUX_user.length; i_u++) {

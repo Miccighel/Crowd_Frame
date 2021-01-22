@@ -218,8 +218,8 @@
                   </div>
                   <div class="annotation-options">
                     <div>
-                      Law number: <input type="text" name="number-{{noteIndex}}.{{i}}" id="number-{{noteIndex}}.{{i}}" placeholder="00" (change)="checkIfSaved(i, noteIndex)"><br /><br />
-                      Law year: <input type="text" name="year-{{noteIndex}}.{{i}}" id="year-{{noteIndex}}.{{i}}" placeholder="0000" (change)="checkIfSaved(i, noteIndex)">
+                      Law number: <input type="number" name="number-{{noteIndex}}.{{i}}" id="number-{{noteIndex}}.{{i}}" placeholder="00" (keyup)="checkIfSaved(i, noteIndex)"><br /><br />
+                      Law year: <input type="number" name="year-{{noteIndex}}.{{i}}" id="year-{{noteIndex}}.{{i}}" placeholder="0000" (keyup)="checkIfSaved(i, noteIndex)">
                     </div>
                     <div>
                       <button (click)="performAnnotation(i, noteIndex)" mat-flat-button color="primary" id="save_button-{{noteIndex}}.{{i}}" [disabled]="checkIfSaved(i, noteIndex)">Save
