@@ -162,8 +162,9 @@
             </mat-radio-group>
           </mat-card-content>
           <mat-card-actions>
+
             <button mat-flat-button color="primary" matStepperNext
-              [disabled]="(!questionnairesForm[i].valid || taskCompleted)" (click)="performLogging('Next')">
+              [disabled]="(!questionnairesForm[i].valid || taskCompleted)" (click)="performLogging('Next',i)">
               Next
             </button>
             <span class="form-note">(*) you have to fill each field to proceed</span>
@@ -175,7 +176,7 @@
 
   <!-- Documents markup -->
   <mat-step *ngFor="let document of documents; let i=index" [editable]="true">
-    <div class="container">
+    <div class=" container">
       <form [formGroup]="documentsForm[i]">
         <mat-card>
           <ng-template matStepLabel> S{{i + 1}}</ng-template>
@@ -232,6 +233,9 @@
                   </ng-container>
                 </tr>
               </table>
+              <mat-error *ngIf="!checkForNotAnnotatedNotes(i)">
+                *<strong>You have to annotate the highlighted text to continue</strong>
+              </mat-error>
             </div>
 
             <!-- Instructions markup -->
@@ -438,17 +442,18 @@
           <!-- Actions markup -->
           <mat-card-actions>
             <button mat-flat-button color="primary" matStepperPrevious *ngIf="i>0" [disabled]="taskCompleted"
-              (click)="performLogging('Back')">
+              (click)="performLogging('Back',i)">
               Back
             </button>
+
             <button mat-flat-button color="primary" matStepperNext *ngIf="i+1<this.documentsAmount"
               [disabled]="(!documentsForm[i].valid || !this.searchEngineRetrievedResponses[i] || taskCompleted || !canINext(i)) && !this.countdownsExpired[i]"
-              (click)="performLogging('Next')">
+              (click)="performLogging('Next',i);">
               Next
             </button>
             <button mat-flat-button color="primary" matStepperNext *ngIf="i+1>=this.documentsAmount"
               [disabled]="!documentsForm[i].valid && !this.countdownsExpired[i]"
-              (click)="performLogging('Finish'); performQualityCheck()">
+              (click)="performLogging('Finish',i); performQualityCheck()">
               Finish
             </button>
             <span class="form-note">(*) you have to annotate at least one DRUG</span>
