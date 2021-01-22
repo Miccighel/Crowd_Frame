@@ -3,7 +3,7 @@
     "caption": "Please, do the following steps:",
     "steps": [
       "Select the portion of the text you want to annotate by highlighting it.",
-      "Choose the desired option (either DRUG or ADV.EFFECT) by clicking on the corresponding  button.",
+      "Choose the desired option (either DRUG or ADV.EFFECT) by clicking on the corresponding button. You have to find at least one DRUG to proceed to the following step.",
       "Use the DELETE button to remove an existing annotation."
     ],
     "steps2": [

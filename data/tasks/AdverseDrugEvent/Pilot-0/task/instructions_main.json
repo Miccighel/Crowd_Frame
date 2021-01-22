@@ -22,10 +22,8 @@
       "The tweets are not presented in any particular order. Simply annotate each tweet after reading it. Don't try to guess or randomly annotate, as there are some cross-checks. You’ll need to use the buttons to annotate at least one DRUG for each tweet, otherwise you will not be able to proceed to the following steps.<br /><br />",
       "Below you can find an example of a valid annotation.<br /><br />",
       "<strong>Example 1</strong><br />",
-      "cipro-51ab07fc53787e40790e02c6<br />",
       "@USERNAME <span class='highlighted-green'>Cipro</span> <span class='highlighted-orange'>destroyed my entire body</span>, from head to toe.  <span class='highlighted-orange'>Bedridden</span> since 2009.  Be VERY careful.<br /><br />",
       "<strong>Example 2</strong><br />",
-      "nicotine-51a7e58853787e40790deaa8<br />",
       "Brb, dying of <span class='highlighted-green'>nicotine</span> <span class='highlighted-orange'>withdrawal</span>."
     ]
   }
