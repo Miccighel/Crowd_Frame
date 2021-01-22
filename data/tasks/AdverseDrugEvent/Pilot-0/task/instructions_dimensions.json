@@ -4,10 +4,8 @@
     "steps": [
       "Select the portion of the text you want to annotate by highlighting it.",
       "Choose the desired option (either DRUG or ADV.EFFECT) by clicking on the corresponding  button.",
-      "Use the DELETE button to remove an existing annotation."
-    ],
-    "steps2": [
-      ""
+      "Use the DELETE button to remove an existing annotation.",
+      "You need to annotate at least one DRUG to proceed to the next tweet."
     ]
   }
 ]
