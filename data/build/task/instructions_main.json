@@ -23,17 +23,18 @@
       "Below you can find an example of a valid annotation.<br /><br />",
       "<strong>Example 1</strong><br /><br />",
       "@USERNAME <span class='highlighted-green'>Cipro</span> <span class='highlighted-orange'>destroyed my entire body</span>, from head to toe.  <span class='highlighted-orange'>Bedridden</span> since 2009.  Be VERY careful.<br /><br />",
-      "<span class='highlighted-green'>Cipro</span> is labelled as <strong>DRUG</strong> (it is the name of a medication) <br />",
-      "<span class='highlighted-orange'>destroyed my entire body</span> is labelled as <strong>ADV.EFFECT</strong> (it is an adverse event description which includes an adjective) <br />",
-      "<span class='highlighted-orange'>Bedridden</span> is labelled as <strong>ADV.EFFECT</strong> (it is the description of an adverse event) <br /><br />",
+      "\"Cipro\" is annotated as <strong>DRUG</strong> (it is the name of a medication) <br />",
+      "\"destroyed my entire body\" is annotated as <strong>ADV.EFFECT</strong> (it is an adverse event description which includes an adjective) <br />",
+      "\"Bedridden\" is annotated as <strong>ADV.EFFECT</strong> (it is the description of an adverse event) <br /><br />",
       "<strong>Example 2</strong><br /><br />",
       "Brb, dying of <span class='highlighted-green'>nicotine</span> <span class='highlighted-orange'>withdrawal</span>.<br /><br />",
-      "<span class='highlighted-green'>nicotine</span> is labelled as <strong>DRUG</strong> (it is the noun which describes an active substance) <br />",
-      "<span class='highlighted-orange'>withdrawal</span> is labelled as <strong>ADV.EFFECT</strong> (withdrawals are considered adverse drug events)<br /><br />",
+      "\"nicotine\" is annotated as <strong>DRUG</strong> (it is the noun which describes an active substance) <br />",
+      "\"withdrawal\" is annotated as <strong>ADV.EFFECT</strong> (withdrawals are considered adverse drug events)<br /><br />",
       "<strong>Example 3</strong><br /><br />",
       "It feels like <span class='highlighted-orange'>my brain is melting</span>. 360mg of <span class='highlighted-green'>vyvanse</span> in 24 hours... not smart danielle. not smart.<br /><br />",
-      "<span class='highlighted-green'>vyvanse</span> is labelled as <strong>DRUG</strong> (it is the name of a medication) <br />",
-      "<span class='highlighted-orange'>my brain is melting</span> is labelled as <strong>ADV.EFFECT</strong> (it is the description of an adverse event) <br /><br />"
+      "\"vyvanse\" is annotated as <strong>DRUG</strong> (it is the name of a medication) <br />",
+      "\"my brain is melting\" is annotated as <strong>ADV.EFFECT</strong> (it is the description of an adverse event) <br /><br />",
+      "You need to <strong>annotate at least one DRUG</strong> to proceed to the next tweet."
     ]
   }
 ]
