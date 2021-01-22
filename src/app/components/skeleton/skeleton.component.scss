@@ -488,10 +488,14 @@ mat-form-field {
   max-width: 80%;
   height: 100vh;
   display: flex;
-  justify-content: center;
-  align-items: center;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.instructions-section mat-card {
   margin: auto;
 }
+
 
 .instructions-section mat-card-actions {
   text-align: center;
