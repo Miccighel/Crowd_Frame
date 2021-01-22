@@ -2,18 +2,31 @@
   {
     "caption": "Task Description",
     "steps": [
-      "In this task, you will be asked to identify and annotate <strong>Drugs</strong> and their <strong>Adverse Drug Events</strong> (ADE) within a set of tweets posted to Twitter. A tweet is a message containing text, photos, a GIF, and/or video. A drug is any substance that causes a change in an organism's physiology or psychology when consumed. An ADE is an injury resulting from medical intervention related to a drug. This includes medication errors, adverse drug reactions (an injury caused by taking medications), allergic reactions, and overdoses.",
-      "We will show you <strong>11 tweets</strong> made by Twitter users. For each tweet, we ask you to read its text and to annotate the mentioned drug along with their ADEs. You will be also required to explicitly tell us if the text of the tweet contains or not an ADE.",
-      "Note that there are some checks throughout the task, and if you do not perform these correctly you will not be able to terminate and get paid. The data from this task is being gathered for research purposes. No personally-identifying information is recorded. Participation is entirely voluntary, and you are free to discontinue at any point. "
+      "In this task, you will be asked to identify and annotate <strong>Drugs</strong> and their <strong>Adverse Effects</strong> within a set of tweets posted to Twitter.",
+      "A <strong>Tweet</strong> is a message containing a piece of text.",
+      "A <strong>Drug</strong> is any substance that causes a change in an organism's physiology or psychology when consumed.",
+      "An <strong>Adverse</strong> Effect is any kind of medical problem or <strong>undesired negative effect</strong> that happens during treatment with a Drug. This includes injury, allergic reactions, overdoses, undesired symptoms and similar.<br /><br />",
+      "We will show you <strong>11 tweets</strong> made by Twitter users. Each tweet is not altered in any way and it is reported as posted by its author (usernames are anonymized).",
+      "For each tweet, we ask you to read its text and to <strong>annotate the mentioned Drugs along with their Adverse Effects.</strong>",
+      "Note that there are some checks throughout the task, and if you do not perform these correctly you will not be able to terminate and get paid.",
+      "The data from this task is being gathered for research purposes. No personally-identifying information is recorded. Participation is entirely voluntary, and you are free to discontinue at any point."
     ]
   },
   {
     "caption": "Task Instructions",
     "steps": [
-      "You will be asked to annotate 11 tweets, each of them posted by a person subscribed to Twitter. You will be shown the 11 tweets, one at time. Each tweet is not altered in any way and it is reported as posted by its author. You will annotate each tweet by highlighting one or more portions of text; you will do that by clicking the left button of your mouse and by dragging pointer over the chosen portion of text. If the mouse pointer will end up beyond the boundaries of the text the annotation will not be saved. Be aware that you will be able to delete any annotation many a time.",
-      "When you will select a portion of text to be annotated, an additional window will be opened. Within such window you will have to <strong>choose the desired option to annotate the current portion of text</strong>. Select DRUG if you think you have found a drug; select ADE if you think you have found an adverse drug event.",
-      "Once you have annotated each portion of text, you will be asked to answer a simple question concerning the presence of an ADE within the text itself; you will do such by selecting the correct alternative using a radio button",
-      "The tweets are not presented in any particular order. Simply annotate each tweet after reading it. Don't try to guess or randomly annotate, as there are some cross-checks. Note that you’ll need to annotate each tweet otherwise you will not be able to proceed to the following steps."
+      "You will be shown one tweet at the time, for a total of 11 tweets. You will annotate each tweet by highlighting one or more portions of text. You can do that by selecting the text as you normally would (clicking and holding the left mouse button, then dragging the pointer over the chosen portion of text).",
+      "You will be able to delete any annotation at any time if you change your mind by clicking on the delete button.<br />",
+      "Once you select a portion of text you will be able to <strong>annotate the current portion of text</strong> by clicking on the DRUG button if you think you have found a drug, or on the ADV.EFFECT button if you think you have found an Adverse Effect.",
+      "Note that the buttons are active only if you highlight a portion of text belonging to the tweet. Make sure that your selection does not include any text outside of the tweet’s text box.<br /><br />",
+      "The tweets are not presented in any particular order. Simply annotate each tweet after reading it. Don't try to guess or randomly annotate, as there are some cross-checks. You’ll need to use the buttons to annotate at least one DRUG for each tweet, otherwise you will not be able to proceed to the following steps.<br /><br />",
+      "Below you can find an example of a valid annotation.<br /><br />",
+      "<strong>Example 1</strong><br />",
+      "cipro-51ab07fc53787e40790e02c6<br />",
+      "@USERNAME <span class='highlighted-green'>Cipro</span> <span class='highlighted-orange'>destroyed my entire body</span>, from head to toe.  <span class='highlighted-orange'>Bedridden</span> since 2009.  Be VERY careful.<br /><br />",
+      "<strong>Example 2</strong><br />",
+      "nicotine-51a7e58853787e40790deaa8<br />",
+      "Brb, dying of <span class='highlighted-green'>nicotine</span> <span class='highlighted-orange'>withdrawal</span>."
     ]
   }
 ]

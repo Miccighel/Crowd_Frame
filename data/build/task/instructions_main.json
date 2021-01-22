@@ -5,7 +5,7 @@
       "In this task, you will be asked to identify and annotate <strong>Drugs</strong> and their <strong>Adverse Effects</strong> within a set of tweets posted to Twitter.",
       "A <strong>Tweet</strong> is a message containing a piece of text.",
       "A <strong>Drug</strong> is any substance that causes a change in an organism's physiology or psychology when consumed.",
-      "An <strong>Adverse</strong> Effect is any kind of medical problem or <strong>undesired negative effect</strong> that happens during treatment with a Drug. This includes injury, allergic reactions, overdoses, undesired symptoms and similar.",
+      "An <strong>Adverse</strong> Effect is any kind of medical problem or <strong>undesired negative effect</strong> that happens during treatment with a Drug. This includes injury, allergic reactions, overdoses, undesired symptoms and similar.<br /><br />",
       "We will show you <strong>11 tweets</strong> made by Twitter users. Each tweet is not altered in any way and it is reported as posted by its author (usernames are anonymized).",
       "For each tweet, we ask you to read its text and to <strong>annotate the mentioned Drugs along with their Adverse Effects.</strong>",
       "Note that there are some checks throughout the task, and if you do not perform these correctly you will not be able to terminate and get paid.",
@@ -16,17 +16,17 @@
     "caption": "Task Instructions",
     "steps": [
       "You will be shown one tweet at the time, for a total of 11 tweets. You will annotate each tweet by highlighting one or more portions of text. You can do that by selecting the text as you normally would (clicking and holding the left mouse button, then dragging the pointer over the chosen portion of text).",
-      "You will be able to delete any annotation at any time if you change your mind by clicking on the delete button.",
-      "Once you select a portion of text you will be able to annotate the current portion of text by clicking on the DRUG button if you think you have found a drug, or on the ADV.EFFECT button if you think you have found an Adverse Effect.",
-      "Note that the buttons are active only if you highlight a portion of text belonging to the tweet. Make sure that your selection does not include any text outside of the tweet’s text box.",
-      "The tweets are not presented in any particular order. Simply annotate each tweet after reading it. Don't try to guess or randomly annotate, as there are some cross-checks. You’ll need to use the buttons to annotate at least one DRUG for each tweet, otherwise you will not be able to proceed to the following steps.",
-      "Below you can find an example of a valid annotation.",
-      "<strong>Example 1</strong>",
-      "cipro-51ab07fc53787e40790e02c6",
-      "@USERNAME <strong>Cipro</strong> <strong>destroyed my entire body</strong>, from head to toe.  <strong>Bedridden</strong> since 2009.  Be VERY careful.",
-      "<strong>Example 2</strong>",
-      "nicotine-51a7e58853787e40790deaa8",
-      "Brb, dying of <strong>nicotine</strong> <strong>withdrawal</strong>."
+      "You will be able to delete any annotation at any time if you change your mind by clicking on the delete button.<br />",
+      "Once you select a portion of text you will be able to <strong>annotate the current portion of text</strong> by clicking on the DRUG button if you think you have found a drug, or on the ADV.EFFECT button if you think you have found an Adverse Effect.",
+      "Note that the buttons are active only if you highlight a portion of text belonging to the tweet. Make sure that your selection does not include any text outside of the tweet’s text box.<br /><br />",
+      "The tweets are not presented in any particular order. Simply annotate each tweet after reading it. Don't try to guess or randomly annotate, as there are some cross-checks. You’ll need to use the buttons to annotate at least one DRUG for each tweet, otherwise you will not be able to proceed to the following steps.<br /><br />",
+      "Below you can find an example of a valid annotation.<br /><br />",
+      "<strong>Example 1</strong><br />",
+      "cipro-51ab07fc53787e40790e02c6<br />",
+      "@USERNAME <span class='highlighted-green'>Cipro</span> <span class='highlighted-orange'>destroyed my entire body</span>, from head to toe.  <span class='highlighted-orange'>Bedridden</span> since 2009.  Be VERY careful.<br /><br />",
+      "<strong>Example 2</strong><br />",
+      "nicotine-51a7e58853787e40790deaa8<br />",
+      "Brb, dying of <span class='highlighted-green'>nicotine</span> <span class='highlighted-orange'>withdrawal</span>."
     ]
   }
 ]
