@@ -17,16 +17,23 @@
     "steps": [
       "You will be shown one tweet at the time, for a total of 11 tweets. You will annotate each tweet by highlighting one or more portions of text. You can do that by selecting the text as you normally would (clicking and holding the left mouse button, then dragging the pointer over the chosen portion of text).",
       "You will be able to delete any annotation at any time if you change your mind by clicking on the delete button.<br />",
-      "Once you select a portion of text you will be able to <strong>annotate the current portion of text</strong> by clicking on the DRUG button if you think you have found a drug, or on the ADV.EFFECT button if you think you have found an Adverse Effect.",
+      "Once you select a portion of text you will be able to <strong>annotate the current portion of text</strong> by clicking on the <span class='highlighted-green'>DRUG</span> button if you think you have found a drug, or on the  <span class='highlighted-orange'>ADV.EFFECT</span> button if you think you have found an Adverse Effect. Note that the label DRUG includes also medications names and active substances nouns, while the label ADV.EFFECT includes descriptions containing verbs, nouns, pronouns, adjectives, adverbs, idioms, slang and mentions of withdrawals and overdoses.",
       "Note that the buttons are active only if you highlight a portion of text belonging to the tweet. Make sure that your selection does not include any text outside of the tweet’s text box.<br /><br />",
       "The tweets are not presented in any particular order. Simply annotate each tweet after reading it. Don't try to guess or randomly annotate, as there are some cross-checks. You’ll need to use the buttons to annotate at least one DRUG for each tweet, otherwise you will not be able to proceed to the following steps.<br /><br />",
       "Below you can find an example of a valid annotation.<br /><br />",
-      "<strong>Example 1</strong><br />",
-      "cipro-51ab07fc53787e40790e02c6<br />",
+      "<strong>Example 1</strong><br /><br />",
       "@USERNAME <span class='highlighted-green'>Cipro</span> <span class='highlighted-orange'>destroyed my entire body</span>, from head to toe.  <span class='highlighted-orange'>Bedridden</span> since 2009.  Be VERY careful.<br /><br />",
-      "<strong>Example 2</strong><br />",
-      "nicotine-51a7e58853787e40790deaa8<br />",
-      "Brb, dying of <span class='highlighted-green'>nicotine</span> <span class='highlighted-orange'>withdrawal</span>."
+      "<span class='highlighted-green'>Cipro</span> is labelled as <strong>DRUG</strong> (it is the name of a medication) <br />",
+      "<span class='highlighted-orange'>destroyed my entire body</span> is labelled as <strong>ADV.EFFECT</strong> (it is an adverse event description which includes an adjective) <br />",
+      "<span class='highlighted-orange'>Bedridden</span> is labelled as <strong>ADV.EFFECT</strong> (it is the description of an adverse event) <br /><br />",
+      "<strong>Example 2</strong><br /><br />",
+      "Brb, dying of <span class='highlighted-green'>nicotine</span> <span class='highlighted-orange'>withdrawal</span>.<br /><br />",
+      "<span class='highlighted-green'>nicotine</span> is labelled as <strong>DRUG</strong> (it is the noun which describes an active substance) <br />",
+      "<span class='highlighted-orange'>withdrawal</span> is labelled as <strong>ADV.EFFECT</strong> (withdrawals are considered adverse drug events)<br /><br />",
+      "<strong>Example 3</strong><br /><br />",
+      "It feels like <span class='highlighted-orange'>my brain is melting</span>. 360mg of <span class='highlighted-green'>vyvanse</span> in 24 hours... not smart danielle. not smart.<br /><br />",
+      "<span class='highlighted-green'>vyvanse</span> is labelled as <strong>DRUG</strong> (it is the name of a medication) <br />",
+      "<span class='highlighted-orange'>my brain is melting</span> is labelled as <strong>ADV.EFFECT</strong> (it is the description of an adverse event) <br /><br />"
     ]
   }
 ]
