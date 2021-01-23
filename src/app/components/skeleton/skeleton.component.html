@@ -233,7 +233,7 @@
                   </ng-container>
                 </tr>
               </table>
-              <mat-error *ngIf="!checkForNotAnnotatedNotes(i)">
+              <mat-error class="note-not-highlighted" *ngIf="!checkForNotAnnotatedNotes(i)">
                 *<strong>You have to annotate the highlighted text to continue</strong>
               </mat-error>
             </div>
