@@ -7,11 +7,11 @@
     "type": "options",
     "values": [
       {
-        "label": "drug",
+        "label": "Drug",
         "color": "#9eff7b"
       },
       {
-        "label": "adv. effect",
+        "label": "Effect",
         "color": "#ff7f50"
       }
     ]

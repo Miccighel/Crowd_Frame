@@ -179,9 +179,9 @@
     <div class=" container">
       <form [formGroup]="documentsForm[i]">
         <mat-card>
-          <ng-template matStepLabel> S{{i + 1}}</ng-template>
+          <ng-template matStepLabel> T{{i + 1}}</ng-template>
           <mat-divider [inset]="true"></mat-divider>
-          <mat-card-title>Consider the following Tweet</mat-card-title>
+          <mat-card-title>Tweet Nr. {{i + 1}}</mat-card-title>
           <mat-divider [inset]="true"></mat-divider>
           <mat-card-content class="pt-16px">
 
@@ -217,8 +217,8 @@
             <div *ngIf="checkUndeletedNotesPresence(this.notes[i])" class="annotations">
               <table class="mat-table">
                 <tr class="mat-header-row">
-                  <th class="mat-header-cell">Quote</th>
-                  <th class="mat-header-cell">Option</th>
+                  <th class="mat-header-cell">Text</th>
+                  <th class="mat-header-cell">Annotation</th>
                   <th class="mat-header-cell">Actions</th>
                 </tr>
                 <tr *ngFor="let note of this.notes[i]; let noteIndex = index" class="mat-row">
@@ -227,7 +227,7 @@
                     <td class="mat-cell"><code>{{note.option}}</code></td>
                     <td class="mat-cell">
                       <button (click)="removeAnnotation(i, noteIndex, this.changeDetector)" mat-flat-button
-                        color="primary">Delete
+                        color="warn">Delete
                       </button>
                     </td>
                   </ng-container>
