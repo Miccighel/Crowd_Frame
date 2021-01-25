@@ -899,6 +899,19 @@ export class SkeletonComponent implements OnInit {
 
   public performHighlighting(changeDetector, event: Object, documentIndex: number, annotationDialog, notes, annotator: Annotator) {
 
+    if (this.notes[documentIndex].length > 0) { //If there is a note
+      let element = this.notes[documentIndex][this.notes[documentIndex].length - 1]
+      if (element.option == "not_selected" && !element.deleted) { //If the note have the option "note_selected" ==> yellow highlight
+        this.removeAnnotation(documentIndex, this.notes[documentIndex].length - 1, changeDetector) //remove the note
+        //Block the events on the buttons
+        let ann_button = <HTMLElement>document.querySelector(`.annotation-buttons-${documentIndex}`)
+        ann_button.style.pointerEvents = "none"
+        ann_button.style.opacity = "0.3"
+        //
+      }
+    }
+
+
     let domElement = null
     let optionChosen = null
     if (this.deviceDetectorService.isMobile() || this.deviceDetectorService.isTablet()) {
@@ -957,15 +970,6 @@ export class SkeletonComponent implements OnInit {
             changeDetector.detectChanges()
             notesForDocument.push(newAnnotation)
             notes[documentIndex] = notesForDocument
-            let main_div = <HTMLElement>document.querySelector(`.general-tweet-div-${documentIndex}`)
-            //
-
-            //Disable the main DIV after highlight, until the highlighted text is annotated
-            main_div.style.userSelect = "none"
-            main_div.style.webkitUserSelect = "none"
-            main_div.style.pointerEvents = "none"
-            main_div.style.touchAction = "none"
-            main_div.style.cursor = "no-drop"
           }
         }
       })
@@ -983,7 +987,7 @@ export class SkeletonComponent implements OnInit {
           let current_note = <HTMLElement>document.querySelector(`[data-timestamp='${element.timestamp_created}']`)
           current_note.style.backgroundColor = value.color
 
-          //disable user events to avoid over selection!
+          //disable user events on the NOTE to avoid over selection!
           current_note.style.userSelect = "none"
           current_note.style.webkitUserSelect = "none"
           current_note.style.pointerEvents = "none"
@@ -994,14 +998,6 @@ export class SkeletonComponent implements OnInit {
     })
     const selection = document.getSelection();
     selection.empty()
-
-    let main_div = <HTMLElement>document.querySelector(`.general-tweet-div-${documentIndex}`)
-    //Enable the user events on the main DIV
-    main_div.style.userSelect = "auto"
-    main_div.style.webkitUserSelect = "auto"
-    main_div.style.pointerEvents = "auto"
-    main_div.style.touchAction = "auto"
-    main_div.style.cursor = "auto"
 
     //Disable the user to click on the buttons
     let ann_button = <HTMLElement>document.querySelector(`.annotation-buttons-${documentIndex}`)
@@ -1220,343 +1216,349 @@ export class SkeletonComponent implements OnInit {
 
 
   public async performLogging(action: string, documentIndex: number) {
+    if (this.notes[documentIndex].length > 0) {
+      let element = this.notes[documentIndex][this.notes[documentIndex].length - 1]
+      if (element.option == "not_selected" && !element.deleted) {
+        this.removeAnnotation(documentIndex, this.notes[documentIndex].length - 1, this.changeDetector)
+        //Disable the user to click on the buttons
+        let ann_button = <HTMLElement>document.querySelector(`.annotation-buttons-${documentIndex}`)
+        ann_button.style.pointerEvents = "none"
+        ann_button.style.opacity = "0.3"
+        ////
+      }
+    }
+    /* |--- COUNTDOWN ---| */
+    if ((this.stepper.selectedIndex >= this.questionnaireAmount) && this.settings.countdownTime) {
+      let currentIndex = this.stepper.selectedIndex - this.questionnaireAmount;
+      switch (action) {
+        case "Next":
+          if (currentIndex > 0 && this.countdown.toArray()[currentIndex - 1].left > 0) {
+            this.countdown.toArray()[currentIndex - 1].pause();
+          }
+          if (this.countdown.toArray()[currentIndex].left == this.settings.countdownTime) {
+            this.countdown.toArray()[currentIndex].begin();
+          } else if (this.countdown.toArray()[currentIndex].left > 0) {
+            this.countdown.toArray()[currentIndex].resume();
+          }
+          break;
+        case "Back":
+          if (this.countdown.toArray()[currentIndex + 1].left > 0) {
+            this.countdown.toArray()[currentIndex + 1].pause();
+          }
+          if (this.countdown.toArray()[currentIndex].left == this.settings.countdownTime) {
+            this.countdown.toArray()[currentIndex].begin();
+          } else if (this.countdown.toArray()[currentIndex].left > 0) {
+            this.countdown.toArray()[currentIndex].resume();
+          }
+          break;
+        case "Finish":
+          if (this.countdown.toArray()[currentIndex - 1].left > 0) {
+            this.countdown.toArray()[currentIndex - 1].pause();
+          }
+          break;
+      }
+    }
 
-    if (this.checkForNotAnnotatedNotes(documentIndex)) {
+    if (!(this.worker.identifier === null)) {
 
-      /* |--- COUNTDOWN ---| */
-      if ((this.stepper.selectedIndex >= this.questionnaireAmount) && this.settings.countdownTime) {
-        let currentIndex = this.stepper.selectedIndex - this.questionnaireAmount;
-        switch (action) {
-          case "Next":
-            if (currentIndex > 0 && this.countdown.toArray()[currentIndex - 1].left > 0) {
-              this.countdown.toArray()[currentIndex - 1].pause();
-            }
-            if (this.countdown.toArray()[currentIndex].left == this.settings.countdownTime) {
-              this.countdown.toArray()[currentIndex].begin();
-            } else if (this.countdown.toArray()[currentIndex].left > 0) {
-              this.countdown.toArray()[currentIndex].resume();
-            }
-            break;
-          case "Back":
-            if (this.countdown.toArray()[currentIndex + 1].left > 0) {
-              this.countdown.toArray()[currentIndex + 1].pause();
-            }
-            if (this.countdown.toArray()[currentIndex].left == this.settings.countdownTime) {
-              this.countdown.toArray()[currentIndex].begin();
-            } else if (this.countdown.toArray()[currentIndex].left > 0) {
-              this.countdown.toArray()[currentIndex].resume();
-            }
-            break;
-          case "Finish":
-            if (this.countdown.toArray()[currentIndex - 1].left > 0) {
-              this.countdown.toArray()[currentIndex - 1].pause();
-            }
-            break;
-        }
+      /*
+       * IMPORTANT: The current document index is the stepper current index AFTER the transition
+       * If a NEXT action is performed at document 3, the stepper current index is 4.
+       * If a BACK action is performed at document 3, the stepper current index is 2.
+       * This is tricky only for the following switch which has to set the start/end
+       * timestamps for the previous/following document.
+       */
+      let currentElement = this.stepper.selectedIndex;
+      /* completedElement is the index of the document/questionnaire in which the user was before */
+      let completedElement = this.stepper.selectedIndex;
+
+      switch (action) {
+        case "Next":
+          completedElement = currentElement - 1;
+          break;
+        case "Back":
+          completedElement = currentElement + 1;
+          break;
+        case "Finish":
+          completedElement = this.questionnaireAmount + this.documentsAmount - 1;
+          currentElement = this.questionnaireAmount + this.documentsAmount - 1;
+          break;
       }
 
-      if (!(this.worker.identifier === null)) {
+      let timeInSeconds = Date.now() / 1000;
+      switch (action) {
+        case "Next":
+          /*
+           * If a transition to the following document is performed the current timestamp is:
+           * the start timestamp for the document at <stepper.selectedIndex>
+           * the end timestamps for the document at <stepper.selectedIndex - 1>
+           */
+          this.timestampsStart[currentElement].push(timeInSeconds);
+          this.timestampsEnd[completedElement].push(timeInSeconds);
+          break;
+        case "Back":
+          /*
+           * If a transition to the previous document is performed the current timestamp is:
+           * the start timestamp for the document at <stepper.selectedIndex>
+           * the end timestamps for the document at <stepper.selectedIndex + 1>
+           */
+          this.timestampsStart[currentElement].push(timeInSeconds);
+          this.timestampsEnd[completedElement].push(timeInSeconds);
+          break;
+        case "Finish":
+          /* If the task finishes, the current timestamp is the end timestamp for the current document. */
+          this.timestampsEnd[currentElement].push(timeInSeconds);
+          break;
+      }
 
-        /*
-         * IMPORTANT: The current document index is the stepper current index AFTER the transition
-         * If a NEXT action is performed at document 3, the stepper current index is 4.
-         * If a BACK action is performed at document 3, the stepper current index is 2.
-         * This is tricky only for the following switch which has to set the start/end
-         * timestamps for the previous/following document.
-         */
-        let currentElement = this.stepper.selectedIndex;
-        /* completedElement is the index of the document/questionnaire in which the user was before */
-        let completedElement = this.stepper.selectedIndex;
+      /*
+       * The general idea with start and end timestamps is that each time a worker goes to
+       * the next document, the current timestamp is the start timestamp for such document
+       * and the end timestamp for the previous and viceversa
+       */
 
-        switch (action) {
-          case "Next":
-            completedElement = currentElement - 1;
-            break;
-          case "Back":
-            completedElement = currentElement + 1;
-            break;
-          case "Finish":
-            completedElement = this.questionnaireAmount + this.documentsAmount - 1;
-            currentElement = this.questionnaireAmount + this.documentsAmount - 1;
-            break;
-        }
-
-        let timeInSeconds = Date.now() / 1000;
-        switch (action) {
-          case "Next":
-            /*
-             * If a transition to the following document is performed the current timestamp is:
-             * the start timestamp for the document at <stepper.selectedIndex>
-             * the end timestamps for the document at <stepper.selectedIndex - 1>
-             */
-            this.timestampsStart[currentElement].push(timeInSeconds);
-            this.timestampsEnd[completedElement].push(timeInSeconds);
-            break;
-          case "Back":
-            /*
-             * If a transition to the previous document is performed the current timestamp is:
-             * the start timestamp for the document at <stepper.selectedIndex>
-             * the end timestamps for the document at <stepper.selectedIndex + 1>
-             */
-            this.timestampsStart[currentElement].push(timeInSeconds);
-            this.timestampsEnd[completedElement].push(timeInSeconds);
-            break;
-          case "Finish":
-            /* If the task finishes, the current timestamp is the end timestamp for the current document. */
-            this.timestampsEnd[currentElement].push(timeInSeconds);
-            break;
-        }
-
-        /*
-         * The general idea with start and end timestamps is that each time a worker goes to
-         * the next document, the current timestamp is the start timestamp for such document
-         * and the end timestamp for the previous and viceversa
-         */
-
-        /* In the corresponding array the elapsed timestamps for each document are computed */
-        for (let i = 0; i < this.documentsAmount + this.questionnaireAmount; i++) {
-          let totalSecondsElapsed = 0;
-          for (let k = 0; k < this.timestampsEnd[i].length; k++) {
-            if (this.timestampsStart[i][k] !== null && this.timestampsEnd[i][k] !== null) {
-              totalSecondsElapsed = totalSecondsElapsed + (Number(this.timestampsEnd[i][k]) - Number(this.timestampsStart[i][k]))
-            }
+      /* In the corresponding array the elapsed timestamps for each document are computed */
+      for (let i = 0; i < this.documentsAmount + this.questionnaireAmount; i++) {
+        let totalSecondsElapsed = 0;
+        for (let k = 0; k < this.timestampsEnd[i].length; k++) {
+          if (this.timestampsStart[i][k] !== null && this.timestampsEnd[i][k] !== null) {
+            totalSecondsElapsed = totalSecondsElapsed + (Number(this.timestampsEnd[i][k]) - Number(this.timestampsStart[i][k]))
           }
-          this.timestampsElapsed[i] = totalSecondsElapsed
         }
+        this.timestampsElapsed[i] = totalSecondsElapsed
+      }
 
-        /* If the worker has completed a questionnaire */
-        if (completedElement < this.questionnaireAmount) {
+      /* If the worker has completed a questionnaire */
+      if (completedElement < this.questionnaireAmount) {
 
-          /* The amount of accesses to the current questionnaire is retrieved */
-          let accessesAmount = this.elementsAccesses[completedElement];
+        /* The amount of accesses to the current questionnaire is retrieved */
+        let accessesAmount = this.elementsAccesses[completedElement];
 
-          /* If the worker has completed the first questionnaire */
-          if (completedElement == 0) {
-
-            let data = {}
-
-            /* The full information about task setup (currentDocument.e., its document and questionnaire structures) are uploaded, only once */
-            let taskData = {
-              task_id: this.taskName,
-              batch_name: this.batchName,
-              worker_id: this.worker.identifier,
-              unit_id: this.unitId,
-              token_input: this.tokenInput.value,
-              token_output: this.tokenOutput,
-              tries_amount: this.allowedTries,
-              questionnaire_amount: this.questionnaireAmount,
-              documents_amount: this.documentsAmount,
-              dimensions_amount: this.dimensionsAmount,
-            };
-            /* General info about task */
-            data["task"] = taskData
-            /* await (this.upload(`${this.workerFolder}/task.json`, taskData)); */
-            /* The answers of the current worker to the questionnaire */
-            data["questionnaires"] = this.questionnaires
-            /* await (this.upload(`${this.workerFolder}/questionnaires.json`, this.questionnaires)); */
-            /* The parsed document contained in current worker's hit */
-            data["documents"] = this.documents
-            /* await (this.upload(`${this.workerFolder}/documents.json`, this.documents)); */
-            /* The dimensions of the answers of each worker */
-            data["dimensions"] = this.dimensions
-            /* await (this.upload(`${this.workerFolder}/dimensions.json`, this.dimensions)); */
-            /* General info about worker */
-            data["worker"] = this.worker
-            /* await (this.upload(`${this.workerFolder}/worker.json`, this.worker)); */
-
-            let uploadStatus = await this.S3Service.uploadTaskData(this.configService.environment, this.worker, data)
-
-          }
-
-          /* The partial data about the completed questionnaire are uploaded */
+        /* If the worker has completed the first questionnaire */
+        if (completedElement == 0) {
 
           let data = {}
 
-          let actionInfo = {
-            action: action,
-            access: accessesAmount,
-            try: this.currentTry,
-            index: completedElement,
-            sequence: this.sequenceNumber,
-            element: "questionnaire"
+          /* The full information about task setup (currentDocument.e., its document and questionnaire structures) are uploaded, only once */
+          let taskData = {
+            task_id: this.taskName,
+            batch_name: this.batchName,
+            worker_id: this.worker.identifier,
+            unit_id: this.unitId,
+            token_input: this.tokenInput.value,
+            token_output: this.tokenOutput,
+            tries_amount: this.allowedTries,
+            questionnaire_amount: this.questionnaireAmount,
+            documents_amount: this.documentsAmount,
+            dimensions_amount: this.dimensionsAmount,
           };
-          /* Info about the performed action ("Next"? "Back"? From where?) */
-          data["info"] = actionInfo
-          /* Worker's answers to the current questionnaire */
-          let answers = this.questionnairesForm[completedElement].value;
-          data["answers"] = answers
-          /* Start, end and elapsed timestamps for the current questionnaire */
-          let timestampsStart = this.timestampsStart[completedElement];
-          data["timestamps_start"] = timestampsStart
-          let timestampsEnd = this.timestampsEnd[completedElement];
-          data["timestamps_end"] = timestampsEnd
-          let timestampsElapsed = this.timestampsElapsed[completedElement];
-          data["timestamps_elapsed"] = timestampsElapsed
-          /* Number of accesses to the current questionnaire (which must be always 1, since the worker cannot go back */
-          data["accesses"] = accessesAmount + 1
+          /* General info about task */
+          data["task"] = taskData
+          /* await (this.upload(`${this.workerFolder}/task.json`, taskData)); */
+          /* The answers of the current worker to the questionnaire */
+          data["questionnaires"] = this.questionnaires
+          /* await (this.upload(`${this.workerFolder}/questionnaires.json`, this.questionnaires)); */
+          /* The parsed document contained in current worker's hit */
+          data["documents"] = this.documents
+          /* await (this.upload(`${this.workerFolder}/documents.json`, this.documents)); */
+          /* The dimensions of the answers of each worker */
+          data["dimensions"] = this.dimensions
+          /* await (this.upload(`${this.workerFolder}/dimensions.json`, this.dimensions)); */
+          /* General info about worker */
+          data["worker"] = this.worker
+          /* await (this.upload(`${this.workerFolder}/worker.json`, this.worker)); */
 
-          let uploadStatus = await this.S3Service.uploadQuestionnaire(this.configService.environment, this.worker, data, false, this.currentTry, completedElement, accessesAmount + 1, this.sequenceNumber)
+          let uploadStatus = await this.S3Service.uploadTaskData(this.configService.environment, this.worker, data)
 
-          /* The amount of accesses to the current questionnaire is incremented */
-          this.sequenceNumber = this.sequenceNumber + 1
-          this.elementsAccesses[completedElement] = accessesAmount + 1;
+        }
 
-          /* If the worker has completed a document */
-        } else {
+        /* The partial data about the completed questionnaire are uploaded */
 
-          if (this.questionnaireAmount == 0) {
+        let data = {}
 
-            let data = {}
+        let actionInfo = {
+          action: action,
+          access: accessesAmount,
+          try: this.currentTry,
+          index: completedElement,
+          sequence: this.sequenceNumber,
+          element: "questionnaire"
+        };
+        /* Info about the performed action ("Next"? "Back"? From where?) */
+        data["info"] = actionInfo
+        /* Worker's answers to the current questionnaire */
+        let answers = this.questionnairesForm[completedElement].value;
+        data["answers"] = answers
+        /* Start, end and elapsed timestamps for the current questionnaire */
+        let timestampsStart = this.timestampsStart[completedElement];
+        data["timestamps_start"] = timestampsStart
+        let timestampsEnd = this.timestampsEnd[completedElement];
+        data["timestamps_end"] = timestampsEnd
+        let timestampsElapsed = this.timestampsElapsed[completedElement];
+        data["timestamps_elapsed"] = timestampsElapsed
+        /* Number of accesses to the current questionnaire (which must be always 1, since the worker cannot go back */
+        data["accesses"] = accessesAmount + 1
 
-            /* The full information about task setup (currentDocument.e., its document and questionnaire structures) are uploaded, only once */
-            let taskData = {
-              task_id: this.taskName,
-              batch_name: this.batchName,
-              worker_id: this.worker.identifier,
-              unit_id: this.unitId,
-              token_input: this.tokenInput.value,
-              token_output: this.tokenOutput,
-              tries_amount: this.allowedTries,
-              questionnaire_amount: this.questionnaireAmount,
-              documents_amount: this.documentsAmount,
-              dimensions_amount: this.dimensionsAmount,
-            };
-            /* General info about task */
-            data["task"] = taskData
-            /* await (this.upload(`${this.workerFolder}/task.json`, taskData)); */
-            /* The answers of the current worker to the questionnaire */
-            data["questionnaires"] = this.questionnaires
-            /* await (this.upload(`${this.workerFolder}/questionnaires.json`, this.questionnaires)); */
-            /* The parsed document contained in current worker's hit */
-            data["documents"] = this.documents
-            /* await (this.upload(`${this.workerFolder}/documents.json`, this.documents)); */
-            /* The dimensions of the answers of each worker */
-            data["dimensions"] = this.dimensions
-            /* await (this.upload(`${this.workerFolder}/dimensions.json`, this.dimensions)); */
-            /* General info about worker */
-            data["worker"] = this.worker
-            /* await (this.upload(`${this.workerFolder}/worker.json`, this.worker)); */
+        let uploadStatus = await this.S3Service.uploadQuestionnaire(this.configService.environment, this.worker, data, false, this.currentTry, completedElement, accessesAmount + 1, this.sequenceNumber)
 
-            let uploadStatus = await this.S3Service.uploadTaskData(this.configService.environment, this.worker, data)
+        /* The amount of accesses to the current questionnaire is incremented */
+        this.sequenceNumber = this.sequenceNumber + 1
+        this.elementsAccesses[completedElement] = accessesAmount + 1;
 
-          }
+        /* If the worker has completed a document */
+      } else {
 
-          /* The amount of accesses to the current document is retrieved */
-          let accessesAmount = this.elementsAccesses[completedElement];
-
-          /* The index of the completed document is the completed element minus the questionnaire amount */
-          let completedDocument = completedElement - this.questionnaireAmount;
+        if (this.questionnaireAmount == 0) {
 
           let data = {}
 
-          let actionInfo = {
-            action: action,
-            access: accessesAmount,
-            try: this.currentTry,
-            index: completedElement,
-            sequence: this.sequenceNumber,
-            element: "document"
+          /* The full information about task setup (currentDocument.e., its document and questionnaire structures) are uploaded, only once */
+          let taskData = {
+            task_id: this.taskName,
+            batch_name: this.batchName,
+            worker_id: this.worker.identifier,
+            unit_id: this.unitId,
+            token_input: this.tokenInput.value,
+            token_output: this.tokenOutput,
+            tries_amount: this.allowedTries,
+            questionnaire_amount: this.questionnaireAmount,
+            documents_amount: this.documentsAmount,
+            dimensions_amount: this.dimensionsAmount,
           };
-          /* Info about the performed action ("Next"? "Back"? From where?) */
-          data["info"] = actionInfo
-          /* Worker's truth level and justification for the current document */
-          let answers = this.documentsForm[completedDocument].value;
-          data["answers"] = answers
-          let notes = this.notes[completedDocument]
-          data["notes"] = notes
-          /* Worker's dimensions selected values for the current document */
-          let dimensionsSelectedValues = this.dimensionsSelectedValues[completedDocument];
-          data["dimensions_selected"] = dimensionsSelectedValues
-          /* Worker's search engine queries for the current document */
-          let searchEngineQueries = this.searchEngineQueries[completedDocument];
-          data["queries"] = searchEngineQueries
-          /* Start, end and elapsed timestamps for the current document */
-          let timestampsStart = this.timestampsStart[completedElement];
-          data["timestamps_start"] = timestampsStart
-          let timestampsEnd = this.timestampsEnd[completedElement];
-          data["timestamps_end"] = timestampsEnd
-          let timestampsElapsed = this.timestampsElapsed[completedElement];
-          data["timestamps_elapsed"] = timestampsElapsed
-          let countdownTime = (this.settings.countdownTime) ? Number(this.countdown[completedElement]["i"]["text"]) : null
-          data["countdowns_times"] = countdownTime
-          let countdown_expired = this.countdownsExpired[completedElement]
-          data["countdowns_expired"] = countdown_expired
-          /* Number of accesses to the current document (currentDocument.e., how many times the worker reached the document with a "Back" or "Next" action */
-          let accesses = accessesAmount + 1
-          data["accesses"] = accesses
-          /* Responses retrieved by search engine for each worker's query for the current document */
-          let responsesRetrieved = this.searchEngineRetrievedResponses[completedDocument];
-          data["responses_retrieved"] = responsesRetrieved
-          /* Responses by search engine ordered by worker's click for the current document */
-          let responsesSelected = this.searchEngineSelectedResponses[completedDocument];
-          data["responses_selected"] = responsesSelected
+          /* General info about task */
+          data["task"] = taskData
+          /* await (this.upload(`${this.workerFolder}/task.json`, taskData)); */
+          /* The answers of the current worker to the questionnaire */
+          data["questionnaires"] = this.questionnaires
+          /* await (this.upload(`${this.workerFolder}/questionnaires.json`, this.questionnaires)); */
+          /* The parsed document contained in current worker's hit */
+          data["documents"] = this.documents
+          /* await (this.upload(`${this.workerFolder}/documents.json`, this.documents)); */
+          /* The dimensions of the answers of each worker */
+          data["dimensions"] = this.dimensions
+          /* await (this.upload(`${this.workerFolder}/dimensions.json`, this.dimensions)); */
+          /* General info about worker */
+          data["worker"] = this.worker
+          /* await (this.upload(`${this.workerFolder}/worker.json`, this.worker)); */
 
-          let uploadStatus = await this.S3Service.uploadDocument(this.configService.environment, this.worker, data, false, this.currentTry, completedElement, accessesAmount + 1, this.sequenceNumber)
+          let uploadStatus = await this.S3Service.uploadTaskData(this.configService.environment, this.worker, data)
+
+        }
+
+        /* The amount of accesses to the current document is retrieved */
+        let accessesAmount = this.elementsAccesses[completedElement];
+
+        /* The index of the completed document is the completed element minus the questionnaire amount */
+        let completedDocument = completedElement - this.questionnaireAmount;
+
+        let data = {}
+
+        let actionInfo = {
+          action: action,
+          access: accessesAmount,
+          try: this.currentTry,
+          index: completedElement,
+          sequence: this.sequenceNumber,
+          element: "document"
+        };
+        /* Info about the performed action ("Next"? "Back"? From where?) */
+        data["info"] = actionInfo
+        /* Worker's truth level and justification for the current document */
+        let answers = this.documentsForm[completedDocument].value;
+        data["answers"] = answers
+        let notes = this.notes[completedDocument]
+        data["notes"] = notes
+        /* Worker's dimensions selected values for the current document */
+        let dimensionsSelectedValues = this.dimensionsSelectedValues[completedDocument];
+        data["dimensions_selected"] = dimensionsSelectedValues
+        /* Worker's search engine queries for the current document */
+        let searchEngineQueries = this.searchEngineQueries[completedDocument];
+        data["queries"] = searchEngineQueries
+        /* Start, end and elapsed timestamps for the current document */
+        let timestampsStart = this.timestampsStart[completedElement];
+        data["timestamps_start"] = timestampsStart
+        let timestampsEnd = this.timestampsEnd[completedElement];
+        data["timestamps_end"] = timestampsEnd
+        let timestampsElapsed = this.timestampsElapsed[completedElement];
+        data["timestamps_elapsed"] = timestampsElapsed
+        let countdownTime = (this.settings.countdownTime) ? Number(this.countdown[completedElement]["i"]["text"]) : null
+        data["countdowns_times"] = countdownTime
+        let countdown_expired = this.countdownsExpired[completedElement]
+        data["countdowns_expired"] = countdown_expired
+        /* Number of accesses to the current document (currentDocument.e., how many times the worker reached the document with a "Back" or "Next" action */
+        let accesses = accessesAmount + 1
+        data["accesses"] = accesses
+        /* Responses retrieved by search engine for each worker's query for the current document */
+        let responsesRetrieved = this.searchEngineRetrievedResponses[completedDocument];
+        data["responses_retrieved"] = responsesRetrieved
+        /* Responses by search engine ordered by worker's click for the current document */
+        let responsesSelected = this.searchEngineSelectedResponses[completedDocument];
+        data["responses_selected"] = responsesSelected
+
+        let uploadStatus = await this.S3Service.uploadDocument(this.configService.environment, this.worker, data, false, this.currentTry, completedElement, accessesAmount + 1, this.sequenceNumber)
+
+        /* The amount of accesses to the current document is incremented */
+        this.elementsAccesses[completedElement] = accessesAmount + 1;
+        this.sequenceNumber = this.sequenceNumber + 1
+
+        /* If the worker has completed the last document */
+        if (completedElement == this.questionnaireAmount + this.documentsAmount - 1) {
 
           /* The amount of accesses to the current document is incremented */
           this.elementsAccesses[completedElement] = accessesAmount + 1;
           this.sequenceNumber = this.sequenceNumber + 1
 
-          /* If the worker has completed the last document */
-          if (completedElement == this.questionnaireAmount + this.documentsAmount - 1) {
+          data = {}
 
-            /* The amount of accesses to the current document is incremented */
-            this.elementsAccesses[completedElement] = accessesAmount + 1;
-            this.sequenceNumber = this.sequenceNumber + 1
+          /* All data about documents are uploaded, only once */
+          let actionInfo = {
+            action: action,
+            access: accessesAmount + 1,
+            try: this.currentTry,
+            index: completedElement,
+            sequence: this.sequenceNumber,
+            element: "document"
+          };
+          /* Info about each performed action ("Next"? "Back"? From where?) */
+          data["info"] = actionInfo
+          let answers = [];
+          for (let index = 0; index < this.questionnairesForm.length; index++) answers.push(this.questionnairesForm[index].value);
+          data["questionnaires_answers"] = answers
+          answers = [];
+          for (let index = 0; index < this.documentsForm.length; index++) answers.push(this.documentsForm[index].value);
+          data["documents_answers"] = answers
+          let notes = this.notes
+          data["notes"] = notes
+          /* Worker's dimensions selected values for the current document */
+          data["dimensions_selected"] = this.dimensionsSelectedValues
+          /* Start, end and elapsed timestamps for each document */
+          data["timestamps_start"] = this.timestampsStart
+          /* await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/timestamps_start.json`, this.timestampsStart)); */
+          data["timestamps_end"] = this.timestampsEnd
+          /* await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/timestamps_end.json`, this.timestampsEnd)); */
+          data["timestamps_elapsed"] = this.timestampsElapsed
+          let countdownTimes = [];
+          if (this.settings.countdownTime)
+            for (let index = 0; index < this.countdown.length; index++) countdownTimes.push(Number(this.countdown[index]["i"]["text"]));
+          data["countdowns_times"] = countdownTimes
+          data["countdowns_expired"] = this.countdownsExpired
+          /* Number of accesses to each document (currentDocument.e., how many times the worker reached the document with a "Back" or "Next" action */
+          data["accesses"] = this.elementsAccesses
+          /* Worker's search engine queries for each document */
+          data["queries"] = this.searchEngineQueries
+          /* Responses retrieved by search engine for each worker's query for each document */
+          data["responses_retrieved"] = this.searchEngineRetrievedResponses
+          /* Responses by search engine ordered by worker's click for the current document */
+          data["responses_selected"] = this.searchEngineSelectedResponses
 
-            data = {}
-
-            /* All data about documents are uploaded, only once */
-            let actionInfo = {
-              action: action,
-              access: accessesAmount + 1,
-              try: this.currentTry,
-              index: completedElement,
-              sequence: this.sequenceNumber,
-              element: "document"
-            };
-            /* Info about each performed action ("Next"? "Back"? From where?) */
-            data["info"] = actionInfo
-            let answers = [];
-            for (let index = 0; index < this.questionnairesForm.length; index++) answers.push(this.questionnairesForm[index].value);
-            data["questionnaires_answers"] = answers
-            answers = [];
-            for (let index = 0; index < this.documentsForm.length; index++) answers.push(this.documentsForm[index].value);
-            data["documents_answers"] = answers
-            let notes = this.notes
-            data["notes"] = notes
-            /* Worker's dimensions selected values for the current document */
-            data["dimensions_selected"] = this.dimensionsSelectedValues
-            /* Start, end and elapsed timestamps for each document */
-            data["timestamps_start"] = this.timestampsStart
-            /* await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/timestamps_start.json`, this.timestampsStart)); */
-            data["timestamps_end"] = this.timestampsEnd
-            /* await (this.upload(`${this.workerFolder}/Final/Try-${this.currentTry}/timestamps_end.json`, this.timestampsEnd)); */
-            data["timestamps_elapsed"] = this.timestampsElapsed
-            let countdownTimes = [];
-            if (this.settings.countdownTime)
-              for (let index = 0; index < this.countdown.length; index++) countdownTimes.push(Number(this.countdown[index]["i"]["text"]));
-            data["countdowns_times"] = countdownTimes
-            data["countdowns_expired"] = this.countdownsExpired
-            /* Number of accesses to each document (currentDocument.e., how many times the worker reached the document with a "Back" or "Next" action */
-            data["accesses"] = this.elementsAccesses
-            /* Worker's search engine queries for each document */
-            data["queries"] = this.searchEngineQueries
-            /* Responses retrieved by search engine for each worker's query for each document */
-            data["responses_retrieved"] = this.searchEngineRetrievedResponses
-            /* Responses by search engine ordered by worker's click for the current document */
-            data["responses_selected"] = this.searchEngineSelectedResponses
-
-            let uploadStatus = await this.S3Service.uploadDocument(this.configService.environment, this.worker, data, true, this.currentTry)
-
-          }
+          let uploadStatus = await this.S3Service.uploadDocument(this.configService.environment, this.worker, data, true, this.currentTry)
 
         }
 
       }
-    } else {
-      this.stepper.selectedIndex = documentIndex;
+
     }
+
   }
 
 
