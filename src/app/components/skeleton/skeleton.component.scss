@@ -135,7 +135,7 @@ mat-card-content label {
   border: 0;
   box-shadow: 0 0 0 0;
   border-radius: 0;
-  background-color: #F0F0F0	;
+  background-color: #DEDEDE;
   position:-webkit-sticky;
   position:sticky;
   top: 42px;
@@ -522,8 +522,8 @@ mat-form-field {
   text-align: center;
 }
 
-.annotations tr:first-child {
-  text-align: center;
+.annotations tr td:first-child {
+  text-align: left;
 }
 
 .annotations tr {
