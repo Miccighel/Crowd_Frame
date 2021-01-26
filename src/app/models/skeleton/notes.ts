@@ -4,17 +4,19 @@ export class Note {
 
   index: number;
   version: number;
-  timestamp_created: number;
-  timestamp_deleted?: number;
   deleted: boolean;
   color: string;
-
-  range: Object
-  data: Object
-
-  quote: string
-
+  container_id: number;
+  start_offset: number;
+  end_offset: number;
+  timestamp_created: number;
+  timestamp_deleted?: number;
+  baseURI: string;
+  current_text: string
   option: string
+  text_not_annotated_left: string
+  text_not_annotated_right: string
+  existing_notes: Array<String>
 
   annotator: Annotator;
 
@@ -28,17 +30,27 @@ export class Note {
     this.index = index;
     this.version = 0
     this.deleted = false
-    this.range = range
     this.color = color
-    this.data = data
+    this.container_id = range["commonAncestorContainer"]["id"]
+    this.start_offset = parseInt(range["startOffset"])
+    this.end_offset = parseInt(range["endOffset"])
     this.timestamp_created = parseInt(data[0]["dataset"]["timestamp"])
     this.timestamp_deleted = null
-    this.quote = data[0]["outerText"]
+    this.baseURI = data[0]["baseURI"]
+    this.current_text = data[0]["outerText"]
     this.option = "not_selected"
+    this.text_not_annotated_left = range["endContainer"]["firstChild"]["data"]
+    this.text_not_annotated_right = range["endContainer"]["lastChild"]["data"]
+    this.existing_notes = new Array<String>()
+    Array.from(range["endContainer"]["children"]).forEach((element: HTMLElement) =>  {
+      if(element.innerText != this.current_text) {
+        this.existing_notes.push(element.innerText)
+      }
+    });
   }
 
   public checkEquality(note: Note) {
-    return (this.quote == note.quote)
+    return (this.current_text == note.current_text)
   }
 
   public updateNote(data) {

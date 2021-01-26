@@ -227,8 +227,8 @@
                 </tr>
                 <tr *ngFor="let note of this.notes[i]; let noteIndex = index" class="mat-row">
                   <ng-container *ngIf="note.deleted == false && note.option != 'not_selected'">
-                    <td class="mat-cell"><span [style.background-color]="note.color">{{note.quote}}</span></td>
-                    <td class="mat-cell"><code>{{note.option}}</code></td>
+                    <td class="mat-cell"><span [style.background-color]="note.color">{{note.current_text}}</span></td>
+                    <td class="mat-cell"><code>{{capitalize(note.option)}}</code></td>
                     <td class="mat-cell">
                       <button (click)="removeAnnotation(i, noteIndex, this.changeDetector)" mat-flat-button
                         color="warn">Delete

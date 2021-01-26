@@ -942,7 +942,7 @@ export class SkeletonComponent implements OnInit {
             for (let note of notesForDocument) {
               if (!note.deleted) {
 
-                if (newAnnotation.quote.includes(note.quote) || note.quote.includes(newAnnotation.quote)) { //if the note is arleady annotated
+                if (newAnnotation.current_text.includes(note.current_text) || note.current_text.includes(newAnnotation.current_text)) { //if the note is arleady annotated
 
                   let element = document.querySelector(`.statement-text-${documentIndex}`) //select the main element
                   element.remove()
@@ -1048,7 +1048,7 @@ export class SkeletonComponent implements OnInit {
   public canINext(documentIndex: number) {
     let omg = false
     this.notes[documentIndex].forEach((element, index) => {
-      if (!element.deleted && element.option == "Drug") {
+      if (!element.deleted && element.option == "drug") {
         omg = true
       }
     })
@@ -1063,7 +1063,7 @@ export class SkeletonComponent implements OnInit {
     currentNote.timestamp_deleted = Date.now()
 
     let element = document.querySelector(`[data-timestamp='${currentNote.timestamp_created}']`)
-    element.parentNode.insertBefore(document.createTextNode(currentNote.quote), element);
+    element.parentNode.insertBefore(document.createTextNode(currentNote.current_text), element);
     element.remove()
     changeDetector.detectChanges()
 
@@ -1129,17 +1129,16 @@ export class SkeletonComponent implements OnInit {
 
     /* 2) GOLD QUESTION CHECK performed here - OPTIONAL CHECK */
 
-
     this.notes[this.goldIndex].forEach(item => {
 
-      if (item.option == 'ade') {
-        "['" + item.quote.replace(/\s+/g, '') + "']" == this.documents[this.goldIndex].adr_text
+      if (item.option == 'effect') {
+        "['" + item.current_text.replace(/\s+/g, '') + "']" == this.documents[this.goldIndex].adr_text
           ? goldQuestionCheck = true
           : goldQuestionCheck = false
 
       } else if (item.option == 'drug') {
 
-        "['" + item.quote.replace(/\s+/g, '') + "']" == this.documents[this.goldIndex].drug_text
+        "['" + item.current_text.replace(/\s+/g, '') + "']" == this.documents[this.goldIndex].drug_text
           ? goldQuestionCheck = true
           : goldQuestionCheck = false
 
