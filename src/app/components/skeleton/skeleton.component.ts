@@ -92,6 +92,7 @@ export class SkeletonComponent implements OnInit {
   taskSuccessful: boolean;
   taskFailed: boolean;
   checkCompleted: boolean;
+  //
 
 
 
@@ -899,18 +900,14 @@ export class SkeletonComponent implements OnInit {
 
   public performHighlighting(changeDetector, event: Object, documentIndex: number, annotationDialog, notes, annotator: Annotator) {
 
-    if (this.notes[documentIndex].length > 0) { //If there is a note
-      let element = this.notes[documentIndex][this.notes[documentIndex].length - 1]
+    if (notes[documentIndex].length > 0) { //If there is a note
+      let element = notes[documentIndex][notes[documentIndex].length - 1]
       if (element.option == "not_selected" && !element.deleted) { //If the note have the option "note_selected" ==> yellow highlight
-        this.removeAnnotation(documentIndex, this.notes[documentIndex].length - 1, changeDetector) //remove the note
-        //Block the events on the buttons
-        let ann_button = <HTMLElement>document.querySelector(`.annotation-buttons-${documentIndex}`)
-        ann_button.style.pointerEvents = "none"
-        ann_button.style.opacity = "0.3"
-        //
+        this.removeAnnotation(documentIndex, notes[documentIndex].length - 1, changeDetector) //remove the note
+        changeDetector.detectChanges()
+
       }
     }
-
 
     let domElement = null
     let optionChosen = null
@@ -923,7 +920,7 @@ export class SkeletonComponent implements OnInit {
       domElement = document.getElementById(`statement-${documentIndex}`);
     }
 
-    //check if the selection is an overlay
+
     if (domElement) {
       let first_clone = document.querySelector(`.statement-text-${documentIndex}`).cloneNode(true) //clone the element
 
@@ -932,8 +929,8 @@ export class SkeletonComponent implements OnInit {
       first_clone.addEventListener('touchend', (e) => this.performHighlighting(changeDetector, event, documentIndex, annotationDialog, notes, annotator))
 
       const highlightMade = doHighlight(domElement, true, {
-        onAfterHighlight(range, highlight) {
 
+        onAfterHighlight(range, highlight) {
           const selection = document.getSelection();
           if (highlight[0]["outerText"]) { //If something is selected
             selection.empty() //clear the selection
@@ -943,24 +940,23 @@ export class SkeletonComponent implements OnInit {
 
             //Check if the selected text is an overlay of another annotation
             for (let note of notesForDocument) {
-              //
-              if (!note.deleted && newAnnotation.quote.includes(note.quote)) { //if the note is arleady annotated
-                let element = document.querySelector(`.statement-text-${documentIndex}`) //select the main element
-                element.remove()
-                document.querySelector(`.tweet_content_li_${documentIndex}`).append(first_clone) //append the element bukupped...
+              if (!note.deleted) {
 
-                //Disable the user to click on the buttons
-                let ann_button = <HTMLElement>document.querySelector(`.annotation-buttons-${documentIndex}`)
-                ann_button.style.pointerEvents = "none"
-                ann_button.style.opacity = "0.3"
-                ////
+                if (newAnnotation.quote.includes(note.quote) || note.quote.includes(newAnnotation.quote)) { //if the note is arleady annotated
 
-                changeDetector.detectChanges()
-                return true //Exit from the callback!
+                  let element = document.querySelector(`.statement-text-${documentIndex}`) //select the main element
+                  element.remove()
+                  document.querySelector(`.tweet_content_li_${documentIndex}`).append(first_clone) //append the element bukupped...
+
+                  let ann_button = <HTMLElement>document.querySelector(`.annotation-buttons-${documentIndex}`)
+                  ann_button.style.pointerEvents = "none"
+                  ann_button.style.opacity = "0.3"
+                  changeDetector.detectChanges()
+
+                  return true //Exit from the callback!
+                }
               }
-
             }
-
             //Ok enable the user to click on the buttons
             let ann_button = <HTMLElement>document.querySelector(`.annotation-buttons-${documentIndex}`)
             ann_button.style.pointerEvents = "auto"
@@ -970,12 +966,39 @@ export class SkeletonComponent implements OnInit {
             changeDetector.detectChanges()
             notesForDocument.push(newAnnotation)
             notes[documentIndex] = notesForDocument
+
+            let main_div = <HTMLElement>document.querySelector(`.general-tweet-div-${documentIndex}`)
+            //
+
+            //Disable the main DIV after highlight, until the highlighted text is annotated
+            main_div.style.userSelect = "none"
+            main_div.style.webkitUserSelect = "none"
+            main_div.style.pointerEvents = "none"
+            main_div.style.touchAction = "none"
+            main_div.style.cursor = "no-drop"
+
+
           }
+
         }
       })
     }
   }
 
+  public cancelAnnotation(documentIndex) {
+    this.removeAnnotation(documentIndex, this.notes[documentIndex].length - 1, this.changeDetector)
+    let main_div = <HTMLElement>document.querySelector(`.general-tweet-div-${documentIndex}`)
+    //Enable the user events on the main DIV
+    main_div.style.userSelect = "auto"
+    main_div.style.webkitUserSelect = "auto"
+    main_div.style.pointerEvents = "auto"
+    main_div.style.touchAction = "auto"
+    main_div.style.cursor = "auto"
+
+    let ann_button = <HTMLElement>document.querySelector(`.annotation-buttons-${documentIndex}`)
+    ann_button.style.pointerEvents = "none"
+    ann_button.style.opacity = "0.3"
+  }
 
   //onClick this function annotated the last text highlighted
   public annotateThis(value, documentIndex: number) {
@@ -999,11 +1022,25 @@ export class SkeletonComponent implements OnInit {
     const selection = document.getSelection();
     selection.empty()
 
+    let main_div = <HTMLElement>document.querySelector(`.general-tweet-div-${documentIndex}`)
+    //Enable the user events on the main DIV
+    main_div.style.userSelect = "auto"
+    main_div.style.webkitUserSelect = "auto"
+    main_div.style.pointerEvents = "auto"
+    main_div.style.touchAction = "auto"
+    main_div.style.cursor = "auto"
+
     //Disable the user to click on the buttons
     let ann_button = <HTMLElement>document.querySelector(`.annotation-buttons-${documentIndex}`)
     ann_button.style.pointerEvents = "none"
     ann_button.style.opacity = "0.3"
     ////
+
+    // this.notes[documentIndex].forEach((note, index) => {
+    //   if (note.option == "not_selected" && !note.deleted) { //If the note have the option "note_selected" ==> yellow highlight
+    //     this.removeAnnotation(documentIndex, index, this.changeDetector) //remove the note
+    //   }
+    // })
   }
 
 
@@ -1020,12 +1057,11 @@ export class SkeletonComponent implements OnInit {
 
 
 
-
   public removeAnnotation(documentIndex: number, noteIndex: number, changeDetector) {
     let currentNote = this.notes[documentIndex][noteIndex]
     currentNote.markDeleted()
-
     currentNote.timestamp_deleted = Date.now()
+
     let element = document.querySelector(`[data-timestamp='${currentNote.timestamp_created}']`)
     element.parentNode.insertBefore(document.createTextNode(currentNote.quote), element);
     element.remove()
@@ -1227,6 +1263,7 @@ export class SkeletonComponent implements OnInit {
         ////
       }
     }
+
     /* |--- COUNTDOWN ---| */
     if ((this.stepper.selectedIndex >= this.questionnaireAmount) && this.settings.countdownTime) {
       let currentIndex = this.stepper.selectedIndex - this.questionnaireAmount;
