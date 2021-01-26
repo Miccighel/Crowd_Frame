@@ -1261,6 +1261,13 @@ export class SkeletonComponent implements OnInit {
         ann_button.style.pointerEvents = "none"
         ann_button.style.opacity = "0.3"
         ////
+        let main_div = <HTMLElement>document.querySelector(`.general-tweet-div-${documentIndex}`)
+        //Enable the user events on the main DIV
+        main_div.style.userSelect = "auto"
+        main_div.style.webkitUserSelect = "auto"
+        main_div.style.pointerEvents = "auto"
+        main_div.style.touchAction = "auto"
+        main_div.style.cursor = "auto"
       }
     }
 
