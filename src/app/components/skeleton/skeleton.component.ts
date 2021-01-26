@@ -1048,7 +1048,7 @@ export class SkeletonComponent implements OnInit {
   public canINext(documentIndex: number) {
     let omg = false
     this.notes[documentIndex].forEach((element, index) => {
-      if (!element.deleted && element.option == "drug") {
+      if (!element.deleted && element.option == "Drug") {
         omg = true
       }
     })
