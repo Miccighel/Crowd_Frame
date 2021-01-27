@@ -3,8 +3,8 @@
     "caption": "Task Description",
     "steps": [
       "In this task, you will be asked to identify and annotate <strong>Drugs</strong> and their <strong>Side Effects</strong> in some tweets.",
-      "A <strong>Tweet</strong> is a short message posted on Twitter containing a piece of text.",
-      "A <strong>Drug</strong> is any substance that causes a change in an organism's physiology or psychology when consumed. We will be interested in medicines.",
+      "A <strong>Tweet</strong> is a short message posted on Twitter containing a piece of text. ",
+      "A <strong>Drug</strong> is any substance that causes a change in an organism's physiology or psychology when consumed. We will be interested in medicines. ",
       "A <strong>Side Effect</strong> is any kind of medical problem or <strong>undesired negative effect</strong> that happens during treatment with a Drug. This includes injury, allergic reactions, overdoses, withdrawals, undesired symptoms and similar.<br /><br />",
       "We will show you <strong>11 tweets</strong> made by Twitter users. Each tweet is not altered in any way and it is reported as posted by its author (usernames are anonymized).",
       "For each tweet, we ask you to read its text and to <strong>annotate both</strong> mentioned <strong>Drugs</strong> and their <strong>Side Effects</strong>. ",

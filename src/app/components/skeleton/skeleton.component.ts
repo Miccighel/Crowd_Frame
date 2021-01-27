@@ -8,33 +8,33 @@ import {
   QueryList, OnInit, ElementRef, AfterViewInit, ViewEncapsulation, Inject, NgZone
 } from '@angular/core';
 /* Reactive forms modules */
-import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
-import { MatFormField } from "@angular/material/form-field";
-import { MatStepper } from "@angular/material/stepper";
-import { CountdownComponent } from 'ngx-countdown';
+import {AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
+import {MatFormField} from "@angular/material/form-field";
+import {MatStepper} from "@angular/material/stepper";
+import {CountdownComponent} from 'ngx-countdown';
 /* Services */
-import { NgxUiLoaderService } from 'ngx-ui-loader';
-import { ConfigService } from "../../services/config.service";
-import { S3Service } from "../../services/s3.service";
+import {NgxUiLoaderService} from 'ngx-ui-loader';
+import {ConfigService} from "../../services/config.service";
+import {S3Service} from "../../services/s3.service";
 /* Task models */
-import { Document } from "../../../../data/build/document";
-import { Hit } from "../../models/skeleton/hit";
-import { Questionnaire } from "../../models/skeleton/questionnaire";
-import { Dimension, ScaleInterval } from "../../models/skeleton/dimension";
-import { Instruction } from "../../models/shared/instructions";
+import {Document} from "../../../../data/build/document";
+import {Hit} from "../../models/skeleton/hit";
+import {Questionnaire} from "../../models/skeleton/questionnaire";
+import {Dimension, ScaleInterval} from "../../models/skeleton/dimension";
+import {Instruction} from "../../models/shared/instructions";
 /* Font Awesome icons */
-import { Annotator, Settings } from "../../models/skeleton/settings";
-import { Worker } from "../../models/skeleton/worker";
-import { HttpClient, HttpHeaders } from "@angular/common/http";
-import { MatSnackBar } from "@angular/material/snack-bar";
-import { Note } from "../../models/skeleton/notes";
-import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { DialogData, InstructionsDialog } from "../instructions/instructions.component";
-import { doHighlight, deserializeHighlights, serializeHighlights, removeHighlights, optionsImpl } from "@funktechno/texthighlighter/lib";
-import { DeviceDetectorService } from 'ngx-device-detector';
-import { Amplify } from 'aws-sdk';
-import { isUndefined } from 'util';
-import { TruncatePipe } from 'src/app/pipes/truncatePipe';
+import {Annotator, Settings} from "../../models/skeleton/settings";
+import {Worker} from "../../models/skeleton/worker";
+import {HttpClient, HttpHeaders} from "@angular/common/http";
+import {MatSnackBar} from "@angular/material/snack-bar";
+import {Note} from "../../models/skeleton/notes";
+import {MatDialog, MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
+import {DialogData, InstructionsDialog} from "../instructions/instructions.component";
+import {doHighlight, deserializeHighlights, serializeHighlights, removeHighlights, optionsImpl} from "@funktechno/texthighlighter/lib";
+import {DeviceDetectorService} from 'ngx-device-detector';
+import {Amplify} from 'aws-sdk';
+import {isUndefined} from 'util';
+import {TruncatePipe} from 'src/app/pipes/truncatePipe';
 
 
 /* Component HTML Tag definition */
@@ -93,7 +93,6 @@ export class SkeletonComponent implements OnInit {
   taskFailed: boolean;
   checkCompleted: boolean;
   //
-
 
 
   /* References to task stepper and token forms */
@@ -301,7 +300,7 @@ export class SkeletonComponent implements OnInit {
       this.workerIdentifier = url.searchParams.get("workerID");
       if (!(this.workerIdentifier === null)) {
         this.performWorkerStatusCheck().then(outcome => {
-          this.client.get('https://www.cloudflare.com/cdn-cgi/trace', { responseType: 'text' }).subscribe(
+          this.client.get('https://www.cloudflare.com/cdn-cgi/trace', {responseType: 'text'}).subscribe(
             cloudflareData => {
               this.worker = new Worker(this.workerIdentifier, this.S3Service.getWorkerFolder(this.configService.environment, null, this.workerIdentifier), cloudflareData, window.navigator, this.deviceDetectorService.getDeviceInfo())
               this.taskAllowed = outcome;
@@ -420,7 +419,7 @@ export class SkeletonComponent implements OnInit {
   public async validateTokenInput(control: FormControl) {
     let hits = await this.S3Service.downloadHits(this.configService.environment)
     for (let hit of hits) if (hit.token_input === control.value) return null;
-    return { "invalid": "This token is not valid." }
+    return {"invalid": "This token is not valid."}
   }
 
   /*
@@ -697,7 +696,7 @@ export class SkeletonComponent implements OnInit {
             let response = selectedUrl["response"]
             /* The controls are performed */
             for (let word of cleanedWords) {
-              if (word == response["url"]) return { "invalid": "You cannot use the selected search engine url as part of the justification." }
+              if (word == response["url"]) return {"invalid": "You cannot use the selected search engine url as part of the justification."}
             }
           }
         }
@@ -706,7 +705,7 @@ export class SkeletonComponent implements OnInit {
         let currentDimensionName = currentControl.split("_")[0]
         for (let dimension of this.dimensions) if (dimension.name == currentDimensionName) if (dimension.justification.minWords) minWords = dimension.justification.minWords
       }
-      return cleanedWords.length > minWords ? null : { "longer": "This is not valid." };
+      return cleanedWords.length > minWords ? null : {"longer": "This is not valid."};
     }
   }
 
@@ -884,7 +883,7 @@ export class SkeletonComponent implements OnInit {
                 if (workerUrlFormControl.value == currentResponses[index].url && this.currentDimension == currentDimension) return null;
               }
               /* If no matching url has been found, raise the error */
-              return { invalidSearchEngineUrl: "Select (or copy & paste) one of the URLs shown above." }
+              return {invalidSearchEngineUrl: "Select (or copy & paste) one of the URLs shown above."}
             }
             return null
           }
@@ -932,54 +931,56 @@ export class SkeletonComponent implements OnInit {
 
         onAfterHighlight(range, highlight) {
           const selection = document.getSelection();
-          if (highlight[0]["outerText"]) { //If something is selected
-            selection.empty() //clear the selection
+          if (highlight.length > 0) {
+            if (highlight[0]["outerText"]) { //If something is selected
+              selection.empty() //clear the selection
 
-            let notesForDocument = notes[documentIndex]
-            let newAnnotation = new Note(documentIndex, range, highlight) //create new note
+              let notesForDocument = notes[documentIndex]
+              let newAnnotation = new Note(documentIndex, range, highlight) //create new note
 
-            //Check if the selected text is an overlay of another annotation
-            for (let note of notesForDocument) {
-              if (!note.deleted) {
+              //Check if the selected text is an overlay of another annotation
+              for (let note of notesForDocument) {
+                if (!note.deleted) {
 
-                if (newAnnotation.current_text.includes(note.current_text) || note.current_text.includes(newAnnotation.current_text)) { //if the note is arleady annotated
+                  if (newAnnotation.current_text.includes(note.current_text) || note.current_text.includes(newAnnotation.current_text)) { //if the note is arleady annotated
 
-                  let element = document.querySelector(`.statement-text-${documentIndex}`) //select the main element
-                  element.remove()
-                  document.querySelector(`.tweet_content_li_${documentIndex}`).append(first_clone) //append the element bukupped...
+                    let element = document.querySelector(`.statement-text-${documentIndex}`) //select the main element
+                    element.remove()
+                    document.querySelector(`.tweet_content_li_${documentIndex}`).append(first_clone) //append the element bukupped...
 
-                  let ann_button = <HTMLElement>document.querySelector(`.annotation-buttons-${documentIndex}`)
-                  ann_button.style.pointerEvents = "none"
-                  ann_button.style.opacity = "0.3"
-                  changeDetector.detectChanges()
+                    let ann_button = <HTMLElement>document.querySelector(`.annotation-buttons-${documentIndex}`)
+                    ann_button.style.pointerEvents = "none"
+                    ann_button.style.opacity = "0.3"
+                    changeDetector.detectChanges()
 
-                  return true //Exit from the callback!
+                    return true //Exit from the callback!
+                  }
                 }
               }
+              //Ok enable the user to click on the buttons
+              let ann_button = <HTMLElement>document.querySelector(`.annotation-buttons-${documentIndex}`)
+              ann_button.style.pointerEvents = "auto"
+              ann_button.style.opacity = "1"
+              ////
+
+              changeDetector.detectChanges()
+              notesForDocument.push(newAnnotation)
+              notes[documentIndex] = notesForDocument
+
+              let main_div = <HTMLElement>document.querySelector(`.general-tweet-div-${documentIndex}`)
+              //
+
+              //Disable the main DIV after highlight, until the highlighted text is annotated
+              main_div.style.userSelect = "none"
+              main_div.style.webkitUserSelect = "none"
+              main_div.style.pointerEvents = "none"
+              main_div.style.touchAction = "none"
+              main_div.style.cursor = "no-drop"
+
+
             }
-            //Ok enable the user to click on the buttons
-            let ann_button = <HTMLElement>document.querySelector(`.annotation-buttons-${documentIndex}`)
-            ann_button.style.pointerEvents = "auto"
-            ann_button.style.opacity = "1"
-            ////
-
-            changeDetector.detectChanges()
-            notesForDocument.push(newAnnotation)
-            notes[documentIndex] = notesForDocument
-
-            let main_div = <HTMLElement>document.querySelector(`.general-tweet-div-${documentIndex}`)
-            //
-
-            //Disable the main DIV after highlight, until the highlighted text is annotated
-            main_div.style.userSelect = "none"
-            main_div.style.webkitUserSelect = "none"
-            main_div.style.pointerEvents = "none"
-            main_div.style.touchAction = "none"
-            main_div.style.cursor = "no-drop"
-
 
           }
-
         }
       })
     }
@@ -1056,7 +1057,6 @@ export class SkeletonComponent implements OnInit {
   }
 
 
-
   public removeAnnotation(documentIndex: number, noteIndex: number, changeDetector) {
     let currentNote = this.notes[documentIndex][noteIndex]
     currentNote.markDeleted()
@@ -1129,22 +1129,26 @@ export class SkeletonComponent implements OnInit {
 
     /* 2) GOLD QUESTION CHECK performed here - OPTIONAL CHECK */
 
+    let effect_check = false
+    let drug_check = false
+    let effect_text_gold = this.documents[this.goldIndex].adr_text
+    let drug_text_gold = this.documents[this.goldIndex].drug_text
+
     this.notes[this.goldIndex].forEach(item => {
 
-      if (item.option == 'effect') {
-        "['" + item.current_text.replace(/\s+/g, '') + "']" == this.documents[this.goldIndex].adr_text
-          ? goldQuestionCheck = true
-          : goldQuestionCheck = false
-
-      } else if (item.option == 'drug') {
-
-        "['" + item.current_text.replace(/\s+/g, '') + "']" == this.documents[this.goldIndex].drug_text
-          ? goldQuestionCheck = true
-          : goldQuestionCheck = false
-
+      let annotation_text = "['" + item.current_text.replace(/\s+/g, '') + "']"
+      if (item.option == "effect" && item.deleted == false && effect_text_gold == annotation_text) {
+        effect_check = true
       }
-      computedChecks.push(goldQuestionCheck)
+      if (item.option == "drug" && item.deleted == false && drug_text_gold == annotation_text) {
+        drug_check = true
+      }
+
     });
+
+    goldQuestionCheck = drug_check && effect_check;
+
+    computedChecks.push(goldQuestionCheck)
 
 
     /* 3) TIME SPENT CHECK performed here - MANDATORY CHECK */
@@ -1162,7 +1166,7 @@ export class SkeletonComponent implements OnInit {
       this.taskFailed = true;
     }
 
-    /* The result of quality check control for the current try is uploaded to the Amazon S3 bucket. */
+    /* The result of quality check control  for the current try is uploaded to the Amazon S3 bucket. */
     if (!(this.worker.identifier === null)) {
       let qualityCheckData = {
         globalFormValidity: globalValidityCheck,
@@ -1247,7 +1251,6 @@ export class SkeletonComponent implements OnInit {
    * The "Final" folder is filled with a full task snapshot at the end of each allowed try.
    * The "Partial" folder contains a snapshot of the current document each time a user clicks on a "Back" or "Next" button.
    */
-
 
 
   public async performLogging(action: string, documentIndex: number) {
