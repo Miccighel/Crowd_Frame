@@ -28,16 +28,16 @@ export class Worker {
       "webkitGetUserMedia"
     ]
     let properties = {}
-    if(cloudflareData!=null)
-    for (let property of cloudflareData.split(/\n/)) {
-      if (property.length > 0 && !unwantedProperties.includes(property)) {
-        properties[property.split("=")[0]] = property.split("=")[1]
+    if (cloudflareData != null)
+      for (let property of cloudflareData.split(/\n/)) {
+        if (property.length > 0 && !unwantedProperties.includes(property)) {
+          properties[property.split("=")[0]] = property.split("=")[1]
+        }
       }
-    }
     this.cloudflareProperties = properties
     properties = {}
     for (let property in navigator) {
-      if(!unwantedProperties.includes(property)) {
+      if (!unwantedProperties.includes(property)) {
         let str = navigator[property];
         if (str && str.length > 0) {
           properties[property] = str

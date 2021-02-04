@@ -1036,20 +1036,14 @@ export class SkeletonComponent implements OnInit {
     ann_button.style.pointerEvents = "none"
     ann_button.style.opacity = "0.3"
     ////
-
-    // this.notes[documentIndex].forEach((note, index) => {
-    //   if (note.option == "not_selected" && !note.deleted) { //If the note have the option "note_selected" ==> yellow highlight
-    //     this.removeAnnotation(documentIndex, index, this.changeDetector) //remove the note
-    //   }
-    // })
   }
 
 
-  //Returns true if there is at least one drug annotated in the document
+  //Returns true if there is at least one ADE effect annotated in the document
   public canINext(documentIndex: number) {
     let omg = false
     this.notes[documentIndex].forEach((element, index) => {
-      if (!element.deleted && element.option == "drug") {
+      if (!element.deleted && element.option == "effect") {
         omg = true
       }
     })
@@ -1130,9 +1124,9 @@ export class SkeletonComponent implements OnInit {
     /* 2) GOLD QUESTION CHECK performed here - OPTIONAL CHECK */
 
     let effect_check = false
-    let drug_check = false
+    //let drug_check = false
     let effect_text_gold = this.documents[this.goldIndex].adr_text
-    let drug_text_gold = this.documents[this.goldIndex].drug_text
+    //let drug_text_gold = this.documents[this.goldIndex].drug_text
 
     this.notes[this.goldIndex].forEach(item => {
 
@@ -1140,13 +1134,14 @@ export class SkeletonComponent implements OnInit {
       if (item.option == "effect" && item.deleted == false && effect_text_gold == annotation_text) {
         effect_check = true
       }
-      if (item.option == "drug" && item.deleted == false && drug_text_gold == annotation_text) {
-        drug_check = true
-      }
+      // if (item.option == "drug" && item.deleted == false && drug_text_gold == annotation_text) {
+      //   drug_check = true
+      // }
 
     });
 
-    goldQuestionCheck = drug_check && effect_check;
+    //goldQuestionCheck = drug_check && effect_check;
+    goldQuestionCheck = effect_check
 
     computedChecks.push(goldQuestionCheck)
 
