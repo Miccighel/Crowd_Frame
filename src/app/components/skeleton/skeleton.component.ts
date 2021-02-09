@@ -930,11 +930,9 @@ export class SkeletonComponent implements OnInit {
       const highlightMade = doHighlight(domElement, true, {
 
         onAfterHighlight(range, highlight) {
-          const selection = document.getSelection();
           if (highlight.length > 0) {
             if (highlight[0]["outerText"]) { //If something is selected
-              selection.empty() //clear the selection
-
+              //selection.empty() //clear the selection
               let notesForDocument = notes[documentIndex]
               let newAnnotation = new Note(documentIndex, range, highlight) //create new note
 
@@ -942,7 +940,7 @@ export class SkeletonComponent implements OnInit {
               for (let note of notesForDocument) {
                 if (!note.deleted) {
 
-                  if (newAnnotation.current_text.includes(note.current_text) || note.current_text.includes(newAnnotation.current_text)) { //if the note is arleady annotated
+                  if (1 in highlight || newAnnotation.current_text.includes(note.current_text) || note.current_text.includes(newAnnotation.current_text)) { //if the note is arleady annotated
 
                     let element = document.querySelector(`.statement-text-${documentIndex}`) //select the main element
                     element.remove()
@@ -952,7 +950,6 @@ export class SkeletonComponent implements OnInit {
                     ann_button.style.pointerEvents = "none"
                     ann_button.style.opacity = "0.3"
                     changeDetector.detectChanges()
-
                     return true //Exit from the callback!
                   }
                 }
@@ -962,21 +959,9 @@ export class SkeletonComponent implements OnInit {
               ann_button.style.pointerEvents = "auto"
               ann_button.style.opacity = "1"
               ////
-
               changeDetector.detectChanges()
               notesForDocument.push(newAnnotation)
               notes[documentIndex] = notesForDocument
-
-              let main_div = <HTMLElement>document.querySelector(`.general-tweet-div-${documentIndex}`)
-              //
-
-              //Disable the main DIV after highlight, until the highlighted text is annotated
-              main_div.style.userSelect = "none"
-              main_div.style.webkitUserSelect = "none"
-              main_div.style.pointerEvents = "none"
-              main_div.style.touchAction = "none"
-              main_div.style.cursor = "no-drop"
-
 
             }
 
@@ -984,21 +969,6 @@ export class SkeletonComponent implements OnInit {
         }
       })
     }
-  }
-
-  public cancelAnnotation(documentIndex) {
-    this.removeAnnotation(documentIndex, this.notes[documentIndex].length - 1, this.changeDetector)
-    let main_div = <HTMLElement>document.querySelector(`.general-tweet-div-${documentIndex}`)
-    //Enable the user events on the main DIV
-    main_div.style.userSelect = "auto"
-    main_div.style.webkitUserSelect = "auto"
-    main_div.style.pointerEvents = "auto"
-    main_div.style.touchAction = "auto"
-    main_div.style.cursor = "auto"
-
-    let ann_button = <HTMLElement>document.querySelector(`.annotation-buttons-${documentIndex}`)
-    ann_button.style.pointerEvents = "none"
-    ann_button.style.opacity = "0.3"
   }
 
   //onClick this function annotated the last text highlighted
@@ -1020,16 +990,6 @@ export class SkeletonComponent implements OnInit {
         }
       }
     })
-    const selection = document.getSelection();
-    selection.empty()
-
-    let main_div = <HTMLElement>document.querySelector(`.general-tweet-div-${documentIndex}`)
-    //Enable the user events on the main DIV
-    main_div.style.userSelect = "auto"
-    main_div.style.webkitUserSelect = "auto"
-    main_div.style.pointerEvents = "auto"
-    main_div.style.touchAction = "auto"
-    main_div.style.cursor = "auto"
 
     //Disable the user to click on the buttons
     let ann_button = <HTMLElement>document.querySelector(`.annotation-buttons-${documentIndex}`)

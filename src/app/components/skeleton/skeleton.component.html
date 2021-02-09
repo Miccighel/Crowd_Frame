@@ -212,9 +212,9 @@
               <button class="ann-button-{{i}}" *ngFor="let value of annotator.values"
                 [style.background-color]="value.color" [style.color]="'black'" mat-flat-button
                 (click)="annotateThis(value,i)">{{value.label}}</button>
-              <button color="primary" style="margin-left: 5px;" mat-flat-button class="deno-button-{{i}}"
+              <!-- <button color="primary" style="margin-left: 5px;" mat-flat-button class="deno-button-{{i}}"
                 (click)="cancelAnnotation(i)">Cancel
-                selection</button>
+                selection</button> -->
             </div><br />
 
 
