@@ -3,9 +3,7 @@
     <mat-card-content>
       <ng-container *ngFor="let instruction of this.taskInstructions; let i=index">
         <h2 *ngIf="instruction['caption']">{{instruction["caption"]}}</h2>
-        <p *ngFor="let step of instruction['steps']; let j=index">
-          {{step}}
-        </p>
+        <span [innerHTML]="step" *ngFor="let step of instruction['steps']; let j=index"></span>
       </ng-container>
     </mat-card-content>
     <mat-card-actions>
@@ -180,7 +178,7 @@
     <div class="container">
       <form [formGroup]="documentsForm[i]">
         <mat-card>
-          <ng-template matStepLabel> S{{i + 1}}</ng-template>
+          <ng-template matStepLabel> L{{i + 1}}</ng-template>
           <mat-divider [inset]="true"></mat-divider>
           <mat-card-title>Please highlight in the following law</mat-card-title>
           <mat-divider [inset]="true"></mat-divider>
@@ -212,23 +210,27 @@
             <div class="annotation-recap" *ngIf="checkUndeletedNotesPresence(this.notes[i])" class="annotations">
               <div *ngFor="let note of this.notes[i]; let noteIndex = index">
                 <ng-container *ngIf="note.deleted == false">
+                  <mat-divider [inset]="true"></mat-divider><br />
                   <div class="annotation-quote">
                     <b>You selected:</b>
-                    &nbsp;<span [style.background-color]="note.color">{{note.quote}}</span>
+                    &nbsp;<span [style.background-color]="note.color">{{note.current_text}}</span>
                   </div>
                   <div class="annotation-options">
                     <div>
-                      Law number: <input type="number" name="number-{{noteIndex}}.{{i}}" id="number-{{noteIndex}}.{{i}}" placeholder="00" (keyup)="checkIfSaved(i, noteIndex)"><br /><br />
-                      Law year: <input type="number" name="year-{{noteIndex}}.{{i}}" id="year-{{noteIndex}}.{{i}}" placeholder="0000" (keyup)="checkIfSaved(i, noteIndex)">
+                      Law number: <input type="number" name="number-{{noteIndex}}.{{i}}" id="number-{{noteIndex}}.{{i}}"
+                        placeholder="00" (change)="checkIfSaved(i, noteIndex)"
+                        (keyup)="checkIfSaved(i, noteIndex)"><br /><br />
+                      Law year: <input type="number" name="year-{{noteIndex}}.{{i}}" id="year-{{noteIndex}}.{{i}}"
+                        placeholder="0000" (change)="checkIfSaved(i, noteIndex)" (keyup)="checkIfSaved(i, noteIndex)">
                     </div>
                     <div>
-                      <button (click)="performAnnotation(i, noteIndex)" mat-flat-button color="primary" id="save_button-{{noteIndex}}.{{i}}" [disabled]="checkIfSaved(i, noteIndex)">Save
+                      <button (click)="performAnnotation(i, noteIndex)" mat-flat-button color="primary"
+                        id="save_button-{{noteIndex}}.{{i}}" [disabled]="checkIfSaved(i, noteIndex)">Save
                       </button>
                       <button (click)="removeAnnotation(i, noteIndex)" mat-flat-button color="warn">Delete
                       </button>
                     </div>
                   </div>
-                  <hr />
                 </ng-container>
               </div>
             </div>
@@ -441,7 +443,7 @@
               Back
             </button>
             <button mat-flat-button color="primary" matStepperNext *ngIf="i+1<this.documentsAmount"
-              [disabled]="(!documentsForm[i].valid || !this.searchEngineRetrievedResponses[i] || taskCompleted) && !this.countdownsExpired[i]"
+              [disabled]="((!documentsForm[i].valid || !this.searchEngineRetrievedResponses[i] || taskCompleted) && !this.countdownsExpired[i]) || !notesDone[i]"
               (click)="performLogging('Next')">
               Next
             </button>
@@ -450,7 +452,7 @@
               (click)="performLogging('Finish'); performQualityCheck()">
               Finish
             </button>
-            <span class="form-note">(*) you have to fill each field to proceed</span>
+            <span class="form-note">(*) you have to create at least one annotation</span>
           </mat-card-actions>
         </mat-card>
       </form>

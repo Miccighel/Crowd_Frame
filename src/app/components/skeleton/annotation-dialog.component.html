@@ -5,7 +5,7 @@
   <div class="annotation">
     <h2>Quoted text</h2>
     <ul>
-      <li><h3 #quotedText >{{annotation.quote}}</h3></li>
+      <li><h3 #quotedText >{{annotation.current_text}}</h3></li>
     </ul>
   </div>
 </mat-dialog-content>
@@ -14,7 +14,7 @@
     Select an option
   </h2>
   <mat-dialog-actions>
-    <button *ngFor="let value of annotator.values" mat-flat-button color="primary" [mat-dialog-close]="value">{{value.label}}</button>
+    <button *ngFor="let value of annotator.values" mat-flat-button color="primary" [mat-dialog-close]="value">{{value}}</button>
   </mat-dialog-actions>
 
 </ng-container>

@@ -35,6 +35,9 @@ import { DeviceDetectorService } from 'ngx-device-detector';
 import { flatten } from '@angular/compiler';
 import { type } from 'os';
 import { equal } from 'assert';
+import { THIS_EXPR } from '@angular/compiler/src/output/output_ast';
+import { throwToolbarMixedModesError } from '@angular/material/toolbar';
+import { fdatasync } from 'fs';
 
 
 /* Component HTML Tag definition */
@@ -92,6 +95,7 @@ export class SkeletonComponent implements OnInit {
   taskSuccessful: boolean;
   taskFailed: boolean;
   checkCompleted: boolean;
+  notesDone: boolean[];
 
   /* References to task stepper and token forms */
   @ViewChild('stepper') stepper: MatStepper;
@@ -250,6 +254,7 @@ export class SkeletonComponent implements OnInit {
     this.taskSuccessful = false;
     this.taskFailed = false;
     this.checkCompleted = false;
+    this.notesDone = [false, false, false, false, false]
 
     /* |--- TASK GENERATOR ---| */
     this.generator = false;
@@ -894,6 +899,7 @@ export class SkeletonComponent implements OnInit {
   }
 
   public performHighlighting(changeDetector, event: Object, documentIndex: number, notes, annotator: Annotator) {
+    this.checkEnabledNotes(documentIndex)
     let domElement = null
     if (this.deviceDetectorService.isMobile() || this.deviceDetectorService.isTablet()) {
       const selection = document.getSelection();
@@ -910,32 +916,34 @@ export class SkeletonComponent implements OnInit {
       const highlightMade = doHighlight(domElement, true, {
         onAfterHighlight(range, highlight) {
           const selection = document.getSelection();
-          if (highlight[0]["outerText"]) {
-            selection.empty()
-            let notesForDocument = notes[documentIndex]
-            let newAnnotation = new Note(documentIndex, range, highlight)
-            let noteAlreadyFound = false
-            for (let note of notesForDocument) {
-              if (!note.deleted && newAnnotation.quote.includes(note.quote)) {
-                let element = document.querySelectorAll(`.statement-text`)[documentIndex]
-                document.querySelectorAll(".law_content_li")[documentIndex].append(first_clone)
-                element.remove()
-                return true
-              }
-            }
-            if (noteAlreadyFound) {
-              return true
-            } else {
-              for (let index = 0; index < notesForDocument.length; ++index) {
-                if (newAnnotation.timestamp_created == notesForDocument[index].timestamp_created) {
-                  if (newAnnotation.quote.length > notesForDocument[index].quote.length) notesForDocument.splice(index, 1);
+          if (highlight.length != 0) {
+            if (highlight[0]["outerText"]) {
+              selection.empty()
+              let notesForDocument = notes[documentIndex]
+              let newAnnotation = new Note(documentIndex, range, highlight)
+              let noteAlreadyFound = false
+              for (let note of notesForDocument) {
+                if (!note.deleted && newAnnotation.current_text.includes(note.current_text)) {
+                  let element = document.querySelectorAll(`.statement-text`)[documentIndex]
+                  document.querySelectorAll(".law_content_li")[documentIndex].append(first_clone)
+                  element.remove()
+                  return true
                 }
               }
-              notes[documentIndex] = notesForDocument
-              notesForDocument.push(newAnnotation)
-              notes[documentIndex] = notesForDocument
-              changeDetector.detectChanges()
-              return true
+              if (noteAlreadyFound) {
+                return true
+              } else {
+                for (let index = 0; index < notesForDocument.length; ++index) {
+                  if (newAnnotation.timestamp_created == notesForDocument[index].timestamp_created) {
+                    if (newAnnotation.current_text.length > notesForDocument[index].current_text.length) notesForDocument.splice(index, 1);
+                  }
+                }
+                notes[documentIndex] = notesForDocument
+                notesForDocument.push(newAnnotation)
+                notes[documentIndex] = notesForDocument
+                changeDetector.detectChanges()
+                return true
+              }
             }
           }
         }
@@ -947,10 +955,28 @@ export class SkeletonComponent implements OnInit {
     let currentNote = this.notes[documentIndex][noteIndex]
     let year = (<HTMLInputElement>document.getElementById("year-" + noteIndex + "." + documentIndex)).value
     let number = (<HTMLInputElement>document.getElementById("number-" + noteIndex + "." + documentIndex)).value
+    this.checkEnabledNotes(documentIndex)
     if (currentNote.year == Number(year) && currentNote.number == Number(number)) {
       return true
     } else {
       return false
+    }
+  }
+
+  public checkEnabledNotes(documentIndex: number) {
+    let currentNotes = this.notes[documentIndex]
+    let counter = 0
+    currentNotes.forEach(note => {
+      if (!note.deleted) {
+        counter += 1
+      }
+    });
+    if (counter > 0) {
+      this.notesDone[documentIndex] = true
+      console.log(this.notesDone)
+    } else {
+      this.notesDone[documentIndex] = false
+      console.log(this.notesDone)
     }
   }
 
@@ -961,7 +987,7 @@ export class SkeletonComponent implements OnInit {
     currentNote.year = Number(year)
     currentNote.number = Number(number)
     currentNote.updateNote()
-    console.log("ANNO INSERITO: " + year + ", NUMERO INSERITO: " + number + ". Versione nota: " + currentNote.version)
+    this.checkEnabledNotes(documentIndex)
   }
 
   public removeAnnotation(documentIndex: number, noteIndex: number) {
@@ -969,8 +995,9 @@ export class SkeletonComponent implements OnInit {
     currentNote.markDeleted()
     currentNote.timestamp_deleted = Date.now()
     let element = document.querySelector(`[data-timestamp='${currentNote.timestamp_created}']`)
-    element.parentNode.insertBefore(document.createTextNode(currentNote.quote), element);
+    element.parentNode.insertBefore(document.createTextNode(currentNote.current_text), element);
     element.remove()
+    this.checkEnabledNotes(documentIndex)
   }
 
   public checkUndeletedNotesPresence(notes) {
@@ -1035,7 +1062,6 @@ export class SkeletonComponent implements OnInit {
     let AUX_booleans: Boolean[] = []
 
     for (let index of this.goldIndex) {
-      console.log("ARRIVATO A GOLD QUESTION CHECK. Documento numero " + this.goldIndex)
       let AUX_user: Note[] = []
       type goldNotes = [String, Number, Number] // [quote, year, number]
       let AUX_gold: goldNotes[] = []
@@ -1056,7 +1082,7 @@ export class SkeletonComponent implements OnInit {
 
       for (let i_g = 0; i_g < AUX_gold.length; i_g++) {
         for (let i_u = 0; i_u < AUX_user.length; i_u++) {
-          let equality = AUX_gold[i_g][0] == AUX_user[i_u].quote &&
+          let equality = AUX_gold[i_g][0] == AUX_user[i_u].current_text &&
             AUX_gold[i_g][1] == AUX_user[i_u].year &&
             AUX_gold[i_g][2] == AUX_user[i_u].number
           if (equality) {
