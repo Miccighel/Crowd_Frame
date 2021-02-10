@@ -39,14 +39,23 @@ export class Note {
     this.baseURI = data[0]["baseURI"]
     this.current_text = data[0]["outerText"]
     this.option = "not_selected"
-    this.text_not_annotated_left = range["endContainer"]["firstChild"]["data"]
-    this.text_not_annotated_right = range["endContainer"]["lastChild"]["data"]
-    this.existing_notes = new Array<String>()
-    Array.from(range["endContainer"]["children"]).forEach((element: HTMLElement) =>  {
-      if(element.innerText != this.current_text) {
-        this.existing_notes.push(element.innerText)
+    if(range["endContainer"]) {
+      if(range["endContainer"]["firstChild"])
+        if(range["endContainer"]["firstChild"]["data"])
+          this.text_not_annotated_left = range["endContainer"]["firstChild"]["data"]
+      if(range["endContainer"]["lastChild"])
+        if(range["endContainer"]["lastChild"]["data"])
+          this.text_not_annotated_right = range["endContainer"]["lastChild"]["data"]
+      if(range["endContainer"]["children"]) {
+        this.existing_notes = new Array<String>()
+        Array.from(range["endContainer"]["children"]).forEach((element: HTMLElement) => {
+          if (element.innerText != this.current_text) {
+            this.existing_notes.push(element.innerText)
+          }
+        });
       }
-    });
+    }
+
   }
 
   public checkEquality(note: Note) {
