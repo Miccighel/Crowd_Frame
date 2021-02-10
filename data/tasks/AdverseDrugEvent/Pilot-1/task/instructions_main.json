@@ -5,7 +5,7 @@
       "In this task, you will be asked to identify and annotate <strong>Side Effects</strong> about some drugs in some tweets.",
       "&nbsp;A <strong>Tweet</strong> is a short message posted on Twitter containing a piece of text. ",
       "A <strong>Side Effect</strong> is any kind of medical problem or <strong>undesired negative effect</strong> that happens during treatment with a Drug. This includes injury, allergic reactions, overdoses, withdrawals, undesired symptoms and similar.<br />",
-      "We will show you <strong>11 tweets</strong> made by Twitter users. Each tweet is not altered in any way and it is reported as posted by its author (usernames are anonymized).",
+      "&nbsp;We will show you <strong>11 tweets</strong> made by Twitter users. Each tweet is not altered in any way and it is reported as posted by its author (usernames are anonymized).",
       "&nbsp;For each tweet, we ask you to read its text and <strong>annotate</strong> the <strong>Side Effects</strong>. ",
       "Note that there are some checks throughout the task, and if you do not perform these correctly you will not be able to terminate and get paid.",
       "&nbsp;The data from this task is being gathered for research purposes. No personal identifying information is recorded. Participation is entirely voluntary, and you are free to discontinue at any point."
@@ -16,9 +16,9 @@
     "steps": [
       "You will be shown one tweet at the time. You will annotate it by highlighting one or more portions of text. You can do that by selecting the text as you normally would.",
       "If you change your mind you will be able to delete any annotation at any time by clicking on the delete button.<br />",
-      "Once you select a portion of text you will be able to <strong>annotate</strong> it by clicking on the <span class='highlighted-orange'>EFFECT</span> button. <br />Use the EFFECT button to annotate descriptions of Side Effects, including all adjectives, idioms, slang, mentions of withdrawals, and overdoses. <br />",
-      "Note that the annotation button is active only if you highlight a portion of text belonging to the tweet. Make sure that your selection does not include any text outside of the tweet text box. <br />",
-      "The tweets are presented in no particular order. Simply annotate each tweet after reading it. Don't try to guess or randomly annotate, as there are some cross-checks. You’ll need to use the button to annotate at least one EFFECT for each tweet, otherwise you will not be able to proceed to the following steps.<br /><br />",
+      "&nbsp;Once you select a portion of text you will be able to <strong>annotate</strong> it by clicking on the <span class='highlighted-orange'>EFFECT</span> button. <br /> &nbsp;Use the EFFECT button to annotate descriptions of Side Effects, including all adjectives, idioms, slang, mentions of withdrawals, and overdoses. <br />",
+      "&nbsp;Note that the annotation button is active only if you highlight a portion of text belonging to the tweet. Make sure that your selection does not include any text outside of the tweet text box. <br />",
+      "&nbsp;The tweets are presented in no particular order. Simply annotate each tweet after reading it. Don't try to guess or randomly annotate, as there are some cross-checks. You’ll need to use the button to annotate at least one EFFECT for each tweet, otherwise you will not be able to proceed to the following steps.<br /><br />",
       "Below you can find some examples of valid annotations.<br /><br />",
       "<strong>Example 1</strong><br /><br />",
       "@USERNAME Cipro <span class='highlighted-orange'>destroyed my entire body</span>, from head to toe.  <span class='highlighted-orange'>Bedridden</span> since 2009.  Be VERY careful.<br /><br />",
