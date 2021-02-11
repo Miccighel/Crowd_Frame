@@ -21,14 +21,14 @@
       "&nbsp;The tweets are presented in no particular order. Simply annotate each tweet after reading it. Don't try to guess or randomly annotate, as there are some cross-checks. You’ll need to use the button to annotate at least one EFFECT for each tweet, otherwise you will not be able to proceed to the following steps.<br /><br />",
       "Below you can find some examples of valid annotations.<br /><br />",
       "<strong>Example 1</strong><br /><br />",
-      "@USERNAME Cipro <span class='highlighted-orange'>destroyed my entire body</span>, from head to toe.  <span class='highlighted-orange'>Bedridden</span> since 2009.  Be VERY careful.<br /><br />",
+      "<span class='instruction-example'>@USERNAME Cipro <span class='highlighted-orange'>destroyed my entire body</span>, from head to toe.  <span class='highlighted-orange'>Bedridden</span> since 2009.  Be VERY careful.</span><br /><br />",
       "\"destroyed my entire body\" is annotated as <strong>EFFECT</strong> (it is a side effect description which includes an adjective) <br />",
       "\"Bedridden\" is annotated as <strong>EFFECT</strong> (it is the description of a side effect) <br /><br />",
       "<strong>Example 2</strong><br /><br />",
-      "Brb, dying of nicotine <span class='highlighted-orange'>withdrawal</span>.<br /><br />",
+      "<span class='instruction-example'>Brb, dying of nicotine <span class='highlighted-orange'>withdrawal</span>.</span><br /><br />",
       "\"withdrawal\" is annotated as <strong>EFFECT</strong> (withdrawals are considered as side effects)<br /><br />",
       "<strong>Example 3</strong><br /><br />",
-      "It feels like <span class='highlighted-orange'>my brain is melting</span>. 360mg of vyvanse in 24 hours... not smart danielle. not smart.<br /><br />",
+      "<span class='instruction-example'>It feels like <span class='highlighted-orange'>my brain is melting</span>. 360mg of vyvanse in 24 hours... not smart danielle. not smart.</span><br /><br />",
       "\"my brain is melting\" is annotated as <strong>EFFECT</strong> (it is the description of a side effect) <br /><br />",
       "You need to <strong>annotate at least one EFFECT</strong> to proceed to the next tweet."
     ]
