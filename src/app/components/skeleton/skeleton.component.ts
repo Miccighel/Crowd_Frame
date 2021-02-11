@@ -29,12 +29,10 @@ import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { Note } from "../../models/skeleton/notes";
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { DialogData, InstructionsDialog } from "../instructions/instructions.component";
-import { doHighlight, deserializeHighlights, serializeHighlights, removeHighlights, optionsImpl } from "@funktechno/texthighlighter/lib";
+import { DialogData } from "../instructions/instructions.component";
+import { doHighlight } from "@funktechno/texthighlighter/lib";
 import { DeviceDetectorService } from 'ngx-device-detector';
-import { Amplify } from 'aws-sdk';
-import { isUndefined } from 'util';
-import { TruncatePipe } from 'src/app/pipes/truncatePipe';
+import {createLogErrorHandler} from "@angular/compiler-cli/ngcc/src/execution/tasks/completion";
 
 
 /* Component HTML Tag definition */
@@ -213,6 +211,7 @@ export class SkeletonComponent implements OnInit {
   notes: Array<Array<Note>>
 
   sequenceNumber: number
+  annotationButtonsDisabled: Array<boolean>
 
   /* |--------- CONSTRUCTOR ---------| */
 
@@ -280,6 +279,7 @@ export class SkeletonComponent implements OnInit {
     });
 
     this.sequenceNumber = 0
+
   }
 
   public async ngOnInit() {
@@ -326,7 +326,6 @@ export class SkeletonComponent implements OnInit {
         this.ngxService.stopLoader('skeleton')
       }
     })
-
 
   }
 
@@ -541,6 +540,11 @@ export class SkeletonComponent implements OnInit {
       for (let index = 0; index < rawDocuments.length; index++) {
         let currentDocument = rawDocuments[index];
         this.documents.push(new Document(index, currentDocument));
+      }
+
+      this.annotationButtonsDisabled = new Array<boolean>();
+      for (let index = 0; index < this.documentsAmount; index++) {
+        this.annotationButtonsDisabled.push(true)
       }
 
       /* The array of accesses counter is initialized */
@@ -899,12 +903,10 @@ export class SkeletonComponent implements OnInit {
 
   public performHighlighting(changeDetector, event: Object, documentIndex: number, annotationDialog, notes, annotator: Annotator) {
 
-    if (notes[documentIndex].length > 0) { //If there is a note
-      let element = notes[documentIndex][notes[documentIndex].length - 1]
-      if (element.option == "not_selected" && !element.deleted) { //If the note have the option "note_selected" ==> yellow highlight
-        this.removeAnnotation(documentIndex, notes[documentIndex].length - 1, changeDetector) //remove the note
-        changeDetector.detectChanges()
-
+    for(let note of notes[documentIndex]){
+      if (note.option == "not_selected" && !note.deleted) { //If the note have the option "note_selected" ==> yellow highlight
+        note.ignored = true
+        this.removeAnnotation(documentIndex, notes[documentIndex].length - 1, changeDetector) //re// move the note
       }
     }
 
@@ -945,21 +947,10 @@ export class SkeletonComponent implements OnInit {
                     let element = document.querySelector(`.statement-text-${documentIndex}`) //select the main element
                     element.remove()
                     document.querySelector(`.tweet_content_li_${documentIndex}`).append(first_clone) //append the element bukupped...
-
-                    let ann_button = <HTMLElement>document.querySelector(`.annotation-buttons-${documentIndex}`)
-                    ann_button.style.pointerEvents = "none"
-                    ann_button.style.opacity = "0.3"
-                    changeDetector.detectChanges()
                     return true //Exit from the callback!
                   }
                 }
               }
-              //Ok enable the user to click on the buttons
-              let ann_button = <HTMLElement>document.querySelector(`.annotation-buttons-${documentIndex}`)
-              ann_button.style.pointerEvents = "auto"
-              ann_button.style.opacity = "1"
-              ////
-              changeDetector.detectChanges()
               notesForDocument.push(newAnnotation)
               notes[documentIndex] = notesForDocument
 
@@ -969,6 +960,19 @@ export class SkeletonComponent implements OnInit {
         }
       })
     }
+    let test = false
+    for (let note of this.notes[documentIndex]) {
+      if(note.option=="not_selected" && note.deleted==false) {
+        test = true
+        this.annotationButtonsDisabled[documentIndex] = false
+        break
+      }
+    }
+    if(!test) {
+      this.annotationButtonsDisabled[documentIndex] = true
+    }
+
+    this.changeDetector.detectChanges()
   }
 
   //onClick this function annotated the last text highlighted
@@ -991,10 +995,9 @@ export class SkeletonComponent implements OnInit {
       }
     })
 
-    //Disable the user to click on the buttons
-    let ann_button = <HTMLElement>document.querySelector(`.annotation-buttons-${documentIndex}`)
-    ann_button.style.pointerEvents = "none"
-    ann_button.style.opacity = "0.3"
+    this.annotationButtonsDisabled[documentIndex] = true
+    this.changeDetector.detectChanges()
+
     ////
   }
 
@@ -1026,7 +1029,7 @@ export class SkeletonComponent implements OnInit {
   public checkUndeletedNotesPresence(notes) {
     let undeletedNotes = false
     for (let note of notes) {
-      if (note.deleted == false) {
+      if (note.deleted == false && note.option!="not_selected") {
         undeletedNotes = true
         break
       }
@@ -1215,8 +1218,7 @@ export class SkeletonComponent implements OnInit {
         this.removeAnnotation(documentIndex, this.notes[documentIndex].length - 1, this.changeDetector)
         //Disable the user to click on the buttons
         let ann_button = <HTMLElement>document.querySelector(`.annotation-buttons-${documentIndex}`)
-        ann_button.style.pointerEvents = "none"
-        ann_button.style.opacity = "0.3"
+
         ////
         let main_div = <HTMLElement>document.querySelector(`.general-tweet-div-${documentIndex}`)
         //Enable the user events on the main DI

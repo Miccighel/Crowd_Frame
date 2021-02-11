@@ -5,6 +5,7 @@ export class Note {
   index: number;
   version: number;
   deleted: boolean;
+  ignored: boolean;
   color: string;
   container_id: number;
   start_offset: number;
@@ -30,6 +31,7 @@ export class Note {
     this.index = index;
     this.version = 0
     this.deleted = false
+    this.ignored = false
     this.color = color
     this.container_id = range["commonAncestorContainer"]["id"]
     this.start_offset = parseInt(range["startOffset"])
