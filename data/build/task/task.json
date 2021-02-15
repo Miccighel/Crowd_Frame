@@ -13,7 +13,9 @@
     ]
   },
   "countdown_time": false,
-  "blacklist_batches": [],
+  "blacklist_batches": [
+    "AdverseDrugEvent/Pilot-0"
+  ],
   "whitelist_batches": [],
   "messages": [
     "You have already started this task without finishing it",
