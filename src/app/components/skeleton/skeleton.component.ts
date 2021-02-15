@@ -1003,7 +1003,7 @@ export class SkeletonComponent implements OnInit {
   //Returns true if there is at least one ADE effect annotated in the document
   public canINext(documentIndex: number) {
     let omg = false
-    this.notes[documentIndex].forEach((element, index) => {
+    this.notes[documentIndex].forEach((element) => {
       if (!element.deleted && element.option == "effect") {
         omg = true
       }
