@@ -1085,6 +1085,7 @@ export class SkeletonComponent implements OnInit {
 
     /* 2) GOLD QUESTION CHECK performed here - OPTIONAL CHECK */
 
+    ///INIZIO CODICE AGGIUNTO DA DAVIDE////
     let effect_check = false //boleean var used to check if there is at least on ADE annotated
     let effect_text_gold = this.documents[this.goldIndex].adr_text //get the gold question text
 
@@ -1097,7 +1098,7 @@ export class SkeletonComponent implements OnInit {
 
     goldQuestionCheck = effect_check
     computedChecks.push(goldQuestionCheck)
-
+    ///FINE CODICE AGGIUNTO DA DAVIDE////
 
     /* 3) TIME SPENT CHECK performed here - MANDATORY CHECK */
     timeSpentCheck = true;
