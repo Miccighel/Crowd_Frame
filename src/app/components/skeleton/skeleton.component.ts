@@ -903,7 +903,7 @@ export class SkeletonComponent implements OnInit {
 
   public performHighlighting(changeDetector, event: Object, documentIndex: number, annotationDialog, notes, annotator: Annotator) {
 
-    //Check if there is a note not annotated, if there is delete it
+    //Check if there is a note highlighted but not annotated, if there is delete it
     for (let note of notes[documentIndex]) {
       if (note.option == "not_selected" && !note.deleted) {
         note.ignored = true
@@ -956,15 +956,19 @@ export class SkeletonComponent implements OnInit {
         }
       })
     }
-    let test = false
+
+    //Enable and Disable the annotation buttons
+    //Enable the buttons if there is an highlighted but not annotated note
+    //Disable the buttons if all the notes of the current document are annotated
+    let check_not_selected = false
     for (let note of this.notes[documentIndex]) {
       if (note.option == "not_selected" && note.deleted == false) {
-        test = true
+        check_not_selected = true
         this.annotationButtonsDisabled[documentIndex] = false
         break
       }
     }
-    if (!test) {
+    if (!check_not_selected) {
       this.annotationButtonsDisabled[documentIndex] = true
     }
 
