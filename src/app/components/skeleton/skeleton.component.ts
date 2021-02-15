@@ -32,7 +32,7 @@ import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dial
 import { DialogData } from "../instructions/instructions.component";
 import { doHighlight } from "@funktechno/texthighlighter/lib";
 import { DeviceDetectorService } from 'ngx-device-detector';
-import {createLogErrorHandler} from "@angular/compiler-cli/ngcc/src/execution/tasks/completion";
+import { createLogErrorHandler } from "@angular/compiler-cli/ngcc/src/execution/tasks/completion";
 
 
 /* Component HTML Tag definition */
@@ -903,15 +903,15 @@ export class SkeletonComponent implements OnInit {
 
   public performHighlighting(changeDetector, event: Object, documentIndex: number, annotationDialog, notes, annotator: Annotator) {
 
-    for(let note of notes[documentIndex]){
-      if (note.option == "not_selected" && !note.deleted) { //If the note have the option "note_selected" ==> yellow highlight
+    //Check if there is a note not annotated, if there is delete it
+    for (let note of notes[documentIndex]) {
+      if (note.option == "not_selected" && !note.deleted) {
         note.ignored = true
-        this.removeAnnotation(documentIndex, notes[documentIndex].length - 1, changeDetector) //re// move the note
+        this.removeAnnotation(documentIndex, notes[documentIndex].length - 1, changeDetector) //remove the note
       }
     }
 
     let domElement = null
-    let optionChosen = null
     if (this.deviceDetectorService.isMobile() || this.deviceDetectorService.isTablet()) {
       const selection = document.getSelection();
       if (selection) {
@@ -923,60 +923,56 @@ export class SkeletonComponent implements OnInit {
 
 
     if (domElement) {
-      let first_clone = document.querySelector(`.statement-text-${documentIndex}`).cloneNode(true) //clone the element
+      let statement_container_clone = document.querySelector(`.statement-text-${documentIndex}`).cloneNode(true) //clone of the main statement container
 
-      //Attach the event bindings
-      first_clone.addEventListener('mouseup', (e) => this.performHighlighting(changeDetector, event, documentIndex, annotationDialog, notes, annotator))
-      first_clone.addEventListener('touchend', (e) => this.performHighlighting(changeDetector, event, documentIndex, annotationDialog, notes, annotator))
+      //Attach the event bindings to the clone
+      statement_container_clone.addEventListener('mouseup', (e) => this.performHighlighting(changeDetector, event, documentIndex, annotationDialog, notes, annotator))
+      statement_container_clone.addEventListener('touchend', (e) => this.performHighlighting(changeDetector, event, documentIndex, annotationDialog, notes, annotator))
 
       const highlightMade = doHighlight(domElement, true, {
 
         onAfterHighlight(range, highlight) {
           if (highlight.length > 0) {
             if (highlight[0]["outerText"]) { //If something is selected
-              //selection.empty() //clear the selection
               let notesForDocument = notes[documentIndex]
               let newAnnotation = new Note(documentIndex, range, highlight) //create new note
 
               //Check if the selected text is an overlay of another annotation
               for (let note of notesForDocument) {
                 if (!note.deleted) {
-
-                  if (1 in highlight || newAnnotation.current_text.includes(note.current_text) || note.current_text.includes(newAnnotation.current_text)) { //if the note is arleady annotated
-
+                  //if the note is arleady annotated or there is an overlap
+                  if (1 in highlight || newAnnotation.current_text.includes(note.current_text) || note.current_text.includes(newAnnotation.current_text)) {
                     let element = document.querySelector(`.statement-text-${documentIndex}`) //select the main element
-                    element.remove()
-                    document.querySelector(`.tweet_content_li_${documentIndex}`).append(first_clone) //append the element bukupped...
+                    element.remove() //remove the container with the overlapped note
+                    document.querySelector(`.tweet_content_li_${documentIndex}`).append(statement_container_clone)//append the old container, without the overlaped note
                     return true //Exit from the callback!
                   }
                 }
               }
               notesForDocument.push(newAnnotation)
               notes[documentIndex] = notesForDocument
-
             }
-
           }
         }
       })
     }
     let test = false
     for (let note of this.notes[documentIndex]) {
-      if(note.option=="not_selected" && note.deleted==false) {
+      if (note.option == "not_selected" && note.deleted == false) {
         test = true
         this.annotationButtonsDisabled[documentIndex] = false
         break
       }
     }
-    if(!test) {
+    if (!test) {
       this.annotationButtonsDisabled[documentIndex] = true
     }
 
     this.changeDetector.detectChanges()
   }
 
-  //onClick this function annotated the last text highlighted
-  public annotateThis(value, documentIndex: number) {
+  //This function annotate the the note highlighted
+  public addAnnotation(value, documentIndex: number) {
     this.notes[documentIndex].forEach((element, index) => {
       if (index === this.notes[documentIndex].length - 1) {
         if (!element.deleted) {
@@ -997,8 +993,6 @@ export class SkeletonComponent implements OnInit {
 
     this.annotationButtonsDisabled[documentIndex] = true
     this.changeDetector.detectChanges()
-
-    ////
   }
 
 
@@ -1015,7 +1009,7 @@ export class SkeletonComponent implements OnInit {
 
 
   public removeAnnotation(documentIndex: number, noteIndex: number, changeDetector) {
-    let currentNote = this.notes[documentIndex][noteIndex]
+    let currentNote = this.notes[documentIndex][noteIndex] //select the current note
     currentNote.markDeleted()
     currentNote.timestamp_deleted = Date.now()
 
@@ -1029,7 +1023,7 @@ export class SkeletonComponent implements OnInit {
   public checkUndeletedNotesPresence(notes) {
     let undeletedNotes = false
     for (let note of notes) {
-      if (note.deleted == false && note.option!="not_selected") {
+      if (note.deleted == false && note.option != "not_selected") {
         undeletedNotes = true
         break
       }
@@ -1086,26 +1080,17 @@ export class SkeletonComponent implements OnInit {
 
     /* 2) GOLD QUESTION CHECK performed here - OPTIONAL CHECK */
 
-    let effect_check = false
-    //let drug_check = false
-    let effect_text_gold = this.documents[this.goldIndex].adr_text
-    //let drug_text_gold = this.documents[this.goldIndex].drug_text
+    let effect_check = false //boleean var used to check if there is at least on ADE annotated
+    let effect_text_gold = this.documents[this.goldIndex].adr_text //get the gold question text
 
     this.notes[this.goldIndex].forEach(item => {
-
       let annotation_text = "['" + item.current_text.replace(/\s+/g, '') + "']"
       if (item.option == "effect" && item.deleted == false && effect_text_gold == annotation_text) {
         effect_check = true
       }
-      // if (item.option == "drug" && item.deleted == false && drug_text_gold == annotation_text) {
-      //   drug_check = true
-      // }
-
     });
 
-    //goldQuestionCheck = drug_check && effect_check;
     goldQuestionCheck = effect_check
-
     computedChecks.push(goldQuestionCheck)
 
 

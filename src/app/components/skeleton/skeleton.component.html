@@ -209,13 +209,9 @@
             </div>
             <div class="annotation-buttons annotation-buttons-{{i}}">
               <button [style.background-color]="value.color"
-                      [style.opacity]="!this.annotationButtonsDisabled[i] ? 1 : 0.3"
-                      class="ann-button-{{i}}" *ngFor="let value of annotator.values"
-                [disabled]="this.annotationButtonsDisabled[i]" mat-flat-button
-                (click)="annotateThis(value,i)">{{value.label}}</button>
-              <!-- <button color="primary" style="margin-left: 5px;" mat-flat-button class="deno-button-{{i}}"
-                (click)="cancelAnnotation(i)">Cancel
-                selection</button> -->
+                [style.opacity]="!this.annotationButtonsDisabled[i] ? 1 : 0.3" class="ann-button-{{i}}"
+                *ngFor="let value of annotator.values" [disabled]="this.annotationButtonsDisabled[i]" mat-flat-button
+                (click)="addAnnotation(value,i)">{{value.label}}</button>
             </div><br />
 
 
