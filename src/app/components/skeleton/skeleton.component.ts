@@ -900,7 +900,7 @@ export class SkeletonComponent implements OnInit {
     return null
   }
 
-
+  ///INIZIO CODICE AGGIUNTO DA DAVIDE////
   public performHighlighting(changeDetector, event: Object, documentIndex: number, annotationDialog, notes, annotator: Annotator) {
 
     //Check if there is a note highlighted but not annotated, if there is delete it
@@ -1034,6 +1034,7 @@ export class SkeletonComponent implements OnInit {
     }
     return undeletedNotes
   }
+  ///FINE CODICE AGGIUNTO DA DAVIDE////
 
 
   /* |--------- QUALITY CHECKS INTEGRATION - FUNCTIONS ---------| */
@@ -1201,23 +1202,14 @@ export class SkeletonComponent implements OnInit {
 
 
   public async performLogging(action: string, documentIndex: number) {
+    ///INIZIO CODICE AGGIUNTO DA DAVIDE////
     if (this.notes[documentIndex].length > 0) {
       let element = this.notes[documentIndex][this.notes[documentIndex].length - 1]
       if (element.option == "not_selected" && !element.deleted) {
         this.removeAnnotation(documentIndex, this.notes[documentIndex].length - 1, this.changeDetector)
-        //Disable the user to click on the buttons
-        let ann_button = <HTMLElement>document.querySelector(`.annotation-buttons-${documentIndex}`)
-
-        ////
-        let main_div = <HTMLElement>document.querySelector(`.general-tweet-div-${documentIndex}`)
-        //Enable the user events on the main DI
-        main_div.style.userSelect = "auto"
-        main_div.style.webkitUserSelect = "auto"
-        main_div.style.pointerEvents = "auto"
-        main_div.style.touchAction = "auto"
-        main_div.style.cursor = "auto"
       }
     }
+    ///FINE CODICE AGGIUNTO DA DAVIDE////
 
     /* |--- COUNTDOWN ---| */
     if ((this.stepper.selectedIndex >= this.questionnaireAmount) && this.settings.countdownTime) {
