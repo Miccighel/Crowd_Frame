@@ -4,6 +4,8 @@
  * Each field of such Document must be mapped to an attribute of this class and set up in the constructor as it is shown.
  * Take care also in providing an implementation of the function; it is used to define if a document represents the high and low gold question.
  */
+import {Mapping} from "../../src/app/models/skeleton/dimension";
+
 export class Document {
 
   /* DO NOT REMOVE THIS ATTRIBUTE */
@@ -12,10 +14,10 @@ export class Document {
 
   id: string;
   text: string;
-  adr_spans: string;
-  adr_text: string;
-  drug_spans: string;
-  drug_text: string;
+  adr_spans: Array<Span>;
+  adr_texts: Array<string>;
+  drug_spans: Array<Span>;
+  drug_texts: Array<string>;
   url: string;
 
   constructor(
@@ -27,25 +29,42 @@ export class Document {
 
     this.id = data['id']
     this.text = data["text"];
-    this.adr_spans = data["adr_spans"];
-    this.adr_text = data["adr_text"];
-
-    this.drug_spans = data["drug_spans"];
-    this.drug_text = data["drug_text"];
+    this.adr_spans = new Array<Span>();
+    for (let index = 0; index < data["adr_spans"].length; index++) this.adr_spans.push(new Span(index, data["adr_spans"][index]))
+    this.adr_texts = new Array<string>();
+    for (let index = 0; index < data["adr_text"].length; index++) this.adr_texts.push(data["adr_text"][index])
+    this.drug_spans = new Array<Span>();
+    for (let index = 0; index < data["drug_spans"].length; index++) this.drug_spans.push(new Span(index, data["drug_spans"][index]))
+    this.drug_texts = new Array<string>();
+    for (let index = 0; index < data["drug_text"].length; index++) this.drug_texts.push(data["drug_text"][index])
 
     this.url = data["url"];
   }
 
-  /*
-   * This function determines if the current document is a gold question.
-   * Possible values for the parameter: HIGH or LOW. (CAPS LOCK MANDATORY).
-   * In this case, for example, if the id_par field is HIGH (LOW) then
-   * the document is the HIGH (LOW) gold question
-   */
   public getGoldQuestionIndex(kind: string) {
     if (this.id.includes(kind)) {
       return this.index
     }
+  }
+
+}
+
+export class Span {
+
+  /* DO NOT REMOVE THIS ATTRIBUTE */
+  index: number;
+
+  start: number;
+  end: number;
+  text: string;
+
+  constructor(
+    index: number,
+    data: JSON
+  ) {
+    this.start = data["start"]
+    this.end = data["end"]
+    this.text = data["text"].trim()
   }
 
 }

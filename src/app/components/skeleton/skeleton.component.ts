@@ -93,7 +93,7 @@ export class SkeletonComponent implements OnInit {
   //
 
 
-  /* References to task stepper and token forms */
+  /* References to task stepper and i forms */
   @ViewChild('stepper') stepper: MatStepper;
   @ViewChild('urlField') urlField: MatFormField;
   tokenForm: FormGroup;
@@ -216,7 +216,6 @@ export class SkeletonComponent implements OnInit {
   /* |--------- CONSTRUCTOR ---------| */
 
   constructor(
-    public annotationDialog: MatDialog,
     changeDetector: ChangeDetectorRef,
     ngxService: NgxUiLoaderService,
     configService: ConfigService,
@@ -259,7 +258,7 @@ export class SkeletonComponent implements OnInit {
     /* |--- TASK GENERATOR ---| */
     this.generator = false;
 
-    this.tokenInput = new FormControl('', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
+    this.tokenInput = new FormControl('AQYDUTLZGT', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
     this.tokenForm = formBuilder.group({
       "tokenInput": this.tokenInput
     });
@@ -901,7 +900,7 @@ export class SkeletonComponent implements OnInit {
   }
 
   ///INIZIO CODICE AGGIUNTO DA DAVIDE////
-  public performHighlighting(changeDetector, event: Object, documentIndex: number, annotationDialog, notes, annotator: Annotator) {
+  public performHighlighting(changeDetector, event: Object, documentIndex: number, notes, annotator: Annotator) {
 
     //Check if there is a note highlighted but not annotated, if there is delete it
     for (let note of notes[documentIndex]) {
@@ -926,8 +925,8 @@ export class SkeletonComponent implements OnInit {
       let statement_container_clone = document.querySelector(`.statement-text-${documentIndex}`).cloneNode(true) //clone of the main statement container
 
       //Attach the event bindings to the clone
-      statement_container_clone.addEventListener('mouseup', (e) => this.performHighlighting(changeDetector, event, documentIndex, annotationDialog, notes, annotator))
-      statement_container_clone.addEventListener('touchend', (e) => this.performHighlighting(changeDetector, event, documentIndex, annotationDialog, notes, annotator))
+      statement_container_clone.addEventListener('mouseup', (e) => this.performHighlighting(changeDetector, event, documentIndex, notes, annotator))
+      statement_container_clone.addEventListener('touchend', (e) => this.performHighlighting(changeDetector, event, documentIndex, notes, annotator))
 
       const highlightMade = doHighlight(domElement, true, {
 
@@ -972,6 +971,7 @@ export class SkeletonComponent implements OnInit {
       this.annotationButtonsDisabled[documentIndex] = true
     }
 
+    console.log(this.notes)
     this.changeDetector.detectChanges()
   }
 
@@ -1086,18 +1086,18 @@ export class SkeletonComponent implements OnInit {
     /* 2) GOLD QUESTION CHECK performed here - OPTIONAL CHECK */
 
     ///INIZIO CODICE AGGIUNTO DA DAVIDE////
-    let effect_check = false //boleean var used to check if there is at least on ADE annotated
-    let effect_text_gold = this.documents[this.goldIndex].adr_text //get the gold question text
 
+    let effect_check = false //boleean var used to check if there is at least on ADE annotated
+
+    let adr_texts  =  this.documents[this.goldIndex].adr_texts
     this.notes[this.goldIndex].forEach(item => {
-      let annotation_text = "['" + item.current_text.replace(/\s+/g, '') + "']"
-      if (item.option == "effect" && item.deleted == false && effect_text_gold == annotation_text) {
-        effect_check = true
-      }
+      let currentText = item.current_text.trim()
+      if (item.option == "effect" && item.deleted == false && adr_texts.includes(currentText)) effect_check = true
     });
 
     goldQuestionCheck = effect_check
     computedChecks.push(goldQuestionCheck)
+
     ///FINE CODICE AGGIUNTO DA DAVIDE////
 
     /* 3) TIME SPENT CHECK performed here - MANDATORY CHECK */
@@ -1588,39 +1588,6 @@ export class SkeletonComponent implements OnInit {
     this.snackBar.open(message, action, {
       duration: duration,
     });
-  }
-
-}
-
-/* Component HTML Tag definition */
-@Component({
-  selector: 'app-annotation-dialog',
-  styleUrls: ['annotation-dialog.component.scss'],
-  templateUrl: 'annotation-dialog.component.html',
-  encapsulation: ViewEncapsulation.None
-})
-
-export class AnnotationDialog {
-
-  annotation: Note
-  annotator: Annotator
-
-  /* |---------  ELEMENTS - DECLARATION ---------| */
-
-  /* |--------- CONSTRUCTOR ---------| */
-
-  constructor(public dialogRef: MatDialogRef<AnnotationDialog>, @Inject(MAT_DIALOG_DATA) public data: DialogData) {
-    this.annotation = data["annotation"]
-    this.annotator = data["annotator"]
-  }
-
-  /* |--------- ELEMENTS - FUNCTIONS ---------| */
-
-  /*
-   * This function closes the modal previously opened.
-   */
-  closeDialog(): void {
-    this.dialogRef.close();
   }
 
 }
