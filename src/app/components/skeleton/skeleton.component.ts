@@ -5,7 +5,7 @@ import {
   Component,
   ViewChild,
   ViewChildren,
-  QueryList, OnInit, ElementRef, AfterViewInit, ViewEncapsulation, Inject, NgZone
+  QueryList, OnInit, NgZone
 } from '@angular/core';
 /* Reactive forms modules */
 import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
@@ -28,12 +28,8 @@ import { Worker } from "../../models/skeleton/worker";
 import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { Note } from "../../models/skeleton/notes";
-import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { DialogData } from "../instructions/instructions.component";
 import { doHighlight } from "@funktechno/texthighlighter/lib";
 import { DeviceDetectorService } from 'ngx-device-detector';
-import { createLogErrorHandler } from "@angular/compiler-cli/ngcc/src/execution/tasks/completion";
-
 
 /* Component HTML Tag definition */
 @Component({
@@ -971,7 +967,6 @@ export class SkeletonComponent implements OnInit {
       this.annotationButtonsDisabled[documentIndex] = true
     }
 
-    console.log(this.notes)
     this.changeDetector.detectChanges()
   }
 
@@ -1087,15 +1082,40 @@ export class SkeletonComponent implements OnInit {
 
     ///INIZIO CODICE AGGIUNTO DA DAVIDE////
 
-    let effect_check = false //boleean var used to check if there is at least on ADE annotated
+    let documentText  =  this.documents[this.goldIndex].text
 
-    let adr_texts  =  this.documents[this.goldIndex].adr_texts
+    goldQuestionCheck = false
+    let highestJaccardCoefficient = 0
     this.notes[this.goldIndex].forEach(item => {
-      let currentText = item.current_text.trim()
-      if (item.option == "effect" && item.deleted == false && adr_texts.includes(currentText)) effect_check = true
+      if (item.option == "effect" && item.deleted == false) {
+        let currentText = item.current_text.trim()
+        let currentTextSet = new Set()
+        let indexStart = documentText.indexOf(currentText)
+        let indexEnd = indexStart+currentText.length
+        for (let i = indexStart; i < indexEnd; i++) currentTextSet.add(i)
+        for (let span of this.documents[this.goldIndex].adr_spans) {
+          let currentAdrSet = new Set()
+          let union = new Set()
+          let intersection = new Set()
+          let indexStart = span["start"]
+          let indexEnd = span["end"]
+          for (let i = indexStart; i < indexEnd; i++) currentAdrSet = currentAdrSet.add(i);
+          for(let number of currentTextSet.values()) {
+            union.add(number)
+            if (currentAdrSet.has(number)) intersection.add(number)
+          }
+          for(let number of currentAdrSet.values()){
+            union.add(number)
+            if (currentTextSet.has(number)) intersection.add(number)
+          }
+          highestJaccardCoefficient = Math.max(intersection.size/union.size, highestJaccardCoefficient)
+        }
+      }
     });
-
-    goldQuestionCheck = effect_check
+    console.log(highestJaccardCoefficient)
+    if(highestJaccardCoefficient>=0.75) {
+      goldQuestionCheck = true
+    }
     computedChecks.push(goldQuestionCheck)
 
     ///FINE CODICE AGGIUNTO DA DAVIDE////
