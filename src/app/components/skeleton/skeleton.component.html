@@ -446,7 +446,7 @@
 
             <button mat-flat-button color="primary" matStepperNext *ngIf="i+1<this.documentsAmount"
               [disabled]="(!documentsForm[i].valid || !this.searchEngineRetrievedResponses[i] || taskCompleted || !canINext(i)) && !this.countdownsExpired[i]"
-              (click)="performLogging('Next',i); performQualityCheck()">
+              (click)="performLogging('Next',i);">
               Next
             </button>
             <button mat-flat-button color="primary" matStepperNext *ngIf="i+1>=this.documentsAmount"

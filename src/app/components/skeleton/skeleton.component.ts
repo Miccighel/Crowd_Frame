@@ -1112,7 +1112,6 @@ export class SkeletonComponent implements OnInit {
         }
       }
     });
-    console.log(highestJaccardCoefficient)
     if(highestJaccardCoefficient>=0.75) {
       goldQuestionCheck = true
     }
