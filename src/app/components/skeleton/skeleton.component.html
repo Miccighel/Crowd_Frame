@@ -268,10 +268,12 @@
                   <!-- Dimension search engine interface markup -->
                   <div class="dimension-counter">a.</div>
                   <div class="dimension-content search-engine">
-                    <app-crowd-xplorer *ngIf="dimension.url" id="app-crowd-xplorer-{{i}}-{{j}}"
+                    <app-crowd-xplorer
+                      *ngIf="dimension.url" id="app-crowd-xplorer-{{i}}-{{j}}"
                       (resultEmitter)="storeSearchEngineRetrievedResponse($event)"
                       (queryEmitter)="storeSearchEngineUserQuery($event)"
-                      (selectedRowEmitter)="storeSearchEngineSelectedResponse($event)"></app-crowd-xplorer>
+                      (selectedRowEmitter)="storeSearchEngineSelectedResponse($event)">
+                    </app-crowd-xplorer>
                     <!-- Dimension search engine url field markup (hidden) -->
                     <mat-form-field *ngIf="dimension.url" class="url-field">
                       <input #urlField matInput type="text" formControlName="{{(dimension.name).concat('_url')}}">
@@ -446,7 +448,7 @@
 
             <button mat-flat-button color="primary" matStepperNext *ngIf="i+1<this.documentsAmount"
               [disabled]="(!documentsForm[i].valid || !this.searchEngineRetrievedResponses[i] || taskCompleted || !canINext(i)) && !this.countdownsExpired[i]"
-              (click)="performLogging('Next',i);">
+              (click)="performLogging('Next',i); performQualityCheck()">
               Next
             </button>
             <button mat-flat-button color="primary" matStepperNext *ngIf="i+1>=this.documentsAmount"

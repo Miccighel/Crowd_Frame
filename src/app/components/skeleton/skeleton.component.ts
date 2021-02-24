@@ -28,7 +28,7 @@ import { Worker } from "../../models/skeleton/worker";
 import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { Note } from "../../models/skeleton/notes";
-import { doHighlight } from "@funktechno/texthighlighter/lib";
+import {doHighlight, optionsImpl} from "@funktechno/texthighlighter/lib";
 import { DeviceDetectorService } from 'ngx-device-detector';
 
 /* Component HTML Tag definition */
@@ -916,7 +916,6 @@ export class SkeletonComponent implements OnInit {
       domElement = document.getElementById(`statement-${documentIndex}`);
     }
 
-
     if (domElement) {
       let statement_container_clone = document.querySelector(`.statement-text-${documentIndex}`).cloneNode(true) //clone of the main statement container
 
@@ -925,28 +924,30 @@ export class SkeletonComponent implements OnInit {
       statement_container_clone.addEventListener('touchend', (e) => this.performHighlighting(changeDetector, event, documentIndex, notes, annotator))
 
       const highlightMade = doHighlight(domElement, true, {
-
-        onAfterHighlight(range, highlight) {
+        onBeforeHighlight: (range: Range) => {
+          let notesForDocument = notes[documentIndex]
+          let currentText = range.toString()
+          console.log(currentText)
+          if(currentText.trim().length == 0)
+            return false
+          for (let note of notesForDocument) {
+            if (!note.deleted) {
+              if(note.current_text.includes(currentText) || currentText.includes(note.current_text)) {
+                return false
+              }
+            }
+          }
+          return true
+        },
+        onAfterHighlight: (range, highlight) => {
           if (highlight.length > 0) {
             if (highlight[0]["outerText"]) { //If something is selected
               let notesForDocument = notes[documentIndex]
               let newAnnotation = new Note(documentIndex, range, highlight) //create new note
-
-              //Check if the selected text is an overlay of another annotation
-              for (let note of notesForDocument) {
-                if (!note.deleted) {
-                  //if the note is arleady annotated or there is an overlap
-                  if (1 in highlight || newAnnotation.current_text.includes(note.current_text) || note.current_text.includes(newAnnotation.current_text)) {
-                    let element = document.querySelector(`.statement-text-${documentIndex}`) //select the main element
-                    element.remove() //remove the container with the overlapped note
-                    document.querySelector(`.tweet_content_li_${documentIndex}`).append(statement_container_clone)//append the old container, without the overlaped note
-                    return true //Exit from the callback!
-                  }
-                }
-              }
               notesForDocument.push(newAnnotation)
               notes[documentIndex] = notesForDocument
             }
+            return true
           }
         }
       })
@@ -1085,7 +1086,8 @@ export class SkeletonComponent implements OnInit {
     let documentText  =  this.documents[this.goldIndex].text
 
     goldQuestionCheck = false
-    let highestJaccardCoefficient = 0
+    let union = new Set()
+    let intersection = new Set()
     this.notes[this.goldIndex].forEach(item => {
       if (item.option == "effect" && item.deleted == false) {
         let currentText = item.current_text.trim()
@@ -1095,8 +1097,6 @@ export class SkeletonComponent implements OnInit {
         for (let i = indexStart; i < indexEnd; i++) currentTextSet.add(i)
         for (let span of this.documents[this.goldIndex].adr_spans) {
           let currentAdrSet = new Set()
-          let union = new Set()
-          let intersection = new Set()
           let indexStart = span["start"]
           let indexEnd = span["end"]
           for (let i = indexStart; i < indexEnd; i++) currentAdrSet = currentAdrSet.add(i);
@@ -1108,11 +1108,12 @@ export class SkeletonComponent implements OnInit {
             union.add(number)
             if (currentTextSet.has(number)) intersection.add(number)
           }
-          highestJaccardCoefficient = Math.max(intersection.size/union.size, highestJaccardCoefficient)
         }
       }
     });
-    if(highestJaccardCoefficient>=0.75) {
+    let jaccardCoefficient = intersection.size/union.size
+    console.log(jaccardCoefficient)
+    if(jaccardCoefficient>=0.70) {
       goldQuestionCheck = true
     }
     computedChecks.push(goldQuestionCheck)
