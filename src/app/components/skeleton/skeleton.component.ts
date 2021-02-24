@@ -927,7 +927,6 @@ export class SkeletonComponent implements OnInit {
         onBeforeHighlight: (range: Range) => {
           let notesForDocument = notes[documentIndex]
           let currentText = range.toString()
-          console.log(currentText)
           if(currentText.trim().length == 0)
             return false
           for (let note of notesForDocument) {
@@ -1112,7 +1111,6 @@ export class SkeletonComponent implements OnInit {
       }
     });
     let jaccardCoefficient = intersection.size/union.size
-    console.log(jaccardCoefficient)
     if(jaccardCoefficient>=0.70) {
       goldQuestionCheck = true
     }
