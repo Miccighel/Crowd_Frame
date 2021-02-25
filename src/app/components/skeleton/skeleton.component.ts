@@ -8,28 +8,32 @@ import {
   QueryList, OnInit, NgZone
 } from '@angular/core';
 /* Reactive forms modules */
-import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
-import { MatFormField } from "@angular/material/form-field";
-import { MatStepper } from "@angular/material/stepper";
-import { CountdownComponent } from 'ngx-countdown';
+import {AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
+import {MatFormField} from "@angular/material/form-field";
+import {MatStepper} from "@angular/material/stepper";
+import {CountdownComponent} from 'ngx-countdown';
 /* Services */
-import { NgxUiLoaderService } from 'ngx-ui-loader';
-import { ConfigService } from "../../services/config.service";
-import { S3Service } from "../../services/s3.service";
+import {NgxUiLoaderService} from 'ngx-ui-loader';
+import {ConfigService} from "../../services/config.service";
+import {S3Service} from "../../services/s3.service";
 /* Task models */
-import { Document } from "../../../../data/build/document";
-import { Hit } from "../../models/skeleton/hit";
-import { Questionnaire } from "../../models/skeleton/questionnaire";
-import { Dimension, ScaleInterval } from "../../models/skeleton/dimension";
-import { Instruction } from "../../models/shared/instructions";
+import {Document} from "../../../../data/build/document";
+import {Hit} from "../../models/skeleton/hit";
+import {Questionnaire} from "../../models/skeleton/questionnaire";
+import {Dimension, ScaleInterval} from "../../models/skeleton/dimension";
+import {Instruction} from "../../models/shared/instructions";
 /* Font Awesome icons */
-import { Annotator, Settings } from "../../models/skeleton/settings";
-import { Worker } from "../../models/skeleton/worker";
-import { HttpClient, HttpHeaders } from "@angular/common/http";
-import { MatSnackBar } from "@angular/material/snack-bar";
-import { Note } from "../../models/skeleton/notes";
+import {Annotator, Settings} from "../../models/skeleton/settings";
+import {Worker} from "../../models/skeleton/worker";
+import {HttpClient, HttpHeaders} from "@angular/common/http";
+import {MatSnackBar} from "@angular/material/snack-bar";
+import {Note} from "../../models/skeleton/notes";
 import {doHighlight, optionsImpl} from "@funktechno/texthighlighter/lib";
-import { DeviceDetectorService } from 'ngx-device-detector';
+import {DeviceDetectorService} from 'ngx-device-detector';
+import {log} from "util";
+import {not} from "rxjs/internal-compatibility";
+import {createLogErrorHandler} from "@angular/compiler-cli/ngcc/src/execution/tasks/completion";
+import {listLazyRoutes} from "@angular/compiler/src/aot/lazy_routes";
 
 /* Component HTML Tag definition */
 @Component({
@@ -219,8 +223,7 @@ export class SkeletonComponent implements OnInit {
     deviceDetectorService: DeviceDetectorService,
     client: HttpClient,
     formBuilder: FormBuilder,
-    snackBar: MatSnackBar,
-    private zone: NgZone
+    snackBar: MatSnackBar
   ) {
 
     /* |--------- SERVICES - INITIALIZATION ---------| */
@@ -254,7 +257,7 @@ export class SkeletonComponent implements OnInit {
     /* |--- TASK GENERATOR ---| */
     this.generator = false;
 
-    this.tokenInput = new FormControl('AQYDUTLZGT', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
+    this.tokenInput = new FormControl('', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
     this.tokenForm = formBuilder.group({
       "tokenInput": this.tokenInput
     });
@@ -295,7 +298,7 @@ export class SkeletonComponent implements OnInit {
       this.workerIdentifier = url.searchParams.get("workerID");
       if (!(this.workerIdentifier === null)) {
         this.performWorkerStatusCheck().then(outcome => {
-          this.client.get('https://www.cloudflare.com/cdn-cgi/trace', { responseType: 'text' }).subscribe(
+          this.client.get('https://www.cloudflare.com/cdn-cgi/trace', {responseType: 'text'}).subscribe(
             cloudflareData => {
               this.worker = new Worker(this.workerIdentifier, this.S3Service.getWorkerFolder(this.configService.environment, null, this.workerIdentifier), cloudflareData, window.navigator, this.deviceDetectorService.getDeviceInfo())
               this.taskAllowed = outcome;
@@ -413,7 +416,7 @@ export class SkeletonComponent implements OnInit {
   public async validateTokenInput(control: FormControl) {
     let hits = await this.S3Service.downloadHits(this.configService.environment)
     for (let hit of hits) if (hit.token_input === control.value) return null;
-    return { "invalid": "This token is not valid." }
+    return {"invalid": "This token is not valid."}
   }
 
   /*
@@ -638,7 +641,7 @@ export class SkeletonComponent implements OnInit {
     let timeInSeconds = Date.now() / 1000;
     /* If some data for the current document already exists*/
     if (this.dimensionsSelectedValues[currentDocument]['amount'] > 0) {
-      /* The new query is pushed into current document data array along with a index used to identify such query*/
+      /* The new query is pushed into current document data array along with a document_index used to identify such query*/
       let selectedValues = Object.values(this.dimensionsSelectedValues[currentDocument]['data']);
       selectedValues.push({
         "dimension": currentDimension,
@@ -661,7 +664,7 @@ export class SkeletonComponent implements OnInit {
         "value": currentValue
       }];
       /* The total amount of selected values for the current document is set to 1 */
-      /* IMPORTANT: the index of the last selected value for a document will be <amount -1> */
+      /* IMPORTANT: the document_index of the last selected value for a document will be <amount -1> */
       this.dimensionsSelectedValues[currentDocument]['amount'] = 1
     }
   }
@@ -686,7 +689,7 @@ export class SkeletonComponent implements OnInit {
     if (this.stepper) {
       /* If at least the first document has been reached */
       if (this.stepper.selectedIndex >= this.questionnaireAmount) {
-        /* The current document index is selected */
+        /* The current document document_index is selected */
         let currentDocument = this.stepper.selectedIndex - this.questionnaireAmount;
         /* If the user has selected some search engine responses for the current document */
         if (this.searchEngineSelectedResponses[currentDocument]) {
@@ -695,7 +698,7 @@ export class SkeletonComponent implements OnInit {
             let response = selectedUrl["response"]
             /* The controls are performed */
             for (let word of cleanedWords) {
-              if (word == response["url"]) return { "invalid": "You cannot use the selected search engine url as part of the justification." }
+              if (word == response["url"]) return {"invalid": "You cannot use the selected search engine url as part of the justification."}
             }
           }
         }
@@ -704,7 +707,7 @@ export class SkeletonComponent implements OnInit {
         let currentDimensionName = currentControl.split("_")[0]
         for (let dimension of this.dimensions) if (dimension.name == currentDimensionName) if (dimension.justification.minWords) minWords = dimension.justification.minWords
       }
-      return cleanedWords.length > minWords ? null : { "longer": "This is not valid." };
+      return cleanedWords.length > minWords ? null : {"longer": "This is not valid."};
     }
   }
 
@@ -725,7 +728,7 @@ export class SkeletonComponent implements OnInit {
     let timeInSeconds = Date.now() / 1000;
     /* If some data for the current document already exists*/
     if (this.searchEngineQueries[currentDocument]['amount'] > 0) {
-      /* The new query is pushed into current document data array along with a index used to identify such query*/
+      /* The new query is pushed into current document data array along with a document_index used to identify such query*/
       let storedQueries = Object.values(this.searchEngineQueries[currentDocument]['data']);
       storedQueries.push({
         "dimension": currentDimension,
@@ -750,7 +753,7 @@ export class SkeletonComponent implements OnInit {
       }];
       this.currentQuery = 0
       /* The total amount of query for the current document is set to 1 */
-      /* IMPORTANT: the index of the last query inserted for a document will be <amount -1> */
+      /* IMPORTANT: the document_index of the last query inserted for a document will be <amount -1> */
       this.searchEngineQueries[currentDocument]['amount'] = 1
     }
   }
@@ -771,7 +774,7 @@ export class SkeletonComponent implements OnInit {
     let timeInSeconds = Date.now() / 1000;
     /* If some responses for the current document already exists*/
     if (this.searchEngineRetrievedResponses[currentDocument]['groups'] > 0) {
-      /* The new response is pushed into current document data array along with its query index */
+      /* The new response is pushed into current document data array along with its query document_index */
       let storedResponses = Object.values(this.searchEngineRetrievedResponses[currentDocument]['data']);
       storedResponses.push({
         "dimension": currentDimension,
@@ -798,7 +801,7 @@ export class SkeletonComponent implements OnInit {
         "response": currentRetrievedResponse
       }];
       /* The total amount of retrieved responses for the current document is set to the length of the first group */
-      /* IMPORTANT: the index of the last retrieved response for a document will be <amount -1> */
+      /* IMPORTANT: the document_index of the last retrieved response for a document will be <amount -1> */
       this.searchEngineRetrievedResponses[currentDocument]['amount'] = currentRetrievedResponse.length
       /* The total amount of groups retrieved responses for the current document is set to 1 */
       this.searchEngineRetrievedResponses[currentDocument]['groups'] = 1
@@ -823,7 +826,7 @@ export class SkeletonComponent implements OnInit {
     let timeInSeconds = Date.now() / 1000;
     /* If some responses for the current document already exists*/
     if (this.searchEngineSelectedResponses[currentDocument]['amount'] > 0) {
-      /* The new response is pushed into current document data array along with its query index */
+      /* The new response is pushed into current document data array along with its query document_index */
       let storedResponses = Object.values(this.searchEngineSelectedResponses[currentDocument]['data']);
       storedResponses.push({
         "dimension": currentDimension,
@@ -848,7 +851,7 @@ export class SkeletonComponent implements OnInit {
         "response": currentSelectedResponse
       }];
       /* The total amount of selected responses for the current document is set to 1 */
-      /* IMPORTANT: the index of the last selected response for a document will be <amount -1> */
+      /* IMPORTANT: the document_index of the last selected response for a document will be <amount -1> */
       this.searchEngineSelectedResponses[currentDocument]['amount'] = 1
     }
     this.documentsForm[currentDocument].controls[this.dimensions[this.currentDimension].name.concat("_url")].setValue(currentSelectedResponse['url']);
@@ -882,7 +885,7 @@ export class SkeletonComponent implements OnInit {
                 if (workerUrlFormControl.value == currentResponses[index].url && this.currentDimension == currentDimension) return null;
               }
               /* If no matching url has been found, raise the error */
-              return { invalidSearchEngineUrl: "Select (or copy & paste) one of the URLs shown above." }
+              return {invalidSearchEngineUrl: "Select (or copy & paste) one of the URLs shown above."}
             }
             return null
           }
@@ -923,18 +926,17 @@ export class SkeletonComponent implements OnInit {
       statement_container_clone.addEventListener('mouseup', (e) => this.performHighlighting(changeDetector, event, documentIndex, notes, annotator))
       statement_container_clone.addEventListener('touchend', (e) => this.performHighlighting(changeDetector, event, documentIndex, notes, annotator))
 
-      const highlightMade = doHighlight(domElement, true, {
+      const highlightMade = doHighlight(domElement, false, {
         onBeforeHighlight: (range: Range) => {
           let notesForDocument = notes[documentIndex]
           let currentText = range.toString()
-          if(currentText.trim().length == 0)
+          if (currentText.trim().length == 0)
             return false
+          let indexes = this.getSelectionCharacterOffsetWithin(document.querySelector(`.statement-text-${documentIndex}`))
+          let currentIndexStart = indexes["start"]
+          let currentIndexEnd = indexes["end"]
           for (let note of notesForDocument) {
-            if (!note.deleted) {
-              if(note.current_text.includes(currentText) || currentText.includes(note.current_text)) {
-                return false
-              }
-            }
+            if (note.deleted == false) if (currentIndexStart < note.index_end && note.index_start < currentIndexEnd) return false
           }
           return true
         },
@@ -942,7 +944,7 @@ export class SkeletonComponent implements OnInit {
           if (highlight.length > 0) {
             if (highlight[0]["outerText"]) { //If something is selected
               let notesForDocument = notes[documentIndex]
-              let newAnnotation = new Note(documentIndex, range, highlight) //create new note
+              let newAnnotation = new Note(documentIndex, range, highlight)
               notesForDocument.push(newAnnotation)
               notes[documentIndex] = notesForDocument
             }
@@ -979,7 +981,6 @@ export class SkeletonComponent implements OnInit {
           element.option = value.label
           let current_note = <HTMLElement>document.querySelector(`[data-timestamp='${element.timestamp_created}']`)
           current_note.style.backgroundColor = value.color
-
           //disable user events on the NOTE to avoid over selection!
           current_note.style.userSelect = "none"
           current_note.style.webkitUserSelect = "none"
@@ -1015,6 +1016,7 @@ export class SkeletonComponent implements OnInit {
     let element = document.querySelector(`[data-timestamp='${currentNote.timestamp_created}']`)
     element.parentNode.insertBefore(document.createTextNode(currentNote.current_text), element);
     element.remove()
+    document.querySelector(`.statement-text-${documentIndex}`).normalize()
     changeDetector.detectChanges()
 
   }
@@ -1029,6 +1031,7 @@ export class SkeletonComponent implements OnInit {
     }
     return undeletedNotes
   }
+
   ///FINE CODICE AGGIUNTO DA DAVIDE////
 
 
@@ -1082,38 +1085,36 @@ export class SkeletonComponent implements OnInit {
 
     ///INIZIO CODICE AGGIUNTO DA DAVIDE////
 
-    let documentText  =  this.documents[this.goldIndex].text
+    let documentText = this.documents[this.goldIndex].text
 
     goldQuestionCheck = false
     let union = new Set()
     let intersection = new Set()
     this.notes[this.goldIndex].forEach(item => {
       if (item.option == "effect" && item.deleted == false) {
-        let currentText = item.current_text.trim()
         let currentTextSet = new Set()
-        let indexStart = documentText.indexOf(currentText)
-        let indexEnd = indexStart+currentText.length
+        let indexStart = item.index_start
+        let indexEnd = item.index_end
         for (let i = indexStart; i < indexEnd; i++) currentTextSet.add(i)
         for (let span of this.documents[this.goldIndex].adr_spans) {
           let currentAdrSet = new Set()
           let indexStart = span["start"]
           let indexEnd = span["end"]
           for (let i = indexStart; i < indexEnd; i++) currentAdrSet = currentAdrSet.add(i);
-          for(let number of currentTextSet.values()) {
+          for (let number of currentTextSet.values()) {
             union.add(number)
             if (currentAdrSet.has(number)) intersection.add(number)
           }
-          for(let number of currentAdrSet.values()){
+          for (let number of currentAdrSet.values()) {
             union.add(number)
             if (currentTextSet.has(number)) intersection.add(number)
           }
         }
       }
     });
-    let jaccardCoefficient = intersection.size/union.size
-    if(jaccardCoefficient>=0.70) {
-      goldQuestionCheck = true
-    }
+    let jaccardCoefficient = intersection.size / union.size
+    console.log(jaccardCoefficient)
+    if (jaccardCoefficient >= 0.70) goldQuestionCheck = true
     computedChecks.push(goldQuestionCheck)
 
     ///FINE CODICE AGGIUNTO DA DAVIDE////
@@ -1181,13 +1182,13 @@ export class SkeletonComponent implements OnInit {
     this.comment.setValue("");
     this.commentSent = false;
 
-    /* Set stepper index to the first tab (currentDocument.e., bring the worker to the first document after the questionnaire) */
+    /* Set stepper document_index to the first tab (currentDocument.e., bring the worker to the first document after the questionnaire) */
     this.stepper.selectedIndex = this.questionnaireAmount;
 
     /* Decrease the remaining tries amount*/
     this.allowedTries = this.allowedTries - 1;
 
-    /* Increases the current try index */
+    /* Increases the current try document_index */
     this.currentTry = this.currentTry + 1;
 
     /* The loading spinner is stopped */
@@ -1265,14 +1266,14 @@ export class SkeletonComponent implements OnInit {
     if (!(this.worker.identifier === null)) {
 
       /*
-       * IMPORTANT: The current document index is the stepper current index AFTER the transition
-       * If a NEXT action is performed at document 3, the stepper current index is 4.
-       * If a BACK action is performed at document 3, the stepper current index is 2.
+       * IMPORTANT: The current document document_index is the stepper current document_index AFTER the transition
+       * If a NEXT action is performed at document 3, the stepper current document_index is 4.
+       * If a BACK action is performed at document 3, the stepper current document_index is 2.
        * This is tricky only for the following switch which has to set the start/end
        * timestamps for the previous/following document.
        */
       let currentElement = this.stepper.selectedIndex;
-      /* completedElement is the index of the document/questionnaire in which the user was before */
+      /* completedElement is the document_index of the document/questionnaire in which the user was before */
       let completedElement = this.stepper.selectedIndex;
 
       switch (action) {
@@ -1451,7 +1452,7 @@ export class SkeletonComponent implements OnInit {
         /* The amount of accesses to the current document is retrieved */
         let accessesAmount = this.elementsAccesses[completedElement];
 
-        /* The index of the completed document is the completed element minus the questionnaire amount */
+        /* The document_index of the completed document is the completed element minus the questionnaire amount */
         let completedDocument = completedElement - this.questionnaireAmount;
 
         let data = {}
@@ -1606,6 +1607,35 @@ export class SkeletonComponent implements OnInit {
     this.snackBar.open(message, action, {
       duration: duration,
     });
+  }
+
+  public getSelectionCharacterOffsetWithin(element) {
+    var start = 0;
+    var end = 0;
+    var doc = element.ownerDocument || element.document;
+    var win = doc.defaultView || doc.parentWindow;
+    var sel;
+    if (typeof win.getSelection != "undefined") {
+      sel = win.getSelection();
+      if (sel.rangeCount > 0) {
+        var range = win.getSelection().getRangeAt(0);
+        var preCaretRange = range.cloneRange();
+        preCaretRange.selectNodeContents(element);
+        preCaretRange.setEnd(range.startContainer, range.startOffset);
+        start = preCaretRange.toString().length;
+        preCaretRange.setEnd(range.endContainer, range.endOffset);
+        end = preCaretRange.toString().length;
+      }
+    } else if ((sel = doc.selection) && sel.type != "Control") {
+      var textRange = sel.createRange();
+      var preCaretTextRange = doc.body.createTextRange();
+      preCaretTextRange.moveToElementText(element);
+      preCaretTextRange.setEndPoint("EndToStart", textRange);
+      start = preCaretTextRange.text.length;
+      preCaretTextRange.setEndPoint("EndToEnd", textRange);
+      end = preCaretTextRange.text.length;
+    }
+    return {start: start, end: end};
   }
 
 }
