@@ -1113,7 +1113,6 @@ export class SkeletonComponent implements OnInit {
       }
     });
     let jaccardCoefficient = intersection.size / union.size
-    console.log(jaccardCoefficient)
     if (jaccardCoefficient >= 0.70) goldQuestionCheck = true
     computedChecks.push(goldQuestionCheck)
 
