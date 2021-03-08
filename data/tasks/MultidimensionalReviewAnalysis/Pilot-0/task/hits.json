@@ -1,0 +1,772 @@
+[
+  {
+    "unit_id": "unit_0",
+    "token_input": "TXPNYQOPNEZ",
+    "token_output": "FUVCMYWBRBT",
+    "documents": [
+      {
+        "name": "doc_0_2355",
+        "product_description": "MJ Metals Jewelry 2mm to 10mm White Tungsten Carbide Mirror Polished Classic Wedding Ring",
+        "review": "Love the mirror finish - very comfortable - scratchproof. Pairs beautifully with my white gold engagement ring.",
+        "reviewTime": "02 5, 2018",
+        "reviewerName": "Foxymoma82"
+      },
+      {
+        "name": "doc_0_19",
+        "product_description": "Powerstep Pinnacle Orthotic Shoe Insoles",
+        "review": "We have used these inserts for years.  They provide great support.",
+        "reviewTime": "10 17, 2016",
+        "reviewerName": "William_Jasper"
+      },
+      {
+        "name": "doc_0_3120",
+        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
+        "review": "Comfortable",
+        "reviewTime": "05 16, 2018",
+        "reviewerName": "k"
+      },
+      {
+        "name": "doc_0_2352",
+        "product_description": "Epoint EGC1B01-03 Multi Mens Paisley Waistcoat Woven Microfiber S-5XL Vest",
+        "review": "I used this for a costume and it worked well.",
+        "reviewTime": "06 25, 2017",
+        "reviewerName": "Seth Hanson"
+      },
+      {
+        "name": "doc_0_3",
+        "product_description": "Calvin Klein Boy's Assorted Boxer Briefs (Pack of 2)",
+        "review": "Great product and price!",
+        "reviewTime": "09 4, 2015",
+        "reviewerName": "Tonya B."
+      },
+      {
+        "name": "doc_0_75",
+        "product_description": "Leg Avenue Women's Athletic Thigh High Socks",
+        "review": "I just wish they would not roll down.",
+        "reviewTime": "10 31, 2015",
+        "reviewerName": "AvidShopper"
+      },
+      {
+        "name": "doc_0_3117",
+        "product_description": "FORTINO LANDI Men's Long-sleeve Banded Collar Shirt - Many Colors Available",
+        "review": "Largely my fault for not reading carefully, but the high synthetic fiber content made the shirt uncomfortable to the touch.  Not the manufacturer's fault, of course.",
+        "reviewTime": "07 19, 2017",
+        "reviewerName": "TDL Chicago"
+      },
+      {
+        "name": "doc_0_3115",
+        "product_description": "PajamaJeans Women's Petite Bootcut Stretch Knit Denim Jeans, Black, 4X (28W)",
+        "review": "Very comfortable and fits perfectly",
+        "reviewTime": "02 8, 2018",
+        "reviewerName": "Amazon Customer"
+      },
+      {
+        "name": "doc_0_2363",
+        "product_description": "Zmart Men's Colorful Patterned Casual Crew Socks 4 Pack,Color-2,Medium,Color-2,Medium",
+        "review": "I am changing my review after a second washing.\nI am a male size 9 wide and after washing  they are a very tight fit. They are mid calf, wide enough at the toe, but snug from toe to heel. That said I think a male size 8 is about it. Larger size feet might have a problem. Quality is OK for the price. You will see these socks sold singly on other sites at $12.99 each!  I like the socks and ordered a second set to put in my daughters Christmas stocking.",
+        "reviewTime": "11 5, 2017",
+        "reviewerName": "Fhteacher"
+      },
+      {
+        "name": "doc_0_71",
+        "product_description": "Havaianas Women's Top Flip Flop Sandal",
+        "review": "Perfect color!",
+        "reviewTime": "08 6, 2014",
+        "reviewerName": "DD"
+      }
+    ]
+  },
+  {
+    "unit_id": "unit_1",
+    "token_input": "LSMCTJBPMQL",
+    "token_output": "GYTFMEXIKYI",
+    "documents": [
+      {
+        "name": "doc_1_0",
+        "product_description": "Calvin Klein Boy's Assorted Boxer Briefs (Pack of 2)",
+        "review": "Great product and price!",
+        "reviewTime": "09 4, 2015",
+        "reviewerName": "Tonya B."
+      },
+      {
+        "name": "doc_1_2349",
+        "product_description": "90 Degree By Reflex Power Flex Yoga Capri \u2013 Cationic Heather Activewear Pants",
+        "review": "WOW!  I love these capris!  I ordered the deep teal and they are a very dark blue/teal (a much deeper prettier color than shown).  I received many compliments the first time I wore them to the gym.  They are super soft and comfortable from the leg all the way to the waist...COMFORTABLE.  They never slip down at the waist and give me full coverage (not see through at all). I am 5' 4\" and 159 pounds and I ordered a medium.  The size fit perfectly although that being said they are longer on me than the photo (probably my short legs) but came 2 inches above my ankle so just below my calf.  Given that I have weight to loose these are very flattering on as well.  They are also a nice stretchy fabric (thus the comfort) and cool.  We are in the high 90's and 100 degree summer weather and I am cool!  Purchase these as you won't be disappointed especially at this price.  I like these better than my Lululemon and Athleta capris!!!  I am back to purchase more!",
+        "reviewTime": "06 26, 2015",
+        "reviewerName": "vp22"
+      },
+      {
+        "name": "doc_1_58",
+        "product_description": "Hanes Mens EcoSmart Fleece Sweatpant",
+        "review": "Typical Hanes quality. Good weight, sized just right, made pretty well",
+        "reviewTime": "06 16, 2017",
+        "reviewerName": "wayne ereira"
+      },
+      {
+        "name": "doc_1_137",
+        "product_description": "Leg Avenue Women's Athletic Thigh High Socks",
+        "review": "Constantly rolls down",
+        "reviewTime": "02 19, 2018",
+        "reviewerName": "AvidShopper"
+      },
+      {
+        "name": "doc_1_3116",
+        "product_description": "SERMAN BRANDS- Carbon Fiber Money Clip Credit Card holder Slim Business Card Holder Clips for men Glossy",
+        "review": "Super.",
+        "reviewTime": "02 1, 2018",
+        "reviewerName": "sporting road"
+      },
+      {
+        "name": "doc_1_2351",
+        "product_description": "Senchanting Women Winter Warm Ski Knitted Crochet Baggy Skullies Cap Beret Hat",
+        "review": "I like it. I wasn't sure if I could pull off this kind of hat, but it looks good and fits nicely.",
+        "reviewTime": "12 31, 2014",
+        "reviewerName": "Heather Devine"
+      },
+      {
+        "name": "doc_1_2350",
+        "product_description": "Baby Headbands Turban Knotted, Girl's Hairbands for Newborn,Toddler and Childrens",
+        "review": "SO CUTE!!  Very good value. Cute style, pretty colors and soft material.",
+        "reviewTime": "05 7, 2018",
+        "reviewerName": "C. Schmitt"
+      },
+      {
+        "name": "doc_1_2345",
+        "product_description": "Forum Novelties Light-Up Ugly Christmas Sweater",
+        "review": "Very nice",
+        "reviewTime": "12 14, 2014",
+        "reviewerName": "phil bensinger"
+      },
+      {
+        "name": "doc_1_2346",
+        "product_description": "90 Degree By Reflex Power Flex Yoga Capri \u2013 Cationic Heather Activewear Pants",
+        "review": "Would recomend",
+        "reviewTime": "03 12, 2018",
+        "reviewerName": "Amazon Customer"
+      },
+      {
+        "name": "doc_1_74",
+        "product_description": "Leg Avenue Women's Athletic Thigh High Socks",
+        "review": "Superrrr thigh high. Im 54 and it easily reaches 3/4 up my thigh!!",
+        "reviewTime": "09 26, 2017",
+        "reviewerName": "j.morris"
+      }
+    ]
+  },
+  {
+    "unit_id": "unit_2",
+    "token_input": "HENNJOCZEUN",
+    "token_output": "ABIXXOXLWTL",
+    "documents": [
+      {
+        "name": "doc_2_3115",
+        "product_description": "PajamaJeans Women's Petite Bootcut Stretch Knit Denim Jeans, Black, 4X (28W)",
+        "review": "Very comfortable and fits perfectly",
+        "reviewTime": "02 8, 2018",
+        "reviewerName": "Amazon Customer"
+      },
+      {
+        "name": "doc_2_0",
+        "product_description": "Calvin Klein Boy's Assorted Boxer Briefs (Pack of 2)",
+        "review": "Great product and price!",
+        "reviewTime": "09 4, 2015",
+        "reviewerName": "Tonya B."
+      },
+      {
+        "name": "doc_2_2352",
+        "product_description": "Epoint EGC1B01-03 Multi Mens Paisley Waistcoat Woven Microfiber S-5XL Vest",
+        "review": "I used this for a costume and it worked well.",
+        "reviewTime": "06 25, 2017",
+        "reviewerName": "Seth Hanson"
+      },
+      {
+        "name": "doc_2_71",
+        "product_description": "Havaianas Women's Top Flip Flop Sandal",
+        "review": "Perfect color!",
+        "reviewTime": "08 6, 2014",
+        "reviewerName": "DD"
+      },
+      {
+        "name": "doc_2_74",
+        "product_description": "Leg Avenue Women's Athletic Thigh High Socks",
+        "review": "Superrrr thigh high. Im 54 and it easily reaches 3/4 up my thigh!!",
+        "reviewTime": "09 26, 2017",
+        "reviewerName": "j.morris"
+      },
+      {
+        "name": "doc_2_2346",
+        "product_description": "90 Degree By Reflex Power Flex Yoga Capri \u2013 Cationic Heather Activewear Pants",
+        "review": "Would recomend",
+        "reviewTime": "03 12, 2018",
+        "reviewerName": "Amazon Customer"
+      },
+      {
+        "name": "doc_2_3",
+        "product_description": "Calvin Klein Boy's Assorted Boxer Briefs (Pack of 2)",
+        "review": "Great product and price!",
+        "reviewTime": "09 4, 2015",
+        "reviewerName": "Tonya B."
+      },
+      {
+        "name": "doc_2_2351",
+        "product_description": "Senchanting Women Winter Warm Ski Knitted Crochet Baggy Skullies Cap Beret Hat",
+        "review": "I like it. I wasn't sure if I could pull off this kind of hat, but it looks good and fits nicely.",
+        "reviewTime": "12 31, 2014",
+        "reviewerName": "Heather Devine"
+      },
+      {
+        "name": "doc_2_19",
+        "product_description": "Powerstep Pinnacle Orthotic Shoe Insoles",
+        "review": "We have used these inserts for years.  They provide great support.",
+        "reviewTime": "10 17, 2016",
+        "reviewerName": "William_Jasper"
+      },
+      {
+        "name": "doc_2_3120",
+        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
+        "review": "Comfortable",
+        "reviewTime": "05 16, 2018",
+        "reviewerName": "k"
+      }
+    ]
+  },
+  {
+    "unit_id": "unit_3",
+    "token_input": "ONVQQNRZHIJ",
+    "token_output": "HXHIWCFSYAW",
+    "documents": [
+      {
+        "name": "doc_3_75",
+        "product_description": "Leg Avenue Women's Athletic Thigh High Socks",
+        "review": "I just wish they would not roll down.",
+        "reviewTime": "10 31, 2015",
+        "reviewerName": "AvidShopper"
+      },
+      {
+        "name": "doc_3_2363",
+        "product_description": "Zmart Men's Colorful Patterned Casual Crew Socks 4 Pack,Color-2,Medium,Color-2,Medium",
+        "review": "I am changing my review after a second washing.\nI am a male size 9 wide and after washing  they are a very tight fit. They are mid calf, wide enough at the toe, but snug from toe to heel. That said I think a male size 8 is about it. Larger size feet might have a problem. Quality is OK for the price. You will see these socks sold singly on other sites at $12.99 each!  I like the socks and ordered a second set to put in my daughters Christmas stocking.",
+        "reviewTime": "11 5, 2017",
+        "reviewerName": "Fhteacher"
+      },
+      {
+        "name": "doc_3_2350",
+        "product_description": "Baby Headbands Turban Knotted, Girl's Hairbands for Newborn,Toddler and Childrens",
+        "review": "SO CUTE!!  Very good value. Cute style, pretty colors and soft material.",
+        "reviewTime": "05 7, 2018",
+        "reviewerName": "C. Schmitt"
+      },
+      {
+        "name": "doc_3_2355",
+        "product_description": "MJ Metals Jewelry 2mm to 10mm White Tungsten Carbide Mirror Polished Classic Wedding Ring",
+        "review": "Love the mirror finish - very comfortable - scratchproof. Pairs beautifully with my white gold engagement ring.",
+        "reviewTime": "02 5, 2018",
+        "reviewerName": "Foxymoma82"
+      },
+      {
+        "name": "doc_3_137",
+        "product_description": "Leg Avenue Women's Athletic Thigh High Socks",
+        "review": "Constantly rolls down",
+        "reviewTime": "02 19, 2018",
+        "reviewerName": "AvidShopper"
+      },
+      {
+        "name": "doc_3_3117",
+        "product_description": "FORTINO LANDI Men's Long-sleeve Banded Collar Shirt - Many Colors Available",
+        "review": "Largely my fault for not reading carefully, but the high synthetic fiber content made the shirt uncomfortable to the touch.  Not the manufacturer's fault, of course.",
+        "reviewTime": "07 19, 2017",
+        "reviewerName": "TDL Chicago"
+      },
+      {
+        "name": "doc_3_2345",
+        "product_description": "Forum Novelties Light-Up Ugly Christmas Sweater",
+        "review": "Very nice",
+        "reviewTime": "12 14, 2014",
+        "reviewerName": "phil bensinger"
+      },
+      {
+        "name": "doc_3_2349",
+        "product_description": "90 Degree By Reflex Power Flex Yoga Capri \u2013 Cationic Heather Activewear Pants",
+        "review": "WOW!  I love these capris!  I ordered the deep teal and they are a very dark blue/teal (a much deeper prettier color than shown).  I received many compliments the first time I wore them to the gym.  They are super soft and comfortable from the leg all the way to the waist...COMFORTABLE.  They never slip down at the waist and give me full coverage (not see through at all). I am 5' 4\" and 159 pounds and I ordered a medium.  The size fit perfectly although that being said they are longer on me than the photo (probably my short legs) but came 2 inches above my ankle so just below my calf.  Given that I have weight to loose these are very flattering on as well.  They are also a nice stretchy fabric (thus the comfort) and cool.  We are in the high 90's and 100 degree summer weather and I am cool!  Purchase these as you won't be disappointed especially at this price.  I like these better than my Lululemon and Athleta capris!!!  I am back to purchase more!",
+        "reviewTime": "06 26, 2015",
+        "reviewerName": "vp22"
+      },
+      {
+        "name": "doc_3_3116",
+        "product_description": "SERMAN BRANDS- Carbon Fiber Money Clip Credit Card holder Slim Business Card Holder Clips for men Glossy",
+        "review": "Super.",
+        "reviewTime": "02 1, 2018",
+        "reviewerName": "sporting road"
+      },
+      {
+        "name": "doc_3_58",
+        "product_description": "Hanes Mens EcoSmart Fleece Sweatpant",
+        "review": "Typical Hanes quality. Good weight, sized just right, made pretty well",
+        "reviewTime": "06 16, 2017",
+        "reviewerName": "wayne ereira"
+      }
+    ]
+  },
+  {
+    "unit_id": "unit_4",
+    "token_input": "TXGNNVJTDJQ",
+    "token_output": "DOONUAKDCSU",
+    "documents": [
+      {
+        "name": "doc_4_2352",
+        "product_description": "Epoint EGC1B01-03 Multi Mens Paisley Waistcoat Woven Microfiber S-5XL Vest",
+        "review": "I used this for a costume and it worked well.",
+        "reviewTime": "06 25, 2017",
+        "reviewerName": "Seth Hanson"
+      },
+      {
+        "name": "doc_4_3117",
+        "product_description": "FORTINO LANDI Men's Long-sleeve Banded Collar Shirt - Many Colors Available",
+        "review": "Largely my fault for not reading carefully, but the high synthetic fiber content made the shirt uncomfortable to the touch.  Not the manufacturer's fault, of course.",
+        "reviewTime": "07 19, 2017",
+        "reviewerName": "TDL Chicago"
+      },
+      {
+        "name": "doc_4_2350",
+        "product_description": "Baby Headbands Turban Knotted, Girl's Hairbands for Newborn,Toddler and Childrens",
+        "review": "SO CUTE!!  Very good value. Cute style, pretty colors and soft material.",
+        "reviewTime": "05 7, 2018",
+        "reviewerName": "C. Schmitt"
+      },
+      {
+        "name": "doc_4_58",
+        "product_description": "Hanes Mens EcoSmart Fleece Sweatpant",
+        "review": "Typical Hanes quality. Good weight, sized just right, made pretty well",
+        "reviewTime": "06 16, 2017",
+        "reviewerName": "wayne ereira"
+      },
+      {
+        "name": "doc_4_19",
+        "product_description": "Powerstep Pinnacle Orthotic Shoe Insoles",
+        "review": "We have used these inserts for years.  They provide great support.",
+        "reviewTime": "10 17, 2016",
+        "reviewerName": "William_Jasper"
+      },
+      {
+        "name": "doc_4_3120",
+        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
+        "review": "Comfortable",
+        "reviewTime": "05 16, 2018",
+        "reviewerName": "k"
+      },
+      {
+        "name": "doc_4_3115",
+        "product_description": "PajamaJeans Women's Petite Bootcut Stretch Knit Denim Jeans, Black, 4X (28W)",
+        "review": "Very comfortable and fits perfectly",
+        "reviewTime": "02 8, 2018",
+        "reviewerName": "Amazon Customer"
+      },
+      {
+        "name": "doc_4_75",
+        "product_description": "Leg Avenue Women's Athletic Thigh High Socks",
+        "review": "I just wish they would not roll down.",
+        "reviewTime": "10 31, 2015",
+        "reviewerName": "AvidShopper"
+      },
+      {
+        "name": "doc_4_2345",
+        "product_description": "Forum Novelties Light-Up Ugly Christmas Sweater",
+        "review": "Very nice",
+        "reviewTime": "12 14, 2014",
+        "reviewerName": "phil bensinger"
+      },
+      {
+        "name": "doc_4_2355",
+        "product_description": "MJ Metals Jewelry 2mm to 10mm White Tungsten Carbide Mirror Polished Classic Wedding Ring",
+        "review": "Love the mirror finish - very comfortable - scratchproof. Pairs beautifully with my white gold engagement ring.",
+        "reviewTime": "02 5, 2018",
+        "reviewerName": "Foxymoma82"
+      }
+    ]
+  },
+  {
+    "unit_id": "unit_5",
+    "token_input": "QURBHITFCSH",
+    "token_output": "KAZMPOVPQEQ",
+    "documents": [
+      {
+        "name": "doc_5_3",
+        "product_description": "Calvin Klein Boy's Assorted Boxer Briefs (Pack of 2)",
+        "review": "Great product and price!",
+        "reviewTime": "09 4, 2015",
+        "reviewerName": "Tonya B."
+      },
+      {
+        "name": "doc_5_0",
+        "product_description": "Calvin Klein Boy's Assorted Boxer Briefs (Pack of 2)",
+        "review": "Great product and price!",
+        "reviewTime": "09 4, 2015",
+        "reviewerName": "Tonya B."
+      },
+      {
+        "name": "doc_5_74",
+        "product_description": "Leg Avenue Women's Athletic Thigh High Socks",
+        "review": "Superrrr thigh high. Im 54 and it easily reaches 3/4 up my thigh!!",
+        "reviewTime": "09 26, 2017",
+        "reviewerName": "j.morris"
+      },
+      {
+        "name": "doc_5_2351",
+        "product_description": "Senchanting Women Winter Warm Ski Knitted Crochet Baggy Skullies Cap Beret Hat",
+        "review": "I like it. I wasn't sure if I could pull off this kind of hat, but it looks good and fits nicely.",
+        "reviewTime": "12 31, 2014",
+        "reviewerName": "Heather Devine"
+      },
+      {
+        "name": "doc_5_3116",
+        "product_description": "SERMAN BRANDS- Carbon Fiber Money Clip Credit Card holder Slim Business Card Holder Clips for men Glossy",
+        "review": "Super.",
+        "reviewTime": "02 1, 2018",
+        "reviewerName": "sporting road"
+      },
+      {
+        "name": "doc_5_2346",
+        "product_description": "90 Degree By Reflex Power Flex Yoga Capri \u2013 Cationic Heather Activewear Pants",
+        "review": "Would recomend",
+        "reviewTime": "03 12, 2018",
+        "reviewerName": "Amazon Customer"
+      },
+      {
+        "name": "doc_5_2349",
+        "product_description": "90 Degree By Reflex Power Flex Yoga Capri \u2013 Cationic Heather Activewear Pants",
+        "review": "WOW!  I love these capris!  I ordered the deep teal and they are a very dark blue/teal (a much deeper prettier color than shown).  I received many compliments the first time I wore them to the gym.  They are super soft and comfortable from the leg all the way to the waist...COMFORTABLE.  They never slip down at the waist and give me full coverage (not see through at all). I am 5' 4\" and 159 pounds and I ordered a medium.  The size fit perfectly although that being said they are longer on me than the photo (probably my short legs) but came 2 inches above my ankle so just below my calf.  Given that I have weight to loose these are very flattering on as well.  They are also a nice stretchy fabric (thus the comfort) and cool.  We are in the high 90's and 100 degree summer weather and I am cool!  Purchase these as you won't be disappointed especially at this price.  I like these better than my Lululemon and Athleta capris!!!  I am back to purchase more!",
+        "reviewTime": "06 26, 2015",
+        "reviewerName": "vp22"
+      },
+      {
+        "name": "doc_5_2363",
+        "product_description": "Zmart Men's Colorful Patterned Casual Crew Socks 4 Pack,Color-2,Medium,Color-2,Medium",
+        "review": "I am changing my review after a second washing.\nI am a male size 9 wide and after washing  they are a very tight fit. They are mid calf, wide enough at the toe, but snug from toe to heel. That said I think a male size 8 is about it. Larger size feet might have a problem. Quality is OK for the price. You will see these socks sold singly on other sites at $12.99 each!  I like the socks and ordered a second set to put in my daughters Christmas stocking.",
+        "reviewTime": "11 5, 2017",
+        "reviewerName": "Fhteacher"
+      },
+      {
+        "name": "doc_5_71",
+        "product_description": "Havaianas Women's Top Flip Flop Sandal",
+        "review": "Perfect color!",
+        "reviewTime": "08 6, 2014",
+        "reviewerName": "DD"
+      },
+      {
+        "name": "doc_5_137",
+        "product_description": "Leg Avenue Women's Athletic Thigh High Socks",
+        "review": "Constantly rolls down",
+        "reviewTime": "02 19, 2018",
+        "reviewerName": "AvidShopper"
+      }
+    ]
+  },
+  {
+    "unit_id": "unit_6",
+    "token_input": "QCWJFPGZVOA",
+    "token_output": "DWMXVOIMMZA",
+    "documents": [
+      {
+        "name": "doc_6_2355",
+        "product_description": "MJ Metals Jewelry 2mm to 10mm White Tungsten Carbide Mirror Polished Classic Wedding Ring",
+        "review": "Love the mirror finish - very comfortable - scratchproof. Pairs beautifully with my white gold engagement ring.",
+        "reviewTime": "02 5, 2018",
+        "reviewerName": "Foxymoma82"
+      },
+      {
+        "name": "doc_6_2345",
+        "product_description": "Forum Novelties Light-Up Ugly Christmas Sweater",
+        "review": "Very nice",
+        "reviewTime": "12 14, 2014",
+        "reviewerName": "phil bensinger"
+      },
+      {
+        "name": "doc_6_3116",
+        "product_description": "SERMAN BRANDS- Carbon Fiber Money Clip Credit Card holder Slim Business Card Holder Clips for men Glossy",
+        "review": "Super.",
+        "reviewTime": "02 1, 2018",
+        "reviewerName": "sporting road"
+      },
+      {
+        "name": "doc_6_3120",
+        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
+        "review": "Comfortable",
+        "reviewTime": "05 16, 2018",
+        "reviewerName": "k"
+      },
+      {
+        "name": "doc_6_3",
+        "product_description": "Calvin Klein Boy's Assorted Boxer Briefs (Pack of 2)",
+        "review": "Great product and price!",
+        "reviewTime": "09 4, 2015",
+        "reviewerName": "Tonya B."
+      },
+      {
+        "name": "doc_6_75",
+        "product_description": "Leg Avenue Women's Athletic Thigh High Socks",
+        "review": "I just wish they would not roll down.",
+        "reviewTime": "10 31, 2015",
+        "reviewerName": "AvidShopper"
+      },
+      {
+        "name": "doc_6_2352",
+        "product_description": "Epoint EGC1B01-03 Multi Mens Paisley Waistcoat Woven Microfiber S-5XL Vest",
+        "review": "I used this for a costume and it worked well.",
+        "reviewTime": "06 25, 2017",
+        "reviewerName": "Seth Hanson"
+      },
+      {
+        "name": "doc_6_74",
+        "product_description": "Leg Avenue Women's Athletic Thigh High Socks",
+        "review": "Superrrr thigh high. Im 54 and it easily reaches 3/4 up my thigh!!",
+        "reviewTime": "09 26, 2017",
+        "reviewerName": "j.morris"
+      },
+      {
+        "name": "doc_6_19",
+        "product_description": "Powerstep Pinnacle Orthotic Shoe Insoles",
+        "review": "We have used these inserts for years.  They provide great support.",
+        "reviewTime": "10 17, 2016",
+        "reviewerName": "William_Jasper"
+      },
+      {
+        "name": "doc_6_2363",
+        "product_description": "Zmart Men's Colorful Patterned Casual Crew Socks 4 Pack,Color-2,Medium,Color-2,Medium",
+        "review": "I am changing my review after a second washing.\nI am a male size 9 wide and after washing  they are a very tight fit. They are mid calf, wide enough at the toe, but snug from toe to heel. That said I think a male size 8 is about it. Larger size feet might have a problem. Quality is OK for the price. You will see these socks sold singly on other sites at $12.99 each!  I like the socks and ordered a second set to put in my daughters Christmas stocking.",
+        "reviewTime": "11 5, 2017",
+        "reviewerName": "Fhteacher"
+      }
+    ]
+  },
+  {
+    "unit_id": "unit_7",
+    "token_input": "LVWNDFWLOLZ",
+    "token_output": "LKHXJOOUBSC",
+    "documents": [
+      {
+        "name": "doc_7_3117",
+        "product_description": "FORTINO LANDI Men's Long-sleeve Banded Collar Shirt - Many Colors Available",
+        "review": "Largely my fault for not reading carefully, but the high synthetic fiber content made the shirt uncomfortable to the touch.  Not the manufacturer's fault, of course.",
+        "reviewTime": "07 19, 2017",
+        "reviewerName": "TDL Chicago"
+      },
+      {
+        "name": "doc_7_0",
+        "product_description": "Calvin Klein Boy's Assorted Boxer Briefs (Pack of 2)",
+        "review": "Great product and price!",
+        "reviewTime": "09 4, 2015",
+        "reviewerName": "Tonya B."
+      },
+      {
+        "name": "doc_7_3115",
+        "product_description": "PajamaJeans Women's Petite Bootcut Stretch Knit Denim Jeans, Black, 4X (28W)",
+        "review": "Very comfortable and fits perfectly",
+        "reviewTime": "02 8, 2018",
+        "reviewerName": "Amazon Customer"
+      },
+      {
+        "name": "doc_7_2346",
+        "product_description": "90 Degree By Reflex Power Flex Yoga Capri \u2013 Cationic Heather Activewear Pants",
+        "review": "Would recomend",
+        "reviewTime": "03 12, 2018",
+        "reviewerName": "Amazon Customer"
+      },
+      {
+        "name": "doc_7_58",
+        "product_description": "Hanes Mens EcoSmart Fleece Sweatpant",
+        "review": "Typical Hanes quality. Good weight, sized just right, made pretty well",
+        "reviewTime": "06 16, 2017",
+        "reviewerName": "wayne ereira"
+      },
+      {
+        "name": "doc_7_2350",
+        "product_description": "Baby Headbands Turban Knotted, Girl's Hairbands for Newborn,Toddler and Childrens",
+        "review": "SO CUTE!!  Very good value. Cute style, pretty colors and soft material.",
+        "reviewTime": "05 7, 2018",
+        "reviewerName": "C. Schmitt"
+      },
+      {
+        "name": "doc_7_137",
+        "product_description": "Leg Avenue Women's Athletic Thigh High Socks",
+        "review": "Constantly rolls down",
+        "reviewTime": "02 19, 2018",
+        "reviewerName": "AvidShopper"
+      },
+      {
+        "name": "doc_7_2351",
+        "product_description": "Senchanting Women Winter Warm Ski Knitted Crochet Baggy Skullies Cap Beret Hat",
+        "review": "I like it. I wasn't sure if I could pull off this kind of hat, but it looks good and fits nicely.",
+        "reviewTime": "12 31, 2014",
+        "reviewerName": "Heather Devine"
+      },
+      {
+        "name": "doc_7_2349",
+        "product_description": "90 Degree By Reflex Power Flex Yoga Capri \u2013 Cationic Heather Activewear Pants",
+        "review": "WOW!  I love these capris!  I ordered the deep teal and they are a very dark blue/teal (a much deeper prettier color than shown).  I received many compliments the first time I wore them to the gym.  They are super soft and comfortable from the leg all the way to the waist...COMFORTABLE.  They never slip down at the waist and give me full coverage (not see through at all). I am 5' 4\" and 159 pounds and I ordered a medium.  The size fit perfectly although that being said they are longer on me than the photo (probably my short legs) but came 2 inches above my ankle so just below my calf.  Given that I have weight to loose these are very flattering on as well.  They are also a nice stretchy fabric (thus the comfort) and cool.  We are in the high 90's and 100 degree summer weather and I am cool!  Purchase these as you won't be disappointed especially at this price.  I like these better than my Lululemon and Athleta capris!!!  I am back to purchase more!",
+        "reviewTime": "06 26, 2015",
+        "reviewerName": "vp22"
+      },
+      {
+        "name": "doc_7_71",
+        "product_description": "Havaianas Women's Top Flip Flop Sandal",
+        "review": "Perfect color!",
+        "reviewTime": "08 6, 2014",
+        "reviewerName": "DD"
+      }
+    ]
+  },
+  {
+    "unit_id": "unit_8",
+    "token_input": "GZVWCJZZHAH",
+    "token_output": "ZIVITHKSZTN",
+    "documents": [
+      {
+        "name": "doc_8_3116",
+        "product_description": "SERMAN BRANDS- Carbon Fiber Money Clip Credit Card holder Slim Business Card Holder Clips for men Glossy",
+        "review": "Super.",
+        "reviewTime": "02 1, 2018",
+        "reviewerName": "sporting road"
+      },
+      {
+        "name": "doc_8_71",
+        "product_description": "Havaianas Women's Top Flip Flop Sandal",
+        "review": "Perfect color!",
+        "reviewTime": "08 6, 2014",
+        "reviewerName": "DD"
+      },
+      {
+        "name": "doc_8_19",
+        "product_description": "Powerstep Pinnacle Orthotic Shoe Insoles",
+        "review": "We have used these inserts for years.  They provide great support.",
+        "reviewTime": "10 17, 2016",
+        "reviewerName": "William_Jasper"
+      },
+      {
+        "name": "doc_8_2355",
+        "product_description": "MJ Metals Jewelry 2mm to 10mm White Tungsten Carbide Mirror Polished Classic Wedding Ring",
+        "review": "Love the mirror finish - very comfortable - scratchproof. Pairs beautifully with my white gold engagement ring.",
+        "reviewTime": "02 5, 2018",
+        "reviewerName": "Foxymoma82"
+      },
+      {
+        "name": "doc_8_0",
+        "product_description": "Calvin Klein Boy's Assorted Boxer Briefs (Pack of 2)",
+        "review": "Great product and price!",
+        "reviewTime": "09 4, 2015",
+        "reviewerName": "Tonya B."
+      },
+      {
+        "name": "doc_8_137",
+        "product_description": "Leg Avenue Women's Athletic Thigh High Socks",
+        "review": "Constantly rolls down",
+        "reviewTime": "02 19, 2018",
+        "reviewerName": "AvidShopper"
+      },
+      {
+        "name": "doc_8_75",
+        "product_description": "Leg Avenue Women's Athletic Thigh High Socks",
+        "review": "I just wish they would not roll down.",
+        "reviewTime": "10 31, 2015",
+        "reviewerName": "AvidShopper"
+      },
+      {
+        "name": "doc_8_74",
+        "product_description": "Leg Avenue Women's Athletic Thigh High Socks",
+        "review": "Superrrr thigh high. Im 54 and it easily reaches 3/4 up my thigh!!",
+        "reviewTime": "09 26, 2017",
+        "reviewerName": "j.morris"
+      },
+      {
+        "name": "doc_8_2351",
+        "product_description": "Senchanting Women Winter Warm Ski Knitted Crochet Baggy Skullies Cap Beret Hat",
+        "review": "I like it. I wasn't sure if I could pull off this kind of hat, but it looks good and fits nicely.",
+        "reviewTime": "12 31, 2014",
+        "reviewerName": "Heather Devine"
+      },
+      {
+        "name": "doc_8_3",
+        "product_description": "Calvin Klein Boy's Assorted Boxer Briefs (Pack of 2)",
+        "review": "Great product and price!",
+        "reviewTime": "09 4, 2015",
+        "reviewerName": "Tonya B."
+      }
+    ]
+  },
+  {
+    "unit_id": "unit_9",
+    "token_input": "UICGGWDXSDE",
+    "token_output": "OQAPKOUIEFJ",
+    "documents": [
+      {
+        "name": "doc_9_2349",
+        "product_description": "90 Degree By Reflex Power Flex Yoga Capri \u2013 Cationic Heather Activewear Pants",
+        "review": "WOW!  I love these capris!  I ordered the deep teal and they are a very dark blue/teal (a much deeper prettier color than shown).  I received many compliments the first time I wore them to the gym.  They are super soft and comfortable from the leg all the way to the waist...COMFORTABLE.  They never slip down at the waist and give me full coverage (not see through at all). I am 5' 4\" and 159 pounds and I ordered a medium.  The size fit perfectly although that being said they are longer on me than the photo (probably my short legs) but came 2 inches above my ankle so just below my calf.  Given that I have weight to loose these are very flattering on as well.  They are also a nice stretchy fabric (thus the comfort) and cool.  We are in the high 90's and 100 degree summer weather and I am cool!  Purchase these as you won't be disappointed especially at this price.  I like these better than my Lululemon and Athleta capris!!!  I am back to purchase more!",
+        "reviewTime": "06 26, 2015",
+        "reviewerName": "vp22"
+      },
+      {
+        "name": "doc_9_2350",
+        "product_description": "Baby Headbands Turban Knotted, Girl's Hairbands for Newborn,Toddler and Childrens",
+        "review": "SO CUTE!!  Very good value. Cute style, pretty colors and soft material.",
+        "reviewTime": "05 7, 2018",
+        "reviewerName": "C. Schmitt"
+      },
+      {
+        "name": "doc_9_2363",
+        "product_description": "Zmart Men's Colorful Patterned Casual Crew Socks 4 Pack,Color-2,Medium,Color-2,Medium",
+        "review": "I am changing my review after a second washing.\nI am a male size 9 wide and after washing  they are a very tight fit. They are mid calf, wide enough at the toe, but snug from toe to heel. That said I think a male size 8 is about it. Larger size feet might have a problem. Quality is OK for the price. You will see these socks sold singly on other sites at $12.99 each!  I like the socks and ordered a second set to put in my daughters Christmas stocking.",
+        "reviewTime": "11 5, 2017",
+        "reviewerName": "Fhteacher"
+      },
+      {
+        "name": "doc_9_2345",
+        "product_description": "Forum Novelties Light-Up Ugly Christmas Sweater",
+        "review": "Very nice",
+        "reviewTime": "12 14, 2014",
+        "reviewerName": "phil bensinger"
+      },
+      {
+        "name": "doc_9_3120",
+        "product_description": "NIKE Women's Flex Supreme TR 4 Cross Trainer",
+        "review": "Comfortable",
+        "reviewTime": "05 16, 2018",
+        "reviewerName": "k"
+      },
+      {
+        "name": "doc_9_3115",
+        "product_description": "PajamaJeans Women's Petite Bootcut Stretch Knit Denim Jeans, Black, 4X (28W)",
+        "review": "Very comfortable and fits perfectly",
+        "reviewTime": "02 8, 2018",
+        "reviewerName": "Amazon Customer"
+      },
+      {
+        "name": "doc_9_2346",
+        "product_description": "90 Degree By Reflex Power Flex Yoga Capri \u2013 Cationic Heather Activewear Pants",
+        "review": "Would recomend",
+        "reviewTime": "03 12, 2018",
+        "reviewerName": "Amazon Customer"
+      },
+      {
+        "name": "doc_9_58",
+        "product_description": "Hanes Mens EcoSmart Fleece Sweatpant",
+        "review": "Typical Hanes quality. Good weight, sized just right, made pretty well",
+        "reviewTime": "06 16, 2017",
+        "reviewerName": "wayne ereira"
+      },
+      {
+        "name": "doc_9_3117",
+        "product_description": "FORTINO LANDI Men's Long-sleeve Banded Collar Shirt - Many Colors Available",
+        "review": "Largely my fault for not reading carefully, but the high synthetic fiber content made the shirt uncomfortable to the touch.  Not the manufacturer's fault, of course.",
+        "reviewTime": "07 19, 2017",
+        "reviewerName": "TDL Chicago"
+      },
+      {
+        "name": "doc_9_2352",
+        "product_description": "Epoint EGC1B01-03 Multi Mens Paisley Waistcoat Woven Microfiber S-5XL Vest",
+        "review": "I used this for a costume and it worked well.",
+        "reviewTime": "06 25, 2017",
+        "reviewerName": "Seth Hanson"
+      }
+    ]
+  }
+]
