@@ -38,7 +38,8 @@
           "options": {
             "allowedCommonJsDependencies": [
               "aws-sdk",
-              "crypto-js"
+              "crypto-js",
+              "@funktechno/texthighlighter/lib"
             ],
             "outputPath": "dist/CrowdsourcingSkeleton",
             "index": "src/index.html",

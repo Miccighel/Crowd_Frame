@@ -5,7 +5,7 @@ import {
   Component,
   ViewChild,
   ViewChildren,
-  QueryList, OnInit, ElementRef, AfterViewInit, ViewEncapsulation, Inject,
+  QueryList, OnInit, NgZone
 } from '@angular/core';
 /* Reactive forms modules */
 import {AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
@@ -28,11 +28,12 @@ import {Worker} from "../../models/skeleton/worker";
 import {HttpClient, HttpHeaders} from "@angular/common/http";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {Note} from "../../models/skeleton/notes";
-import {MatDialog, MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
-import {DialogData, InstructionsDialog} from "../instructions/instructions.component";
-import {doHighlight, deserializeHighlights, serializeHighlights, removeHighlights, optionsImpl} from "@funktechno/texthighlighter/lib";
-import { DeviceDetectorService } from 'ngx-device-detector';
-
+import {doHighlight, optionsImpl} from "@funktechno/texthighlighter/lib";
+import {DeviceDetectorService} from 'ngx-device-detector';
+import {log} from "util";
+import {not} from "rxjs/internal-compatibility";
+import {createLogErrorHandler} from "@angular/compiler-cli/ngcc/src/execution/tasks/completion";
+import {listLazyRoutes} from "@angular/compiler/src/aot/lazy_routes";
 
 /* Component HTML Tag definition */
 @Component({
@@ -89,8 +90,10 @@ export class SkeletonComponent implements OnInit {
   taskSuccessful: boolean;
   taskFailed: boolean;
   checkCompleted: boolean;
+  //
 
-  /* References to task stepper and token forms */
+
+  /* References to task stepper and i forms */
   @ViewChild('stepper') stepper: MatStepper;
   @ViewChild('urlField') urlField: MatFormField;
   tokenForm: FormGroup;
@@ -170,8 +173,9 @@ export class SkeletonComponent implements OnInit {
   /* |--------- QUALITY CHECKS - DECLARATION ---------| */
 
   /* Indexes of the gold questions within a Hit */
-  goldIndexHigh: number;
-  goldIndexLow: number;
+  goldIndex: number;
+  // goldIndexHigh: number;
+  // goldIndexLow: number;
 
   /* Arrays to record timestamps, one for each document within a Hit */
   timestampsStart: Array<Array<number>>;
@@ -207,11 +211,11 @@ export class SkeletonComponent implements OnInit {
   notes: Array<Array<Note>>
 
   sequenceNumber: number
+  annotationButtonsDisabled: Array<boolean>
 
   /* |--------- CONSTRUCTOR ---------| */
 
   constructor(
-    public annotationDialog: MatDialog,
     changeDetector: ChangeDetectorRef,
     ngxService: NgxUiLoaderService,
     configService: ConfigService,
@@ -249,10 +253,11 @@ export class SkeletonComponent implements OnInit {
     this.taskFailed = false;
     this.checkCompleted = false;
 
+
     /* |--- TASK GENERATOR ---| */
     this.generator = false;
 
-    this.tokenInput = new FormControl('MBYTZQGSXYP', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
+    this.tokenInput = new FormControl('', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
     this.tokenForm = formBuilder.group({
       "tokenInput": this.tokenInput
     });
@@ -272,10 +277,10 @@ export class SkeletonComponent implements OnInit {
     });
 
     this.sequenceNumber = 0
+
   }
 
   public async ngOnInit() {
-
     this.ngxService.startLoader('skeleton')
 
     let url = new URL(window.location.href);
@@ -319,7 +324,6 @@ export class SkeletonComponent implements OnInit {
         this.ngxService.stopLoader('skeleton')
       }
     })
-
 
   }
 
@@ -536,6 +540,11 @@ export class SkeletonComponent implements OnInit {
         this.documents.push(new Document(index, currentDocument));
       }
 
+      this.annotationButtonsDisabled = new Array<boolean>();
+      for (let index = 0; index < this.documentsAmount; index++) {
+        this.annotationButtonsDisabled.push(true)
+      }
+
       /* The array of accesses counter is initialized */
       this.elementsAccesses = new Array<number>(this.documentsAmount + this.questionnaireAmount);
       for (let index = 0; index < this.elementsAccesses.length; index++) this.elementsAccesses[index] = 0;
@@ -570,8 +579,7 @@ export class SkeletonComponent implements OnInit {
 
       /* Indexes of high and low gold questions are retrieved */
       for (let index = 0; index < this.documentsAmount; index++) {
-        if (this.documents[index].getGoldQuestionIndex("HIGH") != null) this.goldIndexHigh = this.documents[index].getGoldQuestionIndex("HIGH");
-        if (this.documents[index].getGoldQuestionIndex("LOW") != null) this.goldIndexLow = this.documents[index].getGoldQuestionIndex("LOW");
+        if (this.documents[index].getGoldQuestionIndex("GOLD-") != null) this.goldIndex = this.documents[index].getGoldQuestionIndex("GOLD-")
       }
 
       /*
@@ -633,7 +641,7 @@ export class SkeletonComponent implements OnInit {
     let timeInSeconds = Date.now() / 1000;
     /* If some data for the current document already exists*/
     if (this.dimensionsSelectedValues[currentDocument]['amount'] > 0) {
-      /* The new query is pushed into current document data array along with a index used to identify such query*/
+      /* The new query is pushed into current document data array along with a document_index used to identify such query*/
       let selectedValues = Object.values(this.dimensionsSelectedValues[currentDocument]['data']);
       selectedValues.push({
         "dimension": currentDimension,
@@ -656,7 +664,7 @@ export class SkeletonComponent implements OnInit {
         "value": currentValue
       }];
       /* The total amount of selected values for the current document is set to 1 */
-      /* IMPORTANT: the index of the last selected value for a document will be <amount -1> */
+      /* IMPORTANT: the document_index of the last selected value for a document will be <amount -1> */
       this.dimensionsSelectedValues[currentDocument]['amount'] = 1
     }
   }
@@ -678,10 +686,10 @@ export class SkeletonComponent implements OnInit {
         cleanedWords.push(trimmedWord)
       }
     }
-    if(this.stepper) {
+    if (this.stepper) {
       /* If at least the first document has been reached */
       if (this.stepper.selectedIndex >= this.questionnaireAmount) {
-        /* The current document index is selected */
+        /* The current document document_index is selected */
         let currentDocument = this.stepper.selectedIndex - this.questionnaireAmount;
         /* If the user has selected some search engine responses for the current document */
         if (this.searchEngineSelectedResponses[currentDocument]) {
@@ -720,7 +728,7 @@ export class SkeletonComponent implements OnInit {
     let timeInSeconds = Date.now() / 1000;
     /* If some data for the current document already exists*/
     if (this.searchEngineQueries[currentDocument]['amount'] > 0) {
-      /* The new query is pushed into current document data array along with a index used to identify such query*/
+      /* The new query is pushed into current document data array along with a document_index used to identify such query*/
       let storedQueries = Object.values(this.searchEngineQueries[currentDocument]['data']);
       storedQueries.push({
         "dimension": currentDimension,
@@ -745,7 +753,7 @@ export class SkeletonComponent implements OnInit {
       }];
       this.currentQuery = 0
       /* The total amount of query for the current document is set to 1 */
-      /* IMPORTANT: the index of the last query inserted for a document will be <amount -1> */
+      /* IMPORTANT: the document_index of the last query inserted for a document will be <amount -1> */
       this.searchEngineQueries[currentDocument]['amount'] = 1
     }
   }
@@ -766,7 +774,7 @@ export class SkeletonComponent implements OnInit {
     let timeInSeconds = Date.now() / 1000;
     /* If some responses for the current document already exists*/
     if (this.searchEngineRetrievedResponses[currentDocument]['groups'] > 0) {
-      /* The new response is pushed into current document data array along with its query index */
+      /* The new response is pushed into current document data array along with its query document_index */
       let storedResponses = Object.values(this.searchEngineRetrievedResponses[currentDocument]['data']);
       storedResponses.push({
         "dimension": currentDimension,
@@ -793,7 +801,7 @@ export class SkeletonComponent implements OnInit {
         "response": currentRetrievedResponse
       }];
       /* The total amount of retrieved responses for the current document is set to the length of the first group */
-      /* IMPORTANT: the index of the last retrieved response for a document will be <amount -1> */
+      /* IMPORTANT: the document_index of the last retrieved response for a document will be <amount -1> */
       this.searchEngineRetrievedResponses[currentDocument]['amount'] = currentRetrievedResponse.length
       /* The total amount of groups retrieved responses for the current document is set to 1 */
       this.searchEngineRetrievedResponses[currentDocument]['groups'] = 1
@@ -818,7 +826,7 @@ export class SkeletonComponent implements OnInit {
     let timeInSeconds = Date.now() / 1000;
     /* If some responses for the current document already exists*/
     if (this.searchEngineSelectedResponses[currentDocument]['amount'] > 0) {
-      /* The new response is pushed into current document data array along with its query index */
+      /* The new response is pushed into current document data array along with its query document_index */
       let storedResponses = Object.values(this.searchEngineSelectedResponses[currentDocument]['data']);
       storedResponses.push({
         "dimension": currentDimension,
@@ -843,7 +851,7 @@ export class SkeletonComponent implements OnInit {
         "response": currentSelectedResponse
       }];
       /* The total amount of selected responses for the current document is set to 1 */
-      /* IMPORTANT: the index of the last selected response for a document will be <amount -1> */
+      /* IMPORTANT: the document_index of the last selected response for a document will be <amount -1> */
       this.searchEngineSelectedResponses[currentDocument]['amount'] = 1
     }
     this.documentsForm[currentDocument].controls[this.dimensions[this.currentDimension].name.concat("_url")].setValue(currentSelectedResponse['url']);
@@ -890,10 +898,19 @@ export class SkeletonComponent implements OnInit {
     return null
   }
 
-  public performHighlighting(changeDetector, event: Object, documentIndex: number, annotationDialog, notes, annotator: Annotator) {
-    let domElement  = null
-    let optionChosen = null
-    if(this.deviceDetectorService.isMobile() || this.deviceDetectorService.isTablet()) {
+  ///INIZIO CODICE AGGIUNTO DA DAVIDE////
+  public performHighlighting(changeDetector, event: Object, documentIndex: number, notes, annotator: Annotator) {
+
+    //Check if there is a note highlighted but not annotated, if there is delete it
+    for (let note of notes[documentIndex]) {
+      if (note.option == "not_selected" && !note.deleted) {
+        note.ignored = true
+        this.removeAnnotation(documentIndex, notes[documentIndex].length - 1, changeDetector) //remove the note
+      }
+    }
+
+    let domElement = null
+    if (this.deviceDetectorService.isMobile() || this.deviceDetectorService.isTablet()) {
       const selection = document.getSelection();
       if (selection) {
         domElement = document.getElementById(`statement-${documentIndex}`);
@@ -901,70 +918,121 @@ export class SkeletonComponent implements OnInit {
     } else {
       domElement = document.getElementById(`statement-${documentIndex}`);
     }
+
     if (domElement) {
-      const highlightMade = doHighlight(domElement, true, {
-        onAfterHighlight(range, highlight) {
-          if (highlight[0]["outerText"]) {
-            let notesForDocument = notes[documentIndex]
-            let newAnnotation = new Note(documentIndex, range, highlight)
-            let noteAlreadyFound = false
-            for (let note of notesForDocument) {
-              noteAlreadyFound = newAnnotation.checkEquality(note)
-              if (noteAlreadyFound)
-                break
-            }
-            if (noteAlreadyFound) {
-              return true
-            } else {
-              for (let index = 0; index < notesForDocument.length; ++index) {
-                if (newAnnotation.timestamp_created == notesForDocument[index].timestamp_created) {
-                  if (newAnnotation.quote.length > notesForDocument[index].quote.length) notesForDocument.splice(index, 1);
-                }
-              }
+      let statement_container_clone = document.querySelector(`.statement-text-${documentIndex}`).cloneNode(true) //clone of the main statement container
+
+      //Attach the event bindings to the clone
+      statement_container_clone.addEventListener('mouseup', (e) => this.performHighlighting(changeDetector, event, documentIndex, notes, annotator))
+      statement_container_clone.addEventListener('touchend', (e) => this.performHighlighting(changeDetector, event, documentIndex, notes, annotator))
+
+      const highlightMade = doHighlight(domElement, false, {
+        onBeforeHighlight: (range: Range) => {
+          let notesForDocument = notes[documentIndex]
+          let currentText = range.toString()
+          if (currentText.trim().length == 0)
+            return false
+          let indexes = this.getSelectionCharacterOffsetWithin(document.querySelector(`.statement-text-${documentIndex}`))
+          let currentIndexStart = indexes["start"]
+          let currentIndexEnd = indexes["end"]
+          for (let note of notesForDocument) {
+            if (note.deleted == false) if (currentIndexStart < note.index_end && note.index_start < currentIndexEnd) return false
+          }
+          return true
+        },
+        onAfterHighlight: (range, highlight) => {
+          if (highlight.length > 0) {
+            if (highlight[0]["outerText"]) { //If something is selected
+              let notesForDocument = notes[documentIndex]
+              let newAnnotation = new Note(documentIndex, range, highlight)
+              notesForDocument.push(newAnnotation)
               notes[documentIndex] = notesForDocument
-              annotationDialog.open(AnnotationDialog, {
-                width: '80%',
-                minHeight: '86%',
-                data: {
-                  annotation: newAnnotation,
-                  annotator: annotator
-                }
-              }).afterClosed().subscribe(result => {
-                newAnnotation.option = result.label
-                newAnnotation.color = result.color
-                let element = <HTMLElement>document.querySelector(`[data-timestamp='${newAnnotation.timestamp_created}']`)
-                element.style.backgroundColor=result.color
-                notesForDocument.push(newAnnotation)
-                notes[documentIndex] = notesForDocument
-                changeDetector.detectChanges()
-                return true
-              })
             }
+            return true
           }
         }
-      });
+      })
     }
+
+    //Enable and Disable the annotation buttons
+    //Enable the buttons if there is an highlighted but not annotated note
+    //Disable the buttons if all the notes of the current document are annotated
+    let check_not_selected = false
+    for (let note of this.notes[documentIndex]) {
+      if (note.option == "not_selected" && note.deleted == false) {
+        check_not_selected = true
+        this.annotationButtonsDisabled[documentIndex] = false
+        break
+      }
+    }
+    if (!check_not_selected) {
+      this.annotationButtonsDisabled[documentIndex] = true
+    }
+
+    this.changeDetector.detectChanges()
   }
 
-  public removeAnnotation(documentIndex: number, noteIndex: number) {
-    let currentNote = this.notes[documentIndex][noteIndex]
+  //This function annotate the the note highlighted
+  public addAnnotation(value, documentIndex: number) {
+    this.notes[documentIndex].forEach((element, index) => {
+      if (index === this.notes[documentIndex].length - 1) {
+        if (!element.deleted) {
+          element.color = value.color
+          element.option = value.label
+          let current_note = <HTMLElement>document.querySelector(`[data-timestamp='${element.timestamp_created}']`)
+          current_note.style.backgroundColor = value.color
+          //disable user events on the NOTE to avoid over selection!
+          current_note.style.userSelect = "none"
+          current_note.style.webkitUserSelect = "none"
+          current_note.style.pointerEvents = "none"
+          current_note.style.touchAction = "none"
+          current_note.style.cursor = "no-drop"
+        }
+      }
+    })
+
+    this.annotationButtonsDisabled[documentIndex] = true
+    this.changeDetector.detectChanges()
+  }
+
+
+  //Returns true if there is at least one ADE effect annotated in the document
+  public canINext(documentIndex: number) {
+    let omg = false
+    this.notes[documentIndex].forEach((element) => {
+      if (!element.deleted && element.option == "effect") {
+        omg = true
+      }
+    })
+    return omg
+  }
+
+
+  public removeAnnotation(documentIndex: number, noteIndex: number, changeDetector) {
+    let currentNote = this.notes[documentIndex][noteIndex] //select the current note
     currentNote.markDeleted()
     currentNote.timestamp_deleted = Date.now()
+
     let element = document.querySelector(`[data-timestamp='${currentNote.timestamp_created}']`)
-    element.parentNode.insertBefore(document.createTextNode(currentNote.quote), element);
+    element.parentNode.insertBefore(document.createTextNode(currentNote.current_text), element);
     element.remove()
+    document.querySelector(`.statement-text-${documentIndex}`).normalize()
+    changeDetector.detectChanges()
+
   }
 
   public checkUndeletedNotesPresence(notes) {
     let undeletedNotes = false
     for (let note of notes) {
-      if (note.deleted == false) {
+      if (note.deleted == false && note.option != "not_selected") {
         undeletedNotes = true
         break
       }
     }
     return undeletedNotes
   }
+
+  ///FINE CODICE AGGIUNTO DA DAVIDE////
 
 
   /* |--------- QUALITY CHECKS INTEGRATION - FUNCTIONS ---------| */
@@ -1014,12 +1082,41 @@ export class SkeletonComponent implements OnInit {
     computedChecks.push(globalValidityCheck)
 
     /* 2) GOLD QUESTION CHECK performed here - OPTIONAL CHECK */
-    for (let dimension of this.dimensions) {
-      if (dimension.goldQuestionCheck) {
-        goldQuestionCheck = this.documentsForm[this.goldIndexLow].controls[dimension.name.concat('_value')].value < this.documentsForm[this.goldIndexHigh].controls[dimension.name.concat('_value')].value;
-        computedChecks.push(goldQuestionCheck)
+
+    ///INIZIO CODICE AGGIUNTO DA DAVIDE////
+
+    let documentText = this.documents[this.goldIndex].text
+
+    goldQuestionCheck = false
+    let union = new Set()
+    let intersection = new Set()
+    this.notes[this.goldIndex].forEach(item => {
+      if (item.option == "effect" && item.deleted == false) {
+        let currentTextSet = new Set()
+        let indexStart = item.index_start
+        let indexEnd = item.index_end
+        for (let i = indexStart; i < indexEnd; i++) currentTextSet.add(i)
+        for (let span of this.documents[this.goldIndex].adr_spans) {
+          let currentAdrSet = new Set()
+          let indexStart = span["start"]
+          let indexEnd = span["end"]
+          for (let i = indexStart; i < indexEnd; i++) currentAdrSet = currentAdrSet.add(i);
+          for (let number of currentTextSet.values()) {
+            union.add(number)
+            if (currentAdrSet.has(number)) intersection.add(number)
+          }
+          for (let number of currentAdrSet.values()) {
+            union.add(number)
+            if (currentTextSet.has(number)) intersection.add(number)
+          }
+        }
       }
-    }
+    });
+    let jaccardCoefficient = intersection.size / union.size
+    if (jaccardCoefficient >= 0.70) goldQuestionCheck = true
+    computedChecks.push(goldQuestionCheck)
+
+    ///FINE CODICE AGGIUNTO DA DAVIDE////
 
     /* 3) TIME SPENT CHECK performed here - MANDATORY CHECK */
     timeSpentCheck = true;
@@ -1036,7 +1133,7 @@ export class SkeletonComponent implements OnInit {
       this.taskFailed = true;
     }
 
-    /* The result of quality check control for the current try is uploaded to the Amazon S3 bucket. */
+    /* The result of quality check control  for the current try is uploaded to the Amazon S3 bucket. */
     if (!(this.worker.identifier === null)) {
       let qualityCheckData = {
         globalFormValidity: globalValidityCheck,
@@ -1084,18 +1181,31 @@ export class SkeletonComponent implements OnInit {
     this.comment.setValue("");
     this.commentSent = false;
 
-    /* Set stepper index to the first tab (currentDocument.e., bring the worker to the first document after the questionnaire) */
+    /* Set stepper document_index to the first tab (currentDocument.e., bring the worker to the first document after the questionnaire) */
     this.stepper.selectedIndex = this.questionnaireAmount;
 
     /* Decrease the remaining tries amount*/
     this.allowedTries = this.allowedTries - 1;
 
-    /* Increases the current try index */
+    /* Increases the current try document_index */
     this.currentTry = this.currentTry + 1;
 
     /* The loading spinner is stopped */
     this.ngxService.stopLoader('skeleton');
 
+  }
+
+  //Checks if the last note is annotated or not
+  public checkForNotAnnotatedNotes(documentIndex: number) {
+    if (this.notes[documentIndex].length > 0) {
+      if (this.notes[documentIndex][this.notes[documentIndex].length - 1].option == "not_selected") {
+        return false
+      } else {
+        return true
+      }
+    } else {
+      return true
+    }
   }
 
   // |--------- AMAZON AWS INTEGRATION - FUNCTIONS ---------|
@@ -1108,7 +1218,17 @@ export class SkeletonComponent implements OnInit {
    * The "Final" folder is filled with a full task snapshot at the end of each allowed try.
    * The "Partial" folder contains a snapshot of the current document each time a user clicks on a "Back" or "Next" button.
    */
-  public async performLogging(action: string) {
+
+
+  public async performLogging(action: string, documentIndex: number) {
+    ///INIZIO CODICE AGGIUNTO DA DAVIDE////
+    if (this.notes[documentIndex].length > 0) {
+      let element = this.notes[documentIndex][this.notes[documentIndex].length - 1]
+      if (element.option == "not_selected" && !element.deleted) {
+        this.removeAnnotation(documentIndex, this.notes[documentIndex].length - 1, this.changeDetector)
+      }
+    }
+    ///FINE CODICE AGGIUNTO DA DAVIDE////
 
     /* |--- COUNTDOWN ---| */
     if ((this.stepper.selectedIndex >= this.questionnaireAmount) && this.settings.countdownTime) {
@@ -1145,14 +1265,14 @@ export class SkeletonComponent implements OnInit {
     if (!(this.worker.identifier === null)) {
 
       /*
-       * IMPORTANT: The current document index is the stepper current index AFTER the transition
-       * If a NEXT action is performed at document 3, the stepper current index is 4.
-       * If a BACK action is performed at document 3, the stepper current index is 2.
+       * IMPORTANT: The current document document_index is the stepper current document_index AFTER the transition
+       * If a NEXT action is performed at document 3, the stepper current document_index is 4.
+       * If a BACK action is performed at document 3, the stepper current document_index is 2.
        * This is tricky only for the following switch which has to set the start/end
        * timestamps for the previous/following document.
        */
       let currentElement = this.stepper.selectedIndex;
-      /* completedElement is the index of the document/questionnaire in which the user was before */
+      /* completedElement is the document_index of the document/questionnaire in which the user was before */
       let completedElement = this.stepper.selectedIndex;
 
       switch (action) {
@@ -1282,7 +1402,7 @@ export class SkeletonComponent implements OnInit {
         /* Number of accesses to the current questionnaire (which must be always 1, since the worker cannot go back */
         data["accesses"] = accessesAmount + 1
 
-        let uploadStatus = await this.S3Service.uploadQuestionnaire(this.configService.environment, this.worker, data, false, this.currentTry, completedElement, accessesAmount+1, this.sequenceNumber)
+        let uploadStatus = await this.S3Service.uploadQuestionnaire(this.configService.environment, this.worker, data, false, this.currentTry, completedElement, accessesAmount + 1, this.sequenceNumber)
 
         /* The amount of accesses to the current questionnaire is incremented */
         this.sequenceNumber = this.sequenceNumber + 1
@@ -1331,7 +1451,7 @@ export class SkeletonComponent implements OnInit {
         /* The amount of accesses to the current document is retrieved */
         let accessesAmount = this.elementsAccesses[completedElement];
 
-        /* The index of the completed document is the completed element minus the questionnaire amount */
+        /* The document_index of the completed document is the completed element minus the questionnaire amount */
         let completedDocument = completedElement - this.questionnaireAmount;
 
         let data = {}
@@ -1378,7 +1498,7 @@ export class SkeletonComponent implements OnInit {
         let responsesSelected = this.searchEngineSelectedResponses[completedDocument];
         data["responses_selected"] = responsesSelected
 
-        let uploadStatus = await this.S3Service.uploadDocument(this.configService.environment, this.worker, data, false, this.currentTry, completedElement, accessesAmount+1, this.sequenceNumber)
+        let uploadStatus = await this.S3Service.uploadDocument(this.configService.environment, this.worker, data, false, this.currentTry, completedElement, accessesAmount + 1, this.sequenceNumber)
 
         /* The amount of accesses to the current document is incremented */
         this.elementsAccesses[completedElement] = accessesAmount + 1;
@@ -1441,7 +1561,9 @@ export class SkeletonComponent implements OnInit {
       }
 
     }
+
   }
+
 
   /*
    * This function gives the possibility to the worker to provide a comment when a try is finished, successfully or not.
@@ -1486,37 +1608,33 @@ export class SkeletonComponent implements OnInit {
     });
   }
 
-}
-
-/* Component HTML Tag definition */
-@Component({
-  selector: 'app-annotation-dialog',
-  styleUrls: ['annotation-dialog.component.scss'],
-  templateUrl: 'annotation-dialog.component.html',
-  encapsulation: ViewEncapsulation.None
-})
-
-export class AnnotationDialog {
-
-  annotation: Note
-  annotator: Annotator
-
-  /* |---------  ELEMENTS - DECLARATION ---------| */
-
-  /* |--------- CONSTRUCTOR ---------| */
-
-  constructor(public dialogRef: MatDialogRef<AnnotationDialog>, @Inject(MAT_DIALOG_DATA) public data: DialogData) {
-    this.annotation = data["annotation"]
-    this.annotator = data["annotator"]
-  }
-
-  /* |--------- ELEMENTS - FUNCTIONS ---------| */
-
-  /*
-   * This function closes the modal previously opened.
-   */
-  closeDialog(): void {
-    this.dialogRef.close();
+  public getSelectionCharacterOffsetWithin(element) {
+    var start = 0;
+    var end = 0;
+    var doc = element.ownerDocument || element.document;
+    var win = doc.defaultView || doc.parentWindow;
+    var sel;
+    if (typeof win.getSelection != "undefined") {
+      sel = win.getSelection();
+      if (sel.rangeCount > 0) {
+        var range = win.getSelection().getRangeAt(0);
+        var preCaretRange = range.cloneRange();
+        preCaretRange.selectNodeContents(element);
+        preCaretRange.setEnd(range.startContainer, range.startOffset);
+        start = preCaretRange.toString().length;
+        preCaretRange.setEnd(range.endContainer, range.endOffset);
+        end = preCaretRange.toString().length;
+      }
+    } else if ((sel = doc.selection) && sel.type != "Control") {
+      var textRange = sel.createRange();
+      var preCaretTextRange = doc.body.createTextRange();
+      preCaretTextRange.moveToElementText(element);
+      preCaretTextRange.setEndPoint("EndToStart", textRange);
+      start = preCaretTextRange.text.length;
+      preCaretTextRange.setEndPoint("EndToEnd", textRange);
+      end = preCaretTextRange.text.length;
+    }
+    return {start: start, end: end};
   }
 
 }

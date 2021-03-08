@@ -91,7 +91,6 @@ export class LoaderComponent {
     this.workerIdentifier = url.searchParams.get("workerID");
     this.adminAccess = url.searchParams.get("admin") == 'true'
 
-    if(this.adminAccess) this.ngxService.startLoader("loader")
 
     this.username = new FormControl('admin', [Validators.required]);
     this.password = new FormControl('DBegSUGED5', [Validators.required]);
@@ -100,7 +99,6 @@ export class LoaderComponent {
       "password": this.password
     });
 
-    this.ngxService.stopLoader("loader")
   }
 
   public async loadAction(actionChosen: string) {

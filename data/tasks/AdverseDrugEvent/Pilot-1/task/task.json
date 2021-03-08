@@ -1,6 +1,6 @@
 {
   "task_name": "AdverseDrugEvent",
-  "batch_name": "Pilot-2",
+  "batch_name": "Pilot-1",
   "allowed_tries": 10,
   "time_check_amount": 2,
   "annotator": {
@@ -13,7 +13,9 @@
     ]
   },
   "countdown_time": false,
-  "blacklist_batches": [],
+  "blacklist_batches": [
+    "AdverseDrugEvent/Pilot-0"
+  ],
   "whitelist_batches": [],
   "messages": [
     "You have already started this task without finishing it",
