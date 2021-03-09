@@ -1,5 +1,5 @@
 /* Core modules */
-import {Component, EventEmitter, Input, Output, ViewChild} from '@angular/core';
+import {Component, EventEmitter, Output, ViewChild} from '@angular/core';
 /* Loading screen module */
 import {NgxUiLoaderService} from "ngx-ui-loader";
 /* Material design modules */

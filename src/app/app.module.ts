@@ -100,11 +100,10 @@ export class AppModule {
     customElements.define('app-loader', loaderElement);
     const skeletonElement = createCustomElement(SkeletonComponent, {injector: injector});
     customElements.define('app-skeleton', skeletonElement);
-    const bingerElement = createCustomElement(CrowdXplorer, {injector: injector});
-    customElements.define('app-crowd-xplorer', bingerElement);
+    const crowdXplorerElement = createCustomElement(CrowdXplorer, {injector: injector});
+    customElements.define('app-crowd-xplorer', crowdXplorerElement);
   }
 
-  ngDoBootstrap() {
-  }
+  ngDoBootstrap() {}
 
 }

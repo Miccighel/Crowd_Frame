@@ -2,13 +2,11 @@
  * This class provides a representation of a single document stored in single hit stored in the Amazon S3 bucket.
  * The attribute <document_index> is additional and should not be touched and passed in the constructor.
  * Each field of such Document must be mapped to an attribute of this class and set up in the constructor as it is shown.
- * Take care also in providing an implementation of the function; it is used to define if a document represents the high and low gold question.
  */
-import {Mapping} from "../../src/app/models/skeleton/dimension";
 
 export class Document {
 
-  /* DO NOT REMOVE THIS ATTRIBUTE */
+  /* DO NOT REMOVE THESE ATTRIBUTE */
   index: number;
   countdownExpired: boolean;
 
@@ -39,12 +37,6 @@ export class Document {
     for (let index = 0; index < data["drug_text"].length; index++) this.drug_texts.push(data["drug_text"][index])
 
     this.url = data["url"];
-  }
-
-  public getGoldQuestionIndex(kind: string) {
-    if (this.id.includes(kind)) {
-      return this.index
-    }
   }
 
 }
