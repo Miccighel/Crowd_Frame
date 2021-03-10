@@ -1,12 +1,10 @@
 /* Core modules */
 import {Injectable} from '@angular/core';
 import {Observable} from "rxjs";
-
 /* HTTP handling modules */
 import {HttpClient, HttpHeaders} from '@angular/common/http';
 import {PubmedSearchResponse} from "../models/crowd-xplorer/pubmedSearchResponse";
 import {BaseResponse} from "../models/crowd-xplorer/baseResponse";
-import {BingWebSearchResponse} from "../models/crowd-xplorer/bingWebSearchResponse";
 import {PubmedSummaryResponse} from '../models/crowd-xplorer/pubmedSummaryResponse';
 
 @Injectable({
@@ -21,8 +19,6 @@ import {PubmedSummaryResponse} from '../models/crowd-xplorer/pubmedSummaryRespon
  * You can found such interface in ../models/
  */
 export class PubmedService {
-
-  // |--------- ELEMENTS - DECLARATION ---------|
 
   /* Pubmed eUtils eSearch API Endpoint */
   endPoint_eSearch = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?";
@@ -42,8 +38,6 @@ export class PubmedService {
   /* User search engine query */
   query: string;
 
-  /* |--------- CONSTRUCTOR ---------| */
-
   constructor(client: HttpClient) {
     /* The HTTP client is initialized along with its headers */
     this.client = client;
@@ -55,8 +49,6 @@ export class PubmedService {
     /* JSON Responses are needed */
     this.retmode = "json";
   }
-
-  /* |--------- ELEMENTS - FUNCTIONS ---------| */
 
   /*
    * This function uses the text received as a parameter to perform a request to Pubmed eUtilities API

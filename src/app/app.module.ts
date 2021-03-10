@@ -1,7 +1,12 @@
+/* Core imports */
 import {BrowserModule} from '@angular/platform-browser';
 import {Injector, NgModule} from '@angular/core';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
-import {SkeletonComponent} from "./components/skeleton/skeleton.component";
+import {HttpClientModule} from "@angular/common/http";
+import {createCustomElement} from "@angular/elements";
+/* Reactive forms imports */
+import {ReactiveFormsModule} from "@angular/forms";
+/* Angular Material imports */
 import {MatRadioModule} from "@angular/material/radio";
 import {MatCardModule} from "@angular/material/card";
 import {MatInputModule} from "@angular/material/input";
@@ -14,31 +19,31 @@ import {MatTabsModule} from "@angular/material/tabs";
 import {MatGridListModule} from "@angular/material/grid-list";
 import {MatListModule} from "@angular/material/list";
 import {MatSnackBarModule} from '@angular/material/snack-bar';
-import {ReactiveFormsModule} from "@angular/forms";
-import {NgxUiLoaderModule} from "ngx-ui-loader";
-import {HttpClientModule} from "@angular/common/http";
-import {CrowdXplorer} from "./components/crowd-xplorer/crowd-xplorer.component";
-import {createCustomElement} from "@angular/elements";
-import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
 import {MatBadgeModule} from "@angular/material/badge";
 import {MatPaginatorModule} from "@angular/material/paginator";
 import {MatTableModule} from "@angular/material/table";
 import {MatExpansionModule} from "@angular/material/expansion";
-import {TruncatePipe} from "./pipes/truncatePipe";
+import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
 import {MatIconModule} from "@angular/material/icon";
 import {MatTreeModule} from '@angular/material/tree';
-import {MatToolbarModule} from "@angular/material/toolbar";
-import {InstructionsComponent, InstructionsDialog} from "./components/instructions/instructions.component";
 import {MatDialogModule} from "@angular/material/dialog";
 import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MatSliderModule} from "@angular/material/slider";
 import {MatTooltipModule} from "@angular/material/tooltip";
-import {CountdownModule } from 'ngx-countdown';
-import {GeneratorComponent } from './components/generator/generator.component';
+import {MatToolbarModule} from "@angular/material/toolbar";
 import {MatSlideToggleModule} from '@angular/material/slide-toggle';
-import {NgxFileHelpersModule} from 'ngx-file-helpers';
+/* Components imports */
+import {SkeletonComponent} from "./components/skeleton/skeleton.component";
+import {CrowdXplorer} from "./components/crowd-xplorer/crowd-xplorer.component";
+import {InstructionsComponent, InstructionsDialog} from "./components/instructions/instructions.component";
+import {GeneratorComponent } from './components/generator/generator.component';
 import {LoaderComponent} from './components/loader/loader.component';
-
+/* Pipes import */
+import {TruncatePipe} from "./pipes/truncatePipe";
+/* Other imports */
+import {NgxUiLoaderModule} from "ngx-ui-loader";
+import {CountdownModule } from 'ngx-countdown';
+import {NgxFileHelpersModule} from 'ngx-file-helpers';
 
 @NgModule({
   declarations: [

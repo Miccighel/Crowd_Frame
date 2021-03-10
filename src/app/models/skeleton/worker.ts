@@ -1,6 +1,3 @@
-/*
- * This class provides...
- */
 export class Worker {
 
   identifier: string;
@@ -16,6 +13,7 @@ export class Worker {
     navigator: Navigator,
     ngxDeviceDetectorData: Object,
   ) {
+
     this.identifier = mturkId
     this.folder = folder
     let unwantedProperties = [
@@ -44,6 +42,7 @@ export class Worker {
         }
       }
     }
+
     this.navigatorProperties = properties
     this.ngxDeviceDetectorProperties = ngxDeviceDetectorData
 

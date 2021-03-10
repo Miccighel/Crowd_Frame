@@ -36,7 +36,7 @@ import {S3Service} from "../../services/s3.service";
 */
 export class CrowdXplorer {
 
-  /* |--------- GENERAL ELEMENTS - DECLARATION ---------| */
+  /* |--------- SEARCH ENGINE SETTINGS - DECLARATION ---------| */
 
   /* Microsoft Search API key */
   apiKey: string
@@ -47,10 +47,23 @@ export class CrowdXplorer {
    */
   source: string;
 
+  /*
+   * Array of domains to filter out from search results
+   */
+  domainsToFilter: Array<string>
+
+  /*
+   * Object to wrap search engine settings
+   */
+  settings: Settings
+
+  /* |--------- SERVICES & CO. - DECLARATION ---------| */
+
   /* Loading screen service */
   ngxService: NgxUiLoaderService;
   /* Service to provide an environment-based configuration */
   configService: ConfigService;
+  /* Service which wraps the interaction with S3 */
   S3Service: S3Service;
 
   /* Implementation to query Bing Web Search (Service + REST Interface)*/
@@ -60,19 +73,19 @@ export class CrowdXplorer {
   /* Implementation to query fakeJSON (Service + REST Interface)*/
   fakerService: FakerService;
   fakerSearchResponse: Array<FakerSearchResponse>;
+
   /* Implementation to query Pubmed (Service + REST Interface)*/
   pubmedService: PubmedService;
   pubmedSearchResponse: PubmedSearchResponse;
   pubmedSummaryResponse: PubmedSummaryResponse;
 
+  /* |--------- CONTROL FLOW & UI ELEMENTS - DECLARATION ---------| */
 
   /* Search form UI controls */
   searchForm: FormGroup;
   searchStarted: boolean;
   searchInProgress: boolean;
   query: FormControl;
-
-  domainsToFilter: Array<string>
 
   /* Boolean flag */
   searchPerformed: boolean;
@@ -97,27 +110,7 @@ export class CrowdXplorer {
   /* Random digits to generate unique CSS ids when multiple instances of the search engine are used */
   digits: string;
 
-  settings: Settings
-
-  /* |--------- AMAZON AWS INTEGRATION - DECLARATION ---------| */
-
-  /* Name of the current task */
-  taskName: string;
-  /* Sub name of the current task */
-  batchName: string;
-
-  /* AWS S3 Integration*/
-  s3: AWS.S3;
-  /* Region identifier */
-  region: string;
-  /* Bucket identifier */
-  bucket: string;
-  /* Folder to use within the bucket */
-  folder: string;
-  /* File where some general settings are stored */
-  settingsFile: string;
-
-  // |--------- CONSTRUCTOR ---------|
+  /* |--------- CONSTRUCTOR IMPLEMENTATION ---------| */
 
   constructor(
     ngxService: NgxUiLoaderService,
@@ -129,7 +122,7 @@ export class CrowdXplorer {
     formBuilder: FormBuilder
   ) {
 
-    /* |--------- GENERAL ELEMENTS - INITIALIZATION ---------| */
+    /* |--------- SERVICES & CO. - INITIALIZATION ---------| */
 
     /* Service initialization */
     this.ngxService = ngxService;
@@ -139,12 +132,12 @@ export class CrowdXplorer {
     this.pubmedService = pubmedService;
     this.configService = configService;
 
-    this.apiKey = this.configService.environment.bing_api_key
-
     /* The form control for user query is initialized and bound with its synchronous validator(s) */
     this.query = new FormControl('', [Validators.required]);
     /* The search form is initialized by adding each form control */
     this.searchForm = formBuilder.group({"query": this.query});
+
+    /* |--------- CONTROL FLOW & UI ELEMENTS - INITIALIZATION ---------| */
 
     /* Control booleans */
     this.searchStarted = true;
@@ -158,10 +151,16 @@ export class CrowdXplorer {
     /* The random digits for the current instances are generated */
     this.digits = this.randomDigits();
 
+    /* |--------- SEARCH ENGINE SETTINGS - INITIALIZATION ---------| */
+
+    this.apiKey = this.configService.environment.bing_api_key
     this.loadSettings().then(() => {})
 
   }
 
+  /*
+   * This function interacts with an Amazon S3 bucket to retrieve and initialize the settings for the search engine.
+   */
   public async loadSettings() {
     let rawSettings = await this.S3Service.downloadSearchEngineSettings(this.configService.environment)
     this.settings = new Settings(rawSettings)
@@ -169,7 +168,7 @@ export class CrowdXplorer {
     this.domainsToFilter = this.settings.domainsToFilter
   }
 
-  /* |--------- GENERAL ELEMENTS - FUNCTIONS ---------| */
+  /* |--------- WEB SEARCH ---------| */
 
   /*
    * This function uses the text received as a parameter to perform a request using the chosen service.
@@ -307,7 +306,7 @@ export class CrowdXplorer {
     this.selectedRowEmitter.emit(row)
   }
 
-  /* |--------- UTILITY - FUNCTIONS ---------| */
+  /* |--------- OTHER AMENITIES ---------| */
 
   /* UTF8 URL decode for special characters in URL */
   public decodeURI(uri: string): string {

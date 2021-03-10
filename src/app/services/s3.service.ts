@@ -1,4 +1,5 @@
-import {Inject, Injectable} from '@angular/core';
+/* Core imports */
+import { Injectable} from '@angular/core';
 import * as AWS from "aws-sdk";
 /* Debug config import */
 import * as localRawDimensions from '../../../data/build/task/dimensions.json';
@@ -16,10 +17,10 @@ import {Worker} from "../models/skeleton/worker";
 @Injectable({
   providedIn: 'root'
 })
+
 export class S3Service {
 
-  constructor() {
-  }
+  constructor() {}
 
   public loadS3(config) {
     let region = config["region"];
@@ -61,6 +62,10 @@ export class S3Service {
     })
   }
 
+  /*
+   * This function performs an Upload operation to Amazon S3 and returns a JSON object which contains info about the outcome.
+   * https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html
+   */
   public async listFolders(config, key = null) {
     let s3 = this.loadS3(config)
     if(key) {
@@ -81,6 +86,10 @@ export class S3Service {
     }
 
   }
+
+  /*
+   * The following functions are used to retrieve some base path names on the S3 bucket
+   */
 
   public getTaskDataS3Path(config, name, batch) {
     return `${config["region"]}/${config["bucket"]}/${name}/${batch}`
@@ -105,6 +114,10 @@ export class S3Service {
   public getWorkersFile(config) {
     return `${this.getFolder(config)}Task/workers.json`
   }
+
+  /*
+   * The following functions are used to download the files used by the rest of the application from the S3 bucket
+   */
 
   public downloadAdministrators(config) {
     let administratorsFile = `admin.json`;
@@ -156,6 +169,10 @@ export class S3Service {
     }
   }
 
+  /*
+   * The following functions are used to retrieve the paths to the configuration files of the current task on the S3 bucket
+   */
+
   public getQuestionnairesConfigPath(config, task, batch) {
     return `${task}/${batch}/Task/questionnaires.json`
   }
@@ -188,6 +205,10 @@ export class S3Service {
     return `${task}/${batch}/Task/workers.json`
   }
 
+  /*
+   * The following functions are used to upload the configuration files of the current task on the S3 bucket
+   */
+
   public uploadQuestionnairesConfig(config, data, task, batch) {
     return this.upload(config, `${task}/${batch}/Task/questionnaires.json`, JSON.parse(data))
   }
@@ -219,6 +240,10 @@ export class S3Service {
   public uploadWorkersCheck(config, data, task, batch) {
     return this.upload(config, `${task}/${batch}/Task/workers.json`, JSON.parse(data))
   }
+
+  /*
+   * The following functions are used upload the data produced during the task's executions
+   */
 
   public uploadWorkers(config, data) {
     return this.upload(config, this.getWorkersFile(config), data)

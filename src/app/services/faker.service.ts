@@ -1,7 +1,6 @@
 /* Core modules */
 import {Injectable} from '@angular/core';
 import {Observable} from "rxjs";
-
 /* HTTP handling modules */
 import {HttpClient} from '@angular/common/http';
 import {FakerSearchResponse} from "../models/crowd-xplorer/fakerSearchResponse";

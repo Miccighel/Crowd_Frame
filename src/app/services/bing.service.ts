@@ -1,7 +1,6 @@
 /* Core modules */
 import {Injectable} from '@angular/core';
 import {Observable} from "rxjs";
-
 /* HTTP handling modules */
 import {HttpClient, HttpHeaders} from '@angular/common/http';
 import {BingWebSearchResponse} from '../models/crowd-xplorer/bingWebSearchResponse';
@@ -20,8 +19,6 @@ import {BaseResponse} from "../models/crowd-xplorer/baseResponse";
  */
 export class BingService {
 
-  // |--------- ELEMENTS - DECLARATION ---------|
-
   /* Microsoft Search API key */
   apiKey: string
   /* Microsoft Bing Web Search endpoint */
@@ -34,14 +31,10 @@ export class BingService {
   /* User search engine query */
   query: string;
 
-  // |--------- CONSTRUCTOR ---------|
-
   constructor(client: HttpClient) {
     /* The HTTP client is initialized along with its headers */
     this.client = client;
   }
-
-  // |--------- ELEMENTS - FUNCTIONS ---------|
 
   /*
    * This function uses the text received as a parameter to perform a request to Bing Web Search

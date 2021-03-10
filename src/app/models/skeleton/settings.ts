@@ -13,6 +13,7 @@ export class Settings {
   constructor(
     data: JSON
   ) {
+
     this.task_name =            data["task_name"];
     this.batch_name =           data["batch_name"];
     this.allowedTries =         parseInt((data["allowed_tries"]));

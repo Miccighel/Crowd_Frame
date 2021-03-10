@@ -1,28 +1,30 @@
+/* Core modules */
 import {ChangeDetectorRef, Component, OnInit, ViewChild} from '@angular/core';
+/* Reactive forms modules */
 import {FormArray, FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
+/* Material design modules */
 import {MatStepper} from "@angular/material/stepper";
+/* Services */
 import {S3Service} from "../../services/s3.service";
 import {ConfigService} from "../../services/config.service";
 import {NgxUiLoaderService} from "ngx-ui-loader";
+/* File handling helpers */
 import {ReadFile, ReadMode} from "ngx-file-helpers";
 
 /*
- * STEP #1 - Questionnaires
+ * The following interfaces are used to simplify data handling for each generator step.
  */
+
+/* STEP #1 - Questionnaires */
+
 interface QuestionnaireType {
   value: string;
   viewValue: string;
 }
 
-/*
- * STEP #2 - Dimensions
- */
-interface ScaleType {
-  value: string;
-  viewValue: string;
-}
+/* STEP #2 - Dimensions */
 
-interface AnnotatorType {
+interface ScaleType {
   value: string;
   viewValue: string;
 }
@@ -42,10 +44,16 @@ interface OrientationType {
   viewValue: string;
 }
 
-/*
- * STEP #5 - Search Engine
- */
+/* STEP #5 - Search Engine */
+
 interface SourceType {
+  value: string;
+  viewValue: string;
+}
+
+/* STEP #6 - Task Settings */
+
+interface AnnotatorType {
   value: string;
   viewValue: string;
 }
@@ -55,16 +63,24 @@ interface BatchNode {
   batches?: BatchNode[];
 }
 
+/* Component HTML Tag definition */
 @Component({
   selector: 'app-generator',
   templateUrl: './generator.component.html',
   styleUrls: ['./generator.component.scss']
 })
+
+/*
+ * This class implements the generator of custom task configurations
+ */
 export class GeneratorComponent implements OnInit {
 
   /*
-   * STEP #1 - Questionnaires
+   * The following elements are used to define the forms to be filled for
+   * each generator step and some data types to allow easier data handling
    */
+
+  /* STEP #1 - Questionnaires */
   questionnairesForm: FormGroup;
   questionnaireTypes: QuestionnaireType[] = [
     {value: 'crt', viewValue: 'CRT'},
@@ -72,9 +88,7 @@ export class GeneratorComponent implements OnInit {
     {value: 'standard', viewValue: 'Standard'}
   ];
 
-  /*
-   * STEP #2 - Dimensions
-   */
+  /* STEP #2 - Dimensions */
   dimensionsForm: FormGroup;
   scaleTypes: ScaleType[] = [
     {value: 'categorical', viewValue: 'Categorical'},
@@ -98,19 +112,13 @@ export class GeneratorComponent implements OnInit {
     {value: 'vertical', viewValue: 'Vertical'}
   ];
 
-  /*
-   * STEP #3 - General Instructions
-   */
+  /* STEP #3 - General Instructions */
   generalInstructionsForm: FormGroup;
 
-  /*
-   * STEP #4 - Evaluation Instructions
-   */
+  /* STEP #4 - Evaluation Instructions */
   evaluationInstructionsForm: FormGroup;
 
-  /*
-   * STEP #5 - Search Engine
-   */
+  /* STEP #5 - Search Engine */
   searchEngineForm: FormGroup;
   sourceTypes: SourceType[] = [
     {value: 'BingWebSearch', viewValue: 'BingWeb'},
@@ -118,63 +126,81 @@ export class GeneratorComponent implements OnInit {
     {value: 'PubmedSearch', viewValue: 'Pubmed'}
   ];
 
-  /*
-   * STEP #6 - Task Settings
-   */
+  /* STEP #6 - Task Settings */
   taskSettingsForm: FormGroup;
+  taskNames: Array<string>
+  batchesList: Array<string>
+  batchesTree
+  /* Variables to handle hits file upload */
+  localHitsFile: ReadFile
+  localHistFileSize: number
+  hitsDetected: number
+  parsedHits: Array<JSON>
+  readMode: ReadMode
 
-  /*
-   * STEP #7 - Worker Checks
-   */
+  /* STEP #7 - Worker Checks */
   workerChecksForm: FormGroup;
 
-  /* Service to provide loading screens */
-  ngxService: NgxUiLoaderService;
-  configService: ConfigService
-  S3Service: S3Service
-
-  batchesList: Array<string>
-  taskNames: Array<string>
-  batchesTree
-
-  @ViewChild('generator') generator: MatStepper;
-
-  fullS3Path: string
+  /* STEP #8 - Summary */
 
   uploadStarted: boolean
   uploadCompleted: boolean
+  /* S3 Bucket base upload path */
+  fullS3Path: string
+  /* questionnaires.json upload path */
   questionnairesPath: string
+  /* hits.json upload path */
   hitsPath: string
+  /* dimensions.json upload path */
   dimensionsPath: string
+  /* instructions_main.json upload path */
   taskInstructionsPath: string
+  /* instructions_dimension.json upload path */
   dimensionsInstructionsPath: string
+  /* search_engine.json upload path */
   searchEngineSettingsPath: string
+  /* task.json upload path */
   taskSettingsPath: string
+  /* workers.json upload path */
   workerChecksPath: string
 
-  localHitsFile: ReadFile
-  hitsDetected: number
-  localHistFileSize: number
-  parsedHits: Array<JSON>
-  readMode: ReadMode
+  /* |--------- SERVICES & CO - DECLARATION ---------| */
+
+  /* Loading screen service */
+  ngxService: NgxUiLoaderService;
+  /* Service to provide an environment-based configuration */
+  configService: ConfigService;
+  /* Service which wraps the interaction with S3 */
+  S3Service: S3Service;
 
   /* Change detector to manually intercept changes on DOM */
   changeDetector: ChangeDetectorRef;
 
+  /* |--------- CONTROL FLOW & UI ELEMENTS - DECLARATION ---------| */
+
+  @ViewChild('generator') generator: MatStepper;
+
   constructor(
     changeDetector: ChangeDetectorRef,
-    private _formBuilder: FormBuilder,
     ngxService: NgxUiLoaderService,
     configService: ConfigService,
-    S3Service: S3Service
+    S3Service: S3Service,
+    private _formBuilder: FormBuilder,
   ) {
-    this.changeDetector = changeDetector
+
+    /* |--------- SERVICES & CO. - INITIALIZATION ---------| */
+
+    /* Service initialization */
     this.ngxService = ngxService
     this.configService = configService
     this.S3Service = S3Service
+    this.changeDetector = changeDetector
 
     this.ngxService.startLoader('generator')
 
+    /* The following code lists the folders which are present inside task's main folder.
+     * In other words, it lists every batch name for the current task to build a nodeList
+     * which is then shown to the user during step #6 */
     this.batchesTree = {}
     let tasksPromise = this.S3Service.listFolders(this.configService.environment)
     let nodes = []
@@ -201,57 +227,50 @@ export class GeneratorComponent implements OnInit {
     this.batchesTree = nodes
     this.batchesList = completeList
 
-
+    /* A sample full S3 path is shown */
     this.fullS3Path = "&lt;region&gt;/&lt;bucket&gt;/&lt;task_name&gt;/&lt;bucket_name&gt;"
     this.questionnairesPath = null
+
+    /* Some booleans to handle final upload */
     this.uploadCompleted = false
     this.uploadStarted = false
 
+    /* Read mode during hits file upload*/
     this.readMode = ReadMode.text
   }
 
+  /*
+   * The onInit method initializes each form when the user interface is ready
+   */
   ngOnInit() {
 
-
-    /*
-     * STEP #1 - Questionnaires
-     */
+    /* STEP #1 - Questionnaires */
     this.questionnairesForm = this._formBuilder.group({
       questionnaires: this._formBuilder.array([])
     });
 
-    /*
-     * STEP #2 - Dimensions
-     */
+    /* STEP #2 - Dimensions */
     this.dimensionsForm = this._formBuilder.group({
       dimensions: this._formBuilder.array([])
     });
 
-    /*
-     * STEP #3 - General Instructions
-     */
+    /* STEP #3 - General Instructions */
     this.generalInstructionsForm = this._formBuilder.group({
       generalInstructions: this._formBuilder.array([])
     });
 
-    /*
-     * STEP #4 - Evaluation Instructions
-     */
+    /* STEP #4 - Evaluation Instructions */
     this.evaluationInstructionsForm = this._formBuilder.group({
       evaluationInstructions: this._formBuilder.array([])
     });
 
-    /*
-     * STEP #5 - Search Engine
-     */
+    /* STEP #5 - Search Engine */
     this.searchEngineForm = this._formBuilder.group({
       source: [''],
       domains_to_filter: this._formBuilder.array([])
     });
 
-    /*
-     * STEP #6 - Task Settings
-     */
+    /* STEP #6 - Task Settings */
     this.taskSettingsForm = this._formBuilder.group({
       task_name: [''],
       batch_name: [''],
@@ -270,21 +289,30 @@ export class GeneratorComponent implements OnInit {
       messages: this._formBuilder.array([])
     });
 
-    /*
-     * STEP #7 - Worker Checks
-     */
+    /* STEP #7 - Worker Checks */
     this.workerChecksForm = this._formBuilder.group({
       blacklist: [''],
       whitelist: ['']
     })
 
+    /* Detect the changes and update the UI */
     this.changeDetector.detectChanges()
 
   }
 
-  /*
-   * STEP #1 - Questionnaires
-   */
+  /* The following functions are sorted on a per-step basis. For each step it may be present:
+   * - a function which returns the filled form (i.e., questionnaires())
+   * - a function which returns the values of a sub element (i.e., questions())
+   * - a function called addXXX which adds a new sub element to the form (i.e., addQuestion())
+   * - a function called removeXXX which removes a sub element from the form (i.e., removeQuestion())
+   * - a function called updateXXX which updates an already present sub element to responds to values chosen
+   *   in other fiels (i.e., updateQuestionnaire())
+   * - a funcion called resetXXX which resets a single field or a sub element (i.e., resetJustification())
+   * - a function called xxxJSON which outputs the values of a single step's form as a JSON dictionary (i.e., questionnairesJSON())
+   * */
+
+  /* STEP #1 - Questionnaires */
+
   questionnaires(): FormArray {
     return this.questionnairesForm.get('questionnaires') as FormArray;
   }
@@ -302,7 +330,24 @@ export class GeneratorComponent implements OnInit {
     this.questionnaires().removeAt(questionnaireIndex);
   }
 
-  /* Questions */
+  updateQuestionnaire(questionnaireIndex) {
+    let questionnaire = this.questionnaires().at(questionnaireIndex);
+
+    questionnaire.get('description').setValue('');
+    questionnaire.get('description').clearValidators();
+    questionnaire.get('description').updateValueAndValidity();
+
+    this.questions(questionnaireIndex).clear();
+    this.mapping(questionnaireIndex).clear();
+
+    this.addQuestion(questionnaireIndex);
+    if (questionnaire.get('type').value == 'likert') {
+      this.addMapping(questionnaireIndex);
+    }
+  }
+
+  /* SUB ELEMENT: Questions */
+
   questions(questionnaireIndex: number): FormArray {
     return this.questionnaires().at(questionnaireIndex).get('questions') as FormArray;
   }
@@ -322,7 +367,8 @@ export class GeneratorComponent implements OnInit {
     this.questions(questionnaireIndex).removeAt(questionIndex);
   }
 
-  /* Answers */
+  /* SUB ELEMENT: Answers */
+
   answers(questionnaireIndex: number, questionIndex: number): FormArray {
     return this.questions(questionnaireIndex).at(questionIndex).get('answers') as FormArray;
   }
@@ -337,7 +383,8 @@ export class GeneratorComponent implements OnInit {
     this.answers(questionnaireIndex, questionIndex).removeAt(answerIndex);
   }
 
-  /* Mapping */
+  /* SUB ELEMENT: Mappings  */
+
   mapping(questionnaireIndex: number): FormArray {
     return this.questionnaires().at(questionnaireIndex).get('mapping') as FormArray;
   }
@@ -353,22 +400,7 @@ export class GeneratorComponent implements OnInit {
     this.mapping(questionnaireIndex).removeAt(mappingIndex);
   }
 
-  /* Other Functions */
-  updateQuestionnaire(questionnaireIndex) {
-    let questionnaire = this.questionnaires().at(questionnaireIndex);
-
-    questionnaire.get('description').setValue('');
-    questionnaire.get('description').clearValidators();
-    questionnaire.get('description').updateValueAndValidity();
-
-    this.questions(questionnaireIndex).clear();
-    this.mapping(questionnaireIndex).clear();
-
-    this.addQuestion(questionnaireIndex);
-    if (questionnaire.get('type').value == 'likert') {
-      this.addMapping(questionnaireIndex);
-    }
-  }
+  /* JSON Output */
 
   questionnairesJSON() {
     let questionnairesJSON = JSON.parse(JSON.stringify(this.questionnairesForm.get('questionnaires').value));
@@ -408,9 +440,8 @@ export class GeneratorComponent implements OnInit {
     return JSON.stringify(questionnairesJSON, null, 1);
   }
 
-  /*
-   * STEP #2 - Dimensions
-   */
+  /* STEP #2 - Dimensions */
+
   dimensions(): FormArray {
     return this.dimensionsForm.get('dimensions') as FormArray;
   }
@@ -449,24 +480,6 @@ export class GeneratorComponent implements OnInit {
     this.dimensions().removeAt(dimensionIndex);
   }
 
-  /* Mapping */
-  dimensionMapping(dimensionIndex: number): FormArray {
-    return this.dimensions().at(dimensionIndex).get('scale').get('mapping') as FormArray;
-  }
-
-  addDimensionMapping(dimensionIndex: number) {
-    this.dimensionMapping(dimensionIndex).push(this._formBuilder.group({
-      label: [''],
-      description: [''],
-      value: ['']
-    }))
-  }
-
-  removeDimensionMapping(dimensionIndex: number, dimensionMappingIndex: number) {
-    this.dimensionMapping(dimensionIndex).removeAt(dimensionMappingIndex);
-  }
-
-  /* Other Functions */
   resetJustification(dimensionIndex) {
     let dim = this.dimensions().at(dimensionIndex);
 
@@ -579,6 +592,25 @@ export class GeneratorComponent implements OnInit {
     }
   }
 
+  /* SUB ELEMENT: Mapping */
+
+  dimensionMapping(dimensionIndex: number): FormArray {
+    return this.dimensions().at(dimensionIndex).get('scale').get('mapping') as FormArray;
+  }
+
+  addDimensionMapping(dimensionIndex: number) {
+    this.dimensionMapping(dimensionIndex).push(this._formBuilder.group({
+      label: [''],
+      description: [''],
+      value: ['']
+    }))
+  }
+
+  removeDimensionMapping(dimensionIndex: number, dimensionMappingIndex: number) {
+    this.dimensionMapping(dimensionIndex).removeAt(dimensionMappingIndex);
+  }
+
+  /* JSON Output */
 
   dimensionsJSON() {
 
@@ -714,9 +746,7 @@ export class GeneratorComponent implements OnInit {
     return JSON.stringify(dimensionsJSON, null, 1);
   }
 
-  /*
-   * STEP #3 - General Instructions
-   */
+  /* STEP #3 - General Instructions */
   generalInstructions(): FormArray {
     return this.generalInstructionsForm.get('generalInstructions') as FormArray;
   }
@@ -733,7 +763,8 @@ export class GeneratorComponent implements OnInit {
     this.generalInstructions().removeAt(generalInstructionIndex);
   }
 
-  /* Steps */
+  /* SUB ELEMENT: Steps */
+
   generalInstructionSteps(generalInstructionIndex: number): FormArray {
     return this.generalInstructions().at(generalInstructionIndex).get('steps') as FormArray;
   }
@@ -748,7 +779,8 @@ export class GeneratorComponent implements OnInit {
     this.generalInstructionSteps(generalInstructionIndex).removeAt(generalInstructionStepIndex);
   }
 
-  /* Other Functions */
+  /* JSON Output */
+
   generalInstructionsJSON() {
     let generalInstructionsJSON = JSON.parse(JSON.stringify(this.generalInstructionsForm.get('generalInstructions').value));
     for (let generalInstructionIndex in generalInstructionsJSON) {
@@ -767,9 +799,8 @@ export class GeneratorComponent implements OnInit {
     return JSON.stringify(generalInstructionsJSON, null, 1);
   }
 
-  /*
-   * STEP #4 - Evaluation Instructions
-   */
+  /* STEP #4 - Evaluation Instructions */
+
   evaluationInstructions(): FormArray {
     return this.evaluationInstructionsForm.get('evaluationInstructions') as FormArray;
   }
@@ -786,7 +817,8 @@ export class GeneratorComponent implements OnInit {
     this.evaluationInstructions().removeAt(evaluationInstructionIndex);
   }
 
-  /* Steps */
+  /* SUB ELEMENT: Steps */
+
   evaluationInstructionSteps(evaluationInstructionIndex: number): FormArray {
     return this.evaluationInstructions().at(evaluationInstructionIndex).get('steps') as FormArray;
   }
@@ -801,7 +833,8 @@ export class GeneratorComponent implements OnInit {
     this.evaluationInstructionSteps(evaluationInstructionIndex).removeAt(evaluationInstructionStepIndex);
   }
 
-  /* Other Functions */
+  /* JSON Output */
+
   evaluationInstructionsJSON() {
     let evaluationInstructionsJSON = JSON.parse(JSON.stringify(this.evaluationInstructionsForm.get('evaluationInstructions').value));
     for (let evaluationInstructionIndex in evaluationInstructionsJSON) {
@@ -820,11 +853,8 @@ export class GeneratorComponent implements OnInit {
     return JSON.stringify(evaluationInstructionsJSON, null, 1);
   }
 
-  /*
-   * STEP #5 - Search Engine
-   */
+  /* STEP #5 - Search Engine */
 
-  /* Domains To Filter */
   domains(): FormArray {
     return this.searchEngineForm.get('domains_to_filter') as FormArray;
   }
@@ -839,7 +869,8 @@ export class GeneratorComponent implements OnInit {
     this.domains().removeAt(domainIndex);
   }
 
-  /* Other Functions */
+  /* JSON OUTPUT */
+
   searchEngineJSON() {
     let searchEngineJSON = JSON.parse(JSON.stringify(this.searchEngineForm.value));
 
@@ -856,9 +887,7 @@ export class GeneratorComponent implements OnInit {
     return JSON.stringify(searchEngineJSON, null, 1);
   }
 
-  /*
-   * STEP #6 - Task Settings
-   */
+  /* STEP #6 - Task Settings */
 
   updateHitsFile() {
     this.parsedHits = JSON.parse(this.localHitsFile.content)
@@ -882,12 +911,49 @@ export class GeneratorComponent implements OnInit {
     this.taskSettingsForm.get('hits').updateValueAndValidity();
   }
 
-  /* Blacklist Batches */
   blacklistBatches(): FormArray {
     return this.taskSettingsForm.get('blacklist_batches') as FormArray;
   }
 
-  /* Countdown Time */
+  addBlacklistBatch() {
+    for (let item of this.batchesList) {
+      this.blacklistBatches().push(this._formBuilder.group({
+        blacklist_batch: ['']
+      }))
+    }
+  }
+
+  removeBlacklistBatch(blacklistBatchIndex = null) {
+    if (blacklistBatchIndex) {
+      this.blacklistBatches().removeAt(blacklistBatchIndex);
+    } else {
+      while (this.blacklistBatches().length !== 0) {
+        this.blacklistBatches().removeAt(0)
+      }
+    }
+  }
+
+  whitelistBatches(): FormArray {
+    return this.taskSettingsForm.get('whitelist_batches') as FormArray;
+  }
+
+  addWhitelistBatch() {
+    for (let item of this.batchesList) {
+      this.whitelistBatches().push(this._formBuilder.group({
+        whitelist_batch: ['']
+      }))
+    }
+  }
+
+  removeWhitelistBatch(whitelistBatchIndex = null) {
+    if (whitelistBatchIndex) {
+      this.whitelistBatches().removeAt(whitelistBatchIndex);
+    } else {
+      while (this.whitelistBatches().length !== 0) {
+        this.whitelistBatches().removeAt(0)
+      }
+    }
+  }
 
   resetCountdown() {
     this.taskSettingsForm.get('countdown_time').setValue('')
@@ -918,6 +984,7 @@ export class GeneratorComponent implements OnInit {
     this.taskSettingsForm.get('annotator').get('type').updateValueAndValidity();
   }
 
+  /* SUB ELEMENT: Annotator */
   annotatorOptionValues(): FormArray {
     return this.taskSettingsForm.get('annotator').get('values') as FormArray;
   }
@@ -933,48 +1000,6 @@ export class GeneratorComponent implements OnInit {
     this.annotatorOptionValues().removeAt(valueIndex);
   }
 
-  addBlacklistBatch() {
-    for (let item of this.batchesList) {
-      this.blacklistBatches().push(this._formBuilder.group({
-        blacklist_batch: ['']
-      }))
-    }
-  }
-
-  removeBlacklistBatch(blacklistBatchIndex = null) {
-    if (blacklistBatchIndex) {
-      this.blacklistBatches().removeAt(blacklistBatchIndex);
-    } else {
-      while (this.blacklistBatches().length !== 0) {
-        this.blacklistBatches().removeAt(0)
-      }
-    }
-  }
-
-  /* Whitelist Batches */
-  whitelistBatches(): FormArray {
-    return this.taskSettingsForm.get('whitelist_batches') as FormArray;
-  }
-
-  addWhitelistBatch() {
-    for (let item of this.batchesList) {
-      this.whitelistBatches().push(this._formBuilder.group({
-        whitelist_batch: ['']
-      }))
-    }
-  }
-
-  removeWhitelistBatch(whitelistBatchIndex = null) {
-    if (whitelistBatchIndex) {
-      this.whitelistBatches().removeAt(whitelistBatchIndex);
-    } else {
-      while (this.whitelistBatches().length !== 0) {
-        this.whitelistBatches().removeAt(0)
-      }
-    }
-  }
-
-  /* Messages */
   messages(): FormArray {
     return this.taskSettingsForm.get('messages') as FormArray;
   }
@@ -989,8 +1014,8 @@ export class GeneratorComponent implements OnInit {
     this.messages().removeAt(messageIndex);
   }
 
+  /* JSON Output */
 
-  /* Other Functions */
   taskSettingsJSON(verbose = true) {
     let taskSettingsJSON = JSON.parse(JSON.stringify(this.taskSettingsForm.value));
 
@@ -1035,11 +1060,9 @@ export class GeneratorComponent implements OnInit {
     return JSON.stringify(taskSettingsJSON, null, 1);
   }
 
-  /*
-   * STEP #7 - Worker Checks
-   */
+  /* STEP #7 - Worker Checks */
 
-  /* Other Functions */
+  /* JSON Output */
   workerChecksJSON() {
     let workerChecksJSON = JSON.parse(JSON.stringify(this.workerChecksForm.value));
 
@@ -1057,6 +1080,8 @@ export class GeneratorComponent implements OnInit {
 
     return JSON.stringify(workerChecksJSON, null, 1);
   }
+
+  /* STEP 8 - Summary  */
 
   public updateFullPath() {
     this.fullS3Path = this.S3Service.getTaskDataS3Path(this.configService.environment, this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
@@ -1120,6 +1145,8 @@ export class GeneratorComponent implements OnInit {
     this.uploadCompleted = false
     this.generator.selectedIndex = 0
   }
+
+  /* |--------- OTHER AMENITIES ---------| */
 
   public checkFormControl(form: FormGroup, field: string, key: string): boolean {
     return form.get(field).hasError(key);

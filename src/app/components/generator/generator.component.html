@@ -1,9 +1,11 @@
 <mat-horizontal-stepper labelPosition="bottom" #generator class="green-theme">
-  <!--
-    -- Step #1 - Questionnaires
-    -->
+
+  <!-- Step #1 - Questionnaires -->
+
   <mat-step [stepControl]="questionnairesForm">
     <form [formGroup]="questionnairesForm">
+
+      <!-- Header -->
       <ng-template matStepLabel>Questionnaires</ng-template>
       <mat-card [class.mat-elevation-z3]="true">
         <mat-card-header>
@@ -14,10 +16,9 @@
         <mat-card-content>
 
           <div formArrayName="questionnaires">
-            <div *ngFor="let questionnaire of questionnaires().controls; let questionnaireIndex = index"
-                 [formGroupName]="questionnaireIndex">
 
-              <!-- Questionnaire START -->
+            <div *ngFor="let questionnaire of questionnaires().controls; let questionnaireIndex = index" [formGroupName]="questionnaireIndex">
+
               <mat-card [class.mat-elevation-z3]="true">
                 <mat-card-header>
                   <mat-card-title class="lighter">Questionnaire {{questionnaireIndex + 1}}</mat-card-title>
@@ -29,11 +30,9 @@
                   <table class="width-100 mt-8px">
                     <tr>
                       <td class="p-0">
-                        <mat-form-field matLine class="width-100" [hideRequiredMarker]="questionnaire.get('type').valid"
-                                        appearance="fill">
+                        <mat-form-field matLine class="width-100" [hideRequiredMarker]="questionnaire.get('type').valid" appearance="fill">
                           <mat-label>Type</mat-label>
-                          <mat-select matInput formControlName="type" required
-                                      (selectionChange)="updateQuestionnaire(questionnaireIndex)">
+                          <mat-select matInput formControlName="type" required (selectionChange)="updateQuestionnaire(questionnaireIndex)">
                             <mat-option *ngFor="let questionnaireType of questionnaireTypes" [value]="questionnaireType.value">
                               {{questionnaireType.viewValue}}
                             </mat-option>
@@ -46,13 +45,10 @@
                   <!-- Description -->
                   <div *ngIf="questionnaire.get('type').value == 'likert'">
                     <mat-divider [inset]="true"></mat-divider>
-
                     <table class="width-100 mt-16px">
                       <tr>
                         <td class="p-0">
-                          <mat-form-field class="width-100"
-                                          [hideRequiredMarker]="questionnaire.get('description').valid"
-                                          appearance="fill">
+                          <mat-form-field class="width-100" [hideRequiredMarker]="questionnaire.get('description').valid" appearance="fill">
                             <mat-label>Description</mat-label>
                             <textarea matInput formControlName="description" required></textarea>
                           </mat-form-field>
@@ -62,35 +58,28 @@
                   </div>
 
                   <!-- Questions -->
-                  <div *ngIf="questionnaire.get('type').value != ''"
-                       formArrayName="questions">
+                  <div *ngIf="questionnaire.get('type').value != ''" formArrayName="questions">
                     <mat-divider [inset]="true"></mat-divider>
-                    <button mat-flat-button
-                            color="primary" class="mt-16px mb-16px indent"
-                            (click)="addQuestion(questionnaireIndex)">
+                    <button mat-flat-button color="primary" class="mt-16px mb-16px indent" (click)="addQuestion(questionnaireIndex)">
                       Add Question
                     </button>
-                    <div *ngFor="let question of questions(questionnaireIndex).controls; let questionIndex = index"
-                         [formGroupName]="questionIndex">
+                    <div *ngFor="let question of questions(questionnaireIndex).controls; let questionIndex = index" [formGroupName]="questionIndex">
                       <table class="width-100">
                         <tr>
                           <td class="p-0 pr-16px">
-                            <mat-form-field matLine class="width-100" [hideRequiredMarker]="question.get('name').valid"
-                                            appearance="fill">
+                            <mat-form-field matLine class="width-100" [hideRequiredMarker]="question.get('name').valid" appearance="fill">
                               <mat-label>Name</mat-label>
                               <input matInput type="text" formControlName="name" required>
                             </mat-form-field>
                           </td>
                           <td class="p-0 pr-16px">
-                            <mat-form-field matLine class="width-100" [hideRequiredMarker]="question.get('text').valid"
-                                            appearance="fill">
+                            <mat-form-field matLine class="width-100" [hideRequiredMarker]="question.get('text').valid" appearance="fill">
                               <mat-label>Text</mat-label>
                               <input matInput type="text" formControlName="text" required>
                             </mat-form-field>
                           </td>
                           <td class="p-0 center">
-                            <button mat-flat-button
-                                    color="primary" class="mb-16px"
+                            <button mat-flat-button color="primary" class="mb-16px"
                                     [disabled]="questionIndex == '0' && questions(questionnaireIndex).length == 1"
                                     (click)="removeQuestion(questionnaireIndex, questionIndex)">
                               Remove Question
@@ -102,9 +91,7 @@
                         <button mat-flat-button color="primary" class="mb-16px double-indent" (click)="addAnswer(questionnaireIndex, questionIndex)">
                           Add Answer
                         </button>
-                        <div
-                          *ngFor="let answer of answers(questionnaireIndex, questionIndex).controls; let answerIndex = index"
-                          [formGroupName]="answerIndex">
+                        <div *ngFor="let answer of answers(questionnaireIndex, questionIndex).controls; let answerIndex = index" [formGroupName]="answerIndex">
                           <table class="width-100 indent">
                             <tr>
                               <td class="p-0 pr-16px">
@@ -114,7 +101,8 @@
                                 </mat-form-field>
                               </td>
                               <td class="p-0 center">
-                                <button mat-flat-button color="primary" class="mb-16px" [disabled]="answerIndex == '0' && answers(questionnaireIndex, questionIndex).length == 1"
+                                <button mat-flat-button color="primary" class="mb-16px"
+                                        [disabled]="answerIndex == '0' && answers(questionnaireIndex, questionIndex).length == 1"
                                         (click)="removeAnswer(questionnaireIndex, questionIndex, answerIndex)">
                                   Remove Answer
                                 </button>
@@ -160,37 +148,35 @@
                 </mat-card-content>
                 <mat-divider></mat-divider>
                 <mat-card-actions class="right">
-                  <button mat-flat-button
-                          color="primary"
-                          (click)="removeQuestionnaire(questionnaireIndex)">
+                  <button mat-flat-button color="primary" (click)="removeQuestionnaire(questionnaireIndex)">
                     Remove Questionnaire
                   </button>
                 </mat-card-actions>
               </mat-card>
-              <!-- Questionnaire END -->
-
             </div>
+
           </div>
-          <button mat-flat-button
-                  color="primary"
-                  (click)="addQuestionnaire()">
-            Add Questionnaire
-          </button>
+
+          <button mat-flat-button color="primary" (click)="addQuestionnaire()">Add Questionnaire</button>
 
         </mat-card-content>
+
         <mat-divider></mat-divider>
+
         <mat-card-actions>
           <button mat-flat-button color="primary" matStepperNext>Next</button>
         </mat-card-actions>
+
       </mat-card>
     </form>
   </mat-step>
 
-  <!--
-    -- Step #2 - Dimensions
-    -->
+  <!-- Step #2 - Dimensions -->
+
   <mat-step [stepControl]="dimensionsForm">
     <form [formGroup]="dimensionsForm">
+
+      <!-- Header -->
       <ng-template matStepLabel>Dimensions</ng-template>
       <mat-card [class.mat-elevation-z3]="true">
         <mat-card-header>
@@ -201,10 +187,9 @@
         <mat-card-content>
 
           <div formArrayName="dimensions">
-            <div *ngFor="let dimension of dimensions().controls; let dimensionIndex = index"
-                 [formGroupName]="dimensionIndex">
 
-              <!-- Dimension START -->
+            <div *ngFor="let dimension of dimensions().controls; let dimensionIndex = index" [formGroupName]="dimensionIndex">
+
               <mat-card [class.mat-elevation-z3]="true">
                 <mat-card-header>
                   <mat-card-title class="lighter">Dimension {{dimensionIndex + 1}}</mat-card-title>
@@ -468,40 +453,43 @@
                   </div>
 
                 </mat-card-content>
+
                 <mat-divider></mat-divider>
+
                 <mat-card-actions class="right">
-                  <button mat-flat-button
-                          color="primary"
-                          (click)="removeDimension(dimensionIndex)">
-                    Remove Dimension
+                  <button mat-flat-button color="primary" (click)="removeDimension(dimensionIndex)">Remove Dimension
                   </button>
                 </mat-card-actions>
+
               </mat-card>
-              <!-- Dimension END -->
 
             </div>
+
           </div>
-          <button mat-flat-button
-                  color="primary"
-                  (click)="addDimension()">
+
+          <button mat-flat-button color="primary" (click)="addDimension()">
             Add Dimension
           </button>
 
         </mat-card-content>
+
         <mat-divider></mat-divider>
+
         <mat-card-actions>
           <button mat-flat-button color="primary" matStepperPrevious>Back</button>
           <button mat-flat-button color="primary" matStepperNext>Next</button>
         </mat-card-actions>
+
       </mat-card>
     </form>
   </mat-step>
 
-  <!--
-    -- Step #3 - General Instructions
-    -->
+  <!-- Step #3 - General Instructions -->
+
   <mat-step [stepControl]="generalInstructionsForm">
     <form [formGroup]="generalInstructionsForm">
+
+      <!-- Header -->
       <ng-template matStepLabel>General Instructions</ng-template>
       <mat-card [class.mat-elevation-z3]="true">
         <mat-card-header>
@@ -512,10 +500,9 @@
         <mat-card-content>
 
           <div formArrayName="generalInstructions">
-            <div *ngFor="let generalInstruction of generalInstructions().controls; let generalInstructionIndex = index"
-                 [formGroupName]="generalInstructionIndex">
 
-              <!-- General Instruction START -->
+            <div *ngFor="let generalInstruction of generalInstructions().controls; let generalInstructionIndex = index" [formGroupName]="generalInstructionIndex">
+
               <mat-card [class.mat-elevation-z3]="true">
                 <mat-card-header>
                   <mat-card-title class="lighter">General Instruction {{generalInstructionIndex + 1}}</mat-card-title>
@@ -539,27 +526,20 @@
 
                   <!-- Steps -->
                   <div formArrayName="steps">
-                    <button mat-flat-button
-                            color="primary" class="mt-16px mb-16px indent"
-                            (click)="addGeneralInstructionStep(generalInstructionIndex)">
+                    <button mat-flat-button color="primary" class="mt-16px mb-16px indent" (click)="addGeneralInstructionStep(generalInstructionIndex)">
                       Add Step
                     </button>
-                    <div
-                      *ngFor="let generalInstructionStep of generalInstructionSteps(generalInstructionIndex).controls; let generalInstructionStepIndex = index"
-                      [formGroupName]="generalInstructionStepIndex">
+                    <div *ngFor="let generalInstructionStep of generalInstructionSteps(generalInstructionIndex).controls; let generalInstructionStepIndex = index" [formGroupName]="generalInstructionStepIndex">
                       <table class="width-100">
                         <tr>
                           <td class="p-0 pr-16px">
-                            <mat-form-field class="width-100"
-                                            [hideRequiredMarker]="generalInstructionStep.get('step').valid"
-                                            appearance="fill">
+                            <mat-form-field class="width-100" [hideRequiredMarker]="generalInstructionStep.get('step').valid" appearance="fill">
                               <mat-label>Step</mat-label>
                               <textarea matInput formControlName="step" required></textarea>
                             </mat-form-field>
                           </td>
                           <td class="p-0 center">
-                            <button mat-flat-button
-                                    color="primary" class="mb-16px"
+                            <button mat-flat-button color="primary" class="mb-16px"
                                     [disabled]="generalInstructionStepIndex == '0' && generalInstructionSteps(generalInstructionIndex).length == 1"
                                     (click)="removeGeneralInstructionStep(generalInstructionIndex, generalInstructionStepIndex)">
                               Remove Step
@@ -571,40 +551,43 @@
                   </div>
 
                 </mat-card-content>
+
                 <mat-divider></mat-divider>
+
                 <mat-card-actions class="right">
-                  <button mat-flat-button
-                          color="primary"
-                          (click)="removeGeneralInstruction(generalInstructionIndex)">
+                  <button mat-flat-button color="primary" (click)="removeGeneralInstruction(generalInstructionIndex)">
                     Remove General Instruction
                   </button>
                 </mat-card-actions>
+
               </mat-card>
-              <!-- General Instruction END -->
 
             </div>
+
           </div>
-          <button mat-flat-button
-                  color="primary"
-                  (click)="addGeneralInstruction()">
+
+          <button mat-flat-button color="primary" (click)="addGeneralInstruction()">
             Add General Instruction
           </button>
 
         </mat-card-content>
+
         <mat-divider></mat-divider>
+
         <mat-card-actions>
           <button mat-flat-button color="primary" matStepperPrevious>Back</button>
           <button mat-flat-button color="primary" matStepperNext>Next</button>
         </mat-card-actions>
+
       </mat-card>
     </form>
   </mat-step>
 
-  <!--
-    -- Step #4 - Evaluation Instructions
-    -->
+  <!-- Step #4 - Evaluation Instructions -->
   <mat-step [stepControl]="evaluationInstructionsForm">
     <form [formGroup]="evaluationInstructionsForm">
+
+      <!-- Header -->
       <ng-template matStepLabel>Evaluation Instructions</ng-template>
       <mat-card [class.mat-elevation-z3]="true">
         <mat-card-header>
@@ -615,15 +598,12 @@
         <mat-card-content>
 
           <div formArrayName="evaluationInstructions">
-            <div
-              *ngFor="let evaluationInstruction of evaluationInstructions().controls; let evaluationInstructionIndex = index"
-              [formGroupName]="evaluationInstructionIndex">
 
-              <!-- Evaluation Instruction START -->
+            <div *ngFor="let evaluationInstruction of evaluationInstructions().controls; let evaluationInstructionIndex = index" [formGroupName]="evaluationInstructionIndex">
+
               <mat-card [class.mat-elevation-z3]="true">
                 <mat-card-header>
-                  <mat-card-title class="lighter">Evaluation
-                    Instruction {{evaluationInstructionIndex + 1}}</mat-card-title>
+                  <mat-card-title class="lighter">Evaluation Instruction {{evaluationInstructionIndex + 1}}</mat-card-title>
                 </mat-card-header>
                 <mat-divider></mat-divider>
                 <mat-card-content>
@@ -644,27 +624,20 @@
 
                   <!-- Steps -->
                   <div formArrayName="steps">
-                    <button mat-flat-button
-                            color="primary" class="mt-16px mb-16px indent"
-                            (click)="addEvaluationInstructionStep(evaluationInstructionIndex)">
+                    <button mat-flat-button color="primary" class="mt-16px mb-16px indent" (click)="addEvaluationInstructionStep(evaluationInstructionIndex)">
                       Add Step
                     </button>
-                    <div
-                      *ngFor="let evaluationInstructionStep of evaluationInstructionSteps(evaluationInstructionIndex).controls; let evaluationInstructionStepIndex = index"
-                      [formGroupName]="evaluationInstructionStepIndex">
+                    <div *ngFor="let evaluationInstructionStep of evaluationInstructionSteps(evaluationInstructionIndex).controls; let evaluationInstructionStepIndex = index" [formGroupName]="evaluationInstructionStepIndex">
                       <table class="width-100">
                         <tr>
                           <td class="p-0 pr-16px">
-                            <mat-form-field class="width-100"
-                                            [hideRequiredMarker]="evaluationInstructionStep.get('step').valid"
-                                            appearance="fill">
+                            <mat-form-field class="width-100" [hideRequiredMarker]="evaluationInstructionStep.get('step').valid" appearance="fill">
                               <mat-label>Step</mat-label>
                               <textarea matInput formControlName="step" required></textarea>
                             </mat-form-field>
                           </td>
                           <td class="p-0 center">
-                            <button mat-flat-button
-                                    color="primary" class="mb-16px"
+                            <button mat-flat-button color="primary" class="mb-16px"
                                     [disabled]="evaluationInstructionStepIndex == '0' && evaluationInstructionSteps(evaluationInstructionIndex).length == 1"
                                     (click)="removeEvaluationInstructionStep(evaluationInstructionIndex, evaluationInstructionStepIndex)">
                               Remove Step
@@ -676,40 +649,43 @@
                   </div>
 
                 </mat-card-content>
+
                 <mat-divider></mat-divider>
+
                 <mat-card-actions class="right">
-                  <button mat-flat-button
-                          color="primary"
-                          (click)="removeEvaluationInstruction(evaluationInstructionIndex)">
+                  <button mat-flat-button color="primary" (click)="removeEvaluationInstruction(evaluationInstructionIndex)">
                     Remove Evaluation Instruction
                   </button>
                 </mat-card-actions>
+
               </mat-card>
-              <!-- Evaluation Instruction END -->
 
             </div>
+
           </div>
-          <button mat-flat-button
-                  color="primary"
-                  (click)="addEvaluationInstruction()">
+
+          <button mat-flat-button color="primary" (click)="addEvaluationInstruction()">
             Add Evaluation Instruction
           </button>
 
         </mat-card-content>
+
         <mat-divider></mat-divider>
+
         <mat-card-actions>
           <button mat-flat-button color="primary" matStepperPrevious>Back</button>
           <button mat-flat-button color="primary" matStepperNext>Next</button>
         </mat-card-actions>
+
       </mat-card>
     </form>
   </mat-step>
 
-  <!--
-    -- Step #5 - Search Engine
-    -->
+  <!-- Step #5 - Search Engine -->
   <mat-step [stepControl]="searchEngineForm">
     <form [formGroup]="searchEngineForm">
+
+      <!-- Header -->
       <ng-template matStepLabel>Search Engine</ng-template>
       <mat-card [class.mat-elevation-z3]="true">
         <mat-card-header>
@@ -740,13 +716,10 @@
 
           <!-- Domains To Filter -->
           <div formArrayName="domains_to_filter">
-            <button mat-flat-button
-                    color="primary" class="mt-16px mb-16px indent"
-                    (click)="addDomain()">
+            <button mat-flat-button color="primary" class="mt-16px mb-16px indent" (click)="addDomain()">
               Add Domain To Filter
             </button>
-            <div *ngFor="let domain of domains().controls; let domainIndex = index"
-                 [formGroupName]="domainIndex">
+            <div *ngFor="let domain of domains().controls; let domainIndex = index" [formGroupName]="domainIndex">
               <table class="width-100">
                 <tr>
                   <td class="p-0 pr-16px">
@@ -766,20 +739,23 @@
           </div>
 
         </mat-card-content>
+
         <mat-divider></mat-divider>
+
         <mat-card-actions>
           <button mat-flat-button color="primary" matStepperPrevious>Back</button>
           <button mat-flat-button color="primary" matStepperNext>Next</button>
         </mat-card-actions>
+
       </mat-card>
     </form>
   </mat-step>
 
-  <!--
-    -- Step #6 - Task Settings
-    -->
+  <!-- Step #6 - Task Settings -->
   <mat-step [stepControl]="taskSettingsForm">
     <form [formGroup]="taskSettingsForm">
+
+      <!-- Header -->
       <ng-template matStepLabel>Task Settings</ng-template>
       <mat-card [class.mat-elevation-z3]="true">
         <mat-card-header>
@@ -850,9 +826,7 @@
             </tr>
           </table>
 
-
           <mat-divider [inset]="true"></mat-divider>
-
 
           <!-- Annotator: Type -->
           <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="setAnnotator" (change)="resetAnnotator()">
@@ -953,7 +927,6 @@
             </ng-container>
           </div>
 
-
           <mat-divider [inset]="true"></mat-divider>
 
           <!-- Whitelist Batches -->
@@ -1019,20 +992,23 @@
           </div>
 
         </mat-card-content>
+
         <mat-divider></mat-divider>
+
         <mat-card-actions>
           <button mat-flat-button color="primary" matStepperPrevious>Back</button>
           <button mat-flat-button color="primary" matStepperNext>Next</button>
         </mat-card-actions>
+
       </mat-card>
     </form>
   </mat-step>
 
-  <!--
-    -- Step #7 - Worker Checks
-    -->
+  <!-- Step #7 - Worker Checks -->
   <mat-step [stepControl]="workerChecksForm">
     <form [formGroup]="workerChecksForm">
+
+      <!-- Header -->
       <ng-template matStepLabel>Worker Checks</ng-template>
       <mat-card [class.mat-elevation-z3]="true">
         <mat-card-header>
@@ -1048,8 +1024,7 @@
               <td class="p-0">
                 <mat-form-field class="width-100" appearance="fill">
                   <mat-label>Blacklist Workers</mat-label>
-                  <textarea matInput formControlName="blacklist"
-                            placeholder="blacklistWorker1;blacklistWorker2;etc."></textarea>
+                  <textarea matInput formControlName="blacklist" placeholder="blacklistWorker1;blacklistWorker2;etc."></textarea>
                 </mat-form-field>
               </td>
             </tr>
@@ -1063,27 +1038,29 @@
               <td class="p-0">
                 <mat-form-field class="width-100" appearance="fill">
                   <mat-label>Whitelist Workers</mat-label>
-                  <textarea matInput formControlName="whitelist"
-                            placeholder="whitelistWorker1;whitelistWorker2;etc."></textarea>
+                  <textarea matInput formControlName="whitelist" placeholder="whitelistWorker1;whitelistWorker2;etc."></textarea>
                 </mat-form-field>
               </td>
             </tr>
           </table>
 
         </mat-card-content>
+
         <mat-divider></mat-divider>
+
         <mat-card-actions>
           <button mat-flat-button color="primary" matStepperPrevious>Back</button>
           <button mat-flat-button color="primary" matStepperNext>Next</button>
         </mat-card-actions>
+
       </mat-card>
     </form>
   </mat-step>
 
-  <!--
-    -- Step #8 - Summary
-    -->
+  <!-- Step #8 - Summary -->
   <mat-step>
+
+    <!-- Header -->
     <ng-template matStepLabel>Summary</ng-template>
     <mat-card [class.mat-elevation-z3]="true">
       <mat-card-header>
@@ -1092,6 +1069,7 @@
       </mat-card-header>
       <mat-divider></mat-divider>
       <mat-card-content>
+
         <h4 class="mb-0">Step #1 - Questionnaires:</h4>
         <p><code>{{ questionnairesJSON() }}</code></p>
 
@@ -1168,6 +1146,7 @@
         </ng-container>
 
       </mat-card-content>
+
       <mat-divider></mat-divider>
 
       <mat-card-actions>
@@ -1187,6 +1166,7 @@
           Start Over
         </button>
       </mat-card-actions>
+
     </mat-card>
   </mat-step>
 

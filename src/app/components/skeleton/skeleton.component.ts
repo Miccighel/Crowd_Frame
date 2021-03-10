@@ -16,21 +16,23 @@ import {CountdownComponent} from 'ngx-countdown';
 import {NgxUiLoaderService} from 'ngx-ui-loader';
 import {ConfigService} from "../../services/config.service";
 import {S3Service} from "../../services/s3.service";
+import {DeviceDetectorService} from 'ngx-device-detector';
 /* Task models */
 import {Document} from "../../../../data/build/document";
 import {Hit} from "../../models/skeleton/hit";
 import {Questionnaire} from "../../models/skeleton/questionnaire";
 import {Dimension, ScaleInterval} from "../../models/skeleton/dimension";
 import {Instruction} from "../../models/shared/instructions";
-/* Font Awesome icons */
-import {Annotator, Settings} from "../../models/skeleton/settings";
-import {Worker} from "../../models/skeleton/worker";
-import {HttpClient, HttpHeaders} from "@angular/common/http";
-import {MatSnackBar} from "@angular/material/snack-bar";
 import {Note} from "../../models/skeleton/notes";
+import {Worker} from "../../models/skeleton/worker";
+import {Annotator, Settings} from "../../models/skeleton/settings";
+import {GoldChecker} from "../../../../data/build/goldChecker";
+/* Annotator functions */
 import {doHighlight} from "@funktechno/texthighlighter/lib";
-import {DeviceDetectorService} from 'ngx-device-detector';
-import {createLogErrorHandler} from "@angular/compiler-cli/ngcc/src/execution/tasks/completion";
+/* HTTP Client */
+import {HttpClient, HttpHeaders} from "@angular/common/http";
+/* Material modules */
+import {MatSnackBar} from "@angular/material/snack-bar";
 
 /* Component HTML Tag definition */
 @Component({
@@ -42,7 +44,7 @@ import {createLogErrorHandler} from "@angular/compiler-cli/ngcc/src/execution/ta
 
 /*
 * This class implements a skeleton for Crowdsourcing tasks.
-* Remember that you have to set the environment variables in ../environments/ folder.
+* Please, remember to review the environment variables in ../environments/ folder.
 * File environment.ts --- DEVELOPMENT ENVIRONMENT
 * File environment.prod.ts --- PRODUCTION ENVIRONMENT
 */
@@ -518,6 +520,14 @@ export class SkeletonComponent implements OnInit {
       }
 
       /* |--------- INSTRUCTIONS MAIN (see: instructions_main.json) ---------| */
+
+      let rawTaskInstructions = await this.S3Service.downloadTaskInstructions(this.configService.environment);
+      this.taskInstructionsAmount = rawTaskInstructions.length;
+      /* The instructions are parsed using the Instruction class */
+      this.taskInstructions = new Array<Instruction>();
+      for (let index = 0; index < this.taskInstructionsAmount; index++) {
+        this.taskInstructions.push(new Instruction(index, rawTaskInstructions[index]));
+      }
 
       /* |--------- INSTRUCTIONS DIMENSIONS (see: instructions_dimensions.json) ---------| */
 
@@ -1160,46 +1170,43 @@ export class SkeletonComponent implements OnInit {
     let timeSpentCheck: boolean;
     let timeCheckAmount = this.timeCheckAmount;
 
+    /* Array that stores the results of each check */
     let computedChecks = []
 
+    /* Handful expression to check an array of booleans */
     let checker = array => array.every(Boolean);
 
     /* 1) GLOBAL VALIDITY CHECK performed here */
     globalValidityCheck = this.performGlobalValidityCheck();
     computedChecks.push(globalValidityCheck)
 
-    /* 2) GOLD QUESTION CHECK performed here */
+    /* 2) GOLD ELEMENTS CHECK performed here */
 
+    let goldConfiguration = []
+    /* For each gold document its attribute, answers and notes are retrieved to build a gold configuration */
     for (let goldDocument of this.goldDocuments) {
-      goldQuestionCheck = false
-      let union = new Set()
-      let intersection = new Set()
-      this.notes[goldDocument.index].forEach(item => {
-        if (item.option == "effect" && item.deleted == false) {
-          let currentTextSet = new Set()
-          let indexStart = item.index_start
-          let indexEnd = item.index_end
-          for (let i = indexStart; i < indexEnd; i++) currentTextSet.add(i)
-          for (let span of this.documents[goldDocument.index].adr_spans) {
-            let currentAdrSet = new Set()
-            let indexStart = span["start"]
-            let indexEnd = span["end"]
-            for (let i = indexStart; i < indexEnd; i++) currentAdrSet = currentAdrSet.add(i);
-            for (let number of currentTextSet.values()) {
-              union.add(number)
-              if (currentAdrSet.has(number)) intersection.add(number)
-            }
-            for (let number of currentAdrSet.values()) {
-              union.add(number)
-              if (currentTextSet.has(number)) intersection.add(number)
-            }
+      goldConfiguration = []
+      let currentConfiguration = {}
+      currentConfiguration["document"] = goldDocument
+      let answers = {}
+      for (let goldDimension of this.goldDimensions) {
+        for (let [attribute, value] of Object.entries(this.documentsForm[goldDocument.index].value)) {
+          let dimensionName = attribute.split("_")[0]
+          if(dimensionName == goldDimension.name) {
+            answers[attribute] = value
           }
         }
-      });
-      let jaccardCoefficient = intersection.size / union.size
-      if (jaccardCoefficient >= 0.70) goldQuestionCheck = true
-      computedChecks.push(goldQuestionCheck)
+      }
+      currentConfiguration["answers"] = answers
+      currentConfiguration["notes"] = this.notes[goldDocument.index]
     }
+
+    /* The gold configuration is evaluated using the static method implemented within the GoldChecker class */
+    let goldChecks = GoldChecker.performGoldCheck(goldConfiguration)
+
+    /* Since there is a boolean for each gold element, the corresponding array is checked using the checker expression
+     * to understand if each boolean is true */
+    computedChecks.push(checker(goldChecks))
 
     /* 3) TIME SPENT CHECK performed here */
     timeSpentCheck = true;
@@ -1216,13 +1223,14 @@ export class SkeletonComponent implements OnInit {
       this.taskFailed = true;
     }
 
-    /* The result of quality check control  for the current try is uploaded to the Amazon S3 bucket. */
     if (!(this.worker.identifier === null)) {
+      /* The result of quality check control  for the current try is uploaded to the Amazon S3 bucket along with the gold configuration. */
       let qualityCheckData = {
         globalFormValidity: globalValidityCheck,
-        goldQuestionCheck: goldQuestionCheck,
         timeSpentCheck: timeSpentCheck,
         timeCheckAmount: timeCheckAmount,
+        goldChecks: goldChecks,
+        goldConfiguration: goldConfiguration
       };
       let uploadStatus = await this.S3Service.uploadQualityCheck(
         this.configService.environment,
@@ -1488,9 +1496,8 @@ export class SkeletonComponent implements OnInit {
         };
         /* Info about the performed action ("Next"? "Back"? From where?) */
         data["info"] = actionInfo
-        /* Worker's truth level and justification for the current document */
+        /* Worker's answers for the current document */
         let answers = this.documentsForm[completedDocument].value;
-        data["answers"] = answers
         data["answers"] = answers
         let notes = this.notes[completedDocument]
         data["notes"] = notes

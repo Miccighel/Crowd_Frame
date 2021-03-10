@@ -1,14 +1,12 @@
-/* Core modules*/
+/* Core modules */
 import {Component, Inject, Input, OnInit, ViewEncapsulation} from '@angular/core';
 /* Material design modules */
 import {MatDialog, MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
-import * as AWS from "aws-sdk";
-/* Debug config import */
-
 /* Task models*/
 import {Instruction} from "../../models/shared/instructions";
+/* Services */
 import {ConfigService} from "../../services/config.service";
-/* Data inteface for the underlying dialog component */
+/* Data interface for the underlying dialog component */
 export interface DialogData {}
 
 /* Component HTML Tag definition */
@@ -23,9 +21,11 @@ export interface DialogData {}
  */
 export class InstructionsComponent implements OnInit {
 
+  /* |--------- SERVICES & CO. - DECLARATION ---------| */
+
   configService: ConfigService
 
-  /* |---------  ELEMENTS - DECLARATION ---------| */
+  /* |---------  INSTRUCTIONS ELEMENTS - DECLARATION ---------| */
 
   /* Instructions to perform the task */
   @Input() instructions: Array<Instruction>;
@@ -40,8 +40,6 @@ export class InstructionsComponent implements OnInit {
   ) {
     this.configService = configService
   }
-
-  /* |--------- ELEMENTS - FUNCTIONS ---------| */
 
   /*
    * This function inits an instance of the instruction modal after main view init.
@@ -76,7 +74,7 @@ export class InstructionsComponent implements OnInit {
  */
 export class InstructionsDialog {
 
-  /* |---------  ELEMENTS - DECLARATION ---------| */
+  /* |--------- DIALOG ELEMENTS - DECLARATION ---------| */
 
   scale: string;
   instructions: string;
@@ -86,8 +84,6 @@ export class InstructionsDialog {
   constructor(public dialogRef: MatDialogRef<InstructionsDialog>, @Inject(MAT_DIALOG_DATA) public data: DialogData) {
     this.instructions = data["instructions"];
   }
-
-  /* |--------- ELEMENTS - FUNCTIONS ---------| */
 
   /*
    * This function closes the modal previously opened.

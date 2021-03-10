@@ -1,11 +1,5 @@
-/*
- * This class provides a representation of a single questionnaire stored in the Amazon S3 bucket.
- * The attribute <document_index> is additional and should not be touched and passed in the constructor.
- * Each field of such Questionnaire must be mapped to an attribute of this class and set up in the constructor as it is shown.
- */
 export class Questionnaire {
 
-  /* DO NOT REMOVE THIS ATTRIBUTE */
   index: number;
 
   type: string;
@@ -17,7 +11,7 @@ export class Questionnaire {
     index: number,
     data: JSON
   ) {
-    /* DO NOT REMOVE THIS LINE */
+
     this.index = index;
 
     this.description =  data['description'] ? data["description"] : null;

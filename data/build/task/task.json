@@ -1,6 +1,6 @@
 {
-  "task_name": "AdverseDrugEvent",
-  "batch_name": "Pilot-2",
+  "task_name": "Sample",
+  "batch_name": "Test-1",
   "allowed_tries": 10,
   "time_check_amount": 2,
   "annotator": {

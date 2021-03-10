@@ -1,11 +1,10 @@
 /*
- * This class provides a representation of a single dimension which must be asked to each worker stored in the Amazon S3 bucket.
+ * This class provides a representation of a single dimension stored in the Amazon S3 bucket. which must be asked to each worker
  * Each field of such dimensions must be mapped to an attribute of this class and set up in the constructor as it is shown.
  */
 
 export class Dimension {
 
-  /* DO NOT REMOVE THIS ATTRIBUTE */
   index: number;
 
   name: string;
@@ -20,7 +19,7 @@ export class Dimension {
     index: number,
     data: JSON
   ) {
-    /* DO NOT REMOVE THIS LINE */
+
     this.index = index;
 
     this.name =               data["name"];
@@ -68,7 +67,7 @@ export class ScaleCategorical extends Scale{
   constructor(
     data: JSON
   ) {
-    /* DO NOT REMOVE THIS LINE */
+
     super(data)
 
     this.mappings = new Array<Mapping>();
@@ -79,19 +78,17 @@ export class ScaleCategorical extends Scale{
 
 export class Mapping {
 
-  /* DO NOT REMOVE THIS ATTRIBUTE */
   index: number;
 
   label: string;
   description: string;
   value: string;
 
-
   constructor(
     index: number,
     data: JSON
   ) {
-    /* DO NOT REMOVE THIS LINE */
+
     this.index = index;
 
     this.label =        data["label"];
@@ -110,7 +107,7 @@ export class ScaleInterval extends Scale{
   constructor(
     data: JSON
   ) {
-    /* DO NOT REMOVE THIS LINE */
+
     super(data)
 
     this.min =     data['min']

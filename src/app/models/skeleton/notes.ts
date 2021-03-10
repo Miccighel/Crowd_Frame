@@ -26,7 +26,7 @@ export class Note {
     data: JSON,
     color = "#ffffff"
   ) {
-    /* DO NOT REMOVE THIS LINE */
+
     this.document_index = index;
     this.deleted = false
     this.ignored = false
@@ -65,6 +65,7 @@ export class Note {
     }
     this.index_start = this.text_left.length
     this.index_end = this.text_left.length + this.current_text.length
+
   }
 
   public markDeleted() {
