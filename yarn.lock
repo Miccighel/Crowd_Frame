@@ -184,9 +184,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/cdk@npm:~11.2.3":
-  version: 11.2.3
-  resolution: "@angular/cdk@npm:11.2.3"
+"@angular/cdk@npm:~11.2.4":
+  version: 11.2.4
+  resolution: "@angular/cdk@npm:11.2.4"
   dependencies:
     parse5: ^5.0.0
     tslib: ^2.0.0
@@ -196,7 +196,7 @@ __metadata:
   dependenciesMeta:
     parse5:
       optional: true
-  checksum: 5a7f0d75a741934b855d749a5b72ecf1e6718790fc43a9a76bfefe0a23b25e124e3a200f679a084a58bb9ccd5e4b7026469f2f94060d204e8b8bbe2b467e19d3
+  checksum: 450d1e5e2f1584a9f94f24eaf44984a8b7b7d3b716b1ff64622ce4ddb73654a0c9a4fdb41623e3f47cd052fbbb2119b9e23b5c4655d40b3f021035174d490726
   languageName: node
   linkType: hard
 
@@ -323,18 +323,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/material@npm:^11.2.3":
-  version: 11.2.3
-  resolution: "@angular/material@npm:11.2.3"
+"@angular/material@npm:^11.2.4":
+  version: 11.2.4
+  resolution: "@angular/material@npm:11.2.4"
   dependencies:
     tslib: ^2.0.0
   peerDependencies:
     "@angular/animations": ^11.0.0 || ^12.0.0-0
-    "@angular/cdk": 11.2.3
+    "@angular/cdk": 11.2.4
     "@angular/common": ^11.0.0 || ^12.0.0-0
     "@angular/core": ^11.0.0 || ^12.0.0-0
     "@angular/forms": ^11.0.0 || ^12.0.0-0
-  checksum: 711a8a4880f94d77bf2031a1a3e78f4f69f041f5c81b4b19183e10ade935ac30e7516accb9144b93dd0111bf718df702f07c4d42d14d9882e38e99677b6294f4
+  checksum: 9b54a6528becaa785061a09ff4cb807eeb60efd55a7534c7cceb039d396d411003bd406ec8f1f6f11a38c1746e84c70317ad9d5a5dce84bf7c0fdddb4192b1e9
   languageName: node
   linkType: hard
 
@@ -3623,7 +3623,7 @@ __metadata:
   dependencies:
     "@angular-devkit/build-angular": ^0.1102.4
     "@angular/animations": ~11.2.5
-    "@angular/cdk": ~11.2.3
+    "@angular/cdk": ~11.2.4
     "@angular/cli": 11.2.4
     "@angular/common": ~11.2.5
     "@angular/compiler": ~11.2.5
@@ -3631,7 +3631,7 @@ __metadata:
     "@angular/core": 11.2.5
     "@angular/elements": ^11.2.5
     "@angular/forms": ~11.2.5
-    "@angular/material": ^11.2.3
+    "@angular/material": ^11.2.4
     "@angular/platform-browser": ~11.2.5
     "@angular/platform-browser-dynamic": ~11.2.5
     "@angular/router": ~11.2.5
