@@ -685,6 +685,13 @@ export class SkeletonComponent implements OnInit {
       /* Detect changes within the DOM and update the page */
       this.changeDetector.detectChanges();
 
+      /* If there are no questionnaires and the countdown time is set, enable the first countdown */
+
+      if(this.settings.countdownTime && this.questionnaireAmount == 0) this.countdown.toArray()[0].begin();
+
+      /* trigger the changeDetection again */
+      this.changeDetector.detectChanges();
+
       /* The loading spinner is stopped */
       this.ngxService.stopLoader('skeleton');
 
