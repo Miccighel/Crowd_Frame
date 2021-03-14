@@ -58,3 +58,6 @@ data/build/environments/environment.ts
 !.yarn/sdks
 !.yarn/versions
 .pnp.*
+
+# dev-de-bona related
+log.md
