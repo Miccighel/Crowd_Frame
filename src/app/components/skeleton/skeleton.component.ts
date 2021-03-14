@@ -27,7 +27,7 @@ import {Note} from "../../models/skeleton/notes";
 import {Worker} from "../../models/skeleton/worker";
 import {Annotator, Settings} from "../../models/skeleton/settings";
 import {GoldChecker} from "../../../../data/build/goldChecker";
-import {ActionLogger} from "../../../../data/build/ActionLogger";
+import {ActionLogger} from "../../services/userActionLogger.service";
 /* Annotator functions */
 import {doHighlight} from "@funktechno/texthighlighter/lib";
 /* HTTP Client */
@@ -65,6 +65,8 @@ export class SkeletonComponent implements OnInit {
   S3Service: S3Service;
   /* Service to detect user's device */
   deviceDetectorService: DeviceDetectorService;
+  /* Service to log to the server */
+  actionLogger: ActionLogger
 
   /* HTTP client and headers */
   client: HttpClient;
@@ -231,7 +233,6 @@ export class SkeletonComponent implements OnInit {
   goldDimensions: Array<Dimension>;
 
   /* |--------- LOGGING ELEMENTS - DECLARATION ---------| */
-  actionLogger: ActionLogger
   sequenceNumber: number
 
   /* |--------- CONFIGURATION GENERATOR INTEGRATION - DECLARATION ---------| */
@@ -258,7 +259,8 @@ export class SkeletonComponent implements OnInit {
     deviceDetectorService: DeviceDetectorService,
     client: HttpClient,
     formBuilder: FormBuilder,
-    snackBar: MatSnackBar
+    snackBar: MatSnackBar,
+    actionLogger: ActionLogger
   ) {
     /* |--------- SERVICES & CO. - INITIALIZATION ---------| */
 
@@ -267,11 +269,11 @@ export class SkeletonComponent implements OnInit {
     this.configService = configService;
     this.S3Service = S3Service;
 
+    this.actionLogger = actionLogger
+
     this.deviceDetectorService = deviceDetectorService;
     this.client = client;
     this.formBuilder = formBuilder;
-
-    this.actionLogger = new ActionLogger(this.client);
 
     this.snackBar = snackBar
 
@@ -331,7 +333,7 @@ export class SkeletonComponent implements OnInit {
       this.workerIdentifier = url.searchParams.get("workerID");
 
       // Log session start
-      this.logInit(this.workerIdentifier, this.taskName, this.batchName);
+      this.logInit(this.workerIdentifier, this.taskName, this.batchName, this.client);
 
       /* If there is an external worker which is trying to perform the task, check its status */
       if (!(this.workerIdentifier === null)) {
@@ -696,12 +698,8 @@ export class SkeletonComponent implements OnInit {
     }
   }
 
-  public logInit(workerIdentifier, taskName, batchName){
-    this.actionLogger.logInit(workerIdentifier, taskName, batchName);
-  }
-
-  public onClick(event){
-    this.actionLogger.onClick()
+  public logInit(workerIdentifier, taskName, batchName, http){
+    this.actionLogger.logInit(workerIdentifier, taskName, batchName, http);
   }
 
   /* |--------- DIMENSIONS ELEMENTS (see: dimensions.json) ---------| */

@@ -44,6 +44,8 @@ import {TruncatePipe} from "./pipes/truncatePipe";
 import {NgxUiLoaderModule} from "ngx-ui-loader";
 import {CountdownModule } from 'ngx-countdown';
 import {NgxFileHelpersModule} from 'ngx-file-helpers';
+import {ActionLogger} from "./services/userActionLogger.service";
+import {ButtonDirective} from "./components/skeleton/skeleton.directive";
 
 @NgModule({
   declarations: [
@@ -53,7 +55,8 @@ import {NgxFileHelpersModule} from 'ngx-file-helpers';
     InstructionsComponent,
     InstructionsDialog,
     GeneratorComponent,
-    LoaderComponent
+    LoaderComponent,
+    ButtonDirective
   ],
   imports: [
     BrowserModule,
@@ -95,7 +98,7 @@ import {NgxFileHelpersModule} from 'ngx-file-helpers';
     MatSlideToggleModule,
     NgxFileHelpersModule
   ],
-  providers: [],
+  providers: [ActionLogger],
 })
 
 export class AppModule {
