@@ -60,4 +60,5 @@ data/build/environments/environment.ts
 .pnp.*
 
 # dev-de-bona related
-log.md
+local/log.md
+local/*
