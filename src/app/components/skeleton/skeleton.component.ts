@@ -6,7 +6,7 @@ import {
   ViewChild,
   ViewChildren,
   QueryList, OnInit
-} from '@angular/core';
+} from "@angular/core";
 /* Reactive forms modules */
 import {AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
 import {MatFormField} from "@angular/material/form-field";
@@ -16,7 +16,7 @@ import {CountdownComponent} from 'ngx-countdown';
 import {NgxUiLoaderService} from 'ngx-ui-loader';
 import {ConfigService} from "../../services/config.service";
 import {S3Service} from "../../services/s3.service";
-import {DeviceDetectorService} from 'ngx-device-detector';
+import {DeviceDetectorService} from "ngx-device-detector";
 /* Task models */
 import {Document} from "../../../../data/build/document";
 import {Hit} from "../../models/skeleton/hit";
@@ -27,12 +27,14 @@ import {Note} from "../../models/skeleton/notes";
 import {Worker} from "../../models/skeleton/worker";
 import {Annotator, Settings} from "../../models/skeleton/settings";
 import {GoldChecker} from "../../../../data/build/goldChecker";
+import {ActionLogger} from "../../../../data/build/ActionLogger";
 /* Annotator functions */
 import {doHighlight} from "@funktechno/texthighlighter/lib";
 /* HTTP Client */
 import {HttpClient, HttpHeaders} from "@angular/common/http";
 /* Material modules */
 import {MatSnackBar} from "@angular/material/snack-bar";
+import {ButtonDirective} from "./skeleton.directive";
 
 /* Component HTML Tag definition */
 @Component({
@@ -229,7 +231,7 @@ export class SkeletonComponent implements OnInit {
   goldDimensions: Array<Dimension>;
 
   /* |--------- LOGGING ELEMENTS - DECLARATION ---------| */
-
+  actionLogger: ActionLogger
   sequenceNumber: number
 
   /* |--------- CONFIGURATION GENERATOR INTEGRATION - DECLARATION ---------| */
@@ -258,7 +260,6 @@ export class SkeletonComponent implements OnInit {
     formBuilder: FormBuilder,
     snackBar: MatSnackBar
   ) {
-
     /* |--------- SERVICES & CO. - INITIALIZATION ---------| */
 
     this.changeDetector = changeDetector;
@@ -269,6 +270,8 @@ export class SkeletonComponent implements OnInit {
     this.deviceDetectorService = deviceDetectorService;
     this.client = client;
     this.formBuilder = formBuilder;
+
+    this.actionLogger = new ActionLogger(this.client);
 
     this.snackBar = snackBar
 
@@ -319,15 +322,17 @@ export class SkeletonComponent implements OnInit {
 
   /* |--------- MAIN FLOW IMPLEMENTATION ---------| */
   /* To follow the execution flow of the skeleton the functions needs to be read somehow in order (i.e., from top to bottom) */
-
   public async ngOnInit() {
-
     this.ngxService.startLoader('skeleton')
     let url = new URL(window.location.href);
 
     /* The task settings are loaded */
     this.loadSettings().then(() => {
       this.workerIdentifier = url.searchParams.get("workerID");
+
+      // Log session start
+      this.logInit(this.workerIdentifier, this.taskName, this.batchName);
+
       /* If there is an external worker which is trying to perform the task, check its status */
       if (!(this.workerIdentifier === null)) {
         /* The performWorkerStatusCheck function checks worker's status and its result is interpreted as a success|error callback */
@@ -689,6 +694,14 @@ export class SkeletonComponent implements OnInit {
       this.ngxService.stopLoader('skeleton');
 
     }
+  }
+
+  public logInit(workerIdentifier, taskName, batchName){
+    this.actionLogger.logInit(workerIdentifier, taskName, batchName);
+  }
+
+  public onClick(event){
+    this.actionLogger.onClick()
   }
 
   /* |--------- DIMENSIONS ELEMENTS (see: dimensions.json) ---------| */
