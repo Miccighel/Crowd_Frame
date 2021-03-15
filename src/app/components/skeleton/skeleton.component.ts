@@ -31,13 +31,18 @@ import { Note } from "../../models/skeleton/notes";
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { DialogData, InstructionsDialog } from "../instructions/instructions.component";
 import { doHighlight, deserializeHighlights, serializeHighlights, removeHighlights, optionsImpl } from "@funktechno/texthighlighter/lib";
-import { DeviceDetectorService } from 'ngx-device-detector';
+import { DeviceDetectorService, ReTree } from 'ngx-device-detector';
 import { flatten } from '@angular/compiler';
 import { type } from 'os';
 import { equal } from 'assert';
-import { THIS_EXPR } from '@angular/compiler/src/output/output_ast';
+import { not, THIS_EXPR } from '@angular/compiler/src/output/output_ast';
 import { throwToolbarMixedModesError } from '@angular/material/toolbar';
 import { fdatasync } from 'fs';
+import { bool } from 'aws-sdk/clients/signer';
+import { MatRadioChange } from '@angular/material/radio';
+import { MatCheckboxChange } from '@angular/material/checkbox';
+import { Braket } from 'aws-sdk';
+import { Notes } from 'aws-sdk/clients/directoryservice';
 
 
 /* Component HTML Tag definition */
@@ -96,6 +101,9 @@ export class SkeletonComponent implements OnInit {
   taskFailed: boolean;
   checkCompleted: boolean;
   notesDone: boolean[];
+
+  /* Colors for annotations */
+  colors: string[] = ["#F36060", "#DFF652", "#FFA500", "#FFFF7B"]
 
   /* References to task stepper and token forms */
   @ViewChild('stepper') stepper: MatStepper;
@@ -899,7 +907,6 @@ export class SkeletonComponent implements OnInit {
   }
 
   public performHighlighting(changeDetector, event: Object, documentIndex: number, notes, annotator: Annotator) {
-    this.checkEnabledNotes(documentIndex)
     let domElement = null
     if (this.deviceDetectorService.isMobile() || this.deviceDetectorService.isTablet()) {
       const selection = document.getSelection();
@@ -916,18 +923,20 @@ export class SkeletonComponent implements OnInit {
       const highlightMade = doHighlight(domElement, true, {
         onAfterHighlight(range, highlight) {
           const selection = document.getSelection();
-          if (highlight.length != 0) {
+          if (highlight.length > 0) {
             if (highlight[0]["outerText"]) {
               selection.empty()
               let notesForDocument = notes[documentIndex]
+              range["endContainer"]["children"]
               let newAnnotation = new Note(documentIndex, range, highlight)
               let noteAlreadyFound = false
               for (let note of notesForDocument) {
                 if (!note.deleted && newAnnotation.current_text.includes(note.current_text)) {
-                  let element = document.querySelectorAll(`.statement-text`)[documentIndex]
+                  /* let element = document.querySelectorAll(`.statement-text`)[documentIndex]
                   document.querySelectorAll(".law_content_li")[documentIndex].append(first_clone)
                   element.remove()
-                  return true
+                  return true */
+                  note.deleted = true
                 }
               }
               if (noteAlreadyFound) {
@@ -939,12 +948,72 @@ export class SkeletonComponent implements OnInit {
                   }
                 }
                 notes[documentIndex] = notesForDocument
-                notesForDocument.push(newAnnotation)
+                notesForDocument.unshift(newAnnotation)
                 notes[documentIndex] = notesForDocument
                 changeDetector.detectChanges()
                 return true
               }
             }
+          } else {
+            let element = document.querySelectorAll(".statement-text")[documentIndex]
+            element.remove()
+            document.querySelectorAll(".law_content_li")[documentIndex].append(first_clone)
+          }
+        }
+      });
+    }
+  }
+
+  public performInnerHighlighting(changeDetector, event: Object, documentIndex: number, noteIndex: number, notes, annotator: Annotator) {
+    let domElement = null
+    if (this.deviceDetectorService.isMobile() || this.deviceDetectorService.isTablet()) {
+      const selection = document.getSelection();
+      if (selection) {
+        domElement = document.getElementById(`references-${noteIndex}.${documentIndex}`);
+      }
+    } else {
+      domElement = document.getElementById(`references-${noteIndex}.${documentIndex}`);
+    }
+    if (domElement) {
+      let first_clone = document.getElementById(`references-${noteIndex}.${documentIndex}`).cloneNode(true)
+      first_clone.addEventListener('mouseup', (e) => this.performInnerHighlighting(changeDetector, event, documentIndex, noteIndex, notes, annotator))
+      first_clone.addEventListener('touchend', (e) => this.performInnerHighlighting(changeDetector, event, documentIndex, noteIndex, notes, annotator))
+      const highlightMade = doHighlight(domElement, true, {
+        onAfterHighlight(range, highlight) {
+          const selection = document.getSelection();
+          if (highlight.length > 0) {
+            if (highlight[0]["outerText"]) {
+              selection.empty()
+              let notesForDocument = notes
+              range["endContainer"]["children"]
+              let newAnnotation = new Note(documentIndex, range, highlight)
+              let noteAlreadyFound = false
+              for (let note of notesForDocument) {
+                if (!note.deleted && newAnnotation.current_text.includes(note.current_text)) {
+                  /* let element = document.getElementById(`references-${noteIndex}.${documentIndex}`)
+                  document.getElementById(`note-current-${noteIndex}.${documentIndex}`).appendChild(first_clone)
+                  element.remove()
+                  return true */
+                  note.deleted = true
+                }
+              }
+              if (noteAlreadyFound) {
+                return true
+              } else {
+                for (let index = 0; index < notesForDocument.length; ++index) {
+                  if (newAnnotation.timestamp_created == notesForDocument[index].timestamp_created) {
+                    if (newAnnotation.current_text.length > notesForDocument[index].current_text.length) notesForDocument.splice(index, 1);
+                  }
+                }
+                notesForDocument.unshift(newAnnotation)
+                changeDetector.detectChanges()
+                return true
+              }
+            }
+          } else {
+            let element = document.getElementById(`references-${noteIndex}.${documentIndex}`)
+            element.remove()
+            document.getElementById(`note-current-${noteIndex}.${documentIndex}`).appendChild(first_clone)
           }
         }
       });
@@ -963,20 +1032,114 @@ export class SkeletonComponent implements OnInit {
     }
   }
 
-  public checkEnabledNotes(documentIndex: number) {
+  public checkIfLast(documentIndex: number, noteIndex: number) {
     let currentNotes = this.notes[documentIndex]
-    let counter = 0
-    currentNotes.forEach(note => {
+    let currentNote = currentNotes[noteIndex]
+    let index = 0
+    let undeletedNotes = 0
+    for (let note of currentNotes) {
       if (!note.deleted) {
-        counter += 1
+        undeletedNotes += 1
       }
-    });
-    if (counter > 0) {
-      this.notesDone[documentIndex] = true
-      console.log(this.notesDone)
+    }
+    if (currentNotes.length > 0) {
+      for (let pos = currentNotes.length - 1; pos >= 0; pos--) {
+        if (!currentNotes[pos].deleted) {
+          if (currentNotes[pos].timestamp_created != currentNote.timestamp_created) {
+            index += 1
+          } else {
+            break
+          }
+        }
+      }
+    }
+    if (index == undeletedNotes - 1) {
+      return true
     } else {
+      return false
+    }
+  }
+
+  public innerCheckIfSaved(documentIndex: number, noteIndex: number, innerNoteIndex: number) {
+    let currentNote = this.notes[documentIndex][noteIndex].innerAnnotations[innerNoteIndex]
+    let year = (<HTMLInputElement>document.getElementById("year-" + innerNoteIndex + "-" + noteIndex + "." + documentIndex)).value
+    let number = (<HTMLInputElement>document.getElementById("number-" + innerNoteIndex + "-" + noteIndex + "." + documentIndex)).value
+    this.checkEnabledNotes(documentIndex)
+    if (currentNote.year == Number(year) && currentNote.number == Number(number)) {
+      return true
+    } else {
+      return false
+    }
+  }
+
+  public checkNoteDeleted(note: Note) {
+    return note.deleted
+  }
+
+  public checkReferenceWithoutDetails(note: Note) {
+    if (note.type == "reference") {
+      return (note.year == 0 && note.number == 0)
+    }
+    return false
+  }
+
+  public checkEnabledNotes(documentIndex: number) {
+    this.notesDone[documentIndex] = true
+    let currentNotes = this.notes[documentIndex]
+    var notesNotDeleted: Note[] = []
+    var booleans: Boolean[] = []
+    for (let note of currentNotes) {
+      if (!note.deleted) {
+        notesNotDeleted.push(note)
+      }
+    }
+    for (let note of notesNotDeleted) {
+      if (note.type == "reference") {
+        if (this.checkReferenceWithoutDetails(note)) {
+          booleans.push(false)
+        } else {
+          booleans.push(true)
+        }
+      } else {
+        booleans.push(this.auxCEN(note))
+      }
+    }
+    if (booleans.length == 0) {
       this.notesDone[documentIndex] = false
-      console.log(this.notesDone)
+    } else {
+      let checker = array => array.every(Boolean)
+      if (checker(booleans)) {
+        this.notesDone[documentIndex] = true
+      } else {
+        this.notesDone[documentIndex] = false
+      }
+    }
+  }
+
+  public auxCEN(note: Note) {
+    var booleans: Boolean[] = []
+    for (let n of note.innerAnnotations) {
+      if (!n.deleted) {
+        if (n.number != 0 && n.year != 0) {
+          booleans.push(true)
+        } else {
+          booleans.push(false)
+        }
+      }
+    }
+    if (note.containsReferences) {
+      if (booleans.length == 0) {
+        return false
+      } else {
+        let checker = array => array.every(Boolean)
+        if (checker(booleans)) {
+          return true
+        } else {
+          return false
+        }
+      }
+    } else {
+      return true
     }
   }
 
@@ -990,6 +1153,82 @@ export class SkeletonComponent implements OnInit {
     this.checkEnabledNotes(documentIndex)
   }
 
+  public performInnerAnnotation(documentIndex: number, noteIndex: number, innerNoteIndex: number) {
+    let currentNote = this.notes[documentIndex][noteIndex].innerAnnotations[innerNoteIndex]
+    let year = (<HTMLInputElement>document.getElementById("year-" + innerNoteIndex + "-" + noteIndex + "." + documentIndex)).value
+    let number = (<HTMLInputElement>document.getElementById("number-" + innerNoteIndex + "-" + noteIndex + "." + documentIndex)).value
+    currentNote.year = Number(year)
+    currentNote.number = Number(number)
+    currentNote.updateNote()
+    this.checkEnabledNotes(documentIndex)
+  }
+
+  public changeSpanColor(documentIndex: number, noteIndex: number) {
+    let note = this.notes[documentIndex][noteIndex]
+    let note_timestamp = note.timestamp_created
+    document.querySelector(`[data-timestamp='${note_timestamp}']`).setAttribute("style", `background-color: ${note.color};`)
+  }
+
+  public radioChange($event: MatRadioChange, documentIndex: number, noteIndex: number) {
+    let currentNote = this.notes[documentIndex][noteIndex]
+    switch ($event.value) {
+      case "insertion": {
+        currentNote.type = "insertion"
+        currentNote.year = 0
+        currentNote.number = 0
+        currentNote.containsReferences = false
+        currentNote.innerAnnotations = []
+        currentNote.color = this.colors[1]
+        this.changeSpanColor(documentIndex, noteIndex)
+        this.checkEnabledNotes(documentIndex)
+        break
+      }
+      case "substitution": {
+        currentNote.type = "susbstitution"
+        currentNote.year = 0
+        currentNote.number = 0
+        currentNote.containsReferences = false
+        currentNote.innerAnnotations = []
+        currentNote.color = this.colors[2]
+        this.changeSpanColor(documentIndex, noteIndex)
+        this.checkEnabledNotes(documentIndex)
+        break
+      }
+      case "repeal": {
+        currentNote.type = "repeal"
+        currentNote.year = 0
+        currentNote.number = 0
+        currentNote.containsReferences = false
+        currentNote.innerAnnotations = []
+        currentNote.color = this.colors[0]
+        this.changeSpanColor(documentIndex, noteIndex)
+        this.checkEnabledNotes(documentIndex)
+        break
+      }
+      case "reference": {
+        currentNote.type = "reference"
+        currentNote.containsReferences = true
+        currentNote.innerAnnotations = []
+        currentNote.color = this.colors[3]
+        this.changeSpanColor(documentIndex, noteIndex)
+        this.checkEnabledNotes(documentIndex)
+        break
+      }
+    }
+  }
+
+  public checkboxChange($event: MatCheckboxChange, documentIndex: number, noteIndex: number) {
+    let currentNote = this.notes[documentIndex][noteIndex]
+    if ($event.checked) {
+      currentNote.containsReferences = true
+      this.checkEnabledNotes(documentIndex)
+    } else {
+      currentNote.containsReferences = false
+      currentNote.innerAnnotations = []
+      this.checkEnabledNotes(documentIndex)
+    }
+  }
+
   public removeAnnotation(documentIndex: number, noteIndex: number) {
     let currentNote = this.notes[documentIndex][noteIndex]
     currentNote.markDeleted()
@@ -998,6 +1237,26 @@ export class SkeletonComponent implements OnInit {
     element.parentNode.insertBefore(document.createTextNode(currentNote.current_text), element);
     element.remove()
     this.checkEnabledNotes(documentIndex)
+  }
+
+  public removeInnerAnnotation(documentIndex: number, noteIndex: number, innerNoteIndex: number) {
+    let currentNote = this.notes[documentIndex][noteIndex].innerAnnotations[innerNoteIndex]
+    currentNote.markDeleted()
+    currentNote.timestamp_deleted = Date.now()
+    let element = document.querySelector(`[data-timestamp='${currentNote.timestamp_created}']`)
+    element.parentNode.insertBefore(document.createTextNode(currentNote.current_text), element);
+    element.remove()
+    this.checkEnabledNotes(documentIndex)
+  }
+
+  public countInnerUndeletedNotes(note: Note) {
+    var undeletedNotes = 0
+    for (let innerNote of note.innerAnnotations) {
+      if (!innerNote.deleted) {
+        undeletedNotes += 1
+      }
+    }
+    return undeletedNotes
   }
 
   public checkUndeletedNotesPresence(notes) {
@@ -1009,6 +1268,60 @@ export class SkeletonComponent implements OnInit {
       }
     }
     return undeletedNotes
+  }
+
+  /* |--------- QUALITY CHECKS AUXILIAR FUNCTIONS ---------| */
+
+  public compareNoteAndGoldNote(note: Note, goldnote: [String, Number, Number, [String], [Number], [Number]]) {
+    var booleans: Boolean[] = []
+    if (note.current_text === goldnote[0]) {
+      booleans.push(true)
+    } else {
+      booleans.push(false)
+    }
+    if (note.year === goldnote[1]) {
+      booleans.push(true)
+    } else {
+      booleans.push(false)
+    }
+    if (note.number === goldnote[2]) {
+      booleans.push(true)
+    } else {
+      booleans.push(false)
+    }
+    if (note.type != "reference") {
+      let counter = 0
+      if (this.countInnerUndeletedNotes(note) != goldnote[3].length) {
+        booleans.push(false)
+      } else {
+        for (let innerNote of note.innerAnnotations) {
+          if (!this.checkNoteDeleted(innerNote)) {
+            if (innerNote.current_text === goldnote[3][counter]) {
+              booleans.push(true)
+            } else {
+              booleans.push(false)
+            }
+            if (innerNote.year === goldnote[4][counter]) {
+              booleans.push(true)
+            } else {
+              booleans.push(false)
+            }
+            if (innerNote.number === goldnote[5][counter]) {
+              booleans.push(true)
+            } else {
+              booleans.push(false)
+            }
+            counter += 1
+          }
+        }
+      }
+    }
+    let goldQuestionChecker = array => array.every(Boolean);
+    if (goldQuestionChecker(booleans)) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
 
@@ -1063,7 +1376,7 @@ export class SkeletonComponent implements OnInit {
 
     for (let index of this.goldIndex) {
       let AUX_user: Note[] = []
-      type goldNotes = [String, Number, Number] // [quote, year, number]
+      type goldNotes = [String, Number, Number, [String], [Number], [Number]]
       let AUX_gold: goldNotes[] = []
       let AUX_check = 0;
       for (let userNote of this.notes[index]) {
@@ -1073,19 +1386,20 @@ export class SkeletonComponent implements OnInit {
       }
 
       for (let i = 0; i < this.documents[index].law_quotes.length; i++) {
-        let actualGoldNote: goldNotes = [this.documents[index].law_quotes[i], this.documents[index].law_years[i], this.documents[index].law_numbers[i]]
+        let actualGoldNote: goldNotes = [
+          this.documents[index].law_quotes[i],
+          this.documents[index].law_years[i],
+          this.documents[index].law_numbers[i],
+          this.documents[index].inner_law_quotes[i],
+          this.documents[index].inner_law_years[i],
+          this.documents[index].inner_law_numbers[i]
+        ]
         AUX_gold.push(actualGoldNote)
       }
 
-      console.log(AUX_gold)
-      console.log(AUX_user)
-
-      for (let i_g = 0; i_g < AUX_gold.length; i_g++) {
-        for (let i_u = 0; i_u < AUX_user.length; i_u++) {
-          let equality = AUX_gold[i_g][0] == AUX_user[i_u].current_text &&
-            AUX_gold[i_g][1] == AUX_user[i_u].year &&
-            AUX_gold[i_g][2] == AUX_user[i_u].number
-          if (equality) {
+      for (let user_note of AUX_user) {
+        for (let gold_note of AUX_gold) {
+          if (this.compareNoteAndGoldNote(user_note, gold_note)) {
             AUX_check += 1
           }
         }

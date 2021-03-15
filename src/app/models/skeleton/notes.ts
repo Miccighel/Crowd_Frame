@@ -13,6 +13,9 @@ export class Note {
   end_offset: number;
   year: number
   number: number
+  type: String;
+  containsReferences: boolean;
+  innerAnnotations: Array<Note>
   baseURI: string;
   current_text: string;
   text_not_annotated_left: string
@@ -41,14 +44,27 @@ export class Note {
     this.timestamp_deleted = null
     this.year = 0
     this.number = 0
-    this.text_not_annotated_left = range["endContainer"]["firstChild"]["data"]
-    this.text_not_annotated_right = range["endContainer"]["lastChild"]["data"]
+    this.type = "reference"
+    this.containsReferences = true
+    this.innerAnnotations = []
+    if (range["endContainer"]["firstChild"] != null) {
+      this.text_not_annotated_left = range["endContainer"]["firstChild"]["data"]
+    } else {
+      this.text_not_annotated_left = ""
+    }
+    if (range["endContainer"]["lastChild"] != null) {
+      this.text_not_annotated_right = range["endContainer"]["lastChild"]["data"]
+    } else {
+      this.text_not_annotated_right = ""
+    }
     this.existing_notes = new Array<String>()
+    /*
     Array.from(range["endContainer"]["children"]).forEach((element: HTMLElement) => {
       if (element.innerText != this.current_text) {
         this.existing_notes.push(element.innerText)
       }
     });
+    */
   }
 
   public checkEquality(note: Note) {

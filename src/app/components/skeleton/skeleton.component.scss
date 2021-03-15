@@ -160,23 +160,91 @@ mat-card-content label {
 }
 
 .annotation-recap {
-  display: flex;
-  height: 0%;
-  align-items: center;
+  padding-bottom: 3px;
 }
 
 .annotation-quote {
   display: flex;
   height: 0%;
   align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.inner-annotation-quote {
+  display: flex;
+  height: 0%;
+  align-items: center;
+  justify-content: space-evenly;
+  width: 100%;
+}
+
+.annotation-current-text {
+  display: flex;
+  margin-left: 5px;
+  height: 0%;
+  align-items: center;
 }
 
 .annotation-options {
   display: flex;
-  padding: 1%;
-  justify-content: space-between;
+  margin: auto;
+  padding: 5px;
+  justify-content:center;
   height: 0%;
   align-items: center;
+  text-align: right;
+  max-width: 650px;
+}
+
+.annotation-type {
+  text-align: center;
+  padding-top: 5px;
+}
+
+.inner-annotation-reference {
+  background-color: #F0F0F0;
+  padding: 5px;
+}
+
+.inner-annotation-checkbox-delete {
+  text-align: center;
+  padding-top: 5px;
+}
+
+.mat-radio-group {
+  display: flex;
+  text-align: center;
+  justify-content: space-evenly;
+}
+
+.radio-group {
+  display: flex;
+  margin: auto;
+  padding: 5px;
+  justify-content: space-evenly;
+  height: 0%;
+  align-items: center;
+  max-width: 650px;
+}
+
+.radio-group-button {
+  margin-left: 7px;
+  margin-right: 7px;
+}
+
+.inner-annotation-text {
+  margin-top: 5px;
+  margin-bottom: 5px;
+
+  justify-content: space-evenly;
+  border-style: dashed;
+  border-color: dimgray;
+  padding: 5px;
+}
+
+.inner-annotation-delete {
+  margin-left: 5px;
 }
 
 .url-field {
@@ -296,6 +364,10 @@ button {
 
 .mat-slider {
   width: 100%;
+}
+
+.note-current-text {
+  max-width: 33%;
 }
 
 /* |--- TOKEN INPUT SECTION STYLES --| */
@@ -528,28 +600,4 @@ mat-form-field {
 
 .annotations {
   margin-bottom: 1%;
-}
-
-.annotations table {
-  width: 100%;
-  text-align: center;
-}
-
-.annotations tr:first-child {
-  text-align: center;
-}
-
-.annotations tr {
-  display: flex;
-}
-
-.annotations th {
-  flex-grow: 1;
-  text-align: center;
-  padding: 1%;
-}
-
-.annotations td {
-  flex: 1 1 0px;
-  padding: 1%;
 }
