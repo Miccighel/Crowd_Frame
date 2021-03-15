@@ -51,14 +51,14 @@ export class ActionLogger {
   log(type: string, details: object) {
     let payload = this.buildPayload(type, details)
 
-    this.http.post(
-      'https://8vd1uyg771.execute-api.us-east-1.amazonaws.com/logger/log',
-      payload,
-      {
-        responseType: 'text',
-        headers: new HttpHeaders()
-          .set('content-type', 'text/plain')
-      }).subscribe()
+    // this.http.post(
+    //   'https://8vd1uyg771.execute-api.us-east-1.amazonaws.com/logger/log',
+    //   payload,
+    //   {
+    //     responseType: 'text',
+    //     headers: new HttpHeaders()
+    //       .set('content-type', 'text/plain')
+    //   }).subscribe()
   }
 
   /**
@@ -67,7 +67,7 @@ export class ActionLogger {
   logContext(){
     let payload = this.buildPayload('context', null)
 
-    this.http.post('https://8vd1uyg771.execute-api.us-east-1.amazonaws.com/logger/stats', payload).subscribe(data => console.log(data))
+    //this.http.post('https://8vd1uyg771.execute-api.us-east-1.amazonaws.com/logger/stats', payload).subscribe(data => console.log(data))
   }
 
   /**
@@ -94,5 +94,25 @@ export class ActionLogger {
       this.logContext()
       this.log('init', details)
     }
+  }
+
+  buttonClick(event){
+    console.log(event.type)
+  }
+
+  windowClick(event){
+    console.log(event.type)
+  }
+
+  onCopy(event){
+    console.log(event)
+  }
+
+  onPaste(event){
+    console.log(event.clipboardData.getData('text'))
+  }
+
+  onCut(event){
+    console.log(event)
   }
 }

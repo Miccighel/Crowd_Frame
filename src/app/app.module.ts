@@ -45,7 +45,7 @@ import {NgxUiLoaderModule} from "ngx-ui-loader";
 import {CountdownModule } from 'ngx-countdown';
 import {NgxFileHelpersModule} from 'ngx-file-helpers';
 import {ActionLogger} from "./services/userActionLogger.service";
-import {ButtonDirective} from "./components/skeleton/skeleton.directive";
+import {ButtonDirective, WindowDirective} from "./components/skeleton/skeleton.directive";
 
 @NgModule({
   declarations: [
@@ -56,7 +56,8 @@ import {ButtonDirective} from "./components/skeleton/skeleton.directive";
     InstructionsDialog,
     GeneratorComponent,
     LoaderComponent,
-    ButtonDirective
+    ButtonDirective,
+    WindowDirective
   ],
   imports: [
     BrowserModule,
