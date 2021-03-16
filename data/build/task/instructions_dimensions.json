@@ -1,11 +1,1 @@
-[
-  {
-    "caption": "Please, do the following steps:",
-    "steps": [
-      "Select the portion of the text you want to annotate by highlighting it.",
-      "Annotate it by clicking on the corresponding button.",
-      "Use the DELETE button to remove an existing annotation.",
-      "You need to annotate at least one EFFECT to proceed to the next tweet."
-    ]
-  }
-]
+[]

@@ -1,3908 +1,518 @@
 [
-    {
-        "unit_id": "unit_0",
-        "token_input": "BQYHOBFIBJ",
-        "token_output": "PGOWMCCPCV",
-        "documents": [
-            {
-                "id": "avelox-51c3e5a853785f584a9a8c01",
-                "text": "@USERNAME @USERNAME I don't know what that has to do w/ me. Avelox has hurt my connective tissue,lungs and thyroid. I guess I should feel lucky",
-                "adr_spans": [
-                    {
-                        "start": 79,
-                        "end": 96,
-                        "text": "connective tissue"
-                    },
-                    {
-                        "start": 97,
-                        "end": 102,
-                        "text": "lungs"
-                    },
-                    {
-                        "start": 107,
-                        "end": 114,
-                        "text": "thyroid"
-                    }
-                ],
-                "adr_text": [
-                    "connective tissue",
-                    "lungs",
-                    "thyroid"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 60,
-                        "end": 66,
-                        "text": "avelox"
-                    },
-                    {
-                        "start": 60,
-                        "end": 66,
-                        "text": "avelox"
-                    },
-                    {
-                        "start": 60,
-                        "end": 66,
-                        "text": "avelox"
-                    }
-                ],
-                "drug_text": [
-                    "avelox",
-                    "avelox",
-                    "avelox"
-                ],
-                "url": "http://twitter.com/1222876344/status/347950374063329280"
-            },
-            {
-                "id": "lamotrigine-51d0102553785f584a9ae3a7",
-                "text": "RT @USERNAME: @USERNAME didnt know Lamotrigine was addictive Stopped as didnt think were helping @USERNAME 3 days of hell before realized\u2026",
-                "adr_spans": [
-                    {
-                        "start": 51,
-                        "end": 60,
-                        "text": "addictive"
-                    },
-                    {
-                        "start": 107,
-                        "end": 121,
-                        "text": "3 days of hell"
-                    }
-                ],
-                "adr_text": [
-                    "addictive",
-                    "3 days of hell"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 35,
-                        "end": 46,
-                        "text": "lamotrigine"
-                    },
-                    {
-                        "start": 35,
-                        "end": 46,
-                        "text": "lamotrigine"
-                    }
-                ],
-                "drug_text": [
-                    "lamotrigine",
-                    "lamotrigine"
-                ],
-                "url": "http://twitter.com/1031496606/status/351294528705134592"
-            },
-            {
-                "id": "cymbalta-51b4e1e95378b9555a2f0c7e",
-                "text": "I swear thia cymbalta is causing me to have horrible nightmares!",
-                "adr_spans": [
-                    {
-                        "start": 53,
-                        "end": 63,
-                        "text": "nightmares"
-                    }
-                ],
-                "adr_text": [
-                    "nightmares"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 13,
-                        "end": 21,
-                        "text": "cymbalta"
-                    }
-                ],
-                "drug_text": [
-                    "cymbalta"
-                ],
-                "url": "http://twitter.com/53385378/status/343823180542124032"
-            },
-            {
-                "id": "cipro-51d94ccd53785f584a9b1994",
-                "text": "@USERNAME You can say that again!  I trusted my doc and ended up crippled thanks to just 12 Cipro pills.  Going on 4 years now.",
-                "adr_spans": [
-                    {
-                        "start": 65,
-                        "end": 73,
-                        "text": "crippled"
-                    }
-                ],
-                "adr_text": [
-                    "crippled"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 92,
-                        "end": 97,
-                        "text": "cipro"
-                    }
-                ],
-                "drug_text": [
-                    "cipro"
-                ],
-                "url": "http://twitter.com/323112996/status/353832654724022273"
-            },
-            {
-                "id": "GOLD-1",
-                "text": "Vicodin caused severe dizziness",
-                "adr_spans": [
-                    {
-                        "start": 15,
-                        "end": 31,
-                        "text": "severe dizziness"
-                    }
-                ],
-                "adr_text": [
-                    "severe dizziness"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 0,
-                        "end": 7,
-                        "text": "Vicodin"
-                    }
-                ],
-                "drug_text": [
-                    "Vicodin"
-                ],
-                "url": "NONE"
-            },
-            {
-                "id": "baclofen-51b35e355378b9555a2f0709",
-                "text": "I am never taking baclofen and norflex the same day again. First I felt super drowsy but now I feel extremely high and it's freaking me out.",
-                "adr_spans": [
-                    {
-                        "start": 78,
-                        "end": 84,
-                        "text": "drowsy"
-                    },
-                    {
-                        "start": 110,
-                        "end": 114,
-                        "text": "high"
-                    }
-                ],
-                "adr_text": [
-                    "drowsy",
-                    "high"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 18,
-                        "end": 26,
-                        "text": "baclofen"
-                    },
-                    {
-                        "start": 18,
-                        "end": 26,
-                        "text": "baclofen"
-                    }
-                ],
-                "drug_text": [
-                    "baclofen",
-                    "baclofen"
-                ],
-                "url": "http://twitter.com/23797717/status/343406657717547008"
-            },
-            {
-                "id": "cipro-51cc964953785f584a9acfb2",
-                "text": "@USERNAME So true Ricky! I went into anaphylactic shock &amp; almost died from taking Cipro! Dangerous drug - be careful!! Take care.",
-                "adr_spans": [
-                    {
-                        "start": 37,
-                        "end": 55,
-                        "text": "anaphylactic shock"
-                    },
-                    {
-                        "start": 62,
-                        "end": 73,
-                        "text": "almost died"
-                    }
-                ],
-                "adr_text": [
-                    "anaphylactic shock",
-                    "almost died"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 86,
-                        "end": 91,
-                        "text": "cipro"
-                    },
-                    {
-                        "start": 86,
-                        "end": 91,
-                        "text": "cipro"
-                    }
-                ],
-                "drug_text": [
-                    "cipro",
-                    "cipro"
-                ],
-                "url": "http://twitter.com/717195810/status/350339021471354880"
-            },
-            {
-                "id": "geodon-51c379db53785f584a9a895f",
-                "text": "You know starting with geodon, the meds messed up my attitude. How odd. It's not just about spirituality. I became a bit mean. That got",
-                "adr_spans": [
-                    {
-                        "start": 40,
-                        "end": 61,
-                        "text": "messed up my attitude"
-                    },
-                    {
-                        "start": 121,
-                        "end": 125,
-                        "text": "mean"
-                    }
-                ],
-                "adr_text": [
-                    "messed up my attitude",
-                    "mean"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 23,
-                        "end": 29,
-                        "text": "geodon"
-                    },
-                    {
-                        "start": 23,
-                        "end": 29,
-                        "text": "geodon"
-                    }
-                ],
-                "drug_text": [
-                    "geodon",
-                    "geodon"
-                ],
-                "url": "http://twitter.com/115407248/status/347834624304640001"
-            },
-            {
-                "id": "cymbalta-51913a30ac6ad74cd505f118",
-                "text": "@USERNAME @USERNAME all the things I have just make me sleepy as hell: Cymbalta, Klonopin, Ambien. wait what if I take em all togethhssaagg",
-                "adr_spans": [
-                    {
-                        "start": 55,
-                        "end": 61,
-                        "text": "sleepy"
-                    }
-                ],
-                "adr_text": [
-                    "sleepy"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 71,
-                        "end": 79,
-                        "text": "cymbalta"
-                    }
-                ],
-                "drug_text": [
-                    "cymbalta"
-                ],
-                "url": "http://twitter.com/99207792/status/334022366457917440"
-            },
-            {
-                "id": "humira-51d0c44b53785f584a9ae7d3",
-                "text": "I DON'T WANT TO TAKE MY HUMIRA AT ALL THE PAIN IS ALWAYS UNBEARABLE AND I DON'T WANNA",
-                "adr_spans": [
-                    {
-                        "start": 42,
-                        "end": 46,
-                        "text": "PAIN"
-                    }
-                ],
-                "adr_text": [
-                    "PAIN"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 24,
-                        "end": 30,
-                        "text": "humira"
-                    }
-                ],
-                "drug_text": [
-                    "humira"
-                ],
-                "url": "http://twitter.com/227548532/status/351487964435587074"
-            },
-            {
-                "id": "enbrel-51bac11c5378b9555a2f2b69",
-                "text": "@USERNAME enbrel is a miracle but it made my eyes worse :( so couldn't have it anymore :(",
-                "adr_spans": [
-                    {
-                        "start": 45,
-                        "end": 55,
-                        "text": "eyes worse"
-                    }
-                ],
-                "adr_text": [
-                    "eyes worse"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 10,
-                        "end": 16,
-                        "text": "enbrel"
-                    }
-                ],
-                "drug_text": [
-                    "enbrel"
-                ],
-                "url": "http://twitter.com/30256016/status/345436985361571840"
-            }
-        ]
-    },
-    {
-        "unit_id": "unit_1",
-        "token_input": "QHZPZRIDAG",
-        "token_output": "KZCVJJETUP",
-        "documents": [
-            {
-                "id": "levaquin-51c9d46153785f584a9ac043",
-                "text": "@USERNAME @USERNAME @USERNAME psssh didn't Levaquin make u hallucinate? Girl u best stay Away from shrooms lol",
-                "adr_spans": [
-                    {
-                        "start": 59,
-                        "end": 70,
-                        "text": "hallucinate"
-                    }
-                ],
-                "adr_text": [
-                    "hallucinate"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 43,
-                        "end": 51,
-                        "text": "levaquin"
-                    }
-                ],
-                "drug_text": [
-                    "levaquin"
-                ],
-                "url": "http://twitter.com/22493928/status/349581089221787648"
-            },
-            {
-                "id": "effexor-51c626cd53785f584a9aa0d4",
-                "text": "Effexor side effects; headaches, no appetite.",
-                "adr_spans": [
-                    {
-                        "start": 22,
-                        "end": 31,
-                        "text": "headaches"
-                    },
-                    {
-                        "start": 33,
-                        "end": 44,
-                        "text": "no appetite"
-                    }
-                ],
-                "adr_text": [
-                    "headaches",
-                    "no appetite"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 0,
-                        "end": 7,
-                        "text": "effexor"
-                    },
-                    {
-                        "start": 0,
-                        "end": 7,
-                        "text": "effexor"
-                    }
-                ],
-                "drug_text": [
-                    "effexor",
-                    "effexor"
-                ],
-                "url": "http://twitter.com/43338677/status/348569983833477120"
-            },
-            {
-                "id": "enbrel-51ba2ed45378b9555a2f2804",
-                "text": "@USERNAME I don't know that one, but metho made me sick  everyday I took it. I had to stop. Enbrel has worked wonders for me .. so far",
-                "adr_spans": [
-                    {
-                        "start": 51,
-                        "end": 55,
-                        "text": "sick"
-                    }
-                ],
-                "adr_text": [
-                    "sick"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 37,
-                        "end": 42,
-                        "text": "metho"
-                    },
-                    {
-                        "start": 37,
-                        "end": 42,
-                        "text": "metho"
-                    }
-                ],
-                "drug_text": [
-                    "metho",
-                    "metho"
-                ],
-                "url": "http://twitter.com/1180466966/status/345280161941430272"
-            },
-            {
-                "id": "lozenge-51784dc8ac6af778c203728d",
-                "text": "Nicotine lozenges are giving me stomach cramps.",
-                "adr_spans": [
-                    {
-                        "start": 32,
-                        "end": 46,
-                        "text": "stomach cramps"
-                    }
-                ],
-                "adr_text": [
-                    "stomach cramps"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 9,
-                        "end": 16,
-                        "text": "lozenge"
-                    }
-                ],
-                "drug_text": [
-                    "lozenge"
-                ],
-                "url": "http://twitter.com/173405014/status/327171455014035456"
-            },
-            {
-                "id": "cipro-51cc964953785f584a9acfb2",
-                "text": "@USERNAME So true Ricky! I went into anaphylactic shock &amp; almost died from taking Cipro! Dangerous drug - be careful!! Take care.",
-                "adr_spans": [
-                    {
-                        "start": 37,
-                        "end": 55,
-                        "text": "anaphylactic shock"
-                    },
-                    {
-                        "start": 62,
-                        "end": 73,
-                        "text": "almost died"
-                    }
-                ],
-                "adr_text": [
-                    "anaphylactic shock",
-                    "almost died"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 86,
-                        "end": 91,
-                        "text": "cipro"
-                    },
-                    {
-                        "start": 86,
-                        "end": 91,
-                        "text": "cipro"
-                    }
-                ],
-                "drug_text": [
-                    "cipro",
-                    "cipro"
-                ],
-                "url": "http://twitter.com/717195810/status/350339021471354880"
-            },
-            {
-                "id": "lamictal-51aa913053787e40790dffce",
-                "text": "Fuck some lamictal...almost died. #fuck",
-                "adr_spans": [
-                    {
-                        "start": 21,
-                        "end": 32,
-                        "text": "almost died"
-                    }
-                ],
-                "adr_text": [
-                    "almost died"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 10,
-                        "end": 18,
-                        "text": "lamictal"
-                    }
-                ],
-                "drug_text": [
-                    "lamictal"
-                ],
-                "url": "http://twitter.com/487781211/status/340987702876966913"
-            },
-            {
-                "id": "cymbalta-51b3a4da5378b9555a2f0849",
-                "text": "Cymbalta, my mood has worsened",
-                "adr_spans": [
-                    {
-                        "start": 13,
-                        "end": 17,
-                        "text": "mood"
-                    }
-                ],
-                "adr_text": [
-                    "mood"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 0,
-                        "end": 8,
-                        "text": "cymbalta"
-                    }
-                ],
-                "drug_text": [
-                    "cymbalta"
-                ],
-                "url": "http://twitter.com/444297713/status/343482701816418304"
-            },
-            {
-                "id": "lamotrigine-5190e75dac6ab35b4d48403a",
-                "text": "Day 4: The initial lamotrigine lethargy kicked in the day before exams. I tell myself that possible failure is better than possible death.",
-                "adr_spans": [
-                    {
-                        "start": 31,
-                        "end": 39,
-                        "text": "lethargy"
-                    }
-                ],
-                "adr_text": [
-                    "lethargy"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 19,
-                        "end": 30,
-                        "text": "lamotrigine"
-                    }
-                ],
-                "drug_text": [
-                    "lamotrigine"
-                ],
-                "url": "http://twitter.com/1477211/status/333933432587554816"
-            },
-            {
-                "id": "lamictal-51ca1ddb53785f584a9ac1e4",
-                "text": "Lamictal dosage increases kind of wreck my head for a day or two. But they also make me super productive as long as I can do things slowly.",
-                "adr_spans": [
-                    {
-                        "start": 34,
-                        "end": 47,
-                        "text": "wreck my head"
-                    }
-                ],
-                "adr_text": [
-                    "wreck my head"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 0,
-                        "end": 8,
-                        "text": "lamictal"
-                    }
-                ],
-                "drug_text": [
-                    "lamictal"
-                ],
-                "url": "http://twitter.com/21319383/status/349659482483195905"
-            },
-            {
-                "id": "effexor-518f4496ac6ab35b4d482fb3",
-                "text": "FOUND THEM. Starting back up on Effexor. Vomits shall ensue!",
-                "adr_spans": [
-                    {
-                        "start": 41,
-                        "end": 47,
-                        "text": "Vomits"
-                    }
-                ],
-                "adr_text": [
-                    "Vomits"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 32,
-                        "end": 39,
-                        "text": "effexor"
-                    }
-                ],
-                "drug_text": [
-                    "effexor"
-                ],
-                "url": "http://twitter.com/234233078/status/333483772345466881"
-            },
-            {
-                "id": "GOLD-9",
-                "text": "Amoxicillin caused vomiting",
-                "adr_spans": [
-                    {
-                        "start": 19,
-                        "end": 27,
-                        "text": "vomiting"
-                    }
-                ],
-                "adr_text": [
-                    "vomiting"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 0,
-                        "end": 11,
-                        "text": "Amoxicillin"
-                    }
-                ],
-                "drug_text": [
-                    "Amoxicillin"
-                ],
-                "url": "NONE"
-            }
-        ]
-    },
-    {
-        "unit_id": "unit_2",
-        "token_input": "EJZAFKGKAU",
-        "token_output": "GLDMNTTQNB",
-        "documents": [
-            {
-                "id": "enbrel-51ba2ed45378b9555a2f2804",
-                "text": "@USERNAME I don't know that one, but metho made me sick  everyday I took it. I had to stop. Enbrel has worked wonders for me .. so far",
-                "adr_spans": [
-                    {
-                        "start": 51,
-                        "end": 55,
-                        "text": "sick"
-                    }
-                ],
-                "adr_text": [
-                    "sick"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 37,
-                        "end": 42,
-                        "text": "metho"
-                    },
-                    {
-                        "start": 37,
-                        "end": 42,
-                        "text": "metho"
-                    }
-                ],
-                "drug_text": [
-                    "metho",
-                    "metho"
-                ],
-                "url": "http://twitter.com/1180466966/status/345280161941430272"
-            },
-            {
-                "id": "cipro-51d94ccd53785f584a9b1994",
-                "text": "@USERNAME You can say that again!  I trusted my doc and ended up crippled thanks to just 12 Cipro pills.  Going on 4 years now.",
-                "adr_spans": [
-                    {
-                        "start": 65,
-                        "end": 73,
-                        "text": "crippled"
-                    }
-                ],
-                "adr_text": [
-                    "crippled"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 92,
-                        "end": 97,
-                        "text": "cipro"
-                    }
-                ],
-                "drug_text": [
-                    "cipro"
-                ],
-                "url": "http://twitter.com/323112996/status/353832654724022273"
-            },
-            {
-                "id": "nicotine-51a7e19353787e40790dea82",
-                "text": "god there is nothing worse than nicotine withdrawal",
-                "adr_spans": [
-                    {
-                        "start": 41,
-                        "end": 51,
-                        "text": "withdrawal"
-                    }
-                ],
-                "adr_text": [
-                    "withdrawal"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 32,
-                        "end": 40,
-                        "text": "nicotine"
-                    }
-                ],
-                "drug_text": [
-                    "nicotine"
-                ],
-                "url": "http://twitter.com/741762686/status/340249316469907456"
-            },
-            {
-                "id": "GOLD-3",
-                "text": "Lisinopril caused violent nausea",
-                "adr_spans": [
-                    {
-                        "start": 18,
-                        "end": 32,
-                        "text": "violent nausea"
-                    }
-                ],
-                "adr_text": [
-                    "violent nausea"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 0,
-                        "end": 10,
-                        "text": "Lisinopril"
-                    }
-                ],
-                "drug_text": [
-                    "Lisinopril"
-                ],
-                "url": "NONE"
-            },
-            {
-                "id": "humira-51affeba5378b9555a2ef104",
-                "text": "I'd gladly trade the #MTX  headache for #Humira but after 5 months I still don't have the prescription. I function through vitamins &amp; motrin",
-                "adr_spans": [
-                    {
-                        "start": 27,
-                        "end": 35,
-                        "text": "headache"
-                    }
-                ],
-                "adr_text": [
-                    "headache"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 22,
-                        "end": 25,
-                        "text": "MTX"
-                    },
-                    {
-                        "start": 22,
-                        "end": 25,
-                        "text": "MTX"
-                    }
-                ],
-                "drug_text": [
-                    "MTX",
-                    "MTX"
-                ],
-                "url": "http://twitter.com/1142929842/status/342479732811644929"
-            },
-            {
-                "id": "enbrel-51cf4eac53785f584a9ae00f",
-                "text": "@USERNAME at the end of most working days! I still have to nap loads just to get through a week. Some days better than others #enbrel",
-                "adr_spans": [
-                    {
-                        "start": 59,
-                        "end": 62,
-                        "text": "nap"
-                    }
-                ],
-                "adr_text": [
-                    "nap"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 127,
-                        "end": 133,
-                        "text": "enbrel"
-                    }
-                ],
-                "drug_text": [
-                    "enbrel"
-                ],
-                "url": "http://twitter.com/363607109/status/351086788032471041"
-            },
-            {
-                "id": "cymbalta-51913a30ac6ad74cd505f118",
-                "text": "@USERNAME @USERNAME all the things I have just make me sleepy as hell: Cymbalta, Klonopin, Ambien. wait what if I take em all togethhssaagg",
-                "adr_spans": [
-                    {
-                        "start": 55,
-                        "end": 61,
-                        "text": "sleepy"
-                    }
-                ],
-                "adr_text": [
-                    "sleepy"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 71,
-                        "end": 79,
-                        "text": "cymbalta"
-                    }
-                ],
-                "drug_text": [
-                    "cymbalta"
-                ],
-                "url": "http://twitter.com/99207792/status/334022366457917440"
-            },
-            {
-                "id": "effexor-518f4496ac6ab35b4d482fb3",
-                "text": "FOUND THEM. Starting back up on Effexor. Vomits shall ensue!",
-                "adr_spans": [
-                    {
-                        "start": 41,
-                        "end": 47,
-                        "text": "Vomits"
-                    }
-                ],
-                "adr_text": [
-                    "Vomits"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 32,
-                        "end": 39,
-                        "text": "effexor"
-                    }
-                ],
-                "drug_text": [
-                    "effexor"
-                ],
-                "url": "http://twitter.com/234233078/status/333483772345466881"
-            },
-            {
-                "id": "effexor-518b0b46ac6ab35b4d47fd0b",
-                "text": "#effexor #withdrawl is a monster that i have taken by the horns and am wrestling to the ground...this time i am winning! 7thdayfree",
-                "adr_spans": [
-                    {
-                        "start": 10,
-                        "end": 19,
-                        "text": "withdrawl"
-                    }
-                ],
-                "adr_text": [
-                    "withdrawl"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 1,
-                        "end": 8,
-                        "text": "effexor"
-                    }
-                ],
-                "drug_text": [
-                    "effexor"
-                ],
-                "url": "http://twitter.com/904297134/status/332322723286114304"
-            },
-            {
-                "id": "lamotrigine-51adcd3c5378f924d02ef483",
-                "text": "Lamotrigine causing steven johnson syndrome",
-                "adr_spans": [
-                    {
-                        "start": 20,
-                        "end": 43,
-                        "text": "steven johnson syndrome"
-                    }
-                ],
-                "adr_text": [
-                    "steven johnson syndrome"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 0,
-                        "end": 11,
-                        "text": "lamotrigine"
-                    }
-                ],
-                "drug_text": [
-                    "lamotrigine"
-                ],
-                "url": "http://twitter.com/1036516171/status/341876837900746752"
-            },
-            {
-                "id": "lozenge-51784dc8ac6af778c203728d",
-                "text": "Nicotine lozenges are giving me stomach cramps.",
-                "adr_spans": [
-                    {
-                        "start": 32,
-                        "end": 46,
-                        "text": "stomach cramps"
-                    }
-                ],
-                "adr_text": [
-                    "stomach cramps"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 9,
-                        "end": 16,
-                        "text": "lozenge"
-                    }
-                ],
-                "drug_text": [
-                    "lozenge"
-                ],
-                "url": "http://twitter.com/173405014/status/327171455014035456"
-            }
-        ]
-    },
-    {
-        "unit_id": "unit_3",
-        "token_input": "DTGKTTAQMK",
-        "token_output": "TJIZLUOEJU",
-        "documents": [
-            {
-                "id": "effexor-51d88e8153785f584a9b1708",
-                "text": "@USERNAME Right, some SSRIs are used for cataplexy, as is Effexor. Can be tricky to wean off without rebound.  #nchat",
-                "adr_spans": [
-                    {
-                        "start": 101,
-                        "end": 108,
-                        "text": "rebound"
-                    }
-                ],
-                "adr_text": [
-                    "rebound"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 58,
-                        "end": 65,
-                        "text": "effexor"
-                    },
-                    {
-                        "start": 58,
-                        "end": 65,
-                        "text": "effexor"
-                    }
-                ],
-                "drug_text": [
-                    "effexor",
-                    "effexor"
-                ],
-                "url": "http://twitter.com/161889273/status/353629216518057984"
-            },
-            {
-                "id": "lamictal-51aa913053787e40790dffce",
-                "text": "Fuck some lamictal...almost died. #fuck",
-                "adr_spans": [
-                    {
-                        "start": 21,
-                        "end": 32,
-                        "text": "almost died"
-                    }
-                ],
-                "adr_text": [
-                    "almost died"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 10,
-                        "end": 18,
-                        "text": "lamictal"
-                    }
-                ],
-                "drug_text": [
-                    "lamictal"
-                ],
-                "url": "http://twitter.com/487781211/status/340987702876966913"
-            },
-            {
-                "id": "effexor-51bf2fd65378b9555a2f3f5a",
-                "text": "Day 6 cold turkey from Effexor. I believe this pic adequately represents my descent into madness. Or whatever. http://t.co/Vz0oFABIA0",
-                "adr_spans": [
-                    {
-                        "start": 76,
-                        "end": 96,
-                        "text": "descent into madness"
-                    }
-                ],
-                "adr_text": [
-                    "descent into madness"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 23,
-                        "end": 30,
-                        "text": "effexor"
-                    }
-                ],
-                "drug_text": [
-                    "effexor"
-                ],
-                "url": "http://twitter.com/65611610/status/346655631157108736"
-            },
-            {
-                "id": "levaquin-51c9d46153785f584a9ac043",
-                "text": "@USERNAME @USERNAME @USERNAME psssh didn't Levaquin make u hallucinate? Girl u best stay Away from shrooms lol",
-                "adr_spans": [
-                    {
-                        "start": 59,
-                        "end": 70,
-                        "text": "hallucinate"
-                    }
-                ],
-                "adr_text": [
-                    "hallucinate"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 43,
-                        "end": 51,
-                        "text": "levaquin"
-                    }
-                ],
-                "drug_text": [
-                    "levaquin"
-                ],
-                "url": "http://twitter.com/22493928/status/349581089221787648"
-            },
-            {
-                "id": "GOLD-10",
-                "text": "Hydrochlorothiazide caused nausea",
-                "adr_spans": [
-                    {
-                        "start": 27,
-                        "end": 33,
-                        "text": "nausea"
-                    }
-                ],
-                "adr_text": [
-                    "nausea"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 0,
-                        "end": 19,
-                        "text": "Hydrochlorothiazide"
-                    }
-                ],
-                "drug_text": [
-                    "Hydrochlorothiazide"
-                ],
-                "url": "NONE"
-            },
-            {
-                "id": "humira-51b0e86e5378b9555a2ef6c2",
-                "text": "@USERNAME what problems did you have with humira, if you don't mind me asking. I tried infliximab it destroyed my liver.",
-                "adr_spans": [
-                    {
-                        "start": 101,
-                        "end": 119,
-                        "text": "destroyed my liver"
-                    }
-                ],
-                "adr_text": [
-                    "destroyed my liver"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 87,
-                        "end": 97,
-                        "text": "infliximab"
-                    },
-                    {
-                        "start": 87,
-                        "end": 97,
-                        "text": "infliximab"
-                    }
-                ],
-                "drug_text": [
-                    "infliximab",
-                    "infliximab"
-                ],
-                "url": "http://twitter.com/135627441/status/342730668704415745"
-            },
-            {
-                "id": "effexor-51c626cd53785f584a9aa0d4",
-                "text": "Effexor side effects; headaches, no appetite.",
-                "adr_spans": [
-                    {
-                        "start": 22,
-                        "end": 31,
-                        "text": "headaches"
-                    },
-                    {
-                        "start": 33,
-                        "end": 44,
-                        "text": "no appetite"
-                    }
-                ],
-                "adr_text": [
-                    "headaches",
-                    "no appetite"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 0,
-                        "end": 7,
-                        "text": "effexor"
-                    },
-                    {
-                        "start": 0,
-                        "end": 7,
-                        "text": "effexor"
-                    }
-                ],
-                "drug_text": [
-                    "effexor",
-                    "effexor"
-                ],
-                "url": "http://twitter.com/43338677/status/348569983833477120"
-            },
-            {
-                "id": "metoprolol-51ae29315378f924d02ef808",
-                "text": "A big ol' fuck you to my doctor for not telling me a side effect of metoprolol was depression. Just wait until I see you Friday -.-",
-                "adr_spans": [
-                    {
-                        "start": 83,
-                        "end": 94,
-                        "text": "depression."
-                    }
-                ],
-                "adr_text": [
-                    "depression."
-                ],
-                "drug_spans": [
-                    {
-                        "start": 68,
-                        "end": 78,
-                        "text": "metoprolol"
-                    }
-                ],
-                "drug_text": [
-                    "metoprolol"
-                ],
-                "url": "http://twitter.com/352825068/status/341975457471791104"
-            },
-            {
-                "id": "cymbalta-51b3b3c25378b9555a2f0879",
-                "text": "FROM JESSICA\nI have recently changed anti-depressants from cymbalta to zoloft...does anyone else get daily migraines from taking zoloft?",
-                "adr_spans": [
-                    {
-                        "start": 107,
-                        "end": 116,
-                        "text": "migraines"
-                    }
-                ],
-                "adr_text": [
-                    "migraines"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 59,
-                        "end": 67,
-                        "text": "cymbalta"
-                    },
-                    {
-                        "start": 59,
-                        "end": 67,
-                        "text": "cymbalta"
-                    }
-                ],
-                "drug_text": [
-                    "cymbalta",
-                    "cymbalta"
-                ],
-                "url": "http://twitter.com/143249043/status/343496135475859457"
-            },
-            {
-                "id": "cymbalta-51b0d35d5378b9555a2ef612",
-                "text": "@USERNAME I had been blaming my dizziness upon standing to my menopause but now on HRT &amp; no more flashes so looked at cymbalta side effs",
-                "adr_spans": [
-                    {
-                        "start": 32,
-                        "end": 41,
-                        "text": "dizziness"
-                    }
-                ],
-                "adr_text": [
-                    "dizziness"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 122,
-                        "end": 130,
-                        "text": "cymbalta"
-                    }
-                ],
-                "drug_text": [
-                    "cymbalta"
-                ],
-                "url": "http://twitter.com/56724832/status/342708050160934912"
-            },
-            {
-                "id": "humira-51d0c44b53785f584a9ae7d3",
-                "text": "I DON'T WANT TO TAKE MY HUMIRA AT ALL THE PAIN IS ALWAYS UNBEARABLE AND I DON'T WANNA",
-                "adr_spans": [
-                    {
-                        "start": 42,
-                        "end": 46,
-                        "text": "PAIN"
-                    }
-                ],
-                "adr_text": [
-                    "PAIN"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 24,
-                        "end": 30,
-                        "text": "humira"
-                    }
-                ],
-                "drug_text": [
-                    "humira"
-                ],
-                "url": "http://twitter.com/227548532/status/351487964435587074"
-            }
-        ]
-    },
-    {
-        "unit_id": "unit_4",
-        "token_input": "ALHMKQHPSV",
-        "token_output": "YZQYMZSWXR",
-        "documents": [
-            {
-                "id": "effexor-51bf2fd65378b9555a2f3f5a",
-                "text": "Day 6 cold turkey from Effexor. I believe this pic adequately represents my descent into madness. Or whatever. http://t.co/Vz0oFABIA0",
-                "adr_spans": [
-                    {
-                        "start": 76,
-                        "end": 96,
-                        "text": "descent into madness"
-                    }
-                ],
-                "adr_text": [
-                    "descent into madness"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 23,
-                        "end": 30,
-                        "text": "effexor"
-                    }
-                ],
-                "drug_text": [
-                    "effexor"
-                ],
-                "url": "http://twitter.com/65611610/status/346655631157108736"
-            },
-            {
-                "id": "humira-51d0c44b53785f584a9ae7d3",
-                "text": "I DON'T WANT TO TAKE MY HUMIRA AT ALL THE PAIN IS ALWAYS UNBEARABLE AND I DON'T WANNA",
-                "adr_spans": [
-                    {
-                        "start": 42,
-                        "end": 46,
-                        "text": "PAIN"
-                    }
-                ],
-                "adr_text": [
-                    "PAIN"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 24,
-                        "end": 30,
-                        "text": "humira"
-                    }
-                ],
-                "drug_text": [
-                    "humira"
-                ],
-                "url": "http://twitter.com/227548532/status/351487964435587074"
-            },
-            {
-                "id": "cymbalta-51aa21a953787e40790dfc77",
-                "text": "Coming off Cymbalta cold turkey.. day 4... I think I have vertigo! This is awful.",
-                "adr_spans": [
-                    {
-                        "start": 58,
-                        "end": 65,
-                        "text": "vertigo"
-                    }
-                ],
-                "adr_text": [
-                    "vertigo"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 11,
-                        "end": 19,
-                        "text": "cymbalta"
-                    }
-                ],
-                "drug_text": [
-                    "cymbalta"
-                ],
-                "url": "http://twitter.com/709249026/status/340867974783193088"
-            },
-            {
-                "id": "baclofen-51b35e355378b9555a2f0709",
-                "text": "I am never taking baclofen and norflex the same day again. First I felt super drowsy but now I feel extremely high and it's freaking me out.",
-                "adr_spans": [
-                    {
-                        "start": 78,
-                        "end": 84,
-                        "text": "drowsy"
-                    },
-                    {
-                        "start": 110,
-                        "end": 114,
-                        "text": "high"
-                    }
-                ],
-                "adr_text": [
-                    "drowsy",
-                    "high"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 18,
-                        "end": 26,
-                        "text": "baclofen"
-                    },
-                    {
-                        "start": 18,
-                        "end": 26,
-                        "text": "baclofen"
-                    }
-                ],
-                "drug_text": [
-                    "baclofen",
-                    "baclofen"
-                ],
-                "url": "http://twitter.com/23797717/status/343406657717547008"
-            },
-            {
-                "id": "effexor-51d88e8153785f584a9b1708",
-                "text": "@USERNAME Right, some SSRIs are used for cataplexy, as is Effexor. Can be tricky to wean off without rebound.  #nchat",
-                "adr_spans": [
-                    {
-                        "start": 101,
-                        "end": 108,
-                        "text": "rebound"
-                    }
-                ],
-                "adr_text": [
-                    "rebound"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 58,
-                        "end": 65,
-                        "text": "effexor"
-                    },
-                    {
-                        "start": 58,
-                        "end": 65,
-                        "text": "effexor"
-                    }
-                ],
-                "drug_text": [
-                    "effexor",
-                    "effexor"
-                ],
-                "url": "http://twitter.com/161889273/status/353629216518057984"
-            },
-            {
-                "id": "lamictal-51ca1ddb53785f584a9ac1e4",
-                "text": "Lamictal dosage increases kind of wreck my head for a day or two. But they also make me super productive as long as I can do things slowly.",
-                "adr_spans": [
-                    {
-                        "start": 34,
-                        "end": 47,
-                        "text": "wreck my head"
-                    }
-                ],
-                "adr_text": [
-                    "wreck my head"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 0,
-                        "end": 8,
-                        "text": "lamictal"
-                    }
-                ],
-                "drug_text": [
-                    "lamictal"
-                ],
-                "url": "http://twitter.com/21319383/status/349659482483195905"
-            },
-            {
-                "id": "GOLD-7",
-                "text": "Lipitor caused  heartburn",
-                "adr_spans": [
-                    {
-                        "start": 16,
-                        "end": 25,
-                        "text": "heartburn"
-                    }
-                ],
-                "adr_text": [
-                    "heartburn"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 0,
-                        "end": 7,
-                        "text": "Lipitor"
-                    }
-                ],
-                "drug_text": [
-                    "Lipitor"
-                ],
-                "url": "NONE"
-            },
-            {
-                "id": "avelox-51c3e5a853785f584a9a8c01",
-                "text": "@USERNAME @USERNAME I don't know what that has to do w/ me. Avelox has hurt my connective tissue,lungs and thyroid. I guess I should feel lucky",
-                "adr_spans": [
-                    {
-                        "start": 79,
-                        "end": 96,
-                        "text": "connective tissue"
-                    },
-                    {
-                        "start": 97,
-                        "end": 102,
-                        "text": "lungs"
-                    },
-                    {
-                        "start": 107,
-                        "end": 114,
-                        "text": "thyroid"
-                    }
-                ],
-                "adr_text": [
-                    "connective tissue",
-                    "lungs",
-                    "thyroid"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 60,
-                        "end": 66,
-                        "text": "avelox"
-                    },
-                    {
-                        "start": 60,
-                        "end": 66,
-                        "text": "avelox"
-                    },
-                    {
-                        "start": 60,
-                        "end": 66,
-                        "text": "avelox"
-                    }
-                ],
-                "drug_text": [
-                    "avelox",
-                    "avelox",
-                    "avelox"
-                ],
-                "url": "http://twitter.com/1222876344/status/347950374063329280"
-            },
-            {
-                "id": "lamotrigine-5190e75dac6ab35b4d48403a",
-                "text": "Day 4: The initial lamotrigine lethargy kicked in the day before exams. I tell myself that possible failure is better than possible death.",
-                "adr_spans": [
-                    {
-                        "start": 31,
-                        "end": 39,
-                        "text": "lethargy"
-                    }
-                ],
-                "adr_text": [
-                    "lethargy"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 19,
-                        "end": 30,
-                        "text": "lamotrigine"
-                    }
-                ],
-                "drug_text": [
-                    "lamotrigine"
-                ],
-                "url": "http://twitter.com/1477211/status/333933432587554816"
-            },
-            {
-                "id": "geodon-51c379db53785f584a9a895f",
-                "text": "You know starting with geodon, the meds messed up my attitude. How odd. It's not just about spirituality. I became a bit mean. That got",
-                "adr_spans": [
-                    {
-                        "start": 40,
-                        "end": 61,
-                        "text": "messed up my attitude"
-                    },
-                    {
-                        "start": 121,
-                        "end": 125,
-                        "text": "mean"
-                    }
-                ],
-                "adr_text": [
-                    "messed up my attitude",
-                    "mean"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 23,
-                        "end": 29,
-                        "text": "geodon"
-                    },
-                    {
-                        "start": 23,
-                        "end": 29,
-                        "text": "geodon"
-                    }
-                ],
-                "drug_text": [
-                    "geodon",
-                    "geodon"
-                ],
-                "url": "http://twitter.com/115407248/status/347834624304640001"
-            },
-            {
-                "id": "humira-51b5f5355378b9555a2f109b",
-                "text": "@USERNAME i never had bleeding or vomiting just alot alot of fatigue and face was pale and lost tons of weight.. #crohns #humira",
-                "adr_spans": [
-                    {
-                        "start": 61,
-                        "end": 68,
-                        "text": "fatigue"
-                    },
-                    {
-                        "start": 82,
-                        "end": 86,
-                        "text": "pale"
-                    },
-                    {
-                        "start": 91,
-                        "end": 110,
-                        "text": "lost tons of weight"
-                    }
-                ],
-                "adr_text": [
-                    "fatigue",
-                    "pale",
-                    "lost tons of weight"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 122,
-                        "end": 128,
-                        "text": "humira"
-                    },
-                    {
-                        "start": 122,
-                        "end": 128,
-                        "text": "humira"
-                    },
-                    {
-                        "start": 122,
-                        "end": 128,
-                        "text": "humira"
-                    },
-                    {
-                        "start": 122,
-                        "end": 128,
-                        "text": "humira"
-                    }
-                ],
-                "drug_text": [
-                    "humira",
-                    "humira",
-                    "humira",
-                    "humira"
-                ],
-                "url": "http://twitter.com/1351058880/status/344118257269211136"
-            }
-        ]
-    },
-    {
-        "unit_id": "unit_5",
-        "token_input": "VUZZSQVEYJ",
-        "token_output": "AJSNROZELS",
-        "documents": [
-            {
-                "id": "effexor-51bcba575378b9555a2f34e1",
-                "text": "Crying randomly at nothing and everything. Sigh. Thank you #effexor #withdrawls Can you just exit my system already.",
-                "adr_spans": [
-                    {
-                        "start": 0,
-                        "end": 6,
-                        "text": "Crying"
-                    },
-                    {
-                        "start": 69,
-                        "end": 79,
-                        "text": "withdrawls"
-                    }
-                ],
-                "adr_text": [
-                    "Crying",
-                    "withdrawls"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 60,
-                        "end": 67,
-                        "text": "effexor"
-                    },
-                    {
-                        "start": 60,
-                        "end": 67,
-                        "text": "effexor"
-                    }
-                ],
-                "drug_text": [
-                    "effexor",
-                    "effexor"
-                ],
-                "url": "http://twitter.com/76988264/status/345979692031025153"
-            },
-            {
-                "id": "effexor-51d5efb753785f584a9b0d84",
-                "text": "down to just one tiny dose of effexor each night now. Today wasnt too bad in terms of anxiety &amp; depression, but irritability? WOOSH!! way up",
-                "adr_spans": [
-                    {
-                        "start": 116,
-                        "end": 128,
-                        "text": "irritability"
-                    }
-                ],
-                "adr_text": [
-                    "irritability"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 30,
-                        "end": 37,
-                        "text": "effexor"
-                    },
-                    {
-                        "start": 30,
-                        "end": 37,
-                        "text": "effexor"
-                    },
-                    {
-                        "start": 30,
-                        "end": 37,
-                        "text": "effexor"
-                    }
-                ],
-                "drug_text": [
-                    "effexor",
-                    "effexor",
-                    "effexor"
-                ],
-                "url": "http://twitter.com/37904665/status/352908792721195008"
-            },
-            {
-                "id": "nicotine-51a7ed4953787e40790deb10",
-                "text": "Saying goodbye to smoking involves more than physical recovery from nicotine addiction #WorldNoTobaccoDay (1)",
-                "adr_spans": [
-                    {
-                        "start": 77,
-                        "end": 86,
-                        "text": "addiction"
-                    }
-                ],
-                "adr_text": [
-                    "addiction"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 68,
-                        "end": 76,
-                        "text": "nicotine"
-                    }
-                ],
-                "drug_text": [
-                    "nicotine"
-                ],
-                "url": "http://twitter.com/277543857/status/340261980675907585"
-            },
-            {
-                "id": "cipro-51cc964953785f584a9acfb2",
-                "text": "@USERNAME So true Ricky! I went into anaphylactic shock &amp; almost died from taking Cipro! Dangerous drug - be careful!! Take care.",
-                "adr_spans": [
-                    {
-                        "start": 37,
-                        "end": 55,
-                        "text": "anaphylactic shock"
-                    },
-                    {
-                        "start": 62,
-                        "end": 73,
-                        "text": "almost died"
-                    }
-                ],
-                "adr_text": [
-                    "anaphylactic shock",
-                    "almost died"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 86,
-                        "end": 91,
-                        "text": "cipro"
-                    },
-                    {
-                        "start": 86,
-                        "end": 91,
-                        "text": "cipro"
-                    }
-                ],
-                "drug_text": [
-                    "cipro",
-                    "cipro"
-                ],
-                "url": "http://twitter.com/717195810/status/350339021471354880"
-            },
-            {
-                "id": "cymbalta-51b3a4da5378b9555a2f0849",
-                "text": "Cymbalta, my mood has worsened",
-                "adr_spans": [
-                    {
-                        "start": 13,
-                        "end": 17,
-                        "text": "mood"
-                    }
-                ],
-                "adr_text": [
-                    "mood"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 0,
-                        "end": 8,
-                        "text": "cymbalta"
-                    }
-                ],
-                "drug_text": [
-                    "cymbalta"
-                ],
-                "url": "http://twitter.com/444297713/status/343482701816418304"
-            },
-            {
-                "id": "lamictal-51aa913053787e40790dffce",
-                "text": "Fuck some lamictal...almost died. #fuck",
-                "adr_spans": [
-                    {
-                        "start": 21,
-                        "end": 32,
-                        "text": "almost died"
-                    }
-                ],
-                "adr_text": [
-                    "almost died"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 10,
-                        "end": 18,
-                        "text": "lamictal"
-                    }
-                ],
-                "drug_text": [
-                    "lamictal"
-                ],
-                "url": "http://twitter.com/487781211/status/340987702876966913"
-            },
-            {
-                "id": "lamotrigine-51adcd3c5378f924d02ef483",
-                "text": "Lamotrigine causing steven johnson syndrome",
-                "adr_spans": [
-                    {
-                        "start": 20,
-                        "end": 43,
-                        "text": "steven johnson syndrome"
-                    }
-                ],
-                "adr_text": [
-                    "steven johnson syndrome"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 0,
-                        "end": 11,
-                        "text": "lamotrigine"
-                    }
-                ],
-                "drug_text": [
-                    "lamotrigine"
-                ],
-                "url": "http://twitter.com/1036516171/status/341876837900746752"
-            },
-            {
-                "id": "lamotrigine-51abc54d53787e40790e0744",
-                "text": "It turns out that I can still ride a bike in spite of my ataxia (side effect of Lamotrigine) It has been at least 25 years.",
-                "adr_spans": [
-                    {
-                        "start": 57,
-                        "end": 63,
-                        "text": "ataxia"
-                    }
-                ],
-                "adr_text": [
-                    "ataxia"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 80,
-                        "end": 91,
-                        "text": "lamotrigine"
-                    }
-                ],
-                "drug_text": [
-                    "lamotrigine"
-                ],
-                "url": "http://twitter.com/528072910/status/341318438989471745"
-            },
-            {
-                "id": "GOLD-7",
-                "text": "Lipitor caused  heartburn",
-                "adr_spans": [
-                    {
-                        "start": 16,
-                        "end": 25,
-                        "text": "heartburn"
-                    }
-                ],
-                "adr_text": [
-                    "heartburn"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 0,
-                        "end": 7,
-                        "text": "Lipitor"
-                    }
-                ],
-                "drug_text": [
-                    "Lipitor"
-                ],
-                "url": "NONE"
-            },
-            {
-                "id": "fluoxetine-51d1cd8b53785f584a9af0b3",
-                "text": "RT @USERNAME: Restless Leg Syndrome is bad tonight.  Damn you fluoxetine.",
-                "adr_spans": [
-                    {
-                        "start": 14,
-                        "end": 35,
-                        "text": "Restless Leg Syndrome"
-                    }
-                ],
-                "adr_text": [
-                    "Restless Leg Syndrome"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 62,
-                        "end": 72,
-                        "text": "fluoxetine"
-                    }
-                ],
-                "drug_text": [
-                    "fluoxetine"
-                ],
-                "url": "http://twitter.com/632397611/status/351772771174449152"
-            },
-            {
-                "id": "humira-51b0e86e5378b9555a2ef6c2",
-                "text": "@USERNAME what problems did you have with humira, if you don't mind me asking. I tried infliximab it destroyed my liver.",
-                "adr_spans": [
-                    {
-                        "start": 101,
-                        "end": 119,
-                        "text": "destroyed my liver"
-                    }
-                ],
-                "adr_text": [
-                    "destroyed my liver"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 87,
-                        "end": 97,
-                        "text": "infliximab"
-                    },
-                    {
-                        "start": 87,
-                        "end": 97,
-                        "text": "infliximab"
-                    }
-                ],
-                "drug_text": [
-                    "infliximab",
-                    "infliximab"
-                ],
-                "url": "http://twitter.com/135627441/status/342730668704415745"
-            }
-        ]
-    },
-    {
-        "unit_id": "unit_6",
-        "token_input": "KUZWOMSXAZ",
-        "token_output": "AOHYCTTPVD",
-        "documents": [
-            {
-                "id": "avelox-51c3e5a853785f584a9a8c01",
-                "text": "@USERNAME @USERNAME I don't know what that has to do w/ me. Avelox has hurt my connective tissue,lungs and thyroid. I guess I should feel lucky",
-                "adr_spans": [
-                    {
-                        "start": 79,
-                        "end": 96,
-                        "text": "connective tissue"
-                    },
-                    {
-                        "start": 97,
-                        "end": 102,
-                        "text": "lungs"
-                    },
-                    {
-                        "start": 107,
-                        "end": 114,
-                        "text": "thyroid"
-                    }
-                ],
-                "adr_text": [
-                    "connective tissue",
-                    "lungs",
-                    "thyroid"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 60,
-                        "end": 66,
-                        "text": "avelox"
-                    },
-                    {
-                        "start": 60,
-                        "end": 66,
-                        "text": "avelox"
-                    },
-                    {
-                        "start": 60,
-                        "end": 66,
-                        "text": "avelox"
-                    }
-                ],
-                "drug_text": [
-                    "avelox",
-                    "avelox",
-                    "avelox"
-                ],
-                "url": "http://twitter.com/1222876344/status/347950374063329280"
-            },
-            {
-                "id": "lamotrigine-51d0102553785f584a9ae3a7",
-                "text": "RT @USERNAME: @USERNAME didnt know Lamotrigine was addictive Stopped as didnt think were helping @USERNAME 3 days of hell before realized\u2026",
-                "adr_spans": [
-                    {
-                        "start": 51,
-                        "end": 60,
-                        "text": "addictive"
-                    },
-                    {
-                        "start": 107,
-                        "end": 121,
-                        "text": "3 days of hell"
-                    }
-                ],
-                "adr_text": [
-                    "addictive",
-                    "3 days of hell"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 35,
-                        "end": 46,
-                        "text": "lamotrigine"
-                    },
-                    {
-                        "start": 35,
-                        "end": 46,
-                        "text": "lamotrigine"
-                    }
-                ],
-                "drug_text": [
-                    "lamotrigine",
-                    "lamotrigine"
-                ],
-                "url": "http://twitter.com/1031496606/status/351294528705134592"
-            },
-            {
-                "id": "GOLD-4",
-                "text": "Levothyroxine caused nervousness",
-                "adr_spans": [
-                    {
-                        "start": 21,
-                        "end": 32,
-                        "text": "nervousness"
-                    }
-                ],
-                "adr_text": [
-                    "nervousness"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 0,
-                        "end": 13,
-                        "text": "Levothyroxine"
-                    }
-                ],
-                "drug_text": [
-                    "Levothyroxine"
-                ],
-                "url": "NONE"
-            },
-            {
-                "id": "enbrel-51cf4eac53785f584a9ae00f",
-                "text": "@USERNAME at the end of most working days! I still have to nap loads just to get through a week. Some days better than others #enbrel",
-                "adr_spans": [
-                    {
-                        "start": 59,
-                        "end": 62,
-                        "text": "nap"
-                    }
-                ],
-                "adr_text": [
-                    "nap"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 127,
-                        "end": 133,
-                        "text": "enbrel"
-                    }
-                ],
-                "drug_text": [
-                    "enbrel"
-                ],
-                "url": "http://twitter.com/363607109/status/351086788032471041"
-            },
-            {
-                "id": "cymbalta-51b0d35d5378b9555a2ef612",
-                "text": "@USERNAME I had been blaming my dizziness upon standing to my menopause but now on HRT &amp; no more flashes so looked at cymbalta side effs",
-                "adr_spans": [
-                    {
-                        "start": 32,
-                        "end": 41,
-                        "text": "dizziness"
-                    }
-                ],
-                "adr_text": [
-                    "dizziness"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 122,
-                        "end": 130,
-                        "text": "cymbalta"
-                    }
-                ],
-                "drug_text": [
-                    "cymbalta"
-                ],
-                "url": "http://twitter.com/56724832/status/342708050160934912"
-            },
-            {
-                "id": "humira-51b5f5355378b9555a2f109b",
-                "text": "@USERNAME i never had bleeding or vomiting just alot alot of fatigue and face was pale and lost tons of weight.. #crohns #humira",
-                "adr_spans": [
-                    {
-                        "start": 61,
-                        "end": 68,
-                        "text": "fatigue"
-                    },
-                    {
-                        "start": 82,
-                        "end": 86,
-                        "text": "pale"
-                    },
-                    {
-                        "start": 91,
-                        "end": 110,
-                        "text": "lost tons of weight"
-                    }
-                ],
-                "adr_text": [
-                    "fatigue",
-                    "pale",
-                    "lost tons of weight"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 122,
-                        "end": 128,
-                        "text": "humira"
-                    },
-                    {
-                        "start": 122,
-                        "end": 128,
-                        "text": "humira"
-                    },
-                    {
-                        "start": 122,
-                        "end": 128,
-                        "text": "humira"
-                    },
-                    {
-                        "start": 122,
-                        "end": 128,
-                        "text": "humira"
-                    }
-                ],
-                "drug_text": [
-                    "humira",
-                    "humira",
-                    "humira",
-                    "humira"
-                ],
-                "url": "http://twitter.com/1351058880/status/344118257269211136"
-            },
-            {
-                "id": "cymbalta-51b3b3c25378b9555a2f0879",
-                "text": "FROM JESSICA\nI have recently changed anti-depressants from cymbalta to zoloft...does anyone else get daily migraines from taking zoloft?",
-                "adr_spans": [
-                    {
-                        "start": 107,
-                        "end": 116,
-                        "text": "migraines"
-                    }
-                ],
-                "adr_text": [
-                    "migraines"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 59,
-                        "end": 67,
-                        "text": "cymbalta"
-                    },
-                    {
-                        "start": 59,
-                        "end": 67,
-                        "text": "cymbalta"
-                    }
-                ],
-                "drug_text": [
-                    "cymbalta",
-                    "cymbalta"
-                ],
-                "url": "http://twitter.com/143249043/status/343496135475859457"
-            },
-            {
-                "id": "fluoxetine-518b8a58ac6ab35b4d4802c1",
-                "text": "@USERNAME fluoxetine and quet combo zombified me...ah, the meds merrygoround #bipolar",
-                "adr_spans": [
-                    {
-                        "start": 36,
-                        "end": 45,
-                        "text": "zombified"
-                    }
-                ],
-                "adr_text": [
-                    "zombified"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 10,
-                        "end": 20,
-                        "text": "fluoxetine"
-                    },
-                    {
-                        "start": 10,
-                        "end": 20,
-                        "text": "fluoxetine"
-                    }
-                ],
-                "drug_text": [
-                    "fluoxetine",
-                    "fluoxetine"
-                ],
-                "url": "http://twitter.com/88166476/status/332459161407324162"
-            },
-            {
-                "id": "cymbalta-51b4e1e95378b9555a2f0c7e",
-                "text": "I swear thia cymbalta is causing me to have horrible nightmares!",
-                "adr_spans": [
-                    {
-                        "start": 53,
-                        "end": 63,
-                        "text": "nightmares"
-                    }
-                ],
-                "adr_text": [
-                    "nightmares"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 13,
-                        "end": 21,
-                        "text": "cymbalta"
-                    }
-                ],
-                "drug_text": [
-                    "cymbalta"
-                ],
-                "url": "http://twitter.com/53385378/status/343823180542124032"
-            },
-            {
-                "id": "enbrel-51c89f2153785f584a9ab714",
-                "text": "@USERNAME @USERNAME  I was only on 200 mg and was recently switched to 150 mg due to weight. It's still working with enbrel, though.",
-                "adr_spans": [
-                    {
-                        "start": 85,
-                        "end": 91,
-                        "text": "weight"
-                    }
-                ],
-                "adr_text": [
-                    "weight"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 117,
-                        "end": 123,
-                        "text": "enbrel"
-                    }
-                ],
-                "drug_text": [
-                    "enbrel"
-                ],
-                "url": "http://twitter.com/45346787/status/349248724083544064"
-            },
-            {
-                "id": "effexor-51d5efb753785f584a9b0d84",
-                "text": "down to just one tiny dose of effexor each night now. Today wasnt too bad in terms of anxiety &amp; depression, but irritability? WOOSH!! way up",
-                "adr_spans": [
-                    {
-                        "start": 116,
-                        "end": 128,
-                        "text": "irritability"
-                    }
-                ],
-                "adr_text": [
-                    "irritability"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 30,
-                        "end": 37,
-                        "text": "effexor"
-                    },
-                    {
-                        "start": 30,
-                        "end": 37,
-                        "text": "effexor"
-                    },
-                    {
-                        "start": 30,
-                        "end": 37,
-                        "text": "effexor"
-                    }
-                ],
-                "drug_text": [
-                    "effexor",
-                    "effexor",
-                    "effexor"
-                ],
-                "url": "http://twitter.com/37904665/status/352908792721195008"
-            }
-        ]
-    },
-    {
-        "unit_id": "unit_7",
-        "token_input": "SIFUVWLNTP",
-        "token_output": "YWKYNUJBKB",
-        "documents": [
-            {
-                "id": "GOLD-4",
-                "text": "Levothyroxine caused nervousness",
-                "adr_spans": [
-                    {
-                        "start": 21,
-                        "end": 32,
-                        "text": "nervousness"
-                    }
-                ],
-                "adr_text": [
-                    "nervousness"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 0,
-                        "end": 13,
-                        "text": "Levothyroxine"
-                    }
-                ],
-                "drug_text": [
-                    "Levothyroxine"
-                ],
-                "url": "NONE"
-            },
-            {
-                "id": "enbrel-51ba2ed45378b9555a2f2804",
-                "text": "@USERNAME I don't know that one, but metho made me sick  everyday I took it. I had to stop. Enbrel has worked wonders for me .. so far",
-                "adr_spans": [
-                    {
-                        "start": 51,
-                        "end": 55,
-                        "text": "sick"
-                    }
-                ],
-                "adr_text": [
-                    "sick"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 37,
-                        "end": 42,
-                        "text": "metho"
-                    },
-                    {
-                        "start": 37,
-                        "end": 42,
-                        "text": "metho"
-                    }
-                ],
-                "drug_text": [
-                    "metho",
-                    "metho"
-                ],
-                "url": "http://twitter.com/1180466966/status/345280161941430272"
-            },
-            {
-                "id": "lamotrigine-51d0102553785f584a9ae3a7",
-                "text": "RT @USERNAME: @USERNAME didnt know Lamotrigine was addictive Stopped as didnt think were helping @USERNAME 3 days of hell before realized\u2026",
-                "adr_spans": [
-                    {
-                        "start": 51,
-                        "end": 60,
-                        "text": "addictive"
-                    },
-                    {
-                        "start": 107,
-                        "end": 121,
-                        "text": "3 days of hell"
-                    }
-                ],
-                "adr_text": [
-                    "addictive",
-                    "3 days of hell"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 35,
-                        "end": 46,
-                        "text": "lamotrigine"
-                    },
-                    {
-                        "start": 35,
-                        "end": 46,
-                        "text": "lamotrigine"
-                    }
-                ],
-                "drug_text": [
-                    "lamotrigine",
-                    "lamotrigine"
-                ],
-                "url": "http://twitter.com/1031496606/status/351294528705134592"
-            },
-            {
-                "id": "fluoxetine-518b8a58ac6ab35b4d4802c1",
-                "text": "@USERNAME fluoxetine and quet combo zombified me...ah, the meds merrygoround #bipolar",
-                "adr_spans": [
-                    {
-                        "start": 36,
-                        "end": 45,
-                        "text": "zombified"
-                    }
-                ],
-                "adr_text": [
-                    "zombified"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 10,
-                        "end": 20,
-                        "text": "fluoxetine"
-                    },
-                    {
-                        "start": 10,
-                        "end": 20,
-                        "text": "fluoxetine"
-                    }
-                ],
-                "drug_text": [
-                    "fluoxetine",
-                    "fluoxetine"
-                ],
-                "url": "http://twitter.com/88166476/status/332459161407324162"
-            },
-            {
-                "id": "nicotine-51a7e19353787e40790dea82",
-                "text": "god there is nothing worse than nicotine withdrawal",
-                "adr_spans": [
-                    {
-                        "start": 41,
-                        "end": 51,
-                        "text": "withdrawal"
-                    }
-                ],
-                "adr_text": [
-                    "withdrawal"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 32,
-                        "end": 40,
-                        "text": "nicotine"
-                    }
-                ],
-                "drug_text": [
-                    "nicotine"
-                ],
-                "url": "http://twitter.com/741762686/status/340249316469907456"
-            },
-            {
-                "id": "nicotine-51a7ed4953787e40790deb10",
-                "text": "Saying goodbye to smoking involves more than physical recovery from nicotine addiction #WorldNoTobaccoDay (1)",
-                "adr_spans": [
-                    {
-                        "start": 77,
-                        "end": 86,
-                        "text": "addiction"
-                    }
-                ],
-                "adr_text": [
-                    "addiction"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 68,
-                        "end": 76,
-                        "text": "nicotine"
-                    }
-                ],
-                "drug_text": [
-                    "nicotine"
-                ],
-                "url": "http://twitter.com/277543857/status/340261980675907585"
-            },
-            {
-                "id": "humira-51b592c75378b9555a2f0f0b",
-                "text": "The day after my humira jab and as ever i'm mega tired. May have to go back to bed.",
-                "adr_spans": [
-                    {
-                        "start": 49,
-                        "end": 54,
-                        "text": "tired"
-                    }
-                ],
-                "adr_text": [
-                    "tired"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 17,
-                        "end": 23,
-                        "text": "humira"
-                    }
-                ],
-                "drug_text": [
-                    "humira"
-                ],
-                "url": "http://twitter.com/1236467078/status/344010078380253184"
-            },
-            {
-                "id": "metoprolol-51ae29315378f924d02ef808",
-                "text": "A big ol' fuck you to my doctor for not telling me a side effect of metoprolol was depression. Just wait until I see you Friday -.-",
-                "adr_spans": [
-                    {
-                        "start": 83,
-                        "end": 94,
-                        "text": "depression."
-                    }
-                ],
-                "adr_text": [
-                    "depression."
-                ],
-                "drug_spans": [
-                    {
-                        "start": 68,
-                        "end": 78,
-                        "text": "metoprolol"
-                    }
-                ],
-                "drug_text": [
-                    "metoprolol"
-                ],
-                "url": "http://twitter.com/352825068/status/341975457471791104"
-            },
-            {
-                "id": "effexor-518b0b46ac6ab35b4d47fd0b",
-                "text": "#effexor #withdrawl is a monster that i have taken by the horns and am wrestling to the ground...this time i am winning! 7thdayfree",
-                "adr_spans": [
-                    {
-                        "start": 10,
-                        "end": 19,
-                        "text": "withdrawl"
-                    }
-                ],
-                "adr_text": [
-                    "withdrawl"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 1,
-                        "end": 8,
-                        "text": "effexor"
-                    }
-                ],
-                "drug_text": [
-                    "effexor"
-                ],
-                "url": "http://twitter.com/904297134/status/332322723286114304"
-            },
-            {
-                "id": "lamictal-51ca1ddb53785f584a9ac1e4",
-                "text": "Lamictal dosage increases kind of wreck my head for a day or two. But they also make me super productive as long as I can do things slowly.",
-                "adr_spans": [
-                    {
-                        "start": 34,
-                        "end": 47,
-                        "text": "wreck my head"
-                    }
-                ],
-                "adr_text": [
-                    "wreck my head"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 0,
-                        "end": 8,
-                        "text": "lamictal"
-                    }
-                ],
-                "drug_text": [
-                    "lamictal"
-                ],
-                "url": "http://twitter.com/21319383/status/349659482483195905"
-            },
-            {
-                "id": "enbrel-51cf4eac53785f584a9ae00f",
-                "text": "@USERNAME at the end of most working days! I still have to nap loads just to get through a week. Some days better than others #enbrel",
-                "adr_spans": [
-                    {
-                        "start": 59,
-                        "end": 62,
-                        "text": "nap"
-                    }
-                ],
-                "adr_text": [
-                    "nap"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 127,
-                        "end": 133,
-                        "text": "enbrel"
-                    }
-                ],
-                "drug_text": [
-                    "enbrel"
-                ],
-                "url": "http://twitter.com/363607109/status/351086788032471041"
-            }
-        ]
-    },
-    {
-        "unit_id": "unit_8",
-        "token_input": "CHEJHMNACN",
-        "token_output": "EQDAIFRVFE",
-        "documents": [
-            {
-                "id": "levaquin-51c9d46153785f584a9ac043",
-                "text": "@USERNAME @USERNAME @USERNAME psssh didn't Levaquin make u hallucinate? Girl u best stay Away from shrooms lol",
-                "adr_spans": [
-                    {
-                        "start": 59,
-                        "end": 70,
-                        "text": "hallucinate"
-                    }
-                ],
-                "adr_text": [
-                    "hallucinate"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 43,
-                        "end": 51,
-                        "text": "levaquin"
-                    }
-                ],
-                "drug_text": [
-                    "levaquin"
-                ],
-                "url": "http://twitter.com/22493928/status/349581089221787648"
-            },
-            {
-                "id": "effexor-51d88e8153785f584a9b1708",
-                "text": "@USERNAME Right, some SSRIs are used for cataplexy, as is Effexor. Can be tricky to wean off without rebound.  #nchat",
-                "adr_spans": [
-                    {
-                        "start": 101,
-                        "end": 108,
-                        "text": "rebound"
-                    }
-                ],
-                "adr_text": [
-                    "rebound"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 58,
-                        "end": 65,
-                        "text": "effexor"
-                    },
-                    {
-                        "start": 58,
-                        "end": 65,
-                        "text": "effexor"
-                    }
-                ],
-                "drug_text": [
-                    "effexor",
-                    "effexor"
-                ],
-                "url": "http://twitter.com/161889273/status/353629216518057984"
-            },
-            {
-                "id": "enbrel-51bac11c5378b9555a2f2b69",
-                "text": "@USERNAME enbrel is a miracle but it made my eyes worse :( so couldn't have it anymore :(",
-                "adr_spans": [
-                    {
-                        "start": 45,
-                        "end": 55,
-                        "text": "eyes worse"
-                    }
-                ],
-                "adr_text": [
-                    "eyes worse"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 10,
-                        "end": 16,
-                        "text": "enbrel"
-                    }
-                ],
-                "drug_text": [
-                    "enbrel"
-                ],
-                "url": "http://twitter.com/30256016/status/345436985361571840"
-            },
-            {
-                "id": "cymbalta-51913a30ac6ad74cd505f118",
-                "text": "@USERNAME @USERNAME all the things I have just make me sleepy as hell: Cymbalta, Klonopin, Ambien. wait what if I take em all togethhssaagg",
-                "adr_spans": [
-                    {
-                        "start": 55,
-                        "end": 61,
-                        "text": "sleepy"
-                    }
-                ],
-                "adr_text": [
-                    "sleepy"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 71,
-                        "end": 79,
-                        "text": "cymbalta"
-                    }
-                ],
-                "drug_text": [
-                    "cymbalta"
-                ],
-                "url": "http://twitter.com/99207792/status/334022366457917440"
-            },
-            {
-                "id": "GOLD-2",
-                "text": "Simvastatin caused severe headache",
-                "adr_spans": [
-                    {
-                        "start": 19,
-                        "end": 34,
-                        "text": "severe headache"
-                    }
-                ],
-                "adr_text": [
-                    "severe headache"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 0,
-                        "end": 11,
-                        "text": "Simvastatin"
-                    }
-                ],
-                "drug_text": [
-                    "Simvastatin"
-                ],
-                "url": "NONE"
-            },
-            {
-                "id": "effexor-51bcba575378b9555a2f34e1",
-                "text": "Crying randomly at nothing and everything. Sigh. Thank you #effexor #withdrawls Can you just exit my system already.",
-                "adr_spans": [
-                    {
-                        "start": 0,
-                        "end": 6,
-                        "text": "Crying"
-                    },
-                    {
-                        "start": 69,
-                        "end": 79,
-                        "text": "withdrawls"
-                    }
-                ],
-                "adr_text": [
-                    "Crying",
-                    "withdrawls"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 60,
-                        "end": 67,
-                        "text": "effexor"
-                    },
-                    {
-                        "start": 60,
-                        "end": 67,
-                        "text": "effexor"
-                    }
-                ],
-                "drug_text": [
-                    "effexor",
-                    "effexor"
-                ],
-                "url": "http://twitter.com/76988264/status/345979692031025153"
-            },
-            {
-                "id": "geodon-51c379db53785f584a9a895f",
-                "text": "You know starting with geodon, the meds messed up my attitude. How odd. It's not just about spirituality. I became a bit mean. That got",
-                "adr_spans": [
-                    {
-                        "start": 40,
-                        "end": 61,
-                        "text": "messed up my attitude"
-                    },
-                    {
-                        "start": 121,
-                        "end": 125,
-                        "text": "mean"
-                    }
-                ],
-                "adr_text": [
-                    "messed up my attitude",
-                    "mean"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 23,
-                        "end": 29,
-                        "text": "geodon"
-                    },
-                    {
-                        "start": 23,
-                        "end": 29,
-                        "text": "geodon"
-                    }
-                ],
-                "drug_text": [
-                    "geodon",
-                    "geodon"
-                ],
-                "url": "http://twitter.com/115407248/status/347834624304640001"
-            },
-            {
-                "id": "fluoxetine-518b8a58ac6ab35b4d4802c1",
-                "text": "@USERNAME fluoxetine and quet combo zombified me...ah, the meds merrygoround #bipolar",
-                "adr_spans": [
-                    {
-                        "start": 36,
-                        "end": 45,
-                        "text": "zombified"
-                    }
-                ],
-                "adr_text": [
-                    "zombified"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 10,
-                        "end": 20,
-                        "text": "fluoxetine"
-                    },
-                    {
-                        "start": 10,
-                        "end": 20,
-                        "text": "fluoxetine"
-                    }
-                ],
-                "drug_text": [
-                    "fluoxetine",
-                    "fluoxetine"
-                ],
-                "url": "http://twitter.com/88166476/status/332459161407324162"
-            },
-            {
-                "id": "cipro-51d94ccd53785f584a9b1994",
-                "text": "@USERNAME You can say that again!  I trusted my doc and ended up crippled thanks to just 12 Cipro pills.  Going on 4 years now.",
-                "adr_spans": [
-                    {
-                        "start": 65,
-                        "end": 73,
-                        "text": "crippled"
-                    }
-                ],
-                "adr_text": [
-                    "crippled"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 92,
-                        "end": 97,
-                        "text": "cipro"
-                    }
-                ],
-                "drug_text": [
-                    "cipro"
-                ],
-                "url": "http://twitter.com/323112996/status/353832654724022273"
-            },
-            {
-                "id": "cymbalta-51aa21a953787e40790dfc77",
-                "text": "Coming off Cymbalta cold turkey.. day 4... I think I have vertigo! This is awful.",
-                "adr_spans": [
-                    {
-                        "start": 58,
-                        "end": 65,
-                        "text": "vertigo"
-                    }
-                ],
-                "adr_text": [
-                    "vertigo"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 11,
-                        "end": 19,
-                        "text": "cymbalta"
-                    }
-                ],
-                "drug_text": [
-                    "cymbalta"
-                ],
-                "url": "http://twitter.com/709249026/status/340867974783193088"
-            },
-            {
-                "id": "nicotine-51a7ed4953787e40790deb10",
-                "text": "Saying goodbye to smoking involves more than physical recovery from nicotine addiction #WorldNoTobaccoDay (1)",
-                "adr_spans": [
-                    {
-                        "start": 77,
-                        "end": 86,
-                        "text": "addiction"
-                    }
-                ],
-                "adr_text": [
-                    "addiction"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 68,
-                        "end": 76,
-                        "text": "nicotine"
-                    }
-                ],
-                "drug_text": [
-                    "nicotine"
-                ],
-                "url": "http://twitter.com/277543857/status/340261980675907585"
-            }
-        ]
-    },
-    {
-        "unit_id": "unit_9",
-        "token_input": "UELCIWPZPE",
-        "token_output": "WMAMRSWZNB",
-        "documents": [
-            {
-                "id": "enbrel-51c89f2153785f584a9ab714",
-                "text": "@USERNAME @USERNAME  I was only on 200 mg and was recently switched to 150 mg due to weight. It's still working with enbrel, though.",
-                "adr_spans": [
-                    {
-                        "start": 85,
-                        "end": 91,
-                        "text": "weight"
-                    }
-                ],
-                "adr_text": [
-                    "weight"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 117,
-                        "end": 123,
-                        "text": "enbrel"
-                    }
-                ],
-                "drug_text": [
-                    "enbrel"
-                ],
-                "url": "http://twitter.com/45346787/status/349248724083544064"
-            },
-            {
-                "id": "cymbalta-51b3b3c25378b9555a2f0879",
-                "text": "FROM JESSICA\nI have recently changed anti-depressants from cymbalta to zoloft...does anyone else get daily migraines from taking zoloft?",
-                "adr_spans": [
-                    {
-                        "start": 107,
-                        "end": 116,
-                        "text": "migraines"
-                    }
-                ],
-                "adr_text": [
-                    "migraines"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 59,
-                        "end": 67,
-                        "text": "cymbalta"
-                    },
-                    {
-                        "start": 59,
-                        "end": 67,
-                        "text": "cymbalta"
-                    }
-                ],
-                "drug_text": [
-                    "cymbalta",
-                    "cymbalta"
-                ],
-                "url": "http://twitter.com/143249043/status/343496135475859457"
-            },
-            {
-                "id": "humira-51affeba5378b9555a2ef104",
-                "text": "I'd gladly trade the #MTX  headache for #Humira but after 5 months I still don't have the prescription. I function through vitamins &amp; motrin",
-                "adr_spans": [
-                    {
-                        "start": 27,
-                        "end": 35,
-                        "text": "headache"
-                    }
-                ],
-                "adr_text": [
-                    "headache"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 22,
-                        "end": 25,
-                        "text": "MTX"
-                    },
-                    {
-                        "start": 22,
-                        "end": 25,
-                        "text": "MTX"
-                    }
-                ],
-                "drug_text": [
-                    "MTX",
-                    "MTX"
-                ],
-                "url": "http://twitter.com/1142929842/status/342479732811644929"
-            },
-            {
-                "id": "effexor-51d5efb753785f584a9b0d84",
-                "text": "down to just one tiny dose of effexor each night now. Today wasnt too bad in terms of anxiety &amp; depression, but irritability? WOOSH!! way up",
-                "adr_spans": [
-                    {
-                        "start": 116,
-                        "end": 128,
-                        "text": "irritability"
-                    }
-                ],
-                "adr_text": [
-                    "irritability"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 30,
-                        "end": 37,
-                        "text": "effexor"
-                    },
-                    {
-                        "start": 30,
-                        "end": 37,
-                        "text": "effexor"
-                    },
-                    {
-                        "start": 30,
-                        "end": 37,
-                        "text": "effexor"
-                    }
-                ],
-                "drug_text": [
-                    "effexor",
-                    "effexor",
-                    "effexor"
-                ],
-                "url": "http://twitter.com/37904665/status/352908792721195008"
-            },
-            {
-                "id": "humira-51b0e86e5378b9555a2ef6c2",
-                "text": "@USERNAME what problems did you have with humira, if you don't mind me asking. I tried infliximab it destroyed my liver.",
-                "adr_spans": [
-                    {
-                        "start": 101,
-                        "end": 119,
-                        "text": "destroyed my liver"
-                    }
-                ],
-                "adr_text": [
-                    "destroyed my liver"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 87,
-                        "end": 97,
-                        "text": "infliximab"
-                    },
-                    {
-                        "start": 87,
-                        "end": 97,
-                        "text": "infliximab"
-                    }
-                ],
-                "drug_text": [
-                    "infliximab",
-                    "infliximab"
-                ],
-                "url": "http://twitter.com/135627441/status/342730668704415745"
-            },
-            {
-                "id": "effexor-51bf2fd65378b9555a2f3f5a",
-                "text": "Day 6 cold turkey from Effexor. I believe this pic adequately represents my descent into madness. Or whatever. http://t.co/Vz0oFABIA0",
-                "adr_spans": [
-                    {
-                        "start": 76,
-                        "end": 96,
-                        "text": "descent into madness"
-                    }
-                ],
-                "adr_text": [
-                    "descent into madness"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 23,
-                        "end": 30,
-                        "text": "effexor"
-                    }
-                ],
-                "drug_text": [
-                    "effexor"
-                ],
-                "url": "http://twitter.com/65611610/status/346655631157108736"
-            },
-            {
-                "id": "humira-51b592c75378b9555a2f0f0b",
-                "text": "The day after my humira jab and as ever i'm mega tired. May have to go back to bed.",
-                "adr_spans": [
-                    {
-                        "start": 49,
-                        "end": 54,
-                        "text": "tired"
-                    }
-                ],
-                "adr_text": [
-                    "tired"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 17,
-                        "end": 23,
-                        "text": "humira"
-                    }
-                ],
-                "drug_text": [
-                    "humira"
-                ],
-                "url": "http://twitter.com/1236467078/status/344010078380253184"
-            },
-            {
-                "id": "baclofen-51b35e355378b9555a2f0709",
-                "text": "I am never taking baclofen and norflex the same day again. First I felt super drowsy but now I feel extremely high and it's freaking me out.",
-                "adr_spans": [
-                    {
-                        "start": 78,
-                        "end": 84,
-                        "text": "drowsy"
-                    },
-                    {
-                        "start": 110,
-                        "end": 114,
-                        "text": "high"
-                    }
-                ],
-                "adr_text": [
-                    "drowsy",
-                    "high"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 18,
-                        "end": 26,
-                        "text": "baclofen"
-                    },
-                    {
-                        "start": 18,
-                        "end": 26,
-                        "text": "baclofen"
-                    }
-                ],
-                "drug_text": [
-                    "baclofen",
-                    "baclofen"
-                ],
-                "url": "http://twitter.com/23797717/status/343406657717547008"
-            },
-            {
-                "id": "GOLD-7",
-                "text": "Lipitor caused  heartburn",
-                "adr_spans": [
-                    {
-                        "start": 16,
-                        "end": 25,
-                        "text": "heartburn"
-                    }
-                ],
-                "adr_text": [
-                    "heartburn"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 0,
-                        "end": 7,
-                        "text": "Lipitor"
-                    }
-                ],
-                "drug_text": [
-                    "Lipitor"
-                ],
-                "url": "NONE"
-            },
-            {
-                "id": "lamotrigine-5190e75dac6ab35b4d48403a",
-                "text": "Day 4: The initial lamotrigine lethargy kicked in the day before exams. I tell myself that possible failure is better than possible death.",
-                "adr_spans": [
-                    {
-                        "start": 31,
-                        "end": 39,
-                        "text": "lethargy"
-                    }
-                ],
-                "adr_text": [
-                    "lethargy"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 19,
-                        "end": 30,
-                        "text": "lamotrigine"
-                    }
-                ],
-                "drug_text": [
-                    "lamotrigine"
-                ],
-                "url": "http://twitter.com/1477211/status/333933432587554816"
-            },
-            {
-                "id": "effexor-518b0b46ac6ab35b4d47fd0b",
-                "text": "#effexor #withdrawl is a monster that i have taken by the horns and am wrestling to the ground...this time i am winning! 7thdayfree",
-                "adr_spans": [
-                    {
-                        "start": 10,
-                        "end": 19,
-                        "text": "withdrawl"
-                    }
-                ],
-                "adr_text": [
-                    "withdrawl"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 1,
-                        "end": 8,
-                        "text": "effexor"
-                    }
-                ],
-                "drug_text": [
-                    "effexor"
-                ],
-                "url": "http://twitter.com/904297134/status/332322723286114304"
-            }
-        ]
-    },
-    {
-        "unit_id": "unit_10",
-        "token_input": "FJNKJQHXKV",
-        "token_output": "PZKRTLNSDY",
-        "documents": [
-            {
-                "id": "cymbalta-51b0d35d5378b9555a2ef612",
-                "text": "@USERNAME I had been blaming my dizziness upon standing to my menopause but now on HRT &amp; no more flashes so looked at cymbalta side effs",
-                "adr_spans": [
-                    {
-                        "start": 32,
-                        "end": 41,
-                        "text": "dizziness"
-                    }
-                ],
-                "adr_text": [
-                    "dizziness"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 122,
-                        "end": 130,
-                        "text": "cymbalta"
-                    }
-                ],
-                "drug_text": [
-                    "cymbalta"
-                ],
-                "url": "http://twitter.com/56724832/status/342708050160934912"
-            },
-            {
-                "id": "metoprolol-51ae29315378f924d02ef808",
-                "text": "A big ol' fuck you to my doctor for not telling me a side effect of metoprolol was depression. Just wait until I see you Friday -.-",
-                "adr_spans": [
-                    {
-                        "start": 83,
-                        "end": 94,
-                        "text": "depression."
-                    }
-                ],
-                "adr_text": [
-                    "depression."
-                ],
-                "drug_spans": [
-                    {
-                        "start": 68,
-                        "end": 78,
-                        "text": "metoprolol"
-                    }
-                ],
-                "drug_text": [
-                    "metoprolol"
-                ],
-                "url": "http://twitter.com/352825068/status/341975457471791104"
-            },
-            {
-                "id": "lamotrigine-51abc54d53787e40790e0744",
-                "text": "It turns out that I can still ride a bike in spite of my ataxia (side effect of Lamotrigine) It has been at least 25 years.",
-                "adr_spans": [
-                    {
-                        "start": 57,
-                        "end": 63,
-                        "text": "ataxia"
-                    }
-                ],
-                "adr_text": [
-                    "ataxia"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 80,
-                        "end": 91,
-                        "text": "lamotrigine"
-                    }
-                ],
-                "drug_text": [
-                    "lamotrigine"
-                ],
-                "url": "http://twitter.com/528072910/status/341318438989471745"
-            },
-            {
-                "id": "cymbalta-51aa21a953787e40790dfc77",
-                "text": "Coming off Cymbalta cold turkey.. day 4... I think I have vertigo! This is awful.",
-                "adr_spans": [
-                    {
-                        "start": 58,
-                        "end": 65,
-                        "text": "vertigo"
-                    }
-                ],
-                "adr_text": [
-                    "vertigo"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 11,
-                        "end": 19,
-                        "text": "cymbalta"
-                    }
-                ],
-                "drug_text": [
-                    "cymbalta"
-                ],
-                "url": "http://twitter.com/709249026/status/340867974783193088"
-            },
-            {
-                "id": "lamotrigine-51adcd3c5378f924d02ef483",
-                "text": "Lamotrigine causing steven johnson syndrome",
-                "adr_spans": [
-                    {
-                        "start": 20,
-                        "end": 43,
-                        "text": "steven johnson syndrome"
-                    }
-                ],
-                "adr_text": [
-                    "steven johnson syndrome"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 0,
-                        "end": 11,
-                        "text": "lamotrigine"
-                    }
-                ],
-                "drug_text": [
-                    "lamotrigine"
-                ],
-                "url": "http://twitter.com/1036516171/status/341876837900746752"
-            },
-            {
-                "id": "humira-51b5f5355378b9555a2f109b",
-                "text": "@USERNAME i never had bleeding or vomiting just alot alot of fatigue and face was pale and lost tons of weight.. #crohns #humira",
-                "adr_spans": [
-                    {
-                        "start": 61,
-                        "end": 68,
-                        "text": "fatigue"
-                    },
-                    {
-                        "start": 82,
-                        "end": 86,
-                        "text": "pale"
-                    },
-                    {
-                        "start": 91,
-                        "end": 110,
-                        "text": "lost tons of weight"
-                    }
-                ],
-                "adr_text": [
-                    "fatigue",
-                    "pale",
-                    "lost tons of weight"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 122,
-                        "end": 128,
-                        "text": "humira"
-                    },
-                    {
-                        "start": 122,
-                        "end": 128,
-                        "text": "humira"
-                    },
-                    {
-                        "start": 122,
-                        "end": 128,
-                        "text": "humira"
-                    },
-                    {
-                        "start": 122,
-                        "end": 128,
-                        "text": "humira"
-                    }
-                ],
-                "drug_text": [
-                    "humira",
-                    "humira",
-                    "humira",
-                    "humira"
-                ],
-                "url": "http://twitter.com/1351058880/status/344118257269211136"
-            },
-            {
-                "id": "GOLD-1",
-                "text": "Vicodin caused severe dizziness",
-                "adr_spans": [
-                    {
-                        "start": 15,
-                        "end": 31,
-                        "text": "severe dizziness"
-                    }
-                ],
-                "adr_text": [
-                    "severe dizziness"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 0,
-                        "end": 7,
-                        "text": "Vicodin"
-                    }
-                ],
-                "drug_text": [
-                    "Vicodin"
-                ],
-                "url": "NONE"
-            },
-            {
-                "id": "cymbalta-51b3a4da5378b9555a2f0849",
-                "text": "Cymbalta, my mood has worsened",
-                "adr_spans": [
-                    {
-                        "start": 13,
-                        "end": 17,
-                        "text": "mood"
-                    }
-                ],
-                "adr_text": [
-                    "mood"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 0,
-                        "end": 8,
-                        "text": "cymbalta"
-                    }
-                ],
-                "drug_text": [
-                    "cymbalta"
-                ],
-                "url": "http://twitter.com/444297713/status/343482701816418304"
-            },
-            {
-                "id": "fluoxetine-51d1cd8b53785f584a9af0b3",
-                "text": "RT @USERNAME: Restless Leg Syndrome is bad tonight.  Damn you fluoxetine.",
-                "adr_spans": [
-                    {
-                        "start": 14,
-                        "end": 35,
-                        "text": "Restless Leg Syndrome"
-                    }
-                ],
-                "adr_text": [
-                    "Restless Leg Syndrome"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 62,
-                        "end": 72,
-                        "text": "fluoxetine"
-                    }
-                ],
-                "drug_text": [
-                    "fluoxetine"
-                ],
-                "url": "http://twitter.com/632397611/status/351772771174449152"
-            },
-            {
-                "id": "effexor-51c626cd53785f584a9aa0d4",
-                "text": "Effexor side effects; headaches, no appetite.",
-                "adr_spans": [
-                    {
-                        "start": 22,
-                        "end": 31,
-                        "text": "headaches"
-                    },
-                    {
-                        "start": 33,
-                        "end": 44,
-                        "text": "no appetite"
-                    }
-                ],
-                "adr_text": [
-                    "headaches",
-                    "no appetite"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 0,
-                        "end": 7,
-                        "text": "effexor"
-                    },
-                    {
-                        "start": 0,
-                        "end": 7,
-                        "text": "effexor"
-                    }
-                ],
-                "drug_text": [
-                    "effexor",
-                    "effexor"
-                ],
-                "url": "http://twitter.com/43338677/status/348569983833477120"
-            },
-            {
-                "id": "lozenge-51784dc8ac6af778c203728d",
-                "text": "Nicotine lozenges are giving me stomach cramps.",
-                "adr_spans": [
-                    {
-                        "start": 32,
-                        "end": 46,
-                        "text": "stomach cramps"
-                    }
-                ],
-                "adr_text": [
-                    "stomach cramps"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 9,
-                        "end": 16,
-                        "text": "lozenge"
-                    }
-                ],
-                "drug_text": [
-                    "lozenge"
-                ],
-                "url": "http://twitter.com/173405014/status/327171455014035456"
-            }
-        ]
-    },
-    {
-        "unit_id": "unit_11",
-        "token_input": "OCJEISMAKW",
-        "token_output": "VYPIMZAKYV",
-        "documents": [
-            {
-                "id": "effexor-51bcba575378b9555a2f34e1",
-                "text": "Crying randomly at nothing and everything. Sigh. Thank you #effexor #withdrawls Can you just exit my system already.",
-                "adr_spans": [
-                    {
-                        "start": 0,
-                        "end": 6,
-                        "text": "Crying"
-                    },
-                    {
-                        "start": 69,
-                        "end": 79,
-                        "text": "withdrawls"
-                    }
-                ],
-                "adr_text": [
-                    "Crying",
-                    "withdrawls"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 60,
-                        "end": 67,
-                        "text": "effexor"
-                    },
-                    {
-                        "start": 60,
-                        "end": 67,
-                        "text": "effexor"
-                    }
-                ],
-                "drug_text": [
-                    "effexor",
-                    "effexor"
-                ],
-                "url": "http://twitter.com/76988264/status/345979692031025153"
-            },
-            {
-                "id": "cymbalta-51b4e1e95378b9555a2f0c7e",
-                "text": "I swear thia cymbalta is causing me to have horrible nightmares!",
-                "adr_spans": [
-                    {
-                        "start": 53,
-                        "end": 63,
-                        "text": "nightmares"
-                    }
-                ],
-                "adr_text": [
-                    "nightmares"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 13,
-                        "end": 21,
-                        "text": "cymbalta"
-                    }
-                ],
-                "drug_text": [
-                    "cymbalta"
-                ],
-                "url": "http://twitter.com/53385378/status/343823180542124032"
-            },
-            {
-                "id": "lamotrigine-51abc54d53787e40790e0744",
-                "text": "It turns out that I can still ride a bike in spite of my ataxia (side effect of Lamotrigine) It has been at least 25 years.",
-                "adr_spans": [
-                    {
-                        "start": 57,
-                        "end": 63,
-                        "text": "ataxia"
-                    }
-                ],
-                "adr_text": [
-                    "ataxia"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 80,
-                        "end": 91,
-                        "text": "lamotrigine"
-                    }
-                ],
-                "drug_text": [
-                    "lamotrigine"
-                ],
-                "url": "http://twitter.com/528072910/status/341318438989471745"
-            },
-            {
-                "id": "enbrel-51bac11c5378b9555a2f2b69",
-                "text": "@USERNAME enbrel is a miracle but it made my eyes worse :( so couldn't have it anymore :(",
-                "adr_spans": [
-                    {
-                        "start": 45,
-                        "end": 55,
-                        "text": "eyes worse"
-                    }
-                ],
-                "adr_text": [
-                    "eyes worse"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 10,
-                        "end": 16,
-                        "text": "enbrel"
-                    }
-                ],
-                "drug_text": [
-                    "enbrel"
-                ],
-                "url": "http://twitter.com/30256016/status/345436985361571840"
-            },
-            {
-                "id": "humira-51affeba5378b9555a2ef104",
-                "text": "I'd gladly trade the #MTX  headache for #Humira but after 5 months I still don't have the prescription. I function through vitamins &amp; motrin",
-                "adr_spans": [
-                    {
-                        "start": 27,
-                        "end": 35,
-                        "text": "headache"
-                    }
-                ],
-                "adr_text": [
-                    "headache"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 22,
-                        "end": 25,
-                        "text": "MTX"
-                    },
-                    {
-                        "start": 22,
-                        "end": 25,
-                        "text": "MTX"
-                    }
-                ],
-                "drug_text": [
-                    "MTX",
-                    "MTX"
-                ],
-                "url": "http://twitter.com/1142929842/status/342479732811644929"
-            },
-            {
-                "id": "nicotine-51a7e19353787e40790dea82",
-                "text": "god there is nothing worse than nicotine withdrawal",
-                "adr_spans": [
-                    {
-                        "start": 41,
-                        "end": 51,
-                        "text": "withdrawal"
-                    }
-                ],
-                "adr_text": [
-                    "withdrawal"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 32,
-                        "end": 40,
-                        "text": "nicotine"
-                    }
-                ],
-                "drug_text": [
-                    "nicotine"
-                ],
-                "url": "http://twitter.com/741762686/status/340249316469907456"
-            },
-            {
-                "id": "humira-51b592c75378b9555a2f0f0b",
-                "text": "The day after my humira jab and as ever i'm mega tired. May have to go back to bed.",
-                "adr_spans": [
-                    {
-                        "start": 49,
-                        "end": 54,
-                        "text": "tired"
-                    }
-                ],
-                "adr_text": [
-                    "tired"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 17,
-                        "end": 23,
-                        "text": "humira"
-                    }
-                ],
-                "drug_text": [
-                    "humira"
-                ],
-                "url": "http://twitter.com/1236467078/status/344010078380253184"
-            },
-            {
-                "id": "GOLD-4",
-                "text": "Levothyroxine caused nervousness",
-                "adr_spans": [
-                    {
-                        "start": 21,
-                        "end": 32,
-                        "text": "nervousness"
-                    }
-                ],
-                "adr_text": [
-                    "nervousness"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 0,
-                        "end": 13,
-                        "text": "Levothyroxine"
-                    }
-                ],
-                "drug_text": [
-                    "Levothyroxine"
-                ],
-                "url": "NONE"
-            },
-            {
-                "id": "fluoxetine-51d1cd8b53785f584a9af0b3",
-                "text": "RT @USERNAME: Restless Leg Syndrome is bad tonight.  Damn you fluoxetine.",
-                "adr_spans": [
-                    {
-                        "start": 14,
-                        "end": 35,
-                        "text": "Restless Leg Syndrome"
-                    }
-                ],
-                "adr_text": [
-                    "Restless Leg Syndrome"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 62,
-                        "end": 72,
-                        "text": "fluoxetine"
-                    }
-                ],
-                "drug_text": [
-                    "fluoxetine"
-                ],
-                "url": "http://twitter.com/632397611/status/351772771174449152"
-            },
-            {
-                "id": "enbrel-51c89f2153785f584a9ab714",
-                "text": "@USERNAME @USERNAME  I was only on 200 mg and was recently switched to 150 mg due to weight. It's still working with enbrel, though.",
-                "adr_spans": [
-                    {
-                        "start": 85,
-                        "end": 91,
-                        "text": "weight"
-                    }
-                ],
-                "adr_text": [
-                    "weight"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 117,
-                        "end": 123,
-                        "text": "enbrel"
-                    }
-                ],
-                "drug_text": [
-                    "enbrel"
-                ],
-                "url": "http://twitter.com/45346787/status/349248724083544064"
-            },
-            {
-                "id": "effexor-518f4496ac6ab35b4d482fb3",
-                "text": "FOUND THEM. Starting back up on Effexor. Vomits shall ensue!",
-                "adr_spans": [
-                    {
-                        "start": 41,
-                        "end": 47,
-                        "text": "Vomits"
-                    }
-                ],
-                "adr_text": [
-                    "Vomits"
-                ],
-                "drug_spans": [
-                    {
-                        "start": 32,
-                        "end": 39,
-                        "text": "effexor"
-                    }
-                ],
-                "drug_text": [
-                    "effexor"
-                ],
-                "url": "http://twitter.com/234233078/status/333483772345466881"
-            }
-        ]
-    }
+  {
+    "unit_id": "unit_2",
+    "token_input": "DTTGFEBGEKU",
+    "token_output": "ZZWXJQXHIZO",
+    "documents_number": 11,
+    "documents": [
+      {
+        "name": "Liberal_Positive_doc6",
+        "statement": "Finance Minister Mathias Cormann says privatising Medibank Private wont cause premiums to increase.",
+        "claimant": "Mathias Cormann",
+        "date": "2013",
+        "originated-from": "",
+        "id_par": "5058346",
+        "job": "",
+        "party": "Liberal",
+        "source": "ABC"
+      },
+      {
+        "name": "Labor_Negative_doc10",
+        "statement": "Bill Shorten says Tony Abbott and Christopher Pyne are to blame for WAs Barnett Government cutting $183 million from education and culling 360 teachers and 350 teachers aides and support staff. ",
+        "claimant": "Bill Shorten",
+        "date": "2014",
+        "originated-from": "",
+        "id_par": "5356650",
+        "job": "",
+        "party": "Labor",
+        "source": "ABC"
+      },
+      {
+        "name": "Liberal_In_Between_doc2",
+        "statement": "Scrapping the carbon tax \"means every household will be $550 a year better off\"",
+        "claimant": "Tony Abbott",
+        "date": "2013",
+        "originated-from": "",
+        "id_par": "4912726",
+        "job": "",
+        "party": "Liberal",
+        "source": "ABC"
+      },
+      {
+        "name": "REP_MOSTLYTRUE_doc10",
+        "statement": "Florida ranks first in the nation for access to free prekindergarten.",
+        "claimant": "Rick Scott",
+        "date": "2014",
+        "originated-from": "social media",
+        "id_par": "9074.json",
+        "job": "Governor",
+        "party": "REP",
+        "source": "Politifact"
+      },
+      {
+        "name": "LOW",
+        "statement": "If I were not a Formula One pilot, I would be a football player.",
+        "claimant": "Abraham Lincoln",
+        "date": "2006",
+        "originated-from": "Public appearance",
+        "id_par": "LOW",
+        "job": "Former U.S. President",
+        "party": "REP",
+        "source": "gold_question"
+      },
+      {
+        "name": "DEM_FALSE_doc10",
+        "statement": "FACT: Nothing in #Obamacare forces people out of their health plans.",
+        "claimant": "Valerie Jarrett",
+        "date": "2013",
+        "originated-from": "social media",
+        "id_par": "8476.json",
+        "job": "senior adviser to President Barack Obama",
+        "party": "DEM",
+        "source": "Politifact"
+      },
+      {
+        "name": "REP_LIE_doc10",
+        "statement": "Says Obamacare is the largest middle-class tax increase in history.",
+        "claimant": "Jeff Fitzgerald",
+        "date": "2012",
+        "originated-from": "social media",
+        "id_par": "6288.json",
+        "job": "Incoming speaker of state Assembly",
+        "party": "REP",
+        "source": "Politifact"
+      },
+      {
+        "name": "HIGH",
+        "statement": "Yes, We can!",
+        "claimant": "Barack Obama",
+        "date": "2008",
+        "originated-from": "Public appearance",
+        "id_par": "HIGH",
+        "job": "Former U.S. President",
+        "party": "DEM",
+        "source": "gold_question"
+      },
+      {
+        "name": "REP_BARELYTRUE_doc10",
+        "statement": "(Assembly Democrats) wanted to raise the gas tax by $2.4 billion. We said no to that....Theyre down on the ground. Theyre sweating. Theyre twitching. Its ugly, cause I keep saying no.",
+        "claimant": "Chris Christie",
+        "date": "2012",
+        "originated-from": "social media",
+        "id_par": "6121.json",
+        "job": "Governor of New Jersey",
+        "party": "REP",
+        "source": "Politifact"
+      },
+      {
+        "name": "DEM_TRUE_doc10",
+        "statement": "Says Rep. Jim Weidner proposed a bill taking away health care for 80,000 of Oregons children.",
+        "claimant": "Blue Oregon",
+        "date": "2010",
+        "originated-from": "social media",
+        "id_par": "2550.json",
+        "job": "liberal blog",
+        "party": "DEM",
+        "source": "Politifact"
+      },
+      {
+        "name": "DEM_HALFTRUE_doc10",
+        "statement": "Says his office has already recovered over $2 billion from Wall Street for the workers, retirees, and investors who were harmed.",
+        "claimant": "Richard Cordray",
+        "date": "2010",
+        "originated-from": "social media",
+        "id_par": "2120.json",
+        "job": "Former Ohio Attorney General",
+        "party": "DEM",
+        "source": "Politifact"
+      }
+    ]
+  },
+  {
+    "unit_id": "unit_92",
+    "token_input": "CWSXAZXICVF",
+    "token_output": "RHGSKZHOHQS",
+    "documents_number": 11,
+    "documents": [
+      {
+        "name": "Liberal_Negative_doc10",
+        "statement": "Tony Abbott says the carbon tax is partly to blame for the closure of Alcoas Point Henry aluminium smelter. ",
+        "claimant": "Tony Abbott",
+        "date": "2014",
+        "originated-from": "",
+        "id_par": "5320468",
+        "job": "",
+        "party": "Liberal",
+        "source": "ABC"
+      },
+      {
+        "name": "Liberal_In_Between_doc10",
+        "statement": "Joe Hockey says raising Australias debt ceiling from $300 billion to $500 billion will prevent a US-style crisis. ",
+        "claimant": "Joe Hockey",
+        "date": "2013",
+        "originated-from": "",
+        "id_par": "5050616",
+        "job": "",
+        "party": "Liberal",
+        "source": "ABC"
+      },
+      {
+        "name": "Labor_Positive_doc4",
+        "statement": "Australias mum and dad investors, self-funded retirees are facing a $1.6 billion a year slug to pay for Mr Abbotts expensive, unaffordable, unfair paid parental leave scheme",
+        "claimant": "Chris Bowen",
+        "date": "2013",
+        "originated-from": "",
+        "id_par": "4915222",
+        "job": "",
+        "party": "Labor",
+        "source": "ABC"
+      },
+      {
+        "name": "HIGH",
+        "statement": "Yes, We can!",
+        "claimant": "Barack Obama",
+        "date": "2008",
+        "originated-from": "Public appearance",
+        "id_par": "HIGH",
+        "job": "Former U.S. President",
+        "party": "DEM",
+        "source": "gold_question"
+      },
+      {
+        "name": "REP_BARELYTRUE_doc4",
+        "statement": "Texas high school graduation rate went from 27th in the country in 2002, to second highest in the country in 2013.",
+        "claimant": "Rick Perry",
+        "date": "2015",
+        "originated-from": "a speech",
+        "id_par": "11080.json",
+        "job": "Governor",
+        "party": "REP",
+        "source": "Politifact"
+      },
+      {
+        "name": "LOW",
+        "statement": "If I were not a Formula One pilot, I would be a football player.",
+        "claimant": "Abraham Lincoln",
+        "date": "2006",
+        "originated-from": "Public appearance",
+        "id_par": "LOW",
+        "job": "Former U.S. President",
+        "party": "REP",
+        "source": "gold_question"
+      },
+      {
+        "name": "REP_LIE_doc4",
+        "statement": "Barack Obama and Hillary Clinton are negotiating with the United Nations about doing a treaty that will ban the use of firearms.",
+        "claimant": "Craig James",
+        "date": "2012",
+        "originated-from": "a speech",
+        "id_par": "5936.json",
+        "job": "Former ESPN analyst",
+        "party": "REP",
+        "source": "Politifact"
+      },
+      {
+        "name": "DEM_FALSE_doc4",
+        "statement": "New Jersey alone, my home state, is facing a ten-and-a-half billion dollar shortfall in its 2012 fiscal budget. This means more cuts in state and local spending for education, which means our kids are hurt.",
+        "claimant": "Robert Menendez",
+        "date": "2011",
+        "originated-from": "a speech",
+        "id_par": "4707.json",
+        "job": "U.S. Senator",
+        "party": "DEM",
+        "source": "Politifact"
+      },
+      {
+        "name": "DEM_HALFTRUE_doc4",
+        "statement": "The minimum wage in real terms right now is below where it was when Harry Truman was in office.",
+        "claimant": "Barack Obama",
+        "date": "2013",
+        "originated-from": "a speech",
+        "id_par": "8623.json",
+        "job": "President",
+        "party": "DEM",
+        "source": "Politifact"
+      },
+      {
+        "name": "DEM_MOSTLYTRUE_doc4",
+        "statement": "Says Lake Erie contains more native fish than all the other Great Lakes combined.",
+        "claimant": "Marcy Kaptur",
+        "date": "2012",
+        "originated-from": "a speech",
+        "id_par": "5599.json",
+        "job": "Representative from Ohio's Ninth Congressional District",
+        "party": "DEM",
+        "source": "Politifact"
+      },
+      {
+        "name": "REP_TRUE_doc4",
+        "statement": "Says hes proposed the largest employer contribution to the Virginia Retirement System in history.",
+        "claimant": "Bob Mcdonnell",
+        "date": "2012",
+        "originated-from": "a speech",
+        "id_par": "5075.json",
+        "job": "Governor",
+        "party": "REP",
+        "source": "Politifact"
+      }
+    ]
+  },
+  {
+    "unit_id": "unit_140",
+    "token_input": "MOBULUXNIUE",
+    "token_output": "XPKAOCHMXDE",
+    "documents_number": 11,
+    "documents": [
+      {
+        "name": "Labor_In_Between_doc3",
+        "statement": "The million-dollar male gets to pick up $5,000, $10,000 worth of cash out of this paid parental leave scheme that Mr Abbott is putting forward,\" he said.\n\n\"I dont think thats fair. I dont think its fair that someone picks up $75,000.",
+        "claimant": "Kevin Rudd",
+        "date": "2013",
+        "originated-from": "",
+        "id_par": "4905958",
+        "job": "",
+        "party": "Labor",
+        "source": "ABC"
+      },
+      {
+        "name": "Liberal_Negative_doc7",
+        "statement": "Barry OFarrell says NSW collects more from proceeds of crime than all other states and the federal government combined.",
+        "claimant": "Barry O'Farrell",
+        "date": "2013",
+        "originated-from": "",
+        "id_par": "5088132",
+        "job": "",
+        "party": "Liberal",
+        "source": "ABC"
+      },
+      {
+        "name": "Liberal_Positive_doc3",
+        "statement": "Industry Minister Ian Macfarlane says Australia is set to become the worlds second largest or largest exporter of LNG.",
+        "claimant": "Ian Macfarlane",
+        "date": "2013",
+        "originated-from": "",
+        "id_par": "5014018",
+        "job": "",
+        "party": "Liberal",
+        "source": "ABC"
+      },
+      {
+        "name": "REP_LIE_doc8",
+        "statement": "Says I was the first governor in America to endorse Mitt Romney.",
+        "claimant": "Chris Christie",
+        "date": "2012",
+        "originated-from": "a news release",
+        "id_par": "7077.json",
+        "job": "Governor of New Jersey",
+        "party": "REP",
+        "source": "Politifact"
+      },
+      {
+        "name": "DEM_HALFTRUE_doc8",
+        "statement": "Secure Communities has a proven track record of enhancing public safety by focusing on violent offenders and those that pose a threat to our communities and our national security.",
+        "claimant": "Peter Kilmartin",
+        "date": "2011",
+        "originated-from": "a news release",
+        "id_par": "3136.json",
+        "job": "state representative",
+        "party": "DEM",
+        "source": "Politifact"
+      },
+      {
+        "name": "DEM_BARELYTRUE_doc8",
+        "statement": "Republican (small business tax cut) bill spends $80 million for better Google searches, not job creation",
+        "claimant": "Cory Mason",
+        "date": "2011",
+        "originated-from": "a news release",
+        "id_par": "3110.json",
+        "job": "State Assembly member, 62nd District",
+        "party": "DEM",
+        "source": "Politifact"
+      },
+      {
+        "name": "LOW",
+        "statement": "If I were not a Formula One pilot, I would be a football player.",
+        "claimant": "Abraham Lincoln",
+        "date": "2006",
+        "originated-from": "Public appearance",
+        "id_par": "LOW",
+        "job": "Former U.S. President",
+        "party": "REP",
+        "source": "gold_question"
+      },
+      {
+        "name": "REP_MOSTLYTRUE_doc8",
+        "statement": "6,400 Ohioans ... lost manufacturing jobs in the month of September.",
+        "claimant": "Mitt Romney",
+        "date": "2012",
+        "originated-from": "a news release",
+        "id_par": "7008.json",
+        "job": "Former governor",
+        "party": "REP",
+        "source": "Politifact"
+      },
+      {
+        "name": "DEM_FALSE_doc8",
+        "statement": "Says a $12.5 million incentive deal she approved for Abbott Laboratories contained strong protections for taxpayers if job creation goals were not met.",
+        "claimant": "Mary Burke",
+        "date": "2014",
+        "originated-from": "a news release",
+        "id_par": "9701.json",
+        "job": "Madison school board member",
+        "party": "DEM",
+        "source": "Politifact"
+      },
+      {
+        "name": "HIGH",
+        "statement": "Yes, We can!",
+        "claimant": "Barack Obama",
+        "date": "2008",
+        "originated-from": "Public appearance",
+        "id_par": "HIGH",
+        "job": "Former U.S. President",
+        "party": "DEM",
+        "source": "gold_question"
+      },
+      {
+        "name": "REP_TRUE_doc8",
+        "statement": "Ilana Shafran Mandels stake in Forest City Enterprises constitutes significantly less than 1 percent of the companys shares and any implication of a conflict of interest is legally incorrect.",
+        "claimant": "Josh Mandel",
+        "date": "2011",
+        "originated-from": "a news release",
+        "id_par": "4759.json",
+        "job": "Ohio treasurer",
+        "party": "REP",
+        "source": "Politifact"
+      }
+    ]
+  },
+  {
+    "unit_id": "unit_168",
+    "token_input": "LUSBMGHXLMR",
+    "token_output": "VTVJIUUPFKA",
+    "documents_number": 11,
+    "documents": [
+      {
+        "name": "HIGH",
+        "statement": "Yes, We can!",
+        "claimant": "Barack Obama",
+        "date": "2008",
+        "originated-from": "Public appearance",
+        "id_par": "HIGH",
+        "job": "Former U.S. President",
+        "party": "DEM",
+        "source": "gold_question"
+      },
+      {
+        "name": "REP_BARELYTRUE_doc3",
+        "statement": "The Obama administration \"spent more money on the Cash for Clunkers program than the space program.\"",
+        "claimant": "Marco Rubio",
+        "date": "2010",
+        "originated-from": "a speech",
+        "id_par": "1578.json",
+        "job": "U.S. Senator",
+        "party": "REP",
+        "source": "Politifact"
+      },
+      {
+        "name": "LOW",
+        "statement": "If I were not a Formula One pilot, I would be a football player.",
+        "claimant": "Abraham Lincoln",
+        "date": "2006",
+        "originated-from": "Public appearance",
+        "id_par": "LOW",
+        "job": "Former U.S. President",
+        "party": "REP",
+        "source": "gold_question"
+      },
+      {
+        "name": "DEM_MOSTLYTRUE_doc3",
+        "statement": "Weve cut the deficit by two-thirds.",
+        "claimant": "Barack Obama",
+        "date": "2015",
+        "originated-from": "a speech",
+        "id_par": "11033.json",
+        "job": "President",
+        "party": "DEM",
+        "source": "Politifact"
+      },
+      {
+        "name": "DEM_LIE_doc3",
+        "statement": "The WIC program is an incredibly cost effective program, serving nearly 10 million Americans each year and costing less than $100 per person. In my district, more than 18 percent of residents suffer from food insecurity and depend on WIC to make ends meet.",
+        "claimant": "David Cicilline",
+        "date": "2011",
+        "originated-from": "a speech",
+        "id_par": "4001.json",
+        "job": "mayor of Providence",
+        "party": "DEM",
+        "source": "Politifact"
+      },
+      {
+        "name": "REP_HALFTRUE_doc3",
+        "statement": "To use money from the TARP fund in the manner that is being discussed by the White House and congressional Democrats would be a violation of the law.",
+        "claimant": "Mike Pence",
+        "date": "2009",
+        "originated-from": "a speech",
+        "id_par": "1357.json",
+        "job": "Governor",
+        "party": "REP",
+        "source": "Politifact"
+      },
+      {
+        "name": "DEM_FALSE_doc3",
+        "statement": "Senator McCain would pay for part of his (health care) plan by making drastic cuts in Medicare $882-billion worth.",
+        "claimant": "Barack Obama",
+        "date": "2008",
+        "originated-from": "a speech",
+        "id_par": "811.json",
+        "job": "President",
+        "party": "DEM",
+        "source": "Politifact"
+      },
+      {
+        "name": "REP_TRUE_doc3",
+        "statement": "Collectively states are spending more on Medicaid than they do on K-12 education.",
+        "claimant": "Eric Cantor",
+        "date": "2013",
+        "originated-from": "a speech",
+        "id_par": "7407.json",
+        "job": "House Majority Leader",
+        "party": "REP",
+        "source": "Politifact"
+      },
+      {
+        "name": "Liberal_Negative_doc4",
+        "statement": "Tony Abbott says marriage, or marriage-like relationships, have always been between a man and a woman",
+        "claimant": "Tony Abbott",
+        "date": "2013",
+        "originated-from": "",
+        "id_par": "5053844",
+        "job": "",
+        "party": "Liberal",
+        "source": "ABC"
+      },
+      {
+        "name": "Liberal_Positive_doc8",
+        "statement": "Tony Abbott says some places in Queensland and NSW are experiencing a \"once-in-a-quarter-century\" or even a \"once-in-a-century\" drought. ",
+        "claimant": "Tony Abbott",
+        "date": "2014",
+        "originated-from": "",
+        "id_par": "5295232",
+        "job": "",
+        "party": "Liberal",
+        "source": "ABC"
+      },
+      {
+        "name": "Labor_In_Between_doc8",
+        "statement": "I erred by not contesting the label tax for the fixed-price period of the emissions trading scheme I introduced",
+        "claimant": "Julia Gillard",
+        "date": "2013",
+        "originated-from": "",
+        "id_par": "4961132",
+        "job": "",
+        "party": "Labor",
+        "source": "ABC"
+      }
+    ]
+  }
 ]

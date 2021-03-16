@@ -193,7 +193,7 @@
           <!-- Document header markup -->
           <ng-template matStepLabel> T{{i + 1}}</ng-template>
           <mat-divider [inset]="true"></mat-divider>
-          <mat-card-title>Tweet Nr. {{i + 1}}</mat-card-title>
+          <mat-card-title>Statement Nr. {{i + 1}}</mat-card-title>
           <mat-divider [inset]="true"></mat-divider>
           <mat-card-content class="pt-16px">
 
@@ -215,11 +215,11 @@
                   <span id="statement-{{i}}" class="statement-text"
                     (mouseup)="performAnnotation(i, this.notes, this.changeDetector)"
                     (touchend)="performAnnotation(i, this.notes, this.changeDetector)">
-                    {{document.text}}
+                    {{document.statement}}
                   </span>
                 </li>
                 <ng-template #statementTextNoAnnotation>
-                  <li><span id="statement-{{i}}" class="statement-text">{{document.text}}</span></li>
+                  <li><span id="statement-{{i}}" class="statement-text">{{document.statement}}</span></li>
                 </ng-template>
               </ul>
             </div>
@@ -495,8 +495,8 @@
               (click)="performLogging('Back', i)">
               Back
             </button>
-            <button mat-flat-button color="primary" matStepperNext *ngIf="i+1<this.documentsAmount && this.annotator"
-              [disabled]="(!documentsForm[i].valid || !this.searchEngineRetrievedResponses[i] || taskCompleted || !checkAnnotationConsistency(i)) && !this.countdownsExpired[i]"
+            <button mat-flat-button color="primary" matStepperNext *ngIf="i+1<this.documentsAmount"
+              [disabled]="(!documentsForm[i].valid || !this.searchEngineRetrievedResponses[i] || taskCompleted && !this.countdownsExpired[i])"
               (click)="performLogging('Next', i);">
               Next
             </button>

@@ -11,12 +11,11 @@ export class Document {
   countdownExpired: boolean;
 
   id: string;
-  text: string;
-  adr_spans: Array<Span>;
-  adr_texts: Array<string>;
-  drug_spans: Array<Span>;
-  drug_texts: Array<string>;
-  url: string;
+  name: string;
+  statement: string;
+  claimant: string;
+  date: string;
+  originated_from: string;
 
   constructor(
     index: number,
@@ -25,38 +24,12 @@ export class Document {
     /* DO NOT REMOVE THIS LINE */
     this.index = index;
 
-    this.id = data['id']
-    this.text = data["text"];
-    this.adr_spans = new Array<Span>();
-    for (let index = 0; index < data["adr_spans"].length; index++) this.adr_spans.push(new Span(index, data["adr_spans"][index]))
-    this.adr_texts = new Array<string>();
-    for (let index = 0; index < data["adr_text"].length; index++) this.adr_texts.push(data["adr_text"][index])
-    this.drug_spans = new Array<Span>();
-    for (let index = 0; index < data["drug_spans"].length; index++) this.drug_spans.push(new Span(index, data["drug_spans"][index]))
-    this.drug_texts = new Array<string>();
-    for (let index = 0; index < data["drug_text"].length; index++) this.drug_texts.push(data["drug_text"][index])
+    this.id = data['id_par']
+    this.name = data["name"];
+    this.statement = data["statement"];
+    this.claimant = data["claimant"];
+    this.originated_from = data["originated-from"];
 
-    this.url = data["url"];
-  }
-
-}
-
-export class Span {
-
-  /* DO NOT REMOVE THIS ATTRIBUTE */
-  index: number;
-
-  start: number;
-  end: number;
-  text: string;
-
-  constructor(
-    index: number,
-    data: JSON
-  ) {
-    this.start = data["start"]
-    this.end = data["end"]
-    this.text = data["text"].trim()
   }
 
 }
