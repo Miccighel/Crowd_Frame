@@ -1100,6 +1100,9 @@ export class SkeletonComponent implements OnInit {
     this.notes[documentIndex].forEach((element) => {
       if (!element.deleted && element.option != "not_selected") check = true
     })
+    if(!this.annotator) {
+      check = true
+    }
     return check
   }
 
