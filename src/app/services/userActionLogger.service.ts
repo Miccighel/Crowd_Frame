@@ -87,8 +87,14 @@ export class ActionLogger {
       this.batchName = batchName;
 
       let details = {
-        screen_size : {width : window.screen.width, height : window.screen.height},
-        window_size : {width : window.innerWidth, height: window.innerHeight}
+        screen_size : {
+          width : window.screen.width,
+          height : window.screen.height
+        },
+        window_size : {
+          width : window.innerWidth,
+          height: window.innerHeight
+        }
       }
 
       this.logContext()
@@ -97,11 +103,13 @@ export class ActionLogger {
   }
 
   buttonClick(event){
-    console.log(event.type)
+    event.stopPropagation()
+    console.log(this.findSection(event), 'BUTTON', event.target.innerText.toUpperCase().trim(), event.x, event.y)
   }
 
   windowClick(event){
-    console.log(event.type)
+    event.stopPropagation()
+    console.log(this.findSection(event), event.x, event.y)
   }
 
   onCopy(event){
@@ -114,5 +122,30 @@ export class ActionLogger {
 
   onCut(event){
     console.log(event)
+  }
+
+  onScroll(event){
+    console.log()
+  }
+
+  findSection(event){
+    let element = event.target
+    if(element.nodeName.toLowerCase().includes('app')) {
+      while (element != null) {
+        if (element.nodeName.toLowerCase() == "div" && element.id != "" && element.id.includes('section')) {
+          return element.id
+        } else {
+          element = element.firstChild
+        }
+      }
+    } else {
+      while (element != null) {
+        if (element.nodeName.toLowerCase() == "div" && element.id != "" && element.id.includes('section')) {
+          return element.id
+        } else {
+          element = element.parentElement
+        }
+      }
+    }
   }
 }
