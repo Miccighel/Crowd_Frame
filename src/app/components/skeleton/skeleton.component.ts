@@ -80,14 +80,6 @@ export class SkeletonComponent implements OnInit {
 
   /* |--------- CONTROL FLOW & UI ELEMENTS - DECLARATION ---------| */
 
-  /* Variables to handle the control flow of the task */
-  taskAllowed: boolean;
-  taskStarted: boolean;
-  taskCompleted: boolean;
-  taskSuccessful: boolean;
-  taskFailed: boolean;
-  checkCompleted: boolean;
-
   /* References to task stepper and token forms */
   @ViewChild('stepper') stepper: MatStepper;
   @ViewChild('urlField') urlField: MatFormField;
@@ -135,7 +127,7 @@ export class SkeletonComponent implements OnInit {
   /* Amount of different instruction paragraphs */
   taskInstructionsAmount: number;
   /* Check to understand if the worker click on Next after looking at the main instruction page */
-  taskInstructionsRead: boolean;
+  //taskInstructionsRead: boolean;  <--- IMPLEMENTED IN SectionService
 
   /* |--------- INSTRUCTIONS DIMENSIONS - DECLARATION - (see: instructions_dimensions.json) ---------| */
 
@@ -286,14 +278,6 @@ export class SkeletonComponent implements OnInit {
     this.ngxService.startLoader('skeleton');
 
     /* |--------- CONTROL FLOW & UI ELEMENTS - INITIALIZATION ---------| */
-
-    this.taskAllowed = true;
-    this.taskStarted = false;
-    this.taskCompleted = false;
-    this.taskSuccessful = false;
-    this.taskFailed = false;
-    this.checkCompleted = false;
-
     this.tokenInput = new FormControl('', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
     this.tokenForm = formBuilder.group({
       "tokenInput": this.tokenInput
@@ -350,10 +334,7 @@ export class SkeletonComponent implements OnInit {
             /* If we retrieve some data from Cloudflare we use them to populate worker's object */
             cloudflareData => {
               this.worker = new Worker(this.workerIdentifier, this.S3Service.getWorkerFolder(this.configService.environment, null, this.workerIdentifier), cloudflareData, window.navigator, this.deviceDetectorService.getDeviceInfo())
-              this.taskAllowed = taskAllowed;
-              this.checkCompleted = true
-
-              /* Section service part (1-line) */
+              this.sectionService.taskAllowed = taskAllowed
               this.sectionService.checkCompleted = true
 
               this.changeDetector.detectChanges()
@@ -363,10 +344,7 @@ export class SkeletonComponent implements OnInit {
             /* Otherwise we won't have such information */
             error => {
               this.worker = new Worker(this.workerIdentifier, this.S3Service.getWorkerFolder(this.configService.environment, null, this.workerIdentifier), null, window.navigator, this.deviceDetectorService.getDeviceInfo())
-              this.taskAllowed = taskAllowed;
-              this.checkCompleted = true
-
-              /* Section service part (1-line) */
+              this.sectionService.taskAllowed = taskAllowed
               this.sectionService.checkCompleted = true
 
               this.changeDetector.detectChanges()
@@ -378,9 +356,6 @@ export class SkeletonComponent implements OnInit {
       /* If there is not any worker ID we simply load the task. A sort of testing mode. */
       } else {
         this.worker = new Worker(null, null, null, null, null)
-        this.checkCompleted = true
-
-        /* Section service part (1-line) */
         this.sectionService.checkCompleted = true
 
         this.changeDetector.detectChanges()
@@ -481,12 +456,9 @@ export class SkeletonComponent implements OnInit {
    * This function enables the task when the worker clicks on "Proceed" inside the main instructions page.
    */
   public enableTask() {
-    this.taskInstructionsRead = true
+    this.sectionService.taskInstructionsRead = true
     this.showSnackbar("If you have a very slow internet connection please wait a few seconds before clicking \"Start\".", "Dismiss", 15000)
     this.changeDetector.detectChanges()
-
-    /* Section service part */
-    this.sectionService.taskInstructionsRead = true
   }
 
   /*
@@ -530,9 +502,6 @@ export class SkeletonComponent implements OnInit {
 
       /* The token input field is disabled and the task interface can be shown */
       this.tokenInput.disable();
-      this.taskStarted = true;
-
-      /* Section service part */
       this.sectionService.taskStarted = true;
 
       this.documentsAmount = this.hit.documents.length;
@@ -713,6 +682,9 @@ export class SkeletonComponent implements OnInit {
 
       /* |--------- FINALIZATION ---------| */
 
+      /* Section service gets updated with loaded values */
+      this.updateAmounts()
+
       /* Detect changes within the DOM and update the page */
       this.changeDetector.detectChanges();
 
@@ -722,12 +694,14 @@ export class SkeletonComponent implements OnInit {
     }
   }
 
+  /* |--------- LOGGING SERVICE & SECTION SERVICE ---------| */
+
   /* Logging service initialization */
   public logInit(workerIdentifier, taskName, batchName, http){
     this.actionLogger.logInit(workerIdentifier, taskName, batchName, http);
   }
 
-  /* Section service get updated with questionnaire and document amounts */
+  /* Section service gets updated with questionnaire and document amounts */
   public updateAmounts(){
     this.sectionService.updateAmounts(this.questionnaireAmount, this.documentsAmount, this.allowedTries)
   }
@@ -1211,9 +1185,6 @@ export class SkeletonComponent implements OnInit {
     this.ngxService.startLoader('skeleton');
 
     /* The current try is completed and the final can shall begin */
-    this.taskCompleted = true;
-
-    /* Section service parte (1-line) */
     this.sectionService.taskCompleted = true
 
     /* Booleans to hold result of checks */
@@ -1268,18 +1239,10 @@ export class SkeletonComponent implements OnInit {
     /* If each check is true, the task is successful, otherwise the task is failed (but not over if there are more tries) */
 
     if (checker(computedChecks)) {
-      this.taskSuccessful = true;
-      this.taskFailed = false;
-
-      /* Section service parte */
       this.sectionService.taskSuccessful = true;
       this.sectionService.taskFailed = false;
 
     } else {
-      this.taskSuccessful = false;
-      this.taskFailed = true;
-
-      /* Section service parte */
       this.sectionService.taskSuccessful = false;
       this.sectionService.taskFailed = true;
 
@@ -1320,14 +1283,9 @@ export class SkeletonComponent implements OnInit {
     this.ngxService.startLoader('skeleton');
 
     /* Control variables to restore the state of task */
-    this.taskFailed = false;
-    this.taskSuccessful = false;
-    this.taskCompleted = false;
-    this.taskStarted = true;
     this.comment.setValue("");
     this.commentSent = false;
 
-    /* Section service part */
     this.sectionService.taskFailed = false;
     this.sectionService.taskSuccessful = false;
     this.sectionService.taskCompleted = false;

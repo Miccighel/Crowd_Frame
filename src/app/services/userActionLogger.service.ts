@@ -107,12 +107,19 @@ export class ActionLogger {
 
   buttonClick(event){
     event.stopPropagation()
-    console.log(this.findSection(event), 'BUTTON', event.target.innerText.toUpperCase().trim(), event.x, event.y)
+    let buttonName = event.target.innerText.toUpperCase().trim()
+    let section = ""
+    if (buttonName == 'TASK INSTRUCTIONS' || buttonName == 'CLOSE') {
+      section = this.sectionService.currentSection
+    } else {
+      section = this.sectionService.previousSection
+    }
+    console.log(section, 'BUTTON', buttonName, event.x, event.y)
   }
 
   windowClick(event){
     event.stopPropagation()
-    console.log(this.findSection(event), event.x, event.y)
+    console.log(this.findSection(), event.x, event.y)
   }
 
   onCopy(event){
@@ -131,25 +138,11 @@ export class ActionLogger {
     console.log()
   }
 
-  findSection(event){
-    return this.sectionService.getSection()
-    // let element = event.target
-    // if(element.nodeName.toLowerCase().includes('app')) {
-    //   while (element != null) {
-    //     if (element.nodeName.toLowerCase() == "div" && element.id != "" && element.id.includes('section')) {
-    //       return element.id
-    //     } else {
-    //       element = element.firstChild
-    //     }
-    //   }
-    // } else {
-    //   while (element != null) {
-    //     if (element.nodeName.toLowerCase() == "div" && element.id != "" && element.id.includes('section')) {
-    //       return element.id
-    //     } else {
-    //       element = element.parentElement
-    //     }
-    //   }
-    // }
+  findSection(){
+    return this.sectionService.currentSection
+  }
+
+  previousSection(){
+    return this.sectionService.previousSection
   }
 }

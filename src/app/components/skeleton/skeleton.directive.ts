@@ -14,7 +14,7 @@ export class ButtonDirective {
 }
 
 @Directive({selector: "app-skeleton"})
-export class WindowDirective implements AfterViewInit{
+export class SkeletonDirective implements AfterViewInit{
   constructor(private actionLogger: ActionLogger, private element: ElementRef) {}
 
   ngAfterViewInit() {
