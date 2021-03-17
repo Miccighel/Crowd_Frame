@@ -43,7 +43,7 @@
         </mat-form-field>
       </mat-card-content>
       <mat-card-actions>
-        <button mat-flat-button color="primary" (click)="performTaskSetup()">Start</button>
+        <button mat-flat-button color="primary" (click)="performTaskSetup(); updateAmounts()">Start</button>
       </mat-card-actions>
     </mat-card>
   </form>
@@ -174,7 +174,7 @@
           <!-- Next button markup -->
           <mat-card-actions>
             <button mat-flat-button color="primary" matStepperNext
-              [disabled]="(!questionnairesForm[i].valid || taskCompleted)" (click)="performLogging('Next',i)"> Next
+              [disabled]="(!questionnairesForm[i].valid || taskCompleted)" (click)="performLogging('Next',i); nextStep()"> Next
             </button>
             <span class="form-note">(*) you have to fill each field to proceed</span>
           </mat-card-actions>
@@ -492,12 +492,12 @@
 
             <button mat-flat-button color="primary" matStepperPrevious *ngIf="i>0"
               [disabled]="taskCompleted"
-              (click)="performLogging('Back', i)">
+              (click)="performLogging('Back', i); previousStep()">
               Back
             </button>
             <button mat-flat-button color="primary" matStepperNext *ngIf="i+1<this.documentsAmount"
               [disabled]="(!documentsForm[i].valid || !this.searchEngineRetrievedResponses[i] || taskCompleted && !this.countdownsExpired[i])"
-              (click)="performLogging('Next', i);">
+              (click)="performLogging('Next', i); nextStep()">
               Next
             </button>
             <button mat-flat-button color="primary" matStepperNext *ngIf="i+1>=this.documentsAmount"

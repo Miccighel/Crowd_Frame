@@ -35,6 +35,7 @@ import {HttpClient, HttpHeaders} from "@angular/common/http";
 /* Material modules */
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {ButtonDirective} from "./skeleton.directive";
+import {SectionService} from "../../services/section.service";
 
 /* Component HTML Tag definition */
 @Component({
@@ -67,6 +68,8 @@ export class SkeletonComponent implements OnInit {
   deviceDetectorService: DeviceDetectorService;
   /* Service to log to the server */
   actionLogger: ActionLogger
+  /* Service to track current section */
+  sectionService: SectionService
 
   /* HTTP client and headers */
   client: HttpClient;
@@ -260,7 +263,8 @@ export class SkeletonComponent implements OnInit {
     client: HttpClient,
     formBuilder: FormBuilder,
     snackBar: MatSnackBar,
-    actionLogger: ActionLogger
+    actionLogger: ActionLogger,
+    sectionService: SectionService
   ) {
     /* |--------- SERVICES & CO. - INITIALIZATION ---------| */
 
@@ -270,6 +274,8 @@ export class SkeletonComponent implements OnInit {
     this.S3Service = S3Service;
 
     this.actionLogger = actionLogger
+
+    this.sectionService = sectionService
 
     this.deviceDetectorService = deviceDetectorService;
     this.client = client;
@@ -346,6 +352,10 @@ export class SkeletonComponent implements OnInit {
               this.worker = new Worker(this.workerIdentifier, this.S3Service.getWorkerFolder(this.configService.environment, null, this.workerIdentifier), cloudflareData, window.navigator, this.deviceDetectorService.getDeviceInfo())
               this.taskAllowed = taskAllowed;
               this.checkCompleted = true
+
+              /* Section service part (1-line) */
+              this.sectionService.checkCompleted = true
+
               this.changeDetector.detectChanges()
               /* The loading spinner is stopped */
               this.ngxService.stopLoader('skeleton');
@@ -355,6 +365,10 @@ export class SkeletonComponent implements OnInit {
               this.worker = new Worker(this.workerIdentifier, this.S3Service.getWorkerFolder(this.configService.environment, null, this.workerIdentifier), null, window.navigator, this.deviceDetectorService.getDeviceInfo())
               this.taskAllowed = taskAllowed;
               this.checkCompleted = true
+
+              /* Section service part (1-line) */
+              this.sectionService.checkCompleted = true
+
               this.changeDetector.detectChanges()
               /* The loading spinner is stopped */
               this.ngxService.stopLoader('skeleton');
@@ -365,6 +379,10 @@ export class SkeletonComponent implements OnInit {
       } else {
         this.worker = new Worker(null, null, null, null, null)
         this.checkCompleted = true
+
+        /* Section service part (1-line) */
+        this.sectionService.checkCompleted = true
+
         this.changeDetector.detectChanges()
         this.ngxService.stopLoader('skeleton')
       }
@@ -466,6 +484,9 @@ export class SkeletonComponent implements OnInit {
     this.taskInstructionsRead = true
     this.showSnackbar("If you have a very slow internet connection please wait a few seconds before clicking \"Start\".", "Dismiss", 15000)
     this.changeDetector.detectChanges()
+
+    /* Section service part */
+    this.sectionService.taskInstructionsRead = true
   }
 
   /*
@@ -510,6 +531,9 @@ export class SkeletonComponent implements OnInit {
       /* The token input field is disabled and the task interface can be shown */
       this.tokenInput.disable();
       this.taskStarted = true;
+
+      /* Section service part */
+      this.sectionService.taskStarted = true;
 
       this.documentsAmount = this.hit.documents.length;
 
@@ -698,8 +722,22 @@ export class SkeletonComponent implements OnInit {
     }
   }
 
+  /* Logging service initialization */
   public logInit(workerIdentifier, taskName, batchName, http){
     this.actionLogger.logInit(workerIdentifier, taskName, batchName, http);
+  }
+
+  /* Section service get updated with questionnaire and document amounts */
+  public updateAmounts(){
+    this.sectionService.updateAmounts(this.questionnaireAmount, this.documentsAmount, this.allowedTries)
+  }
+
+  public nextStep(){
+    this.sectionService.increaseIndex()
+  }
+
+  public previousStep() {
+    this.sectionService.decreaseIndex()
   }
 
   /* |--------- DIMENSIONS ELEMENTS (see: dimensions.json) ---------| */
@@ -1175,6 +1213,9 @@ export class SkeletonComponent implements OnInit {
     /* The current try is completed and the final can shall begin */
     this.taskCompleted = true;
 
+    /* Section service parte (1-line) */
+    this.sectionService.taskCompleted = true
+
     /* Booleans to hold result of checks */
     let globalValidityCheck: boolean;
     let goldQuestionCheck: boolean;
@@ -1229,9 +1270,19 @@ export class SkeletonComponent implements OnInit {
     if (checker(computedChecks)) {
       this.taskSuccessful = true;
       this.taskFailed = false;
+
+      /* Section service parte */
+      this.sectionService.taskSuccessful = true;
+      this.sectionService.taskFailed = false;
+
     } else {
       this.taskSuccessful = false;
       this.taskFailed = true;
+
+      /* Section service parte */
+      this.sectionService.taskSuccessful = false;
+      this.sectionService.taskFailed = true;
+
     }
 
     if (!(this.worker.identifier === null)) {
@@ -1275,6 +1326,13 @@ export class SkeletonComponent implements OnInit {
     this.taskStarted = true;
     this.comment.setValue("");
     this.commentSent = false;
+
+    /* Section service part */
+    this.sectionService.taskFailed = false;
+    this.sectionService.taskSuccessful = false;
+    this.sectionService.taskCompleted = false;
+    this.sectionService.taskStarted = true;
+    this.sectionService.decreaseAllowedTries();
 
     /* Set stepper document_index to the first tab (currentDocument.e., bring the worker to the first document after the questionnaire) */
     this.stepper.selectedIndex = this.questionnaireAmount;

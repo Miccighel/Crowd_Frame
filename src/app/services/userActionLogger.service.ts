@@ -1,5 +1,6 @@
 import {HttpClient, HttpHeaders} from "@angular/common/http";
 import {Injectable} from "@angular/core";
+import {SectionService} from "./section.service";
 
 /*
 * This class offers a logging system for the platform. As a Service, the class is instanced as a Singleton in skeleton.component.ts
@@ -9,6 +10,7 @@ import {Injectable} from "@angular/core";
   providedIn: 'root',
 })
 export class ActionLogger {
+  private sectionService: SectionService
   private sequenceNumber: number;
   private readonly initTime: number;
   private workerID: string;
@@ -21,7 +23,8 @@ export class ActionLogger {
    * Default constructor
    * Initialize the sequence number to 0 and the initialization time of the logger
    */
-  constructor(){
+  constructor(sectionService: SectionService){
+    this.sectionService = sectionService
     this.sequenceNumber = 0;
     this.initTime = new Date().getTime()/1000;
   }
@@ -129,23 +132,24 @@ export class ActionLogger {
   }
 
   findSection(event){
-    let element = event.target
-    if(element.nodeName.toLowerCase().includes('app')) {
-      while (element != null) {
-        if (element.nodeName.toLowerCase() == "div" && element.id != "" && element.id.includes('section')) {
-          return element.id
-        } else {
-          element = element.firstChild
-        }
-      }
-    } else {
-      while (element != null) {
-        if (element.nodeName.toLowerCase() == "div" && element.id != "" && element.id.includes('section')) {
-          return element.id
-        } else {
-          element = element.parentElement
-        }
-      }
-    }
+    return this.sectionService.getSection()
+    // let element = event.target
+    // if(element.nodeName.toLowerCase().includes('app')) {
+    //   while (element != null) {
+    //     if (element.nodeName.toLowerCase() == "div" && element.id != "" && element.id.includes('section')) {
+    //       return element.id
+    //     } else {
+    //       element = element.firstChild
+    //     }
+    //   }
+    // } else {
+    //   while (element != null) {
+    //     if (element.nodeName.toLowerCase() == "div" && element.id != "" && element.id.includes('section')) {
+    //       return element.id
+    //     } else {
+    //       element = element.parentElement
+    //     }
+    //   }
+    // }
   }
 }

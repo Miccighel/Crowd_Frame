@@ -46,6 +46,7 @@ import {CountdownModule } from 'ngx-countdown';
 import {NgxFileHelpersModule} from 'ngx-file-helpers';
 import {ActionLogger} from "./services/userActionLogger.service";
 import {ButtonDirective, WindowDirective} from "./components/skeleton/skeleton.directive";
+import {SectionService} from "./services/section.service";
 
 @NgModule({
   declarations: [
@@ -99,7 +100,10 @@ import {ButtonDirective, WindowDirective} from "./components/skeleton/skeleton.d
     MatSlideToggleModule,
     NgxFileHelpersModule
   ],
-  providers: [ActionLogger],
+  providers: [
+    ActionLogger,
+    SectionService
+  ],
 })
 
 export class AppModule {
