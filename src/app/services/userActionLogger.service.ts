@@ -138,6 +138,14 @@ export class ActionLogger {
     console.log()
   }
 
+  onFocus(event){
+    console.log(event)
+  }
+
+  mouseMove(event){
+    console.log(event)
+  }
+
   findSection(){
     return this.sectionService.currentSection
   }
