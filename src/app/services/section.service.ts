@@ -5,7 +5,6 @@ import {Injectable} from "@angular/core";
 })
 export class SectionService{
   private _currentSection: string;
-  private _previousSection: string;
 
   private _instructionsAllowed: boolean
 
@@ -35,7 +34,6 @@ export class SectionService{
 
     this._documentIndex = 0;
 
-    this._previousSection = 'instructions-section';
     this._currentSection = 'instructions-section';
 
     this._instructionsAllowed = false;
@@ -96,10 +94,6 @@ export class SectionService{
     this._currentSection = value;
   }
 
-  set previousSection(value: string) {
-    this._previousSection = value;
-  }
-
   set instructionsAllowed(value: boolean) {
     this._instructionsAllowed = value;
   }
@@ -152,10 +146,6 @@ export class SectionService{
     return this._currentSection;
   }
 
-  get previousSection(): string {
-    return this._previousSection;
-  }
-
   get instructionsAllowed(): boolean {
     return this._instructionsAllowed;
   }
@@ -181,28 +171,20 @@ export class SectionService{
 
   private updateSection(){
     if(this._taskAllowed && this._checkCompleted && !this._taskInstructionsRead) {
-      this.previousSection = this.currentSection
       this.currentSection = 'instructions-section'
     } else if (!this._taskStarted && this._taskAllowed && this._checkCompleted && this._taskInstructionsRead) {
-      this.previousSection = this.currentSection
       this.currentSection = 'token-section'
     } else if (!this._taskAllowed) {
-      this.previousSection = this.currentSection
       this.currentSection = 'already-started-section'
     } else if (this._taskStarted && this._documentIndex < this._questionnaireAmount) {
-      this.previousSection = this.currentSection
       this.currentSection = 'questionnaire-section-' + this._documentIndex
     } else if (this._taskStarted) {
-      this.previousSection = this.currentSection
       this.currentSection = 'document-section-' + String(this._documentIndex - this._questionnaireAmount)
     } else if (this._taskCompleted && this._taskSuccessful){
-      this.previousSection = this.currentSection
       this.currentSection = 'success-section'
     } else if (this._taskCompleted && this._taskSuccessful && this._allowedTries > 0) {
-      this.previousSection = this.currentSection
       this.currentSection = 'retry-section'
     } else {
-      this.previousSection = this.currentSection
       this.currentSection = 'fail-section'
     }
 

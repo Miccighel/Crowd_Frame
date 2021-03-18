@@ -45,7 +45,12 @@ import {NgxUiLoaderModule} from "ngx-ui-loader";
 import {CountdownModule } from 'ngx-countdown';
 import {NgxFileHelpersModule} from 'ngx-file-helpers';
 import {ActionLogger} from "./services/userActionLogger.service";
-import {ButtonDirective, SkeletonDirective} from "./components/skeleton/skeleton.directive";
+import {
+  ButtonDirective,
+  InputDirective,
+  RadioDirective,
+  SkeletonDirective
+} from "./components/skeleton/skeleton.directive";
 import {SectionService} from "./services/section.service";
 
 @NgModule({
@@ -58,7 +63,9 @@ import {SectionService} from "./services/section.service";
     GeneratorComponent,
     LoaderComponent,
     ButtonDirective,
-    SkeletonDirective
+    SkeletonDirective,
+    InputDirective,
+    RadioDirective
   ],
   imports: [
     BrowserModule,

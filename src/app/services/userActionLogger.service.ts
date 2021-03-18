@@ -1,4 +1,4 @@
-import {HttpClient, HttpHeaders} from "@angular/common/http";
+import {HttpClient} from "@angular/common/http";
 import {Injectable} from "@angular/core";
 import {SectionService} from "./section.service";
 
@@ -10,7 +10,8 @@ import {SectionService} from "./section.service";
   providedIn: 'root',
 })
 export class ActionLogger {
-  private sectionService: SectionService
+  private sectionService: SectionService;
+  private loggerSection: string;
   private sequenceNumber: number;
   private readonly initTime: number;
   private workerID: string;
@@ -24,7 +25,8 @@ export class ActionLogger {
    * Initialize the sequence number to 0 and the initialization time of the logger
    */
   constructor(sectionService: SectionService){
-    this.sectionService = sectionService
+    this.sectionService = sectionService;
+    this.loggerSection = this.findSection();
     this.sequenceNumber = 0;
     this.initTime = new Date().getTime()/1000;
   }
@@ -94,10 +96,7 @@ export class ActionLogger {
           width : window.screen.width,
           height : window.screen.height
         },
-        window_size : {
-          width : window.innerWidth,
-          height: window.innerHeight
-        }
+        window_size: this.onResize()
       }
 
       this.logContext()
@@ -106,20 +105,22 @@ export class ActionLogger {
   }
 
   buttonClick(event){
-    event.stopPropagation()
     let buttonName = event.target.innerText.toUpperCase().trim()
     let section = ""
-    if (buttonName == 'TASK INSTRUCTIONS' || buttonName == 'CLOSE') {
-      section = this.sectionService.currentSection
-    } else {
-      section = this.sectionService.previousSection
+    section = this.loggerSection
+    this.loggerSection = this.findSection()
+    let details = {
+      section: section,
+      button: buttonName,
+      timeStamp: event.timeStamp,
+      x: event.x,
+      y: event.y
     }
-    console.log(section, 'BUTTON', buttonName, event.x, event.y)
+    console.log(details)
   }
 
   windowClick(event){
-    event.stopPropagation()
-    console.log(this.findSection(), event.x, event.y)
+    console.log(this.findSection(), event)
   }
 
   onCopy(event){
@@ -134,23 +135,56 @@ export class ActionLogger {
     console.log(event)
   }
 
-  onScroll(event){
-    console.log()
-  }
-
   onFocus(event){
     console.log(event)
   }
 
-  mouseMove(event){
-    console.log(event)
+  mouseMove(positionBuffer){
+    console.log(positionBuffer)
+  }
+
+  onResize(){
+    let scrollWidth = Math.max(
+      document.body.scrollWidth, document.documentElement.scrollWidth,
+      document.body.offsetWidth, document.documentElement.offsetWidth,
+      document.body.clientWidth, document.documentElement.clientWidth
+    );
+    let scrollHeight = Math.max(
+      document.body.scrollHeight, document.documentElement.scrollHeight,
+      document.body.offsetHeight, document.documentElement.offsetHeight,
+      document.body.clientHeight, document.documentElement.clientHeight
+    );
+    let details = {
+      section: this.sectionService.currentSection,
+      width: document.documentElement.clientWidth,
+      height: document.documentElement.clientHeight,
+      scrollWidth: scrollWidth,
+      scrollHeight: scrollHeight
+    }
+    console.log(details)
+  }
+
+  onScroll(obj){
+    let details = {
+      section: this.sectionService.currentSection,
+      startTimeStamp: obj.startTimeStamp,
+      endTimeStamp: obj.endTimeStamp,
+      x: window.pageXOffset,
+      y: window.pageYOffset
+    }
+    console.log(details)
+  }
+
+  onInput(event){
+    let details = {
+      section: this.sectionService.currentSection,
+      timeStamp: event.timeStamp,
+      target: event.target.value
+    }
+    console.log(details)
   }
 
   findSection(){
     return this.sectionService.currentSection
-  }
-
-  previousSection(){
-    return this.sectionService.previousSection
   }
 }
