@@ -175,11 +175,11 @@ export class ActionLogger {
     console.log(details)
   }
 
-  onInput(event){
+  onText(obj){
     let details = {
       section: this.sectionService.currentSection,
-      timeStamp: event.timeStamp,
-      target: event.target.value
+      timeStamp: obj.timeStamp,
+      target: obj.target
     }
     console.log(details)
   }

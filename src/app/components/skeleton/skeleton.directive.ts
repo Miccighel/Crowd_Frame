@@ -103,9 +103,10 @@ export class InputDirective implements AfterViewInit {
     fromEvent(this.element.nativeElement, 'keydown')
       .pipe(
         filter((event: KeyboardEvent) => event.key === 'Backspace'),
-        throttleTime(5000)
+        throttleTime(5000),
+        map((event: KeyboardEvent) => ({timeStamp: event.timeStamp, target: event.target['value']}))
       )
-      .subscribe((event: Event) => this.actionLogger.onInput(event))
+      .subscribe((obj) => this.actionLogger.onText(obj))
   }
 }
 
@@ -113,13 +114,11 @@ export class InputDirective implements AfterViewInit {
 export class RadioDirective implements AfterViewInit {
   constructor(private actionLogger: ActionLogger, private element: ElementRef) {}
 
-  @HostListener('change', ['$event'])
-  onChange(event){
-    console.log(event)
-  }
-
   ngAfterViewInit() {
-    fromEvent(this.element.nativeElement, 'change')
+    fromEvent(this.element.nativeElement, 'input')
+      .pipe(
+        map((event: InputEvent) => ({timeStamp: event.timeStamp, group: event.target['name'], value: event.target['value']}))
+      )
       .subscribe(event => console.log(event))
   }
 }
