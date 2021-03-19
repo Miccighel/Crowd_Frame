@@ -170,19 +170,19 @@ export class SectionService{
   }
 
   private updateSection(){
-    if(this._taskAllowed && this._checkCompleted && !this._taskInstructionsRead) {
+    if(this.taskAllowed && this.checkCompleted && !this.taskInstructionsRead) {
       this.currentSection = 'instructions-section'
-    } else if (!this._taskStarted && this._taskAllowed && this._checkCompleted && this._taskInstructionsRead) {
+    } else if (!this.taskStarted && this.taskAllowed && this.checkCompleted && this.taskInstructionsRead) {
       this.currentSection = 'token-section'
-    } else if (!this._taskAllowed) {
+    } else if (!this.taskAllowed) {
       this.currentSection = 'already-started-section'
-    } else if (this._taskStarted && this._documentIndex < this._questionnaireAmount) {
-      this.currentSection = 'questionnaire-section-' + this._documentIndex
-    } else if (this._taskStarted) {
-      this.currentSection = 'document-section-' + String(this._documentIndex - this._questionnaireAmount)
-    } else if (this._taskCompleted && this._taskSuccessful){
+    } else if (this.taskStarted && this.documentIndex < this.questionnaireAmount) {
+      this.currentSection = 'questionnaire-section-' + this.documentIndex
+    } else if (this.taskStarted && this.documentIndex < this.documentsAmount + this.questionnaireAmount - 1) {
+      this.currentSection = 'document-section-' + String(this.documentIndex - this.questionnaireAmount)
+    } else if (this.taskCompleted && this.taskSuccessful){
       this.currentSection = 'success-section'
-    } else if (this._taskCompleted && this._taskSuccessful && this._allowedTries > 0) {
+    } else if (this.taskCompleted && this.taskSuccessful && this.allowedTries > 0) {
       this.currentSection = 'retry-section'
     } else {
       this.currentSection = 'fail-section'
