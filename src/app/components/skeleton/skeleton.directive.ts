@@ -1,7 +1,7 @@
 import {AfterViewInit, Directive, ElementRef, HostListener,} from "@angular/core";
 import {ActionLogger} from "../../services/userActionLogger.service";
-import {fromEvent} from "rxjs";
-import {buffer, debounceTime, filter, map, tap, throttleTime} from "rxjs/operators";
+import {fromEvent, timer} from "rxjs";
+import {buffer, debounceTime, filter, map, switchMap, takeUntil, tap, throttleTime} from "rxjs/operators";
 
 @Directive({selector: "button"})
 export class ButtonDirective {
@@ -161,8 +161,11 @@ export class SkeletonDirective implements AfterViewInit{
      * SELECTION
      * Listen to text selection
      */
-    fromEvent(document, 'selectstart')
-      .pipe(map((event: Event) => ({timeStamp: event.timeStamp, possibleTarget: event.target['data']})))
+    fromEvent(document, 'mousedown')
+      .pipe(
+        switchMap(() => fromEvent(document, 'mouseup')),
+        map((event: Event) => ({timeStamp: event.timeStamp}))
+      )
       .subscribe((obj) => this.actionLogger.onSelect(obj))
 
     /* ------- CLIPBOARD EVENTS ------- */
@@ -171,7 +174,7 @@ export class SkeletonDirective implements AfterViewInit{
      * Listen to copy event, can't get clipboard content
      */
     fromEvent(this.element.nativeElement, 'copy')
-      .pipe(map((event: Event) => ({timeStamp: event.timeStamp, target: event.target})))
+      .pipe(map((event: Event) => ({timeStamp: event.timeStamp})))
       .subscribe(obj => this.actionLogger.onCopy(obj))
 
     /*
@@ -179,7 +182,7 @@ export class SkeletonDirective implements AfterViewInit{
      * Listen to cut event, can't get clipboard content
      */
     fromEvent(this.element.nativeElement, 'cut')
-      .pipe(map((event: Event) => ({timeStamp: event.timeStamp, target: event.target})))
+      .pipe(map((event: Event) => ({timeStamp: event.timeStamp})))
       .subscribe(obj => this.actionLogger.onCut(obj))
   }
 }
@@ -230,6 +233,5 @@ export class RadioDirective implements AfterViewInit {
 }
 
 //TODO verifica della safe mode
-//TODO reverse lookup ip
 //TODO informazioni sulla connessione
 //TODO contenuto del copy e cut

@@ -72,7 +72,7 @@ export class ActionLogger {
   logContext(){
     let payload = this.buildPayload('context', null)
     console.log(payload)
-    //this.http.post('https://8vd1uyg771.execute-api.us-east-1.amazonaws.com/logger/stats', payload).subscribe(data => console.log(data))
+    this.http.post('https://8vd1uyg771.execute-api.us-east-1.amazonaws.com/logger/stats', payload).subscribe()
   }
 
   /**
@@ -160,7 +160,7 @@ export class ActionLogger {
     let details = {
       section: this.findSection(),
       timeStamp: obj.timeStamp,
-      target: obj.target
+      target: document.getSelection().toString()
     }
     this.log('copy', details)
   }
@@ -173,7 +173,7 @@ export class ActionLogger {
     let details = {
       section: this.findSection(),
       timeStamp: obj.timeStamp,
-      target: obj.target
+      target: document.getSelection().toString()
     }
     this.log('cut', details)
   }
@@ -235,7 +235,7 @@ export class ActionLogger {
     let details = {
       section: this.findSection(),
       timeStamp: obj.timeStamp,
-      possibleTarget: obj.possibleTarget
+      selected: document.getSelection().toString()
     }
     this.log('select', details)
   }
