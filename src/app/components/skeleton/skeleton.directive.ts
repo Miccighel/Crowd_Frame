@@ -1,7 +1,7 @@
-import {AfterViewInit, Directive, ElementRef, HostListener,} from "@angular/core";
+import {AfterViewInit, Directive, ElementRef} from "@angular/core";
 import {ActionLogger} from "../../services/userActionLogger.service";
-import {fromEvent, timer} from "rxjs";
-import {buffer, debounceTime, filter, map, switchMap, takeUntil, tap, throttleTime} from "rxjs/operators";
+import {fromEvent} from "rxjs";
+import {buffer, debounceTime, filter, map, switchMap, tap, throttleTime} from "rxjs/operators";
 
 @Directive({selector: "button"})
 export class ButtonDirective {
@@ -100,7 +100,11 @@ export class SkeletonDirective implements AfterViewInit{
         map(array => ({keySequence: array, sentence: sentence})),
         tap(() => sentence = "")
       )
-      .subscribe(obj => console.log(obj))
+      .subscribe(obj => {
+        if(obj.keySequence.length > 0){
+          this.actionLogger.keypress(obj)
+        }
+      })
 
     /* ------- GLOBAL EVENTS ------- */
     /*
@@ -156,17 +160,6 @@ export class SkeletonDirective implements AfterViewInit{
         map((event: Event) => ({timeStamp: event.timeStamp}))
       )
       .subscribe((obj) => this.actionLogger.windowResize(obj))
-
-    /*
-     * SELECTION
-     * Listen to text selection
-     */
-    fromEvent(document, 'mousedown')
-      .pipe(
-        switchMap(() => fromEvent(document, 'mouseup')),
-        map((event: Event) => ({timeStamp: event.timeStamp}))
-      )
-      .subscribe((obj) => this.actionLogger.onSelect(obj))
 
     /* ------- CLIPBOARD EVENTS ------- */
     /*
@@ -234,4 +227,3 @@ export class RadioDirective implements AfterViewInit {
 
 //TODO verifica della safe mode
 //TODO informazioni sulla connessione
-//TODO contenuto del copy e cut

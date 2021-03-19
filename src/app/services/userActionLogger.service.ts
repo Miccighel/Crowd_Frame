@@ -91,6 +91,8 @@ export class ActionLogger {
       this.taskName = taskName;
       this.batchName = batchName;
 
+      console.log(navigator)
+
       let details = {
         screen_size : {
           width : window.screen.width,
@@ -129,15 +131,19 @@ export class ActionLogger {
    * @param obj mapped event object {timeStamp, x, y, target}
    */
   windowClick(obj){
-    let details = {
-      section: this.findSection(),
-      timeStamp: obj.timeStamp,
-      mouseButton: obj.mouseButton,
-      x: obj.x,
-      y: obj.y,
-      target: obj.target
+    if (document.getSelection().toString() !== ""){
+      this.onSelect(obj.timeStamp)
+    } else {
+      let details = {
+        section: this.findSection(),
+        timeStamp: obj.timeStamp,
+        mouseButton: obj.mouseButton,
+        x: obj.x,
+        y: obj.y,
+        target: obj.target
+      }
+      this.log('click', details)
     }
-    this.log('click', details)
   }
 
   /**
@@ -229,12 +235,12 @@ export class ActionLogger {
 
   /**
    * Log text selection
-   * @param obj mapped event object {timeStamp, possibleTarget}
+   * @param timeStamp
    */
-  onSelect(obj){
+  onSelect(timeStamp){
     let details = {
       section: this.findSection(),
-      timeStamp: obj.timeStamp,
+      timeStamp: timeStamp,
       selected: document.getSelection().toString()
     }
     this.log('select', details)
