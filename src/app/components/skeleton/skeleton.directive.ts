@@ -13,7 +13,8 @@ export class ButtonDirective {
     fromEvent(this.element.nativeElement, 'click')
       .pipe(
         tap((event: Event) => event.stopPropagation()),
-        debounceTime(1000)
+        debounceTime(1000),
+        map((event: MouseEvent) => ({timeStamp: event.timeStamp, x: event.x, y: event.y, buttonName: event.target['innerText'].toUpperCase().trim()}))
       )
       .subscribe(event => this.actionLogger.buttonClick(event))
   }
@@ -37,7 +38,8 @@ export class SkeletonDirective implements AfterViewInit{
       .pipe(
         throttleTime(100),
         map((event: MouseEvent) => ({timeStamp: event.timeStamp, x: event.clientX, y: event.clientY})),
-        buffer(mouseMoveEvent.pipe(debounceTime(500)))
+        buffer(mouseMoveEvent.pipe(debounceTime(500))),
+        filter(array => array.length > 1)
       )
       .subscribe(positionBuffer => this.actionLogger.mouseMove(positionBuffer))
 
@@ -48,7 +50,7 @@ export class SkeletonDirective implements AfterViewInit{
     fromEvent(this.element.nativeElement, 'click')
       .pipe(
         tap((event: MouseEvent) => event.stopPropagation()),
-        map((event: MouseEvent) => ({timeStamp: event.timeStamp, x: event.clientX, y: event.clientY})),
+        map((event: MouseEvent) => ({timeStamp: event.timeStamp, x: event.clientX, y: event.clientY, target: event.target})),
         debounceTime(300)
       )
       .subscribe(obj => this.actionLogger.windowClick(obj))
@@ -83,12 +85,36 @@ export class SkeletonDirective implements AfterViewInit{
      * Listening on window resize, introduced a debounce time to trigger just one call to the log each resize
      */
     fromEvent(window, 'resize')
-      .pipe(debounceTime(500))
-      .subscribe(() => this.actionLogger.onResize())
+      .pipe(
+        debounceTime(500),
+        map((event: Event) => ({timeStamp: event.timeStamp}))
+      )
+      .subscribe((obj) => this.actionLogger.windowResize(obj))
+
+    /*
+     * SELECTION
+     * Listen to text selection
+     */
+    fromEvent(document, 'selectstart')
+      .pipe(map((event: Event) => ({timeStamp: event.timeStamp, possibleTarget: event.target['data']})))
+      .subscribe((obj) => console.log(obj))
 
     /* ------- CLIPBOARD EVENTS ------- */
+    /*
+     * COPY
+     * Listen to copy event, can't get clipboard content
+     */
     fromEvent(this.element.nativeElement, 'copy')
-      .subscribe(event => this.actionLogger.onCopy(event))
+      .pipe(map((event: Event) => ({timeStamp: event.timeStamp, target: event.target})))
+      .subscribe(obj => this.actionLogger.onCopy(obj))
+
+    /*
+     * CUT
+     * Listen to cut event, can't get clipboard content
+     */
+    fromEvent(this.element.nativeElement, 'cut')
+      .pipe(map((event: Event) => ({timeStamp: event.timeStamp, target: event.target})))
+      .subscribe(obj => this.actionLogger.onCopy(obj))
   }
 }
 
@@ -97,16 +123,23 @@ export class InputDirective implements AfterViewInit {
   constructor(private actionLogger: ActionLogger, private element: ElementRef) {}
 
   ngAfterViewInit() {
+    /*
+     * Listen to a paste event on input area and get pasted text
+     */
     fromEvent(this.element.nativeElement, 'paste')
-      .subscribe(event => this.actionLogger.onPaste(event))
+      .pipe(map((event: ClipboardEvent) => ({timeStamp: event.timeStamp, text: event.clipboardData.getData('text')})))
+      .subscribe(obj => this.actionLogger.onPaste(obj))
 
+    /*
+     * When user delete something on the text area, the event log what has written
+     */
     fromEvent(this.element.nativeElement, 'keydown')
       .pipe(
         filter((event: KeyboardEvent) => event.key === 'Backspace'),
         throttleTime(5000),
         map((event: KeyboardEvent) => ({timeStamp: event.timeStamp, target: event.target['value']}))
       )
-      .subscribe((obj) => this.actionLogger.onText(obj))
+      .subscribe((obj) => this.actionLogger.textErase(obj))
   }
 }
 
@@ -115,10 +148,11 @@ export class RadioDirective implements AfterViewInit {
   constructor(private actionLogger: ActionLogger, private element: ElementRef) {}
 
   ngAfterViewInit() {
+    /*
+     *  When user change radio value on a group, log the new value
+     */
     fromEvent(this.element.nativeElement, 'input')
-      .pipe(
-        map((event: InputEvent) => ({timeStamp: event.timeStamp, group: event.target['name'], value: event.target['value']}))
-      )
-      .subscribe(event => console.log(event))
+      .pipe(map((event: InputEvent) => ({timeStamp: event.timeStamp, group: event.target['name'], value: event.target['value']})))
+      .subscribe(obj => this.actionLogger.radioChange(obj))
   }
 }

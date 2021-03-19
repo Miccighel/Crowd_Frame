@@ -178,11 +178,11 @@ export class SectionService{
       this.currentSection = 'already-started-section'
     } else if (this.taskStarted && this.documentIndex < this.questionnaireAmount) {
       this.currentSection = 'questionnaire-section-' + this.documentIndex
-    } else if (this.taskStarted && this.documentIndex < this.documentsAmount + this.questionnaireAmount - 1) {
+    } else if (this.taskStarted && this.documentIndex < this.documentsAmount + this.questionnaireAmount) {
       this.currentSection = 'document-section-' + String(this.documentIndex - this.questionnaireAmount)
     } else if (this.taskCompleted && this.taskSuccessful){
       this.currentSection = 'success-section'
-    } else if (this.taskCompleted && this.taskSuccessful && this.allowedTries > 0) {
+    } else if (this.taskCompleted && !this.taskSuccessful && this.allowedTries > 0) {
       this.currentSection = 'retry-section'
     } else {
       this.currentSection = 'fail-section'

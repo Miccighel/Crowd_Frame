@@ -1,4 +1,4 @@
-import {HttpClient} from "@angular/common/http";
+import {HttpClient, HttpHeaders} from "@angular/common/http";
 import {Injectable} from "@angular/core";
 import {SectionService} from "./section.service";
 
@@ -20,7 +20,7 @@ export class ActionLogger {
   private http: HttpClient;
   private init = false;  // This variable is only needed to not send double request on ngInit
 
-  /**
+  /*
    * Default constructor
    * Initialize the sequence number to 0 and the initialization time of the logger
    */
@@ -55,7 +55,7 @@ export class ActionLogger {
    */
   log(type: string, details: object) {
     let payload = this.buildPayload(type, details)
-
+    console.log(payload)
     // this.http.post(
     //   'https://8vd1uyg771.execute-api.us-east-1.amazonaws.com/logger/log',
     //   payload,
@@ -71,8 +71,8 @@ export class ActionLogger {
    */
   logContext(){
     let payload = this.buildPayload('context', null)
-
-    //this.http.post('https://8vd1uyg771.execute-api.us-east-1.amazonaws.com/logger/stats', payload).subscribe(data => console.log(data))
+    console.log(payload)
+    // this.http.post('https://8vd1uyg771.execute-api.us-east-1.amazonaws.com/logger/stats', payload).subscribe(data => console.log(data))
   }
 
   /**
@@ -96,7 +96,7 @@ export class ActionLogger {
           width : window.screen.width,
           height : window.screen.height
         },
-        window_size: this.onResize()
+        window_size: this.getCurrentSize()
       }
 
       this.logContext()
@@ -104,46 +104,72 @@ export class ActionLogger {
     }
   }
 
-  buttonClick(event){
-    let buttonName = event.target.innerText.toUpperCase().trim()
-    let section = ""
-    section = this.loggerSection
+  buttonClick(obj){
+    let section = this.loggerSection
     this.loggerSection = this.findSection()
     let details = {
       section: section,
-      button: buttonName,
-      timeStamp: event.timeStamp,
-      x: event.x,
-      y: event.y
+      button: obj.buttonName,
+      timeStamp: obj.timeStamp,
+      x: obj.x,
+      y: obj.y
     }
-    console.log(details)
+    this.log('button', details)
   }
 
-  windowClick(event){
-    console.log(this.findSection(), event)
+  windowClick(obj){
+    let details = {
+      section: this.findSection(),
+      timeStamp: obj.timeStamp,
+      x: obj.x,
+      y: obj.y,
+      target: obj.target
+    }
+    this.log('click', details)
   }
 
-  onCopy(event){
-    console.log(event)
+  onCopy(obj){
+    let details = {
+      section: this.findSection(),
+      timeStamp: obj.timeStamp,
+      target: obj.target
+    }
+    this.log('copy', details)
   }
 
-  onPaste(event){
-    console.log(event.clipboardData.getData('text'))
+  onCut(obj){
+    let details = {
+      section: this.findSection(),
+      timeStamp: obj.timeStamp,
+      target: obj.target
+    }
+    this.log('cut', details)
   }
 
-  onCut(event){
-    console.log(event)
-  }
-
-  onFocus(event){
-    console.log(event)
+  onPaste(obj){
+    let details = {
+      section: this.findSection(),
+      timeStamp: obj.timeStamp,
+      text: obj.text
+    }
+    this.log('paste', details)
   }
 
   mouseMove(positionBuffer){
-    console.log(positionBuffer)
+    let details = {
+      section: this.findSection(),
+      points: positionBuffer
+    }
+    this.log('move', details)
   }
 
-  onResize(){
+  windowResize(obj){
+    let details = this.getCurrentSize()
+    details['timeStamp'] = obj.timeStamp
+    this.log('resize', details)
+  }
+
+  getCurrentSize(){
     let scrollWidth = Math.max(
       document.body.scrollWidth, document.documentElement.scrollWidth,
       document.body.offsetWidth, document.documentElement.offsetWidth,
@@ -154,14 +180,13 @@ export class ActionLogger {
       document.body.offsetHeight, document.documentElement.offsetHeight,
       document.body.clientHeight, document.documentElement.clientHeight
     );
-    let details = {
+    return {
       section: this.sectionService.currentSection,
       width: document.documentElement.clientWidth,
       height: document.documentElement.clientHeight,
       scrollWidth: scrollWidth,
       scrollHeight: scrollHeight
     }
-    console.log(details)
   }
 
   onScroll(obj){
@@ -172,16 +197,35 @@ export class ActionLogger {
       x: window.pageXOffset,
       y: window.pageYOffset
     }
-    console.log(details)
+    this.log('scroll', details)
   }
 
-  onText(obj){
+  textErase(obj){
     let details = {
       section: this.sectionService.currentSection,
       timeStamp: obj.timeStamp,
-      target: obj.target
+      value: obj.target
     }
-    console.log(details)
+    this.log('erasedText', details)
+  }
+
+  radioChange(obj){
+    let details = {
+      section: this.sectionService.currentSection,
+      timeStamp: obj.timeStamp,
+      group: obj.group,
+      value: obj.value
+    }
+     this.log('radioChange', details)
+  }
+
+  onSelect(obj){
+    let details = {
+      section: this.sectionService.currentSection,
+      timeStamp: obj.timeStamp,
+      possibleTarget: obj.possibleTarget
+    }
+    this.log('select', details)
   }
 
   findSection(){

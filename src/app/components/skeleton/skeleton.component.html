@@ -502,7 +502,7 @@
             </button>
             <button mat-flat-button color="primary" matStepperNext *ngIf="i+1>=this.documentsAmount"
               [disabled]="!documentsForm[i].valid && !this.countdownsExpired[i]"
-              (click)="performLogging('Finish', i); performQualityCheck()">
+              (click)="performLogging('Finish', i); nextStep(); performQualityCheck()">
               Finish
             </button>
 
