@@ -56,6 +56,18 @@ export class SkeletonDirective implements AfterViewInit{
       .subscribe(obj => this.actionLogger.windowClick(obj))
 
     /* ------- DOCUMENT EVENTS ------- */
+
+    /*
+     * FOCUS
+     * Listener for window focus and blur
+     */
+    fromEvent(window, 'focus')
+      .pipe(map((event: Event) => ({timeStamp: event.timeStamp})))
+      .subscribe(obj => this.actionLogger.windowFocus(obj))
+    fromEvent(window, 'blur')
+      .pipe(map((event: Event) => ({timeStamp: event.timeStamp})))
+      .subscribe(obj => this.actionLogger.windowBlur(obj))
+
     /*
      * SCROLL
      * This listener throttles and debounce the scroll event passing to the logger the first scroll event time and last one
@@ -97,7 +109,7 @@ export class SkeletonDirective implements AfterViewInit{
      */
     fromEvent(document, 'selectstart')
       .pipe(map((event: Event) => ({timeStamp: event.timeStamp, possibleTarget: event.target['data']})))
-      .subscribe((obj) => console.log(obj))
+      .subscribe((obj) => this.actionLogger.onSelect(obj))
 
     /* ------- CLIPBOARD EVENTS ------- */
     /*
@@ -131,15 +143,21 @@ export class InputDirective implements AfterViewInit {
       .subscribe(obj => this.actionLogger.onPaste(obj))
 
     /*
-     * When user delete something on the text area, the event log what has written
+     * When user delete something on the text area or press Enter, the event handler log what has written
      */
     fromEvent(this.element.nativeElement, 'keydown')
       .pipe(
-        filter((event: KeyboardEvent) => event.key === 'Backspace'),
+        filter((event: KeyboardEvent) => event.key === 'Backspace' || event.key === 'Enter'),
         throttleTime(5000),
         map((event: KeyboardEvent) => ({timeStamp: event.timeStamp, target: event.target['value']}))
       )
-      .subscribe((obj) => this.actionLogger.textErase(obj))
+      .subscribe((obj) => this.actionLogger.textLog(obj))
+
+    fromEvent(this.element.nativeElement, 'blur')
+      .pipe(map((event: Event) => ({timeStamp: event.timeStamp, target: event.target['value']})))
+      .subscribe((obj) => this.actionLogger.textLog(obj))
+
+
   }
 }
 
@@ -156,3 +174,13 @@ export class RadioDirective implements AfterViewInit {
       .subscribe(obj => this.actionLogger.radioChange(obj))
   }
 }
+
+//TODO window focus
+//TODO document unload
+//TODO distinzione tra click
+//TODO monitor dei shortcut
+//TODO keystroke number
+//TODO contenuto del copy e cut
+//TODO reverse lookup ip
+//TODO verifica della safe mode
+//TODO informazioni sulla connessione

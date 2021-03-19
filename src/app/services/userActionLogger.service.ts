@@ -104,9 +104,16 @@ export class ActionLogger {
     }
   }
 
+  /**
+   * Log a button click
+   * @param obj mapped event object {buttonName, timeStamp, x, y}
+   */
   buttonClick(obj){
     let section = this.loggerSection
     this.loggerSection = this.findSection()
+    if(section != this.loggerSection){
+      this.windowResize(obj)
+    }
     let details = {
       section: section,
       button: obj.buttonName,
@@ -117,6 +124,10 @@ export class ActionLogger {
     this.log('button', details)
   }
 
+  /**
+   * Log a generic click on the skeleton
+   * @param obj mapped event object {timeStamp, x, y, target}
+   */
   windowClick(obj){
     let details = {
       section: this.findSection(),
@@ -128,6 +139,10 @@ export class ActionLogger {
     this.log('click', details)
   }
 
+  /**
+   * Log a copy event
+   * @param obj mapped event object {timeStamp, target}
+   */
   onCopy(obj){
     let details = {
       section: this.findSection(),
@@ -137,6 +152,10 @@ export class ActionLogger {
     this.log('copy', details)
   }
 
+  /**
+   * Log a cut event
+   * @param obj mapped event object {timeStamp, target}
+   */
   onCut(obj){
     let details = {
       section: this.findSection(),
@@ -146,6 +165,10 @@ export class ActionLogger {
     this.log('cut', details)
   }
 
+  /**
+   * Log a paste event on an textarea element
+   * @param obj mapped event object {timeStamp, text}
+   */
   onPaste(obj){
     let details = {
       section: this.findSection(),
@@ -155,38 +178,47 @@ export class ActionLogger {
     this.log('paste', details)
   }
 
+  /**
+   * Log an array of mouse movements
+   * @param positionBuffer array of objects {timeStamp, x, y}
+   */
   mouseMove(positionBuffer){
     let details = {
       section: this.findSection(),
       points: positionBuffer
     }
-    this.log('move', details)
+    this.log('movements', details)
   }
 
+  /**
+   * Log window dimensions after a resize
+   * Call aux function getCurrentSize()
+   * @param obj mapped event object {timeStamp}
+   */
   windowResize(obj){
     let details = this.getCurrentSize()
-    details['timeStamp'] = obj.timeStamp
+      details['timeStamp'] = obj.timeStamp
     this.log('resize', details)
   }
 
-  getCurrentSize(){
-    let scrollWidth = Math.max(
-      document.body.scrollWidth, document.documentElement.scrollWidth,
-      document.body.offsetWidth, document.documentElement.offsetWidth,
-      document.body.clientWidth, document.documentElement.clientWidth
-    );
-    let scrollHeight = Math.max(
-      document.body.scrollHeight, document.documentElement.scrollHeight,
-      document.body.offsetHeight, document.documentElement.offsetHeight,
-      document.body.clientHeight, document.documentElement.clientHeight
-    );
-    return {
-      section: this.sectionService.currentSection,
-      width: document.documentElement.clientWidth,
-      height: document.documentElement.clientHeight,
-      scrollWidth: scrollWidth,
-      scrollHeight: scrollHeight
+  /**
+   * Log window focus
+   * @param obj
+   */
+  windowFocus(obj){
+    let details = {
+      section: this.findSection(),
+      timeStamp: obj.time
     }
+    this.windowResize(obj)
+    this.log('window_focus', details)
+  }
+
+  windowBlur(obj){
+    let details = {
+      timeStamp: obj.time
+    }
+    this.log('window_blur', details)
   }
 
   onScroll(obj){
@@ -200,7 +232,7 @@ export class ActionLogger {
     this.log('scroll', details)
   }
 
-  textErase(obj){
+  textLog(obj){
     let details = {
       section: this.sectionService.currentSection,
       timeStamp: obj.timeStamp,
@@ -228,7 +260,30 @@ export class ActionLogger {
     this.log('select', details)
   }
 
+  /* ----- UTILITIES ----- */
+  getCurrentSize(){
+    let scrollWidth = Math.max(
+      document.body.scrollWidth, document.documentElement.scrollWidth,
+      document.body.offsetWidth, document.documentElement.offsetWidth,
+      document.body.clientWidth, document.documentElement.clientWidth
+    );
+    let scrollHeight = Math.max(
+      document.body.scrollHeight, document.documentElement.scrollHeight,
+      document.body.offsetHeight, document.documentElement.offsetHeight,
+      document.body.clientHeight, document.documentElement.clientHeight
+    );
+    return {
+      section: this.sectionService.currentSection,
+      width: document.documentElement.clientWidth,
+      height: document.documentElement.clientHeight,
+      scrollWidth: scrollWidth,
+      scrollHeight: scrollHeight
+    }
+  }
+
   findSection(){
     return this.sectionService.currentSection
   }
 }
+
+//TODO log del motore di ricerca: tutte le richieste, scaricare le pagine dove avviene il click
