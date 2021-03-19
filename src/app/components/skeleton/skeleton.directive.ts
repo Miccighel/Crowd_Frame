@@ -44,21 +44,75 @@ export class SkeletonDirective implements AfterViewInit{
       .subscribe(positionBuffer => this.actionLogger.mouseMove(positionBuffer))
 
     /*
-     * MOUSE CLICK
+     * LEFT MOUSE CLICK
      * Debounce time was introduced to prevent click spamming
      */
     fromEvent(this.element.nativeElement, 'click')
       .pipe(
         tap((event: MouseEvent) => event.stopPropagation()),
-        map((event: MouseEvent) => ({timeStamp: event.timeStamp, x: event.clientX, y: event.clientY, target: event.target})),
-        debounceTime(300)
+        debounceTime(300),
+        map((event: MouseEvent) => ({timeStamp: event.timeStamp, x: event.clientX, y: event.clientY, target: event.target, mouseButton: 'left'}))
       )
       .subscribe(obj => this.actionLogger.windowClick(obj))
 
-    /* ------- DOCUMENT EVENTS ------- */
+    /*
+     * RIGHT MOUSE CLICK
+     */
+    fromEvent(this.element.nativeElement, 'contextmenu')
+      .pipe(
+        debounceTime(300),
+        map((event: MouseEvent) => ({timeStamp: event.timeStamp, x: event.clientX, y: event.clientY, target: event.target, mouseButton: 'right'}))
+      )
+      .subscribe(obj => this.actionLogger.windowClick(obj))
+
+    /* ------- KEYBOARD EVENTS ------- */
+    /*
+     * SHORTCUT LISTENER
+     */
+    fromEvent(document, 'keyup')
+      .pipe(
+        filter((event: Event) =>
+          event['key'] != 'Control' &&
+          event['key'] != 'Shift' &&
+          (event['ctrlKey'] == true || (event['ctrlKey'] == true && event['altKey'] == true))
+        ),
+        debounceTime(300),
+        map((event: Event) => ({timeStamp: event.timeStamp, ctrl: event['ctrlKey'], alt: event['altKey'], key: event['key']}))
+      )
+      .subscribe(event => this.actionLogger.shortcut(event))
 
     /*
-     * FOCUS
+     * KEY PRESS
+     */
+    let keyEvent = fromEvent(document, 'keyup')
+    let sentence = ""
+    keyEvent
+      .pipe(
+        filter((event: Event) =>
+          event['key'] != 'Control' &&
+          event['key'] != 'Shift' &&
+          event['ctrlKey'] != true &&
+          event['altKey'] != true
+        ),
+        map((event: Event) => ({timeStamp: event.timeStamp, key: event['key']})),
+        tap(obj => sentence += obj.key),
+        buffer(keyEvent.pipe(debounceTime(1000))),
+        map(array => ({keySequence: array, sentence: sentence})),
+        tap(() => sentence = "")
+      )
+      .subscribe(obj => console.log(obj))
+
+    /* ------- GLOBAL EVENTS ------- */
+    /*
+     * UNLOAD
+     * Listener for document unload (this event is unreliable)
+     */
+    fromEvent(window, 'beforeunload')
+      .pipe(map((event: Event) => ({timeStamp: event.timeStamp})))
+      .subscribe(obj => this.actionLogger.beforeUnload(obj))
+
+    /*
+     * FOCUS & BLUR
      * Listener for window focus and blur
      */
     fromEvent(window, 'focus')
@@ -126,7 +180,7 @@ export class SkeletonDirective implements AfterViewInit{
      */
     fromEvent(this.element.nativeElement, 'cut')
       .pipe(map((event: Event) => ({timeStamp: event.timeStamp, target: event.target})))
-      .subscribe(obj => this.actionLogger.onCopy(obj))
+      .subscribe(obj => this.actionLogger.onCut(obj))
   }
 }
 
@@ -175,12 +229,7 @@ export class RadioDirective implements AfterViewInit {
   }
 }
 
-//TODO window focus
-//TODO document unload
-//TODO distinzione tra click
-//TODO monitor dei shortcut
-//TODO keystroke number
-//TODO contenuto del copy e cut
-//TODO reverse lookup ip
 //TODO verifica della safe mode
+//TODO reverse lookup ip
 //TODO informazioni sulla connessione
+//TODO contenuto del copy e cut
