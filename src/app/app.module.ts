@@ -103,10 +103,6 @@ export class AppModule {
   constructor(injector: Injector) {
     const loaderElement = createCustomElement(LoaderComponent, {injector: injector});
     customElements.define('app-loader', loaderElement);
-    const skeletonElement = createCustomElement(SkeletonComponent, {injector: injector});
-    customElements.define('app-skeleton', skeletonElement);
-    const crowdXplorerElement = createCustomElement(CrowdXplorer, {injector: injector});
-    customElements.define('app-crowd-xplorer', crowdXplorerElement);
   }
 
   ngDoBootstrap() {}
