@@ -55,7 +55,7 @@ export class ActionLogger {
    */
   log(type: string, details: object) {
     let payload = this.buildPayload(type, details)
-    //console.log(payload)
+    console.log(payload)
     // this.http.post(
     //   'https://8vd1uyg771.execute-api.us-east-1.amazonaws.com/logger/log',
     //   payload,
@@ -129,21 +129,17 @@ export class ActionLogger {
    * @param obj mapped event object {timeStamp, x, y, target}
    */
   windowClick(obj){
-    if (document.getSelection().toString() !== ""){
-      this.onSelect(obj.timeStamp)
-    } else {
-      let details = {
-        section: this.findSection(),
-        startTime: obj.startTime,
-        endTime: obj.timeStamp,
-        mouseButton: obj.mouseButton,
-        x: obj.x,
-        y: obj.y,
-        target: obj.target,
-        clicks: obj.clicks
-      }
-      this.log('click', details)
+    let details = {
+      section: this.findSection(),
+      startTime: obj.startTime,
+      endTime: obj.endTime,
+      mouseButton: obj.mouseButton,
+      x: obj.x,
+      y: obj.y,
+      target: obj.target,
+      clicks: obj.clicks
     }
+    this.log('click', details)
   }
 
   /**
@@ -235,12 +231,13 @@ export class ActionLogger {
 
   /**
    * Log text selection
-   * @param timeStamp
+   * @param obj mapped event object {startTime, endTime}
    */
-  onSelect(timeStamp){
+  onSelect(obj){
     let details = {
       section: this.findSection(),
-      timeStamp: timeStamp,
+      startTime: obj.startTime,
+      endTime: obj.endTime,
       selected: document.getSelection().toString()
     }
     this.log('select', details)

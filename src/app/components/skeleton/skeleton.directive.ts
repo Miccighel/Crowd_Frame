@@ -1,7 +1,7 @@
 import {AfterViewInit, Directive, ElementRef} from "@angular/core";
 import {ActionLogger} from "../../services/userActionLogger.service";
 import {from, fromEvent} from "rxjs";
-import {buffer, debounceTime, filter, first, map, switchMap, take, tap, throttleTime} from "rxjs/operators";
+import {buffer, concatMap, debounceTime, filter, first, map, switchMap, take, tap, throttleTime} from "rxjs/operators";
 
 @Directive({selector: "button"})
 export class ButtonDirective {
@@ -115,7 +115,7 @@ export class SkeletonDirective implements AfterViewInit{
      */
     fromEvent(document, 'keydown')
       .pipe(
-        filter((event: Event) => event['metaKey']),
+        filter((event: Event) => event['metaKey'] && event['key'] != 'Meta'),
         debounceTime(200),
         map((event: Event) => ({
           timeStamp: event.timeStamp,
@@ -124,7 +124,7 @@ export class SkeletonDirective implements AfterViewInit{
           key: event['key']
         }))
       )
-      .subscribe(event => this.actionLogger.shortcut(event))
+      .subscribe(obj => this.actionLogger.shortcut(obj))
 
     /*
      * KEY PRESS
@@ -152,6 +152,18 @@ export class SkeletonDirective implements AfterViewInit{
       })
 
     /* ------- GLOBAL EVENTS ------- */
+    let selectionStartTime = 0
+    fromEvent(document, 'selectstart')
+      .pipe(
+        concatMap((event: Event) => {
+            selectionStartTime = event.timeStamp
+            return fromEvent(this.element.nativeElement, 'mouseup')
+          }
+        ),
+        map((event: Event) => ({startTime: selectionStartTime, endTime: event.timeStamp}))
+      )
+      .subscribe(obj => this.actionLogger.onSelect(obj))
+
     /*
      * UNLOAD
      * Listener for document unload (this event is unreliable)
