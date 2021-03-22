@@ -55,7 +55,7 @@ export class ActionLogger {
    */
   log(type: string, details: object) {
     let payload = this.buildPayload(type, details)
-    console.log(payload)
+    //console.log(payload)
     // this.http.post(
     //   'https://8vd1uyg771.execute-api.us-east-1.amazonaws.com/logger/log',
     //   payload,
@@ -71,8 +71,8 @@ export class ActionLogger {
    */
   logContext(){
     let payload = this.buildPayload('context', null)
-    console.log(payload)
-    this.http.post('https://8vd1uyg771.execute-api.us-east-1.amazonaws.com/logger/stats', payload).subscribe()
+    //console.log(payload)
+    //this.http.post('https://8vd1uyg771.execute-api.us-east-1.amazonaws.com/logger/stats', payload).subscribe()
   }
 
   /**
@@ -90,8 +90,6 @@ export class ActionLogger {
       this.workerID = workerID;
       this.taskName = taskName;
       this.batchName = batchName;
-
-      console.log(navigator)
 
       let details = {
         screen_size : {
@@ -136,11 +134,13 @@ export class ActionLogger {
     } else {
       let details = {
         section: this.findSection(),
-        timeStamp: obj.timeStamp,
+        startTime: obj.startTime,
+        endTime: obj.timeStamp,
         mouseButton: obj.mouseButton,
         x: obj.x,
         y: obj.y,
-        target: obj.target
+        target: obj.target,
+        clicks: obj.clicks
       }
       this.log('click', details)
     }
@@ -326,6 +326,27 @@ export class ActionLogger {
       sentence: obj.sentence
     }
     this.log('keySequence', details)
+  }
+
+  /* ----- CROWD XPLORER ----- */
+  onQuery(query){
+    let details = {
+      section: this.findSection(),
+      query: query
+    }
+    this.log('query', details)
+  }
+
+  onResult(results){
+    let urlArray = [];
+    results.forEach((result) => {
+      urlArray.push(result['url'])
+    })
+    let details = {
+      section: this.findSection(),
+      urlArray: urlArray
+    }
+    this.log('queryResults', details)
   }
 
   /* ----- UTILITIES ----- */

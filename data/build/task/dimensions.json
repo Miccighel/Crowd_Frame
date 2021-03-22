@@ -2,7 +2,7 @@
   {
     "name": "overall-truthfulness",
     "description": "State if the statement is true (+2), as opposed to false (-2)",
-    "url": false,
+    "url": true,
     "scale": {
       "type": "categorical",
       "mapping": [

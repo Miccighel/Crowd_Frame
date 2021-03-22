@@ -46,7 +46,7 @@ import {CountdownModule } from 'ngx-countdown';
 import {NgxFileHelpersModule} from 'ngx-file-helpers';
 import {ActionLogger} from "./services/userActionLogger.service";
 import {
-  ButtonDirective,
+  ButtonDirective, CrowdXplorerDirective,
   InputDirective,
   RadioDirective,
   SkeletonDirective
@@ -65,7 +65,8 @@ import {SectionService} from "./services/section.service";
     ButtonDirective,
     SkeletonDirective,
     InputDirective,
-    RadioDirective
+    RadioDirective,
+    CrowdXplorerDirective
   ],
   imports: [
     BrowserModule,
@@ -118,10 +119,6 @@ export class AppModule {
   constructor(injector: Injector) {
     const loaderElement = createCustomElement(LoaderComponent, {injector: injector});
     customElements.define('app-loader', loaderElement);
-    const skeletonElement = createCustomElement(SkeletonComponent, {injector: injector});
-    customElements.define('app-skeleton', skeletonElement);
-    const crowdXplorerElement = createCustomElement(CrowdXplorer, {injector: injector});
-    customElements.define('app-crowd-xplorer', crowdXplorerElement);
   }
 
   ngDoBootstrap() {}

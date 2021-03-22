@@ -1,7 +1,7 @@
 import {AfterViewInit, Directive, ElementRef} from "@angular/core";
 import {ActionLogger} from "../../services/userActionLogger.service";
-import {fromEvent} from "rxjs";
-import {buffer, debounceTime, filter, map, switchMap, tap, throttleTime} from "rxjs/operators";
+import {from, fromEvent} from "rxjs";
+import {buffer, debounceTime, filter, first, map, switchMap, take, tap, throttleTime} from "rxjs/operators";
 
 @Directive({selector: "button"})
 export class ButtonDirective {
@@ -47,23 +47,48 @@ export class SkeletonDirective implements AfterViewInit{
      * LEFT MOUSE CLICK
      * Debounce time was introduced to prevent click spamming
      */
+    let clicks = 0
+    let firstClickTime = 0
     fromEvent(this.element.nativeElement, 'click')
       .pipe(
-        tap((event: MouseEvent) => event.stopPropagation()),
-        debounceTime(300),
-        map((event: MouseEvent) => ({timeStamp: event.timeStamp, x: event.clientX, y: event.clientY, target: event.target, mouseButton: 'left'}))
+        tap((event: MouseEvent) => {
+          event.stopPropagation();
+          if(clicks === 0){
+            firstClickTime = event.timeStamp
+          }
+          clicks++
+        }),
+        debounceTime(500),
+        map((event: MouseEvent) => ({
+          startTime: firstClickTime,
+          endTime: event.timeStamp,
+          x: event.clientX,
+          y: event.clientY,
+          target: event.target,
+          mouseButton: 'left',
+          clicks: clicks
+        }))
       )
-      .subscribe(obj => this.actionLogger.windowClick(obj))
+      .subscribe(obj => {
+        this.actionLogger.windowClick(obj)
+        clicks = 0
+      })
 
     /*
      * RIGHT MOUSE CLICK
      */
     fromEvent(this.element.nativeElement, 'contextmenu')
-      .pipe(
-        debounceTime(300),
-        map((event: MouseEvent) => ({timeStamp: event.timeStamp, x: event.clientX, y: event.clientY, target: event.target, mouseButton: 'right'}))
-      )
-      .subscribe(obj => this.actionLogger.windowClick(obj))
+      .pipe(map((event: MouseEvent) => ({
+        timeStamp: event.timeStamp,
+        x: event.clientX,
+        y: event.clientY,
+        target: event.target,
+        mouseButton: 'right'
+      })))
+      .subscribe(obj => {
+        console.log('test')
+        this.actionLogger.windowClick(obj)
+      })
 
     /* ------- KEYBOARD EVENTS ------- */
     /*
@@ -76,8 +101,28 @@ export class SkeletonDirective implements AfterViewInit{
           event['key'] != 'Shift' &&
           (event['ctrlKey'] == true || (event['ctrlKey'] == true && event['altKey'] == true))
         ),
-        debounceTime(300),
-        map((event: Event) => ({timeStamp: event.timeStamp, ctrl: event['ctrlKey'], alt: event['altKey'], key: event['key']}))
+        map((event: Event) => ({
+          timeStamp: event.timeStamp,
+          ctrl: event['ctrlKey'],
+          alt: event['altKey'],
+          key: event['key']
+        }))
+      )
+      .subscribe(obj => this.actionLogger.shortcut(obj))
+
+    /*
+     * APPLE FIX FOR SHORTCUT LISTENER
+     */
+    fromEvent(document, 'keydown')
+      .pipe(
+        filter((event: Event) => event['metaKey']),
+        debounceTime(200),
+        map((event: Event) => ({
+          timeStamp: event.timeStamp,
+          ctrl: event['metaKey'],
+          alt: event['altKey'],
+          key: event['key']
+        }))
       )
       .subscribe(event => this.actionLogger.shortcut(event))
 
@@ -193,11 +238,11 @@ export class InputDirective implements AfterViewInit {
       .subscribe(obj => this.actionLogger.onPaste(obj))
 
     /*
-     * When user delete something on the text area or press Enter, the event handler log what has written
+     * When user delete something on the text area, the event handler log what has written
      */
     fromEvent(this.element.nativeElement, 'keydown')
       .pipe(
-        filter((event: KeyboardEvent) => event.key === 'Backspace' || event.key === 'Enter'),
+        filter((event: KeyboardEvent) => event.key === 'Backspace'),
         throttleTime(5000),
         map((event: KeyboardEvent) => ({timeStamp: event.timeStamp, target: event.target['value']}))
       )
@@ -222,6 +267,21 @@ export class RadioDirective implements AfterViewInit {
     fromEvent(this.element.nativeElement, 'input')
       .pipe(map((event: InputEvent) => ({timeStamp: event.timeStamp, group: event.target['name'], value: event.target['value']})))
       .subscribe(obj => this.actionLogger.radioChange(obj))
+  }
+}
+
+@Directive({selector: "app-crowd-xplorer"})
+export class CrowdXplorerDirective implements AfterViewInit{
+  constructor(private actionLogger: ActionLogger, private element: ElementRef) {}
+
+  ngAfterViewInit() {
+    fromEvent(this.element.nativeElement, 'queryEmitter')
+      .pipe(map((event: Event) => event['detail']))
+      .subscribe(detail=> this.actionLogger.onQuery(detail))
+
+    fromEvent(this.element.nativeElement, 'resultEmitter')
+      .pipe(map((event: Event) => event['detail']))
+      .subscribe(detail=> this.actionLogger.onResult(detail))
   }
 }
 
