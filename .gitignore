@@ -58,3 +58,4 @@ data/build/environments/environment.ts
 !.yarn/sdks
 !.yarn/versions
 .pnp.*
+data/.env
