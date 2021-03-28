@@ -267,7 +267,7 @@ export class SkeletonComponent implements OnInit {
     /* |--- TASK GENERATOR ---| */
     this.generator = false;
 
-    this.tokenInput = new FormControl('TQONDNHBUP', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
+    this.tokenInput = new FormControl('GXXIJQYZAY', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
     this.tokenForm = formBuilder.group({
       "tokenInput": this.tokenInput
     });
@@ -1087,7 +1087,7 @@ export class SkeletonComponent implements OnInit {
     this.notesDone[documentIndex] = true
     let currentNotes = this.notes[documentIndex]
     var notesNotDeleted: Note[] = []
-    var booleans: Boolean[] = []
+    var booleans: Boolean[] = [true]
     for (let note of currentNotes) {
       if (!note.deleted) {
         notesNotDeleted.push(note)
@@ -1372,7 +1372,7 @@ export class SkeletonComponent implements OnInit {
     computedChecks.push(globalValidityCheck)
 
     /* 2) GOLD QUESTION CHECK performed here - OPTIONAL CHECK */
-    let AUX_booleans: Boolean[] = []
+    /*let AUX_booleans: Boolean[] = []
 
     for (let index of this.goldIndex) {
       let AUX_user: Note[] = []
@@ -1419,7 +1419,7 @@ export class SkeletonComponent implements OnInit {
       goldQuestionCheck = false;
     }
 
-    computedChecks.push(goldQuestionCheck)
+    computedChecks.push(goldQuestionCheck) */
 
     /* 3) TIME SPENT CHECK performed here - MANDATORY CHECK */
     timeSpentCheck = true;

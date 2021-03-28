@@ -178,9 +178,9 @@
     <div class="container">
       <form [formGroup]="documentsForm[i]">
         <mat-card>
-          <ng-template matStepLabel> L{{i + 1}}</ng-template>
+          <ng-template matStepLabel> A. {{document.article_number}} <br /> L. {{document.number}} <br /> A. {{document.year}}</ng-template>
           <mat-divider [inset]="true"></mat-divider>
-          <mat-card-title>Evidenzia nella seguente legge</mat-card-title>
+          <mat-card-title>Evidenzia nel seguente articolo</mat-card-title>
           <mat-divider [inset]="true"></mat-divider>
           <mat-card-content class="pt-16px">
 
@@ -197,11 +197,11 @@
             <!-- Statement markup -->
             <div class="statement">
               <ul>
-                <li class="law_content_li"><strong>Testo della legge:</strong><br />
+                <li class="law_content_li"><strong>Testo:</strong><br />
                   <span style="white-space: pre-wrap;" #statementText id="statement-{{i}}"
                     (mouseup)="performHighlighting(this.changeDetector, $event, i, this.notes, this.annotator)"
                     (touchend)="performHighlighting(this.changeDetector, $event, i, this.notes, this.annotator)"
-                    class="statement-text">{{document.text}}</span>
+                    class="statement-text">{{this.checkEnabledNotes(i)}} {{document.article_text}}</span>
                 </li>
               </ul>
             </div>
@@ -279,16 +279,17 @@
                             id="references-{{noteIndex}}.{{i}}">{{note.current_text}}</span>
                         </div>
                         <div *ngFor="let innerNotes of note.innerAnnotations; let innerNoteIndex = index">
-                          <ng-container *ngIf="!innerNotes.deleted">
-                            <div class="inner-annotation-quote" style="padding-top: 1%;">
+                          <ng-container *ngIf="!innerNotes.deleted"><br />
+                            <mat-divider [inset]="true"></mat-divider>
+                            <div class="inner-annotation-quote" style="padding-top: 5px;">
                               <span [style.background-color]="innerNotes.color">{{innerNotes.current_text}}</span>
                             </div>
                             <div class="annotation-options">
-                              <div style="padding: 1%;">
+                              <div style="padding: 5px;">
                                 <b>Numero legge:<br /><br />
                                   Anno legge:</b>
                               </div><br />
-                              <div style="padding: 1%;"><input type="number"
+                              <div style="padding: 5px;"><input type="number"
                                   name="number-{{innerNoteIndex}}-{{noteIndex}}.{{i}}"
                                   id="number-{{innerNoteIndex}}-{{noteIndex}}.{{i}}" placeholder="00"
                                   (change)="innerCheckIfSaved(i, noteIndex, innerNoteIndex)"
@@ -298,7 +299,7 @@
                                   (change)="innerCheckIfSaved(i, noteIndex, innerNoteIndex)"
                                   (keyup)="innerCheckIfSaved(i, noteIndex, innerNoteIndex)">
                               </div>
-                              <div style="padding: 1%; padding-left: 2%;">
+                              <div style="padding: 5px; padding-left: 7px;">
                                 <button (click)="performInnerAnnotation(i, noteIndex, innerNoteIndex)" mat-flat-button
                                   color="primary"
                                   id="save_button-{{innerNoteIndex}}-{{innerNoteIndex}}-{{noteIndex}}.{{i}}"
@@ -316,17 +317,17 @@
                   </div>
 
                   <div *ngIf="note.type.includes('reference')" class="annotation-options">
-                    <div style="padding: 1%;">
+                    <div style="padding: 5px;">
                       <b>Numero legge:<br /><br />
                         Anno legge:</b>
                     </div><br />
-                    <div style="padding: 1%;"><input type="number" name="number-{{noteIndex}}.{{i}}"
+                    <div style="padding: 5px;"><input type="number" name="number-{{noteIndex}}.{{i}}"
                         id="number-{{noteIndex}}.{{i}}" placeholder="00" (change)="checkIfSaved(i, noteIndex)"
                         (keyup)="checkIfSaved(i, noteIndex)"><br /><br />
                       <input type="number" name="year-{{noteIndex}}.{{i}}" id="year-{{noteIndex}}.{{i}}"
                         placeholder="0000" (change)="checkIfSaved(i, noteIndex)" (keyup)="checkIfSaved(i, noteIndex)">
                     </div>
-                    <div style="padding: 1%; padding-left: 2%;">
+                    <div style="padding: 5px; padding-left: 7px;">
                       <button (click)="performAnnotation(i, noteIndex)" mat-flat-button color="primary"
                         id="save_button-{{noteIndex}}.{{i}}" [disabled]="checkIfSaved(i, noteIndex)">Salva
                       </button>
@@ -553,7 +554,7 @@
               (click)="performLogging('Finish'); performQualityCheck()">
               Concludi
             </button>
-            <span class="form-note">(*) devi creare almeno un'annotazione con i relativi dettagli</span>
+            <span class="form-note">(*) Tutte le annotazioni create devono essere complete dei relativi dettagli.</span>
           </mat-card-actions>
         </mat-card>
       </form>

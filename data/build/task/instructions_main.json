@@ -1,7 +1,7 @@
 [
   {
     "caption": "Istruzioni",
-    "steps": ["Nel task ti viene richiesto di <strong>evidenziare</strong> alcune porzioni di testi proposti. In particolare, devi evidenziare, <strong>all’interno di alcune leggi regionali</strong>, <strong>riferimenti</strong> ad altre leggi oppure riferimenti a <strong>sostituzioni, inserimenti e cancellazioni</strong> all’interno del testo di altre leggi.<br /> ",
+    "steps": ["Nel task ti viene richiesto di <strong>evidenziare</strong> alcune porzioni di testi proposti. In particolare, devi evidenziare, <strong>all’interno di alcune leggi italiane</strong>, <strong>riferimenti</strong> ad altre leggi oppure riferimenti a <strong>sostituzioni, inserimenti e cancellazioni</strong> all’interno del testo di altre leggi.<br /> ",
     "Generalmente, <strong>per creare un’evidenziazione</strong>, occorre <strong>portare il cursore sulla prima lettera</strong> della frase interessata per poi <strong>cliccare il tasto sinistro del mouse</strong> e, mantenendolo premuto, <strong>trascinare il cursore fino all’ultima lettera della frase interessata</strong> (per poi rilasciare il tasto sinistro del mouse).<br /> ",
     "Alla creazione di un’evidenziazione, <strong>sotto al testo del documento</strong> su cui stai lavorando, <strong>comparirà un form</strong> (uno per ciascuna annotazione che hai effettuato) per l’inserimento di ulteriori dettagli: ", 
     "a questo punto, <strong>dovrai scegliere il tipo di annotazione che hai effettuato</strong> (riferimento ad altra legge oppure sostituzione, inserimento o cancellazione del testo di un’altra legge) e <strong>scegliere se questo contiene o meno riferimenti</strong> ad altre leggi al suo interno (solo se non hai scelto “riferimento”, in tal caso dovrai inserire l’anno e il numero della legge referenziata e salvare i dettagli tramite l’apposito tasto SALVA). ", 
@@ -12,12 +12,12 @@
     "Puoi anche <strong>tornare al documento precedente tramite il tasto BACK</strong>, presente anche lui a fondo pagina.<br /><br />",
     "<strong>Esempi di RIFERIMENTI:</strong><br /><br />", 
     "<strong>ESEMPIO 1:</strong><br /><br />",
-    "<span class=\"instruction-example\"><span class=\"gray-background\">testo: “… modifiche all’<span class=\"standard-highlight\">articolo 8, comma 22, della legge 19/2000</span>, in merito alla …”</span></span><br /><br />",
+    "<span class=\"instruction-example\"><span class=\"gray-background\">testo: “… ai sensi dell'<span class=\"standard-highlight\">articolo 10 bis della legge 241/1990</span>, con decreto …”</span></span><br /><br />",
     "In questo caso, il riferimento riportato comprende articolo, comma, numero e anno della legge.<br />",
     "Nel campo di testo anno, dovrai inserire 2000.<br />",
     "Nel campo di testo numero, dovrai inserire 19.<br /><br />",
     "<strong>ESEMPIO 2:</strong><br /><br />",
-    "<span class=\"instruction-example\"><span class=\"gray-background\">testo: “… in riferimento alla <span class=\"standard-highlight\">L.R. del 2013, n. 15</span> …”</span></span><br /><br />",
+    "<span class=\"instruction-example\"><span class=\"gray-background\">testo: “… di cui agli <span class=\"standard-highlight\">articoli 8, 9, 10 e 11 del decreto legislativo 11 aprile 2006, n. 198</span> e con il …”</span></span><br /><br />",
     "In questo caso, il riferimento riportato comprende solo anno e numero della legge.<br />",
     "Nel campo di testo anno, dovrai inserire 2013.<br />",
     "Nel campo di testo numero, dovrai inserire 15.<br /><br />", 
