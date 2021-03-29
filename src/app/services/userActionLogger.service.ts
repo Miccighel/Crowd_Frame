@@ -56,14 +56,14 @@ export class ActionLogger {
   log(type: string, details: object) {
     let payload = this.buildPayload(type, details)
     console.log(payload)
-    // this.http.post(
-    //   'https://8vd1uyg771.execute-api.us-east-1.amazonaws.com/logger/log',
-    //   payload,
-    //   {
-    //     responseType: 'text',
-    //     headers: new HttpHeaders()
-    //       .set('content-type', 'text/plain')
-    //   }).subscribe()
+    this.http.post(
+      'https://8vd1uyg771.execute-api.us-east-1.amazonaws.com/logger/log',
+      payload,
+      {
+        responseType: 'text',
+        headers: new HttpHeaders()
+          .set('content-type', 'text/plain')
+      }).subscribe()
   }
 
   /**
@@ -71,8 +71,8 @@ export class ActionLogger {
    */
   logContext(){
     let payload = this.buildPayload('context', null)
-    //console.log(payload)
-    //this.http.post('https://8vd1uyg771.execute-api.us-east-1.amazonaws.com/logger/stats', payload).subscribe()
+    console.log(payload)
+    this.http.post('https://8vd1uyg771.execute-api.us-east-1.amazonaws.com/logger/stats', payload).subscribe()
   }
 
   /**
@@ -106,7 +106,7 @@ export class ActionLogger {
 
   /**
    * Log a button click
-   * @param obj mapped event object {buttonName, timeStamp, x, y}
+   * @param obj mapped event object {buttonName, timestamp, x, y}
    */
   buttonClick(obj){
     let section = this.loggerSection
@@ -117,7 +117,7 @@ export class ActionLogger {
     let details = {
       section: section,
       button: obj.buttonName,
-      timeStamp: obj.timeStamp,
+      timestamp: obj.timestamp,
       x: obj.x,
       y: obj.y
     }
@@ -126,14 +126,14 @@ export class ActionLogger {
 
   /**
    * Log a generic click on the skeleton
-   * @param obj mapped event object {timeStamp, x, y, target}
+   * @param obj mapped event object {timestamp, x, y, target}
    */
   windowClick(obj){
     let details = {
       section: this.findSection(),
+      mouseButton: obj.mouseButton,
       startTime: obj.startTime,
       endTime: obj.endTime,
-      mouseButton: obj.mouseButton,
       x: obj.x,
       y: obj.y,
       target: obj.target,
@@ -144,7 +144,7 @@ export class ActionLogger {
 
   /**
    * Log an array of mouse movements
-   * @param positionBuffer array of objects {timeStamp, x, y}
+   * @param positionBuffer array of objects {timestamp, x, y}
    */
   mouseMove(positionBuffer){
     let details = {
@@ -156,12 +156,12 @@ export class ActionLogger {
 
   /**
    * Log a copy event
-   * @param obj mapped event object {timeStamp, target}
+   * @param obj mapped event object {timestamp, target}
    */
   onCopy(obj){
     let details = {
       section: this.findSection(),
-      timeStamp: obj.timeStamp,
+      timestamp: obj.timestamp,
       target: document.getSelection().toString()
     }
     this.log('copy', details)
@@ -169,12 +169,12 @@ export class ActionLogger {
 
   /**
    * Log a cut event
-   * @param obj mapped event object {timeStamp, target}
+   * @param obj mapped event object {timestamp, target}
    */
   onCut(obj){
     let details = {
       section: this.findSection(),
-      timeStamp: obj.timeStamp,
+      timestamp: obj.timestamp,
       target: document.getSelection().toString()
     }
     this.log('cut', details)
@@ -182,12 +182,12 @@ export class ActionLogger {
 
   /**
    * Log a paste event on an textarea element
-   * @param obj mapped event object {timeStamp, text}
+   * @param obj mapped event object {timestamp, text}
    */
   onPaste(obj){
     let details = {
       section: this.findSection(),
-      timeStamp: obj.timeStamp,
+      timestamp: obj.timestamp,
       text: obj.text
     }
     this.log('paste', details)
@@ -196,22 +196,22 @@ export class ActionLogger {
   /**
    * Log window dimensions after a resize
    * Call aux function getCurrentSize()
-   * @param obj mapped event object {timeStamp}
+   * @param obj mapped event object {timestamp}
    */
   windowResize(obj){
     let details = this.getCurrentSize()
-    details['timeStamp'] = obj.timeStamp
+    details['timestamp'] = obj.timestamp
     this.log('resize', details)
   }
 
   /**
    * Log window focus
-   * @param obj mapped event object {timeStamp}
+   * @param obj mapped event object {timestamp}
    */
   windowFocus(obj){
     let details = {
       section: this.findSection(),
-      timeStamp: obj.time
+      timestamp: obj.time
     }
     this.windowResize(obj)
     this.log('window_focus', details)
@@ -219,12 +219,12 @@ export class ActionLogger {
 
   /**
    * Log window blur
-   * @param obj mapped event object {timeStamp}
+   * @param obj mapped event object {timestamp}
    */
   windowBlur(obj){
     let details = {
       section: this.findSection(),
-      timeStamp: obj.time
+      timestamp: obj.time
     }
     this.log('window_blur', details)
   }
@@ -240,7 +240,7 @@ export class ActionLogger {
       endTime: obj.endTime,
       selected: document.getSelection().toString()
     }
-    this.log('select', details)
+    this.log('selection', details)
   }
 
   /**
@@ -250,8 +250,8 @@ export class ActionLogger {
   onScroll(obj){
     let details = {
       section: this.findSection(),
-      startTimeStamp: obj.startTimeStamp,
-      endTimeStamp: obj.endTimeStamp,
+      startTimestamp: obj.startTimeStamp,
+      endTimestamp: obj.endTimeStamp,
       x: window.pageXOffset,
       y: window.pageYOffset
     }
@@ -260,37 +260,37 @@ export class ActionLogger {
 
   /**
    * Log unload event
-   * @param obj mapped event object {timeStamp}
+   * @param obj mapped event object {timestamp}
    */
   beforeUnload(obj){
     let details = {
       section: this.findSection(),
-      timeStamp: obj.timeStamp
+      timestamp: obj.timestamp
     }
     this.log('unload', details)
   }
 
   /**
    * Log text selection
-   * @param obj mapped event object {timeStamp, target}
+   * @param obj mapped event object {timestamp, target}
    */
   textLog(obj){
     let details = {
       section: this.findSection(),
-      timeStamp: obj.timeStamp,
-      value: obj.target
+      timestamp: obj.timestamp,
+      text: obj.target
     }
     this.log('text', details)
   }
 
   /**
    * Log radio button changes
-   * @param obj mapped event object {timeStamp, group, value}
+   * @param obj mapped event object {timestamp, group, value}
    */
   radioChange(obj){
     let details = {
       section: this.findSection(),
-      timeStamp: obj.timeStamp,
+      timestamp: obj.timestamp,
       group: obj.group,
       value: obj.value
     }
@@ -299,12 +299,12 @@ export class ActionLogger {
 
   /**
    * Log keys shortcut
-   * @param obj mapped event object {timeStamp, ctrl, alt, key}
+   * @param obj mapped event object {timestamp, ctrl, alt, key}
    */
   shortcut(obj){
     let details = {
       section: this.findSection(),
-      timeStamp: obj.timeStamp,
+      timestamp: obj.timestamp,
       ctrl: obj.ctrl,
       alt: obj.alt,
       key: obj.key
@@ -371,5 +371,3 @@ export class ActionLogger {
     return this.sectionService.currentSection
   }
 }
-
-//TODO log del motore di ricerca: tutte le richieste, scaricare le pagine dove avviene il click

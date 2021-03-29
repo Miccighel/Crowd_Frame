@@ -37,7 +37,16 @@ export class SkeletonDirective implements AfterViewInit{
     mouseMoveEvent
       .pipe(
         throttleTime(100),
-        map((event: MouseEvent) => ({timeStamp: event.timeStamp, x: event.clientX, y: event.clientY})),
+        map((event: MouseEvent) => ({
+          timeStamp: event.timeStamp,
+          x: event.clientX,
+          y: event.clientY,
+          target: {
+            elementName: event['target']['localName'],
+            className: event['target']['className'],
+            innerText: event['target']['innerText']
+          }
+        })),
         buffer(mouseMoveEvent.pipe(debounceTime(500))),
         filter(array => array.length > 1)
       )
@@ -64,7 +73,11 @@ export class SkeletonDirective implements AfterViewInit{
           endTime: event.timeStamp,
           x: event.clientX,
           y: event.clientY,
-          target: event.target,
+          target: {
+            elementName: event['target']['localName'],
+            className: event['target']['className'],
+            innerText: event['target']['innerText']
+          },
           mouseButton: 'left',
           clicks: clicks
         }))
@@ -79,14 +92,19 @@ export class SkeletonDirective implements AfterViewInit{
      */
     fromEvent(this.element.nativeElement, 'contextmenu')
       .pipe(map((event: MouseEvent) => ({
-        timeStamp: event.timeStamp,
+        startTime: event.timeStamp,
+        endTime: event.timeStamp,
         x: event.clientX,
         y: event.clientY,
-        target: event.target,
-        mouseButton: 'right'
+        target: {
+          elementName: event['target']['localName'],
+          className: event['target']['className'],
+          innerText: event['target']['innerText']
+        },
+        mouseButton: 'right',
+        clicks: 1
       })))
       .subscribe(obj => {
-        console.log('test')
         this.actionLogger.windowClick(obj)
       })
 
@@ -152,6 +170,10 @@ export class SkeletonDirective implements AfterViewInit{
       })
 
     /* ------- GLOBAL EVENTS ------- */
+    /*
+     * SELECTION
+     * Listen to selection when selectstart and mouseup events are consecutive
+     */
     let selectionStartTime = 0
     fromEvent(document, 'selectstart')
       .pipe(
@@ -237,12 +259,13 @@ export class SkeletonDirective implements AfterViewInit{
   }
 }
 
-@Directive({selector: 'input'})
+@Directive({selector: 'input[type="text"]'})
 export class InputDirective implements AfterViewInit {
   constructor(private actionLogger: ActionLogger, private element: ElementRef) {}
 
   ngAfterViewInit() {
     /*
+     * PASTE (on input element)
      * Listen to a paste event on input area and get pasted text
      */
     fromEvent(this.element.nativeElement, 'paste')
@@ -250,12 +273,13 @@ export class InputDirective implements AfterViewInit {
       .subscribe(obj => this.actionLogger.onPaste(obj))
 
     /*
+     * BACKSPACE and BLUR (on input element)
      * When user delete something on the text area, the event handler log what has written
      */
     fromEvent(this.element.nativeElement, 'keydown')
       .pipe(
         filter((event: KeyboardEvent) => event.key === 'Backspace'),
-        throttleTime(5000),
+        debounceTime(3000),
         map((event: KeyboardEvent) => ({timeStamp: event.timeStamp, target: event.target['value']}))
       )
       .subscribe((obj) => this.actionLogger.textLog(obj))
@@ -296,6 +320,3 @@ export class CrowdXplorerDirective implements AfterViewInit{
       .subscribe(detail=> this.actionLogger.onResult(detail))
   }
 }
-
-//TODO verifica della safe mode
-//TODO informazioni sulla connessione
