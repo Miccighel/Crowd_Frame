@@ -14,6 +14,7 @@ export class Note {
   year: number
   number: number
   type: String;
+  withoutDetails: boolean;
   containsReferences: boolean;
   innerAnnotations: Array<Note>
   baseURI: string;
@@ -33,33 +34,34 @@ export class Note {
   ) {
     /* DO NOT REMOVE THIS LINE */
     this.index = index;
-    this.version = 0
-    this.deleted = false
-    this.color = color
-    this.container_id = range["commonAncestorContainer"]["id"]
-    this.start_offset = parseInt(range["startOffset"])
-    this.end_offset = parseInt(range["endOffset"])
-    this.baseURI = data[0]["baseURI"]
-    this.current_text = data[0]["outerText"]
-    this.clean_current_text = this.removeSpecialChars()
-    this.timestamp_created = parseInt(data[0]["dataset"]["timestamp"])
-    this.timestamp_deleted = null
-    this.year = 0
-    this.number = 0
-    this.type = "reference"
-    this.containsReferences = true
-    this.innerAnnotations = []
+    this.version = 0;
+    this.deleted = false;
+    this.color = color;
+    this.container_id = range["commonAncestorContainer"]["id"];
+    this.start_offset = parseInt(range["startOffset"]);
+    this.end_offset = parseInt(range["endOffset"]);
+    this.baseURI = data[0]["baseURI"];
+    this.current_text = data[0]["outerText"];
+    this.clean_current_text = this.removeSpecialChars();
+    this.timestamp_created = parseInt(data[0]["dataset"]["timestamp"]);
+    this.timestamp_deleted = null;
+    this.year = 0;
+    this.number = 0;
+    this.type = "reference";
+    this.withoutDetails = false;
+    this.containsReferences = true;
+    this.innerAnnotations = [];
     if (range["endContainer"]["firstChild"] != null) {
-      this.text_not_annotated_left = range["endContainer"]["firstChild"]["data"]
+      this.text_not_annotated_left = range["endContainer"]["firstChild"]["data"];
     } else {
-      this.text_not_annotated_left = ""
+      this.text_not_annotated_left = "";
     }
     if (range["endContainer"]["lastChild"] != null) {
-      this.text_not_annotated_right = range["endContainer"]["lastChild"]["data"]
+      this.text_not_annotated_right = range["endContainer"]["lastChild"]["data"];
     } else {
-      this.text_not_annotated_right = ""
+      this.text_not_annotated_right = "";
     }
-    this.existing_notes = new Array<String>()
+    this.existing_notes = new Array<String>();
     /*
     Array.from(range["endContainer"]["children"]).forEach((element: HTMLElement) => {
       if (element.innerText != this.current_text) {
@@ -71,7 +73,6 @@ export class Note {
 
   public removeSpecialChars () {
     var raw_string = this.current_text;
-    console.log("RAW: " + raw_string);
     raw_string = raw_string.replace(/\n|\r/g, " ");
     raw_string = raw_string.replace(/[^a-zA-Z0-9,.'()\[\] ]/g, "");
     var raw_string_single_whitespaces: string = ""
@@ -88,7 +89,6 @@ export class Note {
         raw_string_single_whitespaces += raw_string.charAt(c)
       }
     }
-    console.log("CORRETTA: " + raw_string_single_whitespaces)
     return raw_string_single_whitespaces
   }
 

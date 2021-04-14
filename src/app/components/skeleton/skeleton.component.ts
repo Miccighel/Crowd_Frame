@@ -1078,9 +1078,39 @@ export class SkeletonComponent implements OnInit {
 
   public checkReferenceWithoutDetails(note: Note) {
     if (note.type == "reference") {
-      return (note.year == 0 && note.number == 0)
+      if (!note.withoutDetails) {
+        return (note.year == 0 && note.number == 0)
+      } else {
+        return false
+      }
     }
     return false
+  }
+
+  public detailsCheckboxChange($event: MatCheckboxChange, documentIndex: number, noteIndex: number) {
+    let currentNote = this.notes[documentIndex][noteIndex]
+    if ($event.checked) {
+      currentNote.withoutDetails = true
+      currentNote.year = 0
+      currentNote.number = 0
+      this.checkEnabledNotes(documentIndex)
+    } else {
+      currentNote.withoutDetails = false
+      this.checkEnabledNotes(documentIndex)
+    }
+  }
+
+  public innerDetailsCheckboxChange($event: MatCheckboxChange, documentIndex: number, noteIndex: number, innerNoteIndex: number) {
+    let currentNote = this.notes[documentIndex][noteIndex].innerAnnotations[innerNoteIndex]
+    if ($event.checked) {
+      currentNote.withoutDetails = true
+      currentNote.year = 0
+      currentNote.number = 0
+      this.checkEnabledNotes(documentIndex)
+    } else {
+      currentNote.withoutDetails = false
+      this.checkEnabledNotes(documentIndex)
+    }
   }
 
   public checkEnabledNotes(documentIndex: number) {
@@ -1120,7 +1150,7 @@ export class SkeletonComponent implements OnInit {
     var booleans: Boolean[] = []
     for (let n of note.innerAnnotations) {
       if (!n.deleted) {
-        if (n.number != 0 && n.year != 0) {
+        if ((n.number != 0 && n.year != 0) || n.withoutDetails) {
           booleans.push(true)
         } else {
           booleans.push(false)

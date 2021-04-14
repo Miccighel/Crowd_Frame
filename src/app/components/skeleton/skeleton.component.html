@@ -178,7 +178,8 @@
     <div class="container">
       <form [formGroup]="documentsForm[i]">
         <mat-card>
-          <ng-template matStepLabel> Art. {{document.article_number}} <br /> L. {{document.number}} <br /> A. {{document.year}}</ng-template>
+          <ng-template matStepLabel> Art. {{document.article_number}} <br /> L. {{document.number}} <br /> A.
+            {{document.year}}</ng-template>
           <mat-divider [inset]="true"></mat-divider>
           <mat-card-title>Evidenzia nel seguente articolo</mat-card-title>
           <mat-divider [inset]="true"></mat-divider>
@@ -197,7 +198,7 @@
             <!-- Statement markup -->
             <div class="statement">
               <ul>
-                <li class="law_content_li"><strong>Testo:</strong><br />
+                <li class="law_content_li">
                   <span style="white-space: pre-wrap;" #statementText id="statement-{{i}}"
                     (mouseup)="performHighlighting(this.changeDetector, $event, i, this.notes, this.annotator)"
                     (touchend)="performHighlighting(this.changeDetector, $event, i, this.notes, this.annotator)"
@@ -234,21 +235,22 @@
                       </div>
                       <div class="mat-radio-group">
                         <div class="radio-group">
-                          <mat-radio-group (change)="radioChange($event, i, noteIndex)">
+                          <mat-radio-group name="radio-group-{{i}}.{{noteIndex}}"
+                            (change)="radioChange($event, i, noteIndex)">
                             <div class="radio-group-button">
-                              <mat-radio-button value="insertion" name="buttonI-{{noteIndex}}.{{i}}">Inserimento
+                              <mat-radio-button value="insertion">Inserimento
                               </mat-radio-button>
                             </div>
                             <div class="radio-group-button">
-                              <mat-radio-button value="substitution" name="buttonM-{{noteIndex}}.{{i}}">Sostituzione
+                              <mat-radio-button value="substitution">Sostituzione
                               </mat-radio-button>
                             </div>
                             <div class="radio-group-button">
-                              <mat-radio-button value="repeal" name="buttonE-{{noteIndex}}.{{i}}">Cancellazione
+                              <mat-radio-button value="repeal">Cancellazione
                               </mat-radio-button>
                             </div>
                             <div class="radio-group-button">
-                              <mat-radio-button value="reference" [checked]="true" name="buttonR-{{noteIndex}}.{{i}}">
+                              <mat-radio-button value="reference" [checked]="true">
                                 Riferimento
                               </mat-radio-button>
                             </div>
@@ -261,6 +263,10 @@
                         <mat-checkbox (change)="checkboxChange($event, i, noteIndex)"
                           name="checkbox-{{noteIndex}}.{{i}}" [disabled]="note.type.includes('reference')"
                           [checked]="note.containsReferences">contiene un riferimento a una legge al suo interno
+                        </mat-checkbox><br />
+                        <mat-checkbox (change)="detailsCheckboxChange($event, i, noteIndex)"
+                          name="details-checkbox-{{noteIndex}}.{{i}}" [disabled]="!note.type.includes('reference')"
+                          [checked]="note.withoutDetails">non ci sono ulteriori dettagli
                         </mat-checkbox>
                       </div>
                     </div>
@@ -284,7 +290,15 @@
                             <div class="inner-annotation-quote" style="padding-top: 5px;">
                               <span [style.background-color]="innerNotes.color">{{innerNotes.current_text}}</span>
                             </div>
-                            <div class="annotation-options">
+                            <div class="inner-annotation-checkbox-delete">
+                              <mat-checkbox (change)="innerDetailsCheckboxChange($event, i, noteIndex, innerNoteIndex)"
+                                name="details-checkbox-{{innerNoteIndex}}-{{noteIndex}}.{{i}}"
+                                [disabled]="!innerNotes.type.includes('reference')"
+                                [checked]="innerNotes.withoutDetails">non ci sono ulteriori dettagli
+                              </mat-checkbox>
+                            </div>
+                            <div *ngIf="innerNotes.type.includes('reference') && !innerNotes.withoutDetails"
+                              class="annotation-options">
                               <div style="padding: 5px;">
                                 <b>Numero legge:<br /><br />
                                   Anno legge:</b>
@@ -305,10 +319,13 @@
                                   id="save_button-{{innerNoteIndex}}-{{innerNoteIndex}}-{{noteIndex}}.{{i}}"
                                   [disabled]="innerCheckIfSaved(i, noteIndex, innerNoteIndex)">Salva
                                 </button>
-                                <button (click)="removeInnerAnnotation(i, noteIndex, innerNoteIndex)" mat-flat-button
-                                  color="warn">Cancella riferimento
-                                </button>
                               </div>
+                            </div>
+                            <br />
+                            <div class="inner-annotation-checkbox-delete">
+                              <button (click)="removeInnerAnnotation(i, noteIndex, innerNoteIndex)" mat-flat-button
+                                color="warn">Cancella riferimento
+                              </button>
                             </div>
                           </ng-container>
                         </div>
@@ -316,7 +333,7 @@
                     </ng-container>
                   </div>
 
-                  <div *ngIf="note.type.includes('reference')" class="annotation-options">
+                  <div *ngIf="note.type.includes('reference') && !note.withoutDetails" class="annotation-options">
                     <div style="padding: 5px;">
                       <b>Numero legge:<br /><br />
                         Anno legge:</b>

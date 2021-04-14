@@ -134,6 +134,8 @@ mat-card-content label {
   border: 0;
   box-shadow: 0 0 0 0;
   border-radius: 0;
+  text-align: center;
+  font-size: large;
   background-color: #F0F0F0	;
   position: static;
   top: 42px;
@@ -157,6 +159,11 @@ mat-card-content label {
   display: inline;
   width: 20%;
   flex-grow: 0;
+}
+
+.statement-text {
+  text-align: left;
+  line-height: 1.5;
 }
 
 .annotation-recap {
