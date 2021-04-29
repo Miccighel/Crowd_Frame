@@ -43,11 +43,11 @@ export class Document {
     this.index =          index;
 
     this.article_id =             data["article_id"];
-    this.article_number =         this.articleNumber();
+    this.article_number =         data["article_number"];
     this.type =                   data["type"];
     this.title =                  data["title"];
     this.subject =                data["subject"];
-    this.article_text =           data["article_text"];
+    this.article_text =           data["article_text"][0];
     this.number =                 data["number"];
     this.year =                   data["year"];
     this.editorial_code =         data["editorial_code"];
@@ -74,15 +74,6 @@ export class Document {
    * In this case, for example, if the id_par field is HIGH (LOW) then
    * the document is the HIGH (LOW) gold question
    */
-
-  public articleNumber() {
-    var art_id = this.article_id;
-    if (art_id.charAt(5) != "_") {
-      return art_id.substr(4,2)
-    } else {
-      return art_id.charAt(4)
-    }
-  }
 
   public getGoldQuestionIndex() {
     /* if (this.id.includes("GOLD")) {

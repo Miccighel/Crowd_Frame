@@ -267,7 +267,7 @@ export class SkeletonComponent implements OnInit {
     /* |--- TASK GENERATOR ---| */
     this.generator = false;
 
-    this.tokenInput = new FormControl('GXXIJQYZAY', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
+    this.tokenInput = new FormControl('PZGNZCTSZL', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
     this.tokenForm = formBuilder.group({
       "tokenInput": this.tokenInput
     });
@@ -549,6 +549,11 @@ export class SkeletonComponent implements OnInit {
       for (let index = 0; index < rawDocuments.length; index++) {
         let currentDocument = rawDocuments[index];
         this.documents.push(new Document(index, currentDocument));
+      }
+
+      /* Each document.article_text gets cleaned of multiple spaces */
+      for (let document of this.documents) {
+        document.article_text = document.article_text.replace(/  +/g, ' ');
       }
 
       /* The array of accesses counter is initialized */
@@ -1087,6 +1092,29 @@ export class SkeletonComponent implements OnInit {
     return false
   }
 
+  public filterNotes(notes: Note[]) {
+    var result: Note[] = []
+    for (let note of notes) {
+      if (note.year != 0 && note.number != 0 && note.type == "reference" && !note.withoutDetails && !note.deleted) {
+        result.push(note)
+      }
+    }
+    return result
+  }
+
+  public referenceRadioChange($event: MatRadioChange, documentIndex: number, noteIndex: number) {
+    let currentNote = this.notes[documentIndex][noteIndex]
+    if ($event.value =="null"){
+      currentNote.year = 0
+      currentNote.number = 0
+    } else {
+      let fields = $event.value.split("-")
+      let referenceNote = this.notes[fields[0]][fields[1]]
+      currentNote.year = referenceNote.year
+      currentNote.number = referenceNote.number
+    } 
+  }
+
   public detailsCheckboxChange($event: MatCheckboxChange, documentIndex: number, noteIndex: number) {
     let currentNote = this.notes[documentIndex][noteIndex]
     if ($event.checked) {
@@ -1204,8 +1232,6 @@ export class SkeletonComponent implements OnInit {
     switch ($event.value) {
       case "insertion": {
         currentNote.type = "insertion"
-        currentNote.year = 0
-        currentNote.number = 0
         currentNote.containsReferences = false
         currentNote.innerAnnotations = []
         currentNote.color = this.colors[1]
@@ -1215,8 +1241,6 @@ export class SkeletonComponent implements OnInit {
       }
       case "substitution": {
         currentNote.type = "susbstitution"
-        currentNote.year = 0
-        currentNote.number = 0
         currentNote.containsReferences = false
         currentNote.innerAnnotations = []
         currentNote.color = this.colors[2]
@@ -1226,8 +1250,6 @@ export class SkeletonComponent implements OnInit {
       }
       case "repeal": {
         currentNote.type = "repeal"
-        currentNote.year = 0
-        currentNote.number = 0
         currentNote.containsReferences = false
         currentNote.innerAnnotations = []
         currentNote.color = this.colors[0]

@@ -199,10 +199,12 @@
             <div class="statement">
               <ul>
                 <li class="law_content_li">
-                  <span style="white-space: pre-wrap;" #statementText id="statement-{{i}}"
-                    (mouseup)="performHighlighting(this.changeDetector, $event, i, this.notes, this.annotator)"
-                    (touchend)="performHighlighting(this.changeDetector, $event, i, this.notes, this.annotator)"
-                    class="statement-text">{{this.checkEnabledNotes(i)}} {{document.article_text}}</span>
+                  <div class="statement-div">
+                    <span style="white-space: pre-wrap;" #statementText id="statement-{{i}}"
+                      (mouseup)="performHighlighting(this.changeDetector, $event, i, this.notes, this.annotator)"
+                      (touchend)="performHighlighting(this.changeDetector, $event, i, this.notes, this.annotator)"
+                      class="statement-text">{{this.checkEnabledNotes(i)}} {{document.article_text}}</span>
+                  </div>
                 </li>
               </ul>
             </div>
@@ -269,6 +271,24 @@
                           [checked]="note.withoutDetails">non ci sono ulteriori dettagli
                         </mat-checkbox>
                       </div>
+                    </div>
+                  </div>
+
+                  <div *ngIf="!note.containsReferences || note.withoutDetails">
+                    <div class='reference-form'>
+                      <strong>Si riferisce a:</strong>
+                      <mat-radio-group name="reference-radio-group-{{i}}.{{noteIndex}}"
+                        (change)="this.referenceRadioChange($event, i, noteIndex)">
+                        <div class="reference-radio-group-button">
+                          <mat-radio-button value="null" [checked]="true">Non presente nel testo</mat-radio-button>
+                        </div>
+                        <div *ngFor="let note of this.filterNotes(this.notes[i]); let referredNoteIndex = index">
+                          <div class="reference-radio-group-button">
+                            <mat-radio-button value="{{i}}-{{referredNoteIndex}}">{{note.year}}/{{note.number}}
+                            </mat-radio-button>
+                          </div>
+                        </div>
+                      </mat-radio-group>
                     </div>
                   </div>
 
