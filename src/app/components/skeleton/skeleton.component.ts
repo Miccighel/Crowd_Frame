@@ -1109,9 +1109,8 @@ export class SkeletonComponent implements OnInit {
       currentNote.number = 0
     } else {
       let fields = $event.value.split("-")
-      let referenceNote = this.notes[fields[0]][fields[1]]
-      currentNote.year = referenceNote.year
-      currentNote.number = referenceNote.number
+      currentNote.year = fields[0]
+      currentNote.number = fields[1]
     } 
   }
 
@@ -1119,8 +1118,6 @@ export class SkeletonComponent implements OnInit {
     let currentNote = this.notes[documentIndex][noteIndex]
     if ($event.checked) {
       currentNote.withoutDetails = true
-      currentNote.year = 0
-      currentNote.number = 0
       this.checkEnabledNotes(documentIndex)
     } else {
       currentNote.withoutDetails = false
@@ -1203,6 +1200,7 @@ export class SkeletonComponent implements OnInit {
 
   public performAnnotation(documentIndex: number, noteIndex: number) {
     let currentNote = this.notes[documentIndex][noteIndex]
+    this.resetRadioButton(documentIndex, noteIndex)
     let year = (<HTMLInputElement>document.getElementById("year-" + noteIndex + "." + documentIndex)).value
     let number = (<HTMLInputElement>document.getElementById("number-" + noteIndex + "." + documentIndex)).value
     currentNote.year = Number(year)
@@ -1284,11 +1282,27 @@ export class SkeletonComponent implements OnInit {
   public removeAnnotation(documentIndex: number, noteIndex: number) {
     let currentNote = this.notes[documentIndex][noteIndex]
     currentNote.markDeleted()
+    this.resetRadioButton(documentIndex, noteIndex)
     currentNote.timestamp_deleted = Date.now()
     let element = document.querySelector(`[data-timestamp='${currentNote.timestamp_created}']`)
     element.parentNode.insertBefore(document.createTextNode(currentNote.current_text), element);
     element.remove()
     this.checkEnabledNotes(documentIndex)
+  }
+
+  public resetRadioButton(documentIndex: number, noteIndex: number) {
+    let currentNote = this.notes[documentIndex][noteIndex]
+    // console.log("Sto cercando " + currentNote.year + " " + currentNote.number)
+    for (let note of this.notes[documentIndex]) {
+      if (!note.deleted && note.type != "reference") {
+        // console.log("Nota " + note.year + " " + note.number)
+        if (note.year == currentNote.year && note.number == currentNote.number) {
+          // console.log("Annotazione resettata: " + note.current_text)
+          note.year = 0
+          note.number = 0
+        }
+      }
+    }
   }
 
   public removeInnerAnnotation(documentIndex: number, noteIndex: number, innerNoteIndex: number) {
@@ -1309,6 +1323,14 @@ export class SkeletonComponent implements OnInit {
       }
     }
     return undeletedNotes
+  }
+
+  public referenceRadioButtonCheck(documentIndex: number, noteIndex: number) {
+    let currentNote = this.notes[documentIndex][noteIndex]
+    if (currentNote.year == 0 && currentNote.number == 0) {
+      return true
+    }
+    return false
   }
 
   public checkUndeletedNotesPresence(notes) {
