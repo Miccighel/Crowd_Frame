@@ -12,10 +12,10 @@ export class Document {
 
   id: string;
   text: string;
-  adr_spans: Array<Span>;
-  adr_texts: Array<string>;
-  drug_spans: Array<Span>;
-  drug_texts: Array<string>;
+  adr_spans: Array<JSON>;
+  adr_texts: Array<JSON>;
+  drug_spans: Array<JSON>;
+  drug_texts: Array<JSON>;
   url: string;
 
   constructor(
@@ -27,36 +27,16 @@ export class Document {
 
     this.id = data['id']
     this.text = data["text"];
-    this.adr_spans = new Array<Span>();
-    for (let index = 0; index < data["adr_spans"].length; index++) this.adr_spans.push(new Span(index, data["adr_spans"][index]))
-    this.adr_texts = new Array<string>();
+    this.adr_spans = new Array<JSON>();
+    for (let index = 0; index < data["adr_spans"].length; index++) this.adr_spans.push(data["adr_spans"][index])
+    this.adr_texts = new Array<JSON>();
     for (let index = 0; index < data["adr_text"].length; index++) this.adr_texts.push(data["adr_text"][index])
-    this.drug_spans = new Array<Span>();
-    for (let index = 0; index < data["drug_spans"].length; index++) this.drug_spans.push(new Span(index, data["drug_spans"][index]))
-    this.drug_texts = new Array<string>();
+    this.drug_spans = new Array<JSON>();
+    for (let index = 0; index < data["drug_spans"].length; index++) this.drug_spans.push(data["drug_spans"][index])
+    this.drug_texts = new Array<JSON>();
     for (let index = 0; index < data["drug_text"].length; index++) this.drug_texts.push(data["drug_text"][index])
 
     this.url = data["url"];
-  }
-
-}
-
-export class Span {
-
-  /* DO NOT REMOVE THIS ATTRIBUTE */
-  index: number;
-
-  start: number;
-  end: number;
-  text: string;
-
-  constructor(
-    index: number,
-    data: JSON
-  ) {
-    this.start = data["start"]
-    this.end = data["end"]
-    this.text = data["text"].trim()
   }
 
 }
