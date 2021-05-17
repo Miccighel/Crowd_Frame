@@ -3657,7 +3657,7 @@ __metadata:
     ngx-countdown: ^11.0.3
     ngx-device-detector: ^2.0.6
     ngx-file-helpers: ^5.0.3
-    ngx-ui-loader: ^10.0.0
+    ngx-ui-loader: ^11.0.0
     rxjs: ^6.6.6
     ts-node: ~9.1.1
     typescript: ~4.2.4
@@ -6836,18 +6836,18 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"ngx-ui-loader@npm:^10.0.0":
-  version: 10.0.0
-  resolution: "ngx-ui-loader@npm:10.0.0"
+"ngx-ui-loader@npm:^11.0.0":
+  version: 11.0.0
+  resolution: "ngx-ui-loader@npm:11.0.0"
   dependencies:
     tslib: ^2.0.0
   peerDependencies:
-    "@angular/common": ">=10.0.0"
-    "@angular/core": ">=10.0.0"
-    "@angular/platform-browser": ">=10.0.0"
-    "@angular/router": ">=10.0.0"
+    "@angular/common": ">=11.0.0"
+    "@angular/core": ">=11.0.0"
+    "@angular/platform-browser": ">=11.0.0"
+    "@angular/router": ">=11.0.0"
     rxjs: ">=6.6.0"
-  checksum: 2a844fd47096428f235f2a367c93f5342980278db8faa18dfcaad54f2d9e9dee5ea94a249bfe9c2031c9d92c9b4475dad3c6fcb40b1f1041e70f2ffeff2eceab
+  checksum: 515906f04a4d39131f919509663483858063655b9530fa733a199e0898245e22a680e7e5bd97c9f8c479fe122b6ec4ba96c82b9fb70d7a5439d312d7e519812d
   languageName: node
   linkType: hard
 
