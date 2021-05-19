@@ -15,7 +15,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular-devkit/build-angular@npm:~0.1102.12":
+"@angular-devkit/build-angular@npm:~0.1102.13":
   version: 0.1102.13
   resolution: "@angular-devkit/build-angular@npm:0.1102.13"
   dependencies:
@@ -3722,7 +3722,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "crowdsourcing-skeleton@workspace:."
   dependencies:
-    "@angular-devkit/build-angular": ~0.1102.12
+    "@angular-devkit/build-angular": ~0.1102.13
     "@angular/animations": ~11.2.14
     "@angular/cdk": ~11.2.12
     "@angular/cli": ~11.2.13
