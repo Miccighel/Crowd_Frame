@@ -33,6 +33,10 @@ import {doHighlight} from "@funktechno/texthighlighter/lib";
 import {HttpClient, HttpHeaders} from "@angular/common/http";
 /* Material modules */
 import {MatSnackBar} from "@angular/material/snack-bar";
+import {NoteStandard} from "../../models/skeleton/notes_standard";
+import {NoteLaws} from "../../models/skeleton/notes_laws";
+import {MatRadioChange} from "@angular/material/radio";
+import {MatCheckboxChange} from "@angular/material/checkbox";
 
 /* Component HTML Tag definition */
 @Component({
@@ -212,6 +216,9 @@ export class SkeletonComponent implements OnInit {
   /* Array of checks to understand if the annotation button should be disabled, one for each document */
   annotationButtonsDisabled: Array<boolean>
 
+  notesDone: boolean[];
+  colors: string[] = ["#F36060", "#DFF652", "#FFA500", "#FFFF7B"]
+
   /* |--------- COMMENT ELEMENTS - DECLARATION ---------| */
 
   /* Final comment form reference */
@@ -283,7 +290,7 @@ export class SkeletonComponent implements OnInit {
     this.taskFailed = false;
     this.checkCompleted = false;
 
-    this.tokenInput = new FormControl('', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
+    this.tokenInput = new FormControl('PZGNZCTSZL', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
     this.tokenForm = formBuilder.group({
       "tokenInput": this.tokenInput
     });
@@ -629,7 +636,12 @@ export class SkeletonComponent implements OnInit {
             this.annotationOptions = this.formBuilder.group({
               label: new FormControl('')
             });
+            this.notes = new Array<Array<NoteStandard>>(this.documentsAmount);
+            for (let i = 0; i < this.notes.length; i++) this.notes[i] = [];
             break;
+          case "laws":
+            this.notes = new Array<Array<NoteLaws>>(this.documentsAmount);
+            for (let i = 0; i < this.notes.length; i++) this.notes[i] = [];
         }
       }
 
@@ -637,6 +649,13 @@ export class SkeletonComponent implements OnInit {
       for (let index = 0; index < this.documentsAmount; index++) {
         this.annotationButtonsDisabled.push(true)
       }
+
+      this.notesDone = [false, false, false, false, false]
+
+      console.log(this.annotator)
+      console.log(this.documents)
+
+      /* |--------- COUNTDOWN ---------| */
 
       this.countdownsExpired = new Array<boolean>(this.documentsAmount);
       for (let index = 0; index < this.documentsAmount; index++) this.countdownsExpired[index] = false;
@@ -677,16 +696,12 @@ export class SkeletonComponent implements OnInit {
       /* The task is now started and the worker is looking at the first questionnaire, so the first start timestamp is saved */
       this.timestampsStart[0].push(Math.round(Date.now() / 1000));
 
-      this.notes = new Array<Array<Note>>(this.documentsAmount);
-      for (let i = 0; i < this.notes.length; i++) this.notes[i] = [];
-
       /* |--------- FINALIZATION ---------| */
 
       /* Detect changes within the DOM and update the page */
       this.changeDetector.detectChanges();
 
       /* If there are no questionnaires and the countdown time is set, enable the first countdown */
-
       if(this.settings.countdownTime && this.questionnaireAmount == 0) this.countdown.toArray()[0].begin();
 
       /* trigger the changeDetection again */
@@ -1022,33 +1037,34 @@ export class SkeletonComponent implements OnInit {
 
     if (domElement) {
 
-      /* The container of the annotated element is cloned and the event bindings are attached again */
-      let elementContainerClone = domElement.cloneNode(true)
-      elementContainerClone.addEventListener('mouseup', () => this.performAnnotation(documentIndex, notes, changeDetector))
-      elementContainerClone.addEventListener('touchend', () => this.performAnnotation(documentIndex, notes, changeDetector))
+        /* The container of the annotated element is cloned and the event bindings are attached again */
+        let elementContainerClone = domElement.cloneNode(true)
+        elementContainerClone.addEventListener('mouseup', () => this.performAnnotation(documentIndex, notes, changeDetector))
+        elementContainerClone.addEventListener('touchend', () => this.performAnnotation(documentIndex, notes, changeDetector))
 
-      /* the doHighlight function of the library is called and the flow is handled within two different callback */
-      doHighlight(domElement, false, {
-        /* the onBeforeHighlight event is called before the creation of the yellow highlight to encase the selected text */
-        onBeforeHighlight: (range: Range) => {
-          let notesForDocument = notes[documentIndex]
-          if (range.toString().trim().length == 0)
-            return false
-          let indexes = this.getSelectionCharacterOffsetWithin(domElement)
-          /* To detect an overlap the indexes of the current annotation are check with respect to each annotation previously created */
-          for (let note of notesForDocument) {
-            if (note.deleted == false) if (indexes["start"] < note.index_end && note.index_start < indexes["end"]) return false
-          }
-          return true
-        },
-        /* the onAfterHighlight event is called after the creation of the yellow highlight to encase the selected text */
-        onAfterHighlight: (range, highlight) => {
-          if (highlight.length > 0) {
-            if (highlight[0]["outerText"]) notes[documentIndex].push(new Note(documentIndex, range, highlight))
+        /* the doHighlight function of the library is called and the flow is handled within two different callback */
+        doHighlight(domElement, false, {
+          /* the onBeforeHighlight event is called before the creation of the yellow highlight to encase the selected text */
+          onBeforeHighlight: (range: Range) => {
+            let notesForDocument = notes[documentIndex]
+            if (range.toString().trim().length == 0)
+              return false
+            let indexes = this.getSelectionCharacterOffsetWithin(domElement)
+            /* To detect an overlap the indexes of the current annotation are check with respect to each annotation previously created */
+            for (let note of notesForDocument) {
+              if (note.deleted == false) if (indexes["start"] < note.index_end && note.index_start < indexes["end"]) return false
+            }
             return true
+          },
+          /* the onAfterHighlight event is called after the creation of the yellow highlight to encase the selected text */
+          onAfterHighlight: (range, highlight) => {
+            if (highlight.length > 0) {
+              if (highlight[0]["outerText"]) notes[documentIndex].push(new NoteStandard(documentIndex, range, highlight))
+              return true
+            }
           }
-        }
-      })
+        })
+
     }
 
    /* The annotation option button is enabled if there is an highlighted but not annotated note
@@ -1098,7 +1114,11 @@ export class SkeletonComponent implements OnInit {
   public checkAnnotationConsistency(documentIndex: number) {
     let check = false
     this.notes[documentIndex].forEach((element) => {
-      if (!element.deleted && element.option != "not_selected") check = true
+      if(element instanceof NoteStandard) {
+        if (!element.deleted && element.option != "not_selected") check = true
+      } else {
+        if (!element.deleted) check = true
+      }
     })
     if(!this.annotator) {
       check = true
@@ -1122,7 +1142,7 @@ export class SkeletonComponent implements OnInit {
     domElement.parentNode.insertBefore(textNode, domElement);
     domElement.remove()
     /* The element is then normalized to join each text node */
-    document.querySelector(`.statement-${documentIndex}`).normalize()
+    //document.querySelector(`.statement-${documentIndex}`).normalize()
     changeDetector.detectChanges()
   }
 
@@ -1137,8 +1157,480 @@ export class SkeletonComponent implements OnInit {
         break
       }
     }
+    console.log(undeletedNotes)
     return undeletedNotes
   }
+
+  public performHighlighting(changeDetector, event: Object, documentIndex: number, notes, annotator: Annotator) {
+    let domElement = null
+    if (this.deviceDetectorService.isMobile() || this.deviceDetectorService.isTablet()) {
+      const selection = document.getSelection();
+      if (selection) {
+        domElement = document.getElementById(`statement-${documentIndex}`);
+      }
+    } else {
+      domElement = document.getElementById(`statement-${documentIndex}`);
+    }
+    if (domElement) {
+      let first_clone = document.querySelectorAll(`.statement-text`)[documentIndex].cloneNode(true)
+      first_clone.addEventListener('mouseup', (e) => this.performHighlighting(changeDetector, event, documentIndex, notes, annotator))
+      first_clone.addEventListener('touchend', (e) => this.performHighlighting(changeDetector, event, documentIndex, notes, annotator))
+      const highlightMade = doHighlight(domElement, true, {
+        onAfterHighlight(range, highlight) {
+          const selection = document.getSelection();
+          if (highlight.length > 0) {
+            if (highlight[0]["outerText"]) {
+              selection.empty()
+              let notesForDocument = notes[documentIndex]
+              range["endContainer"]["children"]
+              let newAnnotation = new NoteLaws(documentIndex, range, highlight)
+              let noteAlreadyFound = false
+              for (let note of notesForDocument) {
+                if (!note.deleted && newAnnotation.current_text.includes(note.current_text)) {
+                  /* let element = document.querySelectorAll(`.statement-text`)[documentIndex]
+                  document.querySelectorAll(".law_content_li")[documentIndex].append(first_clone)
+                  element.remove()
+                  return true */
+                  note.deleted = true
+                }
+              }
+              if (noteAlreadyFound) {
+                return true
+              } else {
+                for (let index = 0; index < notesForDocument.length; ++index) {
+                  if (newAnnotation.timestamp_created == notesForDocument[index].timestamp_created) {
+                    if (newAnnotation.current_text.length > notesForDocument[index].current_text.length) notesForDocument.splice(index, 1);
+                  }
+                }
+                notes[documentIndex] = notesForDocument
+                notesForDocument.unshift(newAnnotation)
+                notes[documentIndex] = notesForDocument
+                changeDetector.detectChanges()
+                return true
+              }
+            }
+          } else {
+            let element = document.querySelectorAll(".statement-text")[documentIndex]
+            element.remove()
+            document.querySelectorAll(".law_content_li")[documentIndex].append(first_clone)
+          }
+        }
+      });
+    }
+  }
+
+  public performInnerHighlighting(changeDetector, event: Object, documentIndex: number, noteIndex: number, notes, annotator: Annotator) {
+    let domElement = null
+    if (this.deviceDetectorService.isMobile() || this.deviceDetectorService.isTablet()) {
+      const selection = document.getSelection();
+      if (selection) {
+        domElement = document.getElementById(`references-${noteIndex}.${documentIndex}`);
+      }
+    } else {
+      domElement = document.getElementById(`references-${noteIndex}.${documentIndex}`);
+    }
+    if (domElement) {
+      let first_clone = document.getElementById(`references-${noteIndex}.${documentIndex}`).cloneNode(true)
+      first_clone.addEventListener('mouseup', (e) => this.performInnerHighlighting(changeDetector, event, documentIndex, noteIndex, notes, annotator))
+      first_clone.addEventListener('touchend', (e) => this.performInnerHighlighting(changeDetector, event, documentIndex, noteIndex, notes, annotator))
+      const highlightMade = doHighlight(domElement, true, {
+        onAfterHighlight(range, highlight) {
+          const selection = document.getSelection();
+          if (highlight.length > 0) {
+            if (highlight[0]["outerText"]) {
+              selection.empty()
+              let notesForDocument = notes
+              range["endContainer"]["children"]
+              let newAnnotation = new NoteLaws(documentIndex, range, highlight)
+              let noteAlreadyFound = false
+              for (let note of notesForDocument) {
+                if (!note.deleted && newAnnotation.current_text.includes(note.current_text)) {
+                  note.deleted = true
+                }
+              }
+              if (noteAlreadyFound) {
+                return true
+              } else {
+                for (let index = 0; index < notesForDocument.length; ++index) {
+                  if (newAnnotation.timestamp_created == notesForDocument[index].timestamp_created) {
+                    if (newAnnotation.current_text.length > notesForDocument[index].current_text.length) notesForDocument.splice(index, 1);
+                  }
+                }
+                notesForDocument.unshift(newAnnotation)
+                changeDetector.detectChanges()
+                return true
+              }
+            }
+          } else {
+            let element = document.getElementById(`references-${noteIndex}.${documentIndex}`)
+            element.remove()
+            document.getElementById(`note-current-${noteIndex}.${documentIndex}`).appendChild(first_clone)
+          }
+        }
+      });
+    }
+  }
+
+  public checkIfSaved(documentIndex: number, noteIndex: number) {
+    let currentNote = this.notes[documentIndex][noteIndex]
+    if (currentNote instanceof NoteLaws) {
+      let year = (<HTMLInputElement>document.getElementById("year-" + noteIndex + "." + documentIndex)).value
+      let number = (<HTMLInputElement>document.getElementById("number-" + noteIndex + "." + documentIndex)).value
+      this.checkEnabledNotes(documentIndex)
+      if (currentNote.year == Number(year) && currentNote.number == Number(number)) {
+        return true
+      } else {
+        return false
+      }
+    }
+  }
+
+  public checkIfLast(documentIndex: number, noteIndex: number) {
+    let currentNotes = this.notes[documentIndex]
+    let currentNote = currentNotes[noteIndex]
+    let index = 0
+    let undeletedNotes = 0
+    for (let note of currentNotes) {
+      if (!note.deleted) {
+        undeletedNotes += 1
+      }
+    }
+    if (currentNotes.length > 0) {
+      for (let pos = currentNotes.length - 1; pos >= 0; pos--) {
+        if (!currentNotes[pos].deleted) {
+          if (currentNotes[pos].timestamp_created != currentNote.timestamp_created) {
+            index += 1
+          } else {
+            break
+          }
+        }
+      }
+    }
+    if (index == undeletedNotes - 1) {
+      return true
+    } else {
+      return false
+    }
+  }
+
+  public innerCheckIfSaved(documentIndex: number, noteIndex: number, innerNoteIndex: number) {
+    let mainNote = this.notes[documentIndex][noteIndex]
+    if (mainNote instanceof NoteLaws) {
+      let currentNote = mainNote.innerAnnotations[innerNoteIndex]
+      let year = (<HTMLInputElement>document.getElementById("year-" + innerNoteIndex + "-" + noteIndex + "." + documentIndex)).value
+      let number = (<HTMLInputElement>document.getElementById("number-" + innerNoteIndex + "-" + noteIndex + "." + documentIndex)).value
+      this.checkEnabledNotes(documentIndex)
+      if (currentNote.year == Number(year) && currentNote.number == Number(number)) {
+        return true
+      } else {
+        return false
+      }
+    }
+  }
+
+  public checkNoteDeleted(note: Note) {
+    return note.deleted
+  }
+
+  public checkReferenceWithoutDetails(note: Note) {
+    if (note instanceof NoteLaws) {
+      if (note.type == "reference") {
+        if (!note.withoutDetails) {
+          return (note.year == 0 && note.number == 0)
+        } else {
+          return false
+        }
+      }
+    }
+    return false
+  }
+
+  public filterNotes(notes: Note[]) {
+    var result: Note[] = []
+    for (let note of notes) {
+      if (note instanceof NoteLaws) {
+        if (note.year != 0 && note.number != 0 && note.type == "reference" && !note.withoutDetails && !note.deleted) {
+          result.push(note)
+        }
+      }
+    }
+    return result
+  }
+
+  public referenceRadioChange($event: MatRadioChange, documentIndex: number, noteIndex: number) {
+    let currentNote = this.notes[documentIndex][noteIndex]
+    if (currentNote instanceof NoteLaws) {
+      if ($event.value == "null") {
+        currentNote.year = 0
+        currentNote.number = 0
+      } else {
+        let fields = $event.value.split("-")
+        currentNote.year = fields[0]
+        currentNote.number = fields[1]
+      }
+    }
+  }
+
+  public detailsCheckboxChange($event: MatCheckboxChange, documentIndex: number, noteIndex: number) {
+    let currentNote = this.notes[documentIndex][noteIndex]
+    if (currentNote instanceof NoteLaws) {
+      if ($event.checked) {
+        currentNote.withoutDetails = true
+        this.checkEnabledNotes(documentIndex)
+      } else {
+        currentNote.withoutDetails = false
+        this.checkEnabledNotes(documentIndex)
+      }
+    }
+  }
+
+  public innerDetailsCheckboxChange($event: MatCheckboxChange, documentIndex: number, noteIndex: number, innerNoteIndex: number) {
+    let mainNote = this.notes[documentIndex][noteIndex]
+    if (mainNote instanceof NoteLaws) {
+      let currentNote = mainNote.innerAnnotations[innerNoteIndex]
+      if ($event.checked) {
+        currentNote.withoutDetails = true
+        currentNote.year = 0
+        currentNote.number = 0
+        this.checkEnabledNotes(documentIndex)
+      } else {
+        currentNote.withoutDetails = false
+        this.checkEnabledNotes(documentIndex)
+      }
+    }
+  }
+
+  public checkEnabledNotes(documentIndex: number) {
+    this.notesDone[documentIndex] = true
+    let currentNotes = this.notes[documentIndex]
+    var notesNotDeleted: Note[] = []
+    var booleans: Boolean[] = [true]
+    for (let note of currentNotes) {
+      if (!note.deleted) {
+        notesNotDeleted.push(note)
+      }
+    }
+    for (let note of notesNotDeleted) {
+      if (note instanceof NoteLaws) {
+        if (note.type == "reference") {
+          if (this.checkReferenceWithoutDetails(note)) {
+            booleans.push(false)
+          } else {
+            booleans.push(true)
+          }
+        } else {
+          booleans.push(this.auxCEN(note))
+        }
+      }
+    }
+    if (booleans.length == 0) {
+      this.notesDone[documentIndex] = false
+    } else {
+      let checker = array => array.every(Boolean)
+      if (checker(booleans)) {
+        this.notesDone[documentIndex] = true
+      } else {
+        this.notesDone[documentIndex] = false
+      }
+    }
+  }
+
+  public auxCEN(note: Note) {
+    var booleans: Boolean[] = []
+    if (note instanceof NoteLaws) {
+      for (let n of note.innerAnnotations) {
+        if (!n.deleted) {
+          if ((n.number != 0 && n.year != 0) || n.withoutDetails) {
+            booleans.push(true)
+          } else {
+            booleans.push(false)
+          }
+        }
+      }
+      if (note.containsReferences) {
+        if (booleans.length == 0) {
+          return false
+        } else {
+          let checker = array => array.every(Boolean)
+          if (checker(booleans)) {
+            return true
+          } else {
+            return false
+          }
+        }
+      } else {
+        return true
+      }
+    }
+  }
+
+  public resetRadioButton(documentIndex: number, noteIndex: number) {
+    let currentNote = this.notes[documentIndex][noteIndex]
+    if (currentNote instanceof NoteLaws) {
+      // console.log("Sto cercando " + currentNote.year + " " + currentNote.number)
+      for (let note of this.notes[documentIndex]) {
+        if (note instanceof NoteLaws) {
+          if (!note.deleted && note.type != "reference") {
+            // console.log("Nota " + note.year + " " + note.number)
+            if (note.year == currentNote.year && note.number == currentNote.number) {
+              // console.log("Annotazione resettata: " + note.current_text)
+              note.year = 0
+              note.number = 0
+            }
+          }
+        }
+      }
+    }
+  }
+
+  public performAnnotationLaws(documentIndex: number, noteIndex: number) {
+    let currentNote = this.notes[documentIndex][noteIndex]
+    if (currentNote instanceof NoteLaws) {
+      this.resetRadioButton(documentIndex, noteIndex)
+      let year = (<HTMLInputElement>document.getElementById("year-" + noteIndex + "." + documentIndex)).value
+      let number = (<HTMLInputElement>document.getElementById("number-" + noteIndex + "." + documentIndex)).value
+      currentNote.year = Number(year)
+      currentNote.number = Number(number)
+      currentNote.updateNote()
+      this.checkEnabledNotes(documentIndex)
+    }
+  }
+
+  public performInnerAnnotationLaws(documentIndex: number, noteIndex: number, innerNoteIndex: number) {
+    let mainNote = this.notes[documentIndex][noteIndex]
+    if (mainNote instanceof NoteLaws) {
+      let currentNote = mainNote.innerAnnotations[innerNoteIndex]
+      let year = (<HTMLInputElement>document.getElementById("year-" + innerNoteIndex + "-" + noteIndex + "." + documentIndex)).value
+      let number = (<HTMLInputElement>document.getElementById("number-" + innerNoteIndex + "-" + noteIndex + "." + documentIndex)).value
+      currentNote.year = Number(year)
+      currentNote.number = Number(number)
+      currentNote.updateNote()
+      this.checkEnabledNotes(documentIndex)
+    }
+  }
+
+  public changeSpanColor(documentIndex: number, noteIndex: number) {
+    let note = this.notes[documentIndex][noteIndex]
+    let note_timestamp = note.timestamp_created
+    document.querySelector(`[data-timestamp='${note_timestamp}']`).setAttribute("style", `background-color: ${note.color};`)
+  }
+
+  public radioChange($event: MatRadioChange, documentIndex: number, noteIndex: number) {
+    let currentNote = this.notes[documentIndex][noteIndex]
+    if (currentNote instanceof NoteLaws) {
+      switch ($event.value) {
+        case "insertion": {
+          currentNote.type = "insertion"
+          currentNote.containsReferences = false
+          currentNote.innerAnnotations = []
+          currentNote.color = this.colors[1]
+          this.changeSpanColor(documentIndex, noteIndex)
+          this.checkEnabledNotes(documentIndex)
+          break
+        }
+        case "substitution": {
+          currentNote.type = "substitution"
+          currentNote.containsReferences = false
+          currentNote.innerAnnotations = []
+          currentNote.color = this.colors[2]
+          this.changeSpanColor(documentIndex, noteIndex)
+          this.checkEnabledNotes(documentIndex)
+          break
+        }
+        case "repeal": {
+          currentNote.type = "repeal"
+          currentNote.containsReferences = false
+          currentNote.innerAnnotations = []
+          currentNote.color = this.colors[0]
+          this.changeSpanColor(documentIndex, noteIndex)
+          this.checkEnabledNotes(documentIndex)
+          break
+        }
+        case "reference": {
+          currentNote.type = "reference"
+          currentNote.containsReferences = true
+          currentNote.innerAnnotations = []
+          currentNote.color = this.colors[3]
+          this.changeSpanColor(documentIndex, noteIndex)
+          this.checkEnabledNotes(documentIndex)
+          break
+        }
+      }
+    }
+  }
+
+  public checkboxChange($event: MatCheckboxChange, documentIndex: number, noteIndex: number) {
+    let currentNote = this.notes[documentIndex][noteIndex]
+    if (currentNote instanceof NoteLaws) {
+      if ($event.checked) {
+        currentNote.containsReferences = true
+        this.checkEnabledNotes(documentIndex)
+      } else {
+        currentNote.containsReferences = false
+        currentNote.innerAnnotations = []
+        this.checkEnabledNotes(documentIndex)
+      }
+    }
+  }
+
+  public removeAnnotationLaws(documentIndex: number, noteIndex: number) {
+    let currentNote = this.notes[documentIndex][noteIndex]
+    currentNote.markDeleted()
+    this.resetRadioButton(documentIndex, noteIndex)
+    currentNote.timestamp_deleted = Date.now()
+    let element = document.querySelector(`[data-timestamp='${currentNote.timestamp_created}']`)
+    element.parentNode.insertBefore(document.createTextNode(currentNote.current_text), element);
+    element.remove()
+    this.checkEnabledNotes(documentIndex)
+  }
+
+  public removeInnerAnnotationLaws(documentIndex: number, noteIndex: number, innerNoteIndex: number) {
+    let mainNote = this.notes[documentIndex][noteIndex]
+    if (mainNote instanceof NoteLaws) {
+      let currentNote = mainNote.innerAnnotations[innerNoteIndex]
+      currentNote.markDeleted()
+      currentNote.timestamp_deleted = Date.now()
+      let element = document.querySelector(`[data-timestamp='${currentNote.timestamp_created}']`)
+      element.parentNode.insertBefore(document.createTextNode(currentNote.current_text), element);
+      element.remove()
+      this.checkEnabledNotes(documentIndex)
+    }
+  }
+
+  public countInnerUndeletedNotes(note: Note) {
+    var undeletedNotes = 0
+    if (note instanceof NoteLaws) {
+      for (let innerNote of note.innerAnnotations) {
+        if (!innerNote.deleted) {
+          undeletedNotes += 1
+        }
+      }
+    }
+    return undeletedNotes
+  }
+
+  public referenceRadioButtonCheck(documentIndex: number, noteIndex: number) {
+    let currentNote = this.notes[documentIndex][noteIndex]
+    if (currentNote instanceof NoteLaws) {
+      if (currentNote.year == 0 && currentNote.number == 0) {
+        return true
+      }
+    }
+    return false
+  }
+
+  public checkUndeletedNotesPresenceLaws(notes) {
+    let undeletedNotes = false
+    for (let note of notes) {
+      if (note.deleted == false) {
+        undeletedNotes = true
+        break
+      }
+    }
+    return undeletedNotes
+  }
+
+
 
   /* |--------- QUALITY CHECKS ---------| */
 
