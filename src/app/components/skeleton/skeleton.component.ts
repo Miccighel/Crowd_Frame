@@ -1294,7 +1294,7 @@ export class SkeletonComponent implements OnInit {
     let currentNote = this.notes[documentIndex][noteIndex]
     // console.log("Sto cercando " + currentNote.year + " " + currentNote.number)
     for (let note of this.notes[documentIndex]) {
-      if (!note.deleted && note.type != "reference") {
+      if (!note.deleted && (note.type != "reference" || (note.type == "reference" && note.withoutDetails))) {
         // console.log("Nota " + note.year + " " + note.number)
         if (note.year == currentNote.year && note.number == currentNote.number) {
           // console.log("Annotazione resettata: " + note.current_text)
