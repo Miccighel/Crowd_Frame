@@ -1157,7 +1157,6 @@ export class SkeletonComponent implements OnInit {
         break
       }
     }
-    console.log(undeletedNotes)
     return undeletedNotes
   }
 
