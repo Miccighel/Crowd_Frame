@@ -3718,9 +3718,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"crowdsourcing-skeleton@workspace:.":
+"crowd-frame@workspace:.":
   version: 0.0.0-use.local
-  resolution: "crowdsourcing-skeleton@workspace:."
+  resolution: "crowd-frame@workspace:."
   dependencies:
     "@angular-devkit/build-angular": ~0.1102.13
     "@angular/animations": ~11.2.14
@@ -3740,7 +3740,6 @@ __metadata:
     "@types/crypto-js": ^4.0.1
     "@types/node": ~15.3.1
     aws-sdk: ^2.911.0
-    browserslist: ^4.16.6
     crypto-js: ^4.0.0
     ngx-countdown: ^11.0.3
     ngx-device-detector: ^2.0.10

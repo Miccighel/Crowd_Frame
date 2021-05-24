@@ -652,9 +652,6 @@ export class SkeletonComponent implements OnInit {
 
       this.notesDone = [false, false, false, false, false]
 
-      console.log(this.annotator)
-      console.log(this.documents)
-
       /* |--------- COUNTDOWN ---------| */
 
       this.countdownsExpired = new Array<boolean>(this.documentsAmount);

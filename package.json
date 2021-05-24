@@ -1,5 +1,5 @@
 {
-  "name": "crowdsourcing-skeleton",
+  "name": "crowd-frame",
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
@@ -23,7 +23,6 @@
     "@funktechno/texthighlighter": "^2.0.10",
     "@types/crypto-js": "^4.0.1",
     "aws-sdk": "^2.911.0",
-    "browserslist": "^4.16.6",
     "crypto-js": "^4.0.0",
     "ngx-countdown": "^11.0.3",
     "ngx-device-detector": "^2.0.10",
