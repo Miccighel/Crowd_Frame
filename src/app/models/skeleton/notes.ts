@@ -1,8 +1,9 @@
 import {Annotator} from "./settings";
 
-export class Note {
+export abstract class Note {
 
   document_index: number;
+  version: number;
   deleted: boolean;
   ignored: boolean;
   color: string;
@@ -66,6 +67,10 @@ export class Note {
     this.index_start = this.text_left.length
     this.index_end = this.text_left.length + this.current_text.length
 
+  }
+
+  public updateNote() {
+    this.version = this.version + 1
   }
 
   public markDeleted() {

@@ -6,37 +6,75 @@
 
 export class Document {
 
-  /* DO NOT REMOVE THESE ATTRIBUTE */
+  /* DO NOT REMOVE THIS ATTRIBUTE */
   index: number;
   countdownExpired: boolean;
 
   id: string;
-  text: string;
-  adr_spans: Array<JSON>;
-  adr_texts: Array<JSON>;
-  drug_spans: Array<JSON>;
-  drug_texts: Array<JSON>;
-  url: string;
+  article_number: string;
+  type: string;
+  title: string;
+  subject: string;
+  article_text: string;
+  number: string;
+  year: string;
+  editorial_code: string;
+  gazette_reference: string;
+  publication_date: string;
+  gazette_date: string;
+  valid_from: string;
+  last_updated: string;
+  link_gazette: string;
+  link_urn_nir: string;
+  link_eli_id: string;
+  link_eli_type: string;
 
   constructor(
     index: number,
     data: JSON
   ) {
     /* DO NOT REMOVE THIS LINE */
-    this.index = index;
+    this.index =          index;
 
-    this.id = data['id']
-    this.text = data["text"];
-    this.adr_spans = new Array<JSON>();
-    for (let index = 0; index < data["adr_spans"].length; index++) this.adr_spans.push(data["adr_spans"][index])
-    this.adr_texts = new Array<JSON>();
-    for (let index = 0; index < data["adr_text"].length; index++) this.adr_texts.push(data["adr_text"][index])
-    this.drug_spans = new Array<JSON>();
-    for (let index = 0; index < data["drug_spans"].length; index++) this.drug_spans.push(data["drug_spans"][index])
-    this.drug_texts = new Array<JSON>();
-    for (let index = 0; index < data["drug_text"].length; index++) this.drug_texts.push(data["drug_text"][index])
+    this.id =                     data["article_id"];
+    this.article_number =         data["article_number"];
+    this.type =                   data["type"];
+    this.title =                  data["title"];
+    this.subject =                data["subject"];
+    this.article_text =           data["article_text"][0];
+    this.article_text = this.article_text.replace(/  +/g, ' ');
+    this.number =                 data["number"];
+    this.year =                   data["year"];
+    this.editorial_code =         data["editorial_code"];
+    this.gazette_reference =      data["gazette_reference"];
+    this.publication_date =       data["publication_date"];
+    this.gazette_date =           data["gazette_date"];
+    this.valid_from =             data["valid_from"];
+    this.last_updated =           data["last_updated"];
+    this.link_gazette =           data["link_gazette"];
+    this.link_urn_nir =           data["link_urn_nir"];
+    this.link_eli_id =            data["link_eli_id"];
+    this.link_eli_type =          data["link_eli_type"];
+  }
 
-    this.url = data["url"];
+}
+
+export class Span {
+
+  /* DO NOT REMOVE THIS ATTRIBUTE */
+  index: number;
+
+  start: number;
+  end: number;
+  text: string;
+
+  constructor(
+    index: number,
+    data: JSON
+  ) {
+    this.start = data["start"]
+    this.end = data["end"]
+    this.text = data["text"].trim()
   }
 
 }

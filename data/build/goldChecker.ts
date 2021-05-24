@@ -30,32 +30,6 @@ export class GoldChecker {
       /* CONTROL IMPLEMENTATION STARTS HERE */
       /* Write your code; the check for the current element holds if goldCheck is set to true */
 
-      let union = new Set()
-      let intersection = new Set()
-      notes.forEach(item => {
-        if (item.option == "effect" && item.deleted == false) {
-          let currentTextSet = new Set()
-          let indexStart = item.index_start
-          let indexEnd = item.index_end
-          for (let i = indexStart; i < indexEnd; i++) currentTextSet.add(i)
-          for (let span of document.adr_spans) {
-            let currentAdrSet = new Set()
-            let indexStart = span["start"]
-            let indexEnd = span["end"]
-            for (let i = indexStart; i < indexEnd; i++) currentAdrSet = currentAdrSet.add(i);
-            for (let number of currentTextSet.values()) {
-              union.add(number)
-              if (currentAdrSet.has(number)) intersection.add(number)
-            }
-            for (let number of currentAdrSet.values()) {
-              union.add(number)
-              if (currentTextSet.has(number)) intersection.add(number)
-            }
-          }
-        }
-      });
-      let jaccardCoefficient = intersection.size / union.size
-      if (jaccardCoefficient >= 0.70) goldCheck = true
 
       /* CONTROL IMPLEMENTATION ENDS HERE */
 

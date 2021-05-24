@@ -97,6 +97,7 @@ export class GeneratorComponent implements OnInit {
   ];
   annotatorTypes: AnnotatorType[] = [
     {value: 'options', viewValue: 'Options'},
+    {value: 'laws', viewValue: 'Laws'},
   ];
   styleTypes: StyleType[] = [
     {value: 'list', viewValue: 'List'},

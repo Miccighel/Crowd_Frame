@@ -16,7 +16,7 @@
 </div>
 
 <!-- Instructions modal shown on the top  -->
-<app-instructions [instructions]="this.taskInstructions" *ngIf="taskAllowed && checkCompleted && taskInstructionsRead"> </app-instructions>
+<app-instructions [instructions]="this.taskInstructions" *ngIf="taskAllowed && checkCompleted && taskInstructionsRead"></app-instructions>
 
 <!-- Token input section -->
 <div id="token-section" class="container" *ngIf="!taskStarted && taskAllowed && checkCompleted && taskInstructionsRead">
@@ -28,9 +28,9 @@
             Insert your input token
           </mat-label>
           <input matInput type="text" placeholder="your_mturk_token" formControlName="tokenInput" maxlength="11"
-            (focus)="this.tokenForm.updateValueAndValidity()" (paste)="this.tokenForm.updateValueAndValidity()"
-            (keyup)="this.tokenForm.updateValueAndValidity()" (keydown)="this.tokenForm.updateValueAndValidity()"
-            (keyup.enter)="performTaskSetup()">
+                 (focus)="this.tokenForm.updateValueAndValidity()" (paste)="this.tokenForm.updateValueAndValidity()"
+                 (keyup)="this.tokenForm.updateValueAndValidity()" (keydown)="this.tokenForm.updateValueAndValidity()"
+                 (keyup.enter)="performTaskSetup()">
           <mat-error *ngIf="checkFormControl(tokenForm,'tokenInput', 'required')">
             This field is required
           </mat-error>
@@ -77,7 +77,7 @@
         <mat-card-content *ngIf="!this.settings.messages">
           <h2>
             Either you have already started this task without finishing it, or you have already participated to a
-            variant of this experiment.<br /> For this reason, you are not allowed to take a part in this experiment.
+            variant of this experiment.<br/> For this reason, you are not allowed to take a part in this experiment.
             If you believe that this is an error, please contact us through Amazon MTurk. Sorry for the inconvenience.
           </h2>
         </mat-card-content>
@@ -91,7 +91,7 @@
 
   <!-- Questionnaire markup -->
   <mat-step *ngFor="let questionnaire of questionnaires; let i=index" [stepControl]="questionnairesForm[i]"
-    [editable]="false">
+            [editable]="false">
     <div class="container">
       <form [formGroup]="questionnairesForm[i]" class="questionnaire-form">
         <ng-template matStepLabel>Q{{i + 1}}</ng-template>
@@ -106,15 +106,14 @@
           <!-- Standard questionnaire markup -->
           <mat-card-content *ngIf="questionnaire.type=='standard'">
             <mat-radio-group *ngFor="let question of questionnaire.questions; let j=index"
-              aria-labelledby="radio-button-label" class="radio-button-group question"
-              formControlName="{{question.name}}">
+                             aria-labelledby="radio-button-label" class="radio-button-group question"
+                             formControlName="{{question.name}}">
               <div class="question-text">
                 <label>{{question.text}}</label>
               </div>
               <mat-radio-button *ngFor="let answer of question.answers; let k=index" class="radio-button" value="{{k}}">
                 {{answer}}</mat-radio-button>
-              <mat-expansion-panel hideToggle *ngIf="question.detail" class="question-detail"
-                (opened)="question.showDetail = true" (closed)="question.showDetail = false">
+              <mat-expansion-panel hideToggle *ngIf="question.detail" class="question-detail" (opened)="question.showDetail = true" (closed)="question.showDetail = false">
                 <mat-expansion-panel-header class="mat-button">
                   <mat-panel-title>
                     {{question.showDetail ? 'Hide details' : 'Show details'}}
@@ -161,7 +160,7 @@
               </div>
             </div>
             <mat-radio-group aria-labelledby="radio-button-label"
-              *ngFor="let question of questionnaire.questions; let m=index" formControlName="{{question.name}}">
+                             *ngFor="let question of questionnaire.questions; let m=index" formControlName="{{question.name}}">
               <div>
                 <p>{{m + 1}}) {{question.text}}</p>
               </div>
@@ -174,7 +173,7 @@
           <!-- Next button markup -->
           <mat-card-actions>
             <button mat-flat-button color="primary" matStepperNext
-              [disabled]="(!questionnairesForm[i].valid || taskCompleted)" (click)="performLogging('Next',i)"> Next
+                    [disabled]="(!questionnairesForm[i].valid || taskCompleted)" (click)="performLogging('Next',i)"> Next
             </button>
             <span class="form-note">(*) you have to fill each field to proceed</span>
           </mat-card-actions>
@@ -191,9 +190,9 @@
         <mat-card>
 
           <!-- Document header markup -->
-          <ng-template matStepLabel> T{{i + 1}}</ng-template>
+          <ng-template matStepLabel> Art. {{document.article_number}} <br /> L. {{document.number}} <br /> A.{{document.year}}</ng-template>
           <mat-divider [inset]="true"></mat-divider>
-          <mat-card-title>Tweet Nr. {{i + 1}}</mat-card-title>
+          <mat-card-title>Evidenzia nel seguente articolo</mat-card-title>
           <mat-divider [inset]="true"></mat-divider>
           <mat-card-content class="pt-16px">
 
@@ -201,58 +200,243 @@
             <div class="instructions sticky" *ngIf="this.settings.countdownTime">
               <h2 class="m-0">
                 Time left:
-                <countdown #countdownElement
-                  [config]="{ demand: true, leftTime: this.settings.countdownTime, format: 's' }"
-                  (event)="handleCountdown($event, i)"></countdown>
+                <countdown #countdownElement [config]="{ demand: true, leftTime: this.settings.countdownTime, format: 's' }" (event)="handleCountdown($event, i)"></countdown>
                 seconds
               </h2>
             </div>
 
             <!-- Document attributes markup; add the event bindings if you want enable annotations -->
+
             <div class="statement">
               <ul>
-                <li *ngIf="(this.annotator); else statementTextNoAnnotation;">
+                <li *ngIf="(this.annotator && this.annotator.type=='options')">
                   <span id="statement-{{i}}" class="statement-text"
-                    (mouseup)="performAnnotation(i, this.notes, this.changeDetector)"
-                    (touchend)="performAnnotation(i, this.notes, this.changeDetector)">
+                        (mouseup)="performAnnotation(i, this.notes, this.changeDetector)"
+                        (touchend)="performAnnotation(i, this.notes, this.changeDetector)">
                     {{document.text}}
                   </span>
                 </li>
-                <ng-template #statementTextNoAnnotation>
-                  <li><span id="statement-{{i}}" class="statement-text">{{document.text}}</span></li>
-                </ng-template>
+                <li *ngIf="(this.annotator && this.annotator.type=='laws')" class="law_content_li">
+                  <div class="statement-div">
+                    <span style="white-space: pre-wrap;" #statementText id="statement-{{i}}"
+                          (mouseup)="performHighlighting(this.changeDetector, $event, i, this.notes, this.annotator)"
+                          (touchend)="performHighlighting(this.changeDetector, $event, i, this.notes, this.annotator)"
+                          class="statement-text">{{this.checkEnabledNotes(i)}} {{document.article_text}}</span>
+                  </div>
+                </li>
+                <li *ngIf="!(this.annotator)">
+                  <span id="statement-{{i}}" class="statement-text">{{document.text}}</span>
+                </li>
               </ul>
             </div>
 
-            <!-- Annotation buttons markup -->
-            <div *ngIf="this.annotator" id="annotation-buttons-{{i}}" class="annotation-buttons">
-              <button [style.background-color]="value.color"
-                [style.opacity]="!this.annotationButtonsDisabled[i] ? 1 : 0.3" class="ann-button-{{i}}"
-                *ngFor="let value of annotator.values" [disabled]="this.annotationButtonsDisabled[i]" mat-flat-button
-                (click)="handleAnnotationOption(value,i)">{{value.label}}</button>
-            </div><br />
 
-            <!-- Finalized notes table markup -->
-            <div *ngIf="this.annotator && checkUndeletedNotesPresence(this.notes[i])" class="annotations">
-              <table class="mat-table">
-                <tr class="mat-header-row">
-                  <th class="mat-header-cell">Text</th>
-                  <th class="mat-header-cell">Annotation</th>
-                  <th class="mat-header-cell">Actions</th>
-                </tr>
-                <tr *ngFor="let note of this.notes[i]; let noteIndex = index" class="mat-row">
-                  <ng-container *ngIf="note.deleted == false && note.option != 'not_selected'">
-                    <td class="mat-cell"><span [style.background-color]="note.color">{{note.current_text}}</span></td>
-                    <td class="mat-cell"><code>{{capitalize(note.option)}}</code></td>
-                    <td class="mat-cell">
-                      <button (click)="removeAnnotation(i, noteIndex, this.changeDetector)" mat-flat-button
-                        color="warn">Delete
-                      </button>
-                    </td>
+            <ng-container *ngIf="(this.annotator && this.annotator.type=='options')">
+
+              <!-- Annotation buttons markup -->
+              <div *ngIf="this.annotator" id="annotation-buttons-{{i}}" class="annotation-buttons">
+                <button [style.background-color]="value.color"
+                        [style.opacity]="!this.annotationButtonsDisabled[i] ? 1 : 0.3" class="ann-button-{{i}}"
+                        *ngFor="let value of annotator.values" [disabled]="this.annotationButtonsDisabled[i]" mat-flat-button
+                        (click)="handleAnnotationOption(value,i)">{{value.label}}</button>
+              </div>
+              <br/>
+
+              <!-- Finalized notes table markup -->
+              <div *ngIf="this.annotator && checkUndeletedNotesPresence(this.notes[i])" class="annotations">
+                <table class="mat-table">
+                  <tr class="mat-header-row">
+                    <th class="mat-header-cell">Text</th>
+                    <th class="mat-header-cell">Annotation</th>
+                    <th class="mat-header-cell">Actions</th>
+                  </tr>
+                  <tr *ngFor="let note of this.notes[i]; let noteIndex = index" class="mat-row">
+                    <ng-container *ngIf="note.deleted == false && note.option != 'not_selected'">
+                      <td class="mat-cell"><span [style.background-color]="note.color">{{note.current_text}}</span></td>
+                      <td class="mat-cell"><code>{{capitalize(note.option)}}</code></td>
+                      <td class="mat-cell">
+                        <button (click)="removeAnnotation(i, noteIndex, this.changeDetector)" mat-flat-button
+                                color="warn">Delete
+                        </button>
+                      </td>
+                    </ng-container>
+                  </tr>
+                </table>
+              </div>
+
+            </ng-container>
+
+            <ng-container *ngIf="(this.annotator && this.annotator.type=='laws')">
+
+              <!-- Annotation recap -->
+              <div class="annotations" *ngIf="checkUndeletedNotesPresenceLaws(this.notes[i])">
+                <div *ngFor="let note of this.notes[i]; let noteIndex = index">
+                  <ng-container *ngIf="note.deleted == false">
+                    <mat-divider [inset]="true"></mat-divider>
+                    <br/>
+                    <div *ngIf="checkIfLast(i, noteIndex)" style="height: 0%; text-align: center; margin-bottom: 1%; background-color: rgb(180, 180, 180); color: rgb(255, 0, 0);">
+                      ULTIMA ANNOTAZIONE ESEGUITA
+                    </div>
+                    <div class="annotation-quote">
+                      <div style="min-width: 101px;">
+                        <b>Hai selezionato:</b>
+                      </div>
+                      <div class="annotation-current-text">
+                        &nbsp;<span [style.background-color]="note.color">{{note.current_text}}</span>
+                      </div>
+                      <div class="inner-annotation-delete">
+                        <button (click)="removeAnnotationLaws(i, noteIndex)" mat-flat-button color="warn">Cancella
+                        </button>
+                      </div>
+                    </div>
+                    <div>
+                      <div class="annotation-type">
+                        <div>
+                          <b>Questa annotazione è un/una:</b><br>
+                        </div>
+                        <div class="mat-radio-group">
+                          <div class="radio-group">
+                            <mat-radio-group name="radio-group-{{i}}.{{noteIndex}}"
+                                             (change)="radioChange($event, i, noteIndex)">
+                              <div class="radio-group-button">
+                                <mat-radio-button value="insertion">Inserimento
+                                </mat-radio-button>
+                              </div>
+                              <div class="radio-group-button">
+                                <mat-radio-button value="substitution">Sostituzione
+                                </mat-radio-button>
+                              </div>
+                              <div class="radio-group-button">
+                                <mat-radio-button value="repeal">Cancellazione
+                                </mat-radio-button>
+                              </div>
+                              <div class="radio-group-button">
+                                <mat-radio-button value="reference" [checked]="true">
+                                  Riferimento
+                                </mat-radio-button>
+                              </div>
+                            </mat-radio-group>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="inner-annotation-checkbox-delete">
+                        <div class="inner-annotation-checkbox">
+                          <mat-checkbox (change)="checkboxChange($event, i, noteIndex)"
+                                        name="checkbox-{{noteIndex}}.{{i}}" [disabled]="note.type.includes('reference')"
+                                        [checked]="note.containsReferences">contiene un riferimento a una legge al suo interno
+                          </mat-checkbox>
+                          <br/>
+                          <mat-checkbox (change)="detailsCheckboxChange($event, i, noteIndex)"
+                                        name="details-checkbox-{{noteIndex}}.{{i}}" [disabled]="!note.type.includes('reference')"
+                                        [checked]="note.withoutDetails">non ci sono ulteriori dettagli
+                          </mat-checkbox>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div *ngIf="!note.containsReferences || note.withoutDetails">
+                      <div class='reference-form'>
+                        <strong>Si riferisce a:</strong>
+                        <mat-radio-group name="reference-radio-group-{{i}}.{{noteIndex}}"
+                                         (change)="this.referenceRadioChange($event, i, noteIndex)">
+                          <div class="reference-radio-group-button">
+                            <mat-radio-button value="null" [checked]="this.referenceRadioButtonCheck(i, noteIndex)">Non presente nel testo</mat-radio-button>
+                          </div>
+                          <div *ngFor="let note of this.filterNotes(this.notes[i]); let referredNoteIndex = index">
+                            <div class="reference-radio-group-button">
+                              <mat-radio-button value="{{note.year}}-{{note.number}}">{{note.year}}/{{note.number}}
+                              </mat-radio-button>
+                            </div>
+                          </div>
+                        </mat-radio-group>
+                      </div>
+                    </div>
+
+                    <div *ngIf="note.containsReferences">
+                      <ng-container *ngIf="!note.type.includes('reference')">
+                        <div class="inner-annotation-text">
+                          <div style="display: flex; justify-content: center; padding: 0.25%;">
+                            <strong>Evidenzia il riferimento interno:</strong>
+                          </div>
+                          <div class="inner-annotation-reference" id="note-current-{{noteIndex}}.{{i}}">
+                          <span
+                            (mouseup)="performInnerHighlighting(this.changeDetector, $event, i, noteIndex, note.innerAnnotations, this.annotator)"
+                            (touchend)="performInnerHighlighting(this.changeDetector, $event, i, noteIndex, note.innerAnnotations, this.annotator)"
+                            id="references-{{noteIndex}}.{{i}}">{{note.current_text}}</span>
+                          </div>
+                          <div *ngFor="let innerNotes of note.innerAnnotations; let innerNoteIndex = index">
+                            <ng-container *ngIf="!innerNotes.deleted"><br/>
+                              <mat-divider [inset]="true"></mat-divider>
+                              <div class="inner-annotation-quote" style="padding-top: 5px;">
+                                <span [style.background-color]="innerNotes.color">{{innerNotes.current_text}}</span>
+                              </div>
+                              <div class="inner-annotation-checkbox-delete">
+                                <mat-checkbox (change)="innerDetailsCheckboxChange($event, i, noteIndex, innerNoteIndex)"
+                                              name="details-checkbox-{{innerNoteIndex}}-{{noteIndex}}.{{i}}"
+                                              [disabled]="!innerNotes.type.includes('reference')"
+                                              [checked]="innerNotes.withoutDetails">non ci sono ulteriori dettagli
+                                </mat-checkbox>
+                              </div>
+                              <div *ngIf="innerNotes.type.includes('reference') && !innerNotes.withoutDetails"
+                                   class="annotation-options">
+                                <div style="padding: 5px;">
+                                  <b>Numero legge:<br/><br/>
+                                    Anno legge:</b>
+                                </div>
+                                <br/>
+                                <div style="padding: 5px;"><input type="number"
+                                                                  name="number-{{innerNoteIndex}}-{{noteIndex}}.{{i}}"
+                                                                  id="number-{{innerNoteIndex}}-{{noteIndex}}.{{i}}" placeholder="00"
+                                                                  (change)="innerCheckIfSaved(i, noteIndex, innerNoteIndex)"
+                                                                  (keyup)="innerCheckIfSaved(i, noteIndex, innerNoteIndex)"><br/><br/>
+                                  <input type="number" name="year-{{innerNoteIndex}}-{{noteIndex}}.{{i}}"
+                                         id="year-{{innerNoteIndex}}-{{noteIndex}}.{{i}}" placeholder="0000"
+                                         (change)="innerCheckIfSaved(i, noteIndex, innerNoteIndex)"
+                                         (keyup)="innerCheckIfSaved(i, noteIndex, innerNoteIndex)">
+                                </div>
+                                <div style="padding: 5px; padding-left: 7px;">
+                                  <button (click)="performInnerAnnotationLaws(i, noteIndex, innerNoteIndex)" mat-flat-button
+                                          color="primary"
+                                          id="save_button-{{innerNoteIndex}}-{{innerNoteIndex}}-{{noteIndex}}.{{i}}"
+                                          [disabled]="innerCheckIfSaved(i, noteIndex, innerNoteIndex)">Salva
+                                  </button>
+                                </div>
+                              </div>
+                              <br/>
+                              <div class="inner-annotation-checkbox-delete">
+                                <button (click)="removeInnerAnnotationLaws(i, noteIndex, innerNoteIndex)" mat-flat-button
+                                        color="warn">Cancella riferimento
+                                </button>
+                              </div>
+                            </ng-container>
+                          </div>
+                        </div>
+                      </ng-container>
+                    </div>
+
+                    <div *ngIf="note.type.includes('reference') && !note.withoutDetails" class="annotation-options">
+                      <div style="padding: 5px;">
+                        <b>Numero legge:<br/><br/>Anno legge:</b>
+                      </div>
+                      <br/>
+                      <div style="padding: 5px;">
+                        <input type="number" name="number-{{noteIndex}}.{{i}}" id="number-{{noteIndex}}.{{i}}" placeholder="00"
+                               (change)="checkIfSaved(i, noteIndex)"
+                               (keyup)="checkIfSaved(i, noteIndex)">
+                        <br/><br/>
+                        <input type="number" name="year-{{noteIndex}}.{{i}}" id="year-{{noteIndex}}.{{i}}" placeholder="0000"
+                               (change)="checkIfSaved(i, noteIndex)" (keyup)="checkIfSaved(i, noteIndex)">
+                      </div>
+                      <div style="padding: 5px; padding-left: 7px;">
+                        <button (click)="performAnnotationLaws(i, noteIndex)" mat-flat-button color="primary" id="save_button-{{noteIndex}}.{{i}}" [disabled]="checkIfSaved(i, noteIndex)">Salva
+                        </button>
+                      </div>
+                    </div>
                   </ng-container>
-                </tr>
-              </table>
-            </div>
+                </div>
+              </div>
+
+            </ng-container>
 
             <!-- Evaluation instructions markup -->
             <div *ngIf="this.instructionsAmount>0" class="instructions">
@@ -326,11 +510,11 @@
                       <!-- Categorical scale markup -->
                       <ng-container *ngIf="dimension.scale.type=='categorical'">
                         <mat-radio-group aria-labelledby="radio-button-label" class="radio-button-group"
-                          formControlName="{{(dimension.name).concat('_value')}}">
+                                         formControlName="{{(dimension.name).concat('_value')}}">
                           <mat-radio-button *ngFor="let mapping of dimension.scale.mappings let k=index"
-                            class="radio-button" value="{{mapping.value}}"
-                            (change)="storeDimensionValue($event, i, dimension.index)"
-                            [disabled]="this.countdownsExpired[i]">
+                                            class="radio-button" value="{{mapping.value}}"
+                                            (change)="storeDimensionValue($event, i, dimension.index)"
+                                            [disabled]="this.countdownsExpired[i]">
                             <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0">
                               ({{mapping.description}})</span>
                           </mat-radio-button>
@@ -342,10 +526,10 @@
                         <label>Selected value:
                           {{documentsForm[i].controls[(dimension.name).concat('_value')].value}}</label>
                         <mat-slider min="{{dimension.scale.min}}" max="{{dimension.scale.max}}"
-                          step="{{dimension.scale.step}}" thumbLabel tickInterval="{{dimension.scale.step}}"
-                          formControlName="{{(dimension.name).concat('_value')}}"
-                          (change)="storeDimensionValue($event, i,dimension.index)"
-                          [disabled]="this.countdownsExpired[i]"></mat-slider>
+                                    step="{{dimension.scale.step}}" thumbLabel tickInterval="{{dimension.scale.step}}"
+                                    formControlName="{{(dimension.name).concat('_value')}}"
+                                    (change)="storeDimensionValue($event, i,dimension.index)"
+                                    [disabled]="this.countdownsExpired[i]"></mat-slider>
                       </ng-container>
 
                       <!-- Magnitude scale markup -->
@@ -361,9 +545,9 @@
                       <!-- Categorical scale markup -->
                       <mat-radio-group *ngIf="dimension.scale.type=='categorical'" aria-labelledby="radio-button-label" formControlName="{{(dimension.name).concat('_value')}}">
                         <mat-radio-button *ngFor="let mapping of dimension.scale.mappings let k=index"
-                          class="radio-button" value="{{mapping.value}}"
-                          (change)="storeDimensionValue($event, i,dimension.index)"
-                          [disabled]="this.countdownsExpired[i]">
+                                          class="radio-button" value="{{mapping.value}}"
+                                          (change)="storeDimensionValue($event, i,dimension.index)"
+                                          [disabled]="this.countdownsExpired[i]">
                           <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0">
                             ({{mapping.description}})</span>
                         </mat-radio-button>
@@ -411,9 +595,9 @@
                 <div *ngIf="dimension.url" class="dimension-container dimension-url">
                   <div class="dimension-content search-engine">
                     <app-crowd-xplorer *ngIf="dimension.url" id="app-crowd-xplorer-{{i}}-{{j}}"
-                      (resultEmitter)="storeSearchEngineRetrievedResponse($event)"
-                      (queryEmitter)="storeSearchEngineUserQuery($event)"
-                      (selectedRowEmitter)="storeSearchEngineSelectedResponse($event)"></app-crowd-xplorer>
+                                       (resultEmitter)="storeSearchEngineRetrievedResponse($event)"
+                                       (queryEmitter)="storeSearchEngineUserQuery($event)"
+                                       (selectedRowEmitter)="storeSearchEngineSelectedResponse($event)"></app-crowd-xplorer>
 
                     <!-- Dimension search engine url field markup (hidden) -->
                     <mat-form-field *ngIf="dimension.url" class="url-field">
@@ -441,7 +625,7 @@
                       <ng-container>
                         <span class="matrix-header-text">{{mapping.label}}</span>
                       </ng-container>
-                      <br />
+                      <br/>
                       <ng-container *ngIf="mapping.value<=0">
                         <span class="matrix-header-value">({{mapping.value}})</span>
                       </ng-container>
@@ -473,17 +657,17 @@
 
             <!-- Dimensions are then shown and filtered according to each position -->
             <ng-template *ngIf="this.filterDimensions('list', 'top').length>0" [ngTemplateOutlet]="dimensionList"
-              [ngTemplateOutletContext]="{dimensions: this.filterDimensions('list', 'top'), i:i}"></ng-template>
+                         [ngTemplateOutletContext]="{dimensions: this.filterDimensions('list', 'top'), i:i}"></ng-template>
             <ng-template *ngIf="this.filterDimensions('matrix', 'top').length>0" [ngTemplateOutlet]="dimensionMatrix"
-              [ngTemplateOutletContext]="{dimensions: this.filterDimensions('matrix', 'top'), i:i}"></ng-template>
+                         [ngTemplateOutletContext]="{dimensions: this.filterDimensions('matrix', 'top'), i:i}"></ng-template>
             <ng-template *ngIf="this.filterDimensions('list', 'middle').length>0" [ngTemplateOutlet]="dimensionList"
-              [ngTemplateOutletContext]="{dimensions: this.filterDimensions('list', 'middle'), i:i}"></ng-template>
+                         [ngTemplateOutletContext]="{dimensions: this.filterDimensions('list', 'middle'), i:i}"></ng-template>
             <ng-template *ngIf="this.filterDimensions('matrix', 'middle').length>0" [ngTemplateOutlet]="dimensionMatrix"
-              [ngTemplateOutletContext]="{dimensions: this.filterDimensions('matrix', 'middle'), i:i}"></ng-template>
+                         [ngTemplateOutletContext]="{dimensions: this.filterDimensions('matrix', 'middle'), i:i}"></ng-template>
             <ng-template *ngIf="this.filterDimensions('list', 'bottom').length>0" [ngTemplateOutlet]="dimensionList"
-              [ngTemplateOutletContext]="{dimensions: this.filterDimensions('list', 'bottom'), i:i}"></ng-template>
+                         [ngTemplateOutletContext]="{dimensions: this.filterDimensions('list', 'bottom'), i:i}"></ng-template>
             <ng-template *ngIf="this.filterDimensions('matrix', 'bottom').length>0" [ngTemplateOutlet]="dimensionMatrix"
-              [ngTemplateOutletContext]="{dimensions: this.filterDimensions('matrix', 'bottom'), i:i}"></ng-template>
+                         [ngTemplateOutletContext]="{dimensions: this.filterDimensions('matrix', 'bottom'), i:i}"></ng-template>
 
           </mat-card-content>
 
@@ -491,19 +675,19 @@
           <mat-card-actions>
 
             <button mat-flat-button color="primary" matStepperPrevious *ngIf="i>0"
-              [disabled]="taskCompleted"
-              (click)="performLogging('Back', i)">
-              Back
+                    [disabled]="taskCompleted"
+                    (click)="performLogging('Back', i)">
+              Indietro
             </button>
             <button mat-flat-button color="primary" matStepperNext *ngIf="i+1<this.documentsAmount"
-              [disabled]="(!documentsForm[i].valid || !this.searchEngineRetrievedResponses[i] || taskCompleted || !checkAnnotationConsistency(i)) && !this.countdownsExpired[i]"
-              (click)="performLogging('Next', i);">
-              Next
+                    [disabled]="(!documentsForm[i].valid || !this.searchEngineRetrievedResponses[i] || taskCompleted || !checkAnnotationConsistency(i)) && !this.countdownsExpired[i]"
+                    (click)="performLogging('Next', i);">
+              Avanti
             </button>
             <button mat-flat-button color="primary" matStepperNext *ngIf="i+1>=this.documentsAmount"
-              [disabled]="!documentsForm[i].valid && !this.countdownsExpired[i]"
-              (click)="performLogging('Finish', i); performQualityCheck()">
-              Finish
+                    [disabled]="!documentsForm[i].valid && !this.countdownsExpired[i]"
+                    (click)="performLogging('Finish', i); performQualityCheck()">
+              Concludi
             </button>
 
           </mat-card-actions>
@@ -520,27 +704,27 @@
     <div id="success-section" class="outcome-section container" *ngIf="taskCompleted && taskSuccessful">
       <mat-card>
         <mat-card-title class="success-title">
-          <h4>Success</h4>
+          <h4>Successo</h4>
         </mat-card-title>
         <mat-card-content>
           <h2>
-            Congratulations, you have successfully completed this task. To be paid you now have to copy your output
-            token
-            (shown below)
-            back to the Amazon Mechanical Turk task page. Feel free to leave any comment in the box below to help us
-            improve our research.
+            Congratulazioni, hai concluso con successo il task. Per essere pagato dovrai ora copiare il token di output
+            (mostrato sotto)
+            sulla pagina di Amazon MTurk da cui arrivi. Sentiti libero di lasciare un commento nel campo di testo per
+            aiutarci
+            a migliorare le nostre ricerche.
           </h2>
           <h1>{{tokenOutput}}</h1>
           <form [formGroup]="commentForm" class="comment-form">
             <mat-form-field appearance="fill">
               <textarea matInput [disabled]="commentSent" placeholder="Your comment here" formControlName="comment"
-                rows="5"></textarea>
+                        rows="5"></textarea>
             </mat-form-field>
           </form>
           <button mat-flat-button color="primary" [disabled]="commentSent || !commentForm.valid "
-            (click)="performCommentSaving()"> Send
+                  (click)="performCommentSaving()"> Invia
           </button>
-          <span class="comment-sent-label" *ngIf="commentSent">Thank you!</span>
+          <span class="comment-sent-label" *ngIf="commentSent">Grazie!</span>
         </mat-card-content>
       </mat-card>
     </div>
@@ -548,54 +732,54 @@
     <div id="retry-section" class="outcome-section container" *ngIf="taskCompleted && taskFailed && allowedTries>0">
       <mat-card>
         <mat-card-title class="retry-title">
-          <h3>Failure, but...</h3>
+          <h3>Hai fallito, ma...</h3>
         </mat-card-title>
         <mat-card-content>
           <h2>
-            Your work was not good enough, so you are not allowed to submit this task.
-            As stated in the instructions, some quality checks are performed in this task.
-            You see this message because you have not passed one or more of such checks.
-            Nevertheless, you are allowed to retry this task. To do so, please click on the reset button below.
-            Feel free to leave any comment in the box below.
+            Il tuo lavoro non è stato abbastanza soddisfacente, quindi non puoi confermarlo.
+            Come spiegato nelle istruzioni, alcuni controlli di qualità vengono svolti durante l'esecuzione del task.
+            Vedi questo messaggio perché non hai passato uno o più di questi test.
+            In ogni caso, puoi riprovare il task. Per farlo, clicca sul tasto "reset" qua sotto.
+            Sentiti libero di lasciare qualunque commento nel box qua sotto.
           </h2>
           <button mat-flat-button color="primary" (click)="performReset()">Reset</button>
           <form [formGroup]="commentForm" class="comment-form">
             <mat-form-field appearance="fill">
               <textarea matInput [disabled]="commentSent" placeholder="Your comment here" formControlName="comment"
-                rows="5"></textarea>
+                        rows="5"></textarea>
             </mat-form-field>
           </form>
           <button mat-flat-button color="primary" [disabled]="commentSent || !commentForm.valid "
-            (click)="performCommentSaving()"> Send
+                  (click)="performCommentSaving()"> Invia
           </button>
-          <span class="comment-sent-label" *ngIf="commentSent">Thank you!</span>
+          <span class="comment-sent-label" *ngIf="commentSent">Grazie!</span>
         </mat-card-content>
       </mat-card>
     </div>
     <!-- Failure section - shown when the worker does not pass the quality checks and does not has tries left -->
     <div id="failure-section" class="outcome-section container"
-      *ngIf="taskCompleted && taskFailed && allowedTries <= 0">
+         *ngIf="taskCompleted && taskFailed && allowedTries <= 0">
       <mat-card>
         <mat-card-title class="failure-title">
-          <h4>Failure</h4>
+          <h4>Fallimento</h4>
         </mat-card-title>
         <mat-card-content>
           <h2>
-            Your work was not good enough, so you are not allowed to submit this task.
-            As stated in the instructions, some quality checks are performed in this task.
-            You see this message because you have not passed one or more of such checks.
-            Feel free to leave any comment in the box below.
+            Il tuo lavoro non è stato abbastanza soddisfacente, quindi non puoi confermarlo.
+            Come spiegato nelle istruzioni, alcuni controlli di qualità vengono svolti durante l'esecuzione del task.
+            Vedi questo messaggio perché non hai passato uno o più di questi test.
+            Sentiti libero di lasciare qualunque commento nel box qua sotto.
           </h2>
           <form [formGroup]="commentForm" class="comment-form">
             <mat-form-field appearance="fill">
               <textarea matInput [disabled]="commentSent" placeholder="Your comment here" formControlName="comment"
-                rows="5"></textarea>
+                        rows="5"></textarea>
             </mat-form-field>
           </form>
           <button mat-flat-button color="primary" [disabled]="commentSent || !commentForm.valid "
-            (click)="performCommentSaving()"> Send
+                  (click)="performCommentSaving()"> Invia
           </button>
-          <span class="comment-sent-label" *ngIf="commentSent">Thank you!</span>
+          <span class="comment-sent-label" *ngIf="commentSent">Grazie!</span>
         </mat-card-content>
       </mat-card>
     </div>
