@@ -1,10 +1,10 @@
 /* Core imports */
-import { Injectable} from '@angular/core';
+import {Injectable} from '@angular/core';
 import * as AWS from "aws-sdk";
 /* Debug config import */
 import * as localRawDimensions from '../../../data/build/task/dimensions.json';
 import * as localRawHits from '../../../data/build/task/hits.json';
-import * as localRawInstructionsDimensions from '.../../../data/build/task/instructions_dimensions.json';
+import * as localRawInstructionsDimensions from '../../../data/build/task/instructions_dimensions.json';
 import * as localRawQuestionnaires from '../../../data/build/task/questionnaires.json';
 import * as localRawTaskSettings from '../../../data/build/task/task.json';
 import * as localRawSearchEngineSettings from '../../../data/build/task/search_engine.json';

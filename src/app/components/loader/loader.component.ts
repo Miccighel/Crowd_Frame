@@ -5,7 +5,7 @@ import {ConfigService} from "../../services/config.service";
 import {NgxUiLoaderService} from "ngx-ui-loader";
 import {S3Service} from "../../services/s3.service";
 /* Cyphers */
-import * as crypto from 'crypto-js';
+import CryptoES from 'crypto-es';
 /* Reactive forms modules */
 import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
 /* Task models */
@@ -148,8 +148,8 @@ export class LoaderComponent {
       let admins = await this.S3Service.downloadAdministrators(this.configService.environment)
       for (let admin of admins) {
         /* the data stored within admin.json file are encrypted using AES */
-        let decrypted = crypto.AES.decrypt(admin["crypt"], this.password.value)
-        let decryptedData = decrypted.toString(crypto.enc.Utf8)
+        let decrypted = CryptoES.AES.decrypt(admin["crypt"], this.password.value)
+        let decryptedData = decrypted.toString(CryptoES.enc.Utf8)
         if (decryptedData != "") {
           let adminData = JSON.parse(decryptedData)
           if (adminData['username'] == this.username.value) {
