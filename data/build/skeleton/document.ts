@@ -18,7 +18,7 @@ export class Document {
 		link_urn_nir: string;
 		link_eli_id: string;
 		link_eli_type: string;
-		article_id: string;
+		id: string;
 		article_number: string;
 		article_text: Array<JSON>;
 
@@ -46,7 +46,7 @@ export class Document {
 			this.link_urn_nir = data["link_urn_nir"]
 			this.link_eli_id = data["link_eli_id"]
 			this.link_eli_type = data["link_eli_type"]
-			this.article_id = data["article_id"]
+			this.id = data["id"]
 			this.article_number = data["article_number"]
 			for (let index = 0; index < data["article_text"].length; index++)
 			this.article_text.push(data["article_text"][index])

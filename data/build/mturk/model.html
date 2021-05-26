@@ -4,7 +4,7 @@
   <script src="https://kit.fontawesome.com/850c8c324f.js" crossorigin="anonymous"></script>
 
   <style>
-    
+    <%text>
     html, body {
       height: 100%;
     }
@@ -65,7 +65,7 @@
       display: block;
       margin-top: 2%;
     }
-    
+    </%text>
   </style>
   <script src="https://assets.crowd.aws/crowd-html-elements.js"></script>
 </head>
@@ -90,7 +90,7 @@
        </li>
     </ol>
     <hr class="my-4">
-    <p id="task-link-container" class="lead"><a target="_blank" id="task-link" href="https://deploy-bucket-test-fsfddfsfdsfsfsffssfdfsdfsfsdfsd.s3.us-east-2.amazonaws.com/ItalianLaws/Test-1/index.html">https://deploy-bucket-test-fsfddfsfdsfsfsffssfdfsdfsfsdfsd.s3.us-east-2.amazonaws.com/ItalianLaws/Test-1/index.html</a></p>
+    <p id="task-link-container" class="lead"><a target="_blank" id="task-link" href="https://${aws_deploy_bucket}.s3.${aws_region}.amazonaws.com/${task_name}/${batch_name}/index.html">https://${aws_deploy_bucket}.s3.${aws_region}.amazonaws.com/${task_name}/${batch_name}/index.html</a></p>
     <div id="token-output-container" class="lead">
       <input type="text" id="token-output" name="token_output" class="form-control" placeholder="your_output_token_here">
     </div>
@@ -106,7 +106,7 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
 
 <script>
-  
+  <%text>
   $('[data-toggle="tooltip"]').tooltip();
 
   let taskLink = $("#task-link").attr("href");
@@ -136,6 +136,5 @@
       $("#token-input-container").append( "<strong id='copy-successful' class='text-success'> token copied!</strong>" );
     }
   }
-  
+  </%text>
 </script>
-
