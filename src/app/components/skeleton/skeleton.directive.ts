@@ -43,8 +43,7 @@ export class SkeletonDirective implements AfterViewInit{
           y: event.clientY,
           target: {
             elementName: event['target']['localName'],
-            className: event['target']['className'],
-            innerText: event['target']['innerText']
+            className: event['target']['className']
           }
         })),
         buffer(mouseMoveEvent.pipe(debounceTime(500))),
@@ -75,8 +74,7 @@ export class SkeletonDirective implements AfterViewInit{
           y: event.clientY,
           target: {
             elementName: event['target']['localName'],
-            className: event['target']['className'],
-            innerText: event['target']['innerText']
+            className: event['target']['className']
           },
           mouseButton: 'left',
           clicks: clicks
@@ -98,8 +96,7 @@ export class SkeletonDirective implements AfterViewInit{
         y: event.clientY,
         target: {
           elementName: event['target']['localName'],
-          className: event['target']['className'],
-          innerText: event['target']['innerText']
+          className: event['target']['className']
         },
         mouseButton: 'right',
         clicks: 1
