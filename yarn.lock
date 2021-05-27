@@ -15,7 +15,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular-devkit/build-angular@npm:~12.0.1":
+"@angular-devkit/build-angular@npm:~12.0.2":
   version: 12.0.2
   resolution: "@angular-devkit/build-angular@npm:12.0.2"
   dependencies:
@@ -171,7 +171,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/animations@npm:~12.0.1":
+"@angular/animations@npm:~12.0.2":
   version: 12.0.2
   resolution: "@angular/animations@npm:12.0.2"
   dependencies:
@@ -182,7 +182,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/cdk@npm:~12.0.1":
+"@angular/cdk@npm:~12.0.2":
   version: 12.0.2
   resolution: "@angular/cdk@npm:12.0.2"
   dependencies:
@@ -199,7 +199,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/cli@npm:^12.0.1":
+"@angular/cli@npm:^12.0.2":
   version: 12.0.2
   resolution: "@angular/cli@npm:12.0.2"
   dependencies:
@@ -229,7 +229,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/common@npm:~12.0.1":
+"@angular/common@npm:~12.0.2":
   version: 12.0.2
   resolution: "@angular/common@npm:12.0.2"
   dependencies:
@@ -241,7 +241,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/compiler-cli@npm:~12.0.1":
+"@angular/compiler-cli@npm:~12.0.2":
   version: 12.0.2
   resolution: "@angular/compiler-cli@npm:12.0.2"
   dependencies:
@@ -271,7 +271,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/compiler@npm:~12.0.1":
+"@angular/compiler@npm:~12.0.2":
   version: 12.0.2
   resolution: "@angular/compiler@npm:12.0.2"
   dependencies:
@@ -280,19 +280,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/core@npm:12.0.1":
-  version: 12.0.1
-  resolution: "@angular/core@npm:12.0.1"
+"@angular/core@npm:12.0.2":
+  version: 12.0.2
+  resolution: "@angular/core@npm:12.0.2"
   dependencies:
     tslib: ^2.1.0
   peerDependencies:
     rxjs: ^6.5.3
     zone.js: ~0.11.4
-  checksum: a7483e96971188b0701e2d0fb1489109984f8ad2a6f70ed4993abbfe7430cdcfff86b07646e95dd797df1708d4454fd5896521d0c6dba8765d1060b320af0822
+  checksum: dca97bde61f860227e2c9eda4214687f1e6af33383251b2701300481032abd30e31cc839ca8e6096ebca5e381494b17e309321455b3d209c7a772d7a3039f4ad
   languageName: node
   linkType: hard
 
-"@angular/elements@npm:^12.0.1":
+"@angular/elements@npm:^12.0.2":
   version: 12.0.2
   resolution: "@angular/elements@npm:12.0.2"
   dependencies:
@@ -305,7 +305,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/forms@npm:~12.0.1":
+"@angular/forms@npm:~12.0.2":
   version: 12.0.2
   resolution: "@angular/forms@npm:12.0.2"
   dependencies:
@@ -319,7 +319,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/material@npm:^12.0.1":
+"@angular/material@npm:^12.0.2":
   version: 12.0.2
   resolution: "@angular/material@npm:12.0.2"
   dependencies:
@@ -335,7 +335,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/platform-browser-dynamic@npm:~12.0.1":
+"@angular/platform-browser-dynamic@npm:~12.0.2":
   version: 12.0.2
   resolution: "@angular/platform-browser-dynamic@npm:12.0.2"
   dependencies:
@@ -349,7 +349,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/platform-browser@npm:~12.0.1":
+"@angular/platform-browser@npm:~12.0.2":
   version: 12.0.2
   resolution: "@angular/platform-browser@npm:12.0.2"
   dependencies:
@@ -365,7 +365,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/router@npm:~12.0.1":
+"@angular/router@npm:~12.0.2":
   version: 12.0.2
   resolution: "@angular/router@npm:12.0.2"
   dependencies:
@@ -2453,7 +2453,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"aws-sdk@npm:^2.913.0":
+"aws-sdk@npm:^2.916.0":
   version: 2.916.0
   resolution: "aws-sdk@npm:2.916.0"
   dependencies:
@@ -3367,27 +3367,27 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "crowd-frame@workspace:."
   dependencies:
-    "@angular-devkit/build-angular": ~12.0.1
-    "@angular/animations": ~12.0.1
-    "@angular/cdk": ~12.0.1
-    "@angular/cli": ^12.0.1
-    "@angular/common": ~12.0.1
-    "@angular/compiler": ~12.0.1
-    "@angular/compiler-cli": ~12.0.1
-    "@angular/core": 12.0.1
-    "@angular/elements": ^12.0.1
-    "@angular/forms": ~12.0.1
-    "@angular/material": ^12.0.1
-    "@angular/platform-browser": ~12.0.1
-    "@angular/platform-browser-dynamic": ~12.0.1
-    "@angular/router": ~12.0.1
+    "@angular-devkit/build-angular": ~12.0.2
+    "@angular/animations": ~12.0.2
+    "@angular/cdk": ~12.0.2
+    "@angular/cli": ^12.0.2
+    "@angular/common": ~12.0.2
+    "@angular/compiler": ~12.0.2
+    "@angular/compiler-cli": ~12.0.2
+    "@angular/core": 12.0.2
+    "@angular/elements": ^12.0.2
+    "@angular/forms": ~12.0.2
+    "@angular/material": ^12.0.2
+    "@angular/platform-browser": ~12.0.2
+    "@angular/platform-browser-dynamic": ~12.0.2
+    "@angular/router": ~12.0.2
     "@funktechno/texthighlighter": ^2.0.10
     "@types/crypto-js": ^4.0.1
     "@types/node": ~15.6.1
-    aws-sdk: ^2.913.0
+    aws-sdk: ^2.916.0
     crypto-es: ^1.2.7
     ngx-countdown: ^11.0.3
-    ngx-device-detector: ^2.0.10
+    ngx-device-detector: ^2.1.1
     ngx-file-helpers: ^5.0.3
     ngx-ui-loader: ^11.0.0
     rxjs: ^6.5.3
@@ -6603,7 +6603,7 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"ngx-device-detector@npm:^2.0.10":
+"ngx-device-detector@npm:^2.1.1":
   version: 2.1.1
   resolution: "ngx-device-detector@npm:2.1.1"
   dependencies:
