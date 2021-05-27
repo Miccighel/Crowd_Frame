@@ -59,4 +59,5 @@ data/build/environments/environment.ts
 !.yarn/versions
 .pnp.*
 data/.env
-data/aws
+data/aws/*
+
