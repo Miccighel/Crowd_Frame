@@ -10,7 +10,7 @@ import * as localRawTaskSettings from '../../../data/build/task/task.json';
 import * as localRawSearchEngineSettings from '../../../data/build/task/search_engine.json';
 import * as localRawWorkers from '../../../data/build/task/workers.json';
 import * as localRawInstructionsMain from '../../../data/build/task/instructions_main.json';
-import * as localRawAdmin from '../../../data/build/admin.json';
+import * as localRawAdmin from '../../../data/build/config/admin.json';
 import {ManagedUpload} from "aws-sdk/clients/s3";
 import {Worker} from "../models/skeleton/worker";
 

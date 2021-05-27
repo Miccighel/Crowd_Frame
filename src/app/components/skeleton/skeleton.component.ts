@@ -18,7 +18,7 @@ import {ConfigService} from "../../services/config.service";
 import {S3Service} from "../../services/s3.service";
 import {DeviceDetectorService} from 'ngx-device-detector';
 /* Task models */
-import {Document} from "../../../../data/build/document";
+import {Document} from "../../../../data/build/skeleton/document";
 import {Hit} from "../../models/skeleton/hit";
 import {Questionnaire} from "../../models/skeleton/questionnaire";
 import {Dimension, ScaleInterval} from "../../models/skeleton/dimension";
@@ -26,7 +26,7 @@ import {Instruction} from "../../models/shared/instructions";
 import {Note} from "../../models/skeleton/notes";
 import {Worker} from "../../models/skeleton/worker";
 import {Annotator, Settings} from "../../models/skeleton/settings";
-import {GoldChecker} from "../../../../data/build/goldChecker";
+import {GoldChecker} from "../../../../data/build/skeleton/goldChecker";
 /* Annotator functions */
 import {doHighlight} from "@funktechno/texthighlighter/lib";
 /* HTTP Client */
