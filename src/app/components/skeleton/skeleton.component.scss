@@ -136,10 +136,10 @@ mat-card-content label {
   box-shadow: 0 0 0 0;
   border-radius: 0;
   background-color: #DEDEDE;
-  position:-webkit-sticky;
-  position:sticky;
-  top: 42px;
-  z-index: 1000;
+  //position:-webkit-sticky;
+  //position:sticky;
+  //top: 42px;
+  //z-index: 1000;
 }
 
 .statement ul {
@@ -563,7 +563,7 @@ mat-form-field {
 .statement-div {
   max-width: 600px;
   margin: auto;
-  font-size: large;
+  font-size: 1.2em;
   line-height: 1.5;
   text-align: center;
 }
