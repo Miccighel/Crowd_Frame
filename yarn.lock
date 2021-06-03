@@ -182,9 +182,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/cdk@npm:~12.0.2":
-  version: 12.0.2
-  resolution: "@angular/cdk@npm:12.0.2"
+"@angular/cdk@npm:~12.0.3":
+  version: 12.0.3
+  resolution: "@angular/cdk@npm:12.0.3"
   dependencies:
     parse5: ^5.0.0
     tslib: ^2.1.0
@@ -195,7 +195,7 @@ __metadata:
   dependenciesMeta:
     parse5:
       optional: true
-  checksum: eb1579693b2e987479010cfbac6e7ef0f678eabf9d37a730ca9a2f73ebc887611e212b254b72bcaf0aa572f18a051e913b39a03991748ce4385820a09432802e
+  checksum: 160175854de96b2b3b0fda3f0d1a9d2d107e23c6e052d3802fd8799b1b7c7a73f4a821996e785bc8a4b9bceb6e25858729d5d57f274fbccd84fab4c8e0efd550
   languageName: node
   linkType: hard
 
@@ -319,19 +319,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/material@npm:^12.0.2":
-  version: 12.0.2
-  resolution: "@angular/material@npm:12.0.2"
+"@angular/material@npm:^12.0.3":
+  version: 12.0.3
+  resolution: "@angular/material@npm:12.0.3"
   dependencies:
     tslib: ^2.1.0
   peerDependencies:
     "@angular/animations": ^12.0.0 || ^13.0.0-0
-    "@angular/cdk": 12.0.2
+    "@angular/cdk": 12.0.3
     "@angular/common": ^12.0.0 || ^13.0.0-0
     "@angular/core": ^12.0.0 || ^13.0.0-0
     "@angular/forms": ^12.0.0 || ^13.0.0-0
     rxjs: ^6.5.3
-  checksum: 18f3376f06779f0c06438d83916e5192bcd29a7970110d90baf8020738d223154eec49c413dde414d8ada07cc4a00c2c6cec5420da33f36db38db2bb0bc30740
+  checksum: a5fe7c3f31aba896cc4e0ab3f2e5acf6cb08a7e686c760e8df0203e9970c00aac3bf30a3ed7f73e0b85f90222b4b2ea6041992bb7d7a492765fe87ede6f30e40
   languageName: node
   linkType: hard
 
@@ -3376,7 +3376,7 @@ __metadata:
   dependencies:
     "@angular-devkit/build-angular": ~12.0.3
     "@angular/animations": ~12.0.3
-    "@angular/cdk": ~12.0.2
+    "@angular/cdk": ~12.0.3
     "@angular/cli": ^12.0.3
     "@angular/common": ~12.0.3
     "@angular/compiler": ~12.0.3
@@ -3384,7 +3384,7 @@ __metadata:
     "@angular/core": 12.0.3
     "@angular/elements": ^12.0.3
     "@angular/forms": ~12.0.3
-    "@angular/material": ^12.0.2
+    "@angular/material": ^12.0.3
     "@angular/platform-browser": ~12.0.3
     "@angular/platform-browser-dynamic": ~12.0.3
     "@angular/router": ~12.0.3
