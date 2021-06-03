@@ -12,8 +12,8 @@ mkdir -p "tasks/${1}/${2}/task";
 fi
 echo "Building task ${1}/${2}";
 ng build --configuration="production" --output-hashing=none \
-&& cat ../dist/CrowdsourcingSkeleton/polyfills-es2015.js ../dist/CrowdsourcingSkeleton/runtime-es2015.js ../dist/CrowdsourcingSkeleton/main-es2015.js > build/deploy/scripts.js  \
-&& cat ../dist/CrowdsourcingSkeleton/styles.css > build/deploy/styles.css \
+&& cat ../dist/Crowd_Frame/polyfills.js ../dist/Crowd_Frame/runtime.js ../dist/Crowd_Frame/main.js > build/deploy/scripts.js  \
+&& cat ../dist/Crowd_Frame/styles.css > build/deploy/styles.css \
 && cat build/deploy/scripts.js > "tasks/${1}/${2}/deploy/scripts.js" \
 && cat build/deploy/styles.css > "tasks/${1}/${2}/deploy/styles.css" \
 && cat build/deploy/index.html > "tasks/${1}/${2}/deploy/index.html" \
