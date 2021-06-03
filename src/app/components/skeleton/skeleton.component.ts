@@ -279,7 +279,7 @@ export class SkeletonComponent implements OnInit {
 
     this.snackBar = snackBar
 
-    this.ngxService.start();
+    this.ngxService.startLoader('skeleton');
 
     /* |--------- CONTROL FLOW & UI ELEMENTS - INITIALIZATION ---------| */
 
@@ -329,7 +329,7 @@ export class SkeletonComponent implements OnInit {
 
   public async ngOnInit() {
 
-    this.ngxService.start()
+    this.ngxService.startLoader('skeleton')
     let url = new URL(window.location.href);
 
     /* The task settings are loaded */
@@ -357,7 +357,7 @@ export class SkeletonComponent implements OnInit {
               this.checkCompleted = true
               this.changeDetector.detectChanges()
               /* The loading spinner is stopped */
-              this.ngxService.stop();
+              this.ngxService.stopLoader('skeleton');
             }
           )
         })
@@ -366,7 +366,7 @@ export class SkeletonComponent implements OnInit {
         this.worker = new Worker(null, null, null, null, null)
         this.checkCompleted = true
         this.changeDetector.detectChanges()
-        this.ngxService.stop()
+        this.ngxService.stopLoader('skeleton')
       }
     })
 
