@@ -3,9 +3,9 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
-    "build": "ng build",
-    "serve": "ng serve --open"
+    "start": "ng serve -c dev",
+    "build": "ng build -c prod",
+    "serve": "ng serve -c dev --open"
   },
   "private": true,
   "dependencies": {
