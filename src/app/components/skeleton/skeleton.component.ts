@@ -48,9 +48,6 @@ import {MatCheckboxChange} from "@angular/material/checkbox";
 
 /*
 * This class implements a skeleton for Crowdsourcing tasks.
-* Please, remember to review the environment variables in ../environments/ folder.
-* File environment.ts --- DEVELOPMENT ENVIRONMENT
-* File environment.prod.ts --- PRODUCTION ENVIRONMENT
 */
 export class SkeletonComponent implements OnInit {
 
@@ -253,7 +250,7 @@ export class SkeletonComponent implements OnInit {
 
   /* |--------- CONSTRUCTOR IMPLEMENTATION ---------| */
 
-  /* When using Angular the construct is deputed to initialize elements for which the UI does not neet to be initialized */
+  /* When using Angular the construct is deputed to initialize elements for which the UI does not need to be initialized */
 
   constructor(
     changeDetector: ChangeDetectorRef,
@@ -279,7 +276,7 @@ export class SkeletonComponent implements OnInit {
 
     this.snackBar = snackBar
 
-    this.ngxService.startLoader('skeleton');
+    this.ngxService.start();
 
     /* |--------- CONTROL FLOW & UI ELEMENTS - INITIALIZATION ---------| */
 
@@ -329,7 +326,7 @@ export class SkeletonComponent implements OnInit {
 
   public async ngOnInit() {
 
-    this.ngxService.startLoader('skeleton')
+    this.ngxService.start()
     let url = new URL(window.location.href);
 
     /* The task settings are loaded */
@@ -348,7 +345,7 @@ export class SkeletonComponent implements OnInit {
               this.checkCompleted = true
               this.changeDetector.detectChanges()
               /* The loading spinner is stopped */
-              this.ngxService.stopLoader('skeleton');
+              this.ngxService.stop();
             },
             /* Otherwise we won't have such information */
             error => {
@@ -357,7 +354,7 @@ export class SkeletonComponent implements OnInit {
               this.checkCompleted = true
               this.changeDetector.detectChanges()
               /* The loading spinner is stopped */
-              this.ngxService.stopLoader('skeleton');
+              this.ngxService.stop();
             }
           )
         })
@@ -366,7 +363,7 @@ export class SkeletonComponent implements OnInit {
         this.worker = new Worker(null, null, null, null, null)
         this.checkCompleted = true
         this.changeDetector.detectChanges()
-        this.ngxService.stopLoader('skeleton')
+        this.ngxService.stop()
       }
     })
 
@@ -378,6 +375,8 @@ export class SkeletonComponent implements OnInit {
     for (let index = 0; index < this.taskInstructionsAmount; index++) {
       this.taskInstructions.push(new Instruction(index, rawTaskInstructions[index]));
     }
+
+    this.changeDetector.detectChanges()
 
   }
 
@@ -490,7 +489,7 @@ export class SkeletonComponent implements OnInit {
     if (this.tokenForm.valid) {
 
       /* The loading spinner is started */
-      this.ngxService.startLoader('skeleton');
+      this.ngxService.start();
 
       /* |--------- HIT ELEMENTS (see: hit.json) ---------| */
 
@@ -705,7 +704,7 @@ export class SkeletonComponent implements OnInit {
       this.changeDetector.detectChanges();
 
       /* The loading spinner is stopped */
-      this.ngxService.stopLoader('skeleton');
+      this.ngxService.stop();
 
     }
   }
@@ -1657,7 +1656,7 @@ export class SkeletonComponent implements OnInit {
   public async performQualityCheck() {
 
     /* The loading spinner is started */
-    this.ngxService.startLoader('skeleton');
+    this.ngxService.start();
 
     /* The current try is completed and the final can shall begin */
     this.taskCompleted = true;
@@ -1742,7 +1741,7 @@ export class SkeletonComponent implements OnInit {
     this.changeDetector.detectChanges();
 
     /* The loading spinner is stopped */
-    this.ngxService.stopLoader('skeleton');
+    this.ngxService.stop();
 
   }
 
@@ -1753,7 +1752,7 @@ export class SkeletonComponent implements OnInit {
   public performReset() {
 
     /* The loading spinner is started */
-    this.ngxService.startLoader('skeleton');
+    this.ngxService.start();
 
     /* Control variables to restore the state of task */
     this.taskFailed = false;
@@ -1780,7 +1779,7 @@ export class SkeletonComponent implements OnInit {
     }
 
     /* The loading spinner is stopped */
-    this.ngxService.stopLoader('skeleton');
+    this.ngxService.stop();
 
   }
 

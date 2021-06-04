@@ -1835,10 +1835,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:~15.6.2":
-  version: 15.6.2
-  resolution: "@types/node@npm:15.6.2"
-  checksum: e65d6d4750c8bff0d7ecaba1b552118f17b163f3dae8007f6112c54bd591b7087b506c20bb03ce802dc895ef1c2565a750c5246bddab6ffa7d308c2d5f301571
+"@types/node@npm:~15.12.0":
+  version: 15.12.0
+  resolution: "@types/node@npm:15.12.0"
+  checksum: d4d82cd60cd6f6030d3882e2cee9c7bdba7a3dd7349925a37320c557fedb730a72dd14ad703b38c45dd52c5e7bdcbdef740bce19c23133661c1dfa1290d763c0
   languageName: node
   linkType: hard
 
@@ -2460,9 +2460,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"aws-sdk@npm:^2.920.0":
-  version: 2.920.0
-  resolution: "aws-sdk@npm:2.920.0"
+"aws-sdk@npm:2.921.0":
+  version: 2.921.0
+  resolution: "aws-sdk@npm:2.921.0"
   dependencies:
     buffer: 4.9.2
     events: 1.1.1
@@ -2473,7 +2473,7 @@ __metadata:
     url: 0.10.3
     uuid: 3.3.2
     xml2js: 0.4.19
-  checksum: e6669fff3fbf87ab15341abe1110c606067ed771abcdaf0e46f46df439ff09a3f5ff661ba8e496f284c9cb28596660a27ffd19945d08819a766b127a048fda32
+  checksum: 3c321006767e5c3b132eaf9969c2e63d41608b5b938ddb762890e8cf6e1a7d2d962626d6f5785af1c8fc2e5f61fd76645bbb54bee02567a6cc011061dcb7b183
   languageName: node
   linkType: hard
 
@@ -3390,14 +3390,14 @@ __metadata:
     "@angular/router": ~12.0.3
     "@funktechno/texthighlighter": ^2.0.10
     "@types/crypto-js": ^4.0.1
-    "@types/node": ~15.6.2
-    aws-sdk: ^2.920.0
+    "@types/node": ~15.12.0
+    aws-sdk: 2.921.0
     crypto-es: ^1.2.7
-    ngx-countdown: ^11.0.3
+    ngx-countdown: ^12.0.0
     ngx-device-detector: ^2.1.1
     ngx-file-helpers: ^5.0.3
     ngx-ui-loader: ^11.0.0
-    rxjs: ^6.5.3
+    rxjs: ^6.6.7
     typescript: 4.2.4
     util: ^0.12.4
     zone.js: ~0.11.4
@@ -6604,12 +6604,12 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"ngx-countdown@npm:^11.0.3":
-  version: 11.0.3
-  resolution: "ngx-countdown@npm:11.0.3"
+"ngx-countdown@npm:^12.0.0":
+  version: 12.0.0
+  resolution: "ngx-countdown@npm:12.0.0"
   dependencies:
-    tslib: ^2.0.0
-  checksum: 5e4a01d8b5eaf703276f4f382ac14fadbd88c57ffd9857ddb7c0fb02c44e4bc72301fa8c78cb9a523a0a862d378bae392fc851b2e8f7ff7b543e5fd5ff095f1d
+    tslib: ^2.1.0
+  checksum: 650e3938f44d96514d9e8f80fc03135750b14823afca03b9db3c9ea910d828be1045ca4178280eb3309dbf4293a530f713aedf63ecf5a929ba04a56377718e25
   languageName: node
   linkType: hard
 
@@ -8714,7 +8714,7 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"rxjs@npm:6.6.7, rxjs@npm:^6.5.3, rxjs@npm:^6.6.6":
+"rxjs@npm:6.6.7, rxjs@npm:^6.6.6, rxjs@npm:^6.6.7":
   version: 6.6.7
   resolution: "rxjs@npm:6.6.7"
   dependencies:

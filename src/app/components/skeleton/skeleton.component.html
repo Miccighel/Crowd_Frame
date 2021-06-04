@@ -87,7 +87,7 @@
 </ng-template>
 
 <!-- Task body section -->
-<mat-horizontal-stepper [linear]="true" labelPosition="bottom" #stepper *ngIf="taskStarted">
+<mat-horizontal-stepper [linear]="true" labelPosition="bottom" #stepper *ngIf="taskStarted && questionnaires && documents && dimensions">
 
   <!-- Questionnaire markup -->
   <mat-step *ngFor="let questionnaire of questionnaires; let i=index" [stepControl]="questionnairesForm[i]"
