@@ -45,7 +45,6 @@ testem.log
 .DS_Store
 Thumbs.db
 src/environments/environment.ts
-src/environments/environment.ts
 src/environments/environment.prod.ts
 src/environments/environment.ts~
 data/build/environments/environment.prod.ts
@@ -58,6 +57,7 @@ data/build/environments/environment.ts
 !.yarn/sdks
 !.yarn/versions
 .pnp.*
+
 data/.env
 data/aws/*
 
