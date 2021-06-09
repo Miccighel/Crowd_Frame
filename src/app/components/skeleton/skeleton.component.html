@@ -285,7 +285,7 @@
                         &nbsp;<span [style.background-color]="note.color">{{note.current_text}}</span>
                       </div>
                       <div class="inner-annotation-delete">
-                        <button (click)="removeAnnotationLaws(i, noteIndex)" mat-flat-button color="warn">Cancella
+                        <button type="button" (click)="removeAnnotationLaws(i, noteIndex)" mat-flat-button color="warn">Cancella
                         </button>
                       </div>
                     </div>
@@ -334,7 +334,8 @@
                       </div>
                     </div>
 
-                    <div *ngIf="!note.containsReferences || note.withoutDetails">
+                    <!-- Law reference radio buttons -->
+                    <div *ngIf="!note.containsReferences && note.withoutDetails">
                       <div class='reference-form'>
                         <strong>Si riferisce a:</strong>
                         <mat-radio-group name="reference-radio-group-{{i}}.{{noteIndex}}"
@@ -342,9 +343,12 @@
                           <div class="reference-radio-group-button">
                             <mat-radio-button value="null" [checked]="this.referenceRadioButtonCheck(i, noteIndex)">Non presente nel testo</mat-radio-button>
                           </div>
+                          <div class="reference-radio-group-button">
+                            <mat-radio-button value="{{document.year}}-{{document.number}}">Questo o un altro articolo della legge stessa</mat-radio-button>
+                          </div>
                           <div *ngFor="let note of this.filterNotes(this.notes[i]); let referredNoteIndex = index">
                             <div class="reference-radio-group-button">
-                              <mat-radio-button value="{{note.year}}-{{note.number}}">{{note.year}}/{{note.number}}
+                              <mat-radio-button value="{{note.year}}-{{note.number}}">{{note.number}}/{{note.year}}
                               </mat-radio-button>
                             </div>
                           </div>
@@ -352,6 +356,7 @@
                       </div>
                     </div>
 
+                    <!-- Inner reference selection -->
                     <div *ngIf="note.containsReferences">
                       <ng-container *ngIf="!note.type.includes('reference')">
                         <div class="inner-annotation-text">
@@ -384,18 +389,18 @@
                                     Anno legge:</b>
                                 </div>
                                 <br/>
-                                <div style="padding: 5px;"><input type="number"
+                                <div style="padding: 5px;"><input (keydown.enter)="performInnerAnnotationLaws(i, noteIndex, innerNoteIndex)" type="number"
                                                                   name="number-{{innerNoteIndex}}-{{noteIndex}}.{{i}}"
                                                                   id="number-{{innerNoteIndex}}-{{noteIndex}}.{{i}}" placeholder="00"
                                                                   (change)="innerCheckIfSaved(i, noteIndex, innerNoteIndex)"
                                                                   (keyup)="innerCheckIfSaved(i, noteIndex, innerNoteIndex)"><br/><br/>
-                                  <input type="number" name="year-{{innerNoteIndex}}-{{noteIndex}}.{{i}}"
+                                  <input (keydown.enter)="performInnerAnnotationLaws(i, noteIndex, innerNoteIndex)" type="number" name="year-{{innerNoteIndex}}-{{noteIndex}}.{{i}}"
                                          id="year-{{innerNoteIndex}}-{{noteIndex}}.{{i}}" placeholder="0000"
                                          (change)="innerCheckIfSaved(i, noteIndex, innerNoteIndex)"
                                          (keyup)="innerCheckIfSaved(i, noteIndex, innerNoteIndex)">
                                 </div>
                                 <div style="padding: 5px; padding-left: 7px;">
-                                  <button (click)="performInnerAnnotationLaws(i, noteIndex, innerNoteIndex)" mat-flat-button
+                                  <button type="button" (click)="performInnerAnnotationLaws(i, noteIndex, innerNoteIndex)" mat-flat-button
                                           color="primary"
                                           id="save_button-{{innerNoteIndex}}-{{innerNoteIndex}}-{{noteIndex}}.{{i}}"
                                           [disabled]="innerCheckIfSaved(i, noteIndex, innerNoteIndex)">Salva
@@ -404,7 +409,7 @@
                               </div>
                               <br/>
                               <div class="inner-annotation-checkbox-delete">
-                                <button (click)="removeInnerAnnotationLaws(i, noteIndex, innerNoteIndex)" mat-flat-button
+                                <button type="button" (click)="removeInnerAnnotationLaws(i, noteIndex, innerNoteIndex)" mat-flat-button
                                         color="warn">Cancella riferimento
                                 </button>
                               </div>
@@ -414,21 +419,22 @@
                       </ng-container>
                     </div>
 
+                    <!-- Standard reference form -->
                     <div *ngIf="note.type.includes('reference') && !note.withoutDetails" class="annotation-options">
                       <div style="padding: 5px;">
                         <b>Numero legge:<br/><br/>Anno legge:</b>
                       </div>
                       <br/>
                       <div style="padding: 5px;">
-                        <input type="number" name="number-{{noteIndex}}.{{i}}" id="number-{{noteIndex}}.{{i}}" placeholder="00"
+                        <input (keydown.enter)="performAnnotationLaws(i, noteIndex)" type="number" name="number-{{noteIndex}}.{{i}}" id="number-{{noteIndex}}.{{i}}" placeholder="00"
                                (change)="checkIfSaved(i, noteIndex)"
                                (keyup)="checkIfSaved(i, noteIndex)">
                         <br/><br/>
-                        <input type="number" name="year-{{noteIndex}}.{{i}}" id="year-{{noteIndex}}.{{i}}" placeholder="0000"
+                        <input (keydown.enter)="performAnnotationLaws(i, noteIndex)" type="number" name="year-{{noteIndex}}.{{i}}" id="year-{{noteIndex}}.{{i}}" placeholder="0000"
                                (change)="checkIfSaved(i, noteIndex)" (keyup)="checkIfSaved(i, noteIndex)">
                       </div>
                       <div style="padding: 5px; padding-left: 7px;">
-                        <button (click)="performAnnotationLaws(i, noteIndex)" mat-flat-button color="primary" id="save_button-{{noteIndex}}.{{i}}" [disabled]="checkIfSaved(i, noteIndex)">Salva
+                        <button type="button" (click)="performAnnotationLaws(i, noteIndex)" mat-flat-button color="primary" id="save_button-{{noteIndex}}.{{i}}" [disabled]="checkIfSaved(i, noteIndex)">Salva
                         </button>
                       </div>
                     </div>
@@ -674,17 +680,17 @@
           <!-- "Back", "Next" and "Finish" actions markup -->
           <mat-card-actions>
 
-            <button mat-flat-button color="primary" matStepperPrevious *ngIf="i>0"
+            <button type="button" mat-flat-button color="primary" matStepperPrevious *ngIf="i>0"
                     [disabled]="taskCompleted"
                     (click)="performLogging('Back', i)">
               Indietro
             </button>
-            <button mat-flat-button color="primary" matStepperNext *ngIf="i+1<this.documentsAmount"
+            <button type="button" mat-flat-button color="primary" matStepperNext *ngIf="i+1<this.documentsAmount"
                     [disabled]="(!documentsForm[i].valid || !this.searchEngineRetrievedResponses[i] || taskCompleted || !checkAnnotationConsistency(i)) && !this.countdownsExpired[i]"
                     (click)="performLogging('Next', i);">
               Avanti
             </button>
-            <button mat-flat-button color="primary" matStepperNext *ngIf="i+1>=this.documentsAmount"
+            <button type="button" mat-flat-button color="primary" matStepperNext *ngIf="i+1>=this.documentsAmount"
                     [disabled]="!documentsForm[i].valid && !this.countdownsExpired[i]"
                     (click)="performLogging('Finish', i); performQualityCheck()">
               Concludi
@@ -721,7 +727,7 @@
                         rows="5"></textarea>
             </mat-form-field>
           </form>
-          <button mat-flat-button color="primary" [disabled]="commentSent || !commentForm.valid "
+          <button type="button" mat-flat-button color="primary" [disabled]="commentSent || !commentForm.valid "
                   (click)="performCommentSaving()"> Invia
           </button>
           <span class="comment-sent-label" *ngIf="commentSent">Grazie!</span>
@@ -742,14 +748,14 @@
             In ogni caso, puoi riprovare il task. Per farlo, clicca sul tasto "reset" qua sotto.
             Sentiti libero di lasciare qualunque commento nel box qua sotto.
           </h2>
-          <button mat-flat-button color="primary" (click)="performReset()">Reset</button>
+          <button type="button" mat-flat-button color="primary" (click)="performReset()">Reset</button>
           <form [formGroup]="commentForm" class="comment-form">
             <mat-form-field appearance="fill">
               <textarea matInput [disabled]="commentSent" placeholder="Your comment here" formControlName="comment"
                         rows="5"></textarea>
             </mat-form-field>
           </form>
-          <button mat-flat-button color="primary" [disabled]="commentSent || !commentForm.valid "
+          <button type="button" mat-flat-button color="primary" [disabled]="commentSent || !commentForm.valid "
                   (click)="performCommentSaving()"> Invia
           </button>
           <span class="comment-sent-label" *ngIf="commentSent">Grazie!</span>
@@ -776,7 +782,7 @@
                         rows="5"></textarea>
             </mat-form-field>
           </form>
-          <button mat-flat-button color="primary" [disabled]="commentSent || !commentForm.valid "
+          <button type="button" mat-flat-button color="primary" [disabled]="commentSent || !commentForm.valid "
                   (click)="performCommentSaving()"> Invia
           </button>
           <span class="comment-sent-label" *ngIf="commentSent">Grazie!</span>

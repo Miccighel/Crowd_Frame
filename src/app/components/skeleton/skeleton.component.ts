@@ -1172,7 +1172,7 @@ export class SkeletonComponent implements OnInit {
       domElement = document.getElementById(`statement-${documentIndex}`);
     }
     if (domElement) {
-      let first_clone = document.querySelectorAll(`.statement-text`)[documentIndex].cloneNode(true)
+      let first_clone = document.querySelectorAll(`.statement-div`)[documentIndex].cloneNode(true)
       first_clone.addEventListener('mouseup', (e) => this.performHighlighting(changeDetector, event, documentIndex, notes, annotator))
       first_clone.addEventListener('touchend', (e) => this.performHighlighting(changeDetector, event, documentIndex, notes, annotator))
       const highlightMade = doHighlight(domElement, true, {
@@ -1210,7 +1210,7 @@ export class SkeletonComponent implements OnInit {
               }
             }
           } else {
-            let element = document.querySelectorAll(".statement-text")[documentIndex]
+            let element = document.querySelectorAll(".statement-div")[documentIndex]
             element.remove()
             document.querySelectorAll(".law_content_li")[documentIndex].append(first_clone)
           }
@@ -1346,15 +1346,37 @@ export class SkeletonComponent implements OnInit {
   }
 
   public filterNotes(notes: Note[]) {
-    var result: Note[] = []
+    var with_duplicates: Note[] = []
     for (let note of notes) {
       if (note instanceof NoteLaws) {
         if (note.year != 0 && note.number != 0 && note.type == "reference" && !note.withoutDetails && !note.deleted) {
-          result.push(note)
+          with_duplicates.push(note)
         }
       }
     }
-    return result
+    var without_duplicates: Note[] = []
+    without_duplicates.push(with_duplicates[0])
+    for (let noteToCheck of with_duplicates) {
+      if (noteToCheck instanceof NoteLaws) {
+        var duplicate = false
+        for (let noteWD of without_duplicates) {
+          if (noteWD instanceof NoteLaws) {
+            if (noteToCheck.year == noteWD.year && noteToCheck.number == noteWD.number) {
+              duplicate = true
+            }
+          }
+        }
+        if (!duplicate) {
+          without_duplicates.push(noteToCheck)
+        }
+      }
+    }
+    if (without_duplicates[0]) {
+      return without_duplicates
+    } else {
+      var empty: Note[] = []
+      return empty
+    }
   }
 
   public referenceRadioChange($event: MatRadioChange, documentIndex: number, noteIndex: number) {
@@ -1365,8 +1387,8 @@ export class SkeletonComponent implements OnInit {
         currentNote.number = 0
       } else {
         let fields = $event.value.split("-")
-        currentNote.year = fields[0]
-        currentNote.number = fields[1]
+        currentNote.year = Number(fields[0])
+        currentNote.number = Number(fields[1])
       }
     }
   }
@@ -1467,13 +1489,10 @@ export class SkeletonComponent implements OnInit {
   public resetRadioButton(documentIndex: number, noteIndex: number) {
     let currentNote = this.notes[documentIndex][noteIndex]
     if (currentNote instanceof NoteLaws) {
-      // console.log("Sto cercando " + currentNote.year + " " + currentNote.number)
       for (let note of this.notes[documentIndex]) {
         if (note instanceof NoteLaws) {
-          if (!note.deleted && note.type != "reference") {
-            // console.log("Nota " + note.year + " " + note.number)
+          if (!note.deleted && note.withoutDetails) {
             if (note.year == currentNote.year && note.number == currentNote.number) {
-              // console.log("Annotazione resettata: " + note.current_text)
               note.year = 0
               note.number = 0
             }
@@ -1521,6 +1540,7 @@ export class SkeletonComponent implements OnInit {
       switch ($event.value) {
         case "insertion": {
           currentNote.type = "insertion"
+          currentNote.withoutDetails = true
           currentNote.containsReferences = false
           currentNote.innerAnnotations = []
           currentNote.color = this.colors[1]
@@ -1530,6 +1550,7 @@ export class SkeletonComponent implements OnInit {
         }
         case "substitution": {
           currentNote.type = "substitution"
+          currentNote.withoutDetails = true
           currentNote.containsReferences = false
           currentNote.innerAnnotations = []
           currentNote.color = this.colors[2]
@@ -1539,6 +1560,7 @@ export class SkeletonComponent implements OnInit {
         }
         case "repeal": {
           currentNote.type = "repeal"
+          currentNote.withoutDetails = true
           currentNote.containsReferences = false
           currentNote.innerAnnotations = []
           currentNote.color = this.colors[0]

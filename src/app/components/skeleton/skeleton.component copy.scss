@@ -72,6 +72,7 @@ mat-card-title {
   border: 0;
   box-shadow: 0 0 0 0;
   border-radius: 0;
+  position:-webkit-sticky;
   position:sticky;
   background-color: white;
   top:0;
@@ -130,18 +131,21 @@ mat-card-content label {
 }
 
 .statement  {
-  margin: auto;
   margin-bottom: 1.5%;
   border: 0;
   box-shadow: 0 0 0 0;
   border-radius: 0;
-  background-color: #F0F0F0	;
-  position: static;
+  background-color: #DEDEDE;
+  //position:-webkit-sticky;
+  //position:sticky;
   top: 42px;
   z-index: 1000;
 }
 
 .statement ul {
+  box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
+  text-align: center;
+  padding: 2%;
   list-style: none;
 }
 
@@ -160,116 +164,6 @@ mat-card-content label {
   flex-grow: 0;
 }
 
-.statement-div {
-  max-width: 600px;
-  margin: auto;
-  font-size: large;
-  line-height: 1.5;
-  text-align: center;
-}
-
-.annotation-recap {
-  padding-bottom: 3px;
-}
-
-.annotation-quote {
-  display: flex;
-  height: 0%;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-}
-
-.inner-annotation-quote {
-  display: flex;
-  height: 0%;
-  align-items: center;
-  justify-content: space-evenly;
-  width: 100%;
-}
-
-.annotation-current-text {
-  display: flex;
-  margin-left: 5px;
-  height: 0%;
-  align-items: center;
-}
-
-.annotation-options {
-  display: flex;
-  margin: auto;
-  padding: 5px;
-  justify-content:center;
-  height: 0%;
-  align-items: center;
-  text-align: right;
-  max-width: 650px;
-}
-
-.annotation-type {
-  text-align: center;
-  padding-top: 5px;
-}
-
-.inner-annotation-reference {
-  background-color: #F0F0F0;
-  padding: 5px;
-}
-
-.inner-annotation-checkbox-delete {
-  text-align: center;
-  padding-top: 5px;
-}
-
-.reference-form {
-  margin-top: 5px;
-  margin-bottom: 5px;
-  text-align: center;
-  justify-content: space-evenly;
-  border-style: dashed;
-  border-color: dimgray;
-  padding: 5px;
-}
-
-.reference-radio-group-button {
-  margin-top: 2px;
-  margin-bottom: 2px;
-}
-
-.mat-radio-group {
-  display: flex;
-  text-align: center;
-  justify-content: space-evenly;
-}
-
-.radio-group {
-  display: flex;
-  margin: auto;
-  padding: 5px;
-  justify-content: space-evenly;
-  height: 0%;
-  align-items: center;
-  max-width: 650px;
-}
-
-.radio-group-button {
-  margin-left: 7px;
-  margin-right: 7px;
-}
-
-.inner-annotation-text {
-  margin-top: 5px;
-  margin-bottom: 5px;
-
-  justify-content: space-evenly;
-  border-style: dashed;
-  border-color: dimgray;
-  padding: 5px;
-}
-
-.inner-annotation-delete {
-  margin-left: 5px;
-}
 
 .url-field {
   display: none;
@@ -388,10 +282,6 @@ button {
 
 .mat-slider {
   width: 100%;
-}
-
-.note-current-text {
-  max-width: 33%;
 }
 
 /* |--- TOKEN INPUT SECTION STYLES --| */
@@ -576,7 +466,7 @@ mat-form-field {
   font-weight: bold;
 }
 
-/* |--- COUNTDOWN ---| */
+/* |--- COUNTDOWN STYLES --| */
 
 .sticky {
   position: -webkit-sticky; /* Safari */
@@ -595,8 +485,6 @@ mat-form-field {
 }
 
 
-
-
 .instructions-section {
   max-width: 80%;
   height: 100vh;
@@ -608,6 +496,7 @@ mat-form-field {
 .instructions-section mat-card {
   margin: auto;
 }
+
 
 .instructions-section mat-card-actions {
   text-align: center;
@@ -625,6 +514,125 @@ mat-form-field {
   font-weight: lighter !important;
 }
 
+/* |--- ANNOTATION STYLES --| */
+
 .annotations {
   margin-bottom: 1%;
 }
+
+.annotations table {
+  width: 100%;
+  text-align: center;
+}
+
+.annotations tr td:first-child {
+  text-align: left;
+}
+
+.annotations tr {
+  display: flex;
+}
+
+.annotations th {
+  flex-grow: 1;
+  text-align: center;
+  padding: 1%;
+}
+
+.annotations td {
+  flex: 1 1 0px;
+  padding: 1%;
+}
+
+.note-not-highlighted {
+  text-align: center;
+}
+
+
+.annotation-buttons {
+  text-align: center;
+}
+
+.annotation-buttons button {
+  color: black;
+}
+
+/* LAWS ANNOTATION STYLES */
+
+
+.statement-div {
+  max-width: 600px;
+  margin: auto;
+  font-size: large;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.annotation-recap {
+  padding-bottom: 3px;
+}
+
+.annotation-quote {
+  display: flex;
+  height: 0%;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.inner-annotation-quote {
+  display: flex;
+  height: 0%;
+  align-items: center;
+  justify-content: space-evenly;
+  width: 100%;
+}
+
+.annotation-current-text {
+  display: flex;
+  margin-left: 5px;
+  height: 0%;
+  align-items: center;
+}
+
+.annotation-options {
+  display: flex;
+  margin: auto;
+  padding: 5px;
+  justify-content:center;
+  height: 0%;
+  align-items: center;
+  text-align: right;
+  max-width: 650px;
+}
+
+.annotation-type {
+  text-align: center;
+  padding-top: 5px;
+}
+
+.inner-annotation-reference {
+  background-color: #F0F0F0;
+  padding: 5px;
+}
+
+.inner-annotation-checkbox-delete {
+  text-align: center;
+  padding-top: 5px;
+}
+
+.reference-form {
+  margin-top: 5px;
+  margin-bottom: 5px;
+  text-align: center;
+  justify-content: space-evenly;
+  border-style: dashed;
+  border-color: dimgray;
+  padding: 5px;
+}
+
+.reference-radio-group-button {
+  margin-top: 2px;
+  margin-bottom: 2px;
+}
+

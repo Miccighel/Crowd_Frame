@@ -30,6 +30,7 @@ export class GoldChecker {
       /* CONTROL IMPLEMENTATION STARTS HERE */
       /* Write your code; the check for the current element holds if goldCheck is set to true */
 
+      
 
       /* CONTROL IMPLEMENTATION ENDS HERE */
 
