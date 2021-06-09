@@ -61,3 +61,4 @@ data/build/environments/environment.ts
 data/.env
 data/aws/*
 
+.vscode/settings.json
