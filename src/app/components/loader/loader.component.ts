@@ -4,8 +4,6 @@ import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit} from '@an
 import {ConfigService} from "../../services/config.service";
 import {NgxUiLoaderService} from "ngx-ui-loader";
 import {S3Service} from "../../services/s3.service";
-/* Cyphers */
-import CryptoES from 'crypto-es';
 /* Reactive forms modules */
 import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
 /* Task models */
