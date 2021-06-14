@@ -287,7 +287,7 @@ export class SkeletonComponent implements OnInit {
     this.taskFailed = false;
     this.checkCompleted = false;
 
-    this.tokenInput = new FormControl('DFPOMULGMM', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
+    this.tokenInput = new FormControl('MBYTZQGSXYP', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
     this.tokenForm = formBuilder.group({
       "tokenInput": this.tokenInput
     });
@@ -390,6 +390,7 @@ export class SkeletonComponent implements OnInit {
     this.blacklistBatches = this.settings.blacklistBatches
     this.whitelistBatches = this.settings.whitelistBatches
     this.countdownTime = this.settings.countdownTime
+    console.log(this.countdownTime)
     this.annotator = this.settings.annotator
   }
 
@@ -814,13 +815,9 @@ export class SkeletonComponent implements OnInit {
    * The parameter is a JSON object which holds the query typed by the worker within a given document.
    * These information are parsed and stored in the corresponding data structure.
    */
-  public storeSearchEngineUserQuery(queryData: Object) {
-    /* The current document, dimension and user query are parsed from the JSON object */
-    let currentDocument = parseInt(queryData['target']['id'].split("-")[3]);
-    let currentDimension = parseInt(queryData['target']['id'].split("-")[4]);
-    /* A reference to the current dimension is saved */
+  public storeSearchEngineUserQuery(queryData: string, currentDocument : number, currentDimension: number) {
     this.currentDimension = currentDimension;
-    let currentQueryText = queryData['detail'];
+    let currentQueryText = queryData;
     let timeInSeconds = Date.now() / 1000;
     /* If some data for the current document already exists*/
     if (this.searchEngineQueries[currentDocument]['amount'] > 0) {
@@ -860,13 +857,8 @@ export class SkeletonComponent implements OnInit {
    * This array CAN BE EMPTY, if the search engine does not find anything for the current query.
    * These information are parsed and stored in the corresponding data structure.
    */
-  public storeSearchEngineRetrievedResponse(retrievedResponseData: Object) {
-    /* The current document, dimension and user search engine retrieved response are parsed from the JSON object */
-    let currentDocument = parseInt(retrievedResponseData['target']['id'].split("-")[3]);
-    let currentDimension = parseInt(retrievedResponseData['target']['id'].split("-")[4]);
-    /* A reference to the current dimension is saved */
-    this.currentDimension = currentDimension;
-    let currentRetrievedResponse = retrievedResponseData['detail'];
+  public storeSearchEngineRetrievedResponse(retrievedResponseData: Array<Object>, currentDocument : number, currentDimension: number) {
+    let currentRetrievedResponse = retrievedResponseData;
     let timeInSeconds = Date.now() / 1000;
     /* If some responses for the current document already exists*/
     if (this.searchEngineRetrievedResponses[currentDocument]['groups'] > 0) {
@@ -912,13 +904,8 @@ export class SkeletonComponent implements OnInit {
    * This array CAN BE EMPTY, if the search engine does not find anything for the current query.
    * These information are parsed and stored in the corresponding data structure.
    */
-  public storeSearchEngineSelectedResponse(selectedResponseData: Object) {
-    /* The current document, dimension and user search engine retrieved response are parsed from the JSON object */
-    let currentDocument = parseInt(selectedResponseData['target']['id'].split("-")[3]);
-    let currentDimension = parseInt(selectedResponseData['target']['id'].split("-")[4]);
-    /* A reference to the current dimension is saved */
-    this.currentDimension = currentDimension;
-    let currentSelectedResponse = selectedResponseData['detail'];
+  public storeSearchEngineSelectedResponse(selectedResponseData: Object, currentDocument : number, currentDimension: number) {
+    let currentSelectedResponse = selectedResponseData;
     let timeInSeconds = Date.now() / 1000;
     /* If some responses for the current document already exists*/
     if (this.searchEngineSelectedResponses[currentDocument]['amount'] > 0) {
@@ -1827,10 +1814,12 @@ export class SkeletonComponent implements OnInit {
     }
 
     /* The yellow leftover notes are marked as deleted */
-    if (this.notes[documentIndex].length > 0) {
-      let element = this.notes[documentIndex][this.notes[documentIndex].length - 1]
-      if (element.option == "not_selected" && !element.deleted) {
-        this.removeAnnotation(documentIndex, this.notes[documentIndex].length - 1, this.changeDetector)
+    if(this.annotator) {
+      if (this.notes[documentIndex].length > 0) {
+        let element = this.notes[documentIndex][this.notes[documentIndex].length - 1]
+        if (element.option == "not_selected" && !element.deleted) {
+          this.removeAnnotation(documentIndex, this.notes[documentIndex].length - 1, this.changeDetector)
+        }
       }
     }
 
@@ -2084,6 +2073,8 @@ export class SkeletonComponent implements OnInit {
           let uploadStatus = await this.S3Service.uploadDocument(this.configService.environment, this.worker, data, true, this.currentTry)
 
         }
+
+        console.log(data)
 
       }
 

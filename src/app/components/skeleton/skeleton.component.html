@@ -190,9 +190,9 @@
         <mat-card>
 
           <!-- Document header markup -->
-          <ng-template matStepLabel> Art. {{document.article_number}} <br /> L. {{document.number}} <br /> A.{{document.year}}</ng-template>
+          <ng-template matStepLabel> S{{document.index + 1}}</ng-template>
           <mat-divider [inset]="true"></mat-divider>
-          <mat-card-title>Evidenzia nel seguente articolo</mat-card-title>
+          <mat-card-title>Plase, assess the following statement</mat-card-title>
           <mat-divider [inset]="true"></mat-divider>
           <mat-card-content class="pt-16px">
 
@@ -200,7 +200,7 @@
             <div class="instructions sticky" *ngIf="this.settings.countdownTime">
               <h2 class="m-0">
                 Time left:
-                <countdown #countdownElement [config]="{ demand: true, leftTime: this.settings.countdownTime, format: 's' }" (event)="handleCountdown($event, i)"></countdown>
+                <countdown #countdownElement [config]="{ demand: true, leftTime: this.settings.countdownTime, format: 'm:s' }" (event)="handleCountdown($event, i)"></countdown>
                 seconds
               </h2>
             </div>
@@ -225,7 +225,11 @@
                   </div>
                 </li>
                 <li *ngIf="!(this.annotator)">
-                  <span id="statement-{{i}}" class="statement-text">{{document.text}}</span>
+                  <ul>
+                    <li><strong>Claimant/Source</strong> (who made the statement): {{document.claimant}}</li>
+                    <li><strong>Date</strong> (when the statement was made): {{document.date}}</li>
+                    <li><strong>Text</strong> (content of the statement): {{document.statement}}</li>
+                  </ul>
                 </li>
               </ul>
             </div>
@@ -477,9 +481,9 @@
                   <div class="dimension-content search-engine">
                     <app-crowd-xplorer
                       *ngIf="dimension.url" id="app-crowd-xplorer-{{i}}-{{j}}"
-                      (resultEmitter)="storeSearchEngineRetrievedResponse($event)"
-                      (queryEmitter)="storeSearchEngineUserQuery($event)"
-                      (selectedRowEmitter)="storeSearchEngineSelectedResponse($event)">
+                      (resultEmitter)="storeSearchEngineRetrievedResponse($event, i, j)"
+                      (queryEmitter)="storeSearchEngineUserQuery($event, i, j)"
+                      (selectedRowEmitter)="storeSearchEngineSelectedResponse($event, i, j)">
                     </app-crowd-xplorer>
                     <!-- Dimension search engine url field markup (hidden) -->
                     <mat-form-field *ngIf="dimension.url" class="url-field">
@@ -595,9 +599,9 @@
                 <div *ngIf="dimension.url" class="dimension-container dimension-url">
                   <div class="dimension-content search-engine">
                     <app-crowd-xplorer *ngIf="dimension.url" id="app-crowd-xplorer-{{i}}-{{j}}"
-                                       (resultEmitter)="storeSearchEngineRetrievedResponse($event)"
-                                       (queryEmitter)="storeSearchEngineUserQuery($event)"
-                                       (selectedRowEmitter)="storeSearchEngineSelectedResponse($event)"></app-crowd-xplorer>
+                                       (resultEmitter)="storeSearchEngineRetrievedResponse($event, i, j)"
+                                       (queryEmitter)="storeSearchEngineUserQuery($event, i, j)"
+                                       (selectedRowEmitter)="storeSearchEngineSelectedResponse($event, i, j)"></app-crowd-xplorer>
 
                     <!-- Dimension search engine url field markup (hidden) -->
                     <mat-form-field *ngIf="dimension.url" class="url-field">
@@ -677,17 +681,22 @@
             <button mat-flat-button color="primary" matStepperPrevious *ngIf="i>0"
                     [disabled]="taskCompleted"
                     (click)="performLogging('Back', i)">
-              Indietro
+              Back
             </button>
-            <button mat-flat-button color="primary" matStepperNext *ngIf="i+1<this.documentsAmount"
+            <button mat-flat-button color="primary" matStepperNext *ngIf="i+1<this.documentsAmount && this.annotator"
                     [disabled]="(!documentsForm[i].valid || !this.searchEngineRetrievedResponses[i] || taskCompleted || !checkAnnotationConsistency(i)) && !this.countdownsExpired[i]"
                     (click)="performLogging('Next', i);">
-              Avanti
+              Next
+            </button>
+            <button mat-flat-button color="primary" matStepperNext *ngIf="i+1<this.documentsAmount && !this.annotator"
+                    [disabled]="(!documentsForm[i].valid || !this.searchEngineRetrievedResponses[i] || taskCompleted) && !this.countdownsExpired[i]"
+                    (click)="performLogging('Next', i);">
+              Next
             </button>
             <button mat-flat-button color="primary" matStepperNext *ngIf="i+1>=this.documentsAmount"
                     [disabled]="!documentsForm[i].valid && !this.countdownsExpired[i]"
                     (click)="performLogging('Finish', i); performQualityCheck()">
-              Concludi
+              Finish
             </button>
 
           </mat-card-actions>
@@ -704,15 +713,15 @@
     <div id="success-section" class="outcome-section container" *ngIf="taskCompleted && taskSuccessful">
       <mat-card>
         <mat-card-title class="success-title">
-          <h4>Successo</h4>
+          <h4>Success</h4>
         </mat-card-title>
         <mat-card-content>
           <h2>
-            Congratulazioni, hai concluso con successo il task. Per essere pagato dovrai ora copiare il token di output
-            (mostrato sotto)
-            sulla pagina di Amazon MTurk da cui arrivi. Sentiti libero di lasciare un commento nel campo di testo per
-            aiutarci
-            a migliorare le nostre ricerche.
+            Congratulations, you have successfully completed this task. To be paid you now have to copy your output
+            token
+            (shown below)
+            back to the Amazon Mechanical Turk task page. Feel free to leave any comment in the box below to help us
+            improve our research.
           </h2>
           <h1>{{tokenOutput}}</h1>
           <form [formGroup]="commentForm" class="comment-form">
@@ -722,9 +731,9 @@
             </mat-form-field>
           </form>
           <button mat-flat-button color="primary" [disabled]="commentSent || !commentForm.valid "
-                  (click)="performCommentSaving()"> Invia
+                  (click)="performCommentSaving()"> Send
           </button>
-          <span class="comment-sent-label" *ngIf="commentSent">Grazie!</span>
+          <span class="comment-sent-label" *ngIf="commentSent">Thank you!</span>
         </mat-card-content>
       </mat-card>
     </div>
@@ -732,15 +741,15 @@
     <div id="retry-section" class="outcome-section container" *ngIf="taskCompleted && taskFailed && allowedTries>0">
       <mat-card>
         <mat-card-title class="retry-title">
-          <h3>Hai fallito, ma...</h3>
+          <h3>Failure, but...</h3>
         </mat-card-title>
         <mat-card-content>
           <h2>
-            Il tuo lavoro non è stato abbastanza soddisfacente, quindi non puoi confermarlo.
-            Come spiegato nelle istruzioni, alcuni controlli di qualità vengono svolti durante l'esecuzione del task.
-            Vedi questo messaggio perché non hai passato uno o più di questi test.
-            In ogni caso, puoi riprovare il task. Per farlo, clicca sul tasto "reset" qua sotto.
-            Sentiti libero di lasciare qualunque commento nel box qua sotto.
+            Your work was not good enough, so you are not allowed to submit this task.
+            As stated in the instructions, some quality checks are performed in this task.
+            You see this message because you have not passed one or more of such checks.
+            Nevertheless, you are allowed to retry this task. To do so, please click on the reset button below.
+            Feel free to leave any comment in the box below.
           </h2>
           <button mat-flat-button color="primary" (click)="performReset()">Reset</button>
           <form [formGroup]="commentForm" class="comment-form">
@@ -750,9 +759,9 @@
             </mat-form-field>
           </form>
           <button mat-flat-button color="primary" [disabled]="commentSent || !commentForm.valid "
-                  (click)="performCommentSaving()"> Invia
+                  (click)="performCommentSaving()"> Send
           </button>
-          <span class="comment-sent-label" *ngIf="commentSent">Grazie!</span>
+          <span class="comment-sent-label" *ngIf="commentSent">Thank you!</span>
         </mat-card-content>
       </mat-card>
     </div>
@@ -761,14 +770,14 @@
          *ngIf="taskCompleted && taskFailed && allowedTries <= 0">
       <mat-card>
         <mat-card-title class="failure-title">
-          <h4>Fallimento</h4>
+          <h4>Failure</h4>
         </mat-card-title>
         <mat-card-content>
           <h2>
-            Il tuo lavoro non è stato abbastanza soddisfacente, quindi non puoi confermarlo.
-            Come spiegato nelle istruzioni, alcuni controlli di qualità vengono svolti durante l'esecuzione del task.
-            Vedi questo messaggio perché non hai passato uno o più di questi test.
-            Sentiti libero di lasciare qualunque commento nel box qua sotto.
+            Your work was not good enough, so you are not allowed to submit this task.
+            As stated in the instructions, some quality checks are performed in this task.
+            You see this message because you have not passed one or more of such checks.
+            Feel free to leave any comment in the box below.
           </h2>
           <form [formGroup]="commentForm" class="comment-form">
             <mat-form-field appearance="fill">
@@ -777,9 +786,9 @@
             </mat-form-field>
           </form>
           <button mat-flat-button color="primary" [disabled]="commentSent || !commentForm.valid "
-                  (click)="performCommentSaving()"> Invia
+                  (click)="performCommentSaving()"> Send
           </button>
-          <span class="comment-sent-label" *ngIf="commentSent">Grazie!</span>
+          <span class="comment-sent-label" *ngIf="commentSent">Thank you!</span>
         </mat-card-content>
       </mat-card>
     </div>

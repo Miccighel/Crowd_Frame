@@ -1,14 +1,10 @@
 [
   {
-    "caption": "Please, do the following step:",
+    "caption": "Please, do the following three steps:",
     "steps": [
-      "Evidenzia nel testo.",
-      "Seleziona il corretto tipo di annotazione che hai effettuato.",
-      "Nel caso tu abbia scelto \"riferimento\", aggiungi anno e numero della legge e salva.",
-      "Nel caso tu abbia scelto un altro tipo, scegli se contiene o meno riferimenti al suo interno.",
-      "Se si, evidenziali e aggiungi i dettagli come spiegato al passaggio C.",
-      "Ripeti i passaggi finchè necessario.",
-      "Quando hai finito, prosegui o concludi."
+      "Use the search engine below to retrieve some evidence about the truthfulness of the statement and select one of the retrieved URLs to justify the truthfulness value.",
+      "Input as truthfulness value one of the six labels.",
+      "Write a text justification. You can use your own words or, even better, copy/paste from the selected URL. You cannot use the selected search engine url as part of the justification."
     ]
   }
 ]
