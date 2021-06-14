@@ -12,6 +12,7 @@ import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
 import {Instruction} from "../../models/shared/instructions";
 /* Material design modules */
 import {MatSnackBar} from "@angular/material/snack-bar";
+import AES = CryptoES.AES;
 
 /* Component HTML Tag definition */
 @Component({
@@ -133,7 +134,6 @@ export class LoaderComponent implements OnInit {
 
     let url = new URL(window.location.href);
     this.adminAccess = url.searchParams.get("admin") == 'true'
-    this.adminAccess = true
 
     this.ngxService.stop()
 
@@ -154,21 +154,7 @@ export class LoaderComponent implements OnInit {
   public async performAdminCheck() {
     this.ngxService.startLoader('generator');
     if (this.loginForm.valid) {
-      /* the data of each administrator are downloaded */
-      let admins = await this.S3Service.downloadAdministrators(this.configService.environment)
-      for (let admin of admins) {
-        /* the data stored within admin.json file are encrypted using AES */
-        let decrypted = CryptoES.AES.decrypt(admin["crypt"], this.password.value)
-        let decryptedData = decrypted.toString(CryptoES.enc.Utf8)
-        if (decryptedData != "") {
-          let adminData = JSON.parse(decryptedData)
-          if (adminData['username'] == this.username.value) {
-            admin = adminData['username']
-            this.loginSuccessful = true
-            break;
-          }
-        }
-      }
+
       this.loginPerformed = true
       this.ngxService.stopLoader('generator');
       /* A snackbar message is shown after the login check */
