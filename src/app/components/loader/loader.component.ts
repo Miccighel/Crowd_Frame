@@ -10,7 +10,6 @@ import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
 import {Instruction} from "../../models/shared/instructions";
 /* Material design modules */
 import {MatSnackBar} from "@angular/material/snack-bar";
-import AES = CryptoES.AES;
 
 /* Component HTML Tag definition */
 @Component({
