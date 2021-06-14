@@ -40,12 +40,12 @@ export class S3Service {
    */
   public async download(config, path) {
     let s3 = this.loadS3(config)
-    return JSON.parse(
-      (await (s3.getObject({
-        Bucket: config["bucket"],
-        Key: path
-      }).promise())).Body.toString('utf-8')
-    );
+      return JSON.parse(
+        (await (s3.getObject({
+          Bucket: config["bucket"],
+          Key: path
+        }).promise())).Body.toString('utf-8')
+      );
   }
 
   /*
