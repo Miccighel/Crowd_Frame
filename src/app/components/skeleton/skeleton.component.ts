@@ -199,6 +199,10 @@ export class SkeletonComponent implements OnInit {
 
   /* Optional countdown to use for each document */
   countdownTime: number
+
+  /* Optional document time value for each document */
+  timeOfDocument : number
+
   /* References to the HTML elements */
   @ViewChildren('countdownElement') countdown: QueryList<CountdownComponent>;
   /* Array of checks to see if the countdowns are expired; one for each document */
@@ -523,6 +527,7 @@ export class SkeletonComponent implements OnInit {
       let rawDocuments = this.hit.documents;
       for (let index = 0; index < rawDocuments.length; index++) {
         let currentDocument = rawDocuments[index];
+        //console.log(currentDocument['time'])
         this.documents.push(new Document(index, currentDocument));
       }
 
