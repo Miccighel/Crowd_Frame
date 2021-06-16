@@ -45,7 +45,7 @@ export class LoaderComponent implements OnInit {
 
   /* |--------- LOADER SETTINGS - DECLARATION ---------| */
 
-  /* Boolean to undestand if the current worker has admin access */
+  /* Boolean to understand if the current worker has admin access */
   adminAccess: boolean;
 
   /* |--------- SERVICES & CO. - DECLARATION ---------| */
