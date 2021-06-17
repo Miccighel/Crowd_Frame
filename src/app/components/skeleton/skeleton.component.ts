@@ -662,6 +662,8 @@ export class SkeletonComponent implements OnInit {
       this.countdownsExpired = new Array<boolean>(this.documentsAmount);
       for (let index = 0; index < this.documentsAmount; index++) this.countdownsExpired[index] = false;
 
+      
+
       /* |--------- QUALITY CHECKS ---------| */
 
       this.goldDocuments = new Array<Document>();
@@ -996,6 +998,46 @@ export class SkeletonComponent implements OnInit {
     if (event.left == 0) {
       this.countdownsExpired[i] = true
     }
+  }
+ /***
+  * This function modifies the countdown value based on the position of the document and its truth value
+  */
+  public calculateTimeOfStatement(documentTime : number, position?: number, trueValue?: string){
+    console.log("Tempo documento: "+ documentTime+ " posizione statement: "+ position + " Valore di verità: "+ trueValue);
+
+    let timeOfStatement = 0;
+    let weightTrueValue = 0;
+    let weightposition = 0;
+
+    switch (trueValue) {
+      case "True":
+        weightTrueValue = 0;
+        break;
+      case "False":
+        weightTrueValue = 0;
+      break;    
+      default:
+        weightTrueValue = 1;
+      break;
+    }
+
+    switch (position) {
+      case 0:
+        weightposition =  2;
+        break;
+      case 1:
+        weightposition =  1.5;
+      break;
+      case 3:
+        weightposition =  1.25;
+      break;
+      default:
+        weightposition = 1;
+        break;
+    }
+    timeOfStatement = documentTime*weightTrueValue*weightposition;
+
+    return timeOfStatement;
   }
 
   /* |--------- ANNOTATOR ---------| */
