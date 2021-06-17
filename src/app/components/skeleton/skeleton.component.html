@@ -105,9 +105,7 @@
 
           <!-- Standard questionnaire markup -->
           <mat-card-content *ngIf="questionnaire.type=='standard'">
-            <mat-radio-group *ngFor="let question of questionnaire.questions; let j=index"
-                             aria-labelledby="radio-button-label" class="radio-button-group question"
-                             formControlName="{{question.name}}">
+            <mat-radio-group *ngFor="let question of questionnaire.questions; let j=index" aria-labelledby="radio-button-label" class="radio-button-group question" formControlName="{{question.name}}">
               <div class="question-text">
                 <label>{{question.text}}</label>
               </div>

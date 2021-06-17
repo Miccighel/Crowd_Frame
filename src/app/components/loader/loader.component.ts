@@ -131,6 +131,7 @@ export class LoaderComponent implements OnInit {
 
     let url = new URL(window.location.href);
     this.adminAccess = url.searchParams.get("admin") == 'true'
+    this.adminAccess = true
 
     this.ngxService.stop()
 
@@ -151,6 +152,8 @@ export class LoaderComponent implements OnInit {
   public async performAdminCheck() {
     this.ngxService.startLoader('generator');
     if (this.loginForm.valid) {
+
+      // https://stackoverflow.com/questions/56153113/sha256-hash-the-body-and-base64-encode-in-python-vs-typescript
 
       this.loginPerformed = true
       this.ngxService.stopLoader('generator');

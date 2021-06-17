@@ -120,7 +120,7 @@ export class S3Service {
    */
 
   public downloadAdministrators(config) {
-    let administratorsFile = `admin.json`;
+    let administratorsFile = `${this.getFolder(config)}Generator/admin.json`;
     return (config["configuration_local"]) ? localRawAdmin["default"] : this.download(config, administratorsFile);
   }
 
