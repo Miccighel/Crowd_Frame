@@ -199,6 +199,7 @@ export class SkeletonComponent implements OnInit {
 
   /* Optional countdown to use for each document */
   countdownTime: number
+  documentsTime : Array<number> 
 
   /* Optional document time value for each document */
   timeOfDocument : number
@@ -610,6 +611,8 @@ export class SkeletonComponent implements OnInit {
         this.dimensionsSelectedValues[index]["data"] = [];
         this.dimensionsSelectedValues[index]["amount"] = 0;
       }
+      
+      
 
       /* |--------- SEARCH ENGINE INTEGRATION (see: search_engine.json | https://github.com/Miccighel/CrowdXplorer) ---------| */
 
@@ -662,6 +665,13 @@ export class SkeletonComponent implements OnInit {
       this.countdownsExpired = new Array<boolean>(this.documentsAmount);
       for (let index = 0; index < this.documentsAmount; index++) this.countdownsExpired[index] = false;
 
+      this.documentsTime = new Array<number>();
+      for (let index = 0; index < this.documents.length; index++) {
+        let time = this.documents[index]['time'];
+        let position = this.documents[index]['index'];
+        let trueValue = this.documents[index]['id'];
+        this.documentsTime[index]= this.calculateTimeOfStatement(time,position, trueValue)
+      }
       
 
       /* |--------- QUALITY CHECKS ---------| */
@@ -999,46 +1009,7 @@ export class SkeletonComponent implements OnInit {
       this.countdownsExpired[i] = true
     }
   }
- /***
-  * This function modifies the countdown value based on the position of the document and its truth value
-  */
-  public calculateTimeOfStatement(documentTime : number, position?: number, trueValue?: string){
-    console.log("Tempo documento: "+ documentTime+ " posizione statement: "+ position + " Valore di verità: "+ trueValue);
-
-    let timeOfStatement = 0;
-    let weightTrueValue = 0;
-    let weightposition = 0;
-
-    switch (trueValue) {
-      case "True":
-        weightTrueValue = 0;
-        break;
-      case "False":
-        weightTrueValue = 0;
-      break;    
-      default:
-        weightTrueValue = 1;
-      break;
-    }
-
-    switch (position) {
-      case 0:
-        weightposition =  2;
-        break;
-      case 1:
-        weightposition =  1.5;
-      break;
-      case 3:
-        weightposition =  1.25;
-      break;
-      default:
-        weightposition = 1;
-        break;
-    }
-    timeOfStatement = documentTime*weightTrueValue*weightposition;
-
-    return timeOfStatement;
-  }
+ 
 
   /* |--------- ANNOTATOR ---------| */
 
@@ -2195,4 +2166,44 @@ export class SkeletonComponent implements OnInit {
     return {start: start, end: end};
   }
 
+  /***
+      * This function modifies the countdown value based on the position of the document and its truth value
+      */
+   public calculateTimeOfStatement(documentTime : number, position?: number, trueValue?: string){
+    //console.log("Tempo documento: "+ documentTime+ " posizione statement: "+ position + " Valore di verità: "+ trueValue);
+
+    let timeOfStatement = 0;
+    let weightTrueValue = 0;
+    let weightposition = 0;
+
+    switch (trueValue) {
+      case "True":
+        weightTrueValue = 0;
+        break;
+      case "False":
+        weightTrueValue = 0;
+      break;    
+      default:
+        weightTrueValue = 1;
+      break;
+    }
+
+    switch (position) {
+      case 0:
+        weightposition =  2;
+        break;
+      case 1:
+        weightposition =  1.5;
+      break;
+      case 3:
+        weightposition =  1.25;
+      break;
+      default:
+        weightposition = 1;
+        break;
+    }
+    timeOfStatement = documentTime*weightTrueValue*weightposition;
+
+    return timeOfStatement;
+  }
 }
