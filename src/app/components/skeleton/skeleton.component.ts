@@ -146,6 +146,8 @@ export class SkeletonComponent implements OnInit {
   questionnaires: Array<Questionnaire>;
   /* Number of different questionnaires inserted within task's body */
   questionnaireAmount: number;
+  questionnaireAmountStart: number;
+  questionnaireAmountEnd: number;
 
   /* |--------- DIMENSIONS ELEMENTS - DECLARATION - (see: dimensions.json) ---------| */
 
@@ -287,7 +289,7 @@ export class SkeletonComponent implements OnInit {
     this.taskFailed = false;
     this.checkCompleted = false;
 
-    this.tokenInput = new FormControl('MBYTZQGSXYP', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
+    this.tokenInput = new FormControl('KXKUHEQIEMR', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
     this.tokenForm = formBuilder.group({
       "tokenInput": this.tokenInput
     });
@@ -390,7 +392,6 @@ export class SkeletonComponent implements OnInit {
     this.blacklistBatches = this.settings.blacklistBatches
     this.whitelistBatches = this.settings.whitelistBatches
     this.countdownTime = this.settings.countdownTime
-    console.log(this.countdownTime)
     this.annotator = this.settings.annotator
   }
 
@@ -554,9 +555,18 @@ export class SkeletonComponent implements OnInit {
       /* The questionnaires stored on Amazon S3 are retrieved */
       let rawQuestionnaires = await this.S3Service.downloadQuestionnaires(this.configService.environment)
       this.questionnaireAmount = rawQuestionnaires.length;
+      this.questionnaireAmountStart = 0;
+      this.questionnaireAmountEnd = 0;
 
       /* Each questionnaire is parsed using the Questionnaire class */
-      for (let index = 0; index < this.questionnaireAmount; index++) this.questionnaires.push(new Questionnaire(index, rawQuestionnaires[index]));
+      for (let index = 0; index < this.questionnaireAmount; index++){
+        let questionnaire = new Questionnaire(index, rawQuestionnaires[index])
+        this.questionnaires.push(questionnaire);
+        if (questionnaire.position == "start" || questionnaire.position==null) this.questionnaireAmountStart = this.questionnaireAmountStart + 1
+        if (questionnaire.position == "end") this.questionnaireAmountEnd = this.questionnaireAmountEnd + 1
+      }
+      console.log(this.questionnaireAmountStart)
+      console.log(this.questionnaireAmountEnd)
 
       /* A form for each questionnaire is initialized */
       this.questionnairesForm = new Array<FormGroup>();
@@ -699,7 +709,7 @@ export class SkeletonComponent implements OnInit {
       this.changeDetector.detectChanges();
 
       /* If there are no questionnaires and the countdown time is set, enable the first countdown */
-      if(this.settings.countdownTime && this.questionnaireAmount == 0) this.countdown.toArray()[0].begin();
+      if(this.settings.countdownTime && this.questionnaireAmountStart == 0) this.countdown.toArray()[0].begin();
 
       /* trigger the changeDetection again */
       this.changeDetector.detectChanges();
@@ -785,9 +795,9 @@ export class SkeletonComponent implements OnInit {
     }
     if (this.stepper) {
       /* If at least the first document has been reached */
-      if (this.stepper.selectedIndex >= this.questionnaireAmount) {
+      if (this.stepper.selectedIndex >= this.questionnaireAmountStart && this.stepper.selectedIndex < this.questionnaireAmountStart + this.documentsAmount + this.questionnaireAmountEnd) {
         /* The current document document_index is selected */
-        let currentDocument = this.stepper.selectedIndex - this.questionnaireAmount;
+        let currentDocument = this.stepper.selectedIndex - this.questionnaireAmountStart;
         /* If the user has selected some search engine responses for the current document */
         if (this.searchEngineSelectedResponses[currentDocument]) {
           if (this.searchEngineSelectedResponses[currentDocument]['amount'] > 0) {
@@ -815,31 +825,31 @@ export class SkeletonComponent implements OnInit {
    * The parameter is a JSON object which holds the query typed by the worker within a given document.
    * These information are parsed and stored in the corresponding data structure.
    */
-  public storeSearchEngineUserQuery(queryData: string, currentDocument : number, currentDimension: number) {
-    this.currentDimension = currentDimension;
+  public storeSearchEngineUserQuery(queryData: string, document : Document, dimension: Dimension) {
+    this.currentDimension = dimension.index
     let currentQueryText = queryData;
     let timeInSeconds = Date.now() / 1000;
     /* If some data for the current document already exists*/
-    if (this.searchEngineQueries[currentDocument]['amount'] > 0) {
+    if (this.searchEngineQueries[document.index]['amount'] > 0) {
       /* The new query is pushed into current document data array along with a document_index used to identify such query*/
-      let storedQueries = Object.values(this.searchEngineQueries[currentDocument]['data']);
+      let storedQueries = Object.values(this.searchEngineQueries[document.index]['data']);
       storedQueries.push({
-        "dimension": currentDimension,
+        "dimension": dimension.index,
         "index": storedQueries.length,
         "timestamp": timeInSeconds,
         "text": currentQueryText
       });
       this.currentQuery = storedQueries.length - 1
       /* The data array within the data structure is updated */
-      this.searchEngineQueries[currentDocument]['data'] = storedQueries;
+      this.searchEngineQueries[document.index]['data'] = storedQueries;
       /* The total amount of query for the current document is updated */
-      this.searchEngineQueries[currentDocument]['amount'] = storedQueries.length;
+      this.searchEngineQueries[document.index]['amount'] = storedQueries.length;
     } else {
       /* The data slot for the current document is created */
-      this.searchEngineQueries[currentDocument] = {};
+      this.searchEngineQueries[document.index] = {};
       /* A new data array for the current document is created and the fist query is pushed */
-      this.searchEngineQueries[currentDocument]['data'] = [{
-        "dimension": currentDimension,
+      this.searchEngineQueries[document.index]['data'] = [{
+        "dimension": dimension.index,
         "index": 0,
         "timestamp": timeInSeconds,
         "text": currentQueryText
@@ -847,7 +857,7 @@ export class SkeletonComponent implements OnInit {
       this.currentQuery = 0
       /* The total amount of query for the current document is set to 1 */
       /* IMPORTANT: the document_index of the last query inserted for a document will be <amount -1> */
-      this.searchEngineQueries[currentDocument]['amount'] = 1
+      this.searchEngineQueries[document.index]['amount'] = 1
     }
   }
 
@@ -857,45 +867,45 @@ export class SkeletonComponent implements OnInit {
    * This array CAN BE EMPTY, if the search engine does not find anything for the current query.
    * These information are parsed and stored in the corresponding data structure.
    */
-  public storeSearchEngineRetrievedResponse(retrievedResponseData: Array<Object>, currentDocument : number, currentDimension: number) {
+  public storeSearchEngineRetrievedResponse(retrievedResponseData: Array<Object>, document : Document, dimension: Dimension) {
     let currentRetrievedResponse = retrievedResponseData;
     let timeInSeconds = Date.now() / 1000;
     /* If some responses for the current document already exists*/
-    if (this.searchEngineRetrievedResponses[currentDocument]['groups'] > 0) {
+    if (this.searchEngineRetrievedResponses[document.index]['groups'] > 0) {
       /* The new response is pushed into current document data array along with its query document_index */
-      let storedResponses = Object.values(this.searchEngineRetrievedResponses[currentDocument]['data']);
+      let storedResponses = Object.values(this.searchEngineRetrievedResponses[document.index]['data']);
       storedResponses.push({
-        "dimension": currentDimension,
-        "query": this.searchEngineQueries[currentDocument]['amount'] - 1,
+        "dimension": dimension.index,
+        "query": this.searchEngineQueries[document.index]['amount'] - 1,
         "index": storedResponses.length,
         "timestamp": timeInSeconds,
         "response": currentRetrievedResponse,
       });
       /* The data array within the data structure is updated */
-      this.searchEngineRetrievedResponses[currentDocument]['data'] = storedResponses;
+      this.searchEngineRetrievedResponses[document.index]['data'] = storedResponses;
       /* The total amount retrieved responses for the current document is updated */
-      this.searchEngineRetrievedResponses[currentDocument]['amount'] = this.searchEngineRetrievedResponses[currentDocument]['amount'] + currentRetrievedResponse.length
+      this.searchEngineRetrievedResponses[document.index]['amount'] = this.searchEngineRetrievedResponses[document.index]['amount'] + currentRetrievedResponse.length
       /* The total amount of groups of retrieved responses for the current document is updated */
-      this.searchEngineRetrievedResponses[currentDocument]['groups'] = storedResponses.length;
+      this.searchEngineRetrievedResponses[document.index]['groups'] = storedResponses.length;
     } else {
       /* The data slot for the current document is created */
-      this.searchEngineRetrievedResponses[currentDocument] = {};
+      this.searchEngineRetrievedResponses[document.index] = {};
       /* A new data array for the current document is created and the fist response is pushed */
-      this.searchEngineRetrievedResponses[currentDocument]['data'] = [{
-        "dimension": currentDimension,
-        "query": this.searchEngineQueries[currentDocument]['amount'] - 1,
+      this.searchEngineRetrievedResponses[document.index]['data'] = [{
+        "dimension": dimension.index,
+        "query": this.searchEngineQueries[document.index]['amount'] - 1,
         "index": 0,
         "timestamp": timeInSeconds,
         "response": currentRetrievedResponse
       }];
       /* The total amount of retrieved responses for the current document is set to the length of the first group */
       /* IMPORTANT: the document_index of the last retrieved response for a document will be <amount -1> */
-      this.searchEngineRetrievedResponses[currentDocument]['amount'] = currentRetrievedResponse.length
+      this.searchEngineRetrievedResponses[document.index]['amount'] = currentRetrievedResponse.length
       /* The total amount of groups retrieved responses for the current document is set to 1 */
-      this.searchEngineRetrievedResponses[currentDocument]['groups'] = 1
+      this.searchEngineRetrievedResponses[document.index]['groups'] = 1
     }
     /* The form control to set the url of the selected search result is enabled */
-    this.documentsForm[currentDocument].controls[this.dimensions[this.currentDimension].name.concat("_url")].enable();
+    this.documentsForm[document.index].controls[dimension.name.concat("_url")].enable();
   }
 
   /*
@@ -904,40 +914,40 @@ export class SkeletonComponent implements OnInit {
    * This array CAN BE EMPTY, if the search engine does not find anything for the current query.
    * These information are parsed and stored in the corresponding data structure.
    */
-  public storeSearchEngineSelectedResponse(selectedResponseData: Object, currentDocument : number, currentDimension: number) {
-    let currentSelectedResponse = selectedResponseData;
-    let timeInSeconds = Date.now() / 1000;
-    /* If some responses for the current document already exists*/
-    if (this.searchEngineSelectedResponses[currentDocument]['amount'] > 0) {
-      /* The new response is pushed into current document data array along with its query document_index */
-      let storedResponses = Object.values(this.searchEngineSelectedResponses[currentDocument]['data']);
-      storedResponses.push({
-        "dimension": currentDimension,
-        "query": this.searchEngineQueries[currentDocument]['amount'] - 1,
-        "index": storedResponses.length,
-        "timestamp": timeInSeconds,
-        "response": currentSelectedResponse,
-      });
-      /* The data array within the data structure is updated */
-      this.searchEngineSelectedResponses[currentDocument]['data'] = storedResponses;
-      /* The total amount of selected responses for the current document is updated */
-      this.searchEngineSelectedResponses[currentDocument]['amount'] = storedResponses.length;
-    } else {
-      /* The data slot for the current document is created */
-      this.searchEngineSelectedResponses[currentDocument] = {};
-      /* A new data array for the current document is created and the fist response is pushed */
-      this.searchEngineSelectedResponses[currentDocument]['data'] = [{
-        "dimension": currentDimension,
-        "query": this.searchEngineQueries[currentDocument]['amount'] - 1,
-        "index": 0,
-        "timestamp": timeInSeconds,
-        "response": currentSelectedResponse
-      }];
-      /* The total amount of selected responses for the current document is set to 1 */
-      /* IMPORTANT: the document_index of the last selected response for a document will be <amount -1> */
-      this.searchEngineSelectedResponses[currentDocument]['amount'] = 1
-    }
-    this.documentsForm[currentDocument].controls[this.dimensions[this.currentDimension].name.concat("_url")].setValue(currentSelectedResponse['url']);
+  public storeSearchEngineSelectedResponse(selectedResponseData: Object, document : Document, dimension: Dimension) {
+      let currentSelectedResponse = selectedResponseData;
+      let timeInSeconds = Date.now() / 1000;
+      /* If some responses for the current document already exists*/
+      if (this.searchEngineSelectedResponses[document.index]['amount'] > 0) {
+        /* The new response is pushed into current document data array along with its query document_index */
+        let storedResponses = Object.values(this.searchEngineSelectedResponses[document.index]['data']);
+        storedResponses.push({
+          "dimension": dimension.index,
+          "query": this.searchEngineQueries[document.index]['amount'] - 1,
+          "index": storedResponses.length,
+          "timestamp": timeInSeconds,
+          "response": currentSelectedResponse,
+        });
+        /* The data array within the data structure is updated */
+        this.searchEngineSelectedResponses[document.index]['data'] = storedResponses;
+        /* The total amount of selected responses for the current document is updated */
+        this.searchEngineSelectedResponses[document.index]['amount'] = storedResponses.length;
+      } else {
+        /* The data slot for the current document is created */
+        this.searchEngineSelectedResponses[document.index] = {};
+        /* A new data array for the current document is created and the fist response is pushed */
+        this.searchEngineSelectedResponses[document.index]['data'] = [{
+          "dimension": dimension.index,
+          "query": this.searchEngineQueries[document.index]['amount'] - 1,
+          "index": 0,
+          "timestamp": timeInSeconds,
+          "response": currentSelectedResponse
+        }];
+        /* The total amount of selected responses for the current document is set to 1 */
+        /* IMPORTANT: the document_index of the last selected response for a document will be <amount -1> */
+        this.searchEngineSelectedResponses[document.index]['amount'] = 1
+      }
+      this.documentsForm[document.index].controls[dimension.name.concat("_url")].setValue(currentSelectedResponse['url']);
   }
 
   /*
@@ -949,16 +959,16 @@ export class SkeletonComponent implements OnInit {
   public validateSearchEngineUrl(workerUrlFormControl: FormControl) {
     /* If the stepped is initialized to something the task is started */
     if (this.stepper) {
-      if (this.stepper.selectedIndex >= this.questionnaireAmount) {
+      if (this.stepper.selectedIndex >= this.questionnaireAmountStart && this.stepper.selectedIndex < this.questionnaireAmountStart + this.documentsAmount) {
         /* If the worker has interacted with the form control of a dimension */
         if (this.currentDimension) {
-          let currentDocument = this.stepper.selectedIndex - this.questionnaireAmount;
+          let currentDocument = this.stepper.selectedIndex - this.questionnaireAmountStart;
           /* If there are data for the current document */
           if (this.searchEngineRetrievedResponses[currentDocument]) {
             let retrievedResponses = this.searchEngineRetrievedResponses[currentDocument];
             if (retrievedResponses.hasOwnProperty("data")) {
               /* The current set of responses is the total amount - 1 */
-              let currentSet = retrievedResponses["amount"] - 1;
+              let currentSet = retrievedResponses["data"].length - 1;
               /* The responses retrieved by search engine are selected */
               let currentResponses = retrievedResponses["data"][currentSet]["response"];
               let currentDimension = retrievedResponses["data"][currentSet]["dimension"];
@@ -1750,7 +1760,7 @@ export class SkeletonComponent implements OnInit {
     this.commentSent = false;
 
     /* Set stepper document_index to the first tab (currentDocument.e., bring the worker to the first document after the questionnaire) */
-    this.stepper.selectedIndex = this.questionnaireAmount;
+    this.stepper.selectedIndex = this.questionnaireAmountStart;
 
     /* Decrease the remaining tries amount*/
     this.allowedTries = this.allowedTries - 1;
@@ -1782,8 +1792,8 @@ export class SkeletonComponent implements OnInit {
 
     /* The countdowns are stopped and resumed to the left or to the right of the current document,
     *  depending on the chosen action ("Back" or "Next") */
-    if ((this.stepper.selectedIndex >= this.questionnaireAmount) && this.settings.countdownTime) {
-      let currentIndex = this.stepper.selectedIndex - this.questionnaireAmount;
+    if ((this.stepper.selectedIndex >= this.questionnaireAmountStart && this.stepper.selectedIndex < this.questionnaireAmountStart + this.documentsAmount) && this.settings.countdownTime) {
+      let currentIndex = this.stepper.selectedIndex - this.questionnaireAmountStart;
       switch (action) {
         case "Next":
           if (currentIndex > 0 && this.countdown.toArray()[currentIndex - 1].left > 0) {
@@ -1844,8 +1854,8 @@ export class SkeletonComponent implements OnInit {
           completedElement = currentElement + 1;
           break;
         case "Finish":
-          completedElement = this.questionnaireAmount + this.documentsAmount - 1;
-          currentElement = this.questionnaireAmount + this.documentsAmount - 1;
+          completedElement = this.questionnaireAmountStart + this.documentsAmount + this.questionnaireAmountEnd - 1;
+          currentElement = this.questionnaireAmountStart + this.documentsAmount + this.questionnaireAmountEnd - 1;
           break;
       }
 
@@ -1904,6 +1914,8 @@ export class SkeletonComponent implements OnInit {
         token_output: this.tokenOutput,
         tries_amount: this.allowedTries,
         questionnaire_amount: this.questionnaireAmount,
+        questionnaire_amount_start: this.questionnaireAmountStart,
+        questionnaire_amount_end: this.questionnaireAmountEnd,
         documents_amount: this.documentsAmount,
         dimensions_amount: this.dimensionsAmount,
       };
@@ -1922,7 +1934,7 @@ export class SkeletonComponent implements OnInit {
       let uploadStatus = await this.S3Service.uploadTaskData(this.configService.environment, this.worker, data)
 
       /* If the worker has completed a questionnaire */
-      if (completedElement < this.questionnaireAmount) {
+      if (completedElement < this.questionnaireAmountStart ||  (completedElement >= this.questionnaireAmountStart + this.documentsAmount)) {
 
         /* The amount of accesses to the current questionnaire is retrieved */
         let accessesAmount = this.elementsAccesses[completedElement];
@@ -1968,7 +1980,7 @@ export class SkeletonComponent implements OnInit {
         let accessesAmount = this.elementsAccesses[completedElement];
 
         /* The document_index of the completed document is the completed element minus the questionnaire amount */
-        let completedDocument = completedElement - this.questionnaireAmount;
+        let completedDocument = completedElement - this.questionnaireAmountStart;
 
         let data = {}
 
@@ -1985,7 +1997,7 @@ export class SkeletonComponent implements OnInit {
         /* Worker's answers for the current document */
         let answers = this.documentsForm[completedDocument].value;
         data["answers"] = answers
-        let notes = this.notes[completedDocument]
+        let notes = (this.settings.countdownTime) ? this.notes[completedDocument] : []
         data["notes"] = notes
         /* Worker's dimensions selected values for the current document */
         let dimensionsSelectedValues = this.dimensionsSelectedValues[completedDocument];
@@ -2000,11 +2012,11 @@ export class SkeletonComponent implements OnInit {
         data["timestamps_end"] = timestampsEnd
         let timestampsElapsed = this.timestampsElapsed[completedElement];
         data["timestamps_elapsed"] = timestampsElapsed
-        let countdownTime = (this.settings.countdownTime) ? Number(this.countdown[completedElement]["i"]["text"]) : null
         /* Countdown time and corresponding flag */
+        let countdownTime = (this.settings.countdownTime) ? Number(this.countdown[completedElement]["i"]["text"]) : []
         data["countdowns_times"] = countdownTime
-        let countdown_expired = this.countdownsExpired[completedElement]
-        data["countdowns_expired"] = countdown_expired
+        let countdown_expired = (this.settings.countdownTime) ? this.countdownsExpired[completedElement] : []
+        data["countdowns_expired"] =  countdown_expired
         /* Number of accesses to the current document (currentDocument.e., how many times the worker reached the document with a "Back" or "Next" action */
         let accesses = accessesAmount + 1
         data["accesses"] = accesses
@@ -2021,62 +2033,11 @@ export class SkeletonComponent implements OnInit {
         this.elementsAccesses[completedElement] = accessesAmount + 1;
         this.sequenceNumber = this.sequenceNumber + 1
 
-        /* If the worker has completed the last document */
-        if (completedElement == this.questionnaireAmount + this.documentsAmount - 1) {
-
-          /* The amount of accesses to the current document is incremented */
-          this.elementsAccesses[completedElement] = accessesAmount + 1;
-          this.sequenceNumber = this.sequenceNumber + 1
-
-          data = {}
-
-          /* All data about documents are uploaded, only once */
-          let actionInfo = {
-            action: action,
-            access: accessesAmount + 1,
-            try: this.currentTry,
-            index: completedElement,
-            sequence: this.sequenceNumber,
-            element: "document"
-          };
-          /* Info about each performed action ("Next"? "Back"? From where?) */
-          data["info"] = actionInfo
-          let answers = [];
-          for (let index = 0; index < this.questionnairesForm.length; index++) answers.push(this.questionnairesForm[index].value);
-          data["questionnaires_answers"] = answers
-          answers = [];
-          for (let index = 0; index < this.documentsForm.length; index++) answers.push(this.documentsForm[index].value);
-          data["documents_answers"] = answers
-          let notes = this.notes
-          data["notes"] = notes
-          /* Worker's dimensions selected values for the current document */
-          data["dimensions_selected"] = this.dimensionsSelectedValues
-          /* Start, end and elapsed timestamps for each document */
-          data["timestamps_start"] = this.timestampsStart
-          data["timestamps_end"] = this.timestampsEnd
-          data["timestamps_elapsed"] = this.timestampsElapsed
-          /* Countdown time and corresponding flag for each document */
-          let countdownTimes = [];
-          if (this.settings.countdownTime)
-            for (let index = 0; index < this.countdown.length; index++) countdownTimes.push(Number(this.countdown[index]["i"]["text"]));
-          data["countdowns_times"] = countdownTimes
-          data["countdowns_expired"] = this.countdownsExpired
-          /* Number of accesses to each document (currentDocument.e., how many times the worker reached the document with a "Back" or "Next" action */
-          data["accesses"] = this.elementsAccesses
-          /* Worker's search engine queries for each document */
-          data["queries"] = this.searchEngineQueries
-          /* Responses retrieved by search engine for each worker's query for each document */
-          data["responses_retrieved"] = this.searchEngineRetrievedResponses
-          /* Responses by search engine ordered by worker's click for the current document */
-          data["responses_selected"] = this.searchEngineSelectedResponses
-
-          let uploadStatus = await this.S3Service.uploadDocument(this.configService.environment, this.worker, data, true, this.currentTry)
-
-        }
-
-        console.log(data)
-
       }
+
+      /* If the worker has completed the last element */
+
+
 
     }
 

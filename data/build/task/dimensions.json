@@ -1,12 +1,43 @@
 [
   {
-    "name": "overall-truthfulness",
-    "description": "",
-    "url": true,
-    "justification": {
-      "text": "Your justification here (You can use your own words or, even better, copy/paste from the selected URL; you cannot use the selected search engine url as part of the justification).",
-      "min_words": 15
+    "name": "overall-truthfulness-s3",
+    "name_pretty": "S3",
+    "description": "Lorem ipsum...",
+    "url": false,
+    "justification": false,
+    "scale": {
+      "type": "categorical",
+      "mapping": [
+        {
+          "label": "Negative",
+          "description": "...",
+          "value": "1"
+        },
+        {
+          "label": "In Between",
+          "description": "...",
+          "value": "2"
+        },
+        {
+          "label": "Positive",
+          "description": "...",
+          "value": "3"
+        }
+      ]
     },
+    "gold_question_check": true,
+    "style": {
+      "type": "list",
+      "orientation": "vertical",
+      "position": "middle"
+    }
+  },
+  {
+    "name": "overall-truthfulness-s6",
+    "name_pretty": "S6",
+    "description": "Lorem ipsum...",
+    "url": false,
+    "justification": false,
     "scale": {
       "type": "categorical",
       "mapping": [
@@ -41,6 +72,25 @@
           "value": "6"
         }
       ]
+    },
+    "gold_question_check": true,
+    "style": {
+      "type": "list",
+      "orientation": "vertical",
+      "position": "middle"
+    }
+  },
+  {
+    "name": "overall-truthfulness-s100",
+    "name_pretty": "S100",
+    "description": "Lorem ipsum...",
+    "url": false,
+    "justification": false,
+    "scale": {
+      "type": "interval",
+      "min": 0,
+      "max": 100,
+      "step": 1
     },
     "gold_question_check": true,
     "style": {

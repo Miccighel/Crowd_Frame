@@ -2,11 +2,15 @@ export class Document {
 
 		index: number;
 		countdownExpired: boolean;
-		id: string;
+		name_unique: string;
 		statement: string;
-		claimant: string;
-		date: string;
-		originated_from: string;
+		speaker: string;
+		job: string;
+		context: string;
+		year: number;
+		party: string;
+		source: string;
+		id: string;
 
 		constructor (
 			index: number,
@@ -14,11 +18,15 @@ export class Document {
 		) {
 
 			this.index = index
-			this.id = data["id"]
+			this.name_unique = data["name_unique"]
 			this.statement = data["statement"]
-			this.claimant = data["claimant"]
-			this.date = data["date"]
-			this.originated_from = data["originated_from"]
+			this.speaker = data["speaker"]
+			this.job = data["job"]
+			this.context = data["context"]
+			this.year = data["year"]
+			this.party = data["party"]
+			this.source = data["source"]
+			this.id = data["id"]
 
 		}
 

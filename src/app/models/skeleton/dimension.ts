@@ -8,6 +8,7 @@ export class Dimension {
   index: number;
 
   name: string;
+  name_pretty?: string;
   description?: string;
   justification?: Justification;
   url?: boolean;
@@ -23,6 +24,7 @@ export class Dimension {
     this.index = index;
 
     this.name =               data["name"];
+    this.name_pretty =        data['name_pretty'] ? data["name_pretty"] : null;
     this.description =        data['description'] ? data["description"] : null;
     this.justification =      data['justification'] ? new Justification(data['justification']) : null;
     this.url =                data['url'] ? data["url"] : null;

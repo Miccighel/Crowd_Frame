@@ -131,7 +131,7 @@ export class LoaderComponent implements OnInit {
 
     let url = new URL(window.location.href);
     this.adminAccess = url.searchParams.get("admin") == 'true'
-    this.adminAccess = true
+    //this.adminAccess = true
 
     this.ngxService.stop()
 

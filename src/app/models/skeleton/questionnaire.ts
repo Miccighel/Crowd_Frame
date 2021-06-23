@@ -4,6 +4,7 @@ export class Questionnaire {
 
   type: string;
   description?: string;
+  position?: string;
   questions: Array<Question>;
   mappings: Array<Mapping>;
 
@@ -15,6 +16,7 @@ export class Questionnaire {
     this.index = index;
 
     this.description =  data['description'] ? data["description"] : null;
+    this.position =  data['position'] ? data["position"] : null;
     this.type = data["type"];
     this.questions = new Array<Question>();
     for (let index = 0; index < data["questions"].length; index++) this.questions.push(new Question(index, data["questions"][index]))

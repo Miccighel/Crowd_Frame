@@ -90,96 +90,96 @@
 <mat-horizontal-stepper [linear]="true" labelPosition="bottom" #stepper *ngIf="taskStarted && questionnaires && documents && dimensions">
 
   <!-- Questionnaire markup -->
-  <mat-step *ngFor="let questionnaire of questionnaires; let i=index" [stepControl]="questionnairesForm[i]"
-            [editable]="false">
-    <div class="container">
-      <form [formGroup]="questionnairesForm[i]" class="questionnaire-form">
-        <ng-template matStepLabel>Q{{i + 1}}</ng-template>
-        <mat-card>
+  <ng-container *ngFor="let questionnaire of questionnaires; let i=index">
+    <mat-step *ngIf="questionnaire.position=='start' || !questionnaire.position" [stepControl]="questionnairesForm[i]" [editable]="false">
+      <div class="container">
+        <form [formGroup]="questionnairesForm[i]" class="questionnaire-form">
+          <ng-template matStepLabel>Q{{i + 1}}</ng-template>
+          <mat-card>
 
-          <mat-divider [inset]="true"></mat-divider>
-          <mat-card-title *ngIf="questionnaire.type=='standard'">Please answer the following questions</mat-card-title>
-          <mat-card-title *ngIf="questionnaire.type=='crt'">Please answer the following question</mat-card-title>
-          <mat-card-title *ngIf="questionnaire.type=='likert'">Please assess the following statements</mat-card-title>
-          <mat-divider [inset]="true"></mat-divider>
-
-          <!-- Standard questionnaire markup -->
-          <mat-card-content *ngIf="questionnaire.type=='standard'">
-            <mat-radio-group *ngFor="let question of questionnaire.questions; let j=index" aria-labelledby="radio-button-label" class="radio-button-group question" formControlName="{{question.name}}">
-              <div class="question-text">
-                <label>{{question.text}}</label>
-              </div>
-              <mat-radio-button *ngFor="let answer of question.answers; let k=index" class="radio-button" value="{{k}}">
-                {{answer}}</mat-radio-button>
-              <mat-expansion-panel hideToggle *ngIf="question.detail" class="question-detail" (opened)="question.showDetail = true" (closed)="question.showDetail = false">
-                <mat-expansion-panel-header class="mat-button">
-                  <mat-panel-title>
-                    {{question.showDetail ? 'Hide details' : 'Show details'}}
-                  </mat-panel-title>
-                  <mat-panel-description>
-                    {{question.detail.text}}
-                  </mat-panel-description>
-                </mat-expansion-panel-header>
-                <div class="question-detail-element" *ngFor="let element of question.detail.elements; let m=index">
-                  {{element.key}}
-                  <ul>
-                    <li *ngFor="let item of element.items; let n=index">{{item}}</li>
-                  </ul>
-                </div>
-              </mat-expansion-panel>
-            </mat-radio-group>
-          </mat-card-content>
-
-          <!-- CRT questionnaire markup -->
-          <mat-card-content *ngIf="questionnaire.type=='crt'">
-            <mat-form-field *ngFor="let question of questionnaire.questions; let j=index">
-              <label>{{question.text}}</label>
-              <input matInput type="number" placeholder="" formControlName="{{question.name}}">
-              <mat-error *ngIf="checkFormControl(questionnairesForm[i],question.name, 'required')">
-                This field is required
-              </mat-error>
-              <mat-error *ngIf="checkFormControl(questionnairesForm[i],question.name, 'min')">
-                Min value allowed: 0
-              </mat-error>
-              <mat-error *ngIf="checkFormControl(questionnairesForm[i],question.name, 'max')">
-                Max value allowed: 100
-              </mat-error>
-            </mat-form-field>
-          </mat-card-content>
-
-          <!-- Likert questionnaire markup -->
-          <mat-card-content *ngIf="questionnaire.type=='likert'" class="questionnaire-matrix">
-            <p *ngIf="questionnaire.description">{{questionnaire.description}}</p>
             <mat-divider [inset]="true"></mat-divider>
-            <div class="matrix-header">
-              <div></div>
-              <div *ngFor="let mapping of questionnaire.mappings; let k=index">
-                <span class="matrix-header-text">{{mapping.label}}</span>
-              </div>
-            </div>
-            <mat-radio-group aria-labelledby="radio-button-label"
-                             *ngFor="let question of questionnaire.questions; let m=index" formControlName="{{question.name}}">
-              <div>
-                <p>{{m + 1}}) {{question.text}}</p>
-              </div>
-              <div *ngFor="let mapping of questionnaire.mappings">
-                <mat-radio-button class="radio-button" value="{{mapping.value}}"></mat-radio-button>
-              </div>
-            </mat-radio-group>
-          </mat-card-content>
+            <mat-card-title *ngIf="questionnaire.type=='standard'">Please answer the following questions</mat-card-title>
+            <mat-card-title *ngIf="questionnaire.type=='crt'">Please answer the following question</mat-card-title>
+            <mat-card-title *ngIf="questionnaire.type=='likert'">Please assess the following statements</mat-card-title>
+            <mat-divider [inset]="true"></mat-divider>
 
-          <!-- Next button markup -->
-          <mat-card-actions>
-            <button mat-flat-button color="primary" matStepperNext
-                    [disabled]="(!questionnairesForm[i].valid || taskCompleted)" (click)="performLogging('Next',i)"> Next
-            </button>
-            <span class="form-note">(*) you have to fill each field to proceed</span>
-          </mat-card-actions>
+            <!-- Standard questionnaire markup -->
+            <mat-card-content *ngIf="questionnaire.type=='standard'">
+              <mat-radio-group *ngFor="let question of questionnaire.questions; let j=index" aria-labelledby="radio-button-label" class="radio-button-group question" formControlName="{{question.name}}">
+                <div class="question-text">
+                  <label>{{question.text}}</label>
+                </div>
+                <mat-radio-button *ngFor="let answer of question.answers; let k=index" class="radio-button" value="{{k}}">
+                  {{answer}}</mat-radio-button>
+                <mat-expansion-panel hideToggle *ngIf="question.detail" class="question-detail" (opened)="question.showDetail = true" (closed)="question.showDetail = false">
+                  <mat-expansion-panel-header class="mat-button">
+                    <mat-panel-title>
+                      {{question.showDetail ? 'Hide details' : 'Show details'}}
+                    </mat-panel-title>
+                    <mat-panel-description>
+                      {{question.detail.text}}
+                    </mat-panel-description>
+                  </mat-expansion-panel-header>
+                  <div class="question-detail-element" *ngFor="let element of question.detail.elements; let m=index">
+                    {{element.key}}
+                    <ul>
+                      <li *ngFor="let item of element.items; let n=index">{{item}}</li>
+                    </ul>
+                  </div>
+                </mat-expansion-panel>
+              </mat-radio-group>
+            </mat-card-content>
 
-        </mat-card>
-      </form>
-    </div>
-  </mat-step>
+            <!-- CRT questionnaire markup -->
+            <mat-card-content *ngIf="questionnaire.type=='crt'">
+              <mat-form-field *ngFor="let question of questionnaire.questions; let j=index">
+                <label>{{question.text}}</label>
+                <input matInput type="number" placeholder="" formControlName="{{question.name}}">
+                <mat-error *ngIf="checkFormControl(questionnairesForm[i],question.name, 'required')">
+                  This field is required
+                </mat-error>
+                <mat-error *ngIf="checkFormControl(questionnairesForm[i],question.name, 'min')">
+                  Min value allowed: 0
+                </mat-error>
+                <mat-error *ngIf="checkFormControl(questionnairesForm[i],question.name, 'max')">
+                  Max value allowed: 100
+                </mat-error>
+              </mat-form-field>
+            </mat-card-content>
+
+            <!-- Likert questionnaire markup -->
+            <mat-card-content *ngIf="questionnaire.type=='likert'" class="questionnaire-matrix">
+              <p *ngIf="questionnaire.description">{{questionnaire.description}}</p>
+              <mat-divider [inset]="true"></mat-divider>
+              <div class="matrix-header">
+                <div></div>
+                <div *ngFor="let mapping of questionnaire.mappings; let k=index">
+                  <span class="matrix-header-text">{{mapping.label}}</span>
+                </div>
+              </div>
+              <mat-radio-group aria-labelledby="radio-button-label"
+                               *ngFor="let question of questionnaire.questions; let m=index" formControlName="{{question.name}}">
+                <div>
+                  <p>{{m + 1}}) {{question.text}}</p>
+                </div>
+                <div *ngFor="let mapping of questionnaire.mappings">
+                  <mat-radio-button class="radio-button" value="{{mapping.value}}"></mat-radio-button>
+                </div>
+              </mat-radio-group>
+            </mat-card-content>
+
+            <!-- Next button markup -->
+            <mat-card-actions>
+              <button mat-flat-button color="primary" matStepperNext [disabled]="(!questionnairesForm[i].valid || taskCompleted)" (click)="performLogging('Next',i)"> Next
+              </button>
+              <span class="form-note">(*) you have to fill each field to proceed</span>
+            </mat-card-actions>
+
+          </mat-card>
+        </form>
+      </div>
+    </mat-step>
+  </ng-container>
 
   <!-- Documents markup -->
   <mat-step *ngFor="let document of documents; let i=index" [editable]="true">
@@ -190,7 +190,7 @@
           <!-- Document header markup -->
           <ng-template matStepLabel> S{{document.index + 1}}</ng-template>
           <mat-divider [inset]="true"></mat-divider>
-          <mat-card-title>Plase, assess the following statement</mat-card-title>
+          <mat-card-title>Please, assess the following statement</mat-card-title>
           <mat-divider [inset]="true"></mat-divider>
           <mat-card-content class="pt-16px">
 
@@ -224,14 +224,13 @@
                 </li>
                 <li *ngIf="!(this.annotator)">
                   <ul>
-                    <li><strong>Claimant/Source</strong> (who made the statement): {{document.claimant}}</li>
-                    <li><strong>Date</strong> (when the statement was made): {{document.date}}</li>
+                    <li><strong>Claimant/Source</strong> (who made the statement): {{document.speaker}}</li>
+                    <li><strong>Date</strong> (when the statement was made): {{document.year}}</li>
                     <li><strong>Text</strong> (content of the statement): {{document.statement}}</li>
                   </ul>
                 </li>
               </ul>
             </div>
-
 
             <ng-container *ngIf="(this.annotator && this.annotator.type=='options')">
 
@@ -462,7 +461,8 @@
                 <!-- Dimension name markup -->
                 <div class="dimension-name">
                   <mat-divider [inset]="true"></mat-divider>
-                  <h2>{{capitalize(dimension.name)}}</h2>
+                  <h2 *ngIf="!dimension.name_pretty">{{capitalize(dimension.name)}}</h2>
+                  <h2 *ngIf="dimension.name_pretty">{{capitalize(dimension.name_pretty)}}</h2>
                   <mat-divider [inset]="true"></mat-divider>
                 </div>
 
@@ -479,9 +479,9 @@
                   <div class="dimension-content search-engine">
                     <app-crowd-xplorer
                       *ngIf="dimension.url" id="app-crowd-xplorer-{{i}}-{{j}}"
-                      (resultEmitter)="storeSearchEngineRetrievedResponse($event, i, j)"
-                      (queryEmitter)="storeSearchEngineUserQuery($event, i, j)"
-                      (selectedRowEmitter)="storeSearchEngineSelectedResponse($event, i, j)">
+                      (resultEmitter)="storeSearchEngineRetrievedResponse($event, document, dimension)"
+                      (queryEmitter)="storeSearchEngineUserQuery($event, document, dimension)"
+                      (selectedRowEmitter)="storeSearchEngineSelectedResponse($event, document, dimension)">
                     </app-crowd-xplorer>
                     <!-- Dimension search engine url field markup (hidden) -->
                     <mat-form-field *ngIf="dimension.url" class="url-field">
@@ -691,7 +691,20 @@
                     (click)="performLogging('Next', i);">
               Next
             </button>
-            <button mat-flat-button color="primary" matStepperNext *ngIf="i+1>=this.documentsAmount"
+
+            <button mat-flat-button color="primary" matStepperNext *ngIf="i+1>=this.documentsAmount && this.annotator && this.questionnaireAmountEnd > 0"
+                    [disabled]="(!documentsForm[i].valid || !this.searchEngineRetrievedResponses[i] || taskCompleted || !checkAnnotationConsistency(i)) && !this.countdownsExpired[i]"
+                    (click)="performLogging('Next', i);">
+              Next
+            </button>
+
+            <button mat-flat-button color="primary" matStepperNext *ngIf="i+1>=this.documentsAmount && !this.annotator  && this.questionnaireAmountEnd > 0"
+                    [disabled]="(!documentsForm[i].valid || !this.searchEngineRetrievedResponses[i] || taskCompleted) && !this.countdownsExpired[i]"
+                    (click)="performLogging('Next', i);">
+              Next
+            </button>
+
+            <button mat-flat-button color="primary" matStepperNext *ngIf="i+1>=this.documentsAmount && this.questionnaireAmountEnd == 0"
                     [disabled]="!documentsForm[i].valid && !this.countdownsExpired[i]"
                     (click)="performLogging('Finish', i); performQualityCheck()">
               Finish
@@ -702,7 +715,112 @@
         </mat-card>
       </form>
     </div>
+
   </mat-step>
+
+  <!-- Questionnaire markup -->
+  <ng-container *ngFor="let questionnaire of questionnaires; let i=index">
+    <mat-step *ngIf="questionnaire.position=='end'" [stepControl]="questionnairesForm[i]" [editable]="true">
+      <div class="container">
+      <form [formGroup]="questionnairesForm[i]" class="questionnaire-form">
+        <ng-template matStepLabel>Q{{i + 1}}</ng-template>
+        <mat-card>
+
+          <mat-divider [inset]="true"></mat-divider>
+          <mat-card-title *ngIf="questionnaire.type=='standard'">Please answer the following questions</mat-card-title>
+          <mat-card-title *ngIf="questionnaire.type=='crt'">Please answer the following question</mat-card-title>
+          <mat-card-title *ngIf="questionnaire.type=='likert'">Please assess the following statements</mat-card-title>
+          <mat-divider [inset]="true"></mat-divider>
+
+          <!-- Standard questionnaire markup -->
+          <mat-card-content *ngIf="questionnaire.type=='standard'">
+            <mat-radio-group *ngFor="let question of questionnaire.questions; let j=index" aria-labelledby="radio-button-label" class="radio-button-group question" formControlName="{{question.name}}">
+              <div class="question-text">
+                <label>{{question.text}}</label>
+              </div>
+              <mat-radio-button *ngFor="let answer of question.answers; let k=index" class="radio-button" value="{{k}}">
+                {{answer}}</mat-radio-button>
+              <mat-expansion-panel hideToggle *ngIf="question.detail" class="question-detail" (opened)="question.showDetail = true" (closed)="question.showDetail = false">
+                <mat-expansion-panel-header class="mat-button">
+                  <mat-panel-title>
+                    {{question.showDetail ? 'Hide details' : 'Show details'}}
+                  </mat-panel-title>
+                  <mat-panel-description>
+                    {{question.detail.text}}
+                  </mat-panel-description>
+                </mat-expansion-panel-header>
+                <div class="question-detail-element" *ngFor="let element of question.detail.elements; let m=index">
+                  {{element.key}}
+                  <ul>
+                    <li *ngFor="let item of element.items; let n=index">{{item}}</li>
+                  </ul>
+                </div>
+              </mat-expansion-panel>
+            </mat-radio-group>
+          </mat-card-content>
+
+          <!-- CRT questionnaire markup -->
+          <mat-card-content *ngIf="questionnaire.type=='crt'">
+            <mat-form-field *ngFor="let question of questionnaire.questions; let j=index">
+              <label>{{question.text}}</label>
+              <input matInput type="number" placeholder="" formControlName="{{question.name}}">
+              <mat-error *ngIf="checkFormControl(questionnairesForm[i],question.name, 'required')">
+                This field is required
+              </mat-error>
+              <mat-error *ngIf="checkFormControl(questionnairesForm[i],question.name, 'min')">
+                Min value allowed: 0
+              </mat-error>
+              <mat-error *ngIf="checkFormControl(questionnairesForm[i],question.name, 'max')">
+                Max value allowed: 100
+              </mat-error>
+            </mat-form-field>
+          </mat-card-content>
+
+          <!-- Likert questionnaire markup -->
+          <mat-card-content *ngIf="questionnaire.type=='likert'" class="questionnaire-matrix">
+            <p *ngIf="questionnaire.description">{{questionnaire.description}}</p>
+            <mat-divider [inset]="true"></mat-divider>
+            <div class="matrix-header">
+              <div></div>
+              <div *ngFor="let mapping of questionnaire.mappings; let k=index">
+                <span class="matrix-header-text">{{mapping.label}}</span>
+              </div>
+            </div>
+            <mat-radio-group aria-labelledby="radio-button-label" *ngFor="let question of questionnaire.questions; let m=index" formControlName="{{question.name}}">
+              <div><p>{{m + 1}}) {{question.text}}</p></div>
+              <div *ngFor="let mapping of questionnaire.mappings">
+                <mat-radio-button class="radio-button" value="{{mapping.value}}"></mat-radio-button>
+              </div>
+            </mat-radio-group>
+          </mat-card-content>
+
+          <mat-card-actions>
+            <button mat-flat-button color="primary" matStepperPrevious
+                    *ngIf="i>0"
+                    [disabled]="taskCompleted"
+                    (click)="performLogging('Back', i)">
+              Back
+            </button>
+
+            <button mat-flat-button color="primary" matStepperNext
+                    *ngIf="i+1 >= this.questionnaireAmountStart + this.documentsAmount && i+1 < (this.questionnaireAmountStart + this.documentsAmount + this.questionnaireAmountEnd) -1"
+                    [disabled]="!questionnairesForm[i].valid" (click)="performLogging('Next',i)">
+              Next
+            </button>
+
+            <button mat-flat-button color="primary" matStepperNext
+                    *ngIf="i+1 >= (this.questionnaireAmountStart + this.documentsAmount + this.questionnaireAmountEnd) - 1"
+                    [disabled]="!questionnairesForm[i].valid" (click)="performLogging('Finish', i); performQualityCheck()">
+              Finish
+            </button>
+
+            <span class="form-note">(*) you have to fill each field to proceed</span>
+          </mat-card-actions>
+        </mat-card>
+      </form>
+     </div>
+    </mat-step>
+  </ng-container>
 
   <!-- Outcome markup -->
   <mat-step *ngIf="documents" [editable]="false">
@@ -724,8 +842,7 @@
           <h1>{{tokenOutput}}</h1>
           <form [formGroup]="commentForm" class="comment-form">
             <mat-form-field appearance="fill">
-              <textarea matInput [disabled]="commentSent" placeholder="Your comment here" formControlName="comment"
-                        rows="5"></textarea>
+              <textarea matInput [disabled]="commentSent" placeholder="Your comment here" formControlName="comment" rows="5"></textarea>
             </mat-form-field>
           </form>
           <button mat-flat-button color="primary" [disabled]="commentSent || !commentForm.valid "
