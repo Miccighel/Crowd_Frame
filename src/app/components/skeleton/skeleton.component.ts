@@ -21,7 +21,7 @@ import {DeviceDetectorService} from 'ngx-device-detector';
 import {Document} from "../../../../data/build/skeleton/document";
 import {Hit} from "../../models/skeleton/hit";
 import {Questionnaire} from "../../models/skeleton/questionnaire";
-import {Dimension, ScaleInterval} from "../../models/skeleton/dimension";
+import {Dimension, ScaleInterval, ScaleMagnitude} from "../../models/skeleton/dimension";
 import {Instruction} from "../../models/shared/instructions";
 import {Note} from "../../models/skeleton/notes";
 import {Worker} from "../../models/skeleton/worker";
@@ -565,8 +565,6 @@ export class SkeletonComponent implements OnInit {
         if (questionnaire.position == "start" || questionnaire.position==null) this.questionnaireAmountStart = this.questionnaireAmountStart + 1
         if (questionnaire.position == "end") this.questionnaireAmountEnd = this.questionnaireAmountEnd + 1
       }
-      console.log(this.questionnaireAmountStart)
-      console.log(this.questionnaireAmountEnd)
 
       /* A form for each questionnaire is initialized */
       this.questionnairesForm = new Array<FormGroup>();
@@ -602,7 +600,17 @@ export class SkeletonComponent implements OnInit {
         let controlsConfig = {};
         for (let index_dimension = 0; index_dimension < this.dimensions.length; index_dimension++) {
           let dimension = this.dimensions[index_dimension];
-          if (dimension.scale) if (dimension.scale.type != "continue") controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.required]); else controlsConfig[`${dimension.name}_value`] = new FormControl((Math.round(((<ScaleInterval>dimension.scale).min + (<ScaleInterval>dimension.scale).max) / 2)), [Validators.required]);
+          if (dimension.scale) {
+            if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.required]);
+            if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value`] = new FormControl((Math.round(((<ScaleInterval>dimension.scale).min + (<ScaleInterval>dimension.scale).max) / 2)), [Validators.required]);
+            if (dimension.scale.type == "magnitude_estimation") {
+              if ((<ScaleMagnitude>dimension.scale).lower_bound) {
+                controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min), Validators.required]);
+              } else {
+                controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min + 1), Validators.required]);
+              }
+            }
+          }
           if (dimension.justification) controlsConfig[`${dimension.name}_justification`] = new FormControl('', [Validators.required, this.validateJustification.bind(this)])
           if (dimension.url) controlsConfig[`${dimension.name}_url`] = new FormControl('', [Validators.required, this.validateSearchEngineUrl.bind(this)]);
         }
@@ -1936,6 +1944,15 @@ export class SkeletonComponent implements OnInit {
       /* If the worker has completed a questionnaire */
       if (completedElement < this.questionnaireAmountStart ||  (completedElement >= this.questionnaireAmountStart + this.documentsAmount)) {
 
+        /* if the questionnaire it's at the end */
+
+        let completedQuestionnaire = 0
+        if(completedElement >= this.questionnaireAmountStart + this.documentsAmount) {
+          completedQuestionnaire = completedElement - this.documentsAmount
+        } else {
+          completedQuestionnaire = completedElement
+        }
+
         /* The amount of accesses to the current questionnaire is retrieved */
         let accessesAmount = this.elementsAccesses[completedElement];
 
@@ -1948,14 +1965,14 @@ export class SkeletonComponent implements OnInit {
           action: action,
           access: accessesAmount,
           try: this.currentTry,
-          index: completedElement,
+          index: completedQuestionnaire,
           sequence: this.sequenceNumber,
           element: "questionnaire"
         };
         /* Info about the performed action ("Next"? "Back"? From where?) */
         data["info"] = actionInfo
         /* Worker's answers to the current questionnaire */
-        let answers = this.questionnairesForm[completedElement].value;
+        let answers = this.questionnairesForm[completedQuestionnaire].value;
         data["answers"] = answers
         /* Start, end and elapsed timestamps for the current questionnaire */
         let timestampsStart = this.timestampsStart[completedElement];
@@ -1967,7 +1984,7 @@ export class SkeletonComponent implements OnInit {
         /* Number of accesses to the current questionnaire (which must be always 1, since the worker cannot go back */
         data["accesses"] = accessesAmount + 1
 
-        let uploadStatus = await this.S3Service.uploadQuestionnaire(this.configService.environment, this.worker, data, false, this.currentTry, completedElement, accessesAmount + 1, this.sequenceNumber)
+        let uploadStatus = await this.S3Service.uploadQuestionnaire(this.configService.environment, this.worker, data, this.currentTry, completedQuestionnaire, accessesAmount + 1, this.sequenceNumber)
 
         /* The amount of accesses to the current questionnaire is incremented */
         this.sequenceNumber = this.sequenceNumber + 1
@@ -1976,11 +1993,11 @@ export class SkeletonComponent implements OnInit {
         /* If the worker has completed a document */
       } else {
 
-        /* The amount of accesses to the current document is retrieved */
-        let accessesAmount = this.elementsAccesses[completedElement];
-
         /* The document_index of the completed document is the completed element minus the questionnaire amount */
         let completedDocument = completedElement - this.questionnaireAmountStart;
+
+        /* The amount of accesses to the current document is retrieved */
+        let accessesAmount = this.elementsAccesses[completedElement];
 
         let data = {}
 
@@ -1988,7 +2005,7 @@ export class SkeletonComponent implements OnInit {
           action: action,
           access: accessesAmount,
           try: this.currentTry,
-          index: completedElement,
+          index: completedDocument,
           sequence: this.sequenceNumber,
           element: "document"
         };
@@ -1997,7 +2014,7 @@ export class SkeletonComponent implements OnInit {
         /* Worker's answers for the current document */
         let answers = this.documentsForm[completedDocument].value;
         data["answers"] = answers
-        let notes = (this.settings.countdownTime) ? this.notes[completedDocument] : []
+        let notes = (this.settings.annotator) ? this.notes[completedDocument] : []
         data["notes"] = notes
         /* Worker's dimensions selected values for the current document */
         let dimensionsSelectedValues = this.dimensionsSelectedValues[completedDocument];
@@ -2013,9 +2030,9 @@ export class SkeletonComponent implements OnInit {
         let timestampsElapsed = this.timestampsElapsed[completedElement];
         data["timestamps_elapsed"] = timestampsElapsed
         /* Countdown time and corresponding flag */
-        let countdownTime = (this.settings.countdownTime) ? Number(this.countdown[completedElement]["i"]["text"]) : []
+        let countdownTime = (this.settings.countdownTime) ? Number(this.countdown[completedDocument]["i"]["text"]) : []
         data["countdowns_times"] = countdownTime
-        let countdown_expired = (this.settings.countdownTime) ? this.countdownsExpired[completedElement] : []
+        let countdown_expired = (this.settings.countdownTime) ? this.countdownsExpired[completedDocument] : []
         data["countdowns_expired"] =  countdown_expired
         /* Number of accesses to the current document (currentDocument.e., how many times the worker reached the document with a "Back" or "Next" action */
         let accesses = accessesAmount + 1
@@ -2027,7 +2044,7 @@ export class SkeletonComponent implements OnInit {
         let responsesSelected = this.searchEngineSelectedResponses[completedDocument];
         data["responses_selected"] = responsesSelected
 
-        let uploadStatus = await this.S3Service.uploadDocument(this.configService.environment, this.worker, data, false, this.currentTry, completedElement, accessesAmount + 1, this.sequenceNumber)
+        let uploadStatus = await this.S3Service.uploadDocument(this.configService.environment, this.worker, data, this.currentTry, completedDocument, accessesAmount + 1, this.sequenceNumber)
 
         /* The amount of accesses to the current document is incremented */
         this.elementsAccesses[completedElement] = accessesAmount + 1;
@@ -2037,10 +2054,52 @@ export class SkeletonComponent implements OnInit {
 
       /* If the worker has completed the last element */
 
-      if (completedElement >= this.questionnaireAmountStart + this.documentsAmount + this.questionnaireAmountEnd - 1) {
-        console.log("TODO")
-      }
+      if (completedElement >= (this.questionnaireAmountStart + this.documentsAmount + this.questionnaireAmountEnd) - 1) {
 
+          /* All data about documents are uploaded, only once */
+          let actionInfo = {
+            action: action,
+            try: this.currentTry,
+            sequence: this.sequenceNumber,
+            element: "all"
+          };
+          /* Info about each performed action ("Next"? "Back"? From where?) */
+          data["info"] = actionInfo
+          let answers = [];
+          for (let index = 0; index < this.questionnairesForm.length; index++) answers.push(this.questionnairesForm[index].value);
+          data["questionnaires_answers"] = answers
+          answers = [];
+          for (let index = 0; index < this.documentsForm.length; index++) answers.push(this.documentsForm[index].value);
+          data["documents_answers"] = answers
+          let notes = (this.settings.annotator) ? this.notes : []
+          data["notes"] = notes
+          /* Worker's dimensions selected values for the current document */
+          data["dimensions_selected"] = this.dimensionsSelectedValues
+          /* Start, end and elapsed timestamps for each document */
+          data["timestamps_start"] = this.timestampsStart
+          data["timestamps_end"] = this.timestampsEnd
+          data["timestamps_elapsed"] = this.timestampsElapsed
+          /* Countdown time and corresponding flag for each document */
+          let countdownTimes = [];
+          let countdownExpired = [];
+          if (this.settings.countdownTime)
+            for (let index = 0; index < this.countdown.length; index++) countdownTimes.push(Number(this.countdown[index]["i"]["text"]));
+            for (let index = 0; index < this.countdownsExpired.length; index++) countdownExpired.push(this.countdownsExpired[index]);
+          data["countdowns_times"] = countdownTimes
+          data["countdowns_expired"] = countdownExpired
+          /* Number of accesses to each document (currentDocument.e., how many times the worker reached the document with a "Back" or "Next" action */
+          data["accesses"] = this.elementsAccesses
+          /* Worker's search engine queries for each document */
+          data["queries"] = this.searchEngineQueries
+          /* Responses retrieved by search engine for each worker's query for each document */
+          data["responses_retrieved"] = this.searchEngineRetrievedResponses
+          /* Responses by search engine ordered by worker's click for the current document */
+          data["responses_selected"] = this.searchEngineSelectedResponses
+          /* If the last element is a document */
+
+          let uploadStatus = await this.S3Service.uploadFinalData(this.configService.environment, this.worker, data, this.currentTry)
+
+      }
 
     }
 

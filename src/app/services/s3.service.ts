@@ -257,20 +257,16 @@ export class S3Service {
     return this.upload(config, `${this.getWorkerFolder(config, worker)}checks_try_${currentTry}.json`, data)
   }
 
-  public uploadQuestionnaire(config, worker, data, isFinal, currentTry = null, completedElement = null, accessesAmount = null, sequenceNumber = null) {
-    if (isFinal) {
-      return this.upload(config, `${this.getWorkerFolder(config, worker)}questionnaires.json`, data)
-    } else {
-      return this.upload(config, `${this.getWorkerFolder(config, worker)}quest_${completedElement}_try_${currentTry}_acc_${accessesAmount}_seq_${sequenceNumber}.json`, data)
-    }
+  public uploadQuestionnaire(config, worker, data, currentTry = null, completedElement = null, accessesAmount = null, sequenceNumber = null) {
+    return this.upload(config, `${this.getWorkerFolder(config, worker)}quest_${completedElement}_try_${currentTry}_acc_${accessesAmount}_seq_${sequenceNumber}.json`, data)
   }
 
-  public uploadDocument(config, worker, data, isFinal, currentTry, completedElement = null, accessesAmount = null, sequenceNumber = null) {
-    if (isFinal) {
-      return this.upload(config, `${this.getWorkerFolder(config, worker)}data_try_${currentTry}.json`, data)
-    } else {
-      return this.upload(config, `${this.getWorkerFolder(config, worker)}doc_${completedElement}_try_${currentTry}_acc_${accessesAmount}_seq_${sequenceNumber}.json`, data)
-    }
+  public uploadDocument(config, worker, data, currentTry, completedElement = null, accessesAmount = null, sequenceNumber = null) {
+    return this.upload(config, `${this.getWorkerFolder(config, worker)}doc_${completedElement}_try_${currentTry}_acc_${accessesAmount}_seq_${sequenceNumber}.json`, data)
+  }
+
+  public uploadFinalData(config, worker, data, currentTry) {
+    return this.upload(config, `${this.getWorkerFolder(config, worker)}data_try_${currentTry}.json`, data)
   }
 
   public uploadComment(config, worker, data, currentTry) {

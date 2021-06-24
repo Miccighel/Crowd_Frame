@@ -12,7 +12,7 @@ export class Dimension {
   description?: string;
   justification?: Justification;
   url?: boolean;
-  scale?: ScaleCategorical | ScaleInterval;
+  scale?: ScaleCategorical | ScaleInterval | ScaleMagnitude;
   goldQuestionCheck?: boolean;
   style: Style;
 
@@ -115,6 +115,23 @@ export class ScaleInterval extends Scale{
     this.min =     data['min']
     this.max =     data['max']
     this.step =    data['step']
+  }
+
+}
+
+export class ScaleMagnitude extends Scale{
+
+  min: number;
+  lower_bound: boolean
+
+  constructor(
+    data: JSON
+  ) {
+
+    super(data)
+
+    this.min =        data['min']
+    this.lower_bound = data['lower_bound']
   }
 
 }

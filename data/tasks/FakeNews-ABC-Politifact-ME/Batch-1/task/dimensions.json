@@ -1,0 +1,133 @@
+[
+  {
+    "name": "overall-truthfulness-s3",
+    "name_pretty": "S3",
+    "description": "Lorem ipsum...",
+    "url": false,
+    "justification": false,
+    "scale": {
+      "type": "categorical",
+      "mapping": [
+        {
+          "label": "Negative",
+          "description": "...",
+          "value": "1"
+        },
+        {
+          "label": "In Between",
+          "description": "...",
+          "value": "2"
+        },
+        {
+          "label": "Positive",
+          "description": "...",
+          "value": "3"
+        }
+      ]
+    },
+    "gold_question_check": true,
+    "style": {
+      "type": "list",
+      "orientation": "vertical",
+      "position": "middle"
+    }
+  },
+  {
+    "name": "overall-truthfulness-s6",
+    "name_pretty": "S6",
+    "description": "Lorem ipsum...",
+    "url": false,
+    "justification": false,
+    "scale": {
+      "type": "categorical",
+      "mapping": [
+        {
+          "label": "Lie",
+          "description": "The statement is not accurate and makes a ridicolous claim",
+          "value": "1"
+        },
+        {
+          "label": "False",
+          "description": "The statement is not accurate",
+          "value": "2"
+        },
+        {
+          "label": "Mostly False",
+          "description": "The statement contains an element of truth but ignores critical facts that would give a different impression",
+          "value": "3"
+        },
+        {
+          "label": "Half True",
+          "description": "The statement is accurate but needs clarification or additional information",
+          "value": "4"
+        },
+        {
+          "label": "Mostly True",
+          "description": "The statement contains an element of truth but ignores critical facts that would give a different impression",
+          "value": "5"
+        },
+        {
+          "label": "True",
+          "description": "The statement is accurate and there is nothing significant missing",
+          "value": "6"
+        }
+      ]
+    },
+    "gold_question_check": true,
+    "style": {
+      "type": "list",
+      "orientation": "vertical",
+      "position": "middle"
+    }
+  },
+  {
+    "name": "overall-truthfulness-s100",
+    "name_pretty": "S100",
+    "description": "Lorem ipsum...",
+    "url": false,
+    "justification": false,
+    "scale": {
+      "type": "interval",
+      "min": 0,
+      "max": 100,
+      "step": 1
+    },
+    "gold_question_check": true,
+    "style": {
+      "type": "list",
+      "orientation": "vertical",
+      "position": "middle"
+    }
+  },
+  {
+    "name": "overall-truthfulness-me",
+    "name_pretty": "Magnitude Estimation",
+    "description": "Lorem ipsum...",
+    "url": false,
+    "justification": false,
+    "scale": {
+      "type": "magnitude_estimation",
+      "min": 0,
+      "lower_bound": false
+    },
+    "gold_question_check": true,
+    "style": {
+      "type": "list",
+      "orientation": "vertical",
+      "position": "middle"
+    }
+  },
+  {
+    "name": "evidence",
+    "description": "",
+    "url": true,
+    "justification": false,
+    "scale": false,
+    "gold_question_check": false,
+    "style": {
+      "type": "list",
+      "orientation": "vertical",
+      "position": "bottom"
+    }
+  }
+]

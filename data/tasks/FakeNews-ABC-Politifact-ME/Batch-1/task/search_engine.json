@@ -1,0 +1,7 @@
+{
+  "source": "FakerWebSearch",
+  "domains_to_filter": [
+    "politifact.com",
+    "abc.com"
+  ]
+}

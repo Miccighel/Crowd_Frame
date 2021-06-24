@@ -28,8 +28,10 @@ button:nth-child(2) {
 }
 
 .form-note {
-  margin-left: 1%;
-  font-size: 0.9em !important;
+  button {
+    margin-right: 1%;
+  }
+  font-size: 1em;
 }
 
 mat-card-title {
@@ -42,7 +44,33 @@ mat-card-title {
   font-weight: lighter;
 }
 
+/* Questionnaires form */
+
+.questionnaire-body {
+
+  mat-form-field {
+    width: 100%;
+  }
+
+  .questionnaire-question {
+    margin-top: 1%;
+    margin-bottom: 1%;
+    font-size: 1.5em;
+    font-weight: normal;
+  }
+
+  .questionnaire-value {
+    font-size: 2em;
+  }
+
+  .mat-divider {
+    margin-bottom: 1%;
+  }
+
+}
+
 /* Task specific styles */
+
 
 .question label {
   font-weight: bold;
@@ -52,7 +80,7 @@ mat-card-title {
   box-shadow: none;
 }
 
-.question-detail mat-panel-title  {
+.question-detail mat-panel-title {
   text-transform: uppercase;
   flex-grow: 0;
 }
@@ -66,16 +94,16 @@ mat-card-title {
   padding-left: 0.75%;
 }
 
-.questionnaire-matrix .matrix-header  {
-  padding-top:  1.5%;
+.questionnaire-matrix .matrix-header {
+  padding-top: 1.5%;
   padding-bottom: 1.5%;
   border: 0;
   box-shadow: 0 0 0 0;
   border-radius: 0;
-  position:-webkit-sticky;
-  position:sticky;
+  position: -webkit-sticky;
+  position: sticky;
   background-color: white;
-  top:0;
+  top: 0;
   z-index: 1000;
   display: flex;
   vertical-align: middle;
@@ -110,7 +138,7 @@ mat-card-title {
   flex: 1;
 }
 
-.questionnaire-matrix mat-radio-group > div p{
+.questionnaire-matrix mat-radio-group > div p {
   margin: 0;
 }
 
@@ -130,7 +158,7 @@ mat-card-content label {
   font-weight: bold;
 }
 
-.statement  {
+.statement {
   margin-bottom: 1.5%;
   border: 0;
   box-shadow: 0 0 0 0;
@@ -174,6 +202,11 @@ mat-card-content label {
 }
 
 .dimension {
+
+  mat-form-field {
+    width: 100%;
+  }
+
   margin-bottom: 1%;
 }
 
@@ -190,7 +223,7 @@ mat-card-content label {
   margin-right: 1%;
 }
 
-.dimension-content{
+.dimension-content {
   flex-grow: 1;
 }
 
@@ -220,6 +253,10 @@ mat-card-content label {
   margin-bottom: 0;
 }
 
+.dimension .magnitude_estimation {
+  font-size: 2em;
+}
+
 .dimension-matrix .matrix-header .matrix-header-value, .dimension-matrix .matrix-header .matrix-header-text {
   position: relative;
   right: 5px;
@@ -245,7 +282,7 @@ mat-card-content label {
   flex: 1;
 }
 
-.dimension-matrix mat-radio-group > div p{
+.dimension-matrix mat-radio-group > div p {
   margin: 0;
 }
 
@@ -289,6 +326,16 @@ button {
 
 #token-section {
   margin-bottom: 2%;
+
+  mat-form-field {
+    width: 100%;
+    text-align: center;
+  }
+
+  mat-card-content {
+    margin-bottom: 1%;
+  }
+
 }
 
 #token-section form {
@@ -297,12 +344,13 @@ button {
 }
 
 #token-section input {
+  font-size: 2em;
   text-transform: uppercase;
 }
 
 #token-section form mat-card-content {
   margin: auto;
-  max-width: 45%;
+  max-width: 60%;
 }
 
 #token-section mat-card-actions {
@@ -330,9 +378,6 @@ mat-step form mat-card-content, mat-step form mat-card-actions {
   padding: 1%;
 }
 
-mat-form-field {
-  width: 100%;
-}
 
 /* |--- OUTCOME SECTION STYLES ---| */
 
@@ -385,6 +430,7 @@ mat-form-field {
 }
 
 /* |--- Success section ---| */
+
 
 .success-title {
   background-color: #66bb6a;
@@ -601,7 +647,7 @@ mat-form-field {
   display: flex;
   margin: auto;
   padding: 5px;
-  justify-content:center;
+  justify-content: center;
   height: 0%;
   align-items: center;
   text-align: right;
