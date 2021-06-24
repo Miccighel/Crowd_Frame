@@ -96,15 +96,7 @@ import {NgxFileHelpersModule} from 'ngx-file-helpers';
     NgxFileHelpersModule
   ],
   providers: [],
+  bootstrap: [LoaderComponent]
 })
 
-export class AppModule {
-
-  constructor(injector: Injector) {
-    const loaderElement = createCustomElement(LoaderComponent, {injector: injector});
-    customElements.define('app-loader', loaderElement);
-  }
-
-  ngDoBootstrap() {}
-
-}
+export class AppModule {}

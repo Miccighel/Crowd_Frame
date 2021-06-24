@@ -2037,6 +2037,9 @@ export class SkeletonComponent implements OnInit {
 
       /* If the worker has completed the last element */
 
+      if (completedElement >= this.questionnaireAmountStart + this.documentsAmount + this.questionnaireAmountEnd - 1) {
+        console.log("TODO")
+      }
 
 
     }

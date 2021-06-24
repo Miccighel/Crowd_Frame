@@ -3,9 +3,8 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve -c dev",
-    "build": "ng build -c prod",
-    "serve": "ng serve -c dev --open"
+    "start": "ng serve",
+    "build": "ng build"
   },
   "private": true,
   "dependencies": {
@@ -21,7 +20,7 @@
     "@angular/platform-browser-dynamic": "~12.0.5",
     "@angular/router": "~12.0.5",
     "@funktechno/texthighlighter": "^2.0.10",
-    "aws-sdk": "2.932.0",
+    "aws-sdk": "2.933.0",
     "ngx-countdown": "^12.0.0",
     "ngx-device-detector": "^2.1.1",
     "ngx-file-helpers": "^6.0.0",

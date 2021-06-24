@@ -211,7 +211,7 @@
                   <span id="statement-{{i}}" class="statement-text"
                         (mouseup)="performAnnotation(i, this.notes, this.changeDetector)"
                         (touchend)="performAnnotation(i, this.notes, this.changeDetector)">
-                    {{document.text}}
+                    {{document.statement}}
                   </span>
                 </li>
                 <li *ngIf="(this.annotator && this.annotator.type=='laws')" class="law_content_li">
