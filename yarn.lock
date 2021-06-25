@@ -3384,6 +3384,7 @@ __metadata:
     "@funktechno/texthighlighter": ^2.0.10
     "@types/node": ~15.12.4
     aws-sdk: 2.933.0
+    crypto-es: ^1.2.7
     ngx-countdown: ^12.0.0
     ngx-device-detector: ^2.1.1
     ngx-file-helpers: ^6.0.0
@@ -3394,6 +3395,13 @@ __metadata:
     zone.js: ~0.11.4
   languageName: unknown
   linkType: soft
+
+"crypto-es@npm:^1.2.7":
+  version: 1.2.7
+  resolution: "crypto-es@npm:1.2.7"
+  checksum: 98ebe39e16704663f22dd55e52a0f88995a9b1bbc2d7c3e0cacafc69d8be7e20ec6e2d3338f2aac87e868ca2ccce6177394280aff9a35041232532dba3969af0
+  languageName: node
+  linkType: hard
 
 "css-blank-pseudo@npm:^0.1.4":
   version: 0.1.4

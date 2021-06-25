@@ -10,6 +10,8 @@ import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
 import {Instruction} from "../../models/shared/instructions";
 /* Material design modules */
 import {MatSnackBar} from "@angular/material/snack-bar";
+/* Crypto */
+import CryptoES from 'crypto-es';
 
 /* Component HTML Tag definition */
 @Component({
@@ -117,7 +119,7 @@ export class LoaderComponent implements OnInit {
     /* |--------- LOADER SETTINGS - INITIALIZATION ---------| */
 
     this.username = new FormControl('admin', [Validators.required]);
-    this.password = new FormControl('DBegSUGED5', [Validators.required]);
+    this.password = new FormControl('1234567890123456', [Validators.required]);
     this.loginForm = formBuilder.group({
       "username": this.username,
       "password": this.password
@@ -131,7 +133,7 @@ export class LoaderComponent implements OnInit {
 
     let url = new URL(window.location.href);
     this.adminAccess = url.searchParams.get("admin") == 'true'
-    //this.adminAccess = true
+    this.adminAccess = true
 
     this.ngxService.stop()
 
@@ -152,9 +154,15 @@ export class LoaderComponent implements OnInit {
   public async performAdminCheck() {
     this.ngxService.startLoader('generator');
     if (this.loginForm.valid) {
-
       // https://stackoverflow.com/questions/56153113/sha256-hash-the-body-and-base64-encode-in-python-vs-typescript
-
+      let admins = await this.S3Service.downloadAdministrators(this.configService.environment)
+      for (let admin of admins) {
+        var hash = CryptoES.HmacSHA256(`username:${this.username.value}`, this.password.value).toString();
+        if (admin == hash) {
+          this.loginSuccessful = true
+          break;
+        }
+      }
       this.loginPerformed = true
       this.ngxService.stopLoader('generator');
       /* A snackbar message is shown after the login check */

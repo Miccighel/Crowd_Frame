@@ -21,6 +21,7 @@
     "@angular/router": "~12.0.5",
     "@funktechno/texthighlighter": "^2.0.10",
     "aws-sdk": "2.933.0",
+    "crypto-es": "^1.2.7",
     "ngx-countdown": "^12.0.0",
     "ngx-device-detector": "^2.1.1",
     "ngx-file-helpers": "^6.0.0",
