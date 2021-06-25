@@ -10,7 +10,7 @@ import {ConfigService} from "../../services/config.service";
 import {NgxUiLoaderService} from "ngx-ui-loader";
 /* File handling helpers */
 import {ReadFile, ReadMode} from "ngx-file-helpers";
-import {Questionnaire} from "../../models/skeleton/questionnaire";
+import {Question, Questionnaire} from "../../models/skeleton/questionnaire";
 
 /*
  * The following interfaces are used to simplify data handling for each generator step.
@@ -202,6 +202,8 @@ export class GeneratorComponent implements OnInit {
 
     this.ngxService.startLoader('generator')
 
+    /*  */
+
     this.questionnairesFetched = this.S3Service.downloadQuestionnaires(this.configService.environment)
 
 
@@ -256,12 +258,11 @@ export class GeneratorComponent implements OnInit {
       questionnaires: this._formBuilder.array([])
     });
 
-    if(this.questionnairesFetched.length>0) {
-      for (let questionnaire of this.questionnairesFetched) {
-        this.addQuestionnaire(questionnaire)
-      }
+    if (this.questionnairesFetched.length > 0) {
+      this.questionnairesFetched.forEach((questionnaire, questionnaireIndex) => {
+        this.addQuestionnaire(questionnaireIndex, questionnaire)
+      })
     }
-
 
     /* STEP #2 - Dimensions */
     this.dimensionsForm = this._formBuilder.group({
@@ -331,21 +332,15 @@ export class GeneratorComponent implements OnInit {
     return this.questionnairesForm.get('questionnaires') as FormArray;
   }
 
-  addQuestionnaire(questionnaire = null as Questionnaire) {
+  addQuestionnaire(questionnaireIndex = null, questionnaire = null as Questionnaire) {
+    this.questionnaires().push(this._formBuilder.group({
+      type: [questionnaire ? questionnaire.type : ''],
+      description: [questionnaire ? questionnaire.description : ''],
+      questions: this._formBuilder.array([]),
+      mapping: this._formBuilder.array([])
+    }))
     if(questionnaire) {
-      this.questionnaires().push(this._formBuilder.group({
-        type: questionnaire.type,
-        description: [''],
-        questions: this._formBuilder.array([]),
-        mapping: this._formBuilder.array([])
-      }))
-    } else {
-      this.questionnaires().push(this._formBuilder.group({
-        type: [''],
-        description: [''],
-        questions: this._formBuilder.array([]),
-        mapping: this._formBuilder.array([])
-      }))
+      questionnaire.questions.forEach((question, questionIndex) => this.addQuestion(questionnaireIndex, questionIndex, question))
     }
   }
 
@@ -375,13 +370,14 @@ export class GeneratorComponent implements OnInit {
     return this.questionnaires().at(questionnaireIndex).get('questions') as FormArray;
   }
 
-  addQuestion(questionnaireIndex: number) {
+  addQuestion(questionnaireIndex: number, questionIndex= null as number, question = null as Question) {
     this.questions(questionnaireIndex).push(this._formBuilder.group({
-      name: [''],
-      text: [''],
+      name: [question ? question.name : ''],
+      text: [question ? question.text : ''],
       answers: this._formBuilder.array([])
     }));
-    if (this.questionnaires().at(questionnaireIndex).get('type').value == 'standard') {
+    if(question) for (let answer of question.answers) this.addAnswer(questionnaireIndex, questionIndex, answer)
+    if (this.questionnaires().at(questionnaireIndex).get('type').value == 'standard' && this.questions(questionnaireIndex).length == 0) {
       this.addAnswer(questionnaireIndex, this.questions(questionnaireIndex).length - 1);
     }
   }
@@ -396,9 +392,9 @@ export class GeneratorComponent implements OnInit {
     return this.questions(questionnaireIndex).at(questionIndex).get('answers') as FormArray;
   }
 
-  addAnswer(questionnaireIndex: number, questionIndex: number) {
+  addAnswer(questionnaireIndex: number, questionIndex: number, answer = null as string) {
     this.answers(questionnaireIndex, questionIndex).push(this._formBuilder.group({
-      answer: ['']
+      answer: [answer ? answer : '']
     }))
   }
 
@@ -989,7 +985,7 @@ export class GeneratorComponent implements OnInit {
   }
 
   setAnnotatorType() {
-    if(this.taskSettingsForm.get('annotator').get('type').value=='options') {
+    if (this.taskSettingsForm.get('annotator').get('type').value == 'options') {
       this.annotatorOptionValues().push(this._formBuilder.group({
         label: [''],
         color: ['']
