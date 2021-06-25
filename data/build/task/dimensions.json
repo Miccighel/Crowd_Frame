@@ -108,7 +108,7 @@
     "scale": {
       "type": "magnitude_estimation",
       "min": 0,
-      "lower_bound": false
+      "lower_bound": true
     },
     "gold_question_check": true,
     "style": {

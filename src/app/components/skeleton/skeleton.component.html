@@ -175,7 +175,8 @@
             <mat-card-actions>
               <p class="form-note">
                 <button mat-flat-button color="primary" matStepperNext [disabled]="(!questionnairesForm[i].valid || taskCompleted)" (click)="performLogging('Next',i)"> Next</button>
-                (*) you have to fill each field to proceed</p>
+                (*) you have to fill each field to proceed
+              </p>
             </mat-card-actions>
           </mat-card>
         </form>
@@ -733,9 +734,9 @@
 
   </mat-step>
 
-  <!-- Questionnaire markup -->
+ <!-- Questionnaire markup -->
   <ng-container *ngFor="let questionnaire of questionnaires; let i=index">
-    <mat-step *ngIf="questionnaire.position=='end'" [stepControl]="questionnairesForm[i]" [editable]="true">
+    <mat-step *ngIf="questionnaire.position=='end'" [stepControl]="questionnairesForm[i]" [editable]="false">
       <div class="container">
         <form [formGroup]="questionnairesForm[i]" class="questionnaire-form">
           <ng-template matStepLabel>Q{{i + 1}}</ng-template>
@@ -748,11 +749,10 @@
             <mat-divider [inset]="true"></mat-divider>
 
             <!-- Standard questionnaire markup -->
-            <mat-card-content *ngIf="questionnaire.type=='standard'">
+            <mat-card-content *ngIf="questionnaire.type=='standard'" class="questionnaire-body">
               <mat-radio-group *ngFor="let question of questionnaire.questions; let j=index" aria-labelledby="radio-button-label" class="radio-button-group question" formControlName="{{question.name}}">
-                <div class="question-text">
-                  <label>{{question.text}}</label>
-                </div>
+                <p class="questionnaire-question">{{question.text}}</p>
+                <mat-divider [inset]="true"></mat-divider>
                 <mat-radio-button *ngFor="let answer of question.answers; let k=index" class="radio-button" value="{{k}}">
                   {{answer}}</mat-radio-button>
                 <mat-expansion-panel hideToggle *ngIf="question.detail" class="question-detail" (opened)="question.showDetail = true" (closed)="question.showDetail = false">
@@ -775,20 +775,24 @@
             </mat-card-content>
 
             <!-- CRT questionnaire markup -->
-            <mat-card-content *ngIf="questionnaire.type=='crt'">
-              <mat-form-field *ngFor="let question of questionnaire.questions; let j=index">
-                <label>{{question.text}}</label>
-                <input matInput type="number" placeholder="value" appearance="fill" min="0" formControlName="{{question.name}}" class="questionnaire-crt">
-                <mat-error *ngIf="checkFormControl(questionnairesForm[i],question.name, 'required')">
-                  This field is required
-                </mat-error>
-                <mat-error *ngIf="checkFormControl(questionnairesForm[i],question.name, 'min')">
-                  Min value allowed: 0
-                </mat-error>
-                <mat-error *ngIf="checkFormControl(questionnairesForm[i],question.name, 'max')">
-                  Max value allowed: 100
-                </mat-error>
-              </mat-form-field>
+            <mat-card-content *ngIf="questionnaire.type=='crt'" class="questionnaire-body">
+              <ng-container *ngFor="let question of questionnaire.questions; let j=index" >
+                <p class="questionnaire-question">{{question.text}}</p>
+                <mat-divider [inset]="true"></mat-divider>
+                <mat-form-field appearance="fill">
+                  <mat-label>Answer</mat-label>
+                  <input matInput type="number" placeholder="0" min="0" formControlName="{{question.name}}" class="questionnaire-value">
+                  <mat-error *ngIf="checkFormControl(questionnairesForm[i],question.name, 'required')">
+                    This field is required
+                  </mat-error>
+                  <mat-error *ngIf="checkFormControl(questionnairesForm[i],question.name, 'min')">
+                    Min value allowed: 0
+                  </mat-error>
+                  <mat-error *ngIf="checkFormControl(questionnairesForm[i],question.name, 'max')">
+                    Max value allowed: 100
+                  </mat-error>
+                </mat-form-field>
+              </ng-container>
             </mat-card-content>
 
             <!-- Likert questionnaire markup -->
@@ -801,8 +805,11 @@
                   <span class="matrix-header-text">{{mapping.label}}</span>
                 </div>
               </div>
-              <mat-radio-group aria-labelledby="radio-button-label" *ngFor="let question of questionnaire.questions; let m=index" formControlName="{{question.name}}">
-                <div><p>{{m + 1}}) {{question.text}}</p></div>
+              <mat-radio-group aria-labelledby="radio-button-label"
+                               *ngFor="let question of questionnaire.questions; let m=index" formControlName="{{question.name}}">
+                <div>
+                  <p>{{m + 1}}) {{question.text}}</p>
+                </div>
                 <div *ngFor="let mapping of questionnaire.mappings">
                   <mat-radio-button class="radio-button" value="{{mapping.value}}"></mat-radio-button>
                 </div>
@@ -810,27 +817,27 @@
             </mat-card-content>
 
             <mat-card-actions>
-              <button mat-flat-button color="primary" matStepperPrevious
-                      *ngIf="i>0"
-                      [disabled]="taskCompleted"
-                      (click)="performLogging('Back', i)">
-                Back
-              </button>
-
-              <button mat-flat-button color="primary" matStepperNext
-                      *ngIf="i+1 >= this.questionnaireAmountStart + this.documentsAmount && i+1 < (this.questionnaireAmountStart + this.documentsAmount + this.questionnaireAmountEnd) -1"
-                      [disabled]="!questionnairesForm[i].valid" (click)="performLogging('Next',i)">
-                Next
-              </button>
-
-              <button mat-flat-button color="primary" matStepperNext
-                      *ngIf="i+1 >= (this.questionnaireAmountStart + this.documentsAmount + this.questionnaireAmountEnd) - 1"
-                      [disabled]="!questionnairesForm[i].valid" (click)="performLogging('Finish', i); performQualityCheck()">
-                Finish
-              </button>
-
-              <span class="form-note">(*) you have to fill each field to proceed</span>
+              <p class="form-note">
+                <button mat-flat-button color="primary" matStepperPrevious
+                        *ngIf="i>0"
+                        [disabled]="taskCompleted"
+                        (click)="performLogging('Back', i)">
+                  Back
+                </button>
+                <button mat-flat-button color="primary" matStepperNext
+                        *ngIf="i+1 >= this.questionnaireAmountStart + this.documentsAmount && i+1 < (this.questionnaireAmountStart + this.documentsAmount + this.questionnaireAmountEnd) -1"
+                        [disabled]="!questionnairesForm[i].valid" (click)="performLogging('Next',i)">
+                  Next
+                </button>
+                <button mat-flat-button color="primary" matStepperNext
+                        *ngIf="i+1 >= (this.questionnaireAmountStart + this.documentsAmount + this.questionnaireAmountEnd) - 1"
+                        [disabled]="!questionnairesForm[i].valid" (click)="performLogging('Finish', i); performQualityCheck()">
+                  Finish
+                </button>
+                (*) you have to fill each field to proceed
+              </p>
             </mat-card-actions>
+
           </mat-card>
         </form>
       </div>

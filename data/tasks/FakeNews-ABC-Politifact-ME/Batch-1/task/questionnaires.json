@@ -34,26 +34,12 @@
     "questions": [
       {
         "name": "scale",
-        "text": "What is your favourite scale?",
+        "text": "Which is your favorite scale?",
         "answers": [
           "S3",
           "S6",
-          "S100"
-        ]
-      }
-    ]
-  }
-,
-  {
-    "type": "standard",
-    "position": "end",
-    "questions": [
-      {
-        "name": "scale",
-        "text": "What is your favourite scale?",
-        "answers": [
-          "S3",
-          "S100"
+          "S100",
+          "Me"
         ]
       }
     ]

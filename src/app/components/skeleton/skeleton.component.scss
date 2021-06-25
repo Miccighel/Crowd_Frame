@@ -28,7 +28,7 @@ button:nth-child(2) {
 }
 
 .form-note {
-  button {
+  button:last-child {
     margin-right: 1%;
   }
   font-size: 1em;
@@ -299,6 +299,11 @@ button {
 }
 
 .comment-form {
+
+  mat-form-field {
+    width: 100%;
+  }
+
   margin-top: 2%
 }
 

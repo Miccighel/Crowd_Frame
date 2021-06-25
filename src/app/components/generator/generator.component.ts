@@ -10,6 +10,7 @@ import {ConfigService} from "../../services/config.service";
 import {NgxUiLoaderService} from "ngx-ui-loader";
 /* File handling helpers */
 import {ReadFile, ReadMode} from "ngx-file-helpers";
+import {Questionnaire} from "../../models/skeleton/questionnaire";
 
 /*
  * The following interfaces are used to simplify data handling for each generator step.
@@ -74,6 +75,8 @@ interface BatchNode {
  * This class implements the generator of custom task configurations
  */
 export class GeneratorComponent implements OnInit {
+
+  questionnairesFetched: Array<Questionnaire>
 
   /*
    * The following elements are used to define the forms to be filled for
@@ -199,6 +202,9 @@ export class GeneratorComponent implements OnInit {
 
     this.ngxService.startLoader('generator')
 
+    this.questionnairesFetched = this.S3Service.downloadQuestionnaires(this.configService.environment)
+
+
     /* The following code lists the folders which are present inside task's main folder.
      * In other words, it lists every batch name for the current task to build a nodeList
      * which is then shown to the user during step #6 */
@@ -249,6 +255,13 @@ export class GeneratorComponent implements OnInit {
     this.questionnairesForm = this._formBuilder.group({
       questionnaires: this._formBuilder.array([])
     });
+
+    if(this.questionnairesFetched.length>0) {
+      for (let questionnaire of this.questionnairesFetched) {
+        this.addQuestionnaire(questionnaire)
+      }
+    }
+
 
     /* STEP #2 - Dimensions */
     this.dimensionsForm = this._formBuilder.group({
@@ -318,13 +331,22 @@ export class GeneratorComponent implements OnInit {
     return this.questionnairesForm.get('questionnaires') as FormArray;
   }
 
-  addQuestionnaire() {
-    this.questionnaires().push(this._formBuilder.group({
-      type: [''],
-      description: [''],
-      questions: this._formBuilder.array([]),
-      mapping: this._formBuilder.array([])
-    }))
+  addQuestionnaire(questionnaire = null as Questionnaire) {
+    if(questionnaire) {
+      this.questionnaires().push(this._formBuilder.group({
+        type: questionnaire.type,
+        description: [''],
+        questions: this._formBuilder.array([]),
+        mapping: this._formBuilder.array([])
+      }))
+    } else {
+      this.questionnaires().push(this._formBuilder.group({
+        type: [''],
+        description: [''],
+        questions: this._formBuilder.array([]),
+        mapping: this._formBuilder.array([])
+      }))
+    }
   }
 
   removeQuestionnaire(questionnaireIndex: number) {
