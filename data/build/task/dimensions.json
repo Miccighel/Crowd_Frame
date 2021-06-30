@@ -4,7 +4,10 @@
     "name_pretty": "S3",
     "description": "Lorem ipsum...",
     "url": false,
-    "justification": false,
+    "justification": {
+      "text": "lalala",
+      "min_words": 2
+    },
     "scale": {
       "type": "categorical",
       "mapping": [

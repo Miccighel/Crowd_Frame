@@ -8,9 +8,12 @@ import {MatStepper} from "@angular/material/stepper";
 import {S3Service} from "../../services/s3.service";
 import {ConfigService} from "../../services/config.service";
 import {NgxUiLoaderService} from "ngx-ui-loader";
+import {LocalStorageService} from '../../services/local-storage.service';
+
 /* File handling helpers */
 import {ReadFile, ReadMode} from "ngx-file-helpers";
 import {Question, Questionnaire} from "../../models/skeleton/questionnaire";
+import {Dimension, Justification, Mapping} from "../../models/skeleton/dimension";
 
 /*
  * The following interfaces are used to simplify data handling for each generator step.
@@ -19,6 +22,11 @@ import {Question, Questionnaire} from "../../models/skeleton/questionnaire";
 /* STEP #1 - Questionnaires */
 
 interface QuestionnaireType {
+  value: string;
+  viewValue: string;
+}
+
+interface QuestionnairePosition {
   value: string;
   viewValue: string;
 }
@@ -76,8 +84,6 @@ interface BatchNode {
  */
 export class GeneratorComponent implements OnInit {
 
-  questionnairesFetched: Array<Questionnaire>
-
   /*
    * The following elements are used to define the forms to be filled for
    * each generator step and some data types to allow easier data handling
@@ -90,6 +96,13 @@ export class GeneratorComponent implements OnInit {
     {value: 'likert', viewValue: 'Likert'},
     {value: 'standard', viewValue: 'Standard'}
   ];
+  questionnairePosition: QuestionnairePosition[] = [
+    {value: 'start', viewValue: 'Start'},
+    {value: 'end', viewValue: 'End'},
+  ];
+
+  questionnairesFetched: Array<Questionnaire>
+  questionnairesSerialized: string
 
   /* STEP #2 - Dimensions */
   dimensionsForm: FormGroup;
@@ -115,6 +128,9 @@ export class GeneratorComponent implements OnInit {
     {value: 'horizontal', viewValue: 'Horizontal'},
     {value: 'vertical', viewValue: 'Vertical'}
   ];
+
+  dimensionsFetched: Array<Dimension>
+  dimensionsSerialized: string
 
   /* STEP #3 - General Instructions */
   generalInstructionsForm: FormGroup;
@@ -176,6 +192,8 @@ export class GeneratorComponent implements OnInit {
   configService: ConfigService;
   /* Service which wraps the interaction with S3 */
   S3Service: S3Service;
+  /* Service which wraps the interaction with browser's local storage */
+  localStorageService: LocalStorageService;
 
   /* Change detector to manually intercept changes on DOM */
   changeDetector: ChangeDetectorRef;
@@ -189,6 +207,7 @@ export class GeneratorComponent implements OnInit {
     ngxService: NgxUiLoaderService,
     configService: ConfigService,
     S3Service: S3Service,
+    localStorageService: LocalStorageService,
     private _formBuilder: FormBuilder,
   ) {
 
@@ -199,13 +218,40 @@ export class GeneratorComponent implements OnInit {
     this.configService = configService
     this.S3Service = S3Service
     this.changeDetector = changeDetector
-
+    this.localStorageService = localStorageService
     this.ngxService.startLoader('generator')
 
-    /*  */
+    /* STEP #1 - Questionnaires */
 
-    this.questionnairesFetched = this.S3Service.downloadQuestionnaires(this.configService.environment)
+    let rawQuestionnaires = this.S3Service.downloadQuestionnaires(this.configService.environment)
+    this.questionnairesFetched = new Array(rawQuestionnaires.length)
+    rawQuestionnaires.forEach((data, questionnaireIndex) => {
+      let questionnaire = new Questionnaire(questionnaireIndex, data)
+      let identifier = `questionnaire-${questionnaireIndex}`
+      let item = this.localStorageService.getItem(identifier)
+      if (item) {
+        this.questionnairesFetched[questionnaireIndex] = JSON.parse(item)
+      } else {
+        this.questionnairesFetched[questionnaireIndex] = questionnaire
+        this.localStorageService.setItem(identifier, JSON.stringify(questionnaire))
+      }
+    })
 
+    /* STEP #2 - Dimensions */
+
+    let rawDimensions = this.S3Service.downloadDimensions(this.configService.environment)
+    this.dimensionsFetched = new Array(rawDimensions.length)
+    rawDimensions.forEach((data, dimensionIndex) => {
+      let dimension = new Dimension(dimensionIndex, data)
+      let identifier = `dimension-${dimensionIndex}`
+      let item = this.localStorageService.getItem(identifier)
+      if (item) {
+        this.dimensionsFetched[dimensionIndex] = JSON.parse(item)
+      } else {
+        this.dimensionsFetched[dimensionIndex] = dimension
+        this.localStorageService.setItem(identifier, JSON.stringify(dimension))
+      }
+    })
 
     /* The following code lists the folders which are present inside task's main folder.
      * In other words, it lists every batch name for the current task to build a nodeList
@@ -257,17 +303,25 @@ export class GeneratorComponent implements OnInit {
     this.questionnairesForm = this._formBuilder.group({
       questionnaires: this._formBuilder.array([])
     });
-
     if (this.questionnairesFetched.length > 0) {
       this.questionnairesFetched.forEach((questionnaire, questionnaireIndex) => {
         this.addQuestionnaire(questionnaireIndex, questionnaire)
       })
     }
+    this.questionnairesJSON()
+    this.questionnairesForm.valueChanges.subscribe(value => this.questionnairesJSON())
 
     /* STEP #2 - Dimensions */
     this.dimensionsForm = this._formBuilder.group({
       dimensions: this._formBuilder.array([])
     });
+    if (this.dimensionsFetched.length > 0) {
+      this.dimensionsFetched.forEach((dimension, dimensionIndex) => {
+        this.addDimension(dimensionIndex, dimension)
+      })
+    }
+    this.dimensionsJSON()
+    this.dimensionsForm.valueChanges.subscribe(value => this.dimensionsJSON())
 
     /* STEP #3 - General Instructions */
     this.generalInstructionsForm = this._formBuilder.group({
@@ -310,8 +364,6 @@ export class GeneratorComponent implements OnInit {
       whitelist: ['']
     })
 
-    /* Detect the changes and update the UI */
-    this.changeDetector.detectChanges()
 
   }
 
@@ -336,10 +388,11 @@ export class GeneratorComponent implements OnInit {
     this.questionnaires().push(this._formBuilder.group({
       type: [questionnaire ? questionnaire.type : ''],
       description: [questionnaire ? questionnaire.description : ''],
+      position: [questionnaire ? questionnaire.position : ''],
       questions: this._formBuilder.array([]),
       mapping: this._formBuilder.array([])
     }))
-    if(questionnaire) {
+    if (questionnaire) {
       questionnaire.questions.forEach((question, questionIndex) => this.addQuestion(questionnaireIndex, questionIndex, question))
     }
   }
@@ -370,13 +423,13 @@ export class GeneratorComponent implements OnInit {
     return this.questionnaires().at(questionnaireIndex).get('questions') as FormArray;
   }
 
-  addQuestion(questionnaireIndex: number, questionIndex= null as number, question = null as Question) {
+  addQuestion(questionnaireIndex: number, questionIndex = null as number, question = null as Question) {
     this.questions(questionnaireIndex).push(this._formBuilder.group({
       name: [question ? question.name : ''],
       text: [question ? question.text : ''],
       answers: this._formBuilder.array([])
     }));
-    if(question) for (let answer of question.answers) this.addAnswer(questionnaireIndex, questionIndex, answer)
+    if (question && question.answers) for (let answer of question.answers) this.addAnswer(questionnaireIndex, questionIndex, answer)
     if (this.questionnaires().at(questionnaireIndex).get('type').value == 'standard' && this.questions(questionnaireIndex).length == 0) {
       this.addAnswer(questionnaireIndex, this.questions(questionnaireIndex).length - 1);
     }
@@ -423,40 +476,39 @@ export class GeneratorComponent implements OnInit {
 
   questionnairesJSON() {
     let questionnairesJSON = JSON.parse(JSON.stringify(this.questionnairesForm.get('questionnaires').value));
-    for (let questionnaireIndex in questionnairesJSON) {
-      switch (questionnairesJSON[questionnaireIndex].type) {
-
+    questionnairesJSON.forEach((questionnaire, questionnaireIndex) => {
+      switch (questionnaire.type) {
         case 'crt':
-          delete questionnairesJSON[questionnaireIndex].description;
-          for (let questionIndex in questionnairesJSON[questionnaireIndex].questions) {
-            delete questionnairesJSON[questionnaireIndex].questions[questionIndex].answers;
+          delete questionnaire.description;
+          for (let questionIndex in questionnaire.questions) {
+            delete questionnaire.questions[questionIndex].answers;
           }
-          delete questionnairesJSON[questionnaireIndex].mapping;
+          delete questionnaire.mapping;
           break;
 
         case 'likert':
-          for (let questionIndex in questionnairesJSON[questionnaireIndex].questions) {
-            delete questionnairesJSON[questionnaireIndex].questions[questionIndex].answers;
+          for (let questionIndex in questionnaire.questions) {
+            delete questionnaire.questions[questionIndex].answers;
           }
           break;
 
         case 'standard':
-          delete questionnairesJSON[questionnaireIndex].description;
-          for (let questionIndex in questionnairesJSON[questionnaireIndex].questions) {
+          delete questionnaire.description;
+          for (let questionIndex in questionnaire.questions) {
             let answersStringArray = [];
-            for (let answerIndex in questionnairesJSON[questionnaireIndex].questions[questionIndex].answers) {
-              answersStringArray.push(questionnairesJSON[questionnaireIndex].questions[questionIndex].answers[answerIndex].answer);
+            for (let answerIndex in questionnaire.questions[questionIndex].answers) {
+              answersStringArray.push(questionnaire.questions[questionIndex].answers[answerIndex].answer);
             }
-            questionnairesJSON[questionnaireIndex].questions[questionIndex].answers = answersStringArray;
+            questionnaire.questions[questionIndex].answers = answersStringArray;
           }
-          delete questionnairesJSON[questionnaireIndex].mapping;
+          delete questionnaire.mapping;
           break;
-
         default:
           break;
       }
-    }
-    return JSON.stringify(questionnairesJSON, null, 1);
+      this.localStorageService.setItem(`questionnaire-${questionnaireIndex}`, JSON.stringify(questionnaire))
+    })
+    this.questionnairesSerialized = JSON.stringify(questionnairesJSON)
   }
 
   /* STEP #2 - Dimensions */
@@ -465,34 +517,39 @@ export class GeneratorComponent implements OnInit {
     return this.dimensionsForm.get('dimensions') as FormArray;
   }
 
-  addDimension() {
+  addDimension(dimensionIndex = null, dimension = null as Dimension) {
+    let scale = null
     this.dimensions().push(this._formBuilder.group({
-      name: [''],
-      description: [''],
-      setJustification: [''],
+      name: [dimension ? dimension.name : ''],
+      description: [dimension ? dimension.description : ''],
+      setJustification: [dimension ? dimension.justification : ''],
       justification: this._formBuilder.group({
-        text: [''],
-        min_words: ['']
+        text: [dimension ? dimension.justification ? dimension.justification.text : '' : ''],
+        min_words: [dimension ? dimension.justification ? dimension.justification.minWords : '' : '']
       }),
-      url: [''],
-      setScale: [''],
+      url: [dimension ? dimension.url : ''],
+      setScale: [dimension ? dimension.scale : ''],
       scale: this._formBuilder.group({
-        type: [''],
-        min: [''],
-        max: [''],
-        step: [''],
+        type: [dimension ? dimension.scale ? dimension.scale.type : '' : ''],
+        min: [dimension ? dimension.scale ? dimension.scale['min'] : '' : ''],
+        max: [dimension ? dimension.scale ? dimension.scale['max'] : '' : ''],
+        step: [dimension ? dimension.scale ? dimension.scale['step'] : '' : ''],
         mapping: this._formBuilder.array([]),
-        include_lower_bound: [true],
-        include_upper_bound: [true]
+        lower_bound: [dimension ? dimension.scale ? dimension.scale['lower_bound'] : '' : ''],
       }),
-      gold_question_check: [''],
+      gold_question_check: [dimension ? dimension.goldQuestionCheck : ''],
       style: this._formBuilder.group({
-        styleType: [{value: '', disabled: true}],
-        position: [{value: '', disabled: true}],
-        orientation: [{value: '', disabled: true}],
-        separator: [{value: '', disabled: true}]
+        styleType: [{value: dimension ? dimension.style.type : '', disabled: true}],
+        position: [{value: dimension ? dimension.style.position : '', disabled: true}],
+        orientation: [{value: dimension ? dimension.style.orientation : '', disabled: true}],
+        separator: [{value: dimension ? dimension.style.separator : '', disabled: true}]
       })
     }))
+    if (dimension && dimension.scale) if (dimension.scale.type == 'categorical') {
+      if(dimension.scale['mapping']) for (let mapping of dimension.scale['mapping']) this.addDimensionMapping(dimensionIndex, mapping)
+      if(this.dimensionMapping(dimensionIndex).length == 0) this.addDimensionMapping(dimensionIndex)
+    }
+
   }
 
   removeDimension(dimensionIndex: number) {
@@ -548,8 +605,7 @@ export class GeneratorComponent implements OnInit {
 
     this.dimensionMapping(dimensionIndex).clear();
 
-    dim.get('scale').get('include_lower_bound').setValue(true);
-    dim.get('scale').get('include_upper_bound').setValue(true);
+    dim.get('scale').get('lower_bound').setValue(true);
 
     if (dim.get('setScale').value == true && dim.get('scale').get('type').value == 'categorical') {
       this.addDimensionMapping(dimensionIndex);
@@ -617,11 +673,11 @@ export class GeneratorComponent implements OnInit {
     return this.dimensions().at(dimensionIndex).get('scale').get('mapping') as FormArray;
   }
 
-  addDimensionMapping(dimensionIndex: number) {
+  addDimensionMapping(dimensionIndex: number, mapping = null as Mapping) {
     this.dimensionMapping(dimensionIndex).push(this._formBuilder.group({
-      label: [''],
-      description: [''],
-      value: ['']
+      label: [mapping ? mapping.label : ''],
+      description: [mapping ? mapping.description : ''],
+      value: [mapping ? mapping.value : '']
     }))
   }
 
@@ -636,133 +692,133 @@ export class GeneratorComponent implements OnInit {
     let dimensionsJSON = JSON.parse(JSON.stringify(this.dimensionsForm.get('dimensions').value));
 
 
-    for (let dimensionIndex in dimensionsJSON) {
+    dimensionsJSON.forEach((dimension, dimensionIndex) => {
 
-      if (dimensionsJSON[dimensionIndex].description == '') {
-        dimensionsJSON[dimensionIndex].description = false
+      if (dimension.description == '') {
+        dimension.description = false
       }
 
-      if (dimensionsJSON[dimensionIndex].setJustification == false) {
-        dimensionsJSON[dimensionIndex].justification = false
+      if (dimension.setJustification == false) {
+        dimension.justification = false
       }
-      delete dimensionsJSON[dimensionIndex].setJustification;
+      delete dimension.setJustification;
 
-      if (dimensionsJSON[dimensionIndex].url == '') {
-        dimensionsJSON[dimensionIndex].url = false
+      if (dimension.url == '') {
+        dimension.url = false
       } else {
-        switch (dimensionsJSON[dimensionIndex].url) {
+        switch (dimension.url) {
           case 'true':
-            dimensionsJSON[dimensionIndex].url = true;
+            dimension.url = true;
             break;
           case 'false':
-            dimensionsJSON[dimensionIndex].url = false;
+            dimension.url = false;
             break;
           default:
             break;
         }
       }
 
-      if (dimensionsJSON[dimensionIndex].setScale == false) {
-        dimensionsJSON[dimensionIndex].scale = false
+      if (dimension.setScale == false) {
+        dimension.scale = false
       } else {
-        switch (dimensionsJSON[dimensionIndex].scale.type) {
+        switch (dimension.scale.type) {
           case 'categorical':
-            delete dimensionsJSON[dimensionIndex].scale.min;
-            delete dimensionsJSON[dimensionIndex].scale.max;
-            delete dimensionsJSON[dimensionIndex].scale.step;
-            delete dimensionsJSON[dimensionIndex].scale.include_lower_bound;
-            delete dimensionsJSON[dimensionIndex].scale.include_upper_bound;
+            delete dimension.scale.min;
+            delete dimension.scale.max;
+            delete dimension.scale.step;
+            delete dimension.scale.include_lower_bound;
+            delete dimension.scale.include_upper_bound;
             break;
           case 'interval':
-            delete dimensionsJSON[dimensionIndex].scale.mapping;
-            delete dimensionsJSON[dimensionIndex].scale.include_lower_bound;
-            delete dimensionsJSON[dimensionIndex].scale.include_upper_bound;
+            delete dimension.scale.mapping;
+            delete dimension.scale.include_lower_bound;
+            delete dimension.scale.include_upper_bound;
             break;
           case 'magnitude_estimation':
-            delete dimensionsJSON[dimensionIndex].scale.mapping;
-            if (dimensionsJSON[dimensionIndex].scale.min == null) {
-              dimensionsJSON[dimensionIndex].scale.min = '';
+            delete dimension.scale.mapping;
+            if (dimension.scale.min == null) {
+              dimension.scale.min = '';
             }
-            if (dimensionsJSON[dimensionIndex].scale.max == null) {
-              dimensionsJSON[dimensionIndex].scale.max = '';
+            if (dimension.scale.max == null) {
+              dimension.scale.max = '';
             }
-            delete dimensionsJSON[dimensionIndex].scale.step;
-            delete dimensionsJSON[dimensionIndex].scale.mapping;
-            if (dimensionsJSON[dimensionIndex].scale.min == '') {
-              dimensionsJSON[dimensionIndex].scale.include_lower_bound = true;
+            delete dimension.scale.step;
+            delete dimension.scale.mapping;
+            if (dimension.scale.min == '') {
+              dimension.scale.include_lower_bound = true;
             }
-            if (dimensionsJSON[dimensionIndex].scale.max == '') {
-              dimensionsJSON[dimensionIndex].scale.include_upper_bound = true;
+            if (dimension.scale.max == '') {
+              dimension.scale.include_upper_bound = true;
             }
             break;
           default:
             break;
         }
       }
-      delete dimensionsJSON[dimensionIndex].setScale;
+      delete dimension.setScale;
 
-      if (dimensionsJSON[dimensionIndex].gold_question_check == '') {
-        dimensionsJSON[dimensionIndex].gold_question_check = false
+      if (dimension.gold_question_check == '') {
+        dimension.gold_question_check = false
       } else {
-        switch (dimensionsJSON[dimensionIndex].gold_question_check) {
+        switch (dimension.gold_question_check) {
           case 'true':
-            dimensionsJSON[dimensionIndex].gold_question_check = true;
+            dimension.gold_question_check = true;
             break;
           case 'false':
-            dimensionsJSON[dimensionIndex].gold_question_check = false;
+            dimension.gold_question_check = false;
             break;
           default:
             break;
         }
       }
 
-      if (dimensionsJSON[dimensionIndex].hasOwnProperty('style')) {
-        dimensionsJSON[dimensionIndex].style.type = dimensionsJSON[dimensionIndex].style.styleType;
-        delete dimensionsJSON[dimensionIndex].style.styleType;
+      if (dimension.hasOwnProperty('style')) {
+        dimension.style.type = dimension.style.styleType;
+        delete dimension.style.styleType;
 
-        if (!dimensionsJSON[dimensionIndex].style.type) {
-          dimensionsJSON[dimensionIndex].style.type = ''
-        }
-
-        if (!dimensionsJSON[dimensionIndex].style.position) {
-          dimensionsJSON[dimensionIndex].style.position = ''
+        if (!dimension.style.type) {
+          dimension.style.type = ''
         }
 
-        if (dimensionsJSON[dimensionIndex].scale.type == 'interval' || dimensionsJSON[dimensionIndex].scale.type == 'magnitude_estimation') {
-          dimensionsJSON[dimensionIndex].style.type = 'list'
-          dimensionsJSON[dimensionIndex].style.orientation = 'vertical'
-        }
-        if (dimensionsJSON[dimensionIndex].scale.type == 'categorical' && dimensionsJSON[dimensionIndex].style.type == 'matrix') {
-          dimensionsJSON[dimensionIndex].style.orientation = false
+        if (!dimension.style.position) {
+          dimension.style.position = ''
         }
 
-        if (!dimensionsJSON[dimensionIndex].style.separator) {
-          dimensionsJSON[dimensionIndex].style.separator = false
+        if (dimension.scale.type == 'interval' || dimension.scale.type == 'magnitude_estimation') {
+          dimension.style.type = 'list'
+          dimension.style.orientation = 'vertical'
         }
-        if (dimensionsJSON[dimensionIndex].style.separator == '') {
-          dimensionsJSON[dimensionIndex].style.separator = false
+        if (dimension.scale.type == 'categorical' && dimension.style.type == 'matrix') {
+          dimension.style.orientation = false
+        }
+
+        if (!dimension.style.separator) {
+          dimension.style.separator = false
+        }
+        if (dimension.style.separator == '') {
+          dimension.style.separator = false
         } else {
-          switch (dimensionsJSON[dimensionIndex].style.separator) {
+          switch (dimension.style.separator) {
             case 'true':
-              dimensionsJSON[dimensionIndex].style.separator = true;
+              dimension.style.separator = true;
               break;
             case 'false':
-              dimensionsJSON[dimensionIndex].style.separator = false;
+              dimension.style.separator = false;
               break;
             default:
               break;
           }
         }
       } else {
-        dimensionsJSON[dimensionIndex].style = {}
-        dimensionsJSON[dimensionIndex].style.type = ''
-        dimensionsJSON[dimensionIndex].style.position = ''
-        dimensionsJSON[dimensionIndex].style.orientation = false
-        dimensionsJSON[dimensionIndex].style.separator = false;
+        dimension.style = {}
+        dimension.style.type = ''
+        dimension.style.position = ''
+        dimension.style.orientation = false
+        dimension.style.separator = false;
       }
-    }
-
-    return JSON.stringify(dimensionsJSON, null, 1);
+      this.localStorageService.setItem(`dimension-${dimensionIndex}`, JSON.stringify(dimension))
+    })
+    this.dimensionsSerialized = JSON.stringify(dimensionsJSON)
   }
 
   /* STEP #3 - General Instructions */
@@ -1108,9 +1164,9 @@ export class GeneratorComponent implements OnInit {
 
   public uploadConfiguration() {
     this.uploadStarted = true
-    let questionnairePromise = this.S3Service.uploadQuestionnairesConfig(this.configService.environment, this.questionnairesJSON(), this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
+    let questionnairePromise = this.S3Service.uploadQuestionnairesConfig(this.configService.environment, this.questionnairesSerialized, this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
     let hitsPromise = this.S3Service.uploadHitsConfig(this.configService.environment, this.taskSettingsForm.get('hits').value, this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
-    let dimensionsPromise = this.S3Service.uploadDimensionsConfig(this.configService.environment, this.dimensionsJSON(), this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
+    let dimensionsPromise = this.S3Service.uploadDimensionsConfig(this.configService.environment, this.dimensionsSerialized, this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
     let taskInstructionsPromise = this.S3Service.uploadTaskInstructionsConfig(this.configService.environment, this.generalInstructionsJSON(), this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
     let dimensionsInstructionsPromise = this.S3Service.uploadDimensionsInstructionsConfig(this.configService.environment, this.evaluationInstructionsJSON(), this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
     let searchEngineSettingsPromise = this.S3Service.uploadSearchEngineSettings(this.configService.environment, this.searchEngineJSON(), this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)

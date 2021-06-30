@@ -20,7 +20,6 @@ export class Dimension {
     index: number,
     data: JSON
   ) {
-
     this.index = index;
 
     this.name =               data["name"];

@@ -57,6 +57,23 @@
                     </table>
                   </div>
 
+                  <!-- Position -->
+                  <mat-divider [inset]="true"></mat-divider>
+                  <table class="width-100 mt-16px">
+                    <tr>
+                      <td class="p-0">
+                        <mat-form-field class="width-100" [hideRequiredMarker]="questionnaire.get('position').valid" appearance="fill">
+                          <mat-label>Position</mat-label>
+                          <mat-select matInput formControlName="position" required (selectionChange)="updateQuestionnaire(questionnaireIndex)">
+                            <mat-option *ngFor="let questionnairePosition of questionnairePosition" [value]="questionnairePosition.value">
+                              {{questionnairePosition.viewValue}}
+                            </mat-option>
+                          </mat-select>
+                        </mat-form-field>
+                      </td>
+                    </tr>
+                  </table>
+
                   <!-- Questions -->
                   <div *ngIf="questionnaire.get('type').value != ''" formArrayName="questions">
                     <mat-divider [inset]="true"></mat-divider>
@@ -355,19 +372,8 @@
                           </mat-form-field>
                         </td>
                         <td class="pr-16px checkbox">
-                          <mat-checkbox formControlName="include_lower_bound" color="primary" [disabled]="dimension.get('scale').get('min').value == '' || dimension.get('scale').get('min').value == null">
+                          <mat-checkbox formControlName="lower_bound" color="primary">
                             Include Lower Bound
-                          </mat-checkbox>
-                        </td>
-                        <td class="p-0 pr-16px">
-                          <mat-form-field matLine class="width-100" appearance="fill">
-                            <mat-label>Maximum</mat-label>
-                            <input matInput type="number" formControlName="max">
-                          </mat-form-field>
-                        </td>
-                        <td class="checkbox">
-                          <mat-checkbox formControlName="include_upper_bound" color="primary" [disabled]="dimension.get('scale').get('max').value == '' || dimension.get('scale').get('max').value == null">
-                            Include Upper Bound
                           </mat-checkbox>
                         </td>
                       </tr>
@@ -627,7 +633,8 @@
                     <button mat-flat-button color="primary" class="mt-16px mb-16px indent" (click)="addEvaluationInstructionStep(evaluationInstructionIndex)">
                       Add Step
                     </button>
-                    <div *ngFor="let evaluationInstructionStep of evaluationInstructionSteps(evaluationInstructionIndex).controls; let evaluationInstructionStepIndex = index" [formGroupName]="evaluationInstructionStepIndex">
+                    <div *ngFor="let evaluationInstructionStep of evaluationInstructionSteps(evaluationInstructionIndex).controls; let evaluationInstructionStepIndex = index"
+                         [formGroupName]="evaluationInstructionStepIndex">
                       <table class="width-100">
                         <tr>
                           <td class="p-0 pr-16px">
@@ -1071,12 +1078,12 @@
       <mat-card-content>
 
         <h4 class="mb-0">Step #1 - Questionnaires:</h4>
-        <p><code>{{ questionnairesJSON() }}</code></p>
+        <p><code>{{ questionnairesSerialized }}</code></p>
 
         <mat-divider [inset]="true"></mat-divider>
 
         <h4 class="mb-0">Step #2 - <strong>Dimensions</strong>:</h4>
-        <p><code>{{ dimensionsJSON() }}</code></p>
+        <p><code>{{ dimensionsSerialized }}</code></p>
 
         <mat-divider [inset]="true"></mat-divider>
 
@@ -1138,7 +1145,8 @@
             <mat-list-item *ngIf="this.questionnairesPath" class="step-valid"><span>Step #1 - Questionnaire configuration uploaded at path: <code>{{this.questionnairesPath}}</code></span></mat-list-item>
             <mat-list-item *ngIf="this.dimensionsPath" class="step-valid"><span>Step #2 - Dimensions configuration uploaded at path: <code>{{this.dimensionsPath}}</code></span></mat-list-item>
             <mat-list-item *ngIf="this.taskInstructionsPath" class="step-valid"><span>Step #3 - General instructions configuration uploaded at path: <code>{{this.taskInstructionsPath}}</code></span></mat-list-item>
-            <mat-list-item *ngIf="this.dimensionsInstructionsPath" class="step-valid"><span>Step #4 - Evaluation instructions configuration uploaded at path: <code>{{this.dimensionsInstructionsPath}}</code></span></mat-list-item>
+            <mat-list-item *ngIf="this.dimensionsInstructionsPath" class="step-valid"><span>Step #4 - Evaluation instructions configuration uploaded at path: <code>{{this.dimensionsInstructionsPath}}</code></span>
+            </mat-list-item>
             <mat-list-item *ngIf="this.searchEngineSettingsPath" class="step-valid"><span>Step #5 - Search engine configuration uploaded at path: <code>{{this.searchEngineSettingsPath}}</code></span></mat-list-item>
             <mat-list-item *ngIf="this.taskSettingsPath" class="step-valid"><span>Step #6 - Task settings configuration uploaded at path: <code>{{this.taskSettingsPath}}</code></span></mat-list-item>
             <mat-list-item *ngIf="this.workerChecksPath" class="step-valid"><span>Step #7 - Worker checks configuration uploaded at path: <code>{{this.workerChecksPath}}</code></span></mat-list-item>

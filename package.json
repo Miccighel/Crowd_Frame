@@ -20,7 +20,7 @@
     "@angular/platform-browser-dynamic": "~12.1.0",
     "@angular/router": "~12.1.0",
     "@funktechno/texthighlighter": "^2.0.10",
-    "aws-sdk": "2.934.0",
+    "aws-sdk": "2.936.0",
     "crypto-es": "^1.2.7",
     "ngx-countdown": "^12.0.0",
     "ngx-device-detector": "^2.1.1",
@@ -34,7 +34,7 @@
     "@angular-devkit/build-angular": "~12.1.0",
     "@angular/cli": "^12.1.0",
     "@angular/compiler-cli": "~12.1.0",
-    "@types/node": "~15.12.4",
+    "@types/node": "~15.12.5",
     "typescript": "4.2.4"
   },
   "browser": {

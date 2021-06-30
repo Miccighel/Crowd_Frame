@@ -62,3 +62,8 @@ data/.env
 data/aws/*
 
 .vscode/settings.json
+data/build/deploy/scripts.js
+data/build/deploy/styles.css
+data/build/deploy/index.html
+data/build/mturk/index.html
+data/build/mturk/tokens.csv
