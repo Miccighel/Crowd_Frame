@@ -2753,9 +2753,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"aws-sdk@npm:2.936.0":
-  version: 2.936.0
-  resolution: "aws-sdk@npm:2.936.0"
+"aws-sdk@npm:2.937.0":
+  version: 2.937.0
+  resolution: "aws-sdk@npm:2.937.0"
   dependencies:
     buffer: 4.9.2
     events: 1.1.1
@@ -2766,7 +2766,7 @@ __metadata:
     url: 0.10.3
     uuid: 3.3.2
     xml2js: 0.4.19
-  checksum: ec14113858e344734e0c2900431a9c9b707eb8c46c12d05cbfc40a12a19c3e6d166836f06636fd9e91bc17e42a13eb4a11c83f672289da0d82633cdc9396ed83
+  checksum: 93133d2fb0df376da6ef6f0de5a5639a0ab69769ce8d1bcd9784c1f859d1d222d276b7d7e9362973a653c75bb5d4e1cb78b27696c3b05bbeb94f60d5d150b6f4
   languageName: node
   linkType: hard
 
@@ -3651,7 +3651,7 @@ __metadata:
     "@angular/router": ~12.1.1
     "@funktechno/texthighlighter": ^2.0.10
     "@types/node": ~15.12.5
-    aws-sdk: 2.936.0
+    aws-sdk: 2.937.0
     crypto-es: ^1.2.7
     ngx-countdown: ^12.0.0
     ngx-device-detector: ^2.1.1
