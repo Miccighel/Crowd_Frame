@@ -61,6 +61,8 @@ data/build/environments/environment.ts
 data/.env
 data/aws/*
 
+data/tasks/*
+
 .vscode/settings.json
 data/build/deploy/scripts.js
 data/build/deploy/styles.css

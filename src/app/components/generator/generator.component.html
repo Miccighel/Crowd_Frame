@@ -234,6 +234,13 @@
 
                   <mat-divider [inset]="true"></mat-divider>
 
+                  <!-- Gold -->
+                  <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="gold">
+                    Gold Dimension
+                  </mat-slide-toggle>
+
+                  <mat-divider [inset]="true"></mat-divider>
+
                   <!-- Justification: Text, Min_Words -->
                   <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="setJustification" (change)="resetJustification(dimensionIndex)">
                     Justification
@@ -382,33 +389,12 @@
 
                   <mat-divider [inset]="true"></mat-divider>
 
-                  <!-- Gold Question Check -->
-                  <table class="width-100 mt-16px">
-                    <tr>
-                      <td class="p-0">
-                        <mat-form-field matLine class="width-100" appearance="fill">
-                          <mat-label>Gold Question Check</mat-label>
-                          <mat-select matInput formControlName="gold_question_check">
-                            <mat-option value="true">
-                              True
-                            </mat-option>
-                            <mat-option value="false">
-                              False
-                            </mat-option>
-                          </mat-select>
-                        </mat-form-field>
-                      </td>
-                    </tr>
-                  </table>
-
-                  <mat-divider [inset]="true"></mat-divider>
-
                   <!-- Style: Type, Position, Orientation, Separator -->
-                  <mat-slide-toggle color="primary" class="mt-16px mb-16px" checked disabled>
+                  <mat-slide-toggle color="primary" *ngIf="dimension.get('setScale').value" class="mt-16px mb-16px" formControlName="setStyle" (change)="resetStyle(dimensionIndex)" disabled>
                     Style
                   </mat-slide-toggle>
 
-                  <div formGroupName="style">
+                  <div formGroupName="style" *ngIf="dimension.get('setStyle').value && dimension.get('setScale').value" >
                     <table class="width-100">
                       <tr>
                         <td class="p-0 pr-16px">
@@ -1088,7 +1074,7 @@
         <mat-divider [inset]="true"></mat-divider>
 
         <h4 class="mb-0">Step #3 - <strong>General Instructions</strong>:</h4>
-        <p><code>{{ generalInstructionsJSON() }}</code></p>
+        <p><code>{{ generalInstructionsSerialized }}</code></p>
 
         <mat-divider [inset]="true"></mat-divider>
 

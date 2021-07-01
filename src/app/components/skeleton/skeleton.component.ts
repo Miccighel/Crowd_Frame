@@ -690,7 +690,7 @@ export class SkeletonComponent implements OnInit {
 
       /* Indexes of the gold dimensions are retrieved */
       for (let index = 0; index < this.dimensionsAmount; index++) {
-        if (this.dimensions[index].goldQuestionCheck) {
+        if (this.dimensions[index].gold) {
           this.goldDimensions.push(this.dimensions[index])
         }
       }

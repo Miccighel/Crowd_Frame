@@ -13,7 +13,7 @@ export class Dimension {
   justification?: Justification;
   url?: boolean;
   scale?: ScaleCategorical | ScaleInterval | ScaleMagnitude;
-  goldQuestionCheck?: boolean;
+  gold?: boolean;
   style: Style;
 
   constructor(
@@ -22,14 +22,19 @@ export class Dimension {
   ) {
     this.index = index;
 
+    if('gold_question_check' in data) {
+      data['gold'] = data['gold_question_check']
+      delete data['gold_question_check']
+    }
     this.name =               data["name"];
     this.name_pretty =        data['name_pretty'] ? data["name_pretty"] : null;
     this.description =        data['description'] ? data["description"] : null;
     this.justification =      data['justification'] ? new Justification(data['justification']) : null;
     this.url =                data['url'] ? data["url"] : null;
     this.scale =              data['scale'] ? data['scale']['type'] == "categorical" ? new ScaleCategorical(data['scale']) : new ScaleInterval(data['scale']) : null;
-    this.goldQuestionCheck =  data['gold_question_check'] ? data['gold_question_check'] : null;
     this.style =              data['style'] = new Style(data['style']);
+    this.gold =               data['gold'] ? data['gold'] : null;
+
   }
 
 }
