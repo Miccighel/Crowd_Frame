@@ -268,24 +268,9 @@
                   <mat-divider [inset]="true"></mat-divider>
 
                   <!-- Url -->
-                  <table class="width-100 mt-16px">
-                    <tr>
-                      <td class="p-0">
-                        <mat-form-field matLine class="width-100" appearance="fill">
-                          <mat-label>Url</mat-label>
-                          <mat-select matInput formControlName="url">
-                            <mat-option></mat-option>
-                            <mat-option value="true">
-                              True
-                            </mat-option>
-                            <mat-option value="false">
-                              False
-                            </mat-option>
-                          </mat-select>
-                        </mat-form-field>
-                      </td>
-                    </tr>
-                  </table>
+                  <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="url">
+                    Url
+                  </mat-slide-toggle>
 
                   <mat-divider [inset]="true"></mat-divider>
 
@@ -694,8 +679,7 @@
               <td class="p-0">
                 <mat-form-field matLine class="width-100" appearance="fill">
                   <mat-label>Source</mat-label>
-                  <mat-select matInput formControlName="source">
-                    <mat-option></mat-option>
+                  <mat-select matInput formControlName="source" [value]="this.searchEngineFetched.source">
                     <mat-option *ngFor="let sourceType of sourceTypes" [value]="sourceType.value">
                       {{sourceType.viewValue}}
                     </mat-option>
@@ -708,7 +692,7 @@
           <mat-divider [inset]="true"></mat-divider>
 
           <!-- Domains To Filter -->
-          <div formArrayName="domains_to_filter">
+          <div formArrayName="domains_filter" *ngIf="searchEngineForm.get('source').value">
             <button mat-flat-button color="primary" class="mt-16px mb-16px indent" (click)="addDomain()">
               Add Domain To Filter
             </button>
@@ -1079,12 +1063,12 @@
         <mat-divider [inset]="true"></mat-divider>
 
         <h4 class="mb-0">Step #4 - <strong>Evaluation Instructions</strong>:</h4>
-        <p><code>{{ evaluationInstructionsJSON() }}</code></p>
+        <p><code>{{ evaluationInstructionsSerialized }}</code></p>
 
         <mat-divider [inset]="true"></mat-divider>
 
         <h4 class="mb-0">Step #5 - <strong>Search Engine</strong>:</h4>
-        <p><code>{{ searchEngineJSON() }}</code></p>
+        <p><code>{{ searchEngineSerialized }}</code></p>
 
         <mat-divider [inset]="true"></mat-divider>
 
@@ -1131,8 +1115,7 @@
             <mat-list-item *ngIf="this.questionnairesPath" class="step-valid"><span>Step #1 - Questionnaire configuration uploaded at path: <code>{{this.questionnairesPath}}</code></span></mat-list-item>
             <mat-list-item *ngIf="this.dimensionsPath" class="step-valid"><span>Step #2 - Dimensions configuration uploaded at path: <code>{{this.dimensionsPath}}</code></span></mat-list-item>
             <mat-list-item *ngIf="this.taskInstructionsPath" class="step-valid"><span>Step #3 - General instructions configuration uploaded at path: <code>{{this.taskInstructionsPath}}</code></span></mat-list-item>
-            <mat-list-item *ngIf="this.dimensionsInstructionsPath" class="step-valid"><span>Step #4 - Evaluation instructions configuration uploaded at path: <code>{{this.dimensionsInstructionsPath}}</code></span>
-            </mat-list-item>
+            <mat-list-item *ngIf="this.dimensionsInstructionsPath" class="step-valid"><span>Step #4 - Evaluation instructions configuration uploaded at path: <code>{{this.dimensionsInstructionsPath}}</code></span></mat-list-item>
             <mat-list-item *ngIf="this.searchEngineSettingsPath" class="step-valid"><span>Step #5 - Search engine configuration uploaded at path: <code>{{this.searchEngineSettingsPath}}</code></span></mat-list-item>
             <mat-list-item *ngIf="this.taskSettingsPath" class="step-valid"><span>Step #6 - Task settings configuration uploaded at path: <code>{{this.taskSettingsPath}}</code></span></mat-list-item>
             <mat-list-item *ngIf="this.workerChecksPath" class="step-valid"><span>Step #7 - Worker checks configuration uploaded at path: <code>{{this.workerChecksPath}}</code></span></mat-list-item>

@@ -139,12 +139,12 @@ export class S3Service {
     return (config["configuration_local"]) ? localRawHits["default"] : this.download(config, hitsFile);
   }
 
-  public downloadTaskInstructions(config) {
+  public downloadGeneralInstructions(config) {
     let taskInstructionsFile = `${this.getFolder(config)}Task/instructions_main.json`;
     return (config["configuration_local"]) ? localRawInstructionsMain["default"] : this.download(config, taskInstructionsFile);
   }
 
-  public downloadDimensionsInstructions(config) {
+  public downloadEvaluationInstructions(config) {
     let dimensionsInstructionsFile = `${this.getFolder(config)}Task/instructions_dimensions.json`;
     return (config["configuration_local"]) ? localRawInstructionsDimensions["default"] : this.download(config, dimensionsInstructionsFile);
   }

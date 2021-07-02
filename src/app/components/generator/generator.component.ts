@@ -15,6 +15,8 @@ import {ReadFile, ReadMode} from "ngx-file-helpers";
 import {Question, Questionnaire} from "../../models/skeleton/questionnaire";
 import {Dimension, Justification, Mapping} from "../../models/skeleton/dimension";
 import {Instruction} from "../../models/shared/instructions";
+import {SearchSettings} from "../../models/skeleton/search";
+import CryptoES from "crypto-es";
 
 /*
  * The following interfaces are used to simplify data handling for each generator step.
@@ -129,7 +131,6 @@ export class GeneratorComponent implements OnInit {
     {value: 'horizontal', viewValue: 'Horizontal'},
     {value: 'vertical', viewValue: 'Vertical'}
   ];
-
   dimensionsFetched: Array<Dimension>
   dimensionsSerialized: string
 
@@ -140,14 +141,19 @@ export class GeneratorComponent implements OnInit {
 
   /* STEP #4 - Evaluation Instructions */
   evaluationInstructionsForm: FormGroup;
+  evaluationInstructionsFetched: Array<Instruction>
+  evaluationInstructionsSerialized: string
 
   /* STEP #5 - Search Engine */
   searchEngineForm: FormGroup;
   sourceTypes: SourceType[] = [
+    {value: null, viewValue: 'None'},
     {value: 'BingWebSearch', viewValue: 'BingWeb'},
     {value: 'FakerWebSearch', viewValue: 'FakerWeb'},
     {value: 'PubmedSearch', viewValue: 'Pubmed'}
   ];
+  searchEngineFetched: SearchSettings
+  searchEngineSerialized: string
 
   /* STEP #6 - Task Settings */
   taskSettingsForm: FormGroup;
@@ -256,9 +262,9 @@ export class GeneratorComponent implements OnInit {
       }
     })
 
-    /* STEP #3 - Instructions */
+    /* STEP #3 - General Instructions */
 
-    let rawGeneralInstructions = this.S3Service.downloadTaskInstructions(this.configService.environment)
+    let rawGeneralInstructions = this.S3Service.downloadGeneralInstructions(this.configService.environment)
     this.generalInstructionsFetched = new Array(rawGeneralInstructions.length)
     rawGeneralInstructions.forEach((data, index) => {
       let instruction = new Instruction(index, data)
@@ -271,6 +277,34 @@ export class GeneratorComponent implements OnInit {
         this.localStorageService.setItem(identifier, JSON.stringify(instruction))
       }
     })
+
+    /* STEP #4 - Evaluation Instructions */
+
+    let rawEvaluationInstructions = this.S3Service.downloadEvaluationInstructions(this.configService.environment)
+    this.evaluationInstructionsFetched = new Array(rawEvaluationInstructions.length)
+    rawEvaluationInstructions.forEach((data, index) => {
+      let instruction = new Instruction(index, data)
+      let identifier = `evaluation-instruction-${index}`
+      let item = this.localStorageService.getItem(identifier)
+      if (item) {
+        this.evaluationInstructionsFetched[index] = JSON.parse(item)
+      } else {
+        this.evaluationInstructionsFetched[index] = instruction
+        this.localStorageService.setItem(identifier, JSON.stringify(instruction))
+      }
+    })
+
+    /* STEP #5 - Search Engine Settings */
+
+    let rawSearchEngineSettings = this.S3Service.downloadSearchEngineSettings(this.configService.environment)
+    this.searchEngineFetched = new SearchSettings(rawSearchEngineSettings)
+    let identifier = `search-engine-settings`
+    let item = this.localStorageService.getItem(identifier)
+    if (item) {
+      this.searchEngineFetched = JSON.parse(item)
+    } else {
+      this.localStorageService.setItem(identifier, JSON.stringify(this.searchEngineFetched))
+    }
 
     /* The following code lists the folders which are present inside task's main folder.
      * In other words, it lists every batch name for the current task to build a nodeList
@@ -358,12 +392,22 @@ export class GeneratorComponent implements OnInit {
     this.evaluationInstructionsForm = this._formBuilder.group({
       evaluationInstructions: this._formBuilder.array([])
     });
+    if (this.evaluationInstructionsFetched.length > 0) {
+      this.evaluationInstructionsFetched.forEach((instruction, instructionIndex) => {
+        this.addEvaluationInstruction(instructionIndex, instruction)
+      })
+    }
+    this.evaluationInstructionsJSON()
+    this.evaluationInstructionsForm.valueChanges.subscribe(value => this.evaluationInstructionsJSON())
 
     /* STEP #5 - Search Engine */
     this.searchEngineForm = this._formBuilder.group({
-      source: [''],
-      domains_to_filter: this._formBuilder.array([])
+      source: [this.searchEngineFetched ? this.searchEngineFetched.source : ''],
+      domains_filter: this._formBuilder.array([])
     });
+    if (this.searchEngineFetched.domains_filter.length > 0) this.searchEngineFetched.domains_filter.forEach((domain, domainIndex) => this.addDomain(domain))
+    this.searchEngineJSON()
+    this.searchEngineForm.valueChanges.subscribe(value => this.searchEngineJSON())
 
     /* STEP #6 - Task Settings */
     this.taskSettingsForm = this._formBuilder.group({
@@ -544,7 +588,6 @@ export class GeneratorComponent implements OnInit {
   }
 
   addDimension(dimensionIndex = null, dimension = null as Dimension) {
-    let scale = null
     this.dimensions().push(this._formBuilder.group({
       name: [dimension ? dimension.name : ''],
       description: [dimension ? dimension.description : ''],
@@ -579,7 +622,6 @@ export class GeneratorComponent implements OnInit {
     if(dimension && dimension.style) {
       this.updateStyleType(dimensionIndex)
     }
-
   }
 
   removeDimension(dimensionIndex: number) {
@@ -746,7 +788,6 @@ export class GeneratorComponent implements OnInit {
 
     let dimensionsJSON = JSON.parse(JSON.stringify(this.dimensionsForm.get('dimensions').value));
 
-
     dimensionsJSON.forEach((dimension, dimensionIndex) => {
 
       if (dimension.description == '') dimension.description = false
@@ -866,12 +907,15 @@ export class GeneratorComponent implements OnInit {
     return this.evaluationInstructionsForm.get('evaluationInstructions') as FormArray;
   }
 
-  addEvaluationInstruction() {
+  addEvaluationInstruction(instructionIndex = null, instruction = null as Instruction) {
     this.evaluationInstructions().push(this._formBuilder.group({
-      caption: [''],
+      caption: [instruction ? instruction.caption : ''],
       steps: this._formBuilder.array([])
     }));
-    this.addEvaluationInstructionStep(this.evaluationInstructions().length - 1);
+    if (instruction && instruction.steps) for (let step of instruction.steps) this.addEvaluationInstructionStep(instructionIndex, step)
+    if (this.evaluationInstructions().length == 0) {
+      this.addEvaluationInstructionStep(this.evaluationInstructions().length - 1);
+    }
   }
 
   removeEvaluationInstruction(evaluationInstructionIndex: number) {
@@ -884,9 +928,9 @@ export class GeneratorComponent implements OnInit {
     return this.evaluationInstructions().at(evaluationInstructionIndex).get('steps') as FormArray;
   }
 
-  addEvaluationInstructionStep(evaluationInstructionIndex: number) {
+  addEvaluationInstructionStep(evaluationInstructionIndex: number, evaluationInstructionStep = null) {
     this.evaluationInstructionSteps(evaluationInstructionIndex).push(this._formBuilder.group({
-      step: ['']
+      step: [evaluationInstructionStep ? evaluationInstructionStep : '']
     }))
   }
 
@@ -898,31 +942,28 @@ export class GeneratorComponent implements OnInit {
 
   evaluationInstructionsJSON() {
     let evaluationInstructionsJSON = JSON.parse(JSON.stringify(this.evaluationInstructionsForm.get('evaluationInstructions').value));
-    for (let evaluationInstructionIndex in evaluationInstructionsJSON) {
 
-      if (evaluationInstructionsJSON[evaluationInstructionIndex].caption == '') {
-        evaluationInstructionsJSON[evaluationInstructionIndex].caption = false
-      }
-
+    evaluationInstructionsJSON.forEach((evaluationInstruction, instructionIndex) => {
+      if (evaluationInstruction.caption == '') evaluationInstruction.caption = false
       let stepsStringArray = [];
-      for (let evaluationInstructionStepIndex in evaluationInstructionsJSON[evaluationInstructionIndex].steps) {
-        stepsStringArray.push(evaluationInstructionsJSON[evaluationInstructionIndex].steps[evaluationInstructionStepIndex].step);
+      for (let evaluationInstructionStepIndex in evaluationInstruction.steps) {
+        stepsStringArray.push(evaluationInstruction.steps[evaluationInstructionStepIndex].step);
       }
-      evaluationInstructionsJSON[evaluationInstructionIndex].steps = stepsStringArray;
-    }
-
-    return JSON.stringify(evaluationInstructionsJSON, null, 1);
+      evaluationInstruction.steps = stepsStringArray;
+      this.localStorageService.setItem(`evaluation-instruction-${instructionIndex}`, JSON.stringify(evaluationInstruction))
+    })
+    this.evaluationInstructionsSerialized = JSON.stringify(evaluationInstructionsJSON);
   }
 
   /* STEP #5 - Search Engine */
 
   domains(): FormArray {
-    return this.searchEngineForm.get('domains_to_filter') as FormArray;
+    return this.searchEngineForm.get('domains_filter') as FormArray;
   }
 
-  addDomain() {
+  addDomain(domain = null) {
     this.domains().push(this._formBuilder.group({
-      url: ['']
+      url: [domain ? domain : '']
     }))
   }
 
@@ -934,18 +975,16 @@ export class GeneratorComponent implements OnInit {
 
   searchEngineJSON() {
     let searchEngineJSON = JSON.parse(JSON.stringify(this.searchEngineForm.value));
-
-    if (searchEngineJSON.source == undefined) {
-      searchEngineJSON.source = false;
+    if (searchEngineJSON.source) {
+      let domainsStringArray = [];
+      for (let domain of searchEngineJSON.domains_filter) domainsStringArray.push(domain.url);
+      searchEngineJSON.domains_filter = domainsStringArray;
+    } else {
+      searchEngineJSON.source = false
+      searchEngineJSON.domains_filter = []
     }
-
-    let domainsStringArray = [];
-    for (let domainIndex in searchEngineJSON.domains_to_filter) {
-      domainsStringArray.push(searchEngineJSON.domains_to_filter[domainIndex].url);
-    }
-    searchEngineJSON.domains_to_filter = domainsStringArray;
-
-    return JSON.stringify(searchEngineJSON, null, 1);
+    this.localStorageService.setItem(`search-engine-settings`, JSON.stringify(searchEngineJSON))
+    this.searchEngineSerialized = JSON.stringify(searchEngineJSON)
   }
 
   /* STEP #6 - Task Settings */
@@ -953,7 +992,6 @@ export class GeneratorComponent implements OnInit {
   updateHitsFile() {
     this.parsedHits = JSON.parse(this.localHitsFile.content)
     if (this.parsedHits.length > 0) {
-      console.log(this.parsedHits[0])
       if (("documents" in this.parsedHits[0]) && ("token_input" in this.parsedHits[0]) && ("token_output" in this.parsedHits[0]) && ("unit_id" in this.parsedHits[0])) {
         this.hitsDetected = this.parsedHits.length
       } else {

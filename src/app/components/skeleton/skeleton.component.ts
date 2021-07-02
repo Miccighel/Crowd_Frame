@@ -370,7 +370,7 @@ export class SkeletonComponent implements OnInit {
     })
 
     /* The main task instructions are downloaded */
-    let rawTaskInstructions = await this.S3Service.downloadTaskInstructions(this.configService.environment);
+    let rawTaskInstructions = await this.S3Service.downloadGeneralInstructions(this.configService.environment);
     this.taskInstructionsAmount = rawTaskInstructions.length;
     /* The instructions are parsed using the Instruction class */
     this.taskInstructions = new Array<Instruction>();
@@ -529,7 +529,7 @@ export class SkeletonComponent implements OnInit {
 
       /* |--------- INSTRUCTIONS MAIN (see: instructions_main.json) ---------| */
 
-      let rawTaskInstructions = await this.S3Service.downloadTaskInstructions(this.configService.environment);
+      let rawTaskInstructions = await this.S3Service.downloadGeneralInstructions(this.configService.environment);
       this.taskInstructionsAmount = rawTaskInstructions.length;
       /* The instructions are parsed using the Instruction class */
       this.taskInstructions = new Array<Instruction>();
@@ -540,7 +540,7 @@ export class SkeletonComponent implements OnInit {
       /* |--------- INSTRUCTIONS DIMENSIONS (see: instructions_dimensions.json) ---------| */
 
       /* The evaluation instructions stored on Amazon S3 are retrieved */
-      let rawInstructions = await this.S3Service.downloadDimensionsInstructions(this.configService.environment)
+      let rawInstructions = await this.S3Service.downloadEvaluationInstructions(this.configService.environment)
       this.instructionsAmount = rawInstructions.length;
 
       /* The instructions are parsed using the Instruction class */

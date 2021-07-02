@@ -14,6 +14,10 @@ export class Settings {
     data: JSON
   ) {
 
+    if('domains_to_filter' in data) {
+      data['domains_filter'] = data['domains_to_filter']
+      delete data['domains_to_filter']
+    }
     this.task_name =            data["task_name"];
     this.batch_name =           data["batch_name"];
     this.allowedTries =         parseInt((data["allowed_tries"]));
