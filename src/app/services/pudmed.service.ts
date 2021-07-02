@@ -3,9 +3,9 @@ import {Injectable} from '@angular/core';
 import {Observable} from "rxjs";
 /* HTTP handling modules */
 import {HttpClient, HttpHeaders} from '@angular/common/http';
-import {PubmedSearchResponse} from "../models/crowd-xplorer/pubmedSearchResponse";
-import {BaseResponse} from "../models/crowd-xplorer/baseResponse";
-import {PubmedSummaryResponse} from '../models/crowd-xplorer/pubmedSummaryResponse';
+import {PubmedSearchResponse} from "../models/pubmedSearchResponse";
+import {BaseResponse} from "../models/baseResponse";
+import {PubmedSummaryResponse} from '../models/pubmedSummaryResponse';
 
 @Injectable({
   providedIn: 'root'

@@ -7,7 +7,7 @@ import {S3Service} from "../../services/s3.service";
 /* Reactive forms modules */
 import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
 /* Task models */
-import {Instruction} from "../../models/shared/instructions";
+import {Instruction} from "../../models/instructions";
 /* Material design modules */
 import {MatSnackBar} from "@angular/material/snack-bar";
 /* Crypto */

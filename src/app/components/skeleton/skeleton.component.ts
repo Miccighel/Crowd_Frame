@@ -19,13 +19,13 @@ import {S3Service} from "../../services/s3.service";
 import {DeviceDetectorService} from 'ngx-device-detector';
 /* Task models */
 import {Document} from "../../../../data/build/skeleton/document";
-import {Hit} from "../../models/skeleton/hit";
-import {Questionnaire} from "../../models/skeleton/questionnaire";
-import {Dimension, ScaleInterval, ScaleMagnitude} from "../../models/skeleton/dimension";
-import {Instruction} from "../../models/shared/instructions";
-import {Note} from "../../models/skeleton/notes";
-import {Worker} from "../../models/skeleton/worker";
-import {Annotator, Settings} from "../../models/skeleton/settings";
+import {Hit} from "../../models/hit";
+import {Questionnaire} from "../../models/questionnaire";
+import {Dimension, ScaleInterval, ScaleMagnitude} from "../../models/dimension";
+import {Instruction} from "../../models/instructions";
+import {Note} from "../../models/notes";
+import {Worker} from "../../models/worker";
+import {Annotator, Settings} from "../../models/settings";
 import {GoldChecker} from "../../../../data/build/skeleton/goldChecker";
 /* Annotator functions */
 import {doHighlight} from "@funktechno/texthighlighter/lib";
@@ -33,8 +33,8 @@ import {doHighlight} from "@funktechno/texthighlighter/lib";
 import {HttpClient, HttpHeaders} from "@angular/common/http";
 /* Material modules */
 import {MatSnackBar} from "@angular/material/snack-bar";
-import {NoteStandard} from "../../models/skeleton/notes_standard";
-import {NoteLaws} from "../../models/skeleton/notes_laws";
+import {NoteStandard} from "../../models/notes_standard";
+import {NoteLaws} from "../../models/notes_laws";
 import {MatRadioChange} from "@angular/material/radio";
 import {MatCheckboxChange} from "@angular/material/checkbox";
 

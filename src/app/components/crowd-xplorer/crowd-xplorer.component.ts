@@ -9,15 +9,15 @@ import {MatPaginator} from "@angular/material/paginator";
 import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
 /* Services */
 import {BingService} from '../../services/bing.service';
-import {BingWebSearchResponse} from "../../models/crowd-xplorer/bingWebSearchResponse";
+import {BingWebSearchResponse} from "../../models/bingWebSearchResponse";
 import {FakerService} from "../../services/faker.service";
-import {FakerSearchResponse} from "../../models/crowd-xplorer/fakerSearchResponse";
+import {FakerSearchResponse} from "../../models/fakerSearchResponse";
 import {PubmedService} from "../../services/pudmed.service";
-import {PubmedSearchResponse} from "../../models/crowd-xplorer/pubmedSearchResponse";
-import {PubmedSummaryResponse} from '../../models/crowd-xplorer/pubmedSummaryResponse';
+import {PubmedSearchResponse} from "../../models/pubmedSearchResponse";
+import {PubmedSummaryResponse} from '../../models/pubmedSummaryResponse';
 import {ConfigService} from "../../services/config.service";
 import * as AWS from "aws-sdk";
-import {Settings} from "../../models/crowd-xplorer/settings";
+import {SearchSettings} from "../../models/search";
 /* Debug config import */
 import {S3Service} from "../../services/s3.service";
 
@@ -55,7 +55,7 @@ export class CrowdXplorer {
   /*
    * Object to wrap search engine settings
    */
-  settings: Settings
+  settings: SearchSettings
 
   /* |--------- SERVICES & CO. - DECLARATION ---------| */
 
@@ -163,9 +163,9 @@ export class CrowdXplorer {
    */
   public async loadSettings() {
     let rawSettings = await this.S3Service.downloadSearchEngineSettings(this.configService.environment)
-    this.settings = new Settings(rawSettings)
+    this.settings = new SearchSettings(rawSettings)
     this.source = this.settings.source
-    this.domainsToFilter = this.settings.domainsToFilter
+    this.domainsToFilter = this.settings.domains_filter
   }
 
   /* |--------- WEB SEARCH ---------| */
@@ -285,7 +285,6 @@ export class CrowdXplorer {
             /* The search operation for Bing Web Search is completed */
             this.searchPerformed = true;
             /* The loading screen is hidden */
-
             this.searchInProgress = false;
             this.ngxService.stopBackground();
           }

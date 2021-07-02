@@ -3,7 +3,7 @@ import {Component, Inject, Input, OnInit, ViewEncapsulation} from '@angular/core
 /* Material design modules */
 import {MatDialog, MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
 /* Task models*/
-import {Instruction} from "../../models/shared/instructions";
+import {Instruction} from "../../models/instructions";
 /* Services */
 import {ConfigService} from "../../services/config.service";
 /* Data interface for the underlying dialog component */
