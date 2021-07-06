@@ -1,3 +1,16 @@
+<ngx-ui-loader [loaderId]="'generator-inner'"
+               [bgsColor]="'#76ff03'"
+               [fgsColor]="'#76ff03'"
+               [pbColor]="'#76ff03'"
+               [fgsSize]="150"
+               [bgsPosition]="'bottom-right'"
+               [bgsSize]="80"
+               [bgsType]="'ball-spin-clockwise'"
+               [text]="'Loading...'"
+               [textColor]="'#FFFFFF'"
+               [textPosition]="'bottom-center'"
+></ngx-ui-loader>
+
 <mat-horizontal-stepper labelPosition="bottom" #generator class="green-theme">
 
   <!-- Step #1 - Questionnaires -->
@@ -379,7 +392,7 @@
                     Style
                   </mat-slide-toggle>
 
-                  <div formGroupName="style" *ngIf="dimension.get('setStyle').value && dimension.get('setScale').value" >
+                  <div formGroupName="style" *ngIf="dimension.get('setStyle').value && dimension.get('setScale').value">
                     <table class="width-100">
                       <tr>
                         <td class="p-0 pr-16px">
@@ -742,24 +755,6 @@
         <mat-divider></mat-divider>
         <mat-card-content>
 
-          <!-- Task Name, Batch Name-->
-          <table class="width-100 mt-8px">
-            <tr>
-              <td class="p-0 pr-16px">
-                <mat-form-field matLine class="width-100" [hideRequiredMarker]="taskSettingsForm.get('task_name').valid" appearance="fill">
-                  <mat-label>Task Name</mat-label>
-                  <input matInput type="text" formControlName="task_name" (change)="updateFullPath()" required>
-                </mat-form-field>
-              </td>
-              <td class="p-0">
-                <mat-form-field matLine class="width-100" [hideRequiredMarker]="taskSettingsForm.get('batch_name').valid" appearance="fill">
-                  <mat-label>Batch Name</mat-label>
-                  <input matInput type="text" min="0" formControlName="batch_name" (change)="updateFullPath()" required>
-                </mat-form-field>
-              </td>
-            </tr>
-          </table>
-
           <!-- Allowed Tries, Time Check Amount-->
           <table class="width-100 mt-8px">
             <tr>
@@ -782,17 +777,17 @@
 
           <!-- Hits file-->
           <table class="width-100 mt-8px">
-            <button mat-flat-button color="primary" class="mt-8px mb-16px indent" ngxFilePicker [readMode]="readMode" (filePick)="localHitsFile = $event" (readEnd)="updateHitsFile()" accept="application/json">
+            <button mat-flat-button color="primary" class="mt-8px mb-16px indent" ngxFilePicker [readMode]="readMode" (filePick)="hitsFile = $event" (readEnd)="updateHitsFile()" accept="application/json">
               Select Hits File
             </button>
-            <ng-container *ngIf="!this.localHitsFile">
+            <ng-container *ngIf="!this.hitsFileName">
               <code>your_file.json</code>
             </ng-container>
             <ng-container *ngIf="this.hitsDetected <= 0">
               <code>invalid file</code>
             </ng-container>
             <ng-container *ngIf="this.hitsDetected > 0">
-              <code>Filename: {{this.localHitsFile.name}}, Hits detected: {{this.hitsDetected}}, Filesize: {{this.localHistFileSize}} Kb</code>
+              <code>Filename: {{ "ddd" }}, Hits detected: {{this.hitsDetected}}, Filesize: {{this.hitsSize}} Kb</code>
             </ng-container>
             <tr *ngIf="this.hitsDetected<=0">
               <td>
@@ -828,7 +823,7 @@
           </div>
 
           <!-- Mapping -->
-          <div *ngIf="taskSettingsForm.get('annotator').get('type').value == 'options'" formGroupName="annotator">
+          <div *ngIf="annotator().get('type').value == 'options'" formGroupName="annotator">
             <button mat-flat-button color="primary" class="mb-16px indent" (click)="addOptionValue()">
               Add Option
             </button>
@@ -841,10 +836,10 @@
                       <input matInput type="text" formControlName="label" required>
                     </mat-form-field>
                   </td>
-                  <td class="p-0 pr-16px">
+                  <td class="p-0 pr-16px" [formGroupName]="valueIndex">
                     <mat-form-field class="width-100" matLine [hideRequiredMarker]="value.valid" appearance="fill">
                       <mat-label>HTML Color (#123456)</mat-label>
-                      <input matInput type="text" formControlName="color" required>
+                      <input matInput formControlName="color" [value]="this.annotatorOptionColors[valueIndex]" [(colorPicker)]="this.annotatorOptionColors[valueIndex]"/>
                     </mat-form-field>
                   </td>
                   <td class="p-0 center">
@@ -876,28 +871,27 @@
 
           <!-- Blacklist Batches -->
           <div formArrayName="blacklist_batches">
-            <button mat-flat-button color="primary" class="mt-16px mb-16px indent" (click)="addBlacklistBatch()">
+            <mat-progress-bar *ngIf="this.blacklistBatches().controls.length<=0 && !this.batchesTreeInitialization" mode="indeterminate"></mat-progress-bar>
+            <button *ngIf="this.batchesTreeInitialization" mat-flat-button color="primary" class="mt-16px mb-16px indent" (click)="addBlacklistBatches()">
               Blacklist Batches
             </button>
-            <button mat-flat-button color="primary" class="mb-16px" (click)="removeBlacklistBatch()" *ngIf="blacklistBatches().controls.length>0">
+            <button *ngIf="this.blacklistBatches().controls.length>0 && this.batchesTreeInitialization" mat-flat-button color="primary" class="mb-16px" (click)="removeBlacklistBatch()">
               Remove Batches
             </button>
-            <ng-container *ngIf="this.blacklistBatches().controls.length>0">
-              <div *ngFor="let task of batchesTree; let taskIndex = index">
+            <ng-container *ngIf="this.blacklistBatches().controls.length>0 && this.batchesTreeInitialization">
+              <div *ngFor="let taskNode of this.batchesTree">
                 <mat-accordion class="generator-accordion">
                   <mat-expansion-panel>
                     <mat-expansion-panel-header>
                       <mat-panel-title>
-                        {{task.name}}
+                        {{taskNode['task']}}
                       </mat-panel-title>
                       <mat-panel-description>
                       </mat-panel-description>
                     </mat-expansion-panel-header>
-                    <ng-container *ngFor="let batch of task.batches; let blacklistBatchIndex = index" [formGroupName]="taskIndex+blacklistBatchIndex">
-                      <p>
-                        <mat-checkbox formControlName="blacklist_batch">{{task.batches[blacklistBatchIndex]}}</mat-checkbox>
-                      </p>
-                    </ng-container>
+                    <mat-slide-toggle *ngFor="let batchNode of taskNode['batches']" color="primary" class="mt-16px mb-16px" formControlName="{{batchNode['counter']}}">
+                      {{batchNode['batch']}}
+                    </mat-slide-toggle>
                   </mat-expansion-panel>
                 </mat-accordion>
               </div>
@@ -908,28 +902,27 @@
 
           <!-- Whitelist Batches -->
           <div formArrayName="whitelist_batches">
-            <button mat-flat-button color="primary" class="mt-16px mb-16px indent" (click)="addWhitelistBatch()">
+            <mat-progress-bar *ngIf="this.whitelistBatches().controls.length<=0 && !this.batchesTreeInitialization" mode="indeterminate"></mat-progress-bar>
+            <button *ngIf="this.batchesTreeInitialization" mat-flat-button color="primary" class="mt-16px mb-16px indent" (click)="addWhitelistBatches()">
               Whitelist Batches
             </button>
-            <button mat-flat-button color="primary" class="mb-16px" (click)="removeWhitelistBatch()" *ngIf="whitelistBatches().controls.length>0">
+            <button *ngIf="this.whitelistBatches().controls.length>0 && this.batchesTreeInitialization" mat-flat-button color="primary" class="mb-16px" (click)="removeWhitelistBatch()">
               Remove Batches
             </button>
-            <ng-container *ngIf="this.whitelistBatches().controls.length>0">
-              <div *ngFor="let task of batchesTree; let taskIndex = index">
+            <ng-container *ngIf="this.whitelistBatches().controls.length>0 && this.batchesTreeInitialization">
+              <div *ngFor="let taskNode of this.batchesTree">
                 <mat-accordion class="generator-accordion">
                   <mat-expansion-panel>
                     <mat-expansion-panel-header>
                       <mat-panel-title>
-                        {{task.name}}
+                        {{taskNode['task']}}
                       </mat-panel-title>
                       <mat-panel-description>
                       </mat-panel-description>
                     </mat-expansion-panel-header>
-                    <ng-container *ngFor="let batch of task.batches; let whitelistBatchIndex = index" [formGroupName]="taskIndex+whitelistBatchIndex">
-                      <p>
-                        <mat-checkbox formControlName="whitelist_batch">{{task.batches[whitelistBatchIndex]}}</mat-checkbox>
-                      </p>
-                    </ng-container>
+                    <mat-slide-toggle *ngFor="let batchNode of taskNode['batches']" color="primary" class="mt-16px mb-16px" formControlName="{{batchNode['counter']}}">
+                      {{batchNode['batch']}}
+                    </mat-slide-toggle>
                   </mat-expansion-panel>
                 </mat-accordion>
               </div>
@@ -940,26 +933,20 @@
 
           <!-- Messages -->
           <div formArrayName="messages">
-            <button mat-flat-button
-                    color="primary" class="mt-16px mb-16px indent"
-                    (click)="addMessage()">
+            <button mat-flat-button color="primary" class="mt-16px mb-16px indent" (click)="addMessage()">
               Add Message
             </button>
-            <div *ngFor="let msg of messages().controls; let messageIndex = index"
-                 [formGroupName]="messageIndex">
+            <div *ngFor="let msg of messages().controls; let messageIndex = index" [formGroupName]="messageIndex">
               <table class="width-100">
                 <tr>
                   <td class="p-0 pr-16px">
-                    <mat-form-field matLine class="width-100" [hideRequiredMarker]="msg.get('message').valid"
-                                    appearance="fill">
+                    <mat-form-field matLine class="width-100" [hideRequiredMarker]="msg.get('message').valid" appearance="fill">
                       <mat-label>Message</mat-label>
                       <input matInput type="text" formControlName="message" required>
                     </mat-form-field>
                   </td>
                   <td class="p-0 center">
-                    <button mat-flat-button
-                            color="primary" class="mb-16px"
-                            (click)="removeMessage(messageIndex)">
+                    <button mat-flat-button color="primary" class="mb-16px" (click)="removeMessage(messageIndex)">
                       Remove Message
                     </button>
                   </td>
@@ -1073,7 +1060,7 @@
         <mat-divider [inset]="true"></mat-divider>
 
         <h4 class="mb-0">Step #6 - <strong>Task Settings</strong>:</h4>
-        <p><code>{{ taskSettingsJSON(false) }}</code></p>
+        <p><code>{{ this.taskSettingsSerialized }}</code></p>
 
         <mat-divider [inset]="true"></mat-divider>
 
@@ -1115,7 +1102,8 @@
             <mat-list-item *ngIf="this.questionnairesPath" class="step-valid"><span>Step #1 - Questionnaire configuration uploaded at path: <code>{{this.questionnairesPath}}</code></span></mat-list-item>
             <mat-list-item *ngIf="this.dimensionsPath" class="step-valid"><span>Step #2 - Dimensions configuration uploaded at path: <code>{{this.dimensionsPath}}</code></span></mat-list-item>
             <mat-list-item *ngIf="this.taskInstructionsPath" class="step-valid"><span>Step #3 - General instructions configuration uploaded at path: <code>{{this.taskInstructionsPath}}</code></span></mat-list-item>
-            <mat-list-item *ngIf="this.dimensionsInstructionsPath" class="step-valid"><span>Step #4 - Evaluation instructions configuration uploaded at path: <code>{{this.dimensionsInstructionsPath}}</code></span></mat-list-item>
+            <mat-list-item *ngIf="this.dimensionsInstructionsPath" class="step-valid"><span>Step #4 - Evaluation instructions configuration uploaded at path: <code>{{this.dimensionsInstructionsPath}}</code></span>
+            </mat-list-item>
             <mat-list-item *ngIf="this.searchEngineSettingsPath" class="step-valid"><span>Step #5 - Search engine configuration uploaded at path: <code>{{this.searchEngineSettingsPath}}</code></span></mat-list-item>
             <mat-list-item *ngIf="this.taskSettingsPath" class="step-valid"><span>Step #6 - Task settings configuration uploaded at path: <code>{{this.taskSettingsPath}}</code></span></mat-list-item>
             <mat-list-item *ngIf="this.workerChecksPath" class="step-valid"><span>Step #7 - Worker checks configuration uploaded at path: <code>{{this.workerChecksPath}}</code></span></mat-list-item>

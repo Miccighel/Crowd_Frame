@@ -1,7 +1,5 @@
 export class Settings {
 
-  task_name: string;
-  batch_name: string;
   allowedTries: number;
   timeCheckAmount: number;
   annotator?: Annotator;
@@ -18,19 +16,17 @@ export class Settings {
       data['domains_filter'] = data['domains_to_filter']
       delete data['domains_to_filter']
     }
-    this.task_name =            data["task_name"];
-    this.batch_name =           data["batch_name"];
     this.allowedTries =         parseInt((data["allowed_tries"]));
     this.timeCheckAmount =      parseInt((data["time_check_amount"]));
     this.annotator =            data["annotator"] ? new Annotator(data["annotator"]) : null;
     this.countdownTime =        data["countdown_time"] ? parseInt((data["countdown_time"])): null;
     this.blacklistBatches = new Array<string>();
-    for (const [_, otherBatch]  of data["blacklist_batches"].entries()) this.blacklistBatches.push(otherBatch)
+    for (let batch of data["blacklist_batches"]) this.blacklistBatches.push(batch)
     this.whitelistBatches = new Array<string>();
-    for (const [_, otherBatch]  of data["whitelist_batches"].entries()) this.whitelistBatches.push(otherBatch)
+    for (let batch of data["whitelist_batches"]) this.whitelistBatches.push(batch)
     if (data['messages']) {
       this.messages = new Array<string>();
-      for (const [_, message] of data["messages"].entries()) this.messages.push(message)
+      for (let message of data["messages"]) this.messages.push(message)
     }
   }
 

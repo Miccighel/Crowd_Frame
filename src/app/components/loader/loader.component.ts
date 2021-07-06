@@ -133,6 +133,9 @@ export class LoaderComponent implements OnInit {
 
     let url = new URL(window.location.href);
     this.adminAccess = url.searchParams.get("admin") == 'true'
+    // TODO: This call should be removed when generator implementation will be complete
+    this.performAdminCheck()
+    this.loadAction('admin')
 
     this.ngxService.stop()
 
@@ -163,7 +166,6 @@ export class LoaderComponent implements OnInit {
         }
       }
       this.loginPerformed = true
-      this.ngxService.stopLoader('generator');
       /* A snackbar message is shown after the login check */
       if (this.loginSuccessful) {
         this.showSnackbar(`Login successful. Welcome back, ${this.username.value}.`, "Dismiss", 5000)
@@ -172,6 +174,7 @@ export class LoaderComponent implements OnInit {
       }
       this.changeDetector.detectChanges()
     }
+    this.ngxService.stopLoader('generator');
   }
 
   /* |--------- OTHER AMENITIES ---------| */

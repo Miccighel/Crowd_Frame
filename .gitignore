@@ -69,3 +69,11 @@ data/build/deploy/styles.css
 data/build/deploy/index.html
 data/build/mturk/index.html
 data/build/mturk/tokens.csv
+data/build/task/dimensions.json
+data/build/task/hits.json
+data/build/task/instructions_dimensions.json
+data/build/task/instructions_main.json
+data/build/task/questionnaires.json
+data/build/task/search_engine.json
+data/build/task/task.json
+data/build/task/workers.json

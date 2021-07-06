@@ -15,6 +15,10 @@ import {Question, Questionnaire} from "../../models/questionnaire";
 import {Dimension, Mapping} from "../../models/dimension";
 import {Instruction} from "../../models/instructions";
 import {SearchSettings} from "../../models/search";
+import {Settings} from "../../models/settings";
+
+import { ColorPickerModule } from 'ngx-color-picker';
+import {Hit} from "../../models/hit";
 
 /*
  * The following interfaces are used to simplify data handling for each generator step.
@@ -155,14 +159,18 @@ export class GeneratorComponent implements OnInit {
 
   /* STEP #6 - Task Settings */
   taskSettingsForm: FormGroup;
+  taskSettingsFetched: Settings
+  taskSettingsSerialized: string
   taskNames: Array<string>
-  batchesList: Array<string>
-  batchesTree
+  batchesTree: Array<Object>
+  batchesTreeInitialization: boolean
+  annotatorOptionColors: Array<string>
   /* Variables to handle hits file upload */
-  localHitsFile: ReadFile
-  localHistFileSize: number
-  hitsDetected: number
+  hitsFile: ReadFile
+  hitsFileName : string
   parsedHits: Array<JSON>
+  hitsSize: number
+  hitsDetected: number
   readMode: ReadMode
 
   /* STEP #7 - Worker Checks */
@@ -226,7 +234,7 @@ export class GeneratorComponent implements OnInit {
     this.S3Service = S3Service
     this.changeDetector = changeDetector
     this.localStorageService = localStorageService
-    this.ngxService.startLoader('generator')
+    this.ngxService.startLoader('generator-inner')
 
     /* STEP #1 - Questionnaires */
 
@@ -298,40 +306,30 @@ export class GeneratorComponent implements OnInit {
     this.searchEngineFetched = new SearchSettings(rawSearchEngineSettings)
     let identifier = `search-engine-settings`
     let item = this.localStorageService.getItem(identifier)
-    if (item) {
-      this.searchEngineFetched = JSON.parse(item)
-    } else {
-      this.localStorageService.setItem(identifier, JSON.stringify(this.searchEngineFetched))
-    }
+    if (item) this.searchEngineFetched = JSON.parse(item); else this.localStorageService.setItem(identifier, JSON.stringify(this.searchEngineFetched))
 
-    /* The following code lists the folders which are present inside task's main folder.
-     * In other words, it lists every batch name for the current task to build a nodeList
-     * which is then shown to the user during step #6 */
-    this.batchesTree = {}
-    let tasksPromise = this.S3Service.listFolders(this.configService.environment)
-    let nodes = []
-    let completeList = []
-    tasksPromise.then(tasks => {
-      for (let task of tasks) {
-        let taskName = task["Prefix"].split("/")[0]
-        let batches = this.S3Service.listFolders(this.configService.environment, task["Prefix"])
-        batches.then(batches => {
-          if (batches.length > 0) {
-            let node = {}
-            node["name"] = taskName
-            node["batches"] = []
-            for (let batch of batches) {
-              completeList.push(batch["Prefix"])
-              node["batches"].push(batch["Prefix"])
-            }
-            nodes.push(node)
-          }
-        })
+    /* STEP #6 - Task Settings */
+
+    let rawTaskSettings = this.S3Service.downloadTaskSettings(this.configService.environment)
+    this.taskSettingsFetched = new Settings(rawTaskSettings)
+    identifier = `task-settings`
+    item = this.localStorageService.getItem(identifier)
+    if (item) this.taskSettingsFetched = JSON.parse(item); else this.localStorageService.setItem(identifier, JSON.stringify(this.taskSettingsFetched))
+
+    this.annotatorOptionColors = ['#FFFF7B']
+    if(this.taskSettingsFetched.annotator) {
+      if (this.taskSettingsFetched.annotator.type == "options") {
+        if (this.taskSettingsFetched.annotator.values.length > 0) {
+          this.annotatorOptionColors = []
+          this.taskSettingsFetched.annotator.values.forEach((optionValue, optionValueIndex) => {
+            this.annotatorOptionColors.push(optionValue['color'])
+          })
+        }
       }
-      this.ngxService.stopLoader('generator')
-    })
-    this.batchesTree = nodes
-    this.batchesList = completeList
+    }
+    this.batchesTreeInitialization = false
+
+    /* STEP #8 - Summary */
 
     /* A sample full S3 path is shown */
     this.fullS3Path = "&lt;region&gt;/&lt;bucket&gt;/&lt;task_name&gt;/&lt;bucket_name&gt;"
@@ -343,6 +341,8 @@ export class GeneratorComponent implements OnInit {
 
     /* Read mode during hits file upload*/
     this.readMode = ReadMode.text
+
+    this.ngxService.stopLoader('generator-inner')
   }
 
   /*
@@ -409,22 +409,24 @@ export class GeneratorComponent implements OnInit {
 
     /* STEP #6 - Task Settings */
     this.taskSettingsForm = this._formBuilder.group({
-      task_name: [''],
-      batch_name: [''],
-      allowed_tries: [''],
-      time_check_amount: [''],
-      hits: [''],
-      setAnnotator: [''],
+      allowed_tries: [this.taskSettingsFetched.allowedTries ? this.taskSettingsFetched.allowedTries : ''],
+      time_check_amount: [this.taskSettingsFetched.timeCheckAmount ? this.taskSettingsFetched.timeCheckAmount : ''],
+      hits: [],
+      setAnnotator: [!!this.taskSettingsFetched.annotator],
       annotator: this._formBuilder.group({
-        type: [''],
+        type: [this.taskSettingsFetched.annotator ? this.taskSettingsFetched.annotator.type : ''],
         values: this._formBuilder.array([]),
       }),
-      setCountdownTime: [''],
-      countdown_time: [''],
+      setCountdownTime: [!!this.taskSettingsFetched.countdownTime],
+      countdown_time: [this.taskSettingsFetched.countdownTime ? this.taskSettingsFetched.countdownTime : ''],
       blacklist_batches: this._formBuilder.array([]),
       whitelist_batches: this._formBuilder.array([]),
       messages: this._formBuilder.array([])
     });
+    if (this.taskSettingsFetched.messages.length > 0) this.taskSettingsFetched.messages.forEach((message, messageIndex) => this.addMessage(message))
+    if (this.taskSettingsFetched.annotator) if (this.taskSettingsFetched.annotator.type == "options") this.taskSettingsFetched.annotator.values.forEach((optionValue, optionValueIndex) => this.addOptionValue(optionValue))
+    this.taskSettingsJSON()
+    this.taskSettingsForm.valueChanges.subscribe(value => this.taskSettingsJSON())
 
     /* STEP #7 - Worker Checks */
     this.workerChecksForm = this._formBuilder.group({
@@ -432,6 +434,55 @@ export class GeneratorComponent implements OnInit {
       whitelist: ['']
     })
 
+    let hitsPromise = this.loadHits()
+    let batchesPromise = this.loadBatchesTree()
+
+  }
+
+  async loadHits() {
+    let hits = await this.S3Service.downloadHits(this.configService.environment)
+    this.updateHitsFile(hits)
+  }
+
+  async loadBatchesTree() {
+
+    this.batchesTree = Array()
+    let counter = 0
+    let blackListedBatches = 0
+    let whiteListedBatches = 0
+    let tasks = await this.S3Service.listFolders(this.configService.environment)
+    for (let task of tasks) {
+      let taskNode = {
+        "task": task['Prefix'],
+        "batches": []
+      }
+      let batches = await this.S3Service.listFolders(this.configService.environment, task['Prefix'])
+      for (let batch of batches) {
+        let batchNode = {
+          "batch": batch['Prefix'],
+          "blacklist": false,
+          "whitelist": false,
+          "counter": counter
+        }
+        this.taskSettingsFetched.blacklistBatches.forEach((batchName, batchIndex) => {
+          blackListedBatches = blackListedBatches + 1
+          batchNode['blacklist'] = batchName == batch["Prefix"];
+        })
+        this.taskSettingsFetched.whitelistBatches.forEach((batchName, batchIndex) => {
+          whiteListedBatches = whiteListedBatches + 1
+          batchNode['whitelist'] = batchName == batch["Prefix"];
+        })
+        taskNode["batches"].push(batchNode)
+        counter = counter + 1
+      }
+      this.batchesTree.push(taskNode)
+    }
+    this.batchesTreeInitialization = true
+
+    if (blackListedBatches > 0) this.addBlacklistBatches()
+    if (whiteListedBatches > 0) this.addWhitelistBatches()
+
+    this.changeDetector.detectChanges()
 
   }
 
@@ -614,10 +665,10 @@ export class GeneratorComponent implements OnInit {
       })
     }))
     if (dimension && dimension.scale) if (dimension.scale.type == 'categorical') {
-      if(dimension.scale['mapping']) for (let mapping of dimension.scale['mapping']) this.addDimensionMapping(dimensionIndex, mapping)
-      if(this.dimensionMapping(dimensionIndex).length == 0) this.addDimensionMapping(dimensionIndex)
+      if (dimension.scale['mapping']) for (let mapping of dimension.scale['mapping']) this.addDimensionMapping(dimensionIndex, mapping)
+      if (this.dimensionMapping(dimensionIndex).length == 0) this.addDimensionMapping(dimensionIndex)
     }
-    if(dimension && dimension.style) {
+    if (dimension && dimension.style) {
       this.updateStyleType(dimensionIndex)
     }
   }
@@ -987,21 +1038,27 @@ export class GeneratorComponent implements OnInit {
 
   /* STEP #6 - Task Settings */
 
-  updateHitsFile() {
-    this.parsedHits = JSON.parse(this.localHitsFile.content)
+  updateHitsFile(hits = null) {
+    this.parsedHits = hits ? hits : JSON.parse(this.hitsFile.content);
     if (this.parsedHits.length > 0) {
-      if (("documents" in this.parsedHits[0]) && ("token_input" in this.parsedHits[0]) && ("token_output" in this.parsedHits[0]) && ("unit_id" in this.parsedHits[0])) {
-        this.hitsDetected = this.parsedHits.length
-      } else {
-        this.hitsDetected = 0
-      }
+      this.hitsDetected = ("documents" in this.parsedHits[0]) && ("token_input" in this.parsedHits[0]) && ("token_output" in this.parsedHits[0]) && ("unit_id" in this.parsedHits[0]) ? this.parsedHits.length : 0;
     } else {
       this.hitsDetected = 0
     }
-    this.localHistFileSize = Math.round(this.localHitsFile.size / 1024)
+    if(this.hitsFile) {
+      this.hitsSize = Math.round(this.hitsFile.size / 1024)
+      this.hitsFileName = this.hitsFile.name
+    } else {
+      this.hitsSize = (new TextEncoder().encode(this.parsedHits.toString())).length
+      this.hitsFileName = "hits.json"
+    }
     this.taskSettingsForm.get('hits').setValue('')
     if (this.hitsDetected > 0) {
-      this.taskSettingsForm.get('hits').setValue(this.localHitsFile.content)
+      if(hits) {
+        this.taskSettingsForm.get('hits').setValue(hits)
+      } else {
+        this.taskSettingsForm.get('hits').setValue(this.hitsFile ? this.hitsFile.content : this.parsedHits)
+      }
     } else {
       this.taskSettingsForm.get('hits').setValidators([Validators.required])
     }
@@ -1012,11 +1069,11 @@ export class GeneratorComponent implements OnInit {
     return this.taskSettingsForm.get('blacklist_batches') as FormArray;
   }
 
-  addBlacklistBatch() {
-    for (let item of this.batchesList) {
-      this.blacklistBatches().push(this._formBuilder.group({
-        blacklist_batch: ['']
-      }))
+  addBlacklistBatches() {
+    for (let taskNode of this.batchesTree) {
+      for (let batchNode of taskNode["batches"]) {
+        if (batchNode['blacklist']) this.blacklistBatches().push(new FormControl(true)); else this.blacklistBatches().push(new FormControl(''))
+      }
     }
   }
 
@@ -1034,11 +1091,11 @@ export class GeneratorComponent implements OnInit {
     return this.taskSettingsForm.get('whitelist_batches') as FormArray;
   }
 
-  addWhitelistBatch() {
-    for (let item of this.batchesList) {
-      this.whitelistBatches().push(this._formBuilder.group({
-        whitelist_batch: ['']
-      }))
+  addWhitelistBatches() {
+    for (let taskNode of this.batchesTree) {
+      for (let batchNode of taskNode["batches"]) {
+        if (batchNode['whitelist']) this.whitelistBatches().push(new FormControl(true)); else this.whitelistBatches().push(new FormControl(''))
+      }
     }
   }
 
@@ -1062,8 +1119,12 @@ export class GeneratorComponent implements OnInit {
     this.taskSettingsForm.get('countdown_time').updateValueAndValidity();
   }
 
+  annotator() {
+    return this.taskSettingsForm.get('annotator') as FormGroup
+  }
+
   setAnnotatorType() {
-    if (this.taskSettingsForm.get('annotator').get('type').value == 'options') {
+    if (this.annotator().get('type').value == 'options' && this.annotatorOptionValues().length == 0) {
       this.annotatorOptionValues().push(this._formBuilder.group({
         label: [''],
         color: ['']
@@ -1072,13 +1133,13 @@ export class GeneratorComponent implements OnInit {
   }
 
   resetAnnotator() {
-    this.taskSettingsForm.get('annotator').get('type').setValue('')
+    this.annotator().get('type').setValue('')
     if (this.taskSettingsForm.get('setAnnotator').value == false) {
-      this.taskSettingsForm.get('annotator').get('type').clearValidators();
+      this.annotator().get('type').clearValidators();
     } else {
-      this.taskSettingsForm.get('annotator').get('type').setValidators([Validators.required, this.positiveNumber.bind(this)]);
+      this.annotator().get('type').setValidators([Validators.required, this.positiveNumber.bind(this)]);
     }
-    this.taskSettingsForm.get('annotator').get('type').updateValueAndValidity();
+    this.annotator().get('type').updateValueAndValidity();
   }
 
   /* SUB ELEMENT: Annotator */
@@ -1086,10 +1147,10 @@ export class GeneratorComponent implements OnInit {
     return this.taskSettingsForm.get('annotator').get('values') as FormArray;
   }
 
-  addOptionValue() {
+  addOptionValue(option = null as Object) {
     this.annotatorOptionValues().push(this._formBuilder.group({
-      label: [''],
-      color: ['']
+      label: [option ? option['label'] : ''],
+      color: [option ? option['color'] : '']
     }))
   }
 
@@ -1101,9 +1162,9 @@ export class GeneratorComponent implements OnInit {
     return this.taskSettingsForm.get('messages') as FormArray;
   }
 
-  addMessage() {
+  addMessage(message = null) {
     this.messages().push(this._formBuilder.group({
-      message: ['']
+      message: [message ? message : '']
     }))
   }
 
@@ -1113,48 +1174,54 @@ export class GeneratorComponent implements OnInit {
 
   /* JSON Output */
 
-  taskSettingsJSON(verbose = true) {
+  taskSettingsJSON(verbose = false) {
+
     let taskSettingsJSON = JSON.parse(JSON.stringify(this.taskSettingsForm.value));
 
     if (!verbose) {
       taskSettingsJSON["hits"] = "..."
     }
 
-    if (taskSettingsJSON.setAnnotator == false || taskSettingsJSON.setAnnotator == null) {
-      taskSettingsJSON.annotator = false
-    }
+    if (!taskSettingsJSON.setAnnotator) taskSettingsJSON.annotator = false
     delete taskSettingsJSON.setAnnotator
 
-    if (taskSettingsJSON.setCountdownTime == false) {
-      taskSettingsJSON.countdown_time = false
-    }
+    if (!taskSettingsJSON.setCountdownTime) taskSettingsJSON.countdown_time = false
     delete taskSettingsJSON.setCountdownTime
 
-    let blacklistBatchesStringArray = [];
-    for (let blacklistBatchIndex in taskSettingsJSON.blacklist_batches) {
-      if (taskSettingsJSON.blacklist_batches[blacklistBatchIndex].blacklist_batch)
-        blacklistBatchesStringArray.push(this.batchesList[blacklistBatchIndex]);
+    let blacklistBatches = [];
+    for (let blacklistCounter in taskSettingsJSON.blacklist_batches) {
+      for (let taskNode of this.batchesTree) {
+        for (let batchNode of taskNode['batches']) {
+          if(blacklistCounter == batchNode['counter'] && batchNode['blacklist']) {
+            blacklistBatches.push(batchNode['batch'])
+          }
+        }
+      }
     }
-    taskSettingsJSON.blacklist_batches = blacklistBatchesStringArray;
+    taskSettingsJSON.blacklist_batches = blacklistBatches;
 
-    let whitelistBatchesStringArray = [];
-    for (let whitelistBatchIndex in taskSettingsJSON.whitelist_batches) {
-      if (taskSettingsJSON.whitelist_batches[whitelistBatchIndex].whitelist_batch)
-        whitelistBatchesStringArray.push(this.batchesList[whitelistBatchIndex]);
+    let whitelistBatches = [];
+    for (let whitelistCounter in taskSettingsJSON.whitelist_batches) {
+      for (let taskNode of this.batchesTree) {
+        for (let batchNode of taskNode['batches']) {
+          if(whitelistCounter == batchNode['counter'] && batchNode['whitelist']) {
+            whitelistBatches.push(batchNode['batch'])
+          }
+        }
+      }
     }
-    taskSettingsJSON.whitelist_batches = whitelistBatchesStringArray;
+    taskSettingsJSON.whitelist_batches = whitelistBatches;
 
     if (taskSettingsJSON.messages.length == 0) {
       delete taskSettingsJSON.messages;
     } else {
-      let messagesStringArray = [];
-      for (let messageIndex in taskSettingsJSON.messages) {
-        messagesStringArray.push(taskSettingsJSON.messages[messageIndex].message);
-      }
-      taskSettingsJSON.messages = messagesStringArray;
+      let messages = [];
+      for (let messageIndex in taskSettingsJSON.messages) messages.push(taskSettingsJSON.messages[messageIndex].message);
+      taskSettingsJSON.messages = messages;
     }
 
-    return JSON.stringify(taskSettingsJSON, null, 1);
+    this.localStorageService.setItem(`task-settings`, JSON.stringify(taskSettingsJSON))
+    this.taskSettingsSerialized = JSON.stringify(taskSettingsJSON)
   }
 
   /* STEP #7 - Worker Checks */
@@ -1190,9 +1257,9 @@ export class GeneratorComponent implements OnInit {
     let hitsPromise = this.S3Service.uploadHitsConfig(this.configService.environment, this.taskSettingsForm.get('hits').value, this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
     let dimensionsPromise = this.S3Service.uploadDimensionsConfig(this.configService.environment, this.dimensionsSerialized, this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
     let taskInstructionsPromise = this.S3Service.uploadTaskInstructionsConfig(this.configService.environment, this.generalInstructionsSerialized, this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
-    let dimensionsInstructionsPromise = this.S3Service.uploadDimensionsInstructionsConfig(this.configService.environment, this.evaluationInstructionsJSON(), this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
-    let searchEngineSettingsPromise = this.S3Service.uploadSearchEngineSettings(this.configService.environment, this.searchEngineJSON(), this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
-    let taskSettingsPromise = this.S3Service.uploadTaskSettings(this.configService.environment, this.taskSettingsJSON(), this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
+    let dimensionsInstructionsPromise = this.S3Service.uploadDimensionsInstructionsConfig(this.configService.environment, this.evaluationInstructionsSerialized, this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
+    let searchEngineSettingsPromise = this.S3Service.uploadSearchEngineSettings(this.configService.environment, this.searchEngineSerialized, this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
+    let taskSettingsPromise = this.S3Service.uploadTaskSettings(this.configService.environment, this.taskSettingsSerialized, this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
     let workerChecksPromise = this.S3Service.uploadWorkersCheck(this.configService.environment, this.workerChecksJSON(), this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
     questionnairePromise.then(result => {
       if (!result["failed"]) {
