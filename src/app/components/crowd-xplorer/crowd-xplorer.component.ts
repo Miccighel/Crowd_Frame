@@ -17,7 +17,7 @@ import {PubmedSearchResponse} from "../../models/pubmedSearchResponse";
 import {PubmedSummaryResponse} from '../../models/pubmedSummaryResponse';
 import {ConfigService} from "../../services/config.service";
 import * as AWS from "aws-sdk";
-import {SearchSettings} from "../../models/search";
+import {SettingsSearchEngine} from "../../models/settingsSearchEngine";
 /* Debug config import */
 import {S3Service} from "../../services/s3.service";
 
@@ -55,7 +55,7 @@ export class CrowdXplorer {
   /*
    * Object to wrap search engine settings
    */
-  settings: SearchSettings
+  settings: SettingsSearchEngine
 
   /* |--------- SERVICES & CO. - DECLARATION ---------| */
 
@@ -163,7 +163,7 @@ export class CrowdXplorer {
    */
   public async loadSettings() {
     let rawSettings = await this.S3Service.downloadSearchEngineSettings(this.configService.environment)
-    this.settings = new SearchSettings(rawSettings)
+    this.settings = new SettingsSearchEngine(rawSettings)
     this.source = this.settings.source
     this.domainsToFilter = this.settings.domains_filter
   }

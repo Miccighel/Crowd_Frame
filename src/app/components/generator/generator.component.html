@@ -787,7 +787,7 @@
               <code>invalid file</code>
             </ng-container>
             <ng-container *ngIf="this.hitsDetected > 0">
-              <code>Filename: {{ "ddd" }}, Hits detected: {{this.hitsDetected}}, Filesize: {{this.hitsSize}} Kb</code>
+              <code>Filename: {{ this.hitsFileName }}, Hits detected: {{this.hitsDetected}}, Filesize: {{this.hitsSize}} Kb</code>
             </ng-container>
             <tr *ngIf="this.hitsDetected<=0">
               <td>
@@ -983,30 +983,25 @@
         <mat-card-content>
 
           <!-- Blacklist -->
-          <table class="width-100 mt-8px">
-            <tr>
-              <td class="p-0">
-                <mat-form-field class="width-100" appearance="fill">
-                  <mat-label>Blacklist Workers</mat-label>
-                  <textarea matInput formControlName="blacklist" placeholder="blacklistWorker1;blacklistWorker2;etc."></textarea>
-                </mat-form-field>
-              </td>
-            </tr>
-          </table>
+
+          <mat-form-field class="width-100" appearance="fill">
+            <mat-label>Worker IDs Blacklisted</mat-label>
+            <mat-chip-list #blacklistChips formControlName="blacklist" multiple>
+              <mat-chip *ngFor="let workerId of this.blacklistedWorkerId" [selected]="workerId" [value]="workerId" (removed)="removeBlacklistedId(workerId)">{{workerId}}</mat-chip>
+              <input  placeholder="New worker ID ..." [matChipInputFor]="blacklistChips" (matChipInputTokenEnd)="addBlacklistedId($event)">
+            </mat-chip-list>
+          </mat-form-field>
 
           <mat-divider [inset]="true"></mat-divider>
 
           <!-- Whitelist -->
-          <table class="width-100 mt-16px">
-            <tr>
-              <td class="p-0">
-                <mat-form-field class="width-100" appearance="fill">
-                  <mat-label>Whitelist Workers</mat-label>
-                  <textarea matInput formControlName="whitelist" placeholder="whitelistWorker1;whitelistWorker2;etc."></textarea>
-                </mat-form-field>
-              </td>
-            </tr>
-          </table>
+          <mat-form-field class="width-100" appearance="fill">
+            <mat-label>Worker IDs Whitelisted</mat-label>
+            <mat-chip-list #whitelistChips formControlName="whitelist" multiple>
+              <mat-chip *ngFor="let workerId of this.whitelistedWorkerId" [selected]="workerId" [value]="workerId" (removed)="removeWhitelistedId(workerId)">{{workerId}}</mat-chip>
+              <input  placeholder="New worker ID ..." [matChipInputFor]="whitelistChips" (matChipInputTokenEnd)="addWhitelistedId($event)">
+            </mat-chip-list>
+          </mat-form-field>
 
         </mat-card-content>
 
@@ -1065,7 +1060,7 @@
         <mat-divider [inset]="true"></mat-divider>
 
         <h4 class="mb-0">Step #7 - <strong>Worker Checks</strong>:</h4>
-        <p><code>{{ workerChecksJSON() }}</code></p>
+        <p><code>{{ this.workersChecksSerialized }}</code></p>
 
         <mat-divider [inset]="true"></mat-divider>
         <h4 class="mb-0"><strong>Validity Check</strong>:</h4>

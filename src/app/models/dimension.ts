@@ -68,7 +68,7 @@ export class Scale {
 
 export class ScaleCategorical extends Scale{
 
-  mappings: Array<Mapping>;
+  mapping: Array<Mapping>;
 
   constructor(
     data: JSON
@@ -76,8 +76,8 @@ export class ScaleCategorical extends Scale{
 
     super(data)
 
-    this.mappings = new Array<Mapping>();
-    for (let index = 0; index < data["mapping"].length; index++) this.mappings.push(new Mapping(index, data["mapping"][index]))
+    this.mapping = new Array<Mapping>();
+    for (let index = 0; index < data["mapping"].length; index++) this.mapping.push(new Mapping(index, data["mapping"][index]))
   }
 
 }

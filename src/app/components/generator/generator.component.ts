@@ -14,11 +14,14 @@ import {ReadFile, ReadMode} from "ngx-file-helpers";
 import {Question, Questionnaire} from "../../models/questionnaire";
 import {Dimension, Mapping} from "../../models/dimension";
 import {Instruction} from "../../models/instructions";
-import {SearchSettings} from "../../models/search";
-import {Settings} from "../../models/settings";
+import {SettingsSearchEngine} from "../../models/settingsSearchEngine";
+import {SettingsTask} from "../../models/settingsTask";
 
 import { ColorPickerModule } from 'ngx-color-picker';
 import {Hit} from "../../models/hit";
+import {SettingsWorker} from "../../models/settingsWorker";
+import {MatChipInputEvent} from "@angular/material/chips";
+import {type} from "os";
 
 /*
  * The following interfaces are used to simplify data handling for each generator step.
@@ -154,27 +157,30 @@ export class GeneratorComponent implements OnInit {
     {value: 'FakerWebSearch', viewValue: 'FakerWeb'},
     {value: 'PubmedSearch', viewValue: 'Pubmed'}
   ];
-  searchEngineFetched: SearchSettings
+  searchEngineFetched: SettingsSearchEngine
   searchEngineSerialized: string
 
   /* STEP #6 - Task Settings */
   taskSettingsForm: FormGroup;
-  taskSettingsFetched: Settings
+  taskSettingsFetched: SettingsTask
   taskSettingsSerialized: string
-  taskNames: Array<string>
   batchesTree: Array<Object>
   batchesTreeInitialization: boolean
   annotatorOptionColors: Array<string>
   /* Variables to handle hits file upload */
   hitsFile: ReadFile
   hitsFileName : string
-  parsedHits: Array<JSON>
+  parsedHits: Array<Hit>
   hitsSize: number
   hitsDetected: number
   readMode: ReadMode
 
   /* STEP #7 - Worker Checks */
   workerChecksForm: FormGroup;
+  workerChecksFetched
+  workersChecksSerialized: string
+  blacklistedWorkerId: Set<string>
+  whitelistedWorkerId: Set<string>
 
   /* STEP #8 - Summary */
 
@@ -303,7 +309,7 @@ export class GeneratorComponent implements OnInit {
     /* STEP #5 - Search Engine Settings */
 
     let rawSearchEngineSettings = this.S3Service.downloadSearchEngineSettings(this.configService.environment)
-    this.searchEngineFetched = new SearchSettings(rawSearchEngineSettings)
+    this.searchEngineFetched = new SettingsSearchEngine(rawSearchEngineSettings)
     let identifier = `search-engine-settings`
     let item = this.localStorageService.getItem(identifier)
     if (item) this.searchEngineFetched = JSON.parse(item); else this.localStorageService.setItem(identifier, JSON.stringify(this.searchEngineFetched))
@@ -311,7 +317,7 @@ export class GeneratorComponent implements OnInit {
     /* STEP #6 - Task Settings */
 
     let rawTaskSettings = this.S3Service.downloadTaskSettings(this.configService.environment)
-    this.taskSettingsFetched = new Settings(rawTaskSettings)
+    this.taskSettingsFetched = new SettingsTask(rawTaskSettings)
     identifier = `task-settings`
     item = this.localStorageService.getItem(identifier)
     if (item) this.taskSettingsFetched = JSON.parse(item); else this.localStorageService.setItem(identifier, JSON.stringify(this.taskSettingsFetched))
@@ -328,6 +334,14 @@ export class GeneratorComponent implements OnInit {
       }
     }
     this.batchesTreeInitialization = false
+
+    /* STEP #7 - Worker Checks Settings */
+
+    let rawWorkerChecks = this.S3Service.downloadWorkers(this.configService.environment)
+    this.workerChecksFetched = new SettingsWorker(rawWorkerChecks)
+    identifier = `worker-settings`
+    item = this.localStorageService.getItem(identifier)
+    if (item) this.workerChecksFetched = JSON.parse(item); else this.localStorageService.setItem(identifier, JSON.stringify(this.workerChecksFetched))
 
     /* STEP #8 - Summary */
 
@@ -428,20 +442,33 @@ export class GeneratorComponent implements OnInit {
     this.taskSettingsJSON()
     this.taskSettingsForm.valueChanges.subscribe(value => this.taskSettingsJSON())
 
-    /* STEP #7 - Worker Checks */
-    this.workerChecksForm = this._formBuilder.group({
-      blacklist: [''],
-      whitelist: ['']
-    })
-
     let hitsPromise = this.loadHits()
     let batchesPromise = this.loadBatchesTree()
+
+    /* STEP #7 - Worker Checks */
+    this.workerChecksForm = this._formBuilder.group({
+      blacklist: [this.workerChecksFetched.blacklist ? this.workerChecksFetched.blacklist : ''],
+      whitelist: [this.workerChecksFetched.whitelist ? this.workerChecksFetched.whitelist : '']
+    })
+    this.workerChecksJSON()
+    this.workerChecksForm.valueChanges.subscribe(value => this.workerChecksJSON())
+
+    this.whitelistedWorkerId =  new Set();
+    this.blacklistedWorkerId =  new Set();
+    this.workerChecksFetched.blacklist.forEach((workerId, workerIndex) => this.blacklistedWorkerId.add(workerId))
+    this.workerChecksFetched.whitelist.forEach((workerId, workerIndex) => this.whitelistedWorkerId.add(workerId))
 
   }
 
   async loadHits() {
-    let hits = await this.S3Service.downloadHits(this.configService.environment)
-    this.updateHitsFile(hits)
+    let hits = JSON.parse(this.localStorageService.getItem('hits'))
+    if(hits) {
+      this.updateHitsFile(hits)
+    } else {
+      let hits = await this.S3Service.downloadHits(this.configService.environment)
+      this.localStorageService.setItem(`hits`, JSON.stringify(hits))
+      this.updateHitsFile(hits)
+    }
   }
 
   async loadBatchesTree() {
@@ -464,14 +491,18 @@ export class GeneratorComponent implements OnInit {
           "whitelist": false,
           "counter": counter
         }
-        this.taskSettingsFetched.blacklistBatches.forEach((batchName, batchIndex) => {
-          blackListedBatches = blackListedBatches + 1
-          batchNode['blacklist'] = batchName == batch["Prefix"];
-        })
-        this.taskSettingsFetched.whitelistBatches.forEach((batchName, batchIndex) => {
-          whiteListedBatches = whiteListedBatches + 1
-          batchNode['whitelist'] = batchName == batch["Prefix"];
-        })
+        if(this.taskSettingsFetched.blacklistBatches) {
+          this.taskSettingsFetched.blacklistBatches.forEach((batchName, batchIndex) => {
+            blackListedBatches = blackListedBatches + 1
+            batchNode['blacklist'] = batchName == batch["Prefix"];
+          })
+        }
+        if(this.taskSettingsFetched.whitelistBatches) {
+          this.taskSettingsFetched.whitelistBatches.forEach((batchName, batchIndex) => {
+            whiteListedBatches = whiteListedBatches + 1
+            batchNode['whitelist'] = batchName == batch["Prefix"];
+          })
+        }
         taskNode["batches"].push(batchNode)
         counter = counter + 1
       }
@@ -1039,11 +1070,18 @@ export class GeneratorComponent implements OnInit {
   /* STEP #6 - Task Settings */
 
   updateHitsFile(hits = null) {
-    this.parsedHits = hits ? hits : JSON.parse(this.hitsFile.content);
+    if (hits) {
+      this.parsedHits = hits;
+    } else {
+      this.parsedHits = JSON.parse(this.hitsFile.content) as Array<Hit>;
+    }
     if (this.parsedHits.length > 0) {
       this.hitsDetected = ("documents" in this.parsedHits[0]) && ("token_input" in this.parsedHits[0]) && ("token_output" in this.parsedHits[0]) && ("unit_id" in this.parsedHits[0]) ? this.parsedHits.length : 0;
     } else {
       this.hitsDetected = 0
+    }
+    if(this.hitsDetected > 0) {
+      this.localStorageService.setItem(`hits`, JSON.stringify(this.parsedHits))
     }
     if(this.hitsFile) {
       this.hitsSize = Math.round(this.hitsFile.size / 1024)
@@ -1178,9 +1216,7 @@ export class GeneratorComponent implements OnInit {
 
     let taskSettingsJSON = JSON.parse(JSON.stringify(this.taskSettingsForm.value));
 
-    if (!verbose) {
-      taskSettingsJSON["hits"] = "..."
-    }
+    taskSettingsJSON["hits"] = "..."
 
     if (!taskSettingsJSON.setAnnotator) taskSettingsJSON.annotator = false
     delete taskSettingsJSON.setAnnotator
@@ -1226,23 +1262,41 @@ export class GeneratorComponent implements OnInit {
 
   /* STEP #7 - Worker Checks */
 
+  addBlacklistedId(event: MatChipInputEvent) {
+    if (event.value) {
+      this.blacklistedWorkerId.add(event.value);
+      event.chipInput!.clear();
+    }
+    this.workerChecksJSON()
+  }
+
+  addWhitelistedId(event: MatChipInputEvent) {
+    if (event.value) {
+      this.whitelistedWorkerId.add(event.value);
+      event.chipInput!.clear();
+    }
+    this.workerChecksJSON()
+  }
+
+  removeBlacklistedId(workerId: string) {
+    this.blacklistedWorkerId.delete(workerId);
+    this.workerChecksJSON()
+  }
+
+  removeWhitelistedId(workerId: string) {
+    this.whitelistedWorkerId.delete(workerId);
+    this.workerChecksJSON()
+  }
+
   /* JSON Output */
   workerChecksJSON() {
     let workerChecksJSON = JSON.parse(JSON.stringify(this.workerChecksForm.value));
-
-    if (workerChecksJSON.blacklist == '') {
-      workerChecksJSON.blacklist = [];
-    } else {
-      workerChecksJSON.blacklist = workerChecksJSON.blacklist.split(";");
-    }
-
-    if (workerChecksJSON.whitelist == '') {
-      workerChecksJSON.whitelist = [];
-    } else {
-      workerChecksJSON.whitelist = workerChecksJSON.whitelist.split(";");
-    }
-
-    return JSON.stringify(workerChecksJSON, null, 1);
+    if(this.blacklistedWorkerId)
+      workerChecksJSON.blacklist = Array.from(this.blacklistedWorkerId.values())
+    if(this.whitelistedWorkerId)
+      workerChecksJSON.whitelist = Array.from(this.whitelistedWorkerId.values())
+    this.localStorageService.setItem(`worker-settings`, JSON.stringify(workerChecksJSON))
+    this.workersChecksSerialized = JSON.stringify(workerChecksJSON)
   }
 
   /* STEP 8 - Summary  */
@@ -1260,7 +1314,7 @@ export class GeneratorComponent implements OnInit {
     let dimensionsInstructionsPromise = this.S3Service.uploadDimensionsInstructionsConfig(this.configService.environment, this.evaluationInstructionsSerialized, this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
     let searchEngineSettingsPromise = this.S3Service.uploadSearchEngineSettings(this.configService.environment, this.searchEngineSerialized, this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
     let taskSettingsPromise = this.S3Service.uploadTaskSettings(this.configService.environment, this.taskSettingsSerialized, this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
-    let workerChecksPromise = this.S3Service.uploadWorkersCheck(this.configService.environment, this.workerChecksJSON(), this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
+    let workerChecksPromise = this.S3Service.uploadWorkersCheck(this.configService.environment, this.workersChecksSerialized, this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
     questionnairePromise.then(result => {
       if (!result["failed"]) {
         this.questionnairesPath = this.S3Service.getQuestionnairesConfigPath(this.configService.environment, this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)

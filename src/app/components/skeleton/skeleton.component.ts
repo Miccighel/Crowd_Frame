@@ -25,7 +25,7 @@ import {Dimension, ScaleInterval, ScaleMagnitude} from "../../models/dimension";
 import {Instruction} from "../../models/instructions";
 import {Note} from "../../models/notes";
 import {Worker} from "../../models/worker";
-import {Annotator, Settings} from "../../models/settings";
+import {Annotator, SettingsTask} from "../../models/settingsTask";
 import {GoldChecker} from "../../../../data/build/skeleton/goldChecker";
 /* Annotator functions */
 import {doHighlight} from "@funktechno/texthighlighter/lib";
@@ -185,7 +185,7 @@ export class SkeletonComponent implements OnInit {
   batchName: string;
 
   /* Settings of the current task */
-  settings: Settings
+  settings: SettingsTask
 
   /* Number of allowed tries */
   allowedTries: number;
@@ -386,7 +386,7 @@ export class SkeletonComponent implements OnInit {
   * This function interacts with an Amazon S3 bucket to retrieve and initialize the settings for the current task.
   */
   public async loadSettings() {
-    this.settings = new Settings(await this.S3Service.downloadTaskSettings(this.configService.environment))
+    this.settings = new SettingsTask(await this.S3Service.downloadTaskSettings(this.configService.environment))
     this.allowedTries = this.settings.allowedTries
     this.timeCheckAmount = this.settings.timeCheckAmount
     this.blacklistBatches = this.settings.blacklistBatches

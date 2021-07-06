@@ -1,4 +1,4 @@
-import {Annotator} from "./settings";
+import {Annotator} from "./settingsTask";
 
 export abstract class Note {
 

@@ -1,4 +1,4 @@
-export class Settings {
+export class SettingsTask {
 
   allowedTries: number;
   timeCheckAmount: number;
