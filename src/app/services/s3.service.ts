@@ -173,72 +173,73 @@ export class S3Service {
    * The following functions are used to retrieve the paths to the configuration files of the current task on the S3 bucket
    */
 
-  public getQuestionnairesConfigPath(config, task, batch) {
-    return `${task}/${batch}/Task/questionnaires.json`
+  public getQuestionnairesConfigPath(config) {
+    return `${config.taskName}/${config.batchName}/Task/questionnaires.json`
   }
 
-  public getHitsConfigPath(config, task, batch) {
-    return `${task}/${batch}/Task/hits.json`
+  public getHitsConfigPath(config) {
+    return `${config.taskName}/${config.batchName}/Task/hits.json`
   }
 
-  public getDimensionsConfigPath(config, task, batch) {
-    return `${task}/${batch}/Task/dimensions.json`
+  public getDimensionsConfigPath(config) {
+    return `${config.taskName}/${config.batchName}/Task/dimensions.json`
   }
 
-  public getTaskInstructionsConfigPath(config, task, batch) {
-    return `${task}/${batch}/Task/instructions_main.json`
+  public getTaskInstructionsConfigPath(config) {
+    return `${config.taskName}/${config.batchName}/Task/instructions_main.json`
   }
 
-  public getDimensionsInstructionsConfigPath(config, task, batch) {
-    return `${task}/${batch}/Task/instructions_dimensions.json`
+  public getDimensionsInstructionsConfigPath(config) {
+    return `${config.taskName}/${config.batchName}/Task/instructions_dimensions.json`
   }
 
-  public getSearchEngineSettingsConfigPath(config, task, batch) {
-    return `${task}/${batch}/Task/search_engine.json`
+  public getSearchEngineSettingsConfigPath(config) {
+    return `${config.taskName}/${config.batchName}/Task/search_engine.json`
   }
 
-  public getTaskSettingsConfigPath(config, task, batch) {
-    return `${task}/${batch}/Task/task.json`
+  public getTaskSettingsConfigPath(config) {
+    return `${config.taskName}/${config.batchName}/Task/task.json`
   }
 
-  public getWorkerChecksConfigPath(config, task, batch) {
-    return `${task}/${batch}/Task/workers.json`
+  public getWorkerChecksConfigPath(config) {
+    return `${config.taskName}/${config.batchName}/Task/workers.json`
   }
 
   /*
    * The following functions are used to upload the configuration files of the current task on the S3 bucket
    */
 
-  public uploadQuestionnairesConfig(config, data, task, batch) {
-    return this.upload(config, `${task}/${batch}/Task/questionnaires.json`, JSON.parse(data))
+  public uploadQuestionnairesConfig(config, data) {
+    console.log(config)
+    return this.upload(config, `${config.taskName}/${config.batchName}/Task/questionnaires.json`, data)
   }
 
-  public uploadHitsConfig(config, data, task, batch) {
-    return this.upload(config, `${task}/${batch}/Task/hits.json`, JSON.parse(data))
+  public uploadHitsConfig(config, data) {
+    return this.upload(config, `${config.taskName}/${config.batchName}/Task/hits.json`, data)
   }
 
-  public uploadDimensionsConfig(config, data, task, batch) {
-    return this.upload(config, `${task}/${batch}/Task/dimensions.json`, JSON.parse(data))
+  public uploadDimensionsConfig(config, data) {
+    return this.upload(config, `${config.taskName}/${config.batchName}/Task/dimensions.json`, data)
   }
 
-  public uploadTaskInstructionsConfig(config, data, task, batch) {
-    return this.upload(config, `${task}/${batch}/Task/instructions_main.json`, JSON.parse(data))
+  public uploadTaskInstructionsConfig(config, data) {
+    return this.upload(config, `${config.taskName}/${config.batchName}/Task/instructions_main.json`, data)
   }
 
-  public uploadDimensionsInstructionsConfig(config, data, task, batch) {
-    return this.upload(config, `${task}/${batch}/Task/instructions_dimensions.json`, JSON.parse(data))
+  public uploadDimensionsInstructionsConfig(config, data) {
+    return this.upload(config, `${config.taskName}/${config.batchName}/Task/instructions_dimensions.json`, data)
   }
 
-  public uploadSearchEngineSettings(config, data, task, batch) {
-    return this.upload(config, `${task}/${batch}/Task/search_engine.json`, JSON.parse(data))
+  public uploadSearchEngineSettings(config, data) {
+    return this.upload(config, `${config.taskName}/${config.batchName}/Task/search_engine.json`, data)
   }
 
-  public uploadTaskSettings(config, data, task, batch) {
-    return this.upload(config, `${task}/${batch}/Task/task.json`, JSON.parse(data))
+  public uploadTaskSettings(config, data) {
+    return this.upload(config, `${config.taskName}/${config.batchName}/Task/task.json`, data)
   }
 
-  public uploadWorkersCheck(config, data, task, batch) {
-    return this.upload(config, `${task}/${batch}/Task/workers.json`, JSON.parse(data))
+  public uploadWorkersCheck(config, data) {
+    return this.upload(config, `${config.taskName}/${config.batchName}/Task/workers.json`, data)
   }
 
   /*

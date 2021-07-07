@@ -1090,7 +1090,9 @@
         <h4 class="mb-0">Upload Path:</h4>
         <p><code [innerHTML]="fullS3Path"></code></p>
 
-        <ng-container *ngIf="this.uploadStarted">
+        <mat-progress-bar *ngIf="this.uploadStarted && !this.uploadCompleted" mode="indeterminate"></mat-progress-bar>
+
+        <ng-container *ngIf="this.uploadCompleted">
           <mat-divider [inset]="true"></mat-divider>
           <h4 class="mb-0">Upload result:</h4>
           <mat-list>

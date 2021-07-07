@@ -242,6 +242,28 @@ export class GeneratorComponent implements OnInit {
     this.localStorageService = localStorageService
     this.ngxService.startLoader('generator-inner')
 
+    this.downloadData()
+
+    /* STEP #8 - Summary */
+
+    this.fullS3Path = `${this.configService.environment.region}/${this.configService.environment.bucket}/${this.configService.environment.taskName}/${this.configService.environment.batchName}/`
+    this.uploadStarted = false
+    this.uploadCompleted = false
+    this.questionnairesPath = null
+    this.dimensionsPath = null
+    this.taskInstructionsPath = null
+    this.dimensionsInstructionsPath = null
+    this.searchEngineSettingsPath = null
+    this.workerChecksPath = null
+
+    /* Read mode during hits file upload*/
+    this.readMode = ReadMode.text
+
+    this.ngxService.stopLoader('generator-inner')
+  }
+
+  downloadData() {
+
     /* STEP #1 - Questionnaires */
 
     let rawQuestionnaires = this.S3Service.downloadQuestionnaires(this.configService.environment)
@@ -343,20 +365,6 @@ export class GeneratorComponent implements OnInit {
     item = this.localStorageService.getItem(identifier)
     if (item) this.workerChecksFetched = JSON.parse(item); else this.localStorageService.setItem(identifier, JSON.stringify(this.workerChecksFetched))
 
-    /* STEP #8 - Summary */
-
-    /* A sample full S3 path is shown */
-    this.fullS3Path = `${this.configService.environment.region}/${this.configService.environment.bucket}/${this.configService.environment.taskName}/${this.configService.environment.batchName}/`
-    this.questionnairesPath = null
-
-    /* Some booleans to handle final upload */
-    this.uploadCompleted = false
-    this.uploadStarted = false
-
-    /* Read mode during hits file upload*/
-    this.readMode = ReadMode.text
-
-    this.ngxService.stopLoader('generator-inner')
   }
 
   /*
@@ -1317,64 +1325,75 @@ export class GeneratorComponent implements OnInit {
     this.fullS3Path = this.S3Service.getTaskDataS3Path(this.configService.environment, this.configService.environment.taskName, this.configService.environment.batchName)
   }
 
-  public uploadConfiguration() {
+  public async uploadConfiguration() {
     this.uploadStarted = true
-    let questionnairePromise = this.S3Service.uploadQuestionnairesConfig(this.configService.environment, this.questionnairesSerialized, this.configService.environment.taskName, this.configService.environment.batchName)
-    let hitsPromise = this.S3Service.uploadHitsConfig(this.configService.environment, this.parsedHits, this.configService.environment.taskName, this.configService.environment.batchName)
-    let dimensionsPromise = this.S3Service.uploadDimensionsConfig(this.configService.environment, this.dimensionsSerialized, this.configService.environment.taskName, this.configService.environment.batchName)
-    let taskInstructionsPromise = this.S3Service.uploadTaskInstructionsConfig(this.configService.environment, this.generalInstructionsSerialized, this.configService.environment.taskName, this.configService.environment.batchName)
-    let dimensionsInstructionsPromise = this.S3Service.uploadDimensionsInstructionsConfig(this.configService.environment, this.evaluationInstructionsSerialized, this.configService.environment.taskName, this.configService.environment.batchName)
-    let searchEngineSettingsPromise = this.S3Service.uploadSearchEngineSettings(this.configService.environment, this.searchEngineSerialized, this.configService.environment.taskName, this.configService.environment.batchName)
-    let taskSettingsPromise = this.S3Service.uploadTaskSettings(this.configService.environment, this.taskSettingsSerialized, this.configService.environment.taskName, this.configService.environment.batchName)
-    let workerChecksPromise = this.S3Service.uploadWorkersCheck(this.configService.environment, this.workersChecksSerialized, this.configService.environment.taskName, this.configService.environment.batchName)
+    this.uploadCompleted = false
+    let questionnairePromise = this.S3Service.uploadQuestionnairesConfig(this.configService.environment, this.questionnairesSerialized)
+    let hitsPromise = this.S3Service.uploadHitsConfig(this.configService.environment, this.parsedHits)
+    let dimensionsPromise = this.S3Service.uploadDimensionsConfig(this.configService.environment, this.dimensionsSerialized)
+    let taskInstructionsPromise = this.S3Service.uploadTaskInstructionsConfig(this.configService.environment, this.generalInstructionsSerialized)
+    let dimensionsInstructionsPromise = this.S3Service.uploadDimensionsInstructionsConfig(this.configService.environment, this.evaluationInstructionsSerialized)
+    let searchEngineSettingsPromise = this.S3Service.uploadSearchEngineSettings(this.configService.environment, this.searchEngineSerialized)
+    let taskSettingsPromise = this.S3Service.uploadTaskSettings(this.configService.environment, this.taskSettingsSerialized)
+    let workerChecksPromise = this.S3Service.uploadWorkersCheck(this.configService.environment, this.workersChecksSerialized)
     questionnairePromise.then(result => {
       if (!result["failed"]) {
-        this.questionnairesPath = this.S3Service.getQuestionnairesConfigPath(this.configService.environment, this.configService.environment.taskName, this.configService.environment.batchName)
+        this.questionnairesPath = this.S3Service.getQuestionnairesConfigPath(this.configService.environment)
       } else this.questionnairesPath = "Failure"
     })
     hitsPromise.then(result => {
       if (!result["failed"]) {
-        this.hitsPath = this.S3Service.getHitsConfigPath(this.configService.environment, this.configService.environment.taskName, this.configService.environment.batchName)
+        this.hitsPath = this.S3Service.getHitsConfigPath(this.configService.environment)
       } else this.hitsPath = "Failure"
     })
     dimensionsPromise.then(result => {
       if (!result["failed"]) {
-        this.dimensionsPath = this.S3Service.getDimensionsConfigPath(this.configService.environment, this.configService.environment.taskName, this.configService.environment.batchName)
+        this.dimensionsPath = this.S3Service.getDimensionsConfigPath(this.configService.environment)
       } else this.dimensionsPath = "Failure"
     })
     taskInstructionsPromise.then(result => {
       if (!result["failed"]) {
-        this.taskInstructionsPath = this.S3Service.getTaskInstructionsConfigPath(this.configService.environment, this.configService.environment.taskName, this.configService.environment.batchName)
+        this.taskInstructionsPath = this.S3Service.getTaskInstructionsConfigPath(this.configService.environment)
       } else this.taskInstructionsPath = "Failure"
     })
     dimensionsInstructionsPromise.then(result => {
       if (!result["failed"]) {
-        this.dimensionsInstructionsPath = this.S3Service.getDimensionsInstructionsConfigPath(this.configService.environment, this.configService.environment.taskName, this.configService.environment.batchName)
+        this.dimensionsInstructionsPath = this.S3Service.getDimensionsInstructionsConfigPath(this.configService.environment)
       } else this.dimensionsInstructionsPath = "Failure"
     })
     searchEngineSettingsPromise.then(result => {
       if (!result["failed"]) {
-        this.searchEngineSettingsPath = this.S3Service.getSearchEngineSettingsConfigPath(this.configService.environment, this.configService.environment.taskName, this.configService.environment.batchName)
+        this.searchEngineSettingsPath = this.S3Service.getSearchEngineSettingsConfigPath(this.configService.environment)
       } else this.searchEngineSettingsPath = "Failure"
     })
     taskSettingsPromise.then(result => {
       if (!result["failed"]) {
-        this.taskSettingsPath = this.S3Service.getTaskSettingsConfigPath(this.configService.environment, this.configService.environment.taskName, this.configService.environment.batchName)
+        this.taskSettingsPath = this.S3Service.getTaskSettingsConfigPath(this.configService.environment)
       } else this.taskSettingsPath = "Failure"
     })
     workerChecksPromise.then(result => {
       if (!result["failed"]) {
-        this.workerChecksPath = this.S3Service.getWorkerChecksConfigPath(this.configService.environment, this.configService.environment.taskName, this.configService.environment.batchName)
+        this.workerChecksPath = this.S3Service.getWorkerChecksConfigPath(this.configService.environment)
       } else this.workerChecksPath = "Failure"
     })
+    this.uploadStarted = false
     this.uploadCompleted = true
   }
 
   public resetConfiguration() {
+    this.ngxService.startLoader('generator-inner')
     this.uploadStarted = false
     this.uploadCompleted = false
-    this.generator.selectedIndex = 0
+    this.questionnairesPath = null
+    this.dimensionsPath = null
+    this.taskInstructionsPath = null
+    this.dimensionsInstructionsPath = null
+    this.searchEngineSettingsPath = null
+    this.workerChecksPath = null
     this.localStorageService.clear()
+    this.generator.selectedIndex = 0
+    this.downloadData()
+    this.ngxService.stopLoader('generator-inner')
   }
 
   /* |--------- OTHER AMENITIES ---------| */

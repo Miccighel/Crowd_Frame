@@ -131,7 +131,7 @@
 
             <!-- CRT questionnaire markup -->
             <mat-card-content *ngIf="questionnaire.type=='crt'" class="questionnaire-body">
-              <ng-container *ngFor="let question of questionnaire.questions; let j=index" >
+              <ng-container *ngFor="let question of questionnaire.questions; let j=index">
                 <p class="questionnaire-question">{{question.text}}</p>
                 <mat-divider [inset]="true"></mat-divider>
                 <mat-form-field appearance="fill">
@@ -550,7 +550,7 @@
                           </mat-error>
                           <mat-error *ngIf="checkFormControl(documentsForm[i], (dimension.name).concat('_value'), 'min')">
                             <span *ngIf="dimension.scale.lower_bound">Min value allowed: {{dimension.scale.min}}</span>
-                            <span *ngIf="!dimension.scale.lower_bound">Min value allowed: {{dimension.scale.min+1}}</span>
+                            <span *ngIf="!dimension.scale.lower_bound">Min value allowed: {{dimension.scale.min + 1}}</span>
                           </mat-error>
 
                         </mat-form-field>
@@ -734,7 +734,7 @@
 
   </mat-step>
 
- <!-- Questionnaire markup -->
+  <!-- Questionnaire markup -->
   <ng-container *ngFor="let questionnaire of questionnaires; let i=index">
     <mat-step *ngIf="questionnaire.position=='end'" [stepControl]="questionnairesForm[i]" [editable]="false">
       <div class="container">
@@ -776,7 +776,7 @@
 
             <!-- CRT questionnaire markup -->
             <mat-card-content *ngIf="questionnaire.type=='crt'" class="questionnaire-body">
-              <ng-container *ngFor="let question of questionnaire.questions; let j=index" >
+              <ng-container *ngFor="let question of questionnaire.questions; let j=index">
                 <p class="questionnaire-question">{{question.text}}</p>
                 <mat-divider [inset]="true"></mat-divider>
                 <mat-form-field appearance="fill">
@@ -867,8 +867,7 @@
               <textarea matInput [disabled]="commentSent" placeholder="Your comment here" formControlName="comment" rows="5"></textarea>
             </mat-form-field>
           </form>
-          <button mat-flat-button color="primary" [disabled]="commentSent || !commentForm.valid "
-                  (click)="performCommentSaving()"> Send
+          <button mat-flat-button color="primary" [disabled]="commentSent || !commentForm.valid " (click)="performCommentSaving()"> Send
           </button>
           <span class="comment-sent-label" *ngIf="commentSent">Thank you!</span>
         </mat-card-content>
@@ -891,8 +890,7 @@
           <button mat-flat-button color="primary" (click)="performReset()">Reset</button>
           <form [formGroup]="commentForm" class="comment-form">
             <mat-form-field appearance="fill">
-              <textarea matInput [disabled]="commentSent" placeholder="Your comment here" formControlName="comment"
-                        rows="5"></textarea>
+              <textarea matInput [disabled]="commentSent" placeholder="Your comment here" formControlName="comment" rows="5"></textarea>
             </mat-form-field>
           </form>
           <button mat-flat-button color="primary" [disabled]="commentSent || !commentForm.valid "
