@@ -31,8 +31,22 @@ export class Dimension {
     this.description =        data['description'] ? data["description"] : null;
     this.justification =      data['justification'] ? new Justification(data['justification']) : null;
     this.url =                data['url'] ? data["url"] : null;
-    this.scale =              data['scale'] ? data['scale']['type'] == "categorical" ? new ScaleCategorical(data['scale']) : new ScaleInterval(data['scale']) : null;
-    this.style =              data['style'] = new Style(data['style']);
+    if(data['scale']) {
+      switch (data['scale']['type']) {
+        case 'categorical':
+          this.scale = new ScaleCategorical(data['scale'])
+          break;
+        case 'interval':
+          this.scale = new ScaleInterval(data['scale'])
+          break;
+        case 'magnitude_estimation':
+          this.scale = new ScaleMagnitude(data['scale'])
+          break;
+      }
+    } else {
+      this.scale = null
+    }
+    this.style =              data['style'] ? new Style(data['style']) : null
     this.gold =               data['gold'] ? data['gold'] : null;
 
   }
@@ -42,13 +56,13 @@ export class Dimension {
 export class Justification {
 
   text: string;
-  minWords: number;
+  min_words: number;
 
   constructor(
     data: JSON
   ) {
     this.text =     data["text"];
-    this.minWords = data["min_words"];
+    this.min_words = data["min_words"];
   }
 
 }

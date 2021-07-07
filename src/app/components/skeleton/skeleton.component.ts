@@ -387,11 +387,11 @@ export class SkeletonComponent implements OnInit {
   */
   public async loadSettings() {
     this.settings = new SettingsTask(await this.S3Service.downloadTaskSettings(this.configService.environment))
-    this.allowedTries = this.settings.allowedTries
-    this.timeCheckAmount = this.settings.timeCheckAmount
+    this.allowedTries = this.settings.allowed_tries
+    this.timeCheckAmount = this.settings.time_check_amount
     this.blacklistBatches = this.settings.blacklistBatches
     this.whitelistBatches = this.settings.whitelistBatches
-    this.countdownTime = this.settings.countdownTime
+    this.countdownTime = this.settings.countdown_time
     this.annotator = this.settings.annotator
   }
 
@@ -717,7 +717,7 @@ export class SkeletonComponent implements OnInit {
       this.changeDetector.detectChanges();
 
       /* If there are no questionnaires and the countdown time is set, enable the first countdown */
-      if(this.settings.countdownTime && this.questionnaireAmountStart == 0) this.countdown.toArray()[0].begin();
+      if(this.settings.countdown_time && this.questionnaireAmountStart == 0) this.countdown.toArray()[0].begin();
 
       /* trigger the changeDetection again */
       this.changeDetector.detectChanges();
@@ -820,7 +820,7 @@ export class SkeletonComponent implements OnInit {
         const allControls = this.getControlGroup(control).controls;
         let currentControl = Object.keys(allControls).find(name => control === allControls[name])
         let currentDimensionName = currentControl.split("_")[0]
-        for (let dimension of this.dimensions) if (dimension.name == currentDimensionName) if (dimension.justification.minWords) minWords = dimension.justification.minWords
+        for (let dimension of this.dimensions) if (dimension.name == currentDimensionName) if (dimension.justification.min_words) minWords = dimension.justification.min_words
       }
       return cleanedWords.length > minWords ? null : {"longer": "This is not valid."};
     }
@@ -1777,7 +1777,7 @@ export class SkeletonComponent implements OnInit {
     this.currentTry = this.currentTry + 1;
 
     /* The countdowns are set back to 0 */
-    if (this.settings.countdownTime) {
+    if (this.settings.countdown_time) {
       if (this.countdown.toArray()[0].left > 0) {
         this.countdown.toArray()[0].resume();
       }
@@ -1800,14 +1800,14 @@ export class SkeletonComponent implements OnInit {
 
     /* The countdowns are stopped and resumed to the left or to the right of the current document,
     *  depending on the chosen action ("Back" or "Next") */
-    if ((this.stepper.selectedIndex >= this.questionnaireAmountStart && this.stepper.selectedIndex < this.questionnaireAmountStart + this.documentsAmount) && this.settings.countdownTime) {
+    if ((this.stepper.selectedIndex >= this.questionnaireAmountStart && this.stepper.selectedIndex < this.questionnaireAmountStart + this.documentsAmount) && this.settings.countdown_time) {
       let currentIndex = this.stepper.selectedIndex - this.questionnaireAmountStart;
       switch (action) {
         case "Next":
           if (currentIndex > 0 && this.countdown.toArray()[currentIndex - 1].left > 0) {
             this.countdown.toArray()[currentIndex - 1].pause();
           }
-          if (this.countdown.toArray()[currentIndex].left == this.settings.countdownTime) {
+          if (this.countdown.toArray()[currentIndex].left == this.settings.countdown_time) {
             this.countdown.toArray()[currentIndex].begin();
           } else if (this.countdown.toArray()[currentIndex].left > 0) {
             this.countdown.toArray()[currentIndex].resume();
@@ -1817,7 +1817,7 @@ export class SkeletonComponent implements OnInit {
           if (this.countdown.toArray()[currentIndex + 1].left > 0) {
             this.countdown.toArray()[currentIndex + 1].pause();
           }
-          if (this.countdown.toArray()[currentIndex].left == this.settings.countdownTime) {
+          if (this.countdown.toArray()[currentIndex].left == this.settings.countdown_time) {
             this.countdown.toArray()[currentIndex].begin();
           } else if (this.countdown.toArray()[currentIndex].left > 0) {
             this.countdown.toArray()[currentIndex].resume();
@@ -2030,9 +2030,9 @@ export class SkeletonComponent implements OnInit {
         let timestampsElapsed = this.timestampsElapsed[completedElement];
         data["timestamps_elapsed"] = timestampsElapsed
         /* Countdown time and corresponding flag */
-        let countdownTime = (this.settings.countdownTime) ? Number(this.countdown[completedDocument]["i"]["text"]) : []
+        let countdownTime = (this.settings.countdown_time) ? Number(this.countdown[completedDocument]["i"]["text"]) : []
         data["countdowns_times"] = countdownTime
-        let countdown_expired = (this.settings.countdownTime) ? this.countdownsExpired[completedDocument] : []
+        let countdown_expired = (this.settings.countdown_time) ? this.countdownsExpired[completedDocument] : []
         data["countdowns_expired"] =  countdown_expired
         /* Number of accesses to the current document (currentDocument.e., how many times the worker reached the document with a "Back" or "Next" action */
         let accesses = accessesAmount + 1
@@ -2082,7 +2082,7 @@ export class SkeletonComponent implements OnInit {
           /* Countdown time and corresponding flag for each document */
           let countdownTimes = [];
           let countdownExpired = [];
-          if (this.settings.countdownTime)
+          if (this.settings.countdown_time)
             for (let index = 0; index < this.countdown.length; index++) countdownTimes.push(Number(this.countdown[index]["i"]["text"]));
             for (let index = 0; index < this.countdownsExpired.length; index++) countdownExpired.push(this.countdownsExpired[index]);
           data["countdowns_times"] = countdownTimes

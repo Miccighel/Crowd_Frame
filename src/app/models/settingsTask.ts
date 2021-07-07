@@ -1,9 +1,9 @@
 export class SettingsTask {
 
-  allowedTries: number;
-  timeCheckAmount: number;
+  allowed_tries: number;
+  time_check_amount: number;
   annotator?: Annotator;
-  countdownTime?: number;
+  countdown_time?: number;
   blacklistBatches: Array<string>;
   whitelistBatches: Array<string>;
   messages?: Array<string>;
@@ -16,10 +16,10 @@ export class SettingsTask {
       data['domains_filter'] = data['domains_to_filter']
       delete data['domains_to_filter']
     }
-    this.allowedTries =         parseInt((data["allowed_tries"]));
-    this.timeCheckAmount =      parseInt((data["time_check_amount"]));
+    this.allowed_tries =         parseInt((data["allowed_tries"]));
+    this.time_check_amount =      parseInt((data["time_check_amount"]));
     this.annotator =            data["annotator"] ? new Annotator(data["annotator"]) : null;
-    this.countdownTime =        data["countdown_time"] ? parseInt((data["countdown_time"])): null;
+    this.countdown_time =        data["countdown_time"] ? parseInt((data["countdown_time"])): null;
     this.blacklistBatches = new Array<string>();
     for (let batch of data["blacklist_batches"]) this.blacklistBatches.push(batch)
     this.whitelistBatches = new Array<string>();

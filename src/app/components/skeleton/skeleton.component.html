@@ -198,10 +198,10 @@
           <mat-card-content class="pt-16px">
 
             <!--- Countdown markup --->
-            <div class="instructions sticky" *ngIf="this.settings.countdownTime">
+            <div class="instructions sticky" *ngIf="this.settings.countdown_time">
               <h2 class="m-0">
                 Time left:
-                <countdown #countdownElement [config]="{ demand: true, leftTime: this.settings.countdownTime, format: 'm:s' }" (event)="handleCountdown($event, i)"></countdown>
+                <countdown #countdownElement [config]="{ demand: true, leftTime: this.settings.countdown_time, format: 'm:s' }" (event)="handleCountdown($event, i)"></countdown>
                 seconds
               </h2>
             </div>

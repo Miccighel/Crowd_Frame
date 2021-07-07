@@ -346,7 +346,7 @@ export class GeneratorComponent implements OnInit {
     /* STEP #8 - Summary */
 
     /* A sample full S3 path is shown */
-    this.fullS3Path = "&lt;region&gt;/&lt;bucket&gt;/&lt;task_name&gt;/&lt;bucket_name&gt;"
+    this.fullS3Path = `${this.configService.environment.region}/${this.configService.environment.bucket}/${this.configService.environment.taskName}/${this.configService.environment.batchName}/`
     this.questionnairesPath = null
 
     /* Some booleans to handle final upload */
@@ -423,16 +423,16 @@ export class GeneratorComponent implements OnInit {
 
     /* STEP #6 - Task Settings */
     this.taskSettingsForm = this._formBuilder.group({
-      allowed_tries: [this.taskSettingsFetched.allowedTries ? this.taskSettingsFetched.allowedTries : ''],
-      time_check_amount: [this.taskSettingsFetched.timeCheckAmount ? this.taskSettingsFetched.timeCheckAmount : ''],
+      allowed_tries: [this.taskSettingsFetched.allowed_tries ? this.taskSettingsFetched.allowed_tries : ''],
+      time_check_amount: [this.taskSettingsFetched.time_check_amount ? this.taskSettingsFetched.time_check_amount : ''],
       hits: [],
       setAnnotator: [!!this.taskSettingsFetched.annotator],
       annotator: this._formBuilder.group({
         type: [this.taskSettingsFetched.annotator ? this.taskSettingsFetched.annotator.type : ''],
         values: this._formBuilder.array([]),
       }),
-      setCountdownTime: [!!this.taskSettingsFetched.countdownTime],
-      countdown_time: [this.taskSettingsFetched.countdownTime ? this.taskSettingsFetched.countdownTime : ''],
+      setCountdownTime: [!!this.taskSettingsFetched.countdown_time],
+      countdown_time: [this.taskSettingsFetched.countdown_time ? this.taskSettingsFetched.countdown_time : ''],
       blacklist_batches: this._formBuilder.array([]),
       whitelist_batches: this._formBuilder.array([]),
       messages: this._formBuilder.array([])
@@ -668,32 +668,43 @@ export class GeneratorComponent implements OnInit {
   }
 
   addDimension(dimensionIndex = null, dimension = null as Dimension) {
+    let name, description, gold, setJustification, justification, url, setScale, scale, setStyle, style;
+    name = dimension.name ? dimension.name : '';
+    description = dimension.description ? dimension.description : '';
+    gold = dimension.gold ? dimension.gold : false;
+    setJustification = dimension.justification ? dimension.justification : false;
+    justification = !dimension.justification ? false : this._formBuilder.group({
+      text: [dimension.justification.text],
+      min_words: [dimension.justification.min_words]
+    });
+    url = dimension.url ? dimension.url : false;
+    setScale = dimension.scale ? dimension.scale : false;
+    scale = !dimension.scale ? false : this._formBuilder.group({
+      type: [dimension.scale.type],
+      min: [dimension.scale['min'] ? dimension.scale['min'] : dimension.scale['min'] == 0 ? '0' : ''],
+      max: [dimension.scale['max'] ? dimension.scale['max'] : dimension.scale['max'] == 0 ? '0' : ''],
+      step: [dimension.scale['step'] ? dimension.scale['step'] : dimension.scale['step'] == 0 ? '0' : ''],
+      mapping: this._formBuilder.array([]),
+      lower_bound: [dimension.scale['lower_bound'] ? dimension.scale['lower_bound'] : ''],
+    });
+    setStyle = dimension.style ? dimension.style : false;
+    style = !dimension.style ? false : this._formBuilder.group({
+      styleType: [dimension.style.type],
+      position: [dimension.style.position],
+      orientation: [dimension.style.orientation],
+      separator: [dimension.style.separator]
+    });
     this.dimensions().push(this._formBuilder.group({
-      name: [dimension ? dimension.name : ''],
-      description: [dimension ? dimension.description : ''],
-      gold: [dimension ? dimension.gold : ''],
-      setJustification: [dimension ? dimension.justification : ''],
-      justification: this._formBuilder.group({
-        text: [dimension ? dimension.justification ? dimension.justification.text : '' : ''],
-        min_words: [dimension ? dimension.justification ? dimension.justification.minWords : '' : '']
-      }),
-      url: [dimension ? dimension.url : ''],
-      setScale: [dimension ? dimension.scale : ''],
-      scale: this._formBuilder.group({
-        type: [dimension ? dimension.scale ? dimension.scale.type : '' : ''],
-        min: [dimension ? dimension.scale ? dimension.scale['min'] : '' : ''],
-        max: [dimension ? dimension.scale ? dimension.scale['max'] : '' : ''],
-        step: [dimension ? dimension.scale ? dimension.scale['step'] : '' : ''],
-        mapping: this._formBuilder.array([]),
-        lower_bound: [dimension ? dimension.scale ? dimension.scale['lower_bound'] : '' : ''],
-      }),
-      setStyle: [dimension ? dimension.style : ''],
-      style: this._formBuilder.group({
-        styleType: [dimension ? dimension.style.type : ''],
-        position: [dimension ? dimension.style.position : ''],
-        orientation: [dimension ? dimension.style.orientation : ''],
-        separator: [dimension ? dimension.style.separator : '']
-      })
+      name: name,
+      description: description,
+      gold: gold,
+      setJustification: setJustification,
+      justification: justification,
+      url: url,
+      setScale: setScale,
+      scale: scale,
+      setStyle: setStyle,
+      style: style
     }))
     if (dimension && dimension.scale) if (dimension.scale.type == 'categorical') {
       if (dimension.scale['mapping']) for (let mapping of dimension.scale['mapping']) this.addDimensionMapping(dimensionIndex, mapping)
@@ -880,6 +891,7 @@ export class GeneratorComponent implements OnInit {
       dimension.url = !!dimension.url;
 
       if (dimension.setScale == false) {
+        delete dimension.scale
         dimension.scale = false
         dimension.style = false
       } else {
@@ -1212,7 +1224,7 @@ export class GeneratorComponent implements OnInit {
 
   /* JSON Output */
 
-  taskSettingsJSON(verbose = false) {
+  taskSettingsJSON() {
 
     let taskSettingsJSON = JSON.parse(JSON.stringify(this.taskSettingsForm.value));
 
@@ -1302,57 +1314,57 @@ export class GeneratorComponent implements OnInit {
   /* STEP 8 - Summary  */
 
   public updateFullPath() {
-    this.fullS3Path = this.S3Service.getTaskDataS3Path(this.configService.environment, this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
+    this.fullS3Path = this.S3Service.getTaskDataS3Path(this.configService.environment, this.configService.environment.taskName, this.configService.environment.batchName)
   }
 
   public uploadConfiguration() {
     this.uploadStarted = true
-    let questionnairePromise = this.S3Service.uploadQuestionnairesConfig(this.configService.environment, this.questionnairesSerialized, this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
-    let hitsPromise = this.S3Service.uploadHitsConfig(this.configService.environment, this.taskSettingsForm.get('hits').value, this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
-    let dimensionsPromise = this.S3Service.uploadDimensionsConfig(this.configService.environment, this.dimensionsSerialized, this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
-    let taskInstructionsPromise = this.S3Service.uploadTaskInstructionsConfig(this.configService.environment, this.generalInstructionsSerialized, this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
-    let dimensionsInstructionsPromise = this.S3Service.uploadDimensionsInstructionsConfig(this.configService.environment, this.evaluationInstructionsSerialized, this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
-    let searchEngineSettingsPromise = this.S3Service.uploadSearchEngineSettings(this.configService.environment, this.searchEngineSerialized, this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
-    let taskSettingsPromise = this.S3Service.uploadTaskSettings(this.configService.environment, this.taskSettingsSerialized, this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
-    let workerChecksPromise = this.S3Service.uploadWorkersCheck(this.configService.environment, this.workersChecksSerialized, this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
+    let questionnairePromise = this.S3Service.uploadQuestionnairesConfig(this.configService.environment, this.questionnairesSerialized, this.configService.environment.taskName, this.configService.environment.batchName)
+    let hitsPromise = this.S3Service.uploadHitsConfig(this.configService.environment, this.parsedHits, this.configService.environment.taskName, this.configService.environment.batchName)
+    let dimensionsPromise = this.S3Service.uploadDimensionsConfig(this.configService.environment, this.dimensionsSerialized, this.configService.environment.taskName, this.configService.environment.batchName)
+    let taskInstructionsPromise = this.S3Service.uploadTaskInstructionsConfig(this.configService.environment, this.generalInstructionsSerialized, this.configService.environment.taskName, this.configService.environment.batchName)
+    let dimensionsInstructionsPromise = this.S3Service.uploadDimensionsInstructionsConfig(this.configService.environment, this.evaluationInstructionsSerialized, this.configService.environment.taskName, this.configService.environment.batchName)
+    let searchEngineSettingsPromise = this.S3Service.uploadSearchEngineSettings(this.configService.environment, this.searchEngineSerialized, this.configService.environment.taskName, this.configService.environment.batchName)
+    let taskSettingsPromise = this.S3Service.uploadTaskSettings(this.configService.environment, this.taskSettingsSerialized, this.configService.environment.taskName, this.configService.environment.batchName)
+    let workerChecksPromise = this.S3Service.uploadWorkersCheck(this.configService.environment, this.workersChecksSerialized, this.configService.environment.taskName, this.configService.environment.batchName)
     questionnairePromise.then(result => {
       if (!result["failed"]) {
-        this.questionnairesPath = this.S3Service.getQuestionnairesConfigPath(this.configService.environment, this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
+        this.questionnairesPath = this.S3Service.getQuestionnairesConfigPath(this.configService.environment, this.configService.environment.taskName, this.configService.environment.batchName)
       } else this.questionnairesPath = "Failure"
     })
     hitsPromise.then(result => {
       if (!result["failed"]) {
-        this.hitsPath = this.S3Service.getHitsConfigPath(this.configService.environment, this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
+        this.hitsPath = this.S3Service.getHitsConfigPath(this.configService.environment, this.configService.environment.taskName, this.configService.environment.batchName)
       } else this.hitsPath = "Failure"
     })
     dimensionsPromise.then(result => {
       if (!result["failed"]) {
-        this.dimensionsPath = this.S3Service.getDimensionsConfigPath(this.configService.environment, this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
+        this.dimensionsPath = this.S3Service.getDimensionsConfigPath(this.configService.environment, this.configService.environment.taskName, this.configService.environment.batchName)
       } else this.dimensionsPath = "Failure"
     })
     taskInstructionsPromise.then(result => {
       if (!result["failed"]) {
-        this.taskInstructionsPath = this.S3Service.getTaskInstructionsConfigPath(this.configService.environment, this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
+        this.taskInstructionsPath = this.S3Service.getTaskInstructionsConfigPath(this.configService.environment, this.configService.environment.taskName, this.configService.environment.batchName)
       } else this.taskInstructionsPath = "Failure"
     })
     dimensionsInstructionsPromise.then(result => {
       if (!result["failed"]) {
-        this.dimensionsInstructionsPath = this.S3Service.getDimensionsInstructionsConfigPath(this.configService.environment, this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
+        this.dimensionsInstructionsPath = this.S3Service.getDimensionsInstructionsConfigPath(this.configService.environment, this.configService.environment.taskName, this.configService.environment.batchName)
       } else this.dimensionsInstructionsPath = "Failure"
     })
     searchEngineSettingsPromise.then(result => {
       if (!result["failed"]) {
-        this.searchEngineSettingsPath = this.S3Service.getSearchEngineSettingsConfigPath(this.configService.environment, this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
+        this.searchEngineSettingsPath = this.S3Service.getSearchEngineSettingsConfigPath(this.configService.environment, this.configService.environment.taskName, this.configService.environment.batchName)
       } else this.searchEngineSettingsPath = "Failure"
     })
     taskSettingsPromise.then(result => {
       if (!result["failed"]) {
-        this.taskSettingsPath = this.S3Service.getTaskSettingsConfigPath(this.configService.environment, this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
+        this.taskSettingsPath = this.S3Service.getTaskSettingsConfigPath(this.configService.environment, this.configService.environment.taskName, this.configService.environment.batchName)
       } else this.taskSettingsPath = "Failure"
     })
     workerChecksPromise.then(result => {
       if (!result["failed"]) {
-        this.workerChecksPath = this.S3Service.getWorkerChecksConfigPath(this.configService.environment, this.taskSettingsForm.get('task_name').value, this.taskSettingsForm.get('batch_name').value)
+        this.workerChecksPath = this.S3Service.getWorkerChecksConfigPath(this.configService.environment, this.configService.environment.taskName, this.configService.environment.batchName)
       } else this.workerChecksPath = "Failure"
     })
     this.uploadCompleted = true
@@ -1362,6 +1374,7 @@ export class GeneratorComponent implements OnInit {
     this.uploadStarted = false
     this.uploadCompleted = false
     this.generator.selectedIndex = 0
+    this.localStorageService.clear()
   }
 
   /* |--------- OTHER AMENITIES ---------| */
