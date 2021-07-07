@@ -237,13 +237,17 @@
                         </mat-form-field>
                       </td>
                       <td class="p-0">
-                        <mat-form-field class="width-100" appearance="fill">
-                          <mat-label>Description</mat-label>
-                          <textarea matInput formControlName="description"></textarea>
+                        <mat-form-field matLine class="width-100" appearance="fill">
+                          <mat-label>Name Pretty</mat-label>
+                          <input matInput type="text" formControlName="name_pretty">
                         </mat-form-field>
                       </td>
                     </tr>
                   </table>
+                  <mat-form-field class="width-100" appearance="fill">
+                    <mat-label>Description</mat-label>
+                    <textarea matInput formControlName="description"></textarea>
+                  </mat-form-field>
 
                   <mat-divider [inset]="true"></mat-divider>
 
@@ -512,32 +516,8 @@
                     </tr>
                   </table>
 
-                  <mat-divider [inset]="true"></mat-divider>
-
-                  <!-- Steps -->
-                  <div formArrayName="steps">
-                    <button mat-flat-button color="primary" class="mt-16px mb-16px indent" (click)="addGeneralInstructionStep(generalInstructionIndex)">
-                      Add Step
-                    </button>
-                    <div *ngFor="let generalInstructionStep of generalInstructionSteps(generalInstructionIndex).controls; let generalInstructionStepIndex = index" [formGroupName]="generalInstructionStepIndex">
-                      <table class="width-100">
-                        <tr>
-                          <td class="p-0 pr-16px">
-                            <mat-form-field class="width-100" [hideRequiredMarker]="generalInstructionStep.get('step').valid" appearance="fill">
-                              <mat-label>Step</mat-label>
-                              <textarea matInput formControlName="step" required></textarea>
-                            </mat-form-field>
-                          </td>
-                          <td class="p-0 center">
-                            <button mat-flat-button color="primary" class="mb-16px"
-                                    [disabled]="generalInstructionStepIndex == '0' && generalInstructionSteps(generalInstructionIndex).length == 1"
-                                    (click)="removeGeneralInstructionStep(generalInstructionIndex, generalInstructionStepIndex)">
-                              Remove Step
-                            </button>
-                          </td>
-                        </tr>
-                      </table>
-                    </div>
+                  <div>
+                    <angular-editor id="general-instruction-{{generalInstructionIndex}}-text" formControlName="text" [config]="editorConfig"></angular-editor>
                   </div>
 
                 </mat-card-content>
@@ -610,33 +590,8 @@
                     </tr>
                   </table>
 
-                  <mat-divider [inset]="true"></mat-divider>
-
-                  <!-- Steps -->
-                  <div formArrayName="steps">
-                    <button mat-flat-button color="primary" class="mt-16px mb-16px indent" (click)="addEvaluationInstructionStep(evaluationInstructionIndex)">
-                      Add Step
-                    </button>
-                    <div *ngFor="let evaluationInstructionStep of evaluationInstructionSteps(evaluationInstructionIndex).controls; let evaluationInstructionStepIndex = index"
-                         [formGroupName]="evaluationInstructionStepIndex">
-                      <table class="width-100">
-                        <tr>
-                          <td class="p-0 pr-16px">
-                            <mat-form-field class="width-100" [hideRequiredMarker]="evaluationInstructionStep.get('step').valid" appearance="fill">
-                              <mat-label>Step</mat-label>
-                              <textarea matInput formControlName="step" required></textarea>
-                            </mat-form-field>
-                          </td>
-                          <td class="p-0 center">
-                            <button mat-flat-button color="primary" class="mb-16px"
-                                    [disabled]="evaluationInstructionStepIndex == '0' && evaluationInstructionSteps(evaluationInstructionIndex).length == 1"
-                                    (click)="removeEvaluationInstructionStep(evaluationInstructionIndex, evaluationInstructionStepIndex)">
-                              Remove Step
-                            </button>
-                          </td>
-                        </tr>
-                      </table>
-                    </div>
+                  <div>
+                    <angular-editor id="evaluation-instruction-{{evaluationInstructionIndex}}-text" formControlName="text" [config]="editorConfig"></angular-editor>
                   </div>
 
                 </mat-card-content>
@@ -988,7 +943,7 @@
             <mat-label>Worker IDs Blacklisted</mat-label>
             <mat-chip-list #blacklistChips formControlName="blacklist" multiple>
               <mat-chip *ngFor="let workerId of this.blacklistedWorkerId" [selected]="workerId" [value]="workerId" (removed)="removeBlacklistedId(workerId)">{{workerId}}</mat-chip>
-              <input  placeholder="New worker ID ..." [matChipInputFor]="blacklistChips" (matChipInputTokenEnd)="addBlacklistedId($event)">
+              <input placeholder="New worker ID ..." [matChipInputFor]="blacklistChips" (matChipInputTokenEnd)="addBlacklistedId($event)">
             </mat-chip-list>
           </mat-form-field>
 
@@ -999,7 +954,7 @@
             <mat-label>Worker IDs Whitelisted</mat-label>
             <mat-chip-list #whitelistChips formControlName="whitelist" multiple>
               <mat-chip *ngFor="let workerId of this.whitelistedWorkerId" [selected]="workerId" [value]="workerId" (removed)="removeWhitelistedId(workerId)">{{workerId}}</mat-chip>
-              <input  placeholder="New worker ID ..." [matChipInputFor]="whitelistChips" (matChipInputTokenEnd)="addWhitelistedId($event)">
+              <input placeholder="New worker ID ..." [matChipInputFor]="whitelistChips" (matChipInputTokenEnd)="addWhitelistedId($event)">
             </mat-chip-list>
           </mat-form-field>
 
@@ -1099,7 +1054,8 @@
             <mat-list-item *ngIf="this.questionnairesPath" class="step-valid"><span>Step #1 - Questionnaire configuration uploaded at path: <code>{{this.questionnairesPath}}</code></span></mat-list-item>
             <mat-list-item *ngIf="this.dimensionsPath" class="step-valid"><span>Step #2 - Dimensions configuration uploaded at path: <code>{{this.dimensionsPath}}</code></span></mat-list-item>
             <mat-list-item *ngIf="this.taskInstructionsPath" class="step-valid"><span>Step #3 - General instructions configuration uploaded at path: <code>{{this.taskInstructionsPath}}</code></span></mat-list-item>
-            <mat-list-item *ngIf="this.dimensionsInstructionsPath" class="step-valid"><span>Step #4 - Evaluation instructions configuration uploaded at path: <code>{{this.dimensionsInstructionsPath}}</code></span></mat-list-item>
+            <mat-list-item *ngIf="this.dimensionsInstructionsPath" class="step-valid"><span>Step #4 - Evaluation instructions configuration uploaded at path: <code>{{this.dimensionsInstructionsPath}}</code></span>
+            </mat-list-item>
             <mat-list-item *ngIf="this.searchEngineSettingsPath" class="step-valid"><span>Step #5 - Search engine configuration uploaded at path: <code>{{this.searchEngineSettingsPath}}</code></span></mat-list-item>
             <mat-list-item *ngIf="this.taskSettingsPath" class="step-valid"><span>Step #6 - Task settings configuration uploaded at path: <code>{{this.taskSettingsPath}}</code></span></mat-list-item>
             <mat-list-item *ngIf="this.workerChecksPath" class="step-valid"><span>Step #7 - Worker checks configuration uploaded at path: <code>{{this.workerChecksPath}}</code></span></mat-list-item>

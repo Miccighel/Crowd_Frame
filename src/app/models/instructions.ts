@@ -8,7 +8,7 @@ export class Instruction {
   index: number;
 
   caption?: string;
-  steps: Array<string>;
+  text: string;
 
   constructor(
     index: number,
@@ -18,8 +18,14 @@ export class Instruction {
     this.index = index;
 
     this.caption =    data['caption'] ? data["caption"] : null;
-    this.steps = new Array<string>();
-    for (const [_, step] of data["steps"].entries()) this.steps.push(step)
+
+    if('steps' in data) {
+      let stepText : Array<string> = data['steps']
+      this.text = stepText.join("\r\n")
+      delete data['steps']
+    } else {
+      this.text =    data['text'] ? data["text"] : null;
+    }
   }
 
 }

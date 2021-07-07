@@ -22,6 +22,7 @@ import {Hit} from "../../models/hit";
 import {SettingsWorker} from "../../models/settingsWorker";
 import {MatChipInputEvent} from "@angular/material/chips";
 import {type} from "os";
+import {AngularEditorConfig} from "@kolkov/angular-editor";
 
 /*
  * The following interfaces are used to simplify data handling for each generator step.
@@ -220,6 +221,54 @@ export class GeneratorComponent implements OnInit {
   changeDetector: ChangeDetectorRef;
 
   /* |--------- CONTROL FLOW & UI ELEMENTS - DECLARATION ---------| */
+
+  editorConfig: AngularEditorConfig = {
+    editable: true,
+    spellcheck: true,
+    height: 'auto',
+    minHeight: '0',
+    maxHeight: 'auto',
+    width: 'auto',
+    minWidth: '0',
+    translate: 'yes',
+    enableToolbar: true,
+    showToolbar: true,
+    placeholder: 'Enter text here...',
+    defaultParagraphSeparator: '',
+    defaultFontName: '',
+    defaultFontSize: '',
+    fonts: [
+      {class: 'arial', name: 'Arial'},
+      {class: 'times-new-roman', name: 'Times New Roman'},
+      {class: 'calibri', name: 'Calibri'},
+      {class: 'comic-sans-ms', name: 'Comic Sans MS'}
+    ],
+    customClasses: [
+      {
+        name: 'quote',
+        class: 'quote',
+      },
+      {
+        name: 'redText',
+        class: 'redText'
+      },
+      {
+        name: 'titleText',
+        class: 'titleText',
+        tag: 'h1',
+      },
+    ],
+    sanitize: true,
+    toolbarPosition: 'top',
+    toolbarHiddenButtons: [
+      [],
+      [
+        'customClasses',
+        'insertImage',
+        'insertVideo',
+      ]
+    ]
+  };
 
   @ViewChild('generator') generator: MatStepper;
 
@@ -676,8 +725,9 @@ export class GeneratorComponent implements OnInit {
   }
 
   addDimension(dimensionIndex = null, dimension = null as Dimension) {
-    let name, description, gold, setJustification, justification, url, setScale, scale, setStyle, style;
+    let name, name_pretty, description, gold, setJustification, justification, url, setScale, scale, setStyle, style;
     name = dimension.name ? dimension.name : '';
+    name_pretty = dimension.name_pretty ? dimension.name_pretty : '';
     description = dimension.description ? dimension.description : '';
     gold = dimension.gold ? dimension.gold : false;
     setJustification = dimension.justification ? dimension.justification : false;
@@ -704,6 +754,7 @@ export class GeneratorComponent implements OnInit {
     });
     this.dimensions().push(this._formBuilder.group({
       name: name,
+      name_pretty: name_pretty,
       description: description,
       gold: gold,
       setJustification: setJustification,
@@ -959,32 +1010,12 @@ export class GeneratorComponent implements OnInit {
   addGeneralInstruction(instructionIndex = null, instruction = null as Instruction) {
     this.generalInstructions().push(this._formBuilder.group({
       caption: [instruction ? instruction.caption : ''],
-      steps: this._formBuilder.array([])
+      text: [instruction ? instruction.text : ''],
     }));
-    if (instruction && instruction.steps) for (let step of instruction.steps) this.addGeneralInstructionStep(instructionIndex, step)
-    if (this.generalInstructions().length == 0) {
-      this.addGeneralInstructionStep(this.generalInstructions().length - 1);
-    }
   }
 
   removeGeneralInstruction(generalInstructionIndex: number) {
     this.generalInstructions().removeAt(generalInstructionIndex);
-  }
-
-  /* SUB ELEMENT: Steps */
-
-  generalInstructionSteps(generalInstructionIndex: number): FormArray {
-    return this.generalInstructions().at(generalInstructionIndex).get('steps') as FormArray;
-  }
-
-  addGeneralInstructionStep(generalInstructionIndex: number, generalInstructionStep = null) {
-    this.generalInstructionSteps(generalInstructionIndex).push(this._formBuilder.group({
-      step: [generalInstructionStep ? generalInstructionStep : '']
-    }))
-  }
-
-  removeGeneralInstructionStep(generalInstructionIndex: number, generalInstructionStepIndex: number) {
-    this.generalInstructionSteps(generalInstructionIndex).removeAt(generalInstructionStepIndex);
   }
 
   /* JSON Output */
@@ -993,9 +1024,6 @@ export class GeneratorComponent implements OnInit {
     let generalInstructionsJSON = JSON.parse(JSON.stringify(this.generalInstructionsForm.get('generalInstructions').value));
     generalInstructionsJSON.forEach((generalInstruction, generalInstructionIndex) => {
       if (generalInstruction.caption == '') generalInstruction.caption = false
-      let stepsStringArray = [];
-      for (let generalInstructionStepIndex in generalInstruction.steps) stepsStringArray.push(generalInstruction.steps[generalInstructionStepIndex].step);
-      generalInstruction.steps = stepsStringArray;
       this.localStorageService.setItem(`general-instruction-${generalInstructionIndex}`, JSON.stringify(generalInstruction))
     })
     this.generalInstructionsSerialized = JSON.stringify(generalInstructionsJSON);
@@ -1010,46 +1038,20 @@ export class GeneratorComponent implements OnInit {
   addEvaluationInstruction(instructionIndex = null, instruction = null as Instruction) {
     this.evaluationInstructions().push(this._formBuilder.group({
       caption: [instruction ? instruction.caption : ''],
-      steps: this._formBuilder.array([])
+      text: [instruction ? instruction.text : ''],
     }));
-    if (instruction && instruction.steps) for (let step of instruction.steps) this.addEvaluationInstructionStep(instructionIndex, step)
-    if (this.evaluationInstructions().length == 0) {
-      this.addEvaluationInstructionStep(this.evaluationInstructions().length - 1);
-    }
   }
 
   removeEvaluationInstruction(evaluationInstructionIndex: number) {
     this.evaluationInstructions().removeAt(evaluationInstructionIndex);
   }
 
-  /* SUB ELEMENT: Steps */
-
-  evaluationInstructionSteps(evaluationInstructionIndex: number): FormArray {
-    return this.evaluationInstructions().at(evaluationInstructionIndex).get('steps') as FormArray;
-  }
-
-  addEvaluationInstructionStep(evaluationInstructionIndex: number, evaluationInstructionStep = null) {
-    this.evaluationInstructionSteps(evaluationInstructionIndex).push(this._formBuilder.group({
-      step: [evaluationInstructionStep ? evaluationInstructionStep : '']
-    }))
-  }
-
-  removeEvaluationInstructionStep(evaluationInstructionIndex: number, evaluationInstructionStepIndex: number) {
-    this.evaluationInstructionSteps(evaluationInstructionIndex).removeAt(evaluationInstructionStepIndex);
-  }
-
   /* JSON Output */
 
   evaluationInstructionsJSON() {
     let evaluationInstructionsJSON = JSON.parse(JSON.stringify(this.evaluationInstructionsForm.get('evaluationInstructions').value));
-
     evaluationInstructionsJSON.forEach((evaluationInstruction, instructionIndex) => {
       if (evaluationInstruction.caption == '') evaluationInstruction.caption = false
-      let stepsStringArray = [];
-      for (let evaluationInstructionStepIndex in evaluationInstruction.steps) {
-        stepsStringArray.push(evaluationInstruction.steps[evaluationInstructionStepIndex].step);
-      }
-      evaluationInstruction.steps = stepsStringArray;
       this.localStorageService.setItem(`evaluation-instruction-${instructionIndex}`, JSON.stringify(evaluationInstruction))
     })
     this.evaluationInstructionsSerialized = JSON.stringify(evaluationInstructionsJSON);

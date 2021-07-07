@@ -47,6 +47,8 @@ import {NgxFileHelpersModule} from 'ngx-file-helpers';
 import {MatProgressBarModule} from "@angular/material/progress-bar";
 import {ColorPickerModule} from "ngx-color-picker";
 import {MatChipsModule} from "@angular/material/chips";
+import { AngularEditorModule } from '@kolkov/angular-editor';
+
 
 @NgModule({
   declarations: [
@@ -99,7 +101,8 @@ import {MatChipsModule} from "@angular/material/chips";
     NgxFileHelpersModule,
     ColorPickerModule,
     MatProgressBarModule,
-    MatChipsModule
+    MatChipsModule,
+    AngularEditorModule
   ],
   providers: [],
   bootstrap: [LoaderComponent]

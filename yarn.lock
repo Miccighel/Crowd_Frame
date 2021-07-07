@@ -1939,6 +1939,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@kolkov/angular-editor@npm:^1.2.0":
+  version: 1.2.0
+  resolution: "@kolkov/angular-editor@npm:1.2.0"
+  dependencies:
+    tslib: ^2.0.0
+  peerDependencies:
+    "@angular/common": ">=8.0.0 <13"
+    "@angular/core": ">=8.0.0 <13"
+    "@angular/forms": ">=8.0.0 <13"
+    "@angular/platform-browser": ">=8.0.0 <13"
+    rxjs: ^6.x.x
+  checksum: 67342675e4c07247d22addbce0bf3dfdd9e41d4840bac0e56af9a8278d1265fd09444d87142359188073f03f9125559c21b3e1ed8f647518db07e6fac5f29e05
+  languageName: node
+  linkType: hard
+
 "@ngtools/webpack@npm:12.1.1":
   version: 12.1.1
   resolution: "@ngtools/webpack@npm:12.1.1"
@@ -3658,6 +3673,7 @@ __metadata:
     "@angular/platform-browser-dynamic": ~12.1.1
     "@angular/router": ~12.1.1
     "@funktechno/texthighlighter": ^2.0.10
+    "@kolkov/angular-editor": ^1.2.0
     "@types/node": ~15.14.1
     aws-sdk: 2.939.0
     crypto-es: ^1.2.7
