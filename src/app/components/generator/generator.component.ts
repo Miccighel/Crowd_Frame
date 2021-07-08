@@ -15,9 +15,9 @@ import {Question, Questionnaire} from "../../models/questionnaire";
 import {Dimension, Mapping} from "../../models/dimension";
 import {Instruction} from "../../models/instructions";
 import {SettingsSearchEngine} from "../../models/settingsSearchEngine";
-import {SettingsTask} from "../../models/settingsTask";
+import {Attribute, SettingsTask} from "../../models/settingsTask";
 
-import { ColorPickerModule } from 'ngx-color-picker';
+import {ColorPickerModule} from 'ngx-color-picker';
 import {Hit} from "../../models/hit";
 import {SettingsWorker} from "../../models/settingsWorker";
 import {MatChipInputEvent} from "@angular/material/chips";
@@ -170,8 +170,9 @@ export class GeneratorComponent implements OnInit {
   annotatorOptionColors: Array<string>
   /* Variables to handle hits file upload */
   hitsFile: ReadFile
-  hitsFileName : string
-  parsedHits: Array<Hit>
+  hitsFileName: string
+  hitsParsed: Array<Hit>
+  hitsAttributes: Array<string>
   hitsSize: number
   hitsDetected: number
   readMode: ReadMode
@@ -220,6 +221,8 @@ export class GeneratorComponent implements OnInit {
   /* Change detector to manually intercept changes on DOM */
   changeDetector: ChangeDetectorRef;
 
+  cloneTask = new FormControl();
+
   /* |--------- CONTROL FLOW & UI ELEMENTS - DECLARATION ---------| */
 
   editorConfig: AngularEditorConfig = {
@@ -241,32 +244,16 @@ export class GeneratorComponent implements OnInit {
       {class: 'arial', name: 'Arial'},
       {class: 'times-new-roman', name: 'Times New Roman'},
       {class: 'calibri', name: 'Calibri'},
-      {class: 'comic-sans-ms', name: 'Comic Sans MS'}
     ],
     customClasses: [
-      {
-        name: 'quote',
-        class: 'quote',
-      },
-      {
-        name: 'redText',
-        class: 'redText'
-      },
-      {
-        name: 'titleText',
-        class: 'titleText',
-        tag: 'h1',
-      },
+      {name: 'quote', class: 'quote',},
+      {name: 'redText', class: 'redText'},
+      {name: 'titleText', class: 'titleText', tag: 'h1',},
     ],
     sanitize: true,
     toolbarPosition: 'top',
     toolbarHiddenButtons: [
-      [],
-      [
-        'customClasses',
-        'insertImage',
-        'insertVideo',
-      ]
+      [], ['customClasses', 'insertImage', 'insertVideo',]
     ]
   };
 
@@ -291,7 +278,14 @@ export class GeneratorComponent implements OnInit {
     this.localStorageService = localStorageService
     this.ngxService.startLoader('generator-inner')
 
-    this.downloadData()
+    this.questionnairesFetched = []
+    this.dimensionsFetched = []
+    this.generalInstructionsFetched = []
+    this.evaluationInstructionsFetched = []
+    this.searchEngineFetched = new SettingsSearchEngine()
+    this.taskSettingsFetched = new SettingsTask()
+    this.workerChecksFetched = new SettingsWorker()
+
 
     /* STEP #8 - Summary */
 
@@ -305,123 +299,34 @@ export class GeneratorComponent implements OnInit {
     this.searchEngineSettingsPath = null
     this.workerChecksPath = null
 
+    this.performGeneratorSetup()
+
     /* Read mode during hits file upload*/
     this.readMode = ReadMode.text
-
-    this.ngxService.stopLoader('generator-inner')
   }
 
-  downloadData() {
+  ngOnInit() {}
+
+  async performGeneratorSetup(config = null) {
+
+    this.ngxService.startLoader("generator-inner")
 
     /* STEP #1 - Questionnaires */
 
-    let rawQuestionnaires = this.S3Service.downloadQuestionnaires(this.configService.environment)
-    this.questionnairesFetched = new Array(rawQuestionnaires.length)
+    let rawQuestionnaires = await this.S3Service.downloadQuestionnaires(config ? config : this.configService.environment)
+    if(typeof rawQuestionnaires == "string")
+      rawQuestionnaires = JSON.parse(rawQuestionnaires)
     rawQuestionnaires.forEach((data, questionnaireIndex) => {
       let questionnaire = new Questionnaire(questionnaireIndex, data)
       let identifier = `questionnaire-${questionnaireIndex}`
       let item = this.localStorageService.getItem(identifier)
       if (item) {
-        this.questionnairesFetched[questionnaireIndex] = JSON.parse(item)
+        this.questionnairesFetched.push(JSON.parse(item))
       } else {
-        this.questionnairesFetched[questionnaireIndex] = questionnaire
+        this.questionnairesFetched.push(questionnaire)
         this.localStorageService.setItem(identifier, JSON.stringify(questionnaire))
       }
     })
-
-    /* STEP #2 - Dimensions */
-
-    let rawDimensions = this.S3Service.downloadDimensions(this.configService.environment)
-    this.dimensionsFetched = new Array(rawDimensions.length)
-    rawDimensions.forEach((data, dimensionIndex) => {
-      let dimension = new Dimension(dimensionIndex, data)
-      let identifier = `dimension-${dimensionIndex}`
-      let item = this.localStorageService.getItem(identifier)
-      if (item) {
-        this.dimensionsFetched[dimensionIndex] = JSON.parse(item)
-      } else {
-        this.dimensionsFetched[dimensionIndex] = dimension
-        this.localStorageService.setItem(identifier, JSON.stringify(dimension))
-      }
-    })
-
-    /* STEP #3 - General Instructions */
-
-    let rawGeneralInstructions = this.S3Service.downloadGeneralInstructions(this.configService.environment)
-    this.generalInstructionsFetched = new Array(rawGeneralInstructions.length)
-    rawGeneralInstructions.forEach((data, index) => {
-      let instruction = new Instruction(index, data)
-      let identifier = `general-instruction-${index}`
-      let item = this.localStorageService.getItem(identifier)
-      if (item) {
-        this.generalInstructionsFetched[index] = JSON.parse(item)
-      } else {
-        this.generalInstructionsFetched[index] = instruction
-        this.localStorageService.setItem(identifier, JSON.stringify(instruction))
-      }
-    })
-
-    /* STEP #4 - Evaluation Instructions */
-
-    let rawEvaluationInstructions = this.S3Service.downloadEvaluationInstructions(this.configService.environment)
-    this.evaluationInstructionsFetched = new Array(rawEvaluationInstructions.length)
-    rawEvaluationInstructions.forEach((data, index) => {
-      let instruction = new Instruction(index, data)
-      let identifier = `evaluation-instruction-${index}`
-      let item = this.localStorageService.getItem(identifier)
-      if (item) {
-        this.evaluationInstructionsFetched[index] = JSON.parse(item)
-      } else {
-        this.evaluationInstructionsFetched[index] = instruction
-        this.localStorageService.setItem(identifier, JSON.stringify(instruction))
-      }
-    })
-
-    /* STEP #5 - Search Engine Settings */
-
-    let rawSearchEngineSettings = this.S3Service.downloadSearchEngineSettings(this.configService.environment)
-    this.searchEngineFetched = new SettingsSearchEngine(rawSearchEngineSettings)
-    let identifier = `search-engine-settings`
-    let item = this.localStorageService.getItem(identifier)
-    if (item) this.searchEngineFetched = JSON.parse(item); else this.localStorageService.setItem(identifier, JSON.stringify(this.searchEngineFetched))
-
-    /* STEP #6 - Task Settings */
-
-    let rawTaskSettings = this.S3Service.downloadTaskSettings(this.configService.environment)
-    this.taskSettingsFetched = new SettingsTask(rawTaskSettings)
-    identifier = `task-settings`
-    item = this.localStorageService.getItem(identifier)
-    if (item) this.taskSettingsFetched = JSON.parse(item); else this.localStorageService.setItem(identifier, JSON.stringify(this.taskSettingsFetched))
-
-    this.annotatorOptionColors = ['#FFFF7B']
-    if(this.taskSettingsFetched.annotator) {
-      if (this.taskSettingsFetched.annotator.type == "options") {
-        if (this.taskSettingsFetched.annotator.values.length > 0) {
-          this.annotatorOptionColors = []
-          this.taskSettingsFetched.annotator.values.forEach((optionValue, optionValueIndex) => {
-            this.annotatorOptionColors.push(optionValue['color'])
-          })
-        }
-      }
-    }
-    this.batchesTreeInitialization = false
-
-    /* STEP #7 - Worker Checks Settings */
-
-    let rawWorkerChecks = this.S3Service.downloadWorkers(this.configService.environment)
-    this.workerChecksFetched = new SettingsWorker(rawWorkerChecks)
-    identifier = `worker-settings`
-    item = this.localStorageService.getItem(identifier)
-    if (item) this.workerChecksFetched = JSON.parse(item); else this.localStorageService.setItem(identifier, JSON.stringify(this.workerChecksFetched))
-
-  }
-
-  /*
-   * The onInit method initializes each form when the user interface is ready
-   */
-  ngOnInit() {
-
-    /* STEP #1 - Questionnaires */
     this.questionnairesForm = this._formBuilder.group({
       questionnaires: this._formBuilder.array([])
     });
@@ -430,10 +335,25 @@ export class GeneratorComponent implements OnInit {
         this.addQuestionnaire(questionnaireIndex, questionnaire)
       })
     }
-    this.questionnairesJSON()
+    //this.questionnairesJSON()
     this.questionnairesForm.valueChanges.subscribe(value => this.questionnairesJSON())
 
     /* STEP #2 - Dimensions */
+
+    let rawDimensions = await this.S3Service.downloadDimensions(config ? config : this.configService.environment)
+    if(typeof rawDimensions == "string")
+      rawDimensions = JSON.parse(rawDimensions)
+    rawDimensions.forEach((data, dimensionIndex) => {
+      let dimension = new Dimension(dimensionIndex, data)
+      let identifier = `dimension-${dimensionIndex}`
+      let item = this.localStorageService.getItem(identifier)
+      if (item) {
+        this.dimensionsFetched.push(JSON.parse(item))
+      } else {
+        this.dimensionsFetched.push(dimension)
+        this.localStorageService.setItem(identifier, JSON.stringify(dimension))
+      }
+    })
     this.dimensionsForm = this._formBuilder.group({
       dimensions: this._formBuilder.array([])
     });
@@ -442,10 +362,26 @@ export class GeneratorComponent implements OnInit {
         this.addDimension(dimensionIndex, dimension)
       })
     }
-    this.dimensionsJSON()
-    this.dimensionsForm.valueChanges.subscribe(value => this.dimensionsJSON())
+    //this.dimensionsJSON()
+    //this.dimensionsForm.valueChanges.subscribe(value => this.dimensionsJSON())
+
 
     /* STEP #3 - General Instructions */
+
+    let rawGeneralInstructions = await this.S3Service.downloadGeneralInstructions(config ? config : this.configService.environment)
+    if(typeof rawGeneralInstructions == "string")
+      rawGeneralInstructions = JSON.parse(rawGeneralInstructions)
+    rawGeneralInstructions.forEach((data, index) => {
+      let instruction = new Instruction(index, data)
+      let identifier = `general-instruction-${index}`
+      let item = this.localStorageService.getItem(identifier)
+      if (item) {
+        this.generalInstructionsFetched.push(JSON.parse(item))
+      } else {
+        this.generalInstructionsFetched.push(instruction)
+        this.localStorageService.setItem(identifier, JSON.stringify(instruction))
+      }
+    })
     this.generalInstructionsForm = this._formBuilder.group({
       generalInstructions: this._formBuilder.array([])
     });
@@ -458,6 +394,21 @@ export class GeneratorComponent implements OnInit {
     this.generalInstructionsForm.valueChanges.subscribe(value => this.generalInstructionsJSON())
 
     /* STEP #4 - Evaluation Instructions */
+
+    let rawEvaluationInstructions = await this.S3Service.downloadEvaluationInstructions(config ? config : this.configService.environment)
+    if(typeof rawEvaluationInstructions == "string")
+      rawEvaluationInstructions = JSON.parse(rawEvaluationInstructions)
+    rawEvaluationInstructions.forEach((data, index) => {
+      let instruction = new Instruction(index, data)
+      let identifier = `evaluation-instruction-${index}`
+      let item = this.localStorageService.getItem(identifier)
+      if (item) {
+        this.evaluationInstructionsFetched.push(JSON.parse(item))
+      } else {
+        this.evaluationInstructionsFetched.push(instruction)
+        this.localStorageService.setItem(identifier, JSON.stringify(instruction))
+      }
+    })
     this.evaluationInstructionsForm = this._formBuilder.group({
       evaluationInstructions: this._formBuilder.array([])
     });
@@ -469,7 +420,16 @@ export class GeneratorComponent implements OnInit {
     this.evaluationInstructionsJSON()
     this.evaluationInstructionsForm.valueChanges.subscribe(value => this.evaluationInstructionsJSON())
 
-    /* STEP #5 - Search Engine */
+
+    /* STEP #5 - Search Engine Settings */
+
+    let rawSearchEngineSettings = await this.S3Service.downloadSearchEngineSettings(config ? config : this.configService.environment)
+    if(typeof rawSearchEngineSettings == "string")
+      rawSearchEngineSettings = JSON.parse(rawSearchEngineSettings)
+    this.searchEngineFetched = new SettingsSearchEngine(rawSearchEngineSettings)
+    let identifier = `search-engine-settings`
+    let item = this.localStorageService.getItem(identifier)
+    if (item) this.searchEngineFetched = JSON.parse(item); else this.localStorageService.setItem(identifier, JSON.stringify(this.searchEngineFetched))
     this.searchEngineForm = this._formBuilder.group({
       source: [this.searchEngineFetched ? this.searchEngineFetched.source : ''],
       domains_filter: this._formBuilder.array([])
@@ -479,10 +439,33 @@ export class GeneratorComponent implements OnInit {
     this.searchEngineForm.valueChanges.subscribe(value => this.searchEngineJSON())
 
     /* STEP #6 - Task Settings */
+
+    let rawTaskSettings = await this.S3Service.downloadTaskSettings(config ? config : this.configService.environment)
+    if(typeof rawTaskSettings == "string")
+      rawTaskSettings = JSON.parse(rawTaskSettings)
+    this.taskSettingsFetched = new SettingsTask(rawTaskSettings)
+    identifier = `task-settings`
+    item = this.localStorageService.getItem(identifier)
+    if (item) this.taskSettingsFetched = JSON.parse(item); else this.localStorageService.setItem(identifier, JSON.stringify(this.taskSettingsFetched))
+
+    this.annotatorOptionColors = ['#FFFF7B']
+    if (this.taskSettingsFetched.annotator) {
+      if (this.taskSettingsFetched.annotator.type == "options") {
+        if (this.taskSettingsFetched.annotator.values.length > 0) {
+          this.annotatorOptionColors = []
+          this.taskSettingsFetched.annotator.values.forEach((optionValue, optionValueIndex) => {
+            this.annotatorOptionColors.push(optionValue['color'])
+          })
+        }
+      }
+    }
+    this.batchesTreeInitialization = false
+
     this.taskSettingsForm = this._formBuilder.group({
       allowed_tries: [this.taskSettingsFetched.allowed_tries ? this.taskSettingsFetched.allowed_tries : ''],
       time_check_amount: [this.taskSettingsFetched.time_check_amount ? this.taskSettingsFetched.time_check_amount : ''],
       hits: [],
+      attributes: this._formBuilder.array([]),
       setAnnotator: [!!this.taskSettingsFetched.annotator],
       annotator: this._formBuilder.group({
         type: [this.taskSettingsFetched.annotator ? this.taskSettingsFetched.annotator.type : ''],
@@ -499,27 +482,68 @@ export class GeneratorComponent implements OnInit {
     this.taskSettingsJSON()
     this.taskSettingsForm.valueChanges.subscribe(value => this.taskSettingsJSON())
 
-    let hitsPromise = this.loadHits()
+    let hitsPromise =  this.loadHits()
     let batchesPromise = this.loadBatchesTree()
 
-    /* STEP #7 - Worker Checks */
+    /* STEP #7 - Worker Checks Settings */
+
+    let rawWorkerChecks = await this.S3Service.downloadWorkers(this.configService.environment)
+    if(typeof rawWorkerChecks == "string")
+      rawWorkerChecks = JSON.parse(rawWorkerChecks)
+    this.workerChecksFetched = new SettingsWorker(rawWorkerChecks)
+    identifier = `worker-settings`
+    item = this.localStorageService.getItem(identifier)
+    if (item) this.workerChecksFetched = JSON.parse(item); else this.localStorageService.setItem(identifier, JSON.stringify(this.workerChecksFetched))
     this.workerChecksForm = this._formBuilder.group({
       blacklist: [this.workerChecksFetched.blacklist ? this.workerChecksFetched.blacklist : ''],
       whitelist: [this.workerChecksFetched.whitelist ? this.workerChecksFetched.whitelist : '']
     })
     this.workerChecksJSON()
     this.workerChecksForm.valueChanges.subscribe(value => this.workerChecksJSON())
-
-    this.whitelistedWorkerId =  new Set();
-    this.blacklistedWorkerId =  new Set();
+    this.whitelistedWorkerId = new Set();
+    this.blacklistedWorkerId = new Set();
     this.workerChecksFetched.blacklist.forEach((workerId, workerIndex) => this.blacklistedWorkerId.add(workerId))
     this.workerChecksFetched.whitelist.forEach((workerId, workerIndex) => this.whitelistedWorkerId.add(workerId))
 
+    this.ngxService.stopLoader("generator-inner")
+
+  }
+
+  async clonePreviousBatch(data: Object) {
+    this.ngxService.startLoader('generator-inner')
+    this.questionnairesFetched = []
+    this.dimensionsFetched = []
+    this.generalInstructionsFetched = []
+    this.evaluationInstructionsFetched = []
+    this.searchEngineFetched = new SettingsSearchEngine()
+    this.taskSettingsFetched = new SettingsTask()
+    this.workerChecksFetched = new SettingsWorker()
+    this.localStorageService.clear()
+    this.generator.selectedIndex = 0
+    let taskName = null
+    let batchName = null
+    for(let taskNode of this.batchesTree) {
+      for (let batchNode of taskNode['batches']) {
+        if (batchNode['batch'] == data['value']) {
+          taskName = taskNode['task']
+          batchName = batchNode['batch']
+        }
+      }
+    }
+    let config = this.configService.environment
+    config['taskName'] = taskName.slice(0, -1)
+    config['batchName'] = batchName.slice(0, -1).replace(taskName, "")
+    console.log(config)
+    console.log(taskName)
+    console.log(batchName)
+    this.performGeneratorSetup(config)
+    this.changeDetector.detectChanges()
+    this.ngxService.stopLoader('generator-inner')
   }
 
   async loadHits() {
     let hits = JSON.parse(this.localStorageService.getItem('hits'))
-    if(hits) {
+    if (hits) {
       this.updateHitsFile(hits)
     } else {
       let hits = await this.S3Service.downloadHits(this.configService.environment)
@@ -548,13 +572,13 @@ export class GeneratorComponent implements OnInit {
           "whitelist": false,
           "counter": counter
         }
-        if(this.taskSettingsFetched.blacklistBatches) {
+        if (this.taskSettingsFetched.blacklistBatches) {
           this.taskSettingsFetched.blacklistBatches.forEach((batchName, batchIndex) => {
             blackListedBatches = blackListedBatches + 1
             batchNode['blacklist'] = batchName == batch["Prefix"];
           })
         }
-        if(this.taskSettingsFetched.whitelistBatches) {
+        if (this.taskSettingsFetched.whitelistBatches) {
           this.taskSettingsFetched.whitelistBatches.forEach((batchName, batchIndex) => {
             whiteListedBatches = whiteListedBatches + 1
             batchNode['whitelist'] = batchName == batch["Prefix"];
@@ -1092,37 +1116,54 @@ export class GeneratorComponent implements OnInit {
   /* STEP #6 - Task Settings */
 
   updateHitsFile(hits = null) {
-    if (hits) {
-      this.parsedHits = hits;
-    } else {
-      this.parsedHits = JSON.parse(this.hitsFile.content) as Array<Hit>;
-    }
-    if (this.parsedHits.length > 0) {
-      this.hitsDetected = ("documents" in this.parsedHits[0]) && ("token_input" in this.parsedHits[0]) && ("token_output" in this.parsedHits[0]) && ("unit_id" in this.parsedHits[0]) ? this.parsedHits.length : 0;
+    this.hitsParsed = hits ? hits : JSON.parse(this.hitsFile.content) as Array<Hit>;
+    if (this.hitsParsed.length > 0) {
+      this.hitsDetected = ("documents" in this.hitsParsed[0]) && ("token_input" in this.hitsParsed[0]) && ("token_output" in this.hitsParsed[0]) && ("unit_id" in this.hitsParsed[0]) ? this.hitsParsed.length : 0;
     } else {
       this.hitsDetected = 0
     }
-    if(this.hitsDetected > 0) {
-      this.localStorageService.setItem(`hits`, JSON.stringify(this.parsedHits))
+    this.hitsAttributes = []
+    if (this.hitsDetected > 0) {
+      for (let document of this.hitsParsed[0]['documents']) for (let attribute in document) if (!(attribute in this.hitsAttributes)) this.hitsAttributes.push(attribute)
+      this.localStorageService.setItem(`hits`, JSON.stringify(this.hitsParsed))
     }
-    if(this.hitsFile) {
+    for (let attributeIndex in this.hitsAttributes) {
+      if(this.taskSettingsFetched.attributes[attributeIndex]) {
+        this.addHitAttribute(this.taskSettingsFetched.attributes[attributeIndex])
+      } else {
+        this.addHitAttribute()
+      }
+
+    }
+    if (this.hitsFile) {
       this.hitsSize = Math.round(this.hitsFile.size / 1024)
       this.hitsFileName = this.hitsFile.name
     } else {
-      this.hitsSize = (new TextEncoder().encode(this.parsedHits.toString())).length
+      this.hitsSize = (new TextEncoder().encode(this.hitsParsed.toString())).length
       this.hitsFileName = "hits.json"
     }
     this.taskSettingsForm.get('hits').setValue('')
     if (this.hitsDetected > 0) {
-      if(hits) {
+      if (hits) {
         this.taskSettingsForm.get('hits').setValue(hits)
       } else {
-        this.taskSettingsForm.get('hits').setValue(this.hitsFile ? this.hitsFile.content : this.parsedHits)
+        this.taskSettingsForm.get('hits').setValue(this.hitsFile ? this.hitsFile.content : this.hitsParsed)
       }
     } else {
       this.taskSettingsForm.get('hits').setValidators([Validators.required])
     }
     this.taskSettingsForm.get('hits').updateValueAndValidity();
+  }
+
+  hitAttributes() {
+    return this.taskSettingsForm.get('attributes') as FormArray;
+  }
+
+  addHitAttribute(attribute = null as Attribute) {
+    this.hitAttributes().push(this._formBuilder.group({
+      show: attribute ? attribute.show : true,
+      annotate: attribute ? attribute.annotate : false,
+    }))
   }
 
   blacklistBatches(): FormArray {
@@ -1193,6 +1234,9 @@ export class GeneratorComponent implements OnInit {
   }
 
   resetAnnotator() {
+    for (let attributeControl of this.hitAttributes().controls) {
+      attributeControl.get('annotate').setValue(false)
+    }
     this.annotator().get('type').setValue('')
     if (this.taskSettingsForm.get('setAnnotator').value == false) {
       this.annotator().get('type').clearValidators();
@@ -1246,11 +1290,23 @@ export class GeneratorComponent implements OnInit {
     if (!taskSettingsJSON.setCountdownTime) taskSettingsJSON.countdown_time = false
     delete taskSettingsJSON.setCountdownTime
 
+    if('attributes' in taskSettingsJSON) {
+      for (let attributeIndex in taskSettingsJSON['attributes']) {
+        let attribute = taskSettingsJSON['attributes'][attributeIndex]
+        if(!attribute['show']) attribute['show'] = false
+        if(!attribute['annotate']) attribute['annotate'] = false
+        if(!taskSettingsJSON.annotator){
+          attribute['annotate'] = false
+        }
+        taskSettingsJSON['attributes'][attributeIndex] = attribute
+      }
+    }
+
     let blacklistBatches = [];
     for (let blacklistCounter in taskSettingsJSON.blacklist_batches) {
       for (let taskNode of this.batchesTree) {
         for (let batchNode of taskNode['batches']) {
-          if(blacklistCounter == batchNode['counter'] && batchNode['blacklist']) {
+          if (blacklistCounter == batchNode['counter'] && batchNode['blacklist']) {
             blacklistBatches.push(batchNode['batch'])
           }
         }
@@ -1262,7 +1318,7 @@ export class GeneratorComponent implements OnInit {
     for (let whitelistCounter in taskSettingsJSON.whitelist_batches) {
       for (let taskNode of this.batchesTree) {
         for (let batchNode of taskNode['batches']) {
-          if(whitelistCounter == batchNode['counter'] && batchNode['whitelist']) {
+          if (whitelistCounter == batchNode['counter'] && batchNode['whitelist']) {
             whitelistBatches.push(batchNode['batch'])
           }
         }
@@ -1313,9 +1369,9 @@ export class GeneratorComponent implements OnInit {
   /* JSON Output */
   workerChecksJSON() {
     let workerChecksJSON = JSON.parse(JSON.stringify(this.workerChecksForm.value));
-    if(this.blacklistedWorkerId)
+    if (this.blacklistedWorkerId)
       workerChecksJSON.blacklist = Array.from(this.blacklistedWorkerId.values())
-    if(this.whitelistedWorkerId)
+    if (this.whitelistedWorkerId)
       workerChecksJSON.whitelist = Array.from(this.whitelistedWorkerId.values())
     this.localStorageService.setItem(`worker-settings`, JSON.stringify(workerChecksJSON))
     this.workersChecksSerialized = JSON.stringify(workerChecksJSON)
@@ -1331,7 +1387,7 @@ export class GeneratorComponent implements OnInit {
     this.uploadStarted = true
     this.uploadCompleted = false
     let questionnairePromise = this.S3Service.uploadQuestionnairesConfig(this.configService.environment, this.questionnairesSerialized)
-    let hitsPromise = this.S3Service.uploadHitsConfig(this.configService.environment, this.parsedHits)
+    let hitsPromise = this.S3Service.uploadHitsConfig(this.configService.environment, this.hitsParsed)
     let dimensionsPromise = this.S3Service.uploadDimensionsConfig(this.configService.environment, this.dimensionsSerialized)
     let taskInstructionsPromise = this.S3Service.uploadTaskInstructionsConfig(this.configService.environment, this.generalInstructionsSerialized)
     let dimensionsInstructionsPromise = this.S3Service.uploadDimensionsInstructionsConfig(this.configService.environment, this.evaluationInstructionsSerialized)
@@ -1394,7 +1450,7 @@ export class GeneratorComponent implements OnInit {
     this.workerChecksPath = null
     this.localStorageService.clear()
     this.generator.selectedIndex = 0
-    this.downloadData()
+    this.performGeneratorSetup()
     this.ngxService.stopLoader('generator-inner')
   }
 

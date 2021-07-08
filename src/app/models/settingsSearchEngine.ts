@@ -4,12 +4,16 @@ export class SettingsSearchEngine {
   domains_filter?: Array<string>;
 
   constructor(
-    data: JSON
+    data = null as JSON
   ) {
-    this.source = data["source"];
-    if (data['domains_to_filter']) {
+    this.source = data ? data["source"] : null;
+    if(data) {
+      if (data['domains_to_filter']) {
+        this.domains_filter = new Array<string>();
+        for (let domain of data["domains_to_filter"]) this.domains_filter.push(domain)
+      }
+    } else {
       this.domains_filter = new Array<string>();
-      for (let domain of data["domains_to_filter"]) this.domains_filter.push(domain)
     }
   }
 

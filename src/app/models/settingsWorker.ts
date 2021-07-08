@@ -4,12 +4,12 @@ export class SettingsWorker {
   whitelist: Array<string>;
 
   constructor(
-    data: JSON
+    data = null as JSON
   ) {
     this.blacklist = new Array<string>();
-    for (let workerId of data["blacklist"]) this.blacklist.push(workerId)
+    if(data) for (let workerId of data["blacklist"]) this.blacklist.push(workerId)
     this.whitelist = new Array<string>();
-    for (let workerId of data["whitelist"]) this.whitelist.push(workerId)
+    if(data) for (let workerId of data["whitelist"]) this.whitelist.push(workerId)
   }
 
 }

@@ -15,7 +15,7 @@
 
   <!-- Step #1 - Questionnaires -->
 
-  <mat-step [stepControl]="questionnairesForm">
+  <mat-step [stepControl]="questionnairesForm" *ngIf="questionnairesFetched && questionnairesForm">
     <form [formGroup]="questionnairesForm">
 
       <!-- Header -->
@@ -203,7 +203,7 @@
 
   <!-- Step #2 - Dimensions -->
 
-  <mat-step [stepControl]="dimensionsForm">
+  <mat-step [stepControl]="dimensionsForm" *ngIf="dimensionsFetched && dimensionsForm">
     <form [formGroup]="dimensionsForm">
 
       <!-- Header -->
@@ -480,7 +480,7 @@
 
   <!-- Step #3 - General Instructions -->
 
-  <mat-step [stepControl]="generalInstructionsForm">
+  <mat-step [stepControl]="generalInstructionsForm" *ngIf="generalInstructionsFetched && generalInstructionsForm">
     <form [formGroup]="generalInstructionsForm">
 
       <!-- Header -->
@@ -554,7 +554,7 @@
   </mat-step>
 
   <!-- Step #4 - Evaluation Instructions -->
-  <mat-step [stepControl]="evaluationInstructionsForm">
+  <mat-step [stepControl]="evaluationInstructionsForm" *ngIf="evaluationInstructionsFetched && evaluationInstructionsForm">
     <form [formGroup]="evaluationInstructionsForm">
 
       <!-- Header -->
@@ -628,7 +628,7 @@
   </mat-step>
 
   <!-- Step #5 - Search Engine -->
-  <mat-step [stepControl]="searchEngineForm">
+  <mat-step [stepControl]="searchEngineForm" *ngIf="searchEngineFetched  && searchEngineForm">
     <form [formGroup]="searchEngineForm">
 
       <!-- Header -->
@@ -697,7 +697,7 @@
   </mat-step>
 
   <!-- Step #6 - Task Settings -->
-  <mat-step [stepControl]="taskSettingsForm">
+  <mat-step [stepControl]="taskSettingsForm" *ngIf="taskSettingsFetched  && taskSettingsForm">
     <form [formGroup]="taskSettingsForm">
 
       <!-- Header -->
@@ -731,19 +731,24 @@
           <mat-divider [inset]="true"></mat-divider>
 
           <!-- Hits file-->
-          <table class="width-100 mt-8px">
-            <button mat-flat-button color="primary" class="mt-8px mb-16px indent" ngxFilePicker [readMode]="readMode" (filePick)="hitsFile = $event" (readEnd)="updateHitsFile()" accept="application/json">
-              Select Hits File
-            </button>
-            <ng-container *ngIf="!this.hitsFileName">
-              <code>your_file.json</code>
-            </ng-container>
-            <ng-container *ngIf="this.hitsDetected <= 0">
-              <code>invalid file</code>
-            </ng-container>
-            <ng-container *ngIf="this.hitsDetected > 0">
-              <code>Filename: {{ this.hitsFileName }}, Hits detected: {{this.hitsDetected}}, Filesize: {{this.hitsSize}} Kb</code>
-            </ng-container>
+          <h3 class="lighter">Hits & Attributes</h3>
+          <table class="width-100 mt-16px">
+            <tr>
+              <td>
+                <button mat-flat-button color="primary" class="indent" ngxFilePicker [readMode]="readMode" (filePick)="hitsFile = $event" (readEnd)="updateHitsFile()" accept="application/json">
+                  Select Hits File
+                </button>
+                <ng-container *ngIf="!this.hitsFileName">
+                  <code>your_file.json</code>
+                </ng-container>
+                <ng-container *ngIf="this.hitsDetected <= 0">
+                  <code>invalid file</code>
+                </ng-container>
+                <ng-container *ngIf="this.hitsDetected > 0">
+                  <code>Filename: {{ this.hitsFileName }}, Hits detected: {{this.hitsDetected}}, Filesize: {{this.hitsSize}} Kb</code>
+                </ng-container>
+              </td>
+            </tr>
             <tr *ngIf="this.hitsDetected<=0">
               <td>
                 <mat-error class="mb-8px indent">
@@ -752,6 +757,23 @@
               </td>
             </tr>
           </table>
+
+          <div class="hit-attributes mt-8px mb-16px indent">
+            <div *ngFor="let value of hitAttributes().controls; let valueIndex = index" formArrayName="attributes" class="p-5px">
+              <div>
+                <ng-container [formGroupName]="valueIndex">
+                  <mat-checkbox color="primary" formControlName="show">
+                    {{this.hitsAttributes[valueIndex]}}
+                  </mat-checkbox>
+                </ng-container>
+                <ng-container *ngIf="this.taskSettingsForm.get('setAnnotator').value" [formGroupName]="valueIndex">
+                  <mat-checkbox color="primary" formControlName="annotate">
+                    Annotations
+                  </mat-checkbox>
+                </ng-container>
+              </div>
+            </div>
+          </div>
 
           <mat-divider [inset]="true"></mat-divider>
 
@@ -924,7 +946,7 @@
   </mat-step>
 
   <!-- Step #7 - Worker Checks -->
-  <mat-step [stepControl]="workerChecksForm">
+  <mat-step [stepControl]="workerChecksForm" *ngIf="workerChecksFetched && workerChecksForm">
     <form [formGroup]="workerChecksForm">
 
       <!-- Header -->
@@ -972,7 +994,14 @@
   </mat-step>
 
   <!-- Step #8 - Summary -->
-  <mat-step>
+  <mat-step *ngIf="
+  questionnairesFetched && questionnairesForm &&
+  dimensionsFetched && dimensionsForm &&
+  generalInstructionsFetched && generalInstructionsForm &&
+  evaluationInstructionsFetched && evaluationInstructionsForm &&
+  taskSettingsFetched && taskSettingsForm &&
+  searchEngineFetched && searchEngineForm &&
+  workerChecksFetched && workerChecksForm">
 
     <!-- Header -->
     <ng-template matStepLabel>Summary</ng-template>
@@ -1088,3 +1117,26 @@
   </mat-step>
 
 </mat-horizontal-stepper>
+
+
+
+<mat-expansion-panel id="cloneTask" *ngIf="this.batchesTreeInitialization">
+  <mat-expansion-panel-header>
+    <mat-panel-title>
+      Clone
+    </mat-panel-title>
+    <mat-panel-description>
+      a previously launched batch
+    </mat-panel-description>
+  </mat-expansion-panel-header>
+  <mat-form-field appearance="fill" class="width-100">
+    <mat-label>Select</mat-label>
+    <mat-select [formControl]="cloneTask" (selectionChange)="clonePreviousBatch($event)">
+      <mat-optgroup *ngFor="let group of this.batchesTree" [label]="group['task']">
+        <mat-option *ngFor="let pokemon of group['batches']" [value]="pokemon['batch']">
+          {{pokemon['batch']}}
+        </mat-option>
+      </mat-optgroup>
+    </mat-select>
+  </mat-form-field>
+</mat-expansion-panel>
