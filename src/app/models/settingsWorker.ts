@@ -7,9 +7,9 @@ export class SettingsWorker {
     data = null as JSON
   ) {
     this.blacklist = new Array<string>();
-    if(data) for (let workerId of data["blacklist"]) this.blacklist.push(workerId)
+    if(data) if('blacklist' in data) for (let workerId of data["blacklist"] as Array<string>) this.blacklist.push(workerId)
     this.whitelist = new Array<string>();
-    if(data) for (let workerId of data["whitelist"]) this.whitelist.push(workerId)
+    if(data) if('whitelist' in data) for (let workerId of data["whitelist"] as Array<string>) this.whitelist.push(workerId)
   }
 
 }

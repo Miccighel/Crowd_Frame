@@ -1119,24 +1119,35 @@
 </mat-horizontal-stepper>
 
 
-
-<mat-expansion-panel id="cloneTask" *ngIf="this.batchesTreeInitialization">
-  <mat-expansion-panel-header>
+<mat-expansion-panel id="cloneTask" [expanded]="true" class="green-theme">
+  <mat-expansion-panel-header *ngIf="!this.batchesTreeInitialization">
+    <mat-panel-title>
+      Initialization
+    </mat-panel-title>
+    <mat-panel-description>
+      in progress...
+    </mat-panel-description>
+  </mat-expansion-panel-header>
+  <mat-expansion-panel-header *ngIf="this.batchesTreeInitialization">
     <mat-panel-title>
       Clone
     </mat-panel-title>
     <mat-panel-description>
-      a previously launched batch
+      a deployed batch
     </mat-panel-description>
   </mat-expansion-panel-header>
-  <mat-form-field appearance="fill" class="width-100">
-    <mat-label>Select</mat-label>
+  <mat-progress-bar mode="indeterminate" *ngIf="!this.batchesTreeInitialization"></mat-progress-bar>
+  <mat-form-field appearance="fill" class="width-100" *ngIf="this.batchesTreeInitialization">
+    <mat-label>Select configuration</mat-label>
     <mat-select [formControl]="cloneTask" (selectionChange)="clonePreviousBatch($event)">
-      <mat-optgroup *ngFor="let group of this.batchesTree" [label]="group['task']">
-        <mat-option *ngFor="let pokemon of group['batches']" [value]="pokemon['batch']">
-          {{pokemon['batch']}}
+      <mat-optgroup *ngFor="let taskNode of this.batchesTree" [label]="taskNode['task']">
+        <mat-option *ngFor="let batchNode of taskNode['batches']" [value]="batchNode['batch']">
+          {{batchNode['batch'].replace(taskNode['task'], '')}}
         </mat-option>
       </mat-optgroup>
     </mat-select>
   </mat-form-field>
+  <button mat-flat-button color="primary" class="width-100" *ngIf="this.taskCloned && this.batchesTreeInitialization" (click)="clearClonedBatch()">
+    Clear
+  </button>
 </mat-expansion-panel>

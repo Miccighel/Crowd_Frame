@@ -57,7 +57,7 @@ export class S3Service {
     return s3.upload({
       Key: path,
       Bucket: config["bucket"],
-      Body: JSON.stringify(payload, null, "\t")
+      Body: JSON.stringify(payload)
     }, function (err, data) {
     })
   }
@@ -210,7 +210,6 @@ export class S3Service {
    */
 
   public uploadQuestionnairesConfig(config, data) {
-    console.log(config)
     return this.upload(config, `${config.taskName}/${config.batchName}/Task/questionnaires.json`, data)
   }
 

@@ -1,3 +1,5 @@
+import {type} from "os";
+
 export class SettingsTask {
 
   allowed_tries: number;
@@ -12,7 +14,6 @@ export class SettingsTask {
   constructor(
     data = null as JSON
   ) {
-
     if(data) {
       if ('domains_to_filter' in data) {
         data['domains_filter'] = data['domains_to_filter']
@@ -31,9 +32,9 @@ export class SettingsTask {
     this.annotator =          data ?  data["annotator"] ? new Annotator(data["annotator"]) : null : null;
     this.countdown_time =     data ?   data["countdown_time"] ? parseInt((data["countdown_time"])): null : null;
     this.blacklistBatches = new Array<string>();
-    if(data) for (let batch of data["blacklist_batches"]) this.blacklistBatches.push(batch)
+    if(data) if('blacklist_batches' in data) for (let batch of data["blacklist_batches"] as Array<string>) this.blacklistBatches.push(batch)
     this.whitelistBatches = new Array<string>();
-    if(data) for (let batch of data["whitelist_batches"]) this.whitelistBatches.push(batch)
+    if(data) if('whitelist_batches' in data) for (let batch of data["whitelist_batches"] as Array<string>) this.whitelistBatches.push(batch)
     this.messages = new Array<string>();
     if(data) {
       if (data['messages']) {
