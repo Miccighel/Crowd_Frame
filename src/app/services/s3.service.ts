@@ -57,7 +57,8 @@ export class S3Service {
     return s3.upload({
       Key: path,
       Bucket: config["bucket"],
-      Body: JSON.stringify(payload)
+      Body: JSON.stringify(payload, null, 4),
+      ContentType: "application/json"
     }, function (err, data) {
     })
   }

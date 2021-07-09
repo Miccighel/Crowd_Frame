@@ -21,7 +21,7 @@ import {DeviceDetectorService} from 'ngx-device-detector';
 import {Document} from "../../../../data/build/skeleton/document";
 import {Hit} from "../../models/hit";
 import {Questionnaire} from "../../models/questionnaire";
-import {Dimension, ScaleInterval, ScaleMagnitude} from "../../models/dimension";
+import {Dimension, ScaleInterval, ScaleMagnitude, Style} from "../../models/dimension";
 import {Instruction} from "../../models/instructions";
 import {Note} from "../../models/notes";
 import {Worker} from "../../models/worker";
@@ -733,7 +733,7 @@ export class SkeletonComponent implements OnInit {
   /* This function is used to sort each dimension that a worker have to assess according the position specified */
   public filterDimensions(type: string, position: string) {
     let filteredDimensions = []
-    for (let dimension of this.dimensions) if (dimension.style.type == type && dimension.style.position == position) filteredDimensions.push(dimension)
+    for (let dimension of this.dimensions) if(dimension.style) if (dimension.style.type == type && dimension.style.position == position) filteredDimensions.push(dimension)
     return filteredDimensions
   }
 
@@ -1833,10 +1833,12 @@ export class SkeletonComponent implements OnInit {
 
     /* The yellow leftover notes are marked as deleted */
     if(this.annotator) {
-      if (this.notes[documentIndex].length > 0) {
-        let element = this.notes[documentIndex][this.notes[documentIndex].length - 1]
-        if (element.option == "not_selected" && !element.deleted) {
-          this.removeAnnotation(documentIndex, this.notes[documentIndex].length - 1, this.changeDetector)
+      if(this.notes[documentIndex]) {
+        if (this.notes[documentIndex].length > 0) {
+          let element = this.notes[documentIndex][this.notes[documentIndex].length - 1]
+          if (element.option == "not_selected" && !element.deleted) {
+            this.removeAnnotation(documentIndex, this.notes[documentIndex].length - 1, this.changeDetector)
+          }
         }
       }
     }

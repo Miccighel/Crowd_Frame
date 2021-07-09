@@ -1,7 +1,7 @@
 <div id="task-instructions" mat-dialog-content>
   <ng-container *ngFor="let instruction of this.instructions; let i=index">
     <h2 *ngIf="instruction['caption']">{{instruction["caption"]}}</h2>
-    <span [innerHTML]="step" *ngFor="let step of instruction['steps']; let j=index"></span>
+    <span [innerHTML]="instruction['text']"></span>
   </ng-container>
 </div>
 <div class="close-button">

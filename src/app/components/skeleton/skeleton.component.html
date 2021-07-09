@@ -4,7 +4,7 @@
     <mat-card-content>
       <ng-container *ngFor="let instruction of this.taskInstructions; let i=index">
         <h2 *ngIf="instruction['caption']">{{instruction["caption"]}}</h2>
-        <span [innerHTML]="step" *ngFor="let step of instruction['steps']; let j=index"></span>
+        <span [innerHTML]="instruction.text"></span>
       </ng-container>
     </mat-card-content>
     <mat-card-actions>
@@ -448,11 +448,7 @@
               <mat-divider [inset]="true"></mat-divider>
               <div *ngFor="let instruction of this.instructions">
                 <p>{{instruction.caption}}</p>
-                <ol *ngIf="instruction.steps.length>0" type="a">
-                  <li *ngFor="let step of instruction.steps">
-                    <p>{{step}}</p>
-                  </li>
-                </ol>
+                <div [innerHTML]="instruction.text"></div>
               </div>
             </div>
 
@@ -514,7 +510,7 @@
                       <!-- Categorical scale markup -->
                       <ng-container *ngIf="dimension.scale.type=='categorical'">
                         <mat-radio-group aria-labelledby="radio-button-label" class="radio-button-group" formControlName="{{(dimension.name).concat('_value')}}">
-                          <mat-radio-button *ngFor="let mapping of dimension.scale.mappings let k=index"
+                          <mat-radio-button *ngFor="let mapping of dimension.scale.mapping let k=index"
                                             class="radio-button" value="{{mapping.value}}"
                                             (change)="storeDimensionValue($event, i, dimension.index)"
                                             [disabled]="this.countdownsExpired[i]">
@@ -915,8 +911,7 @@
           </h2>
           <form [formGroup]="commentForm" class="comment-form">
             <mat-form-field appearance="fill">
-              <textarea matInput [disabled]="commentSent" placeholder="Your comment here" formControlName="comment"
-                        rows="5"></textarea>
+              <textarea matInput [disabled]="commentSent" placeholder="Your comment here" formControlName="comment" rows="5"></textarea>
             </mat-form-field>
           </form>
           <button mat-flat-button color="primary" [disabled]="commentSent || !commentForm.valid "
