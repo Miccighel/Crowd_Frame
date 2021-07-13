@@ -576,8 +576,9 @@ export class GeneratorComponent implements OnInit {
 
   async clearClonedBatch() {
     this.ngxService.startLoader('generator-inner')
-    this.cloneTask = new FormControl('')
     this.localStorageService.clear()
+    this.cloneTask = new FormControl('')
+    this.taskCloned = false
     this.questionnairesFetched = []
     this.dimensionsFetched = []
     this.generalInstructionsFetched = []
@@ -588,7 +589,6 @@ export class GeneratorComponent implements OnInit {
     this.generator.selectedIndex = 0
     this.configService.environment['taskName'] = this.configService.environment['taskNameInitial']
     this.configService.environment['batchName'] = this.configService.environment['batchNameInitial']
-    this.taskCloned = false
     this.performGeneratorSetup()
     this.changeDetector.detectChanges()
     this.ngxService.stopLoader('generator-inner')
@@ -602,8 +602,7 @@ export class GeneratorComponent implements OnInit {
       let hits = []
       try {
         hits = await this.S3Service.downloadHits(this.configService.environment)
-      } catch (exception) {
-      }
+      } catch (exception) {}
       this.localStorageService.setItem(`hits`, JSON.stringify(hits))
       this.updateHitsFile(hits)
     }

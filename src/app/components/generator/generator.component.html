@@ -1119,7 +1119,7 @@
 </mat-horizontal-stepper>
 
 
-<mat-expansion-panel id="cloneTask" [expanded]="true" class="green-theme">
+<mat-expansion-panel id="cloneTask" [expanded]="true" class="green-theme" *ngIf="this.batchesTree.length>0">
   <mat-expansion-panel-header *ngIf="!this.batchesTreeInitialization">
     <mat-panel-title>
       Initialization
