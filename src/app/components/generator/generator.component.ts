@@ -355,8 +355,7 @@ export class GeneratorComponent implements OnInit {
     let rawDimensions = []
     try {
       rawDimensions = await this.S3Service.downloadDimensions(this.configService.environment)
-    } catch (exception) {
-    }
+    } catch (exception) {}
     if (typeof rawDimensions == "string")
       rawDimensions = JSON.parse(rawDimensions)
     rawDimensions.forEach((data, dimensionIndex) => {
@@ -1220,8 +1219,8 @@ export class GeneratorComponent implements OnInit {
 
   addHitAttribute(attribute = null as Attribute) {
     this.hitAttributes().push(this._formBuilder.group({
-      show: attribute ? attribute.show ? attribute.show : true : true,
-      annotate: attribute ? attribute.annotate ? attribute.annotate : false : false,
+      show: attribute ? attribute.show : true,
+      annotate: attribute ? attribute.annotate : false,
     }))
   }
 
