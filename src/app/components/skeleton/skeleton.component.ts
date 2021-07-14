@@ -6,7 +6,7 @@ import {
   ViewChild,
   ViewChildren,
   QueryList, OnInit
-} from '@angular/core';
+} from "@angular/core";
 /* Reactive forms modules */
 import {AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
 import {MatFormField} from "@angular/material/form-field";
@@ -16,7 +16,7 @@ import {CountdownComponent} from 'ngx-countdown';
 import {NgxUiLoaderService} from 'ngx-ui-loader';
 import {ConfigService} from "../../services/config.service";
 import {S3Service} from "../../services/s3.service";
-import {DeviceDetectorService} from 'ngx-device-detector';
+import {DeviceDetectorService} from "ngx-device-detector";
 /* Task models */
 import {Document} from "../../../../data/build/skeleton/document";
 import {Hit} from "../../models/hit";
@@ -27,6 +27,7 @@ import {Note} from "../../models/notes";
 import {Worker} from "../../models/worker";
 import {Annotator, SettingsTask} from "../../models/settingsTask";
 import {GoldChecker} from "../../../../data/build/skeleton/goldChecker";
+import {ActionLogger} from "../../services/userActionLogger.service";
 /* Annotator functions */
 import {doHighlight} from "@funktechno/texthighlighter/lib";
 /* HTTP Client */
@@ -37,6 +38,8 @@ import {NoteStandard} from "../../models/notes_standard";
 import {NoteLaws} from "../../models/notes_laws";
 import {MatRadioChange} from "@angular/material/radio";
 import {MatCheckboxChange} from "@angular/material/checkbox";
+import {ButtonDirective} from "./skeleton.directive";
+import {SectionService} from "../../services/section.service";
 
 /* Component HTML Tag definition */
 @Component({
@@ -64,6 +67,10 @@ export class SkeletonComponent implements OnInit {
   S3Service: S3Service;
   /* Service to detect user's device */
   deviceDetectorService: DeviceDetectorService;
+  /* Service to log to the server */
+  actionLogger: ActionLogger
+  /* Service to track current section */
+  sectionService: SectionService
 
   /* HTTP client and headers */
   client: HttpClient;
@@ -73,14 +80,6 @@ export class SkeletonComponent implements OnInit {
   formBuilder: FormBuilder;
 
   /* |--------- CONTROL FLOW & UI ELEMENTS - DECLARATION ---------| */
-
-  /* Variables to handle the control flow of the task */
-  taskAllowed: boolean;
-  taskStarted: boolean;
-  taskCompleted: boolean;
-  taskSuccessful: boolean;
-  taskFailed: boolean;
-  checkCompleted: boolean;
 
   /* References to task stepper and token forms */
   @ViewChild('stepper') stepper: MatStepper;
@@ -129,7 +128,7 @@ export class SkeletonComponent implements OnInit {
   /* Amount of different instruction paragraphs */
   taskInstructionsAmount: number;
   /* Check to understand if the worker click on Next after looking at the main instruction page */
-  taskInstructionsRead: boolean;
+  //taskInstructionsRead: boolean;  <--- IMPLEMENTED IN SectionService
 
   /* |--------- INSTRUCTIONS DIMENSIONS - DECLARATION - (see: instructions_dimensions.json) ---------| */
 
@@ -235,7 +234,6 @@ export class SkeletonComponent implements OnInit {
   goldDimensions: Array<Dimension>;
 
   /* |--------- LOGGING ELEMENTS - DECLARATION ---------| */
-
   sequenceNumber: number
 
   /* |--------- CONFIGURATION GENERATOR INTEGRATION - DECLARATION ---------| */
@@ -262,15 +260,20 @@ export class SkeletonComponent implements OnInit {
     deviceDetectorService: DeviceDetectorService,
     client: HttpClient,
     formBuilder: FormBuilder,
-    snackBar: MatSnackBar
+    snackBar: MatSnackBar,
+    actionLogger: ActionLogger,
+    sectionService: SectionService
   ) {
-
     /* |--------- SERVICES & CO. - INITIALIZATION ---------| */
 
     this.changeDetector = changeDetector;
     this.ngxService = ngxService;
     this.configService = configService;
     this.S3Service = S3Service;
+
+    this.actionLogger = actionLogger
+
+    this.sectionService = sectionService
 
     this.deviceDetectorService = deviceDetectorService;
     this.client = client;
@@ -281,13 +284,6 @@ export class SkeletonComponent implements OnInit {
     this.ngxService.start();
 
     /* |--------- CONTROL FLOW & UI ELEMENTS - INITIALIZATION ---------| */
-
-    this.taskAllowed = true;
-    this.taskStarted = false;
-    this.taskCompleted = false;
-    this.taskSuccessful = false;
-    this.taskFailed = false;
-    this.checkCompleted = false;
 
     this.tokenInput = new FormControl('KXKUHEQIEMR', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
     this.tokenForm = formBuilder.group({
@@ -324,16 +320,21 @@ export class SkeletonComponent implements OnInit {
   }
 
   /* |--------- MAIN FLOW IMPLEMENTATION ---------| */
-  /* To follow the execution flow of the skeleton the functions needs to be read somehow in order (i.e., from top to bottom) */
 
+  /* To follow the execution flow of the skeleton the functions needs to be read somehow in order (i.e., from top to bottom) */
   public async ngOnInit() {
 
     this.ngxService.start()
+
     let url = new URL(window.location.href);
 
     /* The task settings are loaded */
     this.loadSettings().then(() => {
       this.workerIdentifier = url.searchParams.get("workerID");
+
+      // Log session start
+      this.logInit(this.workerIdentifier, this.taskName, this.batchName, this.client);
+
       /* If there is an external worker which is trying to perform the task, check its status */
       if (!(this.workerIdentifier === null)) {
         /* The performWorkerStatusCheck function checks worker's status and its result is interpreted as a success|error callback */
@@ -343,8 +344,9 @@ export class SkeletonComponent implements OnInit {
             /* If we retrieve some data from Cloudflare we use them to populate worker's object */
             cloudflareData => {
               this.worker = new Worker(this.workerIdentifier, this.S3Service.getWorkerFolder(this.configService.environment, null, this.workerIdentifier), cloudflareData, window.navigator, this.deviceDetectorService.getDeviceInfo())
-              this.taskAllowed = taskAllowed;
-              this.checkCompleted = true
+              this.sectionService.taskAllowed = taskAllowed
+              this.sectionService.checkCompleted = true
+
               this.changeDetector.detectChanges()
               /* The loading spinner is stopped */
               this.ngxService.stop();
@@ -352,18 +354,20 @@ export class SkeletonComponent implements OnInit {
             /* Otherwise we won't have such information */
             error => {
               this.worker = new Worker(this.workerIdentifier, this.S3Service.getWorkerFolder(this.configService.environment, null, this.workerIdentifier), null, window.navigator, this.deviceDetectorService.getDeviceInfo())
-              this.taskAllowed = taskAllowed;
-              this.checkCompleted = true
+              this.sectionService.taskAllowed = taskAllowed
+              this.sectionService.checkCompleted = true
+
               this.changeDetector.detectChanges()
               /* The loading spinner is stopped */
               this.ngxService.stop();
             }
           )
         })
-      /* If there is not any worker ID we simply load the task. A sort of testing mode. */
+        /* If there is not any worker ID we simply load the task. A sort of testing mode. */
       } else {
         this.worker = new Worker(null, null, null, null, null)
-        this.checkCompleted = true
+        this.sectionService.checkCompleted = true
+
         this.changeDetector.detectChanges()
         this.ngxService.stop()
       }
@@ -422,7 +426,7 @@ export class SkeletonComponent implements OnInit {
         let blacklistedWorkers = await this.S3Service.downloadWorkers(this.configService.environment, blacklistBatch)
         for (let currentWorker of blacklistedWorkers['blacklist']) {
           if (currentWorker == this.workerIdentifier) {
-            if(!currentWorkers["blacklist"].includes(this.workerIdentifier))
+            if (!currentWorkers["blacklist"].includes(this.workerIdentifier))
               currentWorkers['blacklist'].push(this.workerIdentifier);
           }
         }
@@ -432,20 +436,20 @@ export class SkeletonComponent implements OnInit {
         let whitelistedWorkers = await this.S3Service.downloadWorkers(this.configService.environment, whitelistBatch)
         for (let currentWorker of whitelistedWorkers['blacklist']) {
           if (currentWorker == this.workerIdentifier) {
-            if(!currentWorkers["whitelist"].includes(this.workerIdentifier))
+            if (!currentWorkers["whitelist"].includes(this.workerIdentifier))
               currentWorkers['whitelist'].push(this.workerIdentifier);
           }
         }
       }
 
       /* If the worker was not blacklisted he is allowed to perform the task */
-      if(!currentWorkers["blacklist"].includes(this.workerIdentifier)) {
+      if (!currentWorkers["blacklist"].includes(this.workerIdentifier)) {
         currentWorkers['blacklist'].push(this.workerIdentifier);
         let uploadStatus = await this.S3Service.uploadWorkers(this.configService.environment, currentWorkers);
         return true;
       } else {
         /* If the worker was blacklisted within a previous batch but whitelisted within the current batch he is allowed to perform the task */
-        if(currentWorkers["blacklist"].includes(this.workerIdentifier) && currentWorkers["whitelist"].includes(this.workerIdentifier) ) {
+        if (currentWorkers["blacklist"].includes(this.workerIdentifier) && currentWorkers["whitelist"].includes(this.workerIdentifier)) {
           let uploadStatus = await this.S3Service.uploadWorkers(this.configService.environment, currentWorkers);
           return true
         } else {
@@ -464,7 +468,7 @@ export class SkeletonComponent implements OnInit {
    * This function enables the task when the worker clicks on "Proceed" inside the main instructions page.
    */
   public enableTask() {
-    this.taskInstructionsRead = true
+    this.sectionService.taskInstructionsRead = true
     this.showSnackbar("If you have a very slow internet connection please wait a few seconds before clicking \"Start\".", "Dismiss", 15000)
     this.changeDetector.detectChanges()
   }
@@ -510,7 +514,7 @@ export class SkeletonComponent implements OnInit {
 
       /* The token input field is disabled and the task interface can be shown */
       this.tokenInput.disable();
-      this.taskStarted = true;
+      this.sectionService.taskStarted = true;
 
       this.documentsAmount = this.hit.documents.length;
 
@@ -559,10 +563,10 @@ export class SkeletonComponent implements OnInit {
       this.questionnaireAmountEnd = 0;
 
       /* Each questionnaire is parsed using the Questionnaire class */
-      for (let index = 0; index < this.questionnaireAmount; index++){
+      for (let index = 0; index < this.questionnaireAmount; index++) {
         let questionnaire = new Questionnaire(index, rawQuestionnaires[index])
         this.questionnaires.push(questionnaire);
-        if (questionnaire.position == "start" || questionnaire.position==null) this.questionnaireAmountStart = this.questionnaireAmountStart + 1
+        if (questionnaire.position == "start" || questionnaire.position == null) this.questionnaireAmountStart = this.questionnaireAmountStart + 1
         if (questionnaire.position == "end") this.questionnaireAmountEnd = this.questionnaireAmountEnd + 1
       }
 
@@ -713,11 +717,14 @@ export class SkeletonComponent implements OnInit {
 
       /* |--------- FINALIZATION ---------| */
 
+      /* Section service gets updated with loaded values */
+      this.updateAmounts()
+
       /* Detect changes within the DOM and update the page */
       this.changeDetector.detectChanges();
 
       /* If there are no questionnaires and the countdown time is set, enable the first countdown */
-      if(this.settings.countdown_time && this.questionnaireAmountStart == 0) this.countdown.toArray()[0].begin();
+      if (this.settings.countdown_time && this.questionnaireAmountStart == 0) this.countdown.toArray()[0].begin();
 
       /* trigger the changeDetection again */
       this.changeDetector.detectChanges();
@@ -728,12 +735,38 @@ export class SkeletonComponent implements OnInit {
     }
   }
 
+  /* |--------- LOGGING SERVICE & SECTION SERVICE ---------| */
+
+  /* Logging service initialization */
+  public logInit(workerIdentifier, taskName, batchName, http) {
+    this.actionLogger.logInit(workerIdentifier, taskName, batchName, http);
+  }
+
+  /* Section service gets updated with questionnaire and document amounts */
+  public updateAmounts() {
+    this.sectionService.updateAmounts(this.questionnaireAmount, this.documentsAmount, this.allowedTries)
+  }
+
+  public nextStep() {
+    this.sectionService.increaseIndex()
+  }
+
+  public previousStep() {
+    this.sectionService.decreaseIndex()
+  }
+
   /* |--------- DIMENSIONS ELEMENTS (see: dimensions.json) ---------| */
 
   /* This function is used to sort each dimension that a worker have to assess according the position specified */
   public filterDimensions(type: string, position: string) {
     let filteredDimensions = []
-    for (let dimension of this.dimensions) if(dimension.style) if (dimension.style.type == type && dimension.style.position == position) filteredDimensions.push(dimension)
+    for (let dimension of this.dimensions) {
+      if (dimension.style) {
+        if (dimension.style.type == type && dimension.style.position == position) filteredDimensions.push(dimension)
+      } else {
+        if (type == "list" && position == "bottom") filteredDimensions.push(dimension)
+      }
+    }
     return filteredDimensions
   }
 
@@ -833,7 +866,7 @@ export class SkeletonComponent implements OnInit {
    * The parameter is a JSON object which holds the query typed by the worker within a given document.
    * These information are parsed and stored in the corresponding data structure.
    */
-  public storeSearchEngineUserQuery(queryData: string, document : Document, dimension: Dimension) {
+  public storeSearchEngineUserQuery(queryData: string, document: Document, dimension: Dimension) {
     this.currentDimension = dimension.index
     let currentQueryText = queryData;
     let timeInSeconds = Date.now() / 1000;
@@ -875,7 +908,7 @@ export class SkeletonComponent implements OnInit {
    * This array CAN BE EMPTY, if the search engine does not find anything for the current query.
    * These information are parsed and stored in the corresponding data structure.
    */
-  public storeSearchEngineRetrievedResponse(retrievedResponseData: Array<Object>, document : Document, dimension: Dimension) {
+  public storeSearchEngineRetrievedResponse(retrievedResponseData: Array<Object>, document: Document, dimension: Dimension) {
     let currentRetrievedResponse = retrievedResponseData;
     let timeInSeconds = Date.now() / 1000;
     /* If some responses for the current document already exists*/
@@ -922,40 +955,40 @@ export class SkeletonComponent implements OnInit {
    * This array CAN BE EMPTY, if the search engine does not find anything for the current query.
    * These information are parsed and stored in the corresponding data structure.
    */
-  public storeSearchEngineSelectedResponse(selectedResponseData: Object, document : Document, dimension: Dimension) {
-      let currentSelectedResponse = selectedResponseData;
-      let timeInSeconds = Date.now() / 1000;
-      /* If some responses for the current document already exists*/
-      if (this.searchEngineSelectedResponses[document.index]['amount'] > 0) {
-        /* The new response is pushed into current document data array along with its query document_index */
-        let storedResponses = Object.values(this.searchEngineSelectedResponses[document.index]['data']);
-        storedResponses.push({
-          "dimension": dimension.index,
-          "query": this.searchEngineQueries[document.index]['amount'] - 1,
-          "index": storedResponses.length,
-          "timestamp": timeInSeconds,
-          "response": currentSelectedResponse,
-        });
-        /* The data array within the data structure is updated */
-        this.searchEngineSelectedResponses[document.index]['data'] = storedResponses;
-        /* The total amount of selected responses for the current document is updated */
-        this.searchEngineSelectedResponses[document.index]['amount'] = storedResponses.length;
-      } else {
-        /* The data slot for the current document is created */
-        this.searchEngineSelectedResponses[document.index] = {};
-        /* A new data array for the current document is created and the fist response is pushed */
-        this.searchEngineSelectedResponses[document.index]['data'] = [{
-          "dimension": dimension.index,
-          "query": this.searchEngineQueries[document.index]['amount'] - 1,
-          "index": 0,
-          "timestamp": timeInSeconds,
-          "response": currentSelectedResponse
-        }];
-        /* The total amount of selected responses for the current document is set to 1 */
-        /* IMPORTANT: the document_index of the last selected response for a document will be <amount -1> */
-        this.searchEngineSelectedResponses[document.index]['amount'] = 1
-      }
-      this.documentsForm[document.index].controls[dimension.name.concat("_url")].setValue(currentSelectedResponse['url']);
+  public storeSearchEngineSelectedResponse(selectedResponseData: Object, document: Document, dimension: Dimension) {
+    let currentSelectedResponse = selectedResponseData;
+    let timeInSeconds = Date.now() / 1000;
+    /* If some responses for the current document already exists*/
+    if (this.searchEngineSelectedResponses[document.index]['amount'] > 0) {
+      /* The new response is pushed into current document data array along with its query document_index */
+      let storedResponses = Object.values(this.searchEngineSelectedResponses[document.index]['data']);
+      storedResponses.push({
+        "dimension": dimension.index,
+        "query": this.searchEngineQueries[document.index]['amount'] - 1,
+        "index": storedResponses.length,
+        "timestamp": timeInSeconds,
+        "response": currentSelectedResponse,
+      });
+      /* The data array within the data structure is updated */
+      this.searchEngineSelectedResponses[document.index]['data'] = storedResponses;
+      /* The total amount of selected responses for the current document is updated */
+      this.searchEngineSelectedResponses[document.index]['amount'] = storedResponses.length;
+    } else {
+      /* The data slot for the current document is created */
+      this.searchEngineSelectedResponses[document.index] = {};
+      /* A new data array for the current document is created and the fist response is pushed */
+      this.searchEngineSelectedResponses[document.index]['data'] = [{
+        "dimension": dimension.index,
+        "query": this.searchEngineQueries[document.index]['amount'] - 1,
+        "index": 0,
+        "timestamp": timeInSeconds,
+        "response": currentSelectedResponse
+      }];
+      /* The total amount of selected responses for the current document is set to 1 */
+      /* IMPORTANT: the document_index of the last selected response for a document will be <amount -1> */
+      this.searchEngineSelectedResponses[document.index]['amount'] = 1
+    }
+    this.documentsForm[document.index].controls[dimension.name.concat("_url")].setValue(currentSelectedResponse['url']);
   }
 
   /*
@@ -1038,38 +1071,38 @@ export class SkeletonComponent implements OnInit {
 
     if (domElement) {
 
-        /* The container of the annotated element is cloned and the event bindings are attached again */
-        let elementContainerClone = domElement.cloneNode(true)
-        elementContainerClone.addEventListener('mouseup', () => this.performAnnotation(documentIndex, notes, changeDetector))
-        elementContainerClone.addEventListener('touchend', () => this.performAnnotation(documentIndex, notes, changeDetector))
+      /* The container of the annotated element is cloned and the event bindings are attached again */
+      let elementContainerClone = domElement.cloneNode(true)
+      elementContainerClone.addEventListener('mouseup', () => this.performAnnotation(documentIndex, notes, changeDetector))
+      elementContainerClone.addEventListener('touchend', () => this.performAnnotation(documentIndex, notes, changeDetector))
 
-        /* the doHighlight function of the library is called and the flow is handled within two different callback */
-        doHighlight(domElement, false, {
-          /* the onBeforeHighlight event is called before the creation of the yellow highlight to encase the selected text */
-          onBeforeHighlight: (range: Range) => {
-            let notesForDocument = notes[documentIndex]
-            if (range.toString().trim().length == 0)
-              return false
-            let indexes = this.getSelectionCharacterOffsetWithin(domElement)
-            /* To detect an overlap the indexes of the current annotation are check with respect to each annotation previously created */
-            for (let note of notesForDocument) {
-              if (note.deleted == false) if (indexes["start"] < note.index_end && note.index_start < indexes["end"]) return false
-            }
-            return true
-          },
-          /* the onAfterHighlight event is called after the creation of the yellow highlight to encase the selected text */
-          onAfterHighlight: (range, highlight) => {
-            if (highlight.length > 0) {
-              if (highlight[0]["outerText"]) notes[documentIndex].push(new NoteStandard(documentIndex, range, highlight))
-              return true
-            }
+      /* the doHighlight function of the library is called and the flow is handled within two different callback */
+      doHighlight(domElement, false, {
+        /* the onBeforeHighlight event is called before the creation of the yellow highlight to encase the selected text */
+        onBeforeHighlight: (range: Range) => {
+          let notesForDocument = notes[documentIndex]
+          if (range.toString().trim().length == 0)
+            return false
+          let indexes = this.getSelectionCharacterOffsetWithin(domElement)
+          /* To detect an overlap the indexes of the current annotation are check with respect to each annotation previously created */
+          for (let note of notesForDocument) {
+            if (note.deleted == false) if (indexes["start"] < note.index_end && note.index_start < indexes["end"]) return false
           }
-        })
+          return true
+        },
+        /* the onAfterHighlight event is called after the creation of the yellow highlight to encase the selected text */
+        onAfterHighlight: (range, highlight) => {
+          if (highlight.length > 0) {
+            if (highlight[0]["outerText"]) notes[documentIndex].push(new NoteStandard(documentIndex, range, highlight))
+            return true
+          }
+        }
+      })
 
     }
 
-   /* The annotation option button is enabled if there is an highlighted but not annotated note
-    * and is disabled if all the notes of the current document are annotated */
+    /* The annotation option button is enabled if there is an highlighted but not annotated note
+     * and is disabled if all the notes of the current document are annotated */
     let notSelectedNotesCheck = false
     for (let note of this.notes[documentIndex]) {
       if (note.option == "not_selected" && note.deleted == false) {
@@ -1115,13 +1148,13 @@ export class SkeletonComponent implements OnInit {
   public checkAnnotationConsistency(documentIndex: number) {
     let check = false
     this.notes[documentIndex].forEach((element) => {
-      if(element instanceof NoteStandard) {
+      if (element instanceof NoteStandard) {
         if (!element.deleted && element.option != "not_selected") check = true
       } else {
         if (!element.deleted) check = true
       }
     })
-    if(!this.annotator) {
+    if (!this.annotator) {
       check = true
     }
     return check
@@ -1631,7 +1664,6 @@ export class SkeletonComponent implements OnInit {
   }
 
 
-
   /* |--------- QUALITY CHECKS ---------| */
 
   /*
@@ -1664,7 +1696,7 @@ export class SkeletonComponent implements OnInit {
     this.ngxService.start();
 
     /* The current try is completed and the final can shall begin */
-    this.taskCompleted = true;
+    this.sectionService.taskCompleted = true
 
     /* Booleans to hold result of checks */
     let globalValidityCheck: boolean;
@@ -1694,7 +1726,7 @@ export class SkeletonComponent implements OnInit {
       for (let goldDimension of this.goldDimensions) {
         for (let [attribute, value] of Object.entries(this.documentsForm[goldDocument.index].value)) {
           let dimensionName = attribute.split("_")[0]
-          if(dimensionName == goldDimension.name) {
+          if (dimensionName == goldDimension.name) {
             answers[attribute] = value
           }
         }
@@ -1718,11 +1750,13 @@ export class SkeletonComponent implements OnInit {
     /* If each check is true, the task is successful, otherwise the task is failed (but not over if there are more tries) */
 
     if (checker(computedChecks)) {
-      this.taskSuccessful = true;
-      this.taskFailed = false;
+      this.sectionService.taskSuccessful = true;
+      this.sectionService.taskFailed = false;
+
     } else {
-      this.taskSuccessful = false;
-      this.taskFailed = true;
+      this.sectionService.taskSuccessful = false;
+      this.sectionService.taskFailed = true;
+
     }
 
     if (!(this.worker.identifier === null)) {
@@ -1760,12 +1794,14 @@ export class SkeletonComponent implements OnInit {
     this.ngxService.start();
 
     /* Control variables to restore the state of task */
-    this.taskFailed = false;
-    this.taskSuccessful = false;
-    this.taskCompleted = false;
-    this.taskStarted = true;
     this.comment.setValue("");
     this.commentSent = false;
+
+    this.sectionService.taskFailed = false;
+    this.sectionService.taskSuccessful = false;
+    this.sectionService.taskCompleted = false;
+    this.sectionService.taskStarted = true;
+    this.sectionService.decreaseAllowedTries();
 
     /* Set stepper document_index to the first tab (currentDocument.e., bring the worker to the first document after the questionnaire) */
     this.stepper.selectedIndex = this.questionnaireAmountStart;
@@ -1832,8 +1868,8 @@ export class SkeletonComponent implements OnInit {
     }
 
     /* The yellow leftover notes are marked as deleted */
-    if(this.annotator) {
-      if(this.notes[documentIndex]) {
+    if (this.annotator) {
+      if (this.notes[documentIndex]) {
         if (this.notes[documentIndex].length > 0) {
           let element = this.notes[documentIndex][this.notes[documentIndex].length - 1]
           if (element.option == "not_selected" && !element.deleted) {
@@ -1944,12 +1980,12 @@ export class SkeletonComponent implements OnInit {
       let uploadStatus = await this.S3Service.uploadTaskData(this.configService.environment, this.worker, data)
 
       /* If the worker has completed a questionnaire */
-      if (completedElement < this.questionnaireAmountStart ||  (completedElement >= this.questionnaireAmountStart + this.documentsAmount)) {
+      if (completedElement < this.questionnaireAmountStart || (completedElement >= this.questionnaireAmountStart + this.documentsAmount)) {
 
         /* if the questionnaire it's at the end */
 
         let completedQuestionnaire = 0
-        if(completedElement >= this.questionnaireAmountStart + this.documentsAmount) {
+        if (completedElement >= this.questionnaireAmountStart + this.documentsAmount) {
           completedQuestionnaire = completedElement - this.documentsAmount
         } else {
           completedQuestionnaire = completedElement
@@ -2035,7 +2071,7 @@ export class SkeletonComponent implements OnInit {
         let countdownTime = (this.settings.countdown_time) ? Number(this.countdown[completedDocument]["i"]["text"]) : []
         data["countdowns_times"] = countdownTime
         let countdown_expired = (this.settings.countdown_time) ? this.countdownsExpired[completedDocument] : []
-        data["countdowns_expired"] =  countdown_expired
+        data["countdowns_expired"] = countdown_expired
         /* Number of accesses to the current document (currentDocument.e., how many times the worker reached the document with a "Back" or "Next" action */
         let accesses = accessesAmount + 1
         data["accesses"] = accesses
@@ -2058,48 +2094,48 @@ export class SkeletonComponent implements OnInit {
 
       if (completedElement >= (this.questionnaireAmountStart + this.documentsAmount + this.questionnaireAmountEnd) - 1) {
 
-          /* All data about documents are uploaded, only once */
-          let actionInfo = {
-            action: action,
-            try: this.currentTry,
-            sequence: this.sequenceNumber,
-            element: "all"
-          };
-          /* Info about each performed action ("Next"? "Back"? From where?) */
-          data["info"] = actionInfo
-          let answers = [];
-          for (let index = 0; index < this.questionnairesForm.length; index++) answers.push(this.questionnairesForm[index].value);
-          data["questionnaires_answers"] = answers
-          answers = [];
-          for (let index = 0; index < this.documentsForm.length; index++) answers.push(this.documentsForm[index].value);
-          data["documents_answers"] = answers
-          let notes = (this.settings.annotator) ? this.notes : []
-          data["notes"] = notes
-          /* Worker's dimensions selected values for the current document */
-          data["dimensions_selected"] = this.dimensionsSelectedValues
-          /* Start, end and elapsed timestamps for each document */
-          data["timestamps_start"] = this.timestampsStart
-          data["timestamps_end"] = this.timestampsEnd
-          data["timestamps_elapsed"] = this.timestampsElapsed
-          /* Countdown time and corresponding flag for each document */
-          let countdownTimes = [];
-          let countdownExpired = [];
-          if (this.settings.countdown_time)
-            for (let index = 0; index < this.countdown.length; index++) countdownTimes.push(Number(this.countdown[index]["i"]["text"]));
-            for (let index = 0; index < this.countdownsExpired.length; index++) countdownExpired.push(this.countdownsExpired[index]);
-          data["countdowns_times"] = countdownTimes
-          data["countdowns_expired"] = countdownExpired
-          /* Number of accesses to each document (currentDocument.e., how many times the worker reached the document with a "Back" or "Next" action */
-          data["accesses"] = this.elementsAccesses
-          /* Worker's search engine queries for each document */
-          data["queries"] = this.searchEngineQueries
-          /* Responses retrieved by search engine for each worker's query for each document */
-          data["responses_retrieved"] = this.searchEngineRetrievedResponses
-          /* Responses by search engine ordered by worker's click for the current document */
-          data["responses_selected"] = this.searchEngineSelectedResponses
-          /* If the last element is a document */
+        /* All data about documents are uploaded, only once */
+        let actionInfo = {
+          action: action,
+          try: this.currentTry,
+          sequence: this.sequenceNumber,
+          element: "all"
+        };
+        /* Info about each performed action ("Next"? "Back"? From where?) */
+        data["info"] = actionInfo
+        let answers = [];
+        for (let index = 0; index < this.questionnairesForm.length; index++) answers.push(this.questionnairesForm[index].value);
+        data["questionnaires_answers"] = answers
+        answers = [];
+        for (let index = 0; index < this.documentsForm.length; index++) answers.push(this.documentsForm[index].value);
+        data["documents_answers"] = answers
+        let notes = (this.settings.annotator) ? this.notes : []
+        data["notes"] = notes
+        /* Worker's dimensions selected values for the current document */
+        data["dimensions_selected"] = this.dimensionsSelectedValues
+        /* Start, end and elapsed timestamps for each document */
+        data["timestamps_start"] = this.timestampsStart
+        data["timestamps_end"] = this.timestampsEnd
+        data["timestamps_elapsed"] = this.timestampsElapsed
+        /* Countdown time and corresponding flag for each document */
+        let countdownTimes = [];
+        let countdownExpired = [];
+        if (this.settings.countdown_time)
+          for (let index = 0; index < this.countdown.length; index++) countdownTimes.push(Number(this.countdown[index]["i"]["text"]));
+        for (let index = 0; index < this.countdownsExpired.length; index++) countdownExpired.push(this.countdownsExpired[index]);
+        data["countdowns_times"] = countdownTimes
+        data["countdowns_expired"] = countdownExpired
+        /* Number of accesses to each document (currentDocument.e., how many times the worker reached the document with a "Back" or "Next" action */
+        data["accesses"] = this.elementsAccesses
+        /* Worker's search engine queries for each document */
+        data["queries"] = this.searchEngineQueries
+        /* Responses retrieved by search engine for each worker's query for each document */
+        data["responses_retrieved"] = this.searchEngineRetrievedResponses
+        /* Responses by search engine ordered by worker's click for the current document */
+        data["responses_selected"] = this.searchEngineSelectedResponses
+        /* If the last element is a document */
 
-          let uploadStatus = await this.S3Service.uploadFinalData(this.configService.environment, this.worker, data, this.currentTry)
+        let uploadStatus = await this.S3Service.uploadFinalData(this.configService.environment, this.worker, data, this.currentTry)
 
       }
 

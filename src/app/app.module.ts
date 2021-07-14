@@ -49,6 +49,14 @@ import {ColorPickerModule} from "ngx-color-picker";
 import {MatChipsModule} from "@angular/material/chips";
 import { AngularEditorModule } from '@kolkov/angular-editor';
 
+import {ActionLogger} from "./services/userActionLogger.service";
+import {
+  ButtonDirective, CrowdXplorerDirective,
+  InputDirective,
+  RadioDirective,
+  SkeletonDirective
+} from "./components/skeleton/skeleton.directive";
+import {SectionService} from "./services/section.service";
 
 @NgModule({
   declarations: [
@@ -58,7 +66,12 @@ import { AngularEditorModule } from '@kolkov/angular-editor';
     InstructionsComponent,
     InstructionsDialog,
     GeneratorComponent,
-    LoaderComponent
+    LoaderComponent,
+    ButtonDirective,
+    SkeletonDirective,
+    InputDirective,
+    RadioDirective,
+    CrowdXplorerDirective
   ],
   imports: [
     BrowserModule,
@@ -104,7 +117,10 @@ import { AngularEditorModule } from '@kolkov/angular-editor';
     MatChipsModule,
     AngularEditorModule
   ],
-  providers: [],
+  providers: [
+    ActionLogger,
+    SectionService
+  ],
   bootstrap: [LoaderComponent]
 })
 

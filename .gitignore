@@ -50,12 +50,12 @@ src/environments/environment.ts~
 data/build/environments/environment.prod.ts
 data/build/environments/environment.ts
 
+
+.vscode/
+
 .yarn/*
-!.yarn/patches
 !.yarn/releases
 !.yarn/plugins
-!.yarn/sdks
-!.yarn/versions
 .pnp.*
 
 data/.env
@@ -78,3 +78,7 @@ data/build/task/search_engine.json
 data/build/task/task.json
 data/build/task/workers.json
 data/build/skeleton/document.ts
+
+local/log.md
+local/*
+
