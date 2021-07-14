@@ -118,8 +118,8 @@ export class LoaderComponent implements OnInit {
 
     /* |--------- LOADER SETTINGS - INITIALIZATION ---------| */
 
-    this.username = new FormControl('admin', [Validators.required]);
-    this.password = new FormControl('1234567890123456', [Validators.required]);
+    this.username = new FormControl('', [Validators.required]);
+    this.password = new FormControl('', [Validators.required]);
     this.loginForm = formBuilder.group({
       "username": this.username,
       "password": this.password
@@ -133,9 +133,9 @@ export class LoaderComponent implements OnInit {
 
     let url = new URL(window.location.href);
     this.adminAccess = url.searchParams.get("admin") == 'true'
-    // TODO: This call should be removed when generator implementation will be complete
-    this.performAdminCheck()
-    this.loadAction('admin')
+    // TODO: This call should be commented out when generator implementation will be complete
+    //this.performAdminCheck()
+    //this.loadAction('admin')
 
     this.ngxService.stop()
 
@@ -156,7 +156,6 @@ export class LoaderComponent implements OnInit {
   public async performAdminCheck() {
     this.ngxService.startLoader('generator');
     if (this.loginForm.valid) {
-      // https://stackoverflow.com/questions/56153113/sha256-hash-the-body-and-base64-encode-in-python-vs-typescript
       let admins = await this.S3Service.downloadAdministrators(this.configService.environment)
       for (let admin of admins) {
         let hash = CryptoES.HmacSHA256(`username:${this.username.value}`, this.password.value).toString();
