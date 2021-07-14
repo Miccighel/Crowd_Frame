@@ -50,12 +50,9 @@ src/environments/environment.ts~
 data/build/environments/environment.prod.ts
 data/build/environments/environment.ts
 
-.yarn/*
-!.yarn/patches
-!.yarn/releases
-!.yarn/plugins
-!.yarn/sdks
-!.yarn/versions
+
+.vscode/
+.yarn/
 .pnp.*
 
 data/.env
