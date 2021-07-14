@@ -18,7 +18,6 @@ export class ActionLogger {
   private taskName: string;
   private batchName: string;
   private http: HttpClient;
-  private init = false;  // This variable is only needed to not send double request on ngInit
 
   /*
    * Default constructor
@@ -89,19 +88,15 @@ export class ActionLogger {
    * @param http client initialized by the skeleton
    */
   logInit(workerID: string, taskName: string, batchName: string, http: HttpClient){
-    if(!this.init) {
-      this.init = true
+    this.http = http;
+    this.workerID = workerID;
+    this.taskName = taskName;
+    this.batchName = batchName;
 
-      this.http = http;
-      this.workerID = workerID;
-      this.taskName = taskName;
-      this.batchName = batchName;
+    let details = this.getCurrentSize()
 
-      let details = this.getCurrentSize()
-
-      this.logContext()
-      this.log('init', details)
-    }
+    this.logContext()
+    this.log('init', details)
   }
 
   /**
