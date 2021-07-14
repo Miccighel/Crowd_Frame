@@ -71,6 +71,13 @@ mat-card-title {
 
 /* Task specific styles */
 
+.evaluation-instructions {
+  h2 {
+    font-weight: lighter;
+  }
+  margin-bottom: 1%;
+}
+
 
 .question label {
   font-weight: bold;
@@ -688,4 +695,3 @@ mat-step form mat-card-content, mat-step form mat-card-actions {
   margin-top: 2px;
   margin-bottom: 2px;
 }
-

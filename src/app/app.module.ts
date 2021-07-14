@@ -124,13 +124,4 @@ import {SectionService} from "./services/section.service";
   bootstrap: [LoaderComponent]
 })
 
-export class AppModule {
-
-  constructor(injector: Injector) {
-    const loaderElement = createCustomElement(LoaderComponent, {injector: injector});
-    customElements.define('app-loader', loaderElement);
-  }
-
-  ngDoBootstrap() {}
-
-}
+export class AppModule {}

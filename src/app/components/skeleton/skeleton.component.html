@@ -442,7 +442,7 @@
             </ng-container>
 
             <!-- Evaluation instructions markup -->
-            <div *ngIf="this.instructionsAmount>0" class="instructions">
+            <div *ngIf="this.instructionsAmount>0" class="evaluation-instructions">
               <mat-divider [inset]="true"></mat-divider>
               <h2>Instructions</h2>
               <mat-divider [inset]="true"></mat-divider>
@@ -587,7 +587,7 @@
                         </mat-error>
                         <mat-error
                           *ngIf="checkFormControl(documentsForm[i],(dimension.name).concat('_justification'), 'longer')">
-                          This justification must have at least {{dimension.justification.minWords}} words.
+                          This justification must have at least {{dimension.justification.min_words}} words.
                         </mat-error>
                         <mat-error
                           *ngIf="checkFormControl(documentsForm[i],(dimension.name).concat('_justification'), 'invalid')">
@@ -688,7 +688,7 @@
           <mat-card-actions>
 
             <button mat-flat-button color="primary" matStepperPrevious *ngIf="i>0"
-                    [disabled]="taskCompleted"
+                    [disabled]="this.sectionService.taskCompleted"
                     (click)="performLogging('Back', i); previousStep()">
               Back
             </button>
@@ -716,15 +716,6 @@
             </button>
 
             <button mat-flat-button color="primary" matStepperNext *ngIf="i+1>=this.documentsAmount && this.questionnaireAmountEnd == 0"
-                    [disabled]="!documentsForm[i].valid && !this.countdownsExpired[i]"
-                    (click)="performLogging('Finish', i); performQualityCheck()">
-            </button>
-            <button mat-flat-button color="primary" matStepperNext *ngIf="i+1<this.documentsAmount"
-                    [disabled]="(!documentsForm[i].valid || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted && !this.countdownsExpired[i])"
-                    (click)="performLogging('Next', i); nextStep()">
-              Next
-            </button>
-            <button mat-flat-button color="primary" matStepperNext *ngIf="i+1>=this.documentsAmount"
                     [disabled]="!documentsForm[i].valid && !this.countdownsExpired[i]"
                     (click)="performLogging('Finish', i); nextStep(); performQualityCheck()">
               Finish
@@ -824,18 +815,18 @@
               <p class="form-note">
                 <button mat-flat-button color="primary" matStepperPrevious
                         *ngIf="i>0"
-                        [disabled]="taskCompleted"
-                        (click)="performLogging('Back', i)">
+                        [disabled]="this.sectionService.taskCompleted"
+                        (click)="performLogging('Back', i); previousStep()">
                   Back
                 </button>
                 <button mat-flat-button color="primary" matStepperNext
                         *ngIf="i+1 >= this.questionnaireAmountStart + this.documentsAmount && i+1 < (this.questionnaireAmountStart + this.documentsAmount + this.questionnaireAmountEnd) -1"
-                        [disabled]="!questionnairesForm[i].valid" (click)="performLogging('Next',i)">
+                        [disabled]="!questionnairesForm[i].valid" (click)="performLogging('Next',i) ; nextStep()">
                   Next
                 </button>
                 <button mat-flat-button color="primary" matStepperNext
                         *ngIf="i+1 >= (this.questionnaireAmountStart + this.documentsAmount + this.questionnaireAmountEnd) - 1"
-                        [disabled]="!questionnairesForm[i].valid" (click)="performLogging('Finish', i); performQualityCheck()">
+                        [disabled]="!questionnairesForm[i].valid" (click)="performLogging('Finish', i); nextStep(); performQualityCheck()">
                   Finish
                 </button>
                 (*) you have to fill each field to proceed
@@ -922,8 +913,7 @@
               <textarea matInput [disabled]="commentSent" placeholder="Your comment here" formControlName="comment" rows="5"></textarea>
             </mat-form-field>
           </form>
-          <button mat-flat-button color="primary" [disabled]="commentSent || !commentForm.valid "
-                  (click)="performCommentSaving()"> Send
+          <button mat-flat-button color="primary" [disabled]="commentSent || !commentForm.valid " (click)="performCommentSaving()"> Send
           </button>
           <span class="comment-sent-label" *ngIf="commentSent">Thank you!</span>
         </mat-card-content>
