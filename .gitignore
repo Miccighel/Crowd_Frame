@@ -75,3 +75,7 @@ data/build/task/search_engine.json
 data/build/task/task.json
 data/build/task/workers.json
 data/build/skeleton/document.ts
+
+local/log.md
+local/*
+
