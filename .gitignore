@@ -52,7 +52,10 @@ data/build/environments/environment.ts
 
 
 .vscode/
-.yarn/
+
+.yarn/*
+!.yarn/releases
+!.yarn/plugins
 .pnp.*
 
 data/.env
