@@ -15,3 +15,17 @@
 - fixed a bug in bucket creation: you can put a constraint on the location if is the default one.
 
 ### Removed
+
+## 2021-07-15 Francesco Bombassei De Bona
+
+### Added
+
+- Exported notebook to py script file
+- New script for creating a configuration user on AWS
+- Policy json for previous script
+
+### Changed
+
+- init.py tuning for better aesthetic
+
+### Removed
