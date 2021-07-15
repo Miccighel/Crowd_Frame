@@ -444,18 +444,25 @@
             <!-- Evaluation instructions markup -->
             <div *ngIf="this.instructionsAmount>0" class="instructions">
               <mat-divider [inset]="true"></mat-divider>
-              <h2>Instructions</h2>
+              <h2>Instructions Ciao</h2>
               <mat-divider [inset]="true"></mat-divider>
               <div *ngFor="let instruction of this.instructions">
                 <p>{{instruction.caption}}</p>
                 <div [innerHTML]="instruction.text"></div>
               </div>
             </div>
-
-            <!-- Dimensions assessment markup (list style) -->
-            <ng-template #dimensionList let-dimensions="dimensions" let-i="i">
-              <div *ngFor="let dimension of dimensions; let j=index" class="dimension">
-
+            <!-- Dimensions assessment markup (list style) --> <!-- NON si riesce a visualizzare la dimension-->
+            Pre ng template
+            <ng-container *ngTemplateOutlet="dimensionList">
+                This text is not displayed
+              </ng-container>
+            <ng-template #dimensionList let-dimensionsa="dimensions" let-i="i">
+                <h1>Dentro ng-template</h1>
+                <h2>dimensions length:{{dimensions.length}}</h2>
+                <div *ngFor="let a of dimensionsa ;let t=index" ><p>dimension {{a}}</p></div>
+              <div *ngFor="let dimension of dimensionsa; let j=index" class="dimension">
+                <h1>Dentro ng-for</h1>
+               
                 <!-- Dimension name markup -->
                 <div class="dimension-name">
                   <mat-divider [inset]="true"></mat-divider>
@@ -521,7 +528,9 @@
                       </ng-container>
 
                       <!-- Interval scale markup -->
+                      
                       <ng-container *ngIf="dimension.scale.type=='interval'">
+                        swag180
                         <label>Selected value: {{documentsForm[i].controls[(dimension.name).concat('_value')].value}}</label>
                         <mat-slider min="{{dimension.scale.min}}" max="{{dimension.scale.max}}"
                                     step="{{dimension.scale.step}}" thumbLabel tickInterval="{{dimension.scale.step}}"
@@ -599,6 +608,7 @@
                 </div>
               </div>
             </ng-template>
+            
 
             <!-- Dimensions markup (matrix style) -->
             <ng-template #dimensionMatrix let-dimensions="dimensions" let-i="i">
