@@ -12,10 +12,8 @@ iamClient = botoSession.client('iam')
 path = '/crowdFrame/config/'
 userName = 'config_user'
 
-
 def keyCont():
     console.input('[green]Press enter to continue...\n\n')
-
 
 with console.status("Generating policy", spinner="aesthetic") as status:
     time.sleep(3)
