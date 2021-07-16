@@ -7,8 +7,8 @@ export class SettingsTask {
   attributes: Array<Attribute>
   annotator?: Annotator;
   countdown_time?: number;
-  blacklistBatches: Array<string>;
-  whitelistBatches: Array<string>;
+  blacklist_batches: Array<string>;
+  whitelist_batches: Array<string>;
   messages?: Array<string>;
 
   constructor(
@@ -31,10 +31,10 @@ export class SettingsTask {
     }
     this.annotator =          data ?  data["annotator"] ? new Annotator(data["annotator"]) : null : null;
     this.countdown_time =     data ?   data["countdown_time"] ? parseInt((data["countdown_time"])): null : null;
-    this.blacklistBatches = new Array<string>();
-    if(data) if('blacklist_batches' in data) for (let batch of data["blacklist_batches"] as Array<string>) this.blacklistBatches.push(batch)
-    this.whitelistBatches = new Array<string>();
-    if(data) if('whitelist_batches' in data) for (let batch of data["whitelist_batches"] as Array<string>) this.whitelistBatches.push(batch)
+    this.blacklist_batches = new Array<string>();
+    if(data) if('blacklist_batches' in data) for (let batch of data["blacklist_batches"] as Array<string>) this.blacklist_batches.push(batch)
+    this.whitelist_batches = new Array<string>();
+    if(data) if('whitelist_batches' in data) for (let batch of data["whitelist_batches"] as Array<string>) this.whitelist_batches.push(batch)
     this.messages = new Array<string>();
     if(data) {
       if (data['messages']) {

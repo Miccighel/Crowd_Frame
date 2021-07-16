@@ -200,7 +200,7 @@ export class SkeletonComponent implements OnInit {
 
   /* Optional countdown to use for each document */
   countdownTime: number
-  documentsTime : Array<number> 
+  documentsTime : Array<number>
 
   /* Optional document time value for each document */
   timeOfDocument : number
@@ -398,8 +398,8 @@ export class SkeletonComponent implements OnInit {
     this.settings = new SettingsTask(await this.S3Service.downloadTaskSettings(this.configService.environment))
     this.allowedTries = this.settings.allowed_tries
     this.timeCheckAmount = this.settings.time_check_amount
-    this.blacklistBatches = this.settings.blacklistBatches
-    this.whitelistBatches = this.settings.whitelistBatches
+    this.blacklistBatches = this.settings.blacklist_batches
+    this.whitelistBatches = this.settings.whitelist_batches
     this.countdownTime = this.settings.countdown_time
     this.annotator = this.settings.annotator
   }
@@ -633,8 +633,8 @@ export class SkeletonComponent implements OnInit {
         this.dimensionsSelectedValues[index]["data"] = [];
         this.dimensionsSelectedValues[index]["amount"] = 0;
       }
-      
-      
+
+
 
       /* |--------- SEARCH ENGINE INTEGRATION (see: search_engine.json | https://github.com/Miccighel/CrowdXplorer) ---------| */
 
@@ -694,7 +694,7 @@ export class SkeletonComponent implements OnInit {
         let trueValue = this.documents[index]['id'];
         this.documentsTime[index]= this.calculateTimeOfStatement(time,position, trueValue)
       }
-      
+
 
       /* |--------- QUALITY CHECKS ---------| */
 
@@ -1060,7 +1060,7 @@ export class SkeletonComponent implements OnInit {
       this.countdownsExpired[i] = true
     }
   }
- 
+
 
   /* |--------- ANNOTATOR ---------| */
 
@@ -2231,7 +2231,7 @@ export class SkeletonComponent implements OnInit {
       * This function modifies the countdown value based on the position of the document and its truth value
       */
    public calculateTimeOfStatement(documentTime : number, position?: number, trueValue?: string){
-    //console.log("Tempo documento: "+ documentTime+ " posizione statement: "+ position + " Valore di verità: "+ trueValue);
+    console.log("Tempo documento: "+ documentTime+ " posizione statement: "+ position + " Valore di verità: "+ trueValue);
 
     let timeOfStatement = 0;
     let weightTrueValue = 0;
@@ -2243,7 +2243,7 @@ export class SkeletonComponent implements OnInit {
         break;
       case "False":
         weightTrueValue = 0;
-      break;    
+      break;
       default:
         weightTrueValue = 1;
       break;

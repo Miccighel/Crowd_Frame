@@ -627,14 +627,14 @@ export class GeneratorComponent implements OnInit {
           "whitelist": false,
           "counter": counter
         }
-        if (this.taskSettingsFetched.blacklistBatches) {
-          this.taskSettingsFetched.blacklistBatches.forEach((batchName, batchIndex) => {
+        if (this.taskSettingsFetched.blacklist_batches) {
+          this.taskSettingsFetched.blacklist_batches.forEach((batchName, batchIndex) => {
             blackListedBatches = blackListedBatches + 1
             batchNode['blacklist'] = batchName == batch["Prefix"];
           })
         }
-        if (this.taskSettingsFetched.whitelistBatches) {
-          this.taskSettingsFetched.whitelistBatches.forEach((batchName, batchIndex) => {
+        if (this.taskSettingsFetched.whitelist_batches) {
+          this.taskSettingsFetched.whitelist_batches.forEach((batchName, batchIndex) => {
             whiteListedBatches = whiteListedBatches + 1
             batchNode['whitelist'] = batchName == batch["Prefix"];
           })
