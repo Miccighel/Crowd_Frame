@@ -1,5 +1,20 @@
 # init.ipynb changelog
 
+## 2021-07-16 Michael soprano
+
+### Added
+
+- env variable profile_name to specify a credentials profile and skip step #4
+- missing PutObjectAcl policy in config_user generation
+
+### Changed
+
+- index.zip and policy/ removed from .gitignore
+- user_policy.json and checks.json encapsulated inside init.py
+- Overall refactoring of init.py
+- init.py merged with user_script.py
+- generated JSONs now are serialized in aws/generated
+
 ## 2021-07-14 Francesco Bombassei De Bona
 
 ### Added

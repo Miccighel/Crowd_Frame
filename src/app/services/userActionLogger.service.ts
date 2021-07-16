@@ -57,6 +57,7 @@ export class ActionLogger {
     if(payload.worker == null){
       payload.worker = 'none'
     }
+     // console.log(payload)
     // this.http.post(
     //   'https://8vd1uyg771.execute-api.us-east-1.amazonaws.com/logger/log',
     //   payload,
