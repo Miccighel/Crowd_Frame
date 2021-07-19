@@ -594,12 +594,18 @@ mat-step form mat-card-content, mat-step form mat-card-actions {
 }
 
 .annotations th {
-  flex-grow: 1;
   text-align: center;
-  padding: 1%;
+  vertical-align: middle;
+  font-size: large;
+  border: 0;
+  flex-grow: 1;
+  padding-top: 2%;
+  padding-left: 1%;
+  padding-right: 1%;
 }
 
 .annotations td {
+  border: 0;
   flex: 1 1 0px;
   padding: 1%;
 }
