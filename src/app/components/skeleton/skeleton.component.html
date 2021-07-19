@@ -685,7 +685,6 @@
               </div>
             </ng-template>
 
-
             <!-- Dimensions are then shown and filtered according to each position -->
             <ng-template *ngIf="this.filterDimensions('list', 'top').length>0" [ngTemplateOutlet]="dimensionList"
                          [ngTemplateOutletContext]="{dimensions: this.filterDimensions('list', 'top'), i:i}"></ng-template>

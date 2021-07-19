@@ -1,0 +1,30 @@
+[
+    {
+        "type": "standard",
+        "position": "start",
+        "questions": [
+            {
+                "name": "age",
+                "text": "What is your age?",
+                "answers": [
+                    "0-18",
+                    "19-25",
+                    "26-35",
+                    "36-50",
+                    "50-80",
+                    "80"
+                ]
+            }
+        ]
+    },
+    {
+        "type": "crt",
+        "position": "start",
+        "questions": [
+            {
+                "name": "farmers",
+                "text": "If three farmers can plant three trees in three hours, how long would it take nine farmers to plant nine trees?"
+            }
+        ]
+    }
+]
