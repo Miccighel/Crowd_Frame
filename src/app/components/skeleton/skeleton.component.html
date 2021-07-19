@@ -451,16 +451,23 @@
                 <div [innerHTML]="instruction.text"></div>
               </div>
             </div>
-            <!-- Dimensions assessment markup (list style) --> <!-- NON si riesce a visualizzare la dimension-->
+            <!-- Dimensions assessment markup (list style) --> 
             Pre ng template
+            <!--aggiunto per controllo -->
+
+            <!--[ngTemplateOutletContext]="{dimensions:dimensions}"> -->
+
+            <!--Senza questo container non si riesce a visualizzare ng template-->
             <ng-container *ngTemplateOutlet="dimensionList">
-                This text is not displayed
+
               </ng-container>
-            <ng-template #dimensionList let-dimensionsa="dimensions" let-i="i">
+            <ng-template #dimensionList let-dimensions="dimensions" let-i="i">
                 <h1>Dentro ng-template</h1>
-                <h2>dimensions length:{{dimensions.length}}</h2>
-                <div *ngFor="let a of dimensionsa ;let t=index" ><p>dimension {{a}}</p></div>
-              <div *ngFor="let dimension of dimensionsa; let j=index" class="dimension">
+                <!--<h2>dimensionsa dentro  length:{{dimensionsa.length}}</h2> -->
+                 <h2>dimension fuori  length:{{dimensions.length}}</h2>
+                <!--<div *ngFor="let a of dimensions ;let t=index" ><p>dimensions {{a.name}}</p></div>-->
+               <!-- <div *ngIf="dimensionsa.length==0">Lunghezza del dimensionsa uguale a 0</div> -->
+              <div *ngFor="let dimension of dimensions; let j=index" class="dimension">
                 <h1>Dentro ng-for</h1>
                
                 <!-- Dimension name markup -->
@@ -530,7 +537,6 @@
                       <!-- Interval scale markup -->
                       
                       <ng-container *ngIf="dimension.scale.type=='interval'">
-                        swag180
                         <label>Selected value: {{documentsForm[i].controls[(dimension.name).concat('_value')].value}}</label>
                         <mat-slider min="{{dimension.scale.min}}" max="{{dimension.scale.max}}"
                                     step="{{dimension.scale.step}}" thumbLabel tickInterval="{{dimension.scale.step}}"
@@ -677,6 +683,7 @@
 
               </div>
             </ng-template>
+            
 
             <!-- Dimensions are then shown and filtered according to each position -->
             <ng-template *ngIf="this.filterDimensions('list', 'top').length>0" [ngTemplateOutlet]="dimensionList"
