@@ -26,6 +26,7 @@ export class Instruction {
     } else {
       this.text =    data['text'] ? data["text"] : null;
     }
+
   }
 
 }

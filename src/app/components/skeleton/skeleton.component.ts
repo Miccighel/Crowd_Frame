@@ -378,7 +378,8 @@ export class SkeletonComponent implements OnInit {
       }
     })
 
-    /* The main task instructions are downloaded */
+    /* |--------- INSTRUCTIONS MAIN (see: instructions_main.json) ---------| */
+
     let rawTaskInstructions = await this.S3Service.downloadGeneralInstructions(this.configService.environment);
     this.taskInstructionsAmount = rawTaskInstructions.length;
     /* The instructions are parsed using the Instruction class */
@@ -475,7 +476,6 @@ export class SkeletonComponent implements OnInit {
   public enableTask() {
     this.sectionService.taskInstructionsRead = true
     this.showSnackbar("If you have a very slow internet connection please wait a few seconds before clicking \"Start\".", "Dismiss", 15000)
-    this.changeDetector.detectChanges()
   }
 
   /*
@@ -537,26 +537,6 @@ export class SkeletonComponent implements OnInit {
         this.documents.push(new Document(index, currentDocument));
       }
 
-      /* |--------- INSTRUCTIONS MAIN (see: instructions_main.json) ---------| */
-
-      let rawTaskInstructions = await this.S3Service.downloadGeneralInstructions(this.configService.environment);
-      this.taskInstructionsAmount = rawTaskInstructions.length;
-      /* The instructions are parsed using the Instruction class */
-      this.taskInstructions = new Array<Instruction>();
-      for (let index = 0; index < this.taskInstructionsAmount; index++) {
-        this.taskInstructions.push(new Instruction(index, rawTaskInstructions[index]));
-      }
-
-      /* |--------- INSTRUCTIONS DIMENSIONS (see: instructions_dimensions.json) ---------| */
-
-      /* The evaluation instructions stored on Amazon S3 are retrieved */
-      let rawInstructions = await this.S3Service.downloadEvaluationInstructions(this.configService.environment)
-      this.instructionsAmount = rawInstructions.length;
-
-      /* The instructions are parsed using the Instruction class */
-      this.instructions = new Array<Instruction>();
-      for (let index = 0; index < this.instructionsAmount; index++) this.instructions.push(new Instruction(index, rawInstructions[index]));
-
       /* |--------- QUESTIONNAIRE ELEMENTS (see: questionnaires.json) ---------| */
 
       /* The array of questionnaires is initialized */
@@ -593,6 +573,16 @@ export class SkeletonComponent implements OnInit {
           this.questionnairesForm[index] = this.formBuilder.group(controlsConfig)
         }
       }
+
+      /* |--------- INSTRUCTIONS DIMENSIONS (see: instructions_dimensions.json) ---------| */
+
+      /* The evaluation instructions stored on Amazon S3 are retrieved */
+      let rawInstructions = await this.S3Service.downloadEvaluationInstructions(this.configService.environment)
+      this.instructionsAmount = rawInstructions.length;
+
+      /* The instructions are parsed using the Instruction class */
+      this.instructions = new Array<Instruction>();
+      for (let index = 0; index < this.instructionsAmount; index++) this.instructions.push(new Instruction(index, rawInstructions[index]));
 
       /* |--------- DIMENSIONS ELEMENTS (see: dimensions.json) ---------| */
 
