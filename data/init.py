@@ -227,6 +227,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     status.update("Checking local configuration file")
     time.sleep(3)
     method = None
+    status.stop()
     if profile_name:
         console.print("Environment variable [yellow]profile_name[/yellow] detected")
         botoSession = boto3.Session(profile_name=profile_name, region_name=aws_region)
@@ -275,6 +276,9 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                     aws_secret_access_key = console.input("Insert your AWS account secret key: ")
             if aws_access_key_id == 'exit' or aws_secret_access_key == 'exit':
                 stop_sequence()
+        iam_resource = botoSession.resource('iam')
+        root_user = iam_resource.CurrentUser()
+        aws_account_id = root_user.arn.split(':')[4]
 
     console.rule(f"5 - [yellow]{userName}[/yellow] Policies Check")
     status.start()
