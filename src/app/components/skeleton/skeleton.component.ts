@@ -2249,6 +2249,10 @@ export class SkeletonComponent implements OnInit {
       break;
     }
 
+    //modificare settings class
+    //accedervi con this.settings
+    // aggiornare il branch
+
     switch (position) {
       case 0:
         weightposition =  2;
