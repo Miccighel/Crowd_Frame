@@ -1349,6 +1349,7 @@ export class GeneratorComponent implements OnInit {
     if ('attributes' in taskSettingsJSON) {
       for (let attributeIndex in taskSettingsJSON['attributes']) {
         let attribute = taskSettingsJSON['attributes'][attributeIndex]
+        attribute['key'] = this.hitsAttributes[attributeIndex]
         if (!attribute['show']) attribute['show'] = false
         if (!attribute['annotate']) attribute['annotate'] = false
         if (!taskSettingsJSON.annotator) {

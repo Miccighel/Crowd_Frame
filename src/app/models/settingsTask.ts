@@ -47,12 +47,14 @@ export class SettingsTask {
 
 export class Attribute {
 
+  key: string;
   show: boolean;
   annotate: boolean;
 
   constructor(
     data: JSON
   ) {
+    this.key = data["key"];
     this.show = data["show"];
     this.annotate = data["annotate"];
   }

@@ -899,6 +899,9 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     status.update(f"Generating a sample configuration if needed")
     time.sleep(3)
 
+    if not os.path.exists(folder_build_task_path):
+        os.makedirs(folder_build_task_path, exist_ok=True)
+
     filename = "hits.json"
     if os.path.exists(f"{folder_build_task_path}{filename}"):
         console.print(f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
