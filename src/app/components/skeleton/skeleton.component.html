@@ -451,7 +451,7 @@
                 <div [innerHTML]="instruction.text"></div>
               </div>
             </div>
-            <!-- Dimensions assessment markup (list style) --> 
+            <!-- Dimensions assessment markup (list style) -->
             Pre ng template
             <!--aggiunto per controllo -->
 
@@ -469,7 +469,8 @@
                <!-- <div *ngIf="dimensionsa.length==0">Lunghezza del dimensionsa uguale a 0</div> -->
               <div *ngFor="let dimension of dimensions; let j=index" class="dimension">
                 <h1>Dentro ng-for</h1>
-               
+
+                <h2>dimensions dentro  length:{{this.dimensions.length}}</h2>
                 <!-- Dimension name markup -->
                 <div class="dimension-name">
                   <mat-divider [inset]="true"></mat-divider>
@@ -535,7 +536,7 @@
                       </ng-container>
 
                       <!-- Interval scale markup -->
-                      
+
                       <ng-container *ngIf="dimension.scale.type=='interval'">
                         <label>Selected value: {{documentsForm[i].controls[(dimension.name).concat('_value')].value}}</label>
                         <mat-slider min="{{dimension.scale.min}}" max="{{dimension.scale.max}}"
@@ -614,7 +615,7 @@
                 </div>
               </div>
             </ng-template>
-            
+
 
             <!-- Dimensions markup (matrix style) -->
             <ng-template #dimensionMatrix let-dimensions="dimensions" let-i="i">
@@ -683,7 +684,7 @@
 
               </div>
             </ng-template>
-            
+
 
             <!-- Dimensions are then shown and filtered according to each position -->
             <ng-template *ngIf="this.filterDimensions('list', 'top').length>0" [ngTemplateOutlet]="dimensionList"
