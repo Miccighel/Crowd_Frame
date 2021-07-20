@@ -776,15 +776,16 @@
           <div class="hit-attributes mt-8px mb-16px indent">
             <div *ngFor="let value of hitAttributes().controls; let valueIndex = index" formArrayName="attributes" class="p-5px">
               <div>
-                <ng-container [formGroupName]="valueIndex">
-                  <mat-checkbox color="primary" formControlName="show">
+                  <ng-container [formGroupName]="valueIndex">
+                      <mat-checkbox color="primary" formControlName="show" (change)="updateHitAttribute(valueIndex)">
                     {{this.hitsAttributes[valueIndex]}}
                   </mat-checkbox>
-                </ng-container>
-                <ng-container *ngIf="this.taskSettingsForm.get('setAnnotator').value" [formGroupName]="valueIndex">
-                  <mat-checkbox color="primary" formControlName="annotate">
-                    Annotations
-                  </mat-checkbox>
+                <mat-checkbox color="primary" formControlName="annotate" (change)="updateHitAttribute(valueIndex)">
+                  Annotations
+                </mat-checkbox>
+                <mat-checkbox color="primary" formControlName="required">
+                  Required
+                </mat-checkbox>
                 </ng-container>
               </div>
             </div>

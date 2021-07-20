@@ -21,7 +21,7 @@
     "@angular/router": "~12.1.2",
     "@funktechno/texthighlighter": "^2.0.10",
     "@kolkov/angular-editor": "^1.2.0",
-    "aws-sdk": "^2.947.0",
+    "aws-sdk": "^2.949.0",
     "crypto-es": "^1.2.7",
     "ngx-color-picker": "^11.0.0",
     "ngx-countdown": "^12.0.1",
@@ -29,6 +29,7 @@
     "ngx-file-helpers": "^6.0.0",
     "ngx-ui-loader": "^11.0.0",
     "rxjs": "^6.6.7",
+    "titleize": "^3.0.0",
     "util": "^0.12.4",
     "zone.js": "~0.11.4"
   },

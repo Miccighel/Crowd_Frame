@@ -44,7 +44,7 @@ export class S3Service {
         (await (s3.getObject({
           Bucket: config["bucket"],
           Key: path
-        }).promise())).Body.toString('utf-8')
+        }).promise())).Body.toString()
       );
   }
 
@@ -57,7 +57,7 @@ export class S3Service {
     return s3.upload({
       Key: path,
       Bucket: config["bucket"],
-      Body: JSON.stringify(payload, null, 4),
+      Body: (typeof payload=="string") ? payload : JSON.stringify(payload),
       ContentType: "application/json"
     }, function (err, data) {
     })
@@ -165,7 +165,7 @@ export class S3Service {
       let workersFile = `${this.getFolder(config)}Task/workers.json`;
       return (config["configuration_local"]) ? localRawWorkers["default"] : this.download(config, workersFile);
     } else {
-      let workersFile = `${batch}/Task/workers.json`;
+      let workersFile = `${batch}Task/workers.json`;
       return this.download(config, workersFile);
     }
   }
@@ -235,6 +235,7 @@ export class S3Service {
   }
 
   public uploadTaskSettings(config, data) {
+    console.log(typeof data)
     return this.upload(config, `${config.taskName}/${config.batchName}/Task/task.json`, data)
   }
 

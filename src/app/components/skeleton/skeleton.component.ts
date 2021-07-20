@@ -40,6 +40,9 @@ import {MatRadioChange} from "@angular/material/radio";
 import {MatCheckboxChange} from "@angular/material/checkbox";
 import {ButtonDirective} from "./skeleton.directive";
 import {SectionService} from "../../services/section.service";
+import CryptoES from "crypto-es";
+import algo = CryptoES.algo;
+
 
 /* Component HTML Tag definition */
 @Component({
@@ -1060,7 +1063,7 @@ export class SkeletonComponent implements OnInit {
    * if it is not an overlap the new note is finally created and pushed inside the corresponding data structure. After such step
    * the annotation button is enabled and the worker is allowed to choose the type of the created annotation
    */
-  public performAnnotation(documentIndex: number, notes: Array<Array<Note>>, changeDetector) {
+  public performAnnotation(documentIndex: number, attributeIndex: number, notes: Array<Array<Note>>, changeDetector) {
 
     /* If there is a leftover note (i.e., its type was not selected by current worker [it is "yellow"]) it is marked as deleted */
     for (let note of notes[documentIndex]) {
@@ -1072,36 +1075,38 @@ export class SkeletonComponent implements OnInit {
 
     /* The hit element which triggered the annotation event is detected */
     let domElement = null
+    let noteIdentifier = `document-${documentIndex}-attribute-${attributeIndex}`
     if (this.deviceDetectorService.isMobile() || this.deviceDetectorService.isTablet()) {
       const selection = document.getSelection();
-      if (selection) domElement = document.getElementById(`statement-${documentIndex}`);
-    } else domElement = document.getElementById(`statement-${documentIndex}`);
+      if (selection) domElement = document.getElementById(noteIdentifier);
+    } else domElement = document.getElementById(noteIdentifier);
 
     if (domElement) {
 
       /* The container of the annotated element is cloned and the event bindings are attached again */
       let elementContainerClone = domElement.cloneNode(true)
-      elementContainerClone.addEventListener('mouseup', () => this.performAnnotation(documentIndex, notes, changeDetector))
-      elementContainerClone.addEventListener('touchend', () => this.performAnnotation(documentIndex, notes, changeDetector))
+      elementContainerClone.addEventListener('mouseup', () => this.performAnnotation(documentIndex, attributeIndex, notes, changeDetector))
+      elementContainerClone.addEventListener('touchend', () => this.performAnnotation(documentIndex, attributeIndex, notes, changeDetector))
 
       /* the doHighlight function of the library is called and the flow is handled within two different callback */
       doHighlight(domElement, false, {
         /* the onBeforeHighlight event is called before the creation of the yellow highlight to encase the selected text */
         onBeforeHighlight: (range: Range) => {
+          let attributeIndex = parseInt(domElement.id.split("-")[3])
           let notesForDocument = notes[documentIndex]
           if (range.toString().trim().length == 0)
             return false
           let indexes = this.getSelectionCharacterOffsetWithin(domElement)
           /* To detect an overlap the indexes of the current annotation are check with respect to each annotation previously created */
           for (let note of notesForDocument) {
-            if (note.deleted == false) if (indexes["start"] < note.index_end && note.index_start < indexes["end"]) return false
+            if (note.deleted == false && note.attribute_index == attributeIndex) if (indexes["start"] < note.index_end && note.index_start < indexes["end"]) return false
           }
           return true
         },
         /* the onAfterHighlight event is called after the creation of the yellow highlight to encase the selected text */
         onAfterHighlight: (range, highlight) => {
           if (highlight.length > 0) {
-            if (highlight[0]["outerText"]) notes[documentIndex].push(new NoteStandard(documentIndex, range, highlight))
+            if (highlight[0]["outerText"]) notes[documentIndex].push(new NoteStandard(documentIndex, attributeIndex, range, highlight))
             return true
           }
         }
@@ -1154,14 +1159,29 @@ export class SkeletonComponent implements OnInit {
    * option; if this is true the worker can proceed to the following element
    */
   public checkAnnotationConsistency(documentIndex: number) {
+    let requiredAttributes = []
+    for (let attribute of this.settings.attributes) {
+      if (attribute.required) {
+        requiredAttributes.push(attribute.index)
+      }
+    }
     let check = false
     this.notes[documentIndex].forEach((element) => {
       if (element instanceof NoteStandard) {
-        if (!element.deleted && element.option != "not_selected") check = true
+        if (!element.deleted && element.option != "not_selected") {
+          const index = requiredAttributes.indexOf(element.attribute_index);
+          if (index > -1) {
+            requiredAttributes.splice(index, 1);
+          }
+          check = true
+        }
       } else {
         if (!element.deleted) check = true
       }
     })
+    if(requiredAttributes.length>0) {
+      check = false
+    }
     if (!this.annotator) {
       check = true
     }

@@ -207,16 +207,9 @@
 
             <!-- Document attributes markup; add the event bindings if you want enable annotations -->
 
-            <div class="statement">
+            <div class="statement" *ngIf="(this.annotator && this.annotator.type=='laws')">
               <ul>
-                <li *ngIf="(this.annotator && this.annotator.type=='options')">
-                  <span id="statement-{{i}}" class="statement-text"
-                        (mouseup)="performAnnotation(i, this.notes, this.changeDetector)"
-                        (touchend)="performAnnotation(i, this.notes, this.changeDetector)">
-                    {{document.statement}}
-                  </span>
-                </li>
-                <li *ngIf="(this.annotator && this.annotator.type=='laws')" class="law_content_li">
+                <li class="law_content_li">
                   <div class="statement-div">
                     <span style="white-space: pre-wrap;" #statementText id="statement-{{i}}"
                           (mouseup)="performHighlighting(this.changeDetector, $event, i, this.notes, this.annotator)"
@@ -224,22 +217,31 @@
                           class="statement-text">{{this.checkEnabledNotes(i)}} {{document.article_text}}</span>
                   </div>
                 </li>
-                <li *ngIf="!(this.annotator)">
-                  <ul>
-                    <li><strong>Claimant/Source</strong> (who made the statement): {{document.speaker}}</li>
-                    <li><strong>Date</strong> (when the statement was made): {{document.year}}</li>
-                    <li><strong>Text</strong> (content of the statement): {{document.statement}}</li>
-                  </ul>
-                </li>
-
               </ul>
             </div>
 
-<!--            <div class="statement">-->
-<!--              <div *ngFor="let attribute of this.settings.attributes">-->
-<!--                {{attribute.key}}-->
-<!--              </div>-->
-<!--            </div>-->
+            <div class="statement">
+              <ng-container *ngFor="let attribute of this.settings.attributes; let k=index">
+                <div *ngIf="attribute.show" class="attribute">
+                  <p>
+                    <span class="attribute-label" *ngIf="!this.annotator">
+                      <strong>{{attribute.name_pretty}}</strong>: {{document[attribute.name]}}
+                    </span>
+                    <span class="attribute-label" *ngIf="this.annotator && !attribute.annotate">
+                      <strong>{{attribute.name_pretty}}</strong>: {{document[attribute.name]}}
+                    </span>
+                    <span class="attribute-label" *ngIf="this.annotator && this.annotator.type=='options'&& attribute.annotate">
+                      <strong>{{attribute.name_pretty}}</strong>:
+                      <span id="document-{{i}}-attribute-{{k}}"
+                            (mouseup)="performAnnotation(i, k, this.notes, this.changeDetector)"
+                            (touchend)="performAnnotation(i, k, this.notes, this.changeDetector)">
+                        {{document[attribute.name]}}
+                      </span>
+                    </span>
+                  </p>
+                </div>
+              </ng-container>
+            </div>
 
             <ng-container *ngIf="(this.annotator && this.annotator.type=='options')">
 
@@ -699,30 +701,36 @@
               Back
             </button>
             <button mat-flat-button color="primary" matStepperNext *ngIf="i+1<this.documentsAmount && this.annotator"
-                    [disabled]="(!documentsForm[i].valid || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted || !checkAnnotationConsistency(i)) && !this.countdownsExpired[i]"
+                    [disabled]="(!documentsForm[i].valid || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted || !checkAnnotationConsistency(i) || !this.countdownsExpired[i])"
                     (click)="performLogging('Next', i); nextStep()">
               Next
             </button>
             <button mat-flat-button color="primary" matStepperNext *ngIf="i+1<this.documentsAmount && !this.annotator"
-                    [disabled]="(!documentsForm[i].valid || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted) && !this.countdownsExpired[i]"
+                    [disabled]="(!documentsForm[i].valid || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted || this.countdownsExpired[i])"
                     (click)="performLogging('Next', i); nextStep()">
               Next
             </button>
 
             <button mat-flat-button color="primary" matStepperNext *ngIf="i+1>=this.documentsAmount && this.annotator && this.questionnaireAmountEnd > 0"
-                    [disabled]="(!documentsForm[i].valid || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted || !checkAnnotationConsistency(i)) && !this.countdownsExpired[i]"
+                    [disabled]="(!documentsForm[i].valid || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted || !checkAnnotationConsistency(i) || this.countdownsExpired[i])"
                     (click)="performLogging('Next', i); nextStep()">
               Next
             </button>
 
             <button mat-flat-button color="primary" matStepperNext *ngIf="i+1>=this.documentsAmount && !this.annotator  && this.questionnaireAmountEnd > 0"
-                    [disabled]="(!documentsForm[i].valid || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted) && !this.countdownsExpired[i]"
+                    [disabled]="(!documentsForm[i].valid || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted || this.countdownsExpired[i])"
                     (click)="performLogging('Next', i); nextStep()">
               Next
             </button>
 
-            <button mat-flat-button color="primary" matStepperNext *ngIf="i+1>=this.documentsAmount && this.questionnaireAmountEnd == 0"
-                    [disabled]="!documentsForm[i].valid && !this.countdownsExpired[i]"
+            <button mat-flat-button color="primary" matStepperNext *ngIf="i+1>=this.documentsAmount && this.questionnaireAmountEnd == 0 && !this.annotator"
+                    [disabled]="(!documentsForm[i].valid || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted || this.countdownsExpired[i])"
+                    (click)="performLogging('Finish', i); nextStep(); performQualityCheck()">
+              Finish
+            </button>
+
+            <button mat-flat-button color="primary" matStepperNext *ngIf="i+1>=this.documentsAmount && this.questionnaireAmountEnd == 0 && this.annotator"
+                    [disabled]="(!documentsForm[i].valid || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted || !checkAnnotationConsistency(i) || this.countdownsExpired[i])"
                     (click)="performLogging('Finish', i); nextStep(); performQualityCheck()">
               Finish
             </button>
@@ -825,13 +833,11 @@
                         (click)="performLogging('Back', i); previousStep()">
                   Back
                 </button>
-                <button mat-flat-button color="primary" matStepperNext
-                        *ngIf="i+1 >= this.questionnaireAmountStart + this.documentsAmount && i+1 < (this.questionnaireAmountStart + this.documentsAmount + this.questionnaireAmountEnd) -1"
+                <button mat-flat-button color="primary" matStepperNext *ngIf="i+1 >= this.questionnaireAmountStart + this.documentsAmount && i+1 < (this.questionnaireAmountStart + this.documentsAmount + this.questionnaireAmountEnd) -1"
                         [disabled]="!questionnairesForm[i].valid" (click)="performLogging('Next',i) ; nextStep()">
                   Next
                 </button>
-                <button mat-flat-button color="primary" matStepperNext
-                        *ngIf="i+1 >= (this.questionnaireAmountStart + this.documentsAmount + this.questionnaireAmountEnd) - 1"
+                <button mat-flat-button color="primary" matStepperNext *ngIf="i+1 >= (this.questionnaireAmountStart + this.documentsAmount + this.questionnaireAmountEnd) - 1"
                         [disabled]="!questionnairesForm[i].valid" (click)="performLogging('Finish', i); nextStep(); performQualityCheck()">
                   Finish
                 </button>

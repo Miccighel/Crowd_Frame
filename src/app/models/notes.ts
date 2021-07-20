@@ -3,6 +3,7 @@ import {Annotator} from "./settingsTask";
 export abstract class Note {
 
   document_index: number;
+  attribute_index: number;
   version: number;
   deleted: boolean;
   ignored: boolean;
@@ -22,13 +23,15 @@ export abstract class Note {
   annotator: Annotator;
 
   constructor(
-    index: number,
+    document_index: number,
+    attribute_index: number,
     range: JSON,
     data: JSON,
     color = "#ffffff"
   ) {
 
-    this.document_index = index;
+    this.document_index = document_index;
+    this.attribute_index = attribute_index;
     this.deleted = false
     this.ignored = false
     this.color = color

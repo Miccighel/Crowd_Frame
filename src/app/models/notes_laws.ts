@@ -15,7 +15,7 @@ export class NoteLaws extends Note {
     data: JSON,
     color = "#ffffff"
   ) {
-    super(index, range, data, color)
+    super(index, 0, range, data, color)
     this.year = 0;
     this.number = 0;
     this.type = "reference";

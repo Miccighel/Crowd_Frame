@@ -322,10 +322,7 @@ export class GeneratorComponent implements OnInit {
     /* STEP #1 - Questionnaires */
 
     let rawQuestionnaires = []
-    try {
-      rawQuestionnaires = await this.S3Service.downloadQuestionnaires(this.configService.environment)
-    } catch (exception) {
-    }
+    rawQuestionnaires = await this.S3Service.downloadQuestionnaires(this.configService.environment)
     if (typeof rawQuestionnaires == "string")
       rawQuestionnaires = JSON.parse(rawQuestionnaires)
     rawQuestionnaires.forEach((data, questionnaireIndex) => {
@@ -1220,8 +1217,44 @@ export class GeneratorComponent implements OnInit {
   addHitAttribute(attribute = null as Attribute) {
     this.hitAttributes().push(this._formBuilder.group({
       show: attribute ? attribute.show : true,
-      annotate: attribute ? attribute.annotate : false,
+      annotate: attribute ? this.taskSettingsForm.get('setAnnotator').value ? attribute.annotate : false : false,
+      required: attribute ? this.taskSettingsForm.get('setAnnotator').value ? attribute.required : false : false,
     }))
+    this.resetHitAttributes()
+  }
+
+  resetHitAttributes() {
+    for (let attribute of this.hitAttributes().controls) {
+      if (this.taskSettingsForm.get('setAnnotator').value == false) {
+        attribute.get("annotate").disable()
+        attribute.get("annotate").setValue(false)
+        attribute.get("required").disable()
+        attribute.get("required").setValue(false)
+      } else {
+        attribute.get("annotate").enable()
+        attribute.get("required").enable()
+      }
+    }
+  }
+
+  updateHitAttribute(attributeIndex) {
+    let attribute = this.hitAttributes().at(attributeIndex)
+    if(attribute.get("show").value == true) {
+      attribute.get("annotate").enable()
+      attribute.get("required").enable()
+    } else {
+      attribute.get("annotate").disable()
+      attribute.get("required").disable()
+      attribute.get("annotate").setValue(false)
+      attribute.get("required").setValue(false)
+    }
+    if(attribute.get("annotate").value == true) {
+      attribute.get("required").enable()
+    } else {
+      attribute.get("required").disable()
+      attribute.get("required").setValue(false)
+    }
+    this.resetHitAttributes()
   }
 
   blacklistBatches(): FormArray {
@@ -1302,6 +1335,7 @@ export class GeneratorComponent implements OnInit {
       this.annotator().get('type').setValidators([Validators.required, this.positiveNumber.bind(this)]);
     }
     this.annotator().get('type').updateValueAndValidity();
+    this.resetHitAttributes()
   }
 
   /* SUB ELEMENT: Annotator */
@@ -1349,11 +1383,17 @@ export class GeneratorComponent implements OnInit {
     if ('attributes' in taskSettingsJSON) {
       for (let attributeIndex in taskSettingsJSON['attributes']) {
         let attribute = taskSettingsJSON['attributes'][attributeIndex]
-        attribute['key'] = this.hitsAttributes[attributeIndex]
-        if (!attribute['show']) attribute['show'] = false
-        if (!attribute['annotate']) attribute['annotate'] = false
-        if (!taskSettingsJSON.annotator) {
+        attribute['name'] = this.hitsAttributes[attributeIndex]
+        if (!attribute['show']) {
           attribute['annotate'] = false
+          attribute['required'] = false
+        }
+        if (!attribute['annotate'])  {
+          attribute['required'] = false
+        }
+        if(!taskSettingsJSON.annotator) {
+          attribute['annotate'] = false
+          attribute['required'] = false
         }
         taskSettingsJSON['attributes'][attributeIndex] = attribute
       }

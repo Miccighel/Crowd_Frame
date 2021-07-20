@@ -170,7 +170,7 @@ mat-card-content label {
   border: 0;
   box-shadow: 0 0 0 0;
   border-radius: 0;
-  background-color: #DEDEDE;
+  background-color: #eaeaea;
   //position:-webkit-sticky;
   //position:sticky;
   //top: 42px;
@@ -178,16 +178,26 @@ mat-card-content label {
 }
 
 .statement ul {
-  //box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
-  //text-align: center;
   padding-left: 2%;
   list-style: none;
 }
 
 .statement ul li {
+  padding-top: 2%;
+  padding-bottom: 2%;
+  font-size: 1.1em;
+}
+
+.statement {
   padding-top: 1%;
   padding-bottom: 1%;
-  font-size: 1.1em;
+  .attribute {
+    padding: 1% 1% 1% 2%;
+    font-size: 1.2em;
+    p {
+      margin: 0;
+    }
+  }
 }
 
 .statement mat-expansion-panel-header {
