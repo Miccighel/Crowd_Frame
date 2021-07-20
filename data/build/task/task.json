@@ -1,0 +1,13 @@
+{
+    "task_name": "Test",
+    "batch_name": "Batch-1",
+    "allowed_tries": 10,
+    "time_check_amount": 3,
+    "annotator": false,
+    "countdown_time": false,
+    "blacklist_batches": [],
+    "whitelist_batches": [],
+    "messages": [
+        "You have already started this task without finishing it"
+    ]
+}

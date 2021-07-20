@@ -1,0 +1,26 @@
+[
+    {
+        "name": "sample-dimension",
+        "name_pretty": "Sample Dimension",
+        "description": "Lorem ipsum dolor sit amet",
+        "url": false,
+        "justification": false,
+        "scale": {
+            "type": "categorical",
+            "mapping": [
+                {
+                    "label": "False",
+                    "description": "...",
+                    "value": "1"
+                },
+                {
+                    "label": "True",
+                    "description": "...",
+                    "value": "1"
+                }
+            ]
+        },
+        "gold_question_check": false,
+        "style": false
+    }
+]
