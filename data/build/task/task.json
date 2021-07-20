@@ -4,9 +4,19 @@
     "allowed_tries": 10,
     "time_check_amount": 2,
     "annotator": false,
-    "countdown_time": 120,
+    "countdown_time": 20,
     "blacklist_batches": [],
     "whitelist_batches": [],
+    "documentTimes": {
+        "true": 51,
+        "mostly-true": 52,
+        "half-true": 53,
+        "mostly-false": 54,
+        "false": 55,
+        "pants-on-fire": 56,
+        "high": 10,
+        "low": 10
+    },
     "messages": [
         "You have already started this task without finishing it",
         "You have already participated to a variant of this experiment",

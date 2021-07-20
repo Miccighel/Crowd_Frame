@@ -5,14 +5,13 @@ export class Document {
     claimant: string;
     date: string;
     originated_from: string;
-    time: number;
 
     constructor(index: number, data: JSON) {
+        this.index = index;
         this.id = data["id"];
         this.statement = data["statement"];
         this.claimant = data["claimant"];
         this.date = data["date"];
         this.originated_from = data["originated_from"];
-        this.time = data['time']
     }
 }

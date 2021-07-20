@@ -10,6 +10,7 @@ export class SettingsTask {
   blacklist_batches: Array<string>;
   whitelist_batches: Array<string>;
   messages?: Array<string>;
+  documentTimes?: Object;
 
   constructor(
     data = null as JSON
@@ -31,6 +32,7 @@ export class SettingsTask {
     }
     this.annotator =          data ?  data["annotator"] ? new Annotator(data["annotator"]) : null : null;
     this.countdown_time =     data ?   data["countdown_time"] ? parseInt((data["countdown_time"])): null : null;
+    this.documentTimes =      data ? data["documentTimes"] ? new Object(data['documentTimes']) : null : null;
     this.blacklist_batches = new Array<string>();
     if(data) if('blacklist_batches' in data) for (let batch of data["blacklist_batches"] as Array<string>) this.blacklist_batches.push(batch)
     this.whitelist_batches = new Array<string>();
