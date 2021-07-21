@@ -1,14 +1,17 @@
 <!-- First instruction page shown when the worker starts the skeleton -->
 <div class="instructions-section" *ngIf="this.sectionService.currentSection == 'instructions-section'">
   <mat-card>
-    <mat-card-content>
+      <mat-card-content *ngIf="!this.sectionService.checkCompleted || !taskInstructions">
+          <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+      </mat-card-content>
+    <mat-card-content *ngIf="this.sectionService.checkCompleted && taskInstructions">
       <ng-container *ngFor="let instruction of this.taskInstructions; let i=index">
         <h2 *ngIf="instruction['caption']">{{instruction["caption"]}}</h2>
         <span [innerHTML]="instruction.text"></span>
       </ng-container>
     </mat-card-content>
     <mat-card-actions>
-      <button mat-flat-button color="primary" (click)="enableTask()">
+      <button mat-flat-button color="primary" (click)="enableTask()" [disabled]="!this.sectionService.checkCompleted || !taskInstructions">
         Proceed
       </button>
     </mat-card-actions>
