@@ -11,7 +11,7 @@
                [textPosition]="'bottom-center'"
 ></ngx-ui-loader>
 
-<mat-horizontal-stepper labelPosition="bottom" #generator class="green-theme">
+<mat-horizontal-stepper labelPosition="bottom" #generator class="green-theme" (selectionChange)="checkProgressStatus($event)">
 
   <!-- Step #1 - Questionnaires -->
 
@@ -986,14 +986,15 @@
         <mat-divider></mat-divider>
         <mat-card-content>
 
+          <p>Select the IDs to consider by pressing <i>SPACE</i></p>
+
           <!-- Blacklist -->
 
           <mat-form-field class="width-100" appearance="fill">
             <mat-label>Worker IDs Blacklisted</mat-label>
             <mat-chip-list #blacklistChips formControlName="blacklist" multiple>
-              <mat-chip *ngFor="let workerId of this.blacklistedWorkerId" [selected]="workerId" [value]="workerId"
-                        (removed)="removeBlacklistedId(workerId)">{{workerId}}</mat-chip>
-              <input placeholder="New worker ID ..." [matChipInputFor]="blacklistChips" (matChipInputTokenEnd)="addBlacklistedId($event)">
+              <mat-chip *ngFor="let workerId of this.blacklistedWorkerId" [selectable]="true" [removable]="true" (removed)="removeBlacklistedId(workerId)">{{workerId}} <mat-icon matChipRemove>cancel</mat-icon></mat-chip>
+              <input placeholder="New worker ID ..." [matChipInputFor]="blacklistChips" [matChipInputSeparatorKeyCodes]="separatorKeysCodes" (matChipInputTokenEnd)="addBlacklistedId($event)">
             </mat-chip-list>
           </mat-form-field>
 
@@ -1003,9 +1004,8 @@
           <mat-form-field class="width-100" appearance="fill">
             <mat-label>Worker IDs Whitelisted</mat-label>
             <mat-chip-list #whitelistChips formControlName="whitelist" multiple>
-              <mat-chip *ngFor="let workerId of this.whitelistedWorkerId" [selected]="workerId" [value]="workerId"
-                        (removed)="removeWhitelistedId(workerId)">{{workerId}}</mat-chip>
-              <input placeholder="New worker ID ..." [matChipInputFor]="whitelistChips" (matChipInputTokenEnd)="addWhitelistedId($event)">
+              <mat-chip *ngFor="let workerId of this.whitelistedWorkerId" [selectable]="true" [removable]="true"  (removed)="removeWhitelistedId(workerId)">{{workerId}} <mat-icon matChipRemove>cancel</mat-icon></mat-chip>
+              <input placeholder="New worker ID ..." [matChipInputFor]="whitelistChips" [matChipInputSeparatorKeyCodes]="separatorKeysCodes" (matChipInputTokenEnd)="addBlacklistedId($event)">
             </mat-chip-list>
           </mat-form-field>
 
@@ -1068,7 +1068,7 @@
         <mat-divider [inset]="true"></mat-divider>
 
         <h4 class="mb-0">Step #6 - <strong>Task Settings</strong>:</h4>
-        <p><code>{{ this.taskSettingsSerialized }}</code></p>
+        <p><code>{{ this.taskSettingsSerializedWithoutHits }}</code></p>
 
         <mat-divider [inset]="true"></mat-divider>
 

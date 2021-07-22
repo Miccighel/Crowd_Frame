@@ -16,13 +16,12 @@ import {Dimension, Mapping} from "../../models/dimension";
 import {Instruction} from "../../models/instructions";
 import {SettingsSearchEngine} from "../../models/settingsSearchEngine";
 import {Attribute, SettingsTask} from "../../models/settingsTask";
-
-import {ColorPickerModule} from 'ngx-color-picker';
 import {Hit} from "../../models/hit";
 import {SettingsWorker} from "../../models/settingsWorker";
 import {MatChipInputEvent} from "@angular/material/chips";
-import {type} from "os";
 import {AngularEditorConfig} from "@kolkov/angular-editor";
+import {COMMA, ENTER} from '@angular/cdk/keycodes';
+
 
 /*
  * The following interfaces are used to simplify data handling for each generator step.
@@ -91,7 +90,7 @@ interface BatchNode {
 /*
  * This class implements the generator of custom task configurations
  */
-export class GeneratorComponent implements OnInit {
+export class GeneratorComponent {
 
   /*
    * The following elements are used to define the forms to be filled for
@@ -165,6 +164,7 @@ export class GeneratorComponent implements OnInit {
   taskSettingsForm: FormGroup;
   taskSettingsFetched: SettingsTask
   taskSettingsSerialized: string
+  taskSettingsSerializedWithoutHits: string
   batchesTree: Array<Object>
   batchesTreeInitialization: boolean
   annotatorOptionColors: Array<string>
@@ -183,6 +183,7 @@ export class GeneratorComponent implements OnInit {
   workersChecksSerialized: string
   blacklistedWorkerId: Set<string>
   whitelistedWorkerId: Set<string>
+  readonly separatorKeysCodes = [ENTER, COMMA] as const;
 
   /* STEP #8 - Summary */
 
@@ -314,28 +315,25 @@ export class GeneratorComponent implements OnInit {
     this.readMode = ReadMode.text
   }
 
-  ngOnInit() {
-  }
-
   async performGeneratorSetup() {
 
     /* STEP #1 - Questionnaires */
 
-    let rawQuestionnaires = []
-    rawQuestionnaires = await this.S3Service.downloadQuestionnaires(this.configService.environment)
-    if (typeof rawQuestionnaires == "string")
-      rawQuestionnaires = JSON.parse(rawQuestionnaires)
-    rawQuestionnaires.forEach((data, questionnaireIndex) => {
-      let questionnaire = new Questionnaire(questionnaireIndex, data)
-      let identifier = `questionnaire-${questionnaireIndex}`
-      let item = this.localStorageService.getItem(identifier)
-      if (item) {
+    let serializedQuestionnaires = Object.keys(localStorage).filter((key) => key.startsWith('questionnaire-'))
+    if(serializedQuestionnaires.length > 0) {
+      serializedQuestionnaires.forEach(questionnaireKey => {
+        let index = questionnaireKey.split("-")[1]
+        let item = this.localStorageService.getItem(`questionnaire-${index}`)
         this.questionnairesFetched.push(JSON.parse(item))
-      } else {
-        this.questionnairesFetched.push(questionnaire)
-        this.localStorageService.setItem(identifier, JSON.stringify(questionnaire))
-      }
-    })
+      })
+    } else {
+      let rawQuestionnaires = await this.S3Service.downloadQuestionnaires(this.configService.environment)
+      rawQuestionnaires.forEach((data, index) => {
+          let questionnaire = new Questionnaire(index, data)
+          this.questionnairesFetched.push(questionnaire)
+          this.localStorageService.setItem(`questionnaire-${index}`, JSON.stringify(questionnaire))
+      })
+    }
     this.questionnairesForm = this._formBuilder.group({
       questionnaires: this._formBuilder.array([])
     });
@@ -344,28 +342,28 @@ export class GeneratorComponent implements OnInit {
         this.addQuestionnaire(questionnaireIndex, questionnaire)
       })
     }
+    this.questionnairesForm.valueChanges.subscribe(forms => {
+      this.questionnairesJSON()
+    })
     this.questionnairesJSON()
-    this.questionnairesForm.valueChanges.subscribe(value => this.questionnairesJSON())
 
     /* STEP #2 - Dimensions */
 
-    let rawDimensions = []
-    try {
-      rawDimensions = await this.S3Service.downloadDimensions(this.configService.environment)
-    } catch (exception) {}
-    if (typeof rawDimensions == "string")
-      rawDimensions = JSON.parse(rawDimensions)
-    rawDimensions.forEach((data, dimensionIndex) => {
-      let dimension = new Dimension(dimensionIndex, data)
-      let identifier = `dimension-${dimensionIndex}`
-      let item = this.localStorageService.getItem(identifier)
-      if (item) {
+    let serializedDimensions = Object.keys(localStorage).filter((key) => key.startsWith('dimension-'))
+    if(serializedDimensions.length > 0) {
+      serializedDimensions.forEach(key => {
+        let index = key.split("-")[1]
+        let item = this.localStorageService.getItem(`dimension-${index}`)
         this.dimensionsFetched.push(JSON.parse(item))
-      } else {
+      })
+    } else {
+      let rawDimensions = await this.S3Service.downloadDimensions(this.configService.environment)
+      rawDimensions.forEach((data, index) => {
+        let dimension = new Dimension(index, data)
         this.dimensionsFetched.push(dimension)
-        this.localStorageService.setItem(identifier, JSON.stringify(dimension))
-      }
-    })
+        this.localStorageService.setItem(`dimension-${index}`, JSON.stringify(dimension))
+      })
+    }
     this.dimensionsForm = this._formBuilder.group({
       dimensions: this._formBuilder.array([])
     });
@@ -374,30 +372,28 @@ export class GeneratorComponent implements OnInit {
         this.addDimension(dimensionIndex, dimension)
       })
     }
+    this.dimensionsForm.valueChanges.subscribe(forms => {
+      this.dimensionsJSON()
+    })
     this.dimensionsJSON()
-    this.dimensionsForm.valueChanges.subscribe(value => this.dimensionsJSON())
-
 
     /* STEP #3 - General Instructions */
 
-    let rawGeneralInstructions = []
-    try {
-      rawGeneralInstructions = await this.S3Service.downloadGeneralInstructions(this.configService.environment)
-    } catch (exception) {
-    }
-    if (typeof rawGeneralInstructions == "string")
-      rawGeneralInstructions = JSON.parse(rawGeneralInstructions)
-    rawGeneralInstructions.forEach((data, index) => {
-      let instruction = new Instruction(index, data)
-      let identifier = `general-instruction-${index}`
-      let item = this.localStorageService.getItem(identifier)
-      if (item) {
+    let serializedGeneralInstructions = Object.keys(localStorage).filter((key) => key.startsWith('general-instruction-'))
+    if(serializedGeneralInstructions.length > 0) {
+      serializedGeneralInstructions.forEach(key => {
+        let index = key.split("-")[2]
+        let item = this.localStorageService.getItem(`general-instruction-${index}`)
         this.generalInstructionsFetched.push(JSON.parse(item))
-      } else {
-        this.generalInstructionsFetched.push(instruction)
-        this.localStorageService.setItem(identifier, JSON.stringify(instruction))
-      }
-    })
+      })
+    } else {
+      let rawGeneralInstructions = await this.S3Service.downloadGeneralInstructions(this.configService.environment)
+      rawGeneralInstructions.forEach((data, index) => {
+        let generalInstruction = new Instruction(index, data)
+        this.generalInstructionsFetched.push(generalInstruction)
+        this.localStorageService.setItem(`general-instruction-${index}`, JSON.stringify(generalInstruction))
+      })
+    }
     this.generalInstructionsForm = this._formBuilder.group({
       generalInstructions: this._formBuilder.array([])
     });
@@ -406,29 +402,28 @@ export class GeneratorComponent implements OnInit {
         this.addGeneralInstruction(instructionIndex, instruction)
       })
     }
+    this.generalInstructionsForm.valueChanges.subscribe(forms => {
+      this.generalInstructionsJSON()
+    })
     this.generalInstructionsJSON()
-    this.generalInstructionsForm.valueChanges.subscribe(value => this.generalInstructionsJSON())
 
     /* STEP #4 - Evaluation Instructions */
 
-    let rawEvaluationInstructions = []
-    try {
-      rawEvaluationInstructions = await this.S3Service.downloadEvaluationInstructions(this.configService.environment)
-    } catch (exception) {
-    }
-    if (typeof rawEvaluationInstructions == "string")
-      rawEvaluationInstructions = JSON.parse(rawEvaluationInstructions)
-    rawEvaluationInstructions.forEach((data, index) => {
-      let instruction = new Instruction(index, data)
-      let identifier = `evaluation-instruction-${index}`
-      let item = this.localStorageService.getItem(identifier)
-      if (item) {
+    let serializedEvaluationInstructions = Object.keys(localStorage).filter((key) => key.startsWith('evaluation-instruction-'))
+    if(serializedEvaluationInstructions.length > 0) {
+      serializedEvaluationInstructions.forEach(key => {
+        let index = key.split("-")[2]
+        let item = this.localStorageService.getItem(`evaluation-instruction-${index}`)
         this.evaluationInstructionsFetched.push(JSON.parse(item))
-      } else {
-        this.evaluationInstructionsFetched.push(instruction)
-        this.localStorageService.setItem(identifier, JSON.stringify(instruction))
-      }
-    })
+      })
+    } else {
+      let rawEvaluationInstructions = await this.S3Service.downloadEvaluationInstructions(this.configService.environment)
+      rawEvaluationInstructions.forEach((data, index) => {
+        let evaluationInstruction = new Instruction(index, data)
+        this.evaluationInstructionsFetched.push(evaluationInstruction)
+        this.localStorageService.setItem(`evaluation-instruction-${index}`, JSON.stringify(evaluationInstruction))
+      })
+    }
     this.evaluationInstructionsForm = this._formBuilder.group({
       evaluationInstructions: this._formBuilder.array([])
     });
@@ -437,43 +432,41 @@ export class GeneratorComponent implements OnInit {
         this.addEvaluationInstruction(instructionIndex, instruction)
       })
     }
+    this.evaluationInstructionsForm.valueChanges.subscribe(forms => {
+      this.evaluationInstructionsJSON()
+    })
     this.evaluationInstructionsJSON()
-    this.evaluationInstructionsForm.valueChanges.subscribe(value => this.evaluationInstructionsJSON())
 
     /* STEP #5 - Search Engine Settings */
 
-    let rawSearchEngineSettings: JSON
-    try {
-      rawSearchEngineSettings = await this.S3Service.downloadSearchEngineSettings(this.configService.environment)
-    } catch (exception) {
+    let serializedSearchEngineSettings = this.localStorageService.getItem("search-engine-settings")
+    if(serializedSearchEngineSettings) {
+      this.searchEngineFetched = new SettingsSearchEngine(JSON.parse(serializedSearchEngineSettings))
+    } else {
+      let rawSearchEngineSettings = await this.S3Service.downloadSearchEngineSettings(this.configService.environment)
+      this.searchEngineFetched = new SettingsSearchEngine(rawSearchEngineSettings)
+      this.localStorageService.setItem(`search-engine-settings`, JSON.stringify(rawSearchEngineSettings))
     }
-    if (typeof rawSearchEngineSettings == "string")
-      rawSearchEngineSettings = JSON.parse(rawSearchEngineSettings)
-    this.searchEngineFetched = new SettingsSearchEngine(rawSearchEngineSettings)
-    let identifier = `search-engine-settings`
-    let item = this.localStorageService.getItem(identifier)
-    if (item) this.searchEngineFetched = JSON.parse(item); else this.localStorageService.setItem(identifier, JSON.stringify(this.searchEngineFetched))
     this.searchEngineForm = this._formBuilder.group({
       source: [this.searchEngineFetched ? this.searchEngineFetched.source : ''],
       domains_filter: this._formBuilder.array([])
     });
     if (this.searchEngineFetched) if (this.searchEngineFetched.domains_filter) if (this.searchEngineFetched.domains_filter.length > 0) this.searchEngineFetched.domains_filter.forEach((domain, domainIndex) => this.addDomain(domain))
+    this.searchEngineForm.valueChanges.subscribe(form => {
+      this.searchEngineJSON()
+    })
     this.searchEngineJSON()
-    this.searchEngineForm.valueChanges.subscribe(value => this.searchEngineJSON())
 
     /* STEP #6 - Task Settings */
 
-    let rawTaskSettings: JSON
-    try {
-      rawTaskSettings = await this.S3Service.downloadTaskSettings(this.configService.environment)
-    } catch (exception) {
+    let serializedTaskSettings = this.localStorageService.getItem("task-settings")
+    if(serializedTaskSettings) {
+      this.taskSettingsFetched = new SettingsTask(JSON.parse(serializedTaskSettings))
+    } else {
+      let rawTaskSettings = await this.S3Service.downloadTaskSettings(this.configService.environment)
+      this.taskSettingsFetched = new SettingsTask(rawTaskSettings)
+      this.localStorageService.setItem(`task-settings`, JSON.stringify(rawTaskSettings))
     }
-    if (typeof rawTaskSettings == "string")
-      rawTaskSettings = JSON.parse(rawTaskSettings)
-    this.taskSettingsFetched = new SettingsTask(rawTaskSettings)
-    identifier = `task-settings`
-    item = this.localStorageService.getItem(identifier)
-    if (item) this.taskSettingsFetched = JSON.parse(item); else this.localStorageService.setItem(identifier, JSON.stringify(this.taskSettingsFetched))
     this.annotatorOptionColors = ['#FFFF7B']
     if (this.taskSettingsFetched.annotator) {
       if (this.taskSettingsFetched.annotator.type == "options") {
@@ -505,37 +498,36 @@ export class GeneratorComponent implements OnInit {
     });
     if (this.taskSettingsFetched.messages) if (this.taskSettingsFetched.messages.length > 0) this.taskSettingsFetched.messages.forEach((message, messageIndex) => this.addMessage(message))
     if (this.taskSettingsFetched.annotator) if (this.taskSettingsFetched.annotator.type == "options") this.taskSettingsFetched.annotator.values.forEach((optionValue, optionValueIndex) => this.addOptionValue(optionValue))
+    this.taskSettingsForm.valueChanges.subscribe(form => {
+      this.taskSettingsJSON()
+    })
     this.taskSettingsJSON()
-    this.taskSettingsForm.valueChanges.subscribe(value => this.taskSettingsJSON())
 
     let hitsPromise = this.loadHits()
     let batchesPromise = this.loadBatchesTree()
 
     /* STEP #7 - Worker Checks Settings */
 
-    let rawWorkerChecks: JSON
-    try {
-      rawWorkerChecks = await this.S3Service.downloadWorkers(this.configService.environment)
-    } catch (exception) {
+    let serializedWorkerChecks = this.localStorageService.getItem("worker-settings")
+    if(serializedWorkerChecks) {
+      this.workerChecksFetched = new SettingsWorker(JSON.parse(serializedWorkerChecks))
+    } else {
+      let rawWorkerChecks = await this.S3Service.downloadWorkers(this.configService.environment)
+      this.workerChecksFetched = new SettingsWorker(rawWorkerChecks)
+      this.localStorageService.setItem(`worker-settings`, JSON.stringify(rawWorkerChecks))
     }
-    if (typeof rawWorkerChecks == "string")
-      rawWorkerChecks = JSON.parse(rawWorkerChecks)
-    this.workerChecksFetched = new SettingsWorker(rawWorkerChecks)
-    identifier = `worker-settings`
-    item = this.localStorageService.getItem(identifier)
-    if (item) this.workerChecksFetched = JSON.parse(item); else this.localStorageService.setItem(identifier, JSON.stringify(this.workerChecksFetched))
     this.workerChecksForm = this._formBuilder.group({
       blacklist: [this.workerChecksFetched.blacklist ? this.workerChecksFetched.blacklist : ''],
       whitelist: [this.workerChecksFetched.whitelist ? this.workerChecksFetched.whitelist : '']
     })
-    this.workerChecksJSON()
-    this.workerChecksForm.valueChanges.subscribe(value => this.workerChecksJSON())
     this.whitelistedWorkerId = new Set();
     this.blacklistedWorkerId = new Set();
     this.workerChecksFetched.blacklist.forEach((workerId, workerIndex) => this.blacklistedWorkerId.add(workerId))
     this.workerChecksFetched.whitelist.forEach((workerId, workerIndex) => this.whitelistedWorkerId.add(workerId))
-
-    this.changeDetector.detectChanges()
+    this.workerChecksForm.valueChanges.subscribe(form => {
+      this.workerChecksJSON()
+    })
+    this.workerChecksJSON()
 
     this.ngxService.stopLoader("generator-inner")
 
@@ -661,6 +653,20 @@ export class GeneratorComponent implements OnInit {
    * - a function called xxxJSON which outputs the values of a single step's form as a JSON dictionary (i.e., questionnairesJSON())
    * */
 
+  async checkProgressStatus(stepperStatus) {
+
+    if(stepperStatus.selectedIndex == 7) {
+        this.questionnairesJSON()
+        this.dimensionsJSON()
+        this.generalInstructionsJSON()
+        this.questionnairesJSON()
+        this.searchEngineJSON()
+        this.taskSettingsJSON()
+        this.workerChecksJSON()
+    }
+
+  }
+
   /* STEP #1 - Questionnaires */
 
   questionnaires(): FormArray {
@@ -758,6 +764,8 @@ export class GeneratorComponent implements OnInit {
   /* JSON Output */
 
   questionnairesJSON() {
+    let serializedQuestionnaires = Object.keys(localStorage).filter((key) => key.startsWith('questionnaire-'))
+    if(serializedQuestionnaires.length > 0) serializedQuestionnaires.forEach(questionnaireKey => this.localStorageService.removeItem(questionnaireKey))
     let questionnairesJSON = JSON.parse(JSON.stringify(this.questionnairesForm.get('questionnaires').value));
     questionnairesJSON.forEach((questionnaire, questionnaireIndex) => {
       switch (questionnaire.type) {
@@ -807,27 +815,54 @@ export class GeneratorComponent implements OnInit {
     description = dimension ? dimension.description ? dimension.description : '' : '';
     gold = dimension ? dimension.gold ? dimension.gold : false : false
     setJustification = dimension ? dimension.justification ? dimension.justification : false : false;
-    justification = dimension ? dimension.justification ? this._formBuilder.group({
-      text: [dimension.justification.text],
-      min_words: [dimension.justification.min_words]
-    }) : false : false
+    justification = this._formBuilder.group({text: '', min_words:''})
+    if (dimension) {
+      if (dimension.justification) {
+        justification = this._formBuilder.group({
+          text: [dimension.justification.text],
+          min_words: [dimension.justification.min_words]
+        })
+      }
+    }
     url = dimension ? dimension.url ? dimension.url : false : false
     setScale = dimension ? dimension.scale ? dimension.scale : false : false
-    scale = dimension ? dimension.scale ? this._formBuilder.group({
-      type: [dimension.scale.type],
-      min: [dimension.scale['min'] ? dimension.scale['min'] : dimension.scale['min'] == 0 ? '0' : ''],
-      max: [dimension.scale['max'] ? dimension.scale['max'] : dimension.scale['max'] == 0 ? '0' : ''],
-      step: [dimension.scale['step'] ? dimension.scale['step'] : dimension.scale['step'] == 0 ? '0' : ''],
+    scale = this._formBuilder.group({
+      type: '',
+      min: '',
+      max: '',
+      step: '',
       mapping: this._formBuilder.array([]),
-      lower_bound: [dimension.scale['lower_bound'] ? dimension.scale['lower_bound'] : ''],
-    }) : false : false
+      lower_bound: '',
+    })
+    if(dimension){
+      if(dimension.scale) {
+        scale = this._formBuilder.group({
+          type: [dimension.scale.type],
+          min: [dimension.scale['min'] ? dimension.scale['min'] : dimension.scale['min'] == 0 ? 0 : ''],
+          max: [dimension.scale['max'] ? dimension.scale['max'] : dimension.scale['max'] == 0 ? 0 : ''],
+          step: [dimension.scale['step'] ? dimension.scale['step'] : dimension.scale['step'] == 0 ? 0 : ''],
+          mapping: this._formBuilder.array([]),
+          lower_bound: [dimension.scale['lower_bound'] ? dimension.scale['lower_bound'] : '']
+        })
+      }
+    }
     setStyle = dimension ? dimension.style ? dimension.style : false : false
-    style = dimension ? dimension.style ? this._formBuilder.group({
-      styleType: [dimension.style.type],
-      position: [dimension.style.position],
-      orientation: [dimension.style.orientation],
-      separator: [dimension.style.separator]
-    }) : false : false
+    style = this._formBuilder.group({
+      styleType: '',
+      position: '',
+      orientation: '',
+      separator: ''
+    })
+    if(dimension){
+      if(dimension.style) {
+        style = this._formBuilder.group({
+          styleType: [dimension.style.type],
+          position: [dimension.style.position],
+          orientation: [dimension.style.orientation],
+          separator: [dimension.style.separator]
+        })
+      }
+    }
     this.dimensions().push(this._formBuilder.group({
       name: name,
       name_pretty: name_pretty,
@@ -846,8 +881,6 @@ export class GeneratorComponent implements OnInit {
         if (dimension.scale['mapping']) for (let mapping of dimension.scale['mapping']) this.addDimensionMapping(dimensionIndex, mapping)
         if (this.dimensionMapping(dimensionIndex).length == 0) this.addDimensionMapping(dimensionIndex)
       }
-    }
-    if (dimension) {
       if (dimension.style)
         this.updateStyleType(dimensionIndex)
     }
@@ -913,6 +946,7 @@ export class GeneratorComponent implements OnInit {
     }
 
     if (dim.get('setScale').value == true) {
+      dim.get('setStyle').enable()
       switch (dim.get('scale').get('type').value) {
         case "categorical":
           dim.get('style').get('styleType').enable()
@@ -926,7 +960,7 @@ export class GeneratorComponent implements OnInit {
           dim.get('style').get('styleType').setValue("list")
           dim.get('style').get('styleType').disable()
           dim.get('style').get('position').enable()
-          dim.get('style').get('orientation').setValue("vertical")
+          dim.get('style').get('orientation').setValue('')
           dim.get('style').get('orientation').disable()
           this.updateStyleType(dimensionIndex)
           break;
@@ -934,7 +968,7 @@ export class GeneratorComponent implements OnInit {
           dim.get('style').get('styleType').setValue("list")
           dim.get('style').get('styleType').disable()
           dim.get('style').get('position').enable()
-          dim.get('style').get('orientation').setValue("vertical")
+          dim.get('style').get('orientation').setValue('')
           dim.get('style').get('orientation').disable()
           this.updateStyleType(dimensionIndex)
           break;
@@ -943,8 +977,6 @@ export class GeneratorComponent implements OnInit {
   }
 
   resetStyle(dimensionIndex) {
-    let dim = this.dimensions().at(dimensionIndex);
-    dim.get('style').get('styleType').setValue('');
     this.updateStyleType(dimensionIndex);
   }
 
@@ -981,7 +1013,6 @@ export class GeneratorComponent implements OnInit {
         dim.get("style").get('separator').setValue("")
         break;
       default:
-        dim.get("style").get('position').disable()
         dim.get('style').get('position').setValue('')
         dim.get("style").get('orientation').disable()
         dim.get('style').get('orientation').setValue('')
@@ -1017,6 +1048,9 @@ export class GeneratorComponent implements OnInit {
   /* JSON Output */
 
   dimensionsJSON() {
+
+    let serializedDimensions = Object.keys(localStorage).filter((key) => key.startsWith('dimension-'))
+    if(serializedDimensions.length > 0) serializedDimensions.forEach(key => this.localStorageService.removeItem(key))
 
     let dimensionsJSON = JSON.parse(JSON.stringify(this.dimensionsForm.get('dimensions').value));
 
@@ -1103,6 +1137,8 @@ export class GeneratorComponent implements OnInit {
   /* JSON Output */
 
   generalInstructionsJSON() {
+    let serializedInstructions = Object.keys(localStorage).filter((key) => key.startsWith('general-instruction-'))
+    if(serializedInstructions.length > 0) serializedInstructions.forEach(key => this.localStorageService.removeItem(key))
     let generalInstructionsJSON = JSON.parse(JSON.stringify(this.generalInstructionsForm.get('generalInstructions').value));
     generalInstructionsJSON.forEach((generalInstruction, generalInstructionIndex) => {
       if (generalInstruction.caption == '') generalInstruction.caption = false
@@ -1131,6 +1167,8 @@ export class GeneratorComponent implements OnInit {
   /* JSON Output */
 
   evaluationInstructionsJSON() {
+    let serializedInstructions = Object.keys(localStorage).filter((key) => key.startsWith('evaluation-instruction-'))
+    if(serializedInstructions.length > 0) serializedInstructions.forEach(key => this.localStorageService.removeItem(key))
     let evaluationInstructionsJSON = JSON.parse(JSON.stringify(this.evaluationInstructionsForm.get('evaluationInstructions').value));
     evaluationInstructionsJSON.forEach((evaluationInstruction, instructionIndex) => {
       if (evaluationInstruction.caption == '') evaluationInstruction.caption = false
@@ -1433,6 +1471,8 @@ export class GeneratorComponent implements OnInit {
 
     this.localStorageService.setItem(`task-settings`, JSON.stringify(taskSettingsJSON))
     this.taskSettingsSerialized = JSON.stringify(taskSettingsJSON)
+    if(taskSettingsJSON["hits"]) taskSettingsJSON["hits"] = [taskSettingsJSON["hits"][0], `... ${this.hitsParsed.length-1} additional hits ...`]
+    this.taskSettingsSerializedWithoutHits = JSON.stringify(taskSettingsJSON)
   }
 
   /* STEP #7 - Worker Checks */
@@ -1441,16 +1481,16 @@ export class GeneratorComponent implements OnInit {
     if (event.value) {
       this.blacklistedWorkerId.add(event.value);
       event.chipInput!.clear();
+      this.workerChecksJSON()
     }
-    this.workerChecksJSON()
   }
 
   addWhitelistedId(event: MatChipInputEvent) {
     if (event.value) {
       this.whitelistedWorkerId.add(event.value);
       event.chipInput!.clear();
+      this.workerChecksJSON()
     }
-    this.workerChecksJSON()
   }
 
   removeBlacklistedId(workerId: string) {
