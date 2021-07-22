@@ -293,7 +293,7 @@ export class SkeletonComponent implements OnInit {
 
     /* |--------- CONTROL FLOW & UI ELEMENTS - INITIALIZATION ---------| */
 
-    this.tokenInput = new FormControl('KXKUHEQIEMR', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
+    this.tokenInput = new FormControl('ABCDEFGHILM', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
     this.tokenForm = formBuilder.group({
       "tokenInput": this.tokenInput
     });
@@ -768,13 +768,13 @@ export class SkeletonComponent implements OnInit {
   /* |--------- DIMENSIONS ELEMENTS (see: dimensions.json) ---------| */
 
   /* This function is used to sort each dimension that a worker have to assess according the position specified */
-  public filterDimensions(type: string, position: string) {
+  public filterDimensions(kind: string, position: string) {
     let filteredDimensions = []
     for (let dimension of this.dimensions) {
       if (dimension.style) {
-        if (dimension.style.type == type && dimension.style.position == position) filteredDimensions.push(dimension)
+        if (dimension.style.type == kind && dimension.style.position == position) filteredDimensions.push(dimension)
       } else {
-        if (type == "list" && position == "bottom") filteredDimensions.push(dimension)
+        if (kind == "list" && position == "bottom") filteredDimensions.push(dimension)
       }
     }
     return filteredDimensions

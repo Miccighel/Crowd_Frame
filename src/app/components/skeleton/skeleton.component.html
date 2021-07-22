@@ -516,66 +516,115 @@
                   <div class="dimension-content">
 
                     <!-- Vertical style markup -->
-                    <ng-container *ngIf="dimension.style.orientation=='vertical'">
+                    <ng-container *ngIf="this.dimension.style">
 
-                      <!-- Categorical scale markup -->
-                      <ng-container *ngIf="dimension.scale.type=='categorical'">
-                        <mat-radio-group aria-labelledby="radio-button-label" class="radio-button-group" formControlName="{{(dimension.name).concat('_value')}}">
-                          <mat-radio-button *ngFor="let mapping of dimension.scale.mapping let k=index"
+                        <ng-container *ngIf="dimension.style.orientation=='vertical'">
+
+                        <!-- Categorical scale markup -->
+                        <ng-container *ngIf="dimension.scale.type=='categorical'">
+                          <mat-radio-group aria-labelledby="radio-button-label" class="radio-button-group" formControlName="{{(dimension.name).concat('_value')}}">
+                            <mat-radio-button *ngFor="let mapping of dimension.scale.mapping let k=index"
+                                              class="radio-button" value="{{mapping.value}}"
+                                              (change)="storeDimensionValue($event, i, dimension.index)"
+                                              [disabled]="this.countdownsExpired[i]">
+                              <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0">
+                                ({{mapping.description}})</span>
+                            </mat-radio-button>
+                          </mat-radio-group>
+                        </ng-container>
+
+                        <!-- Interval scale markup -->
+                        <ng-container *ngIf="dimension.scale.type=='interval'">
+                          <label>Selected value: {{documentsForm[i].controls[(dimension.name).concat('_value')].value}}</label>
+                          <mat-slider min="{{dimension.scale.min}}" max="{{dimension.scale.max}}"
+                                      step="{{dimension.scale.step}}" thumbLabel tickInterval="{{dimension.scale.step}}"
+                                      formControlName="{{(dimension.name).concat('_value')}}"
+                                      (change)="storeDimensionValue($event, i,dimension.index)"
+                                      [disabled]="this.countdownsExpired[i]"></mat-slider>
+                        </ng-container>
+
+                        <!-- Magnitude scale markup -->
+                        <ng-container *ngIf="dimension.scale.type=='magnitude_estimation'">
+                          <mat-form-field appearance="fill">
+                            <mat-label>Value</mat-label>
+                            <input *ngIf="dimension.scale.lower_bound" matInput type="number" placeholder="" formControlName="{{(dimension.name).concat('_value')}}" min="{{dimension.scale.min}}"
+                                   (change)="storeDimensionValue($event, i, dimension.index)"
+                                   [disabled]="this.countdownsExpired[i]" class="magnitude_estimation">
+                            <input *ngIf="!dimension.scale.lower_bound" matInput type="number" placeholder="" formControlName="{{(dimension.name).concat('_value')}}" min="{{dimension.scale.min+1}}"
+                                   (change)="storeDimensionValue($event, i, dimension.index)" class="magnitude_estimation"
+                                   [disabled]="this.countdownsExpired[i]">
+                            <mat-error *ngIf="checkFormControl(documentsForm[i], (dimension.name).concat('_value'), 'required')">
+                              This field is required
+                            </mat-error>
+                            <mat-error *ngIf="checkFormControl(documentsForm[i], (dimension.name).concat('_value'), 'min')">
+                              <span *ngIf="dimension.scale.lower_bound">Min value allowed: {{dimension.scale.min}}</span>
+                              <span *ngIf="!dimension.scale.lower_bound">Min value allowed: {{dimension.scale.min + 1}}</span>
+                            </mat-error>
+
+                          </mat-form-field>
+                        </ng-container>
+                        </ng-container>
+
+                      <!-- Horizontal style markup -->
+                      <ng-container *ngIf="dimension.style.orientation=='horizontal'">
+
+                        <!-- Categorical scale markup -->
+                        <mat-radio-group *ngIf="dimension.scale.type=='categorical'" aria-labelledby="radio-button-label" formControlName="{{(dimension.name).concat('_value')}}">
+                          <mat-radio-button *ngFor="let mapping of dimension.scale.mappings let k=index"
                                             class="radio-button" value="{{mapping.value}}"
-                                            (change)="storeDimensionValue($event, i, dimension.index)"
+                                            (change)="storeDimensionValue($event, i,dimension.index)"
                                             [disabled]="this.countdownsExpired[i]">
-                            <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0">
-                              ({{mapping.description}})</span>
+                            <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0">({{mapping.description}})</span>
                           </mat-radio-button>
                         </mat-radio-group>
                       </ng-container>
 
-                      <!-- Interval scale markup -->
-                      <ng-container *ngIf="dimension.scale.type=='interval'">
-                        <label>Selected value: {{documentsForm[i].controls[(dimension.name).concat('_value')].value}}</label>
-                        <mat-slider min="{{dimension.scale.min}}" max="{{dimension.scale.max}}"
-                                    step="{{dimension.scale.step}}" thumbLabel tickInterval="{{dimension.scale.step}}"
-                                    formControlName="{{(dimension.name).concat('_value')}}"
-                                    (change)="storeDimensionValue($event, i,dimension.index)"
-                                    [disabled]="this.countdownsExpired[i]"></mat-slider>
-                      </ng-container>
-
-                      <!-- Magnitude scale markup -->
-                      <ng-container *ngIf="dimension.scale.type=='magnitude_estimation'">
-                        <mat-form-field appearance="fill">
-                          <mat-label>Value</mat-label>
-                          <input *ngIf="dimension.scale.lower_bound" matInput type="number" placeholder="" formControlName="{{(dimension.name).concat('_value')}}" min="{{dimension.scale.min}}"
-                                 (change)="storeDimensionValue($event, i, dimension.index)"
-                                 [disabled]="this.countdownsExpired[i]" class="magnitude_estimation">
-                          <input *ngIf="!dimension.scale.lower_bound" matInput type="number" placeholder="" formControlName="{{(dimension.name).concat('_value')}}" min="{{dimension.scale.min+1}}"
-                                 (change)="storeDimensionValue($event, i, dimension.index)" class="magnitude_estimation"
-                                 [disabled]="this.countdownsExpired[i]">
-                          <mat-error *ngIf="checkFormControl(documentsForm[i], (dimension.name).concat('_value'), 'required')">
-                            This field is required
-                          </mat-error>
-                          <mat-error *ngIf="checkFormControl(documentsForm[i], (dimension.name).concat('_value'), 'min')">
-                            <span *ngIf="dimension.scale.lower_bound">Min value allowed: {{dimension.scale.min}}</span>
-                            <span *ngIf="!dimension.scale.lower_bound">Min value allowed: {{dimension.scale.min + 1}}</span>
-                          </mat-error>
-
-                        </mat-form-field>
-                      </ng-container>
-
                     </ng-container>
 
-                    <!-- Horizontal style markup -->
-                    <ng-container *ngIf="dimension.style.orientation=='horizontal'">
+                    <ng-container *ngIf="!this.dimension.style">
 
-                      <!-- Categorical scale markup -->
-                      <mat-radio-group *ngIf="dimension.scale.type=='categorical'" aria-labelledby="radio-button-label" formControlName="{{(dimension.name).concat('_value')}}">
-                        <mat-radio-button *ngFor="let mapping of dimension.scale.mappings let k=index"
-                                          class="radio-button" value="{{mapping.value}}"
-                                          (change)="storeDimensionValue($event, i,dimension.index)"
-                                          [disabled]="this.countdownsExpired[i]">
-                          <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0">({{mapping.description}})</span>
-                        </mat-radio-button>
-                      </mat-radio-group>
+                      <ng-container *ngIf="dimension.scale.type=='categorical'">
+                          <mat-radio-group aria-labelledby="radio-button-label" class="radio-button-group" formControlName="{{(dimension.name).concat('_value')}}">
+                            <mat-radio-button *ngFor="let mapping of dimension.scale.mapping let k=index"
+                                              class="radio-button" value="{{mapping.value}}"
+                                              (change)="storeDimensionValue($event, i, dimension.index)"
+                                              [disabled]="this.countdownsExpired[i]">
+                              <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0">
+                                ({{mapping.description}})</span>
+                            </mat-radio-button>
+                          </mat-radio-group>
+                        </ng-container>
+
+                        <!-- Interval scale markup -->
+                        <ng-container *ngIf="dimension.scale.type=='interval'">
+                          <label>Selected value: {{documentsForm[i].controls[(dimension.name).concat('_value')].value}}</label>
+                          <mat-slider min="{{dimension.scale.min}}" max="{{dimension.scale.max}}"
+                                      step="{{dimension.scale.step}}" thumbLabel tickInterval="{{dimension.scale.step}}"
+                                      formControlName="{{(dimension.name).concat('_value')}}"
+                                      (change)="storeDimensionValue($event, i,dimension.index)"
+                                      [disabled]="this.countdownsExpired[i]"></mat-slider>
+                        </ng-container>
+
+                        <!-- Magnitude scale markup -->
+                        <ng-container *ngIf="dimension.scale.type=='magnitude_estimation'">
+                          <mat-form-field appearance="fill">
+                            <mat-label>Value</mat-label>
+                            <input *ngIf="dimension.scale.lower_bound" matInput type="number" placeholder="" formControlName="{{(dimension.name).concat('_value')}}" min="{{dimension.scale.min}}"
+                                   (change)="storeDimensionValue($event, i, dimension.index)"
+                                   [disabled]="this.countdownsExpired[i]" class="magnitude_estimation">
+                            <input *ngIf="!dimension.scale.lower_bound" matInput type="number" placeholder="" formControlName="{{(dimension.name).concat('_value')}}" min="{{dimension.scale.min+1}}"
+                                   (change)="storeDimensionValue($event, i, dimension.index)" class="magnitude_estimation"
+                                   [disabled]="this.countdownsExpired[i]">
+                            <mat-error *ngIf="checkFormControl(documentsForm[i], (dimension.name).concat('_value'), 'required')">
+                              This field is required
+                            </mat-error>
+                            <mat-error *ngIf="checkFormControl(documentsForm[i], (dimension.name).concat('_value'), 'min')">
+                              <span *ngIf="dimension.scale.lower_bound">Min value allowed: {{dimension.scale.min}}</span>
+                              <span *ngIf="!dimension.scale.lower_bound">Min value allowed: {{dimension.scale.min + 1}}</span>
+                            </mat-error>
+
+                          </mat-form-field>
+                        </ng-container>
 
                     </ng-container>
                   </div>
