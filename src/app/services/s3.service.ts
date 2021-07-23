@@ -235,7 +235,6 @@ export class S3Service {
   }
 
   public uploadTaskSettings(config, data) {
-    console.log(typeof data)
     return this.upload(config, `${config.taskName}/${config.batchName}/Task/task.json`, data)
   }
 

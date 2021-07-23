@@ -293,7 +293,7 @@ export class SkeletonComponent implements OnInit {
 
     /* |--------- CONTROL FLOW & UI ELEMENTS - INITIALIZATION ---------| */
 
-    this.tokenInput = new FormControl('ABCDEFGHILM', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
+    this.tokenInput = new FormControl('', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
     this.tokenForm = formBuilder.group({
       "tokenInput": this.tokenInput
     });

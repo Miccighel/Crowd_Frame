@@ -1116,7 +1116,7 @@
 
         <mat-progress-bar *ngIf="this.uploadStarted && !this.uploadCompleted" mode="indeterminate"></mat-progress-bar>
 
-        <ng-container *ngIf="this.uploadCompleted">
+        <ng-container *ngIf="!this.uploadStarted && this.uploadCompleted">
           <mat-divider [inset]="true"></mat-divider>
           <h4 class="mb-0">Upload result:</h4>
           <mat-list>

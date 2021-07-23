@@ -483,7 +483,6 @@ export class GeneratorComponent {
         this.taskSettingsForm = this._formBuilder.group({
             allowed_tries: this.taskSettingsFetched ? this.taskSettingsFetched.allowed_tries ? this.taskSettingsFetched.allowed_tries : '' : '',
             time_check_amount: this.taskSettingsFetched ? this.taskSettingsFetched.time_check_amount ? this.taskSettingsFetched.time_check_amount : '' : '',
-            hits: [],
             attributes: this._formBuilder.array([]),
             setAnnotator: !!this.taskSettingsFetched.annotator,
             annotator: this._formBuilder.group({
@@ -1259,13 +1258,6 @@ export class GeneratorComponent {
             this.hitsSize = (new TextEncoder().encode(this.hitsParsed.toString())).length
             this.hitsFileName = "hits.json"
         }
-        this.taskSettingsForm.get('hits').setValue('')
-        if (this.hitsDetected > 0) {
-            this.taskSettingsForm.get('hits').setValue(this.hitsParsed)
-        } else {
-            this.taskSettingsForm.get('hits').setValidators([Validators.required])
-        }
-        this.taskSettingsForm.get('hits').updateValueAndValidity();
     }
 
     hitAttributes() {
@@ -1492,8 +1484,6 @@ export class GeneratorComponent {
 
         this.localStorageService.setItem(`task-settings`, JSON.stringify(taskSettingsJSON))
         this.taskSettingsSerialized = JSON.stringify(taskSettingsJSON)
-        if (taskSettingsJSON["hits"]) taskSettingsJSON["hits"] = [taskSettingsJSON["hits"][0], `... ${this.hitsParsed.length - 1} additional hits ...`]
-        this.taskSettingsSerializedWithoutHits = JSON.stringify(taskSettingsJSON)
     }
 
     /* STEP #7 - Worker Checks */
@@ -1594,13 +1584,23 @@ export class GeneratorComponent {
                 this.workerChecksPath = this.S3Service.getWorkerChecksConfigPath(this.configService.environment)
             } else this.workerChecksPath = "Failure"
         })
-        this.uploadStarted = false
         this.uploadCompleted = true
+        if(this.uploadCompleted) {
+            this.localStorageService.clear()
+            this.questionnairesJSON()
+            this.dimensionsJSON()
+            this.generalInstructionsJSON()
+            this.evaluationInstructionsJSON()
+            this.searchEngineJSON()
+            this.taskSettingsJSON()
+            this.workerChecksJSON()
+            this.uploadStarted = false
+        }
     }
 
     public resetConfiguration() {
-        this.localStorageService.clear()
         this.ngxService.startLoader('generator-inner')
+        this.localStorageService.clear()
         this.uploadStarted = false
         this.uploadCompleted = false
         this.questionnairesPath = null
