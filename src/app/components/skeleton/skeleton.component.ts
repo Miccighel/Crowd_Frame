@@ -2231,13 +2231,10 @@ export class SkeletonComponent implements OnInit {
       * This function modifies the countdown value based on the position of the document and its truth value
       */
    public calculateTimeOfStatement(position: number, trueValue?: string){
-    //console.log("Tempo documento: "+ documentTime+ " posizione statement: "+ position + " Valore di verità: "+ trueValue);
-
 
     let trueValueDocument = this.findTrueValueDocument(trueValue);
     let documentTime = this.settings.documentTimes[trueValueDocument];
-   
-
+  
     let timeOfStatement = 0;
     let weightTrueValue = 0;
     let weightposition = 0;
@@ -2281,7 +2278,6 @@ export class SkeletonComponent implements OnInit {
         break;
     }
 
-    console.log( documentTime + " " + weightTrueValue+ " " +weightposition);
     timeOfStatement = documentTime*weightTrueValue*weightposition;
 
     return timeOfStatement;
