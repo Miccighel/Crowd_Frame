@@ -2280,6 +2280,8 @@ export class SkeletonComponent implements OnInit {
         weightposition = 1;
         break;
     }
+
+    console.log( documentTime + " " + weightTrueValue+ " " +weightposition);
     timeOfStatement = documentTime*weightTrueValue*weightposition;
 
     return timeOfStatement;
