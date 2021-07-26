@@ -164,14 +164,15 @@ export class GeneratorComponent {
     taskSettingsForm: FormGroup;
     taskSettingsFetched: SettingsTask
     taskSettingsSerialized: string
-    taskSettingsSerializedWithoutHits: string
-    batchesTree: Array<Object>
+    batchesTree: Array<JSON>
     batchesTreeInitialization: boolean
+    batchesTreeSerialized: Array<JSON>
     annotatorOptionColors: Array<string>
     /* Variables to handle hits file upload */
     hitsFile: ReadFile
     hitsFileName: string
     hitsParsed: Array<Hit>
+    hitsParsedString: string
     hitsAttributes: Array<string>
     hitsSize: number
     hitsDetected: number
@@ -491,8 +492,7 @@ export class GeneratorComponent {
             }),
             setCountdownTime: !!this.taskSettingsFetched.countdown_time,
             countdown_time: this.taskSettingsFetched.countdown_time ? this.taskSettingsFetched.countdown_time : '',
-            blacklist_batches: this._formBuilder.array([]),
-            whitelist_batches: this._formBuilder.array([]),
+            batches: this._formBuilder.array([]),
             messages: this._formBuilder.array([])
         });
         if (this.taskSettingsFetched.messages) if (this.taskSettingsFetched.messages.length > 0) this.taskSettingsFetched.messages.forEach((message, messageIndex) => this.addMessage(message))
@@ -504,6 +504,9 @@ export class GeneratorComponent {
 
         let hitsPromise = this.loadHits()
         let batchesPromise = this.loadBatchesTree()
+        batchesPromise.then((result) => {
+            this.changeDetector.detectChanges()
+        })
 
         /* STEP #7 - Worker Checks Settings */
 
@@ -599,48 +602,55 @@ export class GeneratorComponent {
 
     async loadBatchesTree() {
 
-        this.batchesTree = Array()
-        let counter = 0
-        let blackListedBatches = 0
-        let whiteListedBatches = 0
-        let tasks = await this.S3Service.listFolders(this.configService.environment)
-        for (let task of tasks) {
-            let taskNode = {
-                "task": task['Prefix'],
-                "batches": []
+        this.batchesTreeSerialized = JSON.parse(this.localStorageService.getItem('batches-tree'))
+        this.batchesTree = []
+        if (this.batchesTreeSerialized) {
+            this.batchesTree = this.batchesTreeSerialized
+        } else {
+            let counter = 0
+            let blackListedBatches = 0
+            let whiteListedBatches = 0
+            let tasks = await this.S3Service.listFolders(this.configService.environment)
+            for (let task of tasks) {
+                let taskNode = {
+                    "task": task['Prefix'],
+                    "batches": []
+                }
+                let batches = await this.S3Service.listFolders(this.configService.environment, task['Prefix'])
+                for (let batch of batches) {
+                    let batchNode = {
+                        "batch": batch['Prefix'],
+                        "blacklist": false,
+                        "whitelist": false,
+                        "counter": counter
+                    }
+                    if (this.taskSettingsFetched.blacklist_batches) {
+                        this.taskSettingsFetched.blacklist_batches.forEach((batchName, batchIndex) => {
+                            blackListedBatches = blackListedBatches + 1
+                            batchNode['blacklist'] = batchName == batch["Prefix"];
+                        })
+                    }
+                    if (this.taskSettingsFetched.whitelist_batches) {
+                        this.taskSettingsFetched.whitelist_batches.forEach((batchName, batchIndex) => {
+                            whiteListedBatches = whiteListedBatches + 1
+                            batchNode['whitelist'] = batchName == batch["Prefix"];
+                        })
+                    }
+                    taskNode["batches"].push(batchNode)
+                    counter = counter + 1
+                }
+                this.batchesTree.push(JSON.parse(JSON.stringify(taskNode)))
             }
-            let batches = await this.S3Service.listFolders(this.configService.environment, task['Prefix'])
-            for (let batch of batches) {
-                let batchNode = {
-                    "batch": batch['Prefix'],
-                    "blacklist": false,
-                    "whitelist": false,
-                    "counter": counter
-                }
-                if (this.taskSettingsFetched.blacklist_batches) {
-                    this.taskSettingsFetched.blacklist_batches.forEach((batchName, batchIndex) => {
-                        blackListedBatches = blackListedBatches + 1
-                        batchNode['blacklist'] = batchName == batch["Prefix"];
-                    })
-                }
-                if (this.taskSettingsFetched.whitelist_batches) {
-                    this.taskSettingsFetched.whitelist_batches.forEach((batchName, batchIndex) => {
-                        whiteListedBatches = whiteListedBatches + 1
-                        batchNode['whitelist'] = batchName == batch["Prefix"];
-                    })
-                }
-                taskNode["batches"].push(batchNode)
-                counter = counter + 1
-            }
-            this.batchesTree.push(taskNode)
+            this.localStorageService.setItem(`batches-tree`, JSON.stringify(this.batchesTree))
         }
         this.batchesTreeInitialization = true
-
-        if (blackListedBatches > 0) this.addBlacklistBatches()
-        if (whiteListedBatches > 0) this.addWhitelistBatches()
-
-        this.changeDetector.detectChanges()
-
+        if (this.batchesTreeInitialization) {
+            for (let taskNode of this.batchesTree) {
+                for (let batchNode of taskNode["batches"]) {
+                    this.addBatch(batchNode)
+                }
+            }
+        }
     }
 
     /* The following functions are sorted on a per-step basis. For each step it may be present:
@@ -1220,7 +1230,8 @@ export class GeneratorComponent {
 
     updateHitsFile(hits = null) {
         this.hitsParsed = hits ? hits : JSON.parse(this.hitsFile.content) as Array<Hit>;
-        if(!hits) {
+        this.hitsParsedString = JSON.stringify(this.hitsParsed)
+        if (!hits) {
             this.localStorageService.setItem(`hits`, JSON.stringify(this.hitsParsed))
         }
         if (this.hitsParsed.length > 0) {
@@ -1232,17 +1243,17 @@ export class GeneratorComponent {
         if (this.hitsDetected > 0) {
             let document = JSON.parse(JSON.stringify(this.hitsParsed[0]['documents'][0]))
             for (let test in document) {
-                if(!(test in this.hitsAttributes)) {
+                if (!(test in this.hitsAttributes)) {
                     this.hitsAttributes.push(test)
                 }
             }
         }
-        this.hitAttributes().clear({emitEvent:true})
+        this.hitAttributes().clear({emitEvent: true})
         for (let attribute in this.hitsAttributes) {
             if (attribute in this.taskSettingsFetched.attributes) {
                 let attributeIndex = null
-                for(let index in this.taskSettingsFetched.attributes) {
-                    if(this.taskSettingsFetched.attributes[index]["name"] == attribute) {
+                for (let index in this.taskSettingsFetched.attributes) {
+                    if (this.taskSettingsFetched.attributes[index]["name"] == attribute) {
                         attributeIndex = index
                     }
                 }
@@ -1308,48 +1319,8 @@ export class GeneratorComponent {
         this.resetHitAttributes()
     }
 
-    blacklistBatches(): FormArray {
-        return this.taskSettingsForm.get('blacklist_batches') as FormArray;
-    }
-
-    addBlacklistBatches() {
-        for (let taskNode of this.batchesTree) {
-            for (let batchNode of taskNode["batches"]) {
-                if (batchNode['blacklist']) this.blacklistBatches().push(new FormControl(true)); else this.blacklistBatches().push(new FormControl(''))
-            }
-        }
-    }
-
-    removeBlacklistBatch(blacklistBatchIndex = null) {
-        if (blacklistBatchIndex) {
-            this.blacklistBatches().removeAt(blacklistBatchIndex);
-        } else {
-            while (this.blacklistBatches().length !== 0) {
-                this.blacklistBatches().removeAt(0)
-            }
-        }
-    }
-
-    whitelistBatches(): FormArray {
-        return this.taskSettingsForm.get('whitelist_batches') as FormArray;
-    }
-
-    addWhitelistBatches() {
-        for (let taskNode of this.batchesTree) {
-            for (let batchNode of taskNode["batches"]) {
-                if (batchNode['whitelist']) this.whitelistBatches().push(new FormControl(true)); else this.whitelistBatches().push(new FormControl(''))
-            }
-        }
-    }
-
-    removeWhitelistBatch(whitelistBatchIndex = null) {
-        if (whitelistBatchIndex) {
-            this.whitelistBatches().removeAt(whitelistBatchIndex);
-        } else {
-            while (this.whitelistBatches().length !== 0) {
-                this.whitelistBatches().removeAt(0)
-            }
-        }
+    batches(): FormArray {
+        return this.taskSettingsForm.get('batches') as FormArray;
     }
 
     resetCountdown() {
@@ -1401,6 +1372,61 @@ export class GeneratorComponent {
         }))
     }
 
+    addBatch(batchNode) {
+        let control = this._formBuilder.group({
+            name: batchNode ? batchNode['batch'] : '',
+            counter: batchNode ? batchNode['counter'] : '',
+            blacklist: batchNode ? batchNode['blacklist'] ? batchNode['blacklist'] : '' : '',
+            whitelist: batchNode ? batchNode['whitelist'] ? batchNode['whitelist'] : '' : '',
+        })
+        if (batchNode['blacklist']) {
+            control.get('whitelist').setValue(false)
+            control.get('whitelist').disable()
+        }
+        if (batchNode['whitelist']) {
+            control.get('blacklist').setValue(false)
+            control.get('blacklist').disable()
+        }
+        this.batches().push(control, {emitEvent: false})
+    }
+
+    resetBlacklist(batchIndex) {
+        let batch = this.batches().at(batchIndex)
+        if (batch.get('blacklist').value == true) {
+            batch.get('whitelist').setValue(false)
+            batch.get('whitelist').disable()
+        } else {
+            batch.get('whitelist').enable()
+        }
+        this.batchesTree.forEach((taskNode, taskIndex) => {
+            taskNode["batches"].forEach((batchNode, batchIndex) => {
+                if(batch.get('name').value == batchNode['batch']){
+                    this.batchesTree[taskIndex]["batches"][batchIndex]['blacklist'] = batch.get('blacklist').value
+                    this.localStorageService.setItem("batches-tree", JSON.stringify(this.batchesTree))
+                }
+            });
+        });
+    }
+
+    resetWhitelist(batchIndex) {
+        let batch = this.batches().at(batchIndex)
+        if (batch.get('whitelist').value == true) {
+            batch.get('blacklist').setValue(false)
+            batch.get('blacklist').disable()
+        } else {
+            batch.get('blacklist').enable()
+        }
+        this.batchesTree.forEach((taskNode, taskIndex) => {
+            taskNode["batches"].forEach((batchNode, batchIndex) => {
+                if(batch.get('name').value == batchNode['batch']){
+                    this.batchesTree[taskIndex]["batches"][batchIndex]['whitelist'] = batch.get('whitelist').value
+                    this.localStorageService.setItem("batches-tree", JSON.stringify(this.batchesTree))
+                }
+            });
+        });
+    }
+
+
     removeAnnotatorOptionValue(valueIndex) {
         this.annotatorOptionValues().removeAt(valueIndex);
     }
@@ -1449,30 +1475,21 @@ export class GeneratorComponent {
                 taskSettingsJSON['attributes'][attributeIndex] = attribute
             }
         }
-
-        let blacklistBatches = [];
-        for (let blacklistCounter in taskSettingsJSON.blacklist_batches) {
-            for (let taskNode of this.batchesTree) {
-                for (let batchNode of taskNode['batches']) {
-                    if (blacklistCounter == batchNode['counter'] && batchNode['blacklist']) {
-                        blacklistBatches.push(batchNode['batch'])
-                    }
+        if(this.batchesTree) {
+            let blacklist_batches = []
+            let whitelist_batches = []
+            for (let batch of taskSettingsJSON.batches) {
+                if (batch.blacklist) {
+                    blacklist_batches.push(batch.name)
                 }
-            }
-        }
-        taskSettingsJSON.blacklist_batches = blacklistBatches;
-
-        let whitelistBatches = [];
-        for (let whitelistCounter in taskSettingsJSON.whitelist_batches) {
-            for (let taskNode of this.batchesTree) {
-                for (let batchNode of taskNode['batches']) {
-                    if (whitelistCounter == batchNode['counter'] && batchNode['whitelist']) {
-                        whitelistBatches.push(batchNode['batch'])
-                    }
+                if (batch.whitelist) {
+                    whitelist_batches.push(batch.name)
                 }
+
             }
+            taskSettingsJSON["blacklist_batches"] = blacklist_batches
+            taskSettingsJSON["whitelist_batches"] = whitelist_batches
         }
-        taskSettingsJSON.whitelist_batches = whitelistBatches;
 
         if (taskSettingsJSON.messages.length == 0) {
             delete taskSettingsJSON.messages;
@@ -1483,6 +1500,7 @@ export class GeneratorComponent {
         }
 
         this.localStorageService.setItem(`task-settings`, JSON.stringify(taskSettingsJSON))
+        delete taskSettingsJSON["batches"]
         this.taskSettingsSerialized = JSON.stringify(taskSettingsJSON)
     }
 
@@ -1585,7 +1603,7 @@ export class GeneratorComponent {
             } else this.workerChecksPath = "Failure"
         })
         this.uploadCompleted = true
-        if(this.uploadCompleted) {
+        if (this.uploadCompleted) {
             this.localStorageService.clear()
             this.questionnairesJSON()
             this.dimensionsJSON()

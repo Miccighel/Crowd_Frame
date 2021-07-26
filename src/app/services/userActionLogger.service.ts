@@ -75,9 +75,9 @@ export class ActionLogger {
     let details = {
       ua: navigator.userAgent
     }
-    this.http.get('http://api.ipify.org/?format=json').subscribe(res => {
-      details['ip'] = res['ip']
-    })
+    //this.http.get('http://api.ipify.org/?format=json').subscribe(res => {
+    //  details['ip'] = res['ip']
+    //})
     this.log('context', details)
   }
 
