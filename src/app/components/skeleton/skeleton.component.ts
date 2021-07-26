@@ -685,7 +685,7 @@ export class SkeletonComponent implements OnInit {
         //let time = this.documents[index]['time'];
         let position = this.documents[index]['index'];
         let trueValue = this.documents[index]['id'];
-        this.documentsTime[index]= this.calculateTimeOfStatement(position, trueValue)
+        //this.documentsTime[index]= this.calculateTimeOfStatement(position, trueValue)
       }
 
 
@@ -2244,7 +2244,7 @@ export class SkeletonComponent implements OnInit {
 
     let trueValueDocument = this.findTrueValueDocument(trueValue);
     let documentTime = this.settings.documentTimes[trueValueDocument];
-  
+
     let timeOfStatement = 0;
     let weightTrueValue = 0;
     let weightposition = 0;
