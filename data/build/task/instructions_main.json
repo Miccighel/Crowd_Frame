@@ -1,0 +1,19 @@
+[{
+        "caption": "Task Instructions",
+        "steps": [
+            "<p>\n  In this task, you will be asked to select a value to indicate the <strong>truthfulness level</strong> of some\n  statements.\n</p>",
+            "<p>\n  We will show you <strong>8 statements</strong> made by popular people (for example, political figures) together\n  with the information of who made the statement and in which date. For each statement, we ask you to tell us its\n  \"truth level\", that is, <strong>how much the statement represents the reality</strong>; how reliable it is.\n  The truth level must be selected among 6 different labels. For example, if the statement totally represents\n  reality you should select \"True\", while if it is false you should select \"Lie\".\n</p>",
+            "<p>\n  Note that there are some checks throughout the task, and if you do not perform these correctly you will not be able\n  to terminate and get paid. The data from this task is being gathered for research purposes. No\n  personally-identifying information is recorded. Participation is entirely voluntary, and you are free to discontinue\n  at any point.\n</p>",
+            ""
+        ]
+    },
+    {
+        "caption": "Task Description",
+        "steps": [
+            "<p>\n  First, you will be asked to fill in four questionnaires that will help us collect more reliable data.\n</p>",
+            "<p>\n  You will then be asked to rate 8 statements, each of them expressed by a person in a given context. You will be\n  shown the 8 statements, one at a time. Each statement is not altered in any way and it is reported as in the original source.\n  For each statement, your task is <strong>to judge the truthfulness and\n  validity of the statement</strong> using the radio buttons. If you wish to change a previously given judgment, you\n  can use the back button to revisit it.\n</p>",
+            "<p>\n  For each judgment, you will also be asked to <strong>provide a URL and a short text to justify your selection</strong> by using our\n  search engine. You will have to choose one of the URLs provided as result to your search queries by such search\n  engine. Finally, you will have to <strong>fill a textarea with your justification</strong>.\n</p>",
+            "<p>\n  The statements are not presented in any particular order. You might see many good statements, many bad ones, or any\n  combination. Try not to anticipate, and simply rate each statement after reading it. Don't try to guess or randomly\n  click, as there are some cross-checks, as indicated above. Note that you’ll need to answer <strong>all questions and fill in every field</strong>,\n  otherwise you will not be able to proceed to the following steps.\n</p>"
+        ]
+    }
+]

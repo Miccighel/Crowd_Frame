@@ -682,10 +682,10 @@ export class SkeletonComponent implements OnInit {
 
       this.documentsTime = new Array<number>();
       for (let index = 0; index < this.documents.length; index++) {
-        let time = this.documents[index]['time'];
+        //let time = this.documents[index]['time'];
         let position = this.documents[index]['index'];
         let trueValue = this.documents[index]['id'];
-        this.documentsTime[index]= this.calculateTimeOfStatement(time,position, trueValue)
+        this.documentsTime[index]= this.calculateTimeOfStatement(position, trueValue)
       }
 
 
@@ -2240,20 +2240,34 @@ export class SkeletonComponent implements OnInit {
   /***
       * This function modifies the countdown value based on the position of the document and its truth value
       */
-   public calculateTimeOfStatement(documentTime : number, position?: number, trueValue?: string){
-    //console.log("Tempo documento: "+ documentTime+ " posizione statement: "+ position + " Valore di verità: "+ trueValue);
+   public calculateTimeOfStatement(position: number, trueValue?: string){
 
+    let trueValueDocument = this.findTrueValueDocument(trueValue);
+    let documentTime = this.settings.documentTimes[trueValueDocument];
+  
     let timeOfStatement = 0;
     let weightTrueValue = 0;
     let weightposition = 0;
 
-    switch (trueValue) {
-      case "True":
-        weightTrueValue = 0;
+    switch (trueValueDocument) {
+      case "true":
+        weightTrueValue = 0.75;
         break;
-      case "False":
-        weightTrueValue = 0;
-      break;
+      case "mostly-true":
+        weightTrueValue = 1;
+        break;
+      case "half-true":
+        weightTrueValue = 1.25;
+        break;
+      case "mostly-false":
+        weightTrueValue = 1;
+        break;
+      case "false":
+        weightTrueValue = 0.75;
+        break;
+      case "pants-on-fire":
+        weightTrueValue = 0.65;
+        break;
       default:
         weightTrueValue = 1;
       break;
@@ -2266,15 +2280,28 @@ export class SkeletonComponent implements OnInit {
       case 1:
         weightposition =  1.5;
       break;
-      case 3:
+      case 2:
         weightposition =  1.25;
       break;
       default:
         weightposition = 1;
         break;
     }
+
     timeOfStatement = documentTime*weightTrueValue*weightposition;
 
     return timeOfStatement;
+  }
+
+  private findTrueValueDocument(trueValue): string{
+    trueValue = trueValue.toLowerCase().split('_')
+    const values = ['true','mostly-true','half-true','mostly-false','false','pants-on-fire','low','high']
+    let responce = null;
+
+    values.forEach(element => {
+      if(element === trueValue[0])
+        responce = element;
+    });
+    return responce;
   }
 }
