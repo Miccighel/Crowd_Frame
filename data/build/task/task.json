@@ -4,18 +4,74 @@
     "allowed_tries": 10,
     "time_check_amount": 2,
     "annotator": false,
-    "countdown_time": 20,
+    "countdown_time": 1,
     "blacklist_batches": [],
     "whitelist_batches": [],
-    "documentTimes": {
-        "true": 51,
-        "mostly-true": 52,
-        "half-true": 53,
-        "mostly-false": 54,
-        "false": 55,
-        "pants-on-fire": 56,
-        "high": 10,
-        "low": 10
+    "documentsTimeAndWeight": {
+        "true": {
+            "time": 100,
+            "weight": 0.8
+        },
+        "mostly-true": {
+            "time": 90,
+            "weight": 0.9
+        },
+        "half-true": {
+            "time": 80,
+            "weight": 1
+        },
+        "mostly-false": {
+            "time": 80,
+            "weight": 1
+        },
+        "false": {
+            "time": 90,
+            "weight": 0.9
+        },
+        "pants-on-fire": {
+            "time": 100,
+            "weight": 0.8
+        },
+        "high": {
+            "time": 20,
+            "weight": 0.5
+        },
+        "low": {
+            "time": 20,
+            "weight": 0.5
+        }
+    },
+    "documentPositionWeights": {
+        "0": {
+            "weight": 1.5
+        },
+        "1": {
+            "weight": 1.25
+        },
+        "2": {
+            "weight": 1.2
+        },
+        "3": {
+            "weight": 1.15
+        },
+        "4": {
+            "weight": 1.1
+        },
+        "5": {
+            "weight": 1.05
+        },
+        "6": {
+            "weight": 1.0
+        },
+        "7": {
+            "weight": 1.0
+        },
+        "8": {
+            "weight": 1.0
+        },
+        "9": {
+            "weight": 1.0
+        }
     },
     "messages": [
         "You have already started this task without finishing it",
