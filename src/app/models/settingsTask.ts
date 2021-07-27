@@ -1,5 +1,4 @@
 import titleize from 'titleize';
-import {Instruction} from "./instructions";
 
 export class SettingsTask {
 
@@ -11,6 +10,9 @@ export class SettingsTask {
     blacklist_batches: Array<string>;
     whitelist_batches: Array<string>;
     messages?: Array<string>;
+    documentTimes?: Object;
+    documentsTimeAndWeight?: Object;
+    documentPositionWeights?: Object
 
     constructor(
         data = null as JSON
@@ -42,6 +44,17 @@ export class SettingsTask {
         if (data) {
             if (data['messages']) {
                 for (let message of data["messages"]) this.messages.push(message)
+            }
+        }
+        if (data) {
+            if (data['documentTimes']) {
+                this.documentTimes = data ? data["documentTimes"] ? new Object(data['documentTimes']) : null : null;
+            }
+            if (data['documentsTimeAndWeight']) {
+                this.documentsTimeAndWeight =  data ? data["documentsTimeAndWeight"] ? new Object(data['documentsTimeAndWeight']) : null : null;
+            }
+            if (data['documentPositionWeights']) {
+                this.documentPositionWeights =  data ? data["documentPositionWeights"] ? new Object(data['documentPositionWeights']) : null : null;
             }
         }
     }

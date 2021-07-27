@@ -983,7 +983,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                         {
                             "label": "False",
                             "description": "...",
-                            "value": "1"
+                            "value": "0"
                         },
                         {
                             "label": "True",
@@ -1108,7 +1108,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 if isinstance(element, dict):
                     print(wrapper.fill(f"{attribute}: Array<JSON>;"), file=file)
                 elif isinstance(element, int) or isinstance(element, float):
-                    if (attribute == "id"):
+                    if attribute == "id":
                         print(wrapper.fill(f"{attribute}: string;"), file=file)
                     else:
                         print(wrapper.fill(f"{attribute}: number;"), file=file)

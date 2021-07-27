@@ -400,7 +400,7 @@
 
                   <!-- Style: Type, Position, Orientation, Separator -->
                   <mat-slide-toggle color="primary" *ngIf="dimension.get('setScale').value" class="mt-16px mb-16px" formControlName="setStyle"
-                                    (change)="resetStyle(dimensionIndex)" disabled>
+                                    (change)="resetStyle(dimensionIndex)">
                     Style
                   </mat-slide-toggle>
 
@@ -866,18 +866,9 @@
           <mat-divider [inset]="true"></mat-divider>
 
           <!-- Blacklist Batches -->
-          <div formArrayName="blacklist_batches">
-            <mat-progress-bar *ngIf="this.blacklistBatches().controls.length<=0 && !this.batchesTreeInitialization"
-                              mode="indeterminate"></mat-progress-bar>
-            <button *ngIf="this.batchesTreeInitialization" mat-flat-button color="primary" class="mt-16px mb-16px indent"
-                    (click)="addBlacklistBatches()">
-              Blacklist Batches
-            </button>
-            <button *ngIf="this.blacklistBatches().controls.length>0 && this.batchesTreeInitialization" mat-flat-button color="primary" class="mb-16px"
-                    (click)="removeBlacklistBatch()">
-              Remove Batches
-            </button>
-            <ng-container *ngIf="this.blacklistBatches().controls.length>0 && this.batchesTreeInitialization">
+          <div formArrayName="batches">
+            <mat-progress-bar *ngIf="this.batches().controls.length<=0 && !this.batchesTreeInitialization" mode="indeterminate"></mat-progress-bar>
+            <ng-container *ngIf="this.batches().controls.length>0 && this.batchesTreeInitialization">
               <div *ngFor="let taskNode of this.batchesTree">
                 <mat-accordion class="generator-accordion">
                   <mat-expansion-panel>
@@ -888,45 +879,11 @@
                       <mat-panel-description>
                       </mat-panel-description>
                     </mat-expansion-panel-header>
-                    <mat-slide-toggle *ngFor="let batchNode of taskNode['batches']" color="primary" class="mt-16px mb-16px"
-                                      formControlName="{{batchNode['counter']}}">
-                      {{batchNode['batch']}}
-                    </mat-slide-toggle>
-                  </mat-expansion-panel>
-                </mat-accordion>
-              </div>
-            </ng-container>
-          </div>
-
-          <mat-divider [inset]="true"></mat-divider>
-
-          <!-- Whitelist Batches -->
-          <div formArrayName="whitelist_batches">
-            <mat-progress-bar *ngIf="this.whitelistBatches().controls.length<=0 && !this.batchesTreeInitialization"
-                              mode="indeterminate"></mat-progress-bar>
-            <button *ngIf="this.batchesTreeInitialization" mat-flat-button color="primary" class="mt-16px mb-16px indent"
-                    (click)="addWhitelistBatches()">
-              Whitelist Batches
-            </button>
-            <button *ngIf="this.whitelistBatches().controls.length>0 && this.batchesTreeInitialization" mat-flat-button color="primary" class="mb-16px"
-                    (click)="removeWhitelistBatch()">
-              Remove Batches
-            </button>
-            <ng-container *ngIf="this.whitelistBatches().controls.length>0 && this.batchesTreeInitialization">
-              <div *ngFor="let taskNode of this.batchesTree">
-                <mat-accordion class="generator-accordion">
-                  <mat-expansion-panel>
-                    <mat-expansion-panel-header>
-                      <mat-panel-title>
-                        {{taskNode['task']}}
-                      </mat-panel-title>
-                      <mat-panel-description>
-                      </mat-panel-description>
-                    </mat-expansion-panel-header>
-                    <mat-slide-toggle *ngFor="let batchNode of taskNode['batches']" color="primary" class="mt-16px mb-16px"
-                                      formControlName="{{batchNode['counter']}}">
-                      {{batchNode['batch']}}
-                    </mat-slide-toggle>
+                    <div *ngFor="let batch of taskNode['batches']; let batchIndex = index" [formGroupName]="batch['counter']">
+                      <mat-label>{{batch["batch"]}}</mat-label>
+                      <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="blacklist" (change)="resetBlacklist(batch['counter'])">Blacklist</mat-slide-toggle>
+                      <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="whitelist" (change)="resetWhitelist(batch['counter'])">Whitelist</mat-slide-toggle>
+                    </div>
                   </mat-expansion-panel>
                 </mat-accordion>
               </div>
@@ -1068,12 +1025,16 @@
         <mat-divider [inset]="true"></mat-divider>
 
         <h4 class="mb-0">Step #6 - <strong>Task Settings</strong>:</h4>
-        <p><code>{{ this.taskSettingsSerializedWithoutHits }}</code></p>
+        <p><code>{{ this.taskSettingsSerialized }}</code></p>
 
         <mat-divider [inset]="true"></mat-divider>
 
         <h4 class="mb-0">Step #7 - <strong>Worker Checks</strong>:</h4>
         <p><code>{{ this.workersChecksSerialized }}</code></p>
+
+        <mat-divider [inset]="true"></mat-divider>
+        <h4 class="mb-0"><strong>Hits Overview</strong>:</h4>
+        <p><code>{{ this.hitsParsedString }}</code></p>
 
         <mat-divider [inset]="true"></mat-divider>
         <h4 class="mb-0"><strong>Validity Check</strong>:</h4>
@@ -1116,7 +1077,7 @@
 
         <mat-progress-bar *ngIf="this.uploadStarted && !this.uploadCompleted" mode="indeterminate"></mat-progress-bar>
 
-        <ng-container *ngIf="this.uploadCompleted">
+        <ng-container *ngIf="!this.uploadStarted && this.uploadCompleted">
           <mat-divider [inset]="true"></mat-divider>
           <h4 class="mb-0">Upload result:</h4>
           <mat-list>

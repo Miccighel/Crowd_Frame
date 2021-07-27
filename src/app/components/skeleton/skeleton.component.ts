@@ -293,7 +293,7 @@ export class SkeletonComponent implements OnInit {
 
     /* |--------- CONTROL FLOW & UI ELEMENTS - INITIALIZATION ---------| */
 
-    this.tokenInput = new FormControl('KXKUHEQIEMR', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
+    this.tokenInput = new FormControl('', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
     this.tokenForm = formBuilder.group({
       "tokenInput": this.tokenInput
     });
@@ -682,10 +682,9 @@ export class SkeletonComponent implements OnInit {
 
       this.documentsTime = new Array<number>();
       for (let index = 0; index < this.documents.length; index++) {
-        let time = this.documents[index]['time'];
         let position = this.documents[index]['index'];
         let trueValue = this.documents[index]['id'];
-        this.documentsTime[index]= this.calculateTimeOfStatement(time,position, trueValue)
+        //this.documentsTime[index]= this.calculateTimeOfStatement(position, trueValue)
       }
 
 
@@ -768,13 +767,13 @@ export class SkeletonComponent implements OnInit {
   /* |--------- DIMENSIONS ELEMENTS (see: dimensions.json) ---------| */
 
   /* This function is used to sort each dimension that a worker have to assess according the position specified */
-  public filterDimensions(type: string, position: string) {
+  public filterDimensions(kind: string, position: string) {
     let filteredDimensions = []
     for (let dimension of this.dimensions) {
       if (dimension.style) {
-        if (dimension.style.type == type && dimension.style.position == position) filteredDimensions.push(dimension)
+        if (dimension.style.type == kind && dimension.style.position == position) filteredDimensions.push(dimension)
       } else {
-        if (type == "list" && position == "bottom") filteredDimensions.push(dimension)
+        if (kind == "list" && position == "bottom") filteredDimensions.push(dimension)
       }
     }
     return filteredDimensions
@@ -2240,41 +2239,31 @@ export class SkeletonComponent implements OnInit {
   /***
       * This function modifies the countdown value based on the position of the document and its truth value
       */
-   public calculateTimeOfStatement(documentTime : number, position?: number, trueValue?: string){
-    //console.log("Tempo documento: "+ documentTime+ " posizione statement: "+ position + " Valore di verità: "+ trueValue);
+   public calculateTimeOfStatement(position: number, trueValue?: string){
 
+    let trueValueDocumentData = this.findTrueValueDocument(trueValue);
+    
     let timeOfStatement = 0;
-    let weightTrueValue = 0;
-    let weightposition = 0;
+    console.log(trueValueDocumentData)
+     let documentTime = this.settings.documentsTimeAndWeight[trueValueDocumentData].time;
+     let weightTrueValue = this.settings.documentsTimeAndWeight[trueValueDocumentData].weight;
+     let weightposition = this.settings.documentPositionWeights[position].weight;
+     console.log("Document time: " +documentTime +" TrueValue weight: " +weightTrueValue+" Document position weight: " +weightposition)
 
-    switch (trueValue) {
-      case "True":
-        weightTrueValue = 0;
-        break;
-      case "False":
-        weightTrueValue = 0;
-      break;
-      default:
-        weightTrueValue = 1;
-      break;
-    }
-
-    switch (position) {
-      case 0:
-        weightposition =  2;
-        break;
-      case 1:
-        weightposition =  1.5;
-      break;
-      case 3:
-        weightposition =  1.25;
-      break;
-      default:
-        weightposition = 1;
-        break;
-    }
-    timeOfStatement = documentTime*weightTrueValue*weightposition;
+     timeOfStatement = documentTime*weightTrueValue*weightposition;
 
     return timeOfStatement;
+  }
+
+  private findTrueValueDocument(trueValue):string{
+    trueValue = trueValue.toLowerCase().split('_')
+    const values = ['true','mostly-true','half-true','mostly-false','false','pants-on-fire','low','high']
+    let responce = null;
+
+    values.forEach(element => {
+      if(element === trueValue[0])
+        responce = element;
+    });
+    return responce;
   }
 }

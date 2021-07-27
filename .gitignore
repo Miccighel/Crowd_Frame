@@ -70,8 +70,10 @@ data/build/deploy/*
 data/build/mturk/*
 data/build/task/*
 data/build/skeleton/document.ts
+data/build/config/admin.json
 
 # Random things
 local/log.md
 local/*
+
 
