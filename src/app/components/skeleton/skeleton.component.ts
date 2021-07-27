@@ -682,7 +682,6 @@ export class SkeletonComponent implements OnInit {
 
       this.documentsTime = new Array<number>();
       for (let index = 0; index < this.documents.length; index++) {
-        //let time = this.documents[index]['time'];
         let position = this.documents[index]['index'];
         let trueValue = this.documents[index]['id'];
         //this.documentsTime[index]= this.calculateTimeOfStatement(position, trueValue)
@@ -2242,58 +2241,21 @@ export class SkeletonComponent implements OnInit {
       */
    public calculateTimeOfStatement(position: number, trueValue?: string){
 
-    let trueValueDocument = this.findTrueValueDocument(trueValue);
-    let documentTime = this.settings.documentTimes[trueValueDocument];
-
+    let trueValueDocumentData = this.findTrueValueDocument(trueValue);
+    
     let timeOfStatement = 0;
-    let weightTrueValue = 0;
-    let weightposition = 0;
+    console.log(trueValueDocumentData)
+     let documentTime = this.settings.documentsTimeAndWeight[trueValueDocumentData].time;
+     let weightTrueValue = this.settings.documentsTimeAndWeight[trueValueDocumentData].weight;
+     let weightposition = this.settings.documentPositionWeights[position].weight;
+     console.log("Document time: " +documentTime +" TrueValue weight: " +weightTrueValue+" Document position weight: " +weightposition)
 
-    switch (trueValueDocument) {
-      case "true":
-        weightTrueValue = 0.75;
-        break;
-      case "mostly-true":
-        weightTrueValue = 1;
-        break;
-      case "half-true":
-        weightTrueValue = 1.25;
-        break;
-      case "mostly-false":
-        weightTrueValue = 1;
-        break;
-      case "false":
-        weightTrueValue = 0.75;
-        break;
-      case "pants-on-fire":
-        weightTrueValue = 0.65;
-        break;
-      default:
-        weightTrueValue = 1;
-      break;
-    }
-
-    switch (position) {
-      case 0:
-        weightposition =  2;
-        break;
-      case 1:
-        weightposition =  1.5;
-      break;
-      case 2:
-        weightposition =  1.25;
-      break;
-      default:
-        weightposition = 1;
-        break;
-    }
-
-    timeOfStatement = documentTime*weightTrueValue*weightposition;
+     timeOfStatement = documentTime*weightTrueValue*weightposition;
 
     return timeOfStatement;
   }
 
-  private findTrueValueDocument(trueValue): string{
+  private findTrueValueDocument(trueValue):string{
     trueValue = trueValue.toLowerCase().split('_')
     const values = ['true','mostly-true','half-true','mostly-false','false','pants-on-fire','low','high']
     let responce = null;
