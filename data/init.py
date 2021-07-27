@@ -88,6 +88,7 @@ admin_password = os.getenv('admin_password')
 deploy_config = strtobool(os.getenv('deploy_config'))
 server_config = strtobool(os.getenv('server_config'))
 
+
 aws_region = os.getenv('aws_region')
 aws_private_bucket = os.getenv('aws_private_bucket')
 aws_deploy_bucket = os.getenv('aws_deploy_bucket')
@@ -826,7 +827,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         "bucket": aws_private_bucket,
         "aws_id_key": aws_worker_access_id,
         "aws_secret_key": aws_worker_access_secret,
-        "bing_api_key": bing_api_key
+        "bing_api_key": bing_api_key,
+        "server_endpoint": ''
     }
 
     os.makedirs(folder_build_env_path, exist_ok=True)
