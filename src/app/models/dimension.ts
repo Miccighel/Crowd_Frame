@@ -12,7 +12,7 @@ export class Dimension {
   description?: string;
   justification?: Justification;
   url?: boolean;
-  scale?: ScaleCategorical | ScaleInterval | ScaleMagnitude;
+  scale?: ScaleCategorical | ScaleInterval | ScaleMagnitude | ScalePairwaise;
   gold?: boolean;
   style: Style;
 
@@ -42,6 +42,9 @@ export class Dimension {
         case 'magnitude_estimation':
           this.scale = new ScaleMagnitude(data['scale'])
           break;
+        case 'pairwaise':
+          this.scale=new ScalePairwaise(data['scale'])
+          break;
       }
     } else {
       this.scale = null
@@ -52,6 +55,7 @@ export class Dimension {
   }
 
 }
+
 
 export class Justification {
 
@@ -80,6 +84,36 @@ export class Scale {
 
 }
 
+export class ScalePairwaise extends Scale{
+  statements:Array<statement>;
+  constructor(
+     data:JSON
+  ){
+     super(data)
+     this.statements=new Array<statement>();
+     for (let index = 0; index < data["values"].length; index++) this.statements.push(new statement(index, data["values"][index]))
+  }
+}
+
+export class statement{
+    index:number 
+    text:string
+    speaker:string
+    speakerjob:string
+    context:string
+    constructor(
+      index: number,
+      data: JSON
+    ) {
+  
+      this.index = index;
+  
+      this.text =        data["text"];
+      this.speaker =  data["speaker"];
+      this.speakerjob =        data["speakerjob"];
+      this.context=  data["context"];
+    }
+}
 export class ScaleCategorical extends Scale{
 
   mapping: Array<Mapping>;

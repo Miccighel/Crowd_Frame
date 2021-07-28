@@ -207,7 +207,7 @@
             </div>
 
             <!-- Document attributes markup; add the event bindings if you want enable annotations -->
-
+            <!-- Source  statement
             <div class="statement">
               <ul>
                 <li *ngIf="(this.annotator && this.annotator.type=='options')">
@@ -233,7 +233,7 @@
                   </ul>
                 </li>
               </ul>
-            </div>
+            </div>-->
 
             <ng-container *ngIf="(this.annotator && this.annotator.type=='options')">
 
@@ -452,25 +452,9 @@
               </div>
             </div>
             <!-- Dimensions assessment markup (list style) -->
-            Pre ng template
-            <!--aggiunto per controllo -->
 
-            <!--[ngTemplateOutletContext]="{dimensions:dimensions}"> -->
-
-            <!--Senza questo container non si riesce a visualizzare ng template-->
-            <ng-container *ngTemplateOutlet="dimensionList">
-
-              </ng-container>
             <ng-template #dimensionList let-dimensions="dimensions" let-i="i">
-                <h1>Dentro ng-template</h1>
-                <!--<h2>dimensionsa dentro  length:{{dimensionsa.length}}</h2> -->
-                 <!--<h2>dimension fuori  length:{{dimensions.length}}</h2>-->
-                <!--<div *ngFor="let a of dimensions ;let t=index" ><p>dimensions {{a.name}}</p></div>-->
-               <!-- <div *ngIf="dimensionsa.length==0">Lunghezza del dimensionsa uguale a 0</div> -->
               <div *ngFor="let dimension of dimensions; let j=index" class="dimension">
-                <h1>Dentro ng-for</h1>
-
-                <h2>dimensions dentro  length:{{this.dimensions.length}}</h2>
                 <!-- Dimension name markup -->
                 <div class="dimension-name">
                   <mat-divider [inset]="true"></mat-divider>
@@ -566,6 +550,16 @@
 
                         </mat-form-field>
                       </ng-container>
+                      <ng-container *ngIf="dimension.scale.type=='pairwaise'">
+                        dentro if
+                        <div *ngFor="let values of dimension.scale.values let k=index">
+                         dentro for
+                                  Text:{{values.text}}
+                                  Speaker:{{values.speaker}}
+                                  SpeakerJob:{{values.speakerjob}}
+                                  Context:{{values.context}}
+                        </div>
+                      </ng-container>
 
                     </ng-container>
 
@@ -581,7 +575,14 @@
                           <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0">({{mapping.description}})</span>
                         </mat-radio-button>
                       </mat-radio-group>
-
+                      <ng-container *ngIf="dimension.scale.type=='pairwaise'">
+                        <div *ngFor="let values of dimension.scale.values let k=index">
+                                  Text:{{values.text}}
+                                  Speaker:{{values.speaker}}
+                                  SpeakerJob:{{values.speakerjob}}
+                                  Context:{{values.context}}
+                        </div>
+                      </ng-container>
                     </ng-container>
                   </div>
                 </div>

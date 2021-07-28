@@ -603,6 +603,7 @@ export class SkeletonComponent implements OnInit {
           if (dimension.scale) {
             if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.required]);
             if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value`] = new FormControl((Math.round(((<ScaleInterval>dimension.scale).min + (<ScaleInterval>dimension.scale).max) / 2)), [Validators.required]);
+            if(dimension.scale.type =="pairwaise") controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.required]);
             if (dimension.scale.type == "magnitude_estimation") {
               if ((<ScaleMagnitude>dimension.scale).lower_bound) {
                 controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min), Validators.required]);
