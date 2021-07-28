@@ -7,12 +7,14 @@ export class SettingsTask {
     attributes: Array<Attribute>
     annotator?: Annotator;
     countdown_time?: number;
+    countdown_modality?: string;
+    countdown_attribute?: string;
+    countdown_attribute_values?: Array<JSON>;
+    countdown_position_values?: Array<number>;
     blacklist_batches: Array<string>;
     whitelist_batches: Array<string>;
     messages?: Array<string>;
-    documentTimes?: Object;
-    documentsTimeAndWeight?: Object;
-    documentPositionWeights?: Object
+
 
     constructor(
         data = null as JSON
@@ -35,28 +37,16 @@ export class SettingsTask {
             }
         }
         this.annotator = data ? data["annotator"] ? new Annotator(data["annotator"]) : null : null;
-        this.countdown_time = data ? data["countdown_time"] ? parseInt((data["countdown_time"])) : null : null;
-        this.blacklist_batches = new Array<string>();
+        this.countdown_time = data ? data["countdown_time"] >= 0 ? parseInt((data["countdown_time"])) : null : null;
+        this.countdown_modality = data ? data["countdown_modality"] ? data['countdown_modality'] : null : null;
+        this.countdown_attribute = data ? data["countdown_attribute"] ? data['countdown_attribute'] : null : null;
+        this.countdown_attribute_values = new Array<JSON>()
+        if (data) if ('countdown_attribute_values' in data) for (let value of data["countdown_attribute_values"] as Array<JSON>) this.countdown_attribute_values.push(value)
         if (data) if ('blacklist_batches' in data) for (let batch of data["blacklist_batches"] as Array<string>) this.blacklist_batches.push(batch)
         this.whitelist_batches = new Array<string>();
         if (data) if ('whitelist_batches' in data) for (let batch of data["whitelist_batches"] as Array<string>) this.whitelist_batches.push(batch)
         this.messages = new Array<string>();
-        if (data) {
-            if (data['messages']) {
-                for (let message of data["messages"]) this.messages.push(message)
-            }
-        }
-        if (data) {
-            if (data['documentTimes']) {
-                this.documentTimes = data ? data["documentTimes"] ? new Object(data['documentTimes']) : null : null;
-            }
-            if (data['documentsTimeAndWeight']) {
-                this.documentsTimeAndWeight =  data ? data["documentsTimeAndWeight"] ? new Object(data['documentsTimeAndWeight']) : null : null;
-            }
-            if (data['documentPositionWeights']) {
-                this.documentPositionWeights =  data ? data["documentPositionWeights"] ? new Object(data['documentPositionWeights']) : null : null;
-            }
-        }
+        if (data) if (data['messages']) for (let message of data["messages"]) this.messages.push(message)
     }
 
 }

@@ -21,7 +21,7 @@ import {DeviceDetectorService} from "ngx-device-detector";
 import {Document} from "../../../../data/build/skeleton/document";
 import {Hit} from "../../models/hit";
 import {Questionnaire} from "../../models/questionnaire";
-import {Dimension, ScaleInterval, ScaleMagnitude, Style} from "../../models/dimension";
+import {Dimension, ScaleInterval, ScaleMagnitude} from "../../models/dimension";
 import {Instruction} from "../../models/instructions";
 import {Note} from "../../models/notes";
 import {Worker} from "../../models/worker";
@@ -203,7 +203,7 @@ export class SkeletonComponent implements OnInit {
 
   /* Optional countdown to use for each document */
   countdownTime: number
-  documentsTime : Array<number>
+  documentsCountdownTime : Array<number>
 
   /* Optional document time value for each document */
   timeOfDocument : number
@@ -680,13 +680,12 @@ export class SkeletonComponent implements OnInit {
       this.countdownsExpired = new Array<boolean>(this.documentsAmount);
       for (let index = 0; index < this.documentsAmount; index++) this.countdownsExpired[index] = false;
 
-      this.documentsTime = new Array<number>();
+      this.documentsCountdownTime = new Array<number>(this.documentsAmount);
       for (let index = 0; index < this.documents.length; index++) {
-        let position = this.documents[index]['index'];
-        let trueValue = this.documents[index]['id'];
-        //this.documentsTime[index]= this.calculateTimeOfStatement(position, trueValue)
+        let position = this.settings.countdown_modality == 'position' ? this.documents[index]['index'] : null;
+        let attribute = this.settings.countdown_modality == 'attribute' ? this.documents[index][this.settings.countdown_attribute] : null;
+        this.documentsCountdownTime[index] = this.updateCountdownTime(position, attribute)
       }
-
 
       /* |--------- QUALITY CHECKS ---------| */
 
@@ -1051,6 +1050,28 @@ export class SkeletonComponent implements OnInit {
     if (event.left == 0) {
       this.countdownsExpired[i] = true
     }
+  }
+
+  public updateCountdownTime(position: number = null, attribute: string = null){
+
+    let finalTime = this.settings.countdown_time
+
+    if(position) {
+      for (let positionData of this.settings.countdown_position_values) {
+        if(positionData['position']==position) {
+          finalTime = finalTime + positionData['time']
+        }
+      }
+    }
+
+    if(attribute) {
+      for (let attributeData of this.settings.countdown_attribute_values) {
+        if(attributeData['name'] == attribute)
+         finalTime = finalTime + attributeData['time']
+      }
+    }
+
+    return finalTime;
   }
 
 
@@ -2236,34 +2257,4 @@ export class SkeletonComponent implements OnInit {
     return {start: start, end: end};
   }
 
-  /***
-      * This function modifies the countdown value based on the position of the document and its truth value
-      */
-   public calculateTimeOfStatement(position: number, trueValue?: string){
-
-    let trueValueDocumentData = this.findTrueValueDocument(trueValue);
-    
-    let timeOfStatement = 0;
-    console.log(trueValueDocumentData)
-     let documentTime = this.settings.documentsTimeAndWeight[trueValueDocumentData].time;
-     let weightTrueValue = this.settings.documentsTimeAndWeight[trueValueDocumentData].weight;
-     let weightposition = this.settings.documentPositionWeights[position].weight;
-     console.log("Document time: " +documentTime +" TrueValue weight: " +weightTrueValue+" Document position weight: " +weightposition)
-
-     timeOfStatement = documentTime*weightTrueValue*weightposition;
-
-    return timeOfStatement;
-  }
-
-  private findTrueValueDocument(trueValue):string{
-    trueValue = trueValue.toLowerCase().split('_')
-    const values = ['true','mostly-true','half-true','mostly-false','false','pants-on-fire','low','high']
-    let responce = null;
-
-    values.forEach(element => {
-      if(element === trueValue[0])
-        responce = element;
-    });
-    return responce;
-  }
 }
