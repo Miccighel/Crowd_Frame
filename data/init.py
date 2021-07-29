@@ -1088,7 +1088,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     if not 'id' in sample_element.keys():
         raise Exception(
-            "[red]Your [underline]hits.json[/underline] file contains an attributed called [underline]\"id\"[/underline]?")
+            "Your hits.json file does not contains an attributed called \"id\"!")
 
     # This class provides a representation of a single document stored in single hit stored in the Amazon S3 bucket.
     # The attribute <document_index> is additional and should not be touched and passed in the constructor.

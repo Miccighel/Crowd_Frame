@@ -1374,7 +1374,6 @@ export class GeneratorComponent {
         if (this.taskSettingsForm.get('setCountdownTime').value == false) {
             this.taskSettingsForm.get('countdown_time').setValue('')
             this.taskSettingsForm.get('countdown_time').clearValidators();
-            this.taskSettingsForm.get('setAdditionalTimes').setValue('')
         } else {
             this.taskSettingsForm.get('countdown_time').setValidators([Validators.required, this.positiveOrZeroNumber.bind(this)]);
         }
@@ -1578,8 +1577,25 @@ export class GeneratorComponent {
         if (!taskSettingsJSON.setAnnotator) taskSettingsJSON.annotator = false
         delete taskSettingsJSON.setAnnotator
 
-        if (!taskSettingsJSON.setCountdownTime) taskSettingsJSON.countdown_time = false
+        if (!taskSettingsJSON.setCountdownTime) {
+            taskSettingsJSON.countdown_time = false
+            taskSettingsJSON.additional_times = false
+            taskSettingsJSON.countdown_modality = false
+            taskSettingsJSON.countdown_attribute = false
+            taskSettingsJSON.countdown_attribute_values = []
+            taskSettingsJSON.countdown_position_values = []
+        }
+        if (!taskSettingsJSON.setAdditionalTimes) {
+            taskSettingsJSON.additional_times = false
+            taskSettingsJSON.countdown_modality = false
+            taskSettingsJSON.countdown_attribute = false
+            taskSettingsJSON.countdown_attribute_values = []
+            taskSettingsJSON.countdown_position_values = []
+        } else {
+            taskSettingsJSON.additional_times = taskSettingsJSON.setAdditionalTimes
+        }
         delete taskSettingsJSON.setCountdownTime
+        delete taskSettingsJSON.setAdditionalTimes
 
         if ('attributes' in taskSettingsJSON) {
             for (let attributeIndex in taskSettingsJSON['attributes']) {
