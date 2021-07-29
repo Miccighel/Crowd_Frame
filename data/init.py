@@ -1057,6 +1057,20 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 "batch_name": f"{batch_name}",
                 "allowed_tries": 10,
                 "time_check_amount": 3,
+                "attributes": [
+                    {
+                        "name": "id",
+                        "show": False,
+                        "annotate": False,
+                        "required": False
+                    },
+                    {
+                        "name": "text",
+                        "show": True,
+                        "required": False,
+                        "annotate": False
+                    }
+                ],
                 "annotator": False,
                 "countdown_time": False,
                 "additional_times": False,
