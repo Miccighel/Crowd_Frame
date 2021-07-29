@@ -500,7 +500,10 @@
                 <!-- Dimension assessment scale markup -->
                 <div *ngIf="dimension.scale" class="dimension-container dimension-scale">
                   <div *ngIf="dimension.url" class="dimension-counter">b.</div>
-                  <div *ngIf="!dimension.url" class="dimension-counter">a.</div>
+                  <div *ngIf="dimension.scale.type!=='pairwaise'">
+                      <div *ngIf="!dimension.url"  class="dimension-counter">a.</div>
+                  </div>
+                  
                   <div class="dimension-content">
 
                     <!-- Vertical style markup -->
@@ -551,13 +554,11 @@
                         </mat-form-field>
                       </ng-container>
                       <ng-container *ngIf="dimension.scale.type=='pairwaise'">
-                        dentro if
-                        <div *ngFor="let values of dimension.scale.values let k=index">
-                         dentro for
-                                  Text:{{values.text}}
-                                  Speaker:{{values.speaker}}
-                                  SpeakerJob:{{values.speakerjob}}
-                                  Context:{{values.context}}
+                        <div *ngFor="let value of dimension.scale.statements let k=index">
+                                  Text:{{value.text}}
+                                  Speaker:{{value.speaker}}
+                                  SpeakerJob:{{value.speakerjob}}
+                                  Context:{{value.context}}
                         </div>
                       </ng-container>
 
@@ -576,12 +577,12 @@
                         </mat-radio-button>
                       </mat-radio-group>
                       <ng-container *ngIf="dimension.scale.type=='pairwaise'">
-                        <div *ngFor="let values of dimension.scale.values let k=index">
+                        <ng-container *ngFor="let values of dimension.scale.values let k=index">
                                   Text:{{values.text}}
                                   Speaker:{{values.speaker}}
                                   SpeakerJob:{{values.speakerjob}}
                                   Context:{{values.context}}
-                        </div>
+                        </ng-container>
                       </ng-container>
                     </ng-container>
                   </div>

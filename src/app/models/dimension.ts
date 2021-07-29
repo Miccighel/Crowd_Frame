@@ -91,16 +91,16 @@ export class ScalePairwaise extends Scale{
   ){
      super(data)
      this.statements=new Array<statement>();
-     for (let index = 0; index < data["values"].length; index++) this.statements.push(new statement(index, data["values"][index]))
+     for (let index = 0; index < data["statements"].length; index++) this.statements.push(new statement(index, data["statements"][index]))
   }
 }
 
 export class statement{
-    index:number 
-    text:string
-    speaker:string
-    speakerjob:string
-    context:string
+    index:number;
+    text:string;
+    speaker:string;
+    speakerjob:string;
+    context:string;
     constructor(
       index: number,
       data: JSON
@@ -108,9 +108,9 @@ export class statement{
   
       this.index = index;
   
-      this.text =        data["text"];
+      this.text =data["text"];
       this.speaker =  data["speaker"];
-      this.speakerjob =        data["speakerjob"];
+      this.speakerjob = data["speakerjob"];
       this.context=  data["context"];
     }
 }

@@ -47,20 +47,27 @@
           }
     },
     {
-        "name": "sample-dimension",
+        "name": "PairwaseName",
         "name_pretty": "Pairwaise",
         "description": "Pairwaise Description",
         "url": false,
         "justification": false,
         "scale": {
             "type": "pairwaise",
-            "values": [
+            "statements": [
                 {
                     "text":"Il gallo è quattro",
                     "speaker":"christianAbbondo",
                     "speakerjob":"swager",
                     "context":"twitter"
+                },
+                {
+                    "text":"Il gallo è quattro",
+                    "speaker":"bello figo",
+                    "speakerjob":"swager",
+                    "context":"twitter"
                 }
+
             ]
         },
         "gold_question_check": false,
