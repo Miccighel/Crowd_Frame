@@ -1312,17 +1312,11 @@ export class GeneratorComponent {
             }
         }
         this.hitAttributes().clear({emitEvent: true})
-        for (let attribute in this.hitsAttributes) {
-            if (attribute in this.taskSettingsFetched.attributes) {
-                let attributeIndex = null
-                for (let index in this.taskSettingsFetched.attributes) {
-                    if (this.taskSettingsFetched.attributes[index]["name"] == attribute) {
-                        attributeIndex = index
-                    }
-                }
-                this.addHitAttribute(attribute, this.taskSettingsFetched.attributes[attributeIndex])
+        for (let attributeIndex in this.hitsAttributes) {
+            if (attributeIndex in this.taskSettingsFetched.attributes) {
+                this.addHitAttribute(this.hitsAttributes[attributeIndex], this.taskSettingsFetched.attributes[attributeIndex])
             } else {
-                this.addHitAttribute(attribute)
+                this.addHitAttribute(this.hitsAttributes[attributeIndex])
             }
         }
         if (this.hitsFile) {
