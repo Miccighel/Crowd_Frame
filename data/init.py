@@ -899,6 +899,9 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     status.update(f"Generating a sample configuration if needed")
     time.sleep(3)
 
+    if not os.path.exists(folder_build_task_path):
+        os.makedirs(folder_build_task_path, exist_ok=True)
+
     filename = "hits.json"
     if os.path.exists(f"{folder_build_task_path}{filename}"):
         console.print(f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
@@ -978,7 +981,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                         {
                             "label": "False",
                             "description": "...",
-                            "value": "1"
+                            "value": "0"
                         },
                         {
                             "label": "True",
@@ -1103,7 +1106,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 if isinstance(element, dict):
                     print(wrapper.fill(f"{attribute}: Array<JSON>;"), file=file)
                 elif isinstance(element, int) or isinstance(element, float):
-                    if (attribute == "id"):
+                    if attribute == "id":
                         print(wrapper.fill(f"{attribute}: string;"), file=file)
                     else:
                         print(wrapper.fill(f"{attribute}: number;"), file=file)

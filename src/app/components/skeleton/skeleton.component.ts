@@ -40,6 +40,9 @@ import {MatRadioChange} from "@angular/material/radio";
 import {MatCheckboxChange} from "@angular/material/checkbox";
 import {ButtonDirective} from "./skeleton.directive";
 import {SectionService} from "../../services/section.service";
+import CryptoES from "crypto-es";
+import algo = CryptoES.algo;
+
 
 /* Component HTML Tag definition */
 @Component({
@@ -290,7 +293,7 @@ export class SkeletonComponent implements OnInit {
 
     /* |--------- CONTROL FLOW & UI ELEMENTS - INITIALIZATION ---------| */
 
-    this.tokenInput = new FormControl('KXKUHEQIEMR', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
+    this.tokenInput = new FormControl('', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
     this.tokenForm = formBuilder.group({
       "tokenInput": this.tokenInput
     });
@@ -378,7 +381,8 @@ export class SkeletonComponent implements OnInit {
       }
     })
 
-    /* The main task instructions are downloaded */
+    /* |--------- INSTRUCTIONS MAIN (see: instructions_main.json) ---------| */
+
     let rawTaskInstructions = await this.S3Service.downloadGeneralInstructions(this.configService.environment);
     this.taskInstructionsAmount = rawTaskInstructions.length;
     /* The instructions are parsed using the Instruction class */
@@ -475,7 +479,6 @@ export class SkeletonComponent implements OnInit {
   public enableTask() {
     this.sectionService.taskInstructionsRead = true
     this.showSnackbar("If you have a very slow internet connection please wait a few seconds before clicking \"Start\".", "Dismiss", 15000)
-    this.changeDetector.detectChanges()
   }
 
   /*
@@ -537,26 +540,6 @@ export class SkeletonComponent implements OnInit {
         this.documents.push(new Document(index, currentDocument));
       }
 
-      /* |--------- INSTRUCTIONS MAIN (see: instructions_main.json) ---------| */
-
-      let rawTaskInstructions = await this.S3Service.downloadGeneralInstructions(this.configService.environment);
-      this.taskInstructionsAmount = rawTaskInstructions.length;
-      /* The instructions are parsed using the Instruction class */
-      this.taskInstructions = new Array<Instruction>();
-      for (let index = 0; index < this.taskInstructionsAmount; index++) {
-        this.taskInstructions.push(new Instruction(index, rawTaskInstructions[index]));
-      }
-
-      /* |--------- INSTRUCTIONS DIMENSIONS (see: instructions_dimensions.json) ---------| */
-
-      /* The evaluation instructions stored on Amazon S3 are retrieved */
-      let rawInstructions = await this.S3Service.downloadEvaluationInstructions(this.configService.environment)
-      this.instructionsAmount = rawInstructions.length;
-
-      /* The instructions are parsed using the Instruction class */
-      this.instructions = new Array<Instruction>();
-      for (let index = 0; index < this.instructionsAmount; index++) this.instructions.push(new Instruction(index, rawInstructions[index]));
-
       /* |--------- QUESTIONNAIRE ELEMENTS (see: questionnaires.json) ---------| */
 
       /* The array of questionnaires is initialized */
@@ -593,6 +576,16 @@ export class SkeletonComponent implements OnInit {
           this.questionnairesForm[index] = this.formBuilder.group(controlsConfig)
         }
       }
+
+      /* |--------- INSTRUCTIONS DIMENSIONS (see: instructions_dimensions.json) ---------| */
+
+      /* The evaluation instructions stored on Amazon S3 are retrieved */
+      let rawInstructions = await this.S3Service.downloadEvaluationInstructions(this.configService.environment)
+      this.instructionsAmount = rawInstructions.length;
+
+      /* The instructions are parsed using the Instruction class */
+      this.instructions = new Array<Instruction>();
+      for (let index = 0; index < this.instructionsAmount; index++) this.instructions.push(new Instruction(index, rawInstructions[index]));
 
       /* |--------- DIMENSIONS ELEMENTS (see: dimensions.json) ---------| */
 
@@ -691,7 +684,7 @@ export class SkeletonComponent implements OnInit {
       for (let index = 0; index < this.documents.length; index++) {
         let position = this.documents[index]['index'];
         let trueValue = this.documents[index]['id'];
-        this.documentsTime[index]= this.calculateTimeOfStatement(position, trueValue)
+        //this.documentsTime[index]= this.calculateTimeOfStatement(position, trueValue)
       }
 
 
@@ -774,13 +767,13 @@ export class SkeletonComponent implements OnInit {
   /* |--------- DIMENSIONS ELEMENTS (see: dimensions.json) ---------| */
 
   /* This function is used to sort each dimension that a worker have to assess according the position specified */
-  public filterDimensions(type: string, position: string) {
+  public filterDimensions(kind: string, position: string) {
     let filteredDimensions = []
     for (let dimension of this.dimensions) {
       if (dimension.style) {
-        if (dimension.style.type == type && dimension.style.position == position) filteredDimensions.push(dimension)
+        if (dimension.style.type == kind && dimension.style.position == position) filteredDimensions.push(dimension)
       } else {
-        if (type == "list" && position == "bottom") filteredDimensions.push(dimension)
+        if (kind == "list" && position == "bottom") filteredDimensions.push(dimension)
       }
     }
     return filteredDimensions
@@ -1069,7 +1062,7 @@ export class SkeletonComponent implements OnInit {
    * if it is not an overlap the new note is finally created and pushed inside the corresponding data structure. After such step
    * the annotation button is enabled and the worker is allowed to choose the type of the created annotation
    */
-  public performAnnotation(documentIndex: number, notes: Array<Array<Note>>, changeDetector) {
+  public performAnnotation(documentIndex: number, attributeIndex: number, notes: Array<Array<Note>>, changeDetector) {
 
     /* If there is a leftover note (i.e., its type was not selected by current worker [it is "yellow"]) it is marked as deleted */
     for (let note of notes[documentIndex]) {
@@ -1081,36 +1074,38 @@ export class SkeletonComponent implements OnInit {
 
     /* The hit element which triggered the annotation event is detected */
     let domElement = null
+    let noteIdentifier = `document-${documentIndex}-attribute-${attributeIndex}`
     if (this.deviceDetectorService.isMobile() || this.deviceDetectorService.isTablet()) {
       const selection = document.getSelection();
-      if (selection) domElement = document.getElementById(`statement-${documentIndex}`);
-    } else domElement = document.getElementById(`statement-${documentIndex}`);
+      if (selection) domElement = document.getElementById(noteIdentifier);
+    } else domElement = document.getElementById(noteIdentifier);
 
     if (domElement) {
 
       /* The container of the annotated element is cloned and the event bindings are attached again */
       let elementContainerClone = domElement.cloneNode(true)
-      elementContainerClone.addEventListener('mouseup', () => this.performAnnotation(documentIndex, notes, changeDetector))
-      elementContainerClone.addEventListener('touchend', () => this.performAnnotation(documentIndex, notes, changeDetector))
+      elementContainerClone.addEventListener('mouseup', () => this.performAnnotation(documentIndex, attributeIndex, notes, changeDetector))
+      elementContainerClone.addEventListener('touchend', () => this.performAnnotation(documentIndex, attributeIndex, notes, changeDetector))
 
       /* the doHighlight function of the library is called and the flow is handled within two different callback */
       doHighlight(domElement, false, {
         /* the onBeforeHighlight event is called before the creation of the yellow highlight to encase the selected text */
         onBeforeHighlight: (range: Range) => {
+          let attributeIndex = parseInt(domElement.id.split("-")[3])
           let notesForDocument = notes[documentIndex]
           if (range.toString().trim().length == 0)
             return false
           let indexes = this.getSelectionCharacterOffsetWithin(domElement)
           /* To detect an overlap the indexes of the current annotation are check with respect to each annotation previously created */
           for (let note of notesForDocument) {
-            if (note.deleted == false) if (indexes["start"] < note.index_end && note.index_start < indexes["end"]) return false
+            if (note.deleted == false && note.attribute_index == attributeIndex) if (indexes["start"] < note.index_end && note.index_start < indexes["end"]) return false
           }
           return true
         },
         /* the onAfterHighlight event is called after the creation of the yellow highlight to encase the selected text */
         onAfterHighlight: (range, highlight) => {
           if (highlight.length > 0) {
-            if (highlight[0]["outerText"]) notes[documentIndex].push(new NoteStandard(documentIndex, range, highlight))
+            if (highlight[0]["outerText"]) notes[documentIndex].push(new NoteStandard(documentIndex, attributeIndex, range, highlight))
             return true
           }
         }
@@ -1163,14 +1158,29 @@ export class SkeletonComponent implements OnInit {
    * option; if this is true the worker can proceed to the following element
    */
   public checkAnnotationConsistency(documentIndex: number) {
+    let requiredAttributes = []
+    for (let attribute of this.settings.attributes) {
+      if (attribute.required) {
+        requiredAttributes.push(attribute.index)
+      }
+    }
     let check = false
     this.notes[documentIndex].forEach((element) => {
       if (element instanceof NoteStandard) {
-        if (!element.deleted && element.option != "not_selected") check = true
+        if (!element.deleted && element.option != "not_selected") {
+          const index = requiredAttributes.indexOf(element.attribute_index);
+          if (index > -1) {
+            requiredAttributes.splice(index, 1);
+          }
+          check = true
+        }
       } else {
         if (!element.deleted) check = true
       }
     })
+    if(requiredAttributes.length>0) {
+      check = false
+    }
     if (!this.annotator) {
       check = true
     }
@@ -2231,8 +2241,10 @@ export class SkeletonComponent implements OnInit {
       */
    public calculateTimeOfStatement(position: number, trueValue?: string){
 
-    let trueValueDocumentData = this.findTrueValueDocument(trueValue);
-    
+    let trueValueDocument = this.findTrueValueDocument(trueValue);
+    let documentTime = this.settings.documentTimes[trueValueDocument];
+
+
     let timeOfStatement = 0;
     console.log(trueValueDocumentData)
      let documentTime = this.settings.documentsTimeAndWeight[trueValueDocumentData].time;

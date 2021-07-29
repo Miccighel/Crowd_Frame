@@ -11,7 +11,7 @@
                [textPosition]="'bottom-center'"
 ></ngx-ui-loader>
 
-<mat-horizontal-stepper labelPosition="bottom" #generator class="green-theme">
+<mat-horizontal-stepper labelPosition="bottom" #generator class="green-theme" (selectionChange)="checkProgressStatus($event)">
 
   <!-- Step #1 - Questionnaires -->
 
@@ -400,7 +400,7 @@
 
                   <!-- Style: Type, Position, Orientation, Separator -->
                   <mat-slide-toggle color="primary" *ngIf="dimension.get('setScale').value" class="mt-16px mb-16px" formControlName="setStyle"
-                                    (change)="resetStyle(dimensionIndex)" disabled>
+                                    (change)="resetStyle(dimensionIndex)">
                     Style
                   </mat-slide-toggle>
 
@@ -776,15 +776,16 @@
           <div class="hit-attributes mt-8px mb-16px indent">
             <div *ngFor="let value of hitAttributes().controls; let valueIndex = index" formArrayName="attributes" class="p-5px">
               <div>
-                <ng-container [formGroupName]="valueIndex">
-                  <mat-checkbox color="primary" formControlName="show">
+                  <ng-container [formGroupName]="valueIndex">
+                      <mat-checkbox color="primary" formControlName="show" (change)="updateHitAttribute(valueIndex)">
                     {{this.hitsAttributes[valueIndex]}}
                   </mat-checkbox>
-                </ng-container>
-                <ng-container *ngIf="this.taskSettingsForm.get('setAnnotator').value" [formGroupName]="valueIndex">
-                  <mat-checkbox color="primary" formControlName="annotate">
-                    Annotations
-                  </mat-checkbox>
+                <mat-checkbox color="primary" formControlName="annotate" (change)="updateHitAttribute(valueIndex)">
+                  Annotations
+                </mat-checkbox>
+                <mat-checkbox color="primary" formControlName="required">
+                  Required
+                </mat-checkbox>
                 </ng-container>
               </div>
             </div>
@@ -865,18 +866,9 @@
           <mat-divider [inset]="true"></mat-divider>
 
           <!-- Blacklist Batches -->
-          <div formArrayName="blacklist_batches">
-            <mat-progress-bar *ngIf="this.blacklistBatches().controls.length<=0 && !this.batchesTreeInitialization"
-                              mode="indeterminate"></mat-progress-bar>
-            <button *ngIf="this.batchesTreeInitialization" mat-flat-button color="primary" class="mt-16px mb-16px indent"
-                    (click)="addBlacklistBatches()">
-              Blacklist Batches
-            </button>
-            <button *ngIf="this.blacklistBatches().controls.length>0 && this.batchesTreeInitialization" mat-flat-button color="primary" class="mb-16px"
-                    (click)="removeBlacklistBatch()">
-              Remove Batches
-            </button>
-            <ng-container *ngIf="this.blacklistBatches().controls.length>0 && this.batchesTreeInitialization">
+          <div formArrayName="batches">
+            <mat-progress-bar *ngIf="this.batches().controls.length<=0 && !this.batchesTreeInitialization" mode="indeterminate"></mat-progress-bar>
+            <ng-container *ngIf="this.batches().controls.length>0 && this.batchesTreeInitialization">
               <div *ngFor="let taskNode of this.batchesTree">
                 <mat-accordion class="generator-accordion">
                   <mat-expansion-panel>
@@ -887,45 +879,11 @@
                       <mat-panel-description>
                       </mat-panel-description>
                     </mat-expansion-panel-header>
-                    <mat-slide-toggle *ngFor="let batchNode of taskNode['batches']" color="primary" class="mt-16px mb-16px"
-                                      formControlName="{{batchNode['counter']}}">
-                      {{batchNode['batch']}}
-                    </mat-slide-toggle>
-                  </mat-expansion-panel>
-                </mat-accordion>
-              </div>
-            </ng-container>
-          </div>
-
-          <mat-divider [inset]="true"></mat-divider>
-
-          <!-- Whitelist Batches -->
-          <div formArrayName="whitelist_batches">
-            <mat-progress-bar *ngIf="this.whitelistBatches().controls.length<=0 && !this.batchesTreeInitialization"
-                              mode="indeterminate"></mat-progress-bar>
-            <button *ngIf="this.batchesTreeInitialization" mat-flat-button color="primary" class="mt-16px mb-16px indent"
-                    (click)="addWhitelistBatches()">
-              Whitelist Batches
-            </button>
-            <button *ngIf="this.whitelistBatches().controls.length>0 && this.batchesTreeInitialization" mat-flat-button color="primary" class="mb-16px"
-                    (click)="removeWhitelistBatch()">
-              Remove Batches
-            </button>
-            <ng-container *ngIf="this.whitelistBatches().controls.length>0 && this.batchesTreeInitialization">
-              <div *ngFor="let taskNode of this.batchesTree">
-                <mat-accordion class="generator-accordion">
-                  <mat-expansion-panel>
-                    <mat-expansion-panel-header>
-                      <mat-panel-title>
-                        {{taskNode['task']}}
-                      </mat-panel-title>
-                      <mat-panel-description>
-                      </mat-panel-description>
-                    </mat-expansion-panel-header>
-                    <mat-slide-toggle *ngFor="let batchNode of taskNode['batches']" color="primary" class="mt-16px mb-16px"
-                                      formControlName="{{batchNode['counter']}}">
-                      {{batchNode['batch']}}
-                    </mat-slide-toggle>
+                    <div *ngFor="let batch of taskNode['batches']; let batchIndex = index" [formGroupName]="batch['counter']">
+                      <mat-label>{{batch["batch"]}}</mat-label>
+                      <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="blacklist" (change)="resetBlacklist(batch['counter'])">Blacklist</mat-slide-toggle>
+                      <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="whitelist" (change)="resetWhitelist(batch['counter'])">Whitelist</mat-slide-toggle>
+                    </div>
                   </mat-expansion-panel>
                 </mat-accordion>
               </div>
@@ -985,14 +943,15 @@
         <mat-divider></mat-divider>
         <mat-card-content>
 
+          <p>Select the IDs to consider by pressing <i>SPACE</i></p>
+
           <!-- Blacklist -->
 
           <mat-form-field class="width-100" appearance="fill">
             <mat-label>Worker IDs Blacklisted</mat-label>
             <mat-chip-list #blacklistChips formControlName="blacklist" multiple>
-              <mat-chip *ngFor="let workerId of this.blacklistedWorkerId" [selected]="workerId" [value]="workerId"
-                        (removed)="removeBlacklistedId(workerId)">{{workerId}}</mat-chip>
-              <input placeholder="New worker ID ..." [matChipInputFor]="blacklistChips" (matChipInputTokenEnd)="addBlacklistedId($event)">
+              <mat-chip *ngFor="let workerId of this.blacklistedWorkerId" [selectable]="true" [removable]="true" (removed)="removeBlacklistedId(workerId)">{{workerId}} <mat-icon matChipRemove>cancel</mat-icon></mat-chip>
+              <input placeholder="New worker ID ..." [matChipInputFor]="blacklistChips" [matChipInputSeparatorKeyCodes]="separatorKeysCodes" (matChipInputTokenEnd)="addBlacklistedId($event)">
             </mat-chip-list>
           </mat-form-field>
 
@@ -1002,9 +961,8 @@
           <mat-form-field class="width-100" appearance="fill">
             <mat-label>Worker IDs Whitelisted</mat-label>
             <mat-chip-list #whitelistChips formControlName="whitelist" multiple>
-              <mat-chip *ngFor="let workerId of this.whitelistedWorkerId" [selected]="workerId" [value]="workerId"
-                        (removed)="removeWhitelistedId(workerId)">{{workerId}}</mat-chip>
-              <input placeholder="New worker ID ..." [matChipInputFor]="whitelistChips" (matChipInputTokenEnd)="addWhitelistedId($event)">
+              <mat-chip *ngFor="let workerId of this.whitelistedWorkerId" [selectable]="true" [removable]="true"  (removed)="removeWhitelistedId(workerId)">{{workerId}} <mat-icon matChipRemove>cancel</mat-icon></mat-chip>
+              <input placeholder="New worker ID ..." [matChipInputFor]="whitelistChips" [matChipInputSeparatorKeyCodes]="separatorKeysCodes" (matChipInputTokenEnd)="addBlacklistedId($event)">
             </mat-chip-list>
           </mat-form-field>
 
@@ -1075,6 +1033,10 @@
         <p><code>{{ this.workersChecksSerialized }}</code></p>
 
         <mat-divider [inset]="true"></mat-divider>
+        <h4 class="mb-0"><strong>Hits Overview</strong>:</h4>
+        <p><code>{{ this.hitsParsedString }}</code></p>
+
+        <mat-divider [inset]="true"></mat-divider>
         <h4 class="mb-0"><strong>Validity Check</strong>:</h4>
 
         <mat-list>
@@ -1115,7 +1077,7 @@
 
         <mat-progress-bar *ngIf="this.uploadStarted && !this.uploadCompleted" mode="indeterminate"></mat-progress-bar>
 
-        <ng-container *ngIf="this.uploadCompleted">
+        <ng-container *ngIf="!this.uploadStarted && this.uploadCompleted">
           <mat-divider [inset]="true"></mat-divider>
           <h4 class="mb-0">Upload result:</h4>
           <mat-list>
