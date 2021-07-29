@@ -1145,7 +1145,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     console.print(f"Path: [italic white on black]{folder_build_task_path}[/italic white on black]")
 
-    console.rule(f"15- Interface [cyan underline]document.ts")
+    console.rule(f"15 - Interface [cyan underline]document.ts")
 
     hits_file = f"{folder_build_task_path}hits.json"
     document_interface = f"{folder_build_skeleton_path}document.ts"
@@ -1239,7 +1239,68 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.print("Interface built")
     console.print(f"Path: [italic]{document_interface}[/italic]")
 
-    console.rule(f"16 - Amazon Mechanical Turk Landing Page")
+    console.rule(f"16 - Class [cyan underline]goldChecker.ts")
+
+    # This class provides a stub to implement the gold elements check. If there are no gold elements, the check is considered true automatically.
+    # The following codes provides answers, notes and attributes for each gold element. Those three corresponding data structures should be used
+    # to implement the check
+
+    gold_checker = f"{folder_build_skeleton_path}goldChecker.ts"
+    if not os.path.exists(folder_build_skeleton_path):
+        os.makedirs(folder_build_skeleton_path, exist_ok=True)
+
+    with open(gold_checker, 'w') as file:
+        print("export class GoldChecker {", file=file)
+        print("", file=file)
+        wrapper = textwrap.TextWrapper(initial_indent='\t', subsequent_indent='\t')
+        print(wrapper.fill('static performGoldCheck(goldConfiguration : Array<Object>) {'), file=file)
+        print("", file=file)
+        wrapper = textwrap.TextWrapper(initial_indent='\t\t', subsequent_indent='\t\t')
+        print(wrapper.fill('let goldChecks = new Array<boolean>()'), file=file)
+        print("", file=file)
+        print(wrapper.fill("/* If there are no gold elements there is nothing to be checked */"), file=file)
+        print(wrapper.fill("if(goldConfiguration.length<=0) {"), file=file)
+        wrapper = textwrap.TextWrapper(initial_indent='\t\t\t', subsequent_indent='\t\t\t')
+        print(wrapper.fill("goldChecks.push(true)"), file=file)
+        print(wrapper.fill("return goldChecks"), file=file)
+        wrapper = textwrap.TextWrapper(initial_indent='\t\t', subsequent_indent='\t\t')
+        print(wrapper.fill('}'), file=file)
+        print("", file=file)
+        print(wrapper.fill("for (let goldElement of goldConfiguration) {"), file=file)
+        wrapper = textwrap.TextWrapper(initial_indent='\t\t\t', subsequent_indent='\t\t\t')
+        print("", file=file)
+        print(wrapper.fill("/* Element attributes */"), file=file)
+        print(wrapper.fill('let document = goldConfiguration["document"]'), file=file)
+        print(wrapper.fill("/* Worker's answers for each gold dimensions */"), file=file)
+        print(wrapper.fill('let answers = goldConfiguration["answers"]'), file=file)
+        print(wrapper.fill("/* Worker's notes*/"), file=file)
+        print(wrapper.fill('let notes = goldConfiguration["notes"]'), file=file)
+        print("", file=file)
+        print(wrapper.fill("let goldCheck = false"), file=file)
+        print("", file=file)
+        print(wrapper.fill("/* CONTROL IMPLEMENTATION STARTS HERE */"), file=file)
+        print(wrapper.fill("/* Write your code; the check for the current element holds if goldCheck is set to true */"), file=file)
+        print("", file=file)
+        print("", file=file)
+        print("", file=file)
+        print(wrapper.fill("/* CONTROL IMPLEMENTATION ENDS HERE */"), file=file)
+        print(wrapper.fill("/* Push goldCheck inside goldChecks array for the current gold element */"), file=file)
+        print(wrapper.fill('goldChecks.push(goldCheck)'), file=file)
+        print("", file=file)
+        wrapper = textwrap.TextWrapper(initial_indent='\t\t', subsequent_indent='\t\t')
+        print(wrapper.fill('}'), file=file)
+        print("", file=file)
+        print(wrapper.fill('return goldChecks'), file=file)
+        print("", file=file)
+        wrapper = textwrap.TextWrapper(initial_indent='\t', subsequent_indent='\t')
+        print(wrapper.fill('}'), file=file)
+        print("", file=file)
+        print("}", file=file)
+
+    console.print("Class built")
+    console.print(f"Path: [italic]{gold_checker}[/italic]")
+
+    console.rule(f"17 - Amazon Mechanical Turk Landing Page")
     status.start()
     status.update(f"Istantiating Mako model")
     time.sleep(3)
@@ -1275,7 +1336,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.print(f"Tokens for {len(hits)} hits generated")
     console.print(f"Path: [italic]{mturk_tokens_file}")
 
-    console.rule(f"17 - Task [cyan underline]{task_name}[/cyan underline]/[yellow underline]{batch_name}[/yellow underline] build")
+    console.rule(f"18 - Task [cyan underline]{task_name}[/cyan underline]/[yellow underline]{batch_name}[/yellow underline] build")
     status.update(f"Executing build command, please wait")
     time.sleep(3)
 
@@ -1340,7 +1401,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.print("Model istantiated")
     console.print(f"Path: [italic underline]{index_page_file}")
 
-    console.rule(f"18 - Packaging Task [cyan underline]tasks/{task_name}/{batch_name}")
+    console.rule(f"19 - Packaging Task [cyan underline]tasks/{task_name}/{batch_name}")
     status.start()
     status.update(f"Starting")
     time.sleep(3)
@@ -1452,7 +1513,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     destination = f"{folder_tasks_batch_config_path}admin.json"
     copy(source, destination, "Admin Credentials")
 
-    console.rule(f"18 - Task [cyan underline]tasks/{task_name}/{batch_name} Deploy")
+    console.rule(f"20 - Task [cyan underline]tasks/{task_name}/{batch_name} Deploy")
     status.start()
     status.update(f"Starting")
     time.sleep(3)
@@ -1538,7 +1599,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     key = f"{s3_deploy_path}index.html"
     upload(path, aws_deploy_bucket, key, "Task Homepage", "text/html", "public-read")
 
-    console.rule(f"20 - Public Link")
+    console.rule(f"21 - Public Link")
     status.start()
     status.update(f"Writing")
     time.sleep(3)
