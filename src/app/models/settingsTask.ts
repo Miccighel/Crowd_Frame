@@ -15,6 +15,7 @@ export class SettingsTask {
     documentPositionWeights?: Object;
     logger?: boolean;
     logOption?: Object;
+    serverEndpoint?: string;
 
     constructor(
         data = null as JSON
@@ -40,7 +41,51 @@ export class SettingsTask {
         this.countdown_time = data ? data["countdown_time"] ? parseInt((data["countdown_time"])) : null : null;
         this.blacklist_batches = new Array<string>();
         this.logger = data ? !!data["logger"] : false;
-        this.logOption = data ? data['logOption'] ? data['logOption'] : {} : {};
+        this.logOption = data ? data['logOption'] ? data['logOption'] : {
+                    "button": {
+                      "general": 'false',
+                      "click": 'false'
+                    },
+                    "mouse": {
+                      "general": 'false',
+                      "mouseMovements": 'false',
+                      "leftClicks": 'false',
+                      "rightClicks": 'false'
+                    },
+                    "keyboard": {
+                      "general": 'false',
+                      "shortcuts": 'false',
+                      "keys": 'false'
+                    },
+                    "textInput": {
+                      "general": 'false',
+                      "paste": 'false',
+                      "delete": 'false'
+                    },
+                    "clipboard": {
+                      "general": 'false',
+                      "copy": 'false',
+                      "cut": 'false'
+                    },
+                    "radio": {
+                      "general": 'false',
+                      "change": 'false'
+                    },
+                    "crowd-xplorer": {
+                      "general": 'false',
+                      "query": 'false',
+                      "result": 'false'
+                    },
+                    "various": {
+                      "general": 'false',
+                      "selection": 'false',
+                      "unload": 'false',
+                      "focus&blur": 'false',
+                      "scroll": 'false',
+                      "resize": 'false'
+                    }
+                }: {};
+        this.serverEndpoint = data? data['serverEndpoint'] ? data['serverEndpoint'] : "" : "";
         if (data) if ('blacklist_batches' in data) for (let batch of data["blacklist_batches"] as Array<string>) this.blacklist_batches.push(batch)
         this.whitelist_batches = new Array<string>();
         if (data) if ('whitelist_batches' in data) for (let batch of data["whitelist_batches"] as Array<string>) this.whitelist_batches.push(batch)

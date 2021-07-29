@@ -750,6 +750,11 @@
             Logger
           </mat-slide-toggle>
 
+          <mat-form-field matLine class="width-100" appearance="fill" *ngIf="taskSettingsForm.get('logger').value">
+            <mat-label>Logging server URL</mat-label>
+            <input matInput type="text" formControlName="serverEndpoint" required (blur)="updateServerEndpoint()">
+          </mat-form-field>
+
           <div *ngIf="taskSettingsForm.get('logger').value">
             <table class="width-100" style="border-collapse: collapse">
               <tr *ngFor="let item of this.taskSettingsForm.get('logOption').value | keyvalue" style="border-bottom: thin solid lightgray">

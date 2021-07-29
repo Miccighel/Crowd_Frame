@@ -495,7 +495,8 @@ export class GeneratorComponent {
             batches: this._formBuilder.array([]),
             messages: this._formBuilder.array([]),
             logger: !!this.taskSettingsFetched.logger,
-            logOption: this.taskSettingsFetched.logOption
+            logOption: this.taskSettingsFetched.logOption,
+            serverEndpoint: this.taskSettingsFetched.serverEndpoint
         });
         if (this.taskSettingsFetched.messages) if (this.taskSettingsFetched.messages.length > 0) this.taskSettingsFetched.messages.forEach((message, messageIndex) => this.addMessage(message))
         if (this.taskSettingsFetched.annotator) if (this.taskSettingsFetched.annotator.type == "options") this.taskSettingsFetched.annotator.values.forEach((optionValue, optionValueIndex) => this.addOptionValue(optionValue))
@@ -1230,13 +1231,17 @@ export class GeneratorComponent {
 
     /* STEP #6 - Task Settings */
 
-  updateLogOption(el: string, action: string) {
+    updateLogOption(el: string, action: string) {
         let truthValue = this.taskSettingsForm.get('logOption').value[el][action] != true;
         if (action == 'general') {
             for(let key in this.taskSettingsForm.get('logOption').value[el])
                 this.taskSettingsForm.get('logOption').value[el][key] = truthValue
         } else
             this.taskSettingsForm.get('logOption').value[el][action] = truthValue
+    }
+
+    updateServerEndpoint() {
+        return this.taskSettingsForm.get('serverEndpoint').value
     }
 
     updateHitsFile(hits = null) {

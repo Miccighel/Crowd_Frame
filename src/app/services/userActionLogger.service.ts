@@ -13,6 +13,7 @@ import {ConfigService} from "./config.service";
 })
 export class ActionLogger {
   private _opt: Object;
+  private _isActive: boolean;
   private sectionService: SectionService;
   private loggerSection: string;
   private sequenceNumber: number;
@@ -395,5 +396,14 @@ export class ActionLogger {
 
   set opt(value: Object) {
     this._opt = value;
+  }
+
+
+  get isActive(): boolean {
+    return this._isActive;
+  }
+
+  set isActive(value: boolean) {
+    this._isActive = value;
   }
 }

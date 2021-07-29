@@ -831,7 +831,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         "aws_id_key": aws_worker_access_id,
         "aws_secret_key": aws_worker_access_secret,
         "bing_api_key": bing_api_key,
-        "server_endpoint": f'{api["ApiEndpoint"]}/log' if api else endpoint,
         "logOnConsole": 'false'
     }
 
@@ -864,7 +863,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         "aws_id_key": aws_worker_access_id,
         "aws_secret_key": aws_worker_access_secret,
         "bing_api_key": bing_api_key,
-        "server_endpoint": f'{api["ApiEndpoint"]}/log' if api else endpoint,
         "logOnConsole": 'true'
     }
 
@@ -1106,6 +1104,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                       "resize": 'false'
                     }
                 },
+                "serverEndpoint": f'{api["ApiEndpoint"]}/log' if api else endpoint,
                 "blacklist_batches": [],
                 "whitelist_batches": [],
                 "messages": ["You have already started this task without finishing it"]

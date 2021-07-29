@@ -56,7 +56,10 @@ import {from, Observable} from "rxjs";
 import {tap} from "rxjs/operators";
 
 function initActionLogger(actionLogger: ActionLogger): () => Observable<any>{
-  return() => from(actionLogger.downloadOpt()).pipe(tap(data => actionLogger.opt = data['logOption']))
+  return() => from(actionLogger.downloadOpt()).pipe(tap(data => {
+      actionLogger.opt = data['logOption']
+      actionLogger.isActive = data['logger']
+  }))
 }
 
 @NgModule({
