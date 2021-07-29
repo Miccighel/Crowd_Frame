@@ -1,6 +1,6 @@
 /* Core imports */
 import {BrowserModule} from '@angular/platform-browser';
-import {Injector, NgModule} from '@angular/core';
+import {APP_INITIALIZER, Injector, NgModule} from '@angular/core';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {HttpClientModule} from "@angular/common/http";
 import {createCustomElement} from "@angular/elements";
@@ -50,13 +50,17 @@ import {MatChipsModule} from "@angular/material/chips";
 import { AngularEditorModule } from '@kolkov/angular-editor';
 
 import {ActionLogger} from "./services/userActionLogger.service";
-import {
-  ButtonDirective, CrowdXplorerDirective,
-  InputDirective,
-  RadioDirective,
-  SkeletonDirective
-} from "./components/skeleton/skeleton.directive";
+import {ButtonDirective, CrowdXplorerDirective, InputDirective, RadioDirective, SkeletonDirective} from "./components/skeleton/skeleton.directive";
 import {SectionService} from "./services/section.service";
+import {from, Observable} from "rxjs";
+import {tap} from "rxjs/operators";
+
+function initActionLogger(actionLogger: ActionLogger): () => Observable<any>{
+  return() => from(actionLogger.downloadOpt()).pipe(tap(data => {
+      actionLogger.opt = data['logOption']
+      actionLogger.isActive = data['logger']
+  }))
+}
 
 @NgModule({
   declarations: [
@@ -118,7 +122,12 @@ import {SectionService} from "./services/section.service";
     AngularEditorModule
   ],
   providers: [
-    ActionLogger,
+      {
+      provide: APP_INITIALIZER,
+      useFactory: initActionLogger,
+      deps: [ActionLogger],
+      multi: true
+    },
     SectionService
   ],
   bootstrap: [LoaderComponent]

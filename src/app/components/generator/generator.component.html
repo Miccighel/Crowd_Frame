@@ -745,6 +745,38 @@
 
           <mat-divider [inset]="true"></mat-divider>
 
+          <!-- Logging -->
+          <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="logger">
+            Logger
+          </mat-slide-toggle>
+
+          <mat-form-field matLine class="width-100" appearance="fill" *ngIf="taskSettingsForm.get('logger').value">
+            <mat-label>Logging server URL</mat-label>
+            <input matInput type="text" formControlName="serverEndpoint" required (blur)="updateServerEndpoint()">
+          </mat-form-field>
+
+          <div *ngIf="taskSettingsForm.get('logger').value">
+            <table class="width-100" style="border-collapse: collapse">
+              <tr *ngFor="let item of this.taskSettingsForm.get('logOption').value | keyvalue" style="border-bottom: thin solid lightgray">
+                <th align="left">
+                  <mat-checkbox color="primary" [checked]="this.taskSettingsForm.get('logOption').value[item.key]['general']" (change)="updateLogOption(item.key.toString(),'general')">
+                    {{item.key.toUpperCase()}} events
+                  </mat-checkbox>
+                </th>
+                <ng-container *ngFor="let prop of this.taskSettingsForm.get('logOption').value[item.key] | keyvalue">
+                  <td *ngIf="prop.key != 'general'">
+                    <mat-checkbox color="primary" [checked]="this.taskSettingsForm.get('logOption').value[item.key][prop.key]" [disabled]="!this.taskSettingsForm.get('logOption').value[item.key]['general']" (change)="updateLogOption(item.key.toString(), prop.key.toString())">
+                      {{prop.key.toUpperCase()}}
+                    </mat-checkbox>
+                  </td>
+                </ng-container>
+              </tr>
+            </table>
+          </div>
+
+
+          <mat-divider [inset]="true"></mat-divider>
+
           <!-- Hits file-->
           <h3 class="lighter">Hits & Attributes</h3>
           <table class="width-100 mt-16px">
