@@ -493,7 +493,9 @@ export class GeneratorComponent {
             setCountdownTime: !!this.taskSettingsFetched.countdown_time,
             countdown_time: this.taskSettingsFetched.countdown_time ? this.taskSettingsFetched.countdown_time : '',
             batches: this._formBuilder.array([]),
-            messages: this._formBuilder.array([])
+            messages: this._formBuilder.array([]),
+            logger: !!this.taskSettingsFetched.logger,
+            logOption: this.taskSettingsFetched.logOption
         });
         if (this.taskSettingsFetched.messages) if (this.taskSettingsFetched.messages.length > 0) this.taskSettingsFetched.messages.forEach((message, messageIndex) => this.addMessage(message))
         if (this.taskSettingsFetched.annotator) if (this.taskSettingsFetched.annotator.type == "options") this.taskSettingsFetched.annotator.values.forEach((optionValue, optionValueIndex) => this.addOptionValue(optionValue))
@@ -1227,6 +1229,15 @@ export class GeneratorComponent {
     }
 
     /* STEP #6 - Task Settings */
+
+  updateLogOption(el: string, action: string) {
+        let truthValue = this.taskSettingsForm.get('logOption').value[el][action] != true;
+        if (action == 'general') {
+            for(let key in this.taskSettingsForm.get('logOption').value[el])
+                this.taskSettingsForm.get('logOption').value[el][key] = truthValue
+        } else
+            this.taskSettingsForm.get('logOption').value[el][action] = truthValue
+    }
 
     updateHitsFile(hits = null) {
         this.hitsParsed = hits ? hits : JSON.parse(this.hitsFile.content) as Array<Hit>;

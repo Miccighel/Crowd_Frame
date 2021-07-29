@@ -243,6 +243,10 @@ export class SkeletonComponent implements OnInit {
 
   /* |--------- LOGGING ELEMENTS - DECLARATION ---------| */
   sequenceNumber: number
+  logger: boolean
+  loggerOpt: Object
+  logOnConsole: boolean
+  serverEndpoint: string
 
   /* |--------- CONFIGURATION GENERATOR INTEGRATION - DECLARATION ---------| */
 
@@ -320,6 +324,8 @@ export class SkeletonComponent implements OnInit {
     /* |--------- LOGGING ELEMENTS - INITIALIZATION ---------| */
 
     this.sequenceNumber = 0
+    this.logOnConsole = this.configService.environment.logOnConsole
+    this.serverEndpoint = this.configService.environment.server_endpoint
 
     /* |--------- CONFIGURATION GENERATOR INTEGRATION - INITIALIZATION ---------| */
 
@@ -341,7 +347,10 @@ export class SkeletonComponent implements OnInit {
       this.workerIdentifier = url.searchParams.get("workerID");
 
       // Log session start
-      this.logInit(this.workerIdentifier, this.taskName, this.batchName, this.client);
+      if(this.logger)
+        this.logInit(this.workerIdentifier, this.taskName, this.batchName, this.client, this.serverEndpoint, this.logOnConsole);
+      else
+        this.actionLogger = null;
 
       /* If there is an external worker which is trying to perform the task, check its status */
       if (!(this.workerIdentifier === null)) {
@@ -406,6 +415,7 @@ export class SkeletonComponent implements OnInit {
     this.whitelistBatches = this.settings.whitelist_batches
     this.countdownTime = this.settings.countdown_time
     this.annotator = this.settings.annotator
+    this.logger = this.settings.logger
   }
 
   /*
@@ -747,8 +757,8 @@ export class SkeletonComponent implements OnInit {
   /* |--------- LOGGING SERVICE & SECTION SERVICE ---------| */
 
   /* Logging service initialization */
-  public logInit(workerIdentifier, taskName, batchName, http) {
-    this.actionLogger.logInit(workerIdentifier, taskName, batchName, http);
+  public logInit(workerIdentifier, taskName, batchName, http: HttpClient, endpoint: string, logOnConsole: boolean) {
+    this.actionLogger.logInit(workerIdentifier, taskName, batchName, http, endpoint, logOnConsole);
   }
 
   /* Section service gets updated with questionnaire and document amounts */
@@ -2242,7 +2252,7 @@ export class SkeletonComponent implements OnInit {
    public calculateTimeOfStatement(position: number, trueValue?: string){
 
     let trueValueDocumentData = this.findTrueValueDocument(trueValue);
-    
+
     let timeOfStatement = 0;
     console.log(trueValueDocumentData)
      let documentTime = this.settings.documentsTimeAndWeight[trueValueDocumentData].time;

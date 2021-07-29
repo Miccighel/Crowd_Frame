@@ -809,8 +809,11 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         except lambdaClient.exceptions.ResourceConflictException:
             status.stop()
             console.print("Function 'crowdLoggerLambda' already created")
+    else:
+        console.rule(f"10 - Logging Server Setup")
+        endpoint = console.input("Please insert an URL to the logging server: ")
 
-    console.rule(f"10 - Environment: [cyan underline]PRODUCTION[/cyan underline] creation")
+    console.rule(f"11 - Environment: [cyan underline]PRODUCTION[/cyan underline] creation")
     status.start()
     status.update(f"Creating environment")
     time.sleep(3)
@@ -828,7 +831,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         "aws_id_key": aws_worker_access_id,
         "aws_secret_key": aws_worker_access_secret,
         "bing_api_key": bing_api_key,
-        "server_endpoint": ''
+        "server_endpoint": f'{api["ApiEndpoint"]}/log' if api else endpoint,
+        "logOnConsole": 'false'
     }
 
     os.makedirs(folder_build_env_path, exist_ok=True)
@@ -836,7 +840,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     with open(environment_production, 'w') as file:
         print("export const environment = {", file=file)
         for (env_var, value) in environment_dict.items():
-            if env_var == 'production' or env_var == 'configuration_local':
+            if env_var == 'production' or env_var == 'configuration_local' or env_var == 'logOnConsole':
                 print(f"\t{env_var}: {value},", file=file)
             else:
                 print(f"\t{env_var}: \"{value}\",", file=file)
@@ -845,7 +849,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.print("File [cyan underline]environment.prod.ts[/cyan underline] generated")
     console.print(f"Path: [italic]{environment_production}[/italic]")
 
-    console.rule(f"11 -Environment: [cyan underline]DEVELOPMENT[/cyan underline] creation")
+    console.rule(f"12 -Environment: [cyan underline]DEVELOPMENT[/cyan underline] creation")
     status.start()
     status.update(f"Creating environment")
     time.sleep(3)
@@ -859,13 +863,15 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         "bucket": aws_private_bucket,
         "aws_id_key": aws_worker_access_id,
         "aws_secret_key": aws_worker_access_secret,
-        "bing_api_key": bing_api_key
+        "bing_api_key": bing_api_key,
+        "server_endpoint": f'{api["ApiEndpoint"]}/log' if api else endpoint,
+        "logOnConsole": 'true'
     }
 
     with open(environment_development, 'w') as file:
         print("export const environment = {", file=file)
         for (env_var, value) in environment_dict.items():
-            if env_var == 'production' or env_var == 'configuration_local':
+            if env_var == 'production' or env_var == 'configuration_local' or env_var == 'logOnConsole':
                 print(f"\t{env_var}: {value},", file=file)
             else:
                 print(f"\t{env_var}: \"{value}\",", file=file)
@@ -874,7 +880,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.print("File [cyan underline]environment.ts[/cyan underline] generated")
     console.print(f"Path: [italic]{environment_development}[/italic]")
 
-    console.rule(f"12 - Admin Credentials Creation")
+    console.rule(f"13 - Admin Credentials Creation")
     status.start()
     status.update(f"Creating file [cyan underline]admin.json")
     time.sleep(3)
@@ -896,7 +902,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     console.print(f"Path: [italic]{admin_file}")
 
-    console.rule(f"13 - Sample Task Configuration")
+    console.rule(f"14 - Sample Task Configuration")
     status.start()
     status.update(f"Generating a sample configuration if needed")
     time.sleep(3)
@@ -1055,6 +1061,51 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 "time_check_amount": 3,
                 "annotator": False,
                 "countdown_time": False,
+                "logger": False,
+                "logOption": {
+                    "button": {
+                      "general": 'false',
+                      "click": 'false'
+                    },
+                    "mouse": {
+                      "general": 'false',
+                      "mouseMovements": 'false',
+                      "leftClicks": 'false',
+                      "rightClicks": 'false'
+                    },
+                    "keyboard": {
+                      "general": 'false',
+                      "shortcuts": 'false',
+                      "keys": 'false'
+                    },
+                    "textInput": {
+                      "general": 'false',
+                      "paste": 'false',
+                      "delete": 'false'
+                    },
+                    "clipboard": {
+                      "general": 'false',
+                      "copy": 'false',
+                      "cut": 'false'
+                    },
+                    "radio": {
+                      "general": 'false',
+                      "change": 'false'
+                    },
+                    "crowd-xplorer": {
+                      "general": 'false',
+                      "query": 'false',
+                      "result": 'false'
+                    },
+                    "various": {
+                      "general": 'false',
+                      "selection": 'false',
+                      "unload": 'false',
+                      "focus&blur": 'false',
+                      "scroll": 'false',
+                      "resize": 'false'
+                    }
+                },
                 "blacklist_batches": [],
                 "whitelist_batches": [],
                 "messages": ["You have already started this task without finishing it"]
@@ -1076,7 +1127,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     console.print(f"Path: [italic white on black]{folder_build_task_path}[/italic white on black]")
 
-    console.rule(f"14 - Interface [cyan underline]document.ts")
+    console.rule(f"15- Interface [cyan underline]document.ts")
 
     hits_file = f"{folder_build_task_path}hits.json"
     document_interface = f"{folder_build_skeleton_path}document.ts"
@@ -1170,7 +1221,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.print("Interface built")
     console.print(f"Path: [italic]{document_interface}[/italic]")
 
-    console.rule(f"15 - Amazon Mechanical Turk Landing Page")
+    console.rule(f"16 - Amazon Mechanical Turk Landing Page")
     status.start()
     status.update(f"Istantiating Mako model")
     time.sleep(3)
@@ -1206,7 +1257,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.print(f"Tokens for {len(hits)} hits generated")
     console.print(f"Path: [italic]{mturk_tokens_file}")
 
-    console.rule(f"16 - Task [cyan underline]{task_name}[/cyan underline]/[yellow underline]{batch_name}[/yellow underline] build")
+    console.rule(f"17 - Task [cyan underline]{task_name}[/cyan underline]/[yellow underline]{batch_name}[/yellow underline] build")
     status.update(f"Executing build command, please wait")
     time.sleep(3)
 
@@ -1271,7 +1322,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.print("Model istantiated")
     console.print(f"Path: [italic underline]{index_page_file}")
 
-    console.rule(f"17 - Packaging Task [cyan underline]tasks/{task_name}/{batch_name}")
+    console.rule(f"18 - Packaging Task [cyan underline]tasks/{task_name}/{batch_name}")
     status.start()
     status.update(f"Starting")
     time.sleep(3)
@@ -1469,7 +1520,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     key = f"{s3_deploy_path}index.html"
     upload(path, aws_deploy_bucket, key, "Task Homepage", "text/html", "public-read")
 
-    console.rule(f"19 - Public Link")
+    console.rule(f"20 - Public Link")
     status.start()
     status.update(f"Writing")
     time.sleep(3)

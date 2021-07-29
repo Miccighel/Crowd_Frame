@@ -1,5 +1,20 @@
 # init.ipynb changelog
 
+## 2021-07-28 Francesco Bombassei De Bona
+
+### Added
+
+- env variables server_endpoint: string and logOnConsole: boolean
+- logOption to task.json to precisely select which event to monitor
+- logger toggle and options on generator page
+- integration for the previous where it was needed
+
+### Changed
+
+- logger service downloads options before angular init
+- directives adapt to logger options
+- refactoring where it was needed
+
 ## 2021-07-16 Michael soprano
 
 ### Added
