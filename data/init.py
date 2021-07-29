@@ -1059,6 +1059,11 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 "time_check_amount": 3,
                 "annotator": False,
                 "countdown_time": False,
+                "additional_times": False,
+                "countdown_modality": False,
+                "countdown_attribute": False,
+                "countdown_attribute_values": [],
+                "countdown_position_values": [],
                 "logger": False,
                 "logOption": {
                     "button": {
