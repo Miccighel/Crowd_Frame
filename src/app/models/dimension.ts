@@ -12,7 +12,7 @@ export class Dimension {
   description?: string;
   justification?: Justification;
   url?: boolean;
-  scale?: ScaleCategorical | ScaleInterval | ScaleMagnitude | ScalePairwaise;
+  scale?: ScaleCategorical | ScaleInterval | ScaleMagnitude | ScalePairwise;
   gold?: boolean;
   style: Style;
 
@@ -42,8 +42,8 @@ export class Dimension {
         case 'magnitude_estimation':
           this.scale = new ScaleMagnitude(data['scale'])
           break;
-        case 'pairwaise':
-          this.scale=new ScalePairwaise(data['scale'])
+        case 'pairwise':
+          this.scale=new ScalePairwise(data['scale'])
           break;
       }
     } else {
@@ -84,7 +84,7 @@ export class Scale {
 
 }
 
-export class ScalePairwaise extends Scale{
+export class ScalePairwise extends Scale{
   statements:Array<statement>;
   constructor(
      data:JSON

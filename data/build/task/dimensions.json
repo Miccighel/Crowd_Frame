@@ -47,13 +47,13 @@
           }
     },
     {
-        "name": "PairwaseName",
-        "name_pretty": "Pairwaise",
-        "description": "Pairwaise Description",
+        "name": "PairwiseName",
+        "name_pretty": "Pairwise",
+        "description": "Pairwise Description",
         "url": false,
         "justification": false,
         "scale": {
-            "type": "pairwaise",
+            "type": "pairwise",
             "statements": [
                 {
                     "text":"Il gallo è quattro",

@@ -500,7 +500,7 @@
                 <!-- Dimension assessment scale markup -->
                 <div *ngIf="dimension.scale" class="dimension-container dimension-scale">
                   <div *ngIf="dimension.url" class="dimension-counter">b.</div>
-                  <div *ngIf="dimension.scale.type!=='pairwaise'">
+                  <div *ngIf="dimension.scale.type!=='pairwise'">
                       <div *ngIf="!dimension.url"  class="dimension-counter">a.</div>
                   </div>
                   
@@ -553,12 +553,14 @@
 
                         </mat-form-field>
                       </ng-container>
-                      <ng-container *ngIf="dimension.scale.type=='pairwaise'">
-                        <div *ngFor="let value of dimension.scale.statements let k=index">
+                      <ng-container *ngIf="dimension.scale.type=='pairwise'">
+                        <div class="pairwise" >
+                          <div class="statement" *ngFor="let value of dimension.scale.statements let k=index ">
                                   Text:{{value.text}}
                                   Speaker:{{value.speaker}}
                                   SpeakerJob:{{value.speakerjob}}
                                   Context:{{value.context}}
+                          </div>
                         </div>
                       </ng-container>
 
@@ -576,7 +578,7 @@
                           <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0">({{mapping.description}})</span>
                         </mat-radio-button>
                       </mat-radio-group>
-                      <ng-container *ngIf="dimension.scale.type=='pairwaise'">
+                      <ng-container *ngIf="dimension.scale.type=='pairwise'">
                         <ng-container *ngFor="let values of dimension.scale.values let k=index">
                                   Text:{{values.text}}
                                   Speaker:{{values.speaker}}

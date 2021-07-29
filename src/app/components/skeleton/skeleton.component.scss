@@ -689,5 +689,18 @@ mat-step form mat-card-content, mat-step form mat-card-actions {
   margin-bottom: 2px;
 }
 
-
+.pairwise{
+  width: 100%;
+ background-color: #66bb6a;
+  display: flex;
+  align-items: flex-end;
+}
+.statement{
+  width: 50%;
+  height: 100px;
+  background-color: red;
+}
+.ng-star-inserted{
+  padding: 0;
+}
 
