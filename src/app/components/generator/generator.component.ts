@@ -75,6 +75,11 @@ interface AnnotatorType {
     viewValue: string;
 }
 
+interface ModalityType {
+    value: string;
+    viewValue: string;
+}
+
 interface BatchNode {
     name: string;
     batches?: BatchNode[];
@@ -164,6 +169,10 @@ export class GeneratorComponent {
     taskSettingsForm: FormGroup;
     taskSettingsFetched: SettingsTask
     taskSettingsSerialized: string
+    additionalTimeModalities: ModalityType[] = [
+        {value: 'attribute', viewValue: 'Attribute'},
+        {value: 'position', viewValue: 'Position'},
+    ];
     batchesTree: Array<JSON>
     batchesTreeInitialization: boolean
     batchesTreeSerialized: Array<JSON>
@@ -174,6 +183,8 @@ export class GeneratorComponent {
     hitsParsed: Array<Hit>
     hitsParsedString: string
     hitsAttributes: Array<string>
+    hitsAttributesValues: Object
+    hitsPositions: number
     hitsSize: number
     hitsDetected: number
     readMode: ReadMode
@@ -490,13 +501,36 @@ export class GeneratorComponent {
                 type: this.taskSettingsFetched.annotator ? this.taskSettingsFetched.annotator.type ? this.taskSettingsFetched.annotator.type : '' : '',
                 values: this._formBuilder.array([]),
             }),
-            setCountdownTime: !!this.taskSettingsFetched.countdown_time,
-            countdown_time: this.taskSettingsFetched.countdown_time ? this.taskSettingsFetched.countdown_time : '',
+            setCountdownTime: this.taskSettingsFetched.countdown_time >= 0 ? true : '',
+            countdown_time: this.taskSettingsFetched.countdown_time >= 0 ? this.taskSettingsFetched.countdown_time : '',
+            setAdditionalTimes: this.taskSettingsFetched.countdown_modality ? true : '',
+            countdown_modality: this.taskSettingsFetched.countdown_modality ? this.taskSettingsFetched.countdown_modality ? this.taskSettingsFetched.countdown_modality : '' : '',
+            countdown_attribute: this.taskSettingsFetched.countdown_attribute ? this.taskSettingsFetched.countdown_attribute ? this.taskSettingsFetched.countdown_attribute : '' : '',
+            countdown_attribute_values: this._formBuilder.array([]),
+            countdown_position_values: this._formBuilder.array([]),
             batches: this._formBuilder.array([]),
             messages: this._formBuilder.array([])
         });
         if (this.taskSettingsFetched.messages) if (this.taskSettingsFetched.messages.length > 0) this.taskSettingsFetched.messages.forEach((message, messageIndex) => this.addMessage(message))
         if (this.taskSettingsFetched.annotator) if (this.taskSettingsFetched.annotator.type == "options") this.taskSettingsFetched.annotator.values.forEach((optionValue, optionValueIndex) => this.addOptionValue(optionValue))
+        if (this.taskSettingsFetched.countdown_time >= 0) {
+            if(this.taskSettingsFetched.countdown_modality=='attribute') {
+                if(this.taskSettingsFetched.countdown_attribute_values) {
+                    for(let countdownAttribute of this.taskSettingsFetched.countdown_attribute_values) {
+                        this.updateCountdownAttribute(countdownAttribute)
+                    }
+                }
+            }
+        }
+        if (this.taskSettingsFetched.countdown_time >= 0) {
+            if(this.taskSettingsFetched.countdown_modality=='position') {
+                if(this.taskSettingsFetched.countdown_position_values) {
+                    for (let countdownPosition of this.taskSettingsFetched.countdown_position_values) {
+                        this.updateCountdownPosition(countdownPosition)
+                    }
+                }
+            }
+        }
         this.taskSettingsForm.valueChanges.subscribe(form => {
             this.taskSettingsJSON()
         })
@@ -1240,11 +1274,24 @@ export class GeneratorComponent {
             this.hitsDetected = 0
         }
         this.hitsAttributes = []
+        this.hitsAttributesValues = {}
         if (this.hitsDetected > 0) {
-            let document = JSON.parse(JSON.stringify(this.hitsParsed[0]['documents'][0]))
-            for (let test in document) {
-                if (!(test in this.hitsAttributes)) {
-                    this.hitsAttributes.push(test)
+            let hits = JSON.parse(JSON.stringify(this.hitsParsed))
+            let document = hits[0]['documents'][0]
+            this.hitsPositions = hits[0]['documents'].length
+            for (let attribute in document) {
+                if (!(attribute in this.hitsAttributes)) {
+                    this.hitsAttributes.push(attribute)
+                    this.hitsAttributesValues[attribute] = []
+                }
+            }
+            for (let hit of hits) {
+                for (let document of hit['documents']) {
+                    Object.entries(document).forEach(
+                        ([attribute, value]) => {
+                            if(!this.hitsAttributesValues[attribute].includes(value)) this.hitsAttributesValues[attribute].push(value)
+                        }
+                    );
                 }
             }
         }
@@ -1324,13 +1371,90 @@ export class GeneratorComponent {
     }
 
     resetCountdown() {
-        this.taskSettingsForm.get('countdown_time').setValue('')
         if (this.taskSettingsForm.get('setCountdownTime').value == false) {
+            this.taskSettingsForm.get('countdown_time').setValue('')
             this.taskSettingsForm.get('countdown_time').clearValidators();
+            this.taskSettingsForm.get('setAdditionalTimes').setValue('')
         } else {
-            this.taskSettingsForm.get('countdown_time').setValidators([Validators.required, this.positiveNumber.bind(this)]);
+            this.taskSettingsForm.get('countdown_time').setValidators([Validators.required, this.positiveOrZeroNumber.bind(this)]);
         }
-        this.taskSettingsForm.get('countdown_time').updateValueAndValidity();
+        this.resetAdditionalTimes()
+    }
+
+    resetAdditionalTimes() {
+        if (this.taskSettingsForm.get('setAdditionalTimes').value == false) {
+            this.taskSettingsForm.get('countdown_modality').setValue('')
+            this.taskSettingsForm.get('countdown_modality').clearValidators();
+            this.taskSettingsForm.get('countdown_attribute').setValue('')
+            this.taskSettingsForm.get('countdown_attribute').clearValidators()
+            this.countdownAttributeValues().clear()
+            this.countdownPositionValues().clear()
+        } else {
+            this.taskSettingsForm.get('countdown_modality').setValidators([Validators.required]);
+            if(this.taskSettingsForm.get('countdown_modality').value=='attribute')
+                this.taskSettingsForm.get('countdown_attribute').setValidators([Validators.required]);
+        }
+    }
+
+    countdownAttributeValues() {
+        return this.taskSettingsForm.get('countdown_attribute_values') as FormArray;
+    }
+
+    updateCountdownModality() {
+        if(this.taskSettingsForm.get('countdown_modality').value=="attribute") {
+            this.countdownPositionValues().clear()
+        } else {
+            this.taskSettingsForm.get('countdown_attribute').setValue('')
+            this.taskSettingsForm.get('countdown_attribute').clearValidators()
+            this.countdownAttributeValues().clear()
+            this.updateCountdownPosition()
+        }
+    }
+
+    updateCountdownAttribute(countdownAttribute = null) {
+        if(countdownAttribute) {
+            let control = this._formBuilder.group({
+                name: countdownAttribute['name'],
+                time: countdownAttribute['time']
+            })
+            this.countdownAttributeValues().push(control)
+        } else {
+            this.countdownAttributeValues().clear()
+            let chosenAttribute = this.taskSettingsForm.get('countdown_attribute').value
+            let values = this.hitsAttributesValues[chosenAttribute]
+            for (let value of values) {
+                let control = this._formBuilder.group({
+                    name: value,
+                    time: '',
+                })
+                this.countdownAttributeValues().push(control)
+            }
+        }
+
+    }
+
+    countdownPositionValues() {
+        return this.taskSettingsForm.get('countdown_position_values') as FormArray;
+    }
+
+    updateCountdownPosition(countdownPosition = null) {
+        if(countdownPosition) {
+            let control = this._formBuilder.group({
+                position: countdownPosition['name'],
+                time: countdownPosition['time']
+            })
+            this.countdownPositionValues().push(control)
+        } else {
+            this.countdownPositionValues().clear()
+            for(let index = 0;index<this.hitsPositions;index++) {
+                let control = this._formBuilder.group({
+                    position: index,
+                    time: '',
+                })
+                this.countdownPositionValues().push(control)
+            }
+        }
+
     }
 
     annotator() {
@@ -1647,5 +1771,14 @@ export class GeneratorComponent {
             return null;
         }
     }
+
+    public positiveOrZeroNumber(control: FormControl) {
+        if (Number(control.value) < 0) {
+            return {invalid: true};
+        } else {
+            return null;
+        }
+    }
+
 
 }

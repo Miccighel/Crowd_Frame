@@ -854,19 +854,62 @@
             Countdown
           </mat-slide-toggle>
 
-          <mat-form-field matLine class="width-100 mb-16px" [hideRequiredMarker]="taskSettingsForm.get('countdown_time').valid" appearance="fill"
-                          *ngIf="this.taskSettingsForm.get('setCountdownTime').value">
+          <mat-form-field matLine class="width-100" [hideRequiredMarker]="taskSettingsForm.get('countdown_time').valid" appearance="fill" *ngIf="this.taskSettingsForm.get('setCountdownTime').value">
             <mat-label>Time</mat-label>
-            <input matInput type="number" min="1" formControlName="countdown_time" required>
+            <input matInput type="number" min="0" formControlName="countdown_time" required>
             <mat-error *ngIf="checkFormControl(taskSettingsForm,'countdown_time', 'invalid')">
-              A positive number greater than zero is required
+              A positive or zero number is required
             </mat-error>
           </mat-form-field>
 
+          <mat-slide-toggle color="primary" class="mb-16px" formControlName="setAdditionalTimes" (change)="resetAdditionalTimes()" *ngIf="this.taskSettingsForm.get('setCountdownTime').value">
+            Additional Times
+          </mat-slide-toggle>
+
+          <mat-form-field class="width-100" appearance="fill" *ngIf="this.taskSettingsForm.get('setCountdownTime').value && this.taskSettingsForm.get('setAdditionalTimes').value">
+            <mat-label>Modality</mat-label>
+            <mat-select matInput formControlName="countdown_modality" required (selectionChange)="updateCountdownModality()">
+              <mat-option *ngFor="let additionalTimeModality of additionalTimeModalities" [value]="additionalTimeModality.value">
+                {{additionalTimeModality.viewValue}}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field class="width-100" appearance="fill" *ngIf="this.taskSettingsForm.get('countdown_modality').value == 'attribute' && this.taskSettingsForm.get('setCountdownTime').value && this.taskSettingsForm.get('setAdditionalTimes').value">
+            <mat-label>Attribute</mat-label>
+            <mat-select matInput formControlName="countdown_attribute" (selectionChange)="updateCountdownAttribute()" required>
+              <mat-option *ngFor="let attribute of hitsAttributes" [value]="attribute">
+                {{attribute}}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <div formArrayName="countdown_attribute_values" *ngIf="this.taskSettingsForm.get('countdown_modality').value == 'attribute' && this.taskSettingsForm.get('setCountdownTime').value && this.taskSettingsForm.get('setAdditionalTimes').value && this.hitsAttributesValues">
+              <mat-form-field
+                      matLine [hideRequiredMarker]="countdownAttributeControl.get('time').valid" appearance="fill" class="indent p-2px"
+                      *ngFor="let countdownAttributeControl of this.countdownAttributeValues().controls; let countdownAttributeIndex = index"
+                      [formGroupName]="countdownAttributeIndex">
+                <mat-label>{{this.hitsAttributesValues[(this.taskSettingsForm.get('countdown_attribute').value)][countdownAttributeIndex]}}</mat-label>
+                <input matInput type="number" formControlName="time" min="0" required>
+              </mat-form-field>
+          </div>
+
+          <div formArrayName="countdown_position_values" *ngIf="this.taskSettingsForm.get('countdown_modality').value == 'position' && this.taskSettingsForm.get('setCountdownTime').value && this.taskSettingsForm.get('setAdditionalTimes').value">
+            <mat-form-field
+                    matLine [hideRequiredMarker]="countdownPositionControl.get('time').valid" appearance="fill" class="indent p-2px"
+                    *ngFor="let countdownPositionControl of this.countdownPositionValues().controls; let countdownPositionIndex = index"
+                    [formGroupName]="countdownPositionIndex">
+              <mat-label>Position {{countdownPositionIndex}}</mat-label>
+              <input matInput type="number" formControlName="time" min="0" required>
+            </mat-form-field>
+          </div>
+
           <mat-divider [inset]="true"></mat-divider>
 
+          <h3 class="lighter">Batches</h3>
+
           <!-- Blacklist Batches -->
-          <div formArrayName="batches">
+          <div formArrayName="batches" class="mt-16px">
             <mat-progress-bar *ngIf="this.batches().controls.length<=0 && !this.batchesTreeInitialization" mode="indeterminate"></mat-progress-bar>
             <ng-container *ngIf="this.batches().controls.length>0 && this.batchesTreeInitialization">
               <div *ngFor="let taskNode of this.batchesTree">
