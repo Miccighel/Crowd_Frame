@@ -1844,10 +1844,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:~15.14.3":
-  version: 15.14.3
-  resolution: "@types/node@npm:15.14.3"
-  checksum: 928f0e4660c1d06798b9a3d802df08272e616642526dba6906afcbb55398c15c238ff7c47759485496464ca4acac6bb47bc279b13719ec4cf17dcd0057609d85
+"@types/node@npm:~15.14.4":
+  version: 15.14.4
+  resolution: "@types/node@npm:15.14.4"
+  checksum: 21a3e35f4838ba9c7bb2c4e57220fd370629b18d487fca81f59cd23a26289f089ad8d38a39acf1fbaf9dc37fb40dd533b57ad70abc76b85c5fa3153700fa372f
   languageName: node
   linkType: hard
 
@@ -2469,9 +2469,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"aws-sdk@npm:^2.953.0":
-  version: 2.953.0
-  resolution: "aws-sdk@npm:2.953.0"
+"aws-sdk@npm:^2.956.0":
+  version: 2.956.0
+  resolution: "aws-sdk@npm:2.956.0"
   dependencies:
     buffer: 4.9.2
     events: 1.1.1
@@ -2482,7 +2482,7 @@ __metadata:
     url: 0.10.3
     uuid: 3.3.2
     xml2js: 0.4.19
-  checksum: 5cd602727a0dd8d53386017d834039d0dc72f662ec86398bc8798c412789c67f10d3b5d832e4346cc75cd0068ca969704417688b34cd5a577654ba123a1f206b
+  checksum: b4ed5bac666b1e2959962c315289210eed08cc3d72c2221550b10432ce2f09449357a75583fa61ed85a12c02f7f4fd9d2e596ba7b82ae9131bc9f1996195c1f9
   languageName: node
   linkType: hard
 
@@ -3367,8 +3367,8 @@ __metadata:
     "@angular/router": ~12.1.4
     "@funktechno/texthighlighter": ^2.0.10
     "@kolkov/angular-editor": ^1.2.0
-    "@types/node": ~15.14.3
-    aws-sdk: ^2.953.0
+    "@types/node": ~15.14.4
+    aws-sdk: ^2.956.0
     crypto-es: ^1.2.7
     ngx-color-picker: ^11.0.0
     ngx-countdown: ^12.0.1
