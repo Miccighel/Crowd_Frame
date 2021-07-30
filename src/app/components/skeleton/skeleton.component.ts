@@ -325,7 +325,6 @@ export class SkeletonComponent implements OnInit {
 
     this.sequenceNumber = 0
     this.logOnConsole = this.configService.environment.logOnConsole
-    //this.serverEndpoint = this.configService.environment.server_endpoint
 
     /* |--------- CONFIGURATION GENERATOR INTEGRATION - INITIALIZATION ---------| */
 
@@ -348,7 +347,7 @@ export class SkeletonComponent implements OnInit {
 
       // Log session start
       if(this.logger)
-        this.logInit(this.workerIdentifier, this.taskName, this.batchName, this.client, this.serverEndpoint, this.logOnConsole);
+        this.logInit(this.workerIdentifier, this.taskName, this.batchName, this.client, this.logOnConsole);
       else
         this.actionLogger = null;
 
@@ -756,8 +755,8 @@ export class SkeletonComponent implements OnInit {
   /* |--------- LOGGING SERVICE & SECTION SERVICE ---------| */
 
   /* Logging service initialization */
-  public logInit(workerIdentifier, taskName, batchName, http: HttpClient, endpoint: string, logOnConsole: boolean) {
-    this.actionLogger.logInit(workerIdentifier, taskName, batchName, http, endpoint, logOnConsole);
+  public logInit(workerIdentifier, taskName, batchName, http: HttpClient, logOnConsole: boolean) {
+    this.actionLogger.logInit(workerIdentifier, taskName, batchName, http, logOnConsole);
   }
 
   /* Section service gets updated with questionnaire and document amounts */

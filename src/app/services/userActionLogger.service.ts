@@ -21,7 +21,7 @@ export class ActionLogger {
   private workerID: string;
   private taskName: string;
   private batchName: string;
-  private endpoint: string;
+  private _endpoint: string;
   private logOnConsole: boolean;
   private http: HttpClient;
   private s3Service: S3Service;
@@ -75,14 +75,17 @@ export class ActionLogger {
     if (this.logOnConsole) {
       console.log(payload)
     } else {
+      console.log(this.endpoint)
+      console.log(payload)
       this.http.post(
         this.endpoint,
         payload,
-        {
+          {
           responseType: 'text',
           headers: new HttpHeaders()
             .set('content-type', 'text/plain')
-        }).subscribe()
+        }
+      ).subscribe(res => console.log(res))
     }
   }
 
@@ -93,7 +96,7 @@ export class ActionLogger {
     let details = {
       ua: navigator.userAgent
     }
-    this.http.get('https://api.ipify.org/?format=json').subscribe(res => {
+    this.http.get('http://api.ipify.org/?format=json').subscribe(res => {
       details['ip'] = res['ip']
     })
     this.log('context', details)
@@ -105,16 +108,13 @@ export class ActionLogger {
    * @param taskName
    * @param batchName
    * @param http client initialized by the skeleton
-   * @param endpoint url of the centralized logging system
    * @param logOnConsole true to log events only on console
    */
-  logInit(workerID: string, taskName: string, batchName: string, http: HttpClient, endpoint: string, logOnConsole: boolean){
+  logInit(workerID: string, taskName: string, batchName: string, http: HttpClient, logOnConsole: boolean){
     this.http = http;
     this.workerID = workerID;
     this.taskName = taskName;
     this.batchName = batchName;
-
-    this.endpoint = endpoint;
     this.logOnConsole = logOnConsole;
 
     let details = this.getCurrentSize()
@@ -405,5 +405,13 @@ export class ActionLogger {
 
   set isActive(value: boolean) {
     this._isActive = value;
+  }
+
+  get endpoint(): string {
+    return this._endpoint;
+  }
+
+  set endpoint(value: string) {
+    this._endpoint = value;
   }
 }

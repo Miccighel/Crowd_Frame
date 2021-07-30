@@ -745,7 +745,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 PayloadFormatVersion='1.0',
                 CredentialsArn=f'arn:aws:iam::{aws_account_id}:role{path}gatewayToSQS',
                 RequestParameters={
-                    'QueueUrl': queue['url'],
+                    'QueueUrl': f'https://sqs.{aws_region}.amazonaws.com/{aws_account_id}/crowdFrameQueue',
                     'MessageBody': '$request.body'
                 }
             )['IntegrationId']
@@ -753,6 +753,11 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 ApiId=api['ApiId'],
                 RouteKey='POST /log',
                 Target='integrations/' + api['integration']
+            )
+            apiGateway.create_stage(
+              ApiId=api['ApiId'],
+              StageName="$default",
+              AutoDeploy=True
             )
             status.stop()
             console.print(f'[link={api["ApiEndpoint"]}/log]API endpoint[/link] created.')

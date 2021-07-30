@@ -59,6 +59,7 @@ function initActionLogger(actionLogger: ActionLogger): () => Observable<any>{
   return() => from(actionLogger.downloadOpt()).pipe(tap(data => {
       actionLogger.opt = data['logOption']
       actionLogger.isActive = data['logger']
+      actionLogger.endpoint = data['serverEndpoint']
   }))
 }
 
