@@ -69,23 +69,20 @@ export class ActionLogger {
    */
   log(type: string, details: object) {
     let payload = this.buildPayload(type, details)
-    if(payload.worker == null){
-      payload.worker = 'none'
-    }
-    if (this.logOnConsole) {
-      console.log(payload)
-    } else {
-      console.log(this.endpoint)
-      console.log(payload)
-      this.http.post(
-        this.endpoint,
-        payload,
+    if(payload.worker != null) {
+      if (this.logOnConsole) {
+        console.log(payload)
+      } else {
+        this.http.post(
+          this.endpoint,
+          payload,
           {
-          responseType: 'text',
-          headers: new HttpHeaders()
-            .set('content-type', 'text/plain')
-        }
-      ).subscribe(res => console.log(res))
+            responseType: 'text',
+            headers: new HttpHeaders()
+              .set('content-type', 'text/plain')
+          }
+        ).subscribe()
+      }
     }
   }
 
@@ -96,7 +93,7 @@ export class ActionLogger {
     let details = {
       ua: navigator.userAgent
     }
-    this.http.get('http://api.ipify.org/?format=json').subscribe(res => {
+    this.http.get('https://api.ipify.org/?format=json').subscribe(res => {
       details['ip'] = res['ip']
     })
     this.log('context', details)
