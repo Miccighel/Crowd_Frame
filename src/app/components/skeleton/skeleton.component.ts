@@ -41,8 +41,6 @@ import {MatCheckboxChange} from "@angular/material/checkbox";
 import {ButtonDirective} from "./skeleton.directive";
 import {SectionService} from "../../services/section.service";
 import CryptoES from "crypto-es";
-import algo = CryptoES.algo;
-
 
 /* Component HTML Tag definition */
 @Component({

@@ -1503,6 +1503,13 @@ export class GeneratorComponent {
             label: option ? option['label'] ? option['label'] : '' : '',
             color: option ? option['color'] ? option['color'] : '' : ''
         }))
+        if(!option) {
+            this.annotatorOptionColors.push("")
+        }
+    }
+
+    updateOptionColor(color, optionIndex) {
+        this.annotatorOptionColors[optionIndex] = color
     }
 
     addBatch(batchNode) {
@@ -1586,6 +1593,12 @@ export class GeneratorComponent {
 
         if (!taskSettingsJSON.setAnnotator) taskSettingsJSON.annotator = false
         delete taskSettingsJSON.setAnnotator
+
+        if(taskSettingsJSON.annotator.type == "options") {
+            taskSettingsJSON.annotator.values.forEach((option, index) => {
+                option["color"] = this.annotatorOptionColors[index]
+            });
+        }
 
         if (!taskSettingsJSON.setCountdownTime) {
             taskSettingsJSON.countdown_time = false
