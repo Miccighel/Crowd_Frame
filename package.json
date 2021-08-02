@@ -19,7 +19,7 @@
     "@angular/platform-browser": "~12.1.4",
     "@angular/platform-browser-dynamic": "~12.1.4",
     "@angular/router": "~12.1.4",
-    "@funktechno/texthighlighter": "^2.1.1",
+    "@funktechno/texthighlighter": "^2.0.10",
     "@kolkov/angular-editor": "^1.2.0",
     "aws-sdk": "^2.958.0",
     "crypto-es": "^1.2.7",

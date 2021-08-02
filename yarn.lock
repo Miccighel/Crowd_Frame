@@ -1653,7 +1653,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@funktechno/texthighlighter@npm:^2.1.1":
+"@funktechno/texthighlighter@npm:^2.0.10":
   version: 2.1.1
   resolution: "@funktechno/texthighlighter@npm:2.1.1"
   dependencies:
@@ -3443,7 +3443,7 @@ __metadata:
     "@angular/platform-browser": ~12.1.4
     "@angular/platform-browser-dynamic": ~12.1.4
     "@angular/router": ~12.1.4
-    "@funktechno/texthighlighter": ^2.1.1
+    "@funktechno/texthighlighter": ^2.0.10
     "@kolkov/angular-editor": ^1.2.0
     "@types/node": ~15.14.5
     aws-sdk: ^2.958.0
