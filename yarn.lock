@@ -1653,12 +1653,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@funktechno/texthighlighter@npm:^2.0.10":
-  version: 2.1.1
-  resolution: "@funktechno/texthighlighter@npm:2.1.1"
-  dependencies:
-    ts-node: ^10.1.0
-  checksum: a3a575ac7901f760af0773385bbaa53a32eef31da5eb04fe536bb727798f8422b7ed4011b9e91eece819141b665f6107bbf45d7a6b6ce7882f8e6efc4c228b75
+"@funktechno/texthighlighter@npm:^2.1.2":
+  version: 2.1.2
+  resolution: "@funktechno/texthighlighter@npm:2.1.2"
+  checksum: d60073a2ed0498eb474075b5a19a709a290ae69b7d36b656d20ec39891609854a3105392912952638e93f33b556bcbe3bc467c045dc41c8ce3ffedcd44466727
   languageName: node
   linkType: hard
 
@@ -1829,34 +1827,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tsconfig/node10@npm:^1.0.7":
-  version: 1.0.8
-  resolution: "@tsconfig/node10@npm:1.0.8"
-  checksum: 0336493b89fb7c06409a1247a3fb00fac2755f21f3f8ae4b9dd2457859abfc5e8ca42b6d9ca5a279fe81bc70fe1f3450eef61e5dd5a63a7b4a6946ff31874816
-  languageName: node
-  linkType: hard
-
-"@tsconfig/node12@npm:^1.0.7":
-  version: 1.0.9
-  resolution: "@tsconfig/node12@npm:1.0.9"
-  checksum: 5532bfb5df47ed3a507da533c731a2fb80ee2e886edadbf20e664dcd3172d5c159577a281d15733b8d0c30bfa4e6b48496bef0704192c085520bc76bb9938068
-  languageName: node
-  linkType: hard
-
-"@tsconfig/node14@npm:^1.0.0":
-  version: 1.0.1
-  resolution: "@tsconfig/node14@npm:1.0.1"
-  checksum: d0068287dba46dc98e7d49c229b0fee034fbac2bb4bc2efe12cc67227a1c68ec0728ca1e535dff7f033f7455de6c67e9b8f9d90f4fc3bb07c0d9ac08186fe65c
-  languageName: node
-  linkType: hard
-
-"@tsconfig/node16@npm:^1.0.1":
-  version: 1.0.2
-  resolution: "@tsconfig/node16@npm:1.0.2"
-  checksum: 57310e88858be59b36603e5d9bd7bd1714d16402ef1e536c01521ad3b207833a2fc64d260d362cae07bf4e50759a3aba3958c2faf9c42b52c4c817be60a93123
-  languageName: node
-  linkType: hard
-
 "@types/eslint-scope@npm:^3.7.0":
   version: 3.7.1
   resolution: "@types/eslint-scope@npm:3.7.1"
@@ -1915,10 +1885,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:~15.14.5":
-  version: 15.14.5
-  resolution: "@types/node@npm:15.14.5"
-  checksum: 3e55617a1b1c166f7708aab4c2a38d2425494ef0a5a3f341e88b5b51b681e8cccc632f86d10f4bb1f764455a45c60d7de4cbdc0dfe2b19d17a329b72151b8669
+"@types/node@npm:~15.14.6":
+  version: 15.14.6
+  resolution: "@types/node@npm:15.14.6"
+  checksum: 91b53bf770bb0f12c6926ce1b16582d1192ac2cec7a8f19ab57510216874441b0eb60c3cb4cf89613754c20bd46e04231c3b4b8c3768cd1afb6fd244052f9312
   languageName: node
   linkType: hard
 
@@ -2382,13 +2352,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"arg@npm:^4.1.0":
-  version: 4.1.3
-  resolution: "arg@npm:4.1.3"
-  checksum: 81b3b40b1529c4fbf75b12f7c3e6fb2dcce9e78072063babc169de9b4f40777788f3d2b04380f659ef676a756e03ccfbfe78adf4477353bda906295fa69dab89
-  languageName: node
-  linkType: hard
-
 "arr-diff@npm:^4.0.0":
   version: 4.0.0
   resolution: "arr-diff@npm:4.0.0"
@@ -2540,9 +2503,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"aws-sdk@npm:^2.958.0":
-  version: 2.958.0
-  resolution: "aws-sdk@npm:2.958.0"
+"aws-sdk@npm:^2.960.0":
+  version: 2.960.0
+  resolution: "aws-sdk@npm:2.960.0"
   dependencies:
     buffer: 4.9.2
     events: 1.1.1
@@ -2553,7 +2516,7 @@ __metadata:
     url: 0.10.3
     uuid: 3.3.2
     xml2js: 0.4.19
-  checksum: 00afb5ecf247b508f7f789095b2eac25656d2712b4ee3ad1f0aa7231dfa589e6ad690bcb753577779337a381054d63ae67b5e4eb097ca98a6093524f777fdd45
+  checksum: 7a6feb23a150f258d08a5f0661508eb5f7539104b93ebdb79f49b4f0e8dd2d141495dfedf1dcdef9bf914723d70dc61eb2f725308b6726a75cc2b5a8752238e7
   languageName: node
   linkType: hard
 
@@ -3392,13 +3355,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"create-require@npm:^1.1.0":
-  version: 1.1.1
-  resolution: "create-require@npm:1.1.1"
-  checksum: babd307893abfb26d77ae11cb9d6b6cfa6d18c9cee435cf70b5a3fb44aa8d90c9ec26ea89cbb16e0a94b8d34f5fcaee164b90ed526cdd3158955673ab9652d01
-  languageName: node
-  linkType: hard
-
 "critters@npm:0.0.10":
   version: 0.0.10
   resolution: "critters@npm:0.0.10"
@@ -3443,10 +3399,10 @@ __metadata:
     "@angular/platform-browser": ~12.1.4
     "@angular/platform-browser-dynamic": ~12.1.4
     "@angular/router": ~12.1.4
-    "@funktechno/texthighlighter": ^2.0.10
+    "@funktechno/texthighlighter": ^2.1.2
     "@kolkov/angular-editor": ^1.2.0
-    "@types/node": ~15.14.5
-    aws-sdk: ^2.958.0
+    "@types/node": ~15.14.6
+    aws-sdk: ^2.960.0
     crypto-es: ^1.2.7
     ngx-color-picker: ^11.0.0
     ngx-countdown: ^12.0.1
@@ -3932,13 +3888,6 @@ __metadata:
   version: 2.1.0
   resolution: "detect-node@npm:2.1.0"
   checksum: 5100c924d74bdc2cf861af88dce6618abbbb95e3b71047f1eac7e475981416aa2c208c7153fd830df372f8ce324a207adb1c9f56884fa94bcb820b8406dd9e6f
-  languageName: node
-  linkType: hard
-
-"diff@npm:^4.0.1":
-  version: 4.0.2
-  resolution: "diff@npm:4.0.2"
-  checksum: 81b5cd7ddde6f0ba2a532d434cfdca365aedd6cc62bb133e851e66e071d40382a30924a07c1034bd3d5a2e332146f64514b73c06fe2ebc0490a67f0c98da79fb
   languageName: node
   linkType: hard
 
@@ -6197,13 +6146,6 @@ fsevents@~2.3.2:
   dependencies:
     semver: ^6.0.0
   checksum: 54b6f186c209c1b133d0d1710e6b04c41ebfcb0dac699e5a369ea1223f22c0574ef820b91db37cae6c245f5bda8aff9bfec94f6c23e7d75970446b34a58a79b0
-  languageName: node
-  linkType: hard
-
-"make-error@npm:^1.1.1":
-  version: 1.3.6
-  resolution: "make-error@npm:1.3.6"
-  checksum: 2c780bab8409b865e8ee86697c599a2bf2765ec64d21eb67ccda27050e039f983feacad05a0d43aba3c966ea03d305d2612e94fec45474bcbc61181f57c5bb88
   languageName: node
   linkType: hard
 
@@ -9286,7 +9228,7 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"source-map-support@npm:0.5.19, source-map-support@npm:^0.5.17, source-map-support@npm:^0.5.5, source-map-support@npm:~0.5.19":
+"source-map-support@npm:0.5.19, source-map-support@npm:^0.5.5, source-map-support@npm:~0.5.19":
   version: 0.5.19
   resolution: "source-map-support@npm:0.5.19"
   dependencies:
@@ -9854,40 +9796,6 @@ fsevents@~2.3.2:
   bin:
     tree-kill: cli.js
   checksum: 967643efa4a231868232ea9d046c3ba7494ea6061fbb1e661c699b43ca0f0a14dad0782a631d915959d562830035166bab80ed726f9fe33b838af8a7516624ed
-  languageName: node
-  linkType: hard
-
-"ts-node@npm:^10.1.0":
-  version: 10.1.0
-  resolution: "ts-node@npm:10.1.0"
-  dependencies:
-    "@tsconfig/node10": ^1.0.7
-    "@tsconfig/node12": ^1.0.7
-    "@tsconfig/node14": ^1.0.0
-    "@tsconfig/node16": ^1.0.1
-    arg: ^4.1.0
-    create-require: ^1.1.0
-    diff: ^4.0.1
-    make-error: ^1.1.1
-    source-map-support: ^0.5.17
-    yn: 3.1.1
-  peerDependencies:
-    "@swc/core": ">=1.2.50"
-    "@swc/wasm": ">=1.2.50"
-    "@types/node": "*"
-    typescript: ">=2.7"
-  peerDependenciesMeta:
-    "@swc/core":
-      optional: true
-    "@swc/wasm":
-      optional: true
-  bin:
-    ts-node: dist/bin.js
-    ts-node-cwd: dist/bin-cwd.js
-    ts-node-script: dist/bin-script.js
-    ts-node-transpile-only: dist/bin-transpile.js
-    ts-script: dist/bin-script-deprecated.js
-  checksum: d1b582dc3624061d86c2657507e21c3875919b7d108db16cde5507f2aa75b025be2e09b35ec607900eb525e429ebd14f0cf1c5f4b81292a191c0f8c7bfdf0720
   languageName: node
   linkType: hard
 
@@ -10650,13 +10558,6 @@ typescript@4.3.4:
     y18n: ^5.0.5
     yargs-parser: ^20.2.2
   checksum: a7969b48d2dea129a7d4fcc3f13e88d4f94bacbd24f720b2ce19946fa9facc42cfed89c059d953091241f4e9e9000ed9dbf86e4bb4b6ceb3a26af10ddebdd0b2
-  languageName: node
-  linkType: hard
-
-"yn@npm:3.1.1":
-  version: 3.1.1
-  resolution: "yn@npm:3.1.1"
-  checksum: bff63b80568d80c711670935427494dde47cdf97e8b04196b140ce0af519c81c5ee857eddad0caa8b422dd65aea0157bbfaacbb1546bebba623f0f383d5d9ae5
   languageName: node
   linkType: hard
 
