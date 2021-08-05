@@ -1893,8 +1893,6 @@ export class SkeletonComponent implements OnInit {
       let currentIndex = this.stepper.selectedIndex - this.questionnaireAmountStart;
       switch (action) {
         case "Next":
-          console.log(currentIndex)
-          console.log(this.countdown.toArray())
           if (currentIndex > 0 && this.countdown.toArray()[currentIndex - 1].left > 0) {
             this.countdown.toArray()[currentIndex - 1].pause();
           }
