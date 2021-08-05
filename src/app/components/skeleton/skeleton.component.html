@@ -202,9 +202,7 @@
             <!--- Countdown markup --->
             <div class="countdown sticky" *ngIf="this.settings.countdown_time>=0">
               <h1 class="text-lighter m-0">
-                Time left: <countdown #countdownElement [config]="{ leftTime: this.documentsCountdownTime[i], format: 'm:s' }"></countdown>
-                <span *ngIf="this.documentsCountdownTime[i]>=60"> minutes</span>
-                <span *ngIf="this.documentsCountdownTime[i]<60"> seconds</span>
+                Time left: <countdown #countdownElement [config]="{ demand: true, leftTime: this.documentsCountdownTime[i], format: 'm:s' }" (event)="handleCountdown($event, i)"></countdown>
               </h1>
             </div>
 
@@ -490,7 +488,9 @@
                       *ngIf="dimension.url" id="app-crowd-xplorer-{{i}}-{{j}}"
                       (resultEmitter)="storeSearchEngineRetrievedResponse($event, document, dimension)"
                       (queryEmitter)="storeSearchEngineUserQuery($event, document, dimension)"
-                      (selectedRowEmitter)="storeSearchEngineSelectedResponse($event, document, dimension)">
+                      (selectedRowEmitter)="storeSearchEngineSelectedResponse($event, document, dimension)"
+                      [countdownExpired]="this.countdownsExpired[i]"
+                    >
                     </app-crowd-xplorer>
                     <!-- Dimension search engine url field markup (hidden) -->
                     <mat-form-field *ngIf="dimension.url" class="url-field">

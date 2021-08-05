@@ -1,5 +1,5 @@
 /* Core modules */
-import {Component, EventEmitter, Output, ViewChild} from '@angular/core';
+import {Component, EventEmitter, Input, Output, ViewChild} from '@angular/core';
 /* Loading screen module */
 import {NgxUiLoaderService} from "ngx-ui-loader";
 /* Material design modules */
@@ -97,6 +97,8 @@ export class CrowdXplorer {
   @Output() resultEmitter: EventEmitter<Object>;
   /* EMITTER: Response selected by user */
   @Output() selectedRowEmitter: EventEmitter<Object>;
+
+  @Input() countdownExpired: boolean
 
   /* Search results table UI variables and controls */
   resultsAmount = 0;

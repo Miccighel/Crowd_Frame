@@ -200,7 +200,6 @@ export class SkeletonComponent implements OnInit {
   whitelistBatches: Array<string>
 
   /* Optional countdown to use for each document */
-  countdownTime: number
   documentsCountdownTime : Array<number>
 
   /* Optional document time value for each document */
@@ -410,7 +409,6 @@ export class SkeletonComponent implements OnInit {
     this.timeCheckAmount = this.settings.time_check_amount
     this.blacklistBatches = this.settings.blacklist_batches
     this.whitelistBatches = this.settings.whitelist_batches
-    this.countdownTime = this.settings.countdown_time
     this.annotator = this.settings.annotator
     this.logger = this.settings.logger
   }
@@ -739,7 +737,7 @@ export class SkeletonComponent implements OnInit {
       this.changeDetector.detectChanges();
 
       /* If there are no questionnaires and the countdown time is set, enable the first countdown */
-      if (this.settings.countdown_time && this.questionnaireAmountStart == 0) this.countdown.toArray()[0].begin();
+      if (this.settings.countdown_time>=0 && this.questionnaireAmountStart == 0) this.countdown.toArray()[0].begin();
 
       /* trigger the changeDetection again */
       this.changeDetector.detectChanges();
@@ -1868,7 +1866,7 @@ export class SkeletonComponent implements OnInit {
     this.currentTry = this.currentTry + 1;
 
     /* The countdowns are set back to 0 */
-    if (this.settings.countdown_time) {
+    if (this.settings.countdown_time>=0) {
       if (this.countdown.toArray()[0].left > 0) {
         this.countdown.toArray()[0].resume();
       }
@@ -1891,14 +1889,16 @@ export class SkeletonComponent implements OnInit {
 
     /* The countdowns are stopped and resumed to the left or to the right of the current document,
     *  depending on the chosen action ("Back" or "Next") */
-    if ((this.stepper.selectedIndex >= this.questionnaireAmountStart && this.stepper.selectedIndex < this.questionnaireAmountStart + this.documentsAmount) && this.settings.countdown_time) {
+    if ((this.stepper.selectedIndex >= this.questionnaireAmountStart && this.stepper.selectedIndex < this.questionnaireAmountStart + this.documentsAmount) && this.settings.countdown_time>=0) {
       let currentIndex = this.stepper.selectedIndex - this.questionnaireAmountStart;
       switch (action) {
         case "Next":
+          console.log(currentIndex)
+          console.log(this.countdown.toArray())
           if (currentIndex > 0 && this.countdown.toArray()[currentIndex - 1].left > 0) {
             this.countdown.toArray()[currentIndex - 1].pause();
           }
-          if (this.countdown.toArray()[currentIndex].left == this.settings.countdown_time) {
+          if (this.countdown.toArray()[currentIndex].left == this.documentsCountdownTime[documentIndex]) {
             this.countdown.toArray()[currentIndex].begin();
           } else if (this.countdown.toArray()[currentIndex].left > 0) {
             this.countdown.toArray()[currentIndex].resume();
@@ -1908,7 +1908,7 @@ export class SkeletonComponent implements OnInit {
           if (this.countdown.toArray()[currentIndex + 1].left > 0) {
             this.countdown.toArray()[currentIndex + 1].pause();
           }
-          if (this.countdown.toArray()[currentIndex].left == this.settings.countdown_time) {
+          if (this.countdown.toArray()[currentIndex].left == this.documentsCountdownTime[documentIndex]) {
             this.countdown.toArray()[currentIndex].begin();
           } else if (this.countdown.toArray()[currentIndex].left > 0) {
             this.countdown.toArray()[currentIndex].resume();
@@ -2175,7 +2175,7 @@ export class SkeletonComponent implements OnInit {
         /* Countdown time and corresponding flag for each document */
         let countdownTimes = [];
         let countdownExpired = [];
-        if (this.settings.countdown_time)
+        if (this.settings.countdown_time>=0)
           for (let index = 0; index < this.countdown.length; index++) countdownTimes.push(Number(this.countdown[index]["i"]["text"]));
         for (let index = 0; index < this.countdownsExpired.length; index++) countdownExpired.push(this.countdownsExpired[index]);
         data["countdowns_times"] = countdownTimes

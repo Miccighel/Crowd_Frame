@@ -8,7 +8,7 @@
     </form>
 
     <button mat-flat-button color="primary" class="search-button"
-            [disabled]="!searchForm.valid || searchInProgress"
+            [disabled]="!searchForm.valid || searchInProgress || countdownExpired"
             (click)="performWebSearch(searchInput.value)">{{searchInProgress === true ? 'SEARCHING...' : 'SEARCH'}}
     </button>
 
