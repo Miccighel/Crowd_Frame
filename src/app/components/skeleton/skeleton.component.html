@@ -553,17 +553,38 @@
 
                         </mat-form-field>
                       </ng-container>
-                      <ng-container *ngIf="dimension.scale.type=='pairwise'">
+                      
+                      <ng-container *ngIf="dimension.scale.type=='pairwise'" >
                         <div class="pairwise" >
-                          <div class="statement" *ngFor="let value of dimension.scale.statements let k=index ">
-                                  Text:{{value.text}}
-                                  Speaker:{{value.speaker}}
-                                  SpeakerJob:{{value.speakerjob}}
-                                  Context:{{value.context}}
+                         <mat-error *ngIf="checkFormControl(documentsForm[i], (dimension.name).concat('_value'), 'required')">
+                            This field is required
+                          </mat-error>
+                          <div  class="statement"  *ngFor="let values of dimension.scale.statements let k=index" (click)="storeDimensionValue(values, i, dimension.index)" >
+                                  <div class="boxtext">
+                                       {{values.text}}
+                                  </div>
+                                  <div class="values">
+                                    <span class="caption">
+                                      <label>Speaker:</label>
+                                      {{values.speaker}}
+                                    </span>
+                                    <span class="caption">
+                                       <label>SpeakerJob:</label>
+                                       {{values.speakerjob}}
+                                    </span>              
+                                    <span class="caption">
+                                      <label>Context:</label>
+                                       {{values.context}}
+                                    </span>
+                                    <span class="caption">
+                                      <label>value:</label>
+                                      {{values.value}}
+                                    </span>
+                                    
+                                  </div>          
                           </div>
                         </div>
                       </ng-container>
-
                     </ng-container>
 
                     <!-- Horizontal style markup -->
@@ -579,7 +600,7 @@
                         </mat-radio-button>
                       </mat-radio-group>
                       <ng-container *ngIf="dimension.scale.type=='pairwise'">
-                        <ng-container *ngFor="let values of dimension.scale.values let k=index">
+                        <ng-container *ngFor="let values of dimension.scale.values let k=index"  >
                                   Text:{{values.text}}
                                   Speaker:{{values.speaker}}
                                   SpeakerJob:{{values.speakerjob}}

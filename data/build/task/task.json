@@ -2,7 +2,7 @@
     "task_name": "task-Pairwise",
     "batch_name": "Batch-1",
     "allowed_tries": 10,
-    "time_check_amount": 3,
+    "time_check_amount": 0,
     "annotator": false,
     "countdown_time": false,
     "blacklist_batches": [],

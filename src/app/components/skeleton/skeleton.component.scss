@@ -691,16 +691,41 @@ mat-step form mat-card-content, mat-step form mat-card-actions {
 
 .pairwise{
   width: 100%;
- background-color: #66bb6a;
   display: flex;
   align-items: flex-end;
 }
-.statement{
-  width: 50%;
-  height: 100px;
-  background-color: red;
-}
+
 .ng-star-inserted{
   padding: 0;
 }
+.boxtext{
+  width:70%;
+  margin:0 auto;
+  background-color: #ff4081;
+  height: 30%;
+  margin-top: 30px;
+  border-radius: 15px;
+  padding: 10px;
+}
+.statement {
+  overflow: visible;
+  width: 500%;
+  height: 250px;
+  background-color: #4dff4d;
+  border-radius: 30px;
+  margin:15px;
+  margin-right:50px;
+  margin-top:60px;
+  padding:15px;
+}
 
+.values{
+  width: 50%;
+  height: 100%;
+  margin:0 auto;
+  margin-top: 15px;
+}
+
+.caption {
+  display: block;
+}

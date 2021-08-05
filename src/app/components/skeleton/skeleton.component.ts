@@ -52,6 +52,11 @@ import { Console } from 'console';
 */
 export class SkeletonComponent implements OnInit {
 
+
+  changecolor()
+  {
+    console.log("lol")
+  }
   /* |--------- SERVICES & CO. - DECLARATION ---------| */
 
   /* Change detector to manually intercept changes on DOM */
@@ -604,7 +609,7 @@ export class SkeletonComponent implements OnInit {
           if (dimension.scale) {
             if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.required]);
             if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value`] = new FormControl((Math.round(((<ScaleInterval>dimension.scale).min + (<ScaleInterval>dimension.scale).max) / 2)), [Validators.required]);
-            if(dimension.scale.type =="pairwise")controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.required]);
+            if(dimension.scale.type =="pairwise") controlsConfig[`${dimension.name}_value`] = new FormControl('', );
             
             if (dimension.scale.type == "magnitude_estimation") {
               if ((<ScaleMagnitude>dimension.scale).lower_bound) {
@@ -619,6 +624,7 @@ export class SkeletonComponent implements OnInit {
         }
 
         this.documentsForm[index] = this.formBuilder.group(controlsConfig)
+        console.log(this.documentsForm)
       }
 
       this.dimensionsSelectedValues = new Array<object>(this.documentsAmount);
@@ -752,12 +758,15 @@ export class SkeletonComponent implements OnInit {
    */
   public storeDimensionValue(valueData: Object, document: number, dimension: number) {
     /* The current document, dimension and user query are copied from parameters */
+    console.log("swag");
+    console.log(valueData);
     let currentDocument = document
     let currentDimension = dimension
     /* A reference to the current dimension is saved */
     this.currentDimension = currentDimension;
     let currentValue = valueData['value'];
     let timeInSeconds = Date.now() / 1000;
+    console.log("currentvalue"+currentValue)
     /* If some data for the current document already exists*/
     if (this.dimensionsSelectedValues[currentDocument]['amount'] > 0) {
       /* The new query is pushed into current document data array along with a document_index used to identify such query*/
@@ -768,6 +777,7 @@ export class SkeletonComponent implements OnInit {
         "timestamp": timeInSeconds,
         "value": currentValue
       });
+      console.log("selectedValue"+JSON.stringify(selectedValues))
       /* The data array within the data structure is updated */
       this.dimensionsSelectedValues[currentDocument]['data'] = selectedValues;
       /* The total amount of selected values for the current document is updated */
@@ -782,10 +792,12 @@ export class SkeletonComponent implements OnInit {
         "timestamp": timeInSeconds,
         "value": currentValue
       }];
+      console.log("dimn"+JSON.stringify(this.dimensionsSelectedValues))
       /* The total amount of selected values for the current document is set to 1 */
       /* IMPORTANT: the document_index of the last selected value for a document will be <amount -1> */
       this.dimensionsSelectedValues[currentDocument]['amount'] = 1
     }
+
   }
 
   /*
@@ -2176,5 +2188,4 @@ export class SkeletonComponent implements OnInit {
     }
     return {start: start, end: end};
   }
-
 }

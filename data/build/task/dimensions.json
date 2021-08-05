@@ -47,27 +47,28 @@
           }
     },
     {
-        "name": "PairwiseName",
+        "name": "pairwise",
         "name_pretty": "Pairwise",
-        "description": "Pairwise Description",
+        "description": "pairwise",
         "url": false,
         "justification": false,
         "scale": {
             "type": "pairwise",
             "statements": [
                 {
-                    "text":"Il gallo è quattro",
-                    "speaker":"christianAbbondo",
-                    "speakerjob":"swager",
-                    "context":"twitter"
+                    "text": "BHO",
+                    "speaker": "ciao2",
+                    "speakerjob": "1",
+                    "context":"swag",
+                    "value":"0"
                 },
                 {
-                    "text":"Il gallo è quattro",
-                    "speaker":"bello figo",
-                    "speakerjob":"swager",
-                    "context":"twitter"
+                    "text": "Bho2",
+                    "speaker": "ciao2",
+                    "speakerjob": "1",
+                    "context":"swag",
+                    "value":"1"
                 }
-
             ]
         },
         "gold_question_check": false,
@@ -77,4 +78,5 @@
             "position": "middle"
           }
     }
+
 ]

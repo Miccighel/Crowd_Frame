@@ -16,15 +16,5 @@
                 ]
             }
         ]
-    },
-    {
-        "type": "crt",
-        "position": "start",
-        "questions": [
-            {
-                "name": "farmers",
-                "text": "If three farmers can plant three trees in three hours, how long would it take nine farmers to plant nine trees?"
-            }
-        ]
     }
 ]
