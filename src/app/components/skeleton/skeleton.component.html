@@ -640,7 +640,7 @@
                     <div class="dimension-text-field">
                       <mat-form-field appearance="fill">
                         <mat-label>{{dimension.justification.text}}</mat-label>
-                        <textarea matInput formControlName="{{dimension.name}}_justification" rows="3"></textarea>
+                        <textarea matInput formControlName="{{dimension.name}}_justification" rows="3" [disabled]="this.countdownsExpired[i]"></textarea>
                         <mat-error
                           *ngIf="checkFormControl(documentsForm[i],(dimension.name).concat('_justification'), 'required')">
                           This field is required
@@ -753,36 +753,36 @@
               Back
             </button>
             <button mat-flat-button color="primary" matStepperNext *ngIf="i+1<this.documentsAmount && this.annotator"
-                    [disabled]="(!documentsForm[i].valid || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted || !checkAnnotationConsistency(i) || !this.countdownsExpired[i])"
+                    [disabled]="((!documentsForm[i].valid && documentsForm[i].status != 'DISABLED' ) || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted || !checkAnnotationConsistency(i))"
                     (click)="performLogging('Next', i); nextStep()">
               Next
             </button>
             <button mat-flat-button color="primary" matStepperNext *ngIf="i+1<this.documentsAmount && !this.annotator"
-                    [disabled]="(!documentsForm[i].valid || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted || this.countdownsExpired[i])"
+                    [disabled]="(!documentsForm[i].valid && documentsForm[i].status != 'DISABLED'  || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted)"
                     (click)="performLogging('Next', i); nextStep()">
               Next
             </button>
 
             <button mat-flat-button color="primary" matStepperNext *ngIf="i+1>=this.documentsAmount && this.annotator && this.questionnaireAmountEnd > 0"
-                    [disabled]="(!documentsForm[i].valid || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted || !checkAnnotationConsistency(i) || this.countdownsExpired[i])"
+                    [disabled]="(!documentsForm[i].valid && documentsForm[i].status != 'DISABLED'  || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted || !checkAnnotationConsistency(i))"
                     (click)="performLogging('Next', i); nextStep()">
               Next
             </button>
 
             <button mat-flat-button color="primary" matStepperNext *ngIf="i+1>=this.documentsAmount && !this.annotator  && this.questionnaireAmountEnd > 0"
-                    [disabled]="(!documentsForm[i].valid || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted || this.countdownsExpired[i])"
+                    [disabled]="(!documentsForm[i].valid && documentsForm[i].status != 'DISABLED'  || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted)"
                     (click)="performLogging('Next', i); nextStep()">
               Next
             </button>
 
             <button mat-flat-button color="primary" matStepperNext *ngIf="i+1>=this.documentsAmount && this.questionnaireAmountEnd == 0 && !this.annotator"
-                    [disabled]="(!documentsForm[i].valid || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted || this.countdownsExpired[i])"
+                    [disabled]="(!documentsForm[i].valid && documentsForm[i].status != 'DISABLED'  || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted)"
                     (click)="performLogging('Finish', i); nextStep(); performQualityCheck()">
               Finish
             </button>
 
             <button mat-flat-button color="primary" matStepperNext *ngIf="i+1>=this.documentsAmount && this.questionnaireAmountEnd == 0 && this.annotator"
-                    [disabled]="(!documentsForm[i].valid || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted || !checkAnnotationConsistency(i) || this.countdownsExpired[i])"
+                    [disabled]="(!documentsForm[i].valid && documentsForm[i].status != 'DISABLED'  || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted || !checkAnnotationConsistency(i))"
                     (click)="performLogging('Finish', i); nextStep(); performQualityCheck()">
               Finish
             </button>
