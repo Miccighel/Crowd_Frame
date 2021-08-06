@@ -209,6 +209,7 @@ export class SkeletonComponent implements OnInit {
     @ViewChildren('countdownElement') countdown: QueryList<CountdownComponent>;
     /* Array of checks to see if the countdowns are expired; one for each document */
     countdownsExpired: Array<boolean>;
+    hideAttributes: boolean;
 
     /* Object to encapsulate annotator's settings */
     annotator: Annotator
@@ -552,6 +553,7 @@ export class SkeletonComponent implements OnInit {
 
             /* The questionnaires stored on Amazon S3 are retrieved */
             let rawQuestionnaires = await this.S3Service.downloadQuestionnaires(this.configService.environment)
+
             this.questionnaireAmount = rawQuestionnaires.length;
             this.questionnaireAmountStart = 0;
             this.questionnaireAmountEnd = 0;
@@ -690,6 +692,8 @@ export class SkeletonComponent implements OnInit {
                 let attribute = this.settings.countdown_modality == 'attribute' ? this.documents[index][this.settings.countdown_attribute] : null;
                 this.documentsCountdownTime[index] = this.updateCountdownTime(position, attribute)
             }
+
+            this.hideAttributes = false
 
             /* |--------- QUALITY CHECKS ---------| */
 
@@ -1055,9 +1059,6 @@ export class SkeletonComponent implements OnInit {
             this.countdownsExpired[i] = true
             if(this.settings.countdown_behavior=='disable_form')
                 this.documentsForm[i].disable()
-            else {
-                console.log("hide attributes")
-            }
         }
     }
 
@@ -1776,7 +1777,6 @@ export class SkeletonComponent implements OnInit {
         let goldConfiguration = []
         /* For each gold document its attribute, answers and notes are retrieved to build a gold configuration */
         for (let goldDocument of this.goldDocuments) {
-            goldConfiguration = []
             let currentConfiguration = {}
             currentConfiguration["document"] = goldDocument
             let answers = {}
@@ -1789,7 +1789,8 @@ export class SkeletonComponent implements OnInit {
                 }
             }
             currentConfiguration["answers"] = answers
-            currentConfiguration["notes"] = this.notes[goldDocument.index]
+            currentConfiguration["notes"] = this.notes ? this.notes[goldDocument.index] : []
+            goldConfiguration.push(currentConfiguration)
         }
 
         /* The gold configuration is evaluated using the static method implemented within the GoldChecker class */
@@ -2178,7 +2179,7 @@ export class SkeletonComponent implements OnInit {
                 let countdownTimes = [];
                 let countdownExpired = [];
                 if (this.settings.countdown_time >= 0)
-                    for (let index = 0; index < this.countdown.length; index++) countdownTimes.push(Number(this.countdown[index]["i"]["text"]));
+                    for (let countdown of this.countdown) countdownTimes.push(countdown["i"]);
                 for (let index = 0; index < this.countdownsExpired.length; index++) countdownExpired.push(this.countdownsExpired[index]);
                 data["countdowns_times"] = countdownTimes
                 data["countdowns_expired"] = countdownExpired

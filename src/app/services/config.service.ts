@@ -1,5 +1,5 @@
 /* Core modules */
-import {environment} from '../../../data/build/environments/environment.prod';
+import {environment} from '../../../data/build/environments/environment';
 import {Injectable} from "@angular/core";
 
 @Injectable({

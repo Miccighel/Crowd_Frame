@@ -1250,60 +1250,62 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     # The following codes provides answers, notes and attributes for each gold element. Those three corresponding data structures should be used
     # to implement the check
 
-    gold_checker = f"{folder_build_skeleton_path}goldChecker.ts"
-    if not os.path.exists(folder_build_skeleton_path):
-        os.makedirs(folder_build_skeleton_path, exist_ok=True)
+    filename = f"goldChecker.ts"
+    if os.path.exists(f"{folder_build_skeleton_path}{filename}"):
+        console.print(f"Gold checker [italic white on green]{filename}[/italic white on green] detected, skipping generation")
+    else:
+        console.print(
+        f"Gold checker [italic white on yellow]{filename}[/italic white on yellow] not detected, generating a sample")
+        with open(f"{folder_build_skeleton_path}{filename}", 'w') as file:
+            print("export class GoldChecker {", file=file)
+            print("", file=file)
+            wrapper = textwrap.TextWrapper(initial_indent='\t', subsequent_indent='\t')
+            print(wrapper.fill('static performGoldCheck(goldConfiguration : Array<Object>) {'), file=file)
+            print("", file=file)
+            wrapper = textwrap.TextWrapper(initial_indent='\t\t', subsequent_indent='\t\t')
+            print(wrapper.fill('let goldChecks = new Array<boolean>()'), file=file)
+            print("", file=file)
+            print(wrapper.fill("/* If there are no gold elements there is nothing to be checked */"), file=file)
+            print(wrapper.fill("if(goldConfiguration.length<=0) {"), file=file)
+            wrapper = textwrap.TextWrapper(initial_indent='\t\t\t', subsequent_indent='\t\t\t')
+            print(wrapper.fill("goldChecks.push(true)"), file=file)
+            print(wrapper.fill("return goldChecks"), file=file)
+            wrapper = textwrap.TextWrapper(initial_indent='\t\t', subsequent_indent='\t\t')
+            print(wrapper.fill('}'), file=file)
+            print("", file=file)
+            print(wrapper.fill("for (let goldElement of goldConfiguration) {"), file=file)
+            wrapper = textwrap.TextWrapper(initial_indent='\t\t\t', subsequent_indent='\t\t\t')
+            print("", file=file)
+            print(wrapper.fill("/* Element attributes */"), file=file)
+            print(wrapper.fill('let document = goldElement["document"]'), file=file)
+            print(wrapper.fill("/* Worker's answers for each gold dimensions */"), file=file)
+            print(wrapper.fill('let answers = goldElement["answers"]'), file=file)
+            print(wrapper.fill("/* Worker's notes*/"), file=file)
+            print(wrapper.fill('let notes = goldElement["notes"]'), file=file)
+            print("", file=file)
+            print(wrapper.fill("let goldCheck = true"), file=file)
+            print("", file=file)
+            print(wrapper.fill("/* CONTROL IMPLEMENTATION STARTS HERE */"), file=file)
+            print(wrapper.fill("/* Write your code; the check for the current element holds if goldCheck remains set to true */"), file=file)
+            print("", file=file)
+            print("", file=file)
+            print("", file=file)
+            print(wrapper.fill("/* CONTROL IMPLEMENTATION ENDS HERE */"), file=file)
+            print(wrapper.fill("/* Push goldCheck inside goldChecks array for the current gold element */"), file=file)
+            print(wrapper.fill('goldChecks.push(goldCheck)'), file=file)
+            print("", file=file)
+            wrapper = textwrap.TextWrapper(initial_indent='\t\t', subsequent_indent='\t\t')
+            print(wrapper.fill('}'), file=file)
+            print("", file=file)
+            print(wrapper.fill('return goldChecks'), file=file)
+            print("", file=file)
+            wrapper = textwrap.TextWrapper(initial_indent='\t', subsequent_indent='\t')
+            print(wrapper.fill('}'), file=file)
+            print("", file=file)
+            print("}", file=file)
 
-    with open(gold_checker, 'w') as file:
-        print("export class GoldChecker {", file=file)
-        print("", file=file)
-        wrapper = textwrap.TextWrapper(initial_indent='\t', subsequent_indent='\t')
-        print(wrapper.fill('static performGoldCheck(goldConfiguration : Array<Object>) {'), file=file)
-        print("", file=file)
-        wrapper = textwrap.TextWrapper(initial_indent='\t\t', subsequent_indent='\t\t')
-        print(wrapper.fill('let goldChecks = new Array<boolean>()'), file=file)
-        print("", file=file)
-        print(wrapper.fill("/* If there are no gold elements there is nothing to be checked */"), file=file)
-        print(wrapper.fill("if(goldConfiguration.length<=0) {"), file=file)
-        wrapper = textwrap.TextWrapper(initial_indent='\t\t\t', subsequent_indent='\t\t\t')
-        print(wrapper.fill("goldChecks.push(true)"), file=file)
-        print(wrapper.fill("return goldChecks"), file=file)
-        wrapper = textwrap.TextWrapper(initial_indent='\t\t', subsequent_indent='\t\t')
-        print(wrapper.fill('}'), file=file)
-        print("", file=file)
-        print(wrapper.fill("for (let goldElement of goldConfiguration) {"), file=file)
-        wrapper = textwrap.TextWrapper(initial_indent='\t\t\t', subsequent_indent='\t\t\t')
-        print("", file=file)
-        print(wrapper.fill("/* Element attributes */"), file=file)
-        print(wrapper.fill('let document = goldConfiguration["document"]'), file=file)
-        print(wrapper.fill("/* Worker's answers for each gold dimensions */"), file=file)
-        print(wrapper.fill('let answers = goldConfiguration["answers"]'), file=file)
-        print(wrapper.fill("/* Worker's notes*/"), file=file)
-        print(wrapper.fill('let notes = goldConfiguration["notes"]'), file=file)
-        print("", file=file)
-        print(wrapper.fill("let goldCheck = false"), file=file)
-        print("", file=file)
-        print(wrapper.fill("/* CONTROL IMPLEMENTATION STARTS HERE */"), file=file)
-        print(wrapper.fill("/* Write your code; the check for the current element holds if goldCheck is set to true */"), file=file)
-        print("", file=file)
-        print("", file=file)
-        print("", file=file)
-        print(wrapper.fill("/* CONTROL IMPLEMENTATION ENDS HERE */"), file=file)
-        print(wrapper.fill("/* Push goldCheck inside goldChecks array for the current gold element */"), file=file)
-        print(wrapper.fill('goldChecks.push(goldCheck)'), file=file)
-        print("", file=file)
-        wrapper = textwrap.TextWrapper(initial_indent='\t\t', subsequent_indent='\t\t')
-        print(wrapper.fill('}'), file=file)
-        print("", file=file)
-        print(wrapper.fill('return goldChecks'), file=file)
-        print("", file=file)
-        wrapper = textwrap.TextWrapper(initial_indent='\t', subsequent_indent='\t')
-        print(wrapper.fill('}'), file=file)
-        print("", file=file)
-        print("}", file=file)
-
-    console.print("Class built")
-    console.print(f"Path: [italic]{gold_checker}[/italic]")
+        console.print("Class built")
+        console.print(f"Path: [italic]{filename}[/italic]")
 
     console.rule(f"17 - Amazon Mechanical Turk Landing Page")
     status.start()
@@ -1413,9 +1415,11 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     folder_tasks_batch_path = f"{folder_tasks_path}{task_name}/{batch_name}/"
     folder_tasks_batch_deploy_path = f"{folder_tasks_batch_path}deploy/"
+    folder_tasks_batch_env_path = f"{folder_tasks_batch_path}environments/"
     folder_tasks_batch_mturk_path = f"{folder_tasks_batch_path}mturk/"
     folder_tasks_batch_task_path = f"{folder_tasks_batch_path}task/"
     folder_tasks_batch_config_path = f"{folder_tasks_batch_path}config/"
+    folder_tasks_batch_skeleton_path = f"{folder_tasks_batch_path}skeleton/"
 
     console.print(f"[italic purple]deploy-config[/italic purple] variable: {bool(deploy_config)}")
 
@@ -1430,7 +1434,12 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         os.makedirs(folder_tasks_batch_mturk_path, exist_ok=True)
     else:
         console.print("[yellow]Amazon Mechanical Turk assets folder already present")
-    console.print(f"Path: [italic]{folder_tasks_batch_mturk_path}")
+    if not os.path.exists(folder_tasks_batch_env_path):
+        console.print("[green]Environments folder created")
+        os.makedirs(folder_tasks_batch_env_path, exist_ok=True)
+    else:
+        console.print("[yellow]Environments folder already present")
+    console.print(f"Path: [italic]{folder_tasks_batch_env_path}")
     if not os.path.exists(folder_tasks_batch_task_path) and deploy_config:
         console.print("[green]Task configuration folder created")
         os.makedirs(folder_tasks_batch_task_path, exist_ok=True)
@@ -1443,6 +1452,12 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     else:
         console.print("[yellow]General configuration folder already present")
     console.print(f"Path: [italic]{folder_tasks_batch_config_path}")
+    if not os.path.exists(folder_tasks_batch_skeleton_path) and deploy_config:
+        console.print("[green]Task skeleton folder created")
+        os.makedirs(folder_tasks_batch_skeleton_path, exist_ok=True)
+    else:
+        console.print("[yellow]Task skeleton folder already present")
+    console.print(f"Path: [italic]{folder_tasks_batch_skeleton_path}")
 
 
     def copy(source, destination, title):
@@ -1451,7 +1466,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             title=title)
         console.print(panel)
         copy2(source, destination)
-
 
     console.print(f"Copying files for [blue underline on white]{folder_build_deploy_path}[/blue underline on white] folder")
 
@@ -1466,6 +1480,16 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     source = f"{folder_build_deploy_path}index.html"
     destination = f"{folder_tasks_batch_deploy_path}index.html"
     copy(source, destination, "Task Homepage")
+
+    console.print(f"Copying files for [blue underline on white]{folder_build_env_path}[/blue underline on white] folder")
+
+    source = f"{folder_build_env_path}environment.ts"
+    destination = f"{folder_tasks_batch_env_path}environment.ts"
+    copy(source, destination, "Dev Environment")
+
+    source = f"{folder_build_env_path}environment.prod.ts"
+    destination = f"{folder_tasks_batch_env_path}environment.prod.ts"
+    copy(source, destination, "Prod Environment")
 
     console.print(f"Copying files for [blue underline on white]{folder_build_mturk_path}[/blue underline on white] folder")
 
@@ -1511,6 +1535,16 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         source = f"{folder_build_task_path}workers.json"
         destination = f"{folder_tasks_batch_task_path}workers.json"
         copy(source, destination, "Workers Settings")
+
+    console.print(f"Copying files for [yellow underline on white]{folder_tasks_batch_skeleton_path}[/yellow underline on white] folder")
+
+    source = f"{folder_build_skeleton_path}document.ts"
+    destination = f"{folder_tasks_batch_skeleton_path}document.ts"
+    copy(source, destination, "Document Interface")
+
+    source = f"{folder_build_skeleton_path}goldChecker.ts"
+    destination = f"{folder_tasks_batch_skeleton_path}goldChecker.ts"
+    copy(source, destination, "Gold Checker")
 
     console.print(f"Copying files for [blue underline on white]{folder_tasks_batch_config_path}[/blue underline on white] folder")
 

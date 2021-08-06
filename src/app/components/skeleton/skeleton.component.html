@@ -203,7 +203,7 @@
                         <div class="countdown sticky" *ngIf="this.settings.countdown_time>=0">
                             <h1 class="text-lighter m-0">
                                 Time left:
-                                <countdown #countdownElement [config]="{ demand: true, leftTime: this.documentsCountdownTime[i], format: 'm:s' }" (event)="handleCountdown($event, i)"></countdown>
+                                <countdown #countdownElement [config]="{ demand: true, leftTime: this.documentsCountdownTime[i], format: 'mm:ss' }" (event)="handleCountdown($event, i)"></countdown>
                             </h1>
                         </div>
 
@@ -213,10 +213,12 @@
                             <ul>
                                 <li class="law_content_li">
                                     <div class="statement-div">
-                    <span style="white-space: pre-wrap;" #statementText id="statement-{{i}}"
-                          (mouseup)="performHighlighting(this.changeDetector, $event, i, this.notes, this.annotator)"
-                          (touchend)="performHighlighting(this.changeDetector, $event, i, this.notes, this.annotator)"
-                          class="statement-text">{{this.checkEnabledNotes(i)}} {{document.article_text}}</span>
+                                        <span style="white-space: pre-wrap;" #statementText id="statement-{{i}}"
+                                              (mouseup)="performHighlighting(this.changeDetector, $event, i, this.notes, this.annotator)"
+                                              (touchend)="performHighlighting(this.changeDetector, $event, i, this.notes, this.annotator)"
+                                              class="statement-text">{{this.checkEnabledNotes(i)}}
+                                            {{(this.countdownsExpired[i] && this.settings.countdown_behavior == "hide_attributes") ? "---------- text_hidden ----------" : document.article_text}}
+                                        </span>
                                     </div>
                                 </li>
                             </ul>
@@ -226,20 +228,20 @@
                             <ng-container *ngFor="let attribute of this.settings.attributes; let k=index">
                                 <div *ngIf="attribute.show" class="attribute">
                                     <p>
-                    <span class="attribute-label" *ngIf="!this.annotator">
-                      <strong>{{attribute.name_pretty}}</strong>: {{document[attribute.name]}}
-                    </span>
+                                        <span class="attribute-label" *ngIf="!this.annotator">
+                                            <strong>{{attribute.name_pretty}}</strong>: {{(this.countdownsExpired[i] && this.settings.countdown_behavior == "hide_attributes") ? "---------- text_hidden ----------" : document[attribute.name]}}
+                                        </span>
                                         <span class="attribute-label" *ngIf="this.annotator && !attribute.annotate">
-                      <strong>{{attribute.name_pretty}}</strong>: {{document[attribute.name]}}
-                    </span>
+                                            <strong>{{attribute.name_pretty}}</strong>: {{(this.countdownsExpired[i] && this.settings.countdown_behavior == "hide_attributes") ? "---------- text_hidden ----------" : document[attribute.name]}}
+                                        </span>
                                         <span class="attribute-label" *ngIf="this.annotator && this.annotator.type=='options'&& attribute.annotate">
-                      <strong>{{attribute.name_pretty}}</strong>:
-                      <span id="document-{{i}}-attribute-{{k}}"
-                            (mouseup)="performAnnotation(i, k, this.notes, this.changeDetector)"
-                            (touchend)="performAnnotation(i, k, this.notes, this.changeDetector)">
-                        {{document[attribute.name]}}
-                      </span>
-                    </span>
+                                            <strong>{{attribute.name_pretty}}</strong>:
+                                            <span id="document-{{i}}-attribute-{{k}}"
+                                                  (mouseup)="performAnnotation(i, k, this.notes, this.changeDetector)"
+                                                  (touchend)="performAnnotation(i, k, this.notes, this.changeDetector)">
+                                                {{(this.countdownsExpired[i] && this.settings.countdown_behavior == "hide_attributes") ? "---------- text_hidden ----------" : document[attribute.name]}}
+                                            </span>
+                                        </span>
                                     </p>
                                 </div>
                             </ng-container>
@@ -528,8 +530,7 @@
                                                         <mat-radio-button *ngFor="let mapping of dimension.scale.mapping let k=index"
                                                                           class="radio-button" value="{{mapping.value}}"
                                                                           (change)="storeDimensionValue($event, i, dimension.index)">
-                                                            <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0">
-                                ({{mapping.description}})</span>
+                                                            <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0"> ({{mapping.description}})</span>
                                                         </mat-radio-button>
                                                     </mat-radio-group>
                                                 </ng-container>
@@ -572,7 +573,7 @@
                                                     <mat-radio-button *ngFor="let mapping of dimension.scale.mappings let k=index"
                                                                       class="radio-button" value="{{mapping.value}}"
                                                                       (change)="storeDimensionValue($event, i,dimension.index)">
-                                                        <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0">({{mapping.description}})</span>
+                                                        <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0"> ({{1ription}})</span>
                                                     </mat-radio-button>
                                                 </mat-radio-group>
                                             </ng-container>
@@ -586,8 +587,7 @@
                                                     <mat-radio-button *ngFor="let mapping of dimension.scale.mapping let k=index"
                                                                       class="radio-button" value="{{mapping.value}}"
                                                                       (change)="storeDimensionValue($event, i, dimension.index)">
-                                                        <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0">
-                                ({{mapping.description}})</span>
+                                                        <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0"> ({{mapping.description}})</span>
                                                     </mat-radio-button>
                                                 </mat-radio-group>
                                             </ng-container>
