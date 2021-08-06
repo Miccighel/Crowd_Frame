@@ -99,6 +99,7 @@ export class CrowdXplorer {
     @Output() selectedRowEmitter: EventEmitter<Object>;
 
     @Input() countdownExpired: boolean
+    @Input() countdownBehavior: string
 
     /* Search results table UI variables and controls */
     resultsAmount = 0;
@@ -162,7 +163,7 @@ export class CrowdXplorer {
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        if (changes.countdownExpired.currentValue) {
+        if (changes.countdownExpired.currentValue && this.countdownBehavior=='disable_form') {
             this.searchForm.disable()
         }
     }

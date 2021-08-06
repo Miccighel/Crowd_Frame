@@ -169,6 +169,10 @@ export class GeneratorComponent {
     taskSettingsForm: FormGroup;
     taskSettingsFetched: SettingsTask
     taskSettingsSerialized: string
+    countdownBehavior: ModalityType[] = [
+        {value: 'disable_form', viewValue: 'Disable Forms'},
+        {value: 'hide_attributes', viewValue: 'Hide Attributes'},
+    ];
     additionalTimeModalities: ModalityType[] = [
         {value: 'attribute', viewValue: 'Attribute'},
         {value: 'position', viewValue: 'Position'},
@@ -503,6 +507,7 @@ export class GeneratorComponent {
             }),
             setCountdownTime: this.taskSettingsFetched.countdown_time >= 0 ? true : '',
             countdown_time: this.taskSettingsFetched.countdown_time >= 0 ? this.taskSettingsFetched.countdown_time : '',
+            countdown_behavior: this.taskSettingsFetched.countdown_behavior ? this.taskSettingsFetched.countdown_behavior : '',
             setAdditionalTimes: this.taskSettingsFetched.countdown_modality ? true : '',
             countdown_modality: this.taskSettingsFetched.countdown_modality ? this.taskSettingsFetched.countdown_modality ? this.taskSettingsFetched.countdown_modality : '' : '',
             countdown_attribute: this.taskSettingsFetched.countdown_attribute ? this.taskSettingsFetched.countdown_attribute ? this.taskSettingsFetched.countdown_attribute : '' : '',

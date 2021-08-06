@@ -893,6 +893,16 @@
             </mat-error>
           </mat-form-field>
 
+          <mat-form-field class="width-100" appearance="fill" *ngIf="this.taskSettingsForm.get('setCountdownTime').value">
+            <mat-label>Behavior</mat-label>
+            <mat-select matInput formControlName="countdown_behavior" required>
+              <mat-option *ngFor="let countdownBehavior of countdownBehavior" [value]="countdownBehavior.value">
+                {{countdownBehavior.viewValue}}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+
           <mat-slide-toggle color="primary" class="mb-16px" formControlName="setAdditionalTimes" (change)="resetAdditionalTimes()" *ngIf="this.taskSettingsForm.get('setCountdownTime').value">
             Additional Times
           </mat-slide-toggle>

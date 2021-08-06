@@ -1053,7 +1053,11 @@ export class SkeletonComponent implements OnInit {
     public handleCountdown(event, i) {
         if (event.left == 0) {
             this.countdownsExpired[i] = true
-            this.documentsForm[i].disable()
+            if(this.settings.countdown_behavior=='disable_form')
+                this.documentsForm[i].disable()
+            else {
+                console.log("hide attributes")
+            }
         }
     }
 

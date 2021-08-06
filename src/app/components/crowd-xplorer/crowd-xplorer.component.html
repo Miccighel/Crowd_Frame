@@ -3,12 +3,12 @@
     <form [formGroup]="searchForm">
         <mat-form-field id="search-textarea" appearance="outline">
             <mat-label>Insert your query</mat-label>
-            <input #searchInput matInput formControlName="query"  [disabled]="countdownExpired" (keyup.enter)="performWebSearch(searchInput.value)">
+            <input #searchInput matInput formControlName="query"  (keyup.enter)="performWebSearch(searchInput.value)">
         </mat-form-field>
     </form>
 
     <button mat-flat-button color="primary" class="search-button"
-            [disabled]="!searchForm.valid || searchInProgress || countdownExpired"
+            [disabled]="!searchForm.valid || searchInProgress"
             (click)="performWebSearch(searchInput.value)">{{searchInProgress === true ? 'SEARCHING...' : 'SEARCH'}}
     </button>
 
@@ -24,7 +24,7 @@
                     <small>{{row.snippet}}</small>
                 </p>
               <mat-radio-group name="urls">
-                <mat-radio-button labelPosition="before" [disabled]="countdownExpired" (change)="selectRow(row)" value="{{row.url}}">Select</mat-radio-button>
+                <mat-radio-button labelPosition="before" [disabled]="this.countdownExpired && this.countdownBehavior=='disable_form'" (change)="selectRow(row)" value="{{row.url}}">Select</mat-radio-button>
               </mat-radio-group>
             </mat-cell>
         </ng-container>
