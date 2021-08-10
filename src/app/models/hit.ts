@@ -10,5 +10,4 @@ export interface Hit {
   token_output: string
   documents_number: number
   documents: Array<JSON>
-
 }

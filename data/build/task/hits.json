@@ -7,7 +7,41 @@
         "documents": [
             {
                 "id": "identifier_1",
-                "text": "Lorem ipsum dolor sit amet"
+                "text": "Lorem ipsum dolor sit amet",
+                "statements":[
+                    {
+                        "text": "BHO",
+                        "speaker": "ciao2",
+                        "speakerjob": "1",
+                        "context":"swag"
+                    },
+                    {
+                        "text": "BHO",
+                        "speaker": "ciao2",
+                        "speakerjob": "1",
+                        "context":"swag"
+                    }
+                    
+                ]
+            },
+            {
+                "id": "identifier_1",
+                "text": "Lorem ipsum dolor sit amet",
+                "statements":[
+                    {
+                        "text": "BHo3",
+                        "speaker": "ciao3",
+                        "speakerjob": "4",
+                        "context":"swag"
+                    },
+                    {
+                        "text": "BHO4",
+                        "speaker": "ciao4",
+                        "speakerjob": "1",
+                        "context":"swag"
+                    }
+                    
+                ]
             }
         ]
     }
