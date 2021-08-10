@@ -24,7 +24,6 @@ export class statement{
     speaker:string;
     speakerjob:string;
     context:string;
-    value:number;
     constructor(
       index: number,
       data: JSON
@@ -36,6 +35,5 @@ export class statement{
       this.speaker =  data["speaker"];
       this.speakerjob = data["speakerjob"];
       this.context=  data["context"];
-      this.value=data["value"];
     }
 }
