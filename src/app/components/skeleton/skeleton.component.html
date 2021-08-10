@@ -553,6 +553,7 @@
 
                         </mat-form-field>
                       </ng-container>
+                      <!-- Pairwise element-->
                       <ng-container *ngIf="dimension.scale.type=='pairwise'" >
                         <mat-radio-group formControlName="{{(dimension.name).concat('_value')}}" class="radiogroupairwise">
                               <mat-radio-button class="radiobuttonpairwise"  *ngFor="let values of document.statements;let k=index" value="{{k}}"
