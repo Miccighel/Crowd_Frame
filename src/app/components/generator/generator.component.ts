@@ -169,6 +169,10 @@ export class GeneratorComponent {
     taskSettingsForm: FormGroup;
     taskSettingsFetched: SettingsTask
     taskSettingsSerialized: string
+    countdownBehavior: ModalityType[] = [
+        {value: 'disable_form', viewValue: 'Disable Forms'},
+        {value: 'hide_attributes', viewValue: 'Hide Attributes'},
+    ];
     additionalTimeModalities: ModalityType[] = [
         {value: 'attribute', viewValue: 'Attribute'},
         {value: 'position', viewValue: 'Position'},
@@ -503,13 +507,17 @@ export class GeneratorComponent {
             }),
             setCountdownTime: this.taskSettingsFetched.countdown_time >= 0 ? true : '',
             countdown_time: this.taskSettingsFetched.countdown_time >= 0 ? this.taskSettingsFetched.countdown_time : '',
+            countdown_behavior: this.taskSettingsFetched.countdown_behavior ? this.taskSettingsFetched.countdown_behavior : '',
             setAdditionalTimes: this.taskSettingsFetched.countdown_modality ? true : '',
             countdown_modality: this.taskSettingsFetched.countdown_modality ? this.taskSettingsFetched.countdown_modality ? this.taskSettingsFetched.countdown_modality : '' : '',
             countdown_attribute: this.taskSettingsFetched.countdown_attribute ? this.taskSettingsFetched.countdown_attribute ? this.taskSettingsFetched.countdown_attribute : '' : '',
             countdown_attribute_values: this._formBuilder.array([]),
             countdown_position_values: this._formBuilder.array([]),
             batches: this._formBuilder.array([]),
-            messages: this._formBuilder.array([])
+            messages: this._formBuilder.array([]),
+            logger: !!this.taskSettingsFetched.logger,
+            logOption: this.taskSettingsFetched.logOption,
+            serverEndpoint: this.taskSettingsFetched.serverEndpoint
         });
         if (this.taskSettingsFetched.messages) if (this.taskSettingsFetched.messages.length > 0) this.taskSettingsFetched.messages.forEach((message, messageIndex) => this.addMessage(message))
         if (this.taskSettingsFetched.annotator) if (this.taskSettingsFetched.annotator.type == "options") this.taskSettingsFetched.annotator.values.forEach((optionValue, optionValueIndex) => this.addOptionValue(optionValue))
@@ -1262,6 +1270,19 @@ export class GeneratorComponent {
 
     /* STEP #6 - Task Settings */
 
+    updateLogOption(el: string, action: string) {
+        let truthValue = this.taskSettingsForm.get('logOption').value[el][action] != true;
+        if (action == 'general') {
+            for(let key in this.taskSettingsForm.get('logOption').value[el])
+                this.taskSettingsForm.get('logOption').value[el][key] = truthValue
+        } else
+            this.taskSettingsForm.get('logOption').value[el][action] = truthValue
+    }
+
+    updateServerEndpoint() {
+        return this.taskSettingsForm.get('serverEndpoint').value
+    }
+
     updateHitsFile(hits = null) {
         this.hitsParsed = hits ? hits : JSON.parse(this.hitsFile.content) as Array<Hit>;
         this.hitsParsedString = JSON.stringify(this.hitsParsed)
@@ -1296,17 +1317,11 @@ export class GeneratorComponent {
             }
         }
         this.hitAttributes().clear({emitEvent: true})
-        for (let attribute in this.hitsAttributes) {
-            if (attribute in this.taskSettingsFetched.attributes) {
-                let attributeIndex = null
-                for (let index in this.taskSettingsFetched.attributes) {
-                    if (this.taskSettingsFetched.attributes[index]["name"] == attribute) {
-                        attributeIndex = index
-                    }
-                }
-                this.addHitAttribute(attribute, this.taskSettingsFetched.attributes[attributeIndex])
+        for (let attributeIndex in this.hitsAttributes) {
+            if (attributeIndex in this.taskSettingsFetched.attributes) {
+                this.addHitAttribute(this.hitsAttributes[attributeIndex], this.taskSettingsFetched.attributes[attributeIndex])
             } else {
-                this.addHitAttribute(attribute)
+                this.addHitAttribute(this.hitsAttributes[attributeIndex])
             }
         }
         if (this.hitsFile) {
@@ -1374,7 +1389,6 @@ export class GeneratorComponent {
         if (this.taskSettingsForm.get('setCountdownTime').value == false) {
             this.taskSettingsForm.get('countdown_time').setValue('')
             this.taskSettingsForm.get('countdown_time').clearValidators();
-            this.taskSettingsForm.get('setAdditionalTimes').setValue('')
         } else {
             this.taskSettingsForm.get('countdown_time').setValidators([Validators.required, this.positiveOrZeroNumber.bind(this)]);
         }
@@ -1494,6 +1508,13 @@ export class GeneratorComponent {
             label: option ? option['label'] ? option['label'] : '' : '',
             color: option ? option['color'] ? option['color'] : '' : ''
         }))
+        if(!option) {
+            this.annotatorOptionColors.push("")
+        }
+    }
+
+    updateOptionColor(color, optionIndex) {
+        this.annotatorOptionColors[optionIndex] = color
     }
 
     addBatch(batchNode) {
@@ -1578,8 +1599,31 @@ export class GeneratorComponent {
         if (!taskSettingsJSON.setAnnotator) taskSettingsJSON.annotator = false
         delete taskSettingsJSON.setAnnotator
 
-        if (!taskSettingsJSON.setCountdownTime) taskSettingsJSON.countdown_time = false
+        if(taskSettingsJSON.annotator.type == "options") {
+            taskSettingsJSON.annotator.values.forEach((option, index) => {
+                option["color"] = this.annotatorOptionColors[index]
+            });
+        }
+
+        if (!taskSettingsJSON.setCountdownTime) {
+            taskSettingsJSON.countdown_time = false
+            taskSettingsJSON.additional_times = false
+            taskSettingsJSON.countdown_modality = false
+            taskSettingsJSON.countdown_attribute = false
+            taskSettingsJSON.countdown_attribute_values = []
+            taskSettingsJSON.countdown_position_values = []
+        }
+        if (!taskSettingsJSON.setAdditionalTimes) {
+            taskSettingsJSON.additional_times = false
+            taskSettingsJSON.countdown_modality = false
+            taskSettingsJSON.countdown_attribute = false
+            taskSettingsJSON.countdown_attribute_values = []
+            taskSettingsJSON.countdown_position_values = []
+        } else {
+            taskSettingsJSON.additional_times = taskSettingsJSON.setAdditionalTimes
+        }
         delete taskSettingsJSON.setCountdownTime
+        delete taskSettingsJSON.setAdditionalTimes
 
         if ('attributes' in taskSettingsJSON) {
             for (let attributeIndex in taskSettingsJSON['attributes']) {

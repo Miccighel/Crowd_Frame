@@ -77,7 +77,7 @@
                       <td class="p-0">
                         <mat-form-field class="width-100" [hideRequiredMarker]="questionnaire.get('position').valid" appearance="fill">
                           <mat-label>Position</mat-label>
-                          <mat-select matInput formControlName="position" required (selectionChange)="updateQuestionnaire(questionnaireIndex)">
+                          <mat-select matInput formControlName="position" required>
                             <mat-option *ngFor="let questionnairePosition of questionnairePosition" [value]="questionnairePosition.value">
                               {{questionnairePosition.viewValue}}
                             </mat-option>
@@ -745,6 +745,38 @@
 
           <mat-divider [inset]="true"></mat-divider>
 
+          <!-- Logging -->
+          <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="logger">
+            Logger
+          </mat-slide-toggle>
+
+          <mat-form-field matLine class="width-100" appearance="fill" *ngIf="taskSettingsForm.get('logger').value">
+            <mat-label>Logging server URL</mat-label>
+            <input matInput type="text" formControlName="serverEndpoint" required (blur)="updateServerEndpoint()">
+          </mat-form-field>
+
+          <div *ngIf="taskSettingsForm.get('logger').value">
+            <table class="width-100" style="border-collapse: collapse">
+              <tr *ngFor="let item of this.taskSettingsForm.get('logOption').value | keyvalue" style="border-bottom: thin solid lightgray">
+                <th align="left">
+                  <mat-checkbox color="primary" [checked]="this.taskSettingsForm.get('logOption').value[item.key]['general']" (change)="updateLogOption(item.key.toString(),'general')">
+                    {{item.key.toUpperCase()}} events
+                  </mat-checkbox>
+                </th>
+                <ng-container *ngFor="let prop of this.taskSettingsForm.get('logOption').value[item.key] | keyvalue">
+                  <td *ngIf="prop.key != 'general'">
+                    <mat-checkbox color="primary" [checked]="this.taskSettingsForm.get('logOption').value[item.key][prop.key]" [disabled]="!this.taskSettingsForm.get('logOption').value[item.key]['general']" (change)="updateLogOption(item.key.toString(), prop.key.toString())">
+                      {{prop.key.toUpperCase()}}
+                    </mat-checkbox>
+                  </td>
+                </ng-container>
+              </tr>
+            </table>
+          </div>
+
+
+          <mat-divider [inset]="true"></mat-divider>
+
           <!-- Hits file-->
           <h3 class="lighter">Hits & Attributes</h3>
           <table class="width-100 mt-16px">
@@ -832,8 +864,7 @@
                   <td class="p-0 pr-16px" [formGroupName]="valueIndex">
                     <mat-form-field class="width-100" matLine [hideRequiredMarker]="value.valid" appearance="fill">
                       <mat-label>HTML Color (#123456)</mat-label>
-                      <input matInput formControlName="color" [value]="this.annotatorOptionColors[valueIndex]"
-                             [(colorPicker)]="this.annotatorOptionColors[valueIndex]"/>
+                      <input matInput formControlName="color" [value]="this.annotatorOptionColors[valueIndex]" [(colorPicker)]="this.annotatorOptionColors[valueIndex]" (colorPickerChange)="updateOptionColor($event, valueIndex)" required>
                     </mat-form-field>
                   </td>
                   <td class="p-0 center">
@@ -861,6 +892,16 @@
               A positive or zero number is required
             </mat-error>
           </mat-form-field>
+
+          <mat-form-field class="width-100" appearance="fill" *ngIf="this.taskSettingsForm.get('setCountdownTime').value">
+            <mat-label>Behavior</mat-label>
+            <mat-select matInput formControlName="countdown_behavior" required>
+              <mat-option *ngFor="let countdownBehavior of countdownBehavior" [value]="countdownBehavior.value">
+                {{countdownBehavior.viewValue}}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
 
           <mat-slide-toggle color="primary" class="mb-16px" formControlName="setAdditionalTimes" (change)="resetAdditionalTimes()" *ngIf="this.taskSettingsForm.get('setCountdownTime').value">
             Additional Times

@@ -7,6 +7,7 @@ export class SettingsTask {
     attributes: Array<Attribute>
     annotator?: Annotator;
     countdown_time?: number;
+    countdown_behavior?: string;
     countdown_modality?: string;
     countdown_attribute?: string;
     countdown_attribute_values?: Array<JSON>;
@@ -14,7 +15,9 @@ export class SettingsTask {
     blacklist_batches: Array<string>;
     whitelist_batches: Array<string>;
     messages?: Array<string>;
-
+    logger?: boolean;
+    logOption?: Object;
+    serverEndpoint?: string;
 
     constructor(
         data = null as JSON
@@ -38,11 +41,62 @@ export class SettingsTask {
         }
         this.annotator = data ? data["annotator"] ? new Annotator(data["annotator"]) : null : null;
         this.countdown_time = data ? data["countdown_time"] >= 0 ? parseInt((data["countdown_time"])) : null : null;
+        this.countdown_behavior = data ? data["countdown_behavior"] ? data['countdown_behavior'] : null : null;
         this.countdown_modality = data ? data["countdown_modality"] ? data['countdown_modality'] : null : null;
         this.countdown_attribute = data ? data["countdown_attribute"] ? data['countdown_attribute'] : null : null;
         this.countdown_attribute_values = new Array<JSON>()
         if (data) if ('countdown_attribute_values' in data) for (let value of data["countdown_attribute_values"] as Array<JSON>) this.countdown_attribute_values.push(value)
-        if (data) if ('blacklist_batches' in data) for (let batch of data["blacklist_batches"] as Array<string>) this.blacklist_batches.push(batch)
+        this.logger = data ? !!data["logger"] : false;
+        this.logOption = data ? data['logOption'] ? data['logOption'] : {
+            "button": {
+                "general": 'false',
+                "click": 'false'
+            },
+            "mouse": {
+                "general": 'false',
+                "mouseMovements": 'false',
+                "leftClicks": 'false',
+                "rightClicks": 'false'
+            },
+            "keyboard": {
+                "general": 'false',
+                "shortcuts": 'false',
+                "keys": 'false'
+            },
+            "textInput": {
+                "general": 'false',
+                "paste": 'false',
+                "delete": 'false'
+            },
+            "clipboard": {
+                "general": 'false',
+                "copy": 'false',
+                "cut": 'false'
+            },
+            "radio": {
+                "general": 'false',
+                "change": 'false'
+            },
+            "crowd-xplorer": {
+                "general": 'false',
+                "query": 'false',
+                "result": 'false'
+            },
+            "various": {
+                "general": 'false',
+                "selection": 'false',
+                "unload": 'false',
+                "focus&blur": 'false',
+                "scroll": 'false',
+                "resize": 'false'
+            }
+        } : {};
+        this.serverEndpoint = data ? data['serverEndpoint'] ? data['serverEndpoint'] : "" : "";
+        this.blacklist_batches = new Array<string>();
+        if (data)
+            if ('blacklist_batches' in data)
+                for (let batch of data["blacklist_batches"] as Array<string>)
+                    this.blacklist_batches.push(batch)
         this.whitelist_batches = new Array<string>();
         if (data) if ('whitelist_batches' in data) for (let batch of data["whitelist_batches"] as Array<string>) this.whitelist_batches.push(batch)
         this.messages = new Array<string>();

@@ -88,6 +88,7 @@ admin_password = os.getenv('admin_password')
 deploy_config = strtobool(os.getenv('deploy_config'))
 server_config = strtobool(os.getenv('server_config'))
 
+
 aws_region = os.getenv('aws_region')
 aws_private_bucket = os.getenv('aws_private_bucket')
 aws_deploy_bucket = os.getenv('aws_deploy_bucket')
@@ -744,7 +745,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 PayloadFormatVersion='1.0',
                 CredentialsArn=f'arn:aws:iam::{aws_account_id}:role{path}gatewayToSQS',
                 RequestParameters={
-                    'QueueUrl': queue['url'],
+                    'QueueUrl': f'https://sqs.{aws_region}.amazonaws.com/{aws_account_id}/crowdFrameQueue',
                     'MessageBody': '$request.body'
                 }
             )['IntegrationId']
@@ -752,6 +753,11 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 ApiId=api['ApiId'],
                 RouteKey='POST /log',
                 Target='integrations/' + api['integration']
+            )
+            apiGateway.create_stage(
+              ApiId=api['ApiId'],
+              StageName="$default",
+              AutoDeploy=True
             )
             status.stop()
             console.print(f'[link={api["ApiEndpoint"]}/log]API endpoint[/link] created.')
@@ -808,8 +814,11 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         except lambdaClient.exceptions.ResourceConflictException:
             status.stop()
             console.print("Function 'crowdLoggerLambda' already created")
+    else:
+        console.rule(f"10 - Logging Server Setup")
+        endpoint = console.input("Please insert an URL to the logging server: ")
 
-    console.rule(f"10 - Environment: [cyan underline]PRODUCTION[/cyan underline] creation")
+    console.rule(f"11 - Environment: [cyan underline]PRODUCTION[/cyan underline] creation")
     status.start()
     status.update(f"Creating environment")
     time.sleep(3)
@@ -826,7 +835,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         "bucket": aws_private_bucket,
         "aws_id_key": aws_worker_access_id,
         "aws_secret_key": aws_worker_access_secret,
-        "bing_api_key": bing_api_key
+        "bing_api_key": bing_api_key,
+        "logOnConsole": 'false'
     }
 
     os.makedirs(folder_build_env_path, exist_ok=True)
@@ -834,7 +844,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     with open(environment_production, 'w') as file:
         print("export const environment = {", file=file)
         for (env_var, value) in environment_dict.items():
-            if env_var == 'production' or env_var == 'configuration_local':
+            if env_var == 'production' or env_var == 'configuration_local' or env_var == 'logOnConsole':
                 print(f"\t{env_var}: {value},", file=file)
             else:
                 print(f"\t{env_var}: \"{value}\",", file=file)
@@ -843,7 +853,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.print("File [cyan underline]environment.prod.ts[/cyan underline] generated")
     console.print(f"Path: [italic]{environment_production}[/italic]")
 
-    console.rule(f"11 -Environment: [cyan underline]DEVELOPMENT[/cyan underline] creation")
+    console.rule(f"12 -Environment: [cyan underline]DEVELOPMENT[/cyan underline] creation")
     status.start()
     status.update(f"Creating environment")
     time.sleep(3)
@@ -857,13 +867,14 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         "bucket": aws_private_bucket,
         "aws_id_key": aws_worker_access_id,
         "aws_secret_key": aws_worker_access_secret,
-        "bing_api_key": bing_api_key
+        "bing_api_key": bing_api_key,
+        "logOnConsole": 'true'
     }
 
     with open(environment_development, 'w') as file:
         print("export const environment = {", file=file)
         for (env_var, value) in environment_dict.items():
-            if env_var == 'production' or env_var == 'configuration_local':
+            if env_var == 'production' or env_var == 'configuration_local' or env_var == 'logOnConsole':
                 print(f"\t{env_var}: {value},", file=file)
             else:
                 print(f"\t{env_var}: \"{value}\",", file=file)
@@ -872,7 +883,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.print("File [cyan underline]environment.ts[/cyan underline] generated")
     console.print(f"Path: [italic]{environment_development}[/italic]")
 
-    console.rule(f"12 - Admin Credentials Creation")
+    console.rule(f"13 - Admin Credentials Creation")
     status.start()
     status.update(f"Creating file [cyan underline]admin.json")
     time.sleep(3)
@@ -894,7 +905,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     console.print(f"Path: [italic]{admin_file}")
 
-    console.rule(f"13 - Sample Task Configuration")
+    console.rule(f"14 - Sample Task Configuration")
     status.start()
     status.update(f"Generating a sample configuration if needed")
     time.sleep(3)
@@ -1051,8 +1062,73 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 "batch_name": f"{batch_name}",
                 "allowed_tries": 10,
                 "time_check_amount": 3,
+                "attributes": [
+                    {
+                        "name": "id",
+                        "show": False,
+                        "annotate": False,
+                        "required": False
+                    },
+                    {
+                        "name": "text",
+                        "show": True,
+                        "required": False,
+                        "annotate": False
+                    }
+                ],
                 "annotator": False,
                 "countdown_time": False,
+                "additional_times": False,
+                "countdown_modality": False,
+                "countdown_attribute": False,
+                "countdown_attribute_values": [],
+                "countdown_position_values": [],
+                "logger": False,
+                "logOption": {
+                    "button": {
+                      "general": 'false',
+                      "click": 'false'
+                    },
+                    "mouse": {
+                      "general": 'false',
+                      "mouseMovements": 'false',
+                      "leftClicks": 'false',
+                      "rightClicks": 'false'
+                    },
+                    "keyboard": {
+                      "general": 'false',
+                      "shortcuts": 'false',
+                      "keys": 'false'
+                    },
+                    "textInput": {
+                      "general": 'false',
+                      "paste": 'false',
+                      "delete": 'false'
+                    },
+                    "clipboard": {
+                      "general": 'false',
+                      "copy": 'false',
+                      "cut": 'false'
+                    },
+                    "radio": {
+                      "general": 'false',
+                      "change": 'false'
+                    },
+                    "crowd-xplorer": {
+                      "general": 'false',
+                      "query": 'false',
+                      "result": 'false'
+                    },
+                    "various": {
+                      "general": 'false',
+                      "selection": 'false',
+                      "unload": 'false',
+                      "focus&blur": 'false',
+                      "scroll": 'false',
+                      "resize": 'false'
+                    }
+                },
+                "serverEndpoint": f'{api["ApiEndpoint"]}/log' if api else endpoint,
                 "blacklist_batches": [],
                 "whitelist_batches": [],
                 "messages": ["You have already started this task without finishing it"]
@@ -1074,7 +1150,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     console.print(f"Path: [italic white on black]{folder_build_task_path}[/italic white on black]")
 
-    console.rule(f"14 - Interface [cyan underline]document.ts")
+    console.rule(f"15 - Interface [cyan underline]document.ts")
 
     hits_file = f"{folder_build_task_path}hits.json"
     document_interface = f"{folder_build_skeleton_path}document.ts"
@@ -1088,7 +1164,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     if not 'id' in sample_element.keys():
         raise Exception(
-            "[red]Your [underline]hits.json[/underline] file contains an attributed called [underline]\"id\"[/underline]?")
+            "Your hits.json file does not contains an attributed called \"id\"!")
 
     # This class provides a representation of a single document stored in single hit stored in the Amazon S3 bucket.
     # The attribute <document_index> is additional and should not be touched and passed in the constructor.
@@ -1168,7 +1244,70 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.print("Interface built")
     console.print(f"Path: [italic]{document_interface}[/italic]")
 
-    console.rule(f"15 - Amazon Mechanical Turk Landing Page")
+    console.rule(f"16 - Class [cyan underline]goldChecker.ts")
+
+    # This class provides a stub to implement the gold elements check. If there are no gold elements, the check is considered true automatically.
+    # The following codes provides answers, notes and attributes for each gold element. Those three corresponding data structures should be used
+    # to implement the check
+
+    filename = f"goldChecker.ts"
+    if os.path.exists(f"{folder_build_skeleton_path}{filename}"):
+        console.print(f"Gold checker [italic white on green]{filename}[/italic white on green] detected, skipping generation")
+    else:
+        console.print(
+        f"Gold checker [italic white on yellow]{filename}[/italic white on yellow] not detected, generating a sample")
+        with open(f"{folder_build_skeleton_path}{filename}", 'w') as file:
+            print("export class GoldChecker {", file=file)
+            print("", file=file)
+            wrapper = textwrap.TextWrapper(initial_indent='\t', subsequent_indent='\t')
+            print(wrapper.fill('static performGoldCheck(goldConfiguration : Array<Object>) {'), file=file)
+            print("", file=file)
+            wrapper = textwrap.TextWrapper(initial_indent='\t\t', subsequent_indent='\t\t')
+            print(wrapper.fill('let goldChecks = new Array<boolean>()'), file=file)
+            print("", file=file)
+            print(wrapper.fill("/* If there are no gold elements there is nothing to be checked */"), file=file)
+            print(wrapper.fill("if(goldConfiguration.length<=0) {"), file=file)
+            wrapper = textwrap.TextWrapper(initial_indent='\t\t\t', subsequent_indent='\t\t\t')
+            print(wrapper.fill("goldChecks.push(true)"), file=file)
+            print(wrapper.fill("return goldChecks"), file=file)
+            wrapper = textwrap.TextWrapper(initial_indent='\t\t', subsequent_indent='\t\t')
+            print(wrapper.fill('}'), file=file)
+            print("", file=file)
+            print(wrapper.fill("for (let goldElement of goldConfiguration) {"), file=file)
+            wrapper = textwrap.TextWrapper(initial_indent='\t\t\t', subsequent_indent='\t\t\t')
+            print("", file=file)
+            print(wrapper.fill("/* Element attributes */"), file=file)
+            print(wrapper.fill('let document = goldElement["document"]'), file=file)
+            print(wrapper.fill("/* Worker's answers for each gold dimensions */"), file=file)
+            print(wrapper.fill('let answers = goldElement["answers"]'), file=file)
+            print(wrapper.fill("/* Worker's notes*/"), file=file)
+            print(wrapper.fill('let notes = goldElement["notes"]'), file=file)
+            print("", file=file)
+            print(wrapper.fill("let goldCheck = true"), file=file)
+            print("", file=file)
+            print(wrapper.fill("/* CONTROL IMPLEMENTATION STARTS HERE */"), file=file)
+            print(wrapper.fill("/* Write your code; the check for the current element holds if goldCheck remains set to true */"), file=file)
+            print("", file=file)
+            print("", file=file)
+            print("", file=file)
+            print(wrapper.fill("/* CONTROL IMPLEMENTATION ENDS HERE */"), file=file)
+            print(wrapper.fill("/* Push goldCheck inside goldChecks array for the current gold element */"), file=file)
+            print(wrapper.fill('goldChecks.push(goldCheck)'), file=file)
+            print("", file=file)
+            wrapper = textwrap.TextWrapper(initial_indent='\t\t', subsequent_indent='\t\t')
+            print(wrapper.fill('}'), file=file)
+            print("", file=file)
+            print(wrapper.fill('return goldChecks'), file=file)
+            print("", file=file)
+            wrapper = textwrap.TextWrapper(initial_indent='\t', subsequent_indent='\t')
+            print(wrapper.fill('}'), file=file)
+            print("", file=file)
+            print("}", file=file)
+
+        console.print("Class built")
+        console.print(f"Path: [italic]{filename}[/italic]")
+
+    console.rule(f"17 - Amazon Mechanical Turk Landing Page")
     status.start()
     status.update(f"Istantiating Mako model")
     time.sleep(3)
@@ -1204,7 +1343,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.print(f"Tokens for {len(hits)} hits generated")
     console.print(f"Path: [italic]{mturk_tokens_file}")
 
-    console.rule(f"16 - Task [cyan underline]{task_name}[/cyan underline]/[yellow underline]{batch_name}[/yellow underline] build")
+    console.rule(f"18 - Task [cyan underline]{task_name}[/cyan underline]/[yellow underline]{batch_name}[/yellow underline] build")
     status.update(f"Executing build command, please wait")
     time.sleep(3)
 
@@ -1269,16 +1408,18 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.print("Model istantiated")
     console.print(f"Path: [italic underline]{index_page_file}")
 
-    console.rule(f"17 - Packaging Task [cyan underline]tasks/{task_name}/{batch_name}")
+    console.rule(f"19 - Packaging Task [cyan underline]tasks/{task_name}/{batch_name}")
     status.start()
     status.update(f"Starting")
     time.sleep(3)
 
     folder_tasks_batch_path = f"{folder_tasks_path}{task_name}/{batch_name}/"
     folder_tasks_batch_deploy_path = f"{folder_tasks_batch_path}deploy/"
+    folder_tasks_batch_env_path = f"{folder_tasks_batch_path}environments/"
     folder_tasks_batch_mturk_path = f"{folder_tasks_batch_path}mturk/"
     folder_tasks_batch_task_path = f"{folder_tasks_batch_path}task/"
     folder_tasks_batch_config_path = f"{folder_tasks_batch_path}config/"
+    folder_tasks_batch_skeleton_path = f"{folder_tasks_batch_path}skeleton/"
 
     console.print(f"[italic purple]deploy-config[/italic purple] variable: {bool(deploy_config)}")
 
@@ -1293,7 +1434,12 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         os.makedirs(folder_tasks_batch_mturk_path, exist_ok=True)
     else:
         console.print("[yellow]Amazon Mechanical Turk assets folder already present")
-    console.print(f"Path: [italic]{folder_tasks_batch_mturk_path}")
+    if not os.path.exists(folder_tasks_batch_env_path):
+        console.print("[green]Environments folder created")
+        os.makedirs(folder_tasks_batch_env_path, exist_ok=True)
+    else:
+        console.print("[yellow]Environments folder already present")
+    console.print(f"Path: [italic]{folder_tasks_batch_env_path}")
     if not os.path.exists(folder_tasks_batch_task_path) and deploy_config:
         console.print("[green]Task configuration folder created")
         os.makedirs(folder_tasks_batch_task_path, exist_ok=True)
@@ -1306,6 +1452,12 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     else:
         console.print("[yellow]General configuration folder already present")
     console.print(f"Path: [italic]{folder_tasks_batch_config_path}")
+    if not os.path.exists(folder_tasks_batch_skeleton_path) and deploy_config:
+        console.print("[green]Task skeleton folder created")
+        os.makedirs(folder_tasks_batch_skeleton_path, exist_ok=True)
+    else:
+        console.print("[yellow]Task skeleton folder already present")
+    console.print(f"Path: [italic]{folder_tasks_batch_skeleton_path}")
 
 
     def copy(source, destination, title):
@@ -1314,7 +1466,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             title=title)
         console.print(panel)
         copy2(source, destination)
-
 
     console.print(f"Copying files for [blue underline on white]{folder_build_deploy_path}[/blue underline on white] folder")
 
@@ -1329,6 +1480,16 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     source = f"{folder_build_deploy_path}index.html"
     destination = f"{folder_tasks_batch_deploy_path}index.html"
     copy(source, destination, "Task Homepage")
+
+    console.print(f"Copying files for [blue underline on white]{folder_build_env_path}[/blue underline on white] folder")
+
+    source = f"{folder_build_env_path}environment.ts"
+    destination = f"{folder_tasks_batch_env_path}environment.ts"
+    copy(source, destination, "Dev Environment")
+
+    source = f"{folder_build_env_path}environment.prod.ts"
+    destination = f"{folder_tasks_batch_env_path}environment.prod.ts"
+    copy(source, destination, "Prod Environment")
 
     console.print(f"Copying files for [blue underline on white]{folder_build_mturk_path}[/blue underline on white] folder")
 
@@ -1375,13 +1536,23 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         destination = f"{folder_tasks_batch_task_path}workers.json"
         copy(source, destination, "Workers Settings")
 
+    console.print(f"Copying files for [yellow underline on white]{folder_tasks_batch_skeleton_path}[/yellow underline on white] folder")
+
+    source = f"{folder_build_skeleton_path}document.ts"
+    destination = f"{folder_tasks_batch_skeleton_path}document.ts"
+    copy(source, destination, "Document Interface")
+
+    source = f"{folder_build_skeleton_path}goldChecker.ts"
+    destination = f"{folder_tasks_batch_skeleton_path}goldChecker.ts"
+    copy(source, destination, "Gold Checker")
+
     console.print(f"Copying files for [blue underline on white]{folder_tasks_batch_config_path}[/blue underline on white] folder")
 
     source = f"{folder_build_config_path}admin.json"
     destination = f"{folder_tasks_batch_config_path}admin.json"
     copy(source, destination, "Admin Credentials")
 
-    console.rule(f"18 - Task [cyan underline]tasks/{task_name}/{batch_name} Deploy")
+    console.rule(f"20 - Task [cyan underline]tasks/{task_name}/{batch_name} Deploy")
     status.start()
     status.update(f"Starting")
     time.sleep(3)
@@ -1467,7 +1638,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     key = f"{s3_deploy_path}index.html"
     upload(path, aws_deploy_bucket, key, "Task Homepage", "text/html", "public-read")
 
-    console.rule(f"19 - Public Link")
+    console.rule(f"21 - Public Link")
     status.start()
     status.update(f"Writing")
     time.sleep(3)

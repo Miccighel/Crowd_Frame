@@ -1,6 +1,8 @@
 import {HttpClient, HttpHeaders} from "@angular/common/http";
 import {Injectable} from "@angular/core";
 import {SectionService} from "./section.service";
+import {S3Service} from "./s3.service";
+import {ConfigService} from "./config.service";
 
 /*
 * This class offers a logging system for the platform. As a Service, the class is instanced as a Singleton in skeleton.component.ts
@@ -10,6 +12,8 @@ import {SectionService} from "./section.service";
   providedIn: 'root',
 })
 export class ActionLogger {
+  private _opt: Object;
+  private _isActive: boolean;
   private sectionService: SectionService;
   private loggerSection: string;
   private sequenceNumber: number;
@@ -17,17 +21,28 @@ export class ActionLogger {
   private workerID: string;
   private taskName: string;
   private batchName: string;
+  private _endpoint: string;
+  private logOnConsole: boolean;
   private http: HttpClient;
+  private s3Service: S3Service;
+  private configService: ConfigService
+
 
   /*
    * Default constructor
    * Initialize the sequence number to 0 and the initialization time of the logger
    */
-  constructor(sectionService: SectionService){
+  constructor(sectionService: SectionService, s3Service: S3Service, configService: ConfigService){
     this.sectionService = sectionService;
     this.loggerSection = this.findSection();
     this.sequenceNumber = 0;
     this.initTime = new Date().getTime()/1000;
+    this.s3Service = s3Service;
+    this.configService = configService
+  }
+
+  async downloadOpt(){
+    return await this.s3Service.downloadTaskSettings(this.configService.environment)
   }
 
   /**
@@ -54,18 +69,21 @@ export class ActionLogger {
    */
   log(type: string, details: object) {
     let payload = this.buildPayload(type, details)
-    if(payload.worker == null){
-      payload.worker = 'none'
+    if(payload.worker != null) {
+      if (this.logOnConsole) {
+        console.log(payload)
+      } else {
+        this.http.post(
+          this.endpoint,
+          payload,
+          {
+            responseType: 'text',
+            headers: new HttpHeaders()
+              .set('content-type', 'text/plain')
+          }
+        ).subscribe()
+      }
     }
-     // console.log(payload)
-    // this.http.post(
-    //   'https://8vd1uyg771.execute-api.us-east-1.amazonaws.com/logger/log',
-    //   payload,
-    //   {
-    //     responseType: 'text',
-    //     headers: new HttpHeaders()
-    //       .set('content-type', 'text/plain')
-    //   }).subscribe()
   }
 
   /**
@@ -75,9 +93,9 @@ export class ActionLogger {
     let details = {
       ua: navigator.userAgent
     }
-    //this.http.get('http://api.ipify.org/?format=json').subscribe(res => {
-    //  details['ip'] = res['ip']
-    //})
+    this.http.get('https://api.ipify.org/?format=json').subscribe(res => {
+      details['ip'] = res['ip']
+    })
     this.log('context', details)
   }
 
@@ -87,12 +105,14 @@ export class ActionLogger {
    * @param taskName
    * @param batchName
    * @param http client initialized by the skeleton
+   * @param logOnConsole true to log events only on console
    */
-  logInit(workerID: string, taskName: string, batchName: string, http: HttpClient){
+  logInit(workerID: string, taskName: string, batchName: string, http: HttpClient, logOnConsole: boolean){
     this.http = http;
     this.workerID = workerID;
     this.taskName = taskName;
     this.batchName = batchName;
+    this.logOnConsole = logOnConsole;
 
     let details = this.getCurrentSize()
 
@@ -365,5 +385,30 @@ export class ActionLogger {
 
   findSection(){
     return this.sectionService.currentSection
+  }
+
+  get opt(): Object {
+    return this._opt;
+  }
+
+  set opt(value: Object) {
+    this._opt = value;
+  }
+
+
+  get isActive(): boolean {
+    return this._isActive;
+  }
+
+  set isActive(value: boolean) {
+    this._isActive = value;
+  }
+
+  get endpoint(): string {
+    return this._endpoint;
+  }
+
+  set endpoint(value: string) {
+    this._endpoint = value;
   }
 }
