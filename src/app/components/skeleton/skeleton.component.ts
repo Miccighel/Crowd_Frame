@@ -526,6 +526,7 @@ export class SkeletonComponent implements OnInit {
           this.hit = currentHit;
           this.tokenOutput = currentHit.token_output;
           this.unitId = currentHit.unit_id
+          this.actionLogger.unitId = this.unitId
         }
       }
 

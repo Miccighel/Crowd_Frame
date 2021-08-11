@@ -773,7 +773,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         dynamo = botoSession.client('dynamodb')
         try:
             dynamo.create_table(
-                TableName=f"{task_name}_{batch_name}",
+                TableName=f"{task_name}_{batch_name}_logger",
                 AttributeDefinitions=[{'AttributeName': 'sequence', 'AttributeType': 'N'},
                                       {'AttributeName': 'worker', 'AttributeType': 'S'}],
                 KeySchema=[{'AttributeName': 'worker', 'KeyType': 'HASH'},
@@ -781,10 +781,10 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 BillingMode='PAY_PER_REQUEST'
             )
             status.stop()
-            console.print(f"Table '{task_name}_{batch_name}' created")
+            console.print(f"Table '{task_name}_{batch_name}_logger' created")
         except dynamo.exceptions.ResourceInUseException:
             status.stop()
-            console.print(f"Table '{task_name}_{batch_name}' already created")
+            console.print(f"Table '{task_name}_{batch_name}_logger' already created")
 
         status.start()
         status.update('Lambda setup...')
