@@ -1829,6 +1829,7 @@ export class SkeletonComponent implements OnInit {
             let uploadStatus = await this.S3Service.uploadQualityCheck(
                 this.configService.environment,
                 this.worker,
+                this.unitId,
                 qualityCheckData,
                 this.currentTry
             )
@@ -2035,7 +2036,7 @@ export class SkeletonComponent implements OnInit {
             data["worker"] = this.worker
             /* await (this.upload(`${this.workerFolder}/worker.json`, this.worker)); */
 
-            let uploadStatus = await this.S3Service.uploadTaskData(this.configService.environment, this.worker, data)
+            let uploadStatus = await this.S3Service.uploadTaskData(this.configService.environment, this.worker, this.unitId, data)
 
             /* If the worker has completed a questionnaire */
             if (completedElement < this.questionnaireAmountStart || (completedElement >= this.questionnaireAmountStart + this.documentsAmount)) {
@@ -2080,7 +2081,7 @@ export class SkeletonComponent implements OnInit {
                 /* Number of accesses to the current questionnaire (which must be always 1, since the worker cannot go back */
                 data["accesses"] = accessesAmount + 1
 
-                let uploadStatus = await this.S3Service.uploadQuestionnaire(this.configService.environment, this.worker, data, this.currentTry, completedQuestionnaire, accessesAmount + 1, this.sequenceNumber)
+                let uploadStatus = await this.S3Service.uploadQuestionnaire(this.configService.environment, this.worker, this.unitId, data, this.currentTry, completedQuestionnaire, accessesAmount + 1, this.sequenceNumber)
 
                 /* The amount of accesses to the current questionnaire is incremented */
                 this.sequenceNumber = this.sequenceNumber + 1
@@ -2140,7 +2141,7 @@ export class SkeletonComponent implements OnInit {
                 let responsesSelected = this.searchEngineSelectedResponses[completedDocument];
                 data["responses_selected"] = responsesSelected
 
-                let uploadStatus = await this.S3Service.uploadDocument(this.configService.environment, this.worker, data, this.currentTry, completedDocument, accessesAmount + 1, this.sequenceNumber)
+                let uploadStatus = await this.S3Service.uploadDocument(this.configService.environment, this.worker, this.unitId, data, this.currentTry, completedDocument, accessesAmount + 1, this.sequenceNumber)
 
                 /* The amount of accesses to the current document is incremented */
                 this.elementsAccesses[completedElement] = accessesAmount + 1;
@@ -2193,7 +2194,7 @@ export class SkeletonComponent implements OnInit {
                 data["responses_selected"] = this.searchEngineSelectedResponses
                 /* If the last element is a document */
 
-                let uploadStatus = await this.S3Service.uploadFinalData(this.configService.environment, this.worker, data, this.currentTry)
+                let uploadStatus = await this.S3Service.uploadFinalData(this.configService.environment, this.worker, this.unitId, data, this.currentTry)
 
             }
 
@@ -2206,7 +2207,7 @@ export class SkeletonComponent implements OnInit {
      * The comment can be typed in a textarea and when the worker clicks the "Send" button such comment is uploaded to an Amazon S3 bucket.
      */
     public async performCommentSaving() {
-        let uploadStatus = await this.S3Service.uploadComment(this.configService.environment, this.worker, this.commentForm.value, this.currentTry)
+        let uploadStatus = await this.S3Service.uploadComment(this.configService.environment, this.worker, this.unitId, this.commentForm.value, this.currentTry)
         this.commentSent = true;
     }
 
