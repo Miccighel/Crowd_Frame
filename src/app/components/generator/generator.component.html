@@ -864,8 +864,7 @@
                   <td class="p-0 pr-16px" [formGroupName]="valueIndex">
                     <mat-form-field class="width-100" matLine [hideRequiredMarker]="value.valid" appearance="fill">
                       <mat-label>HTML Color (#123456)</mat-label>
-                      <input matInput formControlName="color" [value]="this.annotatorOptionColors[valueIndex]"
-                             [(colorPicker)]="this.annotatorOptionColors[valueIndex]"/>
+                      <input matInput formControlName="color" [value]="this.annotatorOptionColors[valueIndex]" [(colorPicker)]="this.annotatorOptionColors[valueIndex]" (colorPickerChange)="updateOptionColor($event, valueIndex)" required>
                     </mat-form-field>
                   </td>
                   <td class="p-0 center">
@@ -893,6 +892,16 @@
               A positive or zero number is required
             </mat-error>
           </mat-form-field>
+
+          <mat-form-field class="width-100" appearance="fill" *ngIf="this.taskSettingsForm.get('setCountdownTime').value">
+            <mat-label>Behavior</mat-label>
+            <mat-select matInput formControlName="countdown_behavior" required>
+              <mat-option *ngFor="let countdownBehavior of countdownBehavior" [value]="countdownBehavior.value">
+                {{countdownBehavior.viewValue}}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
 
           <mat-slide-toggle color="primary" class="mb-16px" formControlName="setAdditionalTimes" (change)="resetAdditionalTimes()" *ngIf="this.taskSettingsForm.get('setCountdownTime').value">
             Additional Times

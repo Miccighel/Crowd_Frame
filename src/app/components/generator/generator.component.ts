@@ -169,6 +169,10 @@ export class GeneratorComponent {
     taskSettingsForm: FormGroup;
     taskSettingsFetched: SettingsTask
     taskSettingsSerialized: string
+    countdownBehavior: ModalityType[] = [
+        {value: 'disable_form', viewValue: 'Disable Forms'},
+        {value: 'hide_attributes', viewValue: 'Hide Attributes'},
+    ];
     additionalTimeModalities: ModalityType[] = [
         {value: 'attribute', viewValue: 'Attribute'},
         {value: 'position', viewValue: 'Position'},
@@ -328,6 +332,22 @@ export class GeneratorComponent {
     }
 
     async performGeneratorSetup() {
+
+        let differentTask = false
+        let serializedTaskName = this.localStorageService.getItem('task-name')
+        if(serializedTaskName) {
+            if(serializedTaskName!=this.configService.environment.taskName) differentTask = true
+        } else {
+            this.localStorageService.setItem(`task-name`, JSON.stringify(this.configService.environment.taskName))
+        }
+        let differentBatch = false
+        let serializedBatchName = this.localStorageService.getItem('batch-name')
+        if(serializedBatchName) {
+            if(serializedBatchName!=this.configService.environment.batchName) differentBatch = true
+        } else {
+            this.localStorageService.setItem(`batch-name`, JSON.stringify(this.configService.environment.batchName))
+        }
+        if (differentTask && differentBatch) this.localStorageService.clear()
 
         /* STEP #1 - Questionnaires */
 
@@ -503,6 +523,7 @@ export class GeneratorComponent {
             }),
             setCountdownTime: this.taskSettingsFetched.countdown_time >= 0 ? true : '',
             countdown_time: this.taskSettingsFetched.countdown_time >= 0 ? this.taskSettingsFetched.countdown_time : '',
+            countdown_behavior: this.taskSettingsFetched.countdown_behavior ? this.taskSettingsFetched.countdown_behavior : '',
             setAdditionalTimes: this.taskSettingsFetched.countdown_modality ? true : '',
             countdown_modality: this.taskSettingsFetched.countdown_modality ? this.taskSettingsFetched.countdown_modality ? this.taskSettingsFetched.countdown_modality : '' : '',
             countdown_attribute: this.taskSettingsFetched.countdown_attribute ? this.taskSettingsFetched.countdown_attribute ? this.taskSettingsFetched.countdown_attribute : '' : '',
@@ -1503,6 +1524,13 @@ export class GeneratorComponent {
             label: option ? option['label'] ? option['label'] : '' : '',
             color: option ? option['color'] ? option['color'] : '' : ''
         }))
+        if(!option) {
+            this.annotatorOptionColors.push("")
+        }
+    }
+
+    updateOptionColor(color, optionIndex) {
+        this.annotatorOptionColors[optionIndex] = color
     }
 
     addBatch(batchNode) {
@@ -1586,6 +1614,12 @@ export class GeneratorComponent {
 
         if (!taskSettingsJSON.setAnnotator) taskSettingsJSON.annotator = false
         delete taskSettingsJSON.setAnnotator
+
+        if(taskSettingsJSON.annotator.type == "options") {
+            taskSettingsJSON.annotator.values.forEach((option, index) => {
+                option["color"] = this.annotatorOptionColors[index]
+            });
+        }
 
         if (!taskSettingsJSON.setCountdownTime) {
             taskSettingsJSON.countdown_time = false
