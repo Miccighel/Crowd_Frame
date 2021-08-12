@@ -88,7 +88,6 @@ admin_password = os.getenv('admin_password')
 deploy_config = strtobool(os.getenv('deploy_config'))
 server_config = strtobool(os.getenv('server_config'))
 
-
 aws_region = os.getenv('aws_region')
 aws_private_bucket = os.getenv('aws_private_bucket')
 aws_deploy_bucket = os.getenv('aws_deploy_bucket')
@@ -206,7 +205,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             console.print('New credentials generated!')
             console.print(f'Access Key ID = {credentials["AccessKeyId"]}')
             console.print(f'Secret Access Key = {credentials["SecretAccessKey"]}')
-            console.print('[bold orange]Save them somewhere safe! You will not be able to retrieve them, neither on AWS')
+            console.print(
+                '[bold orange]Save them somewhere safe! You will not be able to retrieve them, neither on AWS')
             console.print('[bold green]Your user profile is ready!')
         else:
             exists = False
@@ -219,9 +219,11 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                     console.print('[bold green]Your user profile is ready!')
                     break
             if not exists:
-                console.print(f'[bold red]Your configuration has expired or is broken, remove {userName} profile from credentials file and run this script another time')
+                console.print(
+                    f'[bold red]Your configuration has expired or is broken, remove {userName} profile from credentials file and run this script another time')
     else:
-        console.print('[bold red]Before using this tool you MUST install AWS CLI, run `aws configure` command and insert your base credential')
+        console.print(
+            '[bold red]Before using this tool you MUST install AWS CLI, run `aws configure` command and insert your base credential')
 
     console.rule(f"4 - [yellow]{userName}[/yellow] Profile Loading")
     status.start()
@@ -432,32 +434,40 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     response = iam.attach_user_policy(UserName=user['User']['UserName'], PolicyArn=policy['Policy']['Arn'])
     policy = iam.get_policy(PolicyArn=f"{policy['Policy']['Arn']}")
-    console.print(f"[green]Policy with ARN [cyan underline]{policy['Policy']['Arn']}[/cyan underline] attached to user, HTTP STATUS CODE: {user['ResponseMetadata']['HTTPStatusCode']}")
+    console.print(
+        f"[green]Policy with ARN [cyan underline]{policy['Policy']['Arn']}[/cyan underline] attached to user, HTTP STATUS CODE: {user['ResponseMetadata']['HTTPStatusCode']}")
 
     keys = []
     paginator = iam.get_paginator('list_access_keys')
     for found_keys in paginator.paginate(UserName=user['User']['UserName']):
         for (index, key) in enumerate(found_keys['AccessKeyMetadata']):
-            keyData = read_json(f"{folder_aws_generated_path}user_{user['User']['UserName']}_access_key_{key['AccessKeyId']}.json")
+            keyData = read_json(
+                f"{folder_aws_generated_path}user_{user['User']['UserName']}_access_key_{key['AccessKeyId']}.json")
             if keyData:
                 keys.append(keyData)
             else:
                 response = iam.delete_access_key(UserName=user['User']['UserName'], AccessKeyId=key['AccessKeyId'])
-                console.print(f"[red]Key {index} data not found on disk[/red]; deleting it on AWS, HTTP STATUS CODE: {response['ResponseMetadata']['HTTPStatusCode']}")
+                console.print(
+                    f"[red]Key {index} data not found on disk[/red]; deleting it on AWS, HTTP STATUS CODE: {response['ResponseMetadata']['HTTPStatusCode']}")
 
     if len(keys) < 2:
         key = iam.create_access_key(UserName=user['User']['UserName'])
-        serialize_json(folder_aws_generated_path, f"user_{user['User']['UserName']}_access_key_{key['AccessKey']['AccessKeyId']}.json",
+        serialize_json(folder_aws_generated_path,
+                       f"user_{user['User']['UserName']}_access_key_{key['AccessKey']['AccessKeyId']}.json",
                        key)
-        console.print(f"[green]Access key created[/green], HTTP STATUS CODE: {key['ResponseMetadata']['HTTPStatusCode']}.")
+        console.print(
+            f"[green]Access key created[/green], HTTP STATUS CODE: {key['ResponseMetadata']['HTTPStatusCode']}.")
         keys.append(key)
         if not os.path.exists(
             f"{folder_aws_path}user_{user['User']['UserName']}_access_key_{key['AccessKey']['AccessKeyId']}.json"):
-            serialize_json(folder_aws_generated_path, f"user_{user['User']['UserName']}_access_key_{key['AccessKey']['AccessKeyId']}.json", key)
-            console.print(f"[green]Access key created[/green], HTTP STATUS CODE: {key['ResponseMetadata']['HTTPStatusCode']}.")
+            serialize_json(folder_aws_generated_path,
+                           f"user_{user['User']['UserName']}_access_key_{key['AccessKey']['AccessKeyId']}.json", key)
+            console.print(
+                f"[green]Access key created[/green], HTTP STATUS CODE: {key['ResponseMetadata']['HTTPStatusCode']}.")
 
     key_selected = random.choice(keys)
-    key_data = read_json(f"{folder_aws_generated_path}user_{user['User']['UserName']}_access_key_{key_selected['AccessKey']['AccessKeyId']}.json")
+    key_data = read_json(
+        f"{folder_aws_generated_path}user_{user['User']['UserName']}_access_key_{key_selected['AccessKey']['AccessKeyId']}.json")
 
     console.print("Key data found on disk and loaded")
 
@@ -505,7 +515,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             'RestrictPublicBuckets': True
         },
     )
-    console.print(f"[green]Public access blocked[/green], HTTP STATUS CODE: {response['ResponseMetadata']['HTTPStatusCode']}.")
+    console.print(
+        f"[green]Public access blocked[/green], HTTP STATUS CODE: {response['ResponseMetadata']['HTTPStatusCode']}.")
 
     private_bucket_policy = {
         "Version": "2012-10-17",
@@ -755,9 +766,9 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 Target='integrations/' + api['integration']
             )
             apiGateway.create_stage(
-              ApiId=api['ApiId'],
-              StageName="$default",
-              AutoDeploy=True
+                ApiId=api['ApiId'],
+                StageName="$default",
+                AutoDeploy=True
             )
             status.stop()
             console.print(f'[link={api["ApiEndpoint"]}/log]API endpoint[/link] created.')
@@ -785,6 +796,16 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         except dynamo.exceptions.ResourceInUseException:
             status.stop()
             console.print(f"Table '{task_name}_{batch_name}_logger' already created")
+        try:
+            dynamo.create_table(
+                TableName=f"{task_name}_{batch_name}_acl",
+                AttributeDefinitions=[{'AttributeName': 'worker', 'AttributeType': 'S'}],
+                KeySchema=[{'AttributeName': 'worker', 'KeyType': 'HASH'}],
+                BillingMode='PAY_PER_REQUEST'
+            )
+            console.print(f"Table '{task_name}_{batch_name}_acl' created")
+        except dynamo.exceptions.ResourceInUseException:
+            console.print(f"Table '{task_name}_{batch_name}_acl' already created")
 
         status.start()
         status.update('Lambda setup...')
@@ -893,7 +914,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     admin_file = f"{folder_build_config_path}admin.json"
 
-    console.print("Creating hash with [cyan underline]hmac[/cyan underline] and [cyan underline]sha256[/cyan underline]")
+    console.print(
+        "Creating hash with [cyan underline]hmac[/cyan underline] and [cyan underline]sha256[/cyan underline]")
     console.print(f"Processing user with username: [white on purple]{admin_user}[white on purple]")
 
     admins = []
@@ -915,7 +937,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     filename = "hits.json"
     if os.path.exists(f"{folder_build_task_path}{filename}"):
-        console.print(f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
+        console.print(
+            f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
     else:
         console.print(
             f"Config. file [italic white on yellow]{filename}[/italic white on yellow] not detected, generating a sample")
@@ -936,7 +959,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     filename = "questionnaires.json"
     if os.path.exists(f"{folder_build_task_path}{filename}"):
-        console.print(f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
+        console.print(
+            f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
     else:
         console.print(
             f"Config. file [italic white on yellow]{filename}[/italic white on yellow] not detected, generating a sample")
@@ -975,7 +999,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     filename = "dimensions.json"
     if os.path.exists(f"{folder_build_task_path}{filename}"):
-        console.print(f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
+        console.print(
+            f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
     else:
         console.print(
             f"Config. file [italic white on yellow]{filename}[/italic white on yellow] not detected, generating a sample")
@@ -1008,7 +1033,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     filename = "instructions_main.json"
     if os.path.exists(f"{folder_build_task_path}{filename}"):
-        console.print(f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
+        console.print(
+            f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
     else:
         console.print(
             f"Config. file [italic white on yellow]{filename}[/italic white on yellow] not detected, generating a sample")
@@ -1023,7 +1049,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     filename = "instructions_dimensions.json"
     if os.path.exists(f"{folder_build_task_path}{filename}"):
-        console.print(f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
+        console.print(
+            f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
     else:
         console.print(
             f"Config. file [italic white on yellow]{filename}[/italic white on yellow] not detected, generating a sample")
@@ -1038,7 +1065,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     filename = "search_engine.json"
     if os.path.exists(f"{folder_build_task_path}{filename}"):
-        console.print(f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
+        console.print(
+            f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
     else:
         console.print(
             f"Config. file [italic white on yellow]{filename}[/italic white on yellow] not detected, generating a sample")
@@ -1052,7 +1080,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     filename = "task.json"
     if os.path.exists(f"{folder_build_task_path}{filename}"):
-        console.print(f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
+        console.print(
+            f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
     else:
         console.print(
             f"Config. file [italic white on yellow]{filename}[/italic white on yellow] not detected, generating a sample")
@@ -1086,46 +1115,46 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 "logger": False,
                 "logOption": {
                     "button": {
-                      "general": 'false',
-                      "click": 'false'
+                        "general": 'false',
+                        "click": 'false'
                     },
                     "mouse": {
-                      "general": 'false',
-                      "mouseMovements": 'false',
-                      "leftClicks": 'false',
-                      "rightClicks": 'false'
+                        "general": 'false',
+                        "mouseMovements": 'false',
+                        "leftClicks": 'false',
+                        "rightClicks": 'false'
                     },
                     "keyboard": {
-                      "general": 'false',
-                      "shortcuts": 'false',
-                      "keys": 'false'
+                        "general": 'false',
+                        "shortcuts": 'false',
+                        "keys": 'false'
                     },
                     "textInput": {
-                      "general": 'false',
-                      "paste": 'false',
-                      "delete": 'false'
+                        "general": 'false',
+                        "paste": 'false',
+                        "delete": 'false'
                     },
                     "clipboard": {
-                      "general": 'false',
-                      "copy": 'false',
-                      "cut": 'false'
+                        "general": 'false',
+                        "copy": 'false',
+                        "cut": 'false'
                     },
                     "radio": {
-                      "general": 'false',
-                      "change": 'false'
+                        "general": 'false',
+                        "change": 'false'
                     },
                     "crowd-xplorer": {
-                      "general": 'false',
-                      "query": 'false',
-                      "result": 'false'
+                        "general": 'false',
+                        "query": 'false',
+                        "result": 'false'
                     },
                     "various": {
-                      "general": 'false',
-                      "selection": 'false',
-                      "unload": 'false',
-                      "focus&blur": 'false',
-                      "scroll": 'false',
-                      "resize": 'false'
+                        "general": 'false',
+                        "selection": 'false',
+                        "unload": 'false',
+                        "focus&blur": 'false',
+                        "scroll": 'false',
+                        "resize": 'false'
                     }
                 },
                 "serverEndpoint": f'{api["ApiEndpoint"]}/log' if api else endpoint,
@@ -1137,7 +1166,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     filename = "workers.json"
     if os.path.exists(f"{folder_build_task_path}{filename}"):
-        console.print(f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
+        console.print(
+            f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
     else:
         console.print(
             f"Config. file [italic white on yellow]{filename}[/italic white on yellow] not detected, generating a sample")
@@ -1199,7 +1229,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                     print(wrapper.fill(f"{attribute}: number;"), file=file)
                 else:
                     print(wrapper.fill(f"{attribute}: string;"), file=file)
-                console.print(f"Attribute with name: [cyan underline]{attribute}[/cyan underline] and type: {type(value)} found")
+                console.print(
+                    f"Attribute with name: [cyan underline]{attribute}[/cyan underline] and type: {type(value)} found")
         print("", file=file)
         print(wrapper.fill(f"constructor ("), file=file)
         wrapper = textwrap.TextWrapper(initial_indent='\t\t\t', subsequent_indent='\t\t\t')
@@ -1284,7 +1315,9 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         print(wrapper.fill("let goldCheck = false"), file=file)
         print("", file=file)
         print(wrapper.fill("/* CONTROL IMPLEMENTATION STARTS HERE */"), file=file)
-        print(wrapper.fill("/* Write your code; the check for the current element holds if goldCheck is set to true */"), file=file)
+        print(
+            wrapper.fill("/* Write your code; the check for the current element holds if goldCheck is set to true */"),
+            file=file)
         print("", file=file)
         print("", file=file)
         print("", file=file)
@@ -1341,7 +1374,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.print(f"Tokens for {len(hits)} hits generated")
     console.print(f"Path: [italic]{mturk_tokens_file}")
 
-    console.rule(f"18 - Task [cyan underline]{task_name}[/cyan underline]/[yellow underline]{batch_name}[/yellow underline] build")
+    console.rule(
+        f"18 - Task [cyan underline]{task_name}[/cyan underline]/[yellow underline]{batch_name}[/yellow underline] build")
     status.update(f"Executing build command, please wait")
     time.sleep(3)
 
@@ -1453,7 +1487,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         copy2(source, destination)
 
 
-    console.print(f"Copying files for [blue underline on white]{folder_build_deploy_path}[/blue underline on white] folder")
+    console.print(
+        f"Copying files for [blue underline on white]{folder_build_deploy_path}[/blue underline on white] folder")
 
     source = f"{folder_build_deploy_path}scripts.js"
     destination = f"{folder_tasks_batch_deploy_path}scripts.js"
@@ -1467,7 +1502,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     destination = f"{folder_tasks_batch_deploy_path}index.html"
     copy(source, destination, "Task Homepage")
 
-    console.print(f"Copying files for [blue underline on white]{folder_build_mturk_path}[/blue underline on white] folder")
+    console.print(
+        f"Copying files for [blue underline on white]{folder_build_mturk_path}[/blue underline on white] folder")
 
     source = f"{folder_build_mturk_path}index.html"
     destination = f"{folder_tasks_batch_mturk_path}index.html"
@@ -1478,7 +1514,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     copy(source, destination, "Hits tokens")
 
     if bool(deploy_config):
-        console.print(f"Copying files for [blue underline on white]{folder_build_task_path}[/blue underline on white] folder")
+        console.print(
+            f"Copying files for [blue underline on white]{folder_build_task_path}[/blue underline on white] folder")
 
         source = f"{folder_build_task_path}hits.json"
         destination = f"{folder_tasks_batch_task_path}hits.json"
@@ -1512,7 +1549,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         destination = f"{folder_tasks_batch_task_path}workers.json"
         copy(source, destination, "Workers Settings")
 
-    console.print(f"Copying files for [blue underline on white]{folder_tasks_batch_config_path}[/blue underline on white] folder")
+    console.print(
+        f"Copying files for [blue underline on white]{folder_tasks_batch_config_path}[/blue underline on white] folder")
 
     source = f"{folder_build_config_path}admin.json"
     destination = f"{folder_tasks_batch_config_path}admin.json"
@@ -1541,7 +1579,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             title=title)
         console.print(panel)
         if acl:
-            response = s3_client.put_object(Body=open(path, 'rb'), Bucket=bucket, Key=key, ContentType=content_type, ACL=acl)
+            response = s3_client.put_object(Body=open(path, 'rb'), Bucket=bucket, Key=key, ContentType=content_type,
+                                            ACL=acl)
         else:
             response = s3_client.put_object(Body=open(path, 'rb'), Bucket=bucket, Key=key, ContentType=content_type)
         console.print(f"HTTP Status Code: {response['ResponseMetadata']['HTTPStatusCode']}, ETag: {response['ETag']}")
@@ -1609,4 +1648,5 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     status.update(f"Writing")
     time.sleep(3)
 
-    console.print(f"[bold white on black]https://{aws_deploy_bucket}.s3.{aws_region}.amazonaws.com/{task_name}/{batch_name}/index.html")
+    console.print(
+        f"[bold white on black]https://{aws_deploy_bucket}.s3.{aws_region}.amazonaws.com/{task_name}/{batch_name}/index.html")
