@@ -2127,9 +2127,11 @@ export class SkeletonComponent implements OnInit {
                 let timestampsElapsed = this.timestampsElapsed[completedElement];
                 data["timestamps_elapsed"] = timestampsElapsed
                 /* Countdown time and corresponding flag */
-                let countdownTime = (this.settings.countdown_time) ? Number(this.countdown[completedDocument]["i"]["text"]) : []
-                data["countdowns_times"] = countdownTime
-                let countdown_expired = (this.settings.countdown_time) ? this.countdownsExpired[completedDocument] : []
+                let countdownTimeStart = (this.settings.countdown_time>=0) ? this.documentsCountdownTime[completedDocument] : []
+                data["countdowns_times_start"] = countdownTimeStart
+                let countdownTime = (this.settings.countdown_time>=0) ? Number(this.countdown[completedDocument]["i"]["text"]) : []
+                data["countdowns_times_left"] = countdownTime
+                let countdown_expired = (this.settings.countdown_time>=0) ? this.countdownsExpired[completedDocument] : []
                 data["countdowns_expired"] = countdown_expired
                 /* Number of accesses to the current document (currentDocument.e., how many times the worker reached the document with a "Back" or "Next" action */
                 let accesses = accessesAmount + 1
@@ -2178,11 +2180,15 @@ export class SkeletonComponent implements OnInit {
                 data["timestamps_elapsed"] = this.timestampsElapsed
                 /* Countdown time and corresponding flag for each document */
                 let countdownTimes = [];
+                let countdownTimesStart = [];
                 let countdownExpired = [];
                 if (this.settings.countdown_time >= 0)
                     for (let countdown of this.countdown) countdownTimes.push(countdown["i"]);
+                if (this.settings.countdown_time >= 0)
+                    for (let countdown of this.documentsCountdownTime) countdownTimesStart.push(countdown);
                 for (let index = 0; index < this.countdownsExpired.length; index++) countdownExpired.push(this.countdownsExpired[index]);
-                data["countdowns_times"] = countdownTimes
+                data["countdowns_times_start"] = countdownTimesStart
+                data["countdowns_times_left"] = countdownTimes
                 data["countdowns_expired"] = countdownExpired
                 /* Number of accesses to each document (currentDocument.e., how many times the worker reached the document with a "Back" or "Next" action */
                 data["accesses"] = this.elementsAccesses
