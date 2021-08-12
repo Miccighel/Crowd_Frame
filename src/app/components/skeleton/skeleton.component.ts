@@ -516,15 +516,16 @@ export class SkeletonComponent implements OnInit {
             /* The hits stored on Amazon S3 are retrieved */
             let hits = await this.S3Service.downloadHits(this.configService.environment)
 
-            /* Scan each entry for the token input */
-            for (let currentHit of hits) {
-                /* If the token input of the current hit matches with the one inserted by the worker the right hit has been found */
-                if (this.tokenInput.value === currentHit.token_input) {
-                    this.hit = currentHit;
-                    this.tokenOutput = currentHit.token_output;
-                    this.unitId = currentHit.unit_id
-                }
-            }
+      /* Scan each entry for the token input */
+      for (let currentHit of hits) {
+        /* If the token input of the current hit matches with the one inserted by the worker the right hit has been found */
+        if (this.tokenInput.value === currentHit.token_input) {
+          this.hit = currentHit;
+          this.tokenOutput = currentHit.token_output;
+          this.unitId = currentHit.unit_id
+          this.actionLogger.unitId = this.unitId
+        }
+      }
 
             /* The token input field is disabled and the task interface can be shown */
             this.tokenInput.disable();

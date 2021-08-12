@@ -18,6 +18,7 @@ export class ActionLogger {
   private loggerSection: string;
   private sequenceNumber: number;
   private readonly initTime: number;
+  private _unitId: string;
   private workerID: string;
   private taskName: string;
   private batchName: string;
@@ -51,7 +52,7 @@ export class ActionLogger {
    * @param details of the event
    */
   buildPayload(type: string, details: object){
-    return {
+    let payload = {
       type : type,
       worker : this.workerID,
       task : this.taskName,
@@ -60,6 +61,9 @@ export class ActionLogger {
       sequence : this.sequenceNumber++,
       details: details
     }
+    if (this.unitId != null)
+      payload['unitId'] = this.unitId
+    return payload
   }
 
   /**
@@ -410,5 +414,13 @@ export class ActionLogger {
 
   set endpoint(value: string) {
     this._endpoint = value;
+  }
+
+  get unitId(): string {
+    return this._unitId;
+  }
+
+  set unitId(value: string) {
+    this._unitId = value;
   }
 }

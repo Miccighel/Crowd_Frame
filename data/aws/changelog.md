@@ -1,5 +1,12 @@
 # init.ipynb changelog
 
+## 2021-08-11 Francesco Bombassei De Bona
+
+### Changed
+
+- logger now logs unitId
+- modified suffix of DynamoDB table: added "_logger"
+
 ## 2021-07-28 Francesco Bombassei De Bona
 
 ### Added
