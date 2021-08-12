@@ -16,7 +16,7 @@ def deserializeDynamoJson(dynamoJson: dict):
 
 
 def unzip():
-    for index, file in enumerate(os.listdir("../../Python/Results/First Attempt/data/zipped")):
+    for index, file in enumerate(os.listdir("data/zipped")):
         print(file)
         with gzip.open(f'data/zipped/{file}', 'r') as content:
             with open(f'data/json/part_{index}.json', 'w') as out:
