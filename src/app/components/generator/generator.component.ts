@@ -333,6 +333,22 @@ export class GeneratorComponent {
 
     async performGeneratorSetup() {
 
+        let differentTask = false
+        let serializedTaskName = this.localStorageService.getItem('task-name')
+        if(serializedTaskName) {
+            if(serializedTaskName!=this.configService.environment.taskName) differentTask = true
+        } else {
+            this.localStorageService.setItem(`task-name`, JSON.stringify(this.configService.environment.taskName))
+        }
+        let differentBatch = false
+        let serializedBatchName = this.localStorageService.getItem('batch-name')
+        if(serializedBatchName) {
+            if(serializedBatchName!=this.configService.environment.batchName) differentBatch = true
+        } else {
+            this.localStorageService.setItem(`batch-name`, JSON.stringify(this.configService.environment.batchName))
+        }
+        if (differentTask && differentBatch) this.localStorageService.clear()
+
         /* STEP #1 - Questionnaires */
 
         let serializedQuestionnaires = Object.keys(localStorage).filter((key) => key.startsWith('questionnaire-'))
