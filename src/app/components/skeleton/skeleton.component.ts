@@ -597,19 +597,22 @@ export class SkeletonComponent implements OnInit {
       /* The dimensions stored on Amazon S3 are retrieved */
       let rawDimensions = await this.S3Service.downloadDimensions(this.configService.environment)
       this.dimensionsAmount = rawDimensions.length;
-
+      console.log("documento")
+      console.log(this.documents[0].pairwise);
       /* Each dimension is parsed using the Dimension class */
       for (let index = 0; index < this.dimensionsAmount; index++) this.dimensions.push(new Dimension(index, rawDimensions[index]));
-
+      
       for (let index = 0; index < this.documentsAmount; index++) {
         let controlsConfig = {};
+        if(this.documents[index].pairwise) controlsConfig[`pairwise_value_selected`] = new FormControl('',[Validators.required]);
         for (let index_dimension = 0; index_dimension < this.dimensions.length; index_dimension++) {
           let dimension = this.dimensions[index_dimension];
           if (dimension.scale) {
             if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.required]);
             if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value`] = new FormControl((Math.round(((<ScaleInterval>dimension.scale).min + (<ScaleInterval>dimension.scale).max) / 2)), [Validators.required]);
             if(dimension.scale.type =="pairwise") controlsConfig[`${dimension.name}_value`] = new FormControl('',[Validators.required]);
-            if (dimension.scale.type == "magnitude_estimation") {
+            if(dimension.scale.type =="pairwise") controlsConfig[`${dimension.name}_value`] = new FormControl('',[Validators.required]);
+             if (dimension.scale.type == "magnitude_estimation") {
               if ((<ScaleMagnitude>dimension.scale).lower_bound) {
                 controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min), Validators.required]);
               } else {

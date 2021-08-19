@@ -12,6 +12,7 @@ export class Dimension {
   description?: string;
   justification?: Justification;
   url?: boolean;
+  pairwise?:boolean;
   scale?: ScaleCategorical | ScaleInterval | ScaleMagnitude | ScalePairwise;
   gold?: boolean;
   style: Style;
@@ -31,6 +32,7 @@ export class Dimension {
     this.description =        data['description'] ? data["description"] : null;
     this.justification =      data['justification'] ? new Justification(data['justification']) : null;
     this.url =                data['url'] ? data["url"] : null;
+    this.pairwise=            data['pairwise']? data["pairwise"]: null;
     if(data['scale']) {
       switch (data['scale']['type']) {
         case 'categorical':

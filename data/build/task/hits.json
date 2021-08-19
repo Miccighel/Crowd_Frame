@@ -8,6 +8,7 @@
             {
                 "id": "identifier_1",
                 "text": "Lorem ipsum dolor sit amet",
+                "pairwise":"true",
                 "statements":[
                     {
                         "text": "BHO",
@@ -27,6 +28,7 @@
             {
                 "id": "identifier_1",
                 "text": "Lorem ipsum dolor sit amet",
+                "pairwise":"true",
                 "statements":[
                     {
                         "text": "BHo3",

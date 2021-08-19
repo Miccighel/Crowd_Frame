@@ -1,19 +1,22 @@
 [
     {
-        "name": "pairwise_name",
-        "name_pretty": "Which statement is more thuthful",
-        "description": "Select one statement by clicking on it",
-        "url": false,
+        "name": "é cosi che si va al mare",
+        "name_pretty": "Sa",
+        "description": "Lorem ipsum dolor sit amet",
+        "gold": false,
         "justification": false,
+        "url": false,
+        "pairwise": "true",
         "scale": {
-            "type": "pairwise",
-            "id": "1"
+            "type": "interval",
+            "min": 1,
+            "max": 10,
+            "step": 1
         },
-        "gold_question_check": false,
         "style": {
             "type": "list",
             "orientation": "vertical",
             "position": "middle"
-          }
+        }
     }
 ]

@@ -196,7 +196,7 @@
           <mat-card-title>Please, assess the following statement</mat-card-title>
           <mat-divider [inset]="true"></mat-divider>
           <mat-card-content class="pt-16px">
-
+           
             <!--- Countdown markup --->
             <div class="instructions sticky" *ngIf="this.settings.countdown_time">
               <h2 class="m-0">
@@ -438,9 +438,9 @@
                   </ng-container>
                 </div>
               </div>
-
+             
             </ng-container>
-
+          
             <!-- Evaluation instructions markup -->
             <div *ngIf="this.instructionsAmount>0" class="instructions">
               <mat-divider [inset]="true"></mat-divider>
@@ -451,10 +451,43 @@
                 <div [innerHTML]="instruction.text"></div>
               </div>
             </div>
+          
             <!-- Dimensions assessment markup (list style) -->
 
             <ng-template #dimensionList let-dimensions="dimensions" let-i="i">
               <div *ngFor="let dimension of dimensions; let j=index" class="dimension">
+              <!-- Pairwise element-->
+            <ng-template #pairwiseElement>
+              <ng-container *ngIf="dimension.pairwise">
+                        <mat-radio-group formControlName="pairwise_value_selected" class="radiogroupairwise">
+                                <mat-radio-button class="radiobuttonpairwise"  *ngFor="let values of document.statements;let k=index" value="{{k}}"
+                                                (change)="storeDimensionValue($event, i, document.index) ; changeColor($event,document.index)"
+                                                [disabled]="this.countdownsExpired[i]"  >
+                                <div class="statement" >
+                                      <h3 class="statementTitle">Statement {{k}}</h3>       
+                                        <div class="boxtext">
+                                            {{values.text}}
+                                        </div>
+                                        <div class="boxvalues">
+                                              <span class="caption">
+                                                    <label>Speaker:</label>
+                                                  {{values.speaker}}
+                                              </span>
+                                              <span class="caption">
+                                                  <label>SpeakerJob:</label>
+                                                  {{values.speakerjob}}
+                                              </span>
+                                              <span class="caption">
+                                                <label>Context:</label>
+                                                {{values.context}}
+                                              </span>
+                                        </div>
+                                </div>
+                                </mat-radio-button>
+                          </mat-radio-group>
+              </ng-container>
+            </ng-template>
+            <ng-template *ngIf="document.pairwise" [ngTemplateOutlet]="pairwiseElement"></ng-template>
                 <!-- Dimension name markup -->
                 <div class="dimension-name">
                   <mat-divider [inset]="true"></mat-divider>
@@ -552,35 +585,6 @@
                           </mat-error>
 
                         </mat-form-field>
-                      </ng-container>
-                      <!-- Pairwise element-->
-                      <ng-container *ngIf="dimension.scale.type=='pairwise'" >
-                        <mat-radio-group formControlName="{{(dimension.name).concat('_value')}}" class="radiogroupairwise">
-                              <mat-radio-button class="radiobuttonpairwise"  *ngFor="let values of document.statements;let k=index" value="{{k}}"
-                                              (change)="storeDimensionValue($event, i, dimension.index) ; changeColor($event,document.index)"
-                                              [disabled]="this.countdownsExpired[i]"  >
-                              <div class="statement" >
-                                    <h3 class="statementTitle">Statement {{k}}</h3>       
-                                      <div class="boxtext">
-                                          {{values.text}}
-                                      </div>
-                                      <div class="boxvalues">
-                                            <span class="caption">
-                                                  <label>Speaker:</label>
-                                                {{values.speaker}}
-                                            </span>
-                                            <span class="caption">
-                                                <label>SpeakerJob:</label>
-                                                {{values.speakerjob}}
-                                            </span>
-                                            <span class="caption">
-                                              <label>Context:</label>
-                                              {{values.context}}
-                                            </span>
-                                      </div>
-                              </div>
-                              </mat-radio-button>
-                        </mat-radio-group>
                       </ng-container>
                     </ng-container>
 
