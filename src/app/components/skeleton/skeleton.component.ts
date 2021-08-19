@@ -2190,6 +2190,8 @@ export class SkeletonComponent implements OnInit {
 
   /* contains the last element(pairwise) selected */
   pastValues:Object[] = [];
+
+  checkedValue:Boolean[] = [];
   public changeColor(valueData: Object,documentnumber:number)
   {
       if(this.pastValues[documentnumber]==undefined)
@@ -2198,6 +2200,7 @@ export class SkeletonComponent implements OnInit {
         valueData["source"]["__ngContext__"][22]["className"]="statementTitleclicked";
         valueData["source"]["__ngContext__"][24]["className"]="boxtextafterclicked";
         valueData["source"]["__ngContext__"][26]["className"]="boxvaluesafterclicked";
+        this.checkedValue[documentnumber]=true
         this.pastValues[documentnumber]=valueData
       }else{
         
@@ -2210,6 +2213,7 @@ export class SkeletonComponent implements OnInit {
         valueData["source"]["__ngContext__"][24]["className"]="boxtextafterclicked";
         valueData["source"]["__ngContext__"][26]["className"]="boxvaluesafterclicked";
         this.pastValues[documentnumber]=valueData
+        this.checkedValue[documentnumber]=true
       }
   }
 

@@ -451,43 +451,44 @@
                 <div [innerHTML]="instruction.text"></div>
               </div>
             </div>
-          
+          <!-- Pairwise element-->
+              <ng-template #pairwiseElement>
+                <ng-container *ngIf="document.pairwise">
+                          <mat-radio-group formControlName="pairwise_value_selected" class="radiogroupairwise">
+                                  <mat-radio-button class="radiobuttonpairwise"  *ngFor="let values of document.statements;let k=index" value="{{k}}"
+                                                  (change)="storeDimensionValue($event, i, document.index) ; changeColor($event,document.index); "
+                                                  [disabled]="this.countdownsExpired[i]"   >
+                                  <div class="statement">
+                                        <h3 class="statementTitle">Statement {{k}}</h3>       
+                                          <div class="boxtext">
+                                              {{values.text}}
+                                          </div>
+                                          <div class="boxvalues">
+                                                <span class="caption">
+                                                      <label>Speaker:</label>
+                                                    {{values.speaker}}
+                                                </span>
+                                                <span class="caption">
+                                                    <label>SpeakerJob:</label>
+                                                    {{values.speakerjob}}
+                                                </span>
+                                                <span class="caption">
+                                                  <label>Context:</label>
+                                                  {{values.context}}
+                                                </span>
+                                          </div>
+                                  </div>
+                                  </mat-radio-button>
+                            </mat-radio-group>
+                </ng-container>
+              </ng-template>
+              <ng-template *ngIf="document.pairwise" [ngTemplateOutlet]="pairwiseElement"></ng-template>
             <!-- Dimensions assessment markup (list style) -->
 
             <ng-template #dimensionList let-dimensions="dimensions" let-i="i">
               <div *ngFor="let dimension of dimensions; let j=index" class="dimension">
-              <!-- Pairwise element-->
-            <ng-template #pairwiseElement>
-              <ng-container *ngIf="dimension.pairwise">
-                        <mat-radio-group formControlName="pairwise_value_selected" class="radiogroupairwise">
-                                <mat-radio-button class="radiobuttonpairwise"  *ngFor="let values of document.statements;let k=index" value="{{k}}"
-                                                (change)="storeDimensionValue($event, i, document.index) ; changeColor($event,document.index)"
-                                                [disabled]="this.countdownsExpired[i]"  >
-                                <div class="statement" >
-                                      <h3 class="statementTitle">Statement {{k}}</h3>       
-                                        <div class="boxtext">
-                                            {{values.text}}
-                                        </div>
-                                        <div class="boxvalues">
-                                              <span class="caption">
-                                                    <label>Speaker:</label>
-                                                  {{values.speaker}}
-                                              </span>
-                                              <span class="caption">
-                                                  <label>SpeakerJob:</label>
-                                                  {{values.speakerjob}}
-                                              </span>
-                                              <span class="caption">
-                                                <label>Context:</label>
-                                                {{values.context}}
-                                              </span>
-                                        </div>
-                                </div>
-                                </mat-radio-button>
-                          </mat-radio-group>
-              </ng-container>
-            </ng-template>
-            <ng-template *ngIf="document.pairwise" [ngTemplateOutlet]="pairwiseElement"></ng-template>
+                <ng-template *ngIf="checkedValue[document.index] || !dimension.pairwise" [ngTemplateOutlet]="dimensionPairwise" ></ng-template>
+                <ng-template #dimensionPairwise>
                 <!-- Dimension name markup -->
                 <div class="dimension-name">
                   <mat-divider [inset]="true"></mat-divider>
@@ -529,7 +530,7 @@
                     </mat-form-field>
                   </div>
                 </div>
-
+              
                 <!-- Dimension assessment scale markup -->
                 <div *ngIf="dimension.scale" class="dimension-container dimension-scale">
                   <div *ngIf="dimension.url" class="dimension-counter">b.</div>
@@ -631,8 +632,9 @@
                     </div>
                   </div>
                 </div>
+               </ng-template> 
               </div>
-            </ng-template>
+              </ng-template>
 
 
             <!-- Dimensions markup (matrix style) -->

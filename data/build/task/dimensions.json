@@ -6,7 +6,27 @@
         "gold": false,
         "justification": false,
         "url": false,
-        "pairwise": "true",
+        "pairwise": true,
+        "scale": {
+            "type": "interval",
+            "min": 1,
+            "max": 10,
+            "step": 1
+        },
+        "style": {
+            "type": "list",
+            "orientation": "vertical",
+            "position": "middle"
+        }
+    },
+    {
+        "name": "é cosi che si va al mare",
+        "name_pretty": "Messi è più forte di ronaldo",
+        "description": "Lorem ipsum dolor sit amet",
+        "gold": false,
+        "justification": false,
+        "url": false,
+        "pairwise": false,
         "scale": {
             "type": "interval",
             "min": 1,
