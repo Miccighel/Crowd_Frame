@@ -41,6 +41,7 @@ import { Console } from 'console';
 import { Discovery } from 'aws-sdk';
 import { ConfigurationServicePlaceholders } from 'aws-sdk/lib/config_service_placeholders';
 import { Object } from 'aws-sdk/clients/customerprofiles';
+import { ConstantPool } from '@angular/compiler';
 
 /* Component HTML Tag definition */
 @Component({
@@ -2190,9 +2191,8 @@ export class SkeletonComponent implements OnInit {
 
   /* contains the last element(pairwise) selected */
   pastValues:Object[] = [];
-
   checkedValue:Boolean[] = [];
-  public changeColor(valueData: Object,documentnumber:number)
+  public changeColor(valueData: Object,valueChecked:number,documentnumber:number)
   {
       if(this.pastValues[documentnumber]==undefined)
       {
@@ -2202,6 +2202,7 @@ export class SkeletonComponent implements OnInit {
         valueData["source"]["__ngContext__"][26]["className"]="boxvaluesafterclicked";
         this.checkedValue[documentnumber]=true
         this.pastValues[documentnumber]=valueData
+      
       }else{
         
         this.pastValues[documentnumber]["source"]["__ngContext__"][21]["className"]="statement";
@@ -2215,9 +2216,7 @@ export class SkeletonComponent implements OnInit {
         this.pastValues[documentnumber]=valueData
         this.checkedValue[documentnumber]=true
       }
-  }
-
-  
+  } 
 }
 
   

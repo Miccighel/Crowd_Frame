@@ -1,7 +1,7 @@
 [
     {
-        "name": "é cosi che si va al mare",
-        "name_pretty": "Sa",
+        "name": "dimensionpairwise_1",
+        "name_pretty": "dimension interna al pairwise 1",
         "description": "Lorem ipsum dolor sit amet",
         "gold": false,
         "justification": false,
@@ -20,8 +20,37 @@
         }
     },
     {
-        "name": "é cosi che si va al mare",
-        "name_pretty": "Messi è più forte di ronaldo",
+        "name": "sample-dimension",
+        "name_pretty": "dimension interna al pairwise 2",
+        "description": "Lorem ipsum dolor sit amet",
+        "url": false,
+        "justification": false,
+        "pairwise":true,
+        "scale": {
+            "type": "categorical",
+            "mapping": [
+                {
+                    "label": "False",
+                    "description": "",
+                    "value": "1"
+                },
+                {
+                    "label": "True",
+                    "description": "",
+                    "value": "0"
+                }
+            ]
+        },
+        "gold_question_check": false,
+        "style": {
+            "type": "list",
+            "orientation": "vertical",
+            "position": "middle"
+          }
+    },
+    {
+        "name": "dimensionpairwise_3",
+        "name_pretty": "dimension esterna al pairwise",
         "description": "Lorem ipsum dolor sit amet",
         "gold": false,
         "justification": false,

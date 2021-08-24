@@ -456,7 +456,7 @@
                 <ng-container *ngIf="document.pairwise">
                           <mat-radio-group formControlName="pairwise_value_selected" class="radiogroupairwise">
                                   <mat-radio-button class="radiobuttonpairwise"  *ngFor="let values of document.statements;let k=index" value="{{k}}"
-                                                  (change)="storeDimensionValue($event, i, document.index) ; changeColor($event,document.index); "
+                                                  (change)="storeDimensionValue($event, i, document.index) ; changeColor($event,k,document.index); "
                                                   [disabled]="this.countdownsExpired[i]"   >
                                   <div class="statement">
                                         <h3 class="statementTitle">Statement {{k}}</h3>       
@@ -563,7 +563,7 @@
                         <mat-slider min="{{dimension.scale.min}}" max="{{dimension.scale.max}}"
                                     step="{{dimension.scale.step}}" thumbLabel tickInterval="{{dimension.scale.step}}"
                                     formControlName="{{(dimension.name).concat('_value')}}"
-                                    (change)="storeDimensionValue($event, i,dimension.index)"
+                                    (change)="storeDimensionValue($event, i,dimension.index);"
                                     [disabled]="this.countdownsExpired[i]"></mat-slider>
                       </ng-container>
 
