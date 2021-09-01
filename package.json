@@ -21,7 +21,7 @@
     "@angular/router": "~12.2.3",
     "@funktechno/texthighlighter": "^2.1.2",
     "@kolkov/angular-editor": "^1.2.0",
-    "aws-sdk": "^2.966.0",
+    "aws-sdk": "^2.980.0",
     "crypto-es": "^1.2.7",
     "ngx-color-picker": "^11.0.0",
     "ngx-countdown": "^12.0.1",
@@ -37,7 +37,7 @@
     "@angular-devkit/build-angular": "~12.2.3",
     "@angular/cli": "^12.2.3",
     "@angular/compiler-cli": "~12.2.3",
-    "@types/node": "~15.14.7",
+    "@types/node": "~15.14.9",
     "typescript": "4.2.4"
   },
   "browser": {
