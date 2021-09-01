@@ -194,9 +194,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/cdk@npm:~12.2.1":
-  version: 12.2.1
-  resolution: "@angular/cdk@npm:12.2.1"
+"@angular/cdk@npm:~12.2.3":
+  version: 12.2.3
+  resolution: "@angular/cdk@npm:12.2.3"
   dependencies:
     parse5: ^5.0.0
     tslib: ^2.2.0
@@ -207,7 +207,7 @@ __metadata:
   dependenciesMeta:
     parse5:
       optional: true
-  checksum: db2d9c70c4cd023387eb681cc6a5a7c660a3379dbea49a37971fcc8c906f743d71697700a83f7454006efc20341cb183046d41ce04b22d27846b39eaa1c3fd77
+  checksum: bb752ce7904774ad895bd2c41cfe4548900f72052982fd1dc71bb763b1253005dc6a37c75495c737534943e0c72fd2de0bc10d7558089b69dee4161561518e0e
   languageName: node
   linkType: hard
 
@@ -330,19 +330,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/material@npm:^12.2.1":
-  version: 12.2.1
-  resolution: "@angular/material@npm:12.2.1"
+"@angular/material@npm:^12.2.3":
+  version: 12.2.3
+  resolution: "@angular/material@npm:12.2.3"
   dependencies:
     tslib: ^2.2.0
   peerDependencies:
     "@angular/animations": ^12.0.0 || ^13.0.0-0
-    "@angular/cdk": 12.2.1
+    "@angular/cdk": 12.2.3
     "@angular/common": ^12.0.0 || ^13.0.0-0
     "@angular/core": ^12.0.0 || ^13.0.0-0
     "@angular/forms": ^12.0.0 || ^13.0.0-0
     rxjs: ^6.5.3 || ^7.0.0
-  checksum: 7e0f3791c4a2f9c98bf5ccdd92906a9f6a8fbcb6ac9067e1f56a8dae92a9b295e84385a020fa3b5022c33d0f04ee66f7273e359e83516dcc66acaeceb6843832
+  checksum: 593725c14e1dec5fab5a8dadf986f1db1731df7ef49d27e8bd6735cd7dec831a58f3c777fb864442da13f6009722cd0ce05da374b962e840abd8f2dab43ac2cf
   languageName: node
   linkType: hard
 
@@ -3363,7 +3363,7 @@ __metadata:
   dependencies:
     "@angular-devkit/build-angular": ~12.2.3
     "@angular/animations": ~12.2.3
-    "@angular/cdk": ~12.2.1
+    "@angular/cdk": ~12.2.3
     "@angular/cli": ^12.2.3
     "@angular/common": ~12.2.3
     "@angular/compiler": ~12.2.3
@@ -3371,7 +3371,7 @@ __metadata:
     "@angular/core": 12.2.3
     "@angular/elements": ^12.2.3
     "@angular/forms": ~12.2.3
-    "@angular/material": ^12.2.1
+    "@angular/material": ^12.2.3
     "@angular/platform-browser": ~12.2.3
     "@angular/platform-browser-dynamic": ~12.2.3
     "@angular/router": ~12.2.3
