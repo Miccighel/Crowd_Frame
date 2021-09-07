@@ -782,7 +782,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         try:
             dynamo.create_table(
                 TableName=f"{task_name}_{batch_name}_logger",
-                AttributeDefinitions=[{'AttributeName': 'sequence', 'AttributeType': 'N'},
+                AttributeDefinitions=[{'AttributeName': 'sequence', 'AttributeType': 'S'},
                                       {'AttributeName': 'worker', 'AttributeType': 'S'}],
                 KeySchema=[{'AttributeName': 'worker', 'KeyType': 'HASH'},
                            {'AttributeName': 'sequence', 'KeyType': 'RANGE'}],
