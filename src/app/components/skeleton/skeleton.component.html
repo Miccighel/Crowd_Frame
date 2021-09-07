@@ -242,6 +242,10 @@
                                                 {{(this.countdownsExpired[i] && this.settings.countdown_behavior == "hide_attributes") ? "---------- text_hidden ----------" : document[attribute.name]}}
                                             </span>
                                         </span>
+                                        <span class="attribute-label" *ngIf="this.annotator && this.annotator.type=='laws'&& attribute.annotate">
+                                            <strong>{{attribute.name_pretty}}</strong>:
+                                            <span id="document-{{i}}-attribute-{{k}}">TO BE IMPLEMENTED</span>
+                                        </span>
                                     </p>
                                 </div>
                             </ng-container>

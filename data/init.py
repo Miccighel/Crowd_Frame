@@ -834,7 +834,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             console.print("Function 'crowdLoggerLambda' already created")
     else:
         console.rule(f"10 - Logging Server Setup")
-        endpoint = console.input("Please insert an URL to the logging server: ")
+        console.print("Please insert an URL to the logging server: ")
+        endpoint = console.input()
 
     console.rule(f"11 - Environment: [cyan underline]PRODUCTION[/cyan underline] creation")
     status.start()
@@ -1077,11 +1078,9 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     filename = "task.json"
     if os.path.exists(f"{folder_build_task_path}{filename}"):
-        console.print(
-            f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
+        console.print(f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
     else:
-        console.print(
-            f"Config. file [italic white on yellow]{filename}[/italic white on yellow] not detected, generating a sample")
+        console.print(f"Config. file [italic white on yellow]{filename}[/italic white on yellow] not detected, generating a sample")
         with open(f"{folder_build_task_path}{filename}", 'w') as file:
             sample_settings = {
                 "task_name": f"{task_name}",
