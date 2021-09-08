@@ -1,7 +1,7 @@
-import {AfterViewInit, Directive, ElementRef, SimpleChanges} from "@angular/core";
+import {AfterViewInit, Directive, ElementRef} from "@angular/core";
 import {ActionLogger} from "../../services/userActionLogger.service";
 import {fromEvent} from "rxjs";
-import {buffer, concatMap, debounceTime, filter, map, tap, throttleTime} from "rxjs/operators";
+import {buffer, concatMap, debounceTime, filter, map, tap, throttleTime, take} from "rxjs/operators";
 
 @Directive({selector: "button"})
 export class ButtonDirective {
@@ -196,9 +196,9 @@ export class SkeletonDirective implements AfterViewInit{
         let selectionStartTime = 0
         fromEvent(document, 'selectstart')
           .pipe(
-            concatMap((event: Event) => {
-                selectionStartTime = event.timeStamp
-                return fromEvent(this.element.nativeElement, 'mouseup')
+            tap(event => {selectionStartTime = event.timeStamp}),
+            concatMap(() => {
+                return fromEvent(this.element.nativeElement, 'mouseup').pipe(take(1))
               }
             ),
             map((event: Event) => ({startTime: selectionStartTime, endTime: event.timeStamp}))
