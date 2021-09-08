@@ -31,6 +31,8 @@ path = '/Crowd_Frame/'
 config_user_name = 'config-user'
 mturk_user_name = 'mturk-user'
 
+os.chdir("../data/")
+
 folder_aws_path = "aws/"
 folder_aws_generated_path = "aws/generated/"
 folder_build_path = "build/"
@@ -43,7 +45,6 @@ folder_build_skeleton_path = "build/skeleton/"
 folder_tasks_path = "tasks/"
 
 botoSession = boto3.Session()
-
 
 def serialize_json(folder, filename, data):
     if not os.path.exists(folder):
@@ -95,6 +96,11 @@ aws_deploy_bucket = os.getenv('aws_deploy_bucket')
 bing_api_key = os.getenv('bing_api_key')
 
 iam = botoSession.client('iam')
+
+console.rule("0 - Initialization")
+
+console.print("[bold]Init.py[/bold] script launched")
+console.print(f"Working directory: [bold]{os.getcwd()}[/bold]")
 
 console.rule("1 - Configuration policy")
 with console.status("Generating configuration policy", spinner="aesthetic") as status:
