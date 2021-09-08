@@ -2,18 +2,16 @@
     "Version": "2012-10-17",
     "Statement": [
         {
-            "Sid": "lambdaToDynamoS3",
+            "Sid": "AllowDynamoDBInteraction",
             "Effect": "Allow",
             "Action": [
                 "sqs:ReceiveMessage",
                 "sqs:DeleteMessage",
                 "sqs:GetQueueAttributes",
                 "dynamodb:CreateTable",
-                "s3:PutObject",
                 "dynamodb:PutItem",
                 "dynamodb:DescribeTable",
-                "dynamodb:ListTables",
-                "s3:PutObjectAcl"
+                "dynamodb:ListTables"
             ],
             "Resource": "*"
         }

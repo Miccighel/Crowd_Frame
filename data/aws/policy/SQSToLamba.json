@@ -2,11 +2,12 @@
     "Version": "2012-10-17",
     "Statement": [
         {
-            "Sid": "GatewayToSQS",
+            "Sid": "SQSToLambda",
             "Effect": "Allow",
             "Action": [
-                "sqs:SendMessageBatch",
-                "sqs:SendMessage"
+                "sqs:GetQueueUrl",
+                "sqs:ReceiveMessage",
+                "sqs:GetQueueAttributes"
             ],
             "Resource": "*"
         }
