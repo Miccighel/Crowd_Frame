@@ -1352,6 +1352,13 @@ export class SkeletonComponent implements OnInit {
         if (note.year != 0 && note.number != 0 && note.type == "reference" && !note.withoutDetails && !note.deleted) {
           with_duplicates.push(note)
         }
+        for (let innerNote of note.innerAnnotations) {
+          if (innerNote instanceof NoteLaws) {
+            if(!innerNote.deleted && !innerNote.withoutDetails && innerNote.year != 0 && innerNote.number != 0) {
+              with_duplicates.push(innerNote)
+            }
+          }
+        }
       }
     }
     var without_duplicates: Note[] = []
@@ -1383,12 +1390,27 @@ export class SkeletonComponent implements OnInit {
     let currentNote = this.notes[documentIndex][noteIndex]
     if (currentNote instanceof NoteLaws) {
       if ($event.value == "null") {
-        currentNote.year = 0
-        currentNote.number = 0
+        this.resetDetails(currentNote)
       } else {
         let fields = $event.value.split("-")
         currentNote.year = Number(fields[0])
         currentNote.number = Number(fields[1])
+      }
+    }
+  }
+
+  public innerReferenceRadioChange($event: MatRadioChange, documentIndex: number, noteIndex: number, innerNoteIndex: number) {
+    let currentNote = this.notes[documentIndex][noteIndex]
+    if (currentNote instanceof NoteLaws) {
+      currentNote = currentNote.innerAnnotations[innerNoteIndex]
+      if (currentNote instanceof NoteLaws) {
+        if ($event.value == "null") {
+          this.resetDetails(currentNote)
+        } else {
+          let fields = $event.value.split("-")
+          currentNote.year = Number(fields[0])
+          currentNote.number = Number(fields[1])
+        }
       }
     }
   }
@@ -1398,6 +1420,7 @@ export class SkeletonComponent implements OnInit {
     if (currentNote instanceof NoteLaws) {
       if ($event.checked) {
         currentNote.withoutDetails = true
+        this.resetDetails(currentNote)
         this.checkEnabledNotes(documentIndex)
       } else {
         currentNote.withoutDetails = false
@@ -1412,8 +1435,7 @@ export class SkeletonComponent implements OnInit {
       let currentNote = mainNote.innerAnnotations[innerNoteIndex]
       if ($event.checked) {
         currentNote.withoutDetails = true
-        currentNote.year = 0
-        currentNote.number = 0
+        this.resetDetails(currentNote)
         this.checkEnabledNotes(documentIndex)
       } else {
         currentNote.withoutDetails = false
@@ -1486,18 +1508,34 @@ export class SkeletonComponent implements OnInit {
     }
   }
 
-  public resetRadioButton(documentIndex: number, noteIndex: number) {
-    let currentNote = this.notes[documentIndex][noteIndex]
+  public resetRadioButton(documentIndex: number, noteIndex: number, innerNoteIndex?: number) {
+    var currentNote: NoteStandard
+    if (!innerNoteIndex) {
+      currentNote = this.notes[documentIndex][noteIndex]
+    } else {
+      currentNote = this.notes[documentIndex][noteIndex]
+      if (currentNote instanceof NoteLaws) {
+        currentNote = currentNote.innerAnnotations[innerNoteIndex]
+      }
+    }
     if (currentNote instanceof NoteLaws) {
       for (let note of this.notes[documentIndex]) {
         if (note instanceof NoteLaws) {
           if (!note.deleted && note.withoutDetails) {
             if (note.year == currentNote.year && note.number == currentNote.number) {
-              note.year = 0
-              note.number = 0
+              this.resetDetails(note)
             }
           }
-        }
+          for (let innerNote of note.innerAnnotations) {
+            if (innerNote instanceof NoteLaws) {
+              if (!innerNote.deleted && innerNote.withoutDetails) {
+                if (innerNote.year == currentNote.year && innerNote.number == currentNote.number) {
+                  this.resetDetails(innerNote)
+                }
+              }
+            }
+          }
+        } 
       }
     }
   }
@@ -1518,6 +1556,7 @@ export class SkeletonComponent implements OnInit {
   public performInnerAnnotationLaws(documentIndex: number, noteIndex: number, innerNoteIndex: number) {
     let mainNote = this.notes[documentIndex][noteIndex]
     if (mainNote instanceof NoteLaws) {
+      this.resetRadioButton(documentIndex, noteIndex, innerNoteIndex)
       let currentNote = mainNote.innerAnnotations[innerNoteIndex]
       let year = (<HTMLInputElement>document.getElementById("year-" + innerNoteIndex + "-" + noteIndex + "." + documentIndex)).value
       let number = (<HTMLInputElement>document.getElementById("number-" + innerNoteIndex + "-" + noteIndex + "." + documentIndex)).value
@@ -1534,11 +1573,17 @@ export class SkeletonComponent implements OnInit {
     document.querySelector(`[data-timestamp='${note_timestamp}']`).setAttribute("style", `background-color: ${note.color};`)
   }
 
+  public resetDetails(note: NoteLaws) {
+    note.year = 0
+    note.number = 0
+  }
+
   public radioChange($event: MatRadioChange, documentIndex: number, noteIndex: number) {
     let currentNote = this.notes[documentIndex][noteIndex]
     if (currentNote instanceof NoteLaws) {
       switch ($event.value) {
         case "insertion": {
+          this.resetDetails(currentNote)
           currentNote.type = "insertion"
           currentNote.withoutDetails = true
           currentNote.containsReferences = false
@@ -1549,6 +1594,7 @@ export class SkeletonComponent implements OnInit {
           break
         }
         case "substitution": {
+          this.resetDetails(currentNote)
           currentNote.type = "substitution"
           currentNote.withoutDetails = true
           currentNote.containsReferences = false
@@ -1559,6 +1605,7 @@ export class SkeletonComponent implements OnInit {
           break
         }
         case "repeal": {
+          this.resetDetails(currentNote)
           currentNote.type = "repeal"
           currentNote.withoutDetails = true
           currentNote.containsReferences = false
@@ -1569,8 +1616,9 @@ export class SkeletonComponent implements OnInit {
           break
         }
         case "reference": {
+          this.resetDetails(currentNote)
           currentNote.type = "reference"
-          currentNote.containsReferences = true
+          currentNote.containsReferences = false
           currentNote.innerAnnotations = []
           currentNote.color = this.colors[3]
           this.changeSpanColor(documentIndex, noteIndex)
@@ -1636,6 +1684,19 @@ export class SkeletonComponent implements OnInit {
     if (currentNote instanceof NoteLaws) {
       if (currentNote.year == 0 && currentNote.number == 0) {
         return true
+      }
+    }
+    return false
+  }
+
+  public innerReferenceRadioButtonCheck(documentIndex: number, noteIndex: number, innerNoteIndex: number) {
+    var currentNote = this.notes[documentIndex][noteIndex]
+    if (currentNote instanceof NoteLaws) {
+      currentNote = currentNote.innerAnnotations[innerNoteIndex]
+      if (currentNote instanceof NoteLaws) {
+        if (currentNote.year == 0 && currentNote.number == 0) {
+          return true
+        }
       }
     }
     return false
@@ -1709,7 +1770,6 @@ export class SkeletonComponent implements OnInit {
     let goldConfiguration = []
     /* For each gold document its attribute, answers and notes are retrieved to build a gold configuration */
     for (let goldDocument of this.goldDocuments) {
-      goldConfiguration = []
       let currentConfiguration = {}
       currentConfiguration["document"] = goldDocument
       let answers = {}
@@ -1723,7 +1783,10 @@ export class SkeletonComponent implements OnInit {
       }
       currentConfiguration["answers"] = answers
       currentConfiguration["notes"] = this.notes[goldDocument.index]
+      goldConfiguration.push(currentConfiguration)
     }
+
+    console.log(goldConfiguration)
 
     /* The gold configuration is evaluated using the static method implemented within the GoldChecker class */
     let goldChecks = GoldChecker.performGoldCheck(goldConfiguration)
@@ -1854,12 +1917,12 @@ export class SkeletonComponent implements OnInit {
     }
 
     /* The yellow leftover notes are marked as deleted */
-    if (this.notes[documentIndex].length > 0) {
+    /* if (this.notes[documentIndex].length > 0) {
       let element = this.notes[documentIndex][this.notes[documentIndex].length - 1]
       if (element.option == "not_selected" && !element.deleted) {
         this.removeAnnotation(documentIndex, this.notes[documentIndex].length - 1, this.changeDetector)
       }
-    }
+    } */
 
     /* If there is a worker ID then the data should be uploaded to the S3 bucket */
 

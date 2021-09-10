@@ -29,6 +29,15 @@ export class Document {
   link_eli_id: string;
   link_eli_type: string;
 
+  /* ATTRIBUTES FOR GOLD QUESTIONS CHECK */
+
+  gold_type: string[];
+  gold_text: string[];
+  gold_number: number[];
+  gold_year: number[];
+  gold_inner_notes: Array<Array<Array<number>>>;
+  gold_inner_texts: Array<Array<string>>;
+
   constructor(
     index: number,
     data: JSON
@@ -55,6 +64,15 @@ export class Document {
     this.link_urn_nir =           data["link_urn_nir"];
     this.link_eli_id =            data["link_eli_id"];
     this.link_eli_type =          data["link_eli_type"];
+    
+    if (this.id.includes("GOLD")) {
+      this.gold_type = data["gold_type"];
+      this.gold_text = data["gold_text"];
+      this.gold_number = data["gold_number"];
+      this.gold_year = data["gold_year"];
+      this.gold_inner_notes = data["gold_inner_notes"];
+      this.gold_inner_texts = data["gold_inner_texts"];
+    }
   }
 
 }

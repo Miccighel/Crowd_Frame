@@ -335,7 +335,7 @@
                     </div>
 
                     <!-- Law reference radio buttons -->
-                    <div *ngIf="!note.containsReferences && note.withoutDetails">
+                    <div *ngIf="note.withoutDetails">
                       <div class='reference-form'>
                         <strong>Si riferisce a:</strong>
                         <mat-radio-group name="reference-radio-group-{{i}}.{{noteIndex}}"
@@ -382,6 +382,28 @@
                                               [checked]="innerNotes.withoutDetails">non ci sono ulteriori dettagli
                                 </mat-checkbox>
                               </div>
+
+                              <div *ngIf="innerNotes.withoutDetails">
+                                <div class='reference-form'>
+                                  <strong>Si riferisce a:</strong>
+                                  <mat-radio-group name="reference-radio-group-{{i}}.{{noteIndex}}.{{innerNoteIndex}}"
+                                                   (change)="this.innerReferenceRadioChange($event, i, noteIndex, innerNoteIndex)">
+                                    <div class="reference-radio-group-button">
+                                      <mat-radio-button value="null" [checked]="this.innerReferenceRadioButtonCheck(i, noteIndex, innerNoteIndex)">Non presente nel testo</mat-radio-button>
+                                    </div>
+                                    <div class="reference-radio-group-button">
+                                      <mat-radio-button value="{{document.year}}-{{document.number}}">Questo o un altro articolo della legge stessa</mat-radio-button>
+                                    </div>
+                                    <div *ngFor="let note of this.filterNotes(this.notes[i]); let referredNoteIndex = index">
+                                      <div class="reference-radio-group-button">
+                                        <mat-radio-button value="{{note.year}}-{{note.number}}">{{note.number}}/{{note.year}}
+                                        </mat-radio-button>
+                                      </div>
+                                    </div>
+                                  </mat-radio-group>
+                                </div>
+                              </div>
+
                               <div *ngIf="innerNotes.type.includes('reference') && !innerNotes.withoutDetails"
                                    class="annotation-options">
                                 <div style="padding: 5px;">
