@@ -1,0 +1,17 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "SQSPolicy",
+            "Effect": "Allow",
+            "Action": [
+                "sqs:SendMessageBatch",
+                "sqs:SendMessage"
+            ],
+            "Principal": {
+                "Service": "apigateway.amazonaws.com"
+            },
+            "Resource": "*"
+        }
+    ]
+}

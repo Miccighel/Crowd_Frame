@@ -44,18 +44,37 @@ testem.log
 # System Files
 .DS_Store
 Thumbs.db
-src/environments/environment.ts
-src/environments/environment.ts
-src/environments/environment.prod.ts
-src/environments/environment.ts~
-data/build/environments/environment.prod.ts
-data/build/environments/environment.ts
 
+# Environments
+src/environments/*
+data/build/environments/*
+
+# Visual Studio Code folder
+.vscode/
+
+# Yarn
 .yarn/*
-!.yarn/patches
 !.yarn/releases
 !.yarn/plugins
-!.yarn/sdks
-!.yarn/versions
 .pnp.*
+
+# Environment variables file
 data/.env
+
+# File generated when configuring AWS
+data/aws/generated/*
+
+# Outputs of build phase
+data/tasks/*
+data/build/deploy/*
+data/build/mturk/*
+data/build/task/*
+data/build/skeleton/document.ts
+data/build/config/admin.json
+
+# Random things
+local/log.md
+local/*
+
+
+data/build/skeleton/goldChecker.ts

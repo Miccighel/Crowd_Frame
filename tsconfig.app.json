@@ -15,5 +15,8 @@
     "src/test.ts",
     "src/**/*.spec.ts"
   ],
-  "types": ["node"]
+  "types": ["node"],
+  "angularCompilerOptions": {
+    "enableIvy": true
+  }
 }

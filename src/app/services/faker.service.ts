@@ -3,8 +3,8 @@ import {Injectable} from '@angular/core';
 import {Observable} from "rxjs";
 /* HTTP handling modules */
 import {HttpClient} from '@angular/common/http';
-import {FakerSearchResponse} from "../models/crowd-xplorer/fakerSearchResponse";
-import {BaseResponse} from "../models/crowd-xplorer/baseResponse";
+import {FakerSearchResponse} from "../models/fakerSearchResponse";
+import {BaseResponse} from "../models/baseResponse";
 
 @Injectable({
   providedIn: 'root'

@@ -82,6 +82,14 @@ mat-slide-toggle {
   padding: 0;
 }
 
+.p-2px {
+  padding: 2px;
+}
+
+.p-5px {
+  padding: 5px;
+}
+
 .p-16px {
   padding: 16px;
 }
@@ -118,6 +126,16 @@ button {
   text-transform: uppercase;
 }
 
+/* |--- STEP 6: TASK SETTINGS - STYLES  --| */
+
+.hit-attributes {
+
+  mat-checkbox {
+    width: 150px;
+  }
+
+}
+
 /* |--- STEP 8: SUMMARY - STYLES  --| */
 
 mat-list-item.step-valid {
@@ -140,4 +158,16 @@ mat-list-item span.step-validity-check {
 
 .generator-accordion mat-expansion-panel {
   border-radius: 0;
+}
+
+#cloneTask {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  z-index: 100;
+}
+
+mat-progress-bar {
+  background-color: #76ff03;
+  color: #76ff03;
 }

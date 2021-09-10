@@ -1,8 +1,21 @@
-<mat-horizontal-stepper labelPosition="bottom" #generator class="green-theme">
+<ngx-ui-loader [loaderId]="'generator-inner'"
+               [bgsColor]="'#76ff03'"
+               [fgsColor]="'#76ff03'"
+               [pbColor]="'#76ff03'"
+               [fgsSize]="150"
+               [bgsPosition]="'bottom-right'"
+               [bgsSize]="80"
+               [bgsType]="'ball-spin-clockwise'"
+               [text]="'Loading...'"
+               [textColor]="'#FFFFFF'"
+               [textPosition]="'bottom-center'"
+></ngx-ui-loader>
+
+<mat-horizontal-stepper labelPosition="bottom" #generator class="green-theme" (selectionChange)="checkProgressStatus($event)">
 
   <!-- Step #1 - Questionnaires -->
 
-  <mat-step [stepControl]="questionnairesForm">
+  <mat-step [stepControl]="questionnairesForm" *ngIf="questionnairesFetched && questionnairesForm">
     <form [formGroup]="questionnairesForm">
 
       <!-- Header -->
@@ -57,6 +70,23 @@
                     </table>
                   </div>
 
+                  <!-- Position -->
+                  <mat-divider [inset]="true"></mat-divider>
+                  <table class="width-100 mt-16px">
+                    <tr>
+                      <td class="p-0">
+                        <mat-form-field class="width-100" [hideRequiredMarker]="questionnaire.get('position').valid" appearance="fill">
+                          <mat-label>Position</mat-label>
+                          <mat-select matInput formControlName="position" required>
+                            <mat-option *ngFor="let questionnairePosition of questionnairePosition" [value]="questionnairePosition.value">
+                              {{questionnairePosition.viewValue}}
+                            </mat-option>
+                          </mat-select>
+                        </mat-form-field>
+                      </td>
+                    </tr>
+                  </table>
+
                   <!-- Questions -->
                   <div *ngIf="questionnaire.get('type').value != ''" formArrayName="questions">
                     <mat-divider [inset]="true"></mat-divider>
@@ -91,7 +121,8 @@
                         <button mat-flat-button color="primary" class="mb-16px double-indent" (click)="addAnswer(questionnaireIndex, questionIndex)">
                           Add Answer
                         </button>
-                        <div *ngFor="let answer of answers(questionnaireIndex, questionIndex).controls; let answerIndex = index" [formGroupName]="answerIndex">
+                        <div *ngFor="let answer of answers(questionnaireIndex, questionIndex).controls; let answerIndex = index"
+                             [formGroupName]="answerIndex">
                           <table class="width-100 indent">
                             <tr>
                               <td class="p-0 pr-16px">
@@ -136,7 +167,9 @@
                             </mat-form-field>
                           </td>
                           <td class="p-0 center">
-                            <button mat-flat-button color="primary" class="mb-16px" [disabled]="mappingIndex == '0' && mapping(questionnaireIndex).length == 1" (click)="removeMapping(questionnaireIndex, mappingIndex)">
+                            <button mat-flat-button color="primary" class="mb-16px"
+                                    [disabled]="mappingIndex == '0' && mapping(questionnaireIndex).length == 1"
+                                    (click)="removeMapping(questionnaireIndex, mappingIndex)">
                               Remove Mapping
                             </button>
                           </td>
@@ -173,7 +206,7 @@
 
   <!-- Step #2 - Dimensions -->
 
-  <mat-step [stepControl]="dimensionsForm">
+  <mat-step [stepControl]="dimensionsForm" *ngIf="dimensionsFetched && dimensionsForm">
     <form [formGroup]="dimensionsForm">
 
       <!-- Header -->
@@ -207,18 +240,30 @@
                         </mat-form-field>
                       </td>
                       <td class="p-0">
-                        <mat-form-field class="width-100" appearance="fill">
-                          <mat-label>Description</mat-label>
-                          <textarea matInput formControlName="description"></textarea>
+                        <mat-form-field matLine class="width-100" appearance="fill">
+                          <mat-label>Name Pretty</mat-label>
+                          <input matInput type="text" formControlName="name_pretty">
                         </mat-form-field>
                       </td>
                     </tr>
                   </table>
+                  <mat-form-field class="width-100" appearance="fill">
+                    <mat-label>Description</mat-label>
+                    <textarea matInput formControlName="description"></textarea>
+                  </mat-form-field>
+
+                  <mat-divider [inset]="true"></mat-divider>
+
+                  <!-- Gold -->
+                  <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="gold">
+                    Gold Dimension
+                  </mat-slide-toggle>
 
                   <mat-divider [inset]="true"></mat-divider>
 
                   <!-- Justification: Text, Min_Words -->
-                  <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="setJustification" (change)="resetJustification(dimensionIndex)">
+                  <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="setJustification"
+                                    (change)="resetJustification(dimensionIndex)">
                     Justification
                   </mat-slide-toggle>
 
@@ -226,13 +271,15 @@
                     <table class="width-100">
                       <tr>
                         <td class="p-0 pr-16px">
-                          <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimension.get('justification').get('text').valid" appearance="fill">
+                          <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimension.get('justification').get('text').valid"
+                                          appearance="fill">
                             <mat-label>Text</mat-label>
                             <input matInput type="text" formControlName="text" required>
                           </mat-form-field>
                         </td>
                         <td class="p-0">
-                          <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimension.get('justification').get('min_words').valid" appearance="fill">
+                          <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimension.get('justification').get('min_words').valid"
+                                          appearance="fill">
                             <mat-label>Minimum Words</mat-label>
                             <input matInput type="number" min="0" formControlName="min_words" required>
                           </mat-form-field>
@@ -244,24 +291,9 @@
                   <mat-divider [inset]="true"></mat-divider>
 
                   <!-- Url -->
-                  <table class="width-100 mt-16px">
-                    <tr>
-                      <td class="p-0">
-                        <mat-form-field matLine class="width-100" appearance="fill">
-                          <mat-label>Url</mat-label>
-                          <mat-select matInput formControlName="url">
-                            <mat-option></mat-option>
-                            <mat-option value="true">
-                              True
-                            </mat-option>
-                            <mat-option value="false">
-                              False
-                            </mat-option>
-                          </mat-select>
-                        </mat-form-field>
-                      </td>
-                    </tr>
-                  </table>
+                  <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="url">
+                    Url
+                  </mat-slide-toggle>
 
                   <mat-divider [inset]="true"></mat-divider>
 
@@ -313,7 +345,8 @@
                       <button mat-flat-button color="primary" class="mb-16px indent" (click)="addDimensionMapping(dimensionIndex)">
                         Add Mapping
                       </button>
-                      <div *ngFor="let dimensionMap of dimensionMapping(dimensionIndex).controls; let dimensionMappingIndex = index" [formGroupName]="dimensionMappingIndex">
+                      <div *ngFor="let dimensionMap of dimensionMapping(dimensionIndex).controls; let dimensionMappingIndex = index"
+                           [formGroupName]="dimensionMappingIndex">
                         <table class="width-100">
                           <tr>
                             <td class="p-0 pr-16px">
@@ -355,19 +388,8 @@
                           </mat-form-field>
                         </td>
                         <td class="pr-16px checkbox">
-                          <mat-checkbox formControlName="include_lower_bound" color="primary" [disabled]="dimension.get('scale').get('min').value == '' || dimension.get('scale').get('min').value == null">
+                          <mat-checkbox formControlName="lower_bound" color="primary">
                             Include Lower Bound
-                          </mat-checkbox>
-                        </td>
-                        <td class="p-0 pr-16px">
-                          <mat-form-field matLine class="width-100" appearance="fill">
-                            <mat-label>Maximum</mat-label>
-                            <input matInput type="number" formControlName="max">
-                          </mat-form-field>
-                        </td>
-                        <td class="checkbox">
-                          <mat-checkbox formControlName="include_upper_bound" color="primary" [disabled]="dimension.get('scale').get('max').value == '' || dimension.get('scale').get('max').value == null">
-                            Include Upper Bound
                           </mat-checkbox>
                         </td>
                       </tr>
@@ -376,37 +398,18 @@
 
                   <mat-divider [inset]="true"></mat-divider>
 
-                  <!-- Gold Question Check -->
-                  <table class="width-100 mt-16px">
-                    <tr>
-                      <td class="p-0">
-                        <mat-form-field matLine class="width-100" appearance="fill">
-                          <mat-label>Gold Question Check</mat-label>
-                          <mat-select matInput formControlName="gold_question_check">
-                            <mat-option value="true">
-                              True
-                            </mat-option>
-                            <mat-option value="false">
-                              False
-                            </mat-option>
-                          </mat-select>
-                        </mat-form-field>
-                      </td>
-                    </tr>
-                  </table>
-
-                  <mat-divider [inset]="true"></mat-divider>
-
                   <!-- Style: Type, Position, Orientation, Separator -->
-                  <mat-slide-toggle color="primary" class="mt-16px mb-16px" checked disabled>
+                  <mat-slide-toggle color="primary" *ngIf="dimension.get('setScale').value" class="mt-16px mb-16px" formControlName="setStyle"
+                                    (change)="resetStyle(dimensionIndex)">
                     Style
                   </mat-slide-toggle>
 
-                  <div formGroupName="style">
+                  <div formGroupName="style" *ngIf="dimension.get('setStyle').value && dimension.get('setScale').value">
                     <table class="width-100">
                       <tr>
                         <td class="p-0 pr-16px">
-                          <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimension.get('style').get('styleType').valid" appearance="fill">
+                          <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimension.get('style').get('styleType').valid"
+                                          appearance="fill">
                             <mat-label>Type</mat-label>
                             <mat-select matInput formControlName="styleType" required (selectionChange)="updateStyleType(dimensionIndex)">
                               <mat-option *ngFor="let styleType of styleTypes" [value]="styleType.value">
@@ -416,7 +419,8 @@
                           </mat-form-field>
                         </td>
                         <td class="p-0 pr-16px">
-                          <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimension.get('style').get('position').valid" appearance="fill">
+                          <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimension.get('style').get('position').valid"
+                                          appearance="fill">
                             <mat-label>Position</mat-label>
                             <mat-select matInput formControlName="position" required>
                               <mat-option *ngFor="let positionType of positionTypes" [value]="positionType.value">
@@ -426,7 +430,8 @@
                           </mat-form-field>
                         </td>
                         <td class="p-0 pr-16px">
-                          <mat-form-field matLine class="width-100" appearance="fill" [hideRequiredMarker]="dimension.get('style').get('position').valid">
+                          <mat-form-field matLine class="width-100" appearance="fill"
+                                          [hideRequiredMarker]="dimension.get('style').get('position').valid">
                             <mat-label>Orientation</mat-label>
                             <mat-select matInput formControlName="orientation" required>
                               <mat-option *ngFor="let orientationType of orientationTypes" [value]="orientationType.value">
@@ -486,7 +491,7 @@
 
   <!-- Step #3 - General Instructions -->
 
-  <mat-step [stepControl]="generalInstructionsForm">
+  <mat-step [stepControl]="generalInstructionsForm" *ngIf="generalInstructionsFetched && generalInstructionsForm">
     <form [formGroup]="generalInstructionsForm">
 
       <!-- Header -->
@@ -501,7 +506,8 @@
 
           <div formArrayName="generalInstructions">
 
-            <div *ngFor="let generalInstruction of generalInstructions().controls; let generalInstructionIndex = index" [formGroupName]="generalInstructionIndex">
+            <div *ngFor="let generalInstruction of generalInstructions().controls; let generalInstructionIndex = index"
+                 [formGroupName]="generalInstructionIndex">
 
               <mat-card [class.mat-elevation-z3]="true">
                 <mat-card-header>
@@ -522,32 +528,9 @@
                     </tr>
                   </table>
 
-                  <mat-divider [inset]="true"></mat-divider>
-
-                  <!-- Steps -->
-                  <div formArrayName="steps">
-                    <button mat-flat-button color="primary" class="mt-16px mb-16px indent" (click)="addGeneralInstructionStep(generalInstructionIndex)">
-                      Add Step
-                    </button>
-                    <div *ngFor="let generalInstructionStep of generalInstructionSteps(generalInstructionIndex).controls; let generalInstructionStepIndex = index" [formGroupName]="generalInstructionStepIndex">
-                      <table class="width-100">
-                        <tr>
-                          <td class="p-0 pr-16px">
-                            <mat-form-field class="width-100" [hideRequiredMarker]="generalInstructionStep.get('step').valid" appearance="fill">
-                              <mat-label>Step</mat-label>
-                              <textarea matInput formControlName="step" required></textarea>
-                            </mat-form-field>
-                          </td>
-                          <td class="p-0 center">
-                            <button mat-flat-button color="primary" class="mb-16px"
-                                    [disabled]="generalInstructionStepIndex == '0' && generalInstructionSteps(generalInstructionIndex).length == 1"
-                                    (click)="removeGeneralInstructionStep(generalInstructionIndex, generalInstructionStepIndex)">
-                              Remove Step
-                            </button>
-                          </td>
-                        </tr>
-                      </table>
-                    </div>
+                  <div>
+                    <angular-editor id="general-instruction-{{generalInstructionIndex}}-text" formControlName="text"
+                                    [config]="editorConfig"></angular-editor>
                   </div>
 
                 </mat-card-content>
@@ -584,7 +567,7 @@
   </mat-step>
 
   <!-- Step #4 - Evaluation Instructions -->
-  <mat-step [stepControl]="evaluationInstructionsForm">
+  <mat-step [stepControl]="evaluationInstructionsForm" *ngIf="evaluationInstructionsFetched && evaluationInstructionsForm">
     <form [formGroup]="evaluationInstructionsForm">
 
       <!-- Header -->
@@ -599,7 +582,8 @@
 
           <div formArrayName="evaluationInstructions">
 
-            <div *ngFor="let evaluationInstruction of evaluationInstructions().controls; let evaluationInstructionIndex = index" [formGroupName]="evaluationInstructionIndex">
+            <div *ngFor="let evaluationInstruction of evaluationInstructions().controls; let evaluationInstructionIndex = index"
+                 [formGroupName]="evaluationInstructionIndex">
 
               <mat-card [class.mat-elevation-z3]="true">
                 <mat-card-header>
@@ -620,32 +604,9 @@
                     </tr>
                   </table>
 
-                  <mat-divider [inset]="true"></mat-divider>
-
-                  <!-- Steps -->
-                  <div formArrayName="steps">
-                    <button mat-flat-button color="primary" class="mt-16px mb-16px indent" (click)="addEvaluationInstructionStep(evaluationInstructionIndex)">
-                      Add Step
-                    </button>
-                    <div *ngFor="let evaluationInstructionStep of evaluationInstructionSteps(evaluationInstructionIndex).controls; let evaluationInstructionStepIndex = index" [formGroupName]="evaluationInstructionStepIndex">
-                      <table class="width-100">
-                        <tr>
-                          <td class="p-0 pr-16px">
-                            <mat-form-field class="width-100" [hideRequiredMarker]="evaluationInstructionStep.get('step').valid" appearance="fill">
-                              <mat-label>Step</mat-label>
-                              <textarea matInput formControlName="step" required></textarea>
-                            </mat-form-field>
-                          </td>
-                          <td class="p-0 center">
-                            <button mat-flat-button color="primary" class="mb-16px"
-                                    [disabled]="evaluationInstructionStepIndex == '0' && evaluationInstructionSteps(evaluationInstructionIndex).length == 1"
-                                    (click)="removeEvaluationInstructionStep(evaluationInstructionIndex, evaluationInstructionStepIndex)">
-                              Remove Step
-                            </button>
-                          </td>
-                        </tr>
-                      </table>
-                    </div>
+                  <div>
+                    <angular-editor id="evaluation-instruction-{{evaluationInstructionIndex}}-text" formControlName="text"
+                                    [config]="editorConfig"></angular-editor>
                   </div>
 
                 </mat-card-content>
@@ -682,7 +643,7 @@
   </mat-step>
 
   <!-- Step #5 - Search Engine -->
-  <mat-step [stepControl]="searchEngineForm">
+  <mat-step [stepControl]="searchEngineForm" *ngIf="searchEngineFetched  && searchEngineForm">
     <form [formGroup]="searchEngineForm">
 
       <!-- Header -->
@@ -701,8 +662,7 @@
               <td class="p-0">
                 <mat-form-field matLine class="width-100" appearance="fill">
                   <mat-label>Source</mat-label>
-                  <mat-select matInput formControlName="source">
-                    <mat-option></mat-option>
+                  <mat-select matInput formControlName="source" [value]="this.searchEngineFetched.source">
                     <mat-option *ngFor="let sourceType of sourceTypes" [value]="sourceType.value">
                       {{sourceType.viewValue}}
                     </mat-option>
@@ -715,7 +675,7 @@
           <mat-divider [inset]="true"></mat-divider>
 
           <!-- Domains To Filter -->
-          <div formArrayName="domains_to_filter">
+          <div formArrayName="domains_filter" *ngIf="searchEngineForm.get('source').value">
             <button mat-flat-button color="primary" class="mt-16px mb-16px indent" (click)="addDomain()">
               Add Domain To Filter
             </button>
@@ -752,7 +712,7 @@
   </mat-step>
 
   <!-- Step #6 - Task Settings -->
-  <mat-step [stepControl]="taskSettingsForm">
+  <mat-step [stepControl]="taskSettingsForm" *ngIf="taskSettingsFetched  && taskSettingsForm">
     <form [formGroup]="taskSettingsForm">
 
       <!-- Header -->
@@ -764,24 +724,6 @@
         </mat-card-header>
         <mat-divider></mat-divider>
         <mat-card-content>
-
-          <!-- Task Name, Batch Name-->
-          <table class="width-100 mt-8px">
-            <tr>
-              <td class="p-0 pr-16px">
-                <mat-form-field matLine class="width-100" [hideRequiredMarker]="taskSettingsForm.get('task_name').valid" appearance="fill">
-                  <mat-label>Task Name</mat-label>
-                  <input matInput type="text" formControlName="task_name" (change)="updateFullPath()" required>
-                </mat-form-field>
-              </td>
-              <td class="p-0">
-                <mat-form-field matLine class="width-100" [hideRequiredMarker]="taskSettingsForm.get('batch_name').valid" appearance="fill">
-                  <mat-label>Batch Name</mat-label>
-                  <input matInput type="text" min="0" formControlName="batch_name" (change)="updateFullPath()" required>
-                </mat-form-field>
-              </td>
-            </tr>
-          </table>
 
           <!-- Allowed Tries, Time Check Amount-->
           <table class="width-100 mt-8px">
@@ -803,20 +745,57 @@
 
           <mat-divider [inset]="true"></mat-divider>
 
+          <!-- Logging -->
+          <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="logger">
+            Logger
+          </mat-slide-toggle>
+
+          <mat-form-field matLine class="width-100" appearance="fill" *ngIf="taskSettingsForm.get('logger').value">
+            <mat-label>Logging server URL</mat-label>
+            <input matInput type="text" formControlName="serverEndpoint" required (blur)="updateServerEndpoint()">
+          </mat-form-field>
+
+          <div *ngIf="taskSettingsForm.get('logger').value">
+            <table class="width-100" style="border-collapse: collapse">
+              <tr *ngFor="let item of this.taskSettingsForm.get('logOption').value | keyvalue" style="border-bottom: thin solid lightgray">
+                <th align="left">
+                  <mat-checkbox color="primary" [checked]="this.taskSettingsForm.get('logOption').value[item.key]['general']" (change)="updateLogOption(item.key.toString(),'general')">
+                    {{item.key.toUpperCase()}} events
+                  </mat-checkbox>
+                </th>
+                <ng-container *ngFor="let prop of this.taskSettingsForm.get('logOption').value[item.key] | keyvalue">
+                  <td *ngIf="prop.key != 'general'">
+                    <mat-checkbox color="primary" [checked]="this.taskSettingsForm.get('logOption').value[item.key][prop.key]" [disabled]="!this.taskSettingsForm.get('logOption').value[item.key]['general']" (change)="updateLogOption(item.key.toString(), prop.key.toString())">
+                      {{prop.key.toUpperCase()}}
+                    </mat-checkbox>
+                  </td>
+                </ng-container>
+              </tr>
+            </table>
+          </div>
+
+
+          <mat-divider [inset]="true"></mat-divider>
+
           <!-- Hits file-->
-          <table class="width-100 mt-8px">
-            <button mat-flat-button color="primary" class="mt-8px mb-16px indent" ngxFilePicker [readMode]="readMode" (filePick)="localHitsFile = $event" (readEnd)="updateHitsFile()" accept="application/json">
-              Select Hits File
-            </button>
-            <ng-container *ngIf="!this.localHitsFile">
-              <code>your_file.json</code>
-            </ng-container>
-            <ng-container *ngIf="this.hitsDetected <= 0">
-              <code>invalid file</code>
-            </ng-container>
-            <ng-container *ngIf="this.hitsDetected > 0">
-              <code>Filename: {{this.localHitsFile.name}}, Hits detected: {{this.hitsDetected}}, Filesize: {{this.localHistFileSize}} Kb</code>
-            </ng-container>
+          <h3 class="lighter">Hits & Attributes</h3>
+          <table class="width-100 mt-16px">
+            <tr>
+              <td>
+                <button mat-flat-button color="primary" class="indent" ngxFilePicker [readMode]="readMode" (filePick)="hitsFile = $event" (readEnd)="updateHitsFile()" accept="application/json">
+                  Select Hits File
+                </button>
+                <ng-container *ngIf="!this.hitsFileName">
+                  <code>your_file.json</code>
+                </ng-container>
+                <ng-container *ngIf="this.hitsDetected <= 0">
+                  <code>invalid file</code>
+                </ng-container>
+                <ng-container *ngIf="this.hitsDetected > 0">
+                  <code>Filename: {{ this.hitsFileName }}, Hits detected: {{this.hitsDetected}}, Filesize: {{this.hitsSize}} Kb</code>
+                </ng-container>
+              </td>
+            </tr>
             <tr *ngIf="this.hitsDetected<=0">
               <td>
                 <mat-error class="mb-8px indent">
@@ -825,6 +804,24 @@
               </td>
             </tr>
           </table>
+
+          <div class="hit-attributes mt-8px mb-16px indent">
+            <div *ngFor="let value of hitAttributes().controls; let valueIndex = index" formArrayName="attributes" class="p-5px">
+              <div>
+                  <ng-container [formGroupName]="valueIndex">
+                      <mat-checkbox color="primary" formControlName="show" (change)="updateHitAttribute(valueIndex)">
+                    {{this.hitsAttributes[valueIndex]}}
+                  </mat-checkbox>
+                <mat-checkbox color="primary" formControlName="annotate" (change)="updateHitAttribute(valueIndex)">
+                  Annotations
+                </mat-checkbox>
+                <mat-checkbox color="primary" formControlName="required">
+                  Required
+                </mat-checkbox>
+                </ng-container>
+              </div>
+            </div>
+          </div>
 
           <mat-divider [inset]="true"></mat-divider>
 
@@ -851,7 +848,7 @@
           </div>
 
           <!-- Mapping -->
-          <div *ngIf="taskSettingsForm.get('annotator').get('type').value == 'options'" formGroupName="annotator">
+          <div *ngIf="annotator().get('type').value == 'options'" formGroupName="annotator">
             <button mat-flat-button color="primary" class="mb-16px indent" (click)="addOptionValue()">
               Add Option
             </button>
@@ -864,14 +861,15 @@
                       <input matInput type="text" formControlName="label" required>
                     </mat-form-field>
                   </td>
-                  <td class="p-0 pr-16px">
+                  <td class="p-0 pr-16px" [formGroupName]="valueIndex">
                     <mat-form-field class="width-100" matLine [hideRequiredMarker]="value.valid" appearance="fill">
                       <mat-label>HTML Color (#123456)</mat-label>
-                      <input matInput type="text" formControlName="color" required>
+                      <input matInput formControlName="color" [value]="this.annotatorOptionColors[valueIndex]" [(colorPicker)]="this.annotatorOptionColors[valueIndex]" (colorPickerChange)="updateOptionColor($event, valueIndex)" required>
                     </mat-form-field>
                   </td>
                   <td class="p-0 center">
-                    <button mat-flat-button color="primary" class="mb-16px" (click)="removeAnnotatorOptionValue(valueIndex)" [disabled]="valueIndex == '0' && annotatorOptionValues().controls.length == 1">
+                    <button mat-flat-button color="primary" class="mb-16px" (click)="removeAnnotatorOptionValue(valueIndex)"
+                            [disabled]="valueIndex == '0' && annotatorOptionValues().controls.length == 1">
                       Remove Option
                     </button>
                   </td>
@@ -887,72 +885,89 @@
             Countdown
           </mat-slide-toggle>
 
-          <mat-form-field matLine class="width-100 mb-16px" [hideRequiredMarker]="taskSettingsForm.get('countdown_time').valid" appearance="fill" *ngIf="this.taskSettingsForm.get('setCountdownTime').value">
+          <mat-form-field matLine class="width-100" [hideRequiredMarker]="taskSettingsForm.get('countdown_time').valid" appearance="fill" *ngIf="this.taskSettingsForm.get('setCountdownTime').value">
             <mat-label>Time</mat-label>
-            <input matInput type="number" min="1" formControlName="countdown_time" required>
+            <input matInput type="number" min="0" formControlName="countdown_time" required>
             <mat-error *ngIf="checkFormControl(taskSettingsForm,'countdown_time', 'invalid')">
-              A positive number greater than zero is required
+              A positive or zero number is required
             </mat-error>
           </mat-form-field>
 
-          <mat-divider [inset]="true"></mat-divider>
+          <mat-form-field class="width-100" appearance="fill" *ngIf="this.taskSettingsForm.get('setCountdownTime').value">
+            <mat-label>Behavior</mat-label>
+            <mat-select matInput formControlName="countdown_behavior" required>
+              <mat-option *ngFor="let countdownBehavior of countdownBehavior" [value]="countdownBehavior.value">
+                {{countdownBehavior.viewValue}}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
 
-          <!-- Blacklist Batches -->
-          <div formArrayName="blacklist_batches">
-            <button mat-flat-button color="primary" class="mt-16px mb-16px indent" (click)="addBlacklistBatch()">
-              Blacklist Batches
-            </button>
-            <button mat-flat-button color="primary" class="mb-16px" (click)="removeBlacklistBatch()" *ngIf="blacklistBatches().controls.length>0">
-              Remove Batches
-            </button>
-            <ng-container *ngIf="this.blacklistBatches().controls.length>0">
-              <div *ngFor="let task of batchesTree; let taskIndex = index">
-                <mat-accordion class="generator-accordion">
-                  <mat-expansion-panel>
-                    <mat-expansion-panel-header>
-                      <mat-panel-title>
-                        {{task.name}}
-                      </mat-panel-title>
-                      <mat-panel-description>
-                      </mat-panel-description>
-                    </mat-expansion-panel-header>
-                    <ng-container *ngFor="let batch of task.batches; let blacklistBatchIndex = index" [formGroupName]="taskIndex+blacklistBatchIndex">
-                      <p>
-                        <mat-checkbox formControlName="blacklist_batch">{{task.batches[blacklistBatchIndex]}}</mat-checkbox>
-                      </p>
-                    </ng-container>
-                  </mat-expansion-panel>
-                </mat-accordion>
-              </div>
-            </ng-container>
+
+          <mat-slide-toggle color="primary" class="mb-16px" formControlName="setAdditionalTimes" (change)="resetAdditionalTimes()" *ngIf="this.taskSettingsForm.get('setCountdownTime').value">
+            Additional Times
+          </mat-slide-toggle>
+
+          <mat-form-field class="width-100" appearance="fill" *ngIf="this.taskSettingsForm.get('setCountdownTime').value && this.taskSettingsForm.get('setAdditionalTimes').value">
+            <mat-label>Modality</mat-label>
+            <mat-select matInput formControlName="countdown_modality" required (selectionChange)="updateCountdownModality()">
+              <mat-option *ngFor="let additionalTimeModality of additionalTimeModalities" [value]="additionalTimeModality.value">
+                {{additionalTimeModality.viewValue}}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field class="width-100" appearance="fill" *ngIf="this.taskSettingsForm.get('countdown_modality').value == 'attribute' && this.taskSettingsForm.get('setCountdownTime').value && this.taskSettingsForm.get('setAdditionalTimes').value">
+            <mat-label>Attribute</mat-label>
+            <mat-select matInput formControlName="countdown_attribute" (selectionChange)="updateCountdownAttribute()" required>
+              <mat-option *ngFor="let attribute of hitsAttributes" [value]="attribute">
+                {{attribute}}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <div formArrayName="countdown_attribute_values" *ngIf="this.taskSettingsForm.get('countdown_modality').value == 'attribute' && this.taskSettingsForm.get('setCountdownTime').value && this.taskSettingsForm.get('setAdditionalTimes').value && this.hitsAttributesValues">
+              <mat-form-field
+                      matLine [hideRequiredMarker]="countdownAttributeControl.get('time').valid" appearance="fill" class="indent p-2px"
+                      *ngFor="let countdownAttributeControl of this.countdownAttributeValues().controls; let countdownAttributeIndex = index"
+                      [formGroupName]="countdownAttributeIndex">
+                <mat-label>{{this.hitsAttributesValues[(this.taskSettingsForm.get('countdown_attribute').value)][countdownAttributeIndex]}}</mat-label>
+                <input matInput type="number" formControlName="time" min="0" required>
+              </mat-form-field>
+          </div>
+
+          <div formArrayName="countdown_position_values" *ngIf="this.taskSettingsForm.get('countdown_modality').value == 'position' && this.taskSettingsForm.get('setCountdownTime').value && this.taskSettingsForm.get('setAdditionalTimes').value">
+            <mat-form-field
+                    matLine [hideRequiredMarker]="countdownPositionControl.get('time').valid" appearance="fill" class="indent p-2px"
+                    *ngFor="let countdownPositionControl of this.countdownPositionValues().controls; let countdownPositionIndex = index"
+                    [formGroupName]="countdownPositionIndex">
+              <mat-label>Position {{countdownPositionIndex}}</mat-label>
+              <input matInput type="number" formControlName="time" min="0" required>
+            </mat-form-field>
           </div>
 
           <mat-divider [inset]="true"></mat-divider>
 
-          <!-- Whitelist Batches -->
-          <div formArrayName="whitelist_batches">
-            <button mat-flat-button color="primary" class="mt-16px mb-16px indent" (click)="addWhitelistBatch()">
-              Whitelist Batches
-            </button>
-            <button mat-flat-button color="primary" class="mb-16px" (click)="removeWhitelistBatch()" *ngIf="whitelistBatches().controls.length>0">
-              Remove Batches
-            </button>
-            <ng-container *ngIf="this.whitelistBatches().controls.length>0">
-              <div *ngFor="let task of batchesTree; let taskIndex = index">
+          <h3 class="lighter">Batches</h3>
+
+          <!-- Blacklist Batches -->
+          <div formArrayName="batches" class="mt-16px">
+            <mat-progress-bar *ngIf="this.batches().controls.length<=0 && !this.batchesTreeInitialization" mode="indeterminate"></mat-progress-bar>
+            <ng-container *ngIf="this.batches().controls.length>0 && this.batchesTreeInitialization">
+              <div *ngFor="let taskNode of this.batchesTree">
                 <mat-accordion class="generator-accordion">
                   <mat-expansion-panel>
                     <mat-expansion-panel-header>
                       <mat-panel-title>
-                        {{task.name}}
+                        {{taskNode['task']}}
                       </mat-panel-title>
                       <mat-panel-description>
                       </mat-panel-description>
                     </mat-expansion-panel-header>
-                    <ng-container *ngFor="let batch of task.batches; let whitelistBatchIndex = index" [formGroupName]="taskIndex+whitelistBatchIndex">
-                      <p>
-                        <mat-checkbox formControlName="whitelist_batch">{{task.batches[whitelistBatchIndex]}}</mat-checkbox>
-                      </p>
-                    </ng-container>
+                    <div *ngFor="let batch of taskNode['batches']; let batchIndex = index" [formGroupName]="batch['counter']">
+                      <mat-label>{{batch["batch"]}}</mat-label>
+                      <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="blacklist" (change)="resetBlacklist(batch['counter'])">Blacklist</mat-slide-toggle>
+                      <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="whitelist" (change)="resetWhitelist(batch['counter'])">Whitelist</mat-slide-toggle>
+                    </div>
                   </mat-expansion-panel>
                 </mat-accordion>
               </div>
@@ -963,26 +978,20 @@
 
           <!-- Messages -->
           <div formArrayName="messages">
-            <button mat-flat-button
-                    color="primary" class="mt-16px mb-16px indent"
-                    (click)="addMessage()">
+            <button mat-flat-button color="primary" class="mt-16px mb-16px indent" (click)="addMessage()">
               Add Message
             </button>
-            <div *ngFor="let msg of messages().controls; let messageIndex = index"
-                 [formGroupName]="messageIndex">
+            <div *ngFor="let msg of messages().controls; let messageIndex = index" [formGroupName]="messageIndex">
               <table class="width-100">
                 <tr>
                   <td class="p-0 pr-16px">
-                    <mat-form-field matLine class="width-100" [hideRequiredMarker]="msg.get('message').valid"
-                                    appearance="fill">
+                    <mat-form-field matLine class="width-100" [hideRequiredMarker]="msg.get('message').valid" appearance="fill">
                       <mat-label>Message</mat-label>
                       <input matInput type="text" formControlName="message" required>
                     </mat-form-field>
                   </td>
                   <td class="p-0 center">
-                    <button mat-flat-button
-                            color="primary" class="mb-16px"
-                            (click)="removeMessage(messageIndex)">
+                    <button mat-flat-button color="primary" class="mb-16px" (click)="removeMessage(messageIndex)">
                       Remove Message
                     </button>
                   </td>
@@ -1005,7 +1014,7 @@
   </mat-step>
 
   <!-- Step #7 - Worker Checks -->
-  <mat-step [stepControl]="workerChecksForm">
+  <mat-step [stepControl]="workerChecksForm" *ngIf="workerChecksFetched && workerChecksForm">
     <form [formGroup]="workerChecksForm">
 
       <!-- Header -->
@@ -1018,31 +1027,28 @@
         <mat-divider></mat-divider>
         <mat-card-content>
 
+          <p>Select the IDs to consider by pressing <i>SPACE</i></p>
+
           <!-- Blacklist -->
-          <table class="width-100 mt-8px">
-            <tr>
-              <td class="p-0">
-                <mat-form-field class="width-100" appearance="fill">
-                  <mat-label>Blacklist Workers</mat-label>
-                  <textarea matInput formControlName="blacklist" placeholder="blacklistWorker1;blacklistWorker2;etc."></textarea>
-                </mat-form-field>
-              </td>
-            </tr>
-          </table>
+
+          <mat-form-field class="width-100" appearance="fill">
+            <mat-label>Worker IDs Blacklisted</mat-label>
+            <mat-chip-list #blacklistChips formControlName="blacklist" multiple>
+              <mat-chip *ngFor="let workerId of this.blacklistedWorkerId" [selectable]="true" [removable]="true" (removed)="removeBlacklistedId(workerId)">{{workerId}} <mat-icon matChipRemove>cancel</mat-icon></mat-chip>
+              <input placeholder="New worker ID ..." [matChipInputFor]="blacklistChips" [matChipInputSeparatorKeyCodes]="separatorKeysCodes" (matChipInputTokenEnd)="addBlacklistedId($event)">
+            </mat-chip-list>
+          </mat-form-field>
 
           <mat-divider [inset]="true"></mat-divider>
 
           <!-- Whitelist -->
-          <table class="width-100 mt-16px">
-            <tr>
-              <td class="p-0">
-                <mat-form-field class="width-100" appearance="fill">
-                  <mat-label>Whitelist Workers</mat-label>
-                  <textarea matInput formControlName="whitelist" placeholder="whitelistWorker1;whitelistWorker2;etc."></textarea>
-                </mat-form-field>
-              </td>
-            </tr>
-          </table>
+          <mat-form-field class="width-100" appearance="fill">
+            <mat-label>Worker IDs Whitelisted</mat-label>
+            <mat-chip-list #whitelistChips formControlName="whitelist" multiple>
+              <mat-chip *ngFor="let workerId of this.whitelistedWorkerId" [selectable]="true" [removable]="true"  (removed)="removeWhitelistedId(workerId)">{{workerId}} <mat-icon matChipRemove>cancel</mat-icon></mat-chip>
+              <input placeholder="New worker ID ..." [matChipInputFor]="whitelistChips" [matChipInputSeparatorKeyCodes]="separatorKeysCodes" (matChipInputTokenEnd)="addBlacklistedId($event)">
+            </mat-chip-list>
+          </mat-form-field>
 
         </mat-card-content>
 
@@ -1058,7 +1064,14 @@
   </mat-step>
 
   <!-- Step #8 - Summary -->
-  <mat-step>
+  <mat-step *ngIf="
+  questionnairesFetched && questionnairesForm &&
+  dimensionsFetched && dimensionsForm &&
+  generalInstructionsFetched && generalInstructionsForm &&
+  evaluationInstructionsFetched && evaluationInstructionsForm &&
+  taskSettingsFetched && taskSettingsForm &&
+  searchEngineFetched && searchEngineForm &&
+  workerChecksFetched && workerChecksForm">
 
     <!-- Header -->
     <ng-template matStepLabel>Summary</ng-template>
@@ -1071,59 +1084,74 @@
       <mat-card-content>
 
         <h4 class="mb-0">Step #1 - Questionnaires:</h4>
-        <p><code>{{ questionnairesJSON() }}</code></p>
+        <p><code>{{ questionnairesSerialized }}</code></p>
 
         <mat-divider [inset]="true"></mat-divider>
 
         <h4 class="mb-0">Step #2 - <strong>Dimensions</strong>:</h4>
-        <p><code>{{ dimensionsJSON() }}</code></p>
+        <p><code>{{ dimensionsSerialized }}</code></p>
 
         <mat-divider [inset]="true"></mat-divider>
 
         <h4 class="mb-0">Step #3 - <strong>General Instructions</strong>:</h4>
-        <p><code>{{ generalInstructionsJSON() }}</code></p>
+        <p><code>{{ generalInstructionsSerialized }}</code></p>
 
         <mat-divider [inset]="true"></mat-divider>
 
         <h4 class="mb-0">Step #4 - <strong>Evaluation Instructions</strong>:</h4>
-        <p><code>{{ evaluationInstructionsJSON() }}</code></p>
+        <p><code>{{ evaluationInstructionsSerialized }}</code></p>
 
         <mat-divider [inset]="true"></mat-divider>
 
         <h4 class="mb-0">Step #5 - <strong>Search Engine</strong>:</h4>
-        <p><code>{{ searchEngineJSON() }}</code></p>
+        <p><code>{{ searchEngineSerialized }}</code></p>
 
         <mat-divider [inset]="true"></mat-divider>
 
         <h4 class="mb-0">Step #6 - <strong>Task Settings</strong>:</h4>
-        <p><code>{{ taskSettingsJSON(false) }}</code></p>
+        <p><code>{{ this.taskSettingsSerialized }}</code></p>
 
         <mat-divider [inset]="true"></mat-divider>
 
         <h4 class="mb-0">Step #7 - <strong>Worker Checks</strong>:</h4>
-        <p><code>{{ workerChecksJSON() }}</code></p>
+        <p><code>{{ this.workersChecksSerialized }}</code></p>
+
+        <mat-divider [inset]="true"></mat-divider>
+        <h4 class="mb-0"><strong>Hits Overview</strong>:</h4>
+        <p><code>{{ this.hitsParsedString }}</code></p>
 
         <mat-divider [inset]="true"></mat-divider>
         <h4 class="mb-0"><strong>Validity Check</strong>:</h4>
 
         <mat-list>
-          <mat-list-item *ngIf="this.questionnairesForm.valid" class="step-valid"><span>Step #1 - Questionnaires: <span class="step-validity-check">valid</span></span></mat-list-item>
-          <mat-list-item *ngIf="!this.questionnairesForm.valid" class="step-invalid"><span>Step #1 - Questionnaires: <span class="step-validity-check">invalid</span></span></mat-list-item>
-          <mat-list-item *ngIf="this.dimensionsForm.valid" class="step-valid"><span>Step #2 - Dimensions: <span class="step-validity-check">valid</span></span></mat-list-item>
-          <mat-list-item *ngIf="!this.dimensionsForm.valid" class="step-invalid"><span>Step #2 - Dimensions: <span class="step-validity-check">invalid</span></span></mat-list-item>
-          <mat-list-item *ngIf="this.generalInstructionsForm.valid" class="step-valid"><span>Step #3 - General Instructions: <span class="step-validity-check">valid</span></span></mat-list-item>
-          <mat-list-item *ngIf="!this.generalInstructionsForm.valid" class="step-invalid"><span>Step #3 - General Instructions: <span class="step-validity-check">invalid</span></span></mat-list-item>
-          <mat-list-item *ngIf="this.evaluationInstructionsForm.valid" class="step-valid"><span>Step #4 - Evaluation Instructions: <span class="step-validity-check">valid</span></span></mat-list-item>
-          <mat-list-item *ngIf="!this.evaluationInstructionsForm.valid" class="step-invalid"><span>Step #4 - Evaluation Instructions: <span class="step-validity-check">invalid</span></span></mat-list-item>
-          <mat-list-item *ngIf="this.searchEngineForm.valid" class="step-valid"><span>Step #5 - Search Engine: <span class="step-validity-check">valid</span></span></mat-list-item>
-          <mat-list-item *ngIf="!this.searchEngineForm.valid" class="step-invalid"><span>Step #5 - Search Engine: <span class="step-validity-check">invalid</span></span></mat-list-item>
+          <mat-list-item *ngIf="this.questionnairesForm.valid" class="step-valid"><span>Step #1 - Questionnaires: <span class="step-validity-check">valid</span></span>
+          </mat-list-item>
+          <mat-list-item *ngIf="!this.questionnairesForm.valid" class="step-invalid"><span>Step #1 - Questionnaires: <span class="step-validity-check">invalid</span></span>
+          </mat-list-item>
+          <mat-list-item *ngIf="this.dimensionsForm.valid" class="step-valid"><span>Step #2 - Dimensions: <span
+            class="step-validity-check">valid</span></span></mat-list-item>
+          <mat-list-item *ngIf="!this.dimensionsForm.valid" class="step-invalid"><span>Step #2 - Dimensions: <span
+            class="step-validity-check">invalid</span></span></mat-list-item>
+          <mat-list-item *ngIf="this.generalInstructionsForm.valid" class="step-valid"><span>Step #3 - General Instructions: <span
+            class="step-validity-check">valid</span></span></mat-list-item>
+          <mat-list-item *ngIf="!this.generalInstructionsForm.valid" class="step-invalid"><span>Step #3 - General Instructions: <span
+            class="step-validity-check">invalid</span></span></mat-list-item>
+          <mat-list-item *ngIf="this.evaluationInstructionsForm.valid" class="step-valid"><span>Step #4 - Evaluation Instructions: <span
+            class="step-validity-check">valid</span></span></mat-list-item>
+          <mat-list-item *ngIf="!this.evaluationInstructionsForm.valid" class="step-invalid"><span>Step #4 - Evaluation Instructions: <span
+            class="step-validity-check">invalid</span></span></mat-list-item>
+          <mat-list-item *ngIf="this.searchEngineForm.valid" class="step-valid"><span>Step #5 - Search Engine: <span
+            class="step-validity-check">valid</span></span></mat-list-item>
+          <mat-list-item *ngIf="!this.searchEngineForm.valid" class="step-invalid"><span>Step #5 - Search Engine: <span class="step-validity-check">invalid</span></span>
+          </mat-list-item>
           <div *ngIf="this.taskSettingsForm.valid && this.hitsDetected>0; else invalidTaskSettings">
             <mat-list-item class="step-valid"><span>Step #6 - Task Settings: <span class="step-validity-check">valid</span></span></mat-list-item>
           </div>
           <ng-template #invalidTaskSettings>
             <mat-list-item class="step-invalid"><span>Step #6 - Task Settings: <span class="step-validity-check">invalid</span></span></mat-list-item>
           </ng-template>
-          <mat-list-item *ngIf="this.workerChecksForm.valid" class="step-valid"><span>Step #7 - Worker Checks: <span class="step-validity-check">valid</span></span></mat-list-item>
+          <mat-list-item *ngIf="this.workerChecksForm.valid" class="step-valid"><span>Step #7 - Worker Checks: <span
+            class="step-validity-check">valid</span></span></mat-list-item>
           <mat-list-item *ngIf="!this.workerChecksForm.valid" class="step-invalid"><span>Step #7 - Worker Checks: <span class="step-validity-check">invalid</span></span>
           </mat-list-item>
         </mat-list>
@@ -1131,17 +1159,26 @@
         <h4 class="mb-0">Upload Path:</h4>
         <p><code [innerHTML]="fullS3Path"></code></p>
 
-        <ng-container *ngIf="this.uploadStarted">
+        <mat-progress-bar *ngIf="this.uploadStarted && !this.uploadCompleted" mode="indeterminate"></mat-progress-bar>
+
+        <ng-container *ngIf="!this.uploadStarted && this.uploadCompleted">
           <mat-divider [inset]="true"></mat-divider>
           <h4 class="mb-0">Upload result:</h4>
           <mat-list>
-            <mat-list-item *ngIf="this.questionnairesPath" class="step-valid"><span>Step #1 - Questionnaire configuration uploaded at path: <code>{{this.questionnairesPath}}</code></span></mat-list-item>
-            <mat-list-item *ngIf="this.dimensionsPath" class="step-valid"><span>Step #2 - Dimensions configuration uploaded at path: <code>{{this.dimensionsPath}}</code></span></mat-list-item>
-            <mat-list-item *ngIf="this.taskInstructionsPath" class="step-valid"><span>Step #3 - General instructions configuration uploaded at path: <code>{{this.taskInstructionsPath}}</code></span></mat-list-item>
-            <mat-list-item *ngIf="this.dimensionsInstructionsPath" class="step-valid"><span>Step #4 - Evaluation instructions configuration uploaded at path: <code>{{this.dimensionsInstructionsPath}}</code></span></mat-list-item>
-            <mat-list-item *ngIf="this.searchEngineSettingsPath" class="step-valid"><span>Step #5 - Search engine configuration uploaded at path: <code>{{this.searchEngineSettingsPath}}</code></span></mat-list-item>
-            <mat-list-item *ngIf="this.taskSettingsPath" class="step-valid"><span>Step #6 - Task settings configuration uploaded at path: <code>{{this.taskSettingsPath}}</code></span></mat-list-item>
-            <mat-list-item *ngIf="this.workerChecksPath" class="step-valid"><span>Step #7 - Worker checks configuration uploaded at path: <code>{{this.workerChecksPath}}</code></span></mat-list-item>
+            <mat-list-item *ngIf="this.questionnairesPath" class="step-valid">
+              <span>Step #1 - Questionnaire configuration uploaded at path: <code>{{this.questionnairesPath}}</code></span></mat-list-item>
+            <mat-list-item *ngIf="this.dimensionsPath" class="step-valid">
+              <span>Step #2 - Dimensions configuration uploaded at path: <code>{{this.dimensionsPath}}</code></span></mat-list-item>
+            <mat-list-item *ngIf="this.taskInstructionsPath" class="step-valid">
+              <span>Step #3 - General instructions configuration uploaded at path: <code>{{this.taskInstructionsPath}}</code></span></mat-list-item>
+            <mat-list-item *ngIf="this.dimensionsInstructionsPath" class="step-valid"><span>Step #4 - Evaluation instructions configuration uploaded at path: <code>{{this.dimensionsInstructionsPath}}</code></span>
+            </mat-list-item>
+            <mat-list-item *ngIf="this.searchEngineSettingsPath" class="step-valid">
+              <span>Step #5 - Search engine configuration uploaded at path: <code>{{this.searchEngineSettingsPath}}</code></span></mat-list-item>
+            <mat-list-item *ngIf="this.taskSettingsPath" class="step-valid">
+              <span>Step #6 - Task settings configuration uploaded at path: <code>{{this.taskSettingsPath}}</code></span></mat-list-item>
+            <mat-list-item *ngIf="this.workerChecksPath" class="step-valid">
+              <span>Step #7 - Worker checks configuration uploaded at path: <code>{{this.workerChecksPath}}</code></span></mat-list-item>
           </mat-list>
         </ng-container>
 
@@ -1171,3 +1208,38 @@
   </mat-step>
 
 </mat-horizontal-stepper>
+
+
+<mat-expansion-panel id="cloneTask" [expanded]="true" class="green-theme">
+  <mat-expansion-panel-header *ngIf="!this.batchesTreeInitialization">
+    <mat-panel-title>
+      Initialization
+    </mat-panel-title>
+    <mat-panel-description>
+      in progress...
+    </mat-panel-description>
+  </mat-expansion-panel-header>
+  <mat-expansion-panel-header *ngIf="this.batchesTreeInitialization">
+    <mat-panel-title>
+      Clone
+    </mat-panel-title>
+    <mat-panel-description>
+      a deployed batch
+    </mat-panel-description>
+  </mat-expansion-panel-header>
+  <mat-progress-bar mode="indeterminate" *ngIf="!this.batchesTreeInitialization"></mat-progress-bar>
+  <mat-form-field appearance="fill" class="width-100" *ngIf="this.batchesTreeInitialization && this.batchesTree.length > 0">
+    <mat-label>Select configuration</mat-label>
+    <mat-select [formControl]="cloneTask" (selectionChange)="clonePreviousBatch($event)">
+      <mat-optgroup *ngFor="let taskNode of this.batchesTree" [label]="taskNode['task']">
+        <mat-option *ngFor="let batchNode of taskNode['batches']" [value]="batchNode['batch']">
+          {{batchNode['batch'].replace(taskNode['task'], '')}}
+        </mat-option>
+      </mat-optgroup>
+    </mat-select>
+  </mat-form-field>
+  <p *ngIf="this.batchesTreeInitialization && this.batchesTree.length <= 0">No other batches detected</p>
+  <button mat-flat-button color="primary" class="width-100" *ngIf="this.taskCloned && this.batchesTreeInitialization" (click)="clearClonedBatch()">
+    Clear
+  </button>
+</mat-expansion-panel>
