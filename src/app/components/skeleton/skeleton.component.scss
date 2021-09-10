@@ -774,3 +774,71 @@ mat-step form mat-card-content, mat-step form mat-card-actions {
   text-align: center;
   color:#F8F9FC;
 }
+
+.titlepairwise{
+  text-align: center;
+}
+
+
+
+/*
+  Classes pairwise splited 
+*/
+.divsplit{
+  display: table;
+  border-spacing: 50px;
+}
+.statementsplit{
+  display: table-cell;
+  width: 500px;
+  background-color:#FCFCFC;
+  height: 250px;
+  padding-top: 1px;
+  margin-top: -1px;
+  overflow: hidden;
+  border-radius:5px;
+  cursor: pointer;
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+}
+
+.boxtextsplit{
+  width: 80%;
+  background-color: rgba(0, 0, 0, 0.1);
+  height: 100px;
+  border-radius: 10px;
+  margin:0 auto;
+  padding: 5px;
+  margin-top: 10px;
+}
+
+.boxvaluessplit{
+  width: 50%;
+  height: 100%;
+  margin:0 auto;
+  margin-top: 15px;
+}
+.captionsplit {
+  display: block;
+}
+.statementTitlesplit{
+  text-align: center
+}
+
+
+
+/*
+  Pairwise splitted dimension css
+*/
+.dimension-content-split{
+  display: table;
+  border-spacing: 2cm 0px;
+  width: 100%;
+ 
+
+}
+.dimension-split-inside{
+  display: table-cell;
+}
+
+
+

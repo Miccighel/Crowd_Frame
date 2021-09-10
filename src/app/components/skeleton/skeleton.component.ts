@@ -42,6 +42,7 @@ import { Discovery } from 'aws-sdk';
 import { ConfigurationServicePlaceholders } from 'aws-sdk/lib/config_service_placeholders';
 import { Object } from 'aws-sdk/clients/customerprofiles';
 import { ConstantPool } from '@angular/compiler';
+import { of } from 'rxjs';
 
 /* Component HTML Tag definition */
 @Component({
@@ -595,36 +596,80 @@ export class SkeletonComponent implements OnInit {
       /* The array of dimensions is initialized */
       this.dimensions = new Array<Dimension>();
 
+      let checkDimension=false 
       /* The dimensions stored on Amazon S3 are retrieved */
       let rawDimensions = await this.S3Service.downloadDimensions(this.configService.environment)
       this.dimensionsAmount = rawDimensions.length;
       console.log("documento")
-      console.log(this.documents[0].pairwise);
+      console.log(this.documents[0].pairwise_selection);
       /* Each dimension is parsed using the Dimension class */
       for (let index = 0; index < this.dimensionsAmount; index++) this.dimensions.push(new Dimension(index, rawDimensions[index]));
       
       for (let index = 0; index < this.documentsAmount; index++) {
         let controlsConfig = {};
-        if(this.documents[index].pairwise) controlsConfig[`pairwise_value_selected`] = new FormControl('',[Validators.required]);
-        for (let index_dimension = 0; index_dimension < this.dimensions.length; index_dimension++) {
-          let dimension = this.dimensions[index_dimension];
-          if (dimension.scale) {
-            if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.required]);
-            if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value`] = new FormControl((Math.round(((<ScaleInterval>dimension.scale).min + (<ScaleInterval>dimension.scale).max) / 2)), [Validators.required]);
-            if(dimension.scale.type =="pairwise") controlsConfig[`${dimension.name}_value`] = new FormControl('',[Validators.required]);
-            if(dimension.scale.type =="pairwise") controlsConfig[`${dimension.name}_value`] = new FormControl('',[Validators.required]);
-             if (dimension.scale.type == "magnitude_estimation") {
-              if ((<ScaleMagnitude>dimension.scale).lower_bound) {
-                controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min), Validators.required]);
-              } else {
-                controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min + 1), Validators.required]);
+        if(this.documents[index].pairwise_split)
+        {
+          console.log("mai qui dentro")
+          for (let index_dimension = 0; index_dimension < this.dimensions.length; index_dimension++) {
+
+            let dimension = this.dimensions[index_dimension];
+            if (!dimension.pairwise)
+            {
+              if (dimension.scale) {
+                if (dimension.scale.type == "interval")  controlsConfig[`${dimension.name}_value`] = new FormControl((Math.round(((<ScaleInterval>dimension.scale).min + (<ScaleInterval>dimension.scale).max) / 2)), [Validators.required]);
+                if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.required]);
+                if (dimension.scale.type == "magnitude_estimation") {
+                  if ((<ScaleMagnitude>dimension.scale).lower_bound) {
+                    controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min), Validators.required]);
+                  } else {
+                    controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min + 1), Validators.required]);
+                  }
+                }
+                if (dimension.justification) controlsConfig[`${dimension.name}_justification`] = new FormControl('', [Validators.required, this.validateJustification.bind(this)])
+                if (dimension.url) controlsConfig[`${dimension.name}_url`] = new FormControl('', [Validators.required, this.validateSearchEngineUrl.bind(this)]);
+              }
+            }else if (dimension.scale) {
+              if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.required]);
+              if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value2`] = new FormControl('', [Validators.required]);
+              if (dimension.scale.type == "interval")  controlsConfig[`${dimension.name}_value`] = new FormControl((Math.round(((<ScaleInterval>dimension.scale).min + (<ScaleInterval>dimension.scale).max) / 2)), [Validators.required]);
+              if (dimension.scale.type == "interval")  controlsConfig[`${dimension.name}_value2`] = new FormControl((Math.round(((<ScaleInterval>dimension.scale).min + (<ScaleInterval>dimension.scale).max) / 2)), [Validators.required]);
+              if (dimension.scale.type == "magnitude_estimation") {
+                if ((<ScaleMagnitude>dimension.scale).lower_bound) {
+                  controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min), Validators.required]);
+                  controlsConfig[`${dimension.name}_value2`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min), Validators.required]);
+                } else {
+                  controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min + 1), Validators.required]);
+                  controlsConfig[`${dimension.name}_value2`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min + 1), Validators.required]);
+                }
+              }
+              if (dimension.justification) controlsConfig[`${dimension.name}_justification`] = new FormControl('', [Validators.required, this.validateJustification.bind(this)])
+              if (dimension.justification) controlsConfig[`${dimension.name}_justification2`] = new FormControl('', [Validators.required, this.validateJustification.bind(this)])
+              if (dimension.url) controlsConfig[`${dimension.name}_url`] = new FormControl('', [Validators.required, this.validateSearchEngineUrl.bind(this)]);
+            }  
+          }
+        }else{
+          console.log("mai qui dentro1")
+          for (let index_dimension = 0; index_dimension < this.dimensions.length; index_dimension++) {
+            let dimension = this.dimensions[index_dimension];
+            if (dimension.scale) {
+              if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.required]);
+              if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value`] = new FormControl((Math.round(((<ScaleInterval>dimension.scale).min + (<ScaleInterval>dimension.scale).max) / 2)), [Validators.required]);
+              if(dimension.scale.type =="pairwise") controlsConfig[`${dimension.name}_value`] = new FormControl('',[Validators.required]);
+              if(this.documents[index].pairwise_selection) controlsConfig[`pairwise_value_selected`] = new FormControl('', [Validators.required]);
+               if (dimension.scale.type == "magnitude_estimation") {
+                if ((<ScaleMagnitude>dimension.scale).lower_bound) {
+                  controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min), Validators.required]);
+                } else {
+                  controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min + 1), Validators.required]);
+                }
               }
             }
+            if (dimension.justification) controlsConfig[`${dimension.name}_justification`] = new FormControl('', [Validators.required, this.validateJustification.bind(this)])
+            if (dimension.url) controlsConfig[`${dimension.name}_url`] = new FormControl('', [Validators.required, this.validateSearchEngineUrl.bind(this)]);
           }
-          if (dimension.justification) controlsConfig[`${dimension.name}_justification`] = new FormControl('', [Validators.required, this.validateJustification.bind(this)])
-          if (dimension.url) controlsConfig[`${dimension.name}_url`] = new FormControl('', [Validators.required, this.validateSearchEngineUrl.bind(this)]);
         }
         this.documentsForm[index] = this.formBuilder.group(controlsConfig)
+        console.log(controlsConfig)
       }
 
       this.dimensionsSelectedValues = new Array<object>(this.documentsAmount);
@@ -2192,6 +2237,7 @@ export class SkeletonComponent implements OnInit {
   /* contains the last element(pairwise) selected */
   pastValues:Object[] = [];
   checkedValue:Boolean[] = [];
+  valueCheck:number
   public changeColor(valueData: Object,valueChecked:number,documentnumber:number)
   {
       if(this.pastValues[documentnumber]==undefined)
@@ -2202,6 +2248,7 @@ export class SkeletonComponent implements OnInit {
         valueData["source"]["__ngContext__"][26]["className"]="boxvaluesafterclicked";
         this.checkedValue[documentnumber]=true
         this.pastValues[documentnumber]=valueData
+        this.valueCheck=valueChecked
       
       }else{
         
@@ -2215,8 +2262,54 @@ export class SkeletonComponent implements OnInit {
         valueData["source"]["__ngContext__"][26]["className"]="boxvaluesafterclicked";
         this.pastValues[documentnumber]=valueData
         this.checkedValue[documentnumber]=true
+        this.valueCheck=valueChecked
+        //this.setDimensioValue(valueChecked)
       }
   } 
+
+  /** 
+  savedValuesObject:Object[][]=[];
+  savedValuesName:Object[][]=[]
+  savedValues:Object[][]=[];
+  public saveValuedimension(valueData:Object,dimensionNumber:number,dimensionName:Object)
+  {
+    
+    console.log(valueData)
+    if( this.savedValuesObject[this.valueCheck]==undefined)
+    {
+      this.savedValuesObject[this.valueCheck]=[]
+      this.savedValues[this.valueCheck]=[]
+      this.savedValuesObject[this.valueCheck][dimensionNumber]=valueData
+      this.savedValues[this.valueCheck][dimensionNumber]=valueData["value"]
+      this.savedValuesName[this.valueCheck][dimensionNumber]=dimensionName
+    }else
+    {
+      this.savedValuesObject[this.valueCheck][dimensionNumber]=valueData
+      this.savedValues[this.valueCheck][dimensionNumber]=valueData["value"]
+      this.savedValuesName[this.valueCheck][dimensionNumber]=dimensionName
+    }
+    console.log(this.savedValuesObject)
+    console.log(this.savedValues)
+  }
+
+  public setDimensioValue(valueChecked:number)
+  {
+
+    if(this.savedValuesObject[valueChecked]!=undefined)
+    {
+      console.log("bella lì")
+      for (let index in this.savedValuesObject)
+      {
+        let namedimension=this.savedValuesName[valueChecked][index]
+        console.log("ciao"+this.savedValues[valueChecked][index])
+        console.log("la figa dio can"+this.savedValuesObject[valueChecked][index]["source"]["__ngContext__"][24]);
+        this.savedValuesObject[valueChecked][index]["source"]["__ngContext__"][24]=this.savedValues[valueChecked][index];
+        let value=this.savedValues[valueChecked][index]
+        this.documentsForm[index].controls[(namedimension).concat('_value')].value;
+      }
+      console.log("ciao")
+    }
+  }*/
 }
 
   

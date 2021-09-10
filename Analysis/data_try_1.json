@@ -1,0 +1,377 @@
+{
+    "task": {
+        "task_id": "task-Pairwise",
+        "batch_name": "Batch-1",
+        "worker_id": "topolino",
+        "unit_id": "unit_0",
+        "token_input": "ABCDEFGHILM",
+        "token_output": "MNOPQRSTUVZ",
+        "tries_amount": 10,
+        "questionnaire_amount": 1,
+        "questionnaire_amount_start": 1,
+        "questionnaire_amount_end": 0,
+        "documents_amount": 2,
+        "dimensions_amount": 3
+    },
+    "questionnaires": [
+        {
+            "index": 0,
+            "description": null,
+            "position": "start",
+            "type": "standard",
+            "questions": [
+                {
+                    "index": 0,
+                    "name": "age",
+                    "text": "What is your age?",
+                    "answers": [
+                        "0-18",
+                        "19-25",
+                        "26-35",
+                        "36-50",
+                        "50-80",
+                        "80+"
+                    ],
+                    "detail": null,
+                    "showDetail": false
+                }
+            ]
+        }
+    ],
+    "documents": [
+        {
+            "index": 0,
+            "id": "identifier_1",
+            "text": "Lorem ipsum dolor sit amet",
+            "pairwise": "true",
+            "statements": [
+                {
+                    "index": 0,
+                    "text": "BHO",
+                    "speaker": "ciao2",
+                    "speakerjob": "1",
+                    "context": "swag"
+                },
+                {
+                    "index": 1,
+                    "text": "BHO",
+                    "speaker": "ciao2",
+                    "speakerjob": "1",
+                    "context": "swag"
+                }
+            ]
+        },
+        {
+            "index": 1,
+            "id": "identifier_2",
+            "text": "Lorem ipsum dolor sit amet",
+            "pairwise": "true",
+            "statements": [
+                {
+                    "index": 0,
+                    "text": "BHo3",
+                    "speaker": "ciao3",
+                    "speakerjob": "4",
+                    "context": "swag"
+                },
+                {
+                    "index": 1,
+                    "text": "BHO4",
+                    "speaker": "ciao4",
+                    "speakerjob": "1",
+                    "context": "swag"
+                }
+            ]
+        }
+    ],
+    "dimensions": [
+        {
+            "index": 0,
+            "name": "dimensionpairwise_1",
+            "name_pretty": "dimension interna al pairwise 1",
+            "description": "Lorem ipsum dolor sit amet",
+            "justification": null,
+            "url": null,
+            "pairwise": true,
+            "scale": {
+                "type": "interval",
+                "min": 1,
+                "max": 10,
+                "step": 1
+            },
+            "style": {
+                "type": "list",
+                "position": "middle",
+                "orientation": "vertical",
+                "separator": null
+            },
+            "gold": null
+        },
+        {
+            "index": 1,
+            "name": "sample-dimension",
+            "name_pretty": "dimension interna al pairwise 2",
+            "description": "Lorem ipsum dolor sit amet",
+            "justification": null,
+            "url": null,
+            "pairwise": true,
+            "scale": {
+                "type": "categorical",
+                "mapping": [
+                    {
+                        "index": 0,
+                        "label": "False",
+                        "description": "",
+                        "value": "1"
+                    },
+                    {
+                        "index": 1,
+                        "label": "True",
+                        "description": "",
+                        "value": "0"
+                    }
+                ]
+            },
+            "style": {
+                "type": "list",
+                "position": "middle",
+                "orientation": "vertical",
+                "separator": null
+            },
+            "gold": null
+        },
+        {
+            "index": 2,
+            "name": "dimensionpairwise_3",
+            "name_pretty": "dimension esterna al pairwise",
+            "description": "Lorem ipsum dolor sit amet",
+            "justification": null,
+            "url": null,
+            "pairwise": null,
+            "scale": {
+                "type": "interval",
+                "min": 1,
+                "max": 10,
+                "step": 1
+            },
+            "style": {
+                "type": "list",
+                "position": "middle",
+                "orientation": "vertical",
+                "separator": null
+            },
+            "gold": null
+        }
+    ],
+    "worker": {
+        "identifier": "topolino",
+        "folder": "task-Pairwise/Batch-1/Data/topolino/",
+        "cloudflareProperties": {},
+        "navigatorProperties": {
+            "productSub": "20030107",
+            "vendor": "Google Inc.",
+            "plugins": {
+                "0": {
+                    "0": {}
+                },
+                "1": {
+                    "0": {}
+                },
+                "2": {
+                    "0": {}
+                },
+                "3": {
+                    "0": {}
+                }
+            },
+            "mimeTypes": {
+                "0": {},
+                "1": {}
+            },
+            "appCodeName": "Mozilla",
+            "appName": "Netscape",
+            "appVersion": "5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36",
+            "platform": "Win32",
+            "product": "Gecko",
+            "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36",
+            "language": "en-US",
+            "languages": [
+                "en-US",
+                "en"
+            ]
+        },
+        "ngxDeviceDetectorProperties": {
+            "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36",
+            "os": "Windows",
+            "browser": "Chrome",
+            "device": "Unknown",
+            "os_version": "windows-10",
+            "browser_version": "92.0.4515.159",
+            "deviceType": "desktop",
+            "orientation": "landscape"
+        }
+    },
+    "info": {
+        "action": "Finish",
+        "try": 1,
+        "sequence": 5,
+        "element": "all"
+    },
+    "questionnaires_answers": [
+        {
+            "age": "4"
+        }
+    ],
+    "documents_answers": [
+        {
+            "pairwise_value_selected": "0",
+            "dimensionpairwise_1_value": 4,
+            "sample-dimension_value": "1",
+            "dimensionpairwise_3_value": 6
+        },
+        {
+            "pairwise_value_selected": "1",
+            "dimensionpairwise_1_value": 5,
+            "sample-dimension_value": "0",
+            "dimensionpairwise_3_value": 6
+        }
+    ],
+    "notes": [],
+    "dimensions_selected": [
+        {
+            "data": [
+                {
+                    "dimension": 0,
+                    "index": 0,
+                    "timestamp": 1630058127.435,
+                    "value": "0"
+                },
+                {
+                    "dimension": 0,
+                    "index": 1,
+                    "timestamp": 1630058128.551,
+                    "value": 4
+                },
+                {
+                    "dimension": 1,
+                    "index": 2,
+                    "timestamp": 1630058129.859,
+                    "value": "1"
+                }
+            ],
+            "amount": 3
+        },
+        {
+            "data": [
+                {
+                    "dimension": 1,
+                    "index": 0,
+                    "timestamp": 1630058135.541,
+                    "value": "1"
+                },
+                {
+                    "dimension": 0,
+                    "index": 1,
+                    "timestamp": 1630058136.61,
+                    "value": 4
+                },
+                {
+                    "dimension": 1,
+                    "index": 2,
+                    "timestamp": 1630058137.124,
+                    "value": "0"
+                },
+                {
+                    "dimension": 1,
+                    "index": 3,
+                    "timestamp": 1630058137.888,
+                    "value": "1"
+                },
+                {
+                    "dimension": 1,
+                    "index": 4,
+                    "timestamp": 1630058142.711,
+                    "value": "0"
+                },
+                {
+                    "dimension": 0,
+                    "index": 5,
+                    "timestamp": 1630058143.315,
+                    "value": 5
+                }
+            ],
+            "amount": 6
+        }
+    ],
+    "timestamps_start": [
+        [
+            1630058125
+        ],
+        [
+            1630058126.352,
+            1630058139.884
+        ],
+        [
+            1630058134.648,
+            1630058141.47
+        ]
+    ],
+    "timestamps_end": [
+        [
+            1630058126.352
+        ],
+        [
+            1630058134.648,
+            1630058141.47
+        ],
+        [
+            1630058139.884,
+            1630058144.531
+        ]
+    ],
+    "timestamps_elapsed": [
+        1.3519999980926514,
+        9.881999969482422,
+        8.29699993133545
+    ],
+    "countdowns_times": [],
+    "countdowns_expired": [
+        false,
+        false
+    ],
+    "accesses": [
+        1,
+        2,
+        2
+    ],
+    "queries": [
+        {
+            "data": [],
+            "amount": 0
+        },
+        {
+            "data": [],
+            "amount": 0
+        }
+    ],
+    "responses_retrieved": [
+        {
+            "data": [],
+            "amount": 0
+        },
+        {
+            "data": [],
+            "amount": 0
+        }
+    ],
+    "responses_selected": [
+        {
+            "data": [],
+            "amount": 0
+        },
+        {
+            "data": [],
+            "amount": 0
+        }
+    ]
+}
