@@ -629,21 +629,19 @@ export class SkeletonComponent implements OnInit {
                 if (dimension.url) controlsConfig[`${dimension.name}_url`] = new FormControl('', [Validators.required, this.validateSearchEngineUrl.bind(this)]);
               }
             }else if (dimension.scale) {
-              if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.required]);
-              if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value2`] = new FormControl('', [Validators.required]);
-              if (dimension.scale.type == "interval")  controlsConfig[`${dimension.name}_value`] = new FormControl((Math.round(((<ScaleInterval>dimension.scale).min + (<ScaleInterval>dimension.scale).max) / 2)), [Validators.required]);
-              if (dimension.scale.type == "interval")  controlsConfig[`${dimension.name}_value2`] = new FormControl((Math.round(((<ScaleInterval>dimension.scale).min + (<ScaleInterval>dimension.scale).max) / 2)), [Validators.required]);
-              if (dimension.scale.type == "magnitude_estimation") {
-                if ((<ScaleMagnitude>dimension.scale).lower_bound) {
-                  controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min), Validators.required]);
-                  controlsConfig[`${dimension.name}_value2`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min), Validators.required]);
-                } else {
-                  controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min + 1), Validators.required]);
-                  controlsConfig[`${dimension.name}_value2`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min + 1), Validators.required]);
+              for(let i=0; i<this.documents[index].statements.length;i++)
+              {
+                if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value_${i}`] = new FormControl('', [Validators.required]);
+                if (dimension.scale.type == "interval")  controlsConfig[`${dimension.name}_value_${i}`] = new FormControl((Math.round(((<ScaleInterval>dimension.scale).min + (<ScaleInterval>dimension.scale).max) / 2)), [Validators.required]);
+                if (dimension.scale.type == "magnitude_estimation") {
+                  if ((<ScaleMagnitude>dimension.scale).lower_bound) {
+                    controlsConfig[`${dimension.name}_value_${i}`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min), Validators.required]);
+                  } else {
+                    controlsConfig[`${dimension.name}_value_${i}`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min + 1), Validators.required]);
+                  }
                 }
+                if (dimension.justification) controlsConfig[`${dimension.name}_justification_${i}`] = new FormControl('', [Validators.required, this.validateJustification.bind(this)])
               }
-              if (dimension.justification) controlsConfig[`${dimension.name}_justification`] = new FormControl('', [Validators.required, this.validateJustification.bind(this)])
-              if (dimension.justification) controlsConfig[`${dimension.name}_justification2`] = new FormControl('', [Validators.required, this.validateJustification.bind(this)])
               if (dimension.url) controlsConfig[`${dimension.name}_url`] = new FormControl('', [Validators.required, this.validateSearchEngineUrl.bind(this)]);
             }  
           }

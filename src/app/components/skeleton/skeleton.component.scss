@@ -787,6 +787,7 @@ mat-step form mat-card-content, mat-step form mat-card-actions {
 .divsplit{
   display: table;
   border-spacing: 50px;
+  width: 100%;
 }
 .statementsplit{
   display: table-cell;
@@ -838,6 +839,12 @@ mat-step form mat-card-content, mat-step form mat-card-actions {
 }
 .dimension-split-inside{
   display: table-cell;
+}
+
+
+
+.dimension-name-center{
+  text-align: center;
 }
 
 

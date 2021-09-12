@@ -451,12 +451,9 @@
                 <div [innerHTML]="instruction.text"></div>
               </div>
             </div>
-          <!-- Pairwise element-->
+          <!-- Pairwise element checking-->
               <ng-template #pairwiseElementSel>
                 <ng-container *ngIf="document.pairwise_selection=='true'">
-                   dentro selezione
-                {{document.pairwise_selection}}
-                {{document.pairwise_split}}
                   <div>
                   <h2 class="titlepairwise">Please select one statement(clicking on it) </h2>
                           <mat-radio-group formControlName="pairwise_value_selected" class="radiogroupairwise">
@@ -489,7 +486,7 @@
                 </ng-container>
                
               </ng-template>
-
+              <!-- Pairwise element splited-->
               <ng-template #pairwiseElementSplit>
                  <ng-container *ngIf="document.pairwise_split">
                       <div class="divsplit" >
@@ -527,31 +524,19 @@
                 <ng-template #dimensionPairwise>
                 <!-- Dimension name markup -->
                 <div [ngClass]="document.pairwise_split && dimension.pairwise ? 'dimension-content-split' : 'dimension-name'">
-                  <div [ngClass]="{'dimension-split-inside': document.pairwise_split && dimension.pairwise}">
+                  <div [ngClass]="{'dimension-name-center': document.pairwise_split && dimension.pairwise}">
                   <mat-divider [inset]="true"></mat-divider>
                   <h2 *ngIf="!dimension.name_pretty">{{capitalize(dimension.name)}}</h2>
                   <h2 *ngIf="dimension.name_pretty">{{capitalize(dimension.name_pretty)}}</h2>
                   <mat-divider [inset]="true"></mat-divider>
                   </div>
-                  <ng-container *ngIf="document.pairwise_split && dimension.pairwise">
-                    <div [ngClass]="{'dimension-split-inside': document.pairwise_split && dimension.pairwise}">
-                    <mat-divider [inset]="true"></mat-divider>
-                    <h2 *ngIf="!dimension.name_pretty">{{capitalize(dimension.name)}}</h2>
-                    <h2 *ngIf="dimension.name_pretty">{{capitalize(dimension.name_pretty)}}</h2>
-                    <mat-divider [inset]="true"></mat-divider>
-                    </div>
-                  </ng-container>
                 </div>
 
                 <!-- Dimension description markup -->
-                <div *ngIf="dimension.description"  [ngClass]="document.pairwise_split && dimension.pairwise ? 'dimension-content-split' : 'dimension-container dimension-description'">
-                  <div class="dimension-content" [ngClass]=" document.pairwise_split && dimension.pairwise? 'dimension-split-inside':'dimension-content'" >
+                <div *ngIf="dimension.description" [ngClass]="document.pairwise_split && dimension.pairwise ? 'dimension-name-center' : 'dimension-container dimension-description'">
+                  <div class="dimension-content" ngClass=" 'dimension-split-inside' 'dimension-content'" >
                     <p>{{dimension.description}}</p>
                   </div>
-                  <div class="dimension-content" *ngIf="document.pairwise_split && dimension.pairwise" [ngClass]="{'dimension-split-inside': document.pairwise_split && dimension.pairwise}">
-                    <p>{{dimension.description}}</p>
-                  </div>
-                  
                 </div>
 
 
@@ -595,28 +580,32 @@
 
                       <!-- Categorical scale markup -->
                       <ng-container *ngIf="dimension.scale.type=='categorical'">
-                        <div [ngClass]="{'dimension-split-inside': document.pairwise_split && dimension.pairwise}"> 
-                        <mat-radio-group aria-labelledby="radio-button-label" class="radio-button-group" formControlName="{{(dimension.name).concat('_value')}}">
-                          <mat-radio-button *ngFor="let mapping of dimension.scale.mapping let k=index"
-                                            class="radio-button" value="{{mapping.value}}"
-                                            (change)="storeDimensionValue($event, i, dimension.index)"
-                                            [disabled]="this.countdownsExpired[i]">
-                            <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0">
-                              ({{mapping.description}})</span>
-                          </mat-radio-button>
-                        </mat-radio-group>
+                        <div [ngClass]="{'dimension-split-inside': document.pairwise_split && dimension.pairwise}" *ngIf="!dimension.pairwise"> 
+                          <mat-radio-group aria-labelledby="radio-button-label" class="radio-button-group" formControlName="{{(dimension.name).concat('_value')}}">
+                            <mat-radio-button *ngFor="let mapping of dimension.scale.mapping let k=index"
+                                              class="radio-button" value="{{mapping.value}}"
+                                              (change)="storeDimensionValue($event, i, dimension.index)"
+                                              [disabled]="this.countdownsExpired[i]">
+                              <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0">
+                                ({{mapping.description}})</span>
+                            </mat-radio-button>
+                          </mat-radio-group>
                         </div>
-                         <!-- Categorical scale markup pairwise split -->
-                        <div *ngIf="document.pairwise_split && dimension.pairwise" [ngClass]="{'dimension-split-inside': dimension.pairwise}"> 
-                          <mat-radio-group aria-labelledby="radio-button-label" class="radio-button-group" formControlName="{{(dimension.name).concat('_value2')}}">
-                          <mat-radio-button *ngFor="let mapping of dimension.scale.mapping let k=index"
+                      </ng-container>
+                      <!-- Categorical scale markup pairwise split -->
+                      <ng-container *ngIf="dimension.scale.type=='categorical' && document.pairwise_split && dimension.pairwise">
+                        <div [ngClass]="{'dimension-split-inside': dimension.pairwise}" *ngFor="let test of document.statements; let j=index"> 
+                          <mat-radio-group aria-labelledby="radio-button-label" class="radio-button-group" formControlName="{{(dimension.name).concat('_value_').concat(j)}}">
+                            <mat-radio-button *ngFor="let mapping of dimension.scale.mapping let k=index"
                                             class="radio-button" value="{{mapping.value}}"
                                             (change)="storeDimensionValue($event, i, dimension.index)"
                                             [disabled]="this.countdownsExpired[i]">
-                            <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0">
-                              ({{mapping.description}})</span>
-                          </mat-radio-button>
-                        </mat-radio-group>
+                            <span>{{mapping.label}}</span>
+                            <span *ngIf="mapping.description.length>0">
+                              ({{mapping.description}})
+                              </span>
+                            </mat-radio-button>
+                          </mat-radio-group>
                         </div>
                       </ng-container>
 
@@ -624,7 +613,7 @@
 
                       <!-- Interval scale markup -->
                      
-                      <ng-container *ngIf="dimension.scale.type=='interval'" >
+                      <ng-container *ngIf="dimension.scale.type=='interval' && !dimension.pairwise " >
                        <div [ngClass]="{'dimension-split-inside': document.pairwise_split && dimension.pairwise}" >
                         <label>Selected value: {{documentsForm[i].controls[(dimension.name).concat('_value')].value}}</label>
                         <mat-slider min="{{dimension.scale.min}}" max="{{dimension.scale.max}}"
@@ -635,19 +624,19 @@
                       </div>            
                       </ng-container>
                       <!-- Interval scale pairwise split markup -->
-                      <ng-container *ngIf="dimension.scale.type=='interval' && document.pairwise_split && dimension.pairwise" >
-                      <div [ngClass]="{'dimension-split-inside': document.pairwise_split && dimension.pairwise}" >
-                        <label>Selected value: {{documentsForm[i].controls[(dimension.name).concat('_value2')].value}}</label>
+                      <ng-container *ngIf="dimension.scale.type=='interval' && document.pairwise_split && dimension.pairwise">
+                      <div [ngClass]="{'dimension-split-inside': document.pairwise_split && dimension.pairwise}" *ngFor="let test of document.statements; let j=index"  >
+                        <label>Selected value: {{documentsForm[i].controls[(dimension.name).concat('_value_').concat(j)].value}}</label>
                         <mat-slider min="{{dimension.scale.min}}" max="{{dimension.scale.max}}"
                                     step="{{dimension.scale.step}}" thumbLabel tickInterval="{{dimension.scale.step}}"
-                                    formControlName="{{(dimension.name).concat('_value2')}}"
+                                    formControlName="{{(dimension.name).concat('_value_').concat(j)}}"
                                   (change)="storeDimensionValue($event, i,dimension.index);"
                                     [disabled]="this.countdownsExpired[i]"></mat-slider>
                       </div>
                       </ng-container>
 
                       <!-- Magnitude scale markup -->
-                      <ng-container *ngIf="dimension.scale.type=='magnitude_estimation'">
+                      <ng-container *ngIf="dimension.scale.type=='magnitude_estimation' &&!dimension.pairwise">
                         <div [ngClass]="{'dimension-split-inside': document.pairwise_split && dimension.pairwise}">
                         <mat-form-field appearance="fill">
                           <mat-label>Value</mat-label>
@@ -670,24 +659,26 @@
                       </ng-container>
                       <!-- Magnitude scale pairwise split markup -->
                       <ng-container *ngIf="dimension.scale.type=='magnitude_estimation' && document.pairwise_split && dimension.pairwise">
+                        <ng-container *ngFor="let test of document.statements; let j=index">
                         <div [ngClass]="{'dimension-split-inside': document.pairwise_split && dimension.pairwise}">
                         <mat-form-field appearance="fill">
                           <mat-label>Value</mat-label>
-                          <input *ngIf="dimension.scale.lower_bound" matInput type="number" placeholder="" formControlName="{{(dimension.name).concat('_value2')}}" min="{{dimension.scale.min}}"
+                          <input *ngIf="dimension.scale.lower_bound" matInput type="number" placeholder="" formControlName="{{(dimension.name).concat('_value_').concat(j)}}" min="{{dimension.scale.min}}"
                                  (change)="storeDimensionValue($event, i, dimension.index)"
                                  [disabled]="this.countdownsExpired[i]" class="magnitude_estimation">
-                          <input *ngIf="!dimension.scale.lower_bound" matInput type="number" placeholder="" formControlName="{{(dimension.name).concat('_value2')}}" min="{{dimension.scale.min+1}}"
+                          <input *ngIf="!dimension.scale.lower_bound" matInput type="number" placeholder="" formControlName="{{(dimension.name).concat('_value_').concat(j)}}" min="{{dimension.scale.min+1}}"
                                  (change)="storeDimensionValue($event, i, dimension.index)" class="magnitude_estimation"
                                  [disabled]="this.countdownsExpired[i]">
-                          <mat-error *ngIf="checkFormControl(documentsForm[i], (dimension.name).concat('_value2'), 'required')">
+                          <mat-error *ngIf="checkFormControl(documentsForm[i], (dimension.name).concat('_value_').concat(j), 'required')">
                             This field is required
                           </mat-error>
-                          <mat-error *ngIf="checkFormControl(documentsForm[i], (dimension.name).concat('_value2'), 'min')">
+                          <mat-error *ngIf="checkFormControl(documentsForm[i], (dimension.name).concat('_value_').concat(j), 'min')">
                             <span *ngIf="dimension.scale.lower_bound">Min value allowed: {{dimension.scale.min}}</span>
                             <span *ngIf="!dimension.scale.lower_bound">Min value allowed: {{dimension.scale.min + 1}}</span>
                           </mat-error>
                         </mat-form-field>
                         </div>
+                        </ng-container>
                       </ng-container>
 
 
@@ -715,7 +706,7 @@
                   <div *ngIf="!dimension.url && dimension.scale" class="dimension-counter">b.</div>
                   <div *ngIf="dimension.url && !dimension.scale" class="dimension-counter">b.</div>
                   <div *ngIf="!dimension.url && !dimension.scale" class="dimension-counter">a.</div> -->
-                  <div *ngIf="dimension.justification" [ngClass]="document.pairwise_split && dimension.pairwise ? 'dimension-split-inside' : 'dimension-content justification'">
+                  <div *ngIf="dimension.justification  && !dimension.pairwise" [ngClass]="document.pairwise_split && dimension.pairwise ? 'dimension-split-inside' : 'dimension-content justification'">
                    Justification:
                     <div class="dimension-text-field">
                       <mat-form-field appearance="fill">
@@ -737,27 +728,29 @@
                     </div>
                   </div>
                   <!-- Dimension justification field markup -->
-                  <div *ngIf="dimension.justification && document.pairwise_split && dimension.pairwise" [ngClass]="document.pairwise_split && dimension.pairwise ? 'dimension-split-inside' : 'dimension-content justification'">
+                  <ng-container *ngIf="dimension.justification && document.pairwise_split && dimension.pairwise">
+                  <div *ngFor="let test of document.statements; let j=index" [ngClass]="document.pairwise_split && dimension.pairwise ? 'dimension-split-inside' : 'dimension-content justification'">
                      Justification:
                     <div class="dimension-text-field">
                       <mat-form-field appearance="fill">
                         <mat-label>{{dimension.justification.text}}</mat-label>
-                        <textarea matInput formControlName="{{dimension.name}}_justification2" rows="3"></textarea>
+                        <textarea matInput formControlName="{{dimension.name}}_justification_{{j}}" rows="3"></textarea>
                         <mat-error
-                          *ngIf="checkFormControl(documentsForm[i],(dimension.name).concat('_justification2'), 'required')">
+                          *ngIf="checkFormControl(documentsForm[i],(dimension.name).concat('_justification_').concat(j), 'required')">
                           This field is required
                         </mat-error>
                         <mat-error
-                          *ngIf="checkFormControl(documentsForm[i],(dimension.name).concat('_justification2'), 'longer')">
+                          *ngIf="checkFormControl(documentsForm[i],(dimension.name).concat('_justification_').concat(j), 'longer')">
                           This justification must have at least {{dimension.justification.minWords}} words.
                         </mat-error>
                         <mat-error
-                          *ngIf="checkFormControl(documentsForm[i],(dimension.name).concat('_justification2'), 'invalid')">
+                          *ngIf="checkFormControl(documentsForm[i],(dimension.name).concat('_justification_').concat(j), 'invalid')">
                           You cannot use the selected search engine url as part of the justification.
                         </mat-error>
                       </mat-form-field>
                     </div>
                   </div>
+                  </ng-container>
                 </div>
                </ng-template> 
               </div>

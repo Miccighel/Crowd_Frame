@@ -43,8 +43,27 @@
                         "speaker": "ciao4",
                         "speakerjob": "1",
                         "context":"swag"
+                    },
+                    {
+                        "text": "BHo3",
+                        "speaker": "ciao3",
+                        "speakerjob": "4",
+                        "context":"swag"
                     }
-                    
+                ]
+            },
+            {
+                "id": "identifier_1",
+                "text": "Lorem ipsum dolor sit amet",
+                "pairwise_selection":"false",
+                "pairwise_split":true,
+                "statements":[
+                    {
+                        "text": "BHo3",
+                        "speaker": "ciao3",
+                        "speakerjob": "4",
+                        "context":"swag"
+                    }
                 ]
             }
         ]
