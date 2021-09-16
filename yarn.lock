@@ -2479,9 +2479,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"aws-sdk@npm:^2.984.0":
-  version: 2.984.0
-  resolution: "aws-sdk@npm:2.984.0"
+"aws-sdk@npm:^2.989.0":
+  version: 2.989.0
+  resolution: "aws-sdk@npm:2.989.0"
   dependencies:
     buffer: 4.9.2
     events: 1.1.1
@@ -2492,7 +2492,7 @@ __metadata:
     url: 0.10.3
     uuid: 3.3.2
     xml2js: 0.4.19
-  checksum: a8ced7272c2a1c811c963e81998e7e448bf72986466bd6b046374aeaca4b3f16b15d1f33d3451ad422e7bf52cc61fe8797b8ae9b8ee7ddf02761b7a583fc7d5d
+  checksum: 5c4ce9cb0623764167f8b8e1b4750fe4f3a83ffb6fa699bbaab73a0d40d9553bb54119bf449a4c1615823d83ad4064171ea03d1c354094f967e90b01d62e3e70
   languageName: node
   linkType: hard
 
@@ -3378,7 +3378,7 @@ __metadata:
     "@funktechno/texthighlighter": ^2.1.2
     "@kolkov/angular-editor": ^1.2.0
     "@types/node": ~15.14.9
-    aws-sdk: ^2.984.0
+    aws-sdk: ^2.989.0
     crypto-es: ^1.2.7
     ngx-color-picker: ^11.0.0
     ngx-countdown: ^12.0.1
