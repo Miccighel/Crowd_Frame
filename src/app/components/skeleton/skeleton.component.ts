@@ -523,7 +523,7 @@ export class SkeletonComponent implements OnInit {
                     this.hit = currentHit;
                     this.tokenOutput = currentHit.token_output;
                     this.unitId = currentHit.unit_id
-                    if(this.logger)
+                    if (this.logger)
                         this.actionLogger.unitId = this.unitId
                 }
             }
@@ -1438,128 +1438,131 @@ export class SkeletonComponent implements OnInit {
         return false
     }
 
+    //
+    //   public filterNotes(notes: Note[]) {
+    //       var result: Note[] = []
+    //       for (let note of notes) {
+    //           if (note instanceof NoteLaws) {
+    //               if (note.year != 0 && note.number != 0 && note.type == "reference" && !note.withoutDetails && !note.deleted) {
+    //                   result.push(note)
+    //               }
+    //           }
+    //       }
+    //       return result
+    //   }
+    //   return false
+    // }
+
     public filterNotes(notes: Note[]) {
-        var result: Note[] = []
+        var with_duplicates: Note[] = []
         for (let note of notes) {
             if (note instanceof NoteLaws) {
                 if (note.year != 0 && note.number != 0 && note.type == "reference" && !note.withoutDetails && !note.deleted) {
-                    result.push(note)
+                    with_duplicates.push(note)
+                }
+                for (let innerNote of note.innerAnnotations) {
+                    if (innerNote instanceof NoteLaws) {
+                        if (!innerNote.deleted && !innerNote.withoutDetails && innerNote.year != 0 && innerNote.number != 0) {
+                            with_duplicates.push(innerNote)
+                        }
+                    }
+                }
+            }
+            var without_duplicates: Note[] = []
+            without_duplicates.push(with_duplicates[0])
+            for (let noteToCheck of with_duplicates) {
+                if (noteToCheck instanceof NoteLaws) {
+                    var duplicate = false
+                    for (let noteWD of without_duplicates) {
+                        if (noteWD instanceof NoteLaws) {
+                            if (noteToCheck.year == noteWD.year && noteToCheck.number == noteWD.number) {
+                                duplicate = true
+                            }
+                        }
+                    }
+                    if (!duplicate) {
+                        without_duplicates.push(noteToCheck)
+                    }
+                }
+            }
+            if (without_duplicates[0]) {
+                return without_duplicates
+            } else {
+                var empty: Note[] = []
+                return empty
+            }
+        }
+    }
+
+    public referenceRadioChange($event: MatRadioChange, documentIndex: number, noteIndex: number) {
+        let currentNote = this.notes[documentIndex][noteIndex]
+        if (currentNote instanceof NoteLaws) {
+            if ($event.value == "null") {
+                this.resetDetails(currentNote)
+            } else {
+                let fields = $event.value.split("-")
+                currentNote.year = Number(fields[0])
+                currentNote.number = Number(fields[1])
+            }
+        }
+    }
+
+    public innerReferenceRadioChange($event: MatRadioChange, documentIndex: number, noteIndex: number, innerNoteIndex: number) {
+        let currentNote = this.notes[documentIndex][noteIndex]
+        if (currentNote instanceof NoteLaws) {
+            currentNote = currentNote.innerAnnotations[innerNoteIndex]
+            if (currentNote instanceof NoteLaws) {
+                if ($event.value == "null") {
+                    this.resetDetails(currentNote)
+                } else {
+                    let fields = $event.value.split("-")
+                    currentNote.year = Number(fields[0])
+                    currentNote.number = Number(fields[1])
                 }
             }
         }
-        return result
     }
-    return false
-  }
 
-  public filterNotes(notes: Note[]) {
-    var with_duplicates: Note[] = []
-    for (let note of notes) {
-      if (note instanceof NoteLaws) {
-        if (note.year != 0 && note.number != 0 && note.type == "reference" && !note.withoutDetails && !note.deleted) {
-          with_duplicates.push(note)
-        }
-        for (let innerNote of note.innerAnnotations) {
-          if (innerNote instanceof NoteLaws) {
-            if(!innerNote.deleted && !innerNote.withoutDetails && innerNote.year != 0 && innerNote.number != 0) {
-              with_duplicates.push(innerNote)
+    public detailsCheckboxChange($event: MatCheckboxChange, documentIndex: number, noteIndex: number) {
+        let currentNote = this.notes[documentIndex][noteIndex]
+        if (currentNote instanceof NoteLaws) {
+            if ($event.checked) {
+                currentNote.withoutDetails = true
+                this.resetDetails(currentNote)
+                this.checkEnabledNotes(documentIndex)
+            } else {
+                currentNote.withoutDetails = false
+                this.checkEnabledNotes(documentIndex)
             }
-          }
         }
     }
-    var without_duplicates: Note[] = []
-    without_duplicates.push(with_duplicates[0])
-    for (let noteToCheck of with_duplicates) {
-      if (noteToCheck instanceof NoteLaws) {
-        var duplicate = false
-        for (let noteWD of without_duplicates) {
-          if (noteWD instanceof NoteLaws) {
-            if (noteToCheck.year == noteWD.year && noteToCheck.number == noteWD.number) {
-              duplicate = true
-            }
-          }
-        }
-        if (!duplicate) {
-          without_duplicates.push(noteToCheck)
-        }
-      }
-    }
-    if (without_duplicates[0]) {
-      return without_duplicates
-    } else {
-      var empty: Note[] = []
-      return empty
-    }
-  }
 
-  public referenceRadioChange($event: MatRadioChange, documentIndex: number, noteIndex: number) {
-    let currentNote = this.notes[documentIndex][noteIndex]
-    if (currentNote instanceof NoteLaws) {
-      if ($event.value == "null") {
-        this.resetDetails(currentNote)
-      } else {
-        let fields = $event.value.split("-")
-        currentNote.year = Number(fields[0])
-        currentNote.number = Number(fields[1])
-      }
-    }
-  }
+    // public innerDetailsCheckboxChange($event: MatCheckboxChange, documentIndex: number, noteIndex: number, innerNoteIndex: number) {
+    //   let mainNote = this.notes[documentIndex][noteIndex]
+    //   if (mainNote instanceof NoteLaws) {
+    //     let currentNote = mainNote.innerAnnotations[innerNoteIndex]
+    //     if ($event.checked) {
+    //       currentNote.withoutDetails = true
+    //       this.resetDetails(currentNote)
+    //       this.checkEnabledNotes(documentIndex)
+    //     } else {
+    //       currentNote.withoutDetails = false
+    //       this.checkEnabledNotes(documentIndex)
+    //     }
+    //   }
+    // }
 
-  public innerReferenceRadioChange($event: MatRadioChange, documentIndex: number, noteIndex: number, innerNoteIndex: number) {
-    let currentNote = this.notes[documentIndex][noteIndex]
-    if (currentNote instanceof NoteLaws) {
-      currentNote = currentNote.innerAnnotations[innerNoteIndex]
-      if (currentNote instanceof NoteLaws) {
-        if ($event.value == "null") {
-          this.resetDetails(currentNote)
-        } else {
-          let fields = $event.value.split("-")
-          currentNote.year = Number(fields[0])
-          currentNote.number = Number(fields[1])
-        }
-      }
-    }
-  }
-
-  public detailsCheckboxChange($event: MatCheckboxChange, documentIndex: number, noteIndex: number) {
-    let currentNote = this.notes[documentIndex][noteIndex]
-    if (currentNote instanceof NoteLaws) {
-      if ($event.checked) {
-        currentNote.withoutDetails = true
-        this.resetDetails(currentNote)
-        this.checkEnabledNotes(documentIndex)
-      } else {
-        currentNote.withoutDetails = false
-        this.checkEnabledNotes(documentIndex)
-      }
-    }
-  }
-
-  public innerDetailsCheckboxChange($event: MatCheckboxChange, documentIndex: number, noteIndex: number, innerNoteIndex: number) {
-    let mainNote = this.notes[documentIndex][noteIndex]
-    if (mainNote instanceof NoteLaws) {
-      let currentNote = mainNote.innerAnnotations[innerNoteIndex]
-      if ($event.checked) {
-        currentNote.withoutDetails = true
-        this.resetDetails(currentNote)
-        this.checkEnabledNotes(documentIndex)
-      } else {
-        currentNote.withoutDetails = false
-        this.checkEnabledNotes(documentIndex)
-      }
-    }
-  }
-
-  public checkEnabledNotes(documentIndex: number) {
-    this.notesDone[documentIndex] = true
-    let currentNotes = this.notes[documentIndex]
-    var notesNotDeleted: Note[] = []
-    var booleans: Boolean[] = [true]
-    for (let note of currentNotes) {
-      if (!note.deleted) {
-        notesNotDeleted.push(note)
-      }
-    }
+    // public checkEnabledNotes(documentIndex: number) {
+    //     this.notesDone[documentIndex] = true
+    //     let currentNotes = this.notes[documentIndex]
+    //     var notesNotDeleted: Note[] = []
+    //     var booleans: Boolean[] = [true]
+    //     for (let note of currentNotes) {
+    //         if (!note.deleted) {
+    //             notesNotDeleted.push(note)
+    //         }
+    //     }
+    // }
 
     public innerDetailsCheckboxChange($event: MatCheckboxChange, documentIndex: number, noteIndex: number, innerNoteIndex: number) {
         let mainNote = this.notes[documentIndex][noteIndex]
@@ -1612,122 +1615,125 @@ export class SkeletonComponent implements OnInit {
         }
     }
 
-  public resetRadioButton(documentIndex: number, noteIndex: number, innerNoteIndex?: number) {
-    var currentNote: NoteStandard
-    if (!innerNoteIndex) {
-      currentNote = this.notes[documentIndex][noteIndex]
-    } else {
-      currentNote = this.notes[documentIndex][noteIndex]
-      if (currentNote instanceof NoteLaws) {
-        currentNote = currentNote.innerAnnotations[innerNoteIndex]
-      }
-    }
-    if (currentNote instanceof NoteLaws) {
-      for (let note of this.notes[documentIndex]) {
-        if (note instanceof NoteLaws) {
-          if (!note.deleted && note.withoutDetails) {
-            if (note.year == currentNote.year && note.number == currentNote.number) {
-              this.resetDetails(note)
+
+    public resetRadioButton(documentIndex: number, noteIndex: number, innerNoteIndex?: number) {
+        var currentNote: NoteStandard
+        if (!innerNoteIndex) {
+            currentNote = this.notes[documentIndex][noteIndex]
+        } else {
+            currentNote = this.notes[documentIndex][noteIndex]
+            if (currentNote instanceof NoteLaws) {
+                currentNote = currentNote.innerAnnotations[innerNoteIndex]
             }
-          }
-          for (let innerNote of note.innerAnnotations) {
-            if (innerNote instanceof NoteLaws) {
-              if (!innerNote.deleted && innerNote.withoutDetails) {
-                if (innerNote.year == currentNote.year && innerNote.number == currentNote.number) {
-                  this.resetDetails(innerNote)
+        }
+        if (currentNote instanceof NoteLaws) {
+            for (let note of this.notes[documentIndex]) {
+                if (note instanceof NoteLaws) {
+                    if (!note.deleted && note.withoutDetails) {
+                        if (note.year == currentNote.year && note.number == currentNote.number) {
+                            this.resetDetails(note)
+                        }
+                    }
+                    for (let innerNote of note.innerAnnotations) {
+                        if (innerNote instanceof NoteLaws) {
+                            if (!innerNote.deleted && innerNote.withoutDetails) {
+                                if (innerNote.year == currentNote.year && innerNote.number == currentNote.number) {
+                                    this.resetDetails(innerNote)
+                                }
+                            }
+                        }
+                    }
                 }
-              }
             }
-          }
-        } 
-      }
-    }
-  }
-
-  public performAnnotationLaws(documentIndex: number, noteIndex: number) {
-    let currentNote = this.notes[documentIndex][noteIndex]
-    if (currentNote instanceof NoteLaws) {
-      this.resetRadioButton(documentIndex, noteIndex)
-      let year = (<HTMLInputElement>document.getElementById("year-" + noteIndex + "." + documentIndex)).value
-      let number = (<HTMLInputElement>document.getElementById("number-" + noteIndex + "." + documentIndex)).value
-      currentNote.year = Number(year)
-      currentNote.number = Number(number)
-      currentNote.updateNote()
-      this.checkEnabledNotes(documentIndex)
-    }
-  }
-
-  public performInnerAnnotationLaws(documentIndex: number, noteIndex: number, innerNoteIndex: number) {
-    let mainNote = this.notes[documentIndex][noteIndex]
-    if (mainNote instanceof NoteLaws) {
-      this.resetRadioButton(documentIndex, noteIndex, innerNoteIndex)
-      let currentNote = mainNote.innerAnnotations[innerNoteIndex]
-      let year = (<HTMLInputElement>document.getElementById("year-" + innerNoteIndex + "-" + noteIndex + "." + documentIndex)).value
-      let number = (<HTMLInputElement>document.getElementById("number-" + innerNoteIndex + "-" + noteIndex + "." + documentIndex)).value
-      currentNote.year = Number(year)
-      currentNote.number = Number(number)
-      currentNote.updateNote()
-      this.checkEnabledNotes(documentIndex)
-    }
-  }
-
-  public changeSpanColor(documentIndex: number, noteIndex: number) {
-    let note = this.notes[documentIndex][noteIndex]
-    let note_timestamp = note.timestamp_created
-    document.querySelector(`[data-timestamp='${note_timestamp}']`).setAttribute("style", `background-color: ${note.color};`)
-  }
-
-  public resetDetails(note: NoteLaws) {
-    note.year = 0
-    note.number = 0
-  }
-
-  public radioChange($event: MatRadioChange, documentIndex: number, noteIndex: number) {
-    let currentNote = this.notes[documentIndex][noteIndex]
-    if (currentNote instanceof NoteLaws) {
-      switch ($event.value) {
-        case "insertion": {
-          this.resetDetails(currentNote)
-          currentNote.type = "insertion"
-          currentNote.withoutDetails = true
-          currentNote.containsReferences = false
-          currentNote.innerAnnotations = []
-          currentNote.color = this.colors[1]
-          this.changeSpanColor(documentIndex, noteIndex)
-          this.checkEnabledNotes(documentIndex)
-          break
         }
-        case "substitution": {
-          this.resetDetails(currentNote)
-          currentNote.type = "substitution"
-          currentNote.withoutDetails = true
-          currentNote.containsReferences = false
-          currentNote.innerAnnotations = []
-          currentNote.color = this.colors[2]
-          this.changeSpanColor(documentIndex, noteIndex)
-          this.checkEnabledNotes(documentIndex)
-          break
+    }
+
+    public performAnnotationLaws(documentIndex: number, noteIndex: number) {
+        let currentNote = this.notes[documentIndex][noteIndex]
+        if (currentNote instanceof NoteLaws) {
+            this.resetRadioButton(documentIndex, noteIndex)
+            let year = (<HTMLInputElement>document.getElementById("year-" + noteIndex + "." + documentIndex)).value
+            let number = (<HTMLInputElement>document.getElementById("number-" + noteIndex + "." + documentIndex)).value
+            currentNote.year = Number(year)
+            currentNote.number = Number(number)
+            currentNote.updateNote()
+            this.checkEnabledNotes(documentIndex)
         }
-        case "repeal": {
-          this.resetDetails(currentNote)
-          currentNote.type = "repeal"
-          currentNote.withoutDetails = true
-          currentNote.containsReferences = false
-          currentNote.innerAnnotations = []
-          currentNote.color = this.colors[0]
-          this.changeSpanColor(documentIndex, noteIndex)
-          this.checkEnabledNotes(documentIndex)
-          break
+    }
+
+    public performInnerAnnotationLaws(documentIndex: number, noteIndex: number, innerNoteIndex: number) {
+        let mainNote = this.notes[documentIndex][noteIndex]
+        if (mainNote instanceof NoteLaws) {
+            this.resetRadioButton(documentIndex, noteIndex, innerNoteIndex)
+            let currentNote = mainNote.innerAnnotations[innerNoteIndex]
+            let year = (<HTMLInputElement>document.getElementById("year-" + innerNoteIndex + "-" + noteIndex + "." + documentIndex)).value
+            let number = (<HTMLInputElement>document.getElementById("number-" + innerNoteIndex + "-" + noteIndex + "." + documentIndex)).value
+            currentNote.year = Number(year)
+            currentNote.number = Number(number)
+            currentNote.updateNote()
+            this.checkEnabledNotes(documentIndex)
         }
-        case "reference": {
-          this.resetDetails(currentNote)
-          currentNote.type = "reference"
-          currentNote.containsReferences = false
-          currentNote.innerAnnotations = []
-          currentNote.color = this.colors[3]
-          this.changeSpanColor(documentIndex, noteIndex)
-          this.checkEnabledNotes(documentIndex)
-          break
+    }
+
+    public changeSpanColor(documentIndex: number, noteIndex: number) {
+        let note = this.notes[documentIndex][noteIndex]
+        let note_timestamp = note.timestamp_created
+        document.querySelector(`[data-timestamp='${note_timestamp}']`).setAttribute("style", `background-color: ${note.color};`)
+    }
+
+    public resetDetails(note: NoteLaws) {
+        note.year = 0
+        note.number = 0
+    }
+
+    public radioChange($event: MatRadioChange, documentIndex: number, noteIndex: number) {
+        let currentNote = this.notes[documentIndex][noteIndex]
+        if (currentNote instanceof NoteLaws) {
+            switch ($event.value) {
+                case "insertion": {
+                    this.resetDetails(currentNote)
+                    currentNote.type = "insertion"
+                    currentNote.withoutDetails = true
+                    currentNote.containsReferences = false
+                    currentNote.innerAnnotations = []
+                    currentNote.color = this.colors[1]
+                    this.changeSpanColor(documentIndex, noteIndex)
+                    this.checkEnabledNotes(documentIndex)
+                    break
+                }
+                case "substitution": {
+                    this.resetDetails(currentNote)
+                    currentNote.type = "substitution"
+                    currentNote.withoutDetails = true
+                    currentNote.containsReferences = false
+                    currentNote.innerAnnotations = []
+                    currentNote.color = this.colors[2]
+                    this.changeSpanColor(documentIndex, noteIndex)
+                    this.checkEnabledNotes(documentIndex)
+                    break
+                }
+                case "repeal": {
+                    this.resetDetails(currentNote)
+                    currentNote.type = "repeal"
+                    currentNote.withoutDetails = true
+                    currentNote.containsReferences = false
+                    currentNote.innerAnnotations = []
+                    currentNote.color = this.colors[0]
+                    this.changeSpanColor(documentIndex, noteIndex)
+                    this.checkEnabledNotes(documentIndex)
+                    break
+                }
+                case "reference": {
+                    this.resetDetails(currentNote)
+                    currentNote.type = "reference"
+                    currentNote.containsReferences = false
+                    currentNote.innerAnnotations = []
+                    currentNote.color = this.colors[3]
+                    this.changeSpanColor(documentIndex, noteIndex)
+                    this.checkEnabledNotes(documentIndex)
+                    break
+                }
+            }
         }
     }
 
@@ -1766,35 +1772,43 @@ export class SkeletonComponent implements OnInit {
         }
         return undeletedNotes
     }
-    return false
-  }
 
-  public innerReferenceRadioButtonCheck(documentIndex: number, noteIndex: number, innerNoteIndex: number) {
-    var currentNote = this.notes[documentIndex][noteIndex]
-    if (currentNote instanceof NoteLaws) {
-      currentNote = currentNote.innerAnnotations[innerNoteIndex]
-      if (currentNote instanceof NoteLaws) {
-        if (currentNote.year == 0 && currentNote.number == 0) {
-          return true
+    public innerReferenceRadioButtonCheck(documentIndex: number, noteIndex: number, innerNoteIndex: number) {
+        var currentNote = this.notes[documentIndex][noteIndex]
+        if (currentNote instanceof NoteLaws) {
+            currentNote = currentNote.innerAnnotations[innerNoteIndex]
+            if (currentNote instanceof NoteLaws) {
+                if (currentNote.year == 0 && currentNote.number == 0) {
+                    return true
+                }
+            }
         }
-      }
+        return false
     }
-    return false
-  }
 
-  public checkUndeletedNotesPresenceLaws(notes) {
-    let undeletedNotes = false
-    for (let note of notes) {
-      if (note.deleted == false) {
-        undeletedNotes = true
-        break
-      }
+    public checkUndeletedNotesPresenceLaws(notes) {
+        let undeletedNotes = false
+        for (let note of notes) {
+            if (note.deleted == false) {
+                undeletedNotes = true
+                break
+            }
+        }
+        return undeletedNotes
     }
-    return undeletedNotes
-  }
 
-    /* The gold configuration is evaluated using the static method implemented within the GoldChecker class */
-    let goldChecks = GoldChecker.performGoldCheck(goldConfiguration)
+
+    public auxCEN(note) {
+        return false
+    }
+
+    public referenceRadioButtonCheck(i, index) {
+
+    }
+
+    public checkboxChange(event, i, index) {
+
+    }
 
     /* |--------- QUALITY CHECKS ---------| */
 
