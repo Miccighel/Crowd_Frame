@@ -534,7 +534,7 @@
                                                         <mat-radio-button *ngFor="let mapping of dimension.scale.mapping let k=index"
                                                                           class="radio-button" value="{{mapping.value}}"
                                                                           (change)="storeDimensionValue($event, i, dimension.index)">
-                                                            <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0">({{mapping.description}})</span>
+                                                            <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0"> ({{mapping.description}})</span>
                                                         </mat-radio-button>
                                                     </mat-radio-group>
                                                 </ng-container>
@@ -577,7 +577,7 @@
                                                     <mat-radio-button *ngFor="let mapping of dimension.scale.mappings let k=index"
                                                                       class="radio-button" value="{{mapping.value}}"
                                                                       (change)="storeDimensionValue($event, i,dimension.index)">
-                                                        <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0">({{mapping.description}})</span>
+                                                        <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0"> ({{mapping.description}})</span>
                                                     </mat-radio-button>
                                                 </mat-radio-group>
                                             </ng-container>
@@ -591,8 +591,7 @@
                                                     <mat-radio-button *ngFor="let mapping of dimension.scale.mapping let k=index"
                                                                       class="radio-button" value="{{mapping.value}}"
                                                                       (change)="storeDimensionValue($event, i, dimension.index)">
-                                                        <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0">
-                                ({{mapping.description}})</span>
+                                                        <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0"> ({{mapping.description}})</span>
                                                     </mat-radio-button>
                                                 </mat-radio-group>
                                             </ng-container>
