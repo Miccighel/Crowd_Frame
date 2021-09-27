@@ -702,6 +702,10 @@ mat-step form mat-card-content, mat-step form mat-card-actions {
 /*
   Classes when the statement is not selected
 */
+
+.pairwise_value_selected{
+  text-align: center;width:100%;margin:0 auto
+}
 .statement{
   width: 500px;
   background-color: #FCFCFC;
@@ -722,6 +726,7 @@ mat-step form mat-card-content, mat-step form mat-card-actions {
   margin:0 auto;
   padding: 5px;
   margin-top: 10px;
+  text-align: start;
 }
 
 .boxvalues{
@@ -739,45 +744,6 @@ mat-step form mat-card-content, mat-step form mat-card-actions {
 
 
 
-/*
-   Classes when the statement is selected
-*/
-.statementafterclicked{
-  width: 500px;
-  background-color: #B6BDE2;
-  height: 250px;
-  padding-top: 1px;
-  margin-top: -1px;
-  overflow: hidden;
-  border-radius:5px;
-  cursor: pointer;
-  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
-}
-.boxtextafterclicked{
-  width: 80%;
-  background-color:#6F7CC7;
-  height: 100px;
-  border-radius: 10px;
-  margin:0 auto;
-  padding: 5px;
-  margin-top: 10px;
-  color:#F8F9FC
-}
-.boxvaluesafterclicked{
-  color: #F8F9FC;
-  width: 50%;
-  height: 100%;
-  margin:0 auto;
-  margin-top: 15px;
-}
-.statementTitleclicked{
-  text-align: center;
-  color:#F8F9FC;
-}
-
-.titlepairwise{
-  text-align: center;
-}
 
 
 
@@ -786,13 +752,25 @@ mat-step form mat-card-content, mat-step form mat-card-actions {
 */
 .divsplit{
   display: table;
-  border-spacing: 50px;
+  border-spacing: 40px;
   width: 100%;
 }
 .statementsplit{
   display: table-cell;
   width: 500px;
   background-color:#FCFCFC;
+  height: 250px;
+  padding-top: 1px;
+  margin-top: -1px;
+  overflow: hidden;
+  border-radius:5px;
+  cursor: pointer;
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+}
+.statementsplitafterclicked{
+  display: table-cell;
+  width: 500px;
+  background-color:#B6BDE2;
   height: 250px;
   padding-top: 1px;
   margin-top: -1px;
@@ -812,12 +790,16 @@ mat-step form mat-card-content, mat-step form mat-card-actions {
   margin-top: 10px;
 }
 
+
 .boxvaluessplit{
   width: 50%;
   height: 100%;
   margin:0 auto;
   margin-top: 15px;
 }
+
+
+
 .captionsplit {
   display: block;
 }
@@ -825,7 +807,11 @@ mat-step form mat-card-content, mat-step form mat-card-actions {
   text-align: center
 }
 
-
+.titlepairwise{
+  font-size: 25px;
+  font-weight: bold;
+  text-align: center;
+}
 
 /*
   Pairwise splitted dimension css
@@ -839,8 +825,15 @@ mat-step form mat-card-content, mat-step form mat-card-actions {
 }
 .dimension-split-inside{
   display: table-cell;
+  
 }
-
+.spanDocument{
+  display: table-cell;
+  font-size: 15px;
+  font-weight: bold;
+  text-align: center;
+  padding-bottom: 20px;
+}
 
 
 .dimension-name-center{
@@ -849,3 +842,31 @@ mat-step form mat-card-content, mat-step form mat-card-actions {
 
 
 
+.div_radiobutton_check_pairwise{
+  margin:0 auto;
+  text-align: center;
+}
+.radiobutton_check_pairwise{
+  margin-left:25px;
+  margin-bottom: 20px;
+ 
+}
+
+.spanbutton{
+  font-size: 20px;
+  font-weight: bold;
+}
+.both{
+  font-size: 15px;
+}
+
+
+
+//Phone respoinsive
+
+@media only screen and (max-width: 1000px) {
+  .dimension-split-inside{
+    display: table-row;
+    text-align: left;
+  }
+}

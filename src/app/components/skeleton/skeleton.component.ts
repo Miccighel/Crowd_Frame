@@ -42,7 +42,8 @@ import { Discovery } from 'aws-sdk';
 import { ConfigurationServicePlaceholders } from 'aws-sdk/lib/config_service_placeholders';
 import { Object } from 'aws-sdk/clients/customerprofiles';
 import { ConstantPool } from '@angular/compiler';
-import { of } from 'rxjs';
+import { ObjectUnsubscribedError, of } from 'rxjs';
+import { newArray } from '@angular/compiler/src/util';
 
 /* Component HTML Tag definition */
 @Component({
@@ -495,8 +496,9 @@ export class SkeletonComponent implements OnInit {
   */
   public async performTaskSetup() {
     /* The token input has been already validated, this is just to be sure */
+    
     if (this.tokenForm.valid) {
-
+      
       /* The loading spinner is started */
       this.ngxService.start();
 
@@ -600,18 +602,18 @@ export class SkeletonComponent implements OnInit {
       /* The dimensions stored on Amazon S3 are retrieved */
       let rawDimensions = await this.S3Service.downloadDimensions(this.configService.environment)
       this.dimensionsAmount = rawDimensions.length;
-      console.log("documento")
-      console.log(this.documents[0].pairwise_selection);
+      /**Iniziliazziare il vettore degli statement */
+      this.dimensionValueinsert();
       /* Each dimension is parsed using the Dimension class */
       for (let index = 0; index < this.dimensionsAmount; index++) this.dimensions.push(new Dimension(index, rawDimensions[index]));
       
       for (let index = 0; index < this.documentsAmount; index++) {
+        /*console.log("wtf"+this.documents[index].pairwise_selection);*/
         let controlsConfig = {};
         if(this.documents[index].pairwise_split)
         {
-          console.log("mai qui dentro")
+          if(this.documents[index].pairwise_split) controlsConfig[`pairwise_value_selected`] = new FormControl('', [Validators.required]);
           for (let index_dimension = 0; index_dimension < this.dimensions.length; index_dimension++) {
-
             let dimension = this.dimensions[index_dimension];
             if (!dimension.pairwise)
             {
@@ -629,6 +631,7 @@ export class SkeletonComponent implements OnInit {
                 if (dimension.url) controlsConfig[`${dimension.name}_url`] = new FormControl('', [Validators.required, this.validateSearchEngineUrl.bind(this)]);
               }
             }else if (dimension.scale) {
+             
               for(let i=0; i<this.documents[index].statements.length;i++)
               {
                 if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value_${i}`] = new FormControl('', [Validators.required]);
@@ -646,14 +649,14 @@ export class SkeletonComponent implements OnInit {
             }  
           }
         }else{
-          console.log("mai qui dentro1")
+          
           for (let index_dimension = 0; index_dimension < this.dimensions.length; index_dimension++) {
             let dimension = this.dimensions[index_dimension];
             if (dimension.scale) {
               if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.required]);
               if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value`] = new FormControl((Math.round(((<ScaleInterval>dimension.scale).min + (<ScaleInterval>dimension.scale).max) / 2)), [Validators.required]);
               if(dimension.scale.type =="pairwise") controlsConfig[`${dimension.name}_value`] = new FormControl('',[Validators.required]);
-              if(this.documents[index].pairwise_selection) controlsConfig[`pairwise_value_selected`] = new FormControl('', [Validators.required]);
+              
                if (dimension.scale.type == "magnitude_estimation") {
                 if ((<ScaleMagnitude>dimension.scale).lower_bound) {
                   controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min), Validators.required]);
@@ -667,7 +670,6 @@ export class SkeletonComponent implements OnInit {
           }
         }
         this.documentsForm[index] = this.formBuilder.group(controlsConfig)
-        console.log(controlsConfig)
       }
 
       this.dimensionsSelectedValues = new Array<object>(this.documentsAmount);
@@ -774,7 +776,7 @@ export class SkeletonComponent implements OnInit {
 
       /* trigger the changeDetection again */
       this.changeDetector.detectChanges();
-
+      
       /* The loading spinner is stopped */
       this.ngxService.stop();
 
@@ -805,8 +807,12 @@ export class SkeletonComponent implements OnInit {
     let currentDimension = dimension
     /* A reference to the current dimension is saved */
     this.currentDimension = currentDimension;
-    let currentValue = valueData['value'];
+    let currentValue = valueData['value'];            
     let timeInSeconds = Date.now() / 1000;
+    if (valueData["type"]==="click")
+    {
+      currentValue = "0"  
+    }
     /* If some data for the current document already exists*/
     if (this.dimensionsSelectedValues[currentDocument]['amount'] > 0) {
       /* The new query is pushed into current document data array along with a document_index used to identify such query*/
@@ -835,7 +841,7 @@ export class SkeletonComponent implements OnInit {
       /* IMPORTANT: the document_index of the last selected value for a document will be <amount -1> */
       this.dimensionsSelectedValues[currentDocument]['amount'] = 1
     }
-
+    console.log( this.dimensionsSelectedValues[currentDocument])
   }
 
   /*
@@ -2233,38 +2239,72 @@ export class SkeletonComponent implements OnInit {
   */
 
   /* contains the last element(pairwise) selected */
-  pastValues:Object[] = [];
-  checkedValue:Boolean[] = [];
   valueCheck:number
-  public changeColor(valueData: Object,valueChecked:number,documentnumber:number)
+  selected_statement:string;
+  selected_stetements:Object[]=[];
+  checkedValue=new Array();
+  
+  
+  public changeColor(valueData: Object,documentnumber:number,dimensions:object)
   {
-      if(this.pastValues[documentnumber]==undefined)
-      {
-        valueData["source"]["__ngContext__"][21]["className"]="statementafterclicked";
-        valueData["source"]["__ngContext__"][22]["className"]="statementTitleclicked";
-        valueData["source"]["__ngContext__"][24]["className"]="boxtextafterclicked";
-        valueData["source"]["__ngContext__"][26]["className"]="boxvaluesafterclicked";
-        this.checkedValue[documentnumber]=true
-        this.pastValues[documentnumber]=valueData
-        this.valueCheck=valueChecked
-      
-      }else{
-        
-        this.pastValues[documentnumber]["source"]["__ngContext__"][21]["className"]="statement";
-        this.pastValues[documentnumber]["source"]["__ngContext__"][22]["className"]="statementTitle";
-        this.pastValues[documentnumber]["source"]["__ngContext__"][24]["className"]="boxtext";
-        this.pastValues[documentnumber]["source"]["__ngContext__"][26]["className"]="boxvalues";
-        valueData["source"]["__ngContext__"][21]["className"]="statementafterclicked";
-        valueData["source"]["__ngContext__"][22]["className"]="statementTitleclicked";
-        valueData["source"]["__ngContext__"][24]["className"]="boxtextafterclicked";
-        valueData["source"]["__ngContext__"][26]["className"]="boxvaluesafterclicked";
-        this.pastValues[documentnumber]=valueData
-        this.checkedValue[documentnumber]=true
-        this.valueCheck=valueChecked
-        //this.setDimensioValue(valueChecked)
-      }
-  } 
+    this.selected_statement=valueData["value"]
+    this.selected_stetements[documentnumber]=valueData["value"];
+    console.log(dimensions)
+    console.log()
+    console.log("eskere")
 
+    //console.log(valueData)
+    if(valueData['source']['_checked']==true)
+    {
+      //let pairwise= new Array()
+      //let statement=new Array();
+      //pairwise[0]=true
+      //pairwise[1]=true
+      //console.log(this.checkedValue[0][0][0])
+      //this.checkedValue[0][0]=pairwise
+      //console.log(this.checkedValue)
+    }
+    
+  }
+
+  // metodo che crea l'errore
+  public dimensionValueinsert(){
+    let pairwise= new Array()
+    let statement=new Array();
+    pairwise[0]=false
+    pairwise[1]=false
+    console.log(this.dimensionsAmount)
+    
+    for (let i=0;i<this.documentsAmount;i++)
+    {
+      for (let j=0;j<this.dimensionsAmount;j++)
+    {
+        statement[j]=pairwise
+    }
+      this.checkedValue[i]=statement
+    }
+    // Valori prima del cambio
+    
+    let a=this.checkedValue
+    console.log("a")
+    console.log(a)
+    let b=a[0]
+    console.log(b)
+    let c=b[0]
+    console.log(c)
+    console.log(c[0])
+    c[0]="true"
+    console.log("After 1")
+    console.log(c)
+    console.log("After 2")
+    b[0]=c
+    console.log(b)
+    console.log("After 3");
+    let d=new Array();
+     d[0]=b;
+    console.log(d)
+
+    }
   /** 
   savedValuesObject:Object[][]=[];
   savedValuesName:Object[][]=[]
@@ -2308,6 +2348,21 @@ export class SkeletonComponent implements OnInit {
       console.log("ciao")
     }
   }*/
+  public changeletter(index:number)
+  {
+     if(index==0)
+     {
+        return 'A';
+     }else
+     {
+       return 'B';
+     }
+   }
+
+  public checkingValue(document_index:number,dimension_index:number)
+  {
+   
+  }
 }
 
   

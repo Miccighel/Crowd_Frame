@@ -1,8 +1,8 @@
 [
     {
         "name": "dimensionpairwise_1",
-        "name_pretty": "dimension interna al pairwise 1",
-        "description": "Lorem ipsum dolor sit amet",
+        "name_pretty": "Scale interval 1",
+        "description": "description_1",
         "gold": false,
         "justification": false,
         "url": false,
@@ -21,8 +21,8 @@
     },
     {
         "name": "sample-dimension",
-        "name_pretty": "dimension interna al pairwise 2  ",
-        "description": "Lorem ipsum dolor sit amet",
+        "name_pretty": "Scale categorical 2  ",
+        "description": "description_2",
         "url": false,
         "justification": false,
         "pairwise": true,
@@ -50,8 +50,8 @@
     },
     {
         "name": "dimensionpairwise_3",
-        "name_pretty": "dimension interna al pairwise 3 ",
-        "description": "Lorem ipsum dolor sit amet1",
+        "name_pretty": "Scale magnitude_estimantion 3 ",
+        "description": "description_3",
         "gold": false,
         "justification":{
             "text": "Justificaton text",
@@ -73,7 +73,7 @@
     {
         "name": "dimensionpairwise_4",
         "name_pretty": "dimension esterna al pairwise",
-        "description": "Lorem ipsum dolor sit amet",
+        "description": "description_4",
         "gold": false,
         "justification": false,
         "url": false,

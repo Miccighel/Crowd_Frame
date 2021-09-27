@@ -451,10 +451,9 @@
                 <div [innerHTML]="instruction.text"></div>
               </div>
             </div>
-          <!-- Pairwise element checking-->
+           <!--Pairwise element checking
               <ng-template #pairwiseElementSel>
-                <ng-container *ngIf="document.pairwise_selection=='true'">
-                  <div>
+                  <div class="pairwise_value_selected">
                   <h2 class="titlepairwise">Please select one statement(clicking on it) </h2>
                           <mat-radio-group formControlName="pairwise_value_selected" class="radiogroupairwise">
                                   <mat-radio-button class="radiobuttonpairwise"  *ngFor="let values of document.statements;let k=index" value="{{k}}"
@@ -481,47 +480,84 @@
                                           </div>
                                   </div>
                                   </mat-radio-button>
-                            </mat-radio-group>
+                            <mat-radio-button value="A" class="radiobutton_check_pairwise_both" (change)="storeDimensionValue($event, i, document.index)" >
+                                <span>Statement A</span>
+                              </mat-radio-button>
+                          </mat-radio-group>
                   </div>
-                </ng-container>
                
-              </ng-template>
+              </ng-template> 
               <!-- Pairwise element splited-->
               <ng-template #pairwiseElementSplit>
-                 <ng-container *ngIf="document.pairwise_split">
-                      <div class="divsplit" >
-                        <div class="statementsplit" *ngFor="let values of document.statements;let k=index">
-                          <h3 class="statementTitlesplit">Statement {{k}}</h3>       
+                 <ng-container *ngIf="document.pairwise_split" >
+                 <h2 class="titlepairwise">Which statement is more relevant?(required) </h2>
+                    <div class="divsplit" >
+                          <div [ngClass]="selected_stetements[document.index]=='A' || selected_stetements[document.index]=='Both'  ? 'statementsplitafterclicked' : 'statementsplit'" >
+                          <h3 class="statementTitlesplit" >Statement A</h3>
                             <div class="boxtextsplit">
-                                {{values.text}}
+                                {{document.statements[0].text}}
                             </div>
                             <div class="boxvaluessplit">
                                   <span class="captionsplit">
                                         <label>Speaker:</label>
-                                      {{values.speaker}}
+                                      {{document.statements[0].speaker}}
                                   </span>
                                   <span class="captionsplit">
                                       <label>SpeakerJob:</label>
-                                      {{values.speakerjob}}
+                                      {{document.statements[0].speakerjob}}
                                   </span>
                                   <span class="captionsplit">
                                     <label>Context:</label>
-                                    {{values.context}}
+                                    {{document.statements[0].context}}
                                   </span>
                             </div>
-                        </div>
+                          </div>
+                          <div [ngClass]="selected_stetements[document.index]=='B' || selected_stetements[document.index]=='Both' ? 'statementsplitafterclicked' : 'statementsplit'" >
+                          <h3 class="statementTitlesplit">Statement B</h3>
+                            <div class="boxtextsplit">
+                                {{document.statements[1].text}}
+                            </div>
+                            <div class="boxvaluessplit">
+                                  <span class="captionsplit">
+                                        <label>Speaker:</label>
+                                      {{document.statements[1].speaker}}
+                                  </span>
+                                  <span class="captionsplit">
+                                      <label>SpeakerJob:</label>
+                                      {{document.statements[1].speakerjob}}
+                                  </span>
+                                  <span class="captionsplit">
+                                    <label>Context:</label>
+                                    {{document.statements[1].context}}
+                                  </span>
+                            </div>
+                          </div>  
                       </div>
+                        <div class="div_radiobutton_check_pairwise">
+                          <mat-radio-group formControlName="pairwise_value_selected" >
+                              <mat-radio-button value="A" class="radiobutton_check_pairwise" (change)="storeDimensionValue($event, i, document.index) ; changeColor($event,document.index,dimensions) "  disableRipple="true">
+                                <span class="spanbutton">Statement A</span>
+                              </mat-radio-button>
+                               <mat-radio-button value="Both" class="radiobutton_check_pairwise both_radio" (change)="storeDimensionValue($event, i, document.index);changeColor($event,document.index,dimensions)" >
+                                 <span class="both">Both statement</span>
+                              </mat-radio-button>
+                              <mat-radio-button value="B" class="radiobutton_check_pairwise" (change)="storeDimensionValue($event, i, document.index) ; changeColor($event,document.index,dimensions)" disableRipple="true">
+                                 <span  class="spanbutton">Statement B</span>
+                              </mat-radio-button>
+                          </mat-radio-group>
+                        </div>
                 </ng-container>
               </ng-template>
-              <ng-template *ngIf="document.pairwise_selection "[ngTemplateOutlet]="pairwiseElementSel"></ng-template>
-              <ng-template *ngIf="document.pairwise_split"[ngTemplateOutlet]="pairwiseElementSplit" ></ng-template>
+              <ng-template *ngIf="document.pairwise_split"[ngTemplateOutlet]="pairwiseElementSplit"></ng-template>
+              <!--<ng-template *ngIf="document.pairwise_split"[ngTemplateOutlet]="pairwiseElementSplit" ></ng-template>-->
             <!-- Dimensions assessment markup (list style) -->
-
+           
             <ng-template #dimensionList let-dimensions="dimensions" let-i="i">
               <div *ngFor="let dimension of dimensions; let j=index" class="dimension'">
                 <!-- Dimension not split-->
-                <ng-template *ngIf="checkedValue[document.index] || !dimension.pairwise || document.pairwise_split " [ngTemplateOutlet]="dimensionPairwise" ></ng-template>
+                <ng-template *ngIf=" !document.pairwise_split " [ngTemplateOutlet]="dimensionPairwise" ></ng-template>
                 <ng-template #dimensionPairwise>
+                
                 <!-- Dimension name markup -->
                 <div [ngClass]="document.pairwise_split && dimension.pairwise ? 'dimension-content-split' : 'dimension-name'">
                   <div [ngClass]="{'dimension-name-center': document.pairwise_split && dimension.pairwise}">
@@ -538,7 +574,7 @@
                     <p>{{dimension.description}}</p>
                   </div>
                 </div>
-
+               
 
                 <!-- Dimension search engine interface markup -->
                 <div *ngIf="dimension.url" class="dimension-container dimension-url">
@@ -579,8 +615,8 @@
                     <ng-container *ngIf="dimension.style.orientation=='vertical'">
 
                       <!-- Categorical scale markup -->
-                      <ng-container *ngIf="dimension.scale.type=='categorical'">
-                        <div [ngClass]="{'dimension-split-inside': document.pairwise_split && dimension.pairwise}" *ngIf="!dimension.pairwise"> 
+                      <ng-container *ngIf="dimension.scale.type=='categorical'  && !dimension.pairwise  || dimension.scale.type=='categorical' && document.pairwise_selection ">
+                        <div [ngClass]="{'dimension-split-inside': document.pairwise_split && dimension.pairwise}" *ngIf="!dimension.pairwise || document.pairwise_selection"> 
                           <mat-radio-group aria-labelledby="radio-button-label" class="radio-button-group" formControlName="{{(dimension.name).concat('_value')}}">
                             <mat-radio-button *ngFor="let mapping of dimension.scale.mapping let k=index"
                                               class="radio-button" value="{{mapping.value}}"
@@ -593,8 +629,11 @@
                         </div>
                       </ng-container>
                       <!-- Categorical scale markup pairwise split -->
-                      <ng-container *ngIf="dimension.scale.type=='categorical' && document.pairwise_split && dimension.pairwise">
-                        <div [ngClass]="{'dimension-split-inside': dimension.pairwise}" *ngFor="let test of document.statements; let j=index"> 
+                      <ng-container *ngIf="dimension.scale.type=='categorical' && document.pairwise_split && dimension.pairwise "> 
+                        <div [ngClass]="{'dimension-split-inside': dimension.pairwise}" *ngFor="let test of document.statements; let j=index">
+                          <div *ngIf="document.pairwise_split && dimension.pairwise" [ngClass]="{'dimension-split-inside':document.pairwise_split && dimension.pairwise}" >
+                            <p class="spanDocument"> Document {{changeletter(j)}}</p>
+                          </div>
                           <mat-radio-group aria-labelledby="radio-button-label" class="radio-button-group" formControlName="{{(dimension.name).concat('_value_').concat(j)}}">
                             <mat-radio-button *ngFor="let mapping of dimension.scale.mapping let k=index"
                                             class="radio-button" value="{{mapping.value}}"
@@ -613,8 +652,11 @@
 
                       <!-- Interval scale markup -->
                      
-                      <ng-container *ngIf="dimension.scale.type=='interval' && !dimension.pairwise " >
+                      <ng-container *ngIf="dimension.scale.type=='interval' && !dimension.pairwise  || dimension.scale.type=='interval' && document.pairwise_selection " >
                        <div [ngClass]="{'dimension-split-inside': document.pairwise_split && dimension.pairwise}" >
+                       <div *ngIf="document.pairwise_split && dimension.pairwise" [ngClass]="{'dimension-split-inside':document.pairwise_split && dimension.pairwise}" >
+                            <p class="spanDocument"> Document {{changeletter(j)}}</p>
+                          </div>
                         <label>Selected value: {{documentsForm[i].controls[(dimension.name).concat('_value')].value}}</label>
                         <mat-slider min="{{dimension.scale.min}}" max="{{dimension.scale.max}}"
                                     step="{{dimension.scale.step}}" thumbLabel tickInterval="{{dimension.scale.step}}"
@@ -626,6 +668,9 @@
                       <!-- Interval scale pairwise split markup -->
                       <ng-container *ngIf="dimension.scale.type=='interval' && document.pairwise_split && dimension.pairwise">
                       <div [ngClass]="{'dimension-split-inside': document.pairwise_split && dimension.pairwise}" *ngFor="let test of document.statements; let j=index"  >
+                        <div *ngIf="document.pairwise_split && dimension.pairwise" [ngClass]="{'dimension-split-inside':document.pairwise_split && dimension.pairwise}" >
+                            <p class="spanDocument"> Document {{changeletter(j)}}</p>
+                          </div>
                         <label>Selected value: {{documentsForm[i].controls[(dimension.name).concat('_value_').concat(j)].value}}</label>
                         <mat-slider min="{{dimension.scale.min}}" max="{{dimension.scale.max}}"
                                     step="{{dimension.scale.step}}" thumbLabel tickInterval="{{dimension.scale.step}}"
@@ -636,7 +681,7 @@
                       </ng-container>
 
                       <!-- Magnitude scale markup -->
-                      <ng-container *ngIf="dimension.scale.type=='magnitude_estimation' &&!dimension.pairwise">
+                      <ng-container *ngIf="dimension.scale.type=='magnitude_estimation' &&!dimension.pairwise || dimension.scale.type=='magnitude_estimation' && document.pairwise_selection ">
                         <div [ngClass]="{'dimension-split-inside': document.pairwise_split && dimension.pairwise}">
                         <mat-form-field appearance="fill">
                           <mat-label>Value</mat-label>
@@ -661,6 +706,9 @@
                       <ng-container *ngIf="dimension.scale.type=='magnitude_estimation' && document.pairwise_split && dimension.pairwise">
                         <ng-container *ngFor="let test of document.statements; let j=index">
                         <div [ngClass]="{'dimension-split-inside': document.pairwise_split && dimension.pairwise}">
+                        <div *ngIf="document.pairwise_split && dimension.pairwise" [ngClass]="{'dimension-split-inside':document.pairwise_split && dimension.pairwise}" >
+                            <p class="spanDocument"> Document {{changeletter(j)}}</p>
+                        </div>
                         <mat-form-field appearance="fill">
                           <mat-label>Value</mat-label>
                           <input *ngIf="dimension.scale.lower_bound" matInput type="number" placeholder="" formControlName="{{(dimension.name).concat('_value_').concat(j)}}" min="{{dimension.scale.min}}"
@@ -701,12 +749,12 @@
                 </div>
 
                 <!-- Dimension justification field markup -->
-                <div *ngIf="dimension.justification" [ngClass]="document.pairwise_split && dimension.pairwise ? 'dimension-content-split' : 'dimension-container dimension-justification'" >
+                <div *ngIf="dimension.justification  " [ngClass]="document.pairwise_split && dimension.pairwise ? 'dimension-content-split' : 'dimension-container dimension-justification'" >
                   <!--<div *ngIf="dimension.url && dimension.scale" class="dimension-counter">c.</div>
                   <div *ngIf="!dimension.url && dimension.scale" class="dimension-counter">b.</div>
                   <div *ngIf="dimension.url && !dimension.scale" class="dimension-counter">b.</div>
                   <div *ngIf="!dimension.url && !dimension.scale" class="dimension-counter">a.</div> -->
-                  <div *ngIf="dimension.justification  && !dimension.pairwise" [ngClass]="document.pairwise_split && dimension.pairwise ? 'dimension-split-inside' : 'dimension-content justification'">
+                  <div *ngIf="dimension.justification  && !dimension.pairwise || dimension.justification && document.pairwise_selection" [ngClass]="document.pairwise_split && dimension.pairwise ? 'dimension-split-inside' : 'dimension-content justification'">
                    Justification:
                     <div class="dimension-text-field">
                       <mat-form-field appearance="fill">
