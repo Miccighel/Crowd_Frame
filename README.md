@@ -5,20 +5,20 @@
 
 ### A software system that allows to easily design and deploy diverse types of crowdsourcing tasks.
 
-### Table of Contents
+## Table of Contents
 
 <ul>
     <li><a href="#prerequisites">Prerequisites</a></li>
     <li><a href="#installation">Installation</a></li>
   </ul>
 
-### Prerequisites
+## Prerequisites
 
 - [AWS Command Line Interface](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html)
 - [Node.js](https://nodejs.org/it/download/)
 - [Python 3](https://www.python.org/downloads/https://nodejs.org/it/download/)
 
-### Installation
+## Installation
 
 1. Create a [Amazon AWS Account](https://aws.amazon.com/it/)
 
@@ -66,12 +66,13 @@
    ````
    cd ~/path/to/project
    ````
-
+   
 10. Switch to Yarn newest version
 
     ````
     yarn set version berry
     ````
+    
 11.  Install the dependencies required in `package.json`
   
     ````
