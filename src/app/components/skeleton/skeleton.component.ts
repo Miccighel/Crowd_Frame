@@ -2256,55 +2256,30 @@ export class SkeletonComponent implements OnInit {
     //console.log(valueData)
     if(valueData['source']['_checked']==true)
     {
-      //let pairwise= new Array()
-      //let statement=new Array();
-      //pairwise[0]=true
-      //pairwise[1]=true
-      //console.log(this.checkedValue[0][0][0])
-      //this.checkedValue[0][0]=pairwise
-      //console.log(this.checkedValue)
+      this.checkedValue[documentnumber][0][0]=true
+      this.checkedValue[documentnumber][0][1]=true
     }
-    
+    console.log(this.checkedValue)
   }
 
   // metodo che crea l'errore
   public dimensionValueinsert(){
-    let pairwise= new Array()
-    let statement=new Array();
-    pairwise[0]=false
-    pairwise[1]=false
-    console.log(this.dimensionsAmount)
     
+    console.log(this.dimensionsAmount)
     for (let i=0;i<this.documentsAmount;i++)
     {
+      let statement=new Array();
       for (let j=0;j<this.dimensionsAmount;j++)
-    {
+      {
+        let pairwise= new Array()
+        pairwise[0]=false
+        pairwise[1]=false
         statement[j]=pairwise
-    }
+      }
       this.checkedValue[i]=statement
     }
-    // Valori prima del cambio
-    
-    let a=this.checkedValue
-    console.log("a")
-    console.log(a)
-    let b=a[0]
-    console.log(b)
-    let c=b[0]
-    console.log(c)
-    console.log(c[0])
-    c[0]="true"
-    console.log("After 1")
-    console.log(c)
-    console.log("After 2")
-    b[0]=c
-    console.log(b)
-    console.log("After 3");
-    let d=new Array();
-     d[0]=b;
-    console.log(d)
 
-    }
+  }
   /** 
   savedValuesObject:Object[][]=[];
   savedValuesName:Object[][]=[]
@@ -2358,10 +2333,26 @@ export class SkeletonComponent implements OnInit {
        return 'B';
      }
    }
-
-  public checkingValue(document_index:number,dimension_index:number)
+  public checkdimension(documentnumber:number,dimensionnumber:number)
   {
-   
+    if(this.checkedValue[documentnumber][dimensionnumber][0]==true && this.checkedValue[documentnumber][dimensionnumber][1]==true)
+    {
+      return true
+    }else
+    {
+      return false
+    }
+  }
+  public changeValue(documentnumber:number,dimensionnumber:number,j:number)
+  {
+    console.log(j)
+    if(dimensionnumber>this.dimensionsAmount)
+    {
+
+    }else
+    {
+      this.checkedValue[documentnumber][dimensionnumber][j]=true
+    }
   }
 }
 

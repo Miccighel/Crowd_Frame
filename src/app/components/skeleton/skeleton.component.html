@@ -555,7 +555,7 @@
             <ng-template #dimensionList let-dimensions="dimensions" let-i="i">
               <div *ngFor="let dimension of dimensions; let j=index" class="dimension'">
                 <!-- Dimension not split-->
-                <ng-template *ngIf=" !document.pairwise_split " [ngTemplateOutlet]="dimensionPairwise" ></ng-template>
+                <ng-template *ngIf="checkdimension(document.index,dimension.index) || !document.pairwise_split " [ngTemplateOutlet]="dimensionPairwise" ></ng-template>
                 <ng-template #dimensionPairwise>
                 
                 <!-- Dimension name markup -->
@@ -637,7 +637,7 @@
                           <mat-radio-group aria-labelledby="radio-button-label" class="radio-button-group" formControlName="{{(dimension.name).concat('_value_').concat(j)}}">
                             <mat-radio-button *ngFor="let mapping of dimension.scale.mapping let k=index"
                                             class="radio-button" value="{{mapping.value}}"
-                                            (change)="storeDimensionValue($event, i, dimension.index)"
+                                            (change)="storeDimensionValue($event, i, dimension.index);changeValue(document.index,dimension.index+1,j)"
                                             [disabled]="this.countdownsExpired[i]">
                             <span>{{mapping.label}}</span>
                             <span *ngIf="mapping.description.length>0">
@@ -652,6 +652,7 @@
 
                       <!-- Interval scale markup -->
                      
+                     <!--
                       <ng-container *ngIf="dimension.scale.type=='interval' && !dimension.pairwise  || dimension.scale.type=='interval' && document.pairwise_selection " >
                        <div [ngClass]="{'dimension-split-inside': document.pairwise_split && dimension.pairwise}" >
                        <div *ngIf="document.pairwise_split && dimension.pairwise" [ngClass]="{'dimension-split-inside':document.pairwise_split && dimension.pairwise}" >
@@ -664,7 +665,8 @@
                                   (change)="storeDimensionValue($event, i,dimension.index);"
                                     [disabled]="this.countdownsExpired[i]"></mat-slider>
                       </div>            
-                      </ng-container>
+                      </ng-container>-->
+                      
                       <!-- Interval scale pairwise split markup -->
                       <ng-container *ngIf="dimension.scale.type=='interval' && document.pairwise_split && dimension.pairwise">
                       <div [ngClass]="{'dimension-split-inside': document.pairwise_split && dimension.pairwise}" *ngFor="let test of document.statements; let j=index"  >
@@ -672,11 +674,12 @@
                             <p class="spanDocument"> Document {{changeletter(j)}}</p>
                           </div>
                         <label>Selected value: {{documentsForm[i].controls[(dimension.name).concat('_value_').concat(j)].value}}</label>
-                        <mat-slider min="{{dimension.scale.min}}" max="{{dimension.scale.max}}"
+                        <!-- Slider error fix default value-->
+                        <mat-slider min="{{dimension.scale.min}}" max="{{dimension.scale.max}}" value="{{dimension.scale.min}}"
                                     step="{{dimension.scale.step}}" thumbLabel tickInterval="{{dimension.scale.step}}"
                                     formControlName="{{(dimension.name).concat('_value_').concat(j)}}"
-                                  (change)="storeDimensionValue($event, i,dimension.index);"
-                                    [disabled]="this.countdownsExpired[i]"></mat-slider>
+                                  (change)="storeDimensionValue($event, i,dimension.index); changeValue(document.index,dimension.index+1,j)"
+                                    [disabled]="this.countdownsExpired[i]" ></mat-slider>
                       </div>
                       </ng-container>
 
@@ -712,10 +715,10 @@
                         <mat-form-field appearance="fill">
                           <mat-label>Value</mat-label>
                           <input *ngIf="dimension.scale.lower_bound" matInput type="number" placeholder="" formControlName="{{(dimension.name).concat('_value_').concat(j)}}" min="{{dimension.scale.min}}"
-                                 (change)="storeDimensionValue($event, i, dimension.index)"
+                                 (change)="storeDimensionValue($event, i, dimension.index) ; changeValue(document.index,dimension.index+1,j)"
                                  [disabled]="this.countdownsExpired[i]" class="magnitude_estimation">
                           <input *ngIf="!dimension.scale.lower_bound" matInput type="number" placeholder="" formControlName="{{(dimension.name).concat('_value_').concat(j)}}" min="{{dimension.scale.min+1}}"
-                                 (change)="storeDimensionValue($event, i, dimension.index)" class="magnitude_estimation"
+                                 (change)="storeDimensionValue($event, i, dimension.index); changeValue(document.index,dimension.index+1,j)" class="magnitude_estimation"
                                  [disabled]="this.countdownsExpired[i]">
                           <mat-error *ngIf="checkFormControl(documentsForm[i], (dimension.name).concat('_value_').concat(j), 'required')">
                             This field is required
