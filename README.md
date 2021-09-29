@@ -5,16 +5,12 @@
 
 ### A software system that allows to easily design and deploy diverse types of crowdsourcing tasks.
 
----
-
-## Table of Contents
+### Table of Contents
 
 <ul>
     <li><a href="#prerequisites">Prerequisites</a></li>
     <li><a href="#installation">Installation</a></li>
   </ul>
-
----
 
 ### Prerequisites
 
@@ -22,9 +18,7 @@
 - [Node.js](https://nodejs.org/it/download/)
 - [Python 3](https://www.python.org/downloads/https://nodejs.org/it/download/)
 
----
-
- ### Installation
+### Installation
 
 1. Create a [Amazon AWS Account](https://aws.amazon.com/it/)
 
@@ -45,19 +39,6 @@
    }
    ```
 
-4. 
-
-   {
-       "Version": "2012-10-17",
-       "Statement": [
-           {
-               "Effect": "Allow",
-               "Action": "*",
-               "Resource": "*"
-           }
-       ]
-   }
-
 5. Generate a new access key pair
 
 6. Store the Access Key in your _credentials_ file 
@@ -65,39 +46,32 @@
    1. ![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white) Path `C:\Users\your_os_user\.aws\credentials`
 
    ````
-   ```
    [your_iam_user]
    aws_access_key_id=your_key
    aws_secret_access_key=your_secret
-   ```
    ````
 
 6. Clone repo [Miccighel/Crowd_Frame](https://github.com/Miccighel/Crowd_Frame)
 
 8. Install the Yarn global binary
 
-   ```text
+   ````
    npm install -g yarn
-   ```
+   ````
    
 9. Move to repo folder:
 
    ````
-   ```
    cd ~/path/to/project
-   ```
    ````
 
-10.  Switch to Yarn newest version
+10. Switch to Yarn newest version
 
     ````
-    ```
     yarn set version berry
-    ```
     ````
 11.  Install the dependencies required in `package.json`
+  
     ````
-    ```
     yarn install
-    ```
     ````
