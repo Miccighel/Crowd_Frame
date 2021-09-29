@@ -43,7 +43,7 @@
 
 5. Store the Access Key in your _credentials_ file 
 
-   1. ![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white) Path `C:\Users\your_os_user\.aws\credentials`
+   ![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white) Path: `C:\Users\your_os_user\.aws\credentials`
 
      Sample:
 
@@ -73,7 +73,7 @@
     yarn set version berry
     ````
     
-11.  Install the dependencies required in `package.json`
+11.  Install the dependencies
   
     ````
     yarn install
