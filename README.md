@@ -41,15 +41,17 @@
 
 5. Generate a new access key pair
 
-6. Store the Access Key in your _credentials_ file 
+5. Store the Access Key in your _credentials_ file 
 
    1. ![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white) Path `C:\Users\your_os_user\.aws\credentials`
 
-   ````
-   [your_iam_user]
-   aws_access_key_id=your_key
-   aws_secret_access_key=your_secret
-   ````
+     Sample:
+
+     ````
+     [your_iam_user]
+     aws_access_key_id=your_key
+     aws_secret_access_key=your_secret
+     ````
 
 6. Clone repo [Miccighel/Crowd_Frame](https://github.com/Miccighel/Crowd_Frame)
 
