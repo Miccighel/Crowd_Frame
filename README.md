@@ -41,7 +41,7 @@
 
 5. Generate a new access key pair
 
-5. Store the Access Key in your _credentials_ file 
+6. Store the Access Key in your _credentials_ file 
 
    ![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white) Path: `C:\Users\your_os_user\.aws\credentials`
 
@@ -53,7 +53,7 @@
      aws_secret_access_key=your_secret
      ````
 
-6. Clone repo [Miccighel/Crowd_Frame](https://github.com/Miccighel/Crowd_Frame)
+7. Clone repo [Miccighel/Crowd_Frame](https://github.com/Miccighel/Crowd_Frame)
 
 8. Install the Yarn global binary
 
@@ -72,9 +72,9 @@
     ````
     yarn set version berry
     ````
-    
-11.  Install the dependencies
-  
-    ````text
-    yarn install
-    ````
+
+11. Install the dependencies:
+
+   ````
+   yarn install
+   ````
