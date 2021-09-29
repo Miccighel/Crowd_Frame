@@ -75,6 +75,6 @@
     
 11.  Install the dependencies
   
-    ````
+    ````text
     yarn install
     ````
