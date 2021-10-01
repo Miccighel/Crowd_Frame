@@ -1,12 +1,14 @@
 # Crowd_Frame
 ![](https://badges.aleen42.com/src/angular.svg) ![](https://badges.aleen42.com/src/python.svg)[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)![Maintainer](https://img.shields.io/badge/maintainer-Miccighel-blue)[![Github all releases](https://img.shields.io/github/downloads/Miccighel/Crowd_Frame/total.svg)](https://GitHub.com/Miccighel/Crowd_Frame/releases/)
-[![GitHub stars](https://badgen.net/github/stars/Miccighel/Crowd_Frame)](https://GitHub.com/Miccighel/Crowd_Frame/stargazers/)
+[![GitHub stars](https://badgen.net/github/stars/Miccighel/Crowd_Frame)](https://GitHub.com/Miccighel/Crowd_Frame/stargazers/) [![GitHub watchers](https://badgen.net/github/watchers/Miccighel/Crowd_Frame/)](https://GitHub.com/Miccighel/Crowd_Frame/watchers/)
 
 ![GitHub Contributors Image](https://contrib.rocks/image?repo=Miccighel/Crowd_Frame)
 
 :star: Star us on GitHub — it motivates us a lot!
 
 ### A software system that allows to easily design and deploy diverse types of crowdsourcing tasks.
+
+[![Contributors over time](https://contributor-graph-api.apiseven.com/contributors-svg?chart=contributorOverTime&repo=Miccighel/Crowd_Frame)](https://www.apiseven.com/en/contributor-graph?chart=contributorOverTime&repo=Miccighel/Crowd_Frame)
 
 ## Table of Contents
 
