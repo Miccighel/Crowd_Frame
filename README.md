@@ -115,8 +115,6 @@
      deploy_config=true_or_false
      ````
 
-​       Please refer to the scroll down for a detailed explanation.
-
   14. Run python script `init.py`
 
       Path: `your_repo_folder/data/init.py`
