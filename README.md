@@ -10,10 +10,9 @@
 <ul>
     <li><a href="#prerequisites">Prerequisites</a></li>
     <li><a href="#getting-started">Getting Started</a></li>
-    <li><a href="#usage">Usage</a></li>
-  </ul>
-
-
+    <li><a href="#task-configuration">Task Configuration</a></li>
+    <li><a href="#environment-variables">Environment Variables</a></li>
+</ul>
 
 ## Prerequisites
 
@@ -120,11 +119,71 @@
       
   15. Open your task:
 
-      Link: `https://your_deploy_bucket.s3.your_aws_region.amazonaws.com/your_task_name/your_batch_name/index.html`
+      `https://your_deploy_bucket.s3.your_aws_region.amazonaws.com/your_task_name/your_batch_name/index.html`
 
-      
+## Task Configuration
 
-## Usage
+To configure your crowdsourcing task deployed:
+
+- open the administrator panel by appending `?admin=true`;
+- click the **Generate** button to open the login prompt;
+- use your admin credentials;
+- proceed through each generation step.
+
+When the configuration is ready, click the **Upload** button.
+
+### Step Overview
+
+#### Step 1 - Questionnaires
+
+Allows creating one or more questionnaires that workers will fill before or after task execution.
+
+#### Step 2 - Evaluation Dimensions
+
+Allows configuring what the worker will assess for each element of the HIT assigned.
+
+#### Step 3 - Task Instructions
+
+Each worker is shown with general task instructions before the task.
+
+#### Step 4 - Evaluation Instructions
+
+Each worker is shown with such instructions within the task's body.
+
+#### Step 5 - Search Engine
+
+Allows choosing the search provider wanted and to add a list of domains to filter from search results.
+
+#### Step 6 - Task Settings
+
+Allows to configures several task settings, such as the maximum amount of tries for each worker, the usage of an annotation interface, and much more. 
+
+It also _allows to provide the file containing the set of HITs for the task deployed_.
+
+#### Step 7 - Worker Checks
+
+Allows to configure additional checks on workers.
+
+### Task Testing
+
+To test the task configured open the task and try it
+
+`https://your_deploy_bucket.s3.your_aws_region.amazonaws.com/your_task_name/your_batch_name/index.html`
+
+## Task Performing
+
+1. Assign to each worker a `workerID`:
+
+    - It is used to identify each worker ;
+    - It enables data collection when the worker performs the task;
+
+2. Append the id as a GET parameter `?workerID=worker_id_chosen`
+
+3. Provide the input token to the worker;
+
+4. Provide the full URL to the worker:
+
+   `https://your_deploy_bucket.s3.your_aws_region.amazonaws.com/your_task_name/your_batch_name/index.html?workerID=worker_id_chosen`
 
 ## Environment Variables
 
