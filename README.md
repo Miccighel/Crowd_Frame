@@ -284,3 +284,29 @@ You may want to edit and test the task configuration locally. To enable local de
 Now you can manually edit the configuration and test everything locally.
 
 :warning: _Remember_: each execution of the `init.py` script will overwrite this file :warning:
+
+## References
+
+This software has been already used in the past to launch several crowdsourcing tasks that lead to results published
+
+````latex
+@inproceedings{conference-paper-sigir2020,
+  abstract = {{Truthfulness judgments are a fundamental step in the process of fighting misinformation, as they are crucial to train and evaluate classifiers that automatically distinguish true and false statements. Usually such judgments are made by experts, like journalists for political statements or medical doctors for medical statements. In this paper, we follow a different approach and rely on (non-expert) crowd workers. This of course leads to the following research question: Can crowdsourcing be reliably used to assess the truthfulness of information and to create large-scale labeled collections for information credibility systems? To address this issue, we present the results of an extensive study based on crowdsourcing: we collect thousands of truthfulness assessments over two datasets, and we compare expert judgments with crowd judgments, expressed on scales with various granularity levels. We also measure the political bias and the cognitive background of the workers, and quantify their effect on the reliability of the data provided by the crowd.}},
+  address = {{New York, NY, USA}},
+  author = {Roitero, Kevin and Soprano, Michael and Fan, Shaoyang and Spina, Damiano and Mizzaro, Stefano and Demartini, Gianluca},
+  booktitle = {{Proceedings of the 43st International ACM SIGIR Conference on Research and Development in Information Retrieval (SIGIR 2020). Xi’an, China (Online). July 25-30, 2020. Conference Rank: GGS A++, Core A*}},
+  doi = {{10.1145/3397271.3401112}},
+  isbn = {{9781450380164}},
+  keywords = {{classification, crowdsourcing, information credibility}},
+  location = {{Virtual Event, China}},
+  numpages = {10},
+  month = {7},
+  pages = {{439–448}},
+  publisher = {{Association for Computing Machinery}},
+  series = {{SIGIR '20}},
+  title = {{Can The Crowd Identify Misinformation Objectively? The Effects of Judgment Scale and Assessor's Background}},
+  url = {{https://doi.org/10.1145/3397271.3401112}},
+  year = {2020}
+}
+````
+
