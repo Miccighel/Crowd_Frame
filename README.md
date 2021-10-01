@@ -287,11 +287,40 @@ Now you can manually edit the configuration and test everything locally.
 
 ## References
 
-This software has been already used in the past to launch several crowdsourcing tasks that lead to results published
+This software has been already used in the past to launch several crowdsourcing tasks that lead to results published.
 
-````latex
+---
+
+Roitero, K., Soprano, M., Portelli, B., Spina, D., Della Mea, V., Serra, G., Mizzaro, S., & Demartini, G. (2020). The COVID-19 Infodemic: Can the Crowd Judge Recent Misinformation Objectively?. In Proceedings of the 29th ACM International Conference on Information and Knowledge Management (CIKM2020). Galway, Ireland (Online). October 19-23, 2020. Conference Rank: GGS A+, Core A (pp. 1305–1314). Association for Computing Machinery.
+
+````tex
+@inproceedings{conference-paper-cikm2020,
+  address = {{New York, NY, USA}},
+  author = {Roitero, Kevin and Soprano, Michael and Portelli, Beatrice and Spina, Damiano and Della Mea, Vincenzo and Serra, Giuseppe and Mizzaro, Stefano and Demartini, Gianluca},
+  booktitle = {{Proceedings of the 29th ACM International Conference on Information and Knowledge Management (CIKM2020). Galway, Ireland (Online). October 19-23, 2020. Conference Rank: GGS A+, Core A}},
+  doi = {{10.1145/3340531.3412048}},
+  isbn = {{9781450368599}},
+  keywords = {{ordinal classification, infodemic, information behavior, covid-19, crowdsourcing}},
+  location = {{Virtual Event, Ireland}},
+  numpages = {{10}},
+  pages = {{1305–1314}},
+  publisher = {{Association for Computing Machinery}},
+  series = {{CIKM '20}},
+  title = {{The COVID-19 Infodemic: Can the Crowd Judge Recent Misinformation Objectively?}},
+  url = {{https://doi.org/10.1145/3340531.3412048}},
+  month = {10},
+  year = {2020}
+}
+````
+
+
+
+---
+
+Roitero, K., Soprano, M., Fan, S., Spina, D., Mizzaro, S., & Demartini, G. (2020). Can The Crowd Identify Misinformation Objectively? The Effects of Judgment Scale and Assessor's Background. In *Proceedings of the 43st International ACM SIGIR Conference on Research and Development in Information Retrieval (SIGIR 2020). Xi’an, China (Online). July 25-30, 2020. Conference Rank: GGS A++, Core A** (pp. 439–448). Association for Computing Machinery.
+
+````tex
 @inproceedings{conference-paper-sigir2020,
-  abstract = {{Truthfulness judgments are a fundamental step in the process of fighting misinformation, as they are crucial to train and evaluate classifiers that automatically distinguish true and false statements. Usually such judgments are made by experts, like journalists for political statements or medical doctors for medical statements. In this paper, we follow a different approach and rely on (non-expert) crowd workers. This of course leads to the following research question: Can crowdsourcing be reliably used to assess the truthfulness of information and to create large-scale labeled collections for information credibility systems? To address this issue, we present the results of an extensive study based on crowdsourcing: we collect thousands of truthfulness assessments over two datasets, and we compare expert judgments with crowd judgments, expressed on scales with various granularity levels. We also measure the political bias and the cognitive background of the workers, and quantify their effect on the reliability of the data provided by the crowd.}},
   address = {{New York, NY, USA}},
   author = {Roitero, Kevin and Soprano, Michael and Fan, Shaoyang and Spina, Damiano and Mizzaro, Stefano and Demartini, Gianluca},
   booktitle = {{Proceedings of the 43st International ACM SIGIR Conference on Research and Development in Information Retrieval (SIGIR 2020). Xi’an, China (Online). July 25-30, 2020. Conference Rank: GGS A++, Core A*}},
