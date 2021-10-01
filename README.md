@@ -1,6 +1,5 @@
 # Crowd_Frame
-![](https://badges.aleen42.com/src/angular.svg) ![](https://badges.aleen42.com/src/python.svg)[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)![Maintainer](https://img.shields.io/badge/maintainer-Miccighel-blue)[![Github all releases](https://img.shields.io/github/downloads/Miccighel/Crowd_Frame/total.svg)](https://GitHub.com/Miccighel/Crowd_Frame/releases/)
-[![GitHub stars](https://badgen.net/github/stars/Miccighel/Crowd_Frame)](https://GitHub.com/Miccighel/Crowd_Frame/stargazers/) [![GitHub watchers](https://badgen.net/github/watchers/Miccighel/Crowd_Frame/)](https://GitHub.com/Miccighel/Crowd_Frame/watchers/)[![GitHub contributors](https://img.shields.io/github/contributors/Miccighel/Crowd_Frame.svg)](https://GitHub.com/Miccighel/Crowd_Frame/graphs/contributors/)[![GitHub issues](https://badgen.net/github/issues/Miccighel/Crowd_Frame/)](https://GitHub.com/Miccighel/Crowd_Frame/issues/)[![GitHub issues](https://img.shields.io/github/issues/Miccighel/Crowd_Frame.svg)](https://GitHub.com/Miccighel/Crowd_Frame/issues/) [![GitHub issues-closed](https://img.shields.io/github/issues-closed/Miccighel/Crowd_Frame.svg)](https://GitHub.com/Miccighel/Crowd_Frame/issues?q=is%3Aissue+is%3Aclosed)[![GitHub pull-requests](https://img.shields.io/github/issues-pr/Miccighel/Crowd_Frame.svg)](https://GitHub.com/Miccighel/Crowd_Frame/pull/) [![GitHub pull-requests closed](https://img.shields.io/github/issues-pr-closed/Miccighel/Crowd_Frame.svg)](https://GitHub.com/Miccighel/Crowd_Frame/pull/) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
+![](https://badges.aleen42.com/src/angular.svg) ![](https://badges.aleen42.com/src/python.svg) [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity) ![Maintainer](https://img.shields.io/badge/maintainer-Miccighel-blue) [![Github all releases](https://img.shields.io/github/downloads/Miccighel/Crowd_Frame/total.svg)](https://GitHub.com/Miccighel/Crowd_Frame/releases/) [![GitHub stars](https://badgen.net/github/stars/Miccighel/Crowd_Frame)](https://GitHub.com/Miccighel/Crowd_Frame/stargazers/) [![GitHub watchers](https://badgen.net/github/watchers/Miccighel/Crowd_Frame/)](https://GitHub.com/Miccighel/Crowd_Frame/watchers/) [![GitHub contributors](https://img.shields.io/github/contributors/Miccighel/Crowd_Frame.svg)](https://GitHub.com/Miccighel/Crowd_Frame/graphs/contributors/)[![GitHub issues](https://badgen.net/github/issues/Miccighel/Crowd_Frame/)](https://GitHub.com/Miccighel/Crowd_Frame/issues/) [![GitHub issues](https://img.shields.io/github/issues/Miccighel/Crowd_Frame.svg)](https://GitHub.com/Miccighel/Crowd_Frame/issues/) [![GitHub issues-closed](https://img.shields.io/github/issues-closed/Miccighel/Crowd_Frame.svg)](https://GitHub.com/Miccighel/Crowd_Frame/issues?q=is%3Aissue+is%3Aclosed) [![GitHub pull-requests](https://img.shields.io/github/issues-pr/Miccighel/Crowd_Frame.svg)](https://GitHub.com/Miccighel/Crowd_Frame/pull/) [![GitHub pull-requests closed](https://img.shields.io/github/issues-pr-closed/Miccighel/Crowd_Frame.svg)](https://GitHub.com/Miccighel/Crowd_Frame/pull/) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 
 
 ![GitHub Contributors Image](https://contrib.rocks/image?repo=Miccighel/Crowd_Frame)
@@ -22,7 +21,9 @@
     <li><a href="#task-performing">Task Performing</a></li>
     <li><a href="#environment-variables">Environment Variables</a></li>
     <li><a href="#local-development">Local Development</li>
+    <li><a href="#references">References</li>
 </ul>
+
 
 ## Prerequisites
 
@@ -285,9 +286,58 @@ Now you can manually edit the configuration and test everything locally.
 
 :warning: _Remember_: each execution of the `init.py` script will overwrite this file :warning:
 
+## Contributing
+
+Any contributions you make are **greatly appreciated**.
+
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/dev-brach`)
+3. Commit your Changes (`git commit -m 'Add some Feature'`)
+4. Push to the Branch (`git push origin feature/dev-branch`)
+5. Open a Pull Request
+
+
 ## References
 
 This software has been already used in the past to launch several crowdsourcing tasks that lead to results published.
+
+----
+
+Michael Soprano, Kevin Roitero, David La Barbera, Davide Ceolin, Damiano Spina, Stefano Mizzaro, & Gianluca Demartini (2021). The Many Dimensions of Truthfulness: Crowdsourcing Misinformation Assessments on a Multidimensional Scale*. Information Processing & Management, \*58\*(6), 102710.
+
+````tex
+@article{journal-paper-ipm-2021,
+  title = {{The Many Dimensions of Truthfulness: Crowdsourcing Misinformation Assessments on a Multidimensional Scale}},
+  journal = {Information Processing & Management},
+  volume = {58},
+  number = {6},
+  pages = {102710},
+  year = {2021},
+  issn = {0306-4573},
+  doi = {https://doi.org/10.1016/j.ipm.2021.102710},
+  url = {https://www.sciencedirect.com/science/article/pii/S0306457321001941},
+  author = {Michael Soprano and Kevin Roitero and David {La Barbera} and Davide Ceolin and Damiano Spina and Stefano Mizzaro and Gianluca Demartini},
+  keywords = {Truthfulness, Crowdsourcing, Misinformation, Explainability}
+}
+````
+---
+
+Roitero, K., Soprano, M., Portelli, B., De Luise, M., Spina, D., Mea, V., Serra, G., Mizzaro, S., & Demartini, G. (2021). Can The Crowd Judge Truthfulness? A Longitudinal Study on Recent Misinformation About COVID-19. Personal and Ubiquitous Computing.
+
+````tex
+@Article{journal-paper-puc-2021,
+   author={Roitero, Kevin and Soprano, Michael and Portelli, Beatrice and De Luise, Massimiliano and Spina, Damiano and Mea, Vincenzo Della and Serra, Giuseppe and Mizzaro, Stefano and Demartini, Gianluca},
+   title={{Can The Crowd Judge Truthfulness? A Longitudinal Study on Recent Misinformation About COVID-19}},
+   journal={Personal and Ubiquitous Computing},
+   year={2021},
+   month={Sep},
+   day={16},
+   issn={1617-4917},
+   doi={10.1007/s00779-021-01604-6},
+   url={https://doi.org/10.1007/s00779-021-01604-6}
+}
+````
+
 
 ---
 
