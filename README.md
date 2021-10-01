@@ -1,5 +1,8 @@
-# Crowd_Frame
-![](https://badges.aleen42.com/src/angular.svg) ![](https://badges.aleen42.com/src/python.svg)
+# wd_Frame
+![](https://badges.aleen42.com/src/angular.svg) ![](https://badges.aleen42.com/src/python.svg)[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)![Maintainer](https://img.shields.io/badge/maintainer-Miccighel-blue)
+
+
+![GitHub Contributors Image](https://contrib.rocks/image?repo=Miccighel/Crowd_Frame)
 
 :star: Star us on GitHub — it motivates us a lot!
 
@@ -14,8 +17,8 @@
     <li><a href="#hits-format">HITs Format</a></li>
     <li><a href="#task-performing">Task Performing</a></li>
     <li><a href="#environment-variables">Environment Variables</a></li>
+    <li><a href="#local-development">Local Development</li>
 </ul>
-
 
 ## Prerequisites
 
@@ -206,8 +209,8 @@ The following fragment shows a valid configuration of a crowdsourcing task with 
 
 Useful tips:
 
-	1. Initially the deploy script creates an empty configuration
-	2. You can upload the HITs during configuration step 6
+1. Initially the deploy script creates an empty configuration
+2. You can upload the HITs during configuration step 6
 
 ## Task Performing
 
@@ -276,6 +279,4 @@ You may want to edit and test the task configuration locally. To enable local de
 
 Now you can manually edit the configuration and test everything locally.
 
-:warning: _Remember that_:
-
-​	1.  Each execution of the `init.py` script will overwrite this file, bear this in mind
+:warning: _Remember_: each execution of the `init.py` script will overwrite this file :warning:
