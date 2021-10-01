@@ -11,8 +11,11 @@
     <li><a href="#prerequisites">Prerequisites</a></li>
     <li><a href="#getting-started">Getting Started</a></li>
     <li><a href="#task-configuration">Task Configuration</a></li>
+    <li><a href="#hits-format">HITs Format</a></li>
+    <li><a href="#task-performing">Task Performing</a></li>
     <li><a href="#environment-variables">Environment Variables</a></li>
 </ul>
+
 
 ## Prerequisites
 
@@ -169,6 +172,42 @@ Allows to configure additional checks on workers.
 To test the task configured open the task and try it
 
 `https://your_deploy_bucket.s3.your_aws_region.amazonaws.com/your_task_name/your_batch_name/index.html`
+
+## HITs Format
+
+The HITs for a crowdsourcing task must be stored in a special `json` file and must comply to a specific format:
+
+1. There must be an array of HITs (also called _units_);
+2. Each HIT must have a _unique_ input token attribute;
+3. Each HIT must have a _unique_ output token attribute;
+4. The number of documents for each HIT must be specified;
+5. The documents for each HIT are key/value dictionaries;
+6. Each document can have an arbitrary number of attributes.
+
+The following fragment shows a valid configuration of a crowdsourcing task with 1 HIT. 
+
+````json
+[
+    {
+        "unit_id": "unit_0",
+        "token_input": "ABCDEFGHILM",
+        "token_output": "MNOPQRSTUVZ",
+        "documents_number": 1,
+        "documents": [
+            {
+                "id": "identifier_1",
+                "text": "Lorem ipsum dolor sit amet"
+            }
+        ]
+    }
+]
+
+````
+
+Useful tips:
+
+	1. Initially the deploy script creates an empty configuration
+ 	2. You can upload the HITs during configuration step 6
 
 ## Task Performing
 
