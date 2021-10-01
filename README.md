@@ -9,8 +9,10 @@
 
 <ul>
     <li><a href="#prerequisites">Prerequisites</a></li>
-    <li><a href="#getting-started">Gettina Started</a></li>
+    <li><a href="#getting-started">Getting Started</a></li>
+    <li><a href="#usage">Usage</a></li>
   </ul>
+
 
 
 ## Prerequisites
@@ -84,7 +86,7 @@
     cd data
     ```
     
-12. Create environment file:
+12. Create environment file `.env`:
 
     Path: `your_repo_folder/data/.env`
     
@@ -102,9 +104,25 @@
      bing_api_key=your_bing_api_key
      deploy_config=true_or_false
      ````
-    
 
-​       Please refer to the Table for a detailed explanation.
+​       Please refer to the scroll down for a detailed explanation.
+
+  14. Run python script `init.py`
+
+      Path: `your_repo_folder/data/init.py`
+
+      The script will:
+      
+      	- read your env. variables;
+      	- setup the AWS infrastructure;
+      	- generate an empty task configuration;
+      	- deploy the task on the public bucket.
+      
+  15. Open your task:
+
+      Link: `https://your_deploy_bucket.s3.your_aws_region.amazonaws.com/your_task_name/your_batch_name/index.html`
+
+      
 
 ## Usage
 
@@ -116,7 +134,7 @@
 |     `batch_name`     |             Identifier of a single task's batch              | :heavy_check_mark: | Any string                  |
 |     `admin_user`     |                  Username of the admin user                  | :heavy_check_mark: | Any string                  |
 |   `admin_password`   |                  Password of the admin user                  | :heavy_check_mark: | Any string                  |
-|     `aws_region`     |         Region of your AWS account; e.g. `us-east-1`         | :heavy_check_mark: | Valid AWS region identifier |
+|     `aws_region`     |        Region of your AWS account; e.g., `us-east-1`         | :heavy_check_mark: | Valid AWS region identifier |
 | `aws_private_bucket` | Name of the private S3 bucket in which to store task configuration and data | :heavy_check_mark: | String unique across AWS    |
 | `aws_deploy_bucket`  | Name of the public S3 bucket in which to deploy task source code | :heavy_check_mark: | String unique across AWS    |
 |   `server_config`    | Flag used to check if deploy the AWS logging infrastructure  |        :x:         | true \| false               |
