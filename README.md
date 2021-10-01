@@ -207,7 +207,7 @@ The following fragment shows a valid configuration of a crowdsourcing task with 
 Useful tips:
 
 	1. Initially the deploy script creates an empty configuration
- 	2. You can upload the HITs during configuration step 6
+	2. You can upload the HITs during configuration step 6
 
 ## Task Performing
 
@@ -239,3 +239,43 @@ Useful tips:
 |    `bing_api_key`    |        API Key to use `BingWebSearch` search provider        |        :x:         | Valid  Bing API Key         |
 |   `deploy_config`    | Allows to upload the task configuration available in the local machine. Useful for debugging purposes. |        :x:         | true \| false               |
 
+## Local Development
+
+You may want to edit and test the task configuration locally. To enable local development:
+
+1. Move to enviroments folder:
+
+    ````
+    cd your_repo_folder/data/build/environments
+    ````
+    
+2. Open the `dev` environment file:
+
+    ````
+    environment.ts
+    ````
+    
+3. Set the `configuration_local` flag to `true`:
+
+    Full sample:
+    
+    ````js
+    export const environment = {
+    	production: false,
+    	configuration_local: true,
+    	taskName: "your_task_name",
+    	batchName: "your_batch_name",
+    	region: "your_aws_region",
+    	bucket: "your_private_bucket",
+    	aws_id_key: "your_aws_key_id",
+    	aws_secret_key: "your_aws_key_secret",
+    	bing_api_key: "your_bing_api_key",
+    	logOnConsole: true,
+    };
+    ````
+
+Now you can manually edit the configuration and test everything locally.
+
+:warning: _Remember that_:
+
+​	1.  Each execution of the `init.py` script will overwrite this file, bear this in mind
