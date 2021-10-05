@@ -103,6 +103,8 @@
 13. Provide environment variables values:
     
      ````
+     mail_contact=your_email_address
+     budget_limit=your_usd_budget_limit
      task_name=your_task_name
      batch_name=your_batch_name
      admin_user=your_admin_username
@@ -110,11 +112,9 @@
      aws_region=your_aws_region
      aws_private_bucket=your_private_bucket_name
      aws_deploy_bucket=your_deploy_bucket_name
-     server_config=true_or_false
-     bing_api_key=your_bing_api_key
-     deploy_config=true_or_false
+     deploy_config=true
      ````
-
+    
   14. Run python script `init.py`
 
       Path: `your_repo_folder/data/init.py`
@@ -129,6 +129,8 @@
   15. Open your task:
 
       `https://your_deploy_bucket.s3.your_aws_region.amazonaws.com/your_task_name/your_batch_name/index.html`
+
+Crowd_Frame interacts with diverse Amazon Web Services (AWS) to deploy crowdsourcing tasks, store the data produced and so on. Each service used falls within the [AWS Free Tier](https://aws.amazon.com/free/) program. The budget limit that will block the usage of such services if/when surpassed.
 
 ## Task Configuration
 
@@ -232,8 +234,12 @@ Useful tips:
 
 ## Environment Variables
 
+The following table describes each environment variables that can be set in `your_repo_folder/data/.env`
+
 |       Variable       |                         Description                          |     Mandatory      | Value                       |
 | :------------------: | :----------------------------------------------------------: | :----------------: | --------------------------- |
+|    `mail_contact`    | Contact mail to receive AWS budgeting related comunications  | :heavy_check_mark: | Valid email address         |
+|    `budget_limit`    | Maximum monthly money amount allowed to operate in USD; e.g., `5.0` | :heavy_check_mark: | Positive float number       |
 |     `task_name`      |             Identifier of the crowdsourcing task             | :heavy_check_mark: | Any string                  |
 |     `batch_name`     |             Identifier of a single task's batch              | :heavy_check_mark: | Any string                  |
 |     `admin_user`     |                  Username of the admin user                  | :heavy_check_mark: | Any string                  |
@@ -241,9 +247,9 @@ Useful tips:
 |     `aws_region`     |        Region of your AWS account; e.g., `us-east-1`         | :heavy_check_mark: | Valid AWS region identifier |
 | `aws_private_bucket` | Name of the private S3 bucket in which to store task configuration and data | :heavy_check_mark: | String unique across AWS    |
 | `aws_deploy_bucket`  | Name of the public S3 bucket in which to deploy task source code | :heavy_check_mark: | String unique across AWS    |
-|   `server_config`    | Flag used to check if deploy the AWS logging infrastructure  |        :x:         | true \| false               |
+|   `deploy_config`    | Allows uploading the task configuration available in the local machine. Set it to false if you already edited the configuration remotely to avoid overwriting it. | :heavy_check_mark: | `true` |
+|   `server_config`    | Flag used to check if deploy the AWS logging infrastructure  |        :x:         | `true` \| `false`           |
 |    `bing_api_key`    |        API Key to use `BingWebSearch` search provider        |        :x:         | Valid  Bing API Key         |
-|   `deploy_config`    | Allows to upload the task configuration available in the local machine. Useful for debugging purposes. |        :x:         | true \| false               |
 
 ## Local Development
 
