@@ -93,7 +93,7 @@ aws_deploy_bucket = os.getenv('aws_deploy_bucket')
 budget_limit = os.getenv('budget_limit')
 bing_api_key = os.getenv('bing_api_key')
 
-iam = boto_session.client('iam')
+iam = boto_session.client('iam', region_name=aws_region)
 
 console.rule("0 - Initialization")
 
@@ -375,6 +375,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             "sqs:ListQueues",
             "sqs:CreateQueue",
             "sqs:GetQueueAttributes",
+            "sqs:GetQueueUrl",
             "apigateway:GET",
             "apigateway:POST",
             "dynamodb:CreateTable",
@@ -535,7 +536,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     status.update(f"Creating bucket")
     time.sleep(3)
 
-    s3_client = boto_session.client('s3')
+    s3_client = boto_session.client('s3', region_name=aws_region)
     s3_resource = boto_session.resource('s3')
 
     buckets = []
@@ -745,7 +746,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         status.start()
         status.update('Queue service setup')
         time.sleep(2)
-        sqs = boto_session.client('sqs')
+
+        sqs = boto_session.client('sqs', region_name=aws_region)
         queue = {}
         queue_name = "Crowd_Frame-Queue"
         if 'QueueUrls' not in sqs.list_queues(QueueNamePrefix=queue_name):
@@ -772,7 +774,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         status.update('Gateway setup')
         time.sleep(2)
 
-        api_gateway = boto_session.client('apigatewayv2')
+        api_gateway = boto_session.client('apigatewayv2', region_name=aws_region)
         api_gateway_name = 'Crowd_Frame-API'
 
         if not any(api for api in api_gateway.get_apis()['Items'] if api['Name'] == api_gateway_name):
@@ -824,7 +826,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         status.start()
         status.update('DynamoDB setup')
         time.sleep(2)
-        dynamo = boto_session.client('dynamodb')
+        dynamo = boto_session.client('dynamodb', region_name=aws_region)
         try:
             table_name = f"Crowd_Frame-{task_name}_{batch_name}_Logger"
             table = dynamo.create_table(
@@ -855,7 +857,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         status.start()
         status.update('Lambda setup')
         time.sleep(2)
-        lambdaClient = boto_session.client('lambda')
+        lambdaClient = boto_session.client('lambda', region_name=aws_region)
         function_name = 'Crowd_Frame-Logger'
         try:
             response = lambdaClient.create_function(
@@ -898,7 +900,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     status.update(f"Creating role")
     time.sleep(3)
 
-    budget_client = boto3.client('budgets')
+    budget_client = boto3.client('budgets', region_name=aws_region)
 
     role_name = "Budgeting"
     budget_name = "crowdsourcing-tasks"
@@ -972,8 +974,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 AccountId=aws_account_id,
                 BudgetName=budget_name
             )
-        else:
-            console.print(e.response)
     serialize_json(folder_aws_generated_path, f"budget_{budget_name}.json", response)
 
     response = budget_client.describe_budget_actions_for_budget(
@@ -982,7 +982,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     )
 
     if len(response['Actions']) > 0:
-        console.print("[yellow] Budgeting action already created")
+        console.print("[yellow]Budgeting action already created")
         response = response['Actions'][0]
     else:
         response = budget_client.create_budget_action(
@@ -1038,7 +1038,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     with open(environment_production, 'w') as file:
         print("export const environment = {", file=file)
         for (env_var, value) in environment_dict.items():
-            if env_var == 'production' or env_var == 'configuration_local' or env_var == 'logOnConsole':
+            if env_var == 'production' or env_var == 'configuration_local' or env_var == 'log_on_console':
                 print(f"\t{env_var}: {value},", file=file)
             else:
                 print(f"\t{env_var}: \"{value}\",", file=file)
@@ -1069,7 +1069,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     with open(environment_development, 'w') as file:
         print("export const environment = {", file=file)
         for (env_var, value) in environment_dict.items():
-            if env_var == 'production' or env_var == 'configuration_local' or env_var == 'logOnConsole':
+            if env_var == 'production' or env_var == 'configuration_local' or env_var == 'log_on_console':
                 print(f"\t{env_var}: {value},", file=file)
             else:
                 print(f"\t{env_var}: \"{value}\",", file=file)
@@ -1089,7 +1089,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     admin_file = f"{folder_build_config_path}admin.json"
 
     console.print("Creating hash with [cyan underline]hmac[/cyan underline] and [cyan underline]sha256[/cyan underline]")
-    console.print(f"Processing user with username: [white on purple]{admin_user}[white on purple]")
+    console.print(f"Processing user with username: [cyan on white]{admin_user}[/cyan on white]")
 
     admins = []
     body = f"username:{admin_user}"
@@ -1100,7 +1100,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     console.print(f"Path: [italic]{admin_file}")
 
-    console.rule(f"17 - Sample Task Configuration")
+    console.rule(f"17 - Sample task configuration")
     status.start()
     status.update(f"Generating a sample configuration if needed")
     time.sleep(3)
@@ -1764,7 +1764,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     folder_tasks_batch_task_path = f"{folder_tasks_batch_path}task/"
     folder_tasks_batch_config_path = f"{folder_tasks_batch_path}config/"
 
-    s3_client = boto_session.client('s3')
+    s3_client = boto_session.client('s3', region_name=aws_region)
 
 
     def upload(path, bucket, key, title, content_type, acl=None):

@@ -109,13 +109,25 @@
      batch_name=your_batch_name
      admin_user=your_admin_username
      admin_password=your_admin_password
+     server_config=aws
      aws_region=your_aws_region
      aws_private_bucket=your_private_bucket_name
      aws_deploy_bucket=your_deploy_bucket_name
      deploy_config=true
      ````
+
+  14. Install python packages with `pip install package_name`:
+
+     ````
+     boto3==1.18.21
+     dotenv-python==0.0.1
+     mako==1.1.5
+     pandas==1.3.3
+     python-dotenv==0.19.0
+     rich==10.12.0
+     ````
     
-  14. Run python script `init.py`
+  15. Run python script `init.py`
 
       Path: `your_repo_folder/data/init.py`
 
@@ -126,7 +138,7 @@
       	- generate an empty task configuration;
       	- deploy the task on the public bucket.
       
-  15. Open your task:
+  16. Open your task:
 
       `https://your_deploy_bucket.s3.your_aws_region.amazonaws.com/your_task_name/your_batch_name/index.html`
 
@@ -247,8 +259,8 @@ The following table describes each environment variables that can be set in `you
 |     `aws_region`     |        Region of your AWS account; e.g., `us-east-1`         | :heavy_check_mark: | Valid AWS region identifier |
 | `aws_private_bucket` | Name of the private S3 bucket in which to store task configuration and data | :heavy_check_mark: | String unique across AWS    |
 | `aws_deploy_bucket`  | Name of the public S3 bucket in which to deploy task source code | :heavy_check_mark: | String unique across AWS    |
-|   `deploy_config`    | Allows uploading the task configuration available in the local machine. Set it to false if you already edited the configuration remotely to avoid overwriting it. | :heavy_check_mark: | `true` |
-|   `server_config`    | Flag used to check if deploy the AWS logging infrastructure  |        :x:         | `true` \| `false`           |
+|   `server_config`    | Used to specify where the worker behavior logging interface is. Set it to `aws` to deploy the AWS-based infrastructure. Set it to `custom` if you want to provide a custom logging endpoint. Set it to `none` if you will not log worker behavior. | :heavy_check_mark: | `aws` or `custom` or `none` |
+|   `deploy_config`    | Allows uploading the task configuration available in the local machine. Set it to `false` if you already edited the configuration remotely to avoid overwriting it. | :heavy_check_mark: | `true` |
 |    `bing_api_key`    |        API Key to use `BingWebSearch` search provider        |        :x:         | Valid  Bing API Key         |
 
 ## Local Development

@@ -322,7 +322,7 @@ export class SkeletonComponent implements OnInit {
         /* |--------- LOGGING ELEMENTS - INITIALIZATION ---------| */
 
         this.sequenceNumber = 0
-        this.logOnConsole = this.configService.environment.logOnConsole
+        this.logOnConsole = this.configService.environment.log_on_console
 
         /* |--------- CONFIGURATION GENERATOR INTEGRATION - INITIALIZATION ---------| */
 
