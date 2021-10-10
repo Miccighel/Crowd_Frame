@@ -2,10 +2,10 @@
   "Version": "2012-10-17",
   "Statement": [
     {
-      "Sid": "",
+      "Sid": "AllowLambdaInteraction",
       "Effect": "Allow",
       "Principal": {
-        "Service": "sqs.amazonaws.com"
+        "Service": "lambda.amazonaws.com"
       },
       "Action": "sts:AssumeRole"
     }

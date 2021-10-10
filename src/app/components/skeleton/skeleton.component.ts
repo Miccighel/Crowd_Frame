@@ -322,7 +322,7 @@ export class SkeletonComponent implements OnInit {
         /* |--------- LOGGING ELEMENTS - INITIALIZATION ---------| */
 
         this.sequenceNumber = 0
-        this.logOnConsole = this.configService.environment.logOnConsole
+        this.logOnConsole = this.configService.environment.log_on_console
 
         /* |--------- CONFIGURATION GENERATOR INTEGRATION - INITIALIZATION ---------| */
 
@@ -516,16 +516,17 @@ export class SkeletonComponent implements OnInit {
             /* The hits stored on Amazon S3 are retrieved */
             let hits = await this.S3Service.downloadHits(this.configService.environment)
 
-      /* Scan each entry for the token input */
-      for (let currentHit of hits) {
-        /* If the token input of the current hit matches with the one inserted by the worker the right hit has been found */
-        if (this.tokenInput.value === currentHit.token_input) {
-          this.hit = currentHit;
-          this.tokenOutput = currentHit.token_output;
-          this.unitId = currentHit.unit_id
-          this.actionLogger.unitId = this.unitId
-        }
-      }
+            /* Scan each entry for the token input */
+            for (let currentHit of hits) {
+                /* If the token input of the current hit matches with the one inserted by the worker the right hit has been found */
+                if (this.tokenInput.value === currentHit.token_input) {
+                    this.hit = currentHit;
+                    this.tokenOutput = currentHit.token_output;
+                    this.unitId = currentHit.unit_id
+                    if(this.logger)
+                        this.actionLogger.unitId = this.unitId
+                }
+            }
 
             /* The token input field is disabled and the task interface can be shown */
             this.tokenInput.disable();
@@ -1058,7 +1059,7 @@ export class SkeletonComponent implements OnInit {
     public handleCountdown(event, i) {
         if (event.left == 0) {
             this.countdownsExpired[i] = true
-            if(this.settings.countdown_behavior=='disable_form')
+            if (this.settings.countdown_behavior == 'disable_form')
                 this.documentsForm[i].disable()
         }
     }
@@ -2128,11 +2129,11 @@ export class SkeletonComponent implements OnInit {
                 let timestampsElapsed = this.timestampsElapsed[completedElement];
                 data["timestamps_elapsed"] = timestampsElapsed
                 /* Countdown time and corresponding flag */
-                let countdownTimeStart = (this.settings.countdown_time>=0) ? this.documentsCountdownTime[completedDocument] : []
+                let countdownTimeStart = (this.settings.countdown_time >= 0) ? this.documentsCountdownTime[completedDocument] : []
                 data["countdowns_times_start"] = countdownTimeStart
-                let countdownTime = (this.settings.countdown_time>=0) ? Number(this.countdown[completedDocument]["i"]["text"]) : []
+                let countdownTime = (this.settings.countdown_time >= 0) ? Number(this.countdown.toArray()[completedDocument]["i"]["text"]) : []
                 data["countdowns_times_left"] = countdownTime
-                let countdown_expired = (this.settings.countdown_time>=0) ? this.countdownsExpired[completedDocument] : []
+                let countdown_expired = (this.settings.countdown_time >= 0) ? this.countdownsExpired[completedDocument] : []
                 data["countdowns_expired"] = countdown_expired
                 /* Number of accesses to the current document (currentDocument.e., how many times the worker reached the document with a "Back" or "Next" action */
                 let accesses = accessesAmount + 1

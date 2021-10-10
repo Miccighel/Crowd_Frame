@@ -2,7 +2,7 @@
   "Version": "2012-10-17",
   "Statement": [
     {
-      "Sid": "",
+      "Sid": "Gateway",
       "Effect": "Allow",
       "Principal": {
         "Service": "apigateway.amazonaws.com"

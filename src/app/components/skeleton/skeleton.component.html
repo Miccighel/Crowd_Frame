@@ -242,6 +242,10 @@
                                                 {{(this.countdownsExpired[i] && this.settings.countdown_behavior == "hide_attributes") ? "---------- text_hidden ----------" : document[attribute.name]}}
                                             </span>
                                         </span>
+                                        <span class="attribute-label" *ngIf="this.annotator && this.annotator.type=='laws'&& attribute.annotate">
+                                            <strong>{{attribute.name_pretty}}</strong>:
+                                            <span id="document-{{i}}-attribute-{{k}}">TO BE IMPLEMENTED</span>
+                                        </span>
                                     </p>
                                 </div>
                             </ng-container>
@@ -530,7 +534,7 @@
                                                         <mat-radio-button *ngFor="let mapping of dimension.scale.mapping let k=index"
                                                                           class="radio-button" value="{{mapping.value}}"
                                                                           (change)="storeDimensionValue($event, i, dimension.index)">
-                                                            <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0">({{mapping.description}})</span>
+                                                            <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0"> ({{mapping.description}})</span>
                                                         </mat-radio-button>
                                                     </mat-radio-group>
                                                 </ng-container>
@@ -573,7 +577,7 @@
                                                     <mat-radio-button *ngFor="let mapping of dimension.scale.mappings let k=index"
                                                                       class="radio-button" value="{{mapping.value}}"
                                                                       (change)="storeDimensionValue($event, i,dimension.index)">
-                                                        <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0">({{mapping.description}})</span>
+                                                        <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0"> ({{mapping.description}})</span>
                                                     </mat-radio-button>
                                                 </mat-radio-group>
                                             </ng-container>
@@ -587,8 +591,7 @@
                                                     <mat-radio-button *ngFor="let mapping of dimension.scale.mapping let k=index"
                                                                       class="radio-button" value="{{mapping.value}}"
                                                                       (change)="storeDimensionValue($event, i, dimension.index)">
-                                                        <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0">
-                                ({{mapping.description}})</span>
+                                                        <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0"> ({{mapping.description}})</span>
                                                     </mat-radio-button>
                                                 </mat-radio-group>
                                             </ng-container>
