@@ -574,7 +574,7 @@
 
                                                 <!-- Categorical scale markup -->
                                                 <mat-radio-group *ngIf="dimension.scale.type=='categorical'" aria-labelledby="radio-button-label" formControlName="{{(dimension.name).concat('_value')}}">
-                                                    <mat-radio-button *ngFor="let mapping of dimension.scale.mappings let k=index"
+                                                    <mat-radio-button *ngFor="let mapping of dimension.scale.mapping let k=index"
                                                                       class="radio-button" value="{{mapping.value}}"
                                                                       (change)="storeDimensionValue($event, i,dimension.index)">
                                                         <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0"> ({{mapping.description}})</span>
@@ -692,9 +692,9 @@
                                 </div>
 
                                 <!-- Dimension assessment matrix header markup -->
-                                <mat-radio-group *ngIf="j==0">
+                                <mat-radio-group *ngIf="j==0 && dimension.scale">
                                     <div></div>
-                                    <div *ngFor="let mapping of dimension.scale.mappings; let k=index">
+                                    <div *ngFor="let mapping of dimension.scale.mapping; let k=index">
                                         <div class="matrix-header">
                                             <ng-container>
                                                 <span class="matrix-header-text">{{mapping.label}}</span>
@@ -711,6 +711,7 @@
                                 </mat-radio-group>
 
                                 <!-- Dimension assessment fields markup -->
+                                <div *ngIf="dimension.scale">
                                 <mat-radio-group aria-labelledby="radio-button-label" formControlName="{{(dimension.name).concat('_value')}}">
                                     <div>
                                         <p>
@@ -718,10 +719,11 @@
                                             </strong><strong>{{dimension.description.toLowerCase().split(")")[0]}})</strong>{{dimension.description.toLowerCase().split(")")[1]}})
                                         </p>
                                     </div>
-                                    <div *ngFor="let mapping of dimension.scale.mappings; let k=index">
+                                    <div *ngFor="let mapping of dimension.scale.mapping; let k=index">
                                         <mat-radio-button class="radio-button" value="{{mapping.value}}" (change)="storeDimensionValue($event, i,dimension.index)"></mat-radio-button>
                                     </div>
                                 </mat-radio-group>
+                                </div>
 
                                 <!-- Separator markup -->
                                 <mat-divider *ngIf="dimension.style.separator" [inset]="true"></mat-divider>
@@ -730,18 +732,12 @@
                         </ng-template>
 
                         <!-- Dimensions are then shown and filtered according to each position -->
-                        <ng-template *ngIf="this.filterDimensions('list', 'top').length>0" [ngTemplateOutlet]="dimensionList"
-                                     [ngTemplateOutletContext]="{dimensions: this.filterDimensions('list', 'top'), i:i}"></ng-template>
-                        <ng-template *ngIf="this.filterDimensions('list', 'middle').length>0" [ngTemplateOutlet]="dimensionList"
-                                     [ngTemplateOutletContext]="{dimensions: this.filterDimensions('list', 'middle'), i:i}"></ng-template>
-                        <ng-template *ngIf="this.filterDimensions('list', 'bottom').length>0" [ngTemplateOutlet]="dimensionList"
-                                     [ngTemplateOutletContext]="{dimensions: this.filterDimensions('list', 'bottom'), i:i}"></ng-template>
-                        <ng-template *ngIf="this.filterDimensions('matrix', 'top').length>0" [ngTemplateOutlet]="dimensionMatrix"
-                                     [ngTemplateOutletContext]="{dimensions: this.filterDimensions('matrix', 'top'), i:i}"></ng-template>
-                        <ng-template *ngIf="this.filterDimensions('matrix', 'middle').length>0" [ngTemplateOutlet]="dimensionMatrix"
-                                     [ngTemplateOutletContext]="{dimensions: this.filterDimensions('matrix', 'middle'), i:i}"></ng-template>
-                        <ng-template *ngIf="this.filterDimensions('matrix', 'bottom').length>0" [ngTemplateOutlet]="dimensionMatrix"
-                                     [ngTemplateOutletContext]="{dimensions: this.filterDimensions('matrix', 'bottom'), i:i}"></ng-template>
+                        <ng-template *ngIf="this.filterDimensions('list', 'top').length>0" [ngTemplateOutlet]="dimensionList" [ngTemplateOutletContext]="{dimensions: this.filterDimensions('list', 'top'), i:i}"></ng-template>
+                        <ng-template *ngIf="this.filterDimensions('matrix', 'top').length>0" [ngTemplateOutlet]="dimensionMatrix" [ngTemplateOutletContext]="{dimensions: this.filterDimensions('matrix', 'top'), i:i}"></ng-template>
+                        <ng-template *ngIf="this.filterDimensions('list', 'middle').length>0" [ngTemplateOutlet]="dimensionList" [ngTemplateOutletContext]="{dimensions: this.filterDimensions('list', 'middle'), i:i}"></ng-template>
+                        <ng-template *ngIf="this.filterDimensions('matrix', 'middle').length>0" [ngTemplateOutlet]="dimensionMatrix" [ngTemplateOutletContext]="{dimensions: this.filterDimensions('matrix', 'middle'), i:i}"></ng-template>
+                        <ng-template *ngIf="this.filterDimensions('list', 'bottom').length>0" [ngTemplateOutlet]="dimensionList" [ngTemplateOutletContext]="{dimensions: this.filterDimensions('list', 'bottom'), i:i}"></ng-template>
+                        <ng-template *ngIf="this.filterDimensions('matrix', 'bottom').length>0" [ngTemplateOutlet]="dimensionMatrix" [ngTemplateOutletContext]="{dimensions: this.filterDimensions('matrix', 'bottom'), i:i}"></ng-template>
 
                     </mat-card-content>
 

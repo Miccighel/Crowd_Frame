@@ -38,9 +38,8 @@ import {NoteStandard} from "../../models/notes_standard";
 import {NoteLaws} from "../../models/notes_laws";
 import {MatRadioChange} from "@angular/material/radio";
 import {MatCheckboxChange} from "@angular/material/checkbox";
-import {ButtonDirective} from "./skeleton.directive";
 import {SectionService} from "../../services/section.service";
-import CryptoES from "crypto-es";
+import {DynamoDBService} from "../../services/dynamoDB.service";
 
 /* Component HTML Tag definition */
 @Component({
@@ -66,6 +65,7 @@ export class SkeletonComponent implements OnInit {
     configService: ConfigService;
     /* Service which wraps the interaction with S3 */
     S3Service: S3Service;
+    dynamoDBService: DynamoDBService;
     /* Service to detect user's device */
     deviceDetectorService: DeviceDetectorService;
     /* Service to log to the server */
@@ -267,6 +267,7 @@ export class SkeletonComponent implements OnInit {
         ngxService: NgxUiLoaderService,
         configService: ConfigService,
         S3Service: S3Service,
+        dynamoDBService: DynamoDBService,
         deviceDetectorService: DeviceDetectorService,
         client: HttpClient,
         formBuilder: FormBuilder,
@@ -280,6 +281,7 @@ export class SkeletonComponent implements OnInit {
         this.ngxService = ngxService;
         this.configService = configService;
         this.S3Service = S3Service;
+        this.dynamoDBService = dynamoDBService;
 
         this.actionLogger = actionLogger
 
@@ -360,7 +362,6 @@ export class SkeletonComponent implements OnInit {
                             this.worker = new Worker(this.workerIdentifier, this.S3Service.getWorkerFolder(this.configService.environment, null, this.workerIdentifier), cloudflareData, window.navigator, this.deviceDetectorService.getDeviceInfo())
                             this.sectionService.taskAllowed = taskAllowed
                             this.sectionService.checkCompleted = true
-
                             this.changeDetector.detectChanges()
                             /* The loading spinner is stopped */
                             this.ngxService.stop();
@@ -420,63 +421,16 @@ export class SkeletonComponent implements OnInit {
     */
     public async performWorkerStatusCheck() {
         /* The worker identifiers of the current task are downloaded */
-        let currentWorkers = await this.S3Service.downloadWorkers(this.configService.environment)
-
-        /* Legacy version of this software used a "started" attributed to generate a dictionary instead of a "blacklist" attribute */
-        if ('started' in currentWorkers) {
-            currentWorkers['blacklist'] = currentWorkers['started']
-            delete currentWorkers['started']
-        }
-
-        let blacklistedInCurrentTask = false;
-
-        /* Check if the worker is blacklisted within the current task */
-        for (let currentWorker of currentWorkers['blacklist']) if (currentWorker == this.workerIdentifier) blacklistedInCurrentTask = true;
-
-        /* If he is not blacklisted in the current back the check can continue for the previous batches */
-        if (!blacklistedInCurrentTask) {
-
-            /* If the current worker was blacklisted in a previous batch he must be blocked... */
-            for (let blacklistBatch of this.blacklistBatches) {
-                let blacklistedWorkers = await this.S3Service.downloadWorkers(this.configService.environment, blacklistBatch)
-                for (let currentWorker of blacklistedWorkers['blacklist']) {
-                    if (currentWorker == this.workerIdentifier) {
-                        if (!currentWorkers["blacklist"].includes(this.workerIdentifier))
-                            currentWorkers['blacklist'].push(this.workerIdentifier);
-                    }
-                }
-            }
-
-            for (let whitelistBatch of this.whitelistBatches) {
-                let whitelistedWorkers = await this.S3Service.downloadWorkers(this.configService.environment, whitelistBatch)
-                for (let currentWorker of whitelistedWorkers['blacklist']) {
-                    if (currentWorker == this.workerIdentifier) {
-                        if (!currentWorkers["whitelist"].includes(this.workerIdentifier))
-                            currentWorkers['whitelist'].push(this.workerIdentifier);
-                    }
-                }
-            }
-
-            /* If the worker was not blacklisted he is allowed to perform the task */
-            if (!currentWorkers["blacklist"].includes(this.workerIdentifier)) {
-                currentWorkers['blacklist'].push(this.workerIdentifier);
-                let uploadStatus = await this.S3Service.uploadWorkers(this.configService.environment, currentWorkers);
-                return true;
-            } else {
-                /* If the worker was blacklisted within a previous batch but whitelisted within the current batch he is allowed to perform the task */
-                if (currentWorkers["blacklist"].includes(this.workerIdentifier) && currentWorkers["whitelist"].includes(this.workerIdentifier)) {
-                    let uploadStatus = await this.S3Service.uploadWorkers(this.configService.environment, currentWorkers);
-                    return true
-                } else {
-                    let uploadStatus = await this.S3Service.uploadWorkers(this.configService.environment, currentWorkers);
+        let rawWorker = await this.dynamoDBService.getWorker(this.configService.environment, this.workerIdentifier)
+        if('Items' in rawWorker) {
+            for(let worker of rawWorker['Items']) {
+                if(this.workerIdentifier == worker['identifier']) {
                     return false
                 }
             }
-
-        } else {
-            /* If a returning worker for the current batch is found he is not allowed to perform the task */
-            return false
         }
+        await this.dynamoDBService.insertWorker(this.configService.environment, this.workerIdentifier, this.currentTry)
+        return true
     }
 
     /*
@@ -628,6 +582,8 @@ export class SkeletonComponent implements OnInit {
                 }
                 this.documentsForm[index] = this.formBuilder.group(controlsConfig)
             }
+
+            console.log(this.dimensions)
 
             this.dimensionsSelectedValues = new Array<object>(this.documentsAmount);
             for (let index = 0; index < this.dimensionsSelectedValues.length; index++) {
@@ -781,8 +737,6 @@ export class SkeletonComponent implements OnInit {
         for (let dimension of this.dimensions) {
             if (dimension.style) {
                 if (dimension.style.type == kind && dimension.style.position == position) filteredDimensions.push(dimension)
-            } else {
-                if (kind == "list" && position == "bottom") filteredDimensions.push(dimension)
             }
         }
         return filteredDimensions
