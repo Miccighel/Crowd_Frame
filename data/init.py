@@ -100,6 +100,7 @@ budget_limit = os.getenv('budget_limit')
 bing_api_key = os.getenv('bing_api_key')
 
 table_logging_name = f"Crowd_Frame-{task_name}_{batch_name}_Logger"
+table_data_name = f"Crowd_Frame-{task_name}_{batch_name}_Data"
 table_acl_name = f"Crowd_Frame-{task_name}_{batch_name}_ACL"
 
 iam = boto_session.client('iam', region_name=aws_region)
@@ -855,6 +856,20 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             status.stop()
             console.print(f"Table {table_logging_name} already created")
         try:
+            table_name = table_data_name
+            table = dynamo.create_table(
+                TableName=table_name,
+                AttributeDefinitions=[{'AttributeName': 'identifier', 'AttributeType': 'S'}, {'AttributeName': 'sequence', 'AttributeType': 'S'}],
+                KeySchema=[{'AttributeName': 'identifier', 'KeyType': 'HASH'}, {'AttributeName': 'sequence', 'KeyType': 'RANGE'}],
+                BillingMode='PAY_PER_REQUEST'
+            )
+            serialize_json(folder_aws_generated_path, f"dynamodb_table_{table_name}.json", table)
+            status.stop()
+            console.print(f"{table_data_name} created")
+        except dynamo.exceptions.ResourceInUseException:
+            status.stop()
+            console.print(f"Table {table_data_name} already created")
+        try:
             table_name = table_acl_name
             table = dynamo.create_table(
                 TableName=table_name,
@@ -1043,7 +1058,9 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         "bing_api_key": bing_api_key,
         "log_on_console": 'false',
         "log_server_config": f"{server_config}",
-        "table_acl_name": f"{table_acl_name}"
+        "table_acl_name": f"{table_acl_name}",
+        "table_data_name": f"{table_data_name}",
+        "table_log_name": f"{table_logging_name}",
     }
 
     os.makedirs(folder_build_env_path, exist_ok=True)
@@ -1077,7 +1094,9 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         "bing_api_key": bing_api_key,
         "log_on_console": 'true',
         "log_server_config": f"{server_config}",
-        "table_acl_name": f"{table_acl_name}"
+        "table_acl_name": f"{table_acl_name}",
+        "table_data_name": f"{table_data_name}",
+        "table_log_name": f"{table_logging_name}"
     }
 
     with open(environment_development, 'w') as file:

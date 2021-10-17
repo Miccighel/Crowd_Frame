@@ -62,4 +62,19 @@ export class DynamoDBService {
         return await this.loadDynamoDB(config).putItem(params).promise();
     }
 
+    public async insertData(config, worker_id, unit_id, current_try, sequence_number, data) {
+        let params = {
+            TableName: config["table_data_name"],
+            Item: {
+                identifier: {S: worker_id},
+                sequence: {S: `${worker_id}-${unit_id}-${current_try}-${sequence_number}`},
+                data: {S: JSON.stringify(data)},
+                time: {S: (new Date().toUTCString())}
+            }
+        };
+        return await this.loadDynamoDB(config).putItem(params).promise();
+    }
+
+
+
 }

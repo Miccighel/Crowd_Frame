@@ -389,7 +389,7 @@ for batchName in batchesName:
                         with open(ipFile, 'w', encoding='utf-8') as f:
                             json.dump(decodedData, f, ensure_ascii=False, indent=4)
                     workerCity = decodedData['city']
-                    workerHostname = decodedData['hostname'] if "nostname" in decodedData else None
+                    workerHostname = decodedData['hostname'] if "hostname" in decodedData else None
                     workerRegion = decodedData['region']
                     workerCountryCode = decodedData['country']
                     workerCountryName = decodedData['country_name']

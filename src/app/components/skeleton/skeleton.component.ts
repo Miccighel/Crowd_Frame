@@ -583,8 +583,6 @@ export class SkeletonComponent implements OnInit {
                 this.documentsForm[index] = this.formBuilder.group(controlsConfig)
             }
 
-            console.log(this.dimensions)
-
             this.dimensionsSelectedValues = new Array<object>(this.documentsAmount);
             for (let index = 0; index < this.dimensionsSelectedValues.length; index++) {
                 this.dimensionsSelectedValues[index] = {};
@@ -1775,6 +1773,12 @@ export class SkeletonComponent implements OnInit {
 
         if (!(this.worker.identifier === null)) {
             /* The result of quality check control  for the current try is uploaded to the Amazon S3 bucket along with the gold configuration. */
+            let data = {}
+            let actionInfo = {
+                try: this.currentTry,
+                sequence: this.sequenceNumber,
+                element: "checks"
+            };
             let qualityCheckData = {
                 globalFormValidity: globalValidityCheck,
                 timeSpentCheck: timeSpentCheck,
@@ -1782,6 +1786,7 @@ export class SkeletonComponent implements OnInit {
                 goldChecks: goldChecks,
                 goldConfiguration: goldConfiguration
             };
+            data["checks"] = qualityCheckData
             let uploadStatus = await this.S3Service.uploadQualityCheck(
                 this.configService.environment,
                 this.worker,
@@ -1789,6 +1794,8 @@ export class SkeletonComponent implements OnInit {
                 qualityCheckData,
                 this.currentTry
             )
+            await this.dynamoDBService.insertData(this.configService.environment, this.workerIdentifier, this.unitId, this.currentTry, this.sequenceNumber, data)
+            this.sequenceNumber = this.sequenceNumber + 1
         }
 
         /* Detect changes within the DOM and stop the spinner */
@@ -1992,7 +1999,11 @@ export class SkeletonComponent implements OnInit {
             data["worker"] = this.worker
             /* await (this.upload(`${this.workerFolder}/worker.json`, this.worker)); */
 
-            let uploadStatus = await this.S3Service.uploadTaskData(this.configService.environment, this.worker, this.unitId, data)
+            if(this.sequenceNumber<=0) {
+                let uploadStatus = await this.S3Service.uploadTaskData(this.configService.environment, this.worker, this.unitId, data)
+                await this.dynamoDBService.insertData(this.configService.environment, this.workerIdentifier, this.unitId, this.currentTry, this.sequenceNumber, data)
+                this.sequenceNumber = this.sequenceNumber + 1
+            }
 
             /* If the worker has completed a questionnaire */
             if (completedElement < this.questionnaireAmountStart || (completedElement >= this.questionnaireAmountStart + this.documentsAmount)) {
@@ -2038,6 +2049,7 @@ export class SkeletonComponent implements OnInit {
                 data["accesses"] = accessesAmount + 1
 
                 let uploadStatus = await this.S3Service.uploadQuestionnaire(this.configService.environment, this.worker, this.unitId, data, this.currentTry, completedQuestionnaire, accessesAmount + 1, this.sequenceNumber)
+                await this.dynamoDBService.insertData(this.configService.environment, this.workerIdentifier, this.unitId, this.currentTry, this.sequenceNumber, data)
 
                 /* The amount of accesses to the current questionnaire is incremented */
                 this.sequenceNumber = this.sequenceNumber + 1
@@ -2100,6 +2112,7 @@ export class SkeletonComponent implements OnInit {
                 data["responses_selected"] = responsesSelected
 
                 let uploadStatus = await this.S3Service.uploadDocument(this.configService.environment, this.worker, this.unitId, data, this.currentTry, completedDocument, accessesAmount + 1, this.sequenceNumber)
+                await this.dynamoDBService.insertData(this.configService.environment, this.workerIdentifier, this.unitId, this.currentTry, this.sequenceNumber, data)
 
                 /* The amount of accesses to the current document is incremented */
                 this.elementsAccesses[completedElement] = accessesAmount + 1;
@@ -2157,6 +2170,9 @@ export class SkeletonComponent implements OnInit {
                 /* If the last element is a document */
 
                 let uploadStatus = await this.S3Service.uploadFinalData(this.configService.environment, this.worker, this.unitId, data, this.currentTry)
+                await this.dynamoDBService.insertData(this.configService.environment, this.workerIdentifier, this.unitId, this.currentTry, this.sequenceNumber, data)
+
+                this.sequenceNumber = this.sequenceNumber + 1
 
             }
 
@@ -2169,7 +2185,17 @@ export class SkeletonComponent implements OnInit {
      * The comment can be typed in a textarea and when the worker clicks the "Send" button such comment is uploaded to an Amazon S3 bucket.
      */
     public async performCommentSaving() {
+        let data = {}
+        let actionInfo = {
+            try: this.currentTry,
+            sequence: this.sequenceNumber,
+            element: "comment"
+        };
+        data["info"] = actionInfo
+        data['value'] = this.commentForm.value
         let uploadStatus = await this.S3Service.uploadComment(this.configService.environment, this.worker, this.unitId, this.commentForm.value, this.currentTry)
+        await this.dynamoDBService.insertData(this.configService.environment, this.workerIdentifier, this.unitId, this.currentTry, this.sequenceNumber, data)
+        this.sequenceNumber = this.sequenceNumber + 1
         this.commentSent = true;
     }
 
