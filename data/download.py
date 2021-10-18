@@ -1,38 +1,26 @@
 #!/usr/bin/env python
 # coding: utf-8
+
 import json
 import os
 from glob import glob
 import ipinfo
 import re
 import numpy as np
-import random
-import requests
-import shutil
-import textwrap
 import time
+import requests
 from distutils.util import strtobool
 from pathlib import Path
-from shutil import copy2
 import boto3
 import pandas as pd
-from botocore.exceptions import ClientError
-from botocore.exceptions import ProfileNotFound
 from dotenv import load_dotenv
-from mako.template import Template
 from IPython.display import display
 from rich.console import Console
-from rich.panel import Panel
-from rich.progress import track
 from tqdm import tqdm
-
-pd.set_option('display.max_columns', None)
 
 console = Console()
 
 env_path = Path('.') / '.env'
-
-
 load_dotenv(dotenv_path=env_path)
 
 mail_contact = os.getenv('mail_contact')
@@ -51,10 +39,22 @@ budget_limit = os.getenv('budget_limit')
 bing_api_key = os.getenv('bing_api_key')
 table_logging_name = f"Crowd_Frame-{task_name}_{batch_name}_Logger"
 table_acl_name = f"Crowd_Frame-{task_name}_{batch_name}_ACL"
+table_data_name = f"Crowd_Frame-{task_name}_{batch_name}_Data"
+
+
+def serialize_json(folder, filename, data):
+    if not os.path.exists(folder):
+        os.makedirs(folder, exist_ok=True)
+    with open(f"{folder}{filename}", 'w', encoding='utf-8') as f:
+        json.dump(data, f, ensure_ascii=False, indent=4, default=str)
+        f.close()
+
 
 console.rule("0 - Initialization")
 
-folder_result_path = f"result/{task_name}/{batch_name}/"
+os.chdir("../data/")
+
+folder_result_path = f"result/{task_name}/"
 os.makedirs(folder_result_path, exist_ok=True)
 
 boto_session = boto3.Session(profile_name='mturk-user')
@@ -63,86 +63,174 @@ boto_session = boto3.Session(profile_name='config-user')
 s3 = boto_session.client('s3', region_name=aws_region)
 s3_resource = boto_session.resource('s3')
 bucket = s3_resource.Bucket(aws_private_bucket)
+dynamo_db = boto3.client('dynamodb', region_name=aws_region)
 
 console.print("[bold]Download.py[/bold] script launched")
 console.print(f"Working directory: [bold]{os.getcwd()}[/bold]")
 
-console.rule("1 - Fetching HITs details")
+console.rule("1 - Fetching HITs")
 
-hit_df = pd.DataFrame()
-hit_data_path = f"{folder_result_path}batch_result.csv"
+console.print(f"Task: [cyan on white]{task_name}")
+console.print(f"Batch: [cyan on white]{batch_name}")
 
-if not os.path.exists(hit_data_path):
+hit_data_path = f"result/hits_data.csv"
 
-    for item in tqdm(mturk.list_hits()['HITs']):
+next_token = ''
+hit_counter = 0
+token_counter = 0
 
-        row = {}
+with console.status(f"Downloading HITs, Token: {next_token}, Total: {token_counter}", spinner="aesthetic") as status:
 
-        hit_id = item['HITId']
-        hit_status = mturk.get_hit(HITId=hit_id)['HIT']
-        hit_status.pop('Question')
-        hit_status.pop('QualificationRequirements')
+    status.start()
 
-        if hit_status['Title']=='Assessment of reviews':
+    while next_token != '' or next_token is not None:
 
-            for hit_status_attribute, hit_status_value in hit_status.items():
-                row[hit_status_attribute] = hit_status_value
+        if not os.path.exists(hit_data_path):
+            console.print(f"[yellow]HITs data[/yellow] file not detected, creating it.")
+            hit_df = pd.DataFrame(columns=[
+                'HITId', 'HITTypeId', 'HITGroupId', 'HITLayoutId', 'CreationTime', 'Title', 'Description', 'Keywords', 'HITStatus', 'MaxAssignments',
+                'Reward', 'AutoApprovalDelayInSeconds', 'Expiration','AssignmentDurationInSeconds', 'RequesterAnnotation', 'HITReviewStatus',
+                'NumberOfAssignmentsPending', 'NumberOfAssignmentsAvailable', 'NumberOfAssignmentsCompleted', 'AssignmentId', 'WorkerId', 'AssignmentStatus',
+                'AutoApprovalTime', 'AcceptTime', 'SubmitTime', 'ApprovalTime'
+            ])
+        else:
+            hit_df = pd.read_csv(hit_data_path)
 
-            for hit_assignment in mturk.list_assignments_for_hit(HITId=hit_id)['Assignments']:
+        if next_token == '':
+            response = mturk.list_hits()
+        else:
+            response = mturk.list_hits(NextToken=next_token)
 
-                hit_assignment.pop('Answer')
+        try:
 
-                for hit_assignment_attribute, hit_assignment_value in hit_assignment.items():
-                    row[hit_assignment_attribute] = hit_assignment_value
+            next_token = response['NextToken']
+            num_results = response['NumResults']
+            hits = response['HITs']
 
-                hit_df = hit_df.append(row, ignore_index=True)
+            status.update(f"Downloading HITs, Token: {next_token}, Total: {token_counter}")
 
-    hit_df.to_csv(hit_data_path)
+            for item in hits:
 
-else:
+                row = {}
 
-    hit_df = pd.read_csv(hit_data_path)
+                hit_id = item['HITId']
+                available_records = hit_df.loc[hit_df['HITId'] == hit_id]
 
-console.rule("2 - Downloading task configuration")
+                status.update(f"HIT Id: {hit_id}, Available Records: {len(available_records)}, Total: {hit_counter}")
+
+                if len(available_records) <= 0:
+
+                    hit_status = mturk.get_hit(HITId=hit_id)['HIT']
+                    hit_status.pop('Question')
+                    hit_status.pop('QualificationRequirements')
+
+                    for hit_status_attribute, hit_status_value in hit_status.items():
+                        row[hit_status_attribute] = hit_status_value
+
+                    hit_assignments = mturk.list_assignments_for_hit(HITId=hit_id, AssignmentStatuses=['Approved'])
+                    for hit_assignment in hit_assignments['Assignments']:
+
+                        hit_assignment.pop('Answer')
+
+                        for hit_assignment_attribute, hit_assignment_value in hit_assignment.items():
+                            row[hit_assignment_attribute] = hit_assignment_value
+
+                        hit_df = hit_df.append(row, ignore_index=True)
+
+                hit_counter = hit_counter + 1
+
+            token_counter+=1
+            hit_df.to_csv(hit_data_path, index=False)
+        except KeyError:
+            console.print(f"HITs data download completed, Tokens: {token_counter}, HITs: {hit_counter}")
+            break
+
+console.print(f"HITs data file serialized at path: [cyan on white]{hit_data_path}")
+
+console.rule("2 - Fetching task configuration")
+
+hit_df = pd.read_csv(hit_data_path)
 
 prefix = f"{task_name}/{batch_name}/Task/"
 
 for bucket_object in bucket.objects.filter(Prefix=prefix):
-    task_config_folder = "/".join(bucket_object.key.split("/")[:-1])
-    task_config_folder = f"result/{task_config_folder}/"
+    task_config_folder = f"result/{task_name}/Batches/{batch_name}/Task/"
     if not os.path.exists(task_config_folder):
         os.makedirs(task_config_folder, exist_ok=True)
-        file_name = bucket_object.key.split("/")[-1]
-        s3.download_file(aws_private_bucket, bucket_object.key, f"{task_config_folder}{file_name}")
+    file_name = bucket_object.key.split("/")[-1]
+    console.print(f"Source: [cyan on white]{bucket_object.key}[/cyan on white], Destination: [cyan on white]{task_config_folder}{file_name}[/cyan on white]")
+    s3.download_file(aws_private_bucket, bucket_object.key, f"{task_config_folder}{file_name}")
 
-console.rule("3 - Downloading worker data")
+console.rule("3 - Fetching worker data")
 
-boto_session = boto3.Session(profile_name='config-user')
-s3 = boto_session.client('s3', region_name=aws_region)
-s3_resource = boto_session.resource('s3')
+worker_counter = 0
+worker_amount = len(np.unique(hit_df['WorkerId'].values))
 
-bucket = s3_resource.Bucket(aws_private_bucket)
+with console.status(f"Workers Amount: {worker_amount}", spinner="aesthetic") as status:
 
-for worker_id in tqdm(hit_df['WorkerId']):
+    status.start()
 
-    prefix = f"{task_name}/{batch_name}/Data/{worker_id}/"
+    for worker_id in hit_df['WorkerId']:
 
-    for bucket_object in bucket.objects.filter(Prefix=prefix):
-        unit_folder = "/".join(bucket_object.key.split("/")[:-1])
-        unit_folder = f"result/{unit_folder}/"
-        if not os.path.exists(unit_folder):
-            os.makedirs(unit_folder, exist_ok=True)
-            file_name = bucket_object.key.split("/")[-1]
-            s3.download_file(aws_private_bucket, bucket_object.key, f"{unit_folder}{file_name}")
+        status.update(f"Downloading worker data, Identifier: {worker_id}, Total: {worker_counter}/{worker_amount}")
 
+        response = dynamo_db.query(
+            TableName=table_data_name,
+            KeyConditionExpression="identifier = :worker",
+            ExpressionAttributeValues={
+                ":worker": {'S': worker_id}
+            }
+        )
+
+        for element in response['Items']:
+
+            sequence = element['sequence']['S'].split("-")
+            data = json.loads(element['data']['S'])
+            time = element['time']['S']
+
+            worker_id = sequence[0]
+            unit_id = sequence[1]
+            current_try = sequence[2]
+            sequence_number = sequence[3]
+
+            unit_path = f"result/{task_name}/Batches/{batch_name}/Data/{worker_id}/{unit_id}/"
+            os.makedirs(unit_path, exist_ok=True)
+
+            if 'task' in data:
+                if 'documents_answers' in data:
+                    serialize_json(unit_path, f"data_try_{current_try}.json", data)
+                else:
+                    serialize_json(unit_path, "task_data.json", data)
+            elif 'info' in data:
+                if 'questionnaire' in data['info']['element']:
+                    index = data['info']['index']
+                    access = data['info']['access']
+                    serialize_json(unit_path, f"quest_{index}_try_{current_try}_acc_{access}_seq_{sequence_number}.json", data)
+                elif 'document' in data['info']['element']:
+                    index = data['info']['index']
+                    access = data['info']['access']
+                    serialize_json(unit_path, f"doc_{index}_try_{current_try}_acc_{access}_seq_{sequence_number}.json", data)
+                else:
+                    serialize_json(unit_path, f"comment_try_{current_try}.json", data)
+
+            elif 'checks' in data:
+                serialize_json(unit_path, f'checks_try_{current_try}.json', data)
+            else:
+                display(data)
+
+        worker_counter+=1
+
+assert False
+
+console.rule("4 - Building result dataframe")
 
 taskName = task_name
 batchesFullPaths = glob(f"result/{taskName}/*")
 batchesName = []
 for batch_full_path in batchesFullPaths:
     batch_name = batch_full_path.split('\\')[-1]
-    if "Models" not in batch_name:
-        batchesName.append(batch_name)
+    batchesName.append(batch_name)
+
 
 ipInfoToken = "fa8ac3a2ed1ac4"
 ipInfoHandler = ipinfo.getHandler(ipInfoToken)
@@ -155,6 +243,7 @@ os.makedirs(resultPath, exist_ok=True)
 os.makedirs(ipFolder, exist_ok=True)
 os.makedirs(uagFolder, exist_ok=True)
 
+
 def load_json(p):
     if os.path.exists(p):
         with open(p, "r", encoding="latin1") as f:
@@ -162,12 +251,16 @@ def load_json(p):
         return d
     else:
         return {}
+
+
 def load_file_names(p):
     files = []
     for r, d, f in os.walk(p):
         for caf in f:
             files.append(caf)
     return files
+
+
 def sanitize_string(x):
     try:
         x = re.sub(' +', ' ', x)
@@ -175,12 +268,14 @@ def sanitize_string(x):
         x = x.replace('"', '')
         x = x.replace('\n', '')
         x = x.rstrip()
-        x = re.sub(r'[^\w\s]','',x)
+        x = re.sub(r'[^\w\s]', '', x)
         x = re.sub(' [^0-9a-zA-Z]+', '', x)
         x = re.sub(' +', ' ', x)
         return x
     except TypeError:
         return np.nan
+
+
 def sanitize_statement(x):
     try:
         x = re.sub(' +', ' ', x)
@@ -188,62 +283,63 @@ def sanitize_statement(x):
         x = x.replace('"', '')
         x = x.replace('\n', '')
         x = x.rstrip()
-        x = re.sub(r'[^\w\s]','',x)
+        x = re.sub(r'[^\w\s]', '', x)
         x = re.sub(' [^0-9a-zA-Z]+', '', x)
         x = re.sub(' +', ' ', x)
         return x
     except TypeError:
         return np.nan
-def load_column_names(questionnaires, dimensions, documents):
 
-    columns=[
-            "task_id",
-            "batch_name",
-            "worker_id",
-            "worker_paid",
-            "worker_ip",
-            "worker_hostname",
-            "worker_city",
-            "worker_postal",
-            "worker_region",
-            "worker_country_code",
-            "worker_country_name",
-            "worker_latitude",
-            "worker_longitude",
-            "worker_timezone",
-            "worker_org",
-            "worker_uag",
-            "ua_type",
-            "ua_brand",
-            "ua_name",
-            "ua_url",
-            "os_name",
-            "os_code",
-            "os_url",
-            "os_family",
-            "os_family_code",
-            "os_family_vendor",
-            "os_icon",
-            "os_icon_large",
-            "device_is_mobile",
-            "device_type",
-            "device_brand",
-            "device_brand_code",
-            "device_brand_url",
-            "device_name",
-            "browser_name",
-            "browser_version",
-            "browser_version_major",
-            "browser_engine",
-            "unit_id",
-            "token_input",
-            "token_output",
-            "tries_amount",
-            "questionnaire_amount",
-            "dimensions_amount",
-            "document_amount",
-            "current_try"
-        ]
+
+def load_column_names(questionnaires, dimensions, documents):
+    columns = [
+        "task_id",
+        "batch_name",
+        "worker_id",
+        "worker_paid",
+        "worker_ip",
+        "worker_hostname",
+        "worker_city",
+        "worker_postal",
+        "worker_region",
+        "worker_country_code",
+        "worker_country_name",
+        "worker_latitude",
+        "worker_longitude",
+        "worker_timezone",
+        "worker_org",
+        "worker_uag",
+        "ua_type",
+        "ua_brand",
+        "ua_name",
+        "ua_url",
+        "os_name",
+        "os_code",
+        "os_url",
+        "os_family",
+        "os_family_code",
+        "os_family_vendor",
+        "os_icon",
+        "os_icon_large",
+        "device_is_mobile",
+        "device_type",
+        "device_brand",
+        "device_brand_code",
+        "device_brand_url",
+        "device_name",
+        "browser_name",
+        "browser_version",
+        "browser_version_major",
+        "browser_engine",
+        "unit_id",
+        "token_input",
+        "token_output",
+        "tries_amount",
+        "questionnaire_amount",
+        "dimensions_amount",
+        "document_amount",
+        "current_try"
+    ]
 
     for questionnaire in questionnaires:
         for question in questionnaire["questions"]:
@@ -297,7 +393,10 @@ def load_column_names(questionnaires, dimensions, documents):
 paidWorkers = {}
 spuriousWorkers = []
 dataframe = []
-batchResults = pd.DataFrame(columns=["HITId","HITTypeId","Title","Description","Keywords","Reward","CreationTime","MaxAssignments","RequesterAnnotation","AssignmentDurationInSeconds","AutoApprovalDelayInSeconds","Expiration","NumberOfSimilarHITs","LifetimeInSeconds","AssignmentId","WorkerId","AssignmentStatus","AcceptTime","SubmitTime","AutoApprovalTime","ApprovalTime","RejectionTime","RequesterFeedback","WorkTimeInSeconds","LifetimeApprovalRate","Last30DaysApprovalRate","Last7DaysApprovalRate","Input.token_input","Input.token_output","Answer.token_output","Approve","Reject"])
+batchResults = pd.DataFrame(
+    columns=["HITId", "HITTypeId", "Title", "Description", "Keywords", "Reward", "CreationTime", "MaxAssignments", "RequesterAnnotation", "AssignmentDurationInSeconds", "AutoApprovalDelayInSeconds", "Expiration",
+             "NumberOfSimilarHITs", "LifetimeInSeconds", "AssignmentId", "WorkerId", "AssignmentStatus", "AcceptTime", "SubmitTime", "AutoApprovalTime", "ApprovalTime", "RejectionTime", "RequesterFeedback", "WorkTimeInSeconds",
+             "LifetimeApprovalRate", "Last30DaysApprovalRate", "Last7DaysApprovalRate", "Input.token_input", "Input.token_output", "Answer.token_output", "Approve", "Reject"])
 
 for batchName in batchesName:
     paidWorkers[batchName] = []
@@ -318,13 +417,12 @@ for batchName in batchesName:
 
         paidWorkers[batchName].append(
             {
-                "worker_id":currentBatchResult['WorkerId'],
+                "worker_id": currentBatchResult['WorkerId'],
                 "unit_ids": units,
                 "paid": True
             })
         batchResults = batchResults.append(currentBatchResult)
     print(f"Found {len(paidWorkers[batchName])} paid workers for batch {batchName}")
-
 
 allWorkers = {}
 for batchName in batchesName:
@@ -468,10 +566,10 @@ for batchName in batchesName:
                     browserVersionMajor = np.nan
                     browserEngine = np.nan
 
-                currentTry=0
-                for aTry in range(0, triesAmount+1):
-                    if os.path.exists(f"{folder}data_try_{aTry+1}.json"):
-                        currentTry=aTry+1
+                currentTry = 0
+                for aTry in range(0, triesAmount + 1):
+                    if os.path.exists(f"{folder}data_try_{aTry + 1}.json"):
+                        currentTry = aTry + 1
 
                         row["task_id"] = taskName
                         row["batch_name"] = batchName
@@ -545,13 +643,13 @@ for batchName in batchesName:
                             for index_main, currentAnswers in enumerate(questionnaireAnswers):
                                 questions = currentAnswers.keys()
                                 for index_sub, question in enumerate(questions):
-                                    row[f"q_{questionnaires[index_main]['index']}_{question}_question"] =  questionnaires[index_main]["questions"][index_sub]["text"]
+                                    row[f"q_{questionnaires[index_main]['index']}_{question}_question"] = questionnaires[index_main]["questions"][index_sub]["text"]
                                     row[f"q_{questionnaires[index_main]['index']}_{question}_value"] = currentAnswers[question]
-                                    if questionnaires[index_main]["type"]=="standard":
+                                    if questionnaires[index_main]["type"] == "standard":
                                         row[f"q_{questionnaires[index_main]['index']}_{question}_answer"] = questionnaires[index_main]["questions"][index_sub]["answers"][int(currentAnswers[question])]
                                     else:
-                                         row[f"q_{questionnaires[index_main]['index']}_{question}_answer"] = np.nan
-                                    row[f"q_{questionnaires[index_main]['index']}_time_elapsed"] = round(timestampsElapsed[questionnaires[index_main]['index']],2)
+                                        row[f"q_{questionnaires[index_main]['index']}_{question}_answer"] = np.nan
+                                    row[f"q_{questionnaires[index_main]['index']}_time_elapsed"] = round(timestampsElapsed[questionnaires[index_main]['index']], 2)
                                     row[f"q_{questionnaires[index_main]['index']}_accesses"] = accesses[questionnaires[index_main]['index']]
 
                             for index, data in enumerate(countdownsStart):
@@ -568,10 +666,10 @@ for batchName in batchesName:
                                     row[f"doc_{currentAttribute}"] = documents[index][currentAttribute]
                                 for dimension in dimensions:
                                     if dimension['scale'] is not None:
-                                        value =  currentAnswers[f"{dimension['name']}_value"].strip()
-                                        value = re.sub('\n','',value)
+                                        value = currentAnswers[f"{dimension['name']}_value"].strip()
+                                        value = re.sub('\n', '', value)
                                         row[f"doc_{dimension['name']}_value"] = value
-                                        if dimension["scale"]["type"]=="categorical":
+                                        if dimension["scale"]["type"] == "categorical":
                                             for mapping in dimension["scale"]['mapping']:
                                                 label = mapping['label'].lower().split(" ")
                                                 label = '-'.join([str(c) for c in label])
@@ -585,8 +683,8 @@ for batchName in batchesName:
                                             row[f"doc_{dimension['name']}_index"] = np.nan
                                             row[f"doc_{dimension['name']}_description"] = np.nan
                                     if dimension['justification']:
-                                        justification =  currentAnswers[f"{dimension['name']}_justification"].strip()
-                                        justification = re.sub('\n','',justification)
+                                        justification = currentAnswers[f"{dimension['name']}_justification"].strip()
+                                        justification = re.sub('\n', '', justification)
                                         row[f"doc_{dimension['name']}_justification"] = justification
                                     else:
                                         row[f"doc_{dimension['name']}_justification"] = np.nan
@@ -597,27 +695,27 @@ for batchName in batchesName:
 
                                 row["doc_accesses"] = accesses[index]
 
-                                if timestampsElapsed[index+questionnaireAmount] is None:
-                                     row["doc_time_elapsed"] = np.nan
+                                if timestampsElapsed[index + questionnaireAmount] is None:
+                                    row["doc_time_elapsed"] = np.nan
                                 else:
-                                    row["doc_time_elapsed"] = round(timestampsElapsed[index+questionnaireAmount],2)
+                                    row["doc_time_elapsed"] = round(timestampsElapsed[index + questionnaireAmount], 2)
 
-                                row["global_form_validity"] = checks["globalFormValidity"]
-                                row["gold_checks"] = checks["goldChecks"]
-                                row["time_check_amount"] = checks["timeCheckAmount"]
-                                row["time_spent_check"] = checks["timeSpentCheck"]
+                                row["global_form_validity"] = checks['checks']["globalFormValidity"]
+                                row["gold_checks"] = checks['checks']["goldChecks"]
+                                row["time_check_amount"] = checks['checks']["timeCheckAmount"]
+                                row["time_spent_check"] = checks['checks']["timeSpentCheck"]
 
                                 if "comment" in comments.keys():
-                                    if(comments["comment"])!="":
+                                    if (comments["comment"]) != "":
                                         row["comment"] = sanitize_statement(comments["comment"])
                                     else:
                                         row["comment"] = np.nan
                                 else:
                                     row["comment"] = np.nan
 
-                                df.loc[(workerIndex+index)] = row
+                                df.loc[(workerIndex + index)] = row
 
-                if len(df)>0:
+                if len(df) > 0:
                     dataframe.append(df)
             except IndexError:
                 print(workerId)
@@ -626,7 +724,7 @@ for batchName in batchesName:
 df = pd.concat(dataframe, ignore_index=True)
 empty_cols = [col for col in df.columns if df[col].isnull().all()]
 # Drop these columns from the dataframe
-df.drop(empty_cols,axis=1,inplace=True)
+df.drop(empty_cols, axis=1, inplace=True)
 
 df.to_csv(f"{resultPath}workers_data_{batchesName[0].lower()}.csv", index=False)
 

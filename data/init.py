@@ -47,7 +47,6 @@ folder_tasks_path = "tasks/"
 
 boto_session = boto3.Session()
 
-
 def serialize_json(folder, filename, data):
     if not os.path.exists(folder):
         os.makedirs(folder, exist_ok=True)
@@ -505,7 +504,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     user = None
     try:
-        user = iam.create_user(UserName="crowd-worker")
+        user = iam.create_user(UserName="crowd-worker", Path=iam_path)
         console.print(f"[green]User created[/green], HTTP STATUS CODE: {user['ResponseMetadata']['HTTPStatusCode']}.")
     except iam.exceptions.EntityAlreadyExistsException as exception:
         console.print(f"[yellow]User already created[/yellow]")
@@ -590,7 +589,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 "Sid": "AllowPrivateBucketInteraction",
                 "Effect": "Allow",
                 "Principal": {
-                    "AWS": f"arn:aws:iam::{aws_account_id}:user/{iam_path}/{user['User']['UserName']}",
+                    "AWS": f"arn:aws:iam::{aws_account_id}:user{iam_path}{config_user_name}",
                 },
                 "Action": [
                     "s3:PutObject",
@@ -610,9 +609,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         policy['Policy'] = json.loads(policy['Policy'])
         console.print(f"[yellow]Policy already created[/yellow], HTTP STATUS CODE: {response['ResponseMetadata']['HTTPStatusCode']}.")
     except ClientError as e:
-        if e.response['Error']['Code'] == 'NoSuchBucketPolicy':
-            response = s3_client.put_bucket_policy(Bucket=aws_private_bucket, Policy=json.dumps(private_bucket_policy))
-            console.print(f"[green]Policy configuration completed[/green], HTTP STATUS CODE: {response['ResponseMetadata']['HTTPStatusCode']}.")
+        response = s3_client.put_bucket_policy(Bucket=aws_private_bucket, Policy=json.dumps(private_bucket_policy))
+        console.print(f"[green]Policy configuration completed[/green], HTTP STATUS CODE: {response['ResponseMetadata']['HTTPStatusCode']}.")
         policy = s3_client.get_bucket_policy(Bucket=aws_private_bucket)
         policy['Policy'] = json.loads(policy['Policy'])
     serialize_json(folder_aws_generated_path, f"bucket_{aws_private_bucket}_policy.json", policy)
@@ -631,9 +629,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         cors_configuration = s3_client.get_bucket_cors(Bucket=aws_private_bucket)
         console.print(f"[yellow]CORS Configuration already created[/yellow], HTTP STATUS CODE: {response['ResponseMetadata']['HTTPStatusCode']}.")
     except ClientError as e:
-        if e.response['Error']['Code'] == 'NoSuchCORSConfiguration':
-            response = s3_client.put_bucket_cors(Bucket=aws_private_bucket, CORSConfiguration=cors_configuration)
-            console.print(f"[green]CORS configuration completed[green], HTTP STATUS CODE: {response['ResponseMetadata']['HTTPStatusCode']}.")
+        response = s3_client.put_bucket_cors(Bucket=aws_private_bucket, CORSConfiguration=cors_configuration)
+        console.print(f"[green]CORS configuration completed[green], HTTP STATUS CODE: {response['ResponseMetadata']['HTTPStatusCode']}.")
     cors_configuration = s3_client.get_bucket_cors(Bucket=aws_private_bucket)
     serialize_json(folder_aws_generated_path, f"bucket_{aws_private_bucket}_cors.json", cors_configuration)
 
@@ -662,7 +659,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 "Sid": "AllowPublicBucketInteraction",
                 "Effect": "Allow",
                 "Principal": {
-                    "AWS": f"arn:aws:iam::{aws_account_id}:user/{user['User']['UserName']}"
+                    "AWS": f"arn:aws:iam::{aws_account_id}:user{iam_path}{user['User']['UserName']}"
                 },
                 "Action": [
                     "s3:PutObject",
