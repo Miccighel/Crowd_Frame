@@ -1712,7 +1712,6 @@ export class SkeletonComponent implements OnInit {
 
         /* Booleans to hold result of checks */
         let globalValidityCheck: boolean;
-        let goldQuestionCheck: boolean;
         let timeSpentCheck: boolean;
         let timeCheckAmount = this.timeCheckAmount;
 
@@ -1786,7 +1785,9 @@ export class SkeletonComponent implements OnInit {
                 goldChecks: goldChecks,
                 goldConfiguration: goldConfiguration
             };
+            data["info"] = actionInfo
             data["checks"] = qualityCheckData
+            await this.dynamoDBService.insertData(this.configService.environment, this.workerIdentifier, this.unitId, this.currentTry, this.sequenceNumber, data)
             let uploadStatus = await this.S3Service.uploadQualityCheck(
                 this.configService.environment,
                 this.worker,
@@ -1794,7 +1795,6 @@ export class SkeletonComponent implements OnInit {
                 qualityCheckData,
                 this.currentTry
             )
-            await this.dynamoDBService.insertData(this.configService.environment, this.workerIdentifier, this.unitId, this.currentTry, this.sequenceNumber, data)
             this.sequenceNumber = this.sequenceNumber + 1
         }
 
@@ -1971,7 +1971,11 @@ export class SkeletonComponent implements OnInit {
             }
 
             let data = {}
-
+            let actionInfo = {
+                try: this.currentTry,
+                sequence: this.sequenceNumber,
+                element: "data"
+            };
             /* The full information about task setup (currentDocument.e., its document and questionnaire structures) are uploaded, only once */
             let taskData = {
                 task_id: this.taskName,
@@ -1987,6 +1991,7 @@ export class SkeletonComponent implements OnInit {
                 documents_amount: this.documentsAmount,
                 dimensions_amount: this.dimensionsAmount,
             };
+            data["info"]=actionInfo
             /* General info about task */
             data["task"] = taskData
             /* The answers of the current worker to the questionnaire */

@@ -700,7 +700,41 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         policy['Policy'] = json.loads(policy['Policy'])
     serialize_json(folder_aws_generated_path, f"bucket_{aws_deploy_bucket}_policy.json", policy)
 
-    console.rule(f"12 - Logging server setup")
+    console.rule(f"12 - Table [cyan underline]{table_data_name}[/cyan underline] setup")
+
+    dynamo = boto_session.client('dynamodb', region_name=aws_region)
+
+    try:
+        table_name = table_data_name
+        table = dynamo.create_table(
+            TableName=table_name,
+            AttributeDefinitions=[{'AttributeName': 'identifier', 'AttributeType': 'S'}, {'AttributeName': 'sequence', 'AttributeType': 'S'}],
+            KeySchema=[{'AttributeName': 'identifier', 'KeyType': 'HASH'}, {'AttributeName': 'sequence', 'KeyType': 'RANGE'}],
+            BillingMode='PAY_PER_REQUEST'
+        )
+        serialize_json(folder_aws_generated_path, f"dynamodb_table_{table_name}.json", table)
+        status.stop()
+        console.print(f"{table_data_name} created")
+    except dynamo.exceptions.ResourceInUseException:
+        status.stop()
+        console.print(f"Table [cyan underline]{table_data_name}[/cyan underline] already created")
+
+    console.rule(f"13 - Table [cyan underline]{table_acl_name}[/cyan underline] setup")
+
+    try:
+        table_name = table_acl_name
+        table = dynamo.create_table(
+            TableName=table_name,
+            AttributeDefinitions=[{'AttributeName': 'identifier', 'AttributeType': 'S'}],
+            KeySchema=[{'AttributeName': 'identifier', 'KeyType': 'HASH'}],
+            BillingMode='PAY_PER_REQUEST'
+        )
+        serialize_json(folder_aws_generated_path, f"dynamodb_table_{table_name}.json", table)
+        console.print(f"Table {table_acl_name} created")
+    except dynamo.exceptions.ResourceInUseException:
+        console.print(f"Table {table_acl_name} already created")
+
+    console.rule(f"14 - Logging infrastructure setup")
 
     status.start()
     status.update(f"Setting up policies")
@@ -834,9 +868,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             console.print(f'[link={api["ApiEndpoint"]}/log]API endpoint[/link] already created')
 
         status.start()
-        status.update('DynamoDB setup')
+        status.update(f"Table {table_logging_name} setup")
         time.sleep(2)
-        dynamo = boto_session.client('dynamodb', region_name=aws_region)
 
         try:
             table_name = table_logging_name
@@ -852,32 +885,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         except dynamo.exceptions.ResourceInUseException:
             status.stop()
             console.print(f"Table {table_logging_name} already created")
-        try:
-            table_name = table_data_name
-            table = dynamo.create_table(
-                TableName=table_name,
-                AttributeDefinitions=[{'AttributeName': 'identifier', 'AttributeType': 'S'}, {'AttributeName': 'sequence', 'AttributeType': 'S'}],
-                KeySchema=[{'AttributeName': 'identifier', 'KeyType': 'HASH'}, {'AttributeName': 'sequence', 'KeyType': 'RANGE'}],
-                BillingMode='PAY_PER_REQUEST'
-            )
-            serialize_json(folder_aws_generated_path, f"dynamodb_table_{table_name}.json", table)
-            status.stop()
-            console.print(f"{table_data_name} created")
-        except dynamo.exceptions.ResourceInUseException:
-            status.stop()
-            console.print(f"Table {table_data_name} already created")
-        try:
-            table_name = table_acl_name
-            table = dynamo.create_table(
-                TableName=table_name,
-                AttributeDefinitions=[{'AttributeName': 'identifier', 'AttributeType': 'S'}],
-                KeySchema=[{'AttributeName': 'identifier', 'KeyType': 'HASH'}],
-                BillingMode='PAY_PER_REQUEST'
-            )
-            serialize_json(folder_aws_generated_path, f"dynamodb_table_{table_name}.json", table)
-            console.print(f"Table {table_acl_name} created")
-        except dynamo.exceptions.ResourceInUseException:
-            console.print(f"Table {table_acl_name} already created")
 
         status.start()
         status.update('Lambda setup')
@@ -919,7 +926,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     else:
         raise Exception("Your [italic]server_config[/italic] environment variable must be set to [white on black]aws[/white on black], [white on black]custom[/white on black] or [white on black]none[/white on black]")
 
-    console.rule(f"13 - Budgeting setting")
+    console.rule(f"15 - Budgeting setting")
     status.start()
     status.update(f"Creating role")
     time.sleep(3)
@@ -1035,7 +1042,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         )
     serialize_json(folder_aws_generated_path, f"budget_{budget_name}_action_{response['ActionId']}.json", response)
 
-    console.rule(f"14 - Environment: [cyan underline]PRODUCTION[/cyan underline] creation")
+    console.rule(f"16 - Environment: [cyan underline]PRODUCTION[/cyan underline] creation")
     status.start()
     status.update(f"Creating environment")
     time.sleep(3)
@@ -1074,7 +1081,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.print("File [cyan underline]environment.prod.ts[/cyan underline] generated")
     console.print(f"Path: [italic]{environment_production}[/italic]")
 
-    console.rule(f"15 - Environment: [cyan underline]DEVELOPMENT[/cyan underline] creation")
+    console.rule(f"17 - Environment: [cyan underline]DEVELOPMENT[/cyan underline] creation")
     status.start()
     status.update(f"Creating environment")
     time.sleep(3)
@@ -1108,7 +1115,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.print("File [cyan underline]environment.ts[/cyan underline] generated")
     console.print(f"Path: [italic]{environment_development}[/italic]")
 
-    console.rule(f"16 - Admin Credentials Creation")
+    console.rule(f"18 - Admin Credentials Creation")
     status.start()
     status.update(f"Creating file [cyan underline]admin.json")
     time.sleep(3)
@@ -1130,7 +1137,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     console.print(f"Path: [italic]{admin_file}")
 
-    console.rule(f"17 - Sample task configuration")
+    console.rule(f"19 - Sample task configuration")
     status.start()
     status.update(f"Generating a sample configuration if needed")
     time.sleep(3)
@@ -1205,8 +1212,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         console.print(
             f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
     else:
-        console.print(
-            f"Config. file [italic white on yellow]{filename}[/italic white on yellow] not detected, generating a sample")
+        console.print(f"Config. file [italic white on yellow]{filename}[/italic white on yellow] not detected, generating a sample")
         with open(f"{folder_build_task_path}{filename}", 'w') as file:
             sample_dimensions = [{
                 "name": "sample-dimension",
@@ -1236,8 +1242,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     filename = "instructions_main.json"
     if os.path.exists(f"{folder_build_task_path}{filename}"):
-        console.print(
-            f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
+        console.print(f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
     else:
         console.print(
             f"Config. file [italic white on yellow]{filename}[/italic white on yellow] not detected, generating a sample")
@@ -1377,7 +1382,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     console.print(f"Path: [italic white on black]{folder_build_task_path}[/italic white on black]")
 
-    console.rule(f"18 - Interface [cyan underline]document.ts")
+    console.rule(f"20 - Interface [cyan underline]document.ts")
 
     hits_file = f"{folder_build_task_path}hits.json"
     document_interface = f"{folder_build_skeleton_path}document.ts"
@@ -1471,7 +1476,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.print("Interface built")
     console.print(f"Path: [italic]{document_interface}[/italic]")
 
-    console.rule(f"19 - Class [cyan underline]goldChecker.ts")
+    console.rule(f"21 - Class [cyan underline]goldChecker.ts")
 
     # This class provides a stub to implement the gold elements check. If there are no gold elements, the check is considered true automatically.
     # The following codes provides answers, notes and attributes for each gold element. Those three corresponding data structures should be used
@@ -1536,7 +1541,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         console.print("Class built")
         console.print(f"Path: [italic]{filename}[/italic]")
 
-    console.rule(f"17 - Amazon Mechanical Turk Landing Page")
+    console.rule(f"22 - Amazon Mechanical Turk Landing Page")
     status.start()
     status.update(f"Istantiating Mako model")
     time.sleep(3)
@@ -1572,7 +1577,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.print(f"Tokens for {len(hits)} hits generated")
     console.print(f"Path: [italic]{mturk_tokens_file}")
 
-    console.rule(f"21 - Task [cyan underline]{task_name}[/cyan underline]/[yellow underline]{batch_name}[/yellow underline] build")
+    console.rule(f"23 - Task [cyan underline]{task_name}[/cyan underline]/[yellow underline]{batch_name}[/yellow underline] build")
     status.update(f"Executing build command, please wait")
     time.sleep(3)
 
@@ -1637,7 +1642,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.print("Model istantiated")
     console.print(f"Path: [italic underline]{index_page_file}")
 
-    console.rule(f"22 - Packaging Task [cyan underline]tasks/{task_name}/{batch_name}")
+    console.rule(f"24 - Packaging Task [cyan underline]tasks/{task_name}/{batch_name}")
     status.start()
     status.update(f"Starting")
     time.sleep(3)
@@ -1780,7 +1785,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     destination = f"{folder_tasks_batch_config_path}admin.json"
     copy(source, destination, "Admin Credentials")
 
-    console.rule(f"20 - Task [cyan underline]tasks/{task_name}/{batch_name} Deploy")
+    console.rule(f"25 - Task [cyan underline]tasks/{task_name}/{batch_name} Deploy")
     status.start()
     status.update(f"Starting")
     time.sleep(3)
@@ -1866,7 +1871,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     key = f"{s3_deploy_path}index.html"
     upload(iam_path, aws_deploy_bucket, key, "Task Homepage", "text/html", "public-read")
 
-    console.rule(f"23 - Public Link")
+    console.rule(f"26 - Public Link")
     status.start()
     status.update(f"Writing")
     time.sleep(3)
