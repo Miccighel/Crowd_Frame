@@ -168,6 +168,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             Path=iam_path
         )
         console.print(f"[green]Policy creation completed[/green], HTTP STATUS CODE: {policy['ResponseMetadata']['HTTPStatusCode']}.")
+        policy = policy['Policy']
     except iam.exceptions.EntityAlreadyExistsException:
         policies = iam.list_policies(
             PathPrefix=iam_path
@@ -226,6 +227,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             Path=iam_path
         )
         console.print(f"[green]Policy creation completed[/green], HTTP STATUS CODE: {policy['ResponseMetadata']['HTTPStatusCode']}.")
+        policy = policy['Policy']
     except iam.exceptions.EntityAlreadyExistsException:
         policies = iam.list_policies(PathPrefix=iam_path)['Policies']
         for result in policies:
