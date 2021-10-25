@@ -802,6 +802,7 @@ export class SkeletonComponent implements OnInit {
    */
   public storeDimensionValue(valueData: Object, document: number, dimension: number) {
     /* The current document, dimension and user query are copied from parameters */
+
     let currentDocument = document
     let currentDimension = dimension
     /* A reference to the current dimension is saved */
@@ -2244,11 +2245,10 @@ export class SkeletonComponent implements OnInit {
   checkedValue=new Array();
   
   
-  public changeColor(valueData: Object,documentnumber:number,dimensions:object)
+  public changeColor(valueData: Object,documentnumber:number)
   {
     this.selected_statement=valueData["value"]
     this.selected_stetements[documentnumber]=valueData["value"];
-
     if(valueData['source']['_checked']==true)
     {
       this.checkedValue[documentnumber][0][0]=true
@@ -2295,18 +2295,17 @@ export class SkeletonComponent implements OnInit {
   }
   public changeValue(documentnumber:number,dimensionnumber:number,j:number)
   {
-    if(dimensionnumber>this.dimensionsAmount)
+    if(dimensionnumber>=this.dimensionsAmount)
     {
-
     }else
     {
       this.checkedValue[documentnumber][dimensionnumber][j]=true
     }
   }
-  public changeColorRadio(valueData:Object)
+  public changeColorRadio(valueData:Object,document_index:number)
   {
-      let a=document.getElementById("radioStatementA") as HTMLInputElement
-      let b=document.getElementById("radioStatementB") as HTMLInputElement
+      let a=document.getElementById("radioStatementA."+document_index) as HTMLInputElement
+      let b=document.getElementById("radioStatementB."+document_index) as HTMLInputElement
       if(valueData["value"]=="A")
       {
         if (b.classList.contains('mat-radio-checked'))
@@ -2324,10 +2323,10 @@ export class SkeletonComponent implements OnInit {
       }
   }
 
-  public changeBoth()
+  public changeBoth(document_index:number)
   {
-    let a=document.getElementById("radioStatementA") as HTMLInputElement
-    let b=document.getElementById("radioStatementB") as HTMLInputElement
+    let a=document.getElementById("radioStatementA."+document_index) as HTMLInputElement
+    let b=document.getElementById("radioStatementB."+document_index) as HTMLInputElement
      
     b.classList.remove('mat-radio-checked')
     a.classList.remove('mat-radio-checked')

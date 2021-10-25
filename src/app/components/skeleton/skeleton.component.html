@@ -186,7 +186,7 @@
 
   <!-- Documents markup -->
   <mat-step *ngFor="let document of documents; let i=index" [editable]="true">
-    <div class=" container">
+    <div class="container">
       <form [formGroup]="documentsForm[i]">
         <mat-card>
 
@@ -451,11 +451,11 @@
                 <div [innerHTML]="instruction.text"></div>
               </div>
             </div>
-              <!-- Pairwise element splited-->
+              <!-- Pairwise element splited -->
               <ng-template #pairwiseElementSplit>
                  <ng-container *ngIf="document.pairwise_split" >
                  <h2 class="titlepairwise">Which statement is more relevant?</h2>
-                 <mat-radio-group formControlName="pairwise_value_selected"   id="radiogroup">
+                 <mat-radio-group formControlName="pairwise_value_selected">
                     <div class="divsplit" >
                           <div [ngClass]="selected_stetements[document.index]=='A' || selected_stetements[document.index]=='Both'  ? 'statementsplitafterclicked' : 'statementsplit'"  >
                             <div class="parent">
@@ -492,9 +492,9 @@
                                     <label>Source:</label>
                                     {{document.statements[0].source}}
                                   </span>
+                                  ciao{{document.index}}
                             </div>
-                            
-                              <mat-radio-button class="tester" id="rStatementA" value="A" (change)="storeDimensionValue($event, i, document.index) ; changeColor($event,document.index,dimensions);changeColorRadio($event) " disableRipple="true">
+                              <mat-radio-button class="tester" value="A" (change)="storeDimensionValue($event, i, document.index) ; changeColor($event,document.index); changeColorRadio($event,document.index)" disableRipple="true">
                                   <div style=" width: 500px;
                                   height: 330px;"></div>
                               </mat-radio-button>
@@ -535,8 +535,12 @@
                                     <label>Source:</label>
                                     {{document.statements[1].source}}
                                   </span>
+                                  <span class="captionsplit">
+                                    <label>Document:</label>
+                                    {{document.index}}
+                                  </span>
                               </div>
-                              <mat-radio-button class="tester"  id="rStatementB"value="B" (change)="storeDimensionValue($event, i, document.index) ; changeColor($event,document.index,dimensions); changeColorRadio($event)" disableRipple="true">
+                              <mat-radio-button class="tester" value="B" (change)="storeDimensionValue($event, i, document.index) ; changeColor($event,document.index);changeColorRadio($event,document.index)" disableRipple="true">
                                 <div style=" width: 500px; height: 330px;"></div>
                             </mat-radio-button>
                         </div>
@@ -544,17 +548,17 @@
                   
                   </div>
                         <div class="div_radiobutton_check_pairwise">
-                              <mat-radio-button value="A"  id="radioStatementA" class="radiobutton_check_pairwise" (change)="storeDimensionValue($event, i, document.index) ; changeColor($event,document.index,dimensions);changeColorRadio($event) "  disableRipple="true">
+                              <mat-radio-button value="A" id="radioStatementA.{{document.index}}" class="radiobutton_check_pairwise" (change)="storeDimensionValue($event, i, document.index) ; changeColor($event,document.index); changeColorRadio($event,document.index)"  disableRipple="true">
                                 <span class="spanbutton">Statement A</span>
                               </mat-radio-button>
-                               <mat-radio-button value="Both" id="radioStatementBoth" class="radiobutton_check_pairwise both_radio" (change)="storeDimensionValue($event, i, document.index);changeColor($event,document.index,dimensions); changeBoth()" >
+                               <mat-radio-button value="Both" id="radioStatementBoth.{{document.index}}" class="radiobutton_check_pairwise both_radio" (change)="storeDimensionValue($event, i, document.index);changeColor($event,document.index); changeBoth(document.index)" >
                                  <span class="both">Both statement</span>
                               </mat-radio-button>
-                              <mat-radio-button value="B"  id="radioStatementB" class="radiobutton_check_pairwise" (change)="storeDimensionValue($event, i, document.index) ; changeColor($event,document.index,dimensions);changeColorRadio($event)" disableRipple="true">
+                              <mat-radio-button value="B"  id="radioStatementB.{{document.index}}" class="radiobutton_check_pairwise" (change)="storeDimensionValue($event, i, document.index) ;changeColor($event,document.index);changeColorRadio($event,document.index)" disableRipple="true">
                                  <span  class="spanbutton">Statement B</span>
                               </mat-radio-button>
                       </div>
-                  </mat-radio-group>
+                </mat-radio-group>
                 </ng-container>
               </ng-template>
               <ng-template *ngIf="document.pairwise_split"[ngTemplateOutlet]="pairwiseElementSplit"></ng-template>
