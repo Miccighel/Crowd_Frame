@@ -1,8 +1,8 @@
 [
     {
         "name": "dimensionpairwise_1",
-        "name_pretty": "Scale interval 1",
-        "description": "description_1",
+        "name_pretty": "Rate the truthfulness of the statement ",
+        "description": "Rate the statements,  1 (low truthfulness)to 10(High truthfulness)",
         "gold": false,
         "justification": false,
         "url": false,
@@ -50,7 +50,7 @@
     },
     {
         "name": "dimensionpairwise_3",
-        "name_pretty": "Scale magnitude_estimantion 3 ",
+        "name_pretty": "Scale magnitude_estimation 3",
         "description": "description_3",
         "gold": false,
         "justification":{

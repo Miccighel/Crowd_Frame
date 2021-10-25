@@ -1,6 +1,6 @@
 [
     {
-        "caption": "Evaluation Instructions",
-        "text": "<p>istruzioni dimension</p>"
+        "caption": "Read instructions and answers the question ",
+        "text": "Choose which statement is most truthful, and then answer the questions for each statement"
     }
 ]

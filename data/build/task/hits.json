@@ -6,83 +6,31 @@
         "documents_number": 1,
         "documents": [
             {
-                "id": "identifier_1",
+                "id": "identifier_2",
                 "text": "Lorem ipsum dolor sit amet",
-                "pairwise_selection":false,
                 "pairwise_split":true,
                 "statements":[
                     {
-                        "text": "BHO",
-                        "speaker": "ciao2",
-                        "speakerjob": "1",
-                        "context":"swag"
+                        "name": "REP_MOSTLYTRUE_doc8",
+                        "statement": "6,400 Ohioans ... lost manufacturing jobs in the month of September.",
+                        "claimant": "Mitt Romney",
+                        "date": "2012",
+                        "originated_from": "a news release",
+                        "id": "7008.json",
+                        "job": "Former governor",
+                        "party": "REP",
+                        "source": "Politifact"
                     },
                     {
-                        "text": "BHO",
-                        "speaker": "ciao2",
-                        "speakerjob": "1",
-                        "context":"swag"
-                    }
-                    
-                ]
-            },
-            {
-                "id": "identifier_1",
-                "text": "Lorem ipsum dolor sit amet",
-                "pairwise_selection":false,
-                "pairwise_split":true,
-                "statements":[
-                    {
-                        "text": "BHo3",
-                        "speaker": "ciao3",
-                        "speakerjob": "4",
-                        "context":"swag"
-                    },
-                    {
-                        "text": "BHO4",
-                        "speaker": "ciao4",
-                        "speakerjob": "1",
-                        "context":"swag"
-                    }
-                ]
-            },
-            {
-                "id": "identifier_1",
-                "text": "Lorem ipsum dolor sit amet",
-                "pairwise_selection":false,
-                "pairwise_split":true,
-                "statements":[
-                    {
-                        "text": "BHo3",
-                        "speaker": "ciao3",
-                        "speakerjob": "4",
-                        "context":"swag"
-                    },
-                    {
-                        "text": "BHO4",
-                        "speaker": "ciao4",
-                        "speakerjob": "1",
-                        "context":"swag"
-                    }
-                ]
-            },
-            {
-                "id": "identifier_1",
-                "text": "Lorem ipsum dolor sit amet",
-                "pairwise_selection":false,
-                "pairwise_split":true,
-                "statements":[
-                    {
-                        "text": "BHo3",
-                        "speaker": "ciao3",
-                        "speakerjob": "4",
-                        "context":"swag"
-                    },
-                    {
-                        "text": "BHO4",
-                        "speaker": "ciao4",
-                        "speakerjob": "1",
-                        "context":"swag"
+                        "name": "HIGH",
+                        "statement": "Yes, We can!",
+                        "claimant": "Barack Obama",
+                        "date": "2008",
+                        "originated_from": "Public appearance",
+                        "id": "HIGH",
+                        "job": "Former U.S. President",
+                        "party": "DEM",
+                        "source": "gold_question"
                     }
                 ]
             }

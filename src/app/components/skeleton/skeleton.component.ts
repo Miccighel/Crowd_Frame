@@ -35,7 +35,7 @@ import {HttpClient, HttpHeaders} from "@angular/common/http";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {NoteStandard} from "../../models/notes_standard";
 import {NoteLaws} from "../../models/notes_laws";
-import {MatRadioChange} from "@angular/material/radio";
+import {MatRadioButton, MatRadioChange} from "@angular/material/radio";
 import {MatCheckboxChange} from "@angular/material/checkbox";
 import { Console } from 'console';
 import { Discovery } from 'aws-sdk';
@@ -608,7 +608,6 @@ export class SkeletonComponent implements OnInit {
       for (let index = 0; index < this.dimensionsAmount; index++) this.dimensions.push(new Dimension(index, rawDimensions[index]));
       
       for (let index = 0; index < this.documentsAmount; index++) {
-        /*console.log("wtf"+this.documents[index].pairwise_selection);*/
         let controlsConfig = {};
         if(this.documents[index].pairwise_split)
         {
@@ -618,7 +617,7 @@ export class SkeletonComponent implements OnInit {
             if (!dimension.pairwise)
             {
               if (dimension.scale) {
-                if (dimension.scale.type == "interval")  controlsConfig[`${dimension.name}_value`] = new FormControl((Math.round(((<ScaleInterval>dimension.scale).min + (<ScaleInterval>dimension.scale).max) / 2)), [Validators.required]);
+                if (dimension.scale.type == "interval")  controlsConfig[`${dimension.name}_value`] = new FormControl('' , [Validators.required]);
                 if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.required]);
                 if (dimension.scale.type == "magnitude_estimation") {
                   if ((<ScaleMagnitude>dimension.scale).lower_bound) {
@@ -635,7 +634,7 @@ export class SkeletonComponent implements OnInit {
               for(let i=0; i<this.documents[index].statements.length;i++)
               {
                 if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value_${i}`] = new FormControl('', [Validators.required]);
-                if (dimension.scale.type == "interval")  controlsConfig[`${dimension.name}_value_${i}`] = new FormControl((Math.round(((<ScaleInterval>dimension.scale).min + (<ScaleInterval>dimension.scale).max) / 2)), [Validators.required]);
+                if (dimension.scale.type == "interval")  controlsConfig[`${dimension.name}_value_${i}`] = new FormControl('', [Validators.required]);
                 if (dimension.scale.type == "magnitude_estimation") {
                   if ((<ScaleMagnitude>dimension.scale).lower_bound) {
                     controlsConfig[`${dimension.name}_value_${i}`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min), Validators.required]);
@@ -654,7 +653,7 @@ export class SkeletonComponent implements OnInit {
             let dimension = this.dimensions[index_dimension];
             if (dimension.scale) {
               if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.required]);
-              if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value`] = new FormControl((Math.round(((<ScaleInterval>dimension.scale).min + (<ScaleInterval>dimension.scale).max) / 2)), [Validators.required]);
+              if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value`] = new FormControl(((<ScaleInterval>dimension.scale).min), [Validators.required]);
               if(dimension.scale.type =="pairwise") controlsConfig[`${dimension.name}_value`] = new FormControl('',[Validators.required]);
               
                if (dimension.scale.type == "magnitude_estimation") {
@@ -841,7 +840,7 @@ export class SkeletonComponent implements OnInit {
       /* IMPORTANT: the document_index of the last selected value for a document will be <amount -1> */
       this.dimensionsSelectedValues[currentDocument]['amount'] = 1
     }
-    console.log( this.dimensionsSelectedValues[currentDocument])
+
   }
 
   /*
@@ -2249,23 +2248,16 @@ export class SkeletonComponent implements OnInit {
   {
     this.selected_statement=valueData["value"]
     this.selected_stetements[documentnumber]=valueData["value"];
-    console.log(dimensions)
-    console.log()
-    console.log("eskere")
 
-    //console.log(valueData)
     if(valueData['source']['_checked']==true)
     {
       this.checkedValue[documentnumber][0][0]=true
       this.checkedValue[documentnumber][0][1]=true
     }
-    console.log(this.checkedValue)
   }
 
-  // metodo che crea l'errore
+  // metodo che crea l'array
   public dimensionValueinsert(){
-    
-    console.log(this.dimensionsAmount)
     for (let i=0;i<this.documentsAmount;i++)
     {
       let statement=new Array();
@@ -2280,49 +2272,7 @@ export class SkeletonComponent implements OnInit {
     }
 
   }
-  /** 
-  savedValuesObject:Object[][]=[];
-  savedValuesName:Object[][]=[]
-  savedValues:Object[][]=[];
-  public saveValuedimension(valueData:Object,dimensionNumber:number,dimensionName:Object)
-  {
-    
-    console.log(valueData)
-    if( this.savedValuesObject[this.valueCheck]==undefined)
-    {
-      this.savedValuesObject[this.valueCheck]=[]
-      this.savedValues[this.valueCheck]=[]
-      this.savedValuesObject[this.valueCheck][dimensionNumber]=valueData
-      this.savedValues[this.valueCheck][dimensionNumber]=valueData["value"]
-      this.savedValuesName[this.valueCheck][dimensionNumber]=dimensionName
-    }else
-    {
-      this.savedValuesObject[this.valueCheck][dimensionNumber]=valueData
-      this.savedValues[this.valueCheck][dimensionNumber]=valueData["value"]
-      this.savedValuesName[this.valueCheck][dimensionNumber]=dimensionName
-    }
-    console.log(this.savedValuesObject)
-    console.log(this.savedValues)
-  }
-
-  public setDimensioValue(valueChecked:number)
-  {
-
-    if(this.savedValuesObject[valueChecked]!=undefined)
-    {
-      console.log("bella lì")
-      for (let index in this.savedValuesObject)
-      {
-        let namedimension=this.savedValuesName[valueChecked][index]
-        console.log("ciao"+this.savedValues[valueChecked][index])
-        console.log("la figa dio can"+this.savedValuesObject[valueChecked][index]["source"]["__ngContext__"][24]);
-        this.savedValuesObject[valueChecked][index]["source"]["__ngContext__"][24]=this.savedValues[valueChecked][index];
-        let value=this.savedValues[valueChecked][index]
-        this.documentsForm[index].controls[(namedimension).concat('_value')].value;
-      }
-      console.log("ciao")
-    }
-  }*/
+ 
   public changeletter(index:number)
   {
      if(index==0)
@@ -2345,7 +2295,6 @@ export class SkeletonComponent implements OnInit {
   }
   public changeValue(documentnumber:number,dimensionnumber:number,j:number)
   {
-    console.log(j)
     if(dimensionnumber>this.dimensionsAmount)
     {
 
@@ -2353,6 +2302,35 @@ export class SkeletonComponent implements OnInit {
     {
       this.checkedValue[documentnumber][dimensionnumber][j]=true
     }
+  }
+  public changeColorRadio(valueData:Object)
+  {
+      let a=document.getElementById("radioStatementA") as HTMLInputElement
+      let b=document.getElementById("radioStatementB") as HTMLInputElement
+      if(valueData["value"]=="A")
+      {
+        if (b.classList.contains('mat-radio-checked'))
+        {
+          b.classList.remove('mat-radio-checked')
+        }
+        a.classList.add('mat-radio-checked')
+      }else
+      {
+        if (a.classList.contains('mat-radio-checked'))
+        {
+          a.classList.remove('mat-radio-checked')
+        }
+        b.classList.add('mat-radio-checked')
+      }
+  }
+
+  public changeBoth()
+  {
+    let a=document.getElementById("radioStatementA") as HTMLInputElement
+    let b=document.getElementById("radioStatementB") as HTMLInputElement
+     
+    b.classList.remove('mat-radio-checked')
+    a.classList.remove('mat-radio-checked')
   }
 }
 
