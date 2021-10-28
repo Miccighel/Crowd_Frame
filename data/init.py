@@ -571,6 +571,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         console.print(f"[green]Bucket creation completed[/green], HTTP STATUS CODE: {private_bucket['ResponseMetadata']['HTTPStatusCode']}.")
     except s3_client.exceptions.BucketAlreadyOwnedByYou as error:
         console.print(f"[yellow]Bucket already created[/yellow], HTTP STATUS CODE: {error.response['ResponseMetadata']['HTTPStatusCode']}.")
+    except s3_client.exceptions.BucketAlreadyOwnedByYou as error:
+        console.print(f"[yellow]Bucket already created[/yellow], HTTP STATUS CODE: {error.response['ResponseMetadata']['HTTPStatusCode']}.")
 
     response = s3_client.put_public_access_block(
         Bucket=aws_private_bucket,

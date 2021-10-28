@@ -197,7 +197,8 @@ console.rule("1 - Fetching HITs")
 
 console.print(f"Task: [cyan on white]{task_name}")
 
-hit_data_path = f"result/{task_name}/Models/hits_data.csv"
+models_path = f"result/{task_name}/Models/"
+hit_data_path = f"{models_path}hits_data.csv"
 
 next_token = ''
 hit_counter = 0
@@ -216,6 +217,7 @@ with console.status(f"Downloading HITs, Token: {next_token}, Total: {token_count
                 'NumberOfAssignmentsPending', 'NumberOfAssignmentsAvailable', 'NumberOfAssignmentsCompleted', 'AssignmentId', 'WorkerId', 'AssignmentStatus',
                 'AutoApprovalTime', 'AcceptTime', 'SubmitTime', 'ApprovalTime'
             ])
+            os.makedirs(models_path)
         else:
             hit_df = pd.read_csv(hit_data_path)
 
@@ -642,14 +644,13 @@ if not os.path.exists(dataframe_path):
                         for index, currentAnswers in enumerate(documentAnswers):
                             currentAttributes = documents[index].keys()
                             for currentAttribute in currentAttributes:
-                                if (currentAttribute == 'product_title'):
-                                    row[f"doc_{currentAttribute}"] = sanitize_string(documents[index][currentAttribute])
-                                else:
-                                    row[f"doc_{currentAttribute}"] = documents[index][currentAttribute]
+                                row[f"doc_{currentAttribute}"] = documents[index][currentAttribute]
                             for dimension in dimensions:
                                 if dimension['scale'] is not None:
-                                    value = currentAnswers[f"{dimension['name']}_value"].strip()
-                                    value = re.sub('\n', '', value)
+                                    value = currentAnswers[f"{dimension['name']}_value"]
+                                    if type(value)==str:
+                                        value = value.strip()
+                                        value = re.sub('\n', '', value)
                                     row[f"doc_{dimension['name']}_value"] = value
                                     if dimension["scale"]["type"] == "categorical":
                                         for mapping in dimension["scale"]['mapping']:
