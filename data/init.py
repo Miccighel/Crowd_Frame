@@ -593,7 +593,10 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 "Sid": "AllowPrivateBucketInteraction",
                 "Effect": "Allow",
                 "Principal": {
-                    "AWS": f"arn:aws:iam::{aws_account_id}:user{iam_path}{config_user_name}",
+                    "AWS": [
+                        f"arn:aws:iam::{aws_account_id}:user{iam_path}{config_user_name}",
+                        f"arn:aws:iam::{aws_account_id}:user{iam_path}crowd-worker"
+                    ]
                 },
                 "Action": [
                     "s3:PutObject",

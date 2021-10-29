@@ -34,10 +34,16 @@ export class DynamoDBService {
         });
     }
 
-    public async getWorker(config, worker_id) {
+    public async listTables(config) {
+        let client = this.loadDynamoDB(config)
+        let params = {};
+        return await client.listTables(params).promise()
+    }
+
+    public async getWorker(config, worker_id, table=null) {
         let docClient = this.loadDynamoDBDocumentClient(config)
         let params = {
-            TableName: config["table_acl_name"],
+            TableName: table ? table : config["table_acl_name"],
             KeyConditionExpression: "#identifier = :identifier",
             ExpressionAttributeNames: {
                 "#identifier": "identifier"

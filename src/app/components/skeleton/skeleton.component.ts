@@ -40,6 +40,7 @@ import {MatRadioChange} from "@angular/material/radio";
 import {MatCheckboxChange} from "@angular/material/checkbox";
 import {SectionService} from "../../services/section.service";
 import {DynamoDBService} from "../../services/dynamoDB.service";
+import {viewClassName} from "@angular/compiler";
 
 /* Component HTML Tag definition */
 @Component({
@@ -420,17 +421,121 @@ export class SkeletonComponent implements OnInit {
     * If the worker has already started the task in the past he is not allowed to continue the task.
     */
     public async performWorkerStatusCheck() {
-        /* The worker identifiers of the current task are downloaded */
-        let rawWorker = await this.dynamoDBService.getWorker(this.configService.environment, this.workerIdentifier)
-        if('Items' in rawWorker) {
-            for(let worker of rawWorker['Items']) {
-                if(this.workerIdentifier == worker['identifier']) {
-                    return false
+
+        let taskAllowed = true
+        let batchesStatus = {}
+        let tablesACL = await this.dynamoDBService.listTables(this.configService.environment)
+        let workersManual = await this.S3Service.downloadWorkers(this.configService.environment)
+        let workersACL = await this.dynamoDBService.getWorker(this.configService.environment, this.workerIdentifier)
+
+        /* To blacklist a previous batch its worker list is picked up */
+        for (let batchName of this.blacklistBatches) {
+            if (!(batchName in batchesStatus)) {
+                let workers = await this.S3Service.downloadWorkers(this.configService.environment, batchName)
+                batchesStatus[batchName] = {}
+                batchesStatus[batchName]['blacklist'] = workers['blacklist']
+                /* Was the past batch a legacy one? */
+                for (let tableName in tablesACL['TableNames']) {
+                    if (batchName == tableName) {
+                        batchesStatus[batchName]['tableName'] = tableName
+                    }
                 }
             }
         }
-        await this.dynamoDBService.insertWorker(this.configService.environment, this.workerIdentifier, this.currentTry)
-        return true
+
+        /* To whitelist a previous batch its blacklist is picked up */
+        for (let batchName of this.whitelistBatches) {
+            if (!(batchName in batchesStatus)) {
+                let workers = await this.S3Service.downloadWorkers(this.configService.environment, batchName)
+                batchesStatus[batchName] = {}
+                batchesStatus[batchName]['whitelist'] = workers['blacklist']
+                for (let tableName in tablesACL['TableNames']) {
+                    if (batchName == tableName) {
+                        batchesStatus[batchName]['tableName'] = tableName
+                    }
+                }
+            }
+        }
+
+        /* The true checking operation starts here */
+
+        /* Check to verify if the current worker was present into a previous legacy or dynamo-db based blacklisted batch */
+        for (let batchName in batchesStatus) {
+            let batchStatus = batchesStatus[batchName]
+            if ('blacklist' in batchStatus) {
+                if ('tableName' in batchStatus) {
+                    let rawWorker = await this.dynamoDBService.getWorker(this.configService.environment, this.workerIdentifier, batchStatus['tableName'])
+                    if ('Items' in rawWorker) {
+                        for (let worker of rawWorker['Items']) {
+                            if (this.workerIdentifier == worker['identifier']) {
+                                taskAllowed = false
+                            }
+                        }
+                    }
+                } else {
+                    for (let workerIdentifier of batchStatus['blacklist']) {
+                        if (this.workerIdentifier == workerIdentifier) {
+                            taskAllowed = false
+                        }
+                    }
+                }
+            }
+        }
+
+        /* Check to verify if the current worker was present into a previous legacy or dynamo-db based whitelisted batch */
+        for (let batchName in batchesStatus) {
+            let batchStatus = batchesStatus[batchName]
+            if ('whitelist' in batchStatus) {
+                if ('tableName' in batchStatus) {
+                    let rawWorker = await this.dynamoDBService.getWorker(this.configService.environment, this.workerIdentifier, batchStatus['tableName'])
+                    if ('Items' in rawWorker) {
+                        for (let worker of rawWorker['Items']) {
+                            if (this.workerIdentifier == worker['identifier']) {
+                                taskAllowed = true
+                            }
+                        }
+                    }
+                } else {
+                    for (let workerIdentifier of batchStatus['whitelist']) {
+                        if (this.workerIdentifier == workerIdentifier) {
+                            taskAllowed = true
+                        }
+                    }
+                }
+            }
+        }
+
+        /* Check to verify if the current worker already accessed the current task using the dynamo-db based acl */
+        if ('Items' in workersACL) {
+            for (let worker of workersACL['Items']) {
+                if (this.workerIdentifier == worker['identifier']) {
+                    taskAllowed = false
+                    return taskAllowed
+                }
+            }
+        }
+
+        /* Check to verify if the current worker is manually blacklisted into the current batch */
+        for (let worker of workersManual['blacklist']) {
+            if (this.workerIdentifier == worker) {
+                taskAllowed = false
+                return taskAllowed
+            }
+        }
+
+
+        /* Check to verify if the current worker is manually whitelisted into the current batch using the dynamo-db based acl */
+
+        for (let worker of workersManual['whitelist']) {
+            if (this.workerIdentifier == worker) {
+                taskAllowed = true
+            }
+        }
+
+        if (taskAllowed)
+            await this.dynamoDBService.insertWorker(this.configService.environment, this.workerIdentifier, this.currentTry)
+
+        return taskAllowed
     }
 
     /*
@@ -477,7 +582,7 @@ export class SkeletonComponent implements OnInit {
                     this.hit = currentHit;
                     this.tokenOutput = currentHit.token_output;
                     this.unitId = currentHit.unit_id
-                    if(this.logger)
+                    if (this.logger)
                         this.actionLogger.unitId = this.unitId
                 }
             }
@@ -1991,7 +2096,7 @@ export class SkeletonComponent implements OnInit {
                 documents_amount: this.documentsAmount,
                 dimensions_amount: this.dimensionsAmount,
             };
-            data["info"]=actionInfo
+            data["info"] = actionInfo
             /* General info about task */
             data["task"] = taskData
             /* The answers of the current worker to the questionnaire */
@@ -2004,7 +2109,7 @@ export class SkeletonComponent implements OnInit {
             data["worker"] = this.worker
             /* await (this.upload(`${this.workerFolder}/worker.json`, this.worker)); */
 
-            if(this.sequenceNumber<=0) {
+            if (this.sequenceNumber <= 0) {
                 let uploadStatus = await this.S3Service.uploadTaskData(this.configService.environment, this.worker, this.unitId, data)
                 await this.dynamoDBService.insertData(this.configService.environment, this.workerIdentifier, this.unitId, this.currentTry, this.sequenceNumber, data)
                 this.sequenceNumber = this.sequenceNumber + 1
