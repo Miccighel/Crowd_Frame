@@ -90,7 +90,8 @@
 </ng-template>
 
 <!-- Task body section -->
-<mat-horizontal-stepper [linear]="true" labelPosition="bottom" #stepper *ngIf="questionnaires && documents && dimensions && this.sectionService.taskStarted">
+<mat-horizontal-stepper [linear]="true" labelPosition="bottom" #stepper
+                        *ngIf="questionnaires && documents && dimensions && this.sectionService.taskStarted">
 
     <!-- Questionnaire markup -->
     <ng-container *ngFor="let questionnaire of questionnaires; let i=index">
@@ -108,12 +109,14 @@
 
                         <!-- Standard questionnaire markup -->
                         <mat-card-content *ngIf="questionnaire.type=='standard'" class="questionnaire-body">
-                            <mat-radio-group *ngFor="let question of questionnaire.questions; let j=index" aria-labelledby="radio-button-label" class="radio-button-group question" formControlName="{{question.name}}">
+                            <mat-radio-group *ngFor="let question of questionnaire.questions; let j=index" aria-labelledby="radio-button-label"
+                                             class="radio-button-group question" formControlName="{{question.name}}">
                                 <p class="questionnaire-question">{{question.text}}</p>
                                 <mat-divider [inset]="true"></mat-divider>
                                 <mat-radio-button *ngFor="let answer of question.answers; let k=index" class="radio-button" value="{{k}}">
                                     {{answer}}</mat-radio-button>
-                                <mat-expansion-panel hideToggle *ngIf="question.detail" class="question-detail" (opened)="question.showDetail = true" (closed)="question.showDetail = false">
+                                <mat-expansion-panel hideToggle *ngIf="question.detail" class="question-detail" (opened)="question.showDetail = true"
+                                                     (closed)="question.showDetail = false">
                                     <mat-expansion-panel-header class="mat-button">
                                         <mat-panel-title>
                                             {{question.showDetail ? 'Hide details' : 'Show details'}}
@@ -139,7 +142,8 @@
                                 <mat-divider [inset]="true"></mat-divider>
                                 <mat-form-field appearance="fill">
                                     <mat-label>Answer</mat-label>
-                                    <input matInput type="number" placeholder="0" min="0" formControlName="{{question.name}}" class="questionnaire-value">
+                                    <input matInput type="number" placeholder="0" min="0" formControlName="{{question.name}}"
+                                           class="questionnaire-value">
                                     <mat-error *ngIf="checkFormControl(questionnairesForm[i],question.name, 'required')">
                                         This field is required
                                     </mat-error>
@@ -163,7 +167,8 @@
                                     <span class="matrix-header-text">{{mapping.label}}</span>
                                 </div>
                             </div>
-                            <mat-radio-group aria-labelledby="radio-button-label" *ngFor="let question of questionnaire.questions; let m=index" formControlName="{{question.name}}">
+                            <mat-radio-group aria-labelledby="radio-button-label" *ngFor="let question of questionnaire.questions; let m=index"
+                                             formControlName="{{question.name}}">
                                 <div>
                                     <p>{{m + 1}}) {{question.text}}</p>
                                 </div>
@@ -176,7 +181,10 @@
                         <!-- Next button markup -->
                         <mat-card-actions>
                             <p class="form-note">
-                                <button mat-flat-button color="primary" matStepperNext [disabled]="(!questionnairesForm[i].valid || this.sectionService.taskCompleted)" (click)="performLogging('Next',i); nextStep()"> Next</button>
+                                <button mat-flat-button color="primary" matStepperNext
+                                        [disabled]="(!questionnairesForm[i].valid || this.sectionService.taskCompleted)"
+                                        (click)="performLogging('Next',i); nextStep()"> Next
+                                </button>
                                 (*) you have to fill each field to proceed
                             </p>
                         </mat-card-actions>
@@ -203,7 +211,8 @@
                         <div class="countdown sticky" *ngIf="this.settings.countdown_time>=0">
                             <h1 class="text-lighter m-0">
                                 Time left:
-                                <countdown #countdownElement [config]="{ demand: true, leftTime: this.documentsCountdownTime[i], format: 'mm:ss' }" (event)="handleCountdown($event, i)"></countdown>
+                                <countdown #countdownElement [config]="{ demand: true, leftTime: this.documentsCountdownTime[i], format: 'mm:ss' }"
+                                           (event)="handleCountdown($event, i)"></countdown>
                             </h1>
                         </div>
 
@@ -255,10 +264,12 @@
 
                             <!-- Annotation buttons markup -->
                             <div *ngIf="this.annotator" id="annotation-buttons-{{i}}" class="annotation-buttons">
-                                <button [style.background-color]="value.color"
+                                <button
+                                        [style.background-color]="value.color"
                                         [style.opacity]="!this.annotationButtonsDisabled[i] ? 1 : 0.3" class="ann-button-{{i}}"
                                         *ngFor="let value of annotator.values" [disabled]="this.annotationButtonsDisabled[i]" mat-flat-button
-                                        (click)="handleAnnotationOption(value,i)">{{value.label}}</button>
+                                        (click)="handleAnnotationOption(value,i)">{{value.label}}
+                                </button>
                             </div>
                             <br/>
 
@@ -275,7 +286,8 @@
                                             <td class="mat-cell"><span [style.background-color]="note.color">{{note.current_text}}</span></td>
                                             <td class="mat-cell"><code>{{capitalize(note.option)}}</code></td>
                                             <td class="mat-cell">
-                                                <button (click)="removeAnnotation(i, noteIndex, this.changeDetector)" mat-flat-button color="warn">Delete
+                                                <button (click)="removeAnnotation(i, noteIndex, this.changeDetector)" mat-flat-button color="warn">
+                                                    Delete
                                                 </button>
                                             </td>
                                         </ng-container>
@@ -293,7 +305,8 @@
                                     <ng-container *ngIf="note.deleted == false">
                                         <mat-divider [inset]="true"></mat-divider>
                                         <br/>
-                                        <div *ngIf="checkIfLast(i, noteIndex)" style="height: 0%; text-align: center; margin-bottom: 1%; background-color: rgb(180, 180, 180); color: rgb(255, 0, 0);">
+                                        <div *ngIf="checkIfLast(i, noteIndex)"
+                                             style="height: 0%; text-align: center; margin-bottom: 1%; background-color: rgb(180, 180, 180); color: rgb(255, 0, 0);">
                                             ULTIMA ANNOTAZIONE ESEGUITA
                                         </div>
                                         <div class="annotation-quote">
@@ -346,7 +359,8 @@
                                                     </mat-checkbox>
                                                     <br/>
                                                     <mat-checkbox (change)="detailsCheckboxChange($event, i, noteIndex)"
-                                                                  name="details-checkbox-{{noteIndex}}.{{i}}" [disabled]="!note.type.includes('reference')"
+                                                                  name="details-checkbox-{{noteIndex}}.{{i}}"
+                                                                  [disabled]="!note.type.includes('reference')"
                                                                   [checked]="note.withoutDetails">non ci sono ulteriori dettagli
                                                     </mat-checkbox>
                                                 </div>
@@ -359,7 +373,9 @@
                                                 <mat-radio-group name="reference-radio-group-{{i}}.{{noteIndex}}"
                                                                  (change)="this.referenceRadioChange($event, i, noteIndex)">
                                                     <div class="reference-radio-group-button">
-                                                        <mat-radio-button value="null" [checked]="this.referenceRadioButtonCheck(i, noteIndex)">Non presente nel testo</mat-radio-button>
+                                                        <mat-radio-button value="null" [checked]="this.referenceRadioButtonCheck(i, noteIndex)">Non
+                                                            presente nel testo
+                                                        </mat-radio-button>
                                                     </div>
                                                     <div *ngFor="let note of this.filterNotes(this.notes[i]); let referredNoteIndex = index">
                                                         <div class="reference-radio-group-button">
@@ -378,10 +394,9 @@
                                                         <strong>Evidenzia il riferimento interno:</strong>
                                                     </div>
                                                     <div class="inner-annotation-reference" id="note-current-{{noteIndex}}.{{i}}">
-                          <span
-                                  (mouseup)="performInnerHighlighting(this.changeDetector, $event, i, noteIndex, note.innerAnnotations, this.annotator)"
-                                  (touchend)="performInnerHighlighting(this.changeDetector, $event, i, noteIndex, note.innerAnnotations, this.annotator)"
-                                  id="references-{{noteIndex}}.{{i}}">{{note.current_text}}</span>
+                                                        <span (mouseup)="performInnerHighlighting(this.changeDetector, $event, i, noteIndex, note.innerAnnotations, this.annotator)"
+                                                              (touchend)="performInnerHighlighting(this.changeDetector, $event, i, noteIndex, note.innerAnnotations, this.annotator)"
+                                                              id="references-{{noteIndex}}.{{i}}">{{note.current_text}}</span>
                                                     </div>
                                                     <div *ngFor="let innerNotes of note.innerAnnotations; let innerNoteIndex = index">
                                                         <ng-container *ngIf="!innerNotes.deleted"><br/>
@@ -390,31 +405,34 @@
                                                                 <span [style.background-color]="innerNotes.color">{{innerNotes.current_text}}</span>
                                                             </div>
                                                             <div class="inner-annotation-checkbox-delete">
-                                                                <mat-checkbox (change)="innerDetailsCheckboxChange($event, i, noteIndex, innerNoteIndex)"
-                                                                              name="details-checkbox-{{innerNoteIndex}}-{{noteIndex}}.{{i}}"
-                                                                              [disabled]="!innerNotes.type.includes('reference')"
-                                                                              [checked]="innerNotes.withoutDetails">non ci sono ulteriori dettagli
+                                                                <mat-checkbox
+                                                                        (change)="innerDetailsCheckboxChange($event, i, noteIndex, innerNoteIndex)"
+                                                                        name="details-checkbox-{{innerNoteIndex}}-{{noteIndex}}.{{i}}"
+                                                                        [disabled]="!innerNotes.type.includes('reference')"
+                                                                        [checked]="innerNotes.withoutDetails">non ci sono ulteriori dettagli
                                                                 </mat-checkbox>
                                                             </div>
                                                             <div *ngIf="innerNotes.type.includes('reference') && !innerNotes.withoutDetails"
                                                                  class="annotation-options">
                                                                 <div style="padding: 5px;">
-                                                                    <b>Numero legge:<br/><br/>
-                                                                        Anno legge:</b>
+                                                                    <b>Numero legge:<br/><br/>Anno legge:</b>
                                                                 </div>
                                                                 <br/>
-                                                                <div style="padding: 5px;"><input type="number"
-                                                                                                  name="number-{{innerNoteIndex}}-{{noteIndex}}.{{i}}"
-                                                                                                  id="number-{{innerNoteIndex}}-{{noteIndex}}.{{i}}" placeholder="00"
-                                                                                                  (change)="innerCheckIfSaved(i, noteIndex, innerNoteIndex)"
-                                                                                                  (keyup)="innerCheckIfSaved(i, noteIndex, innerNoteIndex)"><br/><br/>
+                                                                <div style="padding: 5px;">
+                                                                    <input type="number"
+                                                                           name="number-{{innerNoteIndex}}-{{noteIndex}}.{{i}}"
+                                                                           id="number-{{innerNoteIndex}}-{{noteIndex}}.{{i}}"
+                                                                           placeholder="00"
+                                                                           (change)="innerCheckIfSaved(i, noteIndex, innerNoteIndex)"
+                                                                           (keyup)="innerCheckIfSaved(i, noteIndex, innerNoteIndex)"><br/><br/>
                                                                     <input type="number" name="year-{{innerNoteIndex}}-{{noteIndex}}.{{i}}"
                                                                            id="year-{{innerNoteIndex}}-{{noteIndex}}.{{i}}" placeholder="0000"
                                                                            (change)="innerCheckIfSaved(i, noteIndex, innerNoteIndex)"
                                                                            (keyup)="innerCheckIfSaved(i, noteIndex, innerNoteIndex)">
                                                                 </div>
                                                                 <div style="padding: 5px; padding-left: 7px;">
-                                                                    <button (click)="performInnerAnnotationLaws(i, noteIndex, innerNoteIndex)" mat-flat-button
+                                                                    <button (click)="performInnerAnnotationLaws(i, noteIndex, innerNoteIndex)"
+                                                                            mat-flat-button
                                                                             color="primary"
                                                                             id="save_button-{{innerNoteIndex}}-{{innerNoteIndex}}-{{noteIndex}}.{{i}}"
                                                                             [disabled]="innerCheckIfSaved(i, noteIndex, innerNoteIndex)">Salva
@@ -423,8 +441,7 @@
                                                             </div>
                                                             <br/>
                                                             <div class="inner-annotation-checkbox-delete">
-                                                                <button (click)="removeInnerAnnotationLaws(i, noteIndex, innerNoteIndex)" mat-flat-button
-                                                                        color="warn">Cancella riferimento
+                                                                <button (click)="removeInnerAnnotationLaws(i, noteIndex, innerNoteIndex)" mat-flat-button color="warn">Cancella riferimento
                                                                 </button>
                                                             </div>
                                                         </ng-container>
@@ -447,7 +464,8 @@
                                                        (change)="checkIfSaved(i, noteIndex)" (keyup)="checkIfSaved(i, noteIndex)">
                                             </div>
                                             <div style="padding: 5px; padding-left: 7px;">
-                                                <button (click)="performAnnotationLaws(i, noteIndex)" mat-flat-button color="primary" id="save_button-{{noteIndex}}.{{i}}" [disabled]="checkIfSaved(i, noteIndex)">Salva
+                                                <button (click)="performAnnotationLaws(i, noteIndex)" mat-flat-button color="primary"
+                                                        id="save_button-{{noteIndex}}.{{i}}" [disabled]="checkIfSaved(i, noteIndex)">Salva
                                                 </button>
                                             </div>
                                         </div>
@@ -530,18 +548,21 @@
 
                                                 <!-- Categorical scale markup -->
                                                 <ng-container *ngIf="dimension.scale.type=='categorical'">
-                                                    <mat-radio-group aria-labelledby="radio-button-label" class="radio-button-group" formControlName="{{(dimension.name).concat('_value')}}">
+                                                    <mat-radio-group aria-labelledby="radio-button-label" class="radio-button-group"
+                                                                     formControlName="{{(dimension.name).concat('_value')}}">
                                                         <mat-radio-button *ngFor="let mapping of dimension.scale.mapping let k=index"
                                                                           class="radio-button" value="{{mapping.value}}"
                                                                           (change)="storeDimensionValue($event, i, dimension.index)">
-                                                            <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0"> ({{mapping.description}})</span>
+                                                            <span>{{mapping.label}}</span><span
+                                                                *ngIf="mapping.description.length>0"> ({{mapping.description}})</span>
                                                         </mat-radio-button>
                                                     </mat-radio-group>
                                                 </ng-container>
 
                                                 <!-- Interval scale markup -->
                                                 <ng-container *ngIf="dimension.scale.type=='interval'">
-                                                    <label>Selected value: {{documentsForm[i].controls[(dimension.name).concat('_value')].value}}</label>
+                                                    <label>Selected
+                                                        value: {{documentsForm[i].controls[(dimension.name).concat('_value')].value}}</label>
                                                     <mat-slider min="{{dimension.scale.min}}" max="{{dimension.scale.max}}"
                                                                 step="{{dimension.scale.step}}" thumbLabel tickInterval="{{dimension.scale.step}}"
                                                                 formControlName="{{(dimension.name).concat('_value')}}"
@@ -552,15 +573,19 @@
                                                 <ng-container *ngIf="dimension.scale.type=='magnitude_estimation'">
                                                     <mat-form-field appearance="fill">
                                                         <mat-label>Value</mat-label>
-                                                        <input *ngIf="dimension.scale.lower_bound" matInput type="number" placeholder="" formControlName="{{(dimension.name).concat('_value')}}" min="{{dimension.scale.min}}"
+                                                        <input *ngIf="dimension.scale.lower_bound" matInput type="number" placeholder=""
+                                                               formControlName="{{(dimension.name).concat('_value')}}" min="{{dimension.scale.min}}"
                                                                (change)="storeDimensionValue($event, i, dimension.index)"
                                                                class="magnitude_estimation">
-                                                        <input *ngIf="!dimension.scale.lower_bound" matInput type="number" placeholder="" formControlName="{{(dimension.name).concat('_value')}}" min="{{dimension.scale.min+1}}"
+                                                        <input *ngIf="!dimension.scale.lower_bound" matInput type="number" placeholder=""
+                                                               formControlName="{{(dimension.name).concat('_value')}}" min="{{dimension.scale.min+1}}"
                                                                (change)="storeDimensionValue($event, i, dimension.index)" class="magnitude_estimation">
-                                                        <mat-error *ngIf="checkFormControl(documentsForm[i], (dimension.name).concat('_value'), 'required')">
+                                                        <mat-error
+                                                                *ngIf="checkFormControl(documentsForm[i], (dimension.name).concat('_value'), 'required')">
                                                             This field is required
                                                         </mat-error>
-                                                        <mat-error *ngIf="checkFormControl(documentsForm[i], (dimension.name).concat('_value'), 'min')">
+                                                        <mat-error
+                                                                *ngIf="checkFormControl(documentsForm[i], (dimension.name).concat('_value'), 'min')">
                                                             <span *ngIf="dimension.scale.lower_bound">Min value allowed: {{dimension.scale.min}}</span>
                                                             <span *ngIf="!dimension.scale.lower_bound">Min value allowed: {{dimension.scale.min + 1}}</span>
                                                         </mat-error>
@@ -573,11 +598,13 @@
                                             <ng-container *ngIf="dimension.style.orientation=='horizontal'">
 
                                                 <!-- Categorical scale markup -->
-                                                <mat-radio-group *ngIf="dimension.scale.type=='categorical'" aria-labelledby="radio-button-label" formControlName="{{(dimension.name).concat('_value')}}">
+                                                <mat-radio-group *ngIf="dimension.scale.type=='categorical'" aria-labelledby="radio-button-label"
+                                                                 formControlName="{{(dimension.name).concat('_value')}}">
                                                     <mat-radio-button *ngFor="let mapping of dimension.scale.mapping let k=index"
                                                                       class="radio-button" value="{{mapping.value}}"
                                                                       (change)="storeDimensionValue($event, i,dimension.index)">
-                                                        <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0"> ({{mapping.description}})</span>
+                                                        <span>{{mapping.label}}</span><span
+                                                            *ngIf="mapping.description.length>0"> ({{mapping.description}})</span>
                                                     </mat-radio-button>
                                                 </mat-radio-group>
                                             </ng-container>
@@ -587,11 +614,13 @@
                                         <ng-container *ngIf="!this.dimension.style">
 
                                             <ng-container *ngIf="dimension.scale.type=='categorical'">
-                                                <mat-radio-group aria-labelledby="radio-button-label" class="radio-button-group" formControlName="{{(dimension.name).concat('_value')}}">
+                                                <mat-radio-group aria-labelledby="radio-button-label" class="radio-button-group"
+                                                                 formControlName="{{(dimension.name).concat('_value')}}">
                                                     <mat-radio-button *ngFor="let mapping of dimension.scale.mapping let k=index"
                                                                       class="radio-button" value="{{mapping.value}}"
                                                                       (change)="storeDimensionValue($event, i, dimension.index)">
-                                                        <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0"> ({{mapping.description}})</span>
+                                                        <span>{{mapping.label}}</span><span
+                                                            *ngIf="mapping.description.length>0"> ({{mapping.description}})</span>
                                                     </mat-radio-button>
                                                 </mat-radio-group>
                                             </ng-container>
@@ -609,11 +638,14 @@
                                             <ng-container *ngIf="dimension.scale.type=='magnitude_estimation'">
                                                 <mat-form-field appearance="fill">
                                                     <mat-label>Value</mat-label>
-                                                    <input *ngIf="dimension.scale.lower_bound" matInput type="number" placeholder="" formControlName="{{(dimension.name).concat('_value')}}" min="{{dimension.scale.min}}"
+                                                    <input *ngIf="dimension.scale.lower_bound" matInput type="number" placeholder=""
+                                                           formControlName="{{(dimension.name).concat('_value')}}" min="{{dimension.scale.min}}"
                                                            (change)="storeDimensionValue($event, i, dimension.index)" class="magnitude_estimation">
-                                                    <input *ngIf="!dimension.scale.lower_bound" matInput type="number" placeholder="" formControlName="{{(dimension.name).concat('_value')}}" min="{{dimension.scale.min+1}}"
+                                                    <input *ngIf="!dimension.scale.lower_bound" matInput type="number" placeholder=""
+                                                           formControlName="{{(dimension.name).concat('_value')}}" min="{{dimension.scale.min+1}}"
                                                            (change)="storeDimensionValue($event, i, dimension.index)" class="magnitude_estimation">
-                                                    <mat-error *ngIf="checkFormControl(documentsForm[i], (dimension.name).concat('_value'), 'required')">
+                                                    <mat-error
+                                                            *ngIf="checkFormControl(documentsForm[i], (dimension.name).concat('_value'), 'required')">
                                                         This field is required
                                                     </mat-error>
                                                     <mat-error *ngIf="checkFormControl(documentsForm[i], (dimension.name).concat('_value'), 'min')">
@@ -712,17 +744,19 @@
 
                                 <!-- Dimension assessment fields markup -->
                                 <div *ngIf="dimension.scale">
-                                <mat-radio-group aria-labelledby="radio-button-label" formControlName="{{(dimension.name).concat('_value')}}">
-                                    <div>
-                                        <p>
-                                            <strong>{{this.capitalize(dimension.name)}}:
-                                            </strong><strong>{{dimension.description.toLowerCase().split(")")[0]}})</strong>{{dimension.description.toLowerCase().split(")")[1]}})
-                                        </p>
-                                    </div>
-                                    <div *ngFor="let mapping of dimension.scale.mapping; let k=index">
-                                        <mat-radio-button class="radio-button" value="{{mapping.value}}" (change)="storeDimensionValue($event, i,dimension.index)"></mat-radio-button>
-                                    </div>
-                                </mat-radio-group>
+                                    <mat-radio-group aria-labelledby="radio-button-label" formControlName="{{(dimension.name).concat('_value')}}">
+                                        <div>
+                                            <p>
+                                                <strong>{{this.capitalize(dimension.name)}}:
+                                                </strong><strong>{{dimension.description.toLowerCase().split(")")[0]}}
+                                                )</strong>{{dimension.description.toLowerCase().split(")")[1]}})
+                                            </p>
+                                        </div>
+                                        <div *ngFor="let mapping of dimension.scale.mapping; let k=index">
+                                            <mat-radio-button class="radio-button" value="{{mapping.value}}"
+                                                              (change)="storeDimensionValue($event, i,dimension.index)"></mat-radio-button>
+                                        </div>
+                                    </mat-radio-group>
                                 </div>
 
                                 <!-- Separator markup -->
@@ -732,12 +766,18 @@
                         </ng-template>
 
                         <!-- Dimensions are then shown and filtered according to each position -->
-                        <ng-template *ngIf="this.filterDimensions('list', 'top').length>0" [ngTemplateOutlet]="dimensionList" [ngTemplateOutletContext]="{dimensions: this.filterDimensions('list', 'top'), i:i}"></ng-template>
-                        <ng-template *ngIf="this.filterDimensions('matrix', 'top').length>0" [ngTemplateOutlet]="dimensionMatrix" [ngTemplateOutletContext]="{dimensions: this.filterDimensions('matrix', 'top'), i:i}"></ng-template>
-                        <ng-template *ngIf="this.filterDimensions('list', 'middle').length>0" [ngTemplateOutlet]="dimensionList" [ngTemplateOutletContext]="{dimensions: this.filterDimensions('list', 'middle'), i:i}"></ng-template>
-                        <ng-template *ngIf="this.filterDimensions('matrix', 'middle').length>0" [ngTemplateOutlet]="dimensionMatrix" [ngTemplateOutletContext]="{dimensions: this.filterDimensions('matrix', 'middle'), i:i}"></ng-template>
-                        <ng-template *ngIf="this.filterDimensions('list', 'bottom').length>0" [ngTemplateOutlet]="dimensionList" [ngTemplateOutletContext]="{dimensions: this.filterDimensions('list', 'bottom'), i:i}"></ng-template>
-                        <ng-template *ngIf="this.filterDimensions('matrix', 'bottom').length>0" [ngTemplateOutlet]="dimensionMatrix" [ngTemplateOutletContext]="{dimensions: this.filterDimensions('matrix', 'bottom'), i:i}"></ng-template>
+                        <ng-template *ngIf="this.filterDimensions('list', 'top').length>0" [ngTemplateOutlet]="dimensionList"
+                                     [ngTemplateOutletContext]="{dimensions: this.filterDimensions('list', 'top'), i:i}"></ng-template>
+                        <ng-template *ngIf="this.filterDimensions('matrix', 'top').length>0" [ngTemplateOutlet]="dimensionMatrix"
+                                     [ngTemplateOutletContext]="{dimensions: this.filterDimensions('matrix', 'top'), i:i}"></ng-template>
+                        <ng-template *ngIf="this.filterDimensions('list', 'middle').length>0" [ngTemplateOutlet]="dimensionList"
+                                     [ngTemplateOutletContext]="{dimensions: this.filterDimensions('list', 'middle'), i:i}"></ng-template>
+                        <ng-template *ngIf="this.filterDimensions('matrix', 'middle').length>0" [ngTemplateOutlet]="dimensionMatrix"
+                                     [ngTemplateOutletContext]="{dimensions: this.filterDimensions('matrix', 'middle'), i:i}"></ng-template>
+                        <ng-template *ngIf="this.filterDimensions('list', 'bottom').length>0" [ngTemplateOutlet]="dimensionList"
+                                     [ngTemplateOutletContext]="{dimensions: this.filterDimensions('list', 'bottom'), i:i}"></ng-template>
+                        <ng-template *ngIf="this.filterDimensions('matrix', 'bottom').length>0" [ngTemplateOutlet]="dimensionMatrix"
+                                     [ngTemplateOutletContext]="{dimensions: this.filterDimensions('matrix', 'bottom'), i:i}"></ng-template>
 
                     </mat-card-content>
 
@@ -760,25 +800,29 @@
                             Next
                         </button>
 
-                        <button mat-flat-button color="primary" matStepperNext *ngIf="i+1>=this.documentsAmount && this.annotator && this.questionnaireAmountEnd > 0"
+                        <button mat-flat-button color="primary" matStepperNext
+                                *ngIf="i+1>=this.documentsAmount && this.annotator && this.questionnaireAmountEnd > 0"
                                 [disabled]="(!documentsForm[i].valid && documentsForm[i].status != 'DISABLED'  || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted || !checkAnnotationConsistency(i))"
                                 (click)="performLogging('Next', i); nextStep()">
                             Next
                         </button>
 
-                        <button mat-flat-button color="primary" matStepperNext *ngIf="i+1>=this.documentsAmount && !this.annotator  && this.questionnaireAmountEnd > 0"
+                        <button mat-flat-button color="primary" matStepperNext
+                                *ngIf="i+1>=this.documentsAmount && !this.annotator  && this.questionnaireAmountEnd > 0"
                                 [disabled]="(!documentsForm[i].valid && documentsForm[i].status != 'DISABLED'  || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted)"
                                 (click)="performLogging('Next', i); nextStep()">
                             Next
                         </button>
 
-                        <button mat-flat-button color="primary" matStepperNext *ngIf="i+1>=this.documentsAmount && this.questionnaireAmountEnd == 0 && !this.annotator"
+                        <button mat-flat-button color="primary" matStepperNext
+                                *ngIf="i+1>=this.documentsAmount && this.questionnaireAmountEnd == 0 && !this.annotator"
                                 [disabled]="(!documentsForm[i].valid && documentsForm[i].status != 'DISABLED'  || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted)"
                                 (click)="performLogging('Finish', i); nextStep(); performQualityCheck()">
                             Finish
                         </button>
 
-                        <button mat-flat-button color="primary" matStepperNext *ngIf="i+1>=this.documentsAmount && this.questionnaireAmountEnd == 0 && this.annotator"
+                        <button mat-flat-button color="primary" matStepperNext
+                                *ngIf="i+1>=this.documentsAmount && this.questionnaireAmountEnd == 0 && this.annotator"
                                 [disabled]="(!documentsForm[i].valid && documentsForm[i].status != 'DISABLED'  || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted || !checkAnnotationConsistency(i))"
                                 (click)="performLogging('Finish', i); nextStep(); performQualityCheck()">
                             Finish
@@ -808,12 +852,14 @@
 
                         <!-- Standard questionnaire markup -->
                         <mat-card-content *ngIf="questionnaire.type=='standard'" class="questionnaire-body">
-                            <mat-radio-group *ngFor="let question of questionnaire.questions; let j=index" aria-labelledby="radio-button-label" class="radio-button-group question" formControlName="{{question.name}}">
+                            <mat-radio-group *ngFor="let question of questionnaire.questions; let j=index" aria-labelledby="radio-button-label"
+                                             class="radio-button-group question" formControlName="{{question.name}}">
                                 <p class="questionnaire-question">{{question.text}}</p>
                                 <mat-divider [inset]="true"></mat-divider>
                                 <mat-radio-button *ngFor="let answer of question.answers; let k=index" class="radio-button" value="{{k}}">
                                     {{answer}}</mat-radio-button>
-                                <mat-expansion-panel hideToggle *ngIf="question.detail" class="question-detail" (opened)="question.showDetail = true" (closed)="question.showDetail = false">
+                                <mat-expansion-panel hideToggle *ngIf="question.detail" class="question-detail" (opened)="question.showDetail = true"
+                                                     (closed)="question.showDetail = false">
                                     <mat-expansion-panel-header class="mat-button">
                                         <mat-panel-title>
                                             {{question.showDetail ? 'Hide details' : 'Show details'}}
@@ -839,7 +885,8 @@
                                 <mat-divider [inset]="true"></mat-divider>
                                 <mat-form-field appearance="fill">
                                     <mat-label>Answer</mat-label>
-                                    <input matInput type="number" placeholder="0" min="0" formControlName="{{question.name}}" class="questionnaire-value">
+                                    <input matInput type="number" placeholder="0" min="0" formControlName="{{question.name}}"
+                                           class="questionnaire-value">
                                     <mat-error *ngIf="checkFormControl(questionnairesForm[i],question.name, 'required')">
                                         This field is required
                                     </mat-error>
@@ -882,12 +929,15 @@
                                         (click)="performLogging('Back', i); previousStep()">
                                     Back
                                 </button>
-                                <button mat-flat-button color="primary" matStepperNext *ngIf="i+1 >= this.questionnaireAmountStart + this.documentsAmount && i+1 < (this.questionnaireAmountStart + this.documentsAmount + this.questionnaireAmountEnd) -1"
+                                <button mat-flat-button color="primary" matStepperNext
+                                        *ngIf="i+1 >= this.questionnaireAmountStart + this.documentsAmount && i+1 < (this.questionnaireAmountStart + this.documentsAmount + this.questionnaireAmountEnd) -1"
                                         [disabled]="!questionnairesForm[i].valid" (click)="performLogging('Next',i) ; nextStep()">
                                     Next
                                 </button>
-                                <button mat-flat-button color="primary" matStepperNext *ngIf="i+1 >= (this.questionnaireAmountStart + this.documentsAmount + this.questionnaireAmountEnd) - 1"
-                                        [disabled]="!questionnairesForm[i].valid" (click)="performLogging('Finish', i); nextStep(); performQualityCheck()">
+                                <button mat-flat-button color="primary" matStepperNext
+                                        *ngIf="i+1 >= (this.questionnaireAmountStart + this.documentsAmount + this.questionnaireAmountEnd) - 1"
+                                        [disabled]="!questionnairesForm[i].valid"
+                                        (click)="performLogging('Finish', i); nextStep(); performQualityCheck()">
                                     Finish
                                 </button>
                                 (*) you have to fill each field to proceed
@@ -930,7 +980,8 @@
             </mat-card>
         </div>
         <!-- Retry section - shown when the worker does not pass the quality checks but has some tries left -->
-        <div id="retry-section" class="outcome-section container" *ngIf="this.sectionService.taskCompleted && this.sectionService.taskFailed && allowedTries>0">
+        <div id="retry-section" class="outcome-section container"
+             *ngIf="this.sectionService.taskCompleted && this.sectionService.taskFailed && allowedTries>0">
             <mat-card>
                 <mat-card-title class="retry-title">
                     <h3>Failure, but...</h3>
@@ -957,7 +1008,8 @@
             </mat-card>
         </div>
         <!-- Failure section - shown when the worker does not pass the quality checks and does not has tries left -->
-        <div id="failure-section" class="outcome-section container" *ngIf="this.sectionService.taskCompleted && this.sectionService.taskFailed && allowedTries <= 0">
+        <div id="failure-section" class="outcome-section container"
+             *ngIf="this.sectionService.taskCompleted && this.sectionService.taskFailed && allowedTries <= 0">
             <mat-card>
                 <mat-card-title class="failure-title">
                     <h4>Failure</h4>

@@ -1495,21 +1495,6 @@ export class SkeletonComponent implements OnInit {
         return false
     }
 
-    //
-    //   public filterNotes(notes: Note[]) {
-    //       var result: Note[] = []
-    //       for (let note of notes) {
-    //           if (note instanceof NoteLaws) {
-    //               if (note.year != 0 && note.number != 0 && note.type == "reference" && !note.withoutDetails && !note.deleted) {
-    //                   result.push(note)
-    //               }
-    //           }
-    //       }
-    //       return result
-    //   }
-    //   return false
-    // }
-
     public filterNotes(notes: Note[]) {
         var with_duplicates: Note[] = []
         for (let note of notes) {
@@ -1593,33 +1578,6 @@ export class SkeletonComponent implements OnInit {
             }
         }
     }
-
-    // public innerDetailsCheckboxChange($event: MatCheckboxChange, documentIndex: number, noteIndex: number, innerNoteIndex: number) {
-    //   let mainNote = this.notes[documentIndex][noteIndex]
-    //   if (mainNote instanceof NoteLaws) {
-    //     let currentNote = mainNote.innerAnnotations[innerNoteIndex]
-    //     if ($event.checked) {
-    //       currentNote.withoutDetails = true
-    //       this.resetDetails(currentNote)
-    //       this.checkEnabledNotes(documentIndex)
-    //     } else {
-    //       currentNote.withoutDetails = false
-    //       this.checkEnabledNotes(documentIndex)
-    //     }
-    //   }
-    // }
-
-    // public checkEnabledNotes(documentIndex: number) {
-    //     this.notesDone[documentIndex] = true
-    //     let currentNotes = this.notes[documentIndex]
-    //     var notesNotDeleted: Note[] = []
-    //     var booleans: Boolean[] = [true]
-    //     for (let note of currentNotes) {
-    //         if (!note.deleted) {
-    //             notesNotDeleted.push(note)
-    //         }
-    //     }
-    // }
 
     public innerDetailsCheckboxChange($event: MatCheckboxChange, documentIndex: number, noteIndex: number, innerNoteIndex: number) {
         let mainNote = this.notes[documentIndex][noteIndex]
@@ -1859,13 +1817,9 @@ export class SkeletonComponent implements OnInit {
         return false
     }
 
-    public referenceRadioButtonCheck(i, index) {
+    public referenceRadioButtonCheck(i, index) {}
 
-    }
-
-    public checkboxChange(event, i, index) {
-
-    }
+    public checkboxChange(event, i, index) {}
 
     /* |--------- QUALITY CHECKS ---------| */
 
