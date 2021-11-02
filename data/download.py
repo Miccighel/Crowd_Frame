@@ -198,7 +198,7 @@ console.rule("1 - Fetching HITs")
 console.print(f"Task: [cyan on white]{task_name}")
 
 models_path = f"result/{task_name}/Models/"
-hit_data_path = f"{models_path}hits_data.csv"
+hit_data_path = f"result/hits_data.csv"
 
 next_token = ''
 hit_counter = 0
@@ -217,7 +217,7 @@ with console.status(f"Downloading HITs, Token: {next_token}, Total: {token_count
                 'NumberOfAssignmentsPending', 'NumberOfAssignmentsAvailable', 'NumberOfAssignmentsCompleted', 'AssignmentId', 'WorkerId', 'AssignmentStatus',
                 'AutoApprovalTime', 'AcceptTime', 'SubmitTime', 'ApprovalTime'
             ])
-            os.makedirs(models_path)
+            os.makedirs(models_path, exist_ok=True)
         else:
             hit_df = pd.read_csv(hit_data_path)
 
