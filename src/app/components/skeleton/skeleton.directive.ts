@@ -37,7 +37,7 @@ export class SkeletonDirective implements AfterViewInit{
   ngAfterViewInit() {
     if(this.actionLogger.isActive) {
       /* ------- MOUSE EVENTS ------- */
-      if (this.actionLogger.opt['mouse']['mousemove']) {
+      if (this.actionLogger.opt['mouse']['mouseMovements']) {
         /*
          * MOUSE MOVE
          * Mouse movements are limited to one each 100ms

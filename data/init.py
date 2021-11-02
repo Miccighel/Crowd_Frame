@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
+
 import hashlib
 import hmac
 import json
@@ -8,13 +9,13 @@ import random
 import shutil
 import subprocess
 import textwrap
+import boto3
+import pandas as pd
 import time
+import datetime
 from distutils.util import strtobool
 from pathlib import Path
 from shutil import copy2
-
-import boto3
-import pandas as pd
 from botocore.exceptions import ClientError
 from botocore.exceptions import ProfileNotFound
 from dotenv import load_dotenv
@@ -26,7 +27,7 @@ from rich.progress import track
 console = Console()
 
 home = str(Path.home())
-path = '/Crowd_Frame/'
+iam_path = '/Crowd_Frame/'
 
 config_user_name = 'config-user'
 mturk_user_name = 'mturk-user'
@@ -44,7 +45,7 @@ folder_build_deploy_path = "build/deploy/"
 folder_build_skeleton_path = "build/skeleton/"
 folder_tasks_path = "tasks/"
 
-botoSession = boto3.Session()
+boto_session = boto3.Session()
 
 def serialize_json(folder, filename, data):
     if not os.path.exists(folder):
@@ -74,28 +75,34 @@ def stop_sequence():
         time.sleep(5)
         exit()
 
+
 def key_cont():
     console.input('[yellow]Press enter to continue...')
+
 
 env_path = Path('.') / '.env'
 load_dotenv(dotenv_path=env_path)
 
+mail_contact = os.getenv('mail_contact')
 profile_name = os.getenv('profile_name')
-
 task_name = os.getenv('task_name')
 batch_name = os.getenv('batch_name')
 admin_user = os.getenv('admin_user')
 admin_password = os.getenv('admin_password')
-deploy_config = strtobool(os.getenv('deploy_config'))
-server_config = strtobool(os.getenv('server_config'))
-
+deploy_config = os.getenv('deploy_config')
+server_config = os.getenv('server_config')
+deploy_config = strtobool(deploy_config) if deploy_config is not None else False
 aws_region = os.getenv('aws_region')
 aws_private_bucket = os.getenv('aws_private_bucket')
 aws_deploy_bucket = os.getenv('aws_deploy_bucket')
-
+budget_limit = os.getenv('budget_limit')
 bing_api_key = os.getenv('bing_api_key')
 
-iam = botoSession.client('iam')
+table_logging_name = f"Crowd_Frame-{task_name}_{batch_name}_Logger"
+table_data_name = f"Crowd_Frame-{task_name}_{batch_name}_Data"
+table_acl_name = f"Crowd_Frame-{task_name}_{batch_name}_ACL"
+
+iam = boto_session.client('iam', region_name=aws_region)
 
 console.rule("0 - Initialization")
 
@@ -103,6 +110,7 @@ console.print("[bold]Init.py[/bold] script launched")
 console.print(f"Working directory: [bold]{os.getcwd()}[/bold]")
 
 console.rule("1 - Configuration policy")
+
 with console.status("Generating configuration policy", spinner="aesthetic") as status:
     time.sleep(3)
     configuration_policies = {
@@ -133,8 +141,10 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                     "s3:PutBucketCORS",
                     "s3:PutObject",
                     "s3:PutObjectAcl",
+                    "s3:ListObjects",
                     "sqs:ListQueues",
                     "sqs:CreateQueue",
+                    "sqs:GetQueueUrl",
                     "sqs:GetQueueAttributes",
                     "apigateway:GET",
                     "apigateway:POST",
@@ -142,7 +152,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                     "lambda:CreateFunction",
                     "lambda:CreateEventSourceMapping",
                     "lambda:ListEventSourceMappings",
-                    "lambda:UpdateEventSourceMapping"
+                    "lambda:UpdateEventSourceMapping",
+                    "lambda:DeleteEventSourceMapping"
                 ],
                 "Resource": "*"
             }
@@ -154,38 +165,37 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             PolicyName='Configuration',
             Description="Provides access to the services required by Crowd_Frame",
             PolicyDocument=json.dumps(configuration_policies),
-            Path=path
-        )['Policy']
+            Path=iam_path
+        )
+        console.print(f"[green]Policy creation completed[/green], HTTP STATUS CODE: {policy['ResponseMetadata']['HTTPStatusCode']}.")
+        policy = policy['Policy']
     except iam.exceptions.EntityAlreadyExistsException:
         policies = iam.list_policies(
-            PathPrefix=path
+            PathPrefix=iam_path
         )['Policies']
         for result in policies:
             if result['PolicyName'] == 'Configuration':
                 policy = result
+                console.print(f"[yellow]Policy already created")
                 break
     serialize_json(folder_aws_generated_path, f"policy_{policy['PolicyName']}.json", policy)
 
     console.rule(f"2 - [yellow]{config_user_name}[/yellow] creation")
+
     status.start()
     status.update(f"Generating user [yellow]{config_user_name}[/yellow] and attaching configuration policy")
     time.sleep(3)
     try:
-        user = iam.create_user(
-            UserName=config_user_name,
-            Path=path
-        )['User']
-        iam.attach_user_policy(
-            UserName=config_user_name,
-            PolicyArn=policy['Arn']
-        )
+        user = iam.create_user(UserName=config_user_name, Path=iam_path)
+        console.print(f"[green]User created[/green], HTTP STATUS CODE: {user['ResponseMetadata']['HTTPStatusCode']}.")
     except iam.exceptions.EntityAlreadyExistsException:
-        user = iam.get_user(
-            UserName=config_user_name
-        )['User']
-    serialize_json(folder_aws_generated_path, f"user_{user['UserName']}.json", user)
+        console.print("[yellow]User already created")
+        user = iam.get_user(UserName=config_user_name)
+    iam.attach_user_policy(UserName=config_user_name, PolicyArn=policy['Arn'])
+    serialize_json(folder_aws_generated_path, f"user_{user['User']['UserName']}.json", user)
 
     console.rule(f"3 - Amazon Mechanical Turk policy")
+
     status.start()
     status.update(f"Generating Amazon Mechanical Turk read-only access policy")
     time.sleep(3)
@@ -197,12 +207,14 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 "Sid": "EnableReadOnlyAccess",
                 "Effect": "Allow",
                 "Action": [
-                    "mechanicalturk:Get*",
-                    "mechanicalturk:List*"
+                    "mechanicalturk:SearchHITs",
+                    "mechanicalturk:GetReviewableHITs",
+                    "mechanicalturk:GetHIT",
+                    "mechanicalturk:ListAssignmentsForHIT",
+                    "mechanicalturk:GetAssignment",
+                    "mechanicalturk:ListHITs"
                 ],
-                "Resource": [
-                    "*"
-                ]
+                "Resource": ["*"]
             }
         ]
     }
@@ -211,153 +223,145 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         policy = iam.create_policy(
             PolicyName='MTurkAccess',
             Description="Provides read-only access to Amazon Mechanical Turk",
-            PolicyDocument=json.dumps(configuration_policies),
-            Path=path
-        )['Policy']
+            PolicyDocument=json.dumps(policy),
+            Path=iam_path
+        )
+        console.print(f"[green]Policy creation completed[/green], HTTP STATUS CODE: {policy['ResponseMetadata']['HTTPStatusCode']}.")
+        policy = policy['Policy']
     except iam.exceptions.EntityAlreadyExistsException:
-        policies = iam.list_policies(
-            PathPrefix=path
-        )['Policies']
+        policies = iam.list_policies(PathPrefix=iam_path)['Policies']
         for result in policies:
             if result['PolicyName'] == 'MTurkAccess':
                 policy = result
+                console.print(f"[yellow]Policy already created")
                 break
     serialize_json(folder_aws_generated_path, f"policy_{policy['PolicyName']}.json", policy)
 
     console.rule(f"4 - [yellow]{mturk_user_name}[/yellow] creation")
+
     status.start()
     status.update(f"Generating user [yellow]{mturk_user_name}[/yellow] and attaching read-only Amazon MTurk access policy")
     time.sleep(3)
     try:
-        user = iam.create_user(
-            UserName=mturk_user_name,
-            Path=path
-        )['User']
-        iam.attach_user_policy(
-            UserName=mturk_user_name,
-            PolicyArn=policy['Arn']
-        )
+        user = iam.create_user(UserName=mturk_user_name, Path=iam_path)
+        console.print(f"[green]User created[/green], HTTP STATUS CODE: {user['ResponseMetadata']['HTTPStatusCode']}.")
     except iam.exceptions.EntityAlreadyExistsException:
-        user = iam.get_user(
-            UserName=mturk_user_name
-        )['User']
-    serialize_json(folder_aws_generated_path, f"user_{user['UserName']}.json", user)
+        console.print("[yellow]User already created")
+        user = iam.get_user(UserName=mturk_user_name)
+    iam.attach_user_policy(UserName=mturk_user_name, PolicyArn=policy['Arn'])
+    serialize_json(folder_aws_generated_path, f"user_{user['User']['UserName']}.json", user)
 
     console.rule("5 - Local Configuration File")
+
     status.start()
     status.update("Adding users to local configuration file")
     time.sleep(3)
 
     users = [config_user_name, mturk_user_name]
+
     for user in users:
-        file = f'{home}/.aws/credentials'
-        exists = False
-        if os.path.exists(file):
-            with open(file, 'r') as f:
+        file_credentials = f'{home}/.aws/credentials'
+        key_valid = False
+        if os.path.exists(file_credentials):
+            keys_online = iam.list_access_keys(UserName=user)['AccessKeyMetadata']
+
+            # We try to search for credentials in .aws/credentials file
+            keys_credentials = []
+            with open(file_credentials, 'r') as f:
                 for line in f:
                     if line.strip().find(f'[{user}]') == 0:
-                        exists = True
-                        keyLine = f.readline().strip()
-                        secretLine = f.readline().strip()
-                        if keyLine.find('aws_access_key_id = ') != -1 and secretLine.find('aws_secret_access_key = ') != -1:
-                            key = keyLine.split(' ')[2]
-                        else:
-                            key = ''
-                        break
-            if not exists:
-                credentials = iam.create_access_key(
-                    UserName=user
-                )['AccessKey']
-                with open(file, 'a') as f:
+                        key_line = f.readline().strip()
+                        secret_line = f.readline().strip()
+                        if key_line.find('aws_access_key_id = ') != -1 and secret_line.find('aws_secret_access_key = ') != -1:
+                            key_id = key_line.split(' ')[2]
+                            keys_credentials.append(key_id)
+            # If we find a key which is also online, then we are good
+            for key_credentials in keys_credentials:
+                for key_online in keys_online:
+                    if key_credentials == key_online['AccessKeyId']:
+                        key_valid = True
+                        console.print(f"[bold green]Valid key for user {user} found in /.credentials file")
+
+            # We try to look for a key serialized in .aws/generated folder
+            if not key_valid:
+                key = None
+                keys_serialized = [str(path) for path in Path(folder_aws_generated_path).resolve().glob(f"**/*{user}_access_key*.json")]
+                for key_file in keys_serialized:
+                    with open(key_file, 'r') as f:
+                        key_serialized = json.load(f)
+                    for key_online in keys_online:
+                        if key_serialized['AccessKeyId'] == key_online['AccessKeyId']:
+                            key = key_serialized
+                            key_valid = True
+                            console.print(f"[green]Valid key for user {user} found at path: [yellow] {key_file}")
+                            with open(file_credentials, "r") as f:
+                                line_index = None
+                                line_counter = 0
+                                lines = f.readlines()
+                                for line in lines:
+                                    if line.strip() == f'[{user}]':
+                                        print(f"Line: {line.strip()}")
+                                        print(f"User: [{user}]")
+                                        line_index = line_counter
+                                    line_counter += 1
+                            if line_index is not None:
+                                del lines[line_index:line_index + 3]
+                            lines.append(f'\n[{user}]\n')
+                            lines.append(f'aws_access_key_id = {key["AccessKeyId"]}\n')
+                            lines.append(f'aws_secret_access_key = {key["SecretAccessKey"]}\n')
+                            with open(file_credentials, "w") as f:
+                                for line in lines:
+                                    f.write(line)
+                            console.print(f"[green]Credentials file updated with user {user} key")
+
+            # At last, we try to generate a new key for the user
+            if not key_valid:
+                keys_serialized = [str(path) for path in Path(folder_aws_generated_path).resolve().glob(f"**/*{user}_access_key*.json")]
+                for key_invalid in keys_serialized:
+                    console.print(f"[red]Removing invalid key at path: {key_invalid}")
+                    os.remove(key_invalid)
+                console.print(f"[green]Generating new valid key for user {user}")
+                try:
+                    key = iam.create_access_key(UserName=user)['AccessKey']
+                except ClientError as error:
+                    if error.response['Error']['Code'] == 'LimitExceeded':
+                        console.print("[yellow] Removing old keys, limit of two keys for user {user} reached")
+                        for key_online in keys_online:
+                            iam.delete_access_key(AccessKeyId=key_online['AccessKeyId'], UserName=user)
+                        key = iam.create_access_key(UserName=user)['AccessKey']
+                with open(file_credentials, 'a') as f:
                     f.write(f'\n[{user}]\n')
-                    f.write(f'aws_access_key_id = {credentials["AccessKeyId"]}\n')
-                    f.write(f'aws_secret_access_key = {credentials["SecretAccessKey"]}\n')
-                console.print(f"New credentials generated for user {user}!")
-                console.print(f'Access Key ID = {credentials["AccessKeyId"]}')
-                console.print(f'Secret Access Key = {credentials["SecretAccessKey"]}')
-                console.print('[bold orange]Save them somewhere safe! You will not be able to retrieve them, neither on AWS')
+                    f.write(f'aws_access_key_id = {key["AccessKeyId"]}\n')
+                    f.write(f'aws_secret_access_key = {key["SecretAccessKey"]}\n')
+                serialize_json(folder_aws_generated_path, f"user_{user}_access_key_{key['AccessKeyId']}.json", key)
+                console.print(f"[bold green]New credentials generated for user {user}")
+                console.print(f'[bold green]Access Key ID = {key["AccessKeyId"]}')
+                console.print(f'[bold green]Secret Access Key = <hidden>')
+                console.print(f'[bold green]Credentials file updated at path: {file_credentials}')
                 console.print(f"[bold green]Profile for user {user} ready!")
-            else:
-                exists = False
-                availableKeys = iam.list_access_keys(
-                    UserName=user
-                )['AccessKeyMetadata']
-                for onlineKey in availableKeys:
-                    if onlineKey['AccessKeyId'] == key:
-                        exists = True
-                        console.print(f"[bold green]Profile for user {user} ready!")
-                        break
-                if not exists:
-                    console.print(f'[bold red]Configuration for user {user} expired or broken, remove {user} profile from credentials file and run this script again')
         else:
             console.print('[bold red]Before using this tool you MUST install AWS CLI, run `aws configure` command and insert the credentials of a valid IAM user with admin access')
 
-    console.rule(f"6 - Admin user profile loading")
+    console.rule(f"6 - [yellow]{config_user_name}[/yellow] authentication")
+
     status.start()
     status.update("Checking local configuration file")
     time.sleep(3)
 
     method = None
     status.stop()
-    if profile_name:
-        console.print("Environment variable [yellow]profile_name[/yellow] detected")
-        try:
-            botoSession = boto3.Session(profile_name=profile_name, region_name=aws_region)
-            iam_resource = botoSession.resource('iam')
-            root_user = iam_resource.CurrentUser()
-            aws_account_id = root_user.arn.split(':')[4]
-            console.print(f"ID: [bold cyan on white]{root_user.user_id}")
-            console.print(f"Username: [bold cyan on white]{root_user.user_name}")
-            console.print(f"ARN: [bold cyan on white]{root_user.arn}")
-            console.print(f"AWS Account ID: [bold cyan on white]{aws_account_id}")
-        except ProfileNotFound:
-            console.print(f"[bold red]Profile [italic]{profile_name}[/italic] not found in credentials file.")
-            console.print(f"[bold red]Review environment variable [italic]profile_name[/italic] and launch this script again.")
-            raise SystemExit(0)
 
-    else:
-        console.print("How do you want to select or insert admin user credentials?")
-        console.print("0. AWS CLI credentials file\n1. Manual input\n2. Exit")
-        method = console.input("Insert here your choice: ")
-        while method != "0" and method != "1" and method != "2":
-            method = console.input("Wrong option! Insert here your choice: ")
-        if method == "2":
-            stop_sequence()
-        if method == "0":
-            profile = config_user_name
-            while profile != "exit":
-                try:
-                    botoSession = boto3.Session(profile_name=profile, region_name=aws_region)
-                    root_user_arn = botoSession.client('sts').get_caller_identity()['Arn']
-                    break
-                except ProfileNotFound:
-                    console.print("[bold red]\nProfile not valid! Retry or type exit\n")
-                    profile = console.input("Insert profile name: ")
-            if profile == "exit":
-                stop_sequence()
-        else:
-            aws_access_key_id = console.input("Insert your AWS account access key: ")
-            aws_secret_access_key = console.input("Insert your AWS account secret key: ")
-            while aws_access_key_id != "exit" and aws_secret_access_key != "exit":
-                botoSession = boto3.Session(
-                    aws_access_key_id=aws_access_key_id,
-                    aws_secret_access_key=aws_secret_access_key,
-                    region_name=aws_region
-                )
-                try:
-                    root_user_arn = botoSession.client('sts').get_caller_identity()['Arn']
-                    break
-                except ClientError:
-                    console.print("[bold red]\nCredentials are not valid! Retry or type exit in one of the fields\n")
-                    aws_access_key_id = console.input("Insert your AWS account access key: ")
-                    aws_secret_access_key = console.input("Insert your AWS account secret key: ")
-            if aws_access_key_id == 'exit' or aws_secret_access_key == 'exit':
-                stop_sequence()
-        iam_resource = botoSession.resource('iam')
-        root_user = iam_resource.CurrentUser()
-        aws_account_id = root_user.arn.split(':')[4]
+    boto_session = boto3.Session(profile_name=config_user_name, region_name=aws_region)
+    iam_resource = boto_session.resource('iam')
+    root_user = iam_resource.CurrentUser()
+    aws_account_id = root_user.arn.split(':')[4]
+    console.print(f"ID: [bold cyan on white]{root_user.user_id}")
+    console.print(f"Username: [bold cyan on white]{root_user.user_name}")
+    console.print(f"ARN: [bold cyan on white]{root_user.arn}")
+    console.print(f"AWS Account ID: [bold cyan on white]{aws_account_id}")
 
     console.rule(f"7 - [yellow]{root_user.user_name}[/yellow] policies check")
+
     status.start()
     status.update(f"Checking if the required policies are correctly set up")
     time.sleep(3)
@@ -383,9 +387,11 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             "s3:GetBucketCORS",
             "s3:PutBucketCORS",
             "s3:PutObject",
+            "s3:ListObjects",
             "sqs:ListQueues",
             "sqs:CreateQueue",
             "sqs:GetQueueAttributes",
+            "sqs:GetQueueUrl",
             "apigateway:GET",
             "apigateway:POST",
             "dynamodb:CreateTable",
@@ -413,15 +419,18 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     }
 
     denied = []
-    if server_config:
+    if server_config == "aws":
         actions = required_policies['server']
     else:
         actions = required_policies['no_server']
     try:
-        for result in iam.simulate_principal_policy(
-                PolicySourceArn=root_user.arn,
-                ActionNames=actions
-        )['EvaluationResults']:
+        response = iam.simulate_principal_policy(
+            PolicySourceArn=root_user.arn,
+            ActionNames=actions
+        )
+        console.print(f"[green]Policy compliance evaluation completed for user {root_user.user_name}")
+        serialize_json(folder_aws_generated_path, f"user_{root_user.user_name}_policies_evaluation.json", response)
+        for result in response['EvaluationResults']:
             if result['EvalDecision'].find('Deny') != -1:
                 denied.append(result['EvalActionName'])
         if denied:
@@ -436,6 +445,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         stop_sequence()
 
     console.rule(f"8 - Crowd workers interaction policy")
+
     status.start()
     status.update(f"Creating policy to allow crowd workers interaction")
     time.sleep(3)
@@ -463,11 +473,11 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 "Effect": "Allow",
                 "Action": [
                     "dynamodb:DescribeTable",
-                    "dynamodb:DeleteItem",
                     "dynamodb:PutItem",
                     "dynamodb:GetItem",
+                    "dynamodb:Query",
                 ],
-                "Resource": f"arn:aws:dynamodb:{aws_region}:{aws_account_id}:table/users"
+                "Resource": "*"
             }
         ]
     }
@@ -479,10 +489,9 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             Description='Provides crowd workers interaction with Crowd_Frame ecosystem',
             PolicyDocument=json.dumps(crowd_workers_policy)
         )
-        console.print(
-            f"[green]Policy creation completed[/green], HTTP STATUS CODE: {policy['ResponseMetadata']['HTTPStatusCode']}.")
-    except (iam.exceptions.EntityAlreadyExistsException) as exception:
-        console.print(f"[yellow]Policy already present[/yellow]")
+        console.print(f"[green]Policy creation completed[/green], HTTP STATUS CODE: {policy['ResponseMetadata']['HTTPStatusCode']}.")
+    except iam.exceptions.EntityAlreadyExistsException as exception:
+        console.print(f"[yellow]Policy already created[/yellow]")
         policy = iam.get_policy(PolicyArn=f"arn:aws:iam::{aws_account_id}:policy/CrowdWorkersInteractionPolicy")
         console.print(f"[green]Policy retrieved[/green], HTTP STATUS CODE: {policy['ResponseMetadata']['HTTPStatusCode']}.")
     serialize_json(folder_aws_generated_path, f"policy_{policy['Policy']['PolicyName']}.json", policy)
@@ -490,19 +499,20 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.print(f"Policy ARN: [cyan underline]{policy['Policy']['Arn']}[/cyan underline]")
 
     console.rule(f"9 - [cyan underline]crowd-worker[/cyan underline] user creation")
+
     status.start()
     status.update(f"Creating user")
     time.sleep(3)
 
     user = None
     try:
-        user = iam.create_user(UserName="crowd-worker")
-        console.print(f"[green]user created[/green], HTTP STATUS CODE: {user['ResponseMetadata']['HTTPStatusCode']}.")
+        user = iam.create_user(UserName="crowd-worker", Path=iam_path)
+        console.print(f"[green]User created[/green], HTTP STATUS CODE: {user['ResponseMetadata']['HTTPStatusCode']}.")
     except iam.exceptions.EntityAlreadyExistsException as exception:
-        console.print(f"[yellow]User already present[/yellow]")
+        console.print(f"[yellow]User already created[/yellow]")
         user = iam.get_user(UserName="crowd-worker")
         console.print(f"[green]User retrieved[green], HTTP STATUS CODE: {user['ResponseMetadata']['HTTPStatusCode']}.")
-    serialize_json(folder_aws_generated_path, f"user_{user['User']['UserName']}_data.json", user)
+    serialize_json(folder_aws_generated_path, f"user_{user['User']['UserName']}.json", user)
 
     response = iam.attach_user_policy(UserName=user['User']['UserName'], PolicyArn=policy['Policy']['Arn'])
     policy = iam.get_policy(PolicyArn=f"{policy['Policy']['Arn']}")
@@ -537,12 +547,13 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     aws_worker_access_secret = key_data['AccessKey']['SecretAccessKey']
 
     console.rule(f"10 - Private bucket [cyan underline]{aws_private_bucket}[/cyan underline] creation")
+
     status.start()
     status.update(f"Creating bucket")
     time.sleep(3)
 
-    s3_client = botoSession.client('s3')
-    s3_resource = botoSession.resource('s3')
+    s3_client = boto_session.client('s3', region_name=aws_region)
+    s3_resource = boto_session.resource('s3')
 
     buckets = []
     for bucket in s3_resource.buckets.all():
@@ -556,11 +567,12 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 Bucket=aws_private_bucket,
                 CreateBucketConfiguration={'LocationConstraint': aws_region}
             )
+        serialize_json(folder_aws_generated_path, f"bucket_{aws_private_bucket}.json", private_bucket)
         console.print(f"[green]Bucket creation completed[/green], HTTP STATUS CODE: {private_bucket['ResponseMetadata']['HTTPStatusCode']}.")
     except s3_client.exceptions.BucketAlreadyOwnedByYou as error:
-        private_bucket = s3_resource.Bucket(aws_private_bucket)
-        console.print(f"[yellow]Bucket already present[/yellow], HTTP STATUS CODE: {error.response['ResponseMetadata']['HTTPStatusCode']}.")
-    serialize_json(folder_aws_generated_path, f"bucket_{aws_private_bucket}.json", private_bucket)
+        console.print(f"[yellow]Bucket already created[/yellow], HTTP STATUS CODE: {error.response['ResponseMetadata']['HTTPStatusCode']}.")
+    except s3_client.exceptions.BucketAlreadyOwnedByYou as error:
+        console.print(f"[yellow]Bucket already created[/yellow], HTTP STATUS CODE: {error.response['ResponseMetadata']['HTTPStatusCode']}.")
 
     response = s3_client.put_public_access_block(
         Bucket=aws_private_bucket,
@@ -581,7 +593,10 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 "Sid": "AllowPrivateBucketInteraction",
                 "Effect": "Allow",
                 "Principal": {
-                    "AWS": f"arn:aws:iam::{aws_account_id}:user/{user['User']['UserName']}",
+                    "AWS": [
+                        f"arn:aws:iam::{aws_account_id}:user{iam_path}{config_user_name}",
+                        f"arn:aws:iam::{aws_account_id}:user{iam_path}crowd-worker"
+                    ]
                 },
                 "Action": [
                     "s3:PutObject",
@@ -599,11 +614,10 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     try:
         policy = s3_client.get_bucket_policy(Bucket=aws_private_bucket)
         policy['Policy'] = json.loads(policy['Policy'])
-        console.print(f"[yellow]Policy already present[/yellow], HTTP STATUS CODE: {response['ResponseMetadata']['HTTPStatusCode']}.")
+        console.print(f"[yellow]Policy already created[/yellow], HTTP STATUS CODE: {response['ResponseMetadata']['HTTPStatusCode']}.")
     except ClientError as e:
-        if e.response['Error']['Code'] == 'NoSuchBucketPolicy':
-            response = s3_client.put_bucket_policy(Bucket=aws_private_bucket, Policy=json.dumps(private_bucket_policy))
-            console.print(f"[green]Policy configuration completed[/green], HTTP STATUS CODE: {response['ResponseMetadata']['HTTPStatusCode']}.")
+        response = s3_client.put_bucket_policy(Bucket=aws_private_bucket, Policy=json.dumps(private_bucket_policy))
+        console.print(f"[green]Policy configuration completed[/green], HTTP STATUS CODE: {response['ResponseMetadata']['HTTPStatusCode']}.")
         policy = s3_client.get_bucket_policy(Bucket=aws_private_bucket)
         policy['Policy'] = json.loads(policy['Policy'])
     serialize_json(folder_aws_generated_path, f"bucket_{aws_private_bucket}_policy.json", policy)
@@ -620,15 +634,15 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     try:
         cors_configuration = s3_client.get_bucket_cors(Bucket=aws_private_bucket)
-        console.print(f"[yellow]CORS Configuration already present[/yellow], HTTP STATUS CODE: {response['ResponseMetadata']['HTTPStatusCode']}.")
+        console.print(f"[yellow]CORS Configuration already created[/yellow], HTTP STATUS CODE: {response['ResponseMetadata']['HTTPStatusCode']}.")
     except ClientError as e:
-        if e.response['Error']['Code'] == 'NoSuchCORSConfiguration':
-            response = s3_client.put_bucket_cors(Bucket=aws_private_bucket, CORSConfiguration=cors_configuration)
-            console.print(f"[green]CORS configuration completed[green], HTTP STATUS CODE: {response['ResponseMetadata']['HTTPStatusCode']}.")
+        response = s3_client.put_bucket_cors(Bucket=aws_private_bucket, CORSConfiguration=cors_configuration)
+        console.print(f"[green]CORS configuration completed[green], HTTP STATUS CODE: {response['ResponseMetadata']['HTTPStatusCode']}.")
     cors_configuration = s3_client.get_bucket_cors(Bucket=aws_private_bucket)
     serialize_json(folder_aws_generated_path, f"bucket_{aws_private_bucket}_cors.json", cors_configuration)
 
     console.rule(f"11 - Deploy bucket [cyan underline]{aws_deploy_bucket}[/cyan underline] creation")
+
     status.start()
     status.update(f"Creating bucket")
     time.sleep(3)
@@ -638,11 +652,11 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             deploy_bucket = s3_client.create_bucket(Bucket=aws_deploy_bucket)
         else:
             deploy_bucket = s3_client.create_bucket(Bucket=aws_deploy_bucket, CreateBucketConfiguration={'LocationConstraint': aws_region})
+        serialize_json(folder_aws_generated_path, f"bucket_{aws_deploy_bucket}.json", deploy_bucket)
         console.print(f"[green]Bucket creation completed[/green], HTTP STATUS CODE: {deploy_bucket['ResponseMetadata']['HTTPStatusCode']}.")
     except s3_client.exceptions.BucketAlreadyOwnedByYou as error:
         deploy_bucket = s3_resource.Bucket(aws_deploy_bucket)
-        console.print(f"[yellow]Bucket already present[/yellow], HTTP STATUS CODE: {error.response['ResponseMetadata']['HTTPStatusCode']}.")
-    serialize_json(folder_aws_generated_path, f"bucket_{aws_deploy_bucket}.json", deploy_bucket)
+        console.print(f"[yellow]Bucket already created[/yellow], HTTP STATUS CODE: {error.response['ResponseMetadata']['HTTPStatusCode']}.")
 
     deploy_bucket_policy = {
         "Version": "2012-10-17",
@@ -652,7 +666,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 "Sid": "AllowPublicBucketInteraction",
                 "Effect": "Allow",
                 "Principal": {
-                    "AWS": f"arn:aws:iam::{aws_account_id}:user/{user['User']['UserName']}"
+                    "AWS": f"arn:aws:iam::{aws_account_id}:user{iam_path}{user['User']['UserName']}"
                 },
                 "Action": [
                     "s3:PutObject",
@@ -684,54 +698,93 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     try:
         policy = s3_client.get_bucket_policy(Bucket=aws_deploy_bucket)
         policy['Policy'] = json.loads(policy['Policy'])
-        console.print(f"[yellow]Policy already present[/yellow], HTTP STATUS CODE: {response['ResponseMetadata']['HTTPStatusCode']}.")
+        console.print(f"[yellow]Policy already created[/yellow], HTTP STATUS CODE: {response['ResponseMetadata']['HTTPStatusCode']}.")
     except ClientError as e:
         if e.response['Error']['Code'] == 'NoSuchBucketPolicy':
             response = s3_client.put_bucket_policy(Bucket=aws_deploy_bucket, Policy=json.dumps(deploy_bucket_policy))
             console.print(f"[green]Policy configuration completed[/green], HTTP STATUS CODE: {response['ResponseMetadata']['HTTPStatusCode']}.")
         policy = s3_client.get_bucket_policy(Bucket=aws_deploy_bucket)
         policy['Policy'] = json.loads(policy['Policy'])
-    serialize_json(folder_aws_generated_path, f"bucket_{aws_private_bucket}_policy.json", policy)
+    serialize_json(folder_aws_generated_path, f"bucket_{aws_deploy_bucket}_policy.json", policy)
 
-    if server_config:
-        console.rule(f"12 - Logging server setup")
-        status.start()
-        status.update(f"Setting up policies")
-        time.sleep(3)
-        path = '/Crowd_Frame/'
+    console.rule(f"12 - Table [cyan underline]{table_data_name}[/cyan underline] setup")
+
+    dynamo = boto_session.client('dynamodb', region_name=aws_region)
+
+    try:
+        table_name = table_data_name
+        table = dynamo.create_table(
+            TableName=table_name,
+            AttributeDefinitions=[{'AttributeName': 'identifier', 'AttributeType': 'S'}, {'AttributeName': 'sequence', 'AttributeType': 'S'}],
+            KeySchema=[{'AttributeName': 'identifier', 'KeyType': 'HASH'}, {'AttributeName': 'sequence', 'KeyType': 'RANGE'}],
+            BillingMode='PAY_PER_REQUEST'
+        )
+        serialize_json(folder_aws_generated_path, f"dynamodb_table_{table_name}.json", table)
+        status.stop()
+        console.print(f"{table_data_name} created")
+    except dynamo.exceptions.ResourceInUseException:
+        status.stop()
+        console.print(f"Table [cyan underline]{table_data_name}[/cyan underline] already created")
+
+    console.rule(f"13 - Table [cyan underline]{table_acl_name}[/cyan underline] setup")
+
+    try:
+        table_name = table_acl_name
+        table = dynamo.create_table(
+            TableName=table_name,
+            AttributeDefinitions=[{'AttributeName': 'identifier', 'AttributeType': 'S'}],
+            KeySchema=[{'AttributeName': 'identifier', 'KeyType': 'HASH'}],
+            BillingMode='PAY_PER_REQUEST'
+        )
+        serialize_json(folder_aws_generated_path, f"dynamodb_table_{table_name}.json", table)
+        console.print(f"Table {table_acl_name} created")
+    except dynamo.exceptions.ResourceInUseException:
+        console.print(f"Table {table_acl_name} already created")
+
+    console.rule(f"14 - Logging infrastructure setup")
+
+    status.start()
+    status.update(f"Setting up policies")
+    time.sleep(3)
+
+    console.print(f"Modality chosen: [cyan on white]{server_config}")
+
+    if server_config == "aws":
 
         policies = []
         roles = []
 
-        policyList = [file for file in os.listdir(f"{folder_aws_path}policy") if 'To' in file]
-        for file in track(policyList, description="Setting up policies and roles..."):
+        policy_list = [file for file in os.listdir(f"{folder_aws_path}policy") if 'To' in file]
+        for file in track(policy_list, description="Setting up policies and roles..."):
             name = file.split('.')[0]
             with open(f"{folder_aws_path}policy/{file}") as f:
-                policyDocument = json.dumps(json.load(f))
+                policy_document = json.dumps(json.load(f))
             try:
-                iam.create_policy(
+                policy = iam.create_policy(
                     PolicyName=name,
-                    PolicyDocument=policyDocument,
-                    Path=path,
+                    PolicyDocument=policy_document,
+                    Path=iam_path,
                     Description="Required by Crowd_Frame's logging system"
-                )
+                )['Policy']
+                serialize_json(folder_aws_generated_path, f"policy_{policy['PolicyName']}.json", policy)
             except iam.exceptions.EntityAlreadyExistsException:
                 policies.append(name)
 
             with open(f"{folder_aws_path}policy/{name.split('To')[0]}.json") as f:
-                policyDocument = json.dumps(json.load(f))
+                policy_document = json.dumps(json.load(f))
             try:
-                iam.create_role(
+                role = iam.create_role(
                     RoleName=name,
-                    AssumeRolePolicyDocument=policyDocument,
-                    Path=path,
+                    AssumeRolePolicyDocument=policy_document,
+                    Path=iam_path,
                     Description="Required by Crowd_Frame's logging system"
-                )
+                )['Role']
+                serialize_json(folder_aws_generated_path, f"role_{role['RoleName']}.json", role)
             except iam.exceptions.EntityAlreadyExistsException:
                 roles.append(name)
             iam.attach_role_policy(
                 RoleName=name,
-                PolicyArn=f"arn:aws:iam::{aws_account_id}:policy{path}{name}"
+                PolicyArn=f"arn:aws:iam::{aws_account_id}:policy{iam_path}{name}"
             )
         status.stop()
         if policies:
@@ -739,43 +792,44 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         if roles:
             console.print(f"The following roles were already created {roles}")
         if not policies and roles:
-            console.print("Policies correctly set up")
+            console.print("[green]Policies correctly set up")
 
         status.start()
         status.update('Queue service setup')
         time.sleep(2)
-        sqs = botoSession.client('sqs')
+
+        sqs = boto_session.client('sqs', region_name=aws_region)
         queue = {}
-        if 'QueueUrls' not in sqs.list_queues(QueueNamePrefix="Crowd_Frame-Queue"):
+        queue_name = "Crowd_Frame-Queue"
+        if 'QueueUrls' not in sqs.list_queues(QueueNamePrefix=queue_name):
             with open(f"{folder_aws_path}policy/SQSPolicy.json") as f:
-                policyDocument = json.dumps(json.load(f))
-            queue['url'] = sqs.create_queue(
-                QueueName='Crowd_Frame-Queue',
-                Attributes={
-                    'Policy': policyDocument
-                }
-            )['QueueUrl']
-            queue['arn'] = sqs.get_queue_attributes(
-                QueueUrl=queue['url'],
-                AttributeNames=['QueueArn']
-            )['Attributes']['QueueArn']
+                policy_document = json.dumps(json.load(f))
+            queue = sqs.create_queue(
+                QueueName=queue_name,
+                Attributes={'Policy': policy_document}
+            )
             status.stop()
             console.print("Queue created")
         else:
-            queue['url'] = sqs.list_queues(QueueNamePrefix="Crowd_Frame-Queue")['QueueUrls'][0]
-            queue['arn'] = sqs.get_queue_attributes(
-                QueueUrl=queue['url'],
-                AttributeNames=['QueueArn']
-            )['Attributes']['QueueArn']
+            queue = sqs.get_queue_url(QueueName=queue_name, QueueOwnerAWSAccountId=aws_account_id)
             status.stop()
-            console.print("Queue already exists")
+            console.print("Queue already created")
+        attributes = sqs.get_queue_attributes(
+            QueueUrl=queue['QueueUrl'],
+            AttributeNames=['All']
+        )
+        queue['Attributes'] = attributes['Attributes']
+        serialize_json(folder_aws_generated_path, f"queue_{queue_name}.json", queue)
 
         status.start()
         status.update('Gateway setup')
         time.sleep(2)
-        apiGateway = botoSession.client('apigatewayv2')
-        if not any(api for api in apiGateway.get_apis()['Items'] if api['Name'] == 'Crowd_Frame-API'):
-            response = apiGateway.create_api(
+
+        api_gateway = boto_session.client('apigatewayv2', region_name=aws_region)
+        api_gateway_name = 'Crowd_Frame-API'
+
+        if not any(api for api in api_gateway.get_apis()['Items'] if api['Name'] == api_gateway_name):
+            response = api_gateway.create_api(
                 CorsConfiguration={
                     'AllowCredentials': False,
                     'AllowHeaders': ['*'],
@@ -784,111 +838,218 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                     'ExposeHeaders': ['*'],
                     'MaxAge': 300
                 },
-                Name='Crowd_Frame-API',
+                Name=api_gateway_name,
                 ProtocolType='HTTP'
             )
+            serialize_json(folder_aws_generated_path, f"api_gateway_{api_gateway_name}.json", response)
             api = dict((key, response[key]) for key in ['ApiEndpoint', 'ApiId'])
-            api['integration'] = apiGateway.create_integration(
+            api['integration'] = api_gateway.create_integration(
                 ApiId=api['ApiId'],
                 IntegrationType='AWS_PROXY',
                 IntegrationSubtype='SQS-SendMessage',
                 PayloadFormatVersion='1.0',
-                CredentialsArn=f'arn:aws:iam::{aws_account_id}:role{path}GatewayToSQS',
+                CredentialsArn=f'arn:aws:iam::{aws_account_id}:role{iam_path}GatewayToSQS',
                 RequestParameters={
-                    'QueueUrl': f'https://sqs.{aws_region}.amazonaws.com/{aws_account_id}/Crowd_Frame-Queue',
+                    'QueueUrl': f'https://sqs.{aws_region}.amazonaws.com/{aws_account_id}/{queue_name}',
                     'MessageBody': '$request.body'
                 }
-            )['IntegrationId']
-            apiGateway.create_route(
+            )
+            serialize_json(folder_aws_generated_path, f"api_gateway_integration_{api['integration']['IntegrationId']}.json", api['integration'])
+            response = api_gateway.create_route(
                 ApiId=api['ApiId'],
                 RouteKey='POST /log',
-                Target='integrations/' + api['integration']
+                Target='integrations/' + api['integration']['IntegrationId']
             )
-            apiGateway.create_stage(
+            serialize_json(folder_aws_generated_path, f"api_gateway_route_{response['RouteId']}.json", response)
+            response = api_gateway.create_stage(
                 ApiId=api['ApiId'],
                 StageName="$default",
                 AutoDeploy=True
             )
-            status.stop()
+            serialize_json(folder_aws_generated_path, f"api_gateway_stage_{response['StageName']}.json", response)
             console.print(f'[link={api["ApiEndpoint"]}/log]API endpoint[/link] created.')
         else:
-            api = [api for api in apiGateway.get_apis()['Items'] if api['Name'] == 'Crowd_Frame-API'][0]
+            api = [api for api in api_gateway.get_apis()['Items'] if api['Name'] == api_gateway_name][0]
             api = dict((key, api[key]) for key in ['ApiEndpoint', 'ApiId'])
             status.stop()
-            console.print(f'[link={api["ApiEndpoint"]}/log]API endpoint[/link] generated previously.')
+            console.print(f'[link={api["ApiEndpoint"]}/log]API endpoint[/link] already created')
 
         status.start()
-        status.update('DynamoDB setup')
+        status.update(f"Table {table_logging_name} setup")
         time.sleep(2)
-        dynamo = botoSession.client('dynamodb')
+
         try:
-            dynamo.create_table(
-                TableName=f"Crowd_Frame-{task_name}_{batch_name}_Logger",
-                AttributeDefinitions=[{'AttributeName': 'sequence', 'AttributeType': 'S'},
-                                      {'AttributeName': 'worker', 'AttributeType': 'S'}],
-                KeySchema=[{'AttributeName': 'worker', 'KeyType': 'HASH'},
-                           {'AttributeName': 'sequence', 'KeyType': 'RANGE'}],
+            table_name = table_logging_name
+            table = dynamo.create_table(
+                TableName=table_name,
+                AttributeDefinitions=[{'AttributeName': 'sequence', 'AttributeType': 'S'}, {'AttributeName': 'worker', 'AttributeType': 'S'}],
+                KeySchema=[{'AttributeName': 'worker', 'KeyType': 'HASH'}, {'AttributeName': 'sequence', 'KeyType': 'RANGE'}],
                 BillingMode='PAY_PER_REQUEST'
             )
+            serialize_json(folder_aws_generated_path, f"dynamodb_table_{table_name}.json", table)
             status.stop()
-            console.print(f"Table 'Crowd_Frame-{task_name}_{batch_name}_Logger' created")
+            console.print(f"{table_logging_name} created")
         except dynamo.exceptions.ResourceInUseException:
             status.stop()
-            console.print(f"Table 'Crowd_Frame-{task_name}_{batch_name}_Logger' already created")
-        try:
-            dynamo.create_table(
-                TableName=f"Crowd_Frame-{task_name}_{batch_name}_ACL",
-                AttributeDefinitions=[{'AttributeName': 'worker', 'AttributeType': 'S'}],
-                KeySchema=[{'AttributeName': 'worker', 'KeyType': 'HASH'}],
-                BillingMode='PAY_PER_REQUEST'
-            )
-            console.print(f"Table 'Crowd_Frame-{task_name}_{batch_name}_ACL' created")
-        except dynamo.exceptions.ResourceInUseException:
-            console.print(f"Table 'Crowd_Frame-{task_name}_{batch_name}_ACL' already created")
+            console.print(f"Table {table_logging_name} already created")
 
         status.start()
         status.update('Lambda setup')
         time.sleep(2)
-        lambdaClient = botoSession.client('lambda')
+        lambdaClient = boto_session.client('lambda', region_name=aws_region)
+        function_name = 'Crowd_Frame-Logger'
         try:
-            lambdaClient.create_function(
-                FunctionName='Crowd_Frame-Logger',
+            response = lambdaClient.create_function(
+                FunctionName=function_name,
                 Runtime='nodejs14.x',
                 Handler='index.handler',
-                Role=f'arn:aws:iam::{aws_account_id}:role{path}LambdaToDynamoDBAndS3',
-                Code={
-                    'ZipFile': open(f"{folder_aws_path}index.zip", 'rb').read()
-                },
+                Role=f'arn:aws:iam::{aws_account_id}:role{iam_path}LambdaToDynamoDBAndS3',
+                Code={'ZipFile': open(f"{folder_aws_path}index.zip", 'rb').read()},
                 Timeout=10,
                 PackageType='Zip'
             )
-            lambdaClient.create_event_source_mapping(
-                EventSourceArn=queue['arn'],
-                FunctionName='Crowd_Frame-Logger',
-                Enabled=False,
+            serialize_json(folder_aws_generated_path, f"lambda_{function_name}.json", response)
+            response = lambdaClient.create_event_source_mapping(
+                EventSourceArn=queue['Attributes']['QueueArn'],
+                FunctionName=function_name,
+                Enabled=True,
                 BatchSize=1000,
                 MaximumBatchingWindowInSeconds=30
             )
-            console.print('Function created')
-        except lambdaClient.exceptions.ResourceConflictException:
-            console.print("Function 'Crowd_Frame-Logger' already created")
-        response = lambdaClient.list_event_source_mappings(
-            EventSourceArn=queue['arn'],
-            FunctionName='Crowd_Frame-Logger'
-        )
-        for mapping in response['EventSourceMappings']:
-            if mapping['EventSourceArn'] == queue['arn'] and 'Crowd_Frame-Logger' in mapping['FunctionArn']:
-                lambdaClient.update_event_source_mapping(
-                    UUID=mapping['UUID'],
-                    Enabled=True
-                )
+            console.print(f"Event source mapping between {queue_name} and {function_name} created.")
+            serialize_json(folder_aws_generated_path, f"lambda_event_source_mapping_{response['UUID']}.json", response)
+            console.print('[green]Function created.')
+        except lambdaClient.exceptions.ResourceConflictException as error:
+            console.print(f"[yellow]Function already created.")
         status.stop()
-    else:
-        console.rule(f"12 - Logging Server Setup")
-        console.print("Please insert an URL to the logging server: ")
-        endpoint = console.input()
 
-    console.rule(f"13 - Environment: [cyan underline]PRODUCTION[/cyan underline] creation")
+    elif server_config == "custom":
+        status.stop()
+        console.print("Please insert your custom logging endpoint: ")
+        endpoint = console.input()
+    elif server_config == "none":
+        console.print("Logging infrastructure not deployed")
+        endpoint = ""
+    else:
+        raise Exception("Your [italic]server_config[/italic] environment variable must be set to [white on black]aws[/white on black], [white on black]custom[/white on black] or [white on black]none[/white on black]")
+
+    console.rule(f"15 - Budgeting setting")
+    status.start()
+    status.update(f"Creating role")
+    time.sleep(3)
+
+    budget_client = boto3.client('budgets', region_name=aws_region)
+
+    role_name = "Budgeting"
+    budget_name = "crowdsourcing-tasks"
+
+    policy_document = {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Sid": "",
+                "Effect": "Allow",
+                "Principal": {
+                    "Service": "budgets.amazonaws.com"
+                },
+                "Action": "sts:AssumeRole"
+            }
+        ]
+    }
+
+    try:
+        role = iam.create_role(
+            RoleName=role_name,
+            Path=iam_path,
+            AssumeRolePolicyDocument=json.dumps(policy_document),
+            Description="Allows Budgets to create and manage AWS resources on your behalf "
+        )
+        console.print(f"[green]Role {role_name} created")
+        serialize_json(folder_aws_generated_path, f"role_{role['Role']['RoleName']}.json", role)
+        iam.attach_role_policy(
+            RoleName=role_name,
+            PolicyArn=f"arn:aws:iam::aws:policy/AWSBudgetsActionsWithAWSResourceControlAccess"
+        )
+    except iam.exceptions.EntityAlreadyExistsException:
+        console.print(f"[yellow]Role {role_name} already created")
+
+    try:
+        response = budget_client.create_budget(
+            AccountId=aws_account_id,
+            Budget={
+                'BudgetName': budget_name,
+                'BudgetLimit': {
+                    'Amount': budget_limit,
+                    'Unit': 'USD'
+                },
+                'CostTypes': {
+                    'IncludeTax': True,
+                    'IncludeSubscription': True,
+                    'UseBlended': False,
+                    'IncludeRefund': False,
+                    'IncludeCredit': False,
+                    'IncludeUpfront': True,
+                    'IncludeRecurring': True,
+                    'IncludeOtherSubscription': True,
+                    'IncludeSupport': True,
+                    'IncludeDiscount': True,
+                    'UseAmortized': False
+                },
+                'TimeUnit': "MONTHLY",
+                'TimePeriod': {
+                    'Start': datetime.datetime.now(),
+                    'End': datetime.datetime(2087, 6, 15)
+                },
+                'BudgetType': "COST",
+                'LastUpdatedTime': datetime.datetime.now()
+            }
+        )
+        console.print(f"[green]Budget {budget_name} created")
+    except ClientError as e:
+        if e.response['Error']['Code'] == 'DuplicateRecordException':
+            console.print(f"[yellow]Budget {budget_name} already created")
+            response = budget_client.describe_budget(
+                AccountId=aws_account_id,
+                BudgetName=budget_name
+            )
+    serialize_json(folder_aws_generated_path, f"budget_{budget_name}.json", response)
+
+    response = budget_client.describe_budget_actions_for_budget(
+        AccountId=aws_account_id,
+        BudgetName=budget_name,
+    )
+
+    if len(response['Actions']) > 0:
+        console.print("[yellow]Budgeting action already created")
+        response = response['Actions'][0]
+    else:
+        response = budget_client.create_budget_action(
+            AccountId=aws_account_id,
+            BudgetName=budget_name,
+            NotificationType='ACTUAL',
+            ActionType='APPLY_IAM_POLICY',
+            ActionThreshold={
+                'ActionThresholdValue': 95.0,
+                'ActionThresholdType': 'PERCENTAGE'
+            },
+            Definition={
+                'IamActionDefinition': {
+                    'PolicyArn': 'arn:aws:iam::aws:policy/AWSDenyAll',
+                    'Users': ['crowd-worker', 'config-user', 'mturk-user']
+                }
+            },
+            ExecutionRoleArn=f"arn:aws:iam::{aws_account_id}:role{iam_path}{role_name}",
+            ApprovalModel='AUTOMATIC',
+            Subscribers=[
+                {
+                    'SubscriptionType': 'EMAIL',
+                    'Address': mail_contact
+                },
+            ]
+        )
+    serialize_json(folder_aws_generated_path, f"budget_{budget_name}_action_{response['ActionId']}.json", response)
+
+    console.rule(f"16 - Environment: [cyan underline]PRODUCTION[/cyan underline] creation")
     status.start()
     status.update(f"Creating environment")
     time.sleep(3)
@@ -906,7 +1067,11 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         "aws_id_key": aws_worker_access_id,
         "aws_secret_key": aws_worker_access_secret,
         "bing_api_key": bing_api_key,
-        "logOnConsole": 'false'
+        "log_on_console": 'false',
+        "log_server_config": f"{server_config}",
+        "table_acl_name": f"{table_acl_name}",
+        "table_data_name": f"{table_data_name}",
+        "table_log_name": f"{table_logging_name}",
     }
 
     os.makedirs(folder_build_env_path, exist_ok=True)
@@ -914,7 +1079,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     with open(environment_production, 'w') as file:
         print("export const environment = {", file=file)
         for (env_var, value) in environment_dict.items():
-            if env_var == 'production' or env_var == 'configuration_local' or env_var == 'logOnConsole':
+            if env_var == 'production' or env_var == 'configuration_local' or env_var == 'log_on_console':
                 print(f"\t{env_var}: {value},", file=file)
             else:
                 print(f"\t{env_var}: \"{value}\",", file=file)
@@ -923,7 +1088,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.print("File [cyan underline]environment.prod.ts[/cyan underline] generated")
     console.print(f"Path: [italic]{environment_production}[/italic]")
 
-    console.rule(f"12 -Environment: [cyan underline]DEVELOPMENT[/cyan underline] creation")
+    console.rule(f"17 - Environment: [cyan underline]DEVELOPMENT[/cyan underline] creation")
     status.start()
     status.update(f"Creating environment")
     time.sleep(3)
@@ -938,13 +1103,17 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         "aws_id_key": aws_worker_access_id,
         "aws_secret_key": aws_worker_access_secret,
         "bing_api_key": bing_api_key,
-        "logOnConsole": 'true'
+        "log_on_console": 'true',
+        "log_server_config": f"{server_config}",
+        "table_acl_name": f"{table_acl_name}",
+        "table_data_name": f"{table_data_name}",
+        "table_log_name": f"{table_logging_name}"
     }
 
     with open(environment_development, 'w') as file:
         print("export const environment = {", file=file)
         for (env_var, value) in environment_dict.items():
-            if env_var == 'production' or env_var == 'configuration_local' or env_var == 'logOnConsole':
+            if env_var == 'production' or env_var == 'configuration_local' or env_var == 'log_on_console':
                 print(f"\t{env_var}: {value},", file=file)
             else:
                 print(f"\t{env_var}: \"{value}\",", file=file)
@@ -953,7 +1122,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.print("File [cyan underline]environment.ts[/cyan underline] generated")
     console.print(f"Path: [italic]{environment_development}[/italic]")
 
-    console.rule(f"13 - Admin Credentials Creation")
+    console.rule(f"18 - Admin Credentials Creation")
     status.start()
     status.update(f"Creating file [cyan underline]admin.json")
     time.sleep(3)
@@ -964,7 +1133,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     admin_file = f"{folder_build_config_path}admin.json"
 
     console.print("Creating hash with [cyan underline]hmac[/cyan underline] and [cyan underline]sha256[/cyan underline]")
-    console.print(f"Processing user with username: [white on purple]{admin_user}[white on purple]")
+    console.print(f"Processing user with username: [cyan on white]{admin_user}[/cyan on white]")
 
     admins = []
     body = f"username:{admin_user}"
@@ -975,7 +1144,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     console.print(f"Path: [italic]{admin_file}")
 
-    console.rule(f"14 - Sample Task Configuration")
+    console.rule(f"19 - Sample task configuration")
     status.start()
     status.update(f"Generating a sample configuration if needed")
     time.sleep(3)
@@ -1050,8 +1219,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         console.print(
             f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
     else:
-        console.print(
-            f"Config. file [italic white on yellow]{filename}[/italic white on yellow] not detected, generating a sample")
+        console.print(f"Config. file [italic white on yellow]{filename}[/italic white on yellow] not detected, generating a sample")
         with open(f"{folder_build_task_path}{filename}", 'w') as file:
             sample_dimensions = [{
                 "name": "sample-dimension",
@@ -1081,8 +1249,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     filename = "instructions_main.json"
     if os.path.exists(f"{folder_build_task_path}{filename}"):
-        console.print(
-            f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
+        console.print(f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
     else:
         console.print(
             f"Config. file [italic white on yellow]{filename}[/italic white on yellow] not detected, generating a sample")
@@ -1113,11 +1280,9 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     filename = "search_engine.json"
     if os.path.exists(f"{folder_build_task_path}{filename}"):
-        console.print(
-            f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
+        console.print(f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
     else:
-        console.print(
-            f"Config. file [italic white on yellow]{filename}[/italic white on yellow] not detected, generating a sample")
+        console.print(f"Config. file [italic white on yellow]{filename}[/italic white on yellow] not detected, generating a sample")
         with open(f"{folder_build_task_path}{filename}", 'w') as file:
             sample_search_engine = {
                 "source": "FakerWebSearch",
@@ -1212,11 +1377,9 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     filename = "workers.json"
     if os.path.exists(f"{folder_build_task_path}{filename}"):
-        console.print(
-            f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
+        console.print(f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
     else:
-        console.print(
-            f"Config. file [italic white on yellow]{filename}[/italic white on yellow] not detected, generating a sample")
+        console.print(f"Config. file [italic white on yellow]{filename}[/italic white on yellow] not detected, generating a sample")
         with open(f"{folder_build_task_path}{filename}", 'w') as file:
             sample_worker_checks = {
                 "blacklist": [],
@@ -1226,7 +1389,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     console.print(f"Path: [italic white on black]{folder_build_task_path}[/italic white on black]")
 
-    console.rule(f"15 - Interface [cyan underline]document.ts")
+    console.rule(f"20 - Interface [cyan underline]document.ts")
 
     hits_file = f"{folder_build_task_path}hits.json"
     document_interface = f"{folder_build_skeleton_path}document.ts"
@@ -1239,8 +1402,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     sample_element = hits.pop()['documents'].pop()
 
     if not 'id' in sample_element.keys():
-        raise Exception(
-            "Your hits.json file does not contains an attributed called \"id\"!")
+        raise Exception("Your hits.json file does not contains an attributed called \"id\"!")
 
     # This class provides a representation of a single document stored in single hit stored in the Amazon S3 bucket.
     # The attribute <document_index> is additional and should not be touched and passed in the constructor.
@@ -1321,7 +1483,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.print("Interface built")
     console.print(f"Path: [italic]{document_interface}[/italic]")
 
-    console.rule(f"16 - Class [cyan underline]goldChecker.ts")
+    console.rule(f"21 - Class [cyan underline]goldChecker.ts")
 
     # This class provides a stub to implement the gold elements check. If there are no gold elements, the check is considered true automatically.
     # The following codes provides answers, notes and attributes for each gold element. Those three corresponding data structures should be used
@@ -1386,7 +1548,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         console.print("Class built")
         console.print(f"Path: [italic]{filename}[/italic]")
 
-    console.rule(f"17 - Amazon Mechanical Turk Landing Page")
+    console.rule(f"22 - Amazon Mechanical Turk Landing Page")
     status.start()
     status.update(f"Istantiating Mako model")
     time.sleep(3)
@@ -1422,8 +1584,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.print(f"Tokens for {len(hits)} hits generated")
     console.print(f"Path: [italic]{mturk_tokens_file}")
 
-    console.rule(
-        f"18 - Task [cyan underline]{task_name}[/cyan underline]/[yellow underline]{batch_name}[/yellow underline] build")
+    console.rule(f"23 - Task [cyan underline]{task_name}[/cyan underline]/[yellow underline]{batch_name}[/yellow underline] build")
     status.update(f"Executing build command, please wait")
     time.sleep(3)
 
@@ -1488,7 +1649,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.print("Model istantiated")
     console.print(f"Path: [italic underline]{index_page_file}")
 
-    console.rule(f"19 - Packaging Task [cyan underline]tasks/{task_name}/{batch_name}")
+    console.rule(f"24 - Packaging Task [cyan underline]tasks/{task_name}/{batch_name}")
     status.start()
     status.update(f"Starting")
     time.sleep(3)
@@ -1541,15 +1702,12 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
 
     def copy(source, destination, title):
-        panel = Panel(
-            f"Source: [italic white on black]{source}[/italic white on black]\nDestination: [italic white on black]{destination}[/italic white on black]",
-            title=title)
+        panel = Panel(f"Source: [italic white on black]{source}[/italic white on black]\nDestination: [italic white on black]{destination}[/italic white on black]", title=title)
         console.print(panel)
         copy2(source, destination)
 
 
-    console.print(
-        f"Copying files for [blue underline on white]{folder_build_deploy_path}[/blue underline on white] folder")
+    console.print(f"Copying files for [blue underline on white]{folder_build_deploy_path}[/blue underline on white] folder")
 
     source = f"{folder_build_deploy_path}scripts.js"
     destination = f"{folder_tasks_batch_deploy_path}scripts.js"
@@ -1573,8 +1731,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     destination = f"{folder_tasks_batch_env_path}environment.prod.ts"
     copy(source, destination, "Prod Environment")
 
-    console.print(
-        f"Copying files for [blue underline on white]{folder_build_mturk_path}[/blue underline on white] folder")
+    console.print(f"Copying files for [blue underline on white]{folder_build_mturk_path}[/blue underline on white] folder")
 
     source = f"{folder_build_mturk_path}index.html"
     destination = f"{folder_tasks_batch_mturk_path}index.html"
@@ -1585,8 +1742,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     copy(source, destination, "Hits tokens")
 
     if bool(deploy_config):
-        console.print(
-            f"Copying files for [blue underline on white]{folder_build_task_path}[/blue underline on white] folder")
+        console.print(f"Copying files for [blue underline on white]{folder_build_task_path}[/blue underline on white] folder")
 
         source = f"{folder_build_task_path}hits.json"
         destination = f"{folder_tasks_batch_task_path}hits.json"
@@ -1630,14 +1786,13 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     destination = f"{folder_tasks_batch_skeleton_path}goldChecker.ts"
     copy(source, destination, "Gold Checker")
 
-    console.print(
-        f"Copying files for [blue underline on white]{folder_tasks_batch_config_path}[/blue underline on white] folder")
+    console.print(f"Copying files for [blue underline on white]{folder_tasks_batch_config_path}[/blue underline on white] folder")
 
     source = f"{folder_build_config_path}admin.json"
     destination = f"{folder_tasks_batch_config_path}admin.json"
     copy(source, destination, "Admin Credentials")
 
-    console.rule(f"20 - Task [cyan underline]tasks/{task_name}/{batch_name} Deploy")
+    console.rule(f"25 - Task [cyan underline]tasks/{task_name}/{batch_name} Deploy")
     status.start()
     status.update(f"Starting")
     time.sleep(3)
@@ -1651,7 +1806,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     folder_tasks_batch_task_path = f"{folder_tasks_batch_path}task/"
     folder_tasks_batch_config_path = f"{folder_tasks_batch_path}config/"
 
-    s3_client = botoSession.client('s3')
+    s3_client = boto_session.client('s3', region_name=aws_region)
 
 
     def upload(path, bucket, key, title, content_type, acl=None):
@@ -1660,8 +1815,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             title=title)
         console.print(panel)
         if acl:
-            response = s3_client.put_object(Body=open(path, 'rb'), Bucket=bucket, Key=key, ContentType=content_type,
-                                            ACL=acl)
+            response = s3_client.put_object(Body=open(path, 'rb'), Bucket=bucket, Key=key, ContentType=content_type, ACL=acl)
         else:
             response = s3_client.put_object(Body=open(path, 'rb'), Bucket=bucket, Key=key, ContentType=content_type)
         console.print(f"HTTP Status Code: {response['ResponseMetadata']['HTTPStatusCode']}, ETag: {response['ETag']}")
@@ -1671,63 +1825,62 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     console.print(f"[white on blue bold]Generator configuration")
 
-    path = f"{folder_tasks_batch_config_path}admin.json"
+    iam_path = f"{folder_tasks_batch_config_path}admin.json"
     key = f"{s3_private_generator_path}admin.json"
-    upload(path, aws_private_bucket, key, "Admin Credentials", "application/json")
+    upload(iam_path, aws_private_bucket, key, "Admin Credentials", "application/json")
 
     if bool(deploy_config):
         console.print(f"[white on green bold]Task configuration")
 
-        path = f"{folder_tasks_batch_task_path}hits.json"
+        iam_path = f"{folder_tasks_batch_task_path}hits.json"
         key = f"{s3_private_task_path}hits.json"
-        upload(path, aws_private_bucket, key, "Hits", "application/json")
+        upload(iam_path, aws_private_bucket, key, "Hits", "application/json")
 
-        path = f"{folder_tasks_batch_task_path}instructions_dimensions.json"
+        iam_path = f"{folder_tasks_batch_task_path}instructions_dimensions.json"
         key = f"{s3_private_task_path}instructions_dimensions.json"
-        upload(path, aws_private_bucket, key, "Assessment Instructions", "application/json")
+        upload(iam_path, aws_private_bucket, key, "Assessment Instructions", "application/json")
 
-        path = f"{folder_tasks_batch_task_path}instructions_main.json"
+        iam_path = f"{folder_tasks_batch_task_path}instructions_main.json"
         key = f"{s3_private_task_path}instructions_main.json"
-        upload(path, aws_private_bucket, key, "General Instructions", "application/json")
+        upload(iam_path, aws_private_bucket, key, "General Instructions", "application/json")
 
-        path = f"{folder_tasks_batch_task_path}questionnaires.json"
+        iam_path = f"{folder_tasks_batch_task_path}questionnaires.json"
         key = f"{s3_private_task_path}questionnaires.json"
-        upload(path, aws_private_bucket, key, "Questionnaires", "application/json")
+        upload(iam_path, aws_private_bucket, key, "Questionnaires", "application/json")
 
-        path = f"{folder_tasks_batch_task_path}dimensions.json"
+        iam_path = f"{folder_tasks_batch_task_path}dimensions.json"
         key = f"{s3_private_task_path}dimensions.json"
-        upload(path, aws_private_bucket, key, "Dimensions", "application/json")
+        upload(iam_path, aws_private_bucket, key, "Dimensions", "application/json")
 
-        path = f"{folder_tasks_batch_task_path}search_engine.json"
+        iam_path = f"{folder_tasks_batch_task_path}search_engine.json"
         key = f"{s3_private_task_path}search_engine.json"
-        upload(path, aws_private_bucket, key, "Search Engine", "application/json")
+        upload(iam_path, aws_private_bucket, key, "Search Engine", "application/json")
 
-        path = f"{folder_tasks_batch_task_path}task.json"
+        iam_path = f"{folder_tasks_batch_task_path}task.json"
         key = f"{s3_private_task_path}task.json"
-        upload(path, aws_private_bucket, key, "Task Settings", "application/json")
+        upload(iam_path, aws_private_bucket, key, "Task Settings", "application/json")
 
-        path = f"{folder_tasks_batch_task_path}workers.json"
+        iam_path = f"{folder_tasks_batch_task_path}workers.json"
         key = f"{s3_private_task_path}workers.json"
-        upload(path, aws_private_bucket, key, "Workers Settings", "application/json")
+        upload(iam_path, aws_private_bucket, key, "Workers Settings", "application/json")
 
     console.print(f"[white on purple bold]Angular Application")
 
-    path = f"{folder_tasks_batch_deploy_path}scripts.js"
+    iam_path = f"{folder_tasks_batch_deploy_path}scripts.js"
     key = f"{s3_deploy_path}scripts.js"
-    upload(path, aws_deploy_bucket, key, "Javascript Assets", "text/javascript", "public-read")
+    upload(iam_path, aws_deploy_bucket, key, "Javascript Assets", "text/javascript", "public-read")
 
-    path = f"{folder_tasks_batch_deploy_path}styles.css"
+    iam_path = f"{folder_tasks_batch_deploy_path}styles.css"
     key = f"{s3_deploy_path}styles.css"
-    upload(path, aws_deploy_bucket, key, "CSS Styles", "text/css", "public-read")
+    upload(iam_path, aws_deploy_bucket, key, "CSS Styles", "text/css", "public-read")
 
-    path = f"{folder_tasks_batch_deploy_path}index.html"
+    iam_path = f"{folder_tasks_batch_deploy_path}index.html"
     key = f"{s3_deploy_path}index.html"
-    upload(path, aws_deploy_bucket, key, "Task Homepage", "text/html", "public-read")
+    upload(iam_path, aws_deploy_bucket, key, "Task Homepage", "text/html", "public-read")
 
-    console.rule(f"21 - Public Link")
+    console.rule(f"26 - Public Link")
     status.start()
     status.update(f"Writing")
     time.sleep(3)
 
-    console.print(
-        f"[bold white on black]https://{aws_deploy_bucket}.s3.{aws_region}.amazonaws.com/{task_name}/{batch_name}/index.html")
+    console.print(f"[bold white on black]https://{aws_deploy_bucket}.s3.{aws_region}.amazonaws.com/{task_name}/{batch_name}/index.html")

@@ -8,7 +8,7 @@ import {MatStepper} from "@angular/material/stepper";
 import {S3Service} from "../../services/s3.service";
 import {ConfigService} from "../../services/config.service";
 import {NgxUiLoaderService} from "ngx-ui-loader";
-import {LocalStorageService} from '../../services/local-storage.service';
+import {LocalStorageService} from '../../services/localStorage.service';
 /* File handling helpers */
 import {ReadFile, ReadMode} from "ngx-file-helpers";
 import {Question, Questionnaire} from "../../models/questionnaire";
