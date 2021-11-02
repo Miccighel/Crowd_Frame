@@ -63,26 +63,5 @@
             "orientation": "vertical",
             "position": "middle"
         }
-    },
-    {
-        "name": "swager",
-        "name_pretty": "Rate the truthfulness of the statement ",
-        "description": "Rate the statements,  1 (low truthfulness)to 10(High truthfulness)",
-        "gold": false,
-        "justification": false,
-        "url": false,
-        "pairwise": true,
-        "scale": {
-            "type": "interval",
-            "min": 1,
-            "max": 10,
-            "step": 1
-        },
-        "style": {
-            "type": "list",
-            "orientation": "vertical",
-            "position": "middle"
-        }
     }
-
 ]

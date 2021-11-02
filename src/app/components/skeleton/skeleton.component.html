@@ -452,9 +452,14 @@
               </div>
             </div>
               <!-- Pairwise element splited -->
+               <!--
+                 @Aggiunte Abbondo
+                 L'elemento pairwiiseElement viene caricato solo se i documenti presentano la variabile pairwise-split uguale a TRUE.
+              -->
               <ng-template #pairwiseElementSplit>
-                 <ng-container *ngIf="document.pairwise_split" >
-                 <h2 class="titlepairwise">Which statement is more relevant?</h2>
+                 <ng-container *ngIf="document.pairwise_split"  >
+                  <div class="pairwise-cointainer">
+                 <h2 class="titlepairwise">Choose the statement</h2>
                  <mat-radio-group formControlName="pairwise_value_selected">
                     <div class="divsplit" >
                           <div [ngClass]="selected_stetements[document.index]=='A' || selected_stetements[document.index]=='Both'  ? 'statementsplitafterclicked' : 'statementsplit'"  >
@@ -492,8 +497,17 @@
                                     <label>Source:</label>
                                     {{document.statements[0].source}}
                                   </span>
-                                  ciao{{document.index}}
                             </div>
+                            <!--
+                              @Aggiunte Abbondo
+
+                              Mat radio button fantasma serve a il simuluare il tocco sullo statement.
+
+                              @change function:
+                                storeDimensionValue: salva quale elemento è stato cliccato
+                                changeColor: cambia il colore dello statement
+                                changeColor: cambia il colore del radio-button(radioStatement) cosi il simula il click sul radio button. Per dubbi chieda pure
+                            -->
                               <mat-radio-button class="tester" value="A" (change)="storeDimensionValue($event, i, document.index) ; changeColor($event,document.index); changeColorRadio($event,document.index)" disableRipple="true">
                                   <div style=" width: 500px;
                                   height: 330px;"></div>
@@ -535,11 +549,17 @@
                                     <label>Source:</label>
                                     {{document.statements[1].source}}
                                   </span>
-                                  <span class="captionsplit">
-                                    <label>Document:</label>
-                                    {{document.index}}
-                                  </span>
                               </div>
+                              <!--
+                              @Aggiunte Abbondo
+
+                              Mat radio button fantasma serve a il simuluare il tocco sullo statement.
+
+                              @change function:
+                                storeDimensionValue: salva quale elemento è stato cliccato
+                                changeColor: cambia il colore dello statement
+                                changeColor: cambia il colore del radio-button(radioStatement) cosi il simula il click sul radio button. Per dubbi chieda pure
+                            -->
                               <mat-radio-button class="tester" value="B" (change)="storeDimensionValue($event, i, document.index) ; changeColor($event,document.index);changeColorRadio($event,document.index)" disableRipple="true">
                                 <div style=" width: 500px; height: 330px;"></div>
                             </mat-radio-button>
@@ -547,6 +567,16 @@
                     </div>  
                   
                   </div>
+                  <!--
+                        @AggiunteAbbondo
+
+                        Creazione dei 3 radio button visibili dall'utente
+
+                        @change function:
+                          storeDimensionValue: salva quale elemento è stato cliccato
+                          changeColor: cambia il colore dello statement
+                          changeColor: cambia il colore del radio-button(radioStatement) cosi il simula il click sul radio button. Per dubbi chieda pure
+                      -->
                         <div class="div_radiobutton_check_pairwise">
                               <mat-radio-button value="A" id="radioStatementA.{{document.index}}" class="radiobutton_check_pairwise" (change)="storeDimensionValue($event, i, document.index) ; changeColor($event,document.index); changeColorRadio($event,document.index)"  disableRipple="true">
                                 <span class="spanbutton">Statement A</span>
@@ -559,18 +589,28 @@
                               </mat-radio-button>
                       </div>
                 </mat-radio-group>
+                  </div>
                 </ng-container>
               </ng-template>
+              <!-- @AggiunteAbbondo
+                 Ng templete che permette che esegue il parwiseElementSplit solo se l'if è TRUE-->
               <ng-template *ngIf="document.pairwise_split"[ngTemplateOutlet]="pairwiseElementSplit"></ng-template>
-            <!-- Dimensions assessment markup (list style) -->
-           
+            
+              <!-- Dimensions assessment markup (list style) -->
             <ng-template #dimensionList let-dimensions="dimensions" let-i="i">
               <div *ngFor="let dimension of dimensions; let j=index" class="dimension'">
                 <!-- Dimension not split-->
+                <!--
+                  @AggiunteAbbondo
+                    L'if di questo ng-templete verifica che si sia cliccato sulla dimension precedente prima di mostrare la dimension successiva
+                    mentre se il document non è in modalità pairwise non succede nulla è rimane tutto come prima
+                -->
                 <ng-template *ngIf="checkdimension(document.index,dimension.index) || !document.pairwise_split " [ngTemplateOutlet]="dimensionPairwise" ></ng-template>
                 <ng-template #dimensionPairwise>
                 
                 <!-- Dimension name markup -->
+                <!--@AggiunteAbbondo 
+                  Cambia la classe in base sei ci troviamo in modalità pairwise o meno-->
                 <div [ngClass]="document.pairwise_split && dimension.pairwise ? 'dimension-content-split' : 'dimension-name'">
                   <div [ngClass]="{'dimension-name-center': document.pairwise_split && dimension.pairwise}">
                   <mat-divider [inset]="true"></mat-divider>
@@ -581,6 +621,8 @@
                 </div>
 
                 <!-- Dimension description markup -->
+                <!-- @AggiunteAbbondo 
+                  Cambiamo la classe in base sei ci troviamo in modalità pairwise o meno-->
                 <div *ngIf="dimension.description" [ngClass]="document.pairwise_split && dimension.pairwise ? 'dimension-name-center' : 'dimension-container dimension-description'">
                   <div class="dimension-content" ngClass=" 'dimension-split-inside' 'dimension-content'" >
                     <p>{{dimension.description}}</p>
@@ -621,7 +663,10 @@
                   <div *ngIf="!dimension.pairwise">
                       <!--<div *ngIf="!dimension.url"  class="dimension-counter">a.</div>-->
                   </div>
-                  
+                  <!--
+                    @AggiunteAbbondo
+                    Cambia la classe del div  in base se ci troviamo in modalità pairwise o meno
+                  -->
                   <div [ngClass]="document.pairwise_split && dimension.pairwise ? 'dimension-content-split' : 'dimension-content'" >
                     <!-- Vertical style markup -->
                     <ng-container *ngIf="dimension.style.orientation=='vertical'">
@@ -641,6 +686,8 @@
                         </div>
                       </ng-container>
                       <!-- Categorical scale markup pairwise split -->
+                      <!--  @AggiunteAbbondo  
+                        Scale Catagorical ma in modalità pairwise -->
                       <ng-container *ngIf="dimension.scale.type=='categorical' && document.pairwise_split && dimension.pairwise "> 
                         <div [ngClass]="{'dimension-split-inside, dimension-box':dimension.pairwise }" *ngFor="let test of document.statements; let j=index">
                             <p class="spanDocument"> Answer for Statement {{changeletter(j)}}</p>
@@ -675,11 +722,13 @@
                       </ng-container>
                       
                       <!-- Interval scale pairwise split markup -->
+                      <!-- @AggiunteAbbondo 
+                        Scale Interval ma in modalità pairwise 
+                      -->
                       <ng-container *ngIf="dimension.scale.type=='interval' && document.pairwise_split && dimension.pairwise">
                       <div [ngClass]="{'dimension-split-inside, dimension-box': document.pairwise_split && dimension.pairwise}" *ngFor="let test of document.statements; let j=index"  >
                             <p class="spanDocument"> Answer  for Statement {{changeletter(j)}}</p>
                         <label style="margin-left:10px;">  Selected value: {{documentsForm[i].controls[(dimension.name).concat('_value_').concat(j)].value}}</label>
-                        <!-- Slider error fix default value-->
                         <mat-slider min="{{dimension.scale.min}}" max="{{dimension.scale.max}}"
                                     step="{{dimension.scale.step}}" thumbLabel  tickInterval="{{dimension.scale.step}}"
                                     formControlName="{{(dimension.name).concat('_value_').concat(j)}}"
@@ -689,6 +738,7 @@
                       </ng-container>
 
                       <!-- Magnitude scale markup -->
+                      
                       <ng-container *ngIf="dimension.scale.type=='magnitude_estimation' &&!dimension.pairwise || dimension.scale.type=='magnitude_estimation' && !document.pairwise_split ">
                         <div [ngClass]="{'dimension-split-inside': document.pairwise_split && dimension.pairwise}">
                         <mat-form-field appearance="fill">
@@ -711,6 +761,8 @@
                         </div>
                       </ng-container>
                       <!-- Magnitude scale pairwise split markup -->
+                      <!-- @AggiunteAbbondo 
+                        Scale Magnitude ma in modalità pairwise -->
                       <ng-container *ngIf="dimension.scale.type=='magnitude_estimation' && document.pairwise_split && dimension.pairwise">
                         <ng-container *ngFor="let test of document.statements; let j=index">
                         <div [ngClass]="{'dimension-box': document.pairwise_split && dimension.pairwise}">
@@ -782,6 +834,9 @@
                     </div>
                   </div>
                   <!-- Dimension justification field markup pairwise -->
+                  <!--@AggiunteAbbondo 
+
+                    Dimension justification in modolità partwise-->
                   <ng-container *ngIf="dimension.justification && document.pairwise_split && dimension.pairwise">
                   <div *ngFor="let test of document.statements; let j=index" [ngClass]="document.pairwise_split && dimension.pairwise ? 'dimension-box' : 'dimension-content justification'">
                       <p class="spanDocument"> Answer justification  {{changeletter(j)}}</p>

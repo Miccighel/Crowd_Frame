@@ -2235,28 +2235,34 @@ export class SkeletonComponent implements OnInit {
 
 
   /*
-  * This function change the CSS class of pairwise element selected
-  */
-
+  * //@AggiunteAbbondo 
   /* contains the last element(pairwise) selected */
   valueCheck:number
   selected_statement:string;
   selected_stetements:Object[]=[];
   checkedValue=new Array();
   
-  
+  /*
+  //@AggiunteAbbondo 
+    Funziona che cambia il colore del div dello statemente
+
+    this.checkedValue[documentnumber][0][0]=true mette al true la prima dimension cosi da venire visuallizata
+  */
   public changeColor(valueData: Object,documentnumber:number)
   {
     this.selected_statement=valueData["value"]
     this.selected_stetements[documentnumber]=valueData["value"];
     if(valueData['source']['_checked']==true)
     {
+      
+      // mette al true la prima dimension del primo documento cosi da venire visualizzata
       this.checkedValue[documentnumber][0][0]=true
       this.checkedValue[documentnumber][0][1]=true
     }
   }
 
-  // metodo che crea l'array
+  //@AggiunteAbbondo 
+  // metodo che crea l'array tridimensionale
   public dimensionValueinsert(){
     for (let i=0;i<this.documentsAmount;i++)
     {
@@ -2272,7 +2278,9 @@ export class SkeletonComponent implements OnInit {
     }
 
   }
- 
+
+  //@AggiunteAbbondo 
+ // Metodo che cambia la lettera che mostrata sulla scritta Answer for Statement
   public changeletter(index:number)
   {
      if(index==0)
@@ -2283,6 +2291,9 @@ export class SkeletonComponent implements OnInit {
        return 'B';
      }
    }
+
+  //@AggiunteAbbondo 
+  //Metodo che controllo se le due dimension(Scale) precedenti sono state cliccate
   public checkdimension(documentnumber:number,dimensionnumber:number)
   {
     if(this.checkedValue[documentnumber][dimensionnumber][0]==true && this.checkedValue[documentnumber][dimensionnumber][1]==true)
@@ -2293,7 +2304,10 @@ export class SkeletonComponent implements OnInit {
       return false
     }
   }
-  public changeValue(documentnumber:number,dimensionnumber:number,j:number)
+
+  //@AggiunteAbbondo 
+  //Cambia il valore delle dimesion(Scale) da false a  true
+   public changeValue(documentnumber:number,dimensionnumber:number,j:number)
   {
     if(dimensionnumber>=this.dimensionsAmount)
     {
@@ -2302,6 +2316,9 @@ export class SkeletonComponent implements OnInit {
       this.checkedValue[documentnumber][dimensionnumber][j]=true
     }
   }
+
+  //@AggiunteAbbondo 
+  //Cambia il colore del radio button una volta cliccato sullo statement
   public changeColorRadio(valueData:Object,document_index:number)
   {
       let a=document.getElementById("radioStatementA."+document_index) as HTMLInputElement
@@ -2323,6 +2340,8 @@ export class SkeletonComponent implements OnInit {
       }
   }
 
+  //@AggiunteAbbondo 
+  //Cambia il colore per gli altri due radio quanto si clicca sullo radio centrale 
   public changeBoth(document_index:number)
   {
     let a=document.getElementById("radioStatementA."+document_index) as HTMLInputElement

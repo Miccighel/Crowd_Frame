@@ -1,6 +1,6 @@
 [
     {
-        "caption": "Read instructions and answers the question ",
-        "text": "Choose which statement is most truthful, and then answer the questions for each statement"
+        "caption": "Please, do the following steps:",
+        "text": "<ol><li>Read the statement and Choose which one is most truthful</li> <li> Rate the truthfulness of statements with a value between 1 and 10</li><li>Rate how much you agree with the statements using a categorical scale</li>"
     }
 ]
