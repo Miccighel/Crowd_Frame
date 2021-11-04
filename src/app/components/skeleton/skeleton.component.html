@@ -447,7 +447,7 @@
               <h2>Instructions</h2>
               <mat-divider [inset]="true"></mat-divider>
               <div *ngFor="let instruction of this.instructions">
-                <p>{{instruction.caption}}</p>
+                <p><b>{{instruction.caption}}</b></p>
                 <div [innerHTML]="instruction.text"></div>
               </div>
             </div>
@@ -458,15 +458,15 @@
               -->
               <ng-template #pairwiseElementSplit>
                  <ng-container *ngIf="document.pairwise_split"  >
-                  <div class="pairwise-cointainer">
                  <h2 class="titlepairwise">Choose the statement</h2>
                  <mat-radio-group formControlName="pairwise_value_selected">
+                  <div class="pairwise-cointainer">
                     <div class="divsplit" >
-                          <div [ngClass]="selected_stetements[document.index]=='A' || selected_stetements[document.index]=='Both'  ? 'statementsplitafterclicked' : 'statementsplit'"  >
+                          <div class="statementsplit" id="StatementA.{{document.index}}" >
                             <div class="parent">
                             <h3 class="statementTitlesplit" >Statement A</h3>
                             <div class="boxtextsplit">
-                                {{document.statements[0].statement}}
+                                <span class="spanboxtext">{{document.statements[0].statement}}</span>
                             </div>
                             <div class="boxvaluessplit">
                                   <span class="captionsplit">
@@ -482,12 +482,12 @@
                                     {{document.statements[0].originated_from}}
                                   </span>
                                   <span class="captionsplit">
-                                        <label>Id:</label>
-                                      {{document.statements[0].id}}
-                                  </span>
-                                  <span class="captionsplit">
                                       <label>Job:</label>
                                       {{document.statements[0].job}}
+                                  </span>
+                                  <!--<span class="captionsplit">
+                                        <label>Id:</label>
+                                      {{document.statements[0].id}}
                                   </span>
                                   <span class="captionsplit">
                                     <label>Party:</label>
@@ -496,7 +496,7 @@
                                   <span class="captionsplit">
                                     <label>Source:</label>
                                     {{document.statements[0].source}}
-                                  </span>
+                                  </span>-->
                             </div>
                             <!--
                               @Aggiunte Abbondo
@@ -509,63 +509,62 @@
                                 changeColor: cambia il colore del radio-button(radioStatement) cosi il simula il click sul radio button. Per dubbi chieda pure
                             -->
                               <mat-radio-button class="tester" value="A" (change)="storeDimensionValue($event, i, document.index) ; changeColor($event,document.index); changeColorRadio($event,document.index)" disableRipple="true">
-                                  <div style=" width: 500px;
-                                  height: 330px;"></div>
+                                  <div style=" width: 500px; height: 300px;"></div>
                               </mat-radio-button>
                             </div>  
-                        </div>
-                        <div [ngClass]="selected_stetements[document.index]=='B' || selected_stetements[document.index]=='Both' ? 'statementsplitafterclicked' : 'statementsplit'" >
-                          <div class="parent">
-                            <h3 class="statementTitlesplit">Statement B</h3>
-                            <div class="boxtextsplit">
-                              {{document.statements[1].statement}}
-                            </div>
-                            <div class="boxvaluessplit">
-                                  <span class="captionsplit">
-                                        <label>Claimant:</label>
-                                      {{document.statements[1].claimant}}
-                                  </span>
-                                  <span class="captionsplit">
-                                      <label>Date:</label>
-                                      {{document.statements[1].date}}
-                                  </span>
-                                  <span class="captionsplit">
-                                    <label>Originated-from:</label>
-                                    {{document.statements[1].originated_from}}
-                                  </span>
-                                  <span class="captionsplit">
-                                        <label>Id:</label>
-                                      {{document.statements[1].id}}
-                                  </span>
-                                  <span class="captionsplit">
-                                      <label>Job:</label>
-                                      {{document.statements[1].job}}
-                                  </span>
-                                  <span class="captionsplit">
-                                    <label>Party:</label>
-                                    {{document.statements[1].party}}
-                                  </span>
-                                  <span class="captionsplit">
-                                    <label>Source:</label>
-                                    {{document.statements[1].source}}
-                                  </span>
+                          </div>
+                          <div class="statementsplit" id="StatementB.{{document.index}}" >
+                            <div class="parent">
+                              <h3 class="statementTitlesplit">Statement B</h3>
+                              <div class="boxtextsplit">
+                                {{document.statements[1].statement}}
                               </div>
-                              <!--
-                              @Aggiunte Abbondo
+                              <div class="boxvaluessplit">
+                                    <span class="captionsplit">
+                                          <label>Claimant:</label>
+                                        {{document.statements[1].claimant}}
+                                    </span>
+                                    <span class="captionsplit">
+                                        <label>Date:</label>
+                                        {{document.statements[1].date}}
+                                    </span>
+                                    <span class="captionsplit">
+                                      <label>Originated-from:</label>
+                                      {{document.statements[1].originated_from}}
+                                    </span>
+                                    <span class="captionsplit">
+                                        <label>Job:</label>
+                                        {{document.statements[1].job}}
+                                    </span>
+                                    <!--<span class="captionsplit">
+                                          <label>Id:</label>
+                                        {{document.statements[1].id}}
+                                    </span>
+                                    <span class="captionsplit">
+                                      <label>Party:</label>
+                                      {{document.statements[1].party}}
+                                    </span>
+                                    <span class="captionsplit">
+                                      <label>Source:</label>
+                                      {{document.statements[1].source}}
+                                    </span>-->
+                              </div>
+                                <!--
+                                @Aggiunte Abbondo
 
-                              Mat radio button fantasma serve a il simuluare il tocco sullo statement.
+                                Mat radio button fantasma serve a il simuluare il tocco sullo statement.
 
-                              @change function:
-                                storeDimensionValue: salva quale elemento è stato cliccato
-                                changeColor: cambia il colore dello statement
-                                changeColor: cambia il colore del radio-button(radioStatement) cosi il simula il click sul radio button. Per dubbi chieda pure
-                            -->
-                              <mat-radio-button class="tester" value="B" (change)="storeDimensionValue($event, i, document.index) ; changeColor($event,document.index);changeColorRadio($event,document.index)" disableRipple="true">
-                                <div style=" width: 500px; height: 330px;"></div>
-                            </mat-radio-button>
-                        </div>
-                    </div>  
-                  
+                                @change function:
+                                  storeDimensionValue: salva quale elemento è stato cliccato
+                                  changeColor: cambia il colore dello statement
+                                  changeColor: cambia il colore del radio-button(radioStatement) cosi il simula il click sul radio button. Per dubbi chieda pure
+                              -->
+                                <mat-radio-button class="tester" value="B" (change)="storeDimensionValue($event, i, document.index) ; changeColor($event,document.index);changeColorRadio($event,document.index)" disableRipple="true">
+                                  <div style="width: 500px; height: 300px;"></div>
+                              </mat-radio-button>
+                            </div>
+                          </div>
+                      </div>
                   </div>
                   <!--
                         @AggiunteAbbondo
@@ -589,7 +588,6 @@
                               </mat-radio-button>
                       </div>
                 </mat-radio-group>
-                  </div>
                 </ng-container>
               </ng-template>
               <!-- @AggiunteAbbondo

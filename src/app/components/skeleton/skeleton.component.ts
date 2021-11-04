@@ -2238,7 +2238,7 @@ export class SkeletonComponent implements OnInit {
   * //@AggiunteAbbondo 
   /* contains the last element(pairwise) selected */
   valueCheck:number
-  selected_statement:string;
+  //selected_statement:string;
   selected_stetements:Object[]=[];
   checkedValue=new Array();
   
@@ -2250,8 +2250,25 @@ export class SkeletonComponent implements OnInit {
   */
   public changeColor(valueData: Object,documentnumber:number)
   {
-    this.selected_statement=valueData["value"]
-    this.selected_stetements[documentnumber]=valueData["value"];
+    //this.selected_statement=valueData["value"]
+    //this.selected_stetements[documentnumber]=valueData["value"];
+    let a=document.getElementById("StatementA."+documentnumber) as HTMLInputElement
+    let b=document.getElementById("StatementB."+documentnumber) as HTMLInputElement
+    if(valueData["value"]=="A")
+    {
+      a.style.backgroundColor="#B6BDE2"
+      b.style.backgroundColor="#FCFCFC"
+    }else if (valueData["value"]=="B")
+    {
+      b.style.backgroundColor="#B6BDE2"
+      a.style.backgroundColor="#FCFCFC"
+    }else
+    {
+      b.style.backgroundColor="#B6BDE2"
+      a.style.backgroundColor="#B6BDE2"
+    }
+    
+    
     if(valueData['source']['_checked']==true)
     {
       

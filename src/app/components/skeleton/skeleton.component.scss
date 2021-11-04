@@ -722,12 +722,14 @@ mat-step form mat-card-content, mat-step form mat-card-actions {
 .boxtext{
   width: 80%;
   background-color: rgba(0, 0, 0, 0.1);
-  height: 100px;
+  height: 30%;
   border-radius: 10px;
   margin:0 auto;
   padding: 5px;
   margin-top: 10px;
-  text-align: start;
+  text-align: center;
+  justify-content: center; /* align horizontal */
+  align-items: center;
 }
 
 .boxvalues{
@@ -753,10 +755,12 @@ mat-step form mat-card-content, mat-step form mat-card-actions {
   @AggiunteAbbondo 
 */
 .pairwise-cointainer{
-  /**position:sticky;
+
+  position: -webkit-sticky; /* Safari */
+  position: sticky;
   top: 0;
   margin: 20px;
-  z-index: 110;*/
+  z-index: 110;
   background-color: #FCFCFC;
 }
 .divsplit{
@@ -766,9 +770,9 @@ mat-step form mat-card-content, mat-step form mat-card-actions {
 }
 .statementsplit{
   display: table-cell;
-  width: 500px;
+  width: 50%;
   background-color:#FCFCFC;
-  height: 250px;
+  height: 100%;
   padding-top: 1px;
   margin-top: -1px;
   overflow: hidden;
@@ -781,31 +785,21 @@ mat-step form mat-card-content, mat-step form mat-card-actions {
   margin: 0;
   border: 0;
 }
-.statementsplitafterclicked{
-  display: table-cell;
-  width: 500px;
-  background-color:#B6BDE2;
-  height: 250px;
-  padding-top: 1px;
-  margin-top: -1px;
-  overflow: hidden;
-  border-radius:5px;
-  cursor: pointer;
-  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
-}
-
 .boxtextsplit{
   width: 80%;
   background-color: rgba(0, 0, 0, 0.1);
-  height: 120px;
+  height: 30%;
   border-radius: 10px;
   margin:0 auto;
   padding: 5px;
   margin-top: 10px;
-  word-break: break-all;
   text-align: center;
+  justify-content: center; /* align horizontal */
+  align-items: center;
 }
-
+.spanboxtext{
+  height: 100%;
+}
 
 .boxvaluessplit{
   width: 100%;
@@ -912,7 +906,7 @@ mat-step form mat-card-content, mat-step form mat-card-actions {
     display: table-row;
   }
   .boxtextsplit{
-    height: 250px;
+    height: 30%;
   }
   .pairwise-cointainer{
     position: relative;
