@@ -179,20 +179,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/cdk@npm:~12.2.12":
-  version: 12.2.12
-  resolution: "@angular/cdk@npm:12.2.12"
+"@angular/cdk@npm:~13.0.0":
+  version: 13.0.0
+  resolution: "@angular/cdk@npm:13.0.0"
   dependencies:
     parse5: ^5.0.0
-    tslib: ^2.2.0
+    tslib: ^2.3.0
   peerDependencies:
-    "@angular/common": ^12.0.0 || ^13.0.0-0
-    "@angular/core": ^12.0.0 || ^13.0.0-0
-    rxjs: ^6.5.3 || ^7.0.0
+    "@angular/common": ^13.0.0 || ^14.0.0-0
+    "@angular/core": ^13.0.0 || ^14.0.0-0
+    rxjs: ^6.5.3 || ^7.4.0
   dependenciesMeta:
     parse5:
       optional: true
-  checksum: 8454483935b349733a4912d47229e35e12c746371076e232ffcf457b495eaf10c2978af01fc0bb935d9121dc76809745d1923ce8dbd198903887c85ed8093cd8
+  checksum: 1d14627cdbda031f840761e33060ba29262c08ab30969a88811d0cf5dc3194bf7aad1c8ca73b0b98ca6dfc2a277492434a8d0745b380f6ea855ab990991ae791
   languageName: node
   linkType: hard
 
@@ -310,19 +310,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/material@npm:^12.2.12":
-  version: 12.2.12
-  resolution: "@angular/material@npm:12.2.12"
+"@angular/material@npm:^13.0.0":
+  version: 13.0.0
+  resolution: "@angular/material@npm:13.0.0"
   dependencies:
-    tslib: ^2.2.0
+    tslib: ^2.3.0
   peerDependencies:
-    "@angular/animations": ^12.0.0 || ^13.0.0-0
-    "@angular/cdk": 12.2.12
-    "@angular/common": ^12.0.0 || ^13.0.0-0
-    "@angular/core": ^12.0.0 || ^13.0.0-0
-    "@angular/forms": ^12.0.0 || ^13.0.0-0
-    rxjs: ^6.5.3 || ^7.0.0
-  checksum: fa8ce376f5643513f1f6c4334d3f51923be7894e3dc71cea77ba0a021a80ff06f07dbd5002247cde62a5e8250de5e2d7b5e7ba3baf817ff65c4798bbccd6506b
+    "@angular/animations": ^13.0.0 || ^14.0.0-0
+    "@angular/cdk": 13.0.0
+    "@angular/common": ^13.0.0 || ^14.0.0-0
+    "@angular/core": ^13.0.0 || ^14.0.0-0
+    "@angular/forms": ^13.0.0 || ^14.0.0-0
+    rxjs: ^6.5.3 || ^7.4.0
+  checksum: e5b8ce4168721811df4a314eb8be70a181730c1942b07af138ec2836cfcc8e96a6a9b7b8a43dcb9a23355107538d00a7757bb2a7f1eef703f737e6705c696251
   languageName: node
   linkType: hard
 
@@ -3506,7 +3506,7 @@ __metadata:
   dependencies:
     "@angular-devkit/build-angular": ~13.0.1
     "@angular/animations": ~13.0.0
-    "@angular/cdk": ~12.2.12
+    "@angular/cdk": ~13.0.0
     "@angular/cli": ^13.0.1
     "@angular/common": ~13.0.0
     "@angular/compiler": ~13.0.0
@@ -3514,7 +3514,7 @@ __metadata:
     "@angular/core": 13.0.0
     "@angular/elements": ^13.0.0
     "@angular/forms": ~13.0.0
-    "@angular/material": ^12.2.12
+    "@angular/material": ^13.0.0
     "@angular/platform-browser": ~13.0.0
     "@angular/platform-browser-dynamic": ~13.0.0
     "@angular/router": ~13.0.0
@@ -8518,7 +8518,7 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"tslib@npm:^2.0.0, tslib@npm:^2.1.0, tslib@npm:^2.2.0":
+"tslib@npm:^2.0.0, tslib@npm:^2.1.0":
   version: 2.3.0
   resolution: "tslib@npm:2.3.0"
   checksum: 8869694c26e4a7b56d449662fd54a4f9ba872c889d991202c74462bd99f10e61d5bd63199566c4284c0f742277736292a969642cc7b590f98727a7cae9529122
