@@ -2245,10 +2245,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:~15.14.9":
-  version: 15.14.9
-  resolution: "@types/node@npm:15.14.9"
-  checksum: 49f7f0522a3af4b8389aee660e88426490cd54b86356672a1fedb49919a8797c00d090ec2dcc4a5df34edc2099d57fc2203d796c4e7fbd382f2022ccd789eee7
+"@types/node@npm:~16.11.6":
+  version: 16.11.6
+  resolution: "@types/node@npm:16.11.6"
+  checksum: 6e19634766ff589d3d2f361c2196b671f8f133cdadc5ad347a621c360d8994b6c4fbccfb2ad9c60c588c593831a96497c9c6b77d2b7e91be723384b94f6368e7
   languageName: node
   linkType: hard
 
@@ -2749,9 +2749,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"aws-sdk@npm:^2.992.0":
-  version: 2.992.0
-  resolution: "aws-sdk@npm:2.992.0"
+"aws-sdk@npm:^2.1021.0":
+  version: 2.1021.0
+  resolution: "aws-sdk@npm:2.1021.0"
   dependencies:
     buffer: 4.9.2
     events: 1.1.1
@@ -2762,7 +2762,7 @@ __metadata:
     url: 0.10.3
     uuid: 3.3.2
     xml2js: 0.4.19
-  checksum: de1b165bf0b98573c15166f7c0b98600bd155129c4977b612c24546d942014c2c5c4158a286c24a63b4aa6ee23569c542786cfae291666a61466400ebd8da018
+  checksum: 057bb0cc7571bfb3e66f7dfc437d369e2abb8af966bfc02f8ccff74a4dec98768cfe8b4eac9179c93d8d9a5986362289f298b31fcb9addeda8d2432736a1ab15
   languageName: node
   linkType: hard
 
@@ -3520,15 +3520,15 @@ __metadata:
     "@angular/router": ~13.0.0
     "@funktechno/texthighlighter": ^2.1.2
     "@kolkov/angular-editor": ^1.2.0
-    "@types/node": ~15.14.9
-    aws-sdk: ^2.992.0
+    "@types/node": ~16.11.6
+    aws-sdk: ^2.1021.0
     crypto-es: ^1.2.7
     ngx-color-picker: ^11.0.0
     ngx-countdown: ^12.0.1
     ngx-device-detector: ^2.1.1
     ngx-file-helpers: ^6.0.0
     ngx-ui-loader: ^11.0.0
-    rxjs: ^6.6.7
+    rxjs: ^7.4.0
     titleize: ^3.0.0
     typescript: 4.4.4
     util: ^0.12.4
@@ -7695,7 +7695,7 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"rxjs@npm:6.6.7, rxjs@npm:^6.6.7":
+"rxjs@npm:6.6.7":
   version: 6.6.7
   resolution: "rxjs@npm:6.6.7"
   dependencies:
@@ -7710,6 +7710,15 @@ fsevents@~2.3.2:
   dependencies:
     tslib: ~2.1.0
   checksum: e63adb8808ea6c299a020d56d2af92bcf71efe641adf838499932e29b8f5fd5ff00873653ad48ba3ecf6c9fc11c3c595acf995e8d456f9d8cb85c7d37a1fd72e
+  languageName: node
+  linkType: hard
+
+"rxjs@npm:^7.4.0":
+  version: 7.4.0
+  resolution: "rxjs@npm:7.4.0"
+  dependencies:
+    tslib: ~2.1.0
+  checksum: 6b33172a760dcad6882fdc836ee8cf1ebe160dd7eaad95c45a12338ffdaa96eb41e48e6c25bbd3d1fdf45075949ff447954bc17a9d01c688558a67967d09c114
   languageName: node
   linkType: hard
 
