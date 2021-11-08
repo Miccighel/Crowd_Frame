@@ -22,7 +22,7 @@ export class BingService {
   /* Microsoft Search API key */
   apiKey: string
   /* Microsoft Bing Web Search endpoint */
-  endPoint = "https://api.cognitive.microsoft.com/bing/v7.0/search?q=";
+  endPoint = "https://api.bing.microsoft.com/v7.0/search?q=";
 
   /* HTTP client and headers */
   client: HttpClient;

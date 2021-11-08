@@ -71,6 +71,13 @@ mat-card-title {
 
 /* Task specific styles */
 
+.evaluation-instructions {
+  h2 {
+    font-weight: lighter;
+  }
+  margin-bottom: 1%;
+}
+
 
 .question label {
   font-weight: bold;
@@ -163,7 +170,7 @@ mat-card-content label {
   border: 0;
   box-shadow: 0 0 0 0;
   border-radius: 0;
-  background-color: #DEDEDE;
+  background-color: #eaeaea;
   //position:-webkit-sticky;
   //position:sticky;
   //top: 42px;
@@ -171,16 +178,26 @@ mat-card-content label {
 }
 
 .statement ul {
-  //box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
-  //text-align: center;
   padding-left: 2%;
   list-style: none;
 }
 
 .statement ul li {
+  padding-top: 2%;
+  padding-bottom: 2%;
+  font-size: 1.1em;
+}
+
+.statement {
   padding-top: 1%;
   padding-bottom: 1%;
-  font-size: 1.1em;
+  .attribute {
+    padding: 1% 1% 1% 2%;
+    font-size: 1.2em;
+    p {
+      margin: 0;
+    }
+  }
 }
 
 .statement mat-expansion-panel-header {
@@ -193,6 +210,116 @@ mat-card-content label {
   flex-grow: 0;
 }
 
+.statement-div {
+  max-width: 600px;
+  margin: auto;
+  font-size: large;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.annotation-recap {
+  padding-bottom: 3px;
+}
+
+.annotation-quote {
+  display: flex;
+  height: 0%;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.inner-annotation-quote {
+  display: flex;
+  height: 0%;
+  align-items: center;
+  justify-content: space-evenly;
+  width: 100%;
+}
+
+.annotation-current-text {
+  display: flex;
+  margin-left: 5px;
+  height: 0%;
+  align-items: center;
+}
+
+.annotation-options {
+  display: flex;
+  margin: auto;
+  padding: 5px;
+  justify-content:center;
+  height: 0%;
+  align-items: center;
+  text-align: right;
+  max-width: 650px;
+}
+
+.annotation-type {
+  text-align: center;
+  padding-top: 5px;
+}
+
+.inner-annotation-reference {
+  background-color: #F0F0F0;
+  padding: 5px;
+}
+
+.inner-annotation-checkbox-delete {
+  text-align: center;
+  padding-top: 5px;
+}
+
+.reference-form {
+  margin-top: 5px;
+  margin-bottom: 5px;
+  text-align: center;
+  justify-content: space-evenly;
+  border-style: dashed;
+  border-color: dimgray;
+  padding: 5px;
+}
+
+.reference-radio-group-button {
+  margin-top: 2px;
+  margin-bottom: 2px;
+}
+
+.mat-radio-group {
+  display: flex;
+  text-align: center;
+  justify-content: space-evenly;
+}
+
+.radio-group {
+  display: flex;
+  margin: auto;
+  padding: 5px;
+  justify-content: space-evenly;
+  height: 0%;
+  align-items: center;
+  max-width: 650px;
+}
+
+.radio-group-button {
+  margin-left: 7px;
+  margin-right: 7px;
+}
+
+.inner-annotation-text {
+  margin-top: 5px;
+  margin-bottom: 5px;
+
+  justify-content: space-evenly;
+  border-style: dashed;
+  border-color: dimgray;
+  padding: 5px;
+}
+
+.inner-annotation-delete {
+  margin-left: 5px;
+}
 
 .url-field {
   display: none;
@@ -325,6 +452,10 @@ button {
 
 .mat-slider {
   width: 100%;
+}
+
+.note-current-text {
+  max-width: 33%;
 }
 
 /* |--- TOKEN INPUT SECTION STYLES --| */
@@ -518,7 +649,7 @@ mat-step form mat-card-content, mat-step form mat-card-actions {
   font-weight: bold;
 }
 
-/* |--- COUNTDOWN STYLES --| */
+/* |--- COUNTDOWN ---| */
 
 .sticky {
   position: -webkit-sticky; /* Safari */
@@ -527,6 +658,7 @@ mat-step form mat-card-content, mat-step form mat-card-actions {
   background-color: rgb(255, 255, 123);
   padding: 8px 0 8px 40px;
   top: 0;
+  text-align: center;
 }
 
 .m-0 {
@@ -536,6 +668,8 @@ mat-step form mat-card-content, mat-step form mat-card-actions {
 .pt-16px {
   padding-top: 16px;
 }
+
+
 
 
 .instructions-section {
@@ -549,7 +683,6 @@ mat-step form mat-card-content, mat-step form mat-card-actions {
 .instructions-section mat-card {
   margin: auto;
 }
-
 
 .instructions-section mat-card-actions {
   text-align: center;
@@ -566,8 +699,6 @@ mat-step form mat-card-content, mat-step form mat-card-actions {
   border-bottom: 1px solid rgba(0, 0, 0, 0.12);
   font-weight: lighter !important;
 }
-
-/* |--- ANNOTATION STYLES --| */
 
 .annotations {
   margin-bottom: 1%;
@@ -587,12 +718,18 @@ mat-step form mat-card-content, mat-step form mat-card-actions {
 }
 
 .annotations th {
-  flex-grow: 1;
   text-align: center;
-  padding: 1%;
+  vertical-align: middle;
+  font-size: large;
+  border: 0;
+  flex-grow: 1;
+  padding-top: 2%;
+  padding-left: 1%;
+  padding-right: 1%;
 }
 
 .annotations td {
+  border: 0;
   flex: 1 1 0px;
   padding: 1%;
 }
@@ -744,10 +881,6 @@ mat-step form mat-card-content, mat-step form mat-card-actions {
 .statementTitle{
   text-align: center
 }
-
-
-
-
 
 
 /*

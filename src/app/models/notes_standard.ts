@@ -3,12 +3,13 @@ import {Note} from "./notes";
 export class NoteStandard extends Note {
 
   constructor(
-    index: number,
+    document_index: number,
+    attribute_index: number,
     range: JSON,
     data: JSON,
     color = "#ffffff"
   ) {
-    super(index, range, data, color)
+    super(document_index, attribute_index, range, data, color)
   }
 
 }

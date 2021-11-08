@@ -3,6 +3,7 @@ import {Annotator} from "./settingsTask";
 export abstract class Note {
 
   document_index: number;
+  attribute_index: number;
   version: number;
   deleted: boolean;
   ignored: boolean;
@@ -14,6 +15,7 @@ export abstract class Note {
   timestamp_deleted?: number;
   base_uri: string;
   current_text: string
+  raw_text: string
   option: string
   text_left: string
   text_right: string
@@ -22,13 +24,15 @@ export abstract class Note {
   annotator: Annotator;
 
   constructor(
-    index: number,
+    document_index: number,
+    attribute_index: number,
     range: JSON,
     data: JSON,
     color = "#ffffff"
   ) {
 
-    this.document_index = index;
+    this.document_index = document_index;
+    this.attribute_index = attribute_index;
     this.deleted = false
     this.ignored = false
     this.color = color
@@ -39,6 +43,7 @@ export abstract class Note {
     this.timestamp_deleted = 0
     this.base_uri = data[0]["baseURI"]
     this.current_text = data[0]["outerText"]
+    this.raw_text = this.removeSpecialChars()
     this.option = "not_selected"
     this.text_left = ""
     this.text_right = ""
@@ -77,4 +82,24 @@ export abstract class Note {
     this.deleted = true
   }
 
+  public removeSpecialChars () {
+    let raw_string = this.current_text;
+    raw_string = raw_string.replace(/\n|\r/g, " ");
+    raw_string = raw_string.replace(/[^a-zA-Z0-9,.'()\[\] ]/g, "");
+    let raw_string_single_whitespaces: string = "";
+    for (let c = 0; c < raw_string.length; c++) {
+      if (c > 0) {
+        if (raw_string.charAt(c - 1) == " ") {
+          if (raw_string.charAt(c) != " ") {
+            raw_string_single_whitespaces += raw_string.charAt(c)
+          }
+        } else {
+          raw_string_single_whitespaces += raw_string.charAt(c)
+        }
+      } else {
+        raw_string_single_whitespaces += raw_string.charAt(c)
+      }
+    }
+    return raw_string_single_whitespaces
+  }
 }
