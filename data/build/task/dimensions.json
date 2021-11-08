@@ -1,8 +1,8 @@
 [
     {
-        "name": "dimensionpairwise_1",
-        "name_pretty": "dimension interna al pairwise 1",
-        "description": "Lorem ipsum dolor sit amet",
+        "name": "Rate_truth",
+        "name_pretty": "Rate the truthfulness of the statement ",
+        "description": "Rate the statements,  1 (low truthfulness)to 10(High truthfulness)",
         "gold": false,
         "justification": false,
         "url": false,
@@ -20,48 +20,44 @@
         }
     },
     {
-        "name": "sample-dimension",
-        "name_pretty": "dimension interna al pairwise 2",
-        "description": "Lorem ipsum dolor sit amet",
+        "name": "agree-statement",
+        "name_pretty": "How much do you agree with the statement?",
+        "description": "Rate how much you agree with the statements",
         "url": false,
         "justification": false,
-        "pairwise":true,
+        "pairwise": true,
         "scale": {
             "type": "categorical",
             "mapping": [
                 {
-                    "label": "False",
+                    "label": "Strongly Agree",
+                    "description": "",
+                    "value": "0"
+                },
+                {
+                    "label": "Agree",
                     "description": "",
                     "value": "1"
                 },
                 {
-                    "label": "True",
+                    "label": "Undecided",
                     "description": "",
-                    "value": "0"
-                }
+                    "value": "2"
+                },
+                {
+                    "label": "Disagree",
+                    "description": "",
+                    "value": "3"
+                },
+                {
+                    "label": "Strongly Disagree",
+                    "description": "",
+                    "value": "4"
+                }  
             ]
+            
         },
         "gold_question_check": false,
-        "style": {
-            "type": "list",
-            "orientation": "vertical",
-            "position": "middle"
-          }
-    },
-    {
-        "name": "dimensionpairwise_3",
-        "name_pretty": "dimension esterna al pairwise",
-        "description": "Lorem ipsum dolor sit amet",
-        "gold": false,
-        "justification": false,
-        "url": false,
-        "pairwise": false,
-        "scale": {
-            "type": "interval",
-            "min": 1,
-            "max": 10,
-            "step": 1
-        },
         "style": {
             "type": "list",
             "orientation": "vertical",

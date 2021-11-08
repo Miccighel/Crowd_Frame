@@ -14,6 +14,29 @@
                     "50-80",
                     "80+"
                 ]
+            },
+            {
+                "name":"study-level",
+                "text":"What is your qualification?",
+                "answers":[
+                    "Middle School",
+                    "High School",
+                    "Bachelor",
+                    "Master",
+                    "Phd"
+                ]
+            },
+            {
+                "name":"politics-level",
+                "text":"How often do you read news about politics?",
+                "answers":[
+                    "Very Frequently",
+                    "Frequently",
+                    "Occasionally",
+                    "Rarely",
+                    "Very Rarely",
+                    "Never"
+                ]
             }
         ]
     }

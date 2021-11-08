@@ -1,6 +1,13 @@
+
+
 [
     {
-        "caption": "Task Instructions",
-        "text": "<p> <strong>dolor</strong> sit amet.</p>"
+      "caption": "Task Instructions",
+      "text":"<p>In this task, we will show you <strong>statements</strong> made by popular people (for example, political figures).Each statement will be compared with another, we will ask you to choose the one you think is the most truthful. After this we will ask you to answer the questions related to each statement. You will have <b>a limited amount of time</b> to see and read each statement. &#160;</p><p><br>The data from this task is being gathered for research purposes. Non  personally-identifying information is recorded. Participation is entirely voluntary, and you are free to discontinue  at any point.</p>"
+    },
+    {
+      "caption": "Task Description",
+      "text": "First, you will be asked to fill in a questionnaire that will help us collect more reliable data.&#160;You will then be asked to evaluate 5 pairs of statements, each expressed by a person in a particular context. You will be shown the ten statements, two at a time. Each statement is not altered in any way and it is reported as in the original source. For each pair of statements, your task is choosing the most truthful. If you wish to change a previously given judgment,you can do it at any time of the task.<div><br></div><div>The statements are not presented in any particular order. You might see many good statements, many bad ones, or any combination. Try not to anticipate, and simply rate each statement after reading it. Don't try to guess or randomly click, as there are some cross-checks, as indicated above. Note that you&#8217;ll need to answer <b>all questions and fill in every field</b>, otherwise you will not be able to proceed to the following steps.<br></div>"
     }
 ]
+  

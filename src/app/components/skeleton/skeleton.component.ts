@@ -35,13 +35,15 @@ import {HttpClient, HttpHeaders} from "@angular/common/http";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {NoteStandard} from "../../models/notes_standard";
 import {NoteLaws} from "../../models/notes_laws";
-import {MatRadioChange} from "@angular/material/radio";
+import {MatRadioButton, MatRadioChange} from "@angular/material/radio";
 import {MatCheckboxChange} from "@angular/material/checkbox";
 import { Console } from 'console';
 import { Discovery } from 'aws-sdk';
 import { ConfigurationServicePlaceholders } from 'aws-sdk/lib/config_service_placeholders';
 import { Object } from 'aws-sdk/clients/customerprofiles';
 import { ConstantPool } from '@angular/compiler';
+import { ObjectUnsubscribedError, of } from 'rxjs';
+import { newArray } from '@angular/compiler/src/util';
 
 /* Component HTML Tag definition */
 @Component({
@@ -494,8 +496,9 @@ export class SkeletonComponent implements OnInit {
   */
   public async performTaskSetup() {
     /* The token input has been already validated, this is just to be sure */
+    
     if (this.tokenForm.valid) {
-
+      
       /* The loading spinner is started */
       this.ngxService.start();
 
@@ -595,34 +598,75 @@ export class SkeletonComponent implements OnInit {
       /* The array of dimensions is initialized */
       this.dimensions = new Array<Dimension>();
 
+      let checkDimension=false 
       /* The dimensions stored on Amazon S3 are retrieved */
       let rawDimensions = await this.S3Service.downloadDimensions(this.configService.environment)
       this.dimensionsAmount = rawDimensions.length;
-      console.log("documento")
-      console.log(this.documents[0].pairwise);
+      /**Iniziliazziare il vettore degli statement */
+      this.dimensionValueinsert();
       /* Each dimension is parsed using the Dimension class */
       for (let index = 0; index < this.dimensionsAmount; index++) this.dimensions.push(new Dimension(index, rawDimensions[index]));
       
       for (let index = 0; index < this.documentsAmount; index++) {
         let controlsConfig = {};
-        if(this.documents[index].pairwise) controlsConfig[`pairwise_value_selected`] = new FormControl('',[Validators.required]);
-        for (let index_dimension = 0; index_dimension < this.dimensions.length; index_dimension++) {
-          let dimension = this.dimensions[index_dimension];
-          if (dimension.scale) {
-            if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.required]);
-            if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value`] = new FormControl((Math.round(((<ScaleInterval>dimension.scale).min + (<ScaleInterval>dimension.scale).max) / 2)), [Validators.required]);
-            if(dimension.scale.type =="pairwise") controlsConfig[`${dimension.name}_value`] = new FormControl('',[Validators.required]);
-            if(dimension.scale.type =="pairwise") controlsConfig[`${dimension.name}_value`] = new FormControl('',[Validators.required]);
-             if (dimension.scale.type == "magnitude_estimation") {
-              if ((<ScaleMagnitude>dimension.scale).lower_bound) {
-                controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min), Validators.required]);
-              } else {
-                controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min + 1), Validators.required]);
+        if(this.documents[index].pairwise_split)
+        {
+          if(this.documents[index].pairwise_split) controlsConfig[`pairwise_value_selected`] = new FormControl('', [Validators.required]);
+          for (let index_dimension = 0; index_dimension < this.dimensions.length; index_dimension++) {
+            let dimension = this.dimensions[index_dimension];
+            if (!dimension.pairwise)
+            {
+              if (dimension.scale) {
+                if (dimension.scale.type == "interval")  controlsConfig[`${dimension.name}_value`] = new FormControl('' , [Validators.required]);
+                if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.required]);
+                if (dimension.scale.type == "magnitude_estimation") {
+                  if ((<ScaleMagnitude>dimension.scale).lower_bound) {
+                    controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min), Validators.required]);
+                  } else {
+                    controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min + 1), Validators.required]);
+                  }
+                }
+                if (dimension.justification) controlsConfig[`${dimension.name}_justification`] = new FormControl('', [Validators.required, this.validateJustification.bind(this)])
+                if (dimension.url) controlsConfig[`${dimension.name}_url`] = new FormControl('', [Validators.required, this.validateSearchEngineUrl.bind(this)]);
+              }
+            }else if (dimension.scale) {
+             
+              for(let i=0; i<this.documents[index].statements.length;i++)
+              {
+                if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value_${i}`] = new FormControl('', [Validators.required]);
+                if (dimension.scale.type == "interval")  controlsConfig[`${dimension.name}_value_${i}`] = new FormControl('', [Validators.required]);
+                if (dimension.scale.type == "magnitude_estimation") {
+                  if ((<ScaleMagnitude>dimension.scale).lower_bound) {
+                    controlsConfig[`${dimension.name}_value_${i}`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min), Validators.required]);
+                  } else {
+                    controlsConfig[`${dimension.name}_value_${i}`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min + 1), Validators.required]);
+                  }
+                }
+                if (dimension.justification) controlsConfig[`${dimension.name}_justification_${i}`] = new FormControl('', [Validators.required, this.validateJustification.bind(this)])
+              }
+              if (dimension.url) controlsConfig[`${dimension.name}_url`] = new FormControl('', [Validators.required, this.validateSearchEngineUrl.bind(this)]);
+            }  
+          }
+        }else{
+          
+          for (let index_dimension = 0; index_dimension < this.dimensions.length; index_dimension++) {
+            let dimension = this.dimensions[index_dimension];
+            if (dimension.scale) {
+              if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.required]);
+              if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value`] = new FormControl(((<ScaleInterval>dimension.scale).min), [Validators.required]);
+              if(dimension.scale.type =="pairwise") controlsConfig[`${dimension.name}_value`] = new FormControl('',[Validators.required]);
+              
+               if (dimension.scale.type == "magnitude_estimation") {
+                if ((<ScaleMagnitude>dimension.scale).lower_bound) {
+                  controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min), Validators.required]);
+                } else {
+                  controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min + 1), Validators.required]);
+                }
               }
             }
+            if (dimension.justification) controlsConfig[`${dimension.name}_justification`] = new FormControl('', [Validators.required, this.validateJustification.bind(this)])
+            if (dimension.url) controlsConfig[`${dimension.name}_url`] = new FormControl('', [Validators.required, this.validateSearchEngineUrl.bind(this)]);
           }
-          if (dimension.justification) controlsConfig[`${dimension.name}_justification`] = new FormControl('', [Validators.required, this.validateJustification.bind(this)])
-          if (dimension.url) controlsConfig[`${dimension.name}_url`] = new FormControl('', [Validators.required, this.validateSearchEngineUrl.bind(this)]);
         }
         this.documentsForm[index] = this.formBuilder.group(controlsConfig)
       }
@@ -731,7 +775,7 @@ export class SkeletonComponent implements OnInit {
 
       /* trigger the changeDetection again */
       this.changeDetector.detectChanges();
-
+      
       /* The loading spinner is stopped */
       this.ngxService.stop();
 
@@ -758,12 +802,17 @@ export class SkeletonComponent implements OnInit {
    */
   public storeDimensionValue(valueData: Object, document: number, dimension: number) {
     /* The current document, dimension and user query are copied from parameters */
+
     let currentDocument = document
     let currentDimension = dimension
     /* A reference to the current dimension is saved */
     this.currentDimension = currentDimension;
-    let currentValue = valueData['value'];
+    let currentValue = valueData['value'];            
     let timeInSeconds = Date.now() / 1000;
+    if (valueData["type"]==="click")
+    {
+      currentValue = "0"  
+    }
     /* If some data for the current document already exists*/
     if (this.dimensionsSelectedValues[currentDocument]['amount'] > 0) {
       /* The new query is pushed into current document data array along with a document_index used to identify such query*/
@@ -2186,37 +2235,138 @@ export class SkeletonComponent implements OnInit {
 
 
   /*
-  * This function change the CSS class of pairwise element selected
-  */
-
+  * //@AggiunteAbbondo 
   /* contains the last element(pairwise) selected */
-  pastValues:Object[] = [];
-  checkedValue:Boolean[] = [];
-  public changeColor(valueData: Object,valueChecked:number,documentnumber:number)
+  valueCheck:number
+  //selected_statement:string;
+  selected_stetements:Object[]=[];
+  checkedValue=new Array();
+  
+  /*
+  //@AggiunteAbbondo 
+    Funziona che cambia il colore del div dello statemente
+
+    this.checkedValue[documentnumber][0][0]=true mette al true la prima dimension cosi da venire visuallizata
+  */
+  public changeColor(valueData: Object,documentnumber:number)
   {
-      if(this.pastValues[documentnumber]==undefined)
-      {
-        valueData["source"]["__ngContext__"][21]["className"]="statementafterclicked";
-        valueData["source"]["__ngContext__"][22]["className"]="statementTitleclicked";
-        valueData["source"]["__ngContext__"][24]["className"]="boxtextafterclicked";
-        valueData["source"]["__ngContext__"][26]["className"]="boxvaluesafterclicked";
-        this.checkedValue[documentnumber]=true
-        this.pastValues[documentnumber]=valueData
+    //this.selected_statement=valueData["value"]
+    //this.selected_stetements[documentnumber]=valueData["value"];
+    let a=document.getElementById("StatementA."+documentnumber) as HTMLInputElement
+    let b=document.getElementById("StatementB."+documentnumber) as HTMLInputElement
+    if(valueData["value"]=="A")
+    {
+      a.style.backgroundColor="#B6BDE2"
+      b.style.backgroundColor="#FCFCFC"
+    }else if (valueData["value"]=="B")
+    {
+      b.style.backgroundColor="#B6BDE2"
+      a.style.backgroundColor="#FCFCFC"
+    }else
+    {
+      b.style.backgroundColor="#B6BDE2"
+      a.style.backgroundColor="#B6BDE2"
+    }
+    
+    
+    if(valueData['source']['_checked']==true)
+    {
       
-      }else{
-        
-        this.pastValues[documentnumber]["source"]["__ngContext__"][21]["className"]="statement";
-        this.pastValues[documentnumber]["source"]["__ngContext__"][22]["className"]="statementTitle";
-        this.pastValues[documentnumber]["source"]["__ngContext__"][24]["className"]="boxtext";
-        this.pastValues[documentnumber]["source"]["__ngContext__"][26]["className"]="boxvalues";
-        valueData["source"]["__ngContext__"][21]["className"]="statementafterclicked";
-        valueData["source"]["__ngContext__"][22]["className"]="statementTitleclicked";
-        valueData["source"]["__ngContext__"][24]["className"]="boxtextafterclicked";
-        valueData["source"]["__ngContext__"][26]["className"]="boxvaluesafterclicked";
-        this.pastValues[documentnumber]=valueData
-        this.checkedValue[documentnumber]=true
+      // mette al true la prima dimension del primo documento cosi da venire visualizzata
+      this.checkedValue[documentnumber][0][0]=true
+      this.checkedValue[documentnumber][0][1]=true
+    }
+  }
+
+  //@AggiunteAbbondo 
+  // metodo che crea l'array tridimensionale
+  public dimensionValueinsert(){
+    for (let i=0;i<this.documentsAmount;i++)
+    {
+      let statement=new Array();
+      for (let j=0;j<this.dimensionsAmount;j++)
+      {
+        let pairwise= new Array()
+        pairwise[0]=false
+        pairwise[1]=false
+        statement[j]=pairwise
       }
-  } 
+      this.checkedValue[i]=statement
+    }
+
+  }
+
+  //@AggiunteAbbondo 
+ // Metodo che cambia la lettera che mostrata sulla scritta Answer for Statement
+  public changeletter(index:number)
+  {
+     if(index==0)
+     {
+        return 'A';
+     }else
+     {
+       return 'B';
+     }
+   }
+
+  //@AggiunteAbbondo 
+  //Metodo che controllo se le due dimension(Scale) precedenti sono state cliccate
+  public checkdimension(documentnumber:number,dimensionnumber:number)
+  {
+    if(this.checkedValue[documentnumber][dimensionnumber][0]==true && this.checkedValue[documentnumber][dimensionnumber][1]==true)
+    {
+      return true
+    }else
+    {
+      return false
+    }
+  }
+
+  //@AggiunteAbbondo 
+  //Cambia il valore delle dimesion(Scale) da false a  true
+   public changeValue(documentnumber:number,dimensionnumber:number,j:number)
+  {
+    if(dimensionnumber>=this.dimensionsAmount)
+    {
+    }else
+    {
+      this.checkedValue[documentnumber][dimensionnumber][j]=true
+    }
+  }
+
+  //@AggiunteAbbondo 
+  //Cambia il colore del radio button una volta cliccato sullo statement
+  public changeColorRadio(valueData:Object,document_index:number)
+  {
+      let a=document.getElementById("radioStatementA."+document_index) as HTMLInputElement
+      let b=document.getElementById("radioStatementB."+document_index) as HTMLInputElement
+      if(valueData["value"]=="A")
+      {
+        if (b.classList.contains('mat-radio-checked'))
+        {
+          b.classList.remove('mat-radio-checked')
+        }
+        a.classList.add('mat-radio-checked')
+      }else
+      {
+        if (a.classList.contains('mat-radio-checked'))
+        {
+          a.classList.remove('mat-radio-checked')
+        }
+        b.classList.add('mat-radio-checked')
+      }
+  }
+
+  //@AggiunteAbbondo 
+  //Cambia il colore per gli altri due radio quanto si clicca sullo radio centrale 
+  public changeBoth(document_index:number)
+  {
+    let a=document.getElementById("radioStatementA."+document_index) as HTMLInputElement
+    let b=document.getElementById("radioStatementB."+document_index) as HTMLInputElement
+     
+    b.classList.remove('mat-radio-checked')
+    a.classList.remove('mat-radio-checked')
+  }
 }
 
   
