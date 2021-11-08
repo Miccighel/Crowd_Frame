@@ -1696,7 +1696,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@funktechno/texthighlighter@npm:^2.0.10":
+"@funktechno/texthighlighter@npm:^2.1.2":
   version: 2.1.2
   resolution: "@funktechno/texthighlighter@npm:2.1.2"
   checksum: cc7f81fc9302339716bc8b273c5b3cd3220dec3cbe21b90cc8ac275d47f8757fb16ade9e9f77d2c62bb1d723bcb8996933e72c4cf4ab700da6d89f64a81810af
@@ -1927,17 +1927,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*":
+"@types/node@npm:*, @types/node@npm:~16.11.6":
   version: 16.11.6
   resolution: "@types/node@npm:16.11.6"
   checksum: 6e19634766ff589d3d2f361c2196b671f8f133cdadc5ad347a621c360d8994b6c4fbccfb2ad9c60c588c593831a96497c9c6b77d2b7e91be723384b94f6368e7
-  languageName: node
-  linkType: hard
-
-"@types/node@npm:~15.14.1":
-  version: 15.14.9
-  resolution: "@types/node@npm:15.14.9"
-  checksum: 49f7f0522a3af4b8389aee660e88426490cd54b86356672a1fedb49919a8797c00d090ec2dcc4a5df34edc2099d57fc2203d796c4e7fbd382f2022ccd789eee7
   languageName: node
   linkType: hard
 
@@ -2419,7 +2412,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"aws-sdk@npm:^2.942.0":
+"aws-sdk@npm:^2.1023.0":
   version: 2.1023.0
   resolution: "aws-sdk@npm:2.1023.0"
   dependencies:
@@ -3134,17 +3127,17 @@ __metadata:
     "@angular/platform-browser": ~13.0.0
     "@angular/platform-browser-dynamic": ~13.0.0
     "@angular/router": ~13.0.0
-    "@funktechno/texthighlighter": ^2.0.10
+    "@funktechno/texthighlighter": ^2.1.2
     "@kolkov/angular-editor": ^1.2.0
-    "@types/node": ~15.14.1
-    aws-sdk: ^2.942.0
+    "@types/node": ~16.11.6
+    aws-sdk: ^2.1023.0
     crypto-es: ^1.2.7
     ngx-color-picker: ^11.0.0
-    ngx-countdown: ^12.0.0
+    ngx-countdown: ^12.0.1
     ngx-device-detector: ^2.1.1
     ngx-file-helpers: ^6.0.0
     ngx-ui-loader: ^11.0.0
-    rxjs: ^6.6.7
+    rxjs: ^7.4.0
     typescript: 4.4.4
     util: ^0.12.4
     zone.js: ~0.11.4
@@ -5726,7 +5719,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ngx-countdown@npm:^12.0.0":
+"ngx-countdown@npm:^12.0.1":
   version: 12.0.1
   resolution: "ngx-countdown@npm:12.0.1"
   dependencies:
@@ -7250,7 +7243,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rxjs@npm:6.6.7, rxjs@npm:^6.6.7":
+"rxjs@npm:6.6.7":
   version: 6.6.7
   resolution: "rxjs@npm:6.6.7"
   dependencies:
@@ -7259,7 +7252,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rxjs@npm:^7.2.0":
+"rxjs@npm:^7.2.0, rxjs@npm:^7.4.0":
   version: 7.4.0
   resolution: "rxjs@npm:7.4.0"
   dependencies:
