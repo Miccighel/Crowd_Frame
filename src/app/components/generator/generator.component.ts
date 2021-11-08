@@ -16,12 +16,9 @@ import {Dimension, Mapping} from "../../models/dimension";
 import {Instruction} from "../../models/instructions";
 import {SettingsSearchEngine} from "../../models/settingsSearchEngine";
 import {Attribute, SettingsTask} from "../../models/settingsTask";
-
-import {ColorPickerModule} from 'ngx-color-picker';
 import {Hit} from "../../models/hit";
 import {SettingsWorker} from "../../models/settingsWorker";
 import {MatChipInputEvent} from "@angular/material/chips";
-import {type} from "os";
 import {AngularEditorConfig} from "@kolkov/angular-editor";
 
 /*
@@ -70,6 +67,12 @@ interface SourceType {
 }
 
 /* STEP #6 - Task Settings */
+
+interface ModalityType {
+  value: string;
+  viewValue: string;
+}
+
 
 interface AnnotatorType {
   value: string;
@@ -162,6 +165,10 @@ export class GeneratorComponent implements OnInit {
   searchEngineSerialized: string
 
   /* STEP #6 - Task Settings */
+  modalityTypes: ModalityType[] = [
+    {value: 'pointwise', viewValue: 'Pointwise'},
+    {value: 'pairwise', viewValue: 'Pairwise'},
+  ];
   taskSettingsForm: FormGroup;
   taskSettingsFetched: SettingsTask
   taskSettingsSerialized: string
@@ -491,6 +498,7 @@ export class GeneratorComponent implements OnInit {
     this.batchesTreeInitialization = false
 
     this.taskSettingsForm = this._formBuilder.group({
+      modality: this.taskSettingsFetched ? this.taskSettingsFetched.modality ? this.taskSettingsFetched.modality : '' : '',
       allowed_tries: this.taskSettingsFetched ? this.taskSettingsFetched.allowed_tries ? this.taskSettingsFetched.allowed_tries : '' : '',
       time_check_amount: this.taskSettingsFetched ? this.taskSettingsFetched.time_check_amount ? this.taskSettingsFetched.time_check_amount : '' : '',
       hits: [],

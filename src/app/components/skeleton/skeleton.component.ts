@@ -186,11 +186,8 @@ export class SkeletonComponent implements OnInit {
 
   /* |--------- TASK SETTINGS - DECLARATION - (see task.json)---------| */
 
-  /* Name of the current task */
-  taskName: string;
-
-  /* Batch name of the current task */
-  batchName: string;
+   /* Name of the current task */
+  modality: string;
 
   /* Settings of the current task */
   settings: SettingsTask
@@ -302,9 +299,6 @@ export class SkeletonComponent implements OnInit {
       "tokenInput": this.tokenInput
     });
     this.tokenInputValid = false;
-
-    this.taskName = this.configService.environment.taskName;
-    this.batchName = this.configService.environment.batchName;
 
     /* |--------- HIT ELEMENTS - INITIALIZATION - (see: hit.json) ---------| */
 
@@ -609,8 +603,7 @@ export class SkeletonComponent implements OnInit {
       
       for (let index = 0; index < this.documentsAmount; index++) {
         let controlsConfig = {};
-        if(this.documents[index].pairwise_split)
-        {
+        if(this.settings.modality=='pairwise') {
           if(this.documents[index].pairwise_split) controlsConfig[`pairwise_value_selected`] = new FormControl('', [Validators.required]);
           for (let index_dimension = 0; index_dimension < this.dimensions.length; index_dimension++) {
             let dimension = this.dimensions[index_dimension];
@@ -647,6 +640,7 @@ export class SkeletonComponent implements OnInit {
               if (dimension.url) controlsConfig[`${dimension.name}_url`] = new FormControl('', [Validators.required, this.validateSearchEngineUrl.bind(this)]);
             }  
           }
+
         }else{
           
           for (let index_dimension = 0; index_dimension < this.dimensions.length; index_dimension++) {
@@ -1976,8 +1970,8 @@ export class SkeletonComponent implements OnInit {
 
       /* The full information about task setup (currentDocument.e., its document and questionnaire structures) are uploaded, only once */
       let taskData = {
-        task_id: this.taskName,
-        batch_name: this.batchName,
+        task_id: this.configService.environment.taskName,
+        batch_name: this.configService.environment.batchName,
         worker_id: this.worker.identifier,
         unit_id: this.unitId,
         token_input: this.tokenInput.value,

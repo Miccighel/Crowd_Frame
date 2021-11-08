@@ -2,6 +2,7 @@ import {type} from "os";
 
 export class SettingsTask {
 
+  modality: string;
   allowed_tries: number;
   time_check_amount: number;
   attributes: Array<Attribute>
@@ -20,6 +21,7 @@ export class SettingsTask {
         delete data['domains_to_filter']
       }
     }
+    this.modality =  data ? data['modality'] : null;
     this.allowed_tries =  data ? parseInt((data["allowed_tries"])) : 0;
     this.time_check_amount = data? parseInt((data["time_check_amount"])): 0;
     this.attributes = new Array<Attribute>()
