@@ -730,7 +730,6 @@ export class SkeletonComponent implements OnInit {
                             if (dimension.url) controlsConfig[`${dimension.name}_url`] = new FormControl('', [Validators.required, this.validateSearchEngineUrl.bind(this)]);
                         }
                     }
-                    console.log(this.documentsForm)
                     this.documentsForm[index] = this.formBuilder.group(controlsConfig)
                 }
 
