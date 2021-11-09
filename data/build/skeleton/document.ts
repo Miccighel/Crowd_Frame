@@ -2,10 +2,15 @@ export class Document {
 
 		index: number;
 		countdownExpired: boolean;
+		name: string;
+		statement: string;
+		claimant: string;
+		date: number;
+		originated_from: string;
 		id: string;
-		text: string;
-		pairwise_split: number;
-		statements: Array<String>;
+		job: string;
+		party: string;
+		source: string;
 
 		constructor (
 			index: number,
@@ -13,12 +18,15 @@ export class Document {
 		) {
 
 			this.index = index
+			this.name = data["name"]
+			this.statement = data["statement"]
+			this.claimant = data["claimant"]
+			this.date = data["date"]
+			this.originated_from = data["originated_from"]
 			this.id = data["id"]
-			this.text = data["text"]
-			this.pairwise_split = data["pairwise_split"]
-			this.statements = new Array<String>()
-			for (let index = 0; index < data["statements"].length; index++)
-			this.statements.push(data["statements"])
+			this.job = data["job"]
+			this.party = data["party"]
+			this.source = data["source"]
 
 		}
 
