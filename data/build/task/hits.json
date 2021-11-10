@@ -1,1 +1,155 @@
-[{"unit_id":"unit_0","token_input":"ABCDEFGHILM","token_output":"MNOPQRSTUVZ","documents_number":5,"documents":[{"id":"identifier_1","text":"Document_2","pairwise_split":true,"statements":[{"name":"REP_MOSTLYTRUE_doc8","statement":"6,400 Ohioans ... lost manufacturing jobs in the month of September.","claimant":"Mitt Romney","date":"2012","originated_from":"a news release","id":"7008.json","job":"Former governor","party":"REP","source":"Politifact"},{"name":"HIGH","statement":"Yes, We can!","claimant":"Barack Obama","date":"2008","originated_from":"Public appearance","id":"HIGH","job":"Former U.S. President","party":"DEM","source":"gold_question"}]},{"id":"identifier_2","text":"Document_2","pairwise_split":true,"statements":[{"name":"REP_TRUE_doc8","statement":"Ilana Shafran Mandels stake in Forest City Enterprises constitutes significantly less than 1 percent of the companys shares and any implication of a conflict of interest is legally incorrect.","claimant":"Josh Mandel","date":"2011","originated_from":"a news release","id":"4759.json","job":"Ohio treasurer","party":"REP","source":"Politifact"},{"name":"DEM_HALFTRUE_doc8","statement":"Secure Communities has a proven track record of enhancing public safety by focusing on violent offenders and those that pose a threat to our communities and our national security.","claimant":"Peter Kilmartin","date":"2011","originated_from":"a news release","id":"3136.json","job":"state representative","party":"DEM","source":"Politifact"}]},{"id":"identifier_3","text":"Document_3","pairwise_split":true,"statements":[{"name":"DEM_BARELYTRUE_doc8","statement":"Republican (small business tax cut) bill spends $80 million for better Google searches, not job creation","claimant":"Cory Mason","date":"2011","originated_from":"a news release","id":"3110.json","job":"State Assembly member, 62nd District","party":"DEM","source":"Politifact"},{"name":"DEM_FALSE_doc8","statement":"Says a $12.5 million incentive deal she approved for Abbott Laboratories contained strong protections for taxpayers if job creation goals were not met.","claimant":"Mary Burke","date":"2014","originated_from":"a news release","id":"9701.json","job":"Madison school board member","party":"DEM","source":"Politifact"}]},{"id":"identifier_4","text":"Document_4","pairwise_split":true,"statements":[{"name":"LOW","statement":"If I were not a Formula One pilot, I would be a football player.","claimant":"Abraham Lincoln","date":"2006","originated_from":"Public appearance","id":"LOW","job":"Former U.S. President","party":"REP","source":"gold_question"},{"name":"REP_LIE_doc8","statement":"Says I was the first governor in America to endorse Mitt Romney.","claimant":"Chris Christie","date":"2012","originated_from":"a news release","id":"7077.json","job":"Governor of New Jersey","party":"REP","source":"Politifact"}]},{"id":"identifier_5","text":"Document_5","pairwise_split":true,"statements":[{"name":"Labor_In_Between_doc1","statement":"If you take the unaccompanied children, I am their legal guardian. I am in a situation where I have to substitute the level of responsibility by law that would otherwise equate to a parent","claimant":"Tony Burke","date":"2013","originated_from":"","id":"4842978","job":"","party":"Labor","source":"ABC"},{"name":"Labor_Positive_doc3","statement":"Under this government, the tax to GDP ratio has, in the period weve been in office, [been] an average of 22.7 per cent","claimant":"Kevin Rudd","date":"2013","originated_from":"","id":"4892178","job":"","party":"Labor","source":"ABC"}]}]}]
+[
+    {
+        "unit_id": "unit_0",
+        "token_input": "ABCDEFGHILM",
+        "token_output": "MNOPQRSTUVZ",
+        "documents_number": 5,
+        "documents": [
+            {
+                "id": "identifier_1",
+                "text": "Document_2",
+                "pairwise_split": true,
+                "statements": [
+                    {
+                        "name": "REP_MOSTLYTRUE_doc8",
+                        "statement": "6,400 Ohioans ... lost manufacturing jobs in the month of September.",
+                        "claimant": "Mitt Romney",
+                        "date": "2012",
+                        "originated_from": "a news release",
+                        "id": "7008.json",
+                        "job": "Former governor",
+                        "party": "REP",
+                        "source": "Politifact"
+                    },
+                    {
+                        "name": "HIGH",
+                        "statement": "Yes, We can!",
+                        "claimant": "Barack Obama",
+                        "date": "2008",
+                        "originated_from": "Public appearance",
+                        "id": "HIGH",
+                        "job": "Former U.S. President",
+                        "party": "DEM",
+                        "source": "gold_question"
+                    }
+                ]
+            },
+            {
+                "id": "identifier_2",
+                "text": "Document_2",
+                "pairwise_split": true,
+                "statements": [
+                    {
+                        "name": "REP_TRUE_doc8",
+                        "statement": "Ilana Shafran Mandels stake in Forest City Enterprises constitutes significantly less than 1 percent of the companys shares and any implication of a conflict of interest is legally incorrect.",
+                        "claimant": "Josh Mandel",
+                        "date": "2011",
+                        "originated_from": "a news release",
+                        "id": "4759.json",
+                        "job": "Ohio treasurer",
+                        "party": "REP",
+                        "source": "Politifact"
+                    },
+                    {
+                        "name": "DEM_HALFTRUE_doc8",
+                        "statement": "Secure Communities has a proven track record of enhancing public safety by focusing on violent offenders and those that pose a threat to our communities and our national security.",
+                        "claimant": "Peter Kilmartin",
+                        "date": "2011",
+                        "originated_from": "a news release",
+                        "id": "3136.json",
+                        "job": "state representative",
+                        "party": "DEM",
+                        "source": "Politifact"
+                    }
+                ]
+            },
+            {
+                "id": "identifier_3",
+                "text": "Document_3",
+                "pairwise_split": true,
+                "statements": [
+                    {
+                        "name": "DEM_BARELYTRUE_doc8",
+                        "statement": "Republican (small business tax cut) bill spends $80 million for better Google searches, not job creation",
+                        "claimant": "Cory Mason",
+                        "date": "2011",
+                        "originated_from": "a news release",
+                        "id": "3110.json",
+                        "job": "State Assembly member, 62nd District",
+                        "party": "DEM",
+                        "source": "Politifact"
+                    },
+                    {
+                        "name": "DEM_FALSE_doc8",
+                        "statement": "Says a $12.5 million incentive deal she approved for Abbott Laboratories contained strong protections for taxpayers if job creation goals were not met.",
+                        "claimant": "Mary Burke",
+                        "date": "2014",
+                        "originated_from": "a news release",
+                        "id": "9701.json",
+                        "job": "Madison school board member",
+                        "party": "DEM",
+                        "source": "Politifact"
+                    }
+                ]
+            },
+            {
+                "id": "identifier_4",
+                "text": "Document_4",
+                "pairwise_split": true,
+                "statements": [
+                    {
+                        "name": "LOW",
+                        "statement": "If I were not a Formula One pilot, I would be a football player.",
+                        "claimant": "Abraham Lincoln",
+                        "date": "2006",
+                        "originated_from": "Public appearance",
+                        "id": "LOW",
+                        "job": "Former U.S. President",
+                        "party": "REP",
+                        "source": "gold_question"
+                    },
+                    {
+                        "name": "REP_LIE_doc8",
+                        "statement": "Says I was the first governor in America to endorse Mitt Romney.",
+                        "claimant": "Chris Christie",
+                        "date": "2012",
+                        "originated_from": "a news release",
+                        "id": "7077.json",
+                        "job": "Governor of New Jersey",
+                        "party": "REP",
+                        "source": "Politifact"
+                    }
+                ]
+            },
+            {
+                "id": "identifier_5",
+                "text": "Document_5",
+                "pairwise_split": true,
+                "statements": [
+                    {
+                        "name": "Labor_In_Between_doc1",
+                        "statement": "If you take the unaccompanied children, I am their legal guardian. I am in a situation where I have to substitute the level of responsibility by law that would otherwise equate to a parent",
+                        "claimant": "Tony Burke",
+                        "date": "2013",
+                        "originated_from": "",
+                        "id": "4842978",
+                        "job": "",
+                        "party": "Labor",
+                        "source": "ABC"
+                    },
+                    {
+                        "name": "Labor_Positive_doc3",
+                        "statement": "Under this government, the tax to GDP ratio has, in the period weve been in office, [been] an average of 22.7 per cent",
+                        "claimant": "Kevin Rudd",
+                        "date": "2013",
+                        "originated_from": "",
+                        "id": "4892178",
+                        "job": "",
+                        "party": "Labor",
+                        "source": "ABC"
+                    }
+                ]
+            }
+        ]
+    }
+]

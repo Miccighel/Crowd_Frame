@@ -1,0 +1,31 @@
+{
+    "ResponseMetadata": {
+        "RequestId": "WV64AHGV2K92A457",
+        "HostId": "sJzJXjuaXQ+edvkKRTFbys//gYv2TWEONi4MtIL+W12pc/Edf37Mjt7RL3Cjz1981Y2TgnZPml8=",
+        "HTTPStatusCode": 200,
+        "HTTPHeaders": {
+            "x-amz-id-2": "sJzJXjuaXQ+edvkKRTFbys//gYv2TWEONi4MtIL+W12pc/Edf37Mjt7RL3Cjz1981Y2TgnZPml8=",
+            "x-amz-request-id": "WV64AHGV2K92A457",
+            "date": "Wed, 14 Jul 2021 13:17:08 GMT",
+            "transfer-encoding": "chunked",
+            "server": "AmazonS3"
+        },
+        "RetryAttempts": 0
+    },
+    "CORSRules": [
+        {
+            "AllowedHeaders": [
+                "*"
+            ],
+            "AllowedMethods": [
+                "GET",
+                "HEAD",
+                "PUT"
+            ],
+            "AllowedOrigins": [
+                "*"
+            ],
+            "MaxAgeSeconds": 3000
+        }
+    ]
+}
