@@ -85,3 +85,5 @@ data/build/skeleton/goldChecker.ts
 data/result/*
 
 .cache/*
+
+.aws
