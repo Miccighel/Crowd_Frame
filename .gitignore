@@ -65,6 +65,7 @@ data/.env
 # File generated when configuring AWS
 data/aws/policy/*
 data/aws/generated/*
+data/aws/*
 
 
 .vscode/settings.json
