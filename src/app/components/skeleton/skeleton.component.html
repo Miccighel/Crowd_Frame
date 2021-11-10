@@ -653,7 +653,9 @@
                                                     *ngIf="dimension.url" id="app-crowd-xplorer-{{i}}-{{j}}"
                                                     (resultEmitter)="storeSearchEngineRetrievedResponse($event, document, dimension)"
                                                     (queryEmitter)="storeSearchEngineUserQuery($event, document, dimension)"
-                                                    (selectedRowEmitter)="storeSearchEngineSelectedResponse($event, document, dimension)">
+                                                    (selectedRowEmitter)="storeSearchEngineSelectedResponse($event, document, dimension)"
+                                                    [countdownExpired]="this.countdownsExpired[i]"
+                                                    [countdownBehavior]="this.settings.countdown_behavior">
                                             </app-crowd-xplorer>
                                             <!-- Dimension search engine url field markup (hidden) -->
                                             <mat-form-field *ngIf="dimension.url" class="url-field">
@@ -875,9 +877,9 @@
                                 <div *ngIf="dimension.url" class="dimension-container dimension-url">
                                     <div class="dimension-content search-engine">
                                         <app-crowd-xplorer *ngIf="dimension.url" id="app-crowd-xplorer-{{i}}-{{j}}"
-                                                           (resultEmitter)="storeSearchEngineRetrievedResponse($event, i, j)"
-                                                           (queryEmitter)="storeSearchEngineUserQuery($event, i, j)"
-                                                           (selectedRowEmitter)="storeSearchEngineSelectedResponse($event, i, j)"
+                                                           (resultEmitter)="storeSearchEngineRetrievedResponse($event, document, dimension)"
+                                                           (queryEmitter)="storeSearchEngineUserQuery($event, document, dimension)"
+                                                           (selectedRowEmitter)="storeSearchEngineSelectedResponse($event, document, dimension)"
                                                            [countdownExpired]="this.countdownsExpired[i]"
                                                            [countdownBehavior]="this.settings.countdown_behavior"
                                         ></app-crowd-xplorer>

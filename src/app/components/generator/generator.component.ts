@@ -1340,11 +1340,9 @@ export class GeneratorComponent {
 
             for (let hit of hits) {
                 for (let document of hit['documents']) {
-                    console.log(document)
                     if('statements' in document) {
                         Object.entries(document['statements'][0]).forEach(
                             ([attribute, value]) => {
-                                console.log(attribute, value)
                                 if (!this.hitsAttributesValues[attribute].includes(value)) this.hitsAttributesValues[attribute].push(value)
                             }
                         )

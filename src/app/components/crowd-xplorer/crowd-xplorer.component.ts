@@ -157,8 +157,7 @@ export class CrowdXplorer {
         /* |--------- SEARCH ENGINE SETTINGS - INITIALIZATION ---------| */
 
         this.apiKey = this.configService.environment.bing_api_key
-        this.loadSettings().then(() => {
-        })
+        this.loadSettings()
 
     }
 

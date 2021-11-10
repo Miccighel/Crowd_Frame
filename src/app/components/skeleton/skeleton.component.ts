@@ -597,7 +597,6 @@ export class SkeletonComponent implements OnInit {
             let rawDocuments = this.hit.documents;
             for (let index = 0; index < rawDocuments.length; index++) {
                 let currentDocument = rawDocuments[index];
-                //console.log(currentDocument['time'])
                 this.documents.push(new Document(index, currentDocument));
             }
 
@@ -676,7 +675,7 @@ export class SkeletonComponent implements OnInit {
 
                 for (let index = 0; index < this.documentsAmount; index++) {
                     let controlsConfig = {};
-                    if (this.settings.modality=='pairwise') {
+                    if (this.settings.modality == 'pairwise') {
                         if (this.documents[index]['pairwise_split']) controlsConfig[`pairwise_value_selected`] = new FormControl('', [Validators.required]);
                         for (let index_dimension = 0; index_dimension < this.dimensions.length; index_dimension++) {
                             let dimension = this.dimensions[index_dimension];
@@ -831,24 +830,25 @@ export class SkeletonComponent implements OnInit {
                 /* The task is now started and the worker is looking at the first questionnaire, so the first start timestamp is saved */
                 this.timestampsStart[0].push(Math.round(Date.now() / 1000));
 
-                /* |--------- FINALIZATION ---------| */
-
-                /* Section service gets updated with loaded values */
-                this.updateAmounts()
-
-                /* Detect changes within the DOM and update the page */
-                this.changeDetector.detectChanges();
-
-                /* If there are no questionnaires and the countdown time is set, enable the first countdown */
-                if (this.settings.countdown_time >= 0 && this.questionnaireAmountStart == 0) this.countdown.toArray()[0].begin();
-
-                /* trigger the changeDetection again */
-                this.changeDetector.detectChanges();
-
-                /* The loading spinner is stopped */
-                this.ngxService.stop();
-
             }
+
+            /* |--------- FINALIZATION ---------| */
+
+            /* Section service gets updated with loaded values */
+            this.updateAmounts()
+
+            /* Detect changes within the DOM and update the page */
+            this.changeDetector.detectChanges();
+
+            /* If there are no questionnaires and the countdown time is set, enable the first countdown */
+            if (this.settings.countdown_time >= 0 && this.questionnaireAmountStart == 0) {
+                this.countdown.toArray()[0].begin();
+                this.changeDetector.detectChanges();
+            }
+
+            /* The loading spinner is stopped */
+            this.ngxService.stop();
+
         }
     }
 
