@@ -893,6 +893,8 @@ mat-step form mat-card-content, mat-step form mat-card-actions {
   margin: 20px;
   z-index: 110;
   background-color: #FCFCFC;
+  width: 100%;
+  
 }
 .divsplit{
   display: table;
@@ -935,7 +937,7 @@ mat-step form mat-card-content, mat-step form mat-card-actions {
 .boxvaluessplit{
   width: 100%;
   height: 100%;
-  margin-left: 10%;
+  margin-left: 3%;
   margin-top: 15px;
   margin-bottom: 15px;
 }

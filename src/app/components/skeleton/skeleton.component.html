@@ -208,7 +208,16 @@
                     <mat-card-title>Statement Nr. {{i + 1}}</mat-card-title>
                     <mat-divider [inset]="true"></mat-divider>
                     <mat-card-content class="pt-16px">
-
+                    <!-- Evaluation instructions markup -->
+                        <div *ngIf="this.instructionsAmount>0" class="evaluation-instructions">
+                            <mat-divider [inset]="true"></mat-divider>
+                            <h2>Instructions</h2>
+                            <mat-divider [inset]="true"></mat-divider>
+                            <div *ngFor="let instruction of this.instructions">
+                                <p>{{instruction.caption}}</p>
+                                <div [innerHTML]="instruction.text"></div>
+                            </div>
+                        </div>
                         <!--- Countdown markup --->
                         <div class="countdown sticky" *ngIf="this.settings.countdown_time>=0">
                             <h1 class="text-lighter m-0">
@@ -262,6 +271,7 @@
 
                         <ng-template #pairwiseElementSplit>
                             <ng-container>
+                            <div>
                                 <h2 class="titlepairwise">Choose the statement</h2>
                                 <mat-radio-group formControlName="pairwise_value_selected">
                                     <div class="pairwise-cointainer">
@@ -309,24 +319,24 @@
                                                 <div class="parent">
                                                     <h3 class="statementTitlesplit">Statement B</h3>
                                                     <div class="boxtextsplit">
-                                                        {{document.statements[1][0].statement}}
+                                                        {{document.statements[0][1].statement}}
                                                     </div>
                                                     <div class="boxvaluessplit">
                                                         <span class="captionsplit">
                                                             <label>Claimant:</label>
-                                                            {{document.statements[1][0].claimant}}
+                                                            {{document.statements[0][1].claimant}}
                                                         </span>
                                                         <span class="captionsplit">
                                                             <label>Date:</label>
-                                                            {{document.statements[1][0].date}}
+                                                            {{document.statements[0][1].date}}
                                                         </span>
                                                         <span class="captionsplit">
                                                             <label>Originated-from:</label>
-                                                            {{document.statements[1][0].originated_from}}
+                                                            {{document.statements[0][1].originated_from}}
                                                         </span>
                                                         <span class="captionsplit">
                                                             <label>Job:</label>
-                                                            {{document.statements[1][0].job}}
+                                                            {{document.statements[0][1].job}}
                                                         </span>
                                                     </div>
                                                     <!--
@@ -357,7 +367,9 @@
                                             changeColor: cambia il colore dello statement
                                             changeColor: cambia il colore del radio-button(radioStatement) cosi il simula il click sul radio button. Per dubbi chieda pure
                                         -->
-                                    <div class="div_radiobutton_check_pairwise">
+                                </mat-radio-group>
+                            </div>
+                            <div class="div_radiobutton_check_pairwise">
                                         <mat-radio-button value="A" id="radioStatementA.{{document.index}}" class="radiobutton_check_pairwise"
                                                           (change)="storeDimensionValue($event, i, document.index) ; changeColor($event,document.index); changeColorRadio($event,document.index)" disableRipple="true">
                                             <span class="spanbutton">Statement A</span>
@@ -371,7 +383,6 @@
                                             <span class="spanbutton">Statement B</span>
                                         </mat-radio-button>
                                     </div>
-                                </mat-radio-group>
                             </ng-container>
                         </ng-template>
 
@@ -599,16 +610,7 @@
 
                         </ng-container>
 
-                        <!-- Evaluation instructions markup -->
-                        <div *ngIf="this.instructionsAmount>0" class="evaluation-instructions">
-                            <mat-divider [inset]="true"></mat-divider>
-                            <h2>Instructions</h2>
-                            <mat-divider [inset]="true"></mat-divider>
-                            <div *ngFor="let instruction of this.instructions">
-                                <p>{{instruction.caption}}</p>
-                                <div [innerHTML]="instruction.text"></div>
-                            </div>
-                        </div>
+                        
 
                         <ng-template #dimensionList let-dimensions="dimensions" let-i="i">
 
@@ -628,8 +630,8 @@
 
                                     <!-- Dimension name markup -->
                                     <!--@AggiunteAbbondo Cambia la classe in base sei ci troviamo in modalità pairwise o meno-->
-                                    <div [ngClass]="this.settings.modality=='pairwise' && dimension.pairwise ? 'dimension-content-split' : 'dimension-name'">
-                                        <div [ngClass]="{'dimension-name-center': this.settings.modality=='pairwise' && dimension.pairwise}">
+                                    <div [ngClass]="this.settings.modality=='pairwise'? 'dimension-content-split' : 'dimension-name'">
+                                        <div [ngClass]="{'dimension-name-center': this.settings.modality=='pairwise'}">
                                             <mat-divider [inset]="true"></mat-divider>
                                             <h2 *ngIf="!dimension.name_pretty">{{capitalize(dimension.name)}}</h2>
                                             <h2 *ngIf="dimension.name_pretty">{{capitalize(dimension.name_pretty)}}</h2>
@@ -639,7 +641,7 @@
 
                                     <!-- Dimension description markup -->
                                     <!-- @AggiunteAbbondo Cambiamo la classe in base sei ci troviamo in modalità pairwise o meno-->
-                                    <div *ngIf="dimension.description" [ngClass]="this.settings.modality=='pairwise' && dimension.pairwise ? 'dimension-name-center' : 'dimension-container dimension-description'">
+                                    <div *ngIf="dimension.description" [ngClass]="this.settings.modality=='pairwise'? 'dimension-name-center' : 'dimension-container dimension-description'">
                                         <div class="dimension-content" ngClass=" 'dimension-split-inside' 'dimension-content'">
                                             <p>{{dimension.description}}</p>
                                         </div>
@@ -679,14 +681,14 @@
                                           @AggiunteAbbondo
                                           Cambia la classe del div  in base se ci troviamo in modalità pairwise o meno
                                         -->
-                                        <div [ngClass]="this.settings.modality=='pairwise' && dimension.pairwise ? 'dimension-content-split' : 'dimension-content'">
+                                        <div [ngClass]="this.settings.modality=='pairwise'? 'dimension-content-split' : 'dimension-content'">
 
                                             <!-- Vertical style markup -->
                                             <ng-container *ngIf="dimension.style.orientation=='vertical'">
 
                                                 <!-- Categorical scale markup -->
-                                                <ng-container *ngIf="dimension.scale.type=='categorical'  && !dimension.pairwise  || dimension.scale.type=='categorical' && !(this.settings.modality=='pairwise')">
-                                                    <div [ngClass]="{'dimension-split-inside': this.settings.modality=='pairwise' && dimension.pairwise}" *ngIf="!(this.settings.modality=='pairwise')">
+                                                <ng-container *ngIf="dimension.scale.type=='categorical' && !(this.settings.modality=='pairwise')">
+                                                    <div [ngClass]="{'dimension-split-inside': this.settings.modality=='pairwise'}" *ngIf="!(this.settings.modality=='pairwise')">
                                                         <mat-radio-group aria-labelledby="radio-button-label" class="radio-button-group" formControlName="{{(dimension.name).concat('_value')}}">
                                                             <mat-radio-button *ngFor="let mapping of dimension.scale.mapping let k=index"
                                                                               class="radio-button" value="{{mapping.value}}"
@@ -697,12 +699,13 @@
                                                             </mat-radio-button>
                                                         </mat-radio-group>
                                                     </div>
+                                                    ciao
                                                 </ng-container>
 
                                                 <!-- Categorical scale markup pairwise split -->
                                                 <!--  @AggiunteAbbondo Scale Catagorical ma in modalità pairwise -->
-                                                <ng-container *ngIf="dimension.scale.type=='categorical' && this.settings.modality=='pairwise' && dimension.pairwise">
-                                                    <div [ngClass]="{'dimension-split-inside, dimension-box':dimension.pairwise }" *ngFor="let test of document.statements; let j=index">
+                                                <ng-container *ngIf="dimension.scale.type=='categorical' && this.settings.modality=='pairwise'">
+                                                    <div [ngClass]="{'dimension-split-inside, dimension-box':this.settings.modality=='pairwise'}" *ngFor="let test of document.statements; let j=index">
                                                         <p class="spanDocument"> Answer for Statement {{changeletter(j)}}</p>
                                                         <mat-radio-group style="margin-left: 10px;" aria-labelledby="radio-button-label" class="radio-button-group" formControlName="{{(dimension.name).concat('_value_').concat(j)}}">
                                                             <mat-radio-button *ngFor="let mapping of dimension.scale.mapping let k=index"

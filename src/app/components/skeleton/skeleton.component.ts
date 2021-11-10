@@ -680,21 +680,7 @@ export class SkeletonComponent implements OnInit {
                         if (this.documents[index]['pairwise_split']) controlsConfig[`pairwise_value_selected`] = new FormControl('', [Validators.required]);
                         for (let index_dimension = 0; index_dimension < this.dimensions.length; index_dimension++) {
                             let dimension = this.dimensions[index_dimension];
-                            if (!dimension.pairwise) {
-                                if (dimension.scale) {
-                                    if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.required]);
-                                    if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.required]);
-                                    if (dimension.scale.type == "magnitude_estimation") {
-                                        if ((<ScaleMagnitude>dimension.scale).lower_bound) {
-                                            controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min), Validators.required]);
-                                        } else {
-                                            controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min + 1), Validators.required]);
-                                        }
-                                    }
-                                    if (dimension.justification) controlsConfig[`${dimension.name}_justification`] = new FormControl('', [Validators.required, this.validateJustification.bind(this)])
-                                    if (dimension.url) controlsConfig[`${dimension.name}_url`] = new FormControl('', [Validators.required, this.validateSearchEngineUrl.bind(this)]);
-                                }
-                            } else if (dimension.scale) {
+                            if (dimension.scale) {
 
                                 for (let i = 0; i < this.documents[index]['statements'].length; i++) {
                                     if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value_${i}`] = new FormControl('', [Validators.required]);
@@ -896,6 +882,7 @@ export class SkeletonComponent implements OnInit {
      */
     public storeDimensionValue(valueData: Object, document: number, dimension: number) {
         /* The current document, dimension and user query are copied from parameters */
+        console.log("Sucaaaa")
         let currentDocument = document
         let currentDimension = dimension
         /* A reference to the current dimension is saved */
@@ -2518,6 +2505,7 @@ export class SkeletonComponent implements OnInit {
     //Metodo che controllo se le due dimension(Scale) precedenti sono state cliccate
     public checkdimension(documentnumber: number, dimensionnumber: number) {
         if (this.checkedValue[documentnumber][dimensionnumber][0] == true && this.checkedValue[documentnumber][dimensionnumber][1] == true) {
+            console.log("Porcodiooo")
             return true
         } else {
             return false
