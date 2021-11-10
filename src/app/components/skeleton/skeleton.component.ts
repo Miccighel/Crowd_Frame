@@ -590,6 +590,8 @@ export class SkeletonComponent implements OnInit {
             /* The array of documents is initialized */
             this.documents = new Array<Document>();
 
+            /* A form for each document is initialized */
+            this.documentsForm = new Array<FormGroup>();
 
             /*  Each document of the current hit is parsed using the Document interface.  */
             let rawDocuments = this.hit.documents;
@@ -674,8 +676,8 @@ export class SkeletonComponent implements OnInit {
 
                 for (let index = 0; index < this.documentsAmount; index++) {
                     let controlsConfig = {};
-                    if (this.settings.modality == 'pairwise') {
-                        if (this.documents[index].pairwise_split) controlsConfig[`pairwise_value_selected`] = new FormControl('', [Validators.required]);
+                    if (this.settings.modality=='pairwise') {
+                        if (this.documents[index]['pairwise_split']) controlsConfig[`pairwise_value_selected`] = new FormControl('', [Validators.required]);
                         for (let index_dimension = 0; index_dimension < this.dimensions.length; index_dimension++) {
                             let dimension = this.dimensions[index_dimension];
                             if (!dimension.pairwise) {
@@ -694,7 +696,7 @@ export class SkeletonComponent implements OnInit {
                                 }
                             } else if (dimension.scale) {
 
-                                for (let i = 0; i < this.documents[index].statements.length; i++) {
+                                for (let i = 0; i < this.documents[index]['statements'].length; i++) {
                                     if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value_${i}`] = new FormControl('', [Validators.required]);
                                     if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value_${i}`] = new FormControl('', [Validators.required]);
                                     if (dimension.scale.type == "magnitude_estimation") {
@@ -716,8 +718,6 @@ export class SkeletonComponent implements OnInit {
                             if (dimension.scale) {
                                 if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.required]);
                                 if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value`] = new FormControl(((<ScaleInterval>dimension.scale).min), [Validators.required]);
-                                if (dimension.scale.type == "pairwise") controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.required]);
-
                                 if (dimension.scale.type == "magnitude_estimation") {
                                     if ((<ScaleMagnitude>dimension.scale).lower_bound) {
                                         controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min), Validators.required]);

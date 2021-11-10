@@ -106,7 +106,7 @@
                         <mat-divider [inset]="true"></mat-divider>
                         <mat-card-title *ngIf="questionnaire.type=='standard'">Please answer the following questions</mat-card-title>
                         <mat-card-title *ngIf="questionnaire.type=='crt'">Please answer the following question</mat-card-title>
-                        <mat-card-title *ngIf="questionnaire.type=='likert'">Please assess the following claims</mat-card-title>
+                        <mat-card-title *ngIf="questionnaire.type=='likert'">Please assess the following questions</mat-card-title>
                         <mat-divider [inset]="true"></mat-divider>
 
                         <!-- Standard questionnaire markup -->
@@ -203,9 +203,9 @@
                 <mat-card>
 
                     <!-- Document header markup -->
-                    <ng-template matStepLabel> C{{document.index + 1}}</ng-template>
+                    <ng-template matStepLabel> S{{document.index + 1}}</ng-template>
                     <mat-divider [inset]="true"></mat-divider>
-                    <mat-card-title>Claim Nr. {{i + 1}}</mat-card-title>
+                    <mat-card-title>Statement Nr. {{i + 1}}</mat-card-title>
                     <mat-divider [inset]="true"></mat-divider>
                     <mat-card-content class="pt-16px">
 
@@ -1121,7 +1121,6 @@
                             </p>
                         </mat-card-actions>
 
-                        >>>>>>> master
                     </mat-card>
                 </form>
             </div>

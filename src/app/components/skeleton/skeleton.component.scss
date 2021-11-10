@@ -832,18 +832,16 @@ mat-step form mat-card-content, mat-step form mat-card-actions {
   align-items: flex-end;
 }
 
-.ng-star-inserted{
-  padding: 0;
-}
-
 /*
   Classes when the statement is not selected
-  @AggiunteAbbondo 
+  @AggiunteAbbondo
 */
 
 .pairwise_value_selected{
   text-align: center;width:100%;margin:0 auto
 }
+
+/*
 .statement{
   width: 500px;
   background-color: #FCFCFC;
@@ -854,7 +852,7 @@ mat-step form mat-card-content, mat-step form mat-card-actions {
   border-radius:5px;
   cursor: pointer;
   box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
-}
+*/
 
 .boxtext{
   width: 80%;
@@ -884,8 +882,8 @@ mat-step form mat-card-content, mat-step form mat-card-actions {
 
 
 /*
-  Classes pairwise splited 
-  @AggiunteAbbondo 
+  Classes pairwise splited
+  @AggiunteAbbondo
 */
 .pairwise-cointainer{
 
@@ -960,7 +958,7 @@ mat-step form mat-card-content, mat-step form mat-card-actions {
 
 /*
   Pairwise splitted dimension css
-  @AggiunteAbbondo 
+  @AggiunteAbbondo
 */
 .dimension-content-split{
   display: table;
@@ -971,7 +969,7 @@ mat-step form mat-card-content, mat-step form mat-card-actions {
 .dimension-split-inside{
   display: table-cell;
   margin-bottom: 30px;
-  
+
 }
 .spanDocument{
   font-size: 15px;
@@ -994,7 +992,7 @@ mat-step form mat-card-content, mat-step form mat-card-actions {
 .radiobutton_check_pairwise{
   margin-left:25px;
   margin-bottom: 20px;
- 
+
 }
 
 .spanbutton{
