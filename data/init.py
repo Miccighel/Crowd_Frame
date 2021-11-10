@@ -429,7 +429,10 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             "s3:PutBucketPolicy",
             "s3:GetBucketCORS",
             "s3:PutBucketCORS",
-            "s3:PutObject"
+            "s3:PutObject",
+            "s3:HeadObject",
+            "s3:ListObjects",
+            "dynamodb:CreateTable",
         ]
     }
 
