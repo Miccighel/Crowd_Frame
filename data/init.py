@@ -34,6 +34,7 @@ mturk_user_name = 'mturk-user'
 
 os.chdir("data/")#for Windows
 #os.chdir("../data/")
+#
 
 folder_aws_path = "aws/"
 folder_aws_generated_path = "aws/generated/"
