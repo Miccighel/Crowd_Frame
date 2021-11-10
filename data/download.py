@@ -13,8 +13,8 @@ from pathlib import Path
 import boto3
 import pandas as pd
 from dotenv import load_dotenv
-from IPython.display import display
 import datetime
+import xml.etree.ElementTree as Xml
 from rich.console import Console
 from tqdm import tqdm
 
@@ -65,7 +65,6 @@ def load_file_names(p):
 
 def sanitize_string(x):
     try:
-        x = re.sub(' +', ' ', x)
         x = x.replace("'", "")
         x = x.replace('"', '')
         x = x.replace('\n', '')
@@ -246,6 +245,19 @@ with console.status(f"Downloading HITs, Token: {next_token}, Total: {token_count
                 if len(available_records) <= 0:
 
                     hit_status = mturk.get_hit(HITId=hit_id)['HIT']
+                    token_input = None
+                    token_output = None
+                    question_parsed = Xml.fromstring(hit_status['Question'])
+                    for child in question_parsed:
+                        for string_splitted in child.text.split("\n"):
+                            string_sanitized = sanitize_string(string_splitted)
+                            if len(string_sanitized)>0:
+                                if 'tokenInputtext' in string_sanitized:
+                                    token_input = string_sanitized.replace('tokenInputtext','')
+                                if 'tokenOutputonchangeiftokenOutputval' in string_sanitized:
+                                    token_output = string_sanitized.replace('tokenOutputonchangeiftokenOutputval', '').split(" ")[0]
+                    hit_status[f"Input.token_input"] = token_input
+                    hit_status[f"Input.token_output"] = token_output
                     hit_status.pop('Question')
                     hit_status.pop('QualificationRequirements')
 
@@ -255,6 +267,15 @@ with console.status(f"Downloading HITs, Token: {next_token}, Total: {token_count
                     hit_assignments = mturk.list_assignments_for_hit(HITId=hit_id, AssignmentStatuses=['Approved'])
                     for hit_assignment in hit_assignments['Assignments']:
 
+                        answer_parsed = Xml.fromstring(hit_assignment['Answer'])[0]
+                        tag_title = None
+                        tag_value = None
+                        for child in answer_parsed:
+                            if 'QuestionIdentifier' in child.tag:
+                                tag_title = child.text
+                            if 'FreeText' in child.tag:
+                                tag_value = child.text
+                        hit_assignment[f"Answer.{tag_title}"] = tag_value
                         hit_assignment.pop('Answer')
 
                         for hit_assignment_attribute, hit_assignment_value in hit_assignment.items():
@@ -277,24 +298,26 @@ console.rule("2 - Fetching task configuration")
 hit_df = pd.read_csv(hit_data_path)
 
 prefix = f"{task_name}/"
-
-def obj_last_modified(myobj):
-    return myobj.last_modified
-
 task_config_folder = f"{folder_result_path}/Task/"
 if not os.path.exists(task_config_folder):
-    os.makedirs(task_config_folder, exist_ok=True)
-    for bucket_object in sorted(bucket.objects.filter(Prefix=prefix), key=obj_last_modified, reverse=False)[:8]:
-        if "Task" in bucket_object.key:
-            file_name = bucket_object.key.split("/")[-1]
-            destination_path = f"{task_config_folder}{file_name}"
+    response = s3.list_objects(Bucket=aws_private_bucket, Prefix=prefix, Delimiter='/')
+    for path in response['CommonPrefixes']:
+        batch_name = path.get('Prefix').split("/")[1]
+        response_batch = s3.list_objects(Bucket=aws_private_bucket, Prefix=f"{prefix}{batch_name}/Task/", Delimiter='/')
+        os.makedirs(f"{task_config_folder}{batch_name}/", exist_ok=True)
+        for path_batch in response_batch['Contents']:
+            file_key = path_batch['Key']
+            file_name = file_key.split('/')[-1]
+            destination_path = f"{task_config_folder}{batch_name}/{file_name}"
             if not os.path.exists(destination_path):
-                console.print(f"Source: [cyan on white]{bucket_object.key}[/cyan on white], Destination: [cyan on white]{task_config_folder}{file_name}[/cyan on white]")
-                s3.download_file(aws_private_bucket, bucket_object.key, f"{task_config_folder}{file_name}")
+                console.print(f"Source: [cyan on white]{file_key}[/cyan on white], Destination: [cyan on white]{destination_path}[/cyan on white]")
+                s3.download_file(aws_private_bucket, file_key, f"{destination_path}")
             else:
-                console.print(f"Source: [cyan on white]{bucket_object.key}[/cyan on white] [yellow]already detected[/yellow], skipping download")
+                console.print(f"Source: [cyan on white]{file_key}[/cyan on white] [yellow]already detected[/yellow], skipping download")
 else:
     console.print(f"Task configuration [yellow]already detected[/yellow], skipping download")
+
+assert False
 
 console.rule("3 - Fetching worker data")
 

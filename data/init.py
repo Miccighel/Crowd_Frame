@@ -141,6 +141,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                     "s3:PutBucketCORS",
                     "s3:PutObject",
                     "s3:PutObjectAcl",
+                    "s3:HeadObject",
                     "s3:ListObjects",
                     "sqs:ListQueues",
                     "sqs:CreateQueue",
@@ -397,6 +398,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             "s3:GetBucketCORS",
             "s3:PutBucketCORS",
             "s3:PutObject",
+            "s3:HeadObject",
             "s3:ListObjects",
             "sqs:ListQueues",
             "sqs:CreateQueue",
@@ -417,6 +419,9 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             "iam:ListAccessKeys",
             "iam:DeleteAccessKey",
             "iam:CreateAccessKey",
+            "iam:CreateRole",
+            "iam:AttachRolePolicy",
+            "iam:PassRole",
             "s3:ListAllMyBuckets",
             "s3:CreateBucket",
             "s3:PutBucketPublicAccessBlock",
@@ -1827,42 +1832,42 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     iam_path = f"{folder_tasks_batch_config_path}admin.json"
     key = f"{s3_private_generator_path}admin.json"
-    upload(iam_path, aws_private_bucket, key, "Admin Credentials", "application/json")
+    upload(iam_path, aws_private_bucket, key, "Admin Credentials", "application/json", 'bucket-owner-full-control')
 
     if bool(deploy_config):
         console.print(f"[white on green bold]Task configuration")
 
         iam_path = f"{folder_tasks_batch_task_path}hits.json"
         key = f"{s3_private_task_path}hits.json"
-        upload(iam_path, aws_private_bucket, key, "Hits", "application/json")
+        upload(iam_path, aws_private_bucket, key, "Hits", "application/json", 'bucket-owner-full-control')
 
         iam_path = f"{folder_tasks_batch_task_path}instructions_dimensions.json"
         key = f"{s3_private_task_path}instructions_dimensions.json"
-        upload(iam_path, aws_private_bucket, key, "Assessment Instructions", "application/json")
+        upload(iam_path, aws_private_bucket, key, "Assessment Instructions", "application/json", 'bucket-owner-full-control')
 
         iam_path = f"{folder_tasks_batch_task_path}instructions_main.json"
         key = f"{s3_private_task_path}instructions_main.json"
-        upload(iam_path, aws_private_bucket, key, "General Instructions", "application/json")
+        upload(iam_path, aws_private_bucket, key, "General Instructions", "application/json", 'bucket-owner-full-control')
 
         iam_path = f"{folder_tasks_batch_task_path}questionnaires.json"
         key = f"{s3_private_task_path}questionnaires.json"
-        upload(iam_path, aws_private_bucket, key, "Questionnaires", "application/json")
+        upload(iam_path, aws_private_bucket, key, "Questionnaires", "application/json", 'bucket-owner-full-control')
 
         iam_path = f"{folder_tasks_batch_task_path}dimensions.json"
         key = f"{s3_private_task_path}dimensions.json"
-        upload(iam_path, aws_private_bucket, key, "Dimensions", "application/json")
+        upload(iam_path, aws_private_bucket, key, "Dimensions", "application/json", 'bucket-owner-full-control')
 
         iam_path = f"{folder_tasks_batch_task_path}search_engine.json"
         key = f"{s3_private_task_path}search_engine.json"
-        upload(iam_path, aws_private_bucket, key, "Search Engine", "application/json")
+        upload(iam_path, aws_private_bucket, key, "Search Engine", "application/json", 'bucket-owner-full-control')
 
         iam_path = f"{folder_tasks_batch_task_path}task.json"
         key = f"{s3_private_task_path}task.json"
-        upload(iam_path, aws_private_bucket, key, "Task Settings", "application/json")
+        upload(iam_path, aws_private_bucket, key, "Task Settings", "application/json", 'bucket-owner-full-control')
 
         iam_path = f"{folder_tasks_batch_task_path}workers.json"
         key = f"{s3_private_task_path}workers.json"
-        upload(iam_path, aws_private_bucket, key, "Workers Settings", "application/json")
+        upload(iam_path, aws_private_bucket, key, "Workers Settings", "application/json", 'bucket-owner-full-control')
 
     console.print(f"[white on purple bold]Angular Application")
 
