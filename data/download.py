@@ -12,13 +12,16 @@ from distutils.util import strtobool
 from pathlib import Path
 import boto3
 import pandas as pd
+import pprint
 from dotenv import load_dotenv
 import datetime
 import xml.etree.ElementTree as Xml
 from rich.console import Console
 from tqdm import tqdm
+from botocore.errorfactory import ClientError
 
 console = Console()
+pp = pprint.PrettyPrinter(indent=4)
 
 env_path = Path('.') / '.env'
 load_dotenv(dotenv_path=env_path)
@@ -41,12 +44,14 @@ bing_api_key = os.getenv('bing_api_key')
 ipInfoToken = "fa8ac3a2ed1ac4"
 userStackToken = "a5c31ecd7171e421ebe21df5c3ac040d"
 
+
 def serialize_json(folder, filename, data):
     if not os.path.exists(folder):
         os.makedirs(folder, exist_ok=True)
     with open(f"{folder}{filename}", 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=4, default=str)
         f.close()
+
 
 def load_json(p):
     if os.path.exists(p):
@@ -56,12 +61,14 @@ def load_json(p):
     else:
         return {}
 
+
 def load_file_names(p):
     files = []
     for r, d, f in os.walk(p):
         for caf in f:
             files.append(caf)
     return files
+
 
 def sanitize_string(x):
     try:
@@ -75,6 +82,7 @@ def sanitize_string(x):
         return x
     except TypeError:
         return np.nan
+
 
 def load_column_names(questionnaires, dimensions, documents):
     columns = [
@@ -174,9 +182,13 @@ def load_column_names(questionnaires, dimensions, documents):
 
     return columns
 
+
 console.rule("0 - Initialization")
 
 os.chdir("../data/")
+
+console.print("[bold]Download.py[/bold] script launched")
+console.print(f"Working directory: [bold]{os.getcwd()}[/bold]")
 
 folder_result_path = f"result/{task_name}/"
 os.makedirs(folder_result_path, exist_ok=True)
@@ -188,20 +200,48 @@ s3 = boto_session.client('s3', region_name=aws_region)
 s3_resource = boto_session.resource('s3')
 bucket = s3_resource.Bucket(aws_private_bucket)
 dynamo_db = boto3.client('dynamodb', region_name=aws_region)
-
-console.print("[bold]Download.py[/bold] script launched")
-console.print(f"Working directory: [bold]{os.getcwd()}[/bold]")
-
-console.rule("1 - Fetching HITs")
-
-console.print(f"Task: [cyan on white]{task_name}")
-
-models_path = f"result/{task_name}/Models/"
-hit_data_path = f"result/hits_data.csv"
+dynamo_db_resource = boto3.resource('dynamodb', region_name=aws_region)
+ip_info_handler = ipinfo.getHandler(ipInfoToken)
 
 next_token = ''
 hit_counter = 0
 token_counter = 0
+
+task_data_tables = []
+task_log_tables = []
+task_acl_tables = []
+task_batch_names = []
+
+dynamo_db_tables = dynamo_db.list_tables()['TableNames']
+for table_name in dynamo_db_tables:
+    if task_name in table_name and 'Data' in table_name:
+        task_data_tables.append(table_name)
+    if task_name in table_name and 'Logger' in table_name:
+        task_log_tables.append(table_name)
+    if task_name in table_name and 'ACL' in table_name:
+        task_acl_tables.append(table_name)
+
+response = s3.list_objects(Bucket=aws_private_bucket, Prefix=f"{task_name}/", Delimiter='/')
+for path in response['CommonPrefixes']:
+    batch_name = path.get('Prefix').split("/")[1]
+    task_batch_names.append(batch_name)
+
+console.print(f"Batch names: [white on black]{', '.join(task_batch_names)}")
+console.print(f"Tables data: [white on black]{', '.join(task_data_tables)}")
+console.print(f"Tables log: [white on black]{', '.join(task_log_tables)}")
+console.print(f"Tables ACL: [white on black]{', '.join(task_acl_tables)}")
+
+console.rule("1 - Fetching HITs")
+
+models_path = f"result/{task_name}/Models/"
+resources_path = f"result/{task_name}/Resources/"
+data_path = f"result/{task_name}/Data/"
+hit_data_path = f"result/hits_data.csv"
+workers_acl_path = f"result/workers_acl.csv"
+
+os.makedirs(models_path, exist_ok=True)
+os.makedirs(resources_path, exist_ok=True)
+os.makedirs(data_path, exist_ok=True)
 
 with console.status(f"Downloading HITs, Token: {next_token}, Total: {token_counter}", spinner="aesthetic") as status:
     status.start()
@@ -216,7 +256,6 @@ with console.status(f"Downloading HITs, Token: {next_token}, Total: {token_count
                 'NumberOfAssignmentsPending', 'NumberOfAssignmentsAvailable', 'NumberOfAssignmentsCompleted', 'AssignmentId', 'WorkerId', 'AssignmentStatus',
                 'AutoApprovalTime', 'AcceptTime', 'SubmitTime', 'ApprovalTime'
             ])
-            os.makedirs(models_path, exist_ok=True)
         else:
             hit_df = pd.read_csv(hit_data_path)
 
@@ -236,7 +275,6 @@ with console.status(f"Downloading HITs, Token: {next_token}, Total: {token_count
             for item in hits:
 
                 row = {}
-
                 hit_id = item['HITId']
                 available_records = hit_df.loc[hit_df['HITId'] == hit_id]
 
@@ -251,9 +289,9 @@ with console.status(f"Downloading HITs, Token: {next_token}, Total: {token_count
                     for child in question_parsed:
                         for string_splitted in child.text.split("\n"):
                             string_sanitized = sanitize_string(string_splitted)
-                            if len(string_sanitized)>0:
+                            if len(string_sanitized) > 0:
                                 if 'tokenInputtext' in string_sanitized:
-                                    token_input = string_sanitized.replace('tokenInputtext','')
+                                    token_input = string_sanitized.replace('tokenInputtext', '')
                                 if 'tokenOutputonchangeiftokenOutputval' in string_sanitized:
                                     token_output = string_sanitized.replace('tokenOutputonchangeiftokenOutputval', '').split(" ")[0]
                     hit_status[f"Input.token_input"] = token_input
@@ -301,8 +339,7 @@ prefix = f"{task_name}/"
 task_config_folder = f"{folder_result_path}/Task/"
 if not os.path.exists(task_config_folder):
     response = s3.list_objects(Bucket=aws_private_bucket, Prefix=prefix, Delimiter='/')
-    for path in response['CommonPrefixes']:
-        batch_name = path.get('Prefix').split("/")[1]
+    for batch_name in task_batch_names:
         response_batch = s3.list_objects(Bucket=aws_private_bucket, Prefix=f"{prefix}{batch_name}/Task/", Delimiter='/')
         os.makedirs(f"{task_config_folder}{batch_name}/", exist_ok=True)
         for path_batch in response_batch['Contents']:
@@ -317,99 +354,243 @@ if not os.path.exists(task_config_folder):
 else:
     console.print(f"Task configuration [yellow]already detected[/yellow], skipping download")
 
-assert False
-
 console.rule("3 - Fetching worker data")
 
-worker_counter = 0
-worker_amount = len(np.unique(hit_df['WorkerId'].values))
+worker_df = pd.DataFrame(columns=[
+    'worker_id', 'worker_time_acl', 'worker_try'
+])
+paginator = dynamo_db.get_paginator('scan')
+for table_acl in task_acl_tables:
+    for page in paginator.paginate(TableName=table_acl, Select='ALL_ATTRIBUTES'):
+        for item in page['Items']:
+            worker_id = item['identifier']['S']
+            worker_try = item['try']['S']
+            worker_time = item['time']['S']
+            worker_df = worker_df.append({
+                "worker_id": worker_id,
+                "worker_time_acl": worker_time,
+                "worker_try": worker_try
+            }, ignore_index=True)
+worker_df.to_csv(workers_acl_path, index=False)
 
-with console.status(f"Workers Amount: {worker_amount}", spinner="aesthetic") as status:
+worker_identifiers = np.unique(worker_df['worker_id'].values)
+console.print(f"Unique worker identifiers found: [green]{len(worker_identifiers)}")
+console.print(f"Workers ACL data file serialized at path: [cyan on white]{workers_acl_path}")
+
+worker_counter = 0
+
+allowed_ip_properties = ['city', 'hostname', 'region', 'country', 'country_name', 'latitude', 'longitude', 'postal', 'timezone', 'org']
+allowed_ua_properties = ['name', 'url', 'code', 'url', 'family', 'family_code', 'family_vendor', 'icon', 'icon_large', 'is_mobile_device', 'type', 'brand', 'brand_code', 'brand_url', 'version', 'version_major', 'engine']
+allowed_ua_os_properties = []
+allowed_ua_device_properties = []
+allowed_ua_browser_properties = []
+
+with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesthetic") as status:
     status.start()
 
-    for worker_id in hit_df['WorkerId'].values:
+    for worker_id in worker_identifiers:
 
-        worker_folder = f"result/{task_name}/Data/{worker_id}/"
+        worker_snapshot = []
+        worker_snapshot_path = f"result/{task_name}/Data/{worker_id}.json"
+        worker_folder_s3 = f"{aws_private_bucket}/{task_name}/Data/{worker_id}/"
 
-        dynamo_db_tables = dynamo_db.list_tables()['TableNames']
-        task_tables = []
-        for table_name in dynamo_db_tables:
-            if task_name in table_name and 'Data' in table_name:
-                task_tables.append(table_name)
+        if not os.path.exists(worker_snapshot_path):
 
-        if not os.path.exists(worker_folder):
+            status.update(f"Downloading worker data, Identifier: {worker_id}, Total: {worker_counter}/{len(worker_identifiers)}")
 
-            status.update(f"Downloading worker data, Identifier: {worker_id}, Total: {worker_counter}/{worker_amount}")
+            worker_data = {}
+            for table_name in task_data_tables:
+                worker_data[table_name] = []
+            for table_name in task_data_tables:
+                response = dynamo_db.query(
+                    TableName=table_name,
+                    KeyConditionExpression="identifier = :worker",
+                    ExpressionAttributeValues={
+                        ":worker": {'S': worker_id}
+                    }
+                )['Items']
+                for item in response:
+                    worker_data[table_name].append(item)
 
-            items = []
+            worker_snapshot = []
 
-            for table_name in task_tables:
-                if len(items)<=0:
-                    response = dynamo_db.query(
-                        TableName=table_name,
-                        KeyConditionExpression="identifier = :worker",
-                        ExpressionAttributeValues={
-                            ":worker": {'S': worker_id}
-                        }
-                    )['Items']
-                    items = response
+            for data_source, worker_session in worker_data.items():
 
-            for element in items:
+                acl_data_source = None
+                for table_name in task_acl_tables:
+                    if f"{task_name}_{batch_name}" in table_name:
+                        acl_data_source = table_name
+                log_data_source = None
+                for table_name in task_log_tables:
+                    if f"{task_name}_{batch_name}" in table_name:
+                        log_data_source = table_name
 
-                sequence = element['sequence']['S'].split("-")
-                data = json.loads(element['data']['S'])
-                time = element['time']['S']
+                worker_object = {
+                    "task": {
+                        "worker_id": worker_id,
+                        "try_last": 0,
+                        "paid": False,
 
-                worker_id = sequence[0]
-                unit_id = sequence[1]
-                current_try = sequence[2]
-                sequence_number = sequence[3]
+                    },
+                    "checks": [],
+                    "dimensions": {},
+                    "data_full": [],
+                    "data_partial": {
+                        "questionnaires": [],
+                        "documents": []
+                    },
+                    "comments": [],
+                    "documents": {},
+                    "questionnaires": {},
+                    "logs": [],
+                    "ip": {},
+                    "uag": {}
+                }
 
-                unit_path = f"{worker_folder}{unit_id}/"
+                for element in worker_session:
 
-                os.makedirs(unit_path, exist_ok=True)
+                    sequence = element['sequence']['S'].split("-")
+                    data = json.loads(element['data']['S'])
+                    time = element['time']['S']
 
-                if 'task' in data:
-                    if 'documents_answers' in data:
-                        serialize_json(unit_path, f"data_try_{current_try}.json", data)
+                    worker_id = sequence[0]
+                    unit_id = sequence[1]
+                    current_try = sequence[2]
+                    worker_object['task']['try_last'] = max(int(worker_object['task']['try_last']), int(current_try))
+
+                    uag_file = f"{resources_path}{worker_id}_uag.json"
+                    ip_file = f"{resources_path}{worker_id}_ip.json"
+
+                    if 'task' in data:
+                        for attribute, value in data['task'].items():
+                            worker_object['task'][attribute] = value
+                        if data['info']['element'] == 'data':
+                            worker_object['dimensions'] = data.pop('dimensions')
+                            worker_object['documents'] = data.pop('documents')
+                            worker_object['questionnaires'] = data.pop('questionnaires')
+                        if data['info']['element'] == 'all':
+                            data.pop('dimensions')
+                            data.pop('documents')
+                            data.pop('questionnaires')
+                            data.pop('task')
+                            worker_object['data_full'].append({
+                                "time_submit": time,
+                                "serialization": data
+                            })
                     else:
-                        serialize_json(unit_path, "task_data.json", data)
-                elif 'info' in data:
-                    if 'questionnaire' in data['info']['element']:
-                        index = data['info']['index']
-                        access = data['info']['access']
-                        serialize_json(unit_path, f"quest_{index}_try_{current_try}_acc_{access}_seq_{sequence_number}.json", data)
-                    elif 'document' in data['info']['element']:
-                        index = data['info']['index']
-                        access = data['info']['access']
-                        serialize_json(unit_path, f"doc_{index}_try_{current_try}_acc_{access}_seq_{sequence_number}.json", data)
-                    else:
-                        serialize_json(unit_path, f"comment_try_{current_try}.json", data)
+                        if data['info']['element'] == 'document':
+                            worker_object['data_partial']['documents'].append({
+                                "time_submit": time,
+                                "serialization": data
+                            })
+                        if data['info']['element'] == 'questionnaire':
+                            worker_object['data_partial']['questionnaires'].append({
+                                "time_submit": time,
+                                "serialization": data
+                            })
+                        if data['info']['element'] == 'comment':
+                            worker_object['comments'].append({
+                                "time_submit": time,
+                                "serialization": data
+                            })
 
-                elif 'checks' in data:
-                    serialize_json(unit_path, f'checks_try_{current_try}.json', data)
+                    if 'worker' in data:
+                        worker_object['task']['folder'] = data['worker']['folder']
+                        if "cloudflareProperties" in data['worker'].keys() and 'uag' in data['worker']["cloudflareProperties"].keys() and len(worker_object['uag']) <= 0:
+                            workerUag = data['worker']['cloudflareProperties']['uag']
+                            url = f"http://api.userstack.com/detect?access_key={userStackToken}&ua={workerUag}"
+                            if os.path.exists(uag_file):
+                                ua_data = load_json(uag_file)
+                            else:
+                                ua_data = requests.get(url).json()
+                                with open(uag_file, 'w', encoding='utf-8') as f:
+                                    json.dump(ua_data, f, ensure_ascii=False, indent=4)
+                            for attribute, value in ua_data.items():
+                                if type(value) == dict:
+                                    for attribute_sub, value_sub in value.items():
+                                        if attribute_sub in allowed_ua_properties:
+                                            worker_object['uag'][attribute_sub] = value_sub
+                                else:
+                                    if attribute in allowed_ua_properties:
+                                        worker_object['uag'][attribute] = value
+                        if "cloudflareProperties" in data['worker'].keys() and 'ip' in data['worker']["cloudflareProperties"].keys() and len(worker_object['ip']) <= 0:
+                            worker_ip = data['worker']['cloudflareProperties']['ip']
+                            if os.path.exists(ip_file):
+                                ip_data = load_json(ip_file)
+                            else:
+                                ip_data = ip_info_handler.getDetails(worker_ip).all
+                                with open(ip_file, 'w', encoding='utf-8') as f:
+                                    json.dump(ip_data, f, ensure_ascii=False, indent=4)
+                            for attribute, value in ip_data.items():
+                                if attribute in allowed_ip_properties:
+                                    worker_object['ip'][attribute] = value
+                        data.pop('worker')
+
+                        try:
+                            check_for_try = None
+                            for check_data in worker_object['checks']:
+                                if check_data['serialization']['try']==current_try:
+                                    check_for_try = check_data
+                            if not check_for_try:
+                                data = json.loads(
+                                    s3_resource.Object(aws_private_bucket, f"{task_name}/{worker_object['task']['batch_name']}/Data/{worker_id}/{worker_object['task']['unit_id']}/checks_try_{current_try}.json").get()['Body'].read())
+                                data_parsed = {}
+                                for attribute, value in data.items():
+                                    attribute_parsed = re.sub('(?<!^)(?=[A-Z])', '_', attribute).lower()
+                                    data_parsed[attribute_parsed] = value
+                                data_parsed['try'] = current_try
+                                final_object = {
+                                    # "time_submit": time,
+                                    "serialization": data_parsed
+                                }
+                                worker_object['checks'].append(final_object)
+                        except ClientError as e:
+                            continue
+                        except KeyError as e:
+                            continue
+
+                if log_data_source:
+                    paginator = dynamo_db.get_paginator('query')
+                    for page in paginator.paginate(
+                      TableName=log_data_source,
+                      KeyConditionExpression="worker = :worker",
+                      ExpressionAttributeValues={
+                          ":worker": {'S': worker_id}
+                      }
+                    ):
+                        for item in page['Items']:
+                            data = {
+                                'time_server': item['server_time']['N'],
+                                'time_client': item['client_time']['N'],
+                                'type': item['type']['S'],
+                                'try': item['sequence']['S'].split("_")[0],
+                                'sequence': item['sequence']['S'].split("_")[1],
+                                'details': json.loads(item['details']['S'])
+                            }
+                            worker_object['logs'].append(data)
+
+                worker_paid = False
+                check_final_data = None
+                for check_data in worker_object['checks']:
+                    if int(check_data['serialization']['try']) == int(worker_object['task']['try_last']):
+                        check_final_data = check_data
+                if check_final_data:
+                    if check_final_data['serialization']['global_form_validity']==True and check_final_data['serialization']['time_spent_check'] == True and any(check_final_data['serialization']['gold_checks']):
+                        worker_paid = True
                 else:
-                    console.print(data)
+                    worker_paid = False
 
-        else:
+                worker_object['task']['paid'] = worker_paid
 
-            status.update(f"Worker data found, Identifier: {worker_id}, Total: {worker_counter}/{worker_amount}")
+                worker_snapshot.append(worker_object)
 
+        with open(worker_snapshot_path, 'w', encoding='utf-8') as f:
+            json.dump(worker_snapshot, f, ensure_ascii=False, indent=4)
         worker_counter += 1
 
     console.print(f"Data fetching for {worker_counter} workers [green]completed")
 
-
 console.rule("4 - Building results dataframe")
-
-ipInfoHandler = ipinfo.getHandler(ipInfoToken)
-
-models_path = f"result/{task_name}/Models/"
-ip_folder = f"{models_path}worker-ip/"
-uag_folder = f"{models_path}worker-uag/"
-os.makedirs(models_path, exist_ok=True)
-os.makedirs(ip_folder, exist_ok=True)
-os.makedirs(uag_folder, exist_ok=True)
 
 paid_workers = []
 spuriousWorkers = []
@@ -482,94 +663,6 @@ if not os.path.exists(dataframe_path):
             dimensionsAmount = int(task["dimensions_amount"])
             documentsAmount = int(task["documents_amount"])
 
-            if "cloudflareProperties" in worker.keys() and 'ip' in worker["cloudflareProperties"].keys():
-                workerIp = worker['cloudflareProperties']['ip']
-                if os.path.exists(ipFile):
-                    decodedData = load_json(ipFile)
-                else:
-                    decodedData = ipInfoHandler.getDetails(workerIp).all
-                    with open(ipFile, 'w', encoding='utf-8') as f:
-                        json.dump(decodedData, f, ensure_ascii=False, indent=4)
-                workerCity = decodedData['city']
-                workerHostname = decodedData['hostname'] if "hostname" in decodedData else None
-                workerRegion = decodedData['region']
-                workerCountryCode = decodedData['country']
-                workerCountryName = decodedData['country_name']
-                workerLatitude = decodedData['latitude']
-                workerLongitude = decodedData['longitude']
-                workerPostal = decodedData['postal'] if "postal" in decodedData else None
-                workerTimezone = decodedData['timezone']
-                workerOrg = decodedData['org']
-            else:
-                workerIp = np.nan
-                decodedData = np.nan
-                workerCity = np.nan
-                workerHostname = np.nan
-                workerRegion = np.nan
-                workerCountryCode = np.nan
-                workerCountryName = np.nan
-                workerLatitude = np.nan
-                workerLongitude = np.nan
-                workerPostal = np.nan
-                workerTimezone = np.nan
-                workerOrg = np.nan
-
-            if "cloudflareProperties" in worker.keys() and 'uag' in worker["cloudflareProperties"].keys():
-                workerUag = worker['cloudflareProperties']['uag']
-                url = f"http://api.userstack.com/detect?access_key={userStackToken}&ua={workerUag}"
-                if os.path.exists(uagFile):
-                    uaData = load_json(uagFile)
-                else:
-                    uaData = requests.get(url).json()
-                    with open(uagFile, 'w', encoding='utf-8') as f:
-                        json.dump(uaData, f, ensure_ascii=False, indent=4)
-                uaType = uaData["type"]
-                uaBrand = uaData["brand"]
-                uaName = uaData["name"]
-                uaUrl = uaData["url"]
-                osName = uaData["os"]["name"]
-                osCode = uaData["os"]["code"]
-                osUrl = uaData["os"]["url"]
-                osFamily = uaData["os"]["family"]
-                osFamilyCode = uaData["os"]["family_code"]
-                osFamilyVendor = uaData["os"]["family_vendor"]
-                osIcon = uaData["os"]["icon"]
-                osIconLarge = uaData["os"]["icon_large"]
-                deviceIsMobile = uaData["device"]["is_mobile_device"]
-                deviceType = uaData["device"]["type"]
-                deviceBrand = uaData["device"]["brand"]
-                deviceBrandCode = uaData["device"]["brand_code"]
-                deviceBrandUrl = uaData["device"]["brand_url"]
-                deviceName = uaData["device"]["name"]
-                browserName = uaData["browser"]["name"]
-                browserVersion = uaData["browser"]["version"]
-                browserVersionMajor = uaData["browser"]["version_major"]
-                browserEngine = uaData["browser"]["engine"]
-            else:
-                workerUag = np.nan
-                uaType = np.nan
-                uaBrand = np.nan
-                uaName = np.nan
-                uaUrl = np.nan
-                osName = np.nan
-                osCode = np.nan
-                osUrl = np.nan
-                osFamily = np.nan
-                osFamilyCode = np.nan
-                osFamilyVendor = np.nan
-                osIcon = np.nan
-                osIconLarge = np.nan
-                deviceIsMobile = np.nan
-                deviceType = np.nan
-                deviceBrand = np.nan
-                deviceBrandCode = np.nan
-                deviceBrandUrl = np.nan
-                deviceName = np.nan
-                browserName = np.nan
-                browserVersion = np.nan
-                browserVersionMajor = np.nan
-                browserEngine = np.nan
-
             currentTry = 0
             for aTry in range(0, triesAmount + 1):
                 if os.path.exists(f"{folder}data_try_{aTry + 1}.json"):
@@ -579,7 +672,7 @@ if not os.path.exists(dataframe_path):
                     row["batch_name"] = batch_name_current
                     row["worker_id"] = workerId
                     row["worker_paid"] = workerPaid
-                    row["worker_ip"] = workerIp
+                    row["worker_ip"] = worker_ip
                     row["worker_hostname"] = workerHostname
                     row["worker_city"] = workerCity
                     row["worker_region"] = workerRegion
@@ -671,7 +764,7 @@ if not os.path.exists(dataframe_path):
                             for dimension in dimensions:
                                 if dimension['scale'] is not None:
                                     value = currentAnswers[f"{dimension['name']}_value"]
-                                    if type(value)==str:
+                                    if type(value) == str:
                                         value = value.strip()
                                         value = re.sub('\n', '', value)
                                     row[f"doc_{dimension['name']}_value"] = value
@@ -735,9 +828,9 @@ if not os.path.exists(dataframe_path):
     df.drop(empty_cols, axis=1, inplace=True)
 
     hit_df.columns = hit_df.columns.str.replace('[\W]', '', regex=True).str.replace('(?<!^)([A-Z])', r'_\1', regex=True).str.lower()
-    hit_df = hit_df.add_prefix('mturk_',)
+    hit_df = hit_df.add_prefix('mturk_', )
     hit_df.columns = [col.replace('h_i_t', 'hit') for col in hit_df.columns]
-    hit_df.rename(columns={'mturk_worker_id':'worker_id'}, inplace=True)
+    hit_df.rename(columns={'mturk_worker_id': 'worker_id'}, inplace=True)
 
     df.worker_id = df.worker_id.astype(str)
     hit_df.worker_id = hit_df.worker_id.astype(str)
@@ -751,10 +844,9 @@ else:
 
     console.print(f"Dataframe [green]detected[/green], skipping creation")
 
-
 console.rule("4 - Building [cyan on white]dimensions_analysis[/cyan on white] dataframe")
 
-columns=[
+columns = [
     "worker_id",
     "worker_paid",
     "unit_id",
@@ -780,12 +872,11 @@ if not os.path.exists(dim_df_path):
 
     for index, row in tqdm(df.iterrows(), total=df.shape[0]):
 
-        dimDf=pd.DataFrame(columns=columns)
+        dimDf = pd.DataFrame(columns=columns)
         indexUrl = 0
 
         workerId = row['worker_id']
         unit_id = row['unit_id']
-
 
         workerPaid = row['worker_paid']
         unitId = row['unit_id']
@@ -813,7 +904,7 @@ if not os.path.exists(dim_df_path):
                     timestampsStart = tryData["timestamps_start"]
                     dimensionsSelected = tryData["dimensions_selected"]
 
-                    firstTimestamp = timestampsStart[questionnaireAmount-1][0]
+                    firstTimestamp = timestampsStart[questionnaireAmount - 1][0]
 
                     firstTimestampParsed = datetime.datetime.fromtimestamp(firstTimestamp)
 
@@ -831,16 +922,16 @@ if not os.path.exists(dim_df_path):
 
                             currentTimestamp = float(dimension['timestamp'])
                             currentTimestampParsed = datetime.datetime.fromtimestamp(currentTimestamp)
-                            previousTimestampParsed = foundTimestamps[counter-1]
+                            previousTimestampParsed = foundTimestamps[counter - 1]
                             elapsedTime = (currentTimestampParsed - previousTimestampParsed).total_seconds()
-                            if elapsedTime<0:
+                            if elapsedTime < 0:
                                 elapsedTime = (previousTimestampParsed - currentTimestampParsed).total_seconds()
                             foundTimestamps.append(currentTimestampParsed)
                             dimensionRow = {
                                 'worker_id': workerId,
                                 'worker_paid': workerPaid,
                                 'unit_id': unitId,
-                                'current_try': currentTry+1,
+                                'current_try': currentTry + 1,
                                 'document_index': documentIndex,
                                 'dimension_index': dimension['dimension'],
                                 'dimension_name': dimensions[dimension['dimension']]['name'],
