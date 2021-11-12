@@ -95,6 +95,8 @@ aws_private_bucket = os.getenv('aws_private_bucket')
 aws_deploy_bucket = os.getenv('aws_deploy_bucket')
 budget_limit = os.getenv('budget_limit')
 bing_api_key = os.getenv('bing_api_key')
+ip_info_token = os.getenv('ip_info_token')
+user_stack_token = os.getenv('user_stack_token')
 
 table_logging_name = f"Crowd_Frame-{task_name}_{batch_name}_Logger"
 table_data_name = f"Crowd_Frame-{task_name}_{batch_name}_Data"

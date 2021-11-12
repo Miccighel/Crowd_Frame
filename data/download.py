@@ -40,10 +40,8 @@ aws_private_bucket = os.getenv('aws_private_bucket')
 aws_deploy_bucket = os.getenv('aws_deploy_bucket')
 budget_limit = os.getenv('budget_limit')
 bing_api_key = os.getenv('bing_api_key')
-
-ipInfoToken = "fa8ac3a2ed1ac4"
-userStackToken = "a5c31ecd7171e421ebe21df5c3ac040d"
-
+ip_info_token = os.getenv('ip_info_token')
+user_stack_token = os.getenv('user_stack_token')
 
 def serialize_json(folder, filename, data):
     if not os.path.exists(folder):
@@ -51,7 +49,6 @@ def serialize_json(folder, filename, data):
     with open(f"{folder}{filename}", 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=4, default=str)
         f.close()
-
 
 def load_json(p):
     if os.path.exists(p):
@@ -61,14 +58,12 @@ def load_json(p):
     else:
         return {}
 
-
 def load_file_names(p):
     files = []
     for r, d, f in os.walk(p):
         for caf in f:
             files.append(caf)
     return files
-
 
 def sanitize_string(x):
     try:
@@ -83,56 +78,13 @@ def sanitize_string(x):
     except TypeError:
         return np.nan
 
+def load_column_names(task, ip, uag, questionnaires, dimensions, documents):
 
-def load_column_names(questionnaires, dimensions, documents):
-    columns = [
-        "task_id",
-        "batch_name",
-        "worker_id",
-        "worker_paid",
-        "worker_ip",
-        "worker_hostname",
-        "worker_city",
-        "worker_postal",
-        "worker_region",
-        "worker_country_code",
-        "worker_country_name",
-        "worker_latitude",
-        "worker_longitude",
-        "worker_timezone",
-        "worker_org",
-        "worker_uag",
-        "ua_type",
-        "ua_brand",
-        "ua_name",
-        "ua_url",
-        "os_name",
-        "os_code",
-        "os_url",
-        "os_family",
-        "os_family_code",
-        "os_family_vendor",
-        "os_icon",
-        "os_icon_large",
-        "device_is_mobile",
-        "device_type",
-        "device_brand",
-        "device_brand_code",
-        "device_brand_url",
-        "device_name",
-        "browser_name",
-        "browser_version",
-        "browser_version_major",
-        "browser_engine",
-        "unit_id",
-        "token_input",
-        "token_output",
-        "tries_amount",
-        "questionnaire_amount",
-        "dimensions_amount",
-        "document_amount",
-        "current_try"
-    ]
+    columns = []
+
+    for attribute in task.keys():
+        columns.append(attribute)
+    columns.append("time_submit")
 
     for questionnaire in questionnaires:
         for question in questionnaire["questions"]:
@@ -178,7 +130,14 @@ def load_column_names(questionnaires, dimensions, documents):
     columns.append("time_spent_check")
     columns.append("time_check_amount")
 
-    columns.append("comment")
+    columns.append("comment_time_submit")
+    columns.append("comment_text")
+
+    for attribute in ip.keys():
+        columns.append(f"worker_{attribute}")
+
+    for attribute in uag.keys():
+        columns.append(f"worker_{attribute}")
 
     return columns
 
@@ -201,7 +160,7 @@ s3_resource = boto_session.resource('s3')
 bucket = s3_resource.Bucket(aws_private_bucket)
 dynamo_db = boto3.client('dynamodb', region_name=aws_region)
 dynamo_db_resource = boto3.resource('dynamodb', region_name=aws_region)
-ip_info_handler = ipinfo.getHandler(ipInfoToken)
+ip_info_handler = ipinfo.getHandler(ip_info_token)
 
 next_token = ''
 hit_counter = 0
@@ -251,13 +210,17 @@ with console.status(f"Downloading HITs, Token: {next_token}, Total: {token_count
         if not os.path.exists(hit_data_path):
             console.print(f"[yellow]HITs data[/yellow] file not detected, creating it.")
             hit_df = pd.DataFrame(columns=[
-                'HITId', 'HITTypeId', 'HITGroupId', 'HITLayoutId', 'CreationTime', 'Title', 'Description', 'Keywords', 'HITStatus', 'MaxAssignments',
-                'Reward', 'AutoApprovalDelayInSeconds', 'Expiration', 'AssignmentDurationInSeconds', 'RequesterAnnotation', 'HITReviewStatus',
-                'NumberOfAssignmentsPending', 'NumberOfAssignmentsAvailable', 'NumberOfAssignmentsCompleted', 'AssignmentId', 'WorkerId', 'AssignmentStatus',
-                'AutoApprovalTime', 'AcceptTime', 'SubmitTime', 'ApprovalTime'
+                "HITId","HITTypeId","Title","Description","Keywords","Reward","CreationTime","MaxAssignments",
+                "RequesterAnnotation","AssignmentDurationInSeconds","AutoApprovalDelayInSeconds","Expiration",
+                "NumberOfSimilarHITs","LifetimeInSeconds","AssignmentId","WorkerId","AssignmentStatus","AcceptTime",
+                "SubmitTime","AutoApprovalTime","ApprovalTime","RejectionTime","RequesterFeedback","WorkTimeInSeconds",
+                "LifetimeApprovalRate","Last30DaysApprovalRate","Last7DaysApprovalRate"
             ])
         else:
             hit_df = pd.read_csv(hit_data_path)
+
+        # TODO: this should be removed
+        break
 
         if next_token == '':
             response = mturk.list_hits()
@@ -360,6 +323,7 @@ worker_df = pd.DataFrame(columns=[
     'worker_id', 'worker_time_acl', 'worker_try'
 ])
 paginator = dynamo_db.get_paginator('scan')
+
 for table_acl in task_acl_tables:
     for page in paginator.paginate(TableName=table_acl, Select='ALL_ATTRIBUTES'):
         for item in page['Items']:
@@ -389,6 +353,7 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
     status.start()
 
     for worker_id in worker_identifiers:
+
 
         worker_snapshot = []
         worker_snapshot_path = f"result/{task_name}/Data/{worker_id}.json"
@@ -436,8 +401,8 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
                     "dimensions": {},
                     "data_full": [],
                     "data_partial": {
-                        "questionnaires": [],
-                        "documents": []
+                        "questionnaires_answers": [],
+                        "documents_answers": []
                     },
                     "comments": [],
                     "documents": {},
@@ -468,7 +433,7 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
                             worker_object['dimensions'] = data.pop('dimensions')
                             worker_object['documents'] = data.pop('documents')
                             worker_object['questionnaires'] = data.pop('questionnaires')
-                        if data['info']['element'] == 'all':
+                        elif data['info']['element'] == 'all':
                             data.pop('dimensions')
                             data.pop('documents')
                             data.pop('questionnaires')
@@ -477,18 +442,26 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
                                 "time_submit": time,
                                 "serialization": data
                             })
+                        else:
+                            print(data)
                     else:
                         if data['info']['element'] == 'document':
-                            worker_object['data_partial']['documents'].append({
+                            worker_object['data_partial']['documents_answers'].append({
                                 "time_submit": time,
                                 "serialization": data
                             })
-                        if data['info']['element'] == 'questionnaire':
-                            worker_object['data_partial']['questionnaires'].append({
+                        elif data['info']['element'] == 'questionnaire':
+                            worker_object['data_partial']['questionnaires_answers'].append({
                                 "time_submit": time,
                                 "serialization": data
                             })
-                        if data['info']['element'] == 'comment':
+                        # TODO: Quando i check verranno salvati su Dynamo
+                        #elif data['info']['element'] == 'checks':
+                        #    worker_object['checks'].append({
+                        #        "time_submit": time,
+                        #        "serialization": data
+                        #    })
+                        elif data['info']['element'] == 'comment':
                             worker_object['comments'].append({
                                 "time_submit": time,
                                 "serialization": data
@@ -497,8 +470,8 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
                     if 'worker' in data:
                         worker_object['task']['folder'] = data['worker']['folder']
                         if "cloudflareProperties" in data['worker'].keys() and 'uag' in data['worker']["cloudflareProperties"].keys() and len(worker_object['uag']) <= 0:
-                            workerUag = data['worker']['cloudflareProperties']['uag']
-                            url = f"http://api.userstack.com/detect?access_key={userStackToken}&ua={workerUag}"
+                            worker_uag = data['worker']['cloudflareProperties']['uag']
+                            url = f"http://api.userstack.com/detect?access_key={user_stack_token}&ua={worker_uag}"
                             if os.path.exists(uag_file):
                                 ua_data = load_json(uag_file)
                             else:
@@ -584,265 +557,268 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
 
                 worker_snapshot.append(worker_object)
 
-        with open(worker_snapshot_path, 'w', encoding='utf-8') as f:
-            json.dump(worker_snapshot, f, ensure_ascii=False, indent=4)
-        worker_counter += 1
+            with open(worker_snapshot_path, 'w', encoding='utf-8') as f:
+                json.dump(worker_snapshot, f, ensure_ascii=False, indent=4)
+            worker_counter += 1
 
     console.print(f"Data fetching for {worker_counter} workers [green]completed")
 
-console.rule("4 - Building results dataframe")
-
-paid_workers = []
-spuriousWorkers = []
-
-models_path = f"result/{task_name}/Models/"
-
-for index, row in hit_df.iterrows():
-
-    worker_folder_path = f"{folder_result_path}Data/{row['WorkerId']}/"
-    hits = load_json(f"{folder_result_path}Task/hits.json")
-
-    units_paths = glob(f"{worker_folder_path}*")
-
-    units = []
-    for unit_path in units_paths:
-        unit_name = unit_path.split('\\')[-1]
-        units.append(unit_name)
-
-    paid_workers.append({
-        "worker_id": row['WorkerId'],
-        "unit_ids": units,
-        "paid": True
-    })
-
-console.print(f"Found {len(paid_workers)} paid workers")
-
-dataframe = []
+console.rule("4 - Building dataframes")
 
 data_path = f"result/{task_name}/Data/"
-dataframe_path = f"{models_path}workers_data.csv"
 
-if not os.path.exists(dataframe_path):
+workers_snapshot_paths = glob(f"{data_path}/*")
+df_data_path = f"{models_path}workers_data.csv"
+dataframe = pd.DataFrame()
 
-    console.print(f"Dataframe [yellow]not detected[/yellow], building it")
+paid_counter = 0
 
-    for workerIndex, worker in enumerate(tqdm(paid_workers)):
+for workers_snapshot_path in tqdm(workers_snapshot_paths):
 
-        workerId = worker['worker_id']
-        workerUnits = worker['unit_ids']
-        workerPaid = worker['paid']
+    worker_snapshots = load_json(workers_snapshot_path)
 
-        for unit_id in workerUnits:
+    for worker_snapshot in worker_snapshots:
 
-            folder = f"{data_path}{workerId}/{unit_id}/"
-            taskDataFile = f"{folder}task_data.json"
-            taskData = load_json(taskDataFile)
+        worker_id = worker_snapshot['task']['worker_id']
+        worker_paid = worker_snapshot['task']['paid']
 
-            task = taskData["task"]
-            worker = taskData["worker"]
-            questionnaires = taskData["questionnaires"]
-            dimensions = taskData["dimensions"]
-            documents = taskData["documents"]
 
-            columns = load_column_names(questionnaires, dimensions, documents)
+        task = worker_snapshot['task']
+        dimensions = worker_snapshot['dimensions']
+        documents = worker_snapshot['documents']
+        questionnaires = worker_snapshot['questionnaires']
+        ip = worker_snapshot['ip']
+        uag = worker_snapshot['uag']
+        logs = worker_snapshot['logs']
+        comments = worker_snapshot['comments']
+        checks = worker_snapshot['checks']
+        data_full = worker_snapshot['data_full']
+        data_partial = worker_snapshot['data_partial']
+
+        column_names = load_column_names(task, ip, uag, questionnaires, dimensions, documents)
+        for column in column_names:
+            if column not in dataframe:
+                dataframe[column] = np.nan
+
+
+        if len(data_full)>0:
+
             row = {}
-            df = pd.DataFrame(columns=columns)
+            row['worker_id'] = worker_id
 
-            folderFinal = f"{folder}Final/"
+            for attribute, value in task.items():
+                row[attribute] = value
 
-            ipFile = f"{ip_folder}{workerId}_ip.json"
-            uagFile = f"{uag_folder}{workerId}_uag.json"
+            for data_try in data_full:
 
-            task_name = task["task_id"]
-            batch_name_current = task['batch_name']
-            unitId = task["unit_id"]
-            tokenInput = task["token_input"]
-            tokenOutput = task["token_output"]
-            triesAmount = int(task["tries_amount"])
-            questionnaireAmount = int(task["questionnaire_amount"])
-            dimensionsAmount = int(task["dimensions_amount"])
-            documentsAmount = int(task["documents_amount"])
+                row['time_submit'] = data_try['time_submit'] if 'time_submit' in data_try else None
 
-            currentTry = 0
-            for aTry in range(0, triesAmount + 1):
-                if os.path.exists(f"{folder}data_try_{aTry + 1}.json"):
-                    currentTry = aTry + 1
+                accesses = data_try['serialization']["accesses"]
+                timestampsElapsed = data_try['serialization']["timestamps_elapsed"]
+                timestampsStart = data_try['serialization']["timestamps_start"]
+                timestampsEnd = data_try['serialization']["timestamps_end"]
+                questionnaireAnswers = data_try['serialization']["questionnaires_answers"]
+                documentAnswers = data_try['serialization']["documents_answers"]
+                countdownsStart = data_try['serialization']["countdowns_times_start"]
+                countdownsLeft = data_try['serialization']["countdowns_times_left"]
+                countdownsExpired = data_try['serialization']["countdowns_expired"]
+                info = data_try['serialization']["info"]
 
-                    row["task_id"] = task_name
-                    row["batch_name"] = batch_name_current
-                    row["worker_id"] = workerId
-                    row["worker_paid"] = workerPaid
-                    row["worker_ip"] = worker_ip
-                    row["worker_hostname"] = workerHostname
-                    row["worker_city"] = workerCity
-                    row["worker_region"] = workerRegion
-                    row["worker_country_code"] = workerCountryCode
-                    row["worker_country_name"] = workerCountryName
-                    row["worker_latitude"] = workerLatitude
-                    row["worker_longitude"] = workerLongitude
-                    row["worker_postal"] = workerPostal
-                    row["worker_timezone"] = workerTimezone
-                    row["worker_org"] = workerOrg
-                    row["worker_uag"] = workerUag
-                    row["ua_type"] = uaType
-                    row["ua_brand"] = uaBrand
-                    row["ua_name"] = uaName
-                    row["ua_url"] = uaUrl
-                    row["os_name"] = osName
-                    row["os_code"] = osCode
-                    row["os_url"] = osUrl
-                    row["os_family"] = osFamily
-                    row["os_family_code"] = osFamilyCode
-                    row["os_family_vendor"] = osFamilyVendor
-                    row["os_icon"] = osIcon
-                    row["os_icon_large"] = osIconLarge
-                    row["device_is_mobile"] = deviceIsMobile
-                    row["device_type"] = deviceType
-                    row["device_brand"] = deviceBrand
-                    row["device_brand_code"] = deviceBrandCode
-                    row["device_brand_url"] = deviceBrandCode
-                    row["device_name"] = deviceName
-                    row["browser_name"] = browserName
-                    row["browser_version"] = browserVersion
-                    row["browser_version_major"] = browserVersionMajor
-                    row["browser_engine"] = browserEngine
-                    row["unit_id"] = unitId
-                    row["token_input"] = tokenInput
-                    row["token_output"] = tokenOutput
-                    row["tries_amount"] = triesAmount
-                    row["questionnaire_amount"] = questionnaireAmount
-                    row["dimensions_amount"] = dimensionsAmount
-                    row["document_amount"] = documentsAmount
-                    row["current_try"] = currentTry
+                for check_data in checks:
+                    if int(check_data['serialization']['try']) == int(info['try']):
+                        row["global_form_validity"] = check_data['serialization']["global_form_validity"]
+                        row["gold_checks"] = any(check_data['serialization']["gold_checks"])
+                        row["time_check_amount"] = check_data['serialization']["time_check_amount"]
+                        row["time_spent_check"] = check_data['serialization']["time_spent_check"]
 
-                    currentTryPath = f"{folder}data_try_{currentTry}.json"
-                    currentCheckPath = f"{folder}checks_try_{currentTry}.json"
-                    currentCommentPath = f"{folder}comment_try_{currentTry}.json"
+                for comment_data in comments:
+                    if int(comment_data['serialization']['info']['try']) == int(info['try']):
+                        row["comment_time_submit"] = comment_data['time_submit']
+                        row["comment_text"] = sanitize_string(comment_data['serialization']['value']['comment'])
 
-                    if os.path.exists(currentTryPath):
+                for index_main, current_answers in enumerate(questionnaireAnswers):
+                    questions = current_answers.keys()
+                    for index_sub, question in enumerate(questions):
+                        row[f"q_{questionnaires[index_main]['index']}_{question}_question"] = questionnaires[index_main]["questions"][index_sub]["text"]
+                        row[f"q_{questionnaires[index_main]['index']}_{question}_value"] = current_answers[question]
+                        if questionnaires[index_main]["type"] == "standard":
+                            row[f"q_{questionnaires[index_main]['index']}_{question}_answer"] = questionnaires[index_main]["questions"][index_sub]["answers"][int(current_answers[question])]
+                        else:
+                            row[f"q_{questionnaires[index_main]['index']}_{question}_answer"] = np.nan
+                        row[f"q_{questionnaires[index_main]['index']}_time_elapsed"] = round(timestampsElapsed[questionnaires[index_main]['index']], 2)
+                        row[f"q_{questionnaires[index_main]['index']}_accesses"] = accesses[questionnaires[index_main]['index']]
 
-                        tryData = load_json(currentTryPath)
-                        checksData = load_json(currentCheckPath)
-                        commentsData = load_json(currentCommentPath)
+                for index, data in enumerate(countdownsStart):
+                    row["doc_countdown_time_start"] = data
 
-                        accesses = tryData["accesses"]
-                        timestampsElapsed = tryData["timestamps_elapsed"]
-                        timestampsStart = tryData["timestamps_start"]
-                        timestampsEnd = tryData["timestamps_end"]
-                        questionnaireAnswers = tryData["questionnaires_answers"]
-                        documentAnswers = tryData["documents_answers"]
-                        countdownsStart = tryData["countdowns_times_start"]
-                        countdownsLeft = tryData["countdowns_times_left"]
-                        countdownsExpired = tryData["countdowns_expired"]
-                        checks = checksData
-                        comments = commentsData
+                for index, data in enumerate(countdownsLeft):
+                    row["doc_countdown_time_value"] = data['value']
+                    row["doc_countdown_time_text"] = data['text']
+                    row["doc_countdown_time_expired"] = countdownsExpired[index]
 
-                        for index_main, currentAnswers in enumerate(questionnaireAnswers):
-                            questions = currentAnswers.keys()
-                            for index_sub, question in enumerate(questions):
-                                row[f"q_{questionnaires[index_main]['index']}_{question}_question"] = questionnaires[index_main]["questions"][index_sub]["text"]
-                                row[f"q_{questionnaires[index_main]['index']}_{question}_value"] = currentAnswers[question]
-                                if questionnaires[index_main]["type"] == "standard":
-                                    row[f"q_{questionnaires[index_main]['index']}_{question}_answer"] = questionnaires[index_main]["questions"][index_sub]["answers"][int(currentAnswers[question])]
-                                else:
-                                    row[f"q_{questionnaires[index_main]['index']}_{question}_answer"] = np.nan
-                                row[f"q_{questionnaires[index_main]['index']}_time_elapsed"] = round(timestampsElapsed[questionnaires[index_main]['index']], 2)
-                                row[f"q_{questionnaires[index_main]['index']}_accesses"] = accesses[questionnaires[index_main]['index']]
-
-                        for index, data in enumerate(countdownsStart):
-                            row["doc_countdown_time_start"] = data
-
-                        for index, data in enumerate(countdownsLeft):
-                            row["doc_countdown_time_value"] = data['value']
-                            row["doc_countdown_time_text"] = data['text']
-                            row["doc_countdown_time_expired"] = countdownsExpired[index]
-
-                        for index, currentAnswers in enumerate(documentAnswers):
-                            currentAttributes = documents[index].keys()
-                            for currentAttribute in currentAttributes:
-                                row[f"doc_{currentAttribute}"] = documents[index][currentAttribute]
-                            for dimension in dimensions:
-                                if dimension['scale'] is not None:
-                                    value = currentAnswers[f"{dimension['name']}_value"]
-                                    if type(value) == str:
-                                        value = value.strip()
-                                        value = re.sub('\n', '', value)
-                                    row[f"doc_{dimension['name']}_value"] = value
-                                    if dimension["scale"]["type"] == "categorical":
-                                        for mapping in dimension["scale"]['mapping']:
-                                            label = mapping['label'].lower().split(" ")
-                                            label = '-'.join([str(c) for c in label])
-                                            if int(mapping['value']) == (int(value)):
-                                                row[f"doc_{dimension['name']}_label"] = label
-                                                row[f"doc_{dimension['name']}_index"] = mapping['index']
-                                                row[f"doc_{dimension['name']}_description"] = mapping['description']
-                                    else:
-                                        row[f"doc_{dimension['name']}_value"] = np.nan
-                                        row[f"doc_{dimension['name']}_label"] = np.nan
-                                        row[f"doc_{dimension['name']}_index"] = np.nan
-                                        row[f"doc_{dimension['name']}_description"] = np.nan
-                                if dimension['justification']:
-                                    justification = currentAnswers[f"{dimension['name']}_justification"].strip()
-                                    justification = re.sub('\n', '', justification)
-                                    row[f"doc_{dimension['name']}_justification"] = justification
-                                else:
-                                    row[f"doc_{dimension['name']}_justification"] = np.nan
-                                if dimension['url']:
-                                    row[f"doc_{dimension['name']}_url"] = currentAnswers[f"{dimension['name']}_url"]
-                                else:
-                                    row[f"doc_{dimension['name']}_url"] = np.nan
-
-                            row["doc_accesses"] = accesses[index]
-
-                            if timestampsElapsed[index + questionnaireAmount] is None:
-                                row["doc_time_elapsed"] = np.nan
+                for index, current_answers in enumerate(documentAnswers):
+                    current_attributes = documents[index].keys()
+                    for currentAttribute in current_attributes:
+                        row[f"doc_{currentAttribute}"] = documents[index][currentAttribute]
+                    for dimension in dimensions:
+                        if dimension['scale'] is not None:
+                            value = current_answers[f"{dimension['name']}_value"]
+                            if type(value) == str:
+                                value = value.strip()
+                                value = re.sub('\n', '', value)
+                            row[f"doc_{dimension['name']}_value"] = value
+                            if dimension["scale"]["type"] == "categorical":
+                                for mapping in dimension["scale"]['mapping']:
+                                    label = mapping['label'].lower().split(" ")
+                                    label = '-'.join([str(c) for c in label])
+                                    value_int = None
+                                    try:
+                                        value_int = int(value)
+                                    except:
+                                        value_int = 0
+                                    if int(mapping['value']) == value_int:
+                                        row[f"doc_{dimension['name']}_label"] = label
+                                        row[f"doc_{dimension['name']}_index"] = mapping['index']
+                                        row[f"doc_{dimension['name']}_description"] = mapping['description']
                             else:
-                                row["doc_time_elapsed"] = round(timestampsElapsed[index + questionnaireAmount], 2)
+                                row[f"doc_{dimension['name']}_value"] = np.nan
+                                row[f"doc_{dimension['name']}_label"] = np.nan
+                                row[f"doc_{dimension['name']}_index"] = np.nan
+                                row[f"doc_{dimension['name']}_description"] = np.nan
+                        if dimension['justification']:
+                            justification = current_answers[f"{dimension['name']}_justification"].strip()
+                            justification = re.sub('\n', '', justification)
+                            row[f"doc_{dimension['name']}_justification"] = justification
+                        else:
+                            row[f"doc_{dimension['name']}_justification"] = np.nan
+                        if dimension['url']:
+                            row[f"doc_{dimension['name']}_url"] = current_answers[f"{dimension['name']}_url"]
+                        else:
+                            row[f"doc_{dimension['name']}_url"] = np.nan
 
-                            try:
-                                row["global_form_validity"] = checks['checks']["globalFormValidity"]
-                                row["gold_checks"] = checks['checks']["goldChecks"]
-                                row["time_check_amount"] = checks['checks']["timeCheckAmount"]
-                                row["time_spent_check"] = checks['checks']["timeSpentCheck"]
-                            except KeyError:
-                                row["global_form_validity"] = True
-                                row["gold_checks"] = [True]
-                                row["time_check_amount"] = 3
-                                row["time_spent_check"] = True
+                    row["doc_accesses"] = accesses[index]
 
-                            if "value" in comments:
-                                if (comments['value']["comment"]) != "":
-                                    row["comment"] = sanitize_string(comments['value']["comment"])
-                                else:
-                                    row["comment"] = np.nan
-                            else:
-                                row["comment"] = np.nan
+                    if timestampsElapsed[index + task['questionnaire_amount']] is None:
+                        row["doc_time_elapsed"] = np.nan
+                    else:
+                        row["doc_time_elapsed"] = round(timestampsElapsed[index + task['questionnaire_amount']], 2)
 
-                            df.loc[(workerIndex + index)] = row
+                    dataframe = dataframe.append(row, ignore_index=True)
 
-            if len(df) > 0:
-                dataframe.append(df)
+        else:
 
-    df = pd.concat(dataframe, ignore_index=True)
-    empty_cols = [col for col in df.columns if df[col].isnull().all()]
-    df.drop(empty_cols, axis=1, inplace=True)
+            row = {}
+            row['worker_id'] = worker_id
+            row['try_last'] = 0
+            row['paid'] = False
+
+            for document_data in data_partial['documents_answers']:
+
+                row['time_submit'] = document_data['time_submit']
+
+                row["doc_accesses"] = document_data['serialization']['accesses']
+
+                row["doc_countdown_time_start"] = document_data['serialization']['countdowns_times_start'][0] if len(document_data['serialization']['countdowns_times_start'])>0 else np.nan
+                row["doc_countdown_time_value"] = document_data['serialization']['countdowns_times_left']['value'] if len(document_data['serialization']['countdowns_times_left'])>0 else np.nan
+                row["doc_countdown_time_text"] = document_data['serialization']['countdowns_times_left']['text'] if len(document_data['serialization']['countdowns_times_left'])>0 else np.nan
+                row["doc_countdown_time_expired"] = document_data['serialization']["countdowns_expired"][document_data['serialization']['info']['index']] if len(document_data['serialization']["countdowns_expired"])>0 else np.nan
+
+                row["global_form_validity"] = False
+                row["gold_checks"] = False
+                row["time_check_amount"] = False
+                row["time_spent_check"] = False
+
+                current_attributes = documents[document_data['serialization']['info']['index']].keys()
+                current_answers = document_data['serialization']['answers']
+                for currentAttribute in current_attributes:
+                    row[f"doc_{currentAttribute}"] = documents[document_data['serialization']['info']['index']][currentAttribute]
+                for dimension in dimensions:
+                    if dimension['scale'] is not None:
+                        value = current_answers[f"{dimension['name']}_value"]
+                        if type(value) == str:
+                            value = value.strip()
+                            value = re.sub('\n', '', value)
+                        row[f"doc_{dimension['name']}_value"] = value
+                        if dimension["scale"]["type"] == "categorical":
+                            for mapping in dimension["scale"]['mapping']:
+                                label = mapping['label'].lower().split(" ")
+                                label = '-'.join([str(c) for c in label])
+                                value_int = None
+                                try:
+                                    value_int = int(value)
+                                except:
+                                    value_int = 0
+                                if int(mapping['value']) == value_int:
+                                    row[f"doc_{dimension['name']}_label"] = label
+                                    row[f"doc_{dimension['name']}_index"] = mapping['index']
+                                    row[f"doc_{dimension['name']}_description"] = mapping['description']
+                        else:
+                            row[f"doc_{dimension['name']}_value"] = np.nan
+                            row[f"doc_{dimension['name']}_label"] = np.nan
+                            row[f"doc_{dimension['name']}_index"] = np.nan
+                            row[f"doc_{dimension['name']}_description"] = np.nan
+                    if dimension['justification']:
+                        justification = current_answers[f"{dimension['name']}_justification"].strip()
+                        justification = re.sub('\n', '', justification)
+                        row[f"doc_{dimension['name']}_justification"] = justification
+                    else:
+                        row[f"doc_{dimension['name']}_justification"] = np.nan
+                    if dimension['url']:
+                        row[f"doc_{dimension['name']}_url"] = current_answers[f"{dimension['name']}_url"]
+                    else:
+                        row[f"doc_{dimension['name']}_url"] = np.nan
+
+                row["doc_accesses"] = document_data['serialization']['accesses']
+
+                if document_data['serialization']['timestamps_elapsed'] is None:
+                    row["doc_time_elapsed"] = np.nan
+                else:
+                    row["doc_time_elapsed"] = round(document_data['serialization']['timestamps_elapsed'], 2)
+
+            for questionnaire_data in data_partial['questionnaires_answers']:
+
+                current_answers = questionnaire_data['serialization']['answers']
+                questions = current_answers.keys()
+                for index_sub, question in enumerate(questions):
+                    row[f"q_{questionnaires[questionnaire_data['serialization']['info']['index']]}_{question}_question"] = questionnaires[questionnaire_data['serialization']['info']['index']]["questions"][index_sub]["text"]
+                    row[f"q_{questionnaires[questionnaire_data['serialization']['info']['index']]['index']}_{question}_value"] = current_answers[question]
+                    if questionnaires[questionnaire_data['serialization']['info']['index']]["type"] == "standard":
+                        row[f"q_{questionnaires[questionnaire_data['serialization']['info']['index']]['index']}_{question}_answer"] = questionnaires[questionnaire_data['serialization']['info']['index']]["questions"][index_sub]["answers"][int(current_answers[question])]
+                    else:
+                        row[f"q_{questionnaires[questionnaire_data['serialization']['info']['index']]['index']}_{question}_answer"] = np.nan
+                    row[f"q_{questionnaires[questionnaire_data['serialization']['info']['index']]['index']}_time_elapsed"] = round(timestampsElapsed[questionnaires[questionnaire_data['serialization']['info']['index']]['index']], 2)
+                    row[f"q_{questionnaires[questionnaire_data['serialization']['info']['index']]['index']}_accesses"] = accesses[questionnaires[questionnaire_data['serialization']['info']['index']]['index']]
+
+            if('time_submit') in row:
+                dataframe = dataframe.append(row, ignore_index=True)
+
+if not os.path.exists(df_data_path):
+
+    empty_cols = [col for col in dataframe.columns if dataframe[col].isnull().all()]
+    dataframe.drop(empty_cols, axis=1, inplace=True)
+    print(dataframe["paid"].values)
+    dataframe["paid"].replace({0.0: False, 1.0: True}, inplace=True)
+    dataframe["gold_checks"].replace({0.0: False, 1.0: True}, inplace=True)
+    dataframe["time_spent_check"].replace({0.0: False, 1.0: True}, inplace=True)
+    dataframe["time_spent_check"].replace({0.0: False, 1.0: True}, inplace=True)
+    dataframe["global_form_validity"].replace({0.0: False, 1.0: True}, inplace=True)
 
     hit_df.columns = hit_df.columns.str.replace('[\W]', '', regex=True).str.replace('(?<!^)([A-Z])', r'_\1', regex=True).str.lower()
     hit_df = hit_df.add_prefix('mturk_', )
     hit_df.columns = [col.replace('h_i_t', 'hit') for col in hit_df.columns]
     hit_df.rename(columns={'mturk_worker_id': 'worker_id'}, inplace=True)
-
-    df.worker_id = df.worker_id.astype(str)
+    dataframe.worker_id = dataframe.worker_id.astype(str)
     hit_df.worker_id = hit_df.worker_id.astype(str)
+    res = dataframe.merge(hit_df, on='worker_id', how="left")
+    res.to_csv(df_data_path, index=False)
 
-    res = df.merge(hit_df, on='worker_id')
-
-    res.to_csv(dataframe_path, index=False)
-    console.print(f"Dataframe serialized at path: [cyan on white]{dataframe_path}")
+    console.print(f"Dataframe serialized at path: [cyan on white]{df_data_path}")
 
 else:
 
     console.print(f"Dataframe [green]detected[/green], skipping creation")
+
+assert False
 
 console.rule("4 - Building [cyan on white]dimensions_analysis[/cyan on white] dataframe")
 
@@ -863,9 +839,8 @@ columns = [
 ]
 
 dataframe = []
-df = pd.read_csv(dataframe_path)
+df = pd.read_csv(df_data_path)
 dim_df_path = f"{models_path}dimensions_analysis.csv"
-
 if not os.path.exists(dim_df_path):
 
     console.print(f"Dataframe [yellow]not detected[/yellow], building it")
@@ -958,7 +933,7 @@ console.rule("4 - Checking missing HITs")
 
 hits_missing = []
 hits = load_json(f"result/{task_name}/Task/hits.json")
-df = pd.read_csv(dataframe_path)
+df = pd.read_csv(df_data_path)
 for hit in hits:
     unit_data = df.loc[df['unit_id'] == hit['unit_id']]
     if len(unit_data) <= 0:
