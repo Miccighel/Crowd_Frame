@@ -287,7 +287,7 @@ mat-card-content label {
 }
 
 .mat-radio-group {
-  display: flex;
+  //display: flex; remove for pairwise method
   text-align: center;
   justify-content: space-evenly;
 }
@@ -990,6 +990,8 @@ mat-step form mat-card-content, mat-step form mat-card-actions {
 .div_radiobutton_check_pairwise{
   margin:0 auto;
   text-align: center;
+  display: block;
+  clear: both;
 }
 .radiobutton_check_pairwise{
   margin-left:25px;

@@ -677,7 +677,8 @@ export class SkeletonComponent implements OnInit {
                 for (let index = 0; index < this.documentsAmount; index++) {
                     let controlsConfig = {};
                     if (this.settings.modality=='pairwise') {
-                        if (this.documents[index]['pairwise_split']) controlsConfig[`pairwise_value_selected`] = new FormControl('', [Validators.required]);
+                        if (this.documents[index]!=undefined){
+                            if (this.documents[index]!=null) controlsConfig[`pairwise_value_selected`] = new FormControl('', [Validators.required]);}
                         for (let index_dimension = 0; index_dimension < this.dimensions.length; index_dimension++) {
                             let dimension = this.dimensions[index_dimension];
                             if (dimension.scale) {

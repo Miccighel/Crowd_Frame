@@ -8,7 +8,6 @@
             {
                 "id": "identifier_1",
                 "text": "Document_2",
-                "pairwise_split": true,
                 "statements": [
                     {
                         "name": "REP_MOSTLYTRUE_doc8",
@@ -37,7 +36,6 @@
             {
                 "id": "identifier_2",
                 "text": "Document_2",
-                "pairwise_split": true,
                 "statements": [
                     {
                         "name": "REP_TRUE_doc8",
@@ -66,7 +64,6 @@
             {
                 "id": "identifier_3",
                 "text": "Document_3",
-                "pairwise_split": true,
                 "statements": [
                     {
                         "name": "DEM_BARELYTRUE_doc8",
@@ -95,7 +92,6 @@
             {
                 "id": "identifier_4",
                 "text": "Document_4",
-                "pairwise_split": true,
                 "statements": [
                     {
                         "name": "LOW",
@@ -124,7 +120,6 @@
             {
                 "id": "identifier_5",
                 "text": "Document_5",
-                "pairwise_split": true,
                 "statements": [
                     {
                         "name": "Labor_In_Between_doc1",
