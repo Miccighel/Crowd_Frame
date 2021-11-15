@@ -693,7 +693,7 @@ export class SkeletonComponent implements OnInit {
                                             controlsConfig[`${dimension.name}_value_${i}`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min + 1), Validators.required]);
                                         }
                                     }
-                                    if (dimension.justification) controlsConfig[`${dimension.name}_justification_${i}`] = new FormControl('', [Validators.required, this.validateJustification.bind(this)])
+                                    if (dimension.justification)controlsConfig[`${dimension.name}_justification_${i}`] = new FormControl('', [Validators.required, this.validateJustification.bind(this)])
                                 }
                                 if (dimension.url) controlsConfig[`${dimension.name}_url`] = new FormControl('', [Validators.required, this.validateSearchEngineUrl.bind(this)]);
                             }
@@ -883,7 +883,6 @@ export class SkeletonComponent implements OnInit {
      */
     public storeDimensionValue(valueData: Object, document: number, dimension: number) {
         /* The current document, dimension and user query are copied from parameters */
-        console.log("Sucaaaa")
         let currentDocument = document
         let currentDimension = dimension
         /* A reference to the current dimension is saved */
@@ -2506,7 +2505,6 @@ export class SkeletonComponent implements OnInit {
     //Metodo che controllo se le due dimension(Scale) precedenti sono state cliccate
     public checkdimension(documentnumber: number, dimensionnumber: number) {
         if (this.checkedValue[documentnumber][dimensionnumber][0] == true && this.checkedValue[documentnumber][dimensionnumber][1] == true) {
-            console.log("Porcodiooo")
             return true
         } else {
             return false

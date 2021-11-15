@@ -760,7 +760,7 @@
 
                                     <!-- Dimension justification field markup -->
                                     <div *ngIf="dimension.justification" [ngClass]="this.settings.modality=='pairwise' ? 'dimension-content-split' : 'dimension-container dimension-justification'">
-                                        <div *ngIf="dimension.justification || dimension.justification && !(this.settings.modality=='pairwise')"
+                                        <div *ngIf="dimension.justification && !(this.settings.modality=='pairwise')"
                                              [ngClass]="this.settings.modality=='pairwise'? 'dimension-split-inside' : 'dimension-content justification'">
                                             <div class="dimension-text-field">
                                                 <mat-form-field appearance="fill">
@@ -783,7 +783,7 @@
                                         <!--@AggiunteAbbondo
                                           Dimension justification in modolità partwise-->
                                         <ng-container *ngIf="dimension.justification && this.settings.modality=='pairwise'">
-                                            <div *ngFor="let test of document.statements; let j=index" [ngClass]="this.settings.modality=='pairwise' ? 'dimension-box' : 'dimension-content justification'">
+                                            <div *ngFor="let test of document.statements; let j=index" [ngClass]="{'dimension-box': this.settings.modality=='pairwise'}">
                                                 <p class="spanDocument"> Answer justification  {{changeletter(j)}}</p>
                                                 <div class="dimension-text-field" style="margin-left: 10px;">
                                                     <mat-form-field appearance="fill">
