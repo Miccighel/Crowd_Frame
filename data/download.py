@@ -3,6 +3,7 @@
 
 import json
 import os
+import shutil
 from glob import glob
 import ipinfo
 import re
@@ -196,11 +197,11 @@ console.print(f"Tables ACL: [white on black]{', '.join(task_acl_tables)}")
 
 console.rule("1 - Fetching HITs")
 
-models_path = f"result/{task_name}/Models/"
+models_path = f"result/{task_name}/Dataframe/"
 resources_path = f"result/{task_name}/Resources/"
 data_path = f"result/{task_name}/Data/"
 hit_data_path = f"result/hits_data.csv"
-workers_acl_path = f"result/workers_acl.csv"
+workers_acl_path = f"{models_path}workers_acl.csv"
 
 os.makedirs(models_path, exist_ok=True)
 os.makedirs(resources_path, exist_ok=True)
@@ -222,9 +223,6 @@ with console.status(f"Downloading HITs, Token: {next_token}, Total: {token_count
             ])
         else:
             hit_df = pd.read_csv(hit_data_path)
-
-        # TODO: this should be removed
-        break
 
         if next_token == '':
             response = mturk.list_hits()
@@ -384,21 +382,25 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
 
             for data_source, worker_session in worker_data.items():
 
+                table_base_name = "_".join(data_source.split("_")[:-1])
+
                 acl_data_source = None
                 for table_name in task_acl_tables:
-                    if f"{task_name}_{batch_name}" in table_name:
+                    if table_base_name in table_name:
                         acl_data_source = table_name
                 log_data_source = None
                 for table_name in task_log_tables:
-                    if f"{task_name}_{batch_name}" in table_name:
+                    if table_base_name in table_name:
                         log_data_source = table_name
 
                 worker_object = {
+                    "source_data": data_source,
+                    "source_acl": acl_data_source,
+                    "source_log": log_data_source,
                     "task": {
                         "worker_id": worker_id,
                         "try_last": 0,
                         "paid": False,
-
                     },
                     "checks": [],
                     "dimensions": {},
@@ -533,15 +535,14 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
                       KeyConditionExpression="worker = :worker",
                       ExpressionAttributeValues={
                           ":worker": {'S': worker_id}
-                      }
+                      }, Select='ALL_ATTRIBUTES'
                     ):
                         for item in page['Items']:
                             data = {
                                 'worker': item['worker']['S'],
                                 'task': item['task']['S'],
                                 'batch': item['batch']['S'],
-                                'unit_id': item['unitID']['S'] if 'unitID' in item else None,
-                                'try': item['sequence']['S'].split("_")[0],
+                                'unit_id': item['unitId']['S'] if 'unitId' in item else None,
                                 'sequence': item['sequence']['S'].split("_")[1],
                                 'type': item['type']['S'],
                                 'time_server': item['server_time']['N'],
@@ -567,6 +568,7 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
 
             with open(worker_snapshot_path, 'w', encoding='utf-8') as f:
                 json.dump(worker_snapshot, f, ensure_ascii=False, indent=4)
+
             worker_counter += 1
 
     console.print(f"Data fetching for {worker_counter} workers [green]completed")
@@ -578,7 +580,6 @@ console.rule("4 - Building [cyan on white]logs_data[/cyan on white] dataframe")
 
 df_log_path = f"{models_path}logs_data.csv"
 df_log_partial_folder_path = f"{models_path}Logs-Partial/"
-os.makedirs(df_log_partial_folder_path, exist_ok=True)
 
 column_names = [
     "worker_id",
@@ -586,7 +587,6 @@ column_names = [
     "batch_name",
     "unit_id",
     "task_started",
-    "try",
     "sequence",
     "type",
     "time_server",
@@ -595,6 +595,8 @@ column_names = [
 counter = 0
 
 if not os.path.exists(df_log_path):
+
+    os.makedirs(df_log_partial_folder_path, exist_ok=True)
 
     for workers_snapshot_path in tqdm(workers_snapshot_paths):
 
@@ -622,7 +624,7 @@ if not os.path.exists(df_log_path):
 
                     task_started = False
 
-                    if len(worker_snapshot['data_full'])>0 or len(worker_snapshot['data_partial'])>0:
+                    if len(worker_snapshot['data_full'])>0 or len(worker_snapshot['data_partial']['documents_answers']) or len(worker_snapshot['data_partial']['questionnaires_answers'])>0:
 
                         task_started = True
 
@@ -635,7 +637,6 @@ if not os.path.exists(df_log_path):
                             'batch_name': data_log['batch'],
                             'unit_id': data_log['unit_id'],
                             'task_started': task_started,
-                            'try': data_log['try'],
                             'sequence': data_log['sequence'],
                             'time_server': data_log['time_server'],
                             'time_client': data_log['time_client'],
@@ -657,7 +658,7 @@ if not os.path.exists(df_log_path):
                             row['sentence'] = log_details['sentence']
                             for key_sequence in log_details['keySequence']:
                                 row['key_sequence_timestamp'] = key_sequence['timeStamp']
-                                row['key_sequence_key'] = key_sequence['key']
+                                row['key_sequence_key'] = key_sequence['key'] if 'key' in key_sequence else np.nan
                                 dataframe.loc[len(dataframe)] = row
                         elif data_log['type'] == 'movements':
                             for attribute, value in log_details.items():
@@ -727,16 +728,33 @@ if not os.path.exists(df_log_path):
 
             dataframe.to_csv(log_df_partial_path, index=False)
 
-    console.print(f"Dataframe serialized at path: [cyan on white]{df_dim_path}")
+    dataframes_partial = []
+    df_partials_paths = glob(f"{df_log_partial_folder_path}/*")
+
+    console.print(f"Merging together [cyan on white]{len(df_partials_paths)}[/cyan on white] partial log dataframes")
+
+    for df_partial_path in tqdm(df_partials_paths):
+        dataframes_partial.append(pd.read_csv(df_partial_path))
+    dataframe = pd.concat(dataframes_partial, ignore_index=True)
+    dataframe.sort_values(by=['worker_id', 'sequence'], ascending=True, inplace=True)
+    dataframe.to_csv(df_log_path, index=False)
+
+    if os.path.exists(df_log_path):
+        shutil.make_archive(f"{models_path}Logs-Partial", 'zip', df_log_partial_folder_path)
+        if os.path.exists(f"{models_path}Logs-Partial.zip"):
+            shutil.rmtree(df_log_partial_folder_path)
+
+    console.print(f"Log data found: [green]{len(dataframe)}")
+    console.print(f"Dataframe serialized at path: [cyan on white]{df_log_path}")
 
 else:
 
     console.print(f"Dataframe [green]detected[/green], skipping creation")
 
-
 console.rule("5 - Building [cyan on white]workers_data[/cyan on white] dataframe")
 
 df_data_path = f"{models_path}workers_data.csv"
+dataframe = pd.DataFrame()
 
 if not os.path.exists(df_data_path):
 
@@ -745,6 +763,10 @@ if not os.path.exists(df_data_path):
         worker_snapshots = load_json(workers_snapshot_path)
 
         for worker_snapshot in worker_snapshots:
+
+            source_acl = worker_snapshot['source_acl']
+            source_data = worker_snapshot['source_data']
+            source_log = worker_snapshot['source_log']
 
             worker_id = worker_snapshot['task']['worker_id']
             worker_paid = worker_snapshot['task']['paid']
@@ -770,6 +792,10 @@ if not os.path.exists(df_data_path):
 
                 row = {}
                 row['worker_id'] = worker_id
+
+                row['source_acl'] = source_acl
+                row['source_data'] = source_data
+                row['source_log'] = source_log
 
                 for attribute, value in task.items():
                     row[attribute] = value
