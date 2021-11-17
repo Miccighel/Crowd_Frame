@@ -537,11 +537,15 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
                     ):
                         for item in page['Items']:
                             data = {
-                                'time_server': item['server_time']['N'],
-                                'time_client': item['client_time']['N'],
-                                'type': item['type']['S'],
+                                'worker': item['worker']['S'],
+                                'task': item['task']['S'],
+                                'batch': item['batch']['S'],
+                                'unit_id': item['unitID']['S'] if 'unitID' in item else None,
                                 'try': item['sequence']['S'].split("_")[0],
                                 'sequence': item['sequence']['S'].split("_")[1],
+                                'type': item['type']['S'],
+                                'time_server': item['server_time']['N'],
+                                'time_client': item['client_time']['N'],
                                 'details': json.loads(item['details']['S'])
                             }
                             worker_object['logs'].append(data)
@@ -567,11 +571,162 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
 
     console.print(f"Data fetching for {worker_counter} workers [green]completed")
 
-console.rule("4 - Building [cyan on white]workers_data[/cyan on white] dataframe")
-
 data_path = f"result/{task_name}/Data/"
-
 workers_snapshot_paths = glob(f"{data_path}/*")
+
+console.rule("4 - Building [cyan on white]logs_data[/cyan on white] dataframe")
+
+df_log_path = f"{models_path}logs_data.csv"
+column_names = [
+    "worker_id",
+    "worker_paid",
+    "batch_name",
+    "unit_id",
+    "task_started",
+    "try",
+    "sequence",
+    "type",
+    "time_server",
+    "time_client",
+]
+dataframe = pd.DataFrame(columns=column_names)
+counter = 0
+
+if not os.path.exists(df_log_path):
+
+    for workers_snapshot_path in tqdm(workers_snapshot_paths):
+
+        worker_snapshots = load_json(workers_snapshot_path)
+
+        for worker_snapshot in worker_snapshots:
+
+            worker_id = worker_snapshot['task']['worker_id']
+            worker_paid = worker_snapshot['task']['paid']
+
+            task = worker_snapshot['task']
+            logs = worker_snapshot['logs']
+
+            uag_file = f"{resources_path}{worker_id}_uag.json"
+            ip_file = f"{resources_path}{worker_id}_ip.json"
+
+            if len(logs)>0:
+
+                task_started = False
+
+                if len(worker_snapshot['data_full'])>0 or len(worker_snapshot['data_partial'])>0:
+
+                    task_started = True
+
+                for data_log in logs:
+
+                    row = {
+                        'worker_id': worker_id,
+                        'worker_paid': worker_paid,
+                        'task_id': data_log['task'],
+                        'batch_name': data_log['batch'],
+                        'unit_id': data_log['unit_id'],
+                        'task_started': task_started,
+                        'try': data_log['try'],
+                        'sequence': data_log['sequence'],
+                        'time_server': data_log['time_server'],
+                        'time_client': data_log['time_client'],
+                        'type': data_log['type'],
+                    }
+
+                    log_details = data_log['details']
+
+                    if data_log['type']== 'keySequence':
+                        if 'section' not in dataframe.columns:
+                            dataframe['section'] = np.nan
+                        if 'key_sequence_timestamp' not in dataframe.columns:
+                            dataframe['timestamp'] = np.nan
+                        if 'key_sequence_key' not in dataframe.columns:
+                            dataframe['key'] = np.nan
+                        if 'sentence' not in dataframe.columns:
+                            dataframe['sentence'] = np.nan
+                        row['section'] = log_details['section']
+                        row['sentence'] = log_details['sentence']
+                        for key_sequence in log_details['keySequence']:
+                            row['key_sequence_timestamp'] = key_sequence['timeStamp']
+                            row['key_sequence_key'] = key_sequence['key']
+                            dataframe.loc[len(dataframe)] = row
+                    elif data_log['type'] == 'movements':
+                        for attribute, value in log_details.items():
+                            attribute_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute).lower()
+                            attribute_parsed = f"{attribute_parsed}"
+                            if type(value)!=dict and type(value)!=list:
+                                if attribute_parsed not in dataframe.columns:
+                                    dataframe[attribute_parsed] = np.nan
+                                row[attribute_parsed] = value
+                        for movement_data in log_details['points']:
+                            for attribute, value in movement_data.items():
+                                attribute_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute).lower()
+                                if type(value)==dict:
+                                    for attribute_sub, value_sub in value.items():
+                                        attribute_sub_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute_sub).lower()
+                                        attribute_sub_parsed = f"point_{attribute_parsed}_{attribute_sub_parsed}"
+                                        if attribute_sub_parsed not in dataframe.columns:
+                                            dataframe[attribute_sub_parsed] = np.nan
+                                        row[attribute_sub_parsed] = value_sub
+                                else:
+                                    attribute_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute).lower()
+                                    attribute_parsed = f"point_{attribute_parsed}"
+                                    if attribute_parsed not in dataframe.columns:
+                                        dataframe[attribute_parsed] = np.nan
+                                    row[attribute_parsed] = value
+                            dataframe.loc[len(dataframe)] = row
+                    elif data_log['type'] == 'click':
+                        for attribute, value in log_details.items():
+                            attribute_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute).lower()
+                            attribute_parsed = f"{attribute_parsed}"
+                            if type(value)!=dict and type(value)!=list:
+                                if attribute_parsed not in dataframe.columns:
+                                    dataframe[attribute_parsed] = np.nan
+                                row[attribute_parsed] = value
+                        for attribute, value in log_details['target'].items():
+                            attribute_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute).lower()
+                            attribute_parsed = f"target_{attribute_parsed}"
+                            if attribute_parsed not in dataframe.columns:
+                                dataframe[attribute_parsed] = np.nan
+                            row[attribute_parsed] = value
+                        dataframe.loc[len(dataframe)] = row
+                    else:
+                        if data_log['type']== 'context':
+                            worker_uag = log_details['ua']
+                            url = f"http://api.userstack.com/detect?access_key={user_stack_token}&ua={worker_uag}"
+                            if os.path.exists(uag_file):
+                                ua_data = load_json(uag_file)
+                            else:
+                                ua_data = requests.get(url).json()
+                                with open(uag_file, 'w', encoding='utf-8') as f:
+                                    json.dump(ua_data, f, ensure_ascii=False, indent=4)
+                            worker_ip = log_details['ip']
+                            if os.path.exists(ip_file):
+                                ip_data = load_json(ip_file)
+                            else:
+                                ip_data = ip_info_handler.getDetails(worker_ip).all
+                                with open(ip_file, 'w', encoding='utf-8') as f:
+                                    json.dump(ip_data, f, ensure_ascii=False, indent=4)
+                        for detail_kind, detail_val in log_details.items():
+                            detail_kind_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', detail_kind).lower()
+                            if detail_kind_parsed not in dataframe.columns:
+                                dataframe[detail_kind_parsed] = np.nan
+                            if type(detail_val)==str:
+                                detail_val.replace('\n','')
+                            row[detail_kind_parsed] = detail_val
+                        dataframe.loc[len(dataframe)] = row
+
+    dataframe.to_csv(df_log_path, index=False)
+
+    console.print(f"Dataframe serialized at path: [cyan on white]{df_dim_path}")
+
+else:
+
+    console.print(f"Dataframe [green]detected[/green], skipping creation")
+
+
+console.rule("5 - Building [cyan on white]workers_data[/cyan on white] dataframe")
+
 df_data_path = f"{models_path}workers_data.csv"
 dataframe = pd.DataFrame()
 
@@ -856,7 +1011,7 @@ else:
 
     console.print(f"Dataframe [green]detected[/green], skipping creation")
 
-console.rule("5 - Building [cyan on white]dimensions_analysis[/cyan on white] dataframe")
+console.rule("6 - Building [cyan on white]dimensions_analysis[/cyan on white] dataframe")
 
 df_data = pd.read_csv(df_data_path)
 df_dim_path = f"{models_path}dimensions_analysis.csv"
@@ -1025,81 +1180,6 @@ else:
 
     console.print(f"Dataframe [green]detected[/green], skipping creation")
 
-console.rule("6 - Building [cyan on white]logs_data[/cyan on white] dataframe")
-
-df_data = pd.read_csv(df_data_path)
-df_log_path = f"{models_path}logs_data.csv"
-dataframe = pd.DataFrame(columns=[
-    "worker_id",
-    "worker_paid",
-    "batch_name",
-    "unit_id",
-    'current_try',
-])
-
-counter = 0
-
-if not os.path.exists(df_log_path):
-
-    for workers_snapshot_path in tqdm(workers_snapshot_paths):
-
-        worker_snapshots = load_json(workers_snapshot_path)
-
-        for worker_snapshot in worker_snapshots:
-
-            worker_id = worker_snapshot['task']['worker_id']
-            worker_paid = worker_snapshot['task']['paid']
-
-            task = worker_snapshot['task']
-            logs = worker_snapshot['logs']
-
-            if len(logs)>0:
-
-                worker_data = df_data.loc[df_data['worker_id'] == worker_id]
-
-                task_id = None
-                batch_name = None
-                task_started = False
-
-                if len(worker_data)>0:
-                    task_id = worker_data.iloc[0]['task_id']
-                    batch_name = worker_data.iloc[0]['batch_name']
-                    task_started = True
-
-                for data_log in logs:
-
-                    if(counter <= 250):
-
-                        row = {
-                            'worker_id': worker_id,
-                            'worker_paid': worker_paid,
-                            'task_id': task_id,
-                            'batch_name': batch_name,
-                            'task_started': task_started
-                        }
-
-                        for attribute, value in data_log.items():
-
-                            if type(value) == dict:
-                                for attribute_sub, value_sub in value.items():
-                                    column_name = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute_sub).lower()
-                                    if column_name not in dataframe.columns:
-                                        dataframe[column_name] = np.nan
-                                    row[column_name] = str(value_sub)
-                            else:
-                                row[attribute] = str(value)
-
-                        dataframe.loc[len(dataframe)] = row
-
-                        counter = counter + 1
-
-    dataframe.to_csv(df_log_path, index=False)
-
-    console.print(f"Dataframe serialized at path: [cyan on white]{df_dim_path}")
-
-else:
-
-    console.print(f"Dataframe [green]detected[/green], skipping creation")
 
 # console.rule("4 - Checking missing HITs")
 #
