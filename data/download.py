@@ -577,6 +577,9 @@ workers_snapshot_paths = glob(f"{data_path}/*")
 console.rule("4 - Building [cyan on white]logs_data[/cyan on white] dataframe")
 
 df_log_path = f"{models_path}logs_data.csv"
+df_log_partial_folder_path = f"{models_path}Logs-Partial/"
+os.makedirs(df_log_partial_folder_path, exist_ok=True)
+
 column_names = [
     "worker_id",
     "worker_paid",
@@ -589,7 +592,6 @@ column_names = [
     "time_server",
     "time_client",
 ]
-dataframe = pd.DataFrame(columns=column_names)
 counter = 0
 
 if not os.path.exists(df_log_path):
@@ -598,125 +600,132 @@ if not os.path.exists(df_log_path):
 
         worker_snapshots = load_json(workers_snapshot_path)
 
-        for worker_snapshot in worker_snapshots:
+        worker_id = os.path.basename(workers_snapshot_path).replace(".json", '')
+        log_df_partial_path = f"{df_log_partial_folder_path}{worker_id}.csv"
 
-            worker_id = worker_snapshot['task']['worker_id']
-            worker_paid = worker_snapshot['task']['paid']
+        if not os.path.exists(log_df_partial_path):
 
-            task = worker_snapshot['task']
-            logs = worker_snapshot['logs']
+            dataframe = pd.DataFrame(columns=column_names)
 
-            uag_file = f"{resources_path}{worker_id}_uag.json"
-            ip_file = f"{resources_path}{worker_id}_ip.json"
+            for worker_snapshot in worker_snapshots:
 
-            if len(logs)>0:
+                worker_id = worker_snapshot['task']['worker_id']
+                worker_paid = worker_snapshot['task']['paid']
 
-                task_started = False
+                task = worker_snapshot['task']
+                logs = worker_snapshot['logs']
 
-                if len(worker_snapshot['data_full'])>0 or len(worker_snapshot['data_partial'])>0:
+                uag_file = f"{resources_path}{worker_id}_uag.json"
+                ip_file = f"{resources_path}{worker_id}_ip.json"
 
-                    task_started = True
+                if len(logs)>0:
 
-                for data_log in logs:
+                    task_started = False
 
-                    row = {
-                        'worker_id': worker_id,
-                        'worker_paid': worker_paid,
-                        'task_id': data_log['task'],
-                        'batch_name': data_log['batch'],
-                        'unit_id': data_log['unit_id'],
-                        'task_started': task_started,
-                        'try': data_log['try'],
-                        'sequence': data_log['sequence'],
-                        'time_server': data_log['time_server'],
-                        'time_client': data_log['time_client'],
-                        'type': data_log['type'],
-                    }
+                    if len(worker_snapshot['data_full'])>0 or len(worker_snapshot['data_partial'])>0:
 
-                    log_details = data_log['details']
+                        task_started = True
 
-                    if data_log['type']== 'keySequence':
-                        if 'section' not in dataframe.columns:
-                            dataframe['section'] = np.nan
-                        if 'key_sequence_timestamp' not in dataframe.columns:
-                            dataframe['timestamp'] = np.nan
-                        if 'key_sequence_key' not in dataframe.columns:
-                            dataframe['key'] = np.nan
-                        if 'sentence' not in dataframe.columns:
-                            dataframe['sentence'] = np.nan
-                        row['section'] = log_details['section']
-                        row['sentence'] = log_details['sentence']
-                        for key_sequence in log_details['keySequence']:
-                            row['key_sequence_timestamp'] = key_sequence['timeStamp']
-                            row['key_sequence_key'] = key_sequence['key']
-                            dataframe.loc[len(dataframe)] = row
-                    elif data_log['type'] == 'movements':
-                        for attribute, value in log_details.items():
-                            attribute_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute).lower()
-                            attribute_parsed = f"{attribute_parsed}"
-                            if type(value)!=dict and type(value)!=list:
-                                if attribute_parsed not in dataframe.columns:
-                                    dataframe[attribute_parsed] = np.nan
-                                row[attribute_parsed] = value
-                        for movement_data in log_details['points']:
-                            for attribute, value in movement_data.items():
+                    for data_log in logs:
+
+                        row = {
+                            'worker_id': worker_id,
+                            'worker_paid': worker_paid,
+                            'task_id': data_log['task'],
+                            'batch_name': data_log['batch'],
+                            'unit_id': data_log['unit_id'],
+                            'task_started': task_started,
+                            'try': data_log['try'],
+                            'sequence': data_log['sequence'],
+                            'time_server': data_log['time_server'],
+                            'time_client': data_log['time_client'],
+                            'type': data_log['type'],
+                        }
+
+                        log_details = data_log['details']
+
+                        if data_log['type']== 'keySequence':
+                            if 'section' not in dataframe.columns:
+                                dataframe['section'] = np.nan
+                            if 'key_sequence_timestamp' not in dataframe.columns:
+                                dataframe['timestamp'] = np.nan
+                            if 'key_sequence_key' not in dataframe.columns:
+                                dataframe['key'] = np.nan
+                            if 'sentence' not in dataframe.columns:
+                                dataframe['sentence'] = np.nan
+                            row['section'] = log_details['section']
+                            row['sentence'] = log_details['sentence']
+                            for key_sequence in log_details['keySequence']:
+                                row['key_sequence_timestamp'] = key_sequence['timeStamp']
+                                row['key_sequence_key'] = key_sequence['key']
+                                dataframe.loc[len(dataframe)] = row
+                        elif data_log['type'] == 'movements':
+                            for attribute, value in log_details.items():
                                 attribute_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute).lower()
-                                if type(value)==dict:
-                                    for attribute_sub, value_sub in value.items():
-                                        attribute_sub_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute_sub).lower()
-                                        attribute_sub_parsed = f"point_{attribute_parsed}_{attribute_sub_parsed}"
-                                        if attribute_sub_parsed not in dataframe.columns:
-                                            dataframe[attribute_sub_parsed] = np.nan
-                                        row[attribute_sub_parsed] = value_sub
-                                else:
-                                    attribute_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute).lower()
-                                    attribute_parsed = f"point_{attribute_parsed}"
+                                attribute_parsed = f"{attribute_parsed}"
+                                if type(value)!=dict and type(value)!=list:
                                     if attribute_parsed not in dataframe.columns:
                                         dataframe[attribute_parsed] = np.nan
                                     row[attribute_parsed] = value
-                            dataframe.loc[len(dataframe)] = row
-                    elif data_log['type'] == 'click':
-                        for attribute, value in log_details.items():
-                            attribute_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute).lower()
-                            attribute_parsed = f"{attribute_parsed}"
-                            if type(value)!=dict and type(value)!=list:
+                            for movement_data in log_details['points']:
+                                for attribute, value in movement_data.items():
+                                    attribute_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute).lower()
+                                    if type(value)==dict:
+                                        for attribute_sub, value_sub in value.items():
+                                            attribute_sub_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute_sub).lower()
+                                            attribute_sub_parsed = f"point_{attribute_parsed}_{attribute_sub_parsed}"
+                                            if attribute_sub_parsed not in dataframe.columns:
+                                                dataframe[attribute_sub_parsed] = np.nan
+                                            row[attribute_sub_parsed] = value_sub
+                                    else:
+                                        attribute_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute).lower()
+                                        attribute_parsed = f"point_{attribute_parsed}"
+                                        if attribute_parsed not in dataframe.columns:
+                                            dataframe[attribute_parsed] = np.nan
+                                        row[attribute_parsed] = value
+                                dataframe.loc[len(dataframe)] = row
+                        elif data_log['type'] == 'click':
+                            for attribute, value in log_details.items():
+                                attribute_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute).lower()
+                                attribute_parsed = f"{attribute_parsed}"
+                                if type(value)!=dict and type(value)!=list:
+                                    if attribute_parsed not in dataframe.columns:
+                                        dataframe[attribute_parsed] = np.nan
+                                    row[attribute_parsed] = value
+                            for attribute, value in log_details['target'].items():
+                                attribute_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute).lower()
+                                attribute_parsed = f"target_{attribute_parsed}"
                                 if attribute_parsed not in dataframe.columns:
                                     dataframe[attribute_parsed] = np.nan
                                 row[attribute_parsed] = value
-                        for attribute, value in log_details['target'].items():
-                            attribute_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute).lower()
-                            attribute_parsed = f"target_{attribute_parsed}"
-                            if attribute_parsed not in dataframe.columns:
-                                dataframe[attribute_parsed] = np.nan
-                            row[attribute_parsed] = value
-                        dataframe.loc[len(dataframe)] = row
-                    else:
-                        if data_log['type']== 'context':
-                            worker_uag = log_details['ua']
-                            url = f"http://api.userstack.com/detect?access_key={user_stack_token}&ua={worker_uag}"
-                            if os.path.exists(uag_file):
-                                ua_data = load_json(uag_file)
-                            else:
-                                ua_data = requests.get(url).json()
-                                with open(uag_file, 'w', encoding='utf-8') as f:
-                                    json.dump(ua_data, f, ensure_ascii=False, indent=4)
-                            worker_ip = log_details['ip']
-                            if os.path.exists(ip_file):
-                                ip_data = load_json(ip_file)
-                            else:
-                                ip_data = ip_info_handler.getDetails(worker_ip).all
-                                with open(ip_file, 'w', encoding='utf-8') as f:
-                                    json.dump(ip_data, f, ensure_ascii=False, indent=4)
-                        for detail_kind, detail_val in log_details.items():
-                            detail_kind_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', detail_kind).lower()
-                            if detail_kind_parsed not in dataframe.columns:
-                                dataframe[detail_kind_parsed] = np.nan
-                            if type(detail_val)==str:
-                                detail_val.replace('\n','')
-                            row[detail_kind_parsed] = detail_val
-                        dataframe.loc[len(dataframe)] = row
+                            dataframe.loc[len(dataframe)] = row
+                        else:
+                            if data_log['type']== 'context':
+                                worker_uag = log_details['ua']
+                                url = f"http://api.userstack.com/detect?access_key={user_stack_token}&ua={worker_uag}"
+                                if os.path.exists(uag_file):
+                                    ua_data = load_json(uag_file)
+                                else:
+                                    ua_data = requests.get(url).json()
+                                    with open(uag_file, 'w', encoding='utf-8') as f:
+                                        json.dump(ua_data, f, ensure_ascii=False, indent=4)
+                                worker_ip = log_details['ip']
+                                if os.path.exists(ip_file):
+                                    ip_data = load_json(ip_file)
+                                else:
+                                    ip_data = ip_info_handler.getDetails(worker_ip).all
+                                    with open(ip_file, 'w', encoding='utf-8') as f:
+                                        json.dump(ip_data, f, ensure_ascii=False, indent=4)
+                            for detail_kind, detail_val in log_details.items():
+                                detail_kind_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', detail_kind).lower()
+                                if detail_kind_parsed not in dataframe.columns:
+                                    dataframe[detail_kind_parsed] = np.nan
+                                if type(detail_val)==str:
+                                    detail_val.replace('\n','')
+                                row[detail_kind_parsed] = detail_val
+                            dataframe.loc[len(dataframe)] = row
 
-    dataframe.to_csv(df_log_path, index=False)
+            dataframe.to_csv(log_df_partial_path, index=False)
 
     console.print(f"Dataframe serialized at path: [cyan on white]{df_dim_path}")
 
@@ -728,7 +737,6 @@ else:
 console.rule("5 - Building [cyan on white]workers_data[/cyan on white] dataframe")
 
 df_data_path = f"{models_path}workers_data.csv"
-dataframe = pd.DataFrame()
 
 if not os.path.exists(df_data_path):
 
