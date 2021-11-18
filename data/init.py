@@ -32,7 +32,7 @@ iam_path = '/Crowd_Frame/'
 config_user_name = 'config-user'
 mturk_user_name = 'mturk-user'
 
-os.chdir("data/")#for Windows
+#os.chdir("data/")#for Windows
 #os.chdir("../data/")
 #
 

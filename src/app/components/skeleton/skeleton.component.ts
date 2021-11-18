@@ -808,6 +808,10 @@ export class SkeletonComponent implements OnInit {
                     }
                 }
 
+                /* The array of accesses counter is initialized */
+                this.elementsAccesses = new Array<number>(this.documentsAmount + this.questionnaireAmount);
+                for (let index = 0; index < this.elementsAccesses.length; index++) this.elementsAccesses[index] = 0;
+
                 /* Arrays of start, end and elapsed timestamps are initialized to track how much time the worker spends
                  * on each document, including each questionnaire */
                 this.timestampsStart = new Array<Array<number>>(this.documentsAmount + this.questionnaireAmount);
