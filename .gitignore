@@ -63,10 +63,7 @@ data/build/environments/*
 data/.env
 
 # File generated when configuring AWS
-data/aws/policy/*
 data/aws/generated/*
-data/aws/*
-
 
 .vscode/settings.json
 
@@ -81,7 +78,6 @@ data/build/config/admin.json
 # Random things
 local/log.md
 local/*
-
 
 data/build/skeleton/goldChecker.ts
 
