@@ -54,6 +54,7 @@ import {ButtonDirective, CrowdXplorerDirective, InputDirective, RadioDirective, 
 import {SectionService} from "./services/section.service";
 import {from, Observable} from "rxjs";
 import {tap} from "rxjs/operators";
+import { QuestionnaireComponent } from './components/questionnaire/questionnaire.component';
 
 function initActionLogger(actionLogger: ActionLogger): () => Observable<any>{
   return() => from(actionLogger.downloadOpt()).pipe(tap(data => {
@@ -76,7 +77,8 @@ function initActionLogger(actionLogger: ActionLogger): () => Observable<any>{
     SkeletonDirective,
     InputDirective,
     RadioDirective,
-    CrowdXplorerDirective
+    CrowdXplorerDirective,
+    QuestionnaireComponent
   ],
   imports: [
     BrowserModule,

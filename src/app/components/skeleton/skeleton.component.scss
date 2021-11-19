@@ -1,168 +1,5 @@
-/* |--- GENERAL STYLES  --| */
-
 ::ng-deep .mat-horizontal-stepper-header {
   pointer-events: none !important;
-}
-
-.radio-button-group {
-  display: flex;
-  flex-direction: column;
-  margin: 15px 0;
-}
-
-.radio-button-group-horizontal {
-  display: inline;
-}
-
-.radio-button {
-  margin: 5px;
-}
-
-button:nth-child(2) {
-  margin-left: 5px;
-}
-
-.document-section mat-form-field, .questionnaire-section mat-form-field {
-  margin-bottom: 1%;
-  max-width: 70%;
-}
-
-.form-note {
-  button:last-child {
-    margin-right: 1%;
-  }
-  font-size: 1em;
-}
-
-mat-card-title {
-  padding-top: 1%;
-  padding-bottom: 1%;
-  margin-bottom: 1%;
-}
-
-.text-lighter {
-  font-weight: lighter;
-}
-
-/* Questionnaires form */
-
-.questionnaire-body {
-
-  mat-form-field {
-    width: 100%;
-  }
-
-  .questionnaire-question {
-    margin-top: 1%;
-    margin-bottom: 1%;
-    font-size: 1.5em;
-    font-weight: normal;
-  }
-
-  .questionnaire-value {
-    font-size: 2em;
-  }
-
-  .mat-divider {
-    margin-bottom: 1%;
-  }
-
-}
-
-/* Task specific styles */
-
-.evaluation-instructions {
-  h2 {
-    font-weight: lighter;
-  }
-  margin-bottom: 1%;
-}
-
-
-.question label {
-  font-weight: bold;
-}
-
-.question .question-detail {
-  box-shadow: none;
-}
-
-.question-detail mat-panel-title {
-  text-transform: uppercase;
-  flex-grow: 0;
-}
-
-.question-detail mat-panel-description {
-  font-weight: normal;
-  text-align: left;
-}
-
-.question-detail mat-expansion-panel-header, .question-detail mat-expansion-panel {
-  padding-left: 0.75%;
-}
-
-.questionnaire-matrix .matrix-header {
-  padding-top: 1.5%;
-  padding-bottom: 1.5%;
-  border: 0;
-  box-shadow: 0 0 0 0;
-  border-radius: 0;
-  position: -webkit-sticky;
-  position: sticky;
-  background-color: white;
-  top: 0;
-  z-index: 1000;
-  display: flex;
-  vertical-align: middle;
-}
-
-.questionnaire-matrix .matrix-header div {
-  text-align: center;
-  flex: 1 0;
-}
-
-.questionnaire-matrix .matrix-header > div:first-child {
-  flex-basis: 20%;
-  text-align: justify;
-}
-
-.questionnaire-matrix mat-radio-group {
-  margin-top: 1%;
-  margin-bottom: 1%;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-}
-
-.questionnaire-matrix mat-radio-group > div:first-child {
-  text-align: justify;
-  flex-basis: 20%;
-}
-
-.questionnaire-matrix mat-radio-group > div {
-  order: 6;
-  text-align: center;
-  flex: 1;
-}
-
-.questionnaire-matrix mat-radio-group > div p {
-  margin: 0;
-}
-
-mat-card-content mat-form-field label {
-  font-weight: bold;
-}
-
-mat-card-content mat-form-field input {
-  margin-top: 0.5%;
-}
-
-mat-card-content p span.hit-value {
-  font-weight: bold;
-}
-
-mat-card-content label {
-  font-weight: bold;
 }
 
 .statement {
@@ -317,6 +154,20 @@ mat-card-content label {
   padding: 5px;
 }
 
+
+.document-section mat-form-field {
+  margin-bottom: 1%;
+  max-width: 70%;
+}
+
+.form-note {
+  button:last-child {
+    margin-right: 1%;
+  }
+  font-size: 1em;
+}
+
+
 .inner-annotation-delete {
   margin-left: 5px;
 }
@@ -413,16 +264,8 @@ mat-card-content label {
   margin: 0;
 }
 
-mat-card-title, .dimension h2, .instructions h2 {
+.dimension h2, .instructions h2 {
   font-weight: lighter;
-}
-
-mat-card-content {
-  padding-top: 0.5%;
-}
-
-button {
-  text-transform: uppercase;
 }
 
 .comment-form {
@@ -493,6 +336,15 @@ button {
   text-align: center;
 }
 
+/* Task specific styles */
+
+.evaluation-instructions {
+  h2 {
+    font-weight: lighter;
+  }
+  margin-bottom: 1%;
+}
+
 /* |--- TASK BODY SECTION STYLES --| */
 
 /* Stepper */
@@ -505,15 +357,9 @@ mat-horizontal-stepper {
   margin-bottom: 2%;
 }
 
-mat-horizontal-stepper mat-card-content, mat-horizontal-stepper mat-card-title, mat-horizontal-stepper mat-card-actions {
-  width: 75%;
-  margin: auto;
+mat-card-content mat-form-field label {
+  font-weight: bold;
 }
-
-mat-step form mat-card-content, mat-step form mat-card-actions {
-  padding: 1%;
-}
-
 
 /* |--- OUTCOME SECTION STYLES ---| */
 

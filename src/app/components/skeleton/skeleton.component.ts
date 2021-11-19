@@ -656,174 +656,160 @@ export class SkeletonComponent implements OnInit {
             /* The dimensions stored on Amazon S3 are retrieved */
             let rawDimensions = await this.S3Service.downloadDimensions(this.configService.environment)
             this.dimensionsAmount = rawDimensions.length;
-
             /* Each dimension is parsed using the Dimension class */
             for (let index = 0; index < this.dimensionsAmount; index++) this.dimensions.push(new Dimension(index, rawDimensions[index]));
+            /**Iniziliazziare il vettore degli statement */
+            this.dimensionValueinsert();
 
             for (let index = 0; index < this.documentsAmount; index++) {
                 let controlsConfig = {};
-                this.dimensions = new Array<Dimension>();
 
-                let checkDimension = false
-                /* The dimensions stored on Amazon S3 are retrieved */
-                let rawDimensions = await this.S3Service.downloadDimensions(this.configService.environment)
-                this.dimensionsAmount = rawDimensions.length;
-                /**Iniziliazziare il vettore degli statement */
-                this.dimensionValueinsert();
-                /* Each dimension is parsed using the Dimension class */
-                for (let index = 0; index < this.dimensionsAmount; index++) this.dimensions.push(new Dimension(index, rawDimensions[index]));
+                if (this.settings.modality == 'pairwise') {
+                    if (this.documents[index] != undefined) {
+                        if (this.documents[index] != null) controlsConfig[`pairwise_value_selected`] = new FormControl('', [Validators.required]);
+                    }
+                    for (let index_dimension = 0; index_dimension < this.dimensions.length; index_dimension++) {
+                        let dimension = this.dimensions[index_dimension];
+                        if (dimension.scale) {
 
-                for (let index = 0; index < this.documentsAmount; index++) {
-                    let controlsConfig = {};
-
-                    if (this.settings.modality == 'pairwise') {
-                        if (this.documents[index] != undefined) {
-                            if (this.documents[index] != null) controlsConfig[`pairwise_value_selected`] = new FormControl('', [Validators.required]);
-                        }
-                        for (let index_dimension = 0; index_dimension < this.dimensions.length; index_dimension++) {
-                            let dimension = this.dimensions[index_dimension];
-                            if (dimension.scale) {
-
-                                for (let i = 0; i < this.documents[index]['statements'].length; i++) {
-                                    if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value_${i}`] = new FormControl('', [Validators.required]);
-                                    if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value_${i}`] = new FormControl('', [Validators.required]);
-                                    if (dimension.scale.type == "magnitude_estimation") {
-                                        if ((<ScaleMagnitude>dimension.scale).lower_bound) {
-                                            controlsConfig[`${dimension.name}_value_${i}`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min), Validators.required]);
-                                        } else {
-                                            controlsConfig[`${dimension.name}_value_${i}`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min + 1), Validators.required]);
-                                        }
-                                    }
-                                    if (dimension.justification) controlsConfig[`${dimension.name}_justification_${i}`] = new FormControl('', [Validators.required, this.validateJustification.bind(this)])
-                                }
-                                if (dimension.url) controlsConfig[`${dimension.name}_url`] = new FormControl('', [Validators.required, this.validateSearchEngineUrl.bind(this)]);
-                            }
-                        }
-                    } else {
-
-                        for (let index_dimension = 0; index_dimension < this.dimensions.length; index_dimension++) {
-                            let dimension = this.dimensions[index_dimension];
-                            if (dimension.scale) {
-                                if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.required]);
-                                if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value`] = new FormControl(((<ScaleInterval>dimension.scale).min), [Validators.required]);
+                            for (let i = 0; i < this.documents[index]['statements'].length; i++) {
+                                if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value_${i}`] = new FormControl('', [Validators.required]);
+                                if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value_${i}`] = new FormControl('', [Validators.required]);
                                 if (dimension.scale.type == "magnitude_estimation") {
                                     if ((<ScaleMagnitude>dimension.scale).lower_bound) {
-                                        controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min), Validators.required]);
+                                        controlsConfig[`${dimension.name}_value_${i}`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min), Validators.required]);
                                     } else {
-                                        controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min + 1), Validators.required]);
+                                        controlsConfig[`${dimension.name}_value_${i}`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min + 1), Validators.required]);
                                     }
                                 }
+                                if (dimension.justification) controlsConfig[`${dimension.name}_justification_${i}`] = new FormControl('', [Validators.required, this.validateJustification.bind(this)])
                             }
-                            if (dimension.justification) controlsConfig[`${dimension.name}_justification`] = new FormControl('', [Validators.required, this.validateJustification.bind(this)])
                             if (dimension.url) controlsConfig[`${dimension.name}_url`] = new FormControl('', [Validators.required, this.validateSearchEngineUrl.bind(this)]);
                         }
                     }
-                    this.documentsForm[index] = this.formBuilder.group(controlsConfig)
-                }
+                } else {
 
-                this.dimensionsSelectedValues = new Array<object>(this.documentsAmount);
-                for (let index = 0; index < this.dimensionsSelectedValues.length; index++) {
-                    this.dimensionsSelectedValues[index] = {};
-                    this.dimensionsSelectedValues[index]["data"] = [];
-                    this.dimensionsSelectedValues[index]["amount"] = 0;
-                }
-
-
-                /* |--------- SEARCH ENGINE INTEGRATION (see: search_engine.json | https://github.com/Miccighel/CrowdXplorer) ---------| */
-
-                this.searchEngineQueries = new Array<object>(this.documentsAmount);
-                for (let index = 0; index < this.searchEngineQueries.length; index++) {
-                    this.searchEngineQueries[index] = {};
-                    this.searchEngineQueries[index]["data"] = [];
-                    this.searchEngineQueries[index]["amount"] = 0;
-                }
-                this.currentQuery = 0;
-                this.searchEngineRetrievedResponses = new Array<object>(this.documentsAmount);
-                for (let index = 0; index < this.searchEngineRetrievedResponses.length; index++) {
-                    this.searchEngineRetrievedResponses[index] = {};
-                    this.searchEngineRetrievedResponses[index]["data"] = [];
-                    this.searchEngineRetrievedResponses[index]["amount"] = 0;
-                }
-                this.searchEngineSelectedResponses = new Array<object>(this.documentsAmount);
-                for (let index = 0; index < this.searchEngineSelectedResponses.length; index++) {
-                    this.searchEngineSelectedResponses[index] = {};
-                    this.searchEngineSelectedResponses[index]["data"] = [];
-                    this.searchEngineSelectedResponses[index]["amount"] = 0;
-                }
-
-                /* |--------- TASK SETTINGS (see task.json)---------| */
-
-                if (this.annotator) {
-                    switch (this.annotator.type) {
-                        case "options":
-                            this.annotationOptions = this.formBuilder.group({
-                                label: new FormControl('')
-                            });
-                            this.notes = new Array<Array<NoteStandard>>(this.documentsAmount);
-                            for (let i = 0; i < this.notes.length; i++) this.notes[i] = [];
-                            break;
-                        case "laws":
-                            this.notes = new Array<Array<NoteLaws>>(this.documentsAmount);
-                            for (let i = 0; i < this.notes.length; i++) this.notes[i] = [];
+                    for (let index_dimension = 0; index_dimension < this.dimensions.length; index_dimension++) {
+                        let dimension = this.dimensions[index_dimension];
+                        if (dimension.scale) {
+                            if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.required]);
+                            if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value`] = new FormControl(((<ScaleInterval>dimension.scale).min), [Validators.required]);
+                            if (dimension.scale.type == "magnitude_estimation") {
+                                if ((<ScaleMagnitude>dimension.scale).lower_bound) {
+                                    controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min), Validators.required]);
+                                } else {
+                                    controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min + 1), Validators.required]);
+                                }
+                            }
+                        }
+                        if (dimension.justification) controlsConfig[`${dimension.name}_justification`] = new FormControl('', [Validators.required, this.validateJustification.bind(this)])
+                        if (dimension.url) controlsConfig[`${dimension.name}_url`] = new FormControl('', [Validators.required, this.validateSearchEngineUrl.bind(this)]);
                     }
                 }
-
-                this.annotationButtonsDisabled = new Array<boolean>();
-                for (let index = 0; index < this.documentsAmount; index++) {
-                    this.annotationButtonsDisabled.push(true)
-                }
-
-                this.notesDone = [false, false, false, false, false]
-
-                /* |--------- COUNTDOWN ---------| */
-
-                this.countdownsExpired = new Array<boolean>(this.documentsAmount);
-                for (let index = 0; index < this.documentsAmount; index++) this.countdownsExpired[index] = false;
-
-                this.documentsCountdownTime = new Array<number>(this.documentsAmount);
-                for (let index = 0; index < this.documents.length; index++) {
-                    let position = this.settings.countdown_modality == 'position' ? this.documents[index]['index'] : null;
-                    let attribute = this.settings.countdown_modality == 'attribute' ? this.documents[index][this.settings.countdown_attribute] : null;
-                    this.documentsCountdownTime[index] = this.updateCountdownTime(position, attribute)
-                }
-
-                this.hideAttributes = false
-
-                /* |--------- QUALITY CHECKS ---------| */
-
-                this.goldDocuments = new Array<Document>();
-
-                /* Indexes of the gold elements are retrieved */
-                for (let index = 0; index < this.documentsAmount; index++) {
-                    if (this.documents[index].id.includes('GOLD')) {
-                        this.goldDocuments.push(this.documents[index])
-                    }
-                }
-
-                this.goldDimensions = new Array<Dimension>();
-
-                /* Indexes of the gold dimensions are retrieved */
-                for (let index = 0; index < this.dimensionsAmount; index++) {
-                    if (this.dimensions[index].gold) {
-                        this.goldDimensions.push(this.dimensions[index])
-                    }
-                }
-
-                /* The array of accesses counter is initialized */
-                this.elementsAccesses = new Array<number>(this.documentsAmount + this.questionnaireAmount);
-                for (let index = 0; index < this.elementsAccesses.length; index++) this.elementsAccesses[index] = 0;
-
-                /* Arrays of start, end and elapsed timestamps are initialized to track how much time the worker spends
-                 * on each document, including each questionnaire */
-                this.timestampsStart = new Array<Array<number>>(this.documentsAmount + this.questionnaireAmount);
-                this.timestampsEnd = new Array<Array<number>>(this.documentsAmount + this.questionnaireAmount);
-                this.timestampsElapsed = new Array<number>(this.documentsAmount + this.questionnaireAmount);
-                for (let i = 0; i < this.timestampsStart.length; i++) this.timestampsStart[i] = [];
-                for (let i = 0; i < this.timestampsEnd.length; i++) this.timestampsEnd[i] = [];
-                /* The task is now started and the worker is looking at the first questionnaire, so the first start timestamp is saved */
-                this.timestampsStart[0].push(Math.round(Date.now() / 1000));
-
+                this.documentsForm[index] = this.formBuilder.group(controlsConfig)
             }
+
+            this.dimensionsSelectedValues = new Array<object>(this.documentsAmount);
+            for (let index = 0; index < this.dimensionsSelectedValues.length; index++) {
+                this.dimensionsSelectedValues[index] = {};
+                this.dimensionsSelectedValues[index]["data"] = [];
+                this.dimensionsSelectedValues[index]["amount"] = 0;
+            }
+
+            /* |--------- SEARCH ENGINE INTEGRATION (see: search_engine.json | https://github.com/Miccighel/CrowdXplorer) ---------| */
+
+            this.searchEngineQueries = new Array<object>(this.documentsAmount);
+            for (let index = 0; index < this.searchEngineQueries.length; index++) {
+                this.searchEngineQueries[index] = {};
+                this.searchEngineQueries[index]["data"] = [];
+                this.searchEngineQueries[index]["amount"] = 0;
+            }
+            this.currentQuery = 0;
+            this.searchEngineRetrievedResponses = new Array<object>(this.documentsAmount);
+            for (let index = 0; index < this.searchEngineRetrievedResponses.length; index++) {
+                this.searchEngineRetrievedResponses[index] = {};
+                this.searchEngineRetrievedResponses[index]["data"] = [];
+                this.searchEngineRetrievedResponses[index]["amount"] = 0;
+            }
+            this.searchEngineSelectedResponses = new Array<object>(this.documentsAmount);
+            for (let index = 0; index < this.searchEngineSelectedResponses.length; index++) {
+                this.searchEngineSelectedResponses[index] = {};
+                this.searchEngineSelectedResponses[index]["data"] = [];
+                this.searchEngineSelectedResponses[index]["amount"] = 0;
+            }
+
+            /* |--------- TASK SETTINGS (see task.json)---------| */
+
+            if (this.annotator) {
+                switch (this.annotator.type) {
+                    case "options":
+                        this.annotationOptions = this.formBuilder.group({
+                            label: new FormControl('')
+                        });
+                        this.notes = new Array<Array<NoteStandard>>(this.documentsAmount);
+                        for (let i = 0; i < this.notes.length; i++) this.notes[i] = [];
+                        break;
+                    case "laws":
+                        this.notes = new Array<Array<NoteLaws>>(this.documentsAmount);
+                        for (let i = 0; i < this.notes.length; i++) this.notes[i] = [];
+                }
+            }
+
+            this.annotationButtonsDisabled = new Array<boolean>();
+            for (let index = 0; index < this.documentsAmount; index++) {
+                this.annotationButtonsDisabled.push(true)
+            }
+
+            this.notesDone = [false, false, false, false, false]
+
+            /* |--------- COUNTDOWN ---------| */
+
+            this.countdownsExpired = new Array<boolean>(this.documentsAmount);
+            for (let index = 0; index < this.documentsAmount; index++) this.countdownsExpired[index] = false;
+
+            this.documentsCountdownTime = new Array<number>(this.documentsAmount);
+            for (let index = 0; index < this.documents.length; index++) {
+                let position = this.settings.countdown_modality == 'position' ? this.documents[index]['index'] : null;
+                let attribute = this.settings.countdown_modality == 'attribute' ? this.documents[index][this.settings.countdown_attribute] : null;
+                this.documentsCountdownTime[index] = this.updateCountdownTime(position, attribute)
+            }
+
+            this.hideAttributes = false
+
+            /* |--------- QUALITY CHECKS ---------| */
+
+            this.goldDocuments = new Array<Document>();
+
+            /* Indexes of the gold elements are retrieved */
+            for (let index = 0; index < this.documentsAmount; index++) {
+                if (this.documents[index].id.includes('GOLD')) {
+                    this.goldDocuments.push(this.documents[index])
+                }
+            }
+
+            this.goldDimensions = new Array<Dimension>();
+
+            /* Indexes of the gold dimensions are retrieved */
+            for (let index = 0; index < this.dimensionsAmount; index++) {
+                if (this.dimensions[index].gold) {
+                    this.goldDimensions.push(this.dimensions[index])
+                }
+            }
+
+            /* The array of accesses counter is initialized */
+            this.elementsAccesses = new Array<number>(this.documentsAmount + this.questionnaireAmount);
+            for (let index = 0; index < this.elementsAccesses.length; index++) this.elementsAccesses[index] = 0;
+
+            /* Arrays of start, end and elapsed timestamps are initialized to track how much time the worker spends
+             * on each document, including each questionnaire */
+            this.timestampsStart = new Array<Array<number>>(this.documentsAmount + this.questionnaireAmount);
+            this.timestampsEnd = new Array<Array<number>>(this.documentsAmount + this.questionnaireAmount);
+            this.timestampsElapsed = new Array<number>(this.documentsAmount + this.questionnaireAmount);
+            for (let i = 0; i < this.timestampsStart.length; i++) this.timestampsStart[i] = [];
+            for (let i = 0; i < this.timestampsEnd.length; i++) this.timestampsEnd[i] = [];
+            /* The task is now started and the worker is looking at the first questionnaire, so the first start timestamp is saved */
+            this.timestampsStart[0].push(Math.round(Date.now() / 1000));
+
 
             /* |--------- FINALIZATION ---------| */
 
@@ -2027,6 +2013,22 @@ export class SkeletonComponent implements OnInit {
     }
 
     // |--------- AMAZON AWS INTEGRATION - FUNCTIONS ---------|
+
+    public handleQuestionnaireFilled(data) {
+        this.questionnairesForm[data['step']] = data['questionnaireForm']
+        this.performLogging(data['action'], data['step'])
+        if (data['action'] == 'Next') {
+            this.nextStep()
+        } else {
+            if (data['action'] == 'Back') {
+                this.previousStep()
+            } else {
+                this.nextStep()
+                this.performQualityCheck()
+            }
+        }
+
+    }
 
     /*
      * This function interacts with an Amazon S3 bucket to store each data produced within the task.

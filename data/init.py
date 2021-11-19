@@ -32,9 +32,7 @@ iam_path = '/Crowd_Frame/'
 config_user_name = 'config-user'
 mturk_user_name = 'mturk-user'
 
-#os.chdir("data/")#for Windows
-#os.chdir("../data/")
-#
+# Your working dir must be set to data/
 
 folder_aws_path = "aws/"
 folder_aws_generated_path = "aws/generated/"
@@ -498,6 +496,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                     "dynamodb:PutItem",
                     "dynamodb:GetItem",
                     "dynamodb:Query",
+                    "dynamodb:ListTables"
                 ],
                 "Resource": "*"
             }
@@ -587,11 +586,13 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 CreateBucketConfiguration={'LocationConstraint': aws_region}
             )
         serialize_json(folder_aws_generated_path, f"bucket_{aws_private_bucket}.json", private_bucket)
+        time.sleep(2)
         console.print(f"[green]Bucket creation completed[/green], HTTP STATUS CODE: {private_bucket['ResponseMetadata']['HTTPStatusCode']}.")
     except s3_client.exceptions.BucketAlreadyOwnedByYou as error:
         console.print(f"[yellow]Bucket already created[/yellow], HTTP STATUS CODE: {error.response['ResponseMetadata']['HTTPStatusCode']}.")
     except s3_client.exceptions.BucketAlreadyOwnedByYou as error:
         console.print(f"[yellow]Bucket already created[/yellow], HTTP STATUS CODE: {error.response['ResponseMetadata']['HTTPStatusCode']}.")
+
 
     response = s3_client.put_public_access_block(
         Bucket=aws_private_bucket,
@@ -671,6 +672,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             deploy_bucket = s3_client.create_bucket(Bucket=aws_deploy_bucket)
         else:
             deploy_bucket = s3_client.create_bucket(Bucket=aws_deploy_bucket, CreateBucketConfiguration={'LocationConstraint': aws_region})
+        time.sleep(2)
         serialize_json(folder_aws_generated_path, f"bucket_{aws_deploy_bucket}.json", deploy_bucket)
         console.print(f"[green]Bucket creation completed[/green], HTTP STATUS CODE: {deploy_bucket['ResponseMetadata']['HTTPStatusCode']}.")
     except s3_client.exceptions.BucketAlreadyOwnedByYou as error:
