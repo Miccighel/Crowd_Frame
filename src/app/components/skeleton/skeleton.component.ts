@@ -675,25 +675,14 @@ export class SkeletonComponent implements OnInit {
 
                 for (let index = 0; index < this.documentsAmount; index++) {
                     let controlsConfig = {};
+
                     if (this.settings.modality == 'pairwise') {
-                        if (this.documents[index]['pairwise_split']) controlsConfig[`pairwise_value_selected`] = new FormControl('', [Validators.required]);
+                        if (this.documents[index] != undefined) {
+                            if (this.documents[index] != null) controlsConfig[`pairwise_value_selected`] = new FormControl('', [Validators.required]);
+                        }
                         for (let index_dimension = 0; index_dimension < this.dimensions.length; index_dimension++) {
                             let dimension = this.dimensions[index_dimension];
-                            if (!dimension.pairwise) {
-                                if (dimension.scale) {
-                                    if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.required]);
-                                    if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.required]);
-                                    if (dimension.scale.type == "magnitude_estimation") {
-                                        if ((<ScaleMagnitude>dimension.scale).lower_bound) {
-                                            controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min), Validators.required]);
-                                        } else {
-                                            controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min + 1), Validators.required]);
-                                        }
-                                    }
-                                    if (dimension.justification) controlsConfig[`${dimension.name}_justification`] = new FormControl('', [Validators.required, this.validateJustification.bind(this)])
-                                    if (dimension.url) controlsConfig[`${dimension.name}_url`] = new FormControl('', [Validators.required, this.validateSearchEngineUrl.bind(this)]);
-                                }
-                            } else if (dimension.scale) {
+                            if (dimension.scale) {
 
                                 for (let i = 0; i < this.documents[index]['statements'].length; i++) {
                                     if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value_${i}`] = new FormControl('', [Validators.required]);
@@ -819,6 +808,10 @@ export class SkeletonComponent implements OnInit {
                         this.goldDimensions.push(this.dimensions[index])
                     }
                 }
+
+                /* The array of accesses counter is initialized */
+                this.elementsAccesses = new Array<number>(this.documentsAmount + this.questionnaireAmount);
+                for (let index = 0; index < this.elementsAccesses.length; index++) this.elementsAccesses[index] = 0;
 
                 /* Arrays of start, end and elapsed timestamps are initialized to track how much time the worker spends
                  * on each document, including each questionnaire */
