@@ -55,7 +55,7 @@ import {SectionService} from "./services/section.service";
 import {from, Observable} from "rxjs";
 import {tap} from "rxjs/operators";
 import {QuestionnaireComponent} from './components/questionnaire/questionnaire.component';
-import {WorkerChecksComponent} from './components/generator-sections/worker-cheks/worker-checks.component';
+import {WorkerChecksComponent} from './components/generator-steps/worker-checks/worker-checks.component';
 
 function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
     return () => from(actionLogger.downloadOpt()).pipe(tap(data => {

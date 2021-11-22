@@ -1,4 +1,4 @@
-<form [formGroup]="this.workerChecksForm">
+<form [formGroup]="this.formStep">
     <mat-card [class.mat-elevation-z3]="true">
         <mat-card-header>
             <mat-card-title>Step #7: Worker Checks</mat-card-title>
@@ -6,6 +6,23 @@
         </mat-card-header>
         <mat-divider></mat-divider>
         <mat-card-content>
+
+            <table class="width-100">
+                <tr>
+                    <td class="p-0 pr-16px">
+                        <mat-checkbox formControlName="block" color="primary">
+                            Enable Worker Blacklist
+                        </mat-checkbox>
+                    </td>
+                    <td class="pr-16px checkbox">
+                        <mat-checkbox formControlName="analysis" color="primary">
+                            Enable Worker Analysis
+                        </mat-checkbox>
+                    </td>
+                </tr>
+            </table>
+
+            <mat-divider [inset]="true"></mat-divider>
 
             <p>Select the IDs to consider by pressing <i>SPACE</i></p>
 
@@ -39,8 +56,8 @@
         <mat-divider></mat-divider>
 
         <mat-card-actions>
-            <button mat-flat-button color="primary" matStepperPrevious (click)="workerChecksJSON()">Back</button>
-            <button mat-flat-button color="primary" matStepperNext (click)="workerChecksJSON()">Next</button>
+            <button mat-flat-button color="primary" matStepperPrevious (click)="serializeConfiguration()">Back</button>
+            <button mat-flat-button color="primary" matStepperNext (click)="serializeConfiguration()">Next</button>
         </mat-card-actions>
 
     </mat-card>

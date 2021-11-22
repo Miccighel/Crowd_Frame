@@ -19,7 +19,7 @@ import {Attribute, SettingsTask} from "../../models/settingsTask";
 import {Hit} from "../../models/hit";
 import {SettingsWorker} from "../../models/settingsWorker";
 import {AngularEditorConfig} from "@kolkov/angular-editor";
-import {WorkerChecksComponent} from "../generator-sections/worker-cheks/worker-checks.component";
+import {WorkerChecksComponent} from "../generator-steps/worker-checks/worker-checks.component";
 
 
 /*
@@ -710,7 +710,7 @@ export class GeneratorComponent {
             this.questionnairesJSON()
             this.searchEngineJSON()
             this.taskSettingsJSON()
-            //this.workerChecksJSON()
+            this.workerChecks.serializeConfiguration()
         }
 
     }

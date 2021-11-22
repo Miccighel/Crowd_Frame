@@ -9,8 +9,8 @@ import {S3Service} from 'src/app/services/s3.service';
 
 @Component({
     selector: 'app-worker-cheks',
-    templateUrl: './generator-stepsworker-cheks.component.html',
-    styleUrls: ['./worker-cheks.component.scss']
+    templateUrl: './worker-checks.component.html',
+    styleUrls: ['./worker-checks.component.scss']
 })
 
 export class WorkerChecksComponent implements OnInit {
@@ -47,6 +47,8 @@ export class WorkerChecksComponent implements OnInit {
         this.localStorageService = localStorageService
         this.dataStored = new SettingsWorker()
         this.formStep = this._formBuilder.group({
+            block: '',
+            analysis: '',
             blacklist: '',
             whitelist: ''
         })
@@ -68,6 +70,8 @@ export class WorkerChecksComponent implements OnInit {
             this.localStorageService.setItem(`worker-settings`, JSON.stringify(rawWorkerChecks))
         }
         this.formStep = this._formBuilder.group({
+            block: [this.dataStored.block ? this.dataStored.block : true],
+            analysis: [this.dataStored.block ? this.dataStored.block : true],
             blacklist: [this.dataStored.blacklist ? this.dataStored.blacklist : ''],
             whitelist: [this.dataStored.whitelist ? this.dataStored.whitelist : '']
         })
