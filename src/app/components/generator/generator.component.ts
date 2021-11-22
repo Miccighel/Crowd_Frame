@@ -18,9 +18,8 @@ import {SettingsSearchEngine} from "../../models/settingsSearchEngine";
 import {Attribute, SettingsTask} from "../../models/settingsTask";
 import {Hit} from "../../models/hit";
 import {SettingsWorker} from "../../models/settingsWorker";
-import {MatChipInputEvent} from "@angular/material/chips";
 import {AngularEditorConfig} from "@kolkov/angular-editor";
-import {COMMA, ENTER} from '@angular/cdk/keycodes';
+import {WorkerChecksComponent} from "../generator-sections/worker-cheks/worker-checks.component";
 
 
 /*
@@ -198,12 +197,10 @@ export class GeneratorComponent {
     readMode: ReadMode
 
     /* STEP #7 - Worker Checks */
-    workerChecksForm: FormGroup;
-    workerChecksFetched
-    workersChecksSerialized: string
-    blacklistedWorkerId: Set<string>
-    whitelistedWorkerId: Set<string>
-    readonly separatorKeysCodes = [ENTER, COMMA] as const;
+
+    @ViewChild(WorkerChecksComponent) workerChecks: WorkerChecksComponent;
+    workerChecksForm : FormGroup
+    workerChecksResult : string
 
     /* STEP #8 - Summary */
 
@@ -306,8 +303,6 @@ export class GeneratorComponent {
         this.evaluationInstructionsFetched = []
         this.searchEngineFetched = new SettingsSearchEngine()
         this.taskSettingsFetched = new SettingsTask()
-        this.workerChecksFetched = new SettingsWorker()
-
 
         /* STEP #8 - Summary */
 
@@ -340,6 +335,7 @@ export class GeneratorComponent {
         let differentTask = false
         let serializedTaskName = this.localStorageService.getItem('task-name')
         if (serializedTaskName) {
+            serializedTaskName = serializedTaskName.replace(/"/g, '');
             if (serializedTaskName != this.configService.environment.taskName) differentTask = true
         } else {
             this.localStorageService.setItem(`task-name`, JSON.stringify(this.configService.environment.taskName))
@@ -347,6 +343,7 @@ export class GeneratorComponent {
         let differentBatch = false
         let serializedBatchName = this.localStorageService.getItem('batch-name')
         if (serializedBatchName) {
+            serializedBatchName = serializedBatchName.replace(/"/g, '');
             if (serializedBatchName != this.configService.environment.batchName) differentBatch = true
         } else {
             this.localStorageService.setItem(`batch-name`, JSON.stringify(this.configService.environment.batchName))
@@ -571,29 +568,6 @@ export class GeneratorComponent {
             this.changeDetector.detectChanges()
         })
 
-        /* STEP #7 - Worker Checks Settings */
-
-        let serializedWorkerChecks = this.localStorageService.getItem("worker-settings")
-        if (serializedWorkerChecks) {
-            this.workerChecksFetched = new SettingsWorker(JSON.parse(serializedWorkerChecks))
-        } else {
-            let rawWorkerChecks = await this.S3Service.downloadWorkers(this.configService.environment)
-            this.workerChecksFetched = new SettingsWorker(rawWorkerChecks)
-            this.localStorageService.setItem(`worker-settings`, JSON.stringify(rawWorkerChecks))
-        }
-        this.workerChecksForm = this._formBuilder.group({
-            blacklist: [this.workerChecksFetched.blacklist ? this.workerChecksFetched.blacklist : ''],
-            whitelist: [this.workerChecksFetched.whitelist ? this.workerChecksFetched.whitelist : '']
-        })
-        this.whitelistedWorkerId = new Set();
-        this.blacklistedWorkerId = new Set();
-        this.workerChecksFetched.blacklist.forEach((workerId, workerIndex) => this.blacklistedWorkerId.add(workerId))
-        this.workerChecksFetched.whitelist.forEach((workerId, workerIndex) => this.whitelistedWorkerId.add(workerId))
-        this.workerChecksForm.valueChanges.subscribe(form => {
-            this.workerChecksJSON()
-        })
-        this.workerChecksJSON()
-
         this.ngxService.stopLoader("generator-inner")
 
     }
@@ -607,7 +581,7 @@ export class GeneratorComponent {
         this.evaluationInstructionsFetched = []
         this.searchEngineFetched = new SettingsSearchEngine()
         this.taskSettingsFetched = new SettingsTask()
-        this.workerChecksFetched = new SettingsWorker()
+        this.workerChecks.dataStored = new SettingsWorker()
         this.generator.selectedIndex = 0
         let taskName = null
         let batchName = null
@@ -638,7 +612,7 @@ export class GeneratorComponent {
         this.evaluationInstructionsFetched = []
         this.searchEngineFetched = new SettingsSearchEngine()
         this.taskSettingsFetched = new SettingsTask()
-        this.workerChecksFetched = new SettingsWorker()
+        this.workerChecks.dataStored = new SettingsWorker()
         this.generator.selectedIndex = 0
         this.configService.environment['taskName'] = this.configService.environment['taskNameInitial']
         this.configService.environment['batchName'] = this.configService.environment['batchNameInitial']
@@ -736,7 +710,7 @@ export class GeneratorComponent {
             this.questionnairesJSON()
             this.searchEngineJSON()
             this.taskSettingsJSON()
-            this.workerChecksJSON()
+            //this.workerChecksJSON()
         }
 
     }
@@ -1712,43 +1686,14 @@ export class GeneratorComponent {
         this.taskSettingsSerialized = JSON.stringify(taskSettingsJSON)
     }
 
-    /* STEP #7 - Worker Checks */
+    /* STEP #7 - Task Settings */
 
-    addBlacklistedId(event: MatChipInputEvent) {
-        if (event.value) {
-            this.blacklistedWorkerId.add(event.value);
-            event.chipInput!.clear();
-            this.workerChecksJSON()
-        }
+    public storeWorkerChecksForm(data: FormGroup) {
+        this.workerChecksForm = data
     }
 
-    addWhitelistedId(event: MatChipInputEvent) {
-        if (event.value) {
-            this.whitelistedWorkerId.add(event.value);
-            event.chipInput!.clear();
-            this.workerChecksJSON()
-        }
-    }
-
-    removeBlacklistedId(workerId: string) {
-        this.blacklistedWorkerId.delete(workerId);
-        this.workerChecksJSON()
-    }
-
-    removeWhitelistedId(workerId: string) {
-        this.whitelistedWorkerId.delete(workerId);
-        this.workerChecksJSON()
-    }
-
-    /* JSON Output */
-    workerChecksJSON() {
-        let workerChecksJSON = JSON.parse(JSON.stringify(this.workerChecksForm.value));
-        if (this.blacklistedWorkerId)
-            workerChecksJSON.blacklist = Array.from(this.blacklistedWorkerId.values())
-        if (this.whitelistedWorkerId)
-            workerChecksJSON.whitelist = Array.from(this.whitelistedWorkerId.values())
-        this.localStorageService.setItem(`worker-settings`, JSON.stringify(workerChecksJSON))
-        this.workersChecksSerialized = JSON.stringify(workerChecksJSON)
+    public storeWorkerChecks(data: string) {
+        this.workerChecksResult = data
     }
 
     /* STEP 8 - Summary  */
@@ -1769,7 +1714,7 @@ export class GeneratorComponent {
         let dimensionsInstructionsPromise = this.S3Service.uploadDimensionsInstructionsConfig(this.configService.environment, this.evaluationInstructionsSerialized)
         let searchEngineSettingsPromise = this.S3Service.uploadSearchEngineSettings(this.configService.environment, this.searchEngineSerialized)
         let taskSettingsPromise = this.S3Service.uploadTaskSettings(this.configService.environment, this.taskSettingsSerialized)
-        let workerChecksPromise = this.S3Service.uploadWorkersCheck(this.configService.environment, this.workersChecksSerialized)
+        let workerChecksPromise = this.S3Service.uploadWorkersCheck(this.configService.environment, this.workerChecksResult)
         questionnairePromise.then(result => {
             if (!result["failed"]) {
                 this.questionnairesPath = this.S3Service.getQuestionnairesConfigPath(this.configService.environment)
@@ -1819,7 +1764,7 @@ export class GeneratorComponent {
             this.evaluationInstructionsJSON()
             this.searchEngineJSON()
             this.taskSettingsJSON()
-            this.workerChecksJSON()
+            this.workerChecks.serializeConfiguration()
             this.uploadStarted = false
         }
     }

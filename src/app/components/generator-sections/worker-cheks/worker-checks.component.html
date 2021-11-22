@@ -1,0 +1,47 @@
+<form [formGroup]="this.workerChecksForm">
+    <mat-card [class.mat-elevation-z3]="true">
+        <mat-card-header>
+            <mat-card-title>Step #7: Worker Checks</mat-card-title>
+            <mat-card-subtitle>Seventh, define all Worker Checks here</mat-card-subtitle>
+        </mat-card-header>
+        <mat-divider></mat-divider>
+        <mat-card-content>
+
+            <p>Select the IDs to consider by pressing <i>SPACE</i></p>
+
+            <!-- Blacklist -->
+
+            <mat-form-field class="width-100" appearance="fill">
+                <mat-label>Worker IDs Blacklisted</mat-label>
+                <mat-chip-list #blacklistChips formControlName="blacklist" multiple>
+                    <mat-chip *ngFor="let workerId of this.blacklistedWorkerId" [selectable]="true" [removable]="true" (removed)="removeBlacklistedId(workerId)">{{workerId}}
+                        <mat-icon matChipRemove>cancel</mat-icon>
+                    </mat-chip>
+                    <input placeholder="New worker ID ..." [matChipInputFor]="blacklistChips" [matChipInputSeparatorKeyCodes]="separatorKeysCodes" (matChipInputTokenEnd)="addBlacklistedId($event)">
+                </mat-chip-list>
+            </mat-form-field>
+
+            <mat-divider [inset]="true"></mat-divider>
+
+            <!-- Whitelist -->
+            <mat-form-field class="width-100" appearance="fill">
+                <mat-label>Worker IDs Whitelisted</mat-label>
+                <mat-chip-list #whitelistChips formControlName="whitelist" multiple>
+                    <mat-chip *ngFor="let workerId of this.whitelistedWorkerId" [selectable]="true" [removable]="true" (removed)="removeWhitelistedId(workerId)">{{workerId}}
+                        <mat-icon matChipRemove>cancel</mat-icon>
+                    </mat-chip>
+                    <input placeholder="New worker ID ..." [matChipInputFor]="whitelistChips" [matChipInputSeparatorKeyCodes]="separatorKeysCodes" (matChipInputTokenEnd)="addBlacklistedId($event)">
+                </mat-chip-list>
+            </mat-form-field>
+
+        </mat-card-content>
+
+        <mat-divider></mat-divider>
+
+        <mat-card-actions>
+            <button mat-flat-button color="primary" matStepperPrevious (click)="workerChecksJSON()">Back</button>
+            <button mat-flat-button color="primary" matStepperNext (click)="workerChecksJSON()">Next</button>
+        </mat-card-actions>
+
+    </mat-card>
+</form>
