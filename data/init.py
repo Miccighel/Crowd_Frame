@@ -1343,51 +1343,49 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 "logger": False,
                 "logOption": {
                     "button": {
-                        "general": 'false',
-                        "click": 'false'
+                        "general": False,
+                        "click": False
                     },
                     "mouse": {
-                        "general": 'false',
-                        "mouseMovements": 'false',
-                        "leftClicks": 'false',
-                        "rightClicks": 'false'
+                        "general": False,
+                        "mouseMovements": False,
+                        "leftClicks": False,
+                        "rightClicks": False
                     },
                     "keyboard": {
-                        "general": 'false',
-                        "shortcuts": 'false',
-                        "keys": 'false'
+                        "general": False,
+                        "shortcuts": False,
+                        "keys": False
                     },
                     "textInput": {
-                        "general": 'false',
-                        "paste": 'false',
-                        "delete": 'false'
+                        "general": False,
+                        "paste": False,
+                        "delete": False
                     },
                     "clipboard": {
-                        "general": 'false',
-                        "copy": 'false',
-                        "cut": 'false'
+                        "general": False,
+                        "copy": False,
+                        "cut": False
                     },
                     "radio": {
-                        "general": 'false',
-                        "change": 'false'
+                        "general": False,
+                        "change": False
                     },
                     "crowd-xplorer": {
-                        "general": 'false',
-                        "query": 'false',
-                        "result": 'false'
+                        "general": False,
+                        "query": False,
+                        "result": False
                     },
                     "various": {
-                        "general": 'false',
-                        "selection": 'false',
-                        "unload": 'false',
-                        "focus&blur": 'false',
-                        "scroll": 'false',
-                        "resize": 'false'
+                        "general": False,
+                        "selection": False,
+                        "unload": False,
+                        "focus&blur": False,
+                        "scroll": False,
+                        "resize": False
                     }
                 },
                 "serverEndpoint": logging_endpoint,
-                "blacklist_batches": [],
-                "whitelist_batches": [],
                 "messages": ["You have already started this task without finishing it"]
             }
             print(json.dumps(sample_settings, indent=4), file=file)
@@ -1399,8 +1397,12 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         console.print(f"Config. file [italic white on yellow]{filename}[/italic white on yellow] not detected, generating a sample")
         with open(f"{folder_build_task_path}{filename}", 'w') as file:
             sample_worker_checks = {
+                "block": True,
+                "analysis": True,
                 "blacklist": [],
-                "whitelist": []
+                "whitelist": [],
+                "blacklist_batches": [],
+                "whitelist_batches": [],
             }
             print(json.dumps(sample_worker_checks, indent=4), file=file)
 

@@ -13,8 +13,6 @@ export class SettingsTask {
     countdown_attribute?: string;
     countdown_attribute_values?: Array<JSON>;
     countdown_position_values?: Array<number>;
-    blacklist_batches: Array<string>;
-    whitelist_batches: Array<string>;
     messages?: Array<string>;
     logger?: boolean;
     logOption?: Object;
@@ -100,13 +98,6 @@ export class SettingsTask {
             }
         } : {};
         this.serverEndpoint = data ? data['serverEndpoint'] ? data['serverEndpoint'] : "" : "";
-        this.blacklist_batches = new Array<string>();
-        if (data)
-            if ('blacklist_batches' in data)
-                for (let batch of data["blacklist_batches"] as Array<string>)
-                    this.blacklist_batches.push(batch)
-        this.whitelist_batches = new Array<string>();
-        if (data) if ('whitelist_batches' in data) for (let batch of data["whitelist_batches"] as Array<string>) this.whitelist_batches.push(batch)
         this.messages = new Array<string>();
         if (data) if (data['messages']) for (let message of data["messages"]) this.messages.push(message)
     }

@@ -46,6 +46,35 @@
                 </mat-chip-list>
             </mat-form-field>
 
+            <mat-divider [inset]="true"></mat-divider>
+
+            <h3 class="lighter">Batches</h3>
+
+            <!-- Blacklist Batches -->
+            <div formArrayName="batches" class="mt-16px">
+                <mat-progress-bar *ngIf="this.batches().controls.length<=0 && !this.batchesTree" mode="indeterminate"></mat-progress-bar>
+                <ng-container *ngIf="this.batches().controls.length>0 && this.batchesTree">
+                    <div *ngFor="let taskNode of this.batchesTree">
+                        <mat-accordion class="generator-accordion">
+                            <mat-expansion-panel>
+                                <mat-expansion-panel-header>
+                                    <mat-panel-title>
+                                        {{taskNode['task']}}
+                                    </mat-panel-title>
+                                    <mat-panel-description>
+                                    </mat-panel-description>
+                                </mat-expansion-panel-header>
+                                <div *ngFor="let batch of taskNode['batches']; let batchIndex = index" [formGroupName]="batch['counter']">
+                                    <mat-label>{{batch["batch"]}}</mat-label>
+                                    <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="blacklist" (change)="resetBlacklist(batch['counter'])">Blacklist</mat-slide-toggle>
+                                    <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="whitelist" (change)="resetWhitelist(batch['counter'])">Whitelist</mat-slide-toggle>
+                                </div>
+                            </mat-expansion-panel>
+                        </mat-accordion>
+                    </div>
+                </ng-container>
+            </div>
+
 
         </mat-card-content>
 

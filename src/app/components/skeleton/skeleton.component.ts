@@ -42,6 +42,7 @@ import {Object} from 'aws-sdk/clients/customerprofiles';
 
 import {SectionService} from "../../services/section.service";
 import {DynamoDBService} from "../../services/dynamoDB.service";
+import {SettingsWorker} from "../../models/settingsWorker";
 
 /* Component HTML Tag definition */
 @Component({
@@ -183,7 +184,8 @@ export class SkeletonComponent implements OnInit {
     modality: string;
 
     /* Settings of the current task */
-    settings: SettingsTask
+    settingsTask: SettingsTask
+    settingsWorker: SettingsWorker
 
     /* Number of allowed tries */
     allowedTries: number;
@@ -351,27 +353,37 @@ export class SkeletonComponent implements OnInit {
                 /* The performWorkerStatusCheck function checks worker's status and its result is interpreted as a success|error callback */
                 this.performWorkerStatusCheck().then(taskAllowed => {
                     /* But at the end of the day it's just a boolean so we launch a call to Cloudflare to trace the worker and we use such boolean in the second callback */
-                    this.client.get('https://www.cloudflare.com/cdn-cgi/trace', {responseType: 'text'}).subscribe(
-                        /* If we retrieve some data from Cloudflare we use them to populate worker's object */
-                        cloudflareData => {
-                            this.worker = new Worker(this.workerIdentifier, this.S3Service.getWorkerFolder(this.configService.environment, null, this.workerIdentifier), cloudflareData, window.navigator, this.deviceDetectorService.getDeviceInfo())
-                            this.sectionService.taskAllowed = taskAllowed
-                            this.sectionService.checkCompleted = true
-                            this.changeDetector.detectChanges()
-                            /* The loading spinner is stopped */
-                            this.ngxService.stop();
-                        },
-                        /* Otherwise we won't have such information */
-                        error => {
-                            this.worker = new Worker(this.workerIdentifier, this.S3Service.getWorkerFolder(this.configService.environment, null, this.workerIdentifier), null, window.navigator, this.deviceDetectorService.getDeviceInfo())
-                            this.sectionService.taskAllowed = taskAllowed
-                            this.sectionService.checkCompleted = true
+                    if (this.settingsWorker.analysis) {
+                        this.client.get('https://www.cloudflare.com/cdn-cgi/trace', {responseType: 'text'}).subscribe(
+                            /* If we retrieve some data from Cloudflare we use them to populate worker's object */
+                            cloudflareData => {
+                                this.worker = new Worker(this.workerIdentifier, this.S3Service.getWorkerFolder(this.configService.environment, null, this.workerIdentifier), cloudflareData, window.navigator, this.deviceDetectorService.getDeviceInfo())
+                                this.sectionService.taskAllowed = taskAllowed
+                                this.sectionService.checkCompleted = true
+                                this.changeDetector.detectChanges()
+                                /* The loading spinner is stopped */
+                                this.ngxService.stop();
+                            },
+                            /* Otherwise we won't have such information */
+                            error => {
+                                this.worker = new Worker(this.workerIdentifier, this.S3Service.getWorkerFolder(this.configService.environment, null, this.workerIdentifier), null, window.navigator, this.deviceDetectorService.getDeviceInfo())
+                                this.sectionService.taskAllowed = taskAllowed
+                                this.sectionService.checkCompleted = true
 
-                            this.changeDetector.detectChanges()
-                            /* The loading spinner is stopped */
-                            this.ngxService.stop();
-                        }
-                    )
+                                this.changeDetector.detectChanges()
+                                /* The loading spinner is stopped */
+                                this.ngxService.stop();
+                            }
+                        )
+                    } else {
+                        this.worker = new Worker(this.workerIdentifier, this.S3Service.getWorkerFolder(this.configService.environment, null, this.workerIdentifier), null, window.navigator, this.deviceDetectorService.getDeviceInfo())
+                        this.sectionService.taskAllowed = taskAllowed
+                        this.sectionService.checkCompleted = true
+
+                        this.changeDetector.detectChanges()
+                        /* The loading spinner is stopped */
+                        this.ngxService.stop();
+                    }
                 })
                 /* If there is not any worker ID we simply load the task. A sort of testing mode. */
             } else {
@@ -401,13 +413,14 @@ export class SkeletonComponent implements OnInit {
     * This function interacts with an Amazon S3 bucket to retrieve and initialize the settings for the current task.
     */
     public async loadSettings() {
-        this.settings = new SettingsTask(await this.S3Service.downloadTaskSettings(this.configService.environment))
-        this.allowedTries = this.settings.allowed_tries
-        this.timeCheckAmount = this.settings.time_check_amount
-        this.blacklistBatches = this.settings.blacklist_batches
-        this.whitelistBatches = this.settings.whitelist_batches
-        this.annotator = this.settings.annotator
-        this.logger = this.settings.logger
+        this.settingsTask = new SettingsTask(await this.S3Service.downloadTaskSettings(this.configService.environment))
+        this.settingsWorker = new SettingsWorker(await this.S3Service.downloadWorkers(this.configService.environment))
+        this.allowedTries = this.settingsTask.allowed_tries
+        this.timeCheckAmount = this.settingsTask.time_check_amount
+        this.blacklistBatches = this.settingsWorker.blacklist_batches
+        this.whitelistBatches = this.settingsWorker.whitelist_batches
+        this.annotator = this.settingsTask.annotator
+        this.logger = this.settingsTask.logger
     }
 
     /*
@@ -417,117 +430,122 @@ export class SkeletonComponent implements OnInit {
     public async performWorkerStatusCheck() {
 
         let taskAllowed = true
-        let batchesStatus = {}
-        let tablesACL = await this.dynamoDBService.listTables(this.configService.environment)
-        let workersManual = await this.S3Service.downloadWorkers(this.configService.environment)
-        let workersACL = await this.dynamoDBService.getWorker(this.configService.environment, this.workerIdentifier)
 
-        /* To blacklist a previous batch its worker list is picked up */
-        for (let batchName of this.blacklistBatches) {
-            if (!(batchName in batchesStatus)) {
-                let workers = await this.S3Service.downloadWorkers(this.configService.environment, batchName)
-                batchesStatus[batchName] = {}
-                batchesStatus[batchName]['blacklist'] = workers['blacklist']
-                /* Was the past batch a legacy one? */
-                for (let tableName in tablesACL['TableNames']) {
-                    if (batchName == tableName) {
-                        batchesStatus[batchName]['tableName'] = tableName
+        if (this.settingsWorker.block) {
+
+            let batchesStatus = {}
+            let tablesACL = await this.dynamoDBService.listTables(this.configService.environment)
+            let workersManual = await this.S3Service.downloadWorkers(this.configService.environment)
+            let workersACL = await this.dynamoDBService.getWorker(this.configService.environment, this.workerIdentifier)
+
+            /* To blacklist a previous batch its worker list is picked up */
+            for (let batchName of this.blacklistBatches) {
+                if (!(batchName in batchesStatus)) {
+                    let workers = await this.S3Service.downloadWorkers(this.configService.environment, batchName)
+                    batchesStatus[batchName] = {}
+                    batchesStatus[batchName]['blacklist'] = workers['blacklist']
+                    /* Was the past batch a legacy one? */
+                    for (let tableName in tablesACL['TableNames']) {
+                        if (batchName == tableName) {
+                            batchesStatus[batchName]['tableName'] = tableName
+                        }
                     }
                 }
             }
-        }
 
-        /* To whitelist a previous batch its blacklist is picked up */
-        for (let batchName of this.whitelistBatches) {
-            if (!(batchName in batchesStatus)) {
-                let workers = await this.S3Service.downloadWorkers(this.configService.environment, batchName)
-                batchesStatus[batchName] = {}
-                batchesStatus[batchName]['whitelist'] = workers['blacklist']
-                for (let tableName in tablesACL['TableNames']) {
-                    if (batchName == tableName) {
-                        batchesStatus[batchName]['tableName'] = tableName
+            /* To whitelist a previous batch its blacklist is picked up */
+            for (let batchName of this.whitelistBatches) {
+                if (!(batchName in batchesStatus)) {
+                    let workers = await this.S3Service.downloadWorkers(this.configService.environment, batchName)
+                    batchesStatus[batchName] = {}
+                    batchesStatus[batchName]['whitelist'] = workers['blacklist']
+                    for (let tableName in tablesACL['TableNames']) {
+                        if (batchName == tableName) {
+                            batchesStatus[batchName]['tableName'] = tableName
+                        }
                     }
                 }
             }
-        }
 
-        /* The true checking operation starts here */
+            /* The true checking operation starts here */
 
-        /* Check to verify if the current worker was present into a previous legacy or dynamo-db based blacklisted batch */
-        for (let batchName in batchesStatus) {
-            let batchStatus = batchesStatus[batchName]
-            if ('blacklist' in batchStatus) {
-                if ('tableName' in batchStatus) {
-                    let rawWorker = await this.dynamoDBService.getWorker(this.configService.environment, this.workerIdentifier, batchStatus['tableName'])
-                    if ('Items' in rawWorker) {
-                        for (let worker of rawWorker['Items']) {
-                            if (this.workerIdentifier == worker['identifier']) {
+            /* Check to verify if the current worker was present into a previous legacy or dynamo-db based blacklisted batch */
+            for (let batchName in batchesStatus) {
+                let batchStatus = batchesStatus[batchName]
+                if ('blacklist' in batchStatus) {
+                    if ('tableName' in batchStatus) {
+                        let rawWorker = await this.dynamoDBService.getWorker(this.configService.environment, this.workerIdentifier, batchStatus['tableName'])
+                        if ('Items' in rawWorker) {
+                            for (let worker of rawWorker['Items']) {
+                                if (this.workerIdentifier == worker['identifier']) {
+                                    taskAllowed = false
+                                }
+                            }
+                        }
+                    } else {
+                        for (let workerIdentifier of batchStatus['blacklist']) {
+                            if (this.workerIdentifier == workerIdentifier) {
                                 taskAllowed = false
                             }
                         }
                     }
-                } else {
-                    for (let workerIdentifier of batchStatus['blacklist']) {
-                        if (this.workerIdentifier == workerIdentifier) {
-                            taskAllowed = false
-                        }
-                    }
                 }
             }
-        }
 
-        /* Check to verify if the current worker was present into a previous legacy or dynamo-db based whitelisted batch */
-        for (let batchName in batchesStatus) {
-            let batchStatus = batchesStatus[batchName]
-            if ('whitelist' in batchStatus) {
-                if ('tableName' in batchStatus) {
-                    let rawWorker = await this.dynamoDBService.getWorker(this.configService.environment, this.workerIdentifier, batchStatus['tableName'])
-                    if ('Items' in rawWorker) {
-                        for (let worker of rawWorker['Items']) {
-                            if (this.workerIdentifier == worker['identifier']) {
+            /* Check to verify if the current worker was present into a previous legacy or dynamo-db based whitelisted batch */
+            for (let batchName in batchesStatus) {
+                let batchStatus = batchesStatus[batchName]
+                if ('whitelist' in batchStatus) {
+                    if ('tableName' in batchStatus) {
+                        let rawWorker = await this.dynamoDBService.getWorker(this.configService.environment, this.workerIdentifier, batchStatus['tableName'])
+                        if ('Items' in rawWorker) {
+                            for (let worker of rawWorker['Items']) {
+                                if (this.workerIdentifier == worker['identifier']) {
+                                    taskAllowed = true
+                                }
+                            }
+                        }
+                    } else {
+                        for (let workerIdentifier of batchStatus['whitelist']) {
+                            if (this.workerIdentifier == workerIdentifier) {
                                 taskAllowed = true
                             }
                         }
                     }
-                } else {
-                    for (let workerIdentifier of batchStatus['whitelist']) {
-                        if (this.workerIdentifier == workerIdentifier) {
-                            taskAllowed = true
-                        }
+                }
+            }
+
+            /* Check to verify if the current worker already accessed the current task using the dynamo-db based acl */
+            if ('Items' in workersACL) {
+                for (let worker of workersACL['Items']) {
+                    if (this.workerIdentifier == worker['identifier']) {
+                        taskAllowed = false
+                        return taskAllowed
                     }
                 }
             }
-        }
 
-        /* Check to verify if the current worker already accessed the current task using the dynamo-db based acl */
-        if ('Items' in workersACL) {
-            for (let worker of workersACL['Items']) {
-                if (this.workerIdentifier == worker['identifier']) {
+            /* Check to verify if the current worker is manually blacklisted into the current batch */
+            for (let worker of workersManual['blacklist']) {
+                if (this.workerIdentifier == worker) {
                     taskAllowed = false
                     return taskAllowed
                 }
             }
-        }
 
-        /* Check to verify if the current worker is manually blacklisted into the current batch */
-        for (let worker of workersManual['blacklist']) {
-            if (this.workerIdentifier == worker) {
-                taskAllowed = false
-                return taskAllowed
+
+            /* Check to verify if the current worker is manually whitelisted into the current batch using the dynamo-db based acl */
+
+            for (let worker of workersManual['whitelist']) {
+                if (this.workerIdentifier == worker) {
+                    taskAllowed = true
+                }
             }
-        }
 
-
-        /* Check to verify if the current worker is manually whitelisted into the current batch using the dynamo-db based acl */
-
-        for (let worker of workersManual['whitelist']) {
-            if (this.workerIdentifier == worker) {
-                taskAllowed = true
-            }
         }
 
         if (taskAllowed)
-            await this.dynamoDBService.insertWorker(this.configService.environment, this.workerIdentifier, this.currentTry)
+                await this.dynamoDBService.insertWorker(this.configService.environment, this.workerIdentifier, this.currentTry)
 
         return taskAllowed
     }
@@ -664,7 +682,7 @@ export class SkeletonComponent implements OnInit {
             for (let index = 0; index < this.documentsAmount; index++) {
                 let controlsConfig = {};
 
-                if (this.settings.modality == 'pairwise') {
+                if (this.settingsTask.modality == 'pairwise') {
                     if (this.documents[index] != undefined) {
                         if (this.documents[index] != null) controlsConfig[`pairwise_value_selected`] = new FormControl('', [Validators.required]);
                     }
@@ -769,8 +787,8 @@ export class SkeletonComponent implements OnInit {
 
             this.documentsCountdownTime = new Array<number>(this.documentsAmount);
             for (let index = 0; index < this.documents.length; index++) {
-                let position = this.settings.countdown_modality == 'position' ? this.documents[index]['index'] : null;
-                let attribute = this.settings.countdown_modality == 'attribute' ? this.documents[index][this.settings.countdown_attribute] : null;
+                let position = this.settingsTask.countdown_modality == 'position' ? this.documents[index]['index'] : null;
+                let attribute = this.settingsTask.countdown_modality == 'attribute' ? this.documents[index][this.settingsTask.countdown_attribute] : null;
                 this.documentsCountdownTime[index] = this.updateCountdownTime(position, attribute)
             }
 
@@ -820,7 +838,7 @@ export class SkeletonComponent implements OnInit {
             this.changeDetector.detectChanges();
 
             /* If there are no questionnaires and the countdown time is set, enable the first countdown */
-            if (this.settings.countdown_time >= 0 && this.questionnaireAmountStart == 0) {
+            if (this.settingsTask.countdown_time >= 0 && this.questionnaireAmountStart == 0) {
                 this.countdown.toArray()[0].begin();
                 this.changeDetector.detectChanges();
             }
@@ -1135,17 +1153,17 @@ export class SkeletonComponent implements OnInit {
     public handleCountdown(event, i) {
         if (event.left == 0) {
             this.countdownsExpired[i] = true
-            if (this.settings.countdown_behavior == 'disable_form')
+            if (this.settingsTask.countdown_behavior == 'disable_form')
                 this.documentsForm[i].disable()
         }
     }
 
     public updateCountdownTime(position: number = null, attribute: string = null) {
 
-        let finalTime = this.settings.countdown_time
+        let finalTime = this.settingsTask.countdown_time
 
         if (position) {
-            for (let positionData of this.settings.countdown_position_values) {
+            for (let positionData of this.settingsTask.countdown_position_values) {
                 if (positionData['position'] == position) {
                     finalTime = finalTime + positionData['time']
                 }
@@ -1153,7 +1171,7 @@ export class SkeletonComponent implements OnInit {
         }
 
         if (attribute) {
-            for (let attributeData of this.settings.countdown_attribute_values) {
+            for (let attributeData of this.settingsTask.countdown_attribute_values) {
                 if (attributeData['name'] == attribute)
                     finalTime = finalTime + attributeData['time']
             }
@@ -1268,7 +1286,7 @@ export class SkeletonComponent implements OnInit {
      */
     public checkAnnotationConsistency(documentIndex: number) {
         let requiredAttributes = []
-        for (let attribute of this.settings.attributes) {
+        for (let attribute of this.settingsTask.attributes) {
             if (attribute.required) {
                 requiredAttributes.push(attribute.index)
             }
@@ -2001,7 +2019,7 @@ export class SkeletonComponent implements OnInit {
         this.currentTry = this.currentTry + 1;
 
         /* The countdowns are set back to 0 */
-        if (this.settings.countdown_time >= 0) {
+        if (this.settingsTask.countdown_time >= 0) {
             if (this.countdown.toArray()[0].left > 0) {
                 this.countdown.toArray()[0].resume();
             }
@@ -2040,7 +2058,7 @@ export class SkeletonComponent implements OnInit {
 
         /* The countdowns are stopped and resumed to the left or to the right of the current document,
         *  depending on the chosen action ("Back" or "Next") */
-        if ((this.stepper.selectedIndex >= this.questionnaireAmountStart && this.stepper.selectedIndex < this.questionnaireAmountStart + this.documentsAmount) && this.settings.countdown_time >= 0) {
+        if ((this.stepper.selectedIndex >= this.questionnaireAmountStart && this.stepper.selectedIndex < this.questionnaireAmountStart + this.documentsAmount) && this.settingsTask.countdown_time >= 0) {
             let currentIndex = this.stepper.selectedIndex - this.questionnaireAmountStart;
             switch (action) {
                 case "Next":
@@ -2266,7 +2284,7 @@ export class SkeletonComponent implements OnInit {
                 /* Worker's answers for the current document */
                 let answers = this.documentsForm[completedDocument].value;
                 data["answers"] = answers
-                let notes = (this.settings.annotator) ? this.notes[completedDocument] : []
+                let notes = (this.settingsTask.annotator) ? this.notes[completedDocument] : []
                 data["notes"] = notes
                 /* Worker's dimensions selected values for the current document */
                 let dimensionsSelectedValues = this.dimensionsSelectedValues[completedDocument];
@@ -2282,11 +2300,11 @@ export class SkeletonComponent implements OnInit {
                 let timestampsElapsed = this.timestampsElapsed[completedElement];
                 data["timestamps_elapsed"] = timestampsElapsed
                 /* Countdown time and corresponding flag */
-                let countdownTimeStart = (this.settings.countdown_time >= 0) ? this.documentsCountdownTime[completedDocument] : []
+                let countdownTimeStart = (this.settingsTask.countdown_time >= 0) ? this.documentsCountdownTime[completedDocument] : []
                 data["countdowns_times_start"] = countdownTimeStart
-                let countdownTime = (this.settings.countdown_time >= 0) ? Number(this.countdown.toArray()[completedDocument]["i"]["text"]) : []
+                let countdownTime = (this.settingsTask.countdown_time >= 0) ? Number(this.countdown.toArray()[completedDocument]["i"]["text"]) : []
                 data["countdowns_times_left"] = countdownTime
-                let countdown_expired = (this.settings.countdown_time >= 0) ? this.countdownsExpired[completedDocument] : []
+                let countdown_expired = (this.settingsTask.countdown_time >= 0) ? this.countdownsExpired[completedDocument] : []
                 data["countdowns_expired"] = countdown_expired
                 /* Number of accesses to the current document (currentDocument.e., how many times the worker reached the document with a "Back" or "Next" action */
                 let accesses = accessesAmount + 1
@@ -2326,7 +2344,7 @@ export class SkeletonComponent implements OnInit {
                 answers = [];
                 for (let index = 0; index < this.documentsForm.length; index++) answers.push(this.documentsForm[index].value);
                 data["documents_answers"] = answers
-                let notes = (this.settings.annotator) ? this.notes : []
+                let notes = (this.settingsTask.annotator) ? this.notes : []
                 data["notes"] = notes
                 /* Worker's dimensions selected values for the current document */
                 data["dimensions_selected"] = this.dimensionsSelectedValues
@@ -2338,9 +2356,9 @@ export class SkeletonComponent implements OnInit {
                 let countdownTimes = [];
                 let countdownTimesStart = [];
                 let countdownExpired = [];
-                if (this.settings.countdown_time >= 0)
+                if (this.settingsTask.countdown_time >= 0)
                     for (let countdown of this.countdown) countdownTimes.push(countdown["i"]);
-                if (this.settings.countdown_time >= 0)
+                if (this.settingsTask.countdown_time >= 0)
                     for (let countdown of this.documentsCountdownTime) countdownTimesStart.push(countdown);
                 for (let index = 0; index < this.countdownsExpired.length; index++) countdownExpired.push(this.countdownsExpired[index]);
                 data["countdowns_times_start"] = countdownTimesStart

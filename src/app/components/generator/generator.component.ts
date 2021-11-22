@@ -199,8 +199,8 @@ export class GeneratorComponent {
     /* STEP #7 - Worker Checks */
 
     @ViewChild(WorkerChecksComponent) workerChecks: WorkerChecksComponent;
-    workerChecksForm : FormGroup
-    workerChecksResult : string
+    workerChecksForm: FormGroup
+    workerChecksResult: string
 
     /* STEP #8 - Summary */
 
@@ -531,7 +531,6 @@ export class GeneratorComponent {
             countdown_attribute: this.taskSettingsFetched.countdown_attribute ? this.taskSettingsFetched.countdown_attribute ? this.taskSettingsFetched.countdown_attribute : '' : '',
             countdown_attribute_values: this._formBuilder.array([]),
             countdown_position_values: this._formBuilder.array([]),
-            batches: this._formBuilder.array([]),
             messages: this._formBuilder.array([]),
             logger: !!this.taskSettingsFetched.logger,
             logOption: this.taskSettingsFetched.logOption,
@@ -661,14 +660,14 @@ export class GeneratorComponent {
                         "whitelist": false,
                         "counter": counter
                     }
-                    if (this.taskSettingsFetched.blacklist_batches) {
-                        this.taskSettingsFetched.blacklist_batches.forEach((batchName, batchIndex) => {
+                    if (this.workerChecks.dataStored.blacklist_batches) {
+                        this.workerChecks.dataStored.blacklist_batches.forEach((batchName, batchIndex) => {
                             blackListedBatches = blackListedBatches + 1
                             batchNode['blacklist'] = batchName == batch["Prefix"];
                         })
                     }
-                    if (this.taskSettingsFetched.whitelist_batches) {
-                        this.taskSettingsFetched.whitelist_batches.forEach((batchName, batchIndex) => {
+                    if (this.workerChecks.dataStored.whitelist_batches) {
+                        this.workerChecks.dataStored.whitelist_batches.forEach((batchName, batchIndex) => {
                             whiteListedBatches = whiteListedBatches + 1
                             batchNode['whitelist'] = batchName == batch["Prefix"];
                         })
@@ -681,13 +680,6 @@ export class GeneratorComponent {
             this.localStorageService.setItem(`batches-tree`, JSON.stringify(this.batchesTree))
         }
         this.batchesTreeInitialization = true
-        if (this.batchesTreeInitialization) {
-            for (let taskNode of this.batchesTree) {
-                for (let batchNode of taskNode["batches"]) {
-                    this.addBatch(batchNode)
-                }
-            }
-        }
     }
 
     /* The following functions are sorted on a per-step basis. For each step it may be present:
@@ -1314,7 +1306,7 @@ export class GeneratorComponent {
 
             for (let hit of hits) {
                 for (let document of hit['documents']) {
-                    if('statements' in document) {
+                    if ('statements' in document) {
                         Object.entries(document['statements'][0]).forEach(
                             ([attribute, value]) => {
                                 if (!this.hitsAttributesValues[attribute].includes(value)) this.hitsAttributesValues[attribute].push(value)
@@ -1395,28 +1387,31 @@ export class GeneratorComponent {
         this.resetHitAttributes()
     }
 
-    batches(): FormArray {
-        return this.taskSettingsForm.get('batches') as FormArray;
-    }
-
     resetCountdown() {
         if (this.taskSettingsForm.get('setCountdownTime').value == false) {
-            this.taskSettingsForm.get('countdown_time').setValue('')
+            this.taskSettingsForm.get('countdown_time').setValue(false)
             this.taskSettingsForm.get('countdown_time').clearValidators();
+            this.taskSettingsForm.get('countdown_time').updateValueAndValidity();
         } else {
             this.taskSettingsForm.get('countdown_time').setValidators([Validators.required, this.positiveOrZeroNumber.bind(this)]);
+            this.taskSettingsForm.get('countdown_time').updateValueAndValidity();
         }
+        console.log(this.taskSettingsForm)
         this.resetAdditionalTimes()
     }
 
     resetAdditionalTimes() {
         if (this.taskSettingsForm.get('setAdditionalTimes').value == false) {
-            this.taskSettingsForm.get('countdown_modality').setValue('')
+            this.taskSettingsForm.get('countdown_modality').setValue(false)
             this.taskSettingsForm.get('countdown_modality').clearValidators();
-            this.taskSettingsForm.get('countdown_attribute').setValue('')
+            this.taskSettingsForm.get('countdown_modality').updateValueAndValidity();
+            this.taskSettingsForm.get('countdown_attribute').setValue(false)
             this.taskSettingsForm.get('countdown_attribute').clearValidators()
+            this.taskSettingsForm.get('countdown_attribute').updateValueAndValidity()
             this.countdownAttributeValues().clear()
+            this.countdownAttributeValues().updateValueAndValidity()
             this.countdownPositionValues().clear()
+            this.countdownPositionValues().updateValueAndValidity()
         } else {
             this.taskSettingsForm.get('countdown_modality').setValidators([Validators.required]);
             if (this.taskSettingsForm.get('countdown_modality').value == 'attribute')
@@ -1432,9 +1427,10 @@ export class GeneratorComponent {
         if (this.taskSettingsForm.get('countdown_modality').value == "attribute") {
             this.countdownPositionValues().clear()
         } else {
-            this.taskSettingsForm.get('countdown_attribute').setValue('')
+            this.taskSettingsForm.get('countdown_attribute').setValue(false)
             this.taskSettingsForm.get('countdown_attribute').clearValidators()
             this.countdownAttributeValues().clear()
+            this.countdownAttributeValues().updateValueAndValidity()
             this.updateCountdownPosition()
         }
     }
@@ -1531,61 +1527,6 @@ export class GeneratorComponent {
         this.annotatorOptionColors[optionIndex] = color
     }
 
-    addBatch(batchNode) {
-        let control = this._formBuilder.group({
-            name: batchNode ? batchNode['batch'] : '',
-            counter: batchNode ? batchNode['counter'] : '',
-            blacklist: batchNode ? batchNode['blacklist'] ? batchNode['blacklist'] : '' : '',
-            whitelist: batchNode ? batchNode['whitelist'] ? batchNode['whitelist'] : '' : '',
-        })
-        if (batchNode['blacklist']) {
-            control.get('whitelist').setValue(false)
-            control.get('whitelist').disable()
-        }
-        if (batchNode['whitelist']) {
-            control.get('blacklist').setValue(false)
-            control.get('blacklist').disable()
-        }
-        this.batches().push(control, {emitEvent: false})
-    }
-
-    resetBlacklist(batchIndex) {
-        let batch = this.batches().at(batchIndex)
-        if (batch.get('blacklist').value == true) {
-            batch.get('whitelist').setValue(false)
-            batch.get('whitelist').disable()
-        } else {
-            batch.get('whitelist').enable()
-        }
-        this.batchesTree.forEach((taskNode, taskIndex) => {
-            taskNode["batches"].forEach((batchNode, batchIndex) => {
-                if (batch.get('name').value == batchNode['batch']) {
-                    this.batchesTree[taskIndex]["batches"][batchIndex]['blacklist'] = batch.get('blacklist').value
-                    this.localStorageService.setItem("batches-tree", JSON.stringify(this.batchesTree))
-                }
-            });
-        });
-    }
-
-    resetWhitelist(batchIndex) {
-        let batch = this.batches().at(batchIndex)
-        if (batch.get('whitelist').value == true) {
-            batch.get('blacklist').setValue(false)
-            batch.get('blacklist').disable()
-        } else {
-            batch.get('blacklist').enable()
-        }
-        this.batchesTree.forEach((taskNode, taskIndex) => {
-            taskNode["batches"].forEach((batchNode, batchIndex) => {
-                if (batch.get('name').value == batchNode['batch']) {
-                    this.batchesTree[taskIndex]["batches"][batchIndex]['whitelist'] = batch.get('whitelist').value
-                    this.localStorageService.setItem("batches-tree", JSON.stringify(this.batchesTree))
-                }
-            });
-        });
-    }
-
-
     removeAnnotatorOptionValue(valueIndex) {
         this.annotatorOptionValues().removeAt(valueIndex);
     }
@@ -1657,21 +1598,6 @@ export class GeneratorComponent {
                 taskSettingsJSON['attributes'][attributeIndex] = attribute
             }
         }
-        if (this.batchesTree) {
-            let blacklist_batches = []
-            let whitelist_batches = []
-            for (let batch of taskSettingsJSON.batches) {
-                if (batch.blacklist) {
-                    blacklist_batches.push(batch.name)
-                }
-                if (batch.whitelist) {
-                    whitelist_batches.push(batch.name)
-                }
-
-            }
-            taskSettingsJSON["blacklist_batches"] = blacklist_batches
-            taskSettingsJSON["whitelist_batches"] = whitelist_batches
-        }
 
         if (taskSettingsJSON.messages.length == 0) {
             delete taskSettingsJSON.messages;
@@ -1682,7 +1608,6 @@ export class GeneratorComponent {
         }
 
         this.localStorageService.setItem(`task-settings`, JSON.stringify(taskSettingsJSON))
-        delete taskSettingsJSON["batches"]
         this.taskSettingsSerialized = JSON.stringify(taskSettingsJSON)
     }
 

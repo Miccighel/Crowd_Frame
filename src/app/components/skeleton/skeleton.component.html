@@ -68,16 +68,16 @@
                     <h4>Failure</h4>
                 </mat-card-title>
                 <!-- If some messages are set in task.json -->
-                <mat-card-content *ngIf="this.settings.messages">
+                <mat-card-content *ngIf="this.settingsTask.messages">
                     <h2>You are not allowed to participate to this experiment because either:</h2>
                     <ul>
-                        <li *ngFor="let message of this.settings.messages; let i=index">- {{message}}</li>
+                        <li *ngFor="let message of this.settingsTask.messages; let i=index">- {{message}}</li>
                     </ul>
                     <h6>If you believe that this is an error, please contact us through Amazon MTurk. Sorry for the inconvenience.
                     </h6>
                 </mat-card-content>
                 <!-- Otherwise a standard message is shown -->
-                <mat-card-content *ngIf="!this.settings.messages">
+                <mat-card-content *ngIf="!this.settingsTask.messages">
                     <h2>
                         Either you have already started this task without finishing it, or you have already participated to a
                         variant of this experiment.<br/> For this reason, you are not allowed to take a part in this experiment.
@@ -135,7 +135,7 @@
                             </div>
                         </div>
                         <!--- Countdown markup --->
-                        <div class="countdown sticky" *ngIf="this.settings.countdown_time>=0">
+                        <div class="countdown sticky" *ngIf="this.settingsTask.countdown_time>=0">
                             <h1 class="text-lighter m-0">
                                 Time left:
                                 <countdown #countdownElement [config]="{ demand: true, leftTime: this.documentsCountdownTime[i], format: 'mm:ss' }" (event)="handleCountdown($event, i)"></countdown>
@@ -143,22 +143,22 @@
                         </div>
 
                         <!-- Document attributes markup; add the event bindings if you want enable annotations -->
-                        <div class="statement" *ngIf="(this.settings.modality=='pointwise')">
-                            <ng-container *ngFor="let attribute of this.settings.attributes; let k=index">
+                        <div class="statement" *ngIf="(this.settingsTask.modality=='pointwise')">
+                            <ng-container *ngFor="let attribute of this.settingsTask.attributes; let k=index">
                                 <div *ngIf="attribute.show" class="attribute">
                                     <p>
                                         <span class="attribute-label" *ngIf="!this.annotator">
-                                            <strong>{{attribute.name_pretty}}</strong>: {{(this.countdownsExpired[i] && this.settings.countdown_behavior == "hide_attributes") ? "---------- text_hidden ----------" : document[attribute.name]}}
+                                            <strong>{{attribute.name_pretty}}</strong>: {{(this.countdownsExpired[i] && this.settingsTask.countdown_behavior == "hide_attributes") ? "---------- text_hidden ----------" : document[attribute.name]}}
                                         </span>
                                         <span class="attribute-label" *ngIf="this.annotator && !attribute.annotate">
-                                            <strong>{{attribute.name_pretty}}</strong>: {{(this.countdownsExpired[i] && this.settings.countdown_behavior == "hide_attributes") ? "---------- text_hidden ----------" : document[attribute.name]}}
+                                            <strong>{{attribute.name_pretty}}</strong>: {{(this.countdownsExpired[i] && this.settingsTask.countdown_behavior == "hide_attributes") ? "---------- text_hidden ----------" : document[attribute.name]}}
                                         </span>
                                         <span class="attribute-label" *ngIf="this.annotator && this.annotator.type=='options'&& attribute.annotate">
                                             <strong>{{attribute.name_pretty}}</strong>:
                                             <span id="document-{{i}}-attribute-{{k}}"
                                                   (mouseup)="performAnnotation(i, k, this.notes, this.changeDetector)"
                                                   (touchend)="performAnnotation(i, k, this.notes, this.changeDetector)">
-                                                {{(this.countdownsExpired[i] && this.settings.countdown_behavior == "hide_attributes") ? "---------- text_hidden ----------" : document[attribute.name]}}
+                                                {{(this.countdownsExpired[i] && this.settingsTask.countdown_behavior == "hide_attributes") ? "---------- text_hidden ----------" : document[attribute.name]}}
                                             </span>
                                         </span>
                                         <span class="attribute-label" *ngIf="this.annotator && this.annotator.type=='laws'&& attribute.annotate">
@@ -177,7 +177,7 @@
                                               (mouseup)="performHighlighting(this.changeDetector, $event, i, this.notes, this.annotator)"
                                               (touchend)="performHighlighting(this.changeDetector, $event, i, this.notes, this.annotator)"
                                               class="statement-text">{{this.checkEnabledNotes(i)}}
-                                            {{(this.countdownsExpired[i] && this.settings.countdown_behavior == "hide_attributes") ? "---------- text_hidden ----------" : document.article_text}}
+                                            {{(this.countdownsExpired[i] && this.settingsTask.countdown_behavior == "hide_attributes") ? "---------- text_hidden ----------" : document.article_text}}
                                         </span>
                                     </div>
                                 </li>
@@ -198,7 +198,7 @@
                                                         <span class="spanboxtext">{{document.statements[0][0].statement}}</span>
                                                     </div>
                                                     <div class="boxvaluessplit">
-                                                        <ng-container *ngFor="let attribute of this.settings.attributes; let k=index">
+                                                        <ng-container *ngFor="let attribute of this.settingsTask.attributes; let k=index">
                                                             <span class="captionsplit" *ngIf="attribute.show==true">
                                                                 <label><strong>{{attribute.name}}</strong></label>
                                                                 {{document.statements[0][0][attribute.name]}}
@@ -219,7 +219,7 @@
                                                         {{document.statements[0][1].statement}}
                                                     </div>
                                                     <div class="boxvaluessplit">
-                                                        <ng-container *ngFor="let attribute of this.settings.attributes; let k=index">
+                                                        <ng-container *ngFor="let attribute of this.settingsTask.attributes; let k=index">
                                                             <span class="captionsplit" *ngIf="attribute.show==true">
                                                                 <label><strong>{{attribute.name}}</strong></label>
                                                                 {{document.statements[0][1][attribute.name]}}
@@ -258,7 +258,7 @@
                             L'elemento pairwiiseElement viene caricato solo se i settings del task presentano la variabile modality uguale a 'pairwise'.
                         -->
                         <!-- @AggiunteAbbondo Ng templete che permette che esegue il parwiseElementSplit solo se l'if è TRUE-->
-                        <ng-template *ngIf="this.settings.modality=='pairwise'" [ngTemplateOutlet]="pairwiseElementSplit"></ng-template>
+                        <ng-template *ngIf="this.settingsTask.modality=='pairwise'" [ngTemplateOutlet]="pairwiseElementSplit"></ng-template>
 
 
                         <ng-container *ngIf="(this.annotator && this.annotator.type=='options')">
@@ -487,7 +487,7 @@
                                     mentre se il document non è in modalità pairwise non succede nulla è rimane tutto come prima
                                 -->
                                 <ng-template
-                                        *ngIf="checkdimension(document.index,dimension.index) || !(this.settings.modality=='pairwise')"
+                                        *ngIf="checkdimension(document.index,dimension.index) || !(this.settingsTask.modality=='pairwise')"
                                         [ngTemplateOutlet]="dimensionPairwise">
                                 </ng-template>
 
@@ -495,8 +495,8 @@
 
                                     <!-- Dimension name markup -->
                                     <!--@AggiunteAbbondo Cambia la classe in base sei ci troviamo in modalità pairwise o meno-->
-                                    <div [ngClass]="this.settings.modality=='pairwise'? 'dimension-content-split' : 'dimension-name'">
-                                        <div [ngClass]="{'dimension-name-center': this.settings.modality=='pairwise'}">
+                                    <div [ngClass]="this.settingsTask.modality=='pairwise'? 'dimension-content-split' : 'dimension-name'">
+                                        <div [ngClass]="{'dimension-name-center': this.settingsTask.modality=='pairwise'}">
                                             <mat-divider [inset]="true"></mat-divider>
                                             <h2 *ngIf="!dimension.name_pretty">{{capitalize(dimension.name)}}</h2>
                                             <h2 *ngIf="dimension.name_pretty">{{capitalize(dimension.name_pretty)}}</h2>
@@ -506,7 +506,7 @@
 
                                     <!-- Dimension description markup -->
                                     <!-- @AggiunteAbbondo Cambiamo la classe in base sei ci troviamo in modalità pairwise o meno-->
-                                    <div *ngIf="dimension.description" [ngClass]="this.settings.modality=='pairwise'? 'dimension-name-center' : 'dimension-container dimension-description'">
+                                    <div *ngIf="dimension.description" [ngClass]="this.settingsTask.modality=='pairwise'? 'dimension-name-center' : 'dimension-container dimension-description'">
                                         <div class="dimension-content" ngClass=" 'dimension-split-inside' 'dimension-content'">
                                             <p>{{dimension.description}}</p>
                                         </div>
@@ -522,7 +522,7 @@
                                                     (queryEmitter)="storeSearchEngineUserQuery($event, document, dimension)"
                                                     (selectedRowEmitter)="storeSearchEngineSelectedResponse($event, document, dimension)"
                                                     [countdownExpired]="this.countdownsExpired[i]"
-                                                    [countdownBehavior]="this.settings.countdown_behavior">
+                                                    [countdownBehavior]="this.settingsTask.countdown_behavior">
                                             </app-crowd-xplorer>
                                             <!-- Dimension search engine url field markup (hidden) -->
                                             <mat-form-field *ngIf="dimension.url" class="url-field">
@@ -548,14 +548,14 @@
                                           @AggiunteAbbondo
                                           Cambia la classe del div  in base se ci troviamo in modalità pairwise o meno
                                         -->
-                                        <div [ngClass]="this.settings.modality=='pairwise'? 'dimension-content-split' : 'dimension-content'">
+                                        <div [ngClass]="this.settingsTask.modality=='pairwise'? 'dimension-content-split' : 'dimension-content'">
 
                                             <!-- Vertical style markup -->
                                             <ng-container *ngIf="dimension.style.orientation=='vertical'">
 
                                                 <!-- Categorical scale markup -->
                                                 <ng-container *ngIf="dimension.scale.type=='categorical'">
-                                                    <div *ngIf="this.settings.modality!='pairwise'">
+                                                    <div *ngIf="this.settingsTask.modality!='pairwise'">
                                                         <mat-radio-group aria-labelledby="radio-button-label" class="radio-button-group" formControlName="{{(dimension.name).concat('_value')}}">
                                                             <mat-radio-button *ngFor="let mapping of dimension.scale.mapping let k=index"
                                                                               class="radio-button" value="{{mapping.value}}"
@@ -567,8 +567,8 @@
                                                         </mat-radio-group>
                                                     </div>
                                                     <!-- Pairwise Categorical Scale markup-->
-                                                    <ng-container *ngIf="this.settings.modality=='pairwise'">
-                                                        <div [ngClass]="{'dimension-split-inside, dimension-box':this.settings.modality=='pairwise'}" *ngFor="let test of document.statements; let j=index">
+                                                    <ng-container *ngIf="this.settingsTask.modality=='pairwise'">
+                                                        <div [ngClass]="{'dimension-split-inside, dimension-box':this.settingsTask.modality=='pairwise'}" *ngFor="let test of document.statements; let j=index">
                                                             <p class="spanDocument"> Answer for Statement {{changeletter(j)}}</p>
                                                             <mat-radio-group style="margin-left: 10px;" aria-labelledby="radio-button-label" class="radio-button-group" formControlName="{{(dimension.name).concat('_value_').concat(j)}}">
                                                                 <mat-radio-button *ngFor="let mapping of dimension.scale.mapping let k=index"
@@ -587,7 +587,7 @@
 
                                                 <!-- Interval scale markup -->
                                                 <ng-container *ngIf="dimension.scale.type=='interval'">
-                                                    <div *ngIf="this.settings.modality!='pairwise'">
+                                                    <div *ngIf="this.settingsTask.modality!='pairwise'">
                                                         <label>Selected value: {{documentsForm[i].controls[(dimension.name).concat('_value')].value}}</label>
                                                         <mat-slider min="{{dimension.scale.min}}" max="{{dimension.scale.max}}"
                                                                     step="{{dimension.scale.step}}" thumbLabel tickInterval="{{dimension.scale.step}}"
@@ -596,8 +596,8 @@
                                                                     [disabled]="this.countdownsExpired[i]"></mat-slider>
                                                     </div>
                                                     <!-- Pairwise Interval Scale markup-->
-                                                    <ng-container *ngIf="this.settings.modality=='pairwise'">
-                                                        <div [ngClass]="{'dimension-split-inside, dimension-box': this.settings.modality=='pairwise'}" *ngFor="let test of document.statements; let j=index">
+                                                    <ng-container *ngIf="this.settingsTask.modality=='pairwise'">
+                                                        <div [ngClass]="{'dimension-split-inside, dimension-box': this.settingsTask.modality=='pairwise'}" *ngFor="let test of document.statements; let j=index">
                                                             <p class="spanDocument"> Answer for Statement {{changeletter(j)}}</p>
                                                             <label style="margin-left:10px;"> Selected value: {{documentsForm[i].controls[(dimension.name).concat('_value_').concat(j)].value}}</label>
                                                             <mat-slider min="{{dimension.scale.min}}" max="{{dimension.scale.max}}"
@@ -610,8 +610,8 @@
                                                 </ng-container>
 
                                                 <!-- Magnitude scale markup -->
-                                                <ng-container *ngIf="dimension.scale.type=='magnitude_estimation' &&!dimension.pairwise || dimension.scale.type=='magnitude_estimation' && !(this.settings.modality=='pairwise')">
-                                                    <div *ngIf="this.settings.modality!='pairwise'">
+                                                <ng-container *ngIf="dimension.scale.type=='magnitude_estimation' &&!dimension.pairwise || dimension.scale.type=='magnitude_estimation' && !(this.settingsTask.modality=='pairwise')">
+                                                    <div *ngIf="this.settingsTask.modality!='pairwise'">
                                                         <mat-form-field appearance="fill">
                                                             <mat-label>Value</mat-label>
                                                             <input *ngIf="dimension.scale.lower_bound" matInput type="number" placeholder="" formControlName="{{(dimension.name).concat('_value')}}" min="{{dimension.scale.min}}"
@@ -631,9 +631,9 @@
                                                         </mat-form-field>
                                                     </div>
                                                     <!-- Pairwise Magnitude Scale markup-->
-                                                    <ng-container *ngIf="this.settings.modality=='pairwise'">
+                                                    <ng-container *ngIf="this.settingsTask.modality=='pairwise'">
                                                         <ng-container *ngFor="let test of document.statements; let j=index">
-                                                            <div [ngClass]="{'dimension-box': this.settings.modality=='pairwise'}">
+                                                            <div [ngClass]="{'dimension-box': this.settingsTask.modality=='pairwise'}">
                                                                 <p class="spanDocument"> Answer for Statement {{changeletter(j)}}</p>
                                                                 <mat-form-field appearance="fill" style="margin-left: 10px;">
                                                                     <mat-label>Value</mat-label>
@@ -676,9 +676,9 @@
                                     </div>
 
                                     <!-- Dimension justification field markup -->
-                                    <div *ngIf="dimension.justification" [ngClass]="this.settings.modality=='pairwise' ? 'dimension-content-split' : 'dimension-container dimension-justification'">
-                                        <div *ngIf="dimension.justification && !(this.settings.modality=='pairwise')"
-                                             [ngClass]="this.settings.modality=='pairwise'? 'dimension-split-inside' : 'dimension-content justification'">
+                                    <div *ngIf="dimension.justification" [ngClass]="this.settingsTask.modality=='pairwise' ? 'dimension-content-split' : 'dimension-container dimension-justification'">
+                                        <div *ngIf="dimension.justification && !(this.settingsTask.modality=='pairwise')"
+                                             [ngClass]="this.settingsTask.modality=='pairwise'? 'dimension-split-inside' : 'dimension-content justification'">
                                             <div class="dimension-text-field">
                                                 <mat-form-field appearance="fill">
                                                     <mat-label>{{dimension.justification.text}}</mat-label>
@@ -699,8 +699,8 @@
                                         <!-- Dimension justification field markup pairwise -->
                                         <!--@AggiunteAbbondo
                                           Dimension justification in modolità partwise-->
-                                        <ng-container *ngIf="dimension.justification && this.settings.modality=='pairwise'">
-                                            <div *ngFor="let test of document.statements; let j=index" [ngClass]="{'dimension-box': this.settings.modality=='pairwise'}">
+                                        <ng-container *ngIf="dimension.justification && this.settingsTask.modality=='pairwise'">
+                                            <div *ngFor="let test of document.statements; let j=index" [ngClass]="{'dimension-box': this.settingsTask.modality=='pairwise'}">
                                                 <p class="spanDocument"> Answer justification  {{changeletter(j)}}</p>
                                                 <div class="dimension-text-field" style="margin-left: 10px;">
                                                     <mat-form-field appearance="fill">
@@ -736,7 +736,7 @@
                                                            (queryEmitter)="storeSearchEngineUserQuery($event, document, dimension)"
                                                            (selectedRowEmitter)="storeSearchEngineSelectedResponse($event, document, dimension)"
                                                            [countdownExpired]="this.countdownsExpired[i]"
-                                                           [countdownBehavior]="this.settings.countdown_behavior"
+                                                           [countdownBehavior]="this.settingsTask.countdown_behavior"
                                         ></app-crowd-xplorer>
 
                                         <!-- Dimension search engine url field markup (hidden) -->

@@ -1,6 +1,6 @@
-import {Component, EventEmitter, OnInit, Output, ViewEncapsulation} from '@angular/core';
+import {Component, EventEmitter, Input, OnInit, Output, ViewEncapsulation} from '@angular/core';
 import {MatChipInputEvent} from "@angular/material/chips";
-import {FormBuilder, FormGroup} from "@angular/forms";
+import {FormArray, FormBuilder, FormGroup} from "@angular/forms";
 import {COMMA, ENTER} from "@angular/cdk/keycodes";
 import {SettingsWorker} from "../../../models/settingsWorker";
 import {LocalStorageService} from "../../../services/localStorage.service";
@@ -22,6 +22,8 @@ export class WorkerChecksComponent implements OnInit {
     localStorageService: LocalStorageService;
 
     /* STEP #7 - Worker Checks */
+
+    @Input() batchesTree: Array<JSON>
 
     formStep: FormGroup;
 
@@ -50,7 +52,8 @@ export class WorkerChecksComponent implements OnInit {
             block: '',
             analysis: '',
             blacklist: '',
-            whitelist: ''
+            whitelist: '',
+            batches: this._formBuilder.array([]),
         })
         this.formEmitter = new EventEmitter<FormGroup>();
         this.resultEmitter = new EventEmitter<string>();
@@ -61,7 +64,6 @@ export class WorkerChecksComponent implements OnInit {
         /* STEP #7 - Worker Checks Settings */
 
         let serializedWorkerChecks = this.localStorageService.getItem("worker-settings")
-        console.log(serializedWorkerChecks)
         if (serializedWorkerChecks) {
             this.dataStored = new SettingsWorker(JSON.parse(serializedWorkerChecks))
         } else {
@@ -73,12 +75,20 @@ export class WorkerChecksComponent implements OnInit {
             block: [this.dataStored.block ? this.dataStored.block : true],
             analysis: [this.dataStored.block ? this.dataStored.block : true],
             blacklist: [this.dataStored.blacklist ? this.dataStored.blacklist : ''],
-            whitelist: [this.dataStored.whitelist ? this.dataStored.whitelist : '']
+            whitelist: [this.dataStored.whitelist ? this.dataStored.whitelist : ''],
+            batches: this._formBuilder.array([]),
         })
         this.whitelistedWorkerId = new Set();
         this.blacklistedWorkerId = new Set();
         this.dataStored.blacklist.forEach((workerId, workerIndex) => this.blacklistedWorkerId.add(workerId))
         this.dataStored.whitelist.forEach((workerId, workerIndex) => this.whitelistedWorkerId.add(workerId))
+        if (this.batchesTree) {
+            for (let taskNode of this.batchesTree) {
+                for (let batchNode of taskNode["batches"]) {
+                    this.addBatch(batchNode)
+                }
+            }
+        }
     }
 
     public ngAfterViewInit() {
@@ -117,6 +127,64 @@ export class WorkerChecksComponent implements OnInit {
         this.serializeConfiguration()
     }
 
+    batches(): FormArray {
+        return this.formStep.get('batches') as FormArray;
+    }
+
+    addBatch(batchNode) {
+        let control = this._formBuilder.group({
+            name: batchNode ? batchNode['batch'] : '',
+            counter: batchNode ? batchNode['counter'] : '',
+            blacklist: batchNode ? batchNode['blacklist'] ? batchNode['blacklist'] : '' : '',
+            whitelist: batchNode ? batchNode['whitelist'] ? batchNode['whitelist'] : '' : '',
+        })
+        if (batchNode['blacklist']) {
+            control.get('whitelist').setValue(false)
+            control.get('whitelist').disable()
+        }
+        if (batchNode['whitelist']) {
+            control.get('blacklist').setValue(false)
+            control.get('blacklist').disable()
+        }
+        this.batches().push(control, {emitEvent: false})
+    }
+
+    resetBlacklist(batchIndex) {
+        let batch = this.batches().at(batchIndex)
+        if (batch.get('blacklist').value == true) {
+            batch.get('whitelist').setValue(false)
+            batch.get('whitelist').disable()
+        } else {
+            batch.get('whitelist').enable()
+        }
+        this.batchesTree.forEach((taskNode, taskIndex) => {
+            taskNode["batches"].forEach((batchNode, batchIndex) => {
+                if (batch.get('name').value == batchNode['batch']) {
+                    this.batchesTree[taskIndex]["batches"][batchIndex]['blacklist'] = batch.get('blacklist').value
+                    this.localStorageService.setItem("batches-tree", JSON.stringify(this.batchesTree))
+                }
+            });
+        });
+    }
+
+    resetWhitelist(batchIndex) {
+        let batch = this.batches().at(batchIndex)
+        if (batch.get('whitelist').value == true) {
+            batch.get('blacklist').setValue(false)
+            batch.get('blacklist').disable()
+        } else {
+            batch.get('blacklist').enable()
+        }
+        this.batchesTree.forEach((taskNode, taskIndex) => {
+            taskNode["batches"].forEach((batchNode, batchIndex) => {
+                if (batch.get('name').value == batchNode['batch']) {
+                    this.batchesTree[taskIndex]["batches"][batchIndex]['whitelist'] = batch.get('whitelist').value
+                    this.localStorageService.setItem("batches-tree", JSON.stringify(this.batchesTree))
+                }
+            });
+        });
+    }
+
     /* JSON Output */
     serializeConfiguration() {
         let configurationRaw = JSON.parse(JSON.stringify(this.formStep.value));
@@ -124,7 +192,23 @@ export class WorkerChecksComponent implements OnInit {
             configurationRaw.blacklist = Array.from(this.blacklistedWorkerId.values())
         if (this.whitelistedWorkerId)
             configurationRaw.whitelist = Array.from(this.whitelistedWorkerId.values())
+        if (this.batchesTree) {
+            let blacklist_batches = []
+            let whitelist_batches = []
+            for (let batch of configurationRaw.batches) {
+                if (batch.blacklist) {
+                    blacklist_batches.push(batch.name)
+                }
+                if (batch.whitelist) {
+                    whitelist_batches.push(batch.name)
+                }
+
+            }
+            configurationRaw["blacklist_batches"] = blacklist_batches
+            configurationRaw["whitelist_batches"] = whitelist_batches
+        }
         this.localStorageService.setItem(`worker-settings`, JSON.stringify(configurationRaw))
+        delete configurationRaw['batches']
         this.configurationSerialized = JSON.stringify(configurationRaw)
         this.resultEmitter.emit(this.configurationSerialized)
     }
