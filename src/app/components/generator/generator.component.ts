@@ -1396,7 +1396,6 @@ export class GeneratorComponent {
             this.taskSettingsForm.get('countdown_time').setValidators([Validators.required, this.positiveOrZeroNumber.bind(this)]);
             this.taskSettingsForm.get('countdown_time').updateValueAndValidity();
         }
-        console.log(this.taskSettingsForm)
         this.resetAdditionalTimes()
     }
 
