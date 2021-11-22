@@ -25,7 +25,9 @@
                     <mat-card-title>Step #1: Questionnaires</mat-card-title>
                     <mat-card-subtitle>First, define all Questionnaires here</mat-card-subtitle>
                 </mat-card-header>
-                <mat-divider></mat-divider>
+
+                <mat-divider [inset]="true"></mat-divider>
+
                 <mat-card-content>
 
                     <div formArrayName="questionnaires">
@@ -117,7 +119,7 @@
                                                     </td>
                                                 </tr>
                                             </table>
-                                            <div *ngIf="questionnaire.get('type').value == 'standard'" class="mb-16px subsection" formArrayName="answers">
+                                            <div *ngIf="questionnaire.get('type').value == 'standard'" class="mb-16px" formArrayName="answers">
                                                 <button mat-flat-button color="primary" class="mb-16px double-indent" (click)="addAnswer(questionnaireIndex, questionIndex)">
                                                     Add Answer
                                                 </button>

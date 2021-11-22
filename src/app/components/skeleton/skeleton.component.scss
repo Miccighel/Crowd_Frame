@@ -2,6 +2,11 @@
   pointer-events: none !important;
 }
 
+mat-horizontal-stepper mat-card-content, mat-horizontal-stepper mat-card-title, mat-horizontal-stepper mat-card-actions {
+  width: 75% !important;
+  margin: auto !important;
+}
+
 .statement {
   margin-bottom: 1.5%;
   border: 0;
@@ -345,22 +350,6 @@
   margin-bottom: 1%;
 }
 
-/* |--- TASK BODY SECTION STYLES --| */
-
-/* Stepper */
-
-mat-horizontal-stepper {
-  background-color: transparent;
-  margin-left: auto;
-  margin-right: auto;
-  width: 96%;
-  margin-bottom: 2%;
-}
-
-mat-card-content mat-form-field label {
-  font-weight: bold;
-}
-
 /* |--- OUTCOME SECTION STYLES ---| */
 
 /* |--- General ---| */
@@ -515,8 +504,7 @@ mat-card-content mat-form-field label {
   padding-top: 16px;
 }
 
-
-
+/* |--- INSTRUCTIONS SECTIONS ---| */
 
 .instructions-section {
   max-width: 80%;
@@ -686,19 +674,6 @@ mat-card-content mat-form-field label {
 .pairwise_value_selected{
   text-align: center;width:100%;margin:0 auto
 }
-
-/*
-.statement{
-  width: 500px;
-  background-color: #FCFCFC;
-  height: 250px;
-  padding-top: 1px;
-  margin-top: -1px;
-  overflow: hidden;
-  border-radius:5px;
-  cursor: pointer;
-  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
-*/
 
 .boxtext{
   width: 80%;

@@ -1,4 +1,4 @@
-import {Component, EventEmitter, OnInit, Output} from '@angular/core';
+import {Component, EventEmitter, OnInit, Output, ViewEncapsulation} from '@angular/core';
 import {MatChipInputEvent} from "@angular/material/chips";
 import {FormBuilder, FormGroup} from "@angular/forms";
 import {COMMA, ENTER} from "@angular/cdk/keycodes";

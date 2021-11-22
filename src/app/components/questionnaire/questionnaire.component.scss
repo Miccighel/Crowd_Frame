@@ -1,3 +1,16 @@
+mat-card-title {
+  padding-top: 1% !important;
+  padding-bottom: 1% !important;
+  margin-bottom: 0.5% !important;
+  margin-top: 0.5% !important;
+  font-weight: initial !important;
+}
+
+mat-card-content, mat-card-title, mat-card-actions {
+  width: 75% !important;
+  margin: auto !important;
+}
+
 .questionnaire-section mat-form-field {
   margin-bottom: 1%;
   max-width: 70%;
@@ -97,4 +110,3 @@
 .questionnaire-matrix mat-radio-group > div p {
   margin: 0;
 }
-

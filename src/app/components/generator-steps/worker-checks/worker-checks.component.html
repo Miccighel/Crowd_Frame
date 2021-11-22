@@ -7,20 +7,15 @@
         <mat-divider></mat-divider>
         <mat-card-content>
 
-            <table class="width-100">
-                <tr>
-                    <td class="p-0 pr-16px">
-                        <mat-checkbox formControlName="block" color="primary">
-                            Enable Worker Blacklist
-                        </mat-checkbox>
-                    </td>
-                    <td class="pr-16px checkbox">
-                        <mat-checkbox formControlName="analysis" color="primary">
-                            Enable Worker Analysis
-                        </mat-checkbox>
-                    </td>
-                </tr>
-            </table>
+            <mat-slide-toggle color="primary" class="mb-16px" formControlName="block">
+                Enable Worker Blacklist
+            </mat-slide-toggle>
+
+            <mat-divider [inset]="true"></mat-divider>
+
+            <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="analysis">
+                Enable Worker Analysis
+            </mat-slide-toggle>
 
             <mat-divider [inset]="true"></mat-divider>
 
@@ -50,6 +45,7 @@
                     <input placeholder="New worker ID ..." [matChipInputFor]="whitelistChips" [matChipInputSeparatorKeyCodes]="separatorKeysCodes" (matChipInputTokenEnd)="addBlacklistedId($event)">
                 </mat-chip-list>
             </mat-form-field>
+
 
         </mat-card-content>
 
