@@ -1,4 +1,4 @@
-import {Component, EventEmitter, Input, OnInit, Output, ViewEncapsulation} from '@angular/core';
+import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {MatChipInputEvent} from "@angular/material/chips";
 import {FormArray, FormBuilder, FormGroup} from "@angular/forms";
 import {COMMA, ENTER} from "@angular/cdk/keycodes";
@@ -8,12 +8,12 @@ import {ConfigService} from "../../../services/config.service";
 import {S3Service} from 'src/app/services/s3.service';
 
 @Component({
-    selector: 'app-worker-cheks',
-    templateUrl: './worker-checks.component.html',
-    styleUrls: ['./worker-checks.component.scss']
+    selector: 'app-worker-checks',
+    templateUrl: './worker-checks-step.component.html',
+    styleUrls: ['./worker-checks-step.component.scss']
 })
 
-export class WorkerChecksComponent implements OnInit {
+export class WorkerChecksStepComponent implements OnInit {
 
     configService: ConfigService;
     /* Service which wraps the interaction with S3 */

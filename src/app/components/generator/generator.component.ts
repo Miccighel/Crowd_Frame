@@ -19,24 +19,14 @@ import {Attribute, SettingsTask} from "../../models/settingsTask";
 import {Hit} from "../../models/hit";
 import {SettingsWorker} from "../../models/settingsWorker";
 import {AngularEditorConfig} from "@kolkov/angular-editor";
-import {WorkerChecksComponent} from "../generator-steps/worker-checks/worker-checks.component";
+import {WorkerChecksStepComponent} from "../generator-steps/worker-checks-step/worker-checks-step.component";
+import {QuestionnaireStepComponent} from "../generator-steps/questionnaire-step/questionnaire-step.component";
+import {InstructionsStepComponent} from "../generator-steps/instructions-step/instructions-step.component";
 
 
 /*
  * The following interfaces are used to simplify data handling for each generator step.
  */
-
-/* STEP #1 - Questionnaires */
-
-interface QuestionnaireType {
-    value: string;
-    viewValue: string;
-}
-
-interface QuestionnairePosition {
-    value: string;
-    viewValue: string;
-}
 
 /* STEP #2 - Dimensions */
 
@@ -102,19 +92,10 @@ export class GeneratorComponent {
      */
 
     /* STEP #1 - Questionnaires */
-    questionnairesForm: FormGroup;
-    questionnaireTypes: QuestionnaireType[] = [
-        {value: 'crt', viewValue: 'CRT'},
-        {value: 'likert', viewValue: 'Likert'},
-        {value: 'standard', viewValue: 'Standard'}
-    ];
-    questionnairePosition: QuestionnairePosition[] = [
-        {value: 'start', viewValue: 'Start'},
-        {value: 'end', viewValue: 'End'},
-    ];
 
-    questionnairesFetched: Array<Questionnaire>
-    questionnairesSerialized: string
+    @ViewChild(QuestionnaireStepComponent) questionnaireStep: QuestionnaireStepComponent;
+    questionnaireStepForm: FormGroup
+    questionnaireStepResult: string
 
     /* STEP #2 - Dimensions */
     dimensionsForm: FormGroup;
@@ -144,14 +125,14 @@ export class GeneratorComponent {
     dimensionsSerialized: string
 
     /* STEP #3 - General Instructions */
-    generalInstructionsForm: FormGroup;
-    generalInstructionsFetched: Array<Instruction>
-    generalInstructionsSerialized: string
+    @ViewChild('generalInstructions') generalInstructionsStep: InstructionsStepComponent;
+    generalInstructionsStepForm: FormGroup
+    generalInstructionsStepResult: string
 
     /* STEP #4 - Evaluation Instructions */
-    evaluationInstructionsForm: FormGroup;
-    evaluationInstructionsFetched: Array<Instruction>
-    evaluationInstructionsSerialized: string
+    @ViewChild('evaluationInstructions') evaluationInstructionsStep: InstructionsStepComponent;
+    evaluationInstructionsStepForm: FormGroup
+    evaluationInstructionsStepResult: string
 
     /* STEP #5 - Search Engine */
     searchEngineForm: FormGroup;
@@ -198,9 +179,9 @@ export class GeneratorComponent {
 
     /* STEP #7 - Worker Checks */
 
-    @ViewChild(WorkerChecksComponent) workerChecks: WorkerChecksComponent;
-    workerChecksForm: FormGroup
-    workerChecksResult: string
+    @ViewChild(WorkerChecksStepComponent) workerChecksStep: WorkerChecksStepComponent;
+    workerChecksStepForm: FormGroup
+    workersCheckStepResult: string
 
     /* STEP #8 - Summary */
 
@@ -297,10 +278,7 @@ export class GeneratorComponent {
         this.localStorageService = localStorageService
         this.ngxService.startLoader('generator-inner')
 
-        this.questionnairesFetched = []
         this.dimensionsFetched = []
-        this.generalInstructionsFetched = []
-        this.evaluationInstructionsFetched = []
         this.searchEngineFetched = new SettingsSearchEngine()
         this.taskSettingsFetched = new SettingsTask()
 
@@ -350,36 +328,6 @@ export class GeneratorComponent {
         }
         if (differentTask && differentBatch) this.localStorageService.clear()
 
-        /* STEP #1 - Questionnaires */
-
-        let serializedQuestionnaires = Object.keys(localStorage).filter((key) => key.startsWith('questionnaire-'))
-        if (serializedQuestionnaires.length > 0) {
-            serializedQuestionnaires.forEach(questionnaireKey => {
-                let index = questionnaireKey.split("-")[1]
-                let item = this.localStorageService.getItem(`questionnaire-${index}`)
-                this.questionnairesFetched.push(JSON.parse(item))
-            })
-        } else {
-            let rawQuestionnaires = await this.S3Service.downloadQuestionnaires(this.configService.environment)
-            rawQuestionnaires.forEach((data, index) => {
-                let questionnaire = new Questionnaire(index, data)
-                this.questionnairesFetched.push(questionnaire)
-                this.localStorageService.setItem(`questionnaire-${index}`, JSON.stringify(questionnaire))
-            })
-        }
-        this.questionnairesForm = this._formBuilder.group({
-            questionnaires: this._formBuilder.array([])
-        });
-        if (this.questionnairesFetched.length > 0) {
-            this.questionnairesFetched.forEach((questionnaire, questionnaireIndex) => {
-                this.addQuestionnaire(questionnaireIndex, questionnaire)
-            })
-        }
-        this.questionnairesForm.valueChanges.subscribe(forms => {
-            this.questionnairesJSON()
-        })
-        this.questionnairesJSON()
-
         /* STEP #2 - Dimensions */
 
         let serializedDimensions = Object.keys(localStorage).filter((key) => key.startsWith('dimension-'))
@@ -409,66 +357,6 @@ export class GeneratorComponent {
             this.dimensionsJSON()
         })
         this.dimensionsJSON()
-
-        /* STEP #3 - General Instructions */
-
-        let serializedGeneralInstructions = Object.keys(localStorage).filter((key) => key.startsWith('general-instruction-'))
-        if (serializedGeneralInstructions.length > 0) {
-            serializedGeneralInstructions.forEach(key => {
-                let index = key.split("-")[2]
-                let item = this.localStorageService.getItem(`general-instruction-${index}`)
-                this.generalInstructionsFetched.push(JSON.parse(item))
-            })
-        } else {
-            let rawGeneralInstructions = await this.S3Service.downloadGeneralInstructions(this.configService.environment)
-            rawGeneralInstructions.forEach((data, index) => {
-                let generalInstruction = new Instruction(index, data)
-                this.generalInstructionsFetched.push(generalInstruction)
-                this.localStorageService.setItem(`general-instruction-${index}`, JSON.stringify(generalInstruction))
-            })
-        }
-        this.generalInstructionsForm = this._formBuilder.group({
-            generalInstructions: this._formBuilder.array([])
-        });
-        if (this.generalInstructionsFetched.length > 0) {
-            this.generalInstructionsFetched.forEach((instruction, instructionIndex) => {
-                this.addGeneralInstruction(instructionIndex, instruction)
-            })
-        }
-        this.generalInstructionsForm.valueChanges.subscribe(forms => {
-            this.generalInstructionsJSON()
-        })
-        this.generalInstructionsJSON()
-
-        /* STEP #4 - Evaluation Instructions */
-
-        let serializedEvaluationInstructions = Object.keys(localStorage).filter((key) => key.startsWith('evaluation-instruction-'))
-        if (serializedEvaluationInstructions.length > 0) {
-            serializedEvaluationInstructions.forEach(key => {
-                let index = key.split("-")[2]
-                let item = this.localStorageService.getItem(`evaluation-instruction-${index}`)
-                this.evaluationInstructionsFetched.push(JSON.parse(item))
-            })
-        } else {
-            let rawEvaluationInstructions = await this.S3Service.downloadEvaluationInstructions(this.configService.environment)
-            rawEvaluationInstructions.forEach((data, index) => {
-                let evaluationInstruction = new Instruction(index, data)
-                this.evaluationInstructionsFetched.push(evaluationInstruction)
-                this.localStorageService.setItem(`evaluation-instruction-${index}`, JSON.stringify(evaluationInstruction))
-            })
-        }
-        this.evaluationInstructionsForm = this._formBuilder.group({
-            evaluationInstructions: this._formBuilder.array([])
-        });
-        if (this.evaluationInstructionsFetched.length > 0) {
-            this.evaluationInstructionsFetched.forEach((instruction, instructionIndex) => {
-                this.addEvaluationInstruction(instructionIndex, instruction)
-            })
-        }
-        this.evaluationInstructionsForm.valueChanges.subscribe(forms => {
-            this.evaluationInstructionsJSON()
-        })
-        this.evaluationInstructionsJSON()
 
         /* STEP #5 - Search Engine Settings */
 
@@ -574,13 +462,13 @@ export class GeneratorComponent {
     async clonePreviousBatch(data: Object) {
         this.ngxService.startLoader('generator-inner')
         this.localStorageService.clear()
-        this.questionnairesFetched = []
+        this.questionnaireStep.dataStored = []
         this.dimensionsFetched = []
-        this.generalInstructionsFetched = []
-        this.evaluationInstructionsFetched = []
+        this.generalInstructionsStep.dataStored = []
+        this.evaluationInstructionsStep.dataStored = []
         this.searchEngineFetched = new SettingsSearchEngine()
         this.taskSettingsFetched = new SettingsTask()
-        this.workerChecks.dataStored = new SettingsWorker()
+        this.workerChecksStep.dataStored = new SettingsWorker()
         this.generator.selectedIndex = 0
         let taskName = null
         let batchName = null
@@ -605,13 +493,13 @@ export class GeneratorComponent {
         this.localStorageService.clear()
         this.cloneTask = new FormControl('')
         this.taskCloned = false
-        this.questionnairesFetched = []
+        this.questionnaireStep.dataStored = []
         this.dimensionsFetched = []
-        this.generalInstructionsFetched = []
-        this.evaluationInstructionsFetched = []
+        this.generalInstructionsStep.dataStored = []
+        this.evaluationInstructionsStep.dataStored = []
         this.searchEngineFetched = new SettingsSearchEngine()
         this.taskSettingsFetched = new SettingsTask()
-        this.workerChecks.dataStored = new SettingsWorker()
+        this.workerChecksStep.dataStored = new SettingsWorker()
         this.generator.selectedIndex = 0
         this.configService.environment['taskName'] = this.configService.environment['taskNameInitial']
         this.configService.environment['batchName'] = this.configService.environment['batchNameInitial']
@@ -660,14 +548,14 @@ export class GeneratorComponent {
                         "whitelist": false,
                         "counter": counter
                     }
-                    if (this.workerChecks.dataStored.blacklist_batches) {
-                        this.workerChecks.dataStored.blacklist_batches.forEach((batchName, batchIndex) => {
+                    if (this.workerChecksStep.dataStored.blacklist_batches) {
+                        this.workerChecksStep.dataStored.blacklist_batches.forEach((batchName, batchIndex) => {
                             blackListedBatches = blackListedBatches + 1
                             batchNode['blacklist'] = batchName == batch["Prefix"];
                         })
                     }
-                    if (this.workerChecks.dataStored.whitelist_batches) {
-                        this.workerChecks.dataStored.whitelist_batches.forEach((batchName, batchIndex) => {
+                    if (this.workerChecksStep.dataStored.whitelist_batches) {
+                        this.workerChecksStep.dataStored.whitelist_batches.forEach((batchName, batchIndex) => {
                             whiteListedBatches = whiteListedBatches + 1
                             batchNode['whitelist'] = batchName == batch["Prefix"];
                         })
@@ -696,150 +584,44 @@ export class GeneratorComponent {
     async checkProgressStatus(stepperStatus) {
 
         if (stepperStatus.selectedIndex == 7) {
-            this.questionnairesJSON()
+            this.questionnaireStep.serializeConfiguration()
             this.dimensionsJSON()
-            this.generalInstructionsJSON()
-            this.questionnairesJSON()
+            this.generalInstructionsStep.serializeConfiguration()
             this.searchEngineJSON()
             this.taskSettingsJSON()
-            this.workerChecks.serializeConfiguration()
+            this.workerChecksStep.serializeConfiguration()
         }
 
     }
 
     /* STEP #1 - Questionnaires */
 
-    questionnaires(): FormArray {
-        return this.questionnairesForm.get('questionnaires') as FormArray;
+    public storeQuestionnaireForm(data: FormGroup) {
+        this.questionnaireStepForm = data
     }
 
-    addQuestionnaire(questionnaireIndex = null, questionnaire = null as Questionnaire) {
-        this.questionnaires().push(this._formBuilder.group({
-            type: questionnaire ? questionnaire.type ? questionnaire.type : '' : '',
-            description: questionnaire ? questionnaire.description ? questionnaire.description : '' : '',
-            position: questionnaire ? questionnaire.position ? questionnaire.position : '' : '',
-            questions: this._formBuilder.array([]),
-            mapping: this._formBuilder.array([])
-        }))
-        if (questionnaire) {
-            questionnaire.questions.forEach((question, questionIndex) => this.addQuestion(questionnaireIndex, questionIndex, question))
-        }
+    public storeQuestionnaireStep(data: string) {
+        this.questionnaireStepResult = data
     }
 
-    removeQuestionnaire(questionnaireIndex: number) {
-        this.questionnaires().removeAt(questionnaireIndex);
+    /* STEP #3 - General Instructions */
+
+    public storeGeneralInstructionsForm(data: FormGroup) {
+        this.generalInstructionsStepForm = data
     }
 
-    updateQuestionnaire(questionnaireIndex) {
-        let questionnaire = this.questionnaires().at(questionnaireIndex);
-
-        questionnaire.get('description').setValue('');
-        questionnaire.get('description').clearValidators();
-        questionnaire.get('description').updateValueAndValidity();
-
-        this.questions(questionnaireIndex).clear();
-        this.mapping(questionnaireIndex).clear();
-
-        this.addQuestion(questionnaireIndex);
-        if (questionnaire.get('type').value == 'likert') {
-            this.addMapping(questionnaireIndex);
-        }
+    public storeGeneralInstructionsStep(data: string) {
+        this.generalInstructionsStepResult = data
     }
 
-    /* SUB ELEMENT: Questions */
+    /* STEP #3 - Evaluation Instructions */
 
-    questions(questionnaireIndex: number): FormArray {
-        return this.questionnaires().at(questionnaireIndex).get('questions') as FormArray;
+    public storeEvaluationlInstructionsForm(data: FormGroup) {
+        this.evaluationInstructionsStepForm = data
     }
 
-    addQuestion(questionnaireIndex: number, questionIndex = null as number, question = null as Question) {
-        this.questions(questionnaireIndex).push(this._formBuilder.group({
-            name: question ? question.name ? question.name : '' : '',
-            text: question ? question.name ? question.name : '' : '',
-            answers: this._formBuilder.array([])
-        }));
-        if (question && question.answers) for (let answer of question.answers) this.addAnswer(questionnaireIndex, questionIndex, answer)
-        if (this.questionnaires().at(questionnaireIndex).get('type').value == 'standard' && this.questions(questionnaireIndex).length == 0) {
-            this.addAnswer(questionnaireIndex, this.questions(questionnaireIndex).length - 1);
-        }
-    }
-
-    removeQuestion(questionnaireIndex: number, questionIndex: number) {
-        this.questions(questionnaireIndex).removeAt(questionIndex);
-    }
-
-    /* SUB ELEMENT: Answers */
-
-    answers(questionnaireIndex: number, questionIndex: number): FormArray {
-        return this.questions(questionnaireIndex).at(questionIndex).get('answers') as FormArray;
-    }
-
-    addAnswer(questionnaireIndex: number, questionIndex: number, answer = null as string) {
-        this.answers(questionnaireIndex, questionIndex).push(this._formBuilder.group({
-            answer: answer ? answer : ''
-        }))
-    }
-
-    removeAnswer(questionnaireIndex: number, questionIndex: number, answerIndex: number) {
-        this.answers(questionnaireIndex, questionIndex).removeAt(answerIndex);
-    }
-
-    /* SUB ELEMENT: Mappings  */
-
-    mapping(questionnaireIndex: number): FormArray {
-        return this.questionnaires().at(questionnaireIndex).get('mapping') as FormArray;
-    }
-
-    addMapping(questionnaireIndex: number) {
-        this.mapping(questionnaireIndex).push(this._formBuilder.group({
-            label: '',
-            value: ''
-        }))
-    }
-
-    removeMapping(questionnaireIndex: number, mappingIndex: number) {
-        this.mapping(questionnaireIndex).removeAt(mappingIndex);
-    }
-
-    /* JSON Output */
-
-    questionnairesJSON() {
-        let serializedQuestionnaires = Object.keys(localStorage).filter((key) => key.startsWith('questionnaire-'))
-        if (serializedQuestionnaires.length > 0) serializedQuestionnaires.forEach(questionnaireKey => this.localStorageService.removeItem(questionnaireKey))
-        let questionnairesJSON = JSON.parse(JSON.stringify(this.questionnairesForm.get('questionnaires').value));
-        questionnairesJSON.forEach((questionnaire, questionnaireIndex) => {
-            switch (questionnaire.type) {
-                case 'crt':
-                    delete questionnaire.description;
-                    for (let questionIndex in questionnaire.questions) {
-                        delete questionnaire.questions[questionIndex].answers;
-                    }
-                    delete questionnaire.mapping;
-                    break;
-
-                case 'likert':
-                    for (let questionIndex in questionnaire.questions) {
-                        delete questionnaire.questions[questionIndex].answers;
-                    }
-                    break;
-
-                case 'standard':
-                    delete questionnaire.description;
-                    for (let questionIndex in questionnaire.questions) {
-                        let answersStringArray = [];
-                        for (let answerIndex in questionnaire.questions[questionIndex].answers) {
-                            answersStringArray.push(questionnaire.questions[questionIndex].answers[answerIndex].answer);
-                        }
-                        questionnaire.questions[questionIndex].answers = answersStringArray;
-                    }
-                    delete questionnaire.mapping;
-                    break;
-                default:
-                    break;
-            }
-            this.localStorageService.setItem(`questionnaire-${questionnaireIndex}`, JSON.stringify(questionnaire))
-        })
-        this.questionnairesSerialized = JSON.stringify(questionnairesJSON)
+    public storeEvaluationInstructionsStep(data: string) {
+        this.evaluationInstructionsStepResult = data
     }
 
     /* STEP #2 - Dimensions */
@@ -1162,65 +944,6 @@ export class GeneratorComponent {
             this.localStorageService.setItem(`dimension-${dimensionIndex}`, JSON.stringify(dimension))
         })
         this.dimensionsSerialized = JSON.stringify(dimensionsJSON)
-    }
-
-    /* STEP #3 - General Instructions */
-    generalInstructions(): FormArray {
-        return this.generalInstructionsForm.get('generalInstructions') as FormArray;
-    }
-
-    addGeneralInstruction(instructionIndex = null, instruction = null as Instruction) {
-        this.generalInstructions().push(this._formBuilder.group({
-            caption: instruction ? instruction.caption ? instruction.caption : '' : '',
-            text: instruction ? instruction.text ? instruction.text : '' : '',
-        }));
-    }
-
-    removeGeneralInstruction(generalInstructionIndex: number) {
-        this.generalInstructions().removeAt(generalInstructionIndex);
-    }
-
-    /* JSON Output */
-
-    generalInstructionsJSON() {
-        let serializedInstructions = Object.keys(localStorage).filter((key) => key.startsWith('general-instruction-'))
-        if (serializedInstructions.length > 0) serializedInstructions.forEach(key => this.localStorageService.removeItem(key))
-        let generalInstructionsJSON = JSON.parse(JSON.stringify(this.generalInstructionsForm.get('generalInstructions').value));
-        generalInstructionsJSON.forEach((generalInstruction, generalInstructionIndex) => {
-            if (generalInstruction.caption == '') generalInstruction.caption = false
-            this.localStorageService.setItem(`general-instruction-${generalInstructionIndex}`, JSON.stringify(generalInstruction))
-        })
-        this.generalInstructionsSerialized = JSON.stringify(generalInstructionsJSON);
-    }
-
-    /* STEP #4 - Evaluation Instructions */
-
-    evaluationInstructions(): FormArray {
-        return this.evaluationInstructionsForm.get('evaluationInstructions') as FormArray;
-    }
-
-    addEvaluationInstruction(instructionIndex = null, instruction = null as Instruction) {
-        this.evaluationInstructions().push(this._formBuilder.group({
-            caption: instruction ? instruction.caption ? instruction.caption : '' : '',
-            text: instruction ? instruction.text ? instruction.text : '' : ''
-        }));
-    }
-
-    removeEvaluationInstruction(evaluationInstructionIndex: number) {
-        this.evaluationInstructions().removeAt(evaluationInstructionIndex);
-    }
-
-    /* JSON Output */
-
-    evaluationInstructionsJSON() {
-        let serializedInstructions = Object.keys(localStorage).filter((key) => key.startsWith('evaluation-instruction-'))
-        if (serializedInstructions.length > 0) serializedInstructions.forEach(key => this.localStorageService.removeItem(key))
-        let evaluationInstructionsJSON = JSON.parse(JSON.stringify(this.evaluationInstructionsForm.get('evaluationInstructions').value));
-        evaluationInstructionsJSON.forEach((evaluationInstruction, instructionIndex) => {
-            if (evaluationInstruction.caption == '') evaluationInstruction.caption = false
-            this.localStorageService.setItem(`evaluation-instruction-${instructionIndex}`, JSON.stringify(evaluationInstruction))
-        })
-        this.evaluationInstructionsSerialized = JSON.stringify(evaluationInstructionsJSON);
     }
 
     /* STEP #5 - Search Engine */
@@ -1613,11 +1336,11 @@ export class GeneratorComponent {
     /* STEP #7 - Task Settings */
 
     public storeWorkerChecksForm(data: FormGroup) {
-        this.workerChecksForm = data
+        this.workerChecksStepForm = data
     }
 
     public storeWorkerChecks(data: string) {
-        this.workerChecksResult = data
+        this.workersCheckStepResult = data
     }
 
     /* STEP 8 - Summary  */
@@ -1631,14 +1354,14 @@ export class GeneratorComponent {
         this.uploadCompleted = false
         this.configService.environment['taskName'] = this.configService.environment['taskNameInitial']
         this.configService.environment['batchName'] = this.configService.environment['batchNameInitial']
-        let questionnairePromise = this.S3Service.uploadQuestionnairesConfig(this.configService.environment, this.questionnairesSerialized)
+        let questionnairePromise = this.S3Service.uploadQuestionnairesConfig(this.configService.environment, this.questionnaireStepResult)
         let hitsPromise = this.S3Service.uploadHitsConfig(this.configService.environment, this.hitsParsed)
         let dimensionsPromise = this.S3Service.uploadDimensionsConfig(this.configService.environment, this.dimensionsSerialized)
-        let taskInstructionsPromise = this.S3Service.uploadTaskInstructionsConfig(this.configService.environment, this.generalInstructionsSerialized)
-        let dimensionsInstructionsPromise = this.S3Service.uploadDimensionsInstructionsConfig(this.configService.environment, this.evaluationInstructionsSerialized)
+        let taskInstructionsPromise = this.S3Service.uploadTaskInstructionsConfig(this.configService.environment, this.generalInstructionsStepResult)
+        let dimensionsInstructionsPromise = this.S3Service.uploadDimensionsInstructionsConfig(this.configService.environment, this.evaluationInstructionsStepResult)
         let searchEngineSettingsPromise = this.S3Service.uploadSearchEngineSettings(this.configService.environment, this.searchEngineSerialized)
         let taskSettingsPromise = this.S3Service.uploadTaskSettings(this.configService.environment, this.taskSettingsSerialized)
-        let workerChecksPromise = this.S3Service.uploadWorkersCheck(this.configService.environment, this.workerChecksResult)
+        let workerChecksPromise = this.S3Service.uploadWorkersCheck(this.configService.environment, this.workersCheckStepResult)
         questionnairePromise.then(result => {
             if (!result["failed"]) {
                 this.questionnairesPath = this.S3Service.getQuestionnairesConfigPath(this.configService.environment)
@@ -1682,13 +1405,13 @@ export class GeneratorComponent {
         this.uploadCompleted = true
         if (this.uploadCompleted) {
             this.localStorageService.clear()
-            this.questionnairesJSON()
+            this.questionnaireStep.serializeConfiguration()
             this.dimensionsJSON()
-            this.generalInstructionsJSON()
-            this.evaluationInstructionsJSON()
+            this.generalInstructionsStep.serializeConfiguration()
+            this.evaluationInstructionsStep.serializeConfiguration()
             this.searchEngineJSON()
             this.taskSettingsJSON()
-            this.workerChecks.serializeConfiguration()
+            this.workerChecksStep.serializeConfiguration()
             this.uploadStarted = false
         }
     }

@@ -118,8 +118,8 @@ export class LoaderComponent implements OnInit {
 
     /* |--------- LOADER SETTINGS - INITIALIZATION ---------| */
 
-    this.username = new FormControl('admin', [Validators.required]);
-    this.password = new FormControl('Ly7Km5jvvyhunffQ', [Validators.required]);
+    this.username = new FormControl('', [Validators.required]);
+    this.password = new FormControl('', [Validators.required]);
     this.loginForm = formBuilder.group({
       "username": this.username,
       "password": this.password
@@ -133,9 +133,6 @@ export class LoaderComponent implements OnInit {
 
     let url = new URL(window.location.href);
     this.adminAccess = url.searchParams.get("admin") == 'true'
-    // TODO: This call should be commented out when generator implementation will be complete
-    //this.performAdminCheck()
-    //this.loadAction('admin')
 
     this.ngxService.stop()
 

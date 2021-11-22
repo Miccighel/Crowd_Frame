@@ -48,14 +48,15 @@ import {MatProgressBarModule} from "@angular/material/progress-bar";
 import {ColorPickerModule} from "ngx-color-picker";
 import {MatChipsModule} from "@angular/material/chips";
 import {AngularEditorModule} from '@kolkov/angular-editor';
-
 import {ActionLogger} from "./services/userActionLogger.service";
 import {ButtonDirective, CrowdXplorerDirective, InputDirective, RadioDirective, SkeletonDirective} from "./components/skeleton/skeleton.directive";
 import {SectionService} from "./services/section.service";
 import {from, Observable} from "rxjs";
 import {tap} from "rxjs/operators";
 import {QuestionnaireComponent} from './components/questionnaire/questionnaire.component';
-import {WorkerChecksComponent} from './components/generator-steps/worker-checks/worker-checks.component';
+import {WorkerChecksStepComponent} from './components/generator-steps/worker-checks-step/worker-checks-step.component';
+import {QuestionnaireStepComponent} from './components/generator-steps/questionnaire-step/questionnaire-step.component';
+import { InstructionsStepComponent } from './components/generator-steps/instructions-step/instructions-step.component';
 
 function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
     return () => from(actionLogger.downloadOpt()).pipe(tap(data => {
@@ -80,7 +81,9 @@ function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
         RadioDirective,
         CrowdXplorerDirective,
         QuestionnaireComponent,
-        WorkerChecksComponent
+        WorkerChecksStepComponent,
+        QuestionnaireStepComponent,
+        InstructionsStepComponent
     ],
     imports: [
         BrowserModule,
