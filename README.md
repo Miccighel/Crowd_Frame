@@ -1,6 +1,7 @@
 # Crowd_Frame
-![](https://badges.aleen42.com/src/angular.svg) ![](https://badges.aleen42.com/src/python.svg) [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity) ![Maintainer](https://img.shields.io/badge/maintainer-Miccighel-blue) [![Github all releases](https://img.shields.io/github/downloads/Miccighel/Crowd_Frame/total.svg)](https://GitHub.com/Miccighel/Crowd_Frame/releases/) [![GitHub stars](https://badgen.net/github/stars/Miccighel/Crowd_Frame)](https://GitHub.com/Miccighel/Crowd_Frame/stargazers/) [![GitHub watchers](https://badgen.net/github/watchers/Miccighel/Crowd_Frame/)](https://GitHub.com/Miccighel/Crowd_Frame/watchers/) [![GitHub contributors](https://img.shields.io/github/contributors/Miccighel/Crowd_Frame.svg)](https://GitHub.com/Miccighel/Crowd_Frame/graphs/contributors/)[![GitHub issues](https://badgen.net/github/issues/Miccighel/Crowd_Frame/)](https://GitHub.com/Miccighel/Crowd_Frame/issues/) [![GitHub issues](https://img.shields.io/github/issues/Miccighel/Crowd_Frame.svg)](https://GitHub.com/Miccighel/Crowd_Frame/issues/) [![GitHub issues-closed](https://img.shields.io/github/issues-closed/Miccighel/Crowd_Frame.svg)](https://GitHub.com/Miccighel/Crowd_Frame/issues?q=is%3Aissue+is%3Aclosed) [![GitHub pull-requests](https://img.shields.io/github/issues-pr/Miccighel/Crowd_Frame.svg)](https://GitHub.com/Miccighel/Crowd_Frame/pull/) [![GitHub pull-requests closed](https://img.shields.io/github/issues-pr-closed/Miccighel/Crowd_Frame.svg)](https://GitHub.com/Miccighel/Crowd_Frame/pull/) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 
+![](https://badges.aleen42.com/src/angular.svg) ![](https://badges.aleen42.com/src/python.svg) [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity) ![Maintainer](https://img.shields.io/badge/maintainer-Miccighel-blue) [![Github all releases](https://img.shields.io/github/downloads/Miccighel/Crowd_Frame/total.svg)](https://GitHub.com/Miccighel/Crowd_Frame/releases/) [![GitHub stars](https://badgen.net/github/stars/Miccighel/Crowd_Frame)](https://GitHub.com/Miccighel/Crowd_Frame/stargazers/) [![GitHub watchers](https://badgen.net/github/watchers/Miccighel/Crowd_Frame/)](https://GitHub.com/Miccighel/Crowd_Frame/watchers/) [![GitHub contributors](https://img.shields.io/github/contributors/Miccighel/Crowd_Frame.svg)](https://GitHub.com/Miccighel/Crowd_Frame/graphs/contributors/)[![GitHub
+issues](https://badgen.net/github/issues/Miccighel/Crowd_Frame/)](https://GitHub.com/Miccighel/Crowd_Frame/issues/) [![GitHub issues](https://img.shields.io/github/issues/Miccighel/Crowd_Frame.svg)](https://GitHub.com/Miccighel/Crowd_Frame/issues/) [![GitHub issues-closed](https://img.shields.io/github/issues-closed/Miccighel/Crowd_Frame.svg)](https://GitHub.com/Miccighel/Crowd_Frame/issues?q=is%3Aissue+is%3Aclosed) [![GitHub pull-requests](https://img.shields.io/github/issues-pr/Miccighel/Crowd_Frame.svg)](https://GitHub.com/Miccighel/Crowd_Frame/pull/) [![GitHub pull-requests closed](https://img.shields.io/github/issues-pr-closed/Miccighel/Crowd_Frame.svg)](https://GitHub.com/Miccighel/Crowd_Frame/pull/) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 
 ![GitHub Contributors Image](https://contrib.rocks/image?repo=Miccighel/Crowd_Frame)
 
@@ -9,7 +10,6 @@
 ### A software system that allows to easily design and deploy diverse types of crowdsourcing tasks.
 
 [![ForTheBadge built-with-science](http://ForTheBadge.com/images/badges/built-with-science.svg)](https://GitHub.com/Miccighel/Crowd_Frame)
-
 
 ## Table of Contents
 
@@ -23,7 +23,6 @@
     <li><a href="#local-development">Local Development</li>
     <li><a href="#references">References</li>
 </ul>
-
 
 ## Prerequisites
 
@@ -54,7 +53,7 @@
 
 4. Generate a new access key pair
 
-5. Store the Access Key in your _credentials_ file 
+5. Store the Access Key in your _credentials_ file
 
    ![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white) Path: `C:\Users\your_os_user\.aws\credentials`
 
@@ -63,7 +62,7 @@
      aws_access_key_id=your_key
      aws_secret_access_key=your_secret
      ````
-   
+
 6. Clone the repo [Miccighel/Crowd_Frame](https://github.com/Miccighel/Crowd_Frame)
 
 7. Install the Yarn global binary
@@ -95,13 +94,13 @@
     ```
     cd data
     ```
-    
+
 12. Create environment file `.env`:
 
     Path: `your_repo_folder/data/.env`
-    
+
 13. Provide environment variables values:
-    
+
      ````
      mail_contact=your_email_address
      budget_limit=your_usd_budget_limit
@@ -116,33 +115,34 @@
      deploy_config=true
      ````
 
-  14. Install python packages with `pip install package_name`:
+14. Install python packages with `pip install package_name`:
 
-     ````
-     boto3==1.18.21
-     dotenv-python==0.0.1
-     mako==1.1.5
-     pandas==1.3.3
-     python-dotenv==0.19.0
-     rich==10.12.0
-     ````
-    
-  15. Run python script `init.py`
+  ````
+  boto3==1.18.21
+  dotenv-python==0.0.1
+  mako==1.1.5
+  pandas==1.3.3
+  python-dotenv==0.19.0
+  rich==10.12.0
+  ````
 
-      Path: `your_repo_folder/data/init.py`
+15. Run python script `init.py`
 
-      The script will:
-      
-      	- read your env. variables;
-      	- setup the AWS infrastructure;
-      	- generate an empty task configuration;
-      	- deploy the task on the public bucket.
-      
-  16. Open your task:
+    Path: `your_repo_folder/data/init.py`
 
-      `https://your_deploy_bucket.s3.your_aws_region.amazonaws.com/your_task_name/your_batch_name/index.html`
+    The script will:
 
-Crowd_Frame interacts with diverse Amazon Web Services (AWS) to deploy crowdsourcing tasks, store the data produced and so on. Each service used falls within the [AWS Free Tier](https://aws.amazon.com/free/) program. The budget limit that will block the usage of such services if/when surpassed.
+    	- read your env. variables;
+    	- setup the AWS infrastructure;
+    	- generate an empty task configuration;
+    	- deploy the task on the public bucket.
+
+16. Open your task:
+
+    `https://your_deploy_bucket.s3.your_aws_region.amazonaws.com/your_task_name/your_batch_name/index.html`
+
+Crowd_Frame interacts with diverse Amazon Web Services (AWS) to deploy crowdsourcing tasks, store the data produced and so on. Each service used falls within the [AWS Free Tier](https://aws.amazon.com/free/) program. The budget limit that
+will block the usage of such services if/when surpassed.
 
 ## Task Configuration
 
@@ -179,7 +179,7 @@ Allows choosing the search provider wanted and to add a list of domains to filte
 
 #### Step 6 - Task Settings
 
-Allows to configures several task settings, such as the maximum amount of tries for each worker, the usage of an annotation interface, and much more. 
+Allows to configures several task settings, such as the maximum amount of tries for each worker, the usage of an annotation interface, and much more.
 
 It also _allows to provide the file containing the set of HITs for the task deployed_.
 
@@ -204,22 +204,22 @@ The HITs for a crowdsourcing task must be stored in a special `json` file and mu
 5. The documents for each HIT are key/value dictionaries;
 6. Each document can have an arbitrary number of attributes.
 
-The following fragment shows a valid configuration of a crowdsourcing task with 1 HIT. 
+The following fragment shows a valid configuration of a crowdsourcing task with 1 HIT.
 
 ````json
 [
-    {
-        "unit_id": "unit_0",
-        "token_input": "ABCDEFGHILM",
-        "token_output": "MNOPQRSTUVZ",
-        "documents_number": 1,
-        "documents": [
-            {
-                "id": "identifier_1",
-                "text": "Lorem ipsum dolor sit amet"
-            }
-        ]
-    }
+  {
+    "unit_id": "unit_0",
+    "token_input": "ABCDEFGHILM",
+    "token_output": "MNOPQRSTUVZ",
+    "documents_number": 1,
+    "documents": [
+      {
+        "id": "identifier_1",
+        "text": "Lorem ipsum dolor sit amet"
+      }
+    ]
+  }
 ]
 
 ````
@@ -261,6 +261,8 @@ The following table describes each environment variables that can be set in `you
 | `aws_deploy_bucket`  | Name of the public S3 bucket in which to deploy task source code | :heavy_check_mark: | String unique across AWS    |
 |   `server_config`    | Used to specify where the worker behavior logging interface is. Set it to `aws` to deploy the AWS-based infrastructure. Set it to `custom` if you want to provide a custom logging endpoint. Set it to `none` if you will not log worker behavior. | :heavy_check_mark: | `aws` or `custom` or `none` |
 |   `deploy_config`    | Allows uploading the task configuration available in the local machine. Set it to `false` if you already edited the configuration remotely to avoid overwriting it. | :heavy_check_mark: | `true` |
+|   `ip_info_token`    | API Key to use ipinfo.com tracking functionalities. Set it to `true` if you enable the corresponding task setting. | :x: | `true` |
+|   `user_stack_token`    | API Key to use userstack.com user agent detection functionalities. Set it to `true` if you enable the corresponding task setting. | :x: | `true` |
 |    `bing_api_key`    |        API Key to use `BingWebSearch` search provider        |        :x:         | Valid  Bing API Key         |
 
 ## Local Development
@@ -272,17 +274,17 @@ You may want to edit and test the task configuration locally. To enable local de
     ````
     cd your_repo_folder/data/build/environments
     ````
-    
+
 2. Open the `dev` environment file:
 
     ````
     environment.ts
     ````
-    
+
 3. Set the `configuration_local` flag to `true`:
 
-    Full sample:
-    
+   Full sample:
+
     ````js
     export const environment = {
     	production: false,
@@ -312,14 +314,14 @@ Any contributions you make are **greatly appreciated**.
 4. Push to the Branch (`git push origin feature/dev-branch`)
 5. Open a Pull Request
 
-
 ## References
 
 This software has been already used in the past to launch several crowdsourcing tasks that lead to results published.
 
 ----
 
-Michael Soprano, Kevin Roitero, David La Barbera, Davide Ceolin, Damiano Spina, Stefano Mizzaro, & Gianluca Demartini (2021). The Many Dimensions of Truthfulness: Crowdsourcing Misinformation Assessments on a Multidimensional Scale*. Information Processing & Management, \*58\*(6), 102710.
+Michael Soprano, Kevin Roitero, David La Barbera, Davide Ceolin, Damiano Spina, Stefano Mizzaro, & Gianluca Demartini (2021). The Many Dimensions of Truthfulness: Crowdsourcing Misinformation Assessments on a Multidimensional Scale*.
+Information Processing & Management, \*58\*(6), 102710.
 
 ````tex
 @article{journal-paper-ipm-2021,
@@ -336,9 +338,11 @@ Michael Soprano, Kevin Roitero, David La Barbera, Davide Ceolin, Damiano Spina, 
   keywords = {Truthfulness, Crowdsourcing, Misinformation, Explainability}
 }
 ````
+
 ---
 
-Roitero, K., Soprano, M., Portelli, B., De Luise, M., Spina, D., Mea, V., Serra, G., Mizzaro, S., & Demartini, G. (2021). Can The Crowd Judge Truthfulness? A Longitudinal Study on Recent Misinformation About COVID-19. Personal and Ubiquitous Computing.
+Roitero, K., Soprano, M., Portelli, B., De Luise, M., Spina, D., Mea, V., Serra, G., Mizzaro, S., & Demartini, G. (2021). Can The Crowd Judge Truthfulness? A Longitudinal Study on Recent Misinformation About COVID-19. Personal and
+Ubiquitous Computing.
 
 ````tex
 @Article{journal-paper-puc-2021,
@@ -354,10 +358,10 @@ Roitero, K., Soprano, M., Portelli, B., De Luise, M., Spina, D., Mea, V., Serra,
 }
 ````
 
-
 ---
 
-Roitero, K., Soprano, M., Portelli, B., Spina, D., Della Mea, V., Serra, G., Mizzaro, S., & Demartini, G. (2020). The COVID-19 Infodemic: Can the Crowd Judge Recent Misinformation Objectively?. In Proceedings of the 29th ACM International Conference on Information and Knowledge Management (CIKM2020). Galway, Ireland (Online). October 19-23, 2020. Conference Rank: GGS A+, Core A (pp. 1305–1314). Association for Computing Machinery.
+Roitero, K., Soprano, M., Portelli, B., Spina, D., Della Mea, V., Serra, G., Mizzaro, S., & Demartini, G. (2020). The COVID-19 Infodemic: Can the Crowd Judge Recent Misinformation Objectively?. In Proceedings of the 29th ACM International
+Conference on Information and Knowledge Management (CIKM2020). Galway, Ireland (Online). October 19-23, 2020. Conference Rank: GGS A+, Core A (pp. 1305–1314). Association for Computing Machinery.
 
 ````tex
 @inproceedings{conference-paper-cikm2020,
@@ -379,11 +383,10 @@ Roitero, K., Soprano, M., Portelli, B., Spina, D., Della Mea, V., Serra, G., Miz
 }
 ````
 
-
-
 ---
 
-Roitero, K., Soprano, M., Fan, S., Spina, D., Mizzaro, S., & Demartini, G. (2020). Can The Crowd Identify Misinformation Objectively? The Effects of Judgment Scale and Assessor's Background. In *Proceedings of the 43st International ACM SIGIR Conference on Research and Development in Information Retrieval (SIGIR 2020). Xi’an, China (Online). July 25-30, 2020. Conference Rank: GGS A++, Core A** (pp. 439–448). Association for Computing Machinery.
+Roitero, K., Soprano, M., Fan, S., Spina, D., Mizzaro, S., & Demartini, G. (2020). Can The Crowd Identify Misinformation Objectively? The Effects of Judgment Scale and Assessor's Background. In *Proceedings of the 43st International ACM
+SIGIR Conference on Research and Development in Information Retrieval (SIGIR 2020). Xi’an, China (Online). July 25-30, 2020. Conference Rank: GGS A++, Core A** (pp. 439–448). Association for Computing Machinery.
 
 ````tex
 @inproceedings{conference-paper-sigir2020,

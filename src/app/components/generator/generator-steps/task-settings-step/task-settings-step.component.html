@@ -112,11 +112,15 @@
                 <div *ngFor="let value of hitAttributes().controls; let valueIndex = index" formArrayName="attributes" class="p-5px">
                     <div>
                         <ng-container [formGroupName]="valueIndex">
+                            <h3>{{this.hitsAttributes[valueIndex]}}</h3>
+                            <mat-form-field class="width-100" appearance="fill">
+                                <input matInput type="text" placeholder="name_pretty" formControlName="name_pretty">
+                            </mat-form-field>
                             <mat-checkbox color="primary" formControlName="show" (change)="updateHitAttribute(valueIndex)">
-                                {{this.hitsAttributes[valueIndex]}}
+                                Show
                             </mat-checkbox>
                             <mat-checkbox color="primary" formControlName="annotate" (change)="updateHitAttribute(valueIndex)">
-                                Annotations
+                                Enable Annotations
                             </mat-checkbox>
                             <mat-checkbox color="primary" formControlName="required">
                                 Required

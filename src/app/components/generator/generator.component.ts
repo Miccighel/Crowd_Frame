@@ -69,7 +69,6 @@ export class GeneratorComponent {
 
     @ViewChild(WorkerChecksStepComponent) workerChecksStep: WorkerChecksStepComponent;
     workerChecksStepForm: FormGroup
-    workersCheckStepResult: string
 
     /* |--------- SERVICES & CO - DECLARATION ---------| */
 

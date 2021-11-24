@@ -113,7 +113,6 @@ export class TaskSettingsStepComponent implements OnInit {
         });
         /* Read mode during hits file upload*/
         this.readMode = ReadMode.text
-        let hitsPromise = this.loadHits()
         this.formEmitter = new EventEmitter<FormGroup>();
     }
 
@@ -180,6 +179,7 @@ export class TaskSettingsStepComponent implements OnInit {
                 }
             }
         }
+        let hitsPromise = this.loadHits()
         this.formStep.valueChanges.subscribe(form => {
             this.serializeConfiguration()
         })
@@ -292,6 +292,7 @@ export class TaskSettingsStepComponent implements OnInit {
     addHitAttribute(name: string, attribute = null as Attribute) {
         this.hitAttributes().push(this._formBuilder.group({
             name: attribute ? attribute.name : name,
+            name_pretty: attribute ? attribute.name_pretty ? attribute.name_pretty : '' : '',
             show: attribute ? attribute.show : true,
             annotate: attribute ? this.formStep.get('setAnnotator').value ? attribute.annotate : false : false,
             required: attribute ? this.formStep.get('setAnnotator').value ? attribute.required : false : false,
