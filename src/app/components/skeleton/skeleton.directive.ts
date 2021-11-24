@@ -1,4 +1,4 @@
-import {AfterViewInit, Directive, ElementRef} from "@angular/core";
+import {AfterViewInit, Directive, ElementRef, HostListener} from "@angular/core";
 import {ActionLogger} from "../../services/userActionLogger.service";
 import {fromEvent} from "rxjs";
 import {buffer, concatMap, debounceTime, filter, map, tap, throttleTime, take} from "rxjs/operators";
@@ -360,23 +360,18 @@ export class RadioDirective implements AfterViewInit {
 }
 
 @Directive({selector: "app-crowd-xplorer"})
-export class CrowdXplorerDirective implements AfterViewInit {
-    constructor(private actionLogger: ActionLogger, private element: ElementRef) {
+export class CrowdXplorerDirective{
+    constructor(private actionLogger: ActionLogger, private element: ElementRef) {}
+
+    @HostListener('queryEmitter', ['$event'])
+    onQuery(query){
+        if (this.actionLogger.isActive && this.actionLogger.opt['crowd-xplorer']['query'])
+            this.actionLogger.onQuery(query)
     }
 
-    ngAfterViewInit() {
-        if (this.actionLogger.isActive) {
-            if (this.actionLogger.opt['crowd-xplorer']['query']) {
-                fromEvent(this.element.nativeElement, 'queryEmitter')
-                    .pipe(map((event: Event) => event['detail']))
-                    .subscribe(detail => this.actionLogger.onQuery(detail))
-            }
-
-            if (this.actionLogger.opt['crowd-xplorer']['result']) {
-                fromEvent(this.element.nativeElement, 'resultEmitter')
-                    .pipe(map((event: Event) => event['detail']))
-                    .subscribe(detail => this.actionLogger.onResult(detail))
-            }
-        }
+    @HostListener('resultEmitter', ['$event'])
+    onResults(results){
+        if (this.actionLogger.isActive && this.actionLogger.opt['crowd-xplorer']['result'])
+            this.actionLogger.onResult(results)
     }
 }

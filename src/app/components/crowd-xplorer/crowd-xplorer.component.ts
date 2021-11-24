@@ -92,11 +92,11 @@ export class CrowdXplorer {
 
     /* Event emitters to integrate Binger in other components */
     /* EMITTER: Query inserted by user */
-    @Output() queryEmitter: EventEmitter<string>;
+    @Output() queryEmitter = new EventEmitter<string>();
     /* EMITTER: Responses retrieved by search engine */
-    @Output() resultEmitter: EventEmitter<Object>;
+    @Output() resultEmitter = new EventEmitter<Object>();
     /* EMITTER: Response selected by user */
-    @Output() selectedRowEmitter: EventEmitter<Object>;
+    @Output() selectedRowEmitter = new EventEmitter<Object>();
 
     @Input() countdownExpired: boolean
     @Input() countdownBehavior: string
@@ -145,11 +145,6 @@ export class CrowdXplorer {
         /* Control booleans */
         this.searchStarted = true;
         this.searchInProgress = false;
-
-        /* EMITTER: each emitter is initialized with the corresponding datatype to be emitted */
-        this.queryEmitter = new EventEmitter<string>();
-        this.resultEmitter = new EventEmitter<Object>();
-        this.selectedRowEmitter = new EventEmitter<Object>();
 
         /* The random digits for the current instances are generated */
         this.digits = this.randomDigits();
