@@ -23,33 +23,12 @@ import {WorkerChecksStepComponent} from "../generator-steps/worker-checks-step/w
 import {QuestionnaireStepComponent} from "../generator-steps/questionnaire-step/questionnaire-step.component";
 import {InstructionsStepComponent} from "../generator-steps/instructions-step/instructions-step.component";
 import {SearchEngineStepComponent} from "../generator-steps/search-engine-step/search-engine-step.component";
+import {DimensionsStepComponent} from "../generator-steps/dimensions-step/dimensions-step.component";
 
 
 /*
  * The following interfaces are used to simplify data handling for each generator step.
  */
-
-/* STEP #2 - Dimensions */
-
-interface ScaleType {
-    value: string;
-    viewValue: string;
-}
-
-interface StyleType {
-    value: string;
-    viewValue: string;
-}
-
-interface PositionType {
-    value: string;
-    viewValue: string;
-}
-
-interface OrientationType {
-    value: string;
-    viewValue: string;
-}
 
 /* STEP #6 - Task Settings */
 
@@ -89,54 +68,32 @@ export class GeneratorComponent {
 
     @ViewChild(QuestionnaireStepComponent) questionnaireStep: QuestionnaireStepComponent;
     questionnaireStepForm: FormGroup
-    questionnaireStepResult: string
 
     /* STEP #2 - Dimensions */
-    dimensionsForm: FormGroup;
-    scaleTypes: ScaleType[] = [
-        {value: 'categorical', viewValue: 'Categorical'},
-        {value: 'interval', viewValue: 'Interval'},
-        {value: 'magnitude_estimation', viewValue: 'Magnitude Estimation'}
-    ];
-    annotatorTypes: AnnotatorType[] = [
-        {value: 'options', viewValue: 'Options'},
-        {value: 'laws', viewValue: 'Laws'},
-    ];
-    styleTypes: StyleType[] = [
-        {value: 'list', viewValue: 'List'},
-        {value: 'matrix', viewValue: 'Matrix'}
-    ];
-    positionTypes: PositionType[] = [
-        {value: 'top', viewValue: 'Top'},
-        {value: 'middle', viewValue: 'Middle'},
-        {value: 'bottom', viewValue: 'Bottom'}
-    ];
-    orientationTypes: OrientationType[] = [
-        {value: 'horizontal', viewValue: 'Horizontal'},
-        {value: 'vertical', viewValue: 'Vertical'}
-    ];
-    dimensionsFetched: Array<Dimension>
-    dimensionsSerialized: string
+
+    @ViewChild(DimensionsStepComponent) dimensionsStep: DimensionsStepComponent;
+    dimensionsStepForm: FormGroup
 
     /* STEP #3 - General Instructions */
     @ViewChild('generalInstructions') generalInstructionsStep: InstructionsStepComponent;
     generalInstructionsStepForm: FormGroup
-    generalInstructionsStepResult: string
 
     /* STEP #4 - Evaluation Instructions */
     @ViewChild('evaluationInstructions') evaluationInstructionsStep: InstructionsStepComponent;
     evaluationInstructionsStepForm: FormGroup
-    evaluationInstructionsStepResult: string
 
     /* STEP #5 - Search Engine */
     @ViewChild(SearchEngineStepComponent) searchEngineStep: SearchEngineStepComponent;
     searchEngineStepForm: FormGroup
-    searchEngineStepResult: string
 
     /* STEP #6 - Task Settings */
     taskSettingsForm: FormGroup;
     taskSettingsFetched: SettingsTask
     taskSettingsSerialized: string
+    annotatorTypes: AnnotatorType[] = [
+        {value: 'options', viewValue: 'Options'},
+        {value: 'laws', viewValue: 'Laws'},
+    ];
     modalityTypes: ModalityType[] = [
         {value: 'pointwise', viewValue: 'Pointwise'},
         {value: 'pairwise', viewValue: 'Pairwise'},
@@ -266,7 +223,6 @@ export class GeneratorComponent {
         this.localStorageService = localStorageService
         this.ngxService.startLoader('generator-inner')
 
-        this.dimensionsFetched = []
         this.taskSettingsFetched = new SettingsTask()
 
         /* STEP #8 - Summary */
@@ -310,41 +266,10 @@ export class GeneratorComponent {
         if (serializedBatchName) {
             serializedBatchName = serializedBatchName.replace(/"/g, '');
             if (serializedBatchName != this.configService.environment.batchName) differentBatch = true
-        } else {
+        } else {1
             this.localStorageService.setItem(`batch-name`, JSON.stringify(this.configService.environment.batchName))
         }
         if (differentTask && differentBatch) this.localStorageService.clear()
-
-        /* STEP #2 - Dimensions */
-
-        let serializedDimensions = Object.keys(localStorage).filter((key) => key.startsWith('dimension-'))
-        if (serializedDimensions.length > 0) {
-            serializedDimensions.forEach(key => {
-                let index = key.split("-")[1]
-                let item = this.localStorageService.getItem(`dimension-${index}`)
-                this.dimensionsFetched.push(JSON.parse(item))
-            })
-        } else {
-            let rawDimensions = await this.S3Service.downloadDimensions(this.configService.environment)
-            rawDimensions.forEach((data, index) => {
-                let dimension = new Dimension(index, data)
-                this.dimensionsFetched.push(dimension)
-                this.localStorageService.setItem(`dimension-${index}`, JSON.stringify(dimension))
-            })
-        }
-        this.dimensionsForm = this._formBuilder.group({
-            dimensions: this._formBuilder.array([])
-        });
-        if (this.dimensionsFetched.length > 0) {
-            this.dimensionsFetched.forEach((dimension, dimensionIndex) => {
-                this.addDimension(dimensionIndex, dimension)
-            })
-        }
-        this.dimensionsForm.valueChanges.subscribe(forms => {
-            this.dimensionsJSON()
-        })
-        this.dimensionsJSON()
-
 
         /* STEP #6 - Task Settings */
 
@@ -431,7 +356,7 @@ export class GeneratorComponent {
         this.ngxService.startLoader('generator-inner')
         this.localStorageService.clear()
         this.questionnaireStep.dataStored = []
-        this.dimensionsFetched = []
+        this.dimensionsStep.dataStored = []
         this.generalInstructionsStep.dataStored = []
         this.evaluationInstructionsStep.dataStored = []
         this.searchEngineStep.dataStored = new SettingsSearchEngine()
@@ -462,7 +387,7 @@ export class GeneratorComponent {
         this.cloneTask = new FormControl('')
         this.taskCloned = false
         this.questionnaireStep.dataStored = []
-        this.dimensionsFetched = []
+        this.dimensionsStep.dataStored = []
         this.generalInstructionsStep.dataStored = []
         this.evaluationInstructionsStep.dataStored = []
         this.searchEngineStep.dataStored = new SettingsSearchEngine()
@@ -553,7 +478,7 @@ export class GeneratorComponent {
 
         if (stepperStatus.selectedIndex == 7) {
             this.questionnaireStep.serializeConfiguration()
-            this.dimensionsJSON()
+            this.dimensionsStep.serializeConfiguration()
             this.generalInstructionsStep.serializeConfiguration()
             this.searchEngineStep.serializeConfiguration()
             this.taskSettingsJSON()
@@ -568,18 +493,16 @@ export class GeneratorComponent {
         this.questionnaireStepForm = data
     }
 
-    public storeQuestionnaireStep(data: string) {
-        this.questionnaireStepResult = data
-    }
-
     /* STEP #3 - General Instructions */
 
     public storeGeneralInstructionsForm(data: FormGroup) {
         this.generalInstructionsStepForm = data
     }
 
-    public storeGeneralInstructionsStep(data: string) {
-        this.generalInstructionsStepResult = data
+    /* STEP #2 - Dimensions */
+
+    public storeDimensionsForm(data: FormGroup) {
+        this.dimensionsStepForm = data
     }
 
     /* STEP #3 - Evaluation Instructions */
@@ -588,340 +511,14 @@ export class GeneratorComponent {
         this.evaluationInstructionsStepForm = data
     }
 
-    public storeEvaluationInstructionsStep(data: string) {
-        this.evaluationInstructionsStepResult = data
-    }
-
     /* STEP #2 - Dimensions */
 
-    dimensions(): FormArray {
-        return this.dimensionsForm.get('dimensions') as FormArray;
-    }
 
-    addDimension(dimensionIndex = null, dimension = null as Dimension) {
-        let name, name_pretty, description, gold, setJustification, justification, url, setScale, scale, setStyle, style;
-        name = dimension ? dimension.name ? dimension.name : '' : '';
-        name_pretty = dimension ? dimension.name_pretty ? dimension.name_pretty : '' : '';
-        description = dimension ? dimension.description ? dimension.description : '' : '';
-        gold = dimension ? dimension.gold ? dimension.gold : false : false
-        setJustification = dimension ? dimension.justification ? dimension.justification : false : false;
-        justification = this._formBuilder.group({text: '', min_words: ''})
-        if (dimension) {
-            if (dimension.justification) {
-                justification = this._formBuilder.group({
-                    text: [dimension.justification.text],
-                    min_words: [dimension.justification.min_words]
-                })
-            }
-        }
-        url = dimension ? dimension.url ? dimension.url : false : false
-        setScale = dimension ? dimension.scale ? dimension.scale : false : false
-        scale = this._formBuilder.group({
-            type: '',
-            min: '',
-            max: '',
-            step: '',
-            mapping: this._formBuilder.array([]),
-            lower_bound: '',
-        })
-        if (dimension) {
-            if (dimension.scale) {
-                scale = this._formBuilder.group({
-                    type: [dimension.scale.type],
-                    min: [dimension.scale['min'] ? dimension.scale['min'] : dimension.scale['min'] == 0 ? 0 : ''],
-                    max: [dimension.scale['max'] ? dimension.scale['max'] : dimension.scale['max'] == 0 ? 0 : ''],
-                    step: [dimension.scale['step'] ? dimension.scale['step'] : dimension.scale['step'] == 0 ? 0 : ''],
-                    mapping: this._formBuilder.array([]),
-                    lower_bound: [dimension.scale['lower_bound'] ? dimension.scale['lower_bound'] : '']
-                })
-            }
-        }
-        setStyle = dimension ? dimension.style ? dimension.style : false : false
-        style = this._formBuilder.group({
-            styleType: '',
-            position: '',
-            orientation: '',
-            separator: ''
-        })
-        if (dimension) {
-            if (dimension.style) {
-                style = this._formBuilder.group({
-                    styleType: [dimension.style.type],
-                    position: [dimension.style.position],
-                    orientation: [dimension.style.orientation],
-                    separator: [dimension.style.separator]
-                })
-            }
-        }
-        this.dimensions().push(this._formBuilder.group({
-            name: name,
-            name_pretty: name_pretty,
-            description: description,
-            gold: gold,
-            setJustification: setJustification,
-            justification: justification,
-            url: url,
-            setScale: setScale,
-            scale: scale,
-            setStyle: setStyle,
-            style: style
-        }))
-        if (dimension) {
-            if (dimension.scale) if (dimension.scale.type == 'categorical') {
-                if (dimension.scale['mapping']) for (let mapping of dimension.scale['mapping']) this.addDimensionMapping(dimensionIndex, mapping)
-                if (this.dimensionMapping(dimensionIndex).length == 0) this.addDimensionMapping(dimensionIndex)
-            }
-            if (dimension.style)
-                this.updateStyleType(dimensionIndex)
-        }
-    }
-
-    removeDimension(dimensionIndex: number) {
-        this.dimensions().removeAt(dimensionIndex);
-    }
-
-    resetJustification(dimensionIndex) {
-        let dim = this.dimensions().at(dimensionIndex);
-
-        dim.get('justification').get('text').setValue('');
-        dim.get('justification').get('min_words').setValue('');
-
-        if (dim.get('setJustification').value == false) {
-            dim.get('justification').get('text').clearValidators();
-            dim.get('justification').get('min_words').clearValidators();
-        } else {
-            dim.get('justification').get('text').setValidators(Validators.required);
-            dim.get('justification').get('min_words').setValidators(Validators.required);
-        }
-        dim.get('justification').get('text').updateValueAndValidity();
-        dim.get('justification').get('min_words').updateValueAndValidity();
-    }
-
-    resetScale(dimensionIndex) {
-        this.updateScale(dimensionIndex);
-        this.updateStyleType(dimensionIndex);
-    }
-
-    updateScale(dimensionIndex) {
-        let dim = this.dimensions().at(dimensionIndex);
-
-        if (dim.get('setScale').value == false) {
-            dim.get('scale').get('type').clearValidators();
-            dim.get("setStyle").setValue(false)
-            dim.get("setStyle").disable()
-        } else {
-            dim.get('scale').get('type').setValidators(Validators.required);
-        }
-
-        dim.get('scale').get('min').setValue('');
-        dim.get('scale').get('min').clearValidators();
-        dim.get('scale').get('min').updateValueAndValidity();
-
-        dim.get('scale').get('max').setValue('');
-        dim.get('scale').get('max').clearValidators();
-        dim.get('scale').get('max').updateValueAndValidity();
-
-        dim.get('scale').get('step').setValue('');
-        dim.get('scale').get('step').clearValidators();
-        dim.get('scale').get('step').updateValueAndValidity();
-
-        dim.get('scale').get('lower_bound').setValue(true);
-        dim.get('scale').get('lower_bound').clearValidators();
-        dim.get('scale').get('lower_bound').updateValueAndValidity();
-
-        this.dimensionMapping(dimensionIndex).clear();
-
-        if (dim.get('setScale').value == true && dim.get('scale').get('type').value == 'categorical') {
-            this.addDimensionMapping(dimensionIndex);
-        }
-
-        if (dim.get('setScale').value == true) {
-            switch (dim.get('scale').get('type').value) {
-                case "categorical":
-                    dim.get('setStyle').enable()
-                    dim.get('style').get('styleType').enable()
-                    dim.get('style').get('styleType').setValue('list')
-                    dim.get('style').get('position').enable()
-                    dim.get('style').get('position').setValue('middle')
-                    dim.get('style').get('orientation').enable()
-                    dim.get('style').get('orientation').setValue('vertical')
-                    this.updateStyleType(dimensionIndex)
-                    break;
-                case "interval":
-                    dim.get('setStyle').enable()
-                    dim.get('style').get('styleType').setValue("list")
-                    dim.get('style').get('styleType').disable()
-                    dim.get('style').get('position').enable()
-                    dim.get('style').get('position').setValue('middle')
-                    dim.get('style').get('orientation').setValue('vertical')
-                    dim.get('style').get('orientation').disable()
-                    this.updateStyleType(dimensionIndex)
-                    break;
-                case "magnitude_estimation":
-                    dim.get('setStyle').enable()
-                    dim.get('style').get('styleType').setValue("list")
-                    dim.get('style').get('styleType').disable()
-                    dim.get('style').get('position').enable()
-                    dim.get('style').get('position').setValue('middle')
-                    dim.get('style').get('orientation').setValue('vertical')
-                    dim.get('style').get('orientation').disable()
-                    this.updateStyleType(dimensionIndex)
-                    break;
-                default:
-                    dim.get('setStyle').disable()
-            }
-        }
-    }
-
-    resetStyle(dimensionIndex) {
-        this.updateStyleType(dimensionIndex);
-    }
-
-    updateStyleType(dimensionIndex) {
-        let dim = this.dimensions().at(dimensionIndex);
-        let styleType = dim.get('style').get('styleType').value;
-        if (dim.get('setStyle').value == true) {
-            dim.get('style').get('styleType').setValidators(Validators.required);
-            dim.get('style').get('position').setValidators(Validators.required);
-            dim.get('style').get('orientation').setValidators(Validators.required);
-            dim.get('style').get('separator').setValidators(Validators.required);
-            switch (styleType) {
-                case "matrix":
-                    dim.get('style').get('orientation').setValue('vertical')
-                    dim.get('style').get('orientation').disable()
-                    dim.get("style").get('separator').enable()
-                    break;
-                case "list":
-                    if (dim.get('scale').get('type')) {
-                        if (dim.get('scale').get('type').value == "categorical") {
-                            dim.get('style').get('orientation').enable()
-                        } else {
-                            dim.get('style').get('orientation').disable()
-                        }
-                    }
-                    dim.get("style").get('separator').disable()
-                    dim.get("style").get('separator').setValue(false)
-                    break;
-                default:
-                    dim.get('style').get('position').setValue('middle')
-                    dim.get("style").get('orientation').disable()
-                    dim.get('style').get('orientation').setValue('vertical')
-                    dim.get("style").get('separator').disable()
-                    dim.get("style").get('separator').setValue(false)
-            }
-            dim.get('style').get('styleType').updateValueAndValidity();
-            dim.get('style').get('position').updateValueAndValidity();
-            dim.get('style').get('orientation').updateValueAndValidity();
-            dim.get('style').get('separator').updateValueAndValidity();
-        }
-
-    }
-
-    /* SUB ELEMENT: Mapping */
-
-    dimensionMapping(dimensionIndex: number): FormArray {
-        return this.dimensions().at(dimensionIndex).get('scale').get('mapping') as FormArray;
-    }
-
-    addDimensionMapping(dimensionIndex: number, mapping = null as Mapping) {
-        this.dimensionMapping(dimensionIndex).push(this._formBuilder.group({
-            label: mapping ? mapping.label ? mapping.label : '' : '',
-            description: mapping ? mapping.description ? mapping.description : '' : '',
-            value: mapping ? mapping.value ? mapping.value : '' : ''
-        }))
-    }
-
-    removeDimensionMapping(dimensionIndex: number, dimensionMappingIndex: number) {
-        this.dimensionMapping(dimensionIndex).removeAt(dimensionMappingIndex);
-    }
-
-    /* JSON Output */
-
-    dimensionsJSON() {
-
-        let serializedDimensions = Object.keys(localStorage).filter((key) => key.startsWith('dimension-'))
-        if (serializedDimensions.length > 0) serializedDimensions.forEach(key => this.localStorageService.removeItem(key))
-
-        let dimensionsJSON = JSON.parse(JSON.stringify(this.dimensionsForm.get('dimensions').value));
-
-        dimensionsJSON.forEach((dimension, dimensionIndex) => {
-
-            if (dimension.description == '') dimension.description = false
-
-            dimension.gold = !!dimension.gold;
-
-            if (!dimension.setJustification) dimension.justification = false
-            delete dimension.setJustification;
-
-            dimension.url = !!dimension.url;
-
-            if (dimension.setScale == false) {
-                delete dimension.scale
-                dimension.scale = false
-                dimension.style = false
-            } else {
-                switch (dimension.scale.type) {
-                    case 'categorical':
-                        delete dimension.scale.min;
-                        delete dimension.scale.max;
-                        delete dimension.scale.step;
-                        delete dimension.scale.lower_bound;
-                        break;
-                    case 'interval':
-                        delete dimension.scale.mapping;
-                        delete dimension.scale.lower_bound;
-                        break;
-                    case 'magnitude_estimation':
-                        delete dimension.scale.mapping;
-                        delete dimension.scale.max;
-                        delete dimension.scale.step;
-                        delete dimension.scale.mapping;
-                        break;
-                    default:
-                        break;
-                }
-            }
-            delete dimension.setScale;
-
-            if (dimension.style) {
-
-                if (dimension.setStyle) {
-                    dimension.style.type = dimension.style.styleType;
-                    delete dimension.style.styleType;
-
-                    if (!dimension.style.type) dimension.style.type = ''
-                    if (!dimension.style.position) dimension.style.position = ''
-
-                    if (dimension.scale.type == 'interval' || dimension.scale.type == 'magnitude_estimation') {
-                        dimension.style.type = 'list'
-                        dimension.style.orientation = 'vertical'
-                    }
-                    if (dimension.scale.type == 'categorical' && dimension.style.type == 'matrix') dimension.style.orientation = false
-
-                    dimension.style.separator = !!dimension.style.separator;
-                } else {
-                    dimension.style = false
-                }
-
-
-            } else {
-                dimension.style = false
-            }
-            delete dimension.setStyle;
-
-            this.localStorageService.setItem(`dimension-${dimensionIndex}`, JSON.stringify(dimension))
-        })
-        this.dimensionsSerialized = JSON.stringify(dimensionsJSON)
-    }
 
     /* STEP #5 - Search Engine */
 
     public storeSearchEngineStepForm(data: FormGroup) {
         this.searchEngineStepForm = data
-    }
-
-    public storeSearchEngineStep(data: string) {
-        this.searchEngineStepResult = data
     }
 
     /* STEP #6 - Task Settings */
@@ -1300,12 +897,12 @@ export class GeneratorComponent {
         this.uploadCompleted = false
         this.configService.environment['taskName'] = this.configService.environment['taskNameInitial']
         this.configService.environment['batchName'] = this.configService.environment['batchNameInitial']
-        let questionnairePromise = this.S3Service.uploadQuestionnairesConfig(this.configService.environment, this.questionnaireStepResult)
+        let questionnairePromise = this.S3Service.uploadQuestionnairesConfig(this.configService.environment, this.questionnaireStep.configurationSerialized)
         let hitsPromise = this.S3Service.uploadHitsConfig(this.configService.environment, this.hitsParsed)
-        let dimensionsPromise = this.S3Service.uploadDimensionsConfig(this.configService.environment, this.dimensionsSerialized)
-        let taskInstructionsPromise = this.S3Service.uploadTaskInstructionsConfig(this.configService.environment, this.generalInstructionsStepResult)
-        let dimensionsInstructionsPromise = this.S3Service.uploadDimensionsInstructionsConfig(this.configService.environment, this.evaluationInstructionsStepResult)
-        let searchEngineSettingsPromise = this.S3Service.uploadSearchEngineSettings(this.configService.environment, this.searchEngineStepResult)
+        let dimensionsPromise = this.S3Service.uploadDimensionsConfig(this.configService.environment, this.dimensionsStep.configurationSerialized)
+        let taskInstructionsPromise = this.S3Service.uploadTaskInstructionsConfig(this.configService.environment, this.generalInstructionsStep.configurationSerialized)
+        let dimensionsInstructionsPromise = this.S3Service.uploadDimensionsInstructionsConfig(this.configService.environment, this.evaluationInstructionsStep.configurationSerialized)
+        let searchEngineSettingsPromise = this.S3Service.uploadSearchEngineSettings(this.configService.environment, this.searchEngineStep.configurationSerialized)
         let taskSettingsPromise = this.S3Service.uploadTaskSettings(this.configService.environment, this.taskSettingsSerialized)
         let workerChecksPromise = this.S3Service.uploadWorkersCheck(this.configService.environment, this.workersCheckStepResult)
         questionnairePromise.then(result => {
@@ -1352,7 +949,7 @@ export class GeneratorComponent {
         if (this.uploadCompleted) {
             this.localStorageService.clear()
             this.questionnaireStep.serializeConfiguration()
-            this.dimensionsJSON()
+            this.dimensionsStep.serializeConfiguration()
             this.generalInstructionsStep.serializeConfiguration()
             this.evaluationInstructionsStep.serializeConfiguration()
             this.searchEngineStep.serializeConfiguration()

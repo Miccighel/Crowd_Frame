@@ -36,7 +36,6 @@ export class WorkerChecksStepComponent implements OnInit {
     configurationSerialized: string
 
     @Output() formEmitter: EventEmitter<FormGroup>;
-    @Output() resultEmitter: EventEmitter<string>;
 
     constructor(
         localStorageService: LocalStorageService,
@@ -56,7 +55,6 @@ export class WorkerChecksStepComponent implements OnInit {
             batches: this._formBuilder.array([]),
         })
         this.formEmitter = new EventEmitter<FormGroup>();
-        this.resultEmitter = new EventEmitter<string>();
     }
 
     public async ngOnInit() {
@@ -210,7 +208,6 @@ export class WorkerChecksStepComponent implements OnInit {
         this.localStorageService.setItem(`worker-settings`, JSON.stringify(configurationRaw))
         delete configurationRaw['batches']
         this.configurationSerialized = JSON.stringify(configurationRaw)
-        this.resultEmitter.emit(this.configurationSerialized)
     }
 
 }

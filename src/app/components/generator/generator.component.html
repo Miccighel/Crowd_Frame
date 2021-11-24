@@ -15,314 +15,36 @@
 
     <!-- Step #1 - Questionnaires -->
 
-    <mat-step [stepControl]="this.questionnaireStepForm">
+    <mat-step [stepControl]="questionnaireStepForm">
         <ng-template matStepLabel>Questionnaires</ng-template>
-        <app-questionnaire-step (formEmitter)="storeQuestionnaireForm($event)" (resultEmitter)="storeQuestionnaireStep($event)"></app-questionnaire-step>
+        <app-questionnaire-step (formEmitter)="storeQuestionnaireForm($event)"></app-questionnaire-step>
     </mat-step>
 
     <!-- Step #2 - Dimensions -->
 
-    <mat-step [stepControl]="dimensionsForm" *ngIf="dimensionsFetched && dimensionsForm">
-        <form [formGroup]="dimensionsForm">
-
-            <!-- Header -->
-            <ng-template matStepLabel>Dimensions</ng-template>
-            <mat-card [class.mat-elevation-z3]="true">
-                <mat-card-header>
-                    <mat-card-title>Step #2: Dimensions</mat-card-title>
-                    <mat-card-subtitle>Second, define all Dimensions here</mat-card-subtitle>
-                </mat-card-header>
-                <mat-divider></mat-divider>
-                <mat-card-content>
-
-                    <div formArrayName="dimensions">
-
-                        <div *ngFor="let dimension of dimensions().controls; let dimensionIndex = index" [formGroupName]="dimensionIndex">
-
-                            <mat-card [class.mat-elevation-z3]="true">
-                                <mat-card-header>
-                                    <mat-card-title class="lighter">Dimension {{dimensionIndex + 1}}</mat-card-title>
-                                </mat-card-header>
-                                <mat-divider></mat-divider>
-                                <mat-card-content>
-
-                                    <!-- Name, Description -->
-                                    <table class="width-100 mt-8px">
-                                        <tr>
-                                            <td class="p-0 pr-16px">
-                                                <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimension.get('name').valid" appearance="fill">
-                                                    <mat-label>Name</mat-label>
-                                                    <input matInput type="text" formControlName="name" required>
-                                                </mat-form-field>
-                                            </td>
-                                            <td class="p-0">
-                                                <mat-form-field matLine class="width-100" appearance="fill">
-                                                    <mat-label>Name Pretty</mat-label>
-                                                    <input matInput type="text" formControlName="name_pretty">
-                                                </mat-form-field>
-                                            </td>
-                                        </tr>
-                                    </table>
-                                    <mat-form-field class="width-100" appearance="fill">
-                                        <mat-label>Description</mat-label>
-                                        <textarea matInput formControlName="description"></textarea>
-                                    </mat-form-field>
-
-                                    <mat-divider [inset]="true"></mat-divider>
-
-                                    <!-- Gold -->
-                                    <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="gold">
-                                        Gold Dimension
-                                    </mat-slide-toggle>
-
-                                    <mat-divider [inset]="true"></mat-divider>
-
-                                    <!-- Justification: Text, Min_Words -->
-                                    <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="setJustification"
-                                                      (change)="resetJustification(dimensionIndex)">
-                                        Justification
-                                    </mat-slide-toggle>
-
-                                    <div *ngIf="dimension.get('setJustification').value" formGroupName="justification">
-                                        <table class="width-100">
-                                            <tr>
-                                                <td class="p-0 pr-16px">
-                                                    <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimension.get('justification').get('text').valid"
-                                                                    appearance="fill">
-                                                        <mat-label>Text</mat-label>
-                                                        <input matInput type="text" formControlName="text" required>
-                                                    </mat-form-field>
-                                                </td>
-                                                <td class="p-0">
-                                                    <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimension.get('justification').get('min_words').valid"
-                                                                    appearance="fill">
-                                                        <mat-label>Minimum Words</mat-label>
-                                                        <input matInput type="number" min="0" formControlName="min_words" required>
-                                                    </mat-form-field>
-                                                </td>
-                                            </tr>
-                                        </table>
-                                    </div>
-
-                                    <mat-divider [inset]="true"></mat-divider>
-
-                                    <!-- Url -->
-                                    <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="url">
-                                        Url
-                                    </mat-slide-toggle>
-
-                                    <mat-divider [inset]="true"></mat-divider>
-
-                                    <!-- Scale: Type, {Min, Max, Step} or [Mapping] or {Min, Max, IncludeLowerBound, IncludeUpperBound} -->
-                                    <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="setScale" (change)="resetScale(dimensionIndex)">
-                                        Scale
-                                    </mat-slide-toggle>
-
-                                    <div *ngIf="dimension.get('setScale').value" formGroupName="scale">
-                                        <table class="width-100">
-                                            <tr>
-                                                <td class="p-0">
-                                                    <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimension.get('scale').get('type').valid" appearance="fill">
-                                                        <mat-label>Type</mat-label>
-                                                        <mat-select matInput formControlName="type" required (selectionChange)="updateScale(dimensionIndex)">
-                                                            <mat-option *ngFor="let scaleType of scaleTypes" [value]="scaleType.value">
-                                                                {{scaleType.viewValue}}
-                                                            </mat-option>
-                                                        </mat-select>
-                                                    </mat-form-field>
-                                                </td>
-                                            </tr>
-                                        </table>
-
-                                        <table class="width-100" *ngIf="dimension.get('scale').get('type').value == 'interval'">
-                                            <tr>
-                                                <td class="p-0 pr-16px">
-                                                    <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimension.get('scale').get('min').valid" appearance="fill">
-                                                        <mat-label>Minimum</mat-label>
-                                                        <input matInput type="number" formControlName="min" required>
-                                                    </mat-form-field>
-                                                </td>
-                                                <td class="p-0 pr-16px">
-                                                    <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimension.get('scale').get('max').valid" appearance="fill">
-                                                        <mat-label>Maximum</mat-label>
-                                                        <input matInput type="number" formControlName="max" required>
-                                                    </mat-form-field>
-                                                </td>
-                                                <td class="p-0">
-                                                    <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimension.get('scale').get('step').valid" appearance="fill">
-                                                        <mat-label>Step</mat-label>
-                                                        <input matInput type="number" formControlName="step" required>
-                                                    </mat-form-field>
-                                                </td>
-                                            </tr>
-                                        </table>
-
-                                        <div *ngIf="dimension.get('scale').get('type').value == 'categorical'" formArrayName="mapping">
-                                            <button mat-flat-button color="primary" class="mb-16px indent" (click)="addDimensionMapping(dimensionIndex)">
-                                                Add Mapping
-                                            </button>
-                                            <div *ngFor="let dimensionMap of dimensionMapping(dimensionIndex).controls; let dimensionMappingIndex = index"
-                                                 [formGroupName]="dimensionMappingIndex">
-                                                <table class="width-100">
-                                                    <tr>
-                                                        <td class="p-0 pr-16px">
-                                                            <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimensionMap.get('label').valid" appearance="fill">
-                                                                <mat-label>Label</mat-label>
-                                                                <input matInput type="text" formControlName="label" required>
-                                                            </mat-form-field>
-                                                        </td>
-                                                        <td class="p-0 pr-16px">
-                                                            <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimensionMap.get('description').valid" appearance="fill">
-                                                                <mat-label>Description</mat-label>
-                                                                <input matInput type="text" formControlName="description">
-                                                            </mat-form-field>
-                                                        </td>
-                                                        <td class="p-0 pr-16px">
-                                                            <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimensionMap.get('value').valid" appearance="fill">
-                                                                <mat-label>Value</mat-label>
-                                                                <input matInput type="text" formControlName="value" required>
-                                                            </mat-form-field>
-                                                        </td>
-                                                        <td class="p-0 center">
-                                                            <button mat-flat-button color="primary" class="mb-16px"
-                                                                    [disabled]="dimensionMappingIndex == '0' && dimensionMapping(dimensionIndex).length == 1"
-                                                                    (click)="removeDimensionMapping(dimensionIndex, dimensionMappingIndex)">
-                                                                Remove Mapping
-                                                            </button>
-                                                        </td>
-                                                    </tr>
-                                                </table>
-                                            </div>
-                                        </div>
-
-                                        <table class="width-100" *ngIf="dimension.get('scale').get('type').value == 'magnitude_estimation'">
-                                            <tr>
-                                                <td class="p-0 pr-16px">
-                                                    <mat-form-field matLine class="width-100" appearance="fill">
-                                                        <mat-label>Minimum</mat-label>
-                                                        <input matInput type="number" formControlName="min">
-                                                    </mat-form-field>
-                                                </td>
-                                                <td class="pr-16px checkbox">
-                                                    <mat-checkbox formControlName="lower_bound" color="primary">
-                                                        Include Lower Bound
-                                                    </mat-checkbox>
-                                                </td>
-                                            </tr>
-                                        </table>
-                                    </div>
-
-                                    <mat-divider [inset]="true"></mat-divider>
-
-                                    <!-- Style: Type, Position, Orientation, Separator -->
-                                    <mat-slide-toggle color="primary" *ngIf="dimension.get('setScale').value" class="mt-16px mb-16px" formControlName="setStyle"
-                                                      (change)="resetStyle(dimensionIndex)">
-                                        Style
-                                    </mat-slide-toggle>
-
-                                    <div formGroupName="style" *ngIf="dimension.get('setStyle').value && dimension.get('setScale').value">
-                                        <table class="width-100">
-                                            <tr>
-                                                <td class="p-0 pr-16px">
-                                                    <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimension.get('style').get('styleType').valid"
-                                                                    appearance="fill">
-                                                        <mat-label>Type</mat-label>
-                                                        <mat-select matInput formControlName="styleType" required (selectionChange)="updateStyleType(dimensionIndex)">
-                                                            <mat-option *ngFor="let styleType of styleTypes" [value]="styleType.value">
-                                                                {{styleType.viewValue}}
-                                                            </mat-option>
-                                                        </mat-select>
-                                                    </mat-form-field>
-                                                </td>
-                                                <td class="p-0 pr-16px">
-                                                    <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimension.get('style').get('position').valid"
-                                                                    appearance="fill">
-                                                        <mat-label>Position</mat-label>
-                                                        <mat-select matInput formControlName="position" required>
-                                                            <mat-option *ngFor="let positionType of positionTypes" [value]="positionType.value">
-                                                                {{positionType.viewValue}}
-                                                            </mat-option>
-                                                        </mat-select>
-                                                    </mat-form-field>
-                                                </td>
-                                                <td class="p-0 pr-16px">
-                                                    <mat-form-field matLine class="width-100" appearance="fill"
-                                                                    [hideRequiredMarker]="dimension.get('style').get('position').valid">
-                                                        <mat-label>Orientation</mat-label>
-                                                        <mat-select matInput formControlName="orientation" required>
-                                                            <mat-option *ngFor="let orientationType of orientationTypes" [value]="orientationType.value">
-                                                                {{orientationType.viewValue}}
-                                                            </mat-option>
-                                                        </mat-select>
-                                                    </mat-form-field>
-                                                </td>
-                                                <td class="p-0">
-                                                    <mat-form-field matLine class="width-100" appearance="fill">
-                                                        <mat-label>Separator</mat-label>
-                                                        <mat-select matInput formControlName="separator">
-                                                            <mat-option value="true">
-                                                                True
-                                                            </mat-option>
-                                                            <mat-option value="false">
-                                                                False
-                                                            </mat-option>
-                                                        </mat-select>
-                                                    </mat-form-field>
-                                                </td>
-                                            </tr>
-                                        </table>
-                                    </div>
-
-                                </mat-card-content>
-
-                                <mat-divider></mat-divider>
-
-                                <mat-card-actions class="right">
-                                    <button mat-flat-button color="primary" (click)="removeDimension(dimensionIndex)">Remove Dimension
-                                    </button>
-                                </mat-card-actions>
-
-                            </mat-card>
-
-                        </div>
-
-                    </div>
-
-                    <button mat-flat-button color="primary" (click)="addDimension()">
-                        Add Dimension
-                    </button>
-
-                </mat-card-content>
-
-                <mat-divider></mat-divider>
-
-                <mat-card-actions>
-                    <button mat-flat-button color="primary" matStepperPrevious>Back</button>
-                    <button mat-flat-button color="primary" matStepperNext>Next</button>
-                </mat-card-actions>
-
-            </mat-card>
-        </form>
+    <mat-step [stepControl]="dimensionsStepForm">
+        <ng-template matStepLabel>Dimensions</ng-template>
+        <app-dimensions-step (formEmitter)="storeDimensionsForm($event)"></app-dimensions-step>
     </mat-step>
 
     <!-- Step #3 - General Instructions -->
 
     <mat-step [stepControl]="generalInstructionsStepForm">
         <ng-template matStepLabel>General Instructions</ng-template>
-        <app-instructions-step #generalInstructions [type]="'general'" [editorConfig]="this.editorConfig" (formEmitter)="storeGeneralInstructionsForm($event)" (resultEmitter)="storeGeneralInstructionsStep($event)"></app-instructions-step>
+        <app-instructions-step #generalInstructions [type]="'general'" [editorConfig]="this.editorConfig" (formEmitter)="storeGeneralInstructionsForm($event)"></app-instructions-step>
     </mat-step>
 
     <!-- Step #4 - Evaluation Instructions -->
 
     <mat-step [stepControl]="evaluationInstructionsStepForm">
         <ng-template matStepLabel>Evaluation Instructions</ng-template>
-        <app-instructions-step #evaluationInstructions [type]="'evaluation'" [editorConfig]="this.editorConfig" (formEmitter)="storeEvaluationlInstructionsForm($event)" (resultEmitter)="storeEvaluationInstructionsStep($event)"></app-instructions-step>
+        <app-instructions-step #evaluationInstructions [type]="'evaluation'" [editorConfig]="this.editorConfig" (formEmitter)="storeEvaluationlInstructionsForm($event)"></app-instructions-step>
     </mat-step>
 
     <!-- Step #5 - Search Engine -->
     <mat-step [stepControl]="searchEngineStepForm">
         <ng-template matStepLabel>Search Engine</ng-template>
-        <app-search-engine-step (formEmitter)="storeSearchEngineStepForm($event)" (resultEmitter)="storeSearchEngineStep($event)"></app-search-engine-step>
+        <app-search-engine-step (formEmitter)="storeSearchEngineStepForm($event)"></app-search-engine-step>
     </mat-step>
 
     <!-- Step #6 - Task Settings -->
@@ -630,7 +352,7 @@
     <!-- Step #8 - Summary -->
     <mat-step *ngIf="
   this.questionnaireStep &&
-  dimensionsFetched && dimensionsForm &&
+  this.dimensionsStep &&
   this.generalInstructionsStep &&
   this.evaluationInstructionsStep &&
   taskSettingsFetched && taskSettingsForm &&
@@ -652,7 +374,7 @@
                 <mat-divider [inset]="true"></mat-divider>
 
                 <h4 class="mb-0">Step #2 - <strong>Dimensions</strong>:</h4>
-                <p><code>{{ dimensionsSerialized }}</code></p>
+                <p><code>{{ this.dimensionsStep.configurationSerialized }}</code></p>
 
                 <mat-divider [inset]="true"></mat-divider>
 
@@ -691,9 +413,9 @@
                     </mat-list-item>
                     <mat-list-item *ngIf="!this.questionnaireStep.formStep.valid" class="step-invalid"><span>Step #1 - Questionnaires: <span class="step-validity-check">invalid</span></span>
                     </mat-list-item>
-                    <mat-list-item *ngIf="this.dimensionsForm.valid" class="step-valid"><span>Step #2 - Dimensions: <span
+                    <mat-list-item *ngIf="this.dimensionsStep.formStep.valid" class="step-valid"><span>Step #2 - Dimensions: <span
                             class="step-validity-check">valid</span></span></mat-list-item>
-                    <mat-list-item *ngIf="!this.dimensionsForm.valid" class="step-invalid"><span>Step #2 - Dimensions: <span
+                    <mat-list-item *ngIf="!this.dimensionsStep.formStep.valid" class="step-invalid"><span>Step #2 - Dimensions: <span
                             class="step-validity-check">invalid</span></span></mat-list-item>
                     <mat-list-item *ngIf="this.generalInstructionsStep.formStep.valid" class="step-valid"><span>Step #3 - General Instructions: <span
                             class="step-validity-check">valid</span></span></mat-list-item>
@@ -753,7 +475,7 @@
                 <button mat-flat-button color="primary" matStepperPrevious>Back</button>
                 <button mat-flat-button color="accent" *ngIf="!this.uploadCompleted" [disabled]="
                 !(this.questionnaireStep.formStep.valid &&
-                this.dimensionsForm.valid &&
+                this.dimensionsStep.formStep.valid &&
                 this.generalInstructionsStep.formStep.valid &&
                 this.evaluationInstructionsStep.formStep.valid &&
                 this.searchEngineStep.formStep.valid &&

@@ -28,7 +28,6 @@ export class InstructionsStepComponent implements OnInit {
     configurationSerialized: string
 
     @Output() formEmitter: EventEmitter<FormGroup>;
-    @Output() resultEmitter: EventEmitter<string>;
 
     constructor(
         configService: ConfigService,
@@ -44,7 +43,6 @@ export class InstructionsStepComponent implements OnInit {
             instructions: this._formBuilder.array([])
         });
         this.formEmitter = new EventEmitter<FormGroup>();
-        this.resultEmitter = new EventEmitter<string>();
     }
 
     public async ngOnInit() {
@@ -113,7 +111,6 @@ export class InstructionsStepComponent implements OnInit {
             this.localStorageService.setItem(`${this.type}-instruction-${instructionIndex}`, JSON.stringify(instruction))
         })
         this.configurationSerialized = JSON.stringify(instructionsJSON);
-        this.resultEmitter.emit(this.configurationSerialized)
     }
 
 }

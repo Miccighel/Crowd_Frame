@@ -50,7 +50,6 @@ export class QuestionnaireStepComponent implements OnInit {
     configurationSerialized: string
 
     @Output() formEmitter: EventEmitter<FormGroup>;
-    @Output() resultEmitter: EventEmitter<string>;
 
     constructor(
         localStorageService: LocalStorageService,
@@ -66,7 +65,6 @@ export class QuestionnaireStepComponent implements OnInit {
             questionnaires: this._formBuilder.array([])
         });
         this.formEmitter = new EventEmitter<FormGroup>();
-        this.resultEmitter = new EventEmitter<string>();
     }
 
     public async ngOnInit() {
@@ -234,7 +232,6 @@ export class QuestionnaireStepComponent implements OnInit {
             this.localStorageService.setItem(`questionnaire-${questionnaireIndex}`, JSON.stringify(questionnaire))
         })
         this.configurationSerialized = JSON.stringify(questionnairesJSON)
-        this.resultEmitter.emit(this.configurationSerialized)
     }
 
 }

@@ -37,10 +37,8 @@ export class SearchEngineStepComponent implements OnInit {
     ];
 
     @Output() formEmitter: EventEmitter<FormGroup>;
-    @Output() resultEmitter: EventEmitter<string>;
 
     configurationSerialized: string
-
 
     constructor(
         localStorageService: LocalStorageService,
@@ -57,7 +55,6 @@ export class SearchEngineStepComponent implements OnInit {
             domains_filter: this._formBuilder.array([])
         });
         this.formEmitter = new EventEmitter<FormGroup>();
-        this.resultEmitter = new EventEmitter<string>();
     }
 
     public async ngOnInit() {
