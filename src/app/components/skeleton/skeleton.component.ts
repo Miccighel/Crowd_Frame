@@ -904,6 +904,7 @@ export class SkeletonComponent implements OnInit {
             /* The new query is pushed into current document data array along with a document_index used to identify such query*/
             let selectedValues = Object.values(this.dimensionsSelectedValues[currentDocument]['data']);
             selectedValues.push({
+                "document": currentDocument,
                 "dimension": currentDimension,
                 "index": selectedValues.length,
                 "timestamp": timeInSeconds,
@@ -918,6 +919,7 @@ export class SkeletonComponent implements OnInit {
             this.dimensionsSelectedValues[currentDocument] = {};
             /* A new data array for the current document is created and the fist selected value is pushed */
             this.dimensionsSelectedValues[currentDocument]['data'] = [{
+                "document": currentDocument,
                 "dimension": currentDimension,
                 "index": 0,
                 "timestamp": timeInSeconds,
@@ -987,6 +989,7 @@ export class SkeletonComponent implements OnInit {
             /* The new query is pushed into current document data array along with a document_index used to identify such query*/
             let storedQueries = Object.values(this.searchEngineQueries[document.index]['data']);
             storedQueries.push({
+                "document": document.index,
                 "dimension": dimension.index,
                 "index": storedQueries.length,
                 "timestamp": timeInSeconds,
@@ -1002,6 +1005,7 @@ export class SkeletonComponent implements OnInit {
             this.searchEngineQueries[document.index] = {};
             /* A new data array for the current document is created and the fist query is pushed */
             this.searchEngineQueries[document.index]['data'] = [{
+                "document": document.index,
                 "dimension": dimension.index,
                 "index": 0,
                 "timestamp": timeInSeconds,
@@ -1028,6 +1032,7 @@ export class SkeletonComponent implements OnInit {
             /* The new response is pushed into current document data array along with its query document_index */
             let storedResponses = Object.values(this.searchEngineRetrievedResponses[document.index]['data']);
             storedResponses.push({
+                "document": document.index,
                 "dimension": dimension.index,
                 "query": this.searchEngineQueries[document.index]['amount'] - 1,
                 "index": storedResponses.length,
@@ -1045,6 +1050,7 @@ export class SkeletonComponent implements OnInit {
             this.searchEngineRetrievedResponses[document.index] = {};
             /* A new data array for the current document is created and the fist response is pushed */
             this.searchEngineRetrievedResponses[document.index]['data'] = [{
+                "document": document.index,
                 "dimension": dimension.index,
                 "query": this.searchEngineQueries[document.index]['amount'] - 1,
                 "index": 0,
@@ -1075,6 +1081,7 @@ export class SkeletonComponent implements OnInit {
             /* The new response is pushed into current document data array along with its query document_index */
             let storedResponses = Object.values(this.searchEngineSelectedResponses[document.index]['data']);
             storedResponses.push({
+                "document": document.index,
                 "dimension": dimension.index,
                 "query": this.searchEngineQueries[document.index]['amount'] - 1,
                 "index": storedResponses.length,
@@ -1090,6 +1097,7 @@ export class SkeletonComponent implements OnInit {
             this.searchEngineSelectedResponses[document.index] = {};
             /* A new data array for the current document is created and the fist response is pushed */
             this.searchEngineSelectedResponses[document.index]['data'] = [{
+                "document": document.index,
                 "dimension": dimension.index,
                 "query": this.searchEngineQueries[document.index]['amount'] - 1,
                 "index": 0,

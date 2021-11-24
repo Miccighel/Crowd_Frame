@@ -1186,7 +1186,7 @@ if not os.path.exists(df_dim_path):
 
                     counter = 0
 
-                    dimensions_selected_data = document_data['serialization']["dimensions_selected"]
+                    dimensions_selected_data = [document_data['serialization']["dimensions_selected"]]
 
                     dataframe = parse_dimensions_selected(dataframe, worker_id, worker_paid, task, info, documents, dimensions, dimensions_selected_data, timestamp_start, timestamp_end)
 
@@ -1304,8 +1304,8 @@ if not os.path.exists(df_url_path):
 
                     info =  document_data['serialization']['info']
                     queries = document_data['serialization']['queries']
-                    responses_retrieved = document_data['serialization']['responses_retrieved']
-                    responses_selected = document_data['serialization']['responses_selected']
+                    responses_retrieved = [document_data['serialization']['responses_retrieved']]
+                    responses_selected = [document_data['serialization']['responses_selected']]
 
                     dataframe = parse_responses(dataframe, worker_id, worker_paid, info, queries, responses_retrieved, responses_selected)
 
