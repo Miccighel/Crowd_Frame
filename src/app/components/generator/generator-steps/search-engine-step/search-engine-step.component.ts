@@ -1,8 +1,8 @@
 import {Component, EventEmitter, OnInit, Output} from '@angular/core';
 import { S3Service } from 'src/app/services/s3.service';
-import {ConfigService} from "../../../services/config.service";
-import {LocalStorageService} from "../../../services/localStorage.service";
-import {SettingsSearchEngine} from "../../../models/settingsSearchEngine";
+import {ConfigService} from "../../../../services/config.service";
+import {LocalStorageService} from "../../../../services/localStorage.service";
+import {SettingsSearchEngine} from "../../../../models/settingsSearchEngine";
 import {FormArray, FormBuilder, FormGroup} from "@angular/forms";
 
 interface SourceType {
@@ -13,7 +13,7 @@ interface SourceType {
 @Component({
     selector: 'app-search-engine-step',
     templateUrl: './search-engine-step.component.html',
-    styleUrls: ['./search-engine-step.component.scss']
+    styleUrls: ['../generator-steps.component.scss']
 })
 export class SearchEngineStepComponent implements OnInit {
 

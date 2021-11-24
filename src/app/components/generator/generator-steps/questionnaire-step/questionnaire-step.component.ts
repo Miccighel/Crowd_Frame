@@ -1,9 +1,9 @@
 import {Component, EventEmitter, OnInit, Output} from '@angular/core';
 import {S3Service} from 'src/app/services/s3.service';
-import {ConfigService} from "../../../services/config.service";
-import {LocalStorageService} from "../../../services/localStorage.service";
+import {ConfigService} from "../../../../services/config.service";
+import {LocalStorageService} from "../../../../services/localStorage.service";
 import {FormArray, FormBuilder, FormGroup} from "@angular/forms";
-import {Question, Questionnaire} from "../../../models/questionnaire";
+import {Question, Questionnaire} from "../../../../models/questionnaire";
 
 /* STEP #1 - Questionnaires */
 
@@ -20,7 +20,7 @@ interface QuestionnairePosition {
 @Component({
     selector: 'app-questionnaire-step',
     templateUrl: './questionnaire-step.component.html',
-    styleUrls: ['./questionnaire-step.component.scss']
+    styleUrls: ['../generator-steps.component.scss']
 })
 
 export class QuestionnaireStepComponent implements OnInit {

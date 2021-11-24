@@ -1,7 +1,7 @@
 import {Component, EventEmitter, OnInit, Output} from '@angular/core';
 import { S3Service } from 'src/app/services/s3.service';
-import {ConfigService} from "../../../services/config.service";
-import {LocalStorageService} from "../../../services/localStorage.service";
+import {ConfigService} from "../../../../services/config.service";
+import {LocalStorageService} from "../../../../services/localStorage.service";
 import {FormArray, FormBuilder, FormGroup, Validators} from "@angular/forms";
 import {Dimension, Mapping} from 'src/app/models/dimension';
 
@@ -33,7 +33,7 @@ interface AnnotatorType {
 @Component({
     selector: 'app-dimensions-step',
     templateUrl: './dimensions-step.component.html',
-    styleUrls: ['./dimensions-step.component.scss']
+    styleUrls: ['../generator-steps.component.scss']
 })
 export class DimensionsStepComponent implements OnInit {
 

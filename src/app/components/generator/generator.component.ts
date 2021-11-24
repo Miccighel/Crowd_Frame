@@ -19,11 +19,11 @@ import {Attribute, SettingsTask} from "../../models/settingsTask";
 import {Hit} from "../../models/hit";
 import {SettingsWorker} from "../../models/settingsWorker";
 import {AngularEditorConfig} from "@kolkov/angular-editor";
-import {WorkerChecksStepComponent} from "../generator-steps/worker-checks-step/worker-checks-step.component";
-import {QuestionnaireStepComponent} from "../generator-steps/questionnaire-step/questionnaire-step.component";
-import {InstructionsStepComponent} from "../generator-steps/instructions-step/instructions-step.component";
-import {SearchEngineStepComponent} from "../generator-steps/search-engine-step/search-engine-step.component";
-import {DimensionsStepComponent} from "../generator-steps/dimensions-step/dimensions-step.component";
+import {WorkerChecksStepComponent} from "./generator-steps/worker-checks-step/worker-checks-step.component";
+import {QuestionnaireStepComponent} from "./generator-steps/questionnaire-step/questionnaire-step.component";
+import {InstructionsStepComponent} from "./generator-steps/instructions-step/instructions-step.component";
+import {SearchEngineStepComponent} from "./generator-steps/search-engine-step/search-engine-step.component";
+import {DimensionsStepComponent} from "./generator-steps/dimensions-step/dimensions-step.component";
 
 
 /*

@@ -2,15 +2,15 @@ import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {MatChipInputEvent} from "@angular/material/chips";
 import {FormArray, FormBuilder, FormGroup} from "@angular/forms";
 import {COMMA, ENTER} from "@angular/cdk/keycodes";
-import {SettingsWorker} from "../../../models/settingsWorker";
-import {LocalStorageService} from "../../../services/localStorage.service";
-import {ConfigService} from "../../../services/config.service";
+import {SettingsWorker} from "../../../../models/settingsWorker";
+import {LocalStorageService} from "../../../../services/localStorage.service";
+import {ConfigService} from "../../../../services/config.service";
 import {S3Service} from 'src/app/services/s3.service';
 
 @Component({
     selector: 'app-worker-checks',
     templateUrl: './worker-checks-step.component.html',
-    styleUrls: ['./worker-checks-step.component.scss']
+    styleUrls: ['../generator-steps.component.scss']
 })
 
 export class WorkerChecksStepComponent implements OnInit {

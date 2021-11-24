@@ -1,14 +1,14 @@
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {ConfigService} from "../../../services/config.service";
-import {LocalStorageService} from "../../../services/localStorage.service";
-import {S3Service} from "../../../services/s3.service";
+import {ConfigService} from "../../../../services/config.service";
+import {LocalStorageService} from "../../../../services/localStorage.service";
+import {S3Service} from "../../../../services/s3.service";
 import {FormArray, FormBuilder, FormGroup} from "@angular/forms";
-import {Instruction} from "../../../models/instructions";
+import {Instruction} from "../../../../models/instructions";
 
 @Component({
     selector: 'app-instructions-step',
     templateUrl: './instructions-step.component.html',
-    styleUrls: ['./instructions-step.component.scss']
+    styleUrls: ['../generator-steps.component.scss']
 })
 export class InstructionsStepComponent implements OnInit {
 

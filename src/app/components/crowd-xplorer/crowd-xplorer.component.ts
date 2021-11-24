@@ -9,12 +9,12 @@ import {MatPaginator} from "@angular/material/paginator";
 import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
 /* Services */
 import {BingService} from '../../services/bing.service';
-import {BingWebSearchResponse} from "../../models/bingWebSearchResponse";
+import {BingWebSearchResponse} from "../../models/crowd-xplorer/bingWebSearchResponse";
 import {FakerService} from "../../services/faker.service";
-import {FakerSearchResponse} from "../../models/fakerSearchResponse";
+import {FakerSearchResponse} from "../../models/crowd-xplorer/fakerSearchResponse";
 import {PubmedService} from "../../services/pudmed.service";
-import {PubmedSearchResponse} from "../../models/pubmedSearchResponse";
-import {PubmedSummaryResponse} from '../../models/pubmedSummaryResponse';
+import {PubmedSearchResponse} from "../../models/crowd-xplorer/pubmedSearchResponse";
+import {PubmedSummaryResponse} from '../../models/crowd-xplorer/pubmedSummaryResponse';
 import {ConfigService} from "../../services/config.service";
 import * as AWS from "aws-sdk";
 import {SettingsSearchEngine} from "../../models/settingsSearchEngine";
