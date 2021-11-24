@@ -320,72 +320,9 @@
     </mat-step>
 
     <!-- Step #5 - Search Engine -->
-    <mat-step [stepControl]="searchEngineForm" *ngIf="searchEngineFetched  && searchEngineForm">
-        <form [formGroup]="searchEngineForm">
-
-            <!-- Header -->
-            <ng-template matStepLabel>Search Engine</ng-template>
-            <mat-card [class.mat-elevation-z3]="true">
-                <mat-card-header>
-                    <mat-card-title>Step #5: Search Engine Configuration</mat-card-title>
-                    <mat-card-subtitle>Fifth, define the Search Engine Configuration here</mat-card-subtitle>
-                </mat-card-header>
-                <mat-divider></mat-divider>
-                <mat-card-content>
-
-                    <!-- Source -->
-                    <table class="width-100 mt-8px">
-                        <tr>
-                            <td class="p-0">
-                                <mat-form-field matLine class="width-100" appearance="fill">
-                                    <mat-label>Source</mat-label>
-                                    <mat-select matInput formControlName="source" [value]="this.searchEngineFetched.source">
-                                        <mat-option *ngFor="let sourceType of sourceTypes" [value]="sourceType.value">
-                                            {{sourceType.viewValue}}
-                                        </mat-option>
-                                    </mat-select>
-                                </mat-form-field>
-                            </td>
-                        </tr>
-                    </table>
-
-                    <mat-divider [inset]="true"></mat-divider>
-
-                    <!-- Domains To Filter -->
-                    <div formArrayName="domains_filter" *ngIf="searchEngineForm.get('source').value">
-                        <button mat-flat-button color="primary" class="mt-16px mb-16px indent" (click)="addDomain()">
-                            Add Domain To Filter
-                        </button>
-                        <div *ngFor="let domain of domains().controls; let domainIndex = index" [formGroupName]="domainIndex">
-                            <table class="width-100">
-                                <tr>
-                                    <td class="p-0 pr-16px">
-                                        <mat-form-field matLine class="width-100" [hideRequiredMarker]="domain.get('url').valid" appearance="fill">
-                                            <mat-label>Domain</mat-label>
-                                            <input matInput type="text" formControlName="url" required>
-                                        </mat-form-field>
-                                    </td>
-                                    <td class="p-0 center">
-                                        <button mat-flat-button color="primary" class="mb-16px" (click)="removeDomain(domainIndex)">
-                                            Remove Domain
-                                        </button>
-                                    </td>
-                                </tr>
-                            </table>
-                        </div>
-                    </div>
-
-                </mat-card-content>
-
-                <mat-divider></mat-divider>
-
-                <mat-card-actions>
-                    <button mat-flat-button color="primary" matStepperPrevious>Back</button>
-                    <button mat-flat-button color="primary" matStepperNext>Next</button>
-                </mat-card-actions>
-
-            </mat-card>
-        </form>
+    <mat-step [stepControl]="searchEngineStepForm">
+        <ng-template matStepLabel>Search Engine</ng-template>
+        <app-search-engine-step (formEmitter)="storeSearchEngineStepForm($event)" (resultEmitter)="storeSearchEngineStep($event)"></app-search-engine-step>
     </mat-step>
 
     <!-- Step #6 - Task Settings -->
@@ -697,7 +634,7 @@
   this.generalInstructionsStep &&
   this.evaluationInstructionsStep &&
   taskSettingsFetched && taskSettingsForm &&
-  searchEngineFetched && searchEngineForm && this.workerChecksStep">
+  this.searchEngineStep && this.workerChecksStep">
 
         <!-- Header -->
         <ng-template matStepLabel>Summary</ng-template>
@@ -730,7 +667,7 @@
                 <mat-divider [inset]="true"></mat-divider>
 
                 <h4 class="mb-0">Step #5 - <strong>Search Engine</strong>:</h4>
-                <p><code>{{ searchEngineSerialized }}</code></p>
+                <p><code>{{ this.searchEngineStep.configurationSerialized }}</code></p>
 
                 <mat-divider [inset]="true"></mat-divider>
 
@@ -766,9 +703,9 @@
                             class="step-validity-check">valid</span></span></mat-list-item>
                     <mat-list-item *ngIf="!this.evaluationInstructionsStep.formStep.valid" class="step-invalid"><span>Step #4 - Evaluation Instructions: <span
                             class="step-validity-check">invalid</span></span></mat-list-item>
-                    <mat-list-item *ngIf="this.searchEngineForm.valid" class="step-valid"><span>Step #5 - Search Engine: <span
+                    <mat-list-item *ngIf="this.searchEngineStepForm.valid" class="step-valid"><span>Step #5 - Search Engine: <span
                             class="step-validity-check">valid</span></span></mat-list-item>
-                    <mat-list-item *ngIf="!this.searchEngineForm.valid" class="step-invalid"><span>Step #5 - Search Engine: <span class="step-validity-check">invalid</span></span>
+                    <mat-list-item *ngIf="!this.searchEngineStepForm.valid" class="step-invalid"><span>Step #5 - Search Engine: <span class="step-validity-check">invalid</span></span>
                     </mat-list-item>
                     <div *ngIf="this.taskSettingsForm.valid && this.hitsDetected>0; else invalidTaskSettings">
                         <mat-list-item class="step-valid"><span>Step #6 - Task Settings: <span class="step-validity-check">valid</span></span></mat-list-item>
@@ -819,7 +756,7 @@
                 this.dimensionsForm.valid &&
                 this.generalInstructionsStep.formStep.valid &&
                 this.evaluationInstructionsStep.formStep.valid &&
-                this.searchEngineForm.valid &&
+                this.searchEngineStep.formStep.valid &&
                 (this.taskSettingsForm.valid && this.hitsDetected>0) &&
                 this.workerChecksStep.formStep.valid)" (click)="uploadConfiguration()">
                     Upload

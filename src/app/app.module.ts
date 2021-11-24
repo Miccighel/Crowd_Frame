@@ -56,7 +56,8 @@ import {tap} from "rxjs/operators";
 import {QuestionnaireComponent} from './components/questionnaire/questionnaire.component';
 import {WorkerChecksStepComponent} from './components/generator-steps/worker-checks-step/worker-checks-step.component';
 import {QuestionnaireStepComponent} from './components/generator-steps/questionnaire-step/questionnaire-step.component';
-import { InstructionsStepComponent } from './components/generator-steps/instructions-step/instructions-step.component';
+import {InstructionsStepComponent} from './components/generator-steps/instructions-step/instructions-step.component';
+import {SearchEngineStepComponent} from './components/generator-steps/search-engine-step/search-engine-step.component';
 
 function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
     return () => from(actionLogger.downloadOpt()).pipe(tap(data => {
@@ -83,7 +84,8 @@ function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
         QuestionnaireComponent,
         WorkerChecksStepComponent,
         QuestionnaireStepComponent,
-        InstructionsStepComponent
+        InstructionsStepComponent,
+        SearchEngineStepComponent
     ],
     imports: [
         BrowserModule,
@@ -141,5 +143,4 @@ function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
     bootstrap: [LoaderComponent]
 })
 
-export class AppModule {
-}
+export class AppModule {}

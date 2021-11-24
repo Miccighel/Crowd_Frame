@@ -22,6 +22,7 @@ import {AngularEditorConfig} from "@kolkov/angular-editor";
 import {WorkerChecksStepComponent} from "../generator-steps/worker-checks-step/worker-checks-step.component";
 import {QuestionnaireStepComponent} from "../generator-steps/questionnaire-step/questionnaire-step.component";
 import {InstructionsStepComponent} from "../generator-steps/instructions-step/instructions-step.component";
+import {SearchEngineStepComponent} from "../generator-steps/search-engine-step/search-engine-step.component";
 
 
 /*
@@ -46,13 +47,6 @@ interface PositionType {
 }
 
 interface OrientationType {
-    value: string;
-    viewValue: string;
-}
-
-/* STEP #5 - Search Engine */
-
-interface SourceType {
     value: string;
     viewValue: string;
 }
@@ -135,15 +129,9 @@ export class GeneratorComponent {
     evaluationInstructionsStepResult: string
 
     /* STEP #5 - Search Engine */
-    searchEngineForm: FormGroup;
-    sourceTypes: SourceType[] = [
-        {value: null, viewValue: 'None'},
-        {value: 'BingWebSearch', viewValue: 'BingWeb'},
-        {value: 'FakerWebSearch', viewValue: 'FakerWeb'},
-        {value: 'PubmedSearch', viewValue: 'Pubmed'}
-    ];
-    searchEngineFetched: SettingsSearchEngine
-    searchEngineSerialized: string
+    @ViewChild(SearchEngineStepComponent) searchEngineStep: SearchEngineStepComponent;
+    searchEngineStepForm: FormGroup
+    searchEngineStepResult: string
 
     /* STEP #6 - Task Settings */
     taskSettingsForm: FormGroup;
@@ -279,7 +267,6 @@ export class GeneratorComponent {
         this.ngxService.startLoader('generator-inner')
 
         this.dimensionsFetched = []
-        this.searchEngineFetched = new SettingsSearchEngine()
         this.taskSettingsFetched = new SettingsTask()
 
         /* STEP #8 - Summary */
@@ -358,25 +345,6 @@ export class GeneratorComponent {
         })
         this.dimensionsJSON()
 
-        /* STEP #5 - Search Engine Settings */
-
-        let serializedSearchEngineSettings = this.localStorageService.getItem("search-engine-settings")
-        if (serializedSearchEngineSettings) {
-            this.searchEngineFetched = new SettingsSearchEngine(JSON.parse(serializedSearchEngineSettings))
-        } else {
-            let rawSearchEngineSettings = await this.S3Service.downloadSearchEngineSettings(this.configService.environment)
-            this.searchEngineFetched = new SettingsSearchEngine(rawSearchEngineSettings)
-            this.localStorageService.setItem(`search-engine-settings`, JSON.stringify(rawSearchEngineSettings))
-        }
-        this.searchEngineForm = this._formBuilder.group({
-            source: [this.searchEngineFetched ? this.searchEngineFetched.source : ''],
-            domains_filter: this._formBuilder.array([])
-        });
-        if (this.searchEngineFetched) if (this.searchEngineFetched.domains_filter) if (this.searchEngineFetched.domains_filter.length > 0) this.searchEngineFetched.domains_filter.forEach((domain, domainIndex) => this.addDomain(domain))
-        this.searchEngineForm.valueChanges.subscribe(form => {
-            this.searchEngineJSON()
-        })
-        this.searchEngineJSON()
 
         /* STEP #6 - Task Settings */
 
@@ -466,7 +434,7 @@ export class GeneratorComponent {
         this.dimensionsFetched = []
         this.generalInstructionsStep.dataStored = []
         this.evaluationInstructionsStep.dataStored = []
-        this.searchEngineFetched = new SettingsSearchEngine()
+        this.searchEngineStep.dataStored = new SettingsSearchEngine()
         this.taskSettingsFetched = new SettingsTask()
         this.workerChecksStep.dataStored = new SettingsWorker()
         this.generator.selectedIndex = 0
@@ -497,7 +465,7 @@ export class GeneratorComponent {
         this.dimensionsFetched = []
         this.generalInstructionsStep.dataStored = []
         this.evaluationInstructionsStep.dataStored = []
-        this.searchEngineFetched = new SettingsSearchEngine()
+        this.searchEngineStep.dataStored = new SettingsSearchEngine()
         this.taskSettingsFetched = new SettingsTask()
         this.workerChecksStep.dataStored = new SettingsWorker()
         this.generator.selectedIndex = 0
@@ -587,7 +555,7 @@ export class GeneratorComponent {
             this.questionnaireStep.serializeConfiguration()
             this.dimensionsJSON()
             this.generalInstructionsStep.serializeConfiguration()
-            this.searchEngineJSON()
+            this.searchEngineStep.serializeConfiguration()
             this.taskSettingsJSON()
             this.workerChecksStep.serializeConfiguration()
         }
@@ -948,34 +916,12 @@ export class GeneratorComponent {
 
     /* STEP #5 - Search Engine */
 
-    domains(): FormArray {
-        return this.searchEngineForm.get('domains_filter') as FormArray;
+    public storeSearchEngineStepForm(data: FormGroup) {
+        this.searchEngineStepForm = data
     }
 
-    addDomain(domain = null) {
-        this.domains().push(this._formBuilder.group({
-            url: domain ? domain : ''
-        }))
-    }
-
-    removeDomain(domainIndex: number) {
-        this.domains().removeAt(domainIndex);
-    }
-
-    /* JSON OUTPUT */
-
-    searchEngineJSON() {
-        let searchEngineJSON = JSON.parse(JSON.stringify(this.searchEngineForm.value));
-        if (searchEngineJSON.source) {
-            let domainsStringArray = [];
-            for (let domain of searchEngineJSON.domains_filter) domainsStringArray.push(domain.url);
-            searchEngineJSON.domains_filter = domainsStringArray;
-        } else {
-            searchEngineJSON.source = false
-            searchEngineJSON.domains_filter = []
-        }
-        this.localStorageService.setItem(`search-engine-settings`, JSON.stringify(searchEngineJSON))
-        this.searchEngineSerialized = JSON.stringify(searchEngineJSON)
+    public storeSearchEngineStep(data: string) {
+        this.searchEngineStepResult = data
     }
 
     /* STEP #6 - Task Settings */
@@ -1359,7 +1305,7 @@ export class GeneratorComponent {
         let dimensionsPromise = this.S3Service.uploadDimensionsConfig(this.configService.environment, this.dimensionsSerialized)
         let taskInstructionsPromise = this.S3Service.uploadTaskInstructionsConfig(this.configService.environment, this.generalInstructionsStepResult)
         let dimensionsInstructionsPromise = this.S3Service.uploadDimensionsInstructionsConfig(this.configService.environment, this.evaluationInstructionsStepResult)
-        let searchEngineSettingsPromise = this.S3Service.uploadSearchEngineSettings(this.configService.environment, this.searchEngineSerialized)
+        let searchEngineSettingsPromise = this.S3Service.uploadSearchEngineSettings(this.configService.environment, this.searchEngineStepResult)
         let taskSettingsPromise = this.S3Service.uploadTaskSettings(this.configService.environment, this.taskSettingsSerialized)
         let workerChecksPromise = this.S3Service.uploadWorkersCheck(this.configService.environment, this.workersCheckStepResult)
         questionnairePromise.then(result => {
@@ -1409,7 +1355,7 @@ export class GeneratorComponent {
             this.dimensionsJSON()
             this.generalInstructionsStep.serializeConfiguration()
             this.evaluationInstructionsStep.serializeConfiguration()
-            this.searchEngineJSON()
+            this.searchEngineStep.serializeConfiguration()
             this.taskSettingsJSON()
             this.workerChecksStep.serializeConfiguration()
             this.uploadStarted = false
