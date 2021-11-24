@@ -8,7 +8,7 @@ import {Instruction} from "../../../../models/instructions";
 @Component({
     selector: 'app-instructions-step',
     templateUrl: './instructions-step.component.html',
-    styleUrls: ['../generator-steps.component.scss']
+    styleUrls: ['../../generator.component.scss']
 })
 export class InstructionsStepComponent implements OnInit {
 
@@ -47,8 +47,6 @@ export class InstructionsStepComponent implements OnInit {
 
     public async ngOnInit() {
 
-        console.log(this.type)
-
         let serializedInstructions = Object.keys(localStorage).filter((key) => key.startsWith(`${this.type}-instruction-`))
         if (serializedInstructions.length > 0) {
             serializedInstructions.forEach(key => {
@@ -74,15 +72,13 @@ export class InstructionsStepComponent implements OnInit {
                 this.addInstruction(instructionIndex, instruction)
             })
         }
-    }
-
-    public ngAfterViewInit() {
         this.formStep.valueChanges.subscribe(form => {
             this.serializeConfiguration()
         })
         this.serializeConfiguration()
         this.formEmitter.emit(this.formStep)
     }
+
 
     /* STEP #3 - General Instructions */
     instructions(): FormArray {

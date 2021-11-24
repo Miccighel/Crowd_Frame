@@ -20,7 +20,7 @@ interface QuestionnairePosition {
 @Component({
     selector: 'app-questionnaire-step',
     templateUrl: './questionnaire-step.component.html',
-    styleUrls: ['../generator-steps.component.scss']
+    styleUrls: ['../../generator.component.scss']
 })
 
 export class QuestionnaireStepComponent implements OnInit {
@@ -67,6 +67,12 @@ export class QuestionnaireStepComponent implements OnInit {
         this.formEmitter = new EventEmitter<FormGroup>();
     }
 
+    public resetData() {
+        this.formStep = this._formBuilder.group({
+            questionnaires: this._formBuilder.array([])
+        });
+    }
+
     public async ngOnInit() {
 
         let serializedQuestionnaires = Object.keys(localStorage).filter((key) => key.startsWith('questionnaire-'))
@@ -89,9 +95,6 @@ export class QuestionnaireStepComponent implements OnInit {
                 this.addQuestionnaire(questionnaireIndex, questionnaire)
             })
         }
-    }
-
-    public ngAfterViewInit() {
         this.formStep.valueChanges.subscribe(form => {
             this.serializeConfiguration()
         })

@@ -1,9 +1,5 @@
 /* |--- GENERAL STYLES --| */
 
-::ng-deep .mat-horizontal-stepper-header {
-  pointer-events: auto !important;
-}
-
 
 mat-card {
   margin-right: 1%;
@@ -24,6 +20,17 @@ mat-card-actions {
   padding-top: 1%;
 }
 
+mat-progress-bar {
+  background-color: #76ff03;
+  color: #76ff03;
+}
+
+#cloneTask {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  z-index: 100;
+}
 
 /* |--- STEP 6: TASK SETTINGS - STYLES  --| */
 
@@ -59,14 +66,3 @@ mat-list-item span.step-validity-check {
   border-radius: 0;
 }
 
-#cloneTask {
-  position: fixed;
-  bottom: 0;
-  right: 0;
-  z-index: 100;
-}
-
-mat-progress-bar {
-  background-color: #76ff03;
-  color: #76ff03;
-}

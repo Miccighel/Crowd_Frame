@@ -13,7 +13,7 @@ interface SourceType {
 @Component({
     selector: 'app-search-engine-step',
     templateUrl: './search-engine-step.component.html',
-    styleUrls: ['../generator-steps.component.scss']
+    styleUrls: ['../../generator.component.scss']
 })
 export class SearchEngineStepComponent implements OnInit {
 
@@ -71,9 +71,6 @@ export class SearchEngineStepComponent implements OnInit {
             domains_filter: this._formBuilder.array([])
         });
         if (this.dataStored) if (this.dataStored.domains_filter) if (this.dataStored.domains_filter.length > 0) this.dataStored.domains_filter.forEach((domain, domainIndex) => this.addDomain(domain))
-    }
-
-    public ngAfterViewInit() {
         this.formStep.valueChanges.subscribe(form => {
             this.serializeConfiguration()
         })

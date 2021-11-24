@@ -1,4 +1,4 @@
-import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+import {ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {MatChipInputEvent} from "@angular/material/chips";
 import {FormArray, FormBuilder, FormGroup} from "@angular/forms";
 import {COMMA, ENTER} from "@angular/cdk/keycodes";
@@ -10,7 +10,7 @@ import {S3Service} from 'src/app/services/s3.service';
 @Component({
     selector: 'app-worker-checks',
     templateUrl: './worker-checks-step.component.html',
-    styleUrls: ['../generator-steps.component.scss']
+    styleUrls: ['../../generator.component.scss']
 })
 
 export class WorkerChecksStepComponent implements OnInit {
@@ -20,10 +20,13 @@ export class WorkerChecksStepComponent implements OnInit {
     S3Service: S3Service;
     /* Service which wraps the interaction with browser's local storage */
     localStorageService: LocalStorageService;
+    /* Change detector to manually intercept changes on DOM */
+    changeDetector: ChangeDetectorRef;
 
     /* STEP #7 - Worker Checks */
 
     @Input() batchesTree: Array<JSON>
+    @Input() batchesTreeInitialized: boolean
 
     formStep: FormGroup;
 
@@ -38,11 +41,13 @@ export class WorkerChecksStepComponent implements OnInit {
     @Output() formEmitter: EventEmitter<FormGroup>;
 
     constructor(
+        changeDetector: ChangeDetectorRef,
         localStorageService: LocalStorageService,
         configService: ConfigService,
         S3Service: S3Service,
         private _formBuilder: FormBuilder,
     ) {
+        this.changeDetector = changeDetector
         this.configService = configService
         this.S3Service = S3Service
         this.localStorageService = localStorageService
@@ -80,16 +85,11 @@ export class WorkerChecksStepComponent implements OnInit {
         this.blacklistedWorkerId = new Set();
         this.dataStored.blacklist.forEach((workerId, workerIndex) => this.blacklistedWorkerId.add(workerId))
         this.dataStored.whitelist.forEach((workerId, workerIndex) => this.whitelistedWorkerId.add(workerId))
-        if (this.batchesTree) {
-            for (let taskNode of this.batchesTree) {
-                for (let batchNode of taskNode["batches"]) {
-                    this.addBatch(batchNode)
-                }
+        for (let taskNode of this.batchesTree) {
+            for (let batchNode of taskNode["batches"]) {
+                this.addBatch(batchNode)
             }
         }
-    }
-
-    public ngAfterViewInit() {
         this.formStep.valueChanges.subscribe(form => {
             this.serializeConfiguration()
         })
@@ -160,6 +160,7 @@ export class WorkerChecksStepComponent implements OnInit {
                 if (batch.get('name').value == batchNode['batch']) {
                     this.batchesTree[taskIndex]["batches"][batchIndex]['blacklist'] = batch.get('blacklist').value
                     this.localStorageService.setItem("batches-tree", JSON.stringify(this.batchesTree))
+                    this.serializeConfiguration()
                 }
             });
         });
@@ -178,6 +179,7 @@ export class WorkerChecksStepComponent implements OnInit {
                 if (batch.get('name').value == batchNode['batch']) {
                     this.batchesTree[taskIndex]["batches"][batchIndex]['whitelist'] = batch.get('whitelist').value
                     this.localStorageService.setItem("batches-tree", JSON.stringify(this.batchesTree))
+                    this.serializeConfiguration()
                 }
             });
         });

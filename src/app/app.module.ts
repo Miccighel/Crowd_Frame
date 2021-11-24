@@ -59,6 +59,8 @@ import {QuestionnaireStepComponent} from './components/generator/generator-steps
 import {InstructionsStepComponent} from './components/generator/generator-steps/instructions-step/instructions-step.component';
 import {SearchEngineStepComponent} from './components/generator/generator-steps/search-engine-step/search-engine-step.component';
 import {DimensionsStepComponent} from './components/generator/generator-steps/dimensions-step/dimensions-step.component';
+import { TaskSettingsStepComponent } from './components/generator/generator-steps/task-settings-step/task-settings-step.component';
+import { SummaryStepComponent } from './components/generator/generator-steps/summary-step/summary-step.component';
 
 function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
     return () => from(actionLogger.downloadOpt()).pipe(tap(data => {
@@ -87,7 +89,9 @@ function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
         QuestionnaireStepComponent,
         InstructionsStepComponent,
         SearchEngineStepComponent,
-        DimensionsStepComponent
+        DimensionsStepComponent,
+        TaskSettingsStepComponent,
+        SummaryStepComponent
     ],
     imports: [
         BrowserModule,

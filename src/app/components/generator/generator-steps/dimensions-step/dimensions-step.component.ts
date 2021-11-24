@@ -33,7 +33,7 @@ interface AnnotatorType {
 @Component({
     selector: 'app-dimensions-step',
     templateUrl: './dimensions-step.component.html',
-    styleUrls: ['../generator-steps.component.scss']
+    styleUrls: ['../../generator.component.scss']
 })
 export class DimensionsStepComponent implements OnInit {
 
@@ -116,9 +116,6 @@ export class DimensionsStepComponent implements OnInit {
                 this.addDimension(dimensionIndex, dimension)
             })
         }
-    }
-
-    public ngAfterViewInit() {
         this.formStep.valueChanges.subscribe(form => {
             this.serializeConfiguration()
         })

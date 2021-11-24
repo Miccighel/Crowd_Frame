@@ -50,10 +50,9 @@
 
             <h3 class="lighter">Batches</h3>
 
-            <!-- Blacklist Batches -->
             <div formArrayName="batches" class="mt-16px">
-                <mat-progress-bar *ngIf="this.batches().controls.length<=0 && !this.batchesTree" mode="indeterminate"></mat-progress-bar>
-                <ng-container *ngIf="this.batches().controls.length>0 && this.batchesTree">
+                <mat-progress-bar *ngIf="this.batches().controls.length<=0 " mode="indeterminate"></mat-progress-bar>
+                <ng-container *ngIf="this.batches().controls.length>0">
                     <div *ngFor="let taskNode of this.batchesTree">
                         <mat-accordion class="generator-accordion">
                             <mat-expansion-panel>
@@ -75,14 +74,13 @@
                 </ng-container>
             </div>
 
-
         </mat-card-content>
 
         <mat-divider></mat-divider>
 
         <mat-card-actions>
-            <button mat-flat-button color="primary" matStepperPrevious (click)="serializeConfiguration()">Back</button>
-            <button mat-flat-button color="primary" matStepperNext (click)="serializeConfiguration()">Next</button>
+            <button mat-flat-button color="primary" matStepperPrevious>Back</button>
+            <button mat-flat-button color="primary" matStepperNext>Next</button>
         </mat-card-actions>
 
     </mat-card>
