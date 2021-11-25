@@ -234,6 +234,7 @@ export class SkeletonComponent implements OnInit {
 
     /* |--------- QUALITY CHECKS - DECLARATION ---------| */
 
+    qualityChecksOutcome
     /* Array of gold documents within a Hit */
     goldDocuments: Array<Document>;
     /* Array of gold dimensions within a Hit */
@@ -250,13 +251,6 @@ export class SkeletonComponent implements OnInit {
 
     /* Check to understand if the generator or the skeleton should be loader */
     generator: boolean;
-
-    /* |--------- OTHER AMENITIES - DECLARATION ---------| */
-
-    /* Font awesome spinner icon */
-    faSpinner: Object;
-    /* Font awesome infoCircle icon */
-    faInfoCircle: Object;
 
     /* |--------- CONSTRUCTOR IMPLEMENTATION ---------| */
 
@@ -545,7 +539,7 @@ export class SkeletonComponent implements OnInit {
         }
 
         if (taskAllowed)
-                await this.dynamoDBService.insertWorker(this.configService.environment, this.workerIdentifier, this.currentTry)
+            await this.dynamoDBService.insertWorker(this.configService.environment, this.workerIdentifier, this.currentTry)
 
         return taskAllowed
     }
@@ -1894,7 +1888,7 @@ export class SkeletonComponent implements OnInit {
      *                           <timeCheckAmount> seconds, using the <timestampsElapsed> array
      * If each check is successful, the task can end. If the worker has some tries left, the task is reset.
      */
-    public async performQualityCheck() {
+    public performQualityCheck() {
 
         /* The loading spinner is started */
         this.ngxService.start();
@@ -1952,6 +1946,23 @@ export class SkeletonComponent implements OnInit {
 
         /* If each check is true, the task is successful, otherwise the task is failed (but not over if there are more tries) */
 
+        let data = {}
+        let actionInfo = {
+            try: this.currentTry,
+            sequence: this.sequenceNumber,
+            element: "checks"
+        };
+        let qualityCheckData = {
+            globalFormValidity: globalValidityCheck,
+            timeSpentCheck: timeSpentCheck,
+            timeCheckAmount: timeCheckAmount,
+            goldChecks: goldChecks,
+            goldConfiguration: goldConfiguration
+        };
+        data["info"] = actionInfo
+        data["checks"] = qualityCheckData
+        this.qualityChecksOutcome = data
+
         if (checker(computedChecks)) {
             this.sectionService.taskSuccessful = true;
             this.sectionService.taskFailed = false;
@@ -1959,35 +1970,6 @@ export class SkeletonComponent implements OnInit {
         } else {
             this.sectionService.taskSuccessful = false;
             this.sectionService.taskFailed = true;
-
-        }
-
-        if (!(this.worker.identifier === null)) {
-            /* The result of quality check control  for the current try is uploaded to the Amazon S3 bucket along with the gold configuration. */
-            let data = {}
-            let actionInfo = {
-                try: this.currentTry,
-                sequence: this.sequenceNumber,
-                element: "checks"
-            };
-            let qualityCheckData = {
-                globalFormValidity: globalValidityCheck,
-                timeSpentCheck: timeSpentCheck,
-                timeCheckAmount: timeCheckAmount,
-                goldChecks: goldChecks,
-                goldConfiguration: goldConfiguration
-            };
-            data["info"] = actionInfo
-            data["checks"] = qualityCheckData
-            await this.dynamoDBService.insertData(this.configService.environment, this.workerIdentifier, this.unitId, this.currentTry, this.sequenceNumber, data)
-            let uploadStatus = await this.S3Service.uploadQualityCheck(
-                this.configService.environment,
-                this.worker,
-                this.unitId,
-                qualityCheckData,
-                this.currentTry
-            )
-            this.sequenceNumber = this.sequenceNumber + 1
         }
 
         /* Detect changes within the DOM and stop the spinner */
@@ -2042,6 +2024,7 @@ export class SkeletonComponent implements OnInit {
 
     public handleQuestionnaireFilled(data) {
         this.questionnairesForm[data['step']] = data['questionnaireForm']
+        this.performQualityCheck()
         this.performLogging(data['action'], data['step'])
         if (data['action'] == 'Next') {
             this.nextStep()
@@ -2050,7 +2033,6 @@ export class SkeletonComponent implements OnInit {
                 this.previousStep()
             } else {
                 this.nextStep()
-                this.performQualityCheck()
             }
         }
 
@@ -2330,7 +2312,7 @@ export class SkeletonComponent implements OnInit {
                 /* The amount of accesses to the current document is incremented */
                 this.elementsAccesses[completedElement] = accessesAmount + 1;
                 this.sequenceNumber = this.sequenceNumber + 1
-
+                /* If the worker has completed the last element the sequence number must be incremented again */
             }
 
             /* If the worker has completed the last element */
@@ -2382,9 +2364,18 @@ export class SkeletonComponent implements OnInit {
                 data["responses_selected"] = this.searchEngineSelectedResponses
                 /* If the last element is a document */
 
+                this.qualityChecksOutcome["info"]["sequence"] = this.sequenceNumber
+                await this.dynamoDBService.insertData(this.configService.environment, this.workerIdentifier, this.unitId, this.currentTry, this.sequenceNumber, this.qualityChecksOutcome)
+                await this.S3Service.uploadQualityCheck(
+                    this.configService.environment,
+                    this.worker,
+                    this.unitId,
+                    this.qualityChecksOutcome,
+                    this.currentTry
+                )
+                this.sequenceNumber = this.sequenceNumber + 1
                 let uploadStatus = await this.S3Service.uploadFinalData(this.configService.environment, this.worker, this.unitId, data, this.currentTry)
                 await this.dynamoDBService.insertData(this.configService.environment, this.workerIdentifier, this.unitId, this.currentTry, this.sequenceNumber, data)
-
                 this.sequenceNumber = this.sequenceNumber + 1
 
             }

@@ -680,14 +680,14 @@
                                         <div *ngIf="dimension.justification && !(this.settingsTask.modality=='pairwise')"
                                              [ngClass]="this.settingsTask.modality=='pairwise'? 'dimension-split-inside' : 'dimension-content justification'">
                                             <div class="dimension-text-field">
-                                                <mat-form-field appearance="fill">
+                                                <mat-form-field appearance="fill" class="width-100">
                                                     <mat-label>{{dimension.justification.text}}</mat-label>
-                                                    <textarea matInput formControlName="{{dimension.name}}_justification" rows="3"></textarea>
+                                                    <textarea matInput formControlName="{{dimension.name}}_justification" rows="5"></textarea>
                                                     <mat-error *ngIf="checkFormControl(documentsForm[i],(dimension.name).concat('_justification'), 'required')">
                                                         This field is required
                                                     </mat-error>
                                                     <mat-error *ngIf="checkFormControl(documentsForm[i],(dimension.name).concat('_justification'), 'longer')">
-                                                        This justification must have at least {{dimension.justification.minWords}} words.
+                                                        This justification must have at least {{dimension.justification.min_words}} words.
                                                     </mat-error>
                                                     <mat-error *ngIf="checkFormControl(documentsForm[i],(dimension.name).concat('_justification'), 'invalid')">
                                                         You cannot use the selected search engine url as part of the justification.
@@ -851,14 +851,14 @@
                         <button mat-flat-button color="primary" matStepperNext
                                 *ngIf="i+1>=this.documentsAmount && this.questionnaireAmountEnd == 0 && !this.annotator"
                                 [disabled]="(!documentsForm[i].valid && documentsForm[i].status != 'DISABLED'  || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted)"
-                                (click)="performLogging('Finish', i); nextStep(); performQualityCheck()">
+                                (click)="performQualityCheck(); performLogging('Finish', i); nextStep();">
                             Finish
                         </button>
 
                         <button mat-flat-button color="primary" matStepperNext
                                 *ngIf="i+1>=this.documentsAmount && this.questionnaireAmountEnd == 0 && this.annotator"
                                 [disabled]="(!documentsForm[i].valid && documentsForm[i].status != 'DISABLED'  || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted || !checkAnnotationConsistency(i))"
-                                (click)="performLogging('Finish', i); nextStep(); performQualityCheck()">
+                                (click)="performQualityCheck(); performLogging('Finish', i); nextStep();">
                             Finish
                         </button>
 
