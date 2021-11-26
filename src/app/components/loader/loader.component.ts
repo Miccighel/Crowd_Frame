@@ -133,9 +133,6 @@ export class LoaderComponent implements OnInit {
 
     let url = new URL(window.location.href);
     this.adminAccess = url.searchParams.get("admin") == 'true'
-    // TODO: This call should be commented out when generator implementation will be complete
-    //this.performAdminCheck()
-    //this.loadAction('admin')
 
     this.ngxService.stop()
 

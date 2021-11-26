@@ -32,7 +32,7 @@ iam_path = '/Crowd_Frame/'
 config_user_name = 'config-user'
 mturk_user_name = 'mturk-user'
 
-os.chdir("../data/")
+# Your working dir must be set to data/
 
 folder_aws_path = "aws/"
 folder_aws_generated_path = "aws/generated/"
@@ -496,6 +496,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                     "dynamodb:PutItem",
                     "dynamodb:GetItem",
                     "dynamodb:Query",
+                    "dynamodb:ListTables"
                 ],
                 "Resource": "*"
             }
@@ -585,11 +586,13 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 CreateBucketConfiguration={'LocationConstraint': aws_region}
             )
         serialize_json(folder_aws_generated_path, f"bucket_{aws_private_bucket}.json", private_bucket)
+        time.sleep(2)
         console.print(f"[green]Bucket creation completed[/green], HTTP STATUS CODE: {private_bucket['ResponseMetadata']['HTTPStatusCode']}.")
     except s3_client.exceptions.BucketAlreadyOwnedByYou as error:
         console.print(f"[yellow]Bucket already created[/yellow], HTTP STATUS CODE: {error.response['ResponseMetadata']['HTTPStatusCode']}.")
     except s3_client.exceptions.BucketAlreadyOwnedByYou as error:
         console.print(f"[yellow]Bucket already created[/yellow], HTTP STATUS CODE: {error.response['ResponseMetadata']['HTTPStatusCode']}.")
+
 
     response = s3_client.put_public_access_block(
         Bucket=aws_private_bucket,
@@ -669,6 +672,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             deploy_bucket = s3_client.create_bucket(Bucket=aws_deploy_bucket)
         else:
             deploy_bucket = s3_client.create_bucket(Bucket=aws_deploy_bucket, CreateBucketConfiguration={'LocationConstraint': aws_region})
+        time.sleep(2)
         serialize_json(folder_aws_generated_path, f"bucket_{aws_deploy_bucket}.json", deploy_bucket)
         console.print(f"[green]Bucket creation completed[/green], HTTP STATUS CODE: {deploy_bucket['ResponseMetadata']['HTTPStatusCode']}.")
     except s3_client.exceptions.BucketAlreadyOwnedByYou as error:
@@ -1339,51 +1343,49 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 "logger": False,
                 "logOption": {
                     "button": {
-                        "general": 'false',
-                        "click": 'false'
+                        "general": False,
+                        "click": False
                     },
                     "mouse": {
-                        "general": 'false',
-                        "mouseMovements": 'false',
-                        "leftClicks": 'false',
-                        "rightClicks": 'false'
+                        "general": False,
+                        "mouseMovements": False,
+                        "leftClicks": False,
+                        "rightClicks": False
                     },
                     "keyboard": {
-                        "general": 'false',
-                        "shortcuts": 'false',
-                        "keys": 'false'
+                        "general": False,
+                        "shortcuts": False,
+                        "keys": False
                     },
                     "textInput": {
-                        "general": 'false',
-                        "paste": 'false',
-                        "delete": 'false'
+                        "general": False,
+                        "paste": False,
+                        "delete": False
                     },
                     "clipboard": {
-                        "general": 'false',
-                        "copy": 'false',
-                        "cut": 'false'
+                        "general": False,
+                        "copy": False,
+                        "cut": False
                     },
                     "radio": {
-                        "general": 'false',
-                        "change": 'false'
+                        "general": False,
+                        "change": False
                     },
                     "crowd-xplorer": {
-                        "general": 'false',
-                        "query": 'false',
-                        "result": 'false'
+                        "general": False,
+                        "query": False,
+                        "result": False
                     },
                     "various": {
-                        "general": 'false',
-                        "selection": 'false',
-                        "unload": 'false',
-                        "focus&blur": 'false',
-                        "scroll": 'false',
-                        "resize": 'false'
+                        "general": False,
+                        "selection": False,
+                        "unload": False,
+                        "focus&blur": False,
+                        "scroll": False,
+                        "resize": False
                     }
                 },
                 "serverEndpoint": logging_endpoint,
-                "blacklist_batches": [],
-                "whitelist_batches": [],
                 "messages": ["You have already started this task without finishing it"]
             }
             print(json.dumps(sample_settings, indent=4), file=file)
@@ -1395,8 +1397,12 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         console.print(f"Config. file [italic white on yellow]{filename}[/italic white on yellow] not detected, generating a sample")
         with open(f"{folder_build_task_path}{filename}", 'w') as file:
             sample_worker_checks = {
+                "block": True,
+                "analysis": True,
                 "blacklist": [],
-                "whitelist": []
+                "whitelist": [],
+                "blacklist_batches": [],
+                "whitelist_batches": [],
             }
             print(json.dumps(sample_worker_checks, indent=4), file=file)
 

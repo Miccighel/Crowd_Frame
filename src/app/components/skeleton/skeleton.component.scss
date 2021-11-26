@@ -1,168 +1,10 @@
-/* |--- GENERAL STYLES  --| */
-
 ::ng-deep .mat-horizontal-stepper-header {
   pointer-events: none !important;
 }
 
-.radio-button-group {
-  display: flex;
-  flex-direction: column;
-  margin: 15px 0;
-}
-
-.radio-button-group-horizontal {
-  display: inline;
-}
-
-.radio-button {
-  margin: 5px;
-}
-
-button:nth-child(2) {
-  margin-left: 5px;
-}
-
-.document-section mat-form-field, .questionnaire-section mat-form-field {
-  margin-bottom: 1%;
-  max-width: 70%;
-}
-
-.form-note {
-  button:last-child {
-    margin-right: 1%;
-  }
-  font-size: 1em;
-}
-
-mat-card-title {
-  padding-top: 1%;
-  padding-bottom: 1%;
-  margin-bottom: 1%;
-}
-
-.text-lighter {
-  font-weight: lighter;
-}
-
-/* Questionnaires form */
-
-.questionnaire-body {
-
-  mat-form-field {
-    width: 100%;
-  }
-
-  .questionnaire-question {
-    margin-top: 1%;
-    margin-bottom: 1%;
-    font-size: 1.5em;
-    font-weight: normal;
-  }
-
-  .questionnaire-value {
-    font-size: 2em;
-  }
-
-  .mat-divider {
-    margin-bottom: 1%;
-  }
-
-}
-
-/* Task specific styles */
-
-.evaluation-instructions {
-  h2 {
-    font-weight: lighter;
-  }
-  margin-bottom: 1%;
-}
-
-
-.question label {
-  font-weight: bold;
-}
-
-.question .question-detail {
-  box-shadow: none;
-}
-
-.question-detail mat-panel-title {
-  text-transform: uppercase;
-  flex-grow: 0;
-}
-
-.question-detail mat-panel-description {
-  font-weight: normal;
-  text-align: left;
-}
-
-.question-detail mat-expansion-panel-header, .question-detail mat-expansion-panel {
-  padding-left: 0.75%;
-}
-
-.questionnaire-matrix .matrix-header {
-  padding-top: 1.5%;
-  padding-bottom: 1.5%;
-  border: 0;
-  box-shadow: 0 0 0 0;
-  border-radius: 0;
-  position: -webkit-sticky;
-  position: sticky;
-  background-color: white;
-  top: 0;
-  z-index: 1000;
-  display: flex;
-  vertical-align: middle;
-}
-
-.questionnaire-matrix .matrix-header div {
-  text-align: center;
-  flex: 1 0;
-}
-
-.questionnaire-matrix .matrix-header > div:first-child {
-  flex-basis: 20%;
-  text-align: justify;
-}
-
-.questionnaire-matrix mat-radio-group {
-  margin-top: 1%;
-  margin-bottom: 1%;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-}
-
-.questionnaire-matrix mat-radio-group > div:first-child {
-  text-align: justify;
-  flex-basis: 20%;
-}
-
-.questionnaire-matrix mat-radio-group > div {
-  order: 6;
-  text-align: center;
-  flex: 1;
-}
-
-.questionnaire-matrix mat-radio-group > div p {
-  margin: 0;
-}
-
-mat-card-content mat-form-field label {
-  font-weight: bold;
-}
-
-mat-card-content mat-form-field input {
-  margin-top: 0.5%;
-}
-
-mat-card-content p span.hit-value {
-  font-weight: bold;
-}
-
-mat-card-content label {
-  font-weight: bold;
+mat-horizontal-stepper mat-card-content, mat-horizontal-stepper mat-card-title, mat-horizontal-stepper mat-card-actions {
+  width: 75% !important;
+  margin: auto !important;
 }
 
 .statement {
@@ -287,7 +129,7 @@ mat-card-content label {
 }
 
 .mat-radio-group {
-  display: flex;
+  //display: flex; remove for pairwise method
   text-align: center;
   justify-content: space-evenly;
 }
@@ -316,6 +158,21 @@ mat-card-content label {
   border-color: dimgray;
   padding: 5px;
 }
+
+
+.document-section mat-form-field {
+  margin-bottom: 1%;
+  max-width: 70%;
+}
+
+
+.form-note {
+  button:last-child {
+    margin-right: 1%;
+  }
+  font-size: 1em;
+}
+
 
 .inner-annotation-delete {
   margin-left: 5px;
@@ -413,16 +270,8 @@ mat-card-content label {
   margin: 0;
 }
 
-mat-card-title, .dimension h2, .instructions h2 {
+.dimension h2, .instructions h2 {
   font-weight: lighter;
-}
-
-mat-card-content {
-  padding-top: 0.5%;
-}
-
-button {
-  text-transform: uppercase;
 }
 
 .comment-form {
@@ -493,27 +342,14 @@ button {
   text-align: center;
 }
 
-/* |--- TASK BODY SECTION STYLES --| */
+/* Task specific styles */
 
-/* Stepper */
-
-mat-horizontal-stepper {
-  background-color: transparent;
-  margin-left: auto;
-  margin-right: auto;
-  width: 96%;
-  margin-bottom: 2%;
+.evaluation-instructions {
+  h2 {
+    font-weight: lighter;
+  }
+  margin-bottom: 1%;
 }
-
-mat-horizontal-stepper mat-card-content, mat-horizontal-stepper mat-card-title, mat-horizontal-stepper mat-card-actions {
-  width: 75%;
-  margin: auto;
-}
-
-mat-step form mat-card-content, mat-step form mat-card-actions {
-  padding: 1%;
-}
-
 
 /* |--- OUTCOME SECTION STYLES ---| */
 
@@ -669,8 +505,7 @@ mat-step form mat-card-content, mat-step form mat-card-actions {
   padding-top: 16px;
 }
 
-
-
+/* |--- INSTRUCTIONS SECTIONS ---| */
 
 .instructions-section {
   max-width: 80%;
@@ -841,19 +676,6 @@ mat-step form mat-card-content, mat-step form mat-card-actions {
   text-align: center;width:100%;margin:0 auto
 }
 
-/*
-.statement{
-  width: 500px;
-  background-color: #FCFCFC;
-  height: 250px;
-  padding-top: 1px;
-  margin-top: -1px;
-  overflow: hidden;
-  border-radius:5px;
-  cursor: pointer;
-  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
-*/
-
 .boxtext{
   width: 80%;
   background-color: rgba(0, 0, 0, 0.1);
@@ -893,6 +715,8 @@ mat-step form mat-card-content, mat-step form mat-card-actions {
   margin: 20px;
   z-index: 110;
   background-color: #FCFCFC;
+  width: 100%;
+  
 }
 .divsplit{
   display: table;
@@ -935,7 +759,7 @@ mat-step form mat-card-content, mat-step form mat-card-actions {
 .boxvaluessplit{
   width: 100%;
   height: 100%;
-  margin-left: 10%;
+  margin-left: 3%;
   margin-top: 15px;
   margin-bottom: 15px;
 }
@@ -988,6 +812,8 @@ mat-step form mat-card-content, mat-step form mat-card-actions {
 .div_radiobutton_check_pairwise{
   margin:0 auto;
   text-align: center;
+  display: block;
+  clear: both;
 }
 .radiobutton_check_pairwise{
   margin-left:25px;

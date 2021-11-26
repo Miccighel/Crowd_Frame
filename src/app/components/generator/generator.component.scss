@@ -1,129 +1,35 @@
 /* |--- GENERAL STYLES --| */
 
-::ng-deep .mat-horizontal-stepper-header {
-  pointer-events: auto !important;
-}
-
-mat-horizontal-stepper {
-  width: 96%;
-  background-color: transparent;
-  margin-right: auto;
-  margin-left: auto;
-}
 
 mat-card {
-  margin-bottom: 16px;
+  margin-right: 1%;
+  margin-left: 1%;
+  margin-bottom: 1%;
 }
 
 mat-card-content {
-  padding: 16px;
-  margin: 0;
+  margin: 1%;
+}
+
+mat-card-header mat-card-title {
+  margin-bottom: 1%;
 }
 
 mat-card-actions {
-  padding-top: 16px;
-  padding-left: 24px;
-  padding-right: 8px;
+  margin: 1%;
+  padding-top: 1%;
 }
 
-button {
-  margin-right: 16px;
+mat-progress-bar {
+  background-color: #76ff03;
+  color: #76ff03;
 }
 
-mat-slide-toggle {
-  margin-left: 16px;
-}
-
-
-.checkbox {
-  padding-left: 24px;
-  padding-bottom: 12px;
-}
-
-.lighter {
-  font-weight: lighter;
-}
-
-.border {
-  border: 1px solid #ddd;
-}
-
-.subsection {
-  border-left: 1px solid #ddd;
-  border-right: 1px solid #ddd;
-  border-bottom: 1px solid #ddd;
-}
-
-.indent {
-  margin-left: 16px;
-}
-
-.double-indent {
-  margin-left: 32px;
-}
-
-.left {
-  text-align: left;
-}
-
-.center {
-  text-align: center;
-}
-
-.right {
-  text-align: right;
-}
-
-.width-100 {
-  width: 100%;
-}
-
-.p-0 {
-  padding: 0;
-}
-
-.p-2px {
-  padding: 2px;
-}
-
-.p-5px {
-  padding: 5px;
-}
-
-.p-16px {
-  padding: 16px;
-}
-
-.pr-16px {
-  padding-right: 16px;
-}
-
-.mt-0 {
-  margin-top: 0;
-}
-
-.mt-8px {
-  margin-top: 8px;
-}
-
-.mt-16px {
-  margin-top: 16px;
-}
-
-.mb-0 {
-  margin-bottom: 0;
-}
-
-.mb-8px {
-  margin-bottom: 8px;
-}
-
-.mb-16px {
-  margin-bottom: 16px;
-}
-
-button {
-  text-transform: uppercase;
+#cloneTask {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  z-index: 100;
 }
 
 /* |--- STEP 6: TASK SETTINGS - STYLES  --| */
@@ -139,17 +45,17 @@ button {
 /* |--- STEP 8: SUMMARY - STYLES  --| */
 
 mat-list-item.step-valid {
-  background-color:green;
+  background-color: green;
   color: white;
 }
 
 mat-list-item.step-invalid {
-  background-color:darkred;
+  background-color: darkred;
   color: white;
 }
 
 mat-list-item span {
-  color: white ;
+  color: white;
 }
 
 mat-list-item span.step-validity-check {
@@ -160,14 +66,3 @@ mat-list-item span.step-validity-check {
   border-radius: 0;
 }
 
-#cloneTask {
-  position: fixed;
-  bottom: 0;
-  right: 0;
-  z-index: 100;
-}
-
-mat-progress-bar {
-  background-color: #76ff03;
-  color: #76ff03;
-}

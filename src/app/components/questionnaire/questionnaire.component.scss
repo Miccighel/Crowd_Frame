@@ -1,0 +1,112 @@
+mat-card-title {
+  padding-top: 1% !important;
+  padding-bottom: 1% !important;
+  margin-bottom: 0.5% !important;
+  margin-top: 0.5% !important;
+  font-weight: initial !important;
+}
+
+mat-card-content, mat-card-title, mat-card-actions {
+  width: 75% !important;
+  margin: auto !important;
+}
+
+.questionnaire-section mat-form-field {
+  margin-bottom: 1%;
+  max-width: 70%;
+}
+
+/* Questionnaires form */
+
+.questionnaire-body {
+
+  mat-form-field {
+    width: 100%;
+  }
+
+  .questionnaire-question {
+    margin-top: 1%;
+    margin-bottom: 1%;
+    font-size: 1.5em;
+    font-weight: normal;
+  }
+
+  .questionnaire-value {
+    font-size: 2em;
+  }
+
+  .mat-divider {
+    margin-bottom: 1%;
+  }
+
+}
+
+.question label {
+  font-weight: bold;
+}
+
+.question .question-detail {
+  box-shadow: none;
+}
+
+.question-detail mat-panel-title {
+  text-transform: uppercase;
+  flex-grow: 0;
+}
+
+.question-detail mat-panel-description {
+  font-weight: normal;
+  text-align: left;
+}
+
+.question-detail mat-expansion-panel-header, .question-detail mat-expansion-panel {
+  padding-left: 0.75%;
+}
+
+.questionnaire-matrix .matrix-header {
+  padding-top: 1.5%;
+  padding-bottom: 1.5%;
+  border: 0;
+  box-shadow: 0 0 0 0;
+  border-radius: 0;
+  position: -webkit-sticky;
+  position: sticky;
+  background-color: white;
+  top: 0;
+  z-index: 1000;
+  display: flex;
+  vertical-align: middle;
+}
+
+.questionnaire-matrix .matrix-header div {
+  text-align: center;
+  flex: 1 0;
+}
+
+.questionnaire-matrix .matrix-header > div:first-child {
+  flex-basis: 20%;
+  text-align: justify;
+}
+
+.questionnaire-matrix mat-radio-group {
+  margin-top: 1%;
+  margin-bottom: 1%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.questionnaire-matrix mat-radio-group > div:first-child {
+  text-align: justify;
+  flex-basis: 20%;
+}
+
+.questionnaire-matrix mat-radio-group > div {
+  order: 6;
+  text-align: center;
+  flex: 1;
+}
+
+.questionnaire-matrix mat-radio-group > div p {
+  margin: 0;
+}

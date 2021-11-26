@@ -9,12 +9,12 @@ import {MatPaginator} from "@angular/material/paginator";
 import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
 /* Services */
 import {BingService} from '../../services/bing.service';
-import {BingWebSearchResponse} from "../../models/bingWebSearchResponse";
+import {BingWebSearchResponse} from "../../models/crowd-xplorer/bingWebSearchResponse";
 import {FakerService} from "../../services/faker.service";
-import {FakerSearchResponse} from "../../models/fakerSearchResponse";
+import {FakerSearchResponse} from "../../models/crowd-xplorer/fakerSearchResponse";
 import {PubmedService} from "../../services/pudmed.service";
-import {PubmedSearchResponse} from "../../models/pubmedSearchResponse";
-import {PubmedSummaryResponse} from '../../models/pubmedSummaryResponse';
+import {PubmedSearchResponse} from "../../models/crowd-xplorer/pubmedSearchResponse";
+import {PubmedSummaryResponse} from '../../models/crowd-xplorer/pubmedSummaryResponse';
 import {ConfigService} from "../../services/config.service";
 import * as AWS from "aws-sdk";
 import {SettingsSearchEngine} from "../../models/settingsSearchEngine";
@@ -92,11 +92,11 @@ export class CrowdXplorer {
 
     /* Event emitters to integrate Binger in other components */
     /* EMITTER: Query inserted by user */
-    @Output() queryEmitter: EventEmitter<string>;
+    @Output() queryEmitter = new EventEmitter<string>();
     /* EMITTER: Responses retrieved by search engine */
-    @Output() resultEmitter: EventEmitter<Object>;
+    @Output() resultEmitter = new EventEmitter<Object>();
     /* EMITTER: Response selected by user */
-    @Output() selectedRowEmitter: EventEmitter<Object>;
+    @Output() selectedRowEmitter = new EventEmitter<Object>();
 
     @Input() countdownExpired: boolean
     @Input() countdownBehavior: string
@@ -145,11 +145,6 @@ export class CrowdXplorer {
         /* Control booleans */
         this.searchStarted = true;
         this.searchInProgress = false;
-
-        /* EMITTER: each emitter is initialized with the corresponding datatype to be emitted */
-        this.queryEmitter = new EventEmitter<string>();
-        this.resultEmitter = new EventEmitter<Object>();
-        this.selectedRowEmitter = new EventEmitter<Object>();
 
         /* The random digits for the current instances are generated */
         this.digits = this.randomDigits();

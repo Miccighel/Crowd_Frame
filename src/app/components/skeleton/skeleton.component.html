@@ -11,7 +11,6 @@
             </ng-container>
         </mat-card-content>
         <mat-card-actions>
-
             <button mat-flat-button color="primary" (click)="enableTask()" [disabled]="!this.sectionService.checkCompleted || !taskInstructions">
                 Proceed
             </button>
@@ -23,7 +22,6 @@
 <app-instructions [instructions]="this.taskInstructions" *ngIf="this.sectionService.instructionsAllowed"></app-instructions>
 
 <!-- Token input section -->
-
 <div id="token-section" class="container" *ngIf="this.sectionService.currentSection == 'token-section'">
     <form [formGroup]="tokenForm">
         <mat-card>
@@ -70,16 +68,16 @@
                     <h4>Failure</h4>
                 </mat-card-title>
                 <!-- If some messages are set in task.json -->
-                <mat-card-content *ngIf="this.settings.messages">
+                <mat-card-content *ngIf="this.settingsTask.messages">
                     <h2>You are not allowed to participate to this experiment because either:</h2>
                     <ul>
-                        <li *ngFor="let message of this.settings.messages; let i=index">- {{message}}</li>
+                        <li *ngFor="let message of this.settingsTask.messages; let i=index">- {{message}}</li>
                     </ul>
                     <h6>If you believe that this is an error, please contact us through Amazon MTurk. Sorry for the inconvenience.
                     </h6>
                 </mat-card-content>
                 <!-- Otherwise a standard message is shown -->
-                <mat-card-content *ngIf="!this.settings.messages">
+                <mat-card-content *ngIf="!this.settingsTask.messages">
                     <h2>
                         Either you have already started this task without finishing it, or you have already participated to a
                         variant of this experiment.<br/> For this reason, you are not allowed to take a part in this experiment.
@@ -93,106 +91,24 @@
 
 <!-- Task body section -->
 
-<mat-horizontal-stepper [linear]="true" labelPosition="bottom" #stepper *ngIf="questionnaires && documents && dimensions && this.sectionService.taskStarted">
+<mat-horizontal-stepper [linear]="true" labelPosition="bottom" #stepper *ngIf="questionnaires && documents && dimensions  && this.sectionService.taskStarted">
 
     <!-- Questionnaire markup -->
     <ng-container *ngFor="let questionnaire of questionnaires; let i=index">
         <mat-step *ngIf="questionnaire.position=='start' || !questionnaire.position" [stepControl]="questionnairesForm[i]" [editable]="false">
-            <div class="container">
-                <form [formGroup]="questionnairesForm[i]" class="questionnaire-form">
-                    <ng-template matStepLabel>Q{{i + 1}}</ng-template>
-                    <mat-card>
-
-                        <mat-divider [inset]="true"></mat-divider>
-                        <mat-card-title *ngIf="questionnaire.type=='standard'">Please answer the following questions</mat-card-title>
-                        <mat-card-title *ngIf="questionnaire.type=='crt'">Please answer the following question</mat-card-title>
-                        <mat-card-title *ngIf="questionnaire.type=='likert'">Please assess the following questions</mat-card-title>
-                        <mat-divider [inset]="true"></mat-divider>
-
-                        <!-- Standard questionnaire markup -->
-                        <mat-card-content *ngIf="questionnaire.type=='standard'" class="questionnaire-body">
-                            <mat-radio-group *ngFor="let question of questionnaire.questions; let j=index" aria-labelledby="radio-button-label"
-                                             class="radio-button-group question" formControlName="{{question.name}}">
-                                <p class="questionnaire-question">{{question.text}}</p>
-                                <mat-divider [inset]="true"></mat-divider>
-                                <mat-radio-button *ngFor="let answer of question.answers; let k=index" class="radio-button" value="{{k}}">
-                                    {{answer}}</mat-radio-button>
-                                <mat-expansion-panel hideToggle *ngIf="question.detail" class="question-detail" (opened)="question.showDetail = true"
-                                                     (closed)="question.showDetail = false">
-                                    <mat-expansion-panel-header class="mat-button">
-                                        <mat-panel-title>
-                                            {{question.showDetail ? 'Hide details' : 'Show details'}}
-                                        </mat-panel-title>
-                                        <mat-panel-description>
-                                            {{question.detail.text}}
-                                        </mat-panel-description>
-                                    </mat-expansion-panel-header>
-                                    <div class="question-detail-element" *ngFor="let element of question.detail.elements; let m=index">
-                                        {{element.key}}
-                                        <ul>
-                                            <li *ngFor="let item of element.items; let n=index">{{item}}</li>
-                                        </ul>
-                                    </div>
-                                </mat-expansion-panel>
-                            </mat-radio-group>
-                        </mat-card-content>
-
-                        <!-- CRT questionnaire markup -->
-                        <mat-card-content *ngIf="questionnaire.type=='crt'" class="questionnaire-body">
-                            <ng-container *ngFor="let question of questionnaire.questions; let j=index">
-                                <p class="questionnaire-question">{{question.text}}</p>
-                                <mat-divider [inset]="true"></mat-divider>
-                                <mat-form-field appearance="fill">
-                                    <mat-label>Answer</mat-label>
-
-                                    <input matInput type="number" placeholder="0" min="0" formControlName="{{question.name}}" class="questionnaire-value">
-                                    <mat-error *ngIf="checkFormControl(questionnairesForm[i],question.name, 'required')">
-                                        This field is required
-                                    </mat-error>
-                                    <mat-error *ngIf="checkFormControl(questionnairesForm[i],question.name, 'min')">
-                                        Min value allowed: 0
-                                    </mat-error>
-                                    <mat-error *ngIf="checkFormControl(questionnairesForm[i],question.name, 'max')">
-                                        Max value allowed: 100
-                                    </mat-error>
-                                </mat-form-field>
-                            </ng-container>
-                        </mat-card-content>
-
-                        <!-- Likert questionnaire markup -->
-                        <mat-card-content *ngIf="questionnaire.type=='likert'" class="questionnaire-matrix">
-                            <p *ngIf="questionnaire.description">{{questionnaire.description}}</p>
-                            <mat-divider [inset]="true"></mat-divider>
-                            <div class="matrix-header">
-                                <div></div>
-                                <div *ngFor="let mapping of questionnaire.mappings; let k=index">
-                                    <span class="matrix-header-text">{{mapping.label}}</span>
-                                </div>
-                            </div>
-
-                            <mat-radio-group aria-labelledby="radio-button-label" *ngFor="let question of questionnaire.questions; let m=index" formControlName="{{question.name}}">
-                                <div>
-                                    <p>{{m + 1}}) {{question.text}}</p>
-                                </div>
-                                <div *ngFor="let mapping of questionnaire.mappings">
-                                    <mat-radio-button class="radio-button" value="{{mapping.value}}"></mat-radio-button>
-                                </div>
-                            </mat-radio-group>
-                        </mat-card-content>
-
-                        <!-- Next button markup -->
-                        <mat-card-actions>
-                            <p class="form-note">
-                                <button mat-flat-button color="primary" matStepperNext
-                                        [disabled]="(!questionnairesForm[i].valid || this.sectionService.taskCompleted)"
-                                        (click)="performLogging('Next',i); nextStep()"> Next
-                                </button>
-                                (*) you have to fill each field to proceed
-                            </p>
-                        </mat-card-actions>
-                    </mat-card>
-                </form>
-            </div>
+            <ng-template matStepLabel>Q{{i + 1}}</ng-template>
+            <app-questionnaire
+                    id="questionnaire-start-{{i}}"
+                    [step]="i"
+                    [position]=questionnaire.position
+                    [documentsAmount]="this.documentsAmount"
+                    [questionnaire]="questionnaire"
+                    [questionnaireAmount]="this.questionnaireAmount"
+                    [questionnaireAmountStart]="this.questionnaireAmountStart"
+                    [questionnaireAmountEnd]="this.questionnaireAmountEnd"
+                    [questionnaireForm]="questionnairesForm[i]"
+                    (questionnaireFilled)="handleQuestionnaireFilled($event)">
+            </app-questionnaire>
         </mat-step>
     </ng-container>
 
@@ -208,9 +124,18 @@
                     <mat-card-title>Statement Nr. {{i + 1}}</mat-card-title>
                     <mat-divider [inset]="true"></mat-divider>
                     <mat-card-content class="pt-16px">
-
+                        <!-- Evaluation instructions markup -->
+                        <div *ngIf="this.instructionsAmount>0" class="evaluation-instructions">
+                            <mat-divider [inset]="true"></mat-divider>
+                            <h2>Instructions</h2>
+                            <mat-divider [inset]="true"></mat-divider>
+                            <div *ngFor="let instruction of this.instructions">
+                                <p>{{instruction.caption}}</p>
+                                <div [innerHTML]="instruction.text"></div>
+                            </div>
+                        </div>
                         <!--- Countdown markup --->
-                        <div class="countdown sticky" *ngIf="this.settings.countdown_time>=0">
+                        <div class="countdown sticky" *ngIf="this.settingsTask.countdown_time>=0">
                             <h1 class="text-lighter m-0">
                                 Time left:
                                 <countdown #countdownElement [config]="{ demand: true, leftTime: this.documentsCountdownTime[i], format: 'mm:ss' }" (event)="handleCountdown($event, i)"></countdown>
@@ -218,22 +143,22 @@
                         </div>
 
                         <!-- Document attributes markup; add the event bindings if you want enable annotations -->
-                        <div class="statement" *ngIf="(this.settings.modality=='pointwise')">
-                            <ng-container *ngFor="let attribute of this.settings.attributes; let k=index">
+                        <div class="statement" *ngIf="(this.settingsTask.modality=='pointwise')">
+                            <ng-container *ngFor="let attribute of this.settingsTask.attributes; let k=index">
                                 <div *ngIf="attribute.show" class="attribute">
                                     <p>
                                         <span class="attribute-label" *ngIf="!this.annotator">
-                                            <strong>{{attribute.name_pretty}}</strong>: {{(this.countdownsExpired[i] && this.settings.countdown_behavior == "hide_attributes") ? "---------- text_hidden ----------" : document[attribute.name]}}
+                                            <strong>{{attribute.name_pretty}}</strong>: {{(this.countdownsExpired[i] && this.settingsTask.countdown_behavior == "hide_attributes") ? "---------- text_hidden ----------" : document[attribute.name]}}
                                         </span>
                                         <span class="attribute-label" *ngIf="this.annotator && !attribute.annotate">
-                                            <strong>{{attribute.name_pretty}}</strong>: {{(this.countdownsExpired[i] && this.settings.countdown_behavior == "hide_attributes") ? "---------- text_hidden ----------" : document[attribute.name]}}
+                                            <strong>{{attribute.name_pretty}}</strong>: {{(this.countdownsExpired[i] && this.settingsTask.countdown_behavior == "hide_attributes") ? "---------- text_hidden ----------" : document[attribute.name]}}
                                         </span>
                                         <span class="attribute-label" *ngIf="this.annotator && this.annotator.type=='options'&& attribute.annotate">
                                             <strong>{{attribute.name_pretty}}</strong>:
                                             <span id="document-{{i}}-attribute-{{k}}"
                                                   (mouseup)="performAnnotation(i, k, this.notes, this.changeDetector)"
                                                   (touchend)="performAnnotation(i, k, this.notes, this.changeDetector)">
-                                                {{(this.countdownsExpired[i] && this.settings.countdown_behavior == "hide_attributes") ? "---------- text_hidden ----------" : document[attribute.name]}}
+                                                {{(this.countdownsExpired[i] && this.settingsTask.countdown_behavior == "hide_attributes") ? "---------- text_hidden ----------" : document[attribute.name]}}
                                             </span>
                                         </span>
                                         <span class="attribute-label" *ngIf="this.annotator && this.annotator.type=='laws'&& attribute.annotate">
@@ -252,7 +177,7 @@
                                               (mouseup)="performHighlighting(this.changeDetector, $event, i, this.notes, this.annotator)"
                                               (touchend)="performHighlighting(this.changeDetector, $event, i, this.notes, this.annotator)"
                                               class="statement-text">{{this.checkEnabledNotes(i)}}
-                                            {{(this.countdownsExpired[i] && this.settings.countdown_behavior == "hide_attributes") ? "---------- text_hidden ----------" : document.article_text}}
+                                            {{(this.countdownsExpired[i] && this.settingsTask.countdown_behavior == "hide_attributes") ? "---------- text_hidden ----------" : document.article_text}}
                                         </span>
                                     </div>
                                 </li>
@@ -273,31 +198,13 @@
                                                         <span class="spanboxtext">{{document.statements[0][0].statement}}</span>
                                                     </div>
                                                     <div class="boxvaluessplit">
-                                                        <span class="captionsplit">
-                                                            <label>Claimant:</label>
-                                                            {{document.statements[0][0].claimant}}
-                                                        </span>
-                                                        <span class="captionsplit">
-                                                            <label>Date:</label>
-                                                            {{document.statements[0][0].date}}
-                                                        </span>
-                                                        <span class="captionsplit">
-                                                            <label>Originated-from:</label>
-                                                            {{document.statements[0][0].originated_from}}
-                                                        </span>
-                                                        <span class="captionsplit">
-                                                            <label>Job:</label>
-                                                            {{document.statements[0][0].job}}
-                                                        </span>
+                                                        <ng-container *ngFor="let attribute of this.settingsTask.attributes; let k=index">
+                                                            <span class="captionsplit" *ngIf="attribute.show==true">
+                                                                <label><strong>{{attribute.name}}</strong></label>
+                                                                {{document.statements[0][0][attribute.name]}}
+                                                            </span>
+                                                        </ng-container>
                                                     </div>
-                                                    <!--
-                                                      @Aggiunte Abbondo
-                                                      Mat radio button fantasma serve a il simuluare il tocco sullo statement.
-                                                      @change function:
-                                                        storeDimensionValue: salva quale elemento è stato cliccato
-                                                        changeColor: cambia il colore dello statement
-                                                        changeColor: cambia il colore del radio-button(radioStatement) cosi il simula il click sul radio button. Per dubbi chieda pure
-                                                    -->
                                                     <mat-radio-button class="tester" value="A"
                                                                       (change)="storeDimensionValue($event, i, document.index) ; changeColor($event,document.index); changeColorRadio($event,document.index)"
                                                                       disableRipple="true">
@@ -309,36 +216,16 @@
                                                 <div class="parent">
                                                     <h3 class="statementTitlesplit">Statement B</h3>
                                                     <div class="boxtextsplit">
-                                                        {{document.statements[1][0].statement}}
+                                                        {{document.statements[0][1].statement}}
                                                     </div>
                                                     <div class="boxvaluessplit">
-                                                        <span class="captionsplit">
-                                                            <label>Claimant:</label>
-                                                            {{document.statements[1][0].claimant}}
-                                                        </span>
-                                                        <span class="captionsplit">
-                                                            <label>Date:</label>
-                                                            {{document.statements[1][0].date}}
-                                                        </span>
-                                                        <span class="captionsplit">
-                                                            <label>Originated-from:</label>
-                                                            {{document.statements[1][0].originated_from}}
-                                                        </span>
-                                                        <span class="captionsplit">
-                                                            <label>Job:</label>
-                                                            {{document.statements[1][0].job}}
-                                                        </span>
+                                                        <ng-container *ngFor="let attribute of this.settingsTask.attributes; let k=index">
+                                                            <span class="captionsplit" *ngIf="attribute.show==true">
+                                                                <label><strong>{{attribute.name}}</strong></label>
+                                                                {{document.statements[0][1][attribute.name]}}
+                                                            </span>
+                                                        </ng-container>
                                                     </div>
-                                                    <!--
-                                                    @Aggiunte Abbondo
-
-                                                    Mat radio button fantasma serve a il simuluare il tocco sullo statement.
-
-                                                    @change function:
-                                                      storeDimensionValue: salva quale elemento è stato cliccato
-                                                      changeColor: cambia il colore dello statement
-                                                      changeColor: cambia il colore del radio-button(radioStatement) cosi il simula il click sul radio button. Per dubbi chieda pure
-                                                  -->
                                                     <mat-radio-button class="tester" value="B" (change)="storeDimensionValue($event, i, document.index) ; changeColor($event,document.index);changeColorRadio($event,document.index)"
                                                                       disableRipple="true">
                                                         <div style="width: 500px; height: 300px;"></div>
@@ -347,16 +234,6 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <!--
-                                          @AggiunteAbbondo
-
-                                          Creazione dei 3 radio button visibili dall'utente
-
-                                          @change function:
-                                            storeDimensionValue: salva quale elemento è stato cliccato
-                                            changeColor: cambia il colore dello statement
-                                            changeColor: cambia il colore del radio-button(radioStatement) cosi il simula il click sul radio button. Per dubbi chieda pure
-                                        -->
                                     <div class="div_radiobutton_check_pairwise">
                                         <mat-radio-button value="A" id="radioStatementA.{{document.index}}" class="radiobutton_check_pairwise"
                                                           (change)="storeDimensionValue($event, i, document.index) ; changeColor($event,document.index); changeColorRadio($event,document.index)" disableRipple="true">
@@ -381,7 +258,7 @@
                             L'elemento pairwiiseElement viene caricato solo se i settings del task presentano la variabile modality uguale a 'pairwise'.
                         -->
                         <!-- @AggiunteAbbondo Ng templete che permette che esegue il parwiseElementSplit solo se l'if è TRUE-->
-                        <ng-template *ngIf="this.settings.modality=='pairwise'" [ngTemplateOutlet]="pairwiseElementSplit"></ng-template>
+                        <ng-template *ngIf="this.settingsTask.modality=='pairwise'" [ngTemplateOutlet]="pairwiseElementSplit"></ng-template>
 
 
                         <ng-container *ngIf="(this.annotator && this.annotator.type=='options')">
@@ -599,16 +476,6 @@
 
                         </ng-container>
 
-                        <!-- Evaluation instructions markup -->
-                        <div *ngIf="this.instructionsAmount>0" class="evaluation-instructions">
-                            <mat-divider [inset]="true"></mat-divider>
-                            <h2>Instructions</h2>
-                            <mat-divider [inset]="true"></mat-divider>
-                            <div *ngFor="let instruction of this.instructions">
-                                <p>{{instruction.caption}}</p>
-                                <div [innerHTML]="instruction.text"></div>
-                            </div>
-                        </div>
 
                         <ng-template #dimensionList let-dimensions="dimensions" let-i="i">
 
@@ -620,7 +487,7 @@
                                     mentre se il document non è in modalità pairwise non succede nulla è rimane tutto come prima
                                 -->
                                 <ng-template
-                                        *ngIf="checkdimension(document.index,dimension.index) || !(this.settings.modality=='pairwise')"
+                                        *ngIf="checkdimension(document.index,dimension.index) || !(this.settingsTask.modality=='pairwise')"
                                         [ngTemplateOutlet]="dimensionPairwise">
                                 </ng-template>
 
@@ -628,8 +495,8 @@
 
                                     <!-- Dimension name markup -->
                                     <!--@AggiunteAbbondo Cambia la classe in base sei ci troviamo in modalità pairwise o meno-->
-                                    <div [ngClass]="this.settings.modality=='pairwise' && dimension.pairwise ? 'dimension-content-split' : 'dimension-name'">
-                                        <div [ngClass]="{'dimension-name-center': this.settings.modality=='pairwise' && dimension.pairwise}">
+                                    <div [ngClass]="this.settingsTask.modality=='pairwise'? 'dimension-content-split' : 'dimension-name'">
+                                        <div [ngClass]="{'dimension-name-center': this.settingsTask.modality=='pairwise'}">
                                             <mat-divider [inset]="true"></mat-divider>
                                             <h2 *ngIf="!dimension.name_pretty">{{capitalize(dimension.name)}}</h2>
                                             <h2 *ngIf="dimension.name_pretty">{{capitalize(dimension.name_pretty)}}</h2>
@@ -639,7 +506,7 @@
 
                                     <!-- Dimension description markup -->
                                     <!-- @AggiunteAbbondo Cambiamo la classe in base sei ci troviamo in modalità pairwise o meno-->
-                                    <div *ngIf="dimension.description" [ngClass]="this.settings.modality=='pairwise' && dimension.pairwise ? 'dimension-name-center' : 'dimension-container dimension-description'">
+                                    <div *ngIf="dimension.description" [ngClass]="this.settingsTask.modality=='pairwise'? 'dimension-name-center' : 'dimension-container dimension-description'">
                                         <div class="dimension-content" ngClass=" 'dimension-split-inside' 'dimension-content'">
                                             <p>{{dimension.description}}</p>
                                         </div>
@@ -655,7 +522,7 @@
                                                     (queryEmitter)="storeSearchEngineUserQuery($event, document, dimension)"
                                                     (selectedRowEmitter)="storeSearchEngineSelectedResponse($event, document, dimension)"
                                                     [countdownExpired]="this.countdownsExpired[i]"
-                                                    [countdownBehavior]="this.settings.countdown_behavior">
+                                                    [countdownBehavior]="this.settingsTask.countdown_behavior">
                                             </app-crowd-xplorer>
                                             <!-- Dimension search engine url field markup (hidden) -->
                                             <mat-form-field *ngIf="dimension.url" class="url-field">
@@ -681,14 +548,14 @@
                                           @AggiunteAbbondo
                                           Cambia la classe del div  in base se ci troviamo in modalità pairwise o meno
                                         -->
-                                        <div [ngClass]="this.settings.modality=='pairwise' && dimension.pairwise ? 'dimension-content-split' : 'dimension-content'">
+                                        <div [ngClass]="this.settingsTask.modality=='pairwise'? 'dimension-content-split' : 'dimension-content'">
 
                                             <!-- Vertical style markup -->
                                             <ng-container *ngIf="dimension.style.orientation=='vertical'">
 
                                                 <!-- Categorical scale markup -->
-                                                <ng-container *ngIf="dimension.scale.type=='categorical'  && !dimension.pairwise  || dimension.scale.type=='categorical' && !(this.settings.modality=='pairwise')">
-                                                    <div [ngClass]="{'dimension-split-inside': this.settings.modality=='pairwise' && dimension.pairwise}" *ngIf="!(this.settings.modality=='pairwise')">
+                                                <ng-container *ngIf="dimension.scale.type=='categorical'">
+                                                    <div *ngIf="this.settingsTask.modality!='pairwise'">
                                                         <mat-radio-group aria-labelledby="radio-button-label" class="radio-button-group" formControlName="{{(dimension.name).concat('_value')}}">
                                                             <mat-radio-button *ngFor="let mapping of dimension.scale.mapping let k=index"
                                                                               class="radio-button" value="{{mapping.value}}"
@@ -699,31 +566,28 @@
                                                             </mat-radio-button>
                                                         </mat-radio-group>
                                                     </div>
+                                                    <!-- Pairwise Categorical Scale markup-->
+                                                    <ng-container *ngIf="this.settingsTask.modality=='pairwise'">
+                                                        <div [ngClass]="{'dimension-split-inside, dimension-box':this.settingsTask.modality=='pairwise'}" *ngFor="let test of document.statements; let j=index">
+                                                            <p class="spanDocument"> Answer for Statement {{changeletter(j)}}</p>
+                                                            <mat-radio-group style="margin-left: 10px;" aria-labelledby="radio-button-label" class="radio-button-group" formControlName="{{(dimension.name).concat('_value_').concat(j)}}">
+                                                                <mat-radio-button *ngFor="let mapping of dimension.scale.mapping let k=index"
+                                                                                  class="radio-button" value="{{mapping.value}}"
+                                                                                  (change)="storeDimensionValue($event, i, dimension.index);changeValue(document.index,dimension.index+1,j)"
+                                                                                  [disabled]="this.countdownsExpired[i]">
+                                                                    <span>{{mapping.label}}</span>
+                                                                    <span *ngIf="mapping.description.length>0">
+                                                                        ({{mapping.description}})
+                                                                    </span>
+                                                                </mat-radio-button>
+                                                            </mat-radio-group>
+                                                        </div>
+                                                    </ng-container>
                                                 </ng-container>
-
-                                                <!-- Categorical scale markup pairwise split -->
-                                                <!--  @AggiunteAbbondo Scale Catagorical ma in modalità pairwise -->
-                                                <ng-container *ngIf="dimension.scale.type=='categorical' && this.settings.modality=='pairwise' && dimension.pairwise">
-                                                    <div [ngClass]="{'dimension-split-inside, dimension-box':dimension.pairwise }" *ngFor="let test of document.statements; let j=index">
-                                                        <p class="spanDocument"> Answer for Statement {{changeletter(j)}}</p>
-                                                        <mat-radio-group style="margin-left: 10px;" aria-labelledby="radio-button-label" class="radio-button-group" formControlName="{{(dimension.name).concat('_value_').concat(j)}}">
-                                                            <mat-radio-button *ngFor="let mapping of dimension.scale.mapping let k=index"
-                                                                              class="radio-button" value="{{mapping.value}}"
-                                                                              (change)="storeDimensionValue($event, i, dimension.index);changeValue(document.index,dimension.index+1,j)"
-                                                                              [disabled]="this.countdownsExpired[i]">
-                                                                <span>{{mapping.label}}</span>
-                                                                <span *ngIf="mapping.description.length>0">
-                                                                    ({{mapping.description}})
-                                                                </span>
-                                                            </mat-radio-button>
-                                                        </mat-radio-group>
-                                                    </div>
-                                                </ng-container>
-
 
                                                 <!-- Interval scale markup -->
-                                                <ng-container *ngIf="dimension.scale.type=='interval' && !dimension.pairwise  || dimension.scale.type=='interval' && !(this.settings.modality=='pairwise')">
-                                                    <div [ngClass]="{'dimension-split-inside': this.settings.modality=='pairwise' && dimension.pairwise}">
+                                                <ng-container *ngIf="dimension.scale.type=='interval'">
+                                                    <div *ngIf="this.settingsTask.modality!='pairwise'">
                                                         <label>Selected value: {{documentsForm[i].controls[(dimension.name).concat('_value')].value}}</label>
                                                         <mat-slider min="{{dimension.scale.min}}" max="{{dimension.scale.max}}"
                                                                     step="{{dimension.scale.step}}" thumbLabel tickInterval="{{dimension.scale.step}}"
@@ -731,27 +595,23 @@
                                                                     (change)="storeDimensionValue($event, i,dimension.index);"
                                                                     [disabled]="this.countdownsExpired[i]"></mat-slider>
                                                     </div>
-                                                </ng-container>
-
-                                                <!-- Interval scale pairwise split markup -->
-                                                <!-- @AggiunteAbbondo
-                                                  Scale Interval ma in modalità pairwise
-                                                -->
-                                                <ng-container *ngIf="dimension.scale.type=='interval' && this.settings.modality=='pairwise' && dimension.pairwise">
-                                                    <div [ngClass]="{'dimension-split-inside, dimension-box': this.settings.modality=='pairwise' && dimension.pairwise}" *ngFor="let test of document.statements; let j=index">
-                                                        <p class="spanDocument"> Answer for Statement {{changeletter(j)}}</p>
-                                                        <label style="margin-left:10px;"> Selected value: {{documentsForm[i].controls[(dimension.name).concat('_value_').concat(j)].value}}</label>
-                                                        <mat-slider min="{{dimension.scale.min}}" max="{{dimension.scale.max}}"
-                                                                    step="{{dimension.scale.step}}" thumbLabel tickInterval="{{dimension.scale.step}}"
-                                                                    formControlName="{{(dimension.name).concat('_value_').concat(j)}}"
-                                                                    (change)="storeDimensionValue($event, i,dimension.index); changeValue(document.index,dimension.index+1,j)"
-                                                                    [disabled]="this.countdownsExpired[i]" value="0"></mat-slider>
-                                                    </div>
+                                                    <!-- Pairwise Interval Scale markup-->
+                                                    <ng-container *ngIf="this.settingsTask.modality=='pairwise'">
+                                                        <div [ngClass]="{'dimension-split-inside, dimension-box': this.settingsTask.modality=='pairwise'}" *ngFor="let test of document.statements; let j=index">
+                                                            <p class="spanDocument"> Answer for Statement {{changeletter(j)}}</p>
+                                                            <label style="margin-left:10px;"> Selected value: {{documentsForm[i].controls[(dimension.name).concat('_value_').concat(j)].value}}</label>
+                                                            <mat-slider min="{{dimension.scale.min}}" max="{{dimension.scale.max}}"
+                                                                        step="{{dimension.scale.step}}" thumbLabel tickInterval="{{dimension.scale.step}}"
+                                                                        formControlName="{{(dimension.name).concat('_value_').concat(j)}}"
+                                                                        (change)="storeDimensionValue($event, i,dimension.index); changeValue(document.index,dimension.index+1,j)"
+                                                                        [disabled]="this.countdownsExpired[i]" value="0"></mat-slider>
+                                                        </div>
+                                                    </ng-container>
                                                 </ng-container>
 
                                                 <!-- Magnitude scale markup -->
-                                                <ng-container *ngIf="dimension.scale.type=='magnitude_estimation' &&!dimension.pairwise || dimension.scale.type=='magnitude_estimation' && !(this.settings.modality=='pairwise')">
-                                                    <div [ngClass]="{'dimension-split-inside': this.settings.modality=='pairwise' && dimension.pairwise}">
+                                                <ng-container *ngIf="dimension.scale.type=='magnitude_estimation' &&!dimension.pairwise || dimension.scale.type=='magnitude_estimation' && !(this.settingsTask.modality=='pairwise')">
+                                                    <div *ngIf="this.settingsTask.modality!='pairwise'">
                                                         <mat-form-field appearance="fill">
                                                             <mat-label>Value</mat-label>
                                                             <input *ngIf="dimension.scale.lower_bound" matInput type="number" placeholder="" formControlName="{{(dimension.name).concat('_value')}}" min="{{dimension.scale.min}}"
@@ -770,38 +630,33 @@
 
                                                         </mat-form-field>
                                                     </div>
-                                                </ng-container>
-
-                                                <!-- Magnitude scale pairwise split markup -->
-                                                <!-- @AggiunteAbbondo
-                                                  Scale Magnitude ma in modalità pairwise -->
-                                                <ng-container *ngIf="dimension.scale.type=='magnitude_estimation' && this.settings.modality=='pairwise' && dimension.pairwise">
-                                                    <ng-container *ngFor="let test of document.statements; let j=index">
-                                                        <div [ngClass]="{'dimension-box': this.settings.modality=='pairwise' && dimension.pairwise}">
-                                                            <p class="spanDocument"> Answer for Statement {{changeletter(j)}}</p>
-                                                            <mat-form-field appearance="fill" style="margin-left: 10px;">
-                                                                <mat-label>Value</mat-label>
-                                                                <input *ngIf="dimension.scale.lower_bound" matInput type="number" placeholder="" formControlName="{{(dimension.name).concat('_value_').concat(j)}}"
-                                                                       min="{{dimension.scale.min}}"
-                                                                       (change)="storeDimensionValue($event, i, dimension.index) ; changeValue(document.index,dimension.index+1,j)"
-                                                                       [disabled]="this.countdownsExpired[i]" class="magnitude_estimation">
-                                                                <input *ngIf="!dimension.scale.lower_bound" matInput type="number" placeholder="" formControlName="{{(dimension.name).concat('_value_').concat(j)}}"
-                                                                       min="{{dimension.scale.min+1}}"
-                                                                       (change)="storeDimensionValue($event, i, dimension.index); changeValue(document.index,dimension.index+1,j)" class="magnitude_estimation"
-                                                                       [disabled]="this.countdownsExpired[i]">
-                                                                <mat-error *ngIf="checkFormControl(documentsForm[i], (dimension.name).concat('_value_').concat(j), 'required')">
-                                                                    This field is required
-                                                                </mat-error>
-                                                                <mat-error *ngIf="checkFormControl(documentsForm[i], (dimension.name).concat('_value_').concat(j), 'min')">
-                                                                    <span *ngIf="dimension.scale.lower_bound">Min value allowed: {{dimension.scale.min}}</span>
-                                                                    <span *ngIf="!dimension.scale.lower_bound">Min value allowed: {{dimension.scale.min + 1}}</span>
-                                                                </mat-error>
-                                                            </mat-form-field>
-                                                        </div>
+                                                    <!-- Pairwise Magnitude Scale markup-->
+                                                    <ng-container *ngIf="this.settingsTask.modality=='pairwise'">
+                                                        <ng-container *ngFor="let test of document.statements; let j=index">
+                                                            <div [ngClass]="{'dimension-box': this.settingsTask.modality=='pairwise'}">
+                                                                <p class="spanDocument"> Answer for Statement {{changeletter(j)}}</p>
+                                                                <mat-form-field appearance="fill" style="margin-left: 10px;">
+                                                                    <mat-label>Value</mat-label>
+                                                                    <input *ngIf="dimension.scale.lower_bound" matInput type="number" placeholder="" formControlName="{{(dimension.name).concat('_value_').concat(j)}}"
+                                                                           min="{{dimension.scale.min}}"
+                                                                           (change)="storeDimensionValue($event, i, dimension.index) ; changeValue(document.index,dimension.index+1,j)"
+                                                                           [disabled]="this.countdownsExpired[i]" class="magnitude_estimation">
+                                                                    <input *ngIf="!dimension.scale.lower_bound" matInput type="number" placeholder="" formControlName="{{(dimension.name).concat('_value_').concat(j)}}"
+                                                                           min="{{dimension.scale.min+1}}"
+                                                                           (change)="storeDimensionValue($event, i, dimension.index); changeValue(document.index,dimension.index+1,j)" class="magnitude_estimation"
+                                                                           [disabled]="this.countdownsExpired[i]">
+                                                                    <mat-error *ngIf="checkFormControl(documentsForm[i], (dimension.name).concat('_value_').concat(j), 'required')">
+                                                                        This field is required
+                                                                    </mat-error>
+                                                                    <mat-error *ngIf="checkFormControl(documentsForm[i], (dimension.name).concat('_value_').concat(j), 'min')">
+                                                                        <span *ngIf="dimension.scale.lower_bound">Min value allowed: {{dimension.scale.min}}</span>
+                                                                        <span *ngIf="!dimension.scale.lower_bound">Min value allowed: {{dimension.scale.min + 1}}</span>
+                                                                    </mat-error>
+                                                                </mat-form-field>
+                                                            </div>
+                                                        </ng-container>
                                                     </ng-container>
                                                 </ng-container>
-
-
                                             </ng-container>
 
                                             <!-- Horizontal style markup -->
@@ -821,18 +676,18 @@
                                     </div>
 
                                     <!-- Dimension justification field markup -->
-                                    <div *ngIf="dimension.justification" [ngClass]="this.settings.modality=='pairwise' && dimension.pairwise ? 'dimension-content-split' : 'dimension-container dimension-justification'">
-                                        <div *ngIf="dimension.justification  && !dimension.pairwise || dimension.justification && !(this.settings.modality=='pairwise')"
-                                             [ngClass]="this.settings.modality=='pairwise' && dimension.pairwise ? 'dimension-split-inside' : 'dimension-content justification'">
+                                    <div *ngIf="dimension.justification" [ngClass]="this.settingsTask.modality=='pairwise' ? 'dimension-content-split' : 'dimension-container dimension-justification'">
+                                        <div *ngIf="dimension.justification && !(this.settingsTask.modality=='pairwise')"
+                                             [ngClass]="this.settingsTask.modality=='pairwise'? 'dimension-split-inside' : 'dimension-content justification'">
                                             <div class="dimension-text-field">
-                                                <mat-form-field appearance="fill">
+                                                <mat-form-field appearance="fill" class="width-100">
                                                     <mat-label>{{dimension.justification.text}}</mat-label>
-                                                    <textarea matInput formControlName="{{dimension.name}}_justification" rows="3"></textarea>
+                                                    <textarea matInput formControlName="{{dimension.name}}_justification" rows="5"></textarea>
                                                     <mat-error *ngIf="checkFormControl(documentsForm[i],(dimension.name).concat('_justification'), 'required')">
                                                         This field is required
                                                     </mat-error>
                                                     <mat-error *ngIf="checkFormControl(documentsForm[i],(dimension.name).concat('_justification'), 'longer')">
-                                                        This justification must have at least {{dimension.justification.minWords}} words.
+                                                        This justification must have at least {{dimension.justification.min_words}} words.
                                                     </mat-error>
                                                     <mat-error *ngIf="checkFormControl(documentsForm[i],(dimension.name).concat('_justification'), 'invalid')">
                                                         You cannot use the selected search engine url as part of the justification.
@@ -844,8 +699,8 @@
                                         <!-- Dimension justification field markup pairwise -->
                                         <!--@AggiunteAbbondo
                                           Dimension justification in modolità partwise-->
-                                        <ng-container *ngIf="dimension.justification && this.settings.modality=='pairwise' && dimension.pairwise">
-                                            <div *ngFor="let test of document.statements; let j=index" [ngClass]="this.settings.modality=='pairwise' && dimension.pairwise ? 'dimension-box' : 'dimension-content justification'">
+                                        <ng-container *ngIf="dimension.justification && this.settingsTask.modality=='pairwise'">
+                                            <div *ngFor="let test of document.statements; let j=index" [ngClass]="{'dimension-box': this.settingsTask.modality=='pairwise'}">
                                                 <p class="spanDocument"> Answer justification  {{changeletter(j)}}</p>
                                                 <div class="dimension-text-field" style="margin-left: 10px;">
                                                     <mat-form-field appearance="fill">
@@ -881,7 +736,7 @@
                                                            (queryEmitter)="storeSearchEngineUserQuery($event, document, dimension)"
                                                            (selectedRowEmitter)="storeSearchEngineSelectedResponse($event, document, dimension)"
                                                            [countdownExpired]="this.countdownsExpired[i]"
-                                                           [countdownBehavior]="this.settings.countdown_behavior"
+                                                           [countdownBehavior]="this.settingsTask.countdown_behavior"
                                         ></app-crowd-xplorer>
 
                                         <!-- Dimension search engine url field markup (hidden) -->
@@ -996,14 +851,14 @@
                         <button mat-flat-button color="primary" matStepperNext
                                 *ngIf="i+1>=this.documentsAmount && this.questionnaireAmountEnd == 0 && !this.annotator"
                                 [disabled]="(!documentsForm[i].valid && documentsForm[i].status != 'DISABLED'  || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted)"
-                                (click)="performLogging('Finish', i); nextStep(); performQualityCheck()">
+                                (click)="performQualityCheck(); performLogging('Finish', i); nextStep();">
                             Finish
                         </button>
 
                         <button mat-flat-button color="primary" matStepperNext
                                 *ngIf="i+1>=this.documentsAmount && this.questionnaireAmountEnd == 0 && this.annotator"
                                 [disabled]="(!documentsForm[i].valid && documentsForm[i].status != 'DISABLED'  || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted || !checkAnnotationConsistency(i))"
-                                (click)="performLogging('Finish', i); nextStep(); performQualityCheck()">
+                                (click)="performQualityCheck(); performLogging('Finish', i); nextStep();">
                             Finish
                         </button>
 
@@ -1017,115 +872,20 @@
 
     <!-- Questionnaire markup -->
     <ng-container *ngFor="let questionnaire of questionnaires; let i=index">
-        <mat-step *ngIf="questionnaire.position=='end'" [stepControl]="questionnairesForm[i]" [editable]="false">
-            <div class="container">
-                <form [formGroup]="questionnairesForm[i]" class="questionnaire-form">
-                    <ng-template matStepLabel>Q{{i + 1}}</ng-template>
-                    <mat-card>
-
-                        <mat-divider [inset]="true"></mat-divider>
-                        <mat-card-title *ngIf="questionnaire.type=='standard'">Please answer the following questions</mat-card-title>
-                        <mat-card-title *ngIf="questionnaire.type=='crt'">Please answer the following question</mat-card-title>
-                        <mat-card-title *ngIf="questionnaire.type=='likert'">Please assess the following claims</mat-card-title>
-                        <mat-divider [inset]="true"></mat-divider>
-
-                        <!-- Standard questionnaire markup -->
-                        <mat-card-content *ngIf="questionnaire.type=='standard'" class="questionnaire-body">
-                            <mat-radio-group *ngFor="let question of questionnaire.questions; let j=index" aria-labelledby="radio-button-label"
-                                             class="radio-button-group question" formControlName="{{question.name}}">
-                                <p class="questionnaire-question">{{question.text}}</p>
-                                <mat-divider [inset]="true"></mat-divider>
-                                <mat-radio-button *ngFor="let answer of question.answers; let k=index" class="radio-button" value="{{k}}">
-                                    {{answer}}</mat-radio-button>
-                                <mat-expansion-panel hideToggle *ngIf="question.detail" class="question-detail" (opened)="question.showDetail = true"
-                                                     (closed)="question.showDetail = false">
-                                    <mat-expansion-panel-header class="mat-button">
-                                        <mat-panel-title>
-                                            {{question.showDetail ? 'Hide details' : 'Show details'}}
-                                        </mat-panel-title>
-                                        <mat-panel-description>
-                                            {{question.detail.text}}
-                                        </mat-panel-description>
-                                    </mat-expansion-panel-header>
-                                    <div class="question-detail-element" *ngFor="let element of question.detail.elements; let m=index">
-                                        {{element.key}}
-                                        <ul>
-                                            <li *ngFor="let item of element.items; let n=index">{{item}}</li>
-                                        </ul>
-                                    </div>
-                                </mat-expansion-panel>
-                            </mat-radio-group>
-                        </mat-card-content>
-
-                        <!-- CRT questionnaire markup -->
-                        <mat-card-content *ngIf="questionnaire.type=='crt'" class="questionnaire-body">
-                            <ng-container *ngFor="let question of questionnaire.questions; let j=index">
-                                <p class="questionnaire-question">{{question.text}}</p>
-                                <mat-divider [inset]="true"></mat-divider>
-                                <mat-form-field appearance="fill">
-                                    <mat-label>Answer</mat-label>
-                                    <input matInput type="number" placeholder="0" min="0" formControlName="{{question.name}}"
-                                           class="questionnaire-value">
-                                    <mat-error *ngIf="checkFormControl(questionnairesForm[i],question.name, 'required')">
-                                        This field is required
-                                    </mat-error>
-                                    <mat-error *ngIf="checkFormControl(questionnairesForm[i],question.name, 'min')">
-                                        Min value allowed: 0
-                                    </mat-error>
-                                    <mat-error *ngIf="checkFormControl(questionnairesForm[i],question.name, 'max')">
-                                        Max value allowed: 100
-                                    </mat-error>
-                                </mat-form-field>
-                            </ng-container>
-                        </mat-card-content>
-
-                        <!-- Likert questionnaire markup -->
-                        <mat-card-content *ngIf="questionnaire.type=='likert'" class="questionnaire-matrix">
-                            <p *ngIf="questionnaire.description">{{questionnaire.description}}</p>
-                            <mat-divider [inset]="true"></mat-divider>
-                            <div class="matrix-header">
-                                <div></div>
-                                <div *ngFor="let mapping of questionnaire.mappings; let k=index">
-                                    <span class="matrix-header-text">{{mapping.label}}</span>
-                                </div>
-                            </div>
-                            <mat-radio-group aria-labelledby="radio-button-label"
-                                             *ngFor="let question of questionnaire.questions; let m=index" formControlName="{{question.name}}">
-                                <div>
-                                    <p>{{m + 1}}) {{question.text}}</p>
-                                </div>
-                                <div *ngFor="let mapping of questionnaire.mappings">
-                                    <mat-radio-button class="radio-button" value="{{mapping.value}}"></mat-radio-button>
-                                </div>
-                            </mat-radio-group>
-                        </mat-card-content>
-
-                        <mat-card-actions>
-                            <p class="form-note">
-                                <button mat-flat-button color="primary" matStepperPrevious
-                                        *ngIf="i>0"
-                                        [disabled]="this.sectionService.taskCompleted"
-                                        (click)="performLogging('Back', i); previousStep()">
-                                    Back
-                                </button>
-                                <button mat-flat-button color="primary" matStepperNext
-                                        *ngIf="i+1 >= this.questionnaireAmountStart + this.documentsAmount && i+1 < (this.questionnaireAmountStart + this.documentsAmount + this.questionnaireAmountEnd) -1"
-                                        [disabled]="!questionnairesForm[i].valid" (click)="performLogging('Next',i) ; nextStep()">
-                                    Next
-                                </button>
-                                <button mat-flat-button color="primary" matStepperNext
-                                        *ngIf="i+1 >= (this.questionnaireAmountStart + this.documentsAmount + this.questionnaireAmountEnd) - 1"
-                                        [disabled]="!questionnairesForm[i].valid"
-                                        (click)="performLogging('Finish', i); nextStep(); performQualityCheck()">
-                                    Finish
-                                </button>
-                                (*) you have to fill each field to proceed
-                            </p>
-                        </mat-card-actions>
-
-                    </mat-card>
-                </form>
-            </div>
+        <mat-step *ngIf="questionnaire.position=='end' || !questionnaire.position" [stepControl]="questionnairesForm[i]" [editable]="false">
+            <ng-template matStepLabel>Q{{i + 1}}</ng-template>
+            <app-questionnaire
+                    id="questionnaire-end-{{i}}"
+                    [step]="i"
+                    [position]=questionnaire.position
+                    [documentsAmount]="this.documentsAmount"
+                    [questionnaire]="questionnaire"
+                    [questionnaireAmount]="this.questionnaireAmount"
+                    [questionnaireAmountStart]="this.questionnaireAmountStart"
+                    [questionnaireAmountEnd]="this.questionnaireAmountEnd"
+                    [questionnaireForm]="questionnairesForm[i]"
+                    (questionnaireFilled)="handleQuestionnaireFilled($event)">
+            </app-questionnaire>
         </mat-step>
     </ng-container>
 

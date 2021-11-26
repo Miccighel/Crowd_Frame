@@ -24,7 +24,7 @@ import {Hit} from "../../models/hit";
 import {Questionnaire} from "../../models/questionnaire";
 import {Dimension, ScaleInterval, ScaleMagnitude} from "../../models/dimension";
 import {Instruction} from "../../models/instructions";
-import {Note} from "../../models/notes";
+import {Note} from "../../models/annotators/notes";
 import {Worker} from "../../models/worker";
 import {Annotator, SettingsTask} from "../../models/settingsTask";
 import {GoldChecker} from "../../../../data/build/skeleton/goldChecker";
@@ -35,14 +35,15 @@ import {doHighlight} from "@funktechno/texthighlighter/lib";
 import {HttpClient, HttpHeaders} from "@angular/common/http";
 /* Material modules */
 import {MatSnackBar} from "@angular/material/snack-bar";
-import {NoteStandard} from "../../models/notes_standard";
-import {NoteLaws} from "../../models/notes_laws";
+import {NoteStandard} from "../../models/annotators/notes_standard";
+import {NoteLaws} from "../../models/annotators/notes_laws";
 import {MatRadioChange} from "@angular/material/radio";
 import {MatCheckboxChange} from "@angular/material/checkbox";
 import {Object} from 'aws-sdk/clients/customerprofiles';
 
 import {SectionService} from "../../services/section.service";
 import {DynamoDBService} from "../../services/dynamoDB.service";
+import {SettingsWorker} from "../../models/settingsWorker";
 
 /* Component HTML Tag definition */
 @Component({
@@ -187,7 +188,8 @@ export class SkeletonComponent implements OnInit {
     modality: string;
 
     /* Settings of the current task */
-    settings: SettingsTask
+    settingsTask: SettingsTask
+    settingsWorker: SettingsWorker
 
     /* Number of allowed tries */
     allowedTries: number;
@@ -236,6 +238,7 @@ export class SkeletonComponent implements OnInit {
 
     /* |--------- QUALITY CHECKS - DECLARATION ---------| */
 
+    qualityChecksOutcome
     /* Array of gold documents within a Hit */
     goldDocuments: Array<Document>;
     /* Array of gold dimensions within a Hit */
@@ -252,13 +255,6 @@ export class SkeletonComponent implements OnInit {
 
     /* Check to understand if the generator or the skeleton should be loader */
     generator: boolean;
-
-    /* |--------- OTHER AMENITIES - DECLARATION ---------| */
-
-    /* Font awesome spinner icon */
-    faSpinner: Object;
-    /* Font awesome infoCircle icon */
-    faInfoCircle: Object;
 
     /* |--------- CONSTRUCTOR IMPLEMENTATION ---------| */
 
@@ -357,27 +353,37 @@ export class SkeletonComponent implements OnInit {
                 /* The performWorkerStatusCheck function checks worker's status and its result is interpreted as a success|error callback */
                 this.performWorkerStatusCheck().then(taskAllowed => {
                     /* But at the end of the day it's just a boolean so we launch a call to Cloudflare to trace the worker and we use such boolean in the second callback */
-                    this.client.get('https://www.cloudflare.com/cdn-cgi/trace', {responseType: 'text'}).subscribe(
-                        /* If we retrieve some data from Cloudflare we use them to populate worker's object */
-                        cloudflareData => {
-                            this.worker = new Worker(this.workerIdentifier, this.S3Service.getWorkerFolder(this.configService.environment, null, this.workerIdentifier), cloudflareData, window.navigator, this.deviceDetectorService.getDeviceInfo())
-                            this.sectionService.taskAllowed = taskAllowed
-                            this.sectionService.checkCompleted = true
-                            this.changeDetector.detectChanges()
-                            /* The loading spinner is stopped */
-                            this.ngxService.stop();
-                        },
-                        /* Otherwise we won't have such information */
-                        error => {
-                            this.worker = new Worker(this.workerIdentifier, this.S3Service.getWorkerFolder(this.configService.environment, null, this.workerIdentifier), null, window.navigator, this.deviceDetectorService.getDeviceInfo())
-                            this.sectionService.taskAllowed = taskAllowed
-                            this.sectionService.checkCompleted = true
+                    if (this.settingsWorker.analysis) {
+                        this.client.get('https://www.cloudflare.com/cdn-cgi/trace', {responseType: 'text'}).subscribe(
+                            /* If we retrieve some data from Cloudflare we use them to populate worker's object */
+                            cloudflareData => {
+                                this.worker = new Worker(this.workerIdentifier, this.S3Service.getWorkerFolder(this.configService.environment, null, this.workerIdentifier), cloudflareData, window.navigator, this.deviceDetectorService.getDeviceInfo())
+                                this.sectionService.taskAllowed = taskAllowed
+                                this.sectionService.checkCompleted = true
+                                this.changeDetector.detectChanges()
+                                /* The loading spinner is stopped */
+                                this.ngxService.stop();
+                            },
+                            /* Otherwise we won't have such information */
+                            error => {
+                                this.worker = new Worker(this.workerIdentifier, this.S3Service.getWorkerFolder(this.configService.environment, null, this.workerIdentifier), null, window.navigator, this.deviceDetectorService.getDeviceInfo())
+                                this.sectionService.taskAllowed = taskAllowed
+                                this.sectionService.checkCompleted = true
 
-                            this.changeDetector.detectChanges()
-                            /* The loading spinner is stopped */
-                            this.ngxService.stop();
-                        }
-                    )
+                                this.changeDetector.detectChanges()
+                                /* The loading spinner is stopped */
+                                this.ngxService.stop();
+                            }
+                        )
+                    } else {
+                        this.worker = new Worker(this.workerIdentifier, this.S3Service.getWorkerFolder(this.configService.environment, null, this.workerIdentifier), null, window.navigator, this.deviceDetectorService.getDeviceInfo())
+                        this.sectionService.taskAllowed = taskAllowed
+                        this.sectionService.checkCompleted = true
+
+                        this.changeDetector.detectChanges()
+                        /* The loading spinner is stopped */
+                        this.ngxService.stop();
+                    }
                 })
                 /* If there is not any worker ID we simply load the task. A sort of testing mode. */
             } else {
@@ -407,13 +413,14 @@ export class SkeletonComponent implements OnInit {
     * This function interacts with an Amazon S3 bucket to retrieve and initialize the settings for the current task.
     */
     public async loadSettings() {
-        this.settings = new SettingsTask(await this.S3Service.downloadTaskSettings(this.configService.environment))
-        this.allowedTries = this.settings.allowed_tries
-        this.timeCheckAmount = this.settings.time_check_amount
-        this.blacklistBatches = this.settings.blacklist_batches
-        this.whitelistBatches = this.settings.whitelist_batches
-        this.annotator = this.settings.annotator
-        this.logger = this.settings.logger
+        this.settingsTask = new SettingsTask(await this.S3Service.downloadTaskSettings(this.configService.environment))
+        this.settingsWorker = new SettingsWorker(await this.S3Service.downloadWorkers(this.configService.environment))
+        this.allowedTries = this.settingsTask.allowed_tries
+        this.timeCheckAmount = this.settingsTask.time_check_amount
+        this.blacklistBatches = this.settingsWorker.blacklist_batches
+        this.whitelistBatches = this.settingsWorker.whitelist_batches
+        this.annotator = this.settingsTask.annotator
+        this.logger = this.settingsTask.logger
     }
 
     /*
@@ -423,113 +430,118 @@ export class SkeletonComponent implements OnInit {
     public async performWorkerStatusCheck() {
 
         let taskAllowed = true
-        let batchesStatus = {}
-        let tablesACL = await this.dynamoDBService.listTables(this.configService.environment)
-        let workersManual = await this.S3Service.downloadWorkers(this.configService.environment)
-        let workersACL = await this.dynamoDBService.getWorker(this.configService.environment, this.workerIdentifier)
 
-        /* To blacklist a previous batch its worker list is picked up */
-        for (let batchName of this.blacklistBatches) {
-            if (!(batchName in batchesStatus)) {
-                let workers = await this.S3Service.downloadWorkers(this.configService.environment, batchName)
-                batchesStatus[batchName] = {}
-                batchesStatus[batchName]['blacklist'] = workers['blacklist']
-                /* Was the past batch a legacy one? */
-                for (let tableName in tablesACL['TableNames']) {
-                    if (batchName == tableName) {
-                        batchesStatus[batchName]['tableName'] = tableName
+        if (this.settingsWorker.block) {
+
+            let batchesStatus = {}
+            let tablesACL = await this.dynamoDBService.listTables(this.configService.environment)
+            let workersManual = await this.S3Service.downloadWorkers(this.configService.environment)
+            let workersACL = await this.dynamoDBService.getWorker(this.configService.environment, this.workerIdentifier)
+
+            /* To blacklist a previous batch its worker list is picked up */
+            for (let batchName of this.blacklistBatches) {
+                if (!(batchName in batchesStatus)) {
+                    let workers = await this.S3Service.downloadWorkers(this.configService.environment, batchName)
+                    batchesStatus[batchName] = {}
+                    batchesStatus[batchName]['blacklist'] = workers['blacklist']
+                    /* Was the past batch a legacy one? */
+                    for (let tableName in tablesACL['TableNames']) {
+                        if (batchName == tableName) {
+                            batchesStatus[batchName]['tableName'] = tableName
+                        }
                     }
                 }
             }
-        }
 
-        /* To whitelist a previous batch its blacklist is picked up */
-        for (let batchName of this.whitelistBatches) {
-            if (!(batchName in batchesStatus)) {
-                let workers = await this.S3Service.downloadWorkers(this.configService.environment, batchName)
-                batchesStatus[batchName] = {}
-                batchesStatus[batchName]['whitelist'] = workers['blacklist']
-                for (let tableName in tablesACL['TableNames']) {
-                    if (batchName == tableName) {
-                        batchesStatus[batchName]['tableName'] = tableName
+            /* To whitelist a previous batch its blacklist is picked up */
+            for (let batchName of this.whitelistBatches) {
+                if (!(batchName in batchesStatus)) {
+                    let workers = await this.S3Service.downloadWorkers(this.configService.environment, batchName)
+                    batchesStatus[batchName] = {}
+                    batchesStatus[batchName]['whitelist'] = workers['blacklist']
+                    for (let tableName in tablesACL['TableNames']) {
+                        if (batchName == tableName) {
+                            batchesStatus[batchName]['tableName'] = tableName
+                        }
                     }
                 }
             }
-        }
 
-        /* The true checking operation starts here */
+            /* The true checking operation starts here */
 
-        /* Check to verify if the current worker was present into a previous legacy or dynamo-db based blacklisted batch */
-        for (let batchName in batchesStatus) {
-            let batchStatus = batchesStatus[batchName]
-            if ('blacklist' in batchStatus) {
-                if ('tableName' in batchStatus) {
-                    let rawWorker = await this.dynamoDBService.getWorker(this.configService.environment, this.workerIdentifier, batchStatus['tableName'])
-                    if ('Items' in rawWorker) {
-                        for (let worker of rawWorker['Items']) {
-                            if (this.workerIdentifier == worker['identifier']) {
+            /* Check to verify if the current worker was present into a previous legacy or dynamo-db based blacklisted batch */
+            for (let batchName in batchesStatus) {
+                let batchStatus = batchesStatus[batchName]
+                if ('blacklist' in batchStatus) {
+                    if ('tableName' in batchStatus) {
+                        let rawWorker = await this.dynamoDBService.getWorker(this.configService.environment, this.workerIdentifier, batchStatus['tableName'])
+                        if ('Items' in rawWorker) {
+                            for (let worker of rawWorker['Items']) {
+                                if (this.workerIdentifier == worker['identifier']) {
+                                    taskAllowed = false
+                                }
+                            }
+                        }
+                    } else {
+                        for (let workerIdentifier of batchStatus['blacklist']) {
+                            if (this.workerIdentifier == workerIdentifier) {
                                 taskAllowed = false
                             }
                         }
                     }
-                } else {
-                    for (let workerIdentifier of batchStatus['blacklist']) {
-                        if (this.workerIdentifier == workerIdentifier) {
-                            taskAllowed = false
-                        }
-                    }
                 }
             }
-        }
 
-        /* Check to verify if the current worker was present into a previous legacy or dynamo-db based whitelisted batch */
-        for (let batchName in batchesStatus) {
-            let batchStatus = batchesStatus[batchName]
-            if ('whitelist' in batchStatus) {
-                if ('tableName' in batchStatus) {
-                    let rawWorker = await this.dynamoDBService.getWorker(this.configService.environment, this.workerIdentifier, batchStatus['tableName'])
-                    if ('Items' in rawWorker) {
-                        for (let worker of rawWorker['Items']) {
-                            if (this.workerIdentifier == worker['identifier']) {
+            /* Check to verify if the current worker was present into a previous legacy or dynamo-db based whitelisted batch */
+            for (let batchName in batchesStatus) {
+                let batchStatus = batchesStatus[batchName]
+                if ('whitelist' in batchStatus) {
+                    if ('tableName' in batchStatus) {
+                        let rawWorker = await this.dynamoDBService.getWorker(this.configService.environment, this.workerIdentifier, batchStatus['tableName'])
+                        if ('Items' in rawWorker) {
+                            for (let worker of rawWorker['Items']) {
+                                if (this.workerIdentifier == worker['identifier']) {
+                                    taskAllowed = true
+                                }
+                            }
+                        }
+                    } else {
+                        for (let workerIdentifier of batchStatus['whitelist']) {
+                            if (this.workerIdentifier == workerIdentifier) {
                                 taskAllowed = true
                             }
                         }
                     }
-                } else {
-                    for (let workerIdentifier of batchStatus['whitelist']) {
-                        if (this.workerIdentifier == workerIdentifier) {
-                            taskAllowed = true
-                        }
+                }
+            }
+
+            /* Check to verify if the current worker already accessed the current task using the dynamo-db based acl */
+            if ('Items' in workersACL) {
+                for (let worker of workersACL['Items']) {
+                    if (this.workerIdentifier == worker['identifier']) {
+                        taskAllowed = false
+                        return taskAllowed
                     }
                 }
             }
-        }
 
-        /* Check to verify if the current worker already accessed the current task using the dynamo-db based acl */
-        if ('Items' in workersACL) {
-            for (let worker of workersACL['Items']) {
-                if (this.workerIdentifier == worker['identifier']) {
+            /* Check to verify if the current worker is manually blacklisted into the current batch */
+            for (let worker of workersManual['blacklist']) {
+                if (this.workerIdentifier == worker) {
                     taskAllowed = false
                     return taskAllowed
                 }
             }
-        }
 
-        /* Check to verify if the current worker is manually blacklisted into the current batch */
-        for (let worker of workersManual['blacklist']) {
-            if (this.workerIdentifier == worker) {
-                taskAllowed = false
-                return taskAllowed
+
+            /* Check to verify if the current worker is manually whitelisted into the current batch using the dynamo-db based acl */
+
+            for (let worker of workersManual['whitelist']) {
+                if (this.workerIdentifier == worker) {
+                    taskAllowed = true
+                }
             }
-        }
 
-
-        /* Check to verify if the current worker is manually whitelisted into the current batch using the dynamo-db based acl */
-
-        for (let worker of workersManual['whitelist']) {
-            if (this.workerIdentifier == worker) {
-                taskAllowed = true
-            }
         }
 
         if (taskAllowed)
@@ -579,7 +591,13 @@ export class SkeletonComponent implements OnInit {
         });
     }
 
-    public async taskSetup(){
+    /*
+    *  This function retrieves the hit identified by the validated token input inserted by the current worker and sets the task up accordingly.
+    *  Such hit is represented by an Hit object. The task is set up by parsing the hit content as an Array of Document objects.
+    *  Therefore, to use a customize the task the Document interface must be adapted to correctly parse each document's field.
+    *  The Document interface can be found at this path: ../../../../data/build/task/document.ts
+    */
+    public async taskSetup() {
 
         /* The token input field is disabled and the task interface can be shown */
         this.tokenInput.disable();
@@ -656,181 +674,160 @@ export class SkeletonComponent implements OnInit {
         /* The dimensions stored on Amazon S3 are retrieved */
         let rawDimensions = await this.S3Service.downloadDimensions(this.configService.environment)
         this.dimensionsAmount = rawDimensions.length;
-
         /* Each dimension is parsed using the Dimension class */
         for (let index = 0; index < this.dimensionsAmount; index++) this.dimensions.push(new Dimension(index, rawDimensions[index]));
+        /**Iniziliazziare il vettore degli statement */
+        this.dimensionValueinsert();
 
         for (let index = 0; index < this.documentsAmount; index++) {
             let controlsConfig = {};
-            this.dimensions = new Array<Dimension>();
 
-            let checkDimension = false
-            /* The dimensions stored on Amazon S3 are retrieved */
-            let rawDimensions = await this.S3Service.downloadDimensions(this.configService.environment)
-            this.dimensionsAmount = rawDimensions.length;
-            /**Iniziliazziare il vettore degli statement */
-            this.dimensionValueinsert();
-            /* Each dimension is parsed using the Dimension class */
-            for (let index = 0; index < this.dimensionsAmount; index++) this.dimensions.push(new Dimension(index, rawDimensions[index]));
+            if (this.settingsTask.modality == 'pairwise') {
+                if (this.documents[index] != undefined) {
+                    if (this.documents[index] != null) controlsConfig[`pairwise_value_selected`] = new FormControl('', [Validators.required]);
+                }
+                for (let index_dimension = 0; index_dimension < this.dimensions.length; index_dimension++) {
+                    let dimension = this.dimensions[index_dimension];
+                    if (dimension.scale) {
 
-            for (let index = 0; index < this.documentsAmount; index++) {
-                let controlsConfig = {};
-                if (this.settings.modality == 'pairwise') {
-                    if (this.documents[index]['pairwise_split']) controlsConfig[`pairwise_value_selected`] = new FormControl('', [Validators.required]);
-                    for (let index_dimension = 0; index_dimension < this.dimensions.length; index_dimension++) {
-                        let dimension = this.dimensions[index_dimension];
-                        if (!dimension.pairwise) {
-                            if (dimension.scale) {
-                                if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.required]);
-                                if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.required]);
-                                if (dimension.scale.type == "magnitude_estimation") {
-                                    if ((<ScaleMagnitude>dimension.scale).lower_bound) {
-                                        controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min), Validators.required]);
-                                    } else {
-                                        controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min + 1), Validators.required]);
-                                    }
-                                }
-                                if (dimension.justification) controlsConfig[`${dimension.name}_justification`] = new FormControl('', [Validators.required, this.validateJustification.bind(this)])
-                                if (dimension.url) controlsConfig[`${dimension.name}_url`] = new FormControl('', [Validators.required, this.validateSearchEngineUrl.bind(this)]);
-                            }
-                        } else if (dimension.scale) {
-
-                            for (let i = 0; i < this.documents[index]['statements'].length; i++) {
-                                if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value_${i}`] = new FormControl('', [Validators.required]);
-                                if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value_${i}`] = new FormControl('', [Validators.required]);
-                                if (dimension.scale.type == "magnitude_estimation") {
-                                    if ((<ScaleMagnitude>dimension.scale).lower_bound) {
-                                        controlsConfig[`${dimension.name}_value_${i}`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min), Validators.required]);
-                                    } else {
-                                        controlsConfig[`${dimension.name}_value_${i}`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min + 1), Validators.required]);
-                                    }
-                                }
-                                if (dimension.justification) controlsConfig[`${dimension.name}_justification_${i}`] = new FormControl('', [Validators.required, this.validateJustification.bind(this)])
-                            }
-                            if (dimension.url) controlsConfig[`${dimension.name}_url`] = new FormControl('', [Validators.required, this.validateSearchEngineUrl.bind(this)]);
-                        }
-                    }
-                } else {
-
-                    for (let index_dimension = 0; index_dimension < this.dimensions.length; index_dimension++) {
-                        let dimension = this.dimensions[index_dimension];
-                        if (dimension.scale) {
-                            if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.required]);
-                            if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value`] = new FormControl(((<ScaleInterval>dimension.scale).min), [Validators.required]);
+                        for (let i = 0; i < this.documents[index]['statements'].length; i++) {
+                            if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value_${i}`] = new FormControl('', [Validators.required]);
+                            if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value_${i}`] = new FormControl('', [Validators.required]);
                             if (dimension.scale.type == "magnitude_estimation") {
                                 if ((<ScaleMagnitude>dimension.scale).lower_bound) {
-                                    controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min), Validators.required]);
+                                    controlsConfig[`${dimension.name}_value_${i}`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min), Validators.required]);
                                 } else {
-                                    controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min + 1), Validators.required]);
+                                    controlsConfig[`${dimension.name}_value_${i}`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min + 1), Validators.required]);
                                 }
                             }
+                            if (dimension.justification) controlsConfig[`${dimension.name}_justification_${i}`] = new FormControl('', [Validators.required, this.validateJustification.bind(this)])
                         }
-                        if (dimension.justification) controlsConfig[`${dimension.name}_justification`] = new FormControl('', [Validators.required, this.validateJustification.bind(this)])
                         if (dimension.url) controlsConfig[`${dimension.name}_url`] = new FormControl('', [Validators.required, this.validateSearchEngineUrl.bind(this)]);
                     }
                 }
-                this.documentsForm[index] = this.formBuilder.group(controlsConfig)
-            }
+            } else {
 
-            this.dimensionsSelectedValues = new Array<object>(this.documentsAmount);
-            for (let index = 0; index < this.dimensionsSelectedValues.length; index++) {
-                this.dimensionsSelectedValues[index] = {};
-                this.dimensionsSelectedValues[index]["data"] = [];
-                this.dimensionsSelectedValues[index]["amount"] = 0;
-            }
-
-
-            /* |--------- SEARCH ENGINE INTEGRATION (see: search_engine.json | https://github.com/Miccighel/CrowdXplorer) ---------| */
-
-            this.searchEngineQueries = new Array<object>(this.documentsAmount);
-            for (let index = 0; index < this.searchEngineQueries.length; index++) {
-                this.searchEngineQueries[index] = {};
-                this.searchEngineQueries[index]["data"] = [];
-                this.searchEngineQueries[index]["amount"] = 0;
-            }
-            this.currentQuery = 0;
-            this.searchEngineRetrievedResponses = new Array<object>(this.documentsAmount);
-            for (let index = 0; index < this.searchEngineRetrievedResponses.length; index++) {
-                this.searchEngineRetrievedResponses[index] = {};
-                this.searchEngineRetrievedResponses[index]["data"] = [];
-                this.searchEngineRetrievedResponses[index]["amount"] = 0;
-            }
-            this.searchEngineSelectedResponses = new Array<object>(this.documentsAmount);
-            for (let index = 0; index < this.searchEngineSelectedResponses.length; index++) {
-                this.searchEngineSelectedResponses[index] = {};
-                this.searchEngineSelectedResponses[index]["data"] = [];
-                this.searchEngineSelectedResponses[index]["amount"] = 0;
-            }
-
-            /* |--------- TASK SETTINGS (see task.json)---------| */
-
-            if (this.annotator) {
-                switch (this.annotator.type) {
-                    case "options":
-                        this.annotationOptions = this.formBuilder.group({
-                            label: new FormControl('')
-                        });
-                        this.notes = new Array<Array<NoteStandard>>(this.documentsAmount);
-                        for (let i = 0; i < this.notes.length; i++) this.notes[i] = [];
-                        break;
-                    case "laws":
-                        this.notes = new Array<Array<NoteLaws>>(this.documentsAmount);
-                        for (let i = 0; i < this.notes.length; i++) this.notes[i] = [];
+                for (let index_dimension = 0; index_dimension < this.dimensions.length; index_dimension++) {
+                    let dimension = this.dimensions[index_dimension];
+                    if (dimension.scale) {
+                        if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.required]);
+                        if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value`] = new FormControl(((<ScaleInterval>dimension.scale).min), [Validators.required]);
+                        if (dimension.scale.type == "magnitude_estimation") {
+                            if ((<ScaleMagnitude>dimension.scale).lower_bound) {
+                                controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min), Validators.required]);
+                            } else {
+                                controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min + 1), Validators.required]);
+                            }
+                        }
+                    }
+                    if (dimension.justification) controlsConfig[`${dimension.name}_justification`] = new FormControl('', [Validators.required, this.validateJustification.bind(this)])
+                    if (dimension.url) controlsConfig[`${dimension.name}_url`] = new FormControl('', [Validators.required, this.validateSearchEngineUrl.bind(this)]);
                 }
             }
-
-            this.annotationButtonsDisabled = new Array<boolean>();
-            for (let index = 0; index < this.documentsAmount; index++) {
-                this.annotationButtonsDisabled.push(true)
-            }
-
-            this.notesDone = [false, false, false, false, false]
-
-            /* |--------- COUNTDOWN ---------| */
-
-            this.countdownsExpired = new Array<boolean>(this.documentsAmount);
-            for (let index = 0; index < this.documentsAmount; index++) this.countdownsExpired[index] = false;
-
-            this.documentsCountdownTime = new Array<number>(this.documentsAmount);
-            for (let index = 0; index < this.documents.length; index++) {
-                let position = this.settings.countdown_modality == 'position' ? this.documents[index]['index'] : null;
-                let attribute = this.settings.countdown_modality == 'attribute' ? this.documents[index][this.settings.countdown_attribute] : null;
-                this.documentsCountdownTime[index] = this.updateCountdownTime(position, attribute)
-            }
-
-            this.hideAttributes = false
-
-            /* |--------- QUALITY CHECKS ---------| */
-
-            this.goldDocuments = new Array<Document>();
-
-            /* Indexes of the gold elements are retrieved */
-            for (let index = 0; index < this.documentsAmount; index++) {
-                if (this.documents[index].id.includes('GOLD')) {
-                    this.goldDocuments.push(this.documents[index])
-                }
-            }
-
-            this.goldDimensions = new Array<Dimension>();
-
-            /* Indexes of the gold dimensions are retrieved */
-            for (let index = 0; index < this.dimensionsAmount; index++) {
-                if (this.dimensions[index].gold) {
-                    this.goldDimensions.push(this.dimensions[index])
-                }
-            }
-
-            /* Arrays of start, end and elapsed timestamps are initialized to track how much time the worker spends
-                * on each document, including each questionnaire */
-            this.timestampsStart = new Array<Array<number>>(this.documentsAmount + this.questionnaireAmount);
-            this.timestampsEnd = new Array<Array<number>>(this.documentsAmount + this.questionnaireAmount);
-            this.timestampsElapsed = new Array<number>(this.documentsAmount + this.questionnaireAmount);
-            for (let i = 0; i < this.timestampsStart.length; i++) this.timestampsStart[i] = [];
-            for (let i = 0; i < this.timestampsEnd.length; i++) this.timestampsEnd[i] = [];
-            /* The task is now started and the worker is looking at the first questionnaire, so the first start timestamp is saved */
-            this.timestampsStart[0].push(Math.round(Date.now() / 1000));
-
+            this.documentsForm[index] = this.formBuilder.group(controlsConfig)
         }
+
+        this.dimensionsSelectedValues = new Array<object>(this.documentsAmount);
+        for (let index = 0; index < this.dimensionsSelectedValues.length; index++) {
+            this.dimensionsSelectedValues[index] = {};
+            this.dimensionsSelectedValues[index]["data"] = [];
+            this.dimensionsSelectedValues[index]["amount"] = 0;
+        }
+
+        /* |--------- SEARCH ENGINE INTEGRATION (see: search_engine.json | https://github.com/Miccighel/CrowdXplorer) ---------| */
+
+        this.searchEngineQueries = new Array<object>(this.documentsAmount);
+        for (let index = 0; index < this.searchEngineQueries.length; index++) {
+            this.searchEngineQueries[index] = {};
+            this.searchEngineQueries[index]["data"] = [];
+            this.searchEngineQueries[index]["amount"] = 0;
+        }
+        this.currentQuery = 0;
+        this.searchEngineRetrievedResponses = new Array<object>(this.documentsAmount);
+        for (let index = 0; index < this.searchEngineRetrievedResponses.length; index++) {
+            this.searchEngineRetrievedResponses[index] = {};
+            this.searchEngineRetrievedResponses[index]["data"] = [];
+            this.searchEngineRetrievedResponses[index]["amount"] = 0;
+        }
+        this.searchEngineSelectedResponses = new Array<object>(this.documentsAmount);
+        for (let index = 0; index < this.searchEngineSelectedResponses.length; index++) {
+            this.searchEngineSelectedResponses[index] = {};
+            this.searchEngineSelectedResponses[index]["data"] = [];
+            this.searchEngineSelectedResponses[index]["amount"] = 0;
+        }
+
+        /* |--------- TASK SETTINGS (see task.json)---------| */
+
+        if (this.annotator) {
+            switch (this.annotator.type) {
+                case "options":
+                    this.annotationOptions = this.formBuilder.group({
+                        label: new FormControl('')
+                    });
+                    this.notes = new Array<Array<NoteStandard>>(this.documentsAmount);
+                    for (let i = 0; i < this.notes.length; i++) this.notes[i] = [];
+                    break;
+                case "laws":
+                    this.notes = new Array<Array<NoteLaws>>(this.documentsAmount);
+                    for (let i = 0; i < this.notes.length; i++) this.notes[i] = [];
+            }
+        }
+
+        this.annotationButtonsDisabled = new Array<boolean>();
+        for (let index = 0; index < this.documentsAmount; index++) {
+            this.annotationButtonsDisabled.push(true)
+        }
+
+        this.notesDone = [false, false, false, false, false]
+
+        /* |--------- COUNTDOWN ---------| */
+
+        this.countdownsExpired = new Array<boolean>(this.documentsAmount);
+        for (let index = 0; index < this.documentsAmount; index++) this.countdownsExpired[index] = false;
+
+        this.documentsCountdownTime = new Array<number>(this.documentsAmount);
+        for (let index = 0; index < this.documents.length; index++) {
+            let position = this.settingsTask.countdown_modality == 'position' ? this.documents[index]['index'] : null;
+            let attribute = this.settingsTask.countdown_modality == 'attribute' ? this.documents[index][this.settingsTask.countdown_attribute] : null;
+            this.documentsCountdownTime[index] = this.updateCountdownTime(position, attribute)
+        }
+
+        this.hideAttributes = false
+
+        /* |--------- QUALITY CHECKS ---------| */
+
+        this.goldDocuments = new Array<Document>();
+
+        /* Indexes of the gold elements are retrieved */
+        for (let index = 0; index < this.documentsAmount; index++) {
+            if (this.documents[index].id.includes('GOLD')) {
+                this.goldDocuments.push(this.documents[index])
+            }
+        }
+
+        this.goldDimensions = new Array<Dimension>();
+
+        /* Indexes of the gold dimensions are retrieved */
+        for (let index = 0; index < this.dimensionsAmount; index++) {
+            if (this.dimensions[index].gold) {
+                this.goldDimensions.push(this.dimensions[index])
+            }
+        }
+
+        /* The array of accesses counter is initialized */
+        this.elementsAccesses = new Array<number>(this.documentsAmount + this.questionnaireAmount);
+        for (let index = 0; index < this.elementsAccesses.length; index++) this.elementsAccesses[index] = 0;
+
+        /* Arrays of start, end and elapsed timestamps are initialized to track how much time the worker spends
+            * on each document, including each questionnaire */
+        this.timestampsStart = new Array<Array<number>>(this.documentsAmount + this.questionnaireAmount);
+        this.timestampsEnd = new Array<Array<number>>(this.documentsAmount + this.questionnaireAmount);
+        this.timestampsElapsed = new Array<number>(this.documentsAmount + this.questionnaireAmount);
+        for (let i = 0; i < this.timestampsStart.length; i++) this.timestampsStart[i] = [];
+        for (let i = 0; i < this.timestampsEnd.length; i++) this.timestampsEnd[i] = [];
+        /* The task is now started and the worker is looking at the first questionnaire, so the first start timestamp is saved */
+        this.timestampsStart[0].push(Math.round(Date.now() / 1000));
+
 
         /* |--------- FINALIZATION ---------| */
 
@@ -841,22 +838,16 @@ export class SkeletonComponent implements OnInit {
         this.changeDetector.detectChanges();
 
         /* If there are no questionnaires and the countdown time is set, enable the first countdown */
-        if (this.settings.countdown_time >= 0 && this.questionnaireAmountStart == 0) {
+        if (this.settingsTask.countdown_time >= 0 && this.questionnaireAmountStart == 0) {
             this.countdown.toArray()[0].begin();
             this.changeDetector.detectChanges();
         }
 
         /* The loading spinner is stopped */
         this.ngxService.stop();
+
     }
 
-
-    /*
-    *  This function retrieves the hit identified by the validated token input inserted by the current worker and sets the task up accordingly.
-    *  Such hit is represented by an Hit object. The task is set up by parsing the hit content as an Array of Document objects.
-    *  Therefore, to use a customize the task the Document interface must be adapted to correctly parse each document's field.
-    *  The Document interface can be found at this path: ../../../../data/build/task/document.ts
-    */
     public async performTaskSetup() {
         /* The token input has been already validated, this is just to be sure */
         if (this.tokenForm.valid) {
@@ -952,6 +943,7 @@ export class SkeletonComponent implements OnInit {
             /* The new query is pushed into current document data array along with a document_index used to identify such query*/
             let selectedValues = Object.values(this.dimensionsSelectedValues[currentDocument]['data']);
             selectedValues.push({
+                "document": currentDocument,
                 "dimension": currentDimension,
                 "index": selectedValues.length,
                 "timestamp": timeInSeconds,
@@ -966,6 +958,7 @@ export class SkeletonComponent implements OnInit {
             this.dimensionsSelectedValues[currentDocument] = {};
             /* A new data array for the current document is created and the fist selected value is pushed */
             this.dimensionsSelectedValues[currentDocument]['data'] = [{
+                "document": currentDocument,
                 "dimension": currentDimension,
                 "index": 0,
                 "timestamp": timeInSeconds,
@@ -1035,6 +1028,7 @@ export class SkeletonComponent implements OnInit {
             /* The new query is pushed into current document data array along with a document_index used to identify such query*/
             let storedQueries = Object.values(this.searchEngineQueries[document.index]['data']);
             storedQueries.push({
+                "document": document.index,
                 "dimension": dimension.index,
                 "index": storedQueries.length,
                 "timestamp": timeInSeconds,
@@ -1050,6 +1044,7 @@ export class SkeletonComponent implements OnInit {
             this.searchEngineQueries[document.index] = {};
             /* A new data array for the current document is created and the fist query is pushed */
             this.searchEngineQueries[document.index]['data'] = [{
+                "document": document.index,
                 "dimension": dimension.index,
                 "index": 0,
                 "timestamp": timeInSeconds,
@@ -1076,6 +1071,7 @@ export class SkeletonComponent implements OnInit {
             /* The new response is pushed into current document data array along with its query document_index */
             let storedResponses = Object.values(this.searchEngineRetrievedResponses[document.index]['data']);
             storedResponses.push({
+                "document": document.index,
                 "dimension": dimension.index,
                 "query": this.searchEngineQueries[document.index]['amount'] - 1,
                 "index": storedResponses.length,
@@ -1093,6 +1089,7 @@ export class SkeletonComponent implements OnInit {
             this.searchEngineRetrievedResponses[document.index] = {};
             /* A new data array for the current document is created and the fist response is pushed */
             this.searchEngineRetrievedResponses[document.index]['data'] = [{
+                "document": document.index,
                 "dimension": dimension.index,
                 "query": this.searchEngineQueries[document.index]['amount'] - 1,
                 "index": 0,
@@ -1123,6 +1120,7 @@ export class SkeletonComponent implements OnInit {
             /* The new response is pushed into current document data array along with its query document_index */
             let storedResponses = Object.values(this.searchEngineSelectedResponses[document.index]['data']);
             storedResponses.push({
+                "document": document.index,
                 "dimension": dimension.index,
                 "query": this.searchEngineQueries[document.index]['amount'] - 1,
                 "index": storedResponses.length,
@@ -1138,6 +1136,7 @@ export class SkeletonComponent implements OnInit {
             this.searchEngineSelectedResponses[document.index] = {};
             /* A new data array for the current document is created and the fist response is pushed */
             this.searchEngineSelectedResponses[document.index]['data'] = [{
+                "document": document.index,
                 "dimension": dimension.index,
                 "query": this.searchEngineQueries[document.index]['amount'] - 1,
                 "index": 0,
@@ -1201,17 +1200,17 @@ export class SkeletonComponent implements OnInit {
     public handleCountdown(event, i) {
         if (event.left == 0) {
             this.countdownsExpired[i] = true
-            if (this.settings.countdown_behavior == 'disable_form')
+            if (this.settingsTask.countdown_behavior == 'disable_form')
                 this.documentsForm[i].disable()
         }
     }
 
     public updateCountdownTime(position: number = null, attribute: string = null) {
 
-        let finalTime = this.settings.countdown_time
+        let finalTime = this.settingsTask.countdown_time
 
         if (position) {
-            for (let positionData of this.settings.countdown_position_values) {
+            for (let positionData of this.settingsTask.countdown_position_values) {
                 if (positionData['position'] == position) {
                     finalTime = finalTime + positionData['time']
                 }
@@ -1219,7 +1218,7 @@ export class SkeletonComponent implements OnInit {
         }
 
         if (attribute) {
-            for (let attributeData of this.settings.countdown_attribute_values) {
+            for (let attributeData of this.settingsTask.countdown_attribute_values) {
                 if (attributeData['name'] == attribute)
                     finalTime = finalTime + attributeData['time']
             }
@@ -1334,7 +1333,7 @@ export class SkeletonComponent implements OnInit {
      */
     public checkAnnotationConsistency(documentIndex: number) {
         let requiredAttributes = []
-        for (let attribute of this.settings.attributes) {
+        for (let attribute of this.settingsTask.attributes) {
             if (attribute.required) {
                 requiredAttributes.push(attribute.index)
             }
@@ -1934,7 +1933,7 @@ export class SkeletonComponent implements OnInit {
      *                           <timeCheckAmount> seconds, using the <timestampsElapsed> array
      * If each check is successful, the task can end. If the worker has some tries left, the task is reset.
      */
-    public async performQualityCheck() {
+    public performQualityCheck() {
 
         /* The loading spinner is started */
         this.ngxService.start();
@@ -1992,6 +1991,23 @@ export class SkeletonComponent implements OnInit {
 
         /* If each check is true, the task is successful, otherwise the task is failed (but not over if there are more tries) */
 
+        let data = {}
+        let actionInfo = {
+            try: this.currentTry,
+            sequence: this.sequenceNumber,
+            element: "checks"
+        };
+        let qualityCheckData = {
+            globalFormValidity: globalValidityCheck,
+            timeSpentCheck: timeSpentCheck,
+            timeCheckAmount: timeCheckAmount,
+            goldChecks: goldChecks,
+            goldConfiguration: goldConfiguration
+        };
+        data["info"] = actionInfo
+        data["checks"] = qualityCheckData
+        this.qualityChecksOutcome = data
+
         if (checker(computedChecks)) {
             this.sectionService.taskSuccessful = true;
             this.sectionService.taskFailed = false;
@@ -1999,35 +2015,6 @@ export class SkeletonComponent implements OnInit {
         } else {
             this.sectionService.taskSuccessful = false;
             this.sectionService.taskFailed = true;
-
-        }
-
-        if (!(this.worker.identifier === null)) {
-            /* The result of quality check control  for the current try is uploaded to the Amazon S3 bucket along with the gold configuration. */
-            let data = {}
-            let actionInfo = {
-                try: this.currentTry,
-                sequence: this.sequenceNumber,
-                element: "checks"
-            };
-            let qualityCheckData = {
-                globalFormValidity: globalValidityCheck,
-                timeSpentCheck: timeSpentCheck,
-                timeCheckAmount: timeCheckAmount,
-                goldChecks: goldChecks,
-                goldConfiguration: goldConfiguration
-            };
-            data["info"] = actionInfo
-            data["checks"] = qualityCheckData
-            await this.dynamoDBService.insertData(this.configService.environment, this.workerIdentifier, this.unitId, this.currentTry, this.sequenceNumber, data)
-            let uploadStatus = await this.S3Service.uploadQualityCheck(
-                this.configService.environment,
-                this.worker,
-                this.unitId,
-                qualityCheckData,
-                this.currentTry
-            )
-            this.sequenceNumber = this.sequenceNumber + 1
         }
 
         /* Detect changes within the DOM and stop the spinner */
@@ -2067,7 +2054,7 @@ export class SkeletonComponent implements OnInit {
         this.currentTry = this.currentTry + 1;
 
         /* The countdowns are set back to 0 */
-        if (this.settings.countdown_time >= 0) {
+        if (this.settingsTask.countdown_time >= 0) {
             if (this.countdown.toArray()[0].left > 0) {
                 this.countdown.toArray()[0].resume();
             }
@@ -2080,6 +2067,22 @@ export class SkeletonComponent implements OnInit {
 
     // |--------- AMAZON AWS INTEGRATION - FUNCTIONS ---------|
 
+    public handleQuestionnaireFilled(data) {
+        this.questionnairesForm[data['step']] = data['questionnaireForm']
+        this.performQualityCheck()
+        this.performLogging(data['action'], data['step'])
+        if (data['action'] == 'Next') {
+            this.nextStep()
+        } else {
+            if (data['action'] == 'Back') {
+                this.previousStep()
+            } else {
+                this.nextStep()
+            }
+        }
+
+    }
+
     /*
      * This function interacts with an Amazon S3 bucket to store each data produced within the task.
      * A folder on the bucket is created for each worker identifier and such folders contain .json files.
@@ -2090,7 +2093,7 @@ export class SkeletonComponent implements OnInit {
 
         /* The countdowns are stopped and resumed to the left or to the right of the current document,
         *  depending on the chosen action ("Back" or "Next") */
-        if ((this.stepper.selectedIndex >= this.questionnaireAmountStart && this.stepper.selectedIndex < this.questionnaireAmountStart + this.documentsAmount) && this.settings.countdown_time >= 0) {
+        if ((this.stepper.selectedIndex >= this.questionnaireAmountStart && this.stepper.selectedIndex < this.questionnaireAmountStart + this.documentsAmount) && this.settingsTask.countdown_time >= 0) {
             let currentIndex = this.stepper.selectedIndex - this.questionnaireAmountStart;
             switch (action) {
                 case "Next":
@@ -2316,7 +2319,7 @@ export class SkeletonComponent implements OnInit {
                 /* Worker's answers for the current document */
                 let answers = this.documentsForm[completedDocument].value;
                 data["answers"] = answers
-                let notes = (this.settings.annotator) ? this.notes[completedDocument] : []
+                let notes = (this.settingsTask.annotator) ? this.notes[completedDocument] : []
                 data["notes"] = notes
                 /* Worker's dimensions selected values for the current document */
                 let dimensionsSelectedValues = this.dimensionsSelectedValues[completedDocument];
@@ -2332,11 +2335,11 @@ export class SkeletonComponent implements OnInit {
                 let timestampsElapsed = this.timestampsElapsed[completedElement];
                 data["timestamps_elapsed"] = timestampsElapsed
                 /* Countdown time and corresponding flag */
-                let countdownTimeStart = (this.settings.countdown_time >= 0) ? this.documentsCountdownTime[completedDocument] : []
+                let countdownTimeStart = (this.settingsTask.countdown_time >= 0) ? this.documentsCountdownTime[completedDocument] : []
                 data["countdowns_times_start"] = countdownTimeStart
-                let countdownTime = (this.settings.countdown_time >= 0) ? Number(this.countdown.toArray()[completedDocument]["i"]["text"]) : []
+                let countdownTime = (this.settingsTask.countdown_time >= 0) ? Number(this.countdown.toArray()[completedDocument]["i"]["text"]) : []
                 data["countdowns_times_left"] = countdownTime
-                let countdown_expired = (this.settings.countdown_time >= 0) ? this.countdownsExpired[completedDocument] : []
+                let countdown_expired = (this.settingsTask.countdown_time >= 0) ? this.countdownsExpired[completedDocument] : []
                 data["countdowns_expired"] = countdown_expired
                 /* Number of accesses to the current document (currentDocument.e., how many times the worker reached the document with a "Back" or "Next" action */
                 let accesses = accessesAmount + 1
@@ -2354,7 +2357,7 @@ export class SkeletonComponent implements OnInit {
                 /* The amount of accesses to the current document is incremented */
                 this.elementsAccesses[completedElement] = accessesAmount + 1;
                 this.sequenceNumber = this.sequenceNumber + 1
-
+                /* If the worker has completed the last element the sequence number must be incremented again */
             }
 
             /* If the worker has completed the last element */
@@ -2376,7 +2379,7 @@ export class SkeletonComponent implements OnInit {
                 answers = [];
                 for (let index = 0; index < this.documentsForm.length; index++) answers.push(this.documentsForm[index].value);
                 data["documents_answers"] = answers
-                let notes = (this.settings.annotator) ? this.notes : []
+                let notes = (this.settingsTask.annotator) ? this.notes : []
                 data["notes"] = notes
                 /* Worker's dimensions selected values for the current document */
                 data["dimensions_selected"] = this.dimensionsSelectedValues
@@ -2388,9 +2391,9 @@ export class SkeletonComponent implements OnInit {
                 let countdownTimes = [];
                 let countdownTimesStart = [];
                 let countdownExpired = [];
-                if (this.settings.countdown_time >= 0)
+                if (this.settingsTask.countdown_time >= 0)
                     for (let countdown of this.countdown) countdownTimes.push(countdown["i"]);
-                if (this.settings.countdown_time >= 0)
+                if (this.settingsTask.countdown_time >= 0)
                     for (let countdown of this.documentsCountdownTime) countdownTimesStart.push(countdown);
                 for (let index = 0; index < this.countdownsExpired.length; index++) countdownExpired.push(this.countdownsExpired[index]);
                 data["countdowns_times_start"] = countdownTimesStart
@@ -2406,9 +2409,18 @@ export class SkeletonComponent implements OnInit {
                 data["responses_selected"] = this.searchEngineSelectedResponses
                 /* If the last element is a document */
 
+                this.qualityChecksOutcome["info"]["sequence"] = this.sequenceNumber
+                await this.dynamoDBService.insertData(this.configService.environment, this.workerIdentifier, this.unitId, this.currentTry, this.sequenceNumber, this.qualityChecksOutcome)
+                await this.S3Service.uploadQualityCheck(
+                    this.configService.environment,
+                    this.worker,
+                    this.unitId,
+                    this.qualityChecksOutcome,
+                    this.currentTry
+                )
+                this.sequenceNumber = this.sequenceNumber + 1
                 let uploadStatus = await this.S3Service.uploadFinalData(this.configService.environment, this.worker, this.unitId, data, this.currentTry)
                 await this.dynamoDBService.insertData(this.configService.environment, this.workerIdentifier, this.unitId, this.currentTry, this.sequenceNumber, data)
-
                 this.sequenceNumber = this.sequenceNumber + 1
 
             }
@@ -2505,7 +2517,6 @@ export class SkeletonComponent implements OnInit {
     /*
     //@AggiunteAbbondo
       Funziona che cambia il colore del div dello statemente
-
       this.checkedValue[documentnumber][0][0]=true mette al true la prima dimension cosi da venire visuallizata
     */
     public changeColor(valueData: Object, documentnumber: number) {
