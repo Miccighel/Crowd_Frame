@@ -25,7 +25,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular-devkit/build-angular@npm:^13.0.3":
+"@angular-devkit/build-angular@npm:^13.0.4":
   version: 13.0.4
   resolution: "@angular-devkit/build-angular@npm:13.0.4"
   dependencies:
@@ -168,7 +168,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/animations@npm:~13.0.2":
+"@angular/animations@npm:~13.0.3":
   version: 13.0.3
   resolution: "@angular/animations@npm:13.0.3"
   dependencies:
@@ -179,7 +179,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/cdk@npm:~13.0.2":
+"@angular/cdk@npm:~13.0.3":
   version: 13.0.3
   resolution: "@angular/cdk@npm:13.0.3"
   dependencies:
@@ -196,7 +196,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/cli@npm:^13.0.3":
+"@angular/cli@npm:^13.0.4":
   version: 13.0.4
   resolution: "@angular/cli@npm:13.0.4"
   dependencies:
@@ -225,7 +225,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/common@npm:~13.0.2":
+"@angular/common@npm:~13.0.3":
   version: 13.0.3
   resolution: "@angular/common@npm:13.0.3"
   dependencies:
@@ -237,7 +237,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/compiler-cli@npm:~13.0.2":
+"@angular/compiler-cli@npm:~13.0.3":
   version: 13.0.3
   resolution: "@angular/compiler-cli@npm:13.0.3"
   dependencies:
@@ -263,7 +263,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/compiler@npm:~13.0.2":
+"@angular/compiler@npm:~13.0.3":
   version: 13.0.3
   resolution: "@angular/compiler@npm:13.0.3"
   dependencies:
@@ -284,7 +284,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/elements@npm:^13.0.2":
+"@angular/elements@npm:^13.0.3":
   version: 13.0.3
   resolution: "@angular/elements@npm:13.0.3"
   dependencies:
@@ -296,7 +296,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/forms@npm:~13.0.2":
+"@angular/forms@npm:~13.0.3":
   version: 13.0.3
   resolution: "@angular/forms@npm:13.0.3"
   dependencies:
@@ -310,7 +310,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/material@npm:^13.0.2":
+"@angular/material@npm:^13.0.3":
   version: 13.0.3
   resolution: "@angular/material@npm:13.0.3"
   dependencies:
@@ -326,7 +326,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/platform-browser-dynamic@npm:~13.0.2":
+"@angular/platform-browser-dynamic@npm:~13.0.3":
   version: 13.0.3
   resolution: "@angular/platform-browser-dynamic@npm:13.0.3"
   dependencies:
@@ -340,7 +340,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/platform-browser@npm:~13.0.2":
+"@angular/platform-browser@npm:~13.0.3":
   version: 13.0.3
   resolution: "@angular/platform-browser@npm:13.0.3"
   dependencies:
@@ -356,7 +356,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/router@npm:~13.0.2":
+"@angular/router@npm:~13.0.3":
   version: 13.0.3
   resolution: "@angular/router@npm:13.0.3"
   dependencies:
@@ -1927,7 +1927,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:~16.11.7":
+"@types/node@npm:*, @types/node@npm:~16.11.11":
   version: 16.11.11
   resolution: "@types/node@npm:16.11.11"
   checksum: 1c472bd63f23ca0e4effc96e6e0c693b83b027f613a1f41b6d1bd7791f65ce171a351e0a5c92575cb59e84ad0a930875397bfbbb91a7c925ddbbb558f7461af8
@@ -3131,23 +3131,23 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "crowd-frame@workspace:."
   dependencies:
-    "@angular-devkit/build-angular": ^13.0.3
-    "@angular/animations": ~13.0.2
-    "@angular/cdk": ~13.0.2
-    "@angular/cli": ^13.0.3
-    "@angular/common": ~13.0.2
-    "@angular/compiler": ~13.0.2
-    "@angular/compiler-cli": ~13.0.2
+    "@angular-devkit/build-angular": ^13.0.4
+    "@angular/animations": ~13.0.3
+    "@angular/cdk": ~13.0.3
+    "@angular/cli": ^13.0.4
+    "@angular/common": ~13.0.3
+    "@angular/compiler": ~13.0.3
+    "@angular/compiler-cli": ~13.0.3
     "@angular/core": 13.0.3
-    "@angular/elements": ^13.0.2
-    "@angular/forms": ~13.0.2
-    "@angular/material": ^13.0.2
-    "@angular/platform-browser": ~13.0.2
-    "@angular/platform-browser-dynamic": ~13.0.2
-    "@angular/router": ~13.0.2
+    "@angular/elements": ^13.0.3
+    "@angular/forms": ~13.0.3
+    "@angular/material": ^13.0.3
+    "@angular/platform-browser": ~13.0.3
+    "@angular/platform-browser-dynamic": ~13.0.3
+    "@angular/router": ~13.0.3
     "@funktechno/texthighlighter": ^2.1.2
     "@kolkov/angular-editor": ^1.2.0
-    "@types/node": ~16.11.7
+    "@types/node": ~16.11.11
     aws-sdk: ^2.1041.0
     crypto-es: ^1.2.7
     ngx-color-picker: ^11.0.0
