@@ -35,6 +35,7 @@ interface AnnotatorType {
     templateUrl: './dimensions-step.component.html',
     styleUrls: ['../../generator.component.scss']
 })
+
 export class DimensionsStepComponent implements OnInit {
 
     configService: ConfigService;

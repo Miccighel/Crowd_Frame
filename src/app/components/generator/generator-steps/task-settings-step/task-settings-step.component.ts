@@ -155,9 +155,9 @@ export class TaskSettingsStepComponent implements OnInit {
             countdown_attribute_values: this._formBuilder.array([]),
             countdown_position_values: this._formBuilder.array([]),
             messages: this._formBuilder.array([]),
-            logger: !!this.dataStored.logger,
-            logOption: this.dataStored.logOption,
-            serverEndpoint: this.dataStored.serverEndpoint
+            logger: !!this.dataStored.log_enable,
+            logOption: this.dataStored.log_option,
+            serverEndpoint: this.dataStored.log_server_endpoint
         });
         if (this.dataStored.messages) if (this.dataStored.messages.length > 0) this.dataStored.messages.forEach((message, messageIndex) => this.addMessage(message))
         if (this.dataStored.annotator) if (this.dataStored.annotator.type == "options") this.dataStored.annotator.values.forEach((optionValue, optionValueIndex) => this.addOptionValue(optionValue))

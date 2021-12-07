@@ -39,7 +39,7 @@ import {NoteLaws} from "../../models/annotators/notes_laws";
 import {MatRadioChange} from "@angular/material/radio";
 import {MatCheckboxChange} from "@angular/material/checkbox";
 import {Object} from 'aws-sdk/clients/customerprofiles';
-
+/* Services */
 import {SectionService} from "../../services/section.service";
 import {DynamoDBService} from "../../services/dynamoDB.service";
 import {SettingsWorker} from "../../models/settingsWorker";
@@ -363,7 +363,6 @@ export class SkeletonComponent implements OnInit {
                                 this.worker = new Worker(this.workerIdentifier, this.S3Service.getWorkerFolder(this.configService.environment, null, this.workerIdentifier), null, window.navigator, this.deviceDetectorService.getDeviceInfo())
                                 this.sectionService.taskAllowed = taskAllowed
                                 this.sectionService.checkCompleted = true
-
                                 this.changeDetector.detectChanges()
                                 /* The loading spinner is stopped */
                                 this.ngxService.stop();
@@ -373,7 +372,6 @@ export class SkeletonComponent implements OnInit {
                         this.worker = new Worker(this.workerIdentifier, this.S3Service.getWorkerFolder(this.configService.environment, null, this.workerIdentifier), null, window.navigator, this.deviceDetectorService.getDeviceInfo())
                         this.sectionService.taskAllowed = taskAllowed
                         this.sectionService.checkCompleted = true
-
                         this.changeDetector.detectChanges()
                         /* The loading spinner is stopped */
                         this.ngxService.stop();
@@ -414,7 +412,7 @@ export class SkeletonComponent implements OnInit {
         this.blacklistBatches = this.settingsWorker.blacklist_batches
         this.whitelistBatches = this.settingsWorker.whitelist_batches
         this.annotator = this.settingsTask.annotator
-        this.logger = this.settingsTask.logger
+        this.logger = this.settingsTask.log_enable
     }
 
     /*
@@ -637,10 +635,14 @@ export class SkeletonComponent implements OnInit {
             for (let index = 0; index < this.questionnaires.length; index++) {
                 let questionnaire = this.questionnaires[index];
                 if (questionnaire.type == "standard" || questionnaire.type == "likert") {
-                    /* If the questionnaire is a standard one it means that it has only questions where answers must be selected
-                     * within a group of radio buttons; only a required validator is required to check answer presence */
                     let controlsConfig = {};
-                    for (let index_question = 0; index_question < questionnaire.questions.length; index_question++) controlsConfig[`${this.questionnaires[index].questions[index_question].name}`] = new FormControl('', [Validators.required])
+                    for (let index_question = 0; index_question < questionnaire.questions.length; index_question++) {
+                        let currentQuestion = this.questionnaires[index].questions[index_question]
+                        controlsConfig[`${currentQuestion.name}_answer`] = new FormControl('', [Validators.required])
+                        if (currentQuestion.free_text) {
+                            controlsConfig[`${currentQuestion.name}_free_text`] = new FormControl('', [Validators.required])
+                        }
+                    }
                     this.questionnairesForm[index] = this.formBuilder.group(controlsConfig)
                 } else {
                     /* If the questionnaire is a CRT one it means that it has only one question where the answer must be a number between 0 and 100 chosen by user; required, max and min validators are needed */
@@ -2574,4 +2576,3 @@ export class SkeletonComponent implements OnInit {
     }
 }
 
-  

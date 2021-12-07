@@ -1,5 +1,5 @@
 <div class="container">
-    <form [formGroup]="questionnaireForm" class="questionnaire-form">
+    <form [formGroup]="questionnaireForm">
         <mat-card>
 
             <mat-divider [inset]="true"></mat-divider>
@@ -9,41 +9,19 @@
             <mat-divider [inset]="true"></mat-divider>
 
             <!-- Standard questionnaire markup -->
-            <mat-card-content *ngIf="questionnaire.type=='standard'" class="questionnaire-body">
-                <mat-radio-group *ngFor="let question of questionnaire.questions; let j=index" aria-labelledby="radio-button-label"
-                                 class="radio-button-group question" formControlName="{{question.name}}">
-                    <p class="questionnaire-question">{{question.text}}</p>
-                    <mat-divider [inset]="true"></mat-divider>
-                    <mat-radio-button *ngFor="let answer of question.answers; let k=index" class="radio-button" value="{{k}}">
-                        {{answer}}</mat-radio-button>
-                    <mat-expansion-panel hideToggle *ngIf="question.detail" class="question-detail" (opened)="question.showDetail = true"
-                                         (closed)="question.showDetail = false">
-                        <mat-expansion-panel-header class="mat-button">
-                            <mat-panel-title>
-                                {{question.showDetail ? 'Hide details' : 'Show details'}}
-                            </mat-panel-title>
-                            <mat-panel-description>
-                                {{question.detail.text}}
-                            </mat-panel-description>
-                        </mat-expansion-panel-header>
-                        <div class="question-detail-element" *ngFor="let element of question.detail.elements; let m=index">
-                            {{element.key}}
-                            <ul>
-                                <li *ngFor="let item of element.items; let n=index">{{item}}</li>
-                            </ul>
-                        </div>
-                    </mat-expansion-panel>
-                </mat-radio-group>
+            <mat-card-content *ngIf="questionnaire.type=='standard' && this.questionnaireForm">
+                <ng-container *ngFor="let question of this.questionnaire.questions; let j=index">
+                    <app-question [question]="question" [questionForm]="questionnaireForm"></app-question>
+                </ng-container>
             </mat-card-content>
 
             <!-- CRT questionnaire markup -->
-            <mat-card-content *ngIf="questionnaire.type=='crt'" class="questionnaire-body">
+            <mat-card-content *ngIf="questionnaire.type=='crt'">
                 <ng-container *ngFor="let question of questionnaire.questions; let j=index">
                     <p class="questionnaire-question">{{question.text}}</p>
                     <mat-divider [inset]="true"></mat-divider>
                     <mat-form-field appearance="fill">
                         <mat-label>Answer</mat-label>
-
                         <input matInput type="number" placeholder="0" min="0" formControlName="{{question.name}}" class="questionnaire-value">
                         <mat-error *ngIf="checkFormControl(questionnaireForm,question.name, 'required')">
                             This field is required
@@ -68,7 +46,6 @@
                         <span class="matrix-header-text">{{mapping.label}}</span>
                     </div>
                 </div>
-
                 <mat-radio-group aria-labelledby="radio-button-label" *ngFor="let question of questionnaire.questions; let m=index" formControlName="{{question.name}}">
                     <div>
                         <p>{{m + 1}}) {{question.text}}</p>

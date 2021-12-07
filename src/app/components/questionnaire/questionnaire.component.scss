@@ -11,34 +11,40 @@ mat-card-content, mat-card-title, mat-card-actions {
   margin: auto !important;
 }
 
-.questionnaire-section mat-form-field {
+mat-form-field {
   margin-bottom: 1%;
-  max-width: 70%;
+}
+
+mat-checkbox {
+  padding-top: 0.5%;
+  padding-bottom: 0.5%;
+  font-size: 1.2em;
 }
 
 /* Questionnaires form */
 
-.questionnaire-body {
+mat-form-field {
+  width: 100%;
+}
 
-  mat-form-field {
-    width: 100%;
-  }
+.question-text {
+  margin-top: 1%;
+  margin-bottom: 1%;
+  font-size: 1.5em;
+  font-weight: normal;
+}
 
-  .questionnaire-question {
-    margin-top: 1%;
-    margin-bottom: 1%;
-    font-size: 1.5em;
-    font-weight: normal;
-  }
+.question-box {
+  margin-top: 2%;
+  margin-bottom: 2%;
+}
 
-  .questionnaire-value {
-    font-size: 2em;
-  }
+.questionnaire-value {
+  font-size: 2em;
+}
 
-  .mat-divider {
-    margin-bottom: 1%;
-  }
-
+.mat-divider {
+  margin-bottom: 1%;
 }
 
 .question label {
