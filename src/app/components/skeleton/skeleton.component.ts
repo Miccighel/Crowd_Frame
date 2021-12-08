@@ -147,6 +147,7 @@ export class SkeletonComponent implements OnInit {
     questionnairesForm: FormGroup[];
     /* Reference to the current questionnaires */
     questionnaires: Array<Questionnaire>;
+
     /* Number of different questionnaires inserted within task's body */
     questionnaireAmount: number;
     questionnaireAmountStart: number;
@@ -291,7 +292,7 @@ export class SkeletonComponent implements OnInit {
 
         /* |--------- CONTROL FLOW & UI ELEMENTS - INITIALIZATION ---------| */
 
-        this.tokenInput = new FormControl('', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
+        this.tokenInput = new FormControl('ABCDEFGHILM', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
         this.tokenForm = formBuilder.group({
             "tokenInput": this.tokenInput
         });
@@ -381,7 +382,6 @@ export class SkeletonComponent implements OnInit {
             } else {
                 this.worker = new Worker(null, null, null, null, null)
                 this.sectionService.checkCompleted = true
-
                 this.changeDetector.detectChanges()
                 this.ngxService.stop()
             }
@@ -568,6 +568,7 @@ export class SkeletonComponent implements OnInit {
     *  The Document interface can be found at this path: ../../../../data/build/task/document.ts
     */
     public async performTaskSetup() {
+
         /* The token input has been already validated, this is just to be sure */
         if (this.tokenForm.valid) {
 
@@ -636,11 +637,43 @@ export class SkeletonComponent implements OnInit {
                 let questionnaire = this.questionnaires[index];
                 if (questionnaire.type == "standard" || questionnaire.type == "likert") {
                     let controlsConfig = {};
-                    for (let index_question = 0; index_question < questionnaire.questions.length; index_question++) {
-                        let currentQuestion = this.questionnaires[index].questions[index_question]
-                        controlsConfig[`${currentQuestion.name}_answer`] = new FormControl('', [Validators.required])
-                        if (currentQuestion.free_text) {
-                            controlsConfig[`${currentQuestion.name}_free_text`] = new FormControl('', [Validators.required])
+                    for (let indexQuestion = 0; indexQuestion < questionnaire.questions.length; indexQuestion++) {
+                        let currentQuestion = this.questionnaires[index].questions[indexQuestion]
+                        if (currentQuestion.type != 'section') {
+                            let controlName = `${currentQuestion.name}`
+                            controlsConfig[`${controlName}_answer`] = new FormControl('', [Validators.required])
+                            if (currentQuestion.freeText) controlsConfig[`${controlName}_free_text`] = new FormControl('', [Validators.required])
+                        }
+                        if (currentQuestion.questions) {
+                            for (let indexQuestionSub = 0; indexQuestionSub < currentQuestion.questions.length; indexQuestionSub++) {
+                                let currentQuestionSub = currentQuestion.questions[indexQuestionSub]
+                                if (currentQuestionSub.type != 'section') {
+                                    let controlNameSub = `${currentQuestion.nameFull}_${currentQuestionSub.name}`
+                                    controlsConfig[`${controlNameSub}_answer`] = new FormControl('', [Validators.required])
+                                    if (currentQuestionSub.freeText) controlsConfig[`${controlNameSub}_free_text`] = new FormControl('', [Validators.required])
+                                }
+                                if (currentQuestionSub.questions) {
+                                    for (let indexQuestionSubSub = 0; indexQuestionSubSub < currentQuestionSub.questions.length; indexQuestionSubSub++) {
+                                        let currentQuestionSubSub = currentQuestionSub.questions[indexQuestionSubSub]
+                                        if (currentQuestionSubSub.type != 'section') {
+                                            let controlNameSubSub = `${currentQuestionSub.nameFull}_${currentQuestionSubSub.name}`
+                                            controlsConfig[`${controlNameSubSub}_answer`] = new FormControl('', [Validators.required])
+                                            if (currentQuestionSubSub.freeText) controlsConfig[`${controlNameSubSub}_free_text`] = new FormControl('', [Validators.required])
+                                        }
+                                        if (currentQuestionSubSub.questions) {
+                                            for (let indexQuestionSubSubSub = 0; indexQuestionSubSubSub < currentQuestionSubSub.questions.length; indexQuestionSubSubSub++) {
+                                                let currentQuestionSubSubSub = currentQuestionSubSub.questions[indexQuestionSubSubSub]
+                                                if (currentQuestionSubSubSub.type != 'section') {
+                                                    let controlNameSubSubSub = `${currentQuestionSubSub.nameFull}_${currentQuestionSubSubSub.name}`
+                                                    controlsConfig[`${controlNameSubSubSub}_answer`] = new FormControl('', [Validators.required])
+                                                    if (currentQuestionSubSubSub.freeText) controlsConfig[`${controlNameSubSubSub}_free_text`] = new FormControl('', [Validators.required])
+
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                     this.questionnairesForm[index] = this.formBuilder.group(controlsConfig)

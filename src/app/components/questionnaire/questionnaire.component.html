@@ -12,6 +12,21 @@
             <mat-card-content *ngIf="questionnaire.type=='standard' && this.questionnaireForm">
                 <ng-container *ngFor="let question of this.questionnaire.questions; let j=index">
                     <app-question [question]="question" [questionForm]="questionnaireForm"></app-question>
+                    <ng-container *ngFor="let questionSub of question.questions; let j=index">
+                        <div class="indent-1">
+                            <app-question [question]="questionSub" [questionForm]="questionnaireForm"></app-question>
+                            <ng-container *ngFor="let questionSubSub of questionSub.questions; let j=index">
+                                <div class="indent-2">
+                                    <app-question [question]="questionSubSub" [questionForm]="questionnaireForm"></app-question>
+                                    <ng-container *ngFor="let questionSubSubSub of questionSubSub.questions; let j=index">
+                                        <div class="indent-3">
+                                            <app-question [question]="questionSubSubSub" [questionForm]="questionnaireForm"></app-question>
+                                        </div>
+                                    </ng-container>
+                                </div>
+                            </ng-container>
+                        </div>
+                    </ng-container>
                 </ng-container>
             </mat-card-content>
 

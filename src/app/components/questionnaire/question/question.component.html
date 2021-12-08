@@ -4,43 +4,43 @@
     <mat-divider [inset]="true"></mat-divider>
 
     <div *ngIf="question.type=='mcq'" class="question-box">
-        <mat-radio-group aria-labelledby="radio-button-label" class="radio-button-group question" formControlName="{{question.name}}_answer">
+        <mat-radio-group aria-labelledby="radio-button-label" class="radio-button-group question" formControlName="{{question.nameFull}}_answer">
             <mat-radio-button *ngFor="let answer of question.answers; let k=index" class="radio-button" value="{{k}}">{{answer}}</mat-radio-button>
         </mat-radio-group>
     </div>
 
-    <div *ngIf="question.type=='perc'" class="question-box">
-        <input matInput type="number" placeholder="0" min="0" formControlName="{{question.name}}_answer" class="questionnaire-value">
-        <mat-error *ngIf="checkFormControl(questionForm,question.name.concat('_answer'), 'required')">
+    <div *ngIf="question.type=='number'" class="question-box">
+        <input matInput type="number" placeholder="0" min="0" formControlName="{{question.nameFull}}_answer" class="questionnaire-value">
+        <mat-error *ngIf="checkFormControl(questionForm,question.nameFull.concat('_answer'), 'required')">
             This field is required
         </mat-error>
-        <mat-error *ngIf="checkFormControl(questionForm,question.name.concat('_answer'), 'min')">
+        <mat-error *ngIf="checkFormControl(questionForm,question.nameFull.concat('_answer'), 'min')">
             Min value allowed: 0
         </mat-error>
-        <mat-error *ngIf="checkFormControl(questionForm,question.name.concat('_answer'), 'max')">
+        <mat-error *ngIf="checkFormControl(questionForm,question.nameFull.concat('_answer'), 'max')">
             Max value allowed: 100
         </mat-error>
     </div>
 
     <div *ngIf="question.type=='list'" class="question-box">
         <div *ngFor="let answer of question.answers; let k=index">
-            <mat-checkbox formControlName="{{question.name}}_answer">
+            <mat-checkbox formControlName="{{question.nameFull}}_answer">
                 {{answer}}
             </mat-checkbox>
         </div>
     </div>
 
-    <div *ngIf="question.free_text">
+    <div *ngIf="question.freeText">
         <mat-form-field appearance="fill" class="width-100">
             <mat-label>Other</mat-label>
-            <textarea matInput formControlName="{{question.name}}_free_text" rows="3"></textarea>
+            <textarea matInput formControlName="{{question.nameFull}}_free_text" rows="3"></textarea>
         </mat-form-field>
     </div>
 
-    <mat-expansion-panel hideToggle *ngIf="question.detail" class="question-detail" (opened)="question.show_detail = true" (closed)="question.show_detail = false">
+    <mat-expansion-panel hideToggle *ngIf="question.detail" class="question-detail" (opened)="question.showDetail = true" (closed)="question.showDetail = false">
         <mat-expansion-panel-header class="mat-button">
             <mat-panel-title>
-                {{question.show_detail ? 'Hide details' : 'Show details'}}
+                {{question.showDetail ? 'Hide details' : 'Show details'}}
             </mat-panel-title>
             <mat-panel-description>
                 {{question.detail.text}}

@@ -1,3 +1,5 @@
+import {FormControl, Validators} from "@angular/forms";
+
 export class Questionnaire {
 
     index: number;
@@ -24,8 +26,30 @@ export class Questionnaire {
             this.mappings = new Array<Mapping>();
             for (let index = 0; index < data["mapping"].length; index++) this.mappings.push(new Mapping(index, data["mapping"][index]))
         }
-    }
 
+        for (let indexQuestion = 0; indexQuestion < this.questions.length; indexQuestion++) {
+            let currentQuestion = this.questions[indexQuestion]
+            currentQuestion.nameFull = currentQuestion.name
+            if (currentQuestion.questions) {
+                for (let indexQuestionSub = 0; indexQuestionSub < currentQuestion.questions.length; indexQuestionSub++) {
+                    let currentQuestionSub = currentQuestion.questions[indexQuestionSub]
+                    currentQuestionSub.nameFull = `${currentQuestion.nameFull}_${currentQuestionSub.name}`
+                    if (currentQuestionSub.questions) {
+                        for (let indexQuestionSubSub = 0; indexQuestionSubSub < currentQuestionSub.questions.length; indexQuestionSubSub++) {
+                            let currentQuestionSubSub = currentQuestionSub.questions[indexQuestionSubSub]
+                            currentQuestionSubSub.nameFull = `${currentQuestionSub.nameFull}_${currentQuestionSubSub.name}`
+                            if (currentQuestionSubSub.questions) {
+                                for (let indexQuestionSubSubSub = 0; indexQuestionSubSubSub < currentQuestionSubSub.questions.length; indexQuestionSubSubSub++) {
+                                    let currentQuestionSubSubSub = currentQuestionSubSub.questions[indexQuestionSubSubSub]
+                                    currentQuestionSubSubSub.nameFull = `${currentQuestionSubSub.nameFull}_${currentQuestionSubSubSub.name}`
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 export class Question {
@@ -36,11 +60,13 @@ export class Question {
     name: string
     type: string
     parent?: string
+    nameFull?: string
     text?: string
     detail?: Detail
-    show_detail?: boolean
-    free_text?: boolean
+    showDetail?: boolean
+    freeText?: boolean
     answers?: Array<string>
+    questions?: Array<Question>
 
     constructor(
         index: number,
@@ -51,16 +77,30 @@ export class Question {
 
         this.name = data["name"]
         this.type = data['type']
-        this.text = data['text'] ? data["text"] : null
         this.parent = data['parent'] ? data["parent"] : null
+        this.nameFull = null
+        this.text = data['text'] ? data["text"] : null
         if (data['answers']) {
             this.answers = new Array<string>();
             for (const [_, answer] of data["answers"].entries()) this.answers.push(answer)
         }
+        if (data['questions']) {
+            this.questions = new Array<Question>();
+            for (let index = 0; index < data["questions"].length; index++) this.questions.push(new Question(index, data["questions"][index]))
+        }
         this.detail = data['detail'] ? new Detail(data["detail"]) : null;
-        this.show_detail = data['show_detail'] ? data['show_detail'] : false;
-        this.free_text = data['free_text'] ? data['free_text'] : false;
+        this.showDetail = data['show_detail'] ? data['show_detail'] : false;
+        this.freeText = data['free_text'] ? data['free_text'] : false;
     }
+
+    public controlName() {
+        if (this.parent) {
+            return `${this.parent}_${this.name}`
+        } else {
+            return this.name
+        }
+    }
+
 
 }
 
