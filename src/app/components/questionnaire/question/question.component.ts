@@ -12,6 +12,7 @@ export class QuestionComponent implements OnInit {
 
     @Input() questionForm: FormGroup
     @Input() question: Question
+    @Input() index: string
 
     constructor() {}
 

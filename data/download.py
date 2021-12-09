@@ -96,6 +96,7 @@ def load_column_names(task, ip, uag, questionnaires, dimensions, documents):
             columns.append(f"q_{questionnaire['index']}_{question['name']}_question")
             columns.append(f"q_{questionnaire['index']}_{question['name']}_answer")
             columns.append(f"q_{questionnaire['index']}_{question['name']}_value")
+            columns.append(f"q_{questionnaire['index']}_{question['name']}_free_text")
         columns.append(f"q_{questionnaire['index']}_time_elapsed")
         columns.append(f"q_{questionnaire['index']}_accesses")
 
@@ -566,7 +567,7 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
                     if int(check_data['serialization']['try']) == int(worker_object['task']['try_last']):
                         check_final_data = check_data
                 if check_final_data:
-                    if check_final_data['serialization']['global_form_validity'] == True and check_final_data['serialization']['time_spent_check'] == True and any(check_final_data['serialization']['gold_checks']):
+                    if check_final_data['serialization']['checks']['globalFormValidity'] == True and check_final_data['serialization']['checks']['timeSpentCheck'] == True and any(check_final_data['serialization']['checks']['goldChecks']):
                         worker_paid = True
                 else:
                     worker_paid = False
@@ -835,10 +836,10 @@ if not os.path.exists(df_data_path):
 
                         for check_data in checks:
                             if int(check_data['serialization']['try']) == int(info['try']):
-                                row["global_form_validity"] = check_data['serialization']["global_form_validity"]
-                                row["gold_checks"] = any(check_data['serialization']["gold_checks"])
-                                row["time_check_amount"] = check_data['serialization']["time_check_amount"]
-                                row["time_spent_check"] = check_data['serialization']["time_spent_check"]
+                                row["global_form_validity"] = check_data['serialization']["checks"]["globalFormValidity"]
+                                row["gold_checks"] = any(check_data['serialization']["checks"]["goldChecks"])
+                                row["time_check_amount"] = check_data['serialization']["checks"]["timeCheckAmount"]
+                                row["time_spent_check"] = check_data['serialization']["checks"]["timeSpentCheck"]
 
                         for comment_data in comments:
                             if int(comment_data['serialization']['info']['try']) == int(info['try']):
@@ -848,6 +849,10 @@ if not os.path.exists(df_data_path):
                         for index_main, current_answers in enumerate(questionnaireAnswers):
                             questions = current_answers.keys()
                             for index_sub, question in enumerate(questions):
+                                question_data = questionnaires[index_main]["questions"][index_sub]
+                                print(current_answers)
+                                print(question_data)
+                                assert False
                                 row[f"q_{questionnaires[index_main]['index']}_{question}_question"] = questionnaires[index_main]["questions"][index_sub]["text"]
                                 row[f"q_{questionnaires[index_main]['index']}_{question}_value"] = current_answers[question]
                                 if questionnaires[index_main]["type"] == "standard":

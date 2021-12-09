@@ -42,6 +42,18 @@ export class Questionnaire {
                                 for (let indexQuestionSubSubSub = 0; indexQuestionSubSubSub < currentQuestionSubSub.questions.length; indexQuestionSubSubSub++) {
                                     let currentQuestionSubSubSub = currentQuestionSubSub.questions[indexQuestionSubSubSub]
                                     currentQuestionSubSubSub.nameFull = `${currentQuestionSubSub.nameFull}_${currentQuestionSubSubSub.name}`
+                                    if (currentQuestionSubSubSub.questions) {
+                                        for (let indexQuestionSubSubSubSub = 0; indexQuestionSubSubSubSub < currentQuestionSubSubSub.questions.length; indexQuestionSubSubSubSub++) {
+                                            let currentQuestionSubSubSubSub = currentQuestionSubSubSub.questions[indexQuestionSubSubSubSub]
+                                            currentQuestionSubSubSubSub.nameFull = `${currentQuestionSubSubSub.nameFull}_${currentQuestionSubSubSubSub.name}`
+                                            if (currentQuestionSubSubSubSub.questions) {
+                                                for (let indexQuestionSubSubSubSubSub = 0; indexQuestionSubSubSubSubSub < currentQuestionSubSubSubSub.questions.length; indexQuestionSubSubSubSubSub++) {
+                                                    let currentQuestionSubSubSubSubSub = currentQuestionSubSubSubSub.questions[indexQuestionSubSubSubSubSub]
+                                                    currentQuestionSubSubSubSubSub.nameFull = `${currentQuestionSubSubSubSub.nameFull}_${currentQuestionSubSubSubSubSub.name}`
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -61,6 +73,7 @@ export class Question {
     type: string
     parent?: string
     nameFull?: string
+    required?: boolean
     text?: string
     detail?: Detail
     showDetail?: boolean
@@ -80,6 +93,7 @@ export class Question {
         this.parent = data['parent'] ? data["parent"] : null
         this.nameFull = null
         this.text = data['text'] ? data["text"] : null
+        this.required = data['required']
         if (data['answers']) {
             this.answers = new Array<string>();
             for (const [_, answer] of data["answers"].entries()) this.answers.push(answer)
@@ -100,7 +114,6 @@ export class Question {
             return this.name
         }
     }
-
 
 }
 

@@ -1,6 +1,6 @@
 <ng-container [formGroup]="questionForm" class="questionnaire-body">
 
-    <p class="question-text">{{question.text}}</p>
+    <p class="question-text">{{index}} - {{question.text}}</p>
     <mat-divider [inset]="true"></mat-divider>
 
     <div *ngIf="question.type=='mcq'" class="question-box">
@@ -11,13 +11,13 @@
 
     <div *ngIf="question.type=='number'" class="question-box">
         <input matInput type="number" placeholder="0" min="0" formControlName="{{question.nameFull}}_answer" class="questionnaire-value">
-        <mat-error *ngIf="checkFormControl(questionForm,question.nameFull.concat('_answer'), 'required')">
+        <mat-error *ngIf="checkFormControl(questionForm,question.nameFull.concat('_answer'), 'required') && question.required">
             This field is required
         </mat-error>
-        <mat-error *ngIf="checkFormControl(questionForm,question.nameFull.concat('_answer'), 'min')">
+        <mat-error *ngIf="checkFormControl(questionForm,question.nameFull.concat('_answer'), 'min') && question.required">
             Min value allowed: 0
         </mat-error>
-        <mat-error *ngIf="checkFormControl(questionForm,question.nameFull.concat('_answer'), 'max')">
+        <mat-error *ngIf="checkFormControl(questionForm,question.nameFull.concat('_answer'), 'max') && question.required">
             Max value allowed: 100
         </mat-error>
     </div>
@@ -28,6 +28,32 @@
                 {{answer}}
             </mat-checkbox>
         </div>
+        <mat-error *ngIf="checkFormControl(questionForm,question.nameFull.concat('_answer'), 'required') && question.required">
+            This field is required
+        </mat-error>
+    </div>
+
+    <div *ngIf="question.type=='dropdown'" class="question-box">
+        <mat-form-field appearance="fill">
+            <mat-label>Value</mat-label>
+            <mat-select formControlName="{{question.nameFull}}_answer">
+                <mat-option *ngFor="let answer of question.answers" [value]="answer">
+                    {{answer}}
+                </mat-option>
+            </mat-select>
+        </mat-form-field>
+        <mat-error *ngIf="checkFormControl(questionForm,question.nameFull.concat('_answer'), 'required') && question.required">
+            This field is required
+        </mat-error>
+    </div>
+
+    <div *ngIf="question.type=='text'" class="question-box">
+        <mat-form-field appearance="fill" class="width-100">
+            <textarea matInput placeholder="Your text here" formControlName="{{question.nameFull}}_answer" rows="3"></textarea>
+        </mat-form-field>
+        <mat-error *ngIf="checkFormControl(questionForm,question.nameFull.concat('_answer'), 'required') && question.required">
+            This field is required
+        </mat-error>
     </div>
 
     <div *ngIf="question.freeText">
@@ -35,6 +61,9 @@
             <mat-label>Other</mat-label>
             <textarea matInput formControlName="{{question.nameFull}}_free_text" rows="3"></textarea>
         </mat-form-field>
+        <mat-error *ngIf="checkFormControl(questionForm,question.nameFull.concat('_free_text'), 'required') && question.required">
+            This field is required
+        </mat-error>
     </div>
 
     <mat-expansion-panel hideToggle *ngIf="question.detail" class="question-detail" (opened)="question.showDetail = true" (closed)="question.showDetail = false">

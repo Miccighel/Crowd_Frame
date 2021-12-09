@@ -1,7 +1,7 @@
 <div class="container">
     <form [formGroup]="questionnaireForm">
-        <mat-card>
 
+        <mat-card>
             <mat-divider [inset]="true"></mat-divider>
             <mat-card-title *ngIf="questionnaire.type=='standard'">Please answer the following questions</mat-card-title>
             <mat-card-title *ngIf="questionnaire.type=='crt'">Please answer the following question</mat-card-title>
@@ -10,17 +10,46 @@
 
             <!-- Standard questionnaire markup -->
             <mat-card-content *ngIf="questionnaire.type=='standard' && this.questionnaireForm">
+                <div class="questionnaire-description">
+                    <p *ngIf="questionnaire.description">{{questionnaire.description}}</p>
+                </div>
                 <ng-container *ngFor="let question of this.questionnaire.questions; let j=index">
-                    <app-question [question]="question" [questionForm]="questionnaireForm"></app-question>
-                    <ng-container *ngFor="let questionSub of question.questions; let j=index">
+                    <app-question [index]="(j+1).toString()" [question]="question" [questionForm]="questionnaireForm"></app-question>
+                    <ng-container *ngFor="let questionSub of question.questions; let k=index">
                         <div class="indent-1">
-                            <app-question [question]="questionSub" [questionForm]="questionnaireForm"></app-question>
-                            <ng-container *ngFor="let questionSubSub of questionSub.questions; let j=index">
+                            <app-question [index]="(j+1).toString().concat('.').concat((k+1).toString())" [question]="questionSub" [questionForm]="questionnaireForm"></app-question>
+                            <ng-container *ngFor="let questionSubSub of questionSub.questions; let l=index">
                                 <div class="indent-2">
-                                    <app-question [question]="questionSubSub" [questionForm]="questionnaireForm"></app-question>
-                                    <ng-container *ngFor="let questionSubSubSub of questionSubSub.questions; let j=index">
+                                    <app-question
+                                            [index]="(j+1).toString().concat('.').concat((k+1).toString()).concat('.').concat((l+1).toString())"
+                                            [question]="questionSubSub"
+                                            [questionForm]="questionnaireForm">
+                                    </app-question>
+                                    <ng-container *ngFor="let questionSubSubSub of questionSubSub.questions; let m=index">
                                         <div class="indent-3">
-                                            <app-question [question]="questionSubSubSub" [questionForm]="questionnaireForm"></app-question>
+                                            <app-question
+                                                    [index]="(j+1).toString().concat('.').concat((k+1).toString()).concat('.').concat((l+1).toString()).concat('.').concat((m+1).toString())"
+                                                    [question]="questionSubSubSub"
+                                                    [questionForm]="questionnaireForm">
+                                            </app-question>
+                                            <ng-container *ngFor="let questionSubSubSubSub of questionSubSubSub.questions; let n=index">
+                                                <div class="indent-4">
+                                                    <app-question
+                                                            [index]="(j+1).toString().concat('.').concat((k+1).toString()).concat('.').concat((l+1).toString()).concat('.').concat((m+1).toString()).concat('.').concat((n+1).toString())"
+                                                            [question]="questionSubSubSubSub"
+                                                            [questionForm]="questionnaireForm">
+                                                    </app-question>
+                                                    <ng-container *ngFor="let questionSubSubSubSubSub of questionSubSubSubSub.questions; let o=index">
+                                                        <div class="indent-5">
+                                                            <app-question
+                                                                    [index]="(j+1).toString().concat('.').concat((k+1).toString()).concat('.').concat((l+1).toString()).concat('.').concat((m+1).toString()).concat('.').concat((n+1).toString()).concat('.').concat((o+1).toString())"
+                                                                    [question]="questionSubSubSubSubSub"
+                                                                    [questionForm]="questionnaireForm">
+                                                            </app-question>
+                                                        </div>
+                                                    </ng-container>
+                                                </div>
+                                            </ng-container>
                                         </div>
                                     </ng-container>
                                 </div>
@@ -75,10 +104,16 @@
             <mat-card-actions>
                 <p class="form-note">
                     <button mat-flat-button color="primary" matStepperNext
-                            *ngIf="position=='start'"
-                            [disabled]="(!questionnaireForm.valid || this.sectionService.taskCompleted)"
+                            *ngIf="!(step+1 >= this.questionnaireAmountStart && this.questionnaireAmountEnd == 0 && this.documentsAmount==0) && position=='start'"
+                            [disabled]="!questionnaireForm.valid"
                             (click)="emitQuestionnaireFilled('Next',step)">
                         Next
+                    </button>
+                    <button mat-flat-button color="primary" matStepperNext
+                            *ngIf="(step+1 >= this.questionnaireAmountStart && this.questionnaireAmountEnd == 0 && this.documentsAmount==0) && position=='start'"
+                            [disabled]="!questionnaireForm.valid"
+                            (click)="emitQuestionnaireFilled('Finish',step)">
+                        Finish
                     </button>
                     <button mat-flat-button color="primary" matStepperPrevious
                             *ngIf="step>0 && position=='end'"

@@ -27,7 +27,7 @@ mat-form-field {
   width: 100%;
 }
 
-.question-text {
+.question-text  {
   margin-top: 1%;
   margin-bottom: 1%;
   font-size: 1.5em;
@@ -37,6 +37,14 @@ mat-form-field {
 .question-box {
   margin-top: 2%;
   margin-bottom: 2%;
+}
+
+.questionnaire-description {
+  font-size: 1.5em;
+  font-weight: normal;
+  font-style: italic;
+  margin-bottom: 2%;
+  margin-top: 1%;
 }
 
 .questionnaire-value {
@@ -128,6 +136,16 @@ mat-form-field {
 }
 
 .indent-3 {
-  margin-left: 8%;
+  margin-left: 7%;
+  margin-top: 2%;
+}
+
+.indent-4 {
+  margin-left: 9%;
+  margin-top: 2%;
+}
+
+.indent-5 {
+  margin-left: 11%;
   margin-top: 2%;
 }

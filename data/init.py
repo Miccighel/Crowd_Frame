@@ -1203,6 +1203,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                         {
                             "name": "age",
                             "text": "What is your age range?",
+                            "type": "mcq",
+                            "required": True,
                             "answers": [
                                 "0-18",
                                 "19-25",
@@ -1419,10 +1421,16 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.print(f"Reading hits file")
     console.print(f"Path: [italic]{hits_file}[/italic]")
     hits = read_json(hits_file)
-    sample_element = hits.pop()['documents'].pop()
+    documents = hits.pop()['documents']
 
-    if not 'id' in sample_element.keys():
-        raise Exception("Your hits.json file does not contains an attributed called \"id\"!")
+    sample_element = {}
+
+    if len(documents)>0:
+
+        sample_element = documents.pop()
+
+        if not 'id' in sample_element.keys():
+            raise Exception("Your hits.json file does not contains an attributed called \"id\"!")
 
     # This class provides a representation of a single document stored in single hit stored in the Amazon S3 bucket.
     # The attribute <document_index> is additional and should not be touched and passed in the constructor.
