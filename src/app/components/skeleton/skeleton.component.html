@@ -107,6 +107,7 @@
                     [questionnaireAmountStart]="this.questionnaireAmountStart"
                     [questionnaireAmountEnd]="this.questionnaireAmountEnd"
                     [questionnaireForm]="questionnairesForm[i]"
+                    [taskCompleted]="this.sectionService.taskCompleted"
                     (questionnaireFilled)="handleQuestionnaireFilled($event)">
             </app-questionnaire>
         </mat-step>
@@ -884,6 +885,7 @@
                     [questionnaireAmountStart]="this.questionnaireAmountStart"
                     [questionnaireAmountEnd]="this.questionnaireAmountEnd"
                     [questionnaireForm]="questionnairesForm[i]"
+                    [taskCompleted]="this.sectionService.taskCompleted"
                     (questionnaireFilled)="handleQuestionnaireFilled($event)">
             </app-questionnaire>
         </mat-step>

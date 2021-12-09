@@ -643,7 +643,7 @@ export class SkeletonComponent implements OnInit {
                             let controlName = `${currentQuestion.name}`
                             let validators = []
                             if (currentQuestion.required) validators = [Validators.required]
-                            if (currentQuestion.type=='number') validators.concat([Validators.max(100), Validators.min(0), Validators.max(100)])
+                            if (currentQuestion.type == 'number') validators.concat([Validators.max(100), Validators.min(0), Validators.max(100)])
                             controlsConfig[`${controlName}_answer`] = new FormControl('', validators)
                             if (currentQuestion.freeText) controlsConfig[`${controlName}_free_text`] = new FormControl('', validators)
                         }
@@ -654,7 +654,7 @@ export class SkeletonComponent implements OnInit {
                                     let controlNameSub = `${currentQuestion.nameFull}_${currentQuestionSub.name}`
                                     let validators = []
                                     if (currentQuestionSub.required) validators = [Validators.required]
-                                    if (currentQuestionSub.type=='number') validators.concat([Validators.max(100), Validators.min(0), Validators.max(100)])
+                                    if (currentQuestionSub.type == 'number') validators.concat([Validators.max(100), Validators.min(0), Validators.max(100)])
                                     controlsConfig[`${controlNameSub}_answer`] = new FormControl('', validators)
                                     if (currentQuestionSub.freeText) controlsConfig[`${controlNameSub}_free_text`] = new FormControl('', validators)
                                 }
@@ -665,7 +665,7 @@ export class SkeletonComponent implements OnInit {
                                             let controlNameSubSub = `${currentQuestionSub.nameFull}_${currentQuestionSubSub.name}`
                                             let validators = []
                                             if (currentQuestionSubSub.required) validators = [Validators.required]
-                                            if (currentQuestionSubSub.type=='number') validators.concat([Validators.max(100), Validators.min(0), Validators.max(100)])
+                                            if (currentQuestionSubSub.type == 'number') validators.concat([Validators.max(100), Validators.min(0), Validators.max(100)])
                                             controlsConfig[`${controlNameSubSub}_answer`] = new FormControl('', validators)
                                             if (currentQuestionSubSub.freeText) controlsConfig[`${controlNameSubSub}_free_text`] = new FormControl('', validators)
                                         }
@@ -676,7 +676,7 @@ export class SkeletonComponent implements OnInit {
                                                     let controlNameSubSubSub = `${currentQuestionSubSub.nameFull}_${currentQuestionSubSubSub.name}`
                                                     let validators = []
                                                     if (currentQuestionSubSubSub.required) validators = [Validators.required]
-                                                    if (currentQuestionSubSubSub.type=='number') validators.concat([Validators.max(100), Validators.min(0), Validators.max(100)])
+                                                    if (currentQuestionSubSubSub.type == 'number') validators.concat([Validators.max(100), Validators.min(0), Validators.max(100)])
                                                     controlsConfig[`${controlNameSubSubSub}_answer`] = new FormControl('', validators)
                                                     if (currentQuestionSubSubSub.freeText) controlsConfig[`${controlNameSubSubSub}_free_text`] = new FormControl('', validators)
                                                 }
@@ -687,7 +687,7 @@ export class SkeletonComponent implements OnInit {
                                                             let controlNameSubSubSubSub = `${currentQuestionSubSubSub.nameFull}_${currentQuestionSubSubSubSub.name}`
                                                             let validators = []
                                                             if (currentQuestionSubSubSubSub.required) validators = [Validators.required]
-                                                            if (currentQuestionSubSubSubSub.type=='number') validators.concat([Validators.max(100), Validators.min(0), Validators.max(100)])
+                                                            if (currentQuestionSubSubSubSub.type == 'number') validators.concat([Validators.max(100), Validators.min(0), Validators.max(100)])
                                                             controlsConfig[`${controlNameSubSubSubSub}_answer`] = new FormControl('', validators)
                                                             if (currentQuestionSubSubSubSub.freeText) controlsConfig[`${controlNameSubSubSubSub}_free_text`] = new FormControl('', validators)
                                                         }
@@ -698,7 +698,7 @@ export class SkeletonComponent implements OnInit {
                                                                     let controlNameSubSubSubSubSub = `${currentQuestionSubSubSubSub.nameFull}_${currentQuestionSubSubSubSubSub.name}`
                                                                     let validators = []
                                                                     if (currentQuestionSubSubSubSubSub.required) validators = [Validators.required]
-                                                                    if (currentQuestionSubSubSubSubSub.type=='number') validators.concat([Validators.max(100), Validators.min(0), Validators.max(100)])
+                                                                    if (currentQuestionSubSubSubSubSub.type == 'number') validators.concat([Validators.max(100), Validators.min(0), Validators.max(100)])
                                                                     controlsConfig[`${controlNameSubSubSubSubSub}_answer`] = new FormControl('', validators)
                                                                     if (currentQuestionSubSubSubSubSub.freeText) controlsConfig[`${controlNameSubSubSubSubSub}_free_text`] = new FormControl('', validators)
                                                                 }
@@ -713,7 +713,6 @@ export class SkeletonComponent implements OnInit {
                             }
                         }
                     }
-                    console.log(controlsConfig)
                     this.questionnairesForm[index] = this.formBuilder.group(controlsConfig)
                 } else {
                     /* If the questionnaire is a CRT one it means that it has only one question where the answer must be a number between 0 and 100 chosen by user; required, max and min validators are needed */
@@ -2099,7 +2098,9 @@ export class SkeletonComponent implements OnInit {
 
     public handleQuestionnaireFilled(data) {
         this.questionnairesForm[data['step']] = data['questionnaireForm']
-        this.performQualityCheck()
+        if (data['action'] == "Finish") {
+            this.performQualityCheck()
+        }
         this.performLogging(data['action'], data['step'])
         if (data['action'] == 'Next') {
             this.nextStep()
