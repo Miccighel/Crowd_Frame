@@ -292,7 +292,7 @@ export class SkeletonComponent implements OnInit {
 
         /* |--------- CONTROL FLOW & UI ELEMENTS - INITIALIZATION ---------| */
 
-        this.tokenInput = new FormControl('ABCDEFGHILM', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
+        this.tokenInput = new FormControl('PMJGPFVIAOC', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
         this.tokenForm = formBuilder.group({
             "tokenInput": this.tokenInput
         });
@@ -643,9 +643,10 @@ export class SkeletonComponent implements OnInit {
                             let controlName = `${currentQuestion.name}`
                             let validators = []
                             if (currentQuestion.required) validators = [Validators.required]
-                            if (currentQuestion.type == 'number') validators.concat([Validators.max(100), Validators.min(0), Validators.max(100)])
+                            if (currentQuestion.type == 'number') validators.concat([Validators.min(0), Validators.max(100)])
+                            if (currentQuestion.type == 'email') validators.push(Validators.email)
                             controlsConfig[`${controlName}_answer`] = new FormControl('', validators)
-                            if (currentQuestion.freeText) controlsConfig[`${controlName}_free_text`] = new FormControl('', validators)
+                            if (currentQuestion.freeText) controlsConfig[`${controlName}_free_text`] = new FormControl('')
                         }
                         if (currentQuestion.questions) {
                             for (let indexQuestionSub = 0; indexQuestionSub < currentQuestion.questions.length; indexQuestionSub++) {
@@ -654,9 +655,10 @@ export class SkeletonComponent implements OnInit {
                                     let controlNameSub = `${currentQuestion.nameFull}_${currentQuestionSub.name}`
                                     let validators = []
                                     if (currentQuestionSub.required) validators = [Validators.required]
-                                    if (currentQuestionSub.type == 'number') validators.concat([Validators.max(100), Validators.min(0), Validators.max(100)])
+                                    if (currentQuestionSub.type == 'number') validators.concat([Validators.min(0), Validators.max(100)])
+                                    if (currentQuestionSub.type == 'email') validators.push(Validators.email)
                                     controlsConfig[`${controlNameSub}_answer`] = new FormControl('', validators)
-                                    if (currentQuestionSub.freeText) controlsConfig[`${controlNameSub}_free_text`] = new FormControl('', validators)
+                                    if (currentQuestionSub.freeText) controlsConfig[`${controlNameSub}_free_text`] = new FormControl('')
                                 }
                                 if (currentQuestionSub.questions) {
                                     for (let indexQuestionSubSub = 0; indexQuestionSubSub < currentQuestionSub.questions.length; indexQuestionSubSub++) {
@@ -665,9 +667,10 @@ export class SkeletonComponent implements OnInit {
                                             let controlNameSubSub = `${currentQuestionSub.nameFull}_${currentQuestionSubSub.name}`
                                             let validators = []
                                             if (currentQuestionSubSub.required) validators = [Validators.required]
-                                            if (currentQuestionSubSub.type == 'number') validators.concat([Validators.max(100), Validators.min(0), Validators.max(100)])
+                                            if (currentQuestionSubSub.type == 'number') validators.concat([Validators.min(0), Validators.max(100)])
+                                            if (currentQuestionSubSub.type == 'email') validators.push(Validators.email)
                                             controlsConfig[`${controlNameSubSub}_answer`] = new FormControl('', validators)
-                                            if (currentQuestionSubSub.freeText) controlsConfig[`${controlNameSubSub}_free_text`] = new FormControl('', validators)
+                                            if (currentQuestionSubSub.freeText) controlsConfig[`${controlNameSubSub}_free_text`] = new FormControl('')
                                         }
                                         if (currentQuestionSubSub.questions) {
                                             for (let indexQuestionSubSubSub = 0; indexQuestionSubSubSub < currentQuestionSubSub.questions.length; indexQuestionSubSubSub++) {
@@ -676,9 +679,10 @@ export class SkeletonComponent implements OnInit {
                                                     let controlNameSubSubSub = `${currentQuestionSubSub.nameFull}_${currentQuestionSubSubSub.name}`
                                                     let validators = []
                                                     if (currentQuestionSubSubSub.required) validators = [Validators.required]
-                                                    if (currentQuestionSubSubSub.type == 'number') validators.concat([Validators.max(100), Validators.min(0), Validators.max(100)])
+                                                    if (currentQuestionSubSubSub.type == 'number') validators.concat([Validators.min(0), Validators.max(100)])
+                                                    if (currentQuestionSubSubSub.type == 'email') validators.push(Validators.email)
                                                     controlsConfig[`${controlNameSubSubSub}_answer`] = new FormControl('', validators)
-                                                    if (currentQuestionSubSubSub.freeText) controlsConfig[`${controlNameSubSubSub}_free_text`] = new FormControl('', validators)
+                                                    if (currentQuestionSubSubSub.freeText) controlsConfig[`${controlNameSubSubSub}_free_text`] = new FormControl('')
                                                 }
                                                 if (currentQuestionSubSubSub.questions) {
                                                     for (let indexQuestionSubSubSubSub = 0; indexQuestionSubSubSubSub < currentQuestionSubSubSub.questions.length; indexQuestionSubSubSubSub++) {
@@ -687,9 +691,10 @@ export class SkeletonComponent implements OnInit {
                                                             let controlNameSubSubSubSub = `${currentQuestionSubSubSub.nameFull}_${currentQuestionSubSubSubSub.name}`
                                                             let validators = []
                                                             if (currentQuestionSubSubSubSub.required) validators = [Validators.required]
-                                                            if (currentQuestionSubSubSubSub.type == 'number') validators.concat([Validators.max(100), Validators.min(0), Validators.max(100)])
+                                                            if (currentQuestionSubSubSubSub.type == 'number') validators.concat([Validators.min(0), Validators.max(100)])
+                                                            if (currentQuestionSubSubSubSub.type == 'email') validators.push(Validators.email)
                                                             controlsConfig[`${controlNameSubSubSubSub}_answer`] = new FormControl('', validators)
-                                                            if (currentQuestionSubSubSubSub.freeText) controlsConfig[`${controlNameSubSubSubSub}_free_text`] = new FormControl('', validators)
+                                                            if (currentQuestionSubSubSubSub.freeText) controlsConfig[`${controlNameSubSubSubSub}_free_text`] = new FormControl('')
                                                         }
                                                         if (currentQuestionSubSubSubSub.questions) {
                                                             for (let indexQuestionSubSubSubSubSub = 0; indexQuestionSubSubSubSubSub < currentQuestionSubSubSubSub.questions.length; indexQuestionSubSubSubSubSub++) {
@@ -698,9 +703,10 @@ export class SkeletonComponent implements OnInit {
                                                                     let controlNameSubSubSubSubSub = `${currentQuestionSubSubSubSub.nameFull}_${currentQuestionSubSubSubSubSub.name}`
                                                                     let validators = []
                                                                     if (currentQuestionSubSubSubSubSub.required) validators = [Validators.required]
-                                                                    if (currentQuestionSubSubSubSubSub.type == 'number') validators.concat([Validators.max(100), Validators.min(0), Validators.max(100)])
+                                                                    if (currentQuestionSubSubSubSubSub.type == 'number') validators.concat([Validators.min(0), Validators.max(100)])
+                                                                    if (currentQuestionSubSubSubSubSub.type == 'email') validators.push(Validators.email)
                                                                     controlsConfig[`${controlNameSubSubSubSubSub}_answer`] = new FormControl('', validators)
-                                                                    if (currentQuestionSubSubSubSubSub.freeText) controlsConfig[`${controlNameSubSubSubSubSub}_free_text`] = new FormControl('', validators)
+                                                                    if (currentQuestionSubSubSubSubSub.freeText) controlsConfig[`${controlNameSubSubSubSubSub}_free_text`] = new FormControl('')
                                                                 }
                                                             }
                                                         }
@@ -1254,6 +1260,120 @@ export class SkeletonComponent implements OnInit {
         }
 
         return finalTime;
+    }
+
+    /* |--------- PAIRWISE ---------| */
+
+    /*
+    * //@AggiunteAbbondo
+    /* contains the last element(pairwise) selected */
+    valueCheck: number
+    //selected_statement:string;
+    selected_stetements: Object[] = [];
+    checkedValue = new Array();
+
+    /*
+    //@AggiunteAbbondo
+      Funziona che cambia il colore del div dello statemente
+
+      this.checkedValue[documentnumber][0][0]=true mette al true la prima dimension cosi da venire visuallizata
+    */
+    public changeColor(valueData: Object, documentnumber: number) {
+        //this.selected_statement=valueData["value"]
+        //this.selected_stetements[documentnumber]=valueData["value"];
+        let a = document.getElementById("StatementA." + documentnumber) as HTMLInputElement
+        let b = document.getElementById("StatementB." + documentnumber) as HTMLInputElement
+        if (valueData["value"] == "A") {
+            a.style.backgroundColor = "#B6BDE2"
+            b.style.backgroundColor = "#FCFCFC"
+        } else if (valueData["value"] == "B") {
+            b.style.backgroundColor = "#B6BDE2"
+            a.style.backgroundColor = "#FCFCFC"
+        } else {
+            b.style.backgroundColor = "#B6BDE2"
+            a.style.backgroundColor = "#B6BDE2"
+        }
+
+
+        if (valueData['source']['_checked'] == true) {
+
+            // mette al true la prima dimension del primo documento cosi da venire visualizzata
+            this.checkedValue[documentnumber][0][0] = true
+            this.checkedValue[documentnumber][0][1] = true
+        }
+    }
+
+    //@AggiunteAbbondo
+    // metodo che crea l'array tridimensionale
+    public dimensionValueinsert() {
+        for (let i = 0; i < this.documentsAmount; i++) {
+            let statement = new Array();
+            for (let j = 0; j < this.dimensionsAmount; j++) {
+                let pairwise = new Array()
+                pairwise[0] = false
+                pairwise[1] = false
+                statement[j] = pairwise
+            }
+            this.checkedValue[i] = statement
+        }
+
+    }
+
+    //@AggiunteAbbondo
+    // Metodo che cambia la lettera che mostrata sulla scritta Answer for Statement
+    public changeletter(index: number) {
+        if (index == 0) {
+            return 'A';
+        } else {
+            return 'B';
+        }
+    }
+
+    //@AggiunteAbbondo
+    //Metodo che controllo se le due dimension(Scale) precedenti sono state cliccate
+    public checkdimension(documentnumber: number, dimensionnumber: number) {
+        if (this.checkedValue[documentnumber][dimensionnumber][0] == true && this.checkedValue[documentnumber][dimensionnumber][1] == true) {
+            return true
+        } else {
+            return false
+        }
+    }
+
+    //@AggiunteAbbondo
+    //Cambia il valore delle dimesion(Scale) da false a  true
+    public changeValue(documentnumber: number, dimensionnumber: number, j: number) {
+        if (dimensionnumber >= this.dimensionsAmount) {
+        } else {
+            this.checkedValue[documentnumber][dimensionnumber][j] = true
+        }
+    }
+
+    //@AggiunteAbbondo
+    //Cambia il colore del radio button una volta cliccato sullo statement
+    public changeColorRadio(valueData: Object, document_index: number) {
+        let a = document.getElementById("radioStatementA." + document_index) as HTMLInputElement
+        let b = document.getElementById("radioStatementB." + document_index) as HTMLInputElement
+        if (valueData["value"] == "A") {
+            if (b.classList.contains('mat-radio-checked')) {
+                b.classList.remove('mat-radio-checked')
+            }
+            a.classList.add('mat-radio-checked')
+        } else {
+            if (a.classList.contains('mat-radio-checked')) {
+                a.classList.remove('mat-radio-checked')
+            }
+            b.classList.add('mat-radio-checked')
+        }
+    }
+
+    //@AggiunteAbbondo
+    //Cambia il colore per gli altri due radio quanto si clicca sullo radio centrale
+    public changeBoth(document_index: number) {
+        let a = document.getElementById("radioStatementA." + document_index) as HTMLInputElement
+        let b = document.getElementById("radioStatementB." + document_index) as HTMLInputElement
+
+        b.classList.remove('mat-radio-checked')
+        a.classList.remove('mat-radio-checked')
     }
 
 
@@ -2537,116 +2657,5 @@ export class SkeletonComponent implements OnInit {
     }
 
 
-    /*
-    * //@AggiunteAbbondo
-    /* contains the last element(pairwise) selected */
-    valueCheck: number
-    //selected_statement:string;
-    selected_stetements: Object[] = [];
-    checkedValue = new Array();
-
-    /*
-    //@AggiunteAbbondo
-      Funziona che cambia il colore del div dello statemente
-
-      this.checkedValue[documentnumber][0][0]=true mette al true la prima dimension cosi da venire visuallizata
-    */
-    public changeColor(valueData: Object, documentnumber: number) {
-        //this.selected_statement=valueData["value"]
-        //this.selected_stetements[documentnumber]=valueData["value"];
-        let a = document.getElementById("StatementA." + documentnumber) as HTMLInputElement
-        let b = document.getElementById("StatementB." + documentnumber) as HTMLInputElement
-        if (valueData["value"] == "A") {
-            a.style.backgroundColor = "#B6BDE2"
-            b.style.backgroundColor = "#FCFCFC"
-        } else if (valueData["value"] == "B") {
-            b.style.backgroundColor = "#B6BDE2"
-            a.style.backgroundColor = "#FCFCFC"
-        } else {
-            b.style.backgroundColor = "#B6BDE2"
-            a.style.backgroundColor = "#B6BDE2"
-        }
-
-
-        if (valueData['source']['_checked'] == true) {
-
-            // mette al true la prima dimension del primo documento cosi da venire visualizzata
-            this.checkedValue[documentnumber][0][0] = true
-            this.checkedValue[documentnumber][0][1] = true
-        }
-    }
-
-    //@AggiunteAbbondo
-    // metodo che crea l'array tridimensionale
-    public dimensionValueinsert() {
-        for (let i = 0; i < this.documentsAmount; i++) {
-            let statement = new Array();
-            for (let j = 0; j < this.dimensionsAmount; j++) {
-                let pairwise = new Array()
-                pairwise[0] = false
-                pairwise[1] = false
-                statement[j] = pairwise
-            }
-            this.checkedValue[i] = statement
-        }
-
-    }
-
-    //@AggiunteAbbondo
-    // Metodo che cambia la lettera che mostrata sulla scritta Answer for Statement
-    public changeletter(index: number) {
-        if (index == 0) {
-            return 'A';
-        } else {
-            return 'B';
-        }
-    }
-
-    //@AggiunteAbbondo
-    //Metodo che controllo se le due dimension(Scale) precedenti sono state cliccate
-    public checkdimension(documentnumber: number, dimensionnumber: number) {
-        if (this.checkedValue[documentnumber][dimensionnumber][0] == true && this.checkedValue[documentnumber][dimensionnumber][1] == true) {
-            return true
-        } else {
-            return false
-        }
-    }
-
-    //@AggiunteAbbondo
-    //Cambia il valore delle dimesion(Scale) da false a  true
-    public changeValue(documentnumber: number, dimensionnumber: number, j: number) {
-        if (dimensionnumber >= this.dimensionsAmount) {
-        } else {
-            this.checkedValue[documentnumber][dimensionnumber][j] = true
-        }
-    }
-
-    //@AggiunteAbbondo
-    //Cambia il colore del radio button una volta cliccato sullo statement
-    public changeColorRadio(valueData: Object, document_index: number) {
-        let a = document.getElementById("radioStatementA." + document_index) as HTMLInputElement
-        let b = document.getElementById("radioStatementB." + document_index) as HTMLInputElement
-        if (valueData["value"] == "A") {
-            if (b.classList.contains('mat-radio-checked')) {
-                b.classList.remove('mat-radio-checked')
-            }
-            a.classList.add('mat-radio-checked')
-        } else {
-            if (a.classList.contains('mat-radio-checked')) {
-                a.classList.remove('mat-radio-checked')
-            }
-            b.classList.add('mat-radio-checked')
-        }
-    }
-
-    //@AggiunteAbbondo
-    //Cambia il colore per gli altri due radio quanto si clicca sullo radio centrale
-    public changeBoth(document_index: number) {
-        let a = document.getElementById("radioStatementA." + document_index) as HTMLInputElement
-        let b = document.getElementById("radioStatementB." + document_index) as HTMLInputElement
-
-        b.classList.remove('mat-radio-checked')
-        a.classList.remove('mat-radio-checked')
-    }
 }
 

@@ -215,6 +215,11 @@ export class QuestionnaireStepComponent implements OnInit {
                 case 'likert':
                     for (let questionIndex in questionnaire.questions) {
                         delete questionnaire.questions[questionIndex].answers;
+                        questionnaire.questions[questionIndex]['type']='mcq'
+                        questionnaire.questions[questionIndex]['required']=true
+                        questionnaire.questions[questionIndex]['free_text']=false
+                        questionnaire.questions[questionIndex]['detail']=null
+                        questionnaire.questions[questionIndex]['show_detail']=false
                     }
                     break;
 
@@ -226,6 +231,11 @@ export class QuestionnaireStepComponent implements OnInit {
                             answersStringArray.push(questionnaire.questions[questionIndex].answers[answerIndex].answer);
                         }
                         questionnaire.questions[questionIndex].answers = answersStringArray;
+                        questionnaire.questions[questionIndex]['type']='mcq'
+                        questionnaire.questions[questionIndex]['required']=true
+                        questionnaire.questions[questionIndex]['free_text']=false
+                        questionnaire.questions[questionIndex]['detail']=null
+                        questionnaire.questions[questionIndex]['show_detail']=false
                     }
                     delete questionnaire.mapping;
                     break;

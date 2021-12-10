@@ -47,14 +47,18 @@
         </mat-error>
     </div>
 
-    <div *ngIf="question.type=='text'" class="question-box">
+    <div *ngIf="question.type=='text'|| question.type=='email'" class="question-box">
         <mat-form-field appearance="fill" class="width-100">
             <textarea matInput placeholder="Your text here" formControlName="{{question.nameFull}}_answer" rows="3"></textarea>
         </mat-form-field>
         <mat-error *ngIf="checkFormControl(questionForm,question.nameFull.concat('_answer'), 'required') && question.required">
             This field is required
         </mat-error>
+        <mat-error *ngIf="checkFormControl(questionForm,question.nameFull.concat('_answer'), 'email') && question.required">
+            You must insert a valid email address
+        </mat-error>
     </div>
+
 
     <div *ngIf="question.freeText">
         <mat-form-field appearance="fill" class="width-100">

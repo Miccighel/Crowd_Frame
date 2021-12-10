@@ -14,10 +14,18 @@
                     <p *ngIf="questionnaire.description">{{questionnaire.description}}</p>
                 </div>
                 <ng-container *ngFor="let question of this.questionnaire.questions; let j=index">
-                    <app-question [index]="(j+1).toString()" [question]="question" [questionForm]="questionnaireForm"></app-question>
+                    <app-question
+                            [index]="(j+1).toString()"
+                            [question]="question"
+                            [questionForm]="questionnaireForm">
+                    </app-question>
                     <ng-container *ngFor="let questionSub of question.questions; let k=index">
                         <div class="indent-1">
-                            <app-question [index]="(j+1).toString().concat('.').concat((k+1).toString())" [question]="questionSub" [questionForm]="questionnaireForm"></app-question>
+                            <app-question
+                                    [index]="(j+1).toString().concat('.').concat((k+1).toString())"
+                                    [question]="questionSub"
+                                    [questionForm]="questionnaireForm">
+                            </app-question>
                             <ng-container *ngFor="let questionSubSub of questionSub.questions; let l=index">
                                 <div class="indent-2">
                                     <app-question
@@ -61,12 +69,12 @@
 
             <!-- CRT questionnaire markup -->
             <mat-card-content *ngIf="questionnaire.type=='crt'">
-                <ng-container *ngFor="let question of questionnaire.questions; let j=index">
-                    <p class="questionnaire-question">{{question.text}}</p>
+                <div *ngFor="let question of questionnaire.questions; let j=index" class="question-box">
+                    <p class="question-text">{{question.text}}</p>
                     <mat-divider [inset]="true"></mat-divider>
-                    <mat-form-field appearance="fill">
+                    <mat-form-field appearance="fill" class="questionnaire-crt-value">
                         <mat-label>Answer</mat-label>
-                        <input matInput type="number" placeholder="0" min="0" formControlName="{{question.name}}" class="questionnaire-value">
+                        <input matInput type="number" placeholder="0" min="0" formControlName="{{question.name}}">
                         <mat-error *ngIf="checkFormControl(questionnaireForm,question.name, 'required')">
                             This field is required
                         </mat-error>
@@ -77,7 +85,7 @@
                             Max value allowed: 100
                         </mat-error>
                     </mat-form-field>
-                </ng-container>
+                </div>
             </mat-card-content>
 
             <!-- Likert questionnaire markup -->
@@ -90,9 +98,9 @@
                         <span class="matrix-header-text">{{mapping.label}}</span>
                     </div>
                 </div>
-                <mat-radio-group aria-labelledby="radio-button-label" *ngFor="let question of questionnaire.questions; let m=index" formControlName="{{question.name}}">
+                <mat-radio-group aria-labelledby="radio-button-label" *ngFor="let question of questionnaire.questions; let m=index" formControlName="{{question.name}}_answer">
                     <div>
-                        <p>{{m + 1}}) {{question.text}}</p>
+                        <p class="question-text">{{m + 1}} - {{question.text}}</p>
                     </div>
                     <div *ngFor="let mapping of questionnaire.mappings">
                         <mat-radio-button class="radio-button" value="{{mapping.value}}"></mat-radio-button>
@@ -104,13 +112,13 @@
             <mat-card-actions>
                 <p class="form-note">
                     <button mat-flat-button color="primary" matStepperNext
-                            *ngIf="!(step+1 >= this.questionnaireAmountStart && this.questionnaireAmountEnd == 0 && this.documentsAmount==0) && position=='start'"
+                            *ngIf="(step+1 <= this.questionnaireAmountStart && this.documentsAmount>0 && this.questionnaireAmountEnd>0) || (step+1 <= this.questionnaireAmountStart && this.documentsAmount>0 && this.questionnaireAmountEnd==0) && position=='start'"
                             [disabled]="!questionnaireForm.valid || this.taskCompleted"
                             (click)="emitQuestionnaireFilled('Next',step)">
                         Next
                     </button>
                     <button mat-flat-button color="primary" matStepperNext
-                            *ngIf="(step+1 >= this.questionnaireAmountStart && this.questionnaireAmountEnd == 0 && this.documentsAmount==0) && position=='start'"
+                            *ngIf="(step+1 >= this.questionnaireAmountStart && this.questionnaireAmountEnd == 0 && this.documentsAmount<=0) && position=='start'"
                             [disabled]="!questionnaireForm.valid || this.taskCompleted"
                             (click)="emitQuestionnaireFilled('Finish',step)">
                         Finish
@@ -133,7 +141,6 @@
                             (click)="emitQuestionnaireFilled('Finish',step)">
                         Finish
                     </button>
-                    {{this.taskCompleted}}
                     (*) you have to fill each field to proceed
                 </p>
             </mat-card-actions>

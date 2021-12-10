@@ -241,6 +241,10 @@ mat-horizontal-stepper mat-card-content, mat-horizontal-stepper mat-card-title, 
   font-size: 2em;
 }
 
+.dimension-matrix-container {
+  margin-bottom: 2%;
+}
+
 .dimension-matrix .matrix-header .matrix-header-value, .dimension-matrix .matrix-header .matrix-header-text {
   position: relative;
   right: 5px;

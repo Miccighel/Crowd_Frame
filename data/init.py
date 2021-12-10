@@ -1198,6 +1198,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             sample_questionnaires = [
                 {
                     "type": "standard",
+                    "description": "This is a standard questionnaire",
                     "position": "start",
                     "questions": [
                         {
@@ -1205,6 +1206,9 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                             "text": "What is your age range?",
                             "type": "mcq",
                             "required": True,
+                            "free_text": False,
+                            "show_detail": False,
+                            "detail": None,
                             "answers": [
                                 "0-18",
                                 "19-25",
@@ -1218,6 +1222,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 },
                 {
                     "type": "crt",
+                    "description": "This is a CRT questionnaire",
                     "position": "start",
                     "questions": [
                         {

@@ -51,6 +51,11 @@ mat-form-field {
   font-size: 2em;
 }
 
+.questionnaire-crt-value {
+  margin-top: 1%;
+  font-size: 2em;
+}
+
 .mat-divider {
   margin-bottom: 1%;
 }
@@ -90,6 +95,11 @@ mat-form-field {
   z-index: 1000;
   display: flex;
   vertical-align: middle;
+}
+
+.questionnaire-matrix .matrix-header-text {
+  font-size: 1.2em;
+  font-weight: normal;
 }
 
 .questionnaire-matrix .matrix-header div {
