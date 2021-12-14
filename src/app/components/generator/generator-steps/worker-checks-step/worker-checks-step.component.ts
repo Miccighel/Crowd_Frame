@@ -51,6 +51,10 @@ export class WorkerChecksStepComponent implements OnInit {
         this.configService = configService
         this.S3Service = S3Service
         this.localStorageService = localStorageService
+        this.initializeControls()
+    }
+
+    public initializeControls() {
         this.dataStored = new SettingsWorker()
         this.formStep = this._formBuilder.group({
             block: '',
@@ -70,6 +74,7 @@ export class WorkerChecksStepComponent implements OnInit {
         if (serializedWorkerChecks) {
             this.dataStored = new SettingsWorker(JSON.parse(serializedWorkerChecks))
         } else {
+            this.initializeControls()
             let rawWorkerChecks = await this.S3Service.downloadWorkers(this.configService.environment)
             this.dataStored = new SettingsWorker(rawWorkerChecks)
             this.localStorageService.setItem(`worker-settings`, JSON.stringify(rawWorkerChecks))

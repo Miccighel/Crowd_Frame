@@ -902,7 +902,6 @@ export class SkeletonComponent implements OnInit {
             /* The task is now started and the worker is looking at the first questionnaire, so the first start timestamp is saved */
             this.timestampsStart[0].push(Math.round(Date.now() / 1000));
 
-
             /* |--------- FINALIZATION ---------| */
 
             /* Section service gets updated with loaded values */
@@ -2135,7 +2134,9 @@ export class SkeletonComponent implements OnInit {
 
         /* 3) TIME SPENT CHECK performed here */
         timeSpentCheck = true;
-        for (let i = 0; i < this.timestampsElapsed.length; i++) if (this.timestampsElapsed[i] < timeCheckAmount) timeSpentCheck = false;
+        this.timestampsElapsed.forEach(item => {
+            if (item < timeCheckAmount) timeSpentCheck = false;
+        });
         computedChecks.push(timeSpentCheck)
 
         /* If each check is true, the task is successful, otherwise the task is failed (but not over if there are more tries) */
@@ -2218,10 +2219,10 @@ export class SkeletonComponent implements OnInit {
 
     public handleQuestionnaireFilled(data) {
         this.questionnairesForm[data['step']] = data['questionnaireForm']
+        this.performLogging(data['action'], data['step'])
         if (data['action'] == "Finish") {
             this.performQualityCheck()
         }
-        this.performLogging(data['action'], data['step'])
         if (data['action'] == 'Next') {
             this.nextStep()
         } else {

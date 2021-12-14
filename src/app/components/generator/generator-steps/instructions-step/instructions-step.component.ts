@@ -20,6 +20,8 @@ export class InstructionsStepComponent implements OnInit {
 
     @Input() type: string
     @Input() editorConfig
+    @Input() index: number
+    @Input() title: string
 
     dataStored: Array<Instruction>
 
@@ -38,6 +40,10 @@ export class InstructionsStepComponent implements OnInit {
         this.configService = configService
         this.S3Service = S3Service
         this.localStorageService = localStorageService
+        this.initializeControls()
+    }
+
+    public initializeControls() {
         this.dataStored = []
         this.formStep = this._formBuilder.group({
             instructions: this._formBuilder.array([])
@@ -55,8 +61,9 @@ export class InstructionsStepComponent implements OnInit {
                 this.dataStored.push(JSON.parse(item))
             })
         } else {
+            this.initializeControls()
             let rawInstructions = null
-            if(this.type=='general') {
+            if (this.type == 'general') {
                 rawInstructions = await this.S3Service.downloadGeneralInstructions(this.configService.environment)
             } else {
                 rawInstructions = await this.S3Service.downloadEvaluationInstructions(this.configService.environment)

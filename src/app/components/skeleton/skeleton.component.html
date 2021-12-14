@@ -128,13 +128,13 @@
 
                         <!-- Evaluation instructions markup -->
                         <div *ngIf="this.instructionsAmount>0" class="evaluation-instructions">
-                            <mat-divider [inset]="true"></mat-divider>
-                            <h2>Instructions</h2>
-                            <mat-divider [inset]="true"></mat-divider>
                             <div *ngFor="let instruction of this.instructions">
-                                <p>{{instruction.caption}}</p>
+                                <mat-divider [inset]="true"></mat-divider>
+                                <h2>{{instruction.caption}}</h2>
+                                <mat-divider [inset]="true"></mat-divider>
                                 <div [innerHTML]="instruction.text"></div>
                             </div>
+                            <mat-divider [inset]="true"></mat-divider>
                         </div>
 
                         <!--- Countdown markup --->
@@ -556,7 +556,7 @@
                                                                               (change)="storeDimensionValue($event, i, dimension.index)"
                                                                               [disabled]="this.countdownsExpired[i]">
                                                                 <span>{{mapping.label}}</span>
-                                                                <span *ngIf="mapping.description.length>0">({{mapping.description}})</span>
+                                                                <span *ngIf="mapping.description.length>0"> ({{mapping.description}})</span>
                                                             </mat-radio-button>
                                                         </mat-radio-group>
                                                     </div>
@@ -889,14 +889,14 @@
                         <button mat-flat-button color="primary" matStepperNext
                                 *ngIf="i+1>=this.documentsAmount && this.questionnaireAmountEnd == 0 && !this.annotator"
                                 [disabled]="(!documentsForm[i].valid && documentsForm[i].status != 'DISABLED'  || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted)"
-                                (click)="performQualityCheck(); performLogging('Finish', i); nextStep();">
+                                (click)="performLogging('Finish', i); performQualityCheck(); nextStep();">
                             Finish
                         </button>
 
                         <button mat-flat-button color="primary" matStepperNext
                                 *ngIf="i+1>=this.documentsAmount && this.questionnaireAmountEnd == 0 && this.annotator"
                                 [disabled]="(!documentsForm[i].valid && documentsForm[i].status != 'DISABLED'  || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted || !checkAnnotationConsistency(i))"
-                                (click)="performQualityCheck(); performLogging('Finish', i); nextStep();">
+                                (click)="performLogging('Finish', i); performQualityCheck(); nextStep();">
                             Finish
                         </button>
 

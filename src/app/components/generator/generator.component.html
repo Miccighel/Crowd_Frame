@@ -16,53 +16,53 @@
 
     <!-- Step #1 - Questionnaires -->
 
-    <mat-step [stepControl]="questionnaireStepForm" *ngIf="!redraw">
+    <mat-step [stepControl]="questionnaireStepForm">
         <ng-template matStepLabel>Questionnaires</ng-template>
         <app-questionnaire-step (formEmitter)="storeQuestionnaireForm($event)"></app-questionnaire-step>
     </mat-step>
 
     <!-- Step #2 - Dimensions -->
 
-    <mat-step [stepControl]="dimensionsStepForm" *ngIf="!redraw">
+    <mat-step [stepControl]="dimensionsStepForm">
         <ng-template matStepLabel>Dimensions</ng-template>
         <app-dimensions-step (formEmitter)="storeDimensionsForm($event)"></app-dimensions-step>
     </mat-step>
 
     <!-- Step #3 - General Instructions -->
 
-    <mat-step [stepControl]="generalInstructionsStepForm" *ngIf="!redraw">
+    <mat-step [stepControl]="generalInstructionsStepForm">
         <ng-template matStepLabel>General Instructions</ng-template>
-        <app-instructions-step #generalInstructions [type]="'general'" [editorConfig]="this.editorConfig" (formEmitter)="storeGeneralInstructionsForm($event)"></app-instructions-step>
+        <app-instructions-step #generalInstructions [type]="'general'" [editorConfig]="this.editorConfig" [index]="3" [title]="'Third, define all General Instructions here'" (formEmitter)="storeGeneralInstructionsForm($event)"></app-instructions-step>
     </mat-step>
 
     <!-- Step #4 - Evaluation Instructions -->
 
-    <mat-step [stepControl]="evaluationInstructionsStepForm" *ngIf="!redraw">
+    <mat-step [stepControl]="evaluationInstructionsStepForm">
         <ng-template matStepLabel>Evaluation Instructions</ng-template>
-        <app-instructions-step #evaluationInstructions [type]="'evaluation'" [editorConfig]="this.editorConfig" (formEmitter)="storeEvaluationlInstructionsForm($event)"></app-instructions-step>
+        <app-instructions-step #evaluationInstructions [type]="'evaluation'" [editorConfig]="this.editorConfig" [index]="4" [title]="'Fourth, define all Evaluation Instructions here'" (formEmitter)="storeEvaluationlInstructionsForm($event)"></app-instructions-step>
     </mat-step>
 
     <!-- Step #5 - Search Engine -->
 
-    <mat-step [stepControl]="searchEngineStepForm" *ngIf="!redraw">
+    <mat-step [stepControl]="searchEngineStepForm">
         <ng-template matStepLabel>Search Engine</ng-template>
         <app-search-engine-step (formEmitter)="storeSearchEngineStepForm($event)"></app-search-engine-step>
     </mat-step>
 
     <!-- Step #6 - Task Settings -->
-    <mat-step [stepControl]="taskSettingsStepForm" *ngIf="!redraw">
+    <mat-step [stepControl]="taskSettingsStepForm">
         <ng-template matStepLabel>Task Settings</ng-template>
         <app-task-settings-step (formEmitter)="storeTaskSettingsForm($event)"></app-task-settings-step>
     </mat-step>
 
     <!-- Step #7 - Worker Checks -->
-    <mat-step [stepControl]="workerChecksStepForm" *ngIf="batchesTreeInitialization && !redraw">
+    <mat-step [stepControl]="workerChecksStepForm" *ngIf="batchesTreeInitialization">
         <ng-template matStepLabel>Worker Checks</ng-template>
         <app-worker-checks [batchesTree]="batchesTree" (formEmitter)="storeWorkerChecksForm($event)"></app-worker-checks>
     </mat-step>
 
     <!-- Step #8 - Summary -->
-    <ng-container *ngIf="questionnaireStep && dimensionsStep && generalInstructionsStep && evaluationInstructionsStep && searchEngineStep && taskSettingsStep && workerChecksStep && !redraw">
+    <ng-container *ngIf="questionnaireStep && dimensionsStep && generalInstructionsStep && evaluationInstructionsStep && searchEngineStep && taskSettingsStep && workerChecksStep">
         <mat-step>
             <ng-template matStepLabel>Summary</ng-template>
             <app-summary-step

@@ -190,6 +190,7 @@ export class GeneratorComponent {
         this.batchesTree = []
         if (batchesTreeSerialized) {
             this.batchesTree = batchesTreeSerialized
+            this.batchesTreeInitialization = true
         } else {
             let workerSettings = await this.S3Service.downloadWorkers(this.configService.environment)
             let counter = 0
@@ -232,7 +233,6 @@ export class GeneratorComponent {
 
     async clonePreviousBatch(data: Object) {
         this.ngxService.startLoader('generator-inner')
-        this.emptyData()
         let taskName = null
         let batchName = null
         for (let taskNode of this.batchesTree) {
@@ -246,35 +246,33 @@ export class GeneratorComponent {
         this.configService.environment['taskName'] = taskName.slice(0, -1)
         this.configService.environment['batchName'] = batchName.slice(0, -1).replace(taskName, "")
         this.taskCloned = true
+        this.batchesTreeInitialization = false
         this.performGeneratorSetup()
-        this.changeDetector.detectChanges()
-        this.ngxService.stopLoader('generator-inner')
+        this.questionnaireStep.ngOnInit()
+        this.dimensionsStep.ngOnInit()
+        this.generalInstructionsStep.ngOnInit()
+        this.evaluationInstructionsStep.ngOnInit()
+        this.searchEngineStep.ngOnInit()
+        this.taskSettingsStep.ngOnInit()
+        this.workerChecksStep.ngOnInit()
     }
 
     async clearClonedBatch() {
         this.ngxService.startLoader('generator-inner')
+        this.batchCloned = new FormControl();
         this.localStorageService.clear()
-        this.batchCloned = new FormControl('')
-        this.taskCloned = false
-        this.emptyData()
-        this.generator.selectedIndex = 0
         this.configService.environment['taskName'] = this.configService.environment['taskNameInitial']
         this.configService.environment['batchName'] = this.configService.environment['batchNameInitial']
+        this.taskCloned = true
+        this.batchesTreeInitialization = false
         this.performGeneratorSetup()
-        this.changeDetector.detectChanges()
-        this.ngxService.stopLoader('generator-inner')
-    }
-
-    public emptyData() {
-        this.localStorageService.clear()
-        this.questionnaireStep.dataStored = []
-        this.dimensionsStep.dataStored = []
-        this.generalInstructionsStep.dataStored = []
-        this.evaluationInstructionsStep.dataStored = []
-        this.searchEngineStep.dataStored = new SettingsSearchEngine()
-        this.taskSettingsStep.dataStored = new SettingsTask()
-        this.workerChecksStep.dataStored = new SettingsWorker()
-        this.generator.selectedIndex = 0
+        this.questionnaireStep.ngOnInit()
+        this.dimensionsStep.ngOnInit()
+        this.generalInstructionsStep.ngOnInit()
+        this.evaluationInstructionsStep.ngOnInit()
+        this.searchEngineStep.ngOnInit()
+        this.taskSettingsStep.ngOnInit()
+        this.workerChecksStep.ngOnInit()
     }
 
     /* The "stored" within each generator step may be in the form:

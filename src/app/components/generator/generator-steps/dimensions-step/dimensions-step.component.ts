@@ -1,5 +1,5 @@
 import {Component, EventEmitter, OnInit, Output} from '@angular/core';
-import { S3Service } from 'src/app/services/s3.service';
+import {S3Service} from 'src/app/services/s3.service';
 import {ConfigService} from "../../../../services/config.service";
 import {LocalStorageService} from "../../../../services/localStorage.service";
 import {FormArray, FormBuilder, FormGroup, Validators} from "@angular/forms";
@@ -44,7 +44,7 @@ export class DimensionsStepComponent implements OnInit {
     /* Service which wraps the interaction with browser's local storage */
     localStorageService: LocalStorageService;
 
-     /* STEP #2 - Dimensions */
+    /* STEP #2 - Dimensions */
 
     dataStored: Array<Dimension>
 
@@ -86,6 +86,10 @@ export class DimensionsStepComponent implements OnInit {
         this.configService = configService
         this.S3Service = S3Service
         this.localStorageService = localStorageService
+        this.initializeControls()
+    }
+
+    public initializeControls() {
         this.dataStored = []
         this.formStep = this._formBuilder.group({
             dimensions: this._formBuilder.array([])
@@ -102,6 +106,7 @@ export class DimensionsStepComponent implements OnInit {
                 this.dataStored.push(JSON.parse(item))
             })
         } else {
+            this.initializeControls()
             let rawDimensions = await this.S3Service.downloadDimensions(this.configService.environment)
             rawDimensions.forEach((data, index) => {
                 let dimension = new Dimension(index, data)

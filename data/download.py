@@ -850,13 +850,18 @@ if not os.path.exists(df_data_path):
                             questions = current_answers.keys()
                             for index_sub, question in enumerate(questions):
                                 question_data = questionnaires[index_main]["questions"][index_sub]
-                                print(current_answers)
-                                print(question_data)
-                                assert False
-                                row[f"q_{questionnaires[index_main]['index']}_{question}_question"] = questionnaires[index_main]["questions"][index_sub]["text"]
+                                row[f"q_{questionnaires[index_main]['index']}_{question}_index"] = question_data["index"]
+                                row[f"q_{questionnaires[index_main]['index']}_{question}_name"] = question_data["name"]
+                                row[f"q_{questionnaires[index_main]['index']}_{question}_type"] = question_data["type"] if "type" in question_data else None
+                                row[f"q_{questionnaires[index_main]['index']}_{question}_name_full"] = question_data["nameFull"]
+                                row[f"q_{questionnaires[index_main]['index']}_{question}_required"] = question_data["required"] if "required" in question_data else None
+                                row[f"q_{questionnaires[index_main]['index']}_{question}_detail"] = question_data["detail"] if "detail" in question_data else None
+                                row[f"q_{questionnaires[index_main]['index']}_{question}_show_detail"] = question_data["showDetail"] if "showDetail" in question_data else None
+                                row[f"q_{questionnaires[index_main]['index']}_{question}_free_text"] = question_data["freeText"] if "freeText" in question_data else None
+                                row[f"q_{questionnaires[index_main]['index']}_{question}_text"] = question_data["text"]
                                 row[f"q_{questionnaires[index_main]['index']}_{question}_value"] = current_answers[question]
                                 if questionnaires[index_main]["type"] == "standard":
-                                    row[f"q_{questionnaires[index_main]['index']}_{question}_answer"] = questionnaires[index_main]["questions"][index_sub]["answers"][int(current_answers[question])]
+                                    row[f"q_{questionnaires[index_main]['index']}_{question}_answer"] = question_data["answers"][int(current_answers[question])]
                                 else:
                                     row[f"q_{questionnaires[index_main]['index']}_{question}_answer"] = np.nan
                                 row[f"q_{questionnaires[index_main]['index']}_time_elapsed"] = round(timestampsElapsed[questionnaires[index_main]['index']], 2)

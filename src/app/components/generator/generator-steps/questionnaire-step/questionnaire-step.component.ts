@@ -60,17 +60,15 @@ export class QuestionnaireStepComponent implements OnInit {
         this.configService = configService
         this.S3Service = S3Service
         this.localStorageService = localStorageService
+        this.initializeControls()
+    }
+
+    public initializeControls() {
         this.dataStored = []
         this.formStep = this._formBuilder.group({
             questionnaires: this._formBuilder.array([])
         });
         this.formEmitter = new EventEmitter<FormGroup>();
-    }
-
-    public resetData() {
-        this.formStep = this._formBuilder.group({
-            questionnaires: this._formBuilder.array([])
-        });
     }
 
     public async ngOnInit() {
@@ -83,6 +81,8 @@ export class QuestionnaireStepComponent implements OnInit {
                 this.dataStored.push(JSON.parse(item))
             })
         } else {
+            console.log(this.configService.environment)
+            this.initializeControls()
             let rawQuestionnaires = await this.S3Service.downloadQuestionnaires(this.configService.environment)
             rawQuestionnaires.forEach((data, index) => {
                 let questionnaire = new Questionnaire(index, data)
@@ -215,11 +215,11 @@ export class QuestionnaireStepComponent implements OnInit {
                 case 'likert':
                     for (let questionIndex in questionnaire.questions) {
                         delete questionnaire.questions[questionIndex].answers;
-                        questionnaire.questions[questionIndex]['type']='mcq'
-                        questionnaire.questions[questionIndex]['required']=true
-                        questionnaire.questions[questionIndex]['free_text']=false
-                        questionnaire.questions[questionIndex]['detail']=null
-                        questionnaire.questions[questionIndex]['show_detail']=false
+                        questionnaire.questions[questionIndex]['type'] = 'mcq'
+                        questionnaire.questions[questionIndex]['required'] = true
+                        questionnaire.questions[questionIndex]['free_text'] = false
+                        questionnaire.questions[questionIndex]['detail'] = null
+                        questionnaire.questions[questionIndex]['show_detail'] = false
                     }
                     break;
 
@@ -231,11 +231,11 @@ export class QuestionnaireStepComponent implements OnInit {
                             answersStringArray.push(questionnaire.questions[questionIndex].answers[answerIndex].answer);
                         }
                         questionnaire.questions[questionIndex].answers = answersStringArray;
-                        questionnaire.questions[questionIndex]['type']='mcq'
-                        questionnaire.questions[questionIndex]['required']=true
-                        questionnaire.questions[questionIndex]['free_text']=false
-                        questionnaire.questions[questionIndex]['detail']=null
-                        questionnaire.questions[questionIndex]['show_detail']=false
+                        questionnaire.questions[questionIndex]['type'] = 'mcq'
+                        questionnaire.questions[questionIndex]['required'] = true
+                        questionnaire.questions[questionIndex]['free_text'] = false
+                        questionnaire.questions[questionIndex]['detail'] = null
+                        questionnaire.questions[questionIndex]['show_detail'] = false
                     }
                     delete questionnaire.mapping;
                     break;
