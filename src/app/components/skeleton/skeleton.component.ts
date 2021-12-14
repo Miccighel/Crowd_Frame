@@ -2586,17 +2586,19 @@ export class SkeletonComponent implements OnInit {
      * The comment can be typed in a textarea and when the worker clicks the "Send" button such comment is uploaded to an Amazon S3 bucket.
      */
     public async performCommentSaving() {
-        let data = {}
-        let actionInfo = {
-            try: this.currentTry,
-            sequence: this.sequenceNumber,
-            element: "comment"
-        };
-        data["info"] = actionInfo
-        data['value'] = this.commentForm.value
-        let uploadStatus = await this.S3Service.uploadComment(this.configService.environment, this.worker, this.unitId, this.commentForm.value, this.currentTry)
-        await this.dynamoDBService.insertData(this.configService.environment, this.workerIdentifier, this.unitId, this.currentTry, this.sequenceNumber, data)
-        this.sequenceNumber = this.sequenceNumber + 1
+        if (!(this.workerIdentifier === null)) {
+            let data = {}
+            let actionInfo = {
+                try: this.currentTry,
+                sequence: this.sequenceNumber,
+                element: "comment"
+            };
+            data["info"] = actionInfo
+            data['comment'] = this.commentForm.value["comment"]
+            let uploadStatus = await this.S3Service.uploadComment(this.configService.environment, this.worker, this.unitId, data, this.currentTry)
+            await this.dynamoDBService.insertData(this.configService.environment, this.workerIdentifier, this.unitId, this.currentTry, this.sequenceNumber, data)
+            this.sequenceNumber = this.sequenceNumber + 1
+        }
         this.commentSent = true;
     }
 

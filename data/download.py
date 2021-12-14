@@ -471,18 +471,16 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
                                 "time_submit": time,
                                 "serialization": data
                             })
-                        # TODO: Quando i check verranno salvati su Dynamo
-                        # elif data['info']['element'] == 'checks':
-                        #    worker_object['checks'].append({
-                        #        "time_submit": time,
-                        #        "serialization": data
-                        #    })
+                        elif data['info']['element'] == 'checks':
+                            worker_object['checks'].append({
+                                "time_submit": time,
+                                "serialization": data
+                            })
                         elif data['info']['element'] == 'comment':
                             worker_object['comments'].append({
                                 "time_submit": time,
                                 "serialization": data
                             })
-
                     if 'worker' in data:
                         worker_object['task']['folder'] = data['worker']['folder']
                         if "cloudflareProperties" in data['worker'].keys() and 'uag' in data['worker']["cloudflareProperties"].keys() and len(worker_object['uag']) <= 0:
@@ -514,38 +512,15 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
                                 if attribute in allowed_ip_properties:
                                     worker_object['ip'][attribute] = value
                         data.pop('worker')
-                        try:
-                            check_for_try = None
-                            for check_data in worker_object['checks']:
-                                if check_data['serialization']['try'] == current_try:
-                                    check_for_try = check_data
-                            if not check_for_try:
-                                data = json.loads(
-                                    s3_resource.Object(aws_private_bucket, f"{task_name}/{worker_object['task']['batch_name']}/Data/{worker_id}/{worker_object['task']['unit_id']}/checks_try_{current_try}.json").get()[
-                                        'Body'].read())
-                                data_parsed = {}
-                                for attribute, value in data.items():
-                                    attribute_parsed = re.sub('(?<!^)(?=[A-Z])', '_', attribute).lower()
-                                    data_parsed[attribute_parsed] = value
-                                data_parsed['try'] = current_try
-                                final_object = {
-                                    # "time_submit": time,
-                                    "serialization": data_parsed
-                                }
-                                worker_object['checks'].append(final_object)
-                        except ClientError as e:
-                            continue
-                        except KeyError as e:
-                            continue
 
                 if log_data_source:
                     paginator = dynamo_db.get_paginator('query')
                     for page in paginator.paginate(
-                      TableName=log_data_source,
-                      KeyConditionExpression="worker = :worker",
-                      ExpressionAttributeValues={
-                          ":worker": {'S': worker_id}
-                      }, Select='ALL_ATTRIBUTES'
+                        TableName=log_data_source,
+                        KeyConditionExpression="worker = :worker",
+                        ExpressionAttributeValues={
+                            ":worker": {'S': worker_id}
+                        }, Select='ALL_ATTRIBUTES'
                     ):
                         for item in page['Items']:
                             data = {
@@ -564,10 +539,11 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
                 worker_paid = False
                 check_final_data = None
                 for check_data in worker_object['checks']:
-                    if int(check_data['serialization']['try']) == int(worker_object['task']['try_last']):
+                    if int(check_data['serialization']['info']['try']) == int(worker_object['task']['try_last']):
                         check_final_data = check_data
                 if check_final_data:
-                    if check_final_data['serialization']['checks']['globalFormValidity'] == True and check_final_data['serialization']['checks']['timeSpentCheck'] == True and any(check_final_data['serialization']['checks']['goldChecks']):
+                    if check_final_data['serialization']['checks']['globalFormValidity'] == True and check_final_data['serialization']['checks']['timeSpentCheck'] == True and any(
+                        check_final_data['serialization']['checks']['goldChecks']):
                         worker_paid = True
                 else:
                     worker_paid = False
@@ -761,7 +737,6 @@ else:
     console.print(f"Logs dataframe [yellow]already detected[/yellow], skipping creation")
     console.print(f"Serialized at path: [cyan on white]{df_log_path}")
 
-
 console.rule("5 - Building [cyan on white]workers_data[/cyan on white] dataframe")
 
 df_data_path = f"{models_path}workers_data.csv"
@@ -835,7 +810,7 @@ if not os.path.exists(df_data_path):
                     if info['element'] == 'all' and info['action'] == 'Finish':
 
                         for check_data in checks:
-                            if int(check_data['serialization']['try']) == int(info['try']):
+                            if int(check_data['serialization']['info']['try']) == int(info['try']):
                                 row["global_form_validity"] = check_data['serialization']["checks"]["globalFormValidity"]
                                 row["gold_checks"] = any(check_data['serialization']["checks"]["goldChecks"])
                                 row["time_check_amount"] = check_data['serialization']["checks"]["timeCheckAmount"]
@@ -844,7 +819,7 @@ if not os.path.exists(df_data_path):
                         for comment_data in comments:
                             if int(comment_data['serialization']['info']['try']) == int(info['try']):
                                 row["comment_time_submit"] = comment_data['time_submit']
-                                row["comment_text"] = sanitize_string(comment_data['serialization']['value']['comment'])
+                                row["comment_text"] = sanitize_string(comment_data['serialization']['comment'])
 
                         for index_main, current_answers in enumerate(questionnaireAnswers):
                             questions = current_answers.keys()
@@ -1090,8 +1065,8 @@ dataframe = pd.DataFrame(columns=[
     'document_id'
 ])
 
-def parse_dimensions_selected(df, worker_id, worker_paid, task, info, documents, dimensions, dimensions_selected_data, timestamp_start, timestamp_end):
 
+def parse_dimensions_selected(df, worker_id, worker_paid, task, info, documents, dimensions, dimensions_selected_data, timestamp_start, timestamp_end):
     for document_index, dimensions_selected in enumerate(dimensions_selected_data):
 
         for dimension_current in dimensions_selected['data']:
@@ -1119,8 +1094,8 @@ def parse_dimensions_selected(df, worker_id, worker_paid, task, info, documents,
                 'batch_name': task['batch_name'],
                 'unit_id': task['unit_id'],
                 'current_try': info['try'],
-                'document_index': document_index,
-                'document_id': documents[document_index]['id'],
+                'document_index': dimension_current['document'],
+                'document_id': documents[dimension_current['document']]['id'],
                 'dimension_index': dimension_current['dimension'],
                 'dimension_name': dimension_data['name'],
                 'timestamp_start': timestamp_start,
@@ -1135,6 +1110,7 @@ def parse_dimensions_selected(df, worker_id, worker_paid, task, info, documents,
             df = df.append(row, ignore_index=True)
 
     return df
+
 
 if not os.path.exists(df_dim_path):
 
@@ -1174,7 +1150,6 @@ if not os.path.exists(df_dim_path):
                     counter = 0
 
                     if info['element'] == 'all' and info['action'] == 'Finish':
-
                         dimensions_selected_data = data_try['serialization']["dimensions_selected"]
 
                         dataframe = parse_dimensions_selected(dataframe, worker_id, worker_paid, task, info, documents, dimensions, dimensions_selected_data, timestamp_start, timestamp_end)
@@ -1184,7 +1159,6 @@ if not os.path.exists(df_dim_path):
                 timestamps_found = []
 
                 for document_data in data_partial['documents_answers']:
-
                     timestampsElapsed = document_data['serialization']["timestamps_elapsed"]
                     timestampsStart = document_data['serialization']["timestamps_start"]
                     timestampsEnd = document_data['serialization']["timestamps_end"]
@@ -1230,8 +1204,8 @@ dataframe = pd.DataFrame(columns=[
     "index_selected"
 ])
 
-def parse_responses(df, worker_id, worker_paid,  info, queries, responses_retrieved, responses_selected):
 
+def parse_responses(df, worker_id, worker_paid, info, queries, responses_retrieved, responses_selected):
     for document_index, responses_retrieved_document in enumerate(responses_retrieved):
         for query_index, response_retrieved in enumerate(responses_retrieved_document["data"]):
             row = {
@@ -1270,7 +1244,7 @@ def parse_responses(df, worker_id, worker_paid,  info, queries, responses_retrie
             row = df.loc[
                 (df["worker_id"] == worker_id) &
                 (df["current_try"] == int(info['try'])) &
-                (df["document_index"] == document_index) &
+                (df["document_index"] == response_selected["document"]) &
                 (df["query_index"] == response_selected["query"]) &
                 (df["response_url"] == response_selected["response"]['url']) &
                 (df["response_name"] == response_selected["response"]['name']) &
@@ -1279,6 +1253,7 @@ def parse_responses(df, worker_id, worker_paid,  info, queries, responses_retrie
             df.at[row.index, 'index_selected'] = response_index
 
     return df
+
 
 if not os.path.exists(df_url_path):
 
@@ -1300,7 +1275,6 @@ if not os.path.exists(df_url_path):
             if len(data_full) > 0:
 
                 for data_try in data_full:
-
                     info = data_try['serialization']['info']
                     queries = data_try['serialization']['queries']
                     responses_retrieved = data_try['serialization']['responses_retrieved']
@@ -1311,8 +1285,7 @@ if not os.path.exists(df_url_path):
             else:
 
                 for document_data in data_partial['documents_answers']:
-
-                    info =  document_data['serialization']['info']
+                    info = document_data['serialization']['info']
                     queries = document_data['serialization']['queries']
                     responses_retrieved = [document_data['serialization']['responses_retrieved']]
                     responses_selected = [document_data['serialization']['responses_selected']]
@@ -1328,7 +1301,6 @@ else:
 
     console.print(f"URL analysis dataframe [yellow]already detected[/yellow], skipping creation")
     console.print(f"Serialized at path: [cyan on white]{df_url_path}")
-
 
 # console.rule("4 - Checking missing HITs")
 #
