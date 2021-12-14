@@ -2,7 +2,7 @@
     "Version": "2012-10-17",
     "Statement": [
         {
-            "Sid": "lambdaToDynamoS3",
+            "Sid": "AllowDynamoDBAndS3Interaction",
             "Effect": "Allow",
             "Action": [
                 "sqs:ReceiveMessage",

@@ -2,6 +2,7 @@ import titleize from 'titleize';
 
 export class SettingsTask {
 
+  modality: string;
     allowed_tries: number;
     time_check_amount: number;
     attributes: Array<Attribute>
@@ -28,12 +29,19 @@ export class SettingsTask {
                 delete data['domains_to_filter']
             }
         }
+        this.modality =  data ? data['modality'] : null;
         this.allowed_tries = data ? parseInt((data["allowed_tries"])) : 0;
         this.time_check_amount = data ? parseInt((data["time_check_amount"])) : 0;
         this.attributes = new Array<Attribute>()
         if (data) {
             if ('attributes' in data) {
                 let attributes = data["attributes"] as Array<JSON>
+                for (let index = 0; index < attributes.length; index++) {
+                    this.attributes.push(new Attribute(index, attributes[index]))
+                }
+            }
+            if ('statements' in data) {
+                let attributes = data["statements"][0] as Array<JSON>
                 for (let index = 0; index < attributes.length; index++) {
                     this.attributes.push(new Attribute(index, attributes[index]))
                 }
@@ -120,7 +128,7 @@ export class Attribute {
     ) {
         this.index = index
         this.name = data["name"]
-        this.name_pretty = titleize(data["name"].replace("_", " "))
+        this.name_pretty = ("name_pretty" in data) ? data["name_pretty"] : titleize(data["name"].replace("_", " "))
         this.show = data["show"];
         this.annotate = data["annotate"];
         this.required = data["required"];

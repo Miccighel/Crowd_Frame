@@ -1,168 +1,10 @@
-/* |--- GENERAL STYLES  --| */
-
 ::ng-deep .mat-horizontal-stepper-header {
   pointer-events: none !important;
 }
 
-.radio-button-group {
-  display: flex;
-  flex-direction: column;
-  margin: 15px 0;
-}
-
-.radio-button-group-horizontal {
-  display: inline;
-}
-
-.radio-button {
-  margin: 5px;
-}
-
-button:nth-child(2) {
-  margin-left: 5px;
-}
-
-.document-section mat-form-field, .questionnaire-section mat-form-field {
-  margin-bottom: 1%;
-  max-width: 70%;
-}
-
-.form-note {
-  button:last-child {
-    margin-right: 1%;
-  }
-  font-size: 1em;
-}
-
-mat-card-title {
-  padding-top: 1%;
-  padding-bottom: 1%;
-  margin-bottom: 1%;
-}
-
-.text-lighter {
-  font-weight: lighter;
-}
-
-/* Questionnaires form */
-
-.questionnaire-body {
-
-  mat-form-field {
-    width: 100%;
-  }
-
-  .questionnaire-question {
-    margin-top: 1%;
-    margin-bottom: 1%;
-    font-size: 1.5em;
-    font-weight: normal;
-  }
-
-  .questionnaire-value {
-    font-size: 2em;
-  }
-
-  .mat-divider {
-    margin-bottom: 1%;
-  }
-
-}
-
-/* Task specific styles */
-
-.evaluation-instructions {
-  h2 {
-    font-weight: lighter;
-  }
-  margin-bottom: 1%;
-}
-
-
-.question label {
-  font-weight: bold;
-}
-
-.question .question-detail {
-  box-shadow: none;
-}
-
-.question-detail mat-panel-title {
-  text-transform: uppercase;
-  flex-grow: 0;
-}
-
-.question-detail mat-panel-description {
-  font-weight: normal;
-  text-align: left;
-}
-
-.question-detail mat-expansion-panel-header, .question-detail mat-expansion-panel {
-  padding-left: 0.75%;
-}
-
-.questionnaire-matrix .matrix-header {
-  padding-top: 1.5%;
-  padding-bottom: 1.5%;
-  border: 0;
-  box-shadow: 0 0 0 0;
-  border-radius: 0;
-  position: -webkit-sticky;
-  position: sticky;
-  background-color: white;
-  top: 0;
-  z-index: 1000;
-  display: flex;
-  vertical-align: middle;
-}
-
-.questionnaire-matrix .matrix-header div {
-  text-align: center;
-  flex: 1 0;
-}
-
-.questionnaire-matrix .matrix-header > div:first-child {
-  flex-basis: 20%;
-  text-align: justify;
-}
-
-.questionnaire-matrix mat-radio-group {
-  margin-top: 1%;
-  margin-bottom: 1%;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-}
-
-.questionnaire-matrix mat-radio-group > div:first-child {
-  text-align: justify;
-  flex-basis: 20%;
-}
-
-.questionnaire-matrix mat-radio-group > div {
-  order: 6;
-  text-align: center;
-  flex: 1;
-}
-
-.questionnaire-matrix mat-radio-group > div p {
-  margin: 0;
-}
-
-mat-card-content mat-form-field label {
-  font-weight: bold;
-}
-
-mat-card-content mat-form-field input {
-  margin-top: 0.5%;
-}
-
-mat-card-content p span.hit-value {
-  font-weight: bold;
-}
-
-mat-card-content label {
-  font-weight: bold;
+mat-horizontal-stepper mat-card-content, mat-horizontal-stepper mat-card-title, mat-horizontal-stepper mat-card-actions {
+  width: 75% !important;
+  margin: auto !important;
 }
 
 .statement {
@@ -210,6 +52,131 @@ mat-card-content label {
   flex-grow: 0;
 }
 
+.statement-div {
+  max-width: 600px;
+  margin: auto;
+  font-size: large;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.annotation-recap {
+  padding-bottom: 3px;
+}
+
+.annotation-quote {
+  display: flex;
+  height: 0%;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.inner-annotation-quote {
+  display: flex;
+  height: 0%;
+  align-items: center;
+  justify-content: space-evenly;
+  width: 100%;
+}
+
+.annotation-current-text {
+  display: flex;
+  margin-left: 5px;
+  height: 0%;
+  align-items: center;
+}
+
+.annotation-options {
+  display: flex;
+  margin: auto;
+  padding: 5px;
+  justify-content:center;
+  height: 0%;
+  align-items: center;
+  text-align: right;
+  max-width: 650px;
+}
+
+.annotation-type {
+  text-align: center;
+  padding-top: 5px;
+}
+
+.inner-annotation-reference {
+  background-color: #F0F0F0;
+  padding: 5px;
+}
+
+.inner-annotation-checkbox-delete {
+  text-align: center;
+  padding-top: 5px;
+}
+
+.reference-form {
+  margin-top: 5px;
+  margin-bottom: 5px;
+  text-align: center;
+  justify-content: space-evenly;
+  border-style: dashed;
+  border-color: dimgray;
+  padding: 5px;
+}
+
+.reference-radio-group-button {
+  margin-top: 2px;
+  margin-bottom: 2px;
+}
+
+.mat-radio-group {
+  //display: flex; remove for pairwise method
+  text-align: center;
+  justify-content: space-evenly;
+}
+
+.radio-group {
+  display: flex;
+  margin: auto;
+  padding: 5px;
+  justify-content: space-evenly;
+  height: 0%;
+  align-items: center;
+  max-width: 650px;
+}
+
+.radio-group-button {
+  margin-left: 7px;
+  margin-right: 7px;
+}
+
+.inner-annotation-text {
+  margin-top: 5px;
+  margin-bottom: 5px;
+
+  justify-content: space-evenly;
+  border-style: dashed;
+  border-color: dimgray;
+  padding: 5px;
+}
+
+
+.document-section mat-form-field {
+  margin-bottom: 1%;
+  max-width: 70%;
+}
+
+
+.form-note {
+  button:last-child {
+    margin-right: 1%;
+  }
+  font-size: 1em;
+}
+
+
+.inner-annotation-delete {
+  margin-left: 5px;
+}
 
 .url-field {
   display: none;
@@ -303,16 +270,8 @@ mat-card-content label {
   margin: 0;
 }
 
-mat-card-title, .dimension h2, .instructions h2 {
+.dimension h2, .instructions h2 {
   font-weight: lighter;
-}
-
-mat-card-content {
-  padding-top: 0.5%;
-}
-
-button {
-  text-transform: uppercase;
 }
 
 .comment-form {
@@ -342,6 +301,10 @@ button {
 
 .mat-slider {
   width: 100%;
+}
+
+.note-current-text {
+  max-width: 33%;
 }
 
 /* |--- TOKEN INPUT SECTION STYLES --| */
@@ -379,27 +342,14 @@ button {
   text-align: center;
 }
 
-/* |--- TASK BODY SECTION STYLES --| */
+/* Task specific styles */
 
-/* Stepper */
-
-mat-horizontal-stepper {
-  background-color: transparent;
-  margin-left: auto;
-  margin-right: auto;
-  width: 96%;
-  margin-bottom: 2%;
+.evaluation-instructions {
+  h2 {
+    font-weight: lighter;
+  }
+  margin-bottom: 1%;
 }
-
-mat-horizontal-stepper mat-card-content, mat-horizontal-stepper mat-card-title, mat-horizontal-stepper mat-card-actions {
-  width: 75%;
-  margin: auto;
-}
-
-mat-step form mat-card-content, mat-step form mat-card-actions {
-  padding: 1%;
-}
-
 
 /* |--- OUTCOME SECTION STYLES ---| */
 
@@ -535,7 +485,7 @@ mat-step form mat-card-content, mat-step form mat-card-actions {
   font-weight: bold;
 }
 
-/* |--- COUNTDOWN STYLES --| */
+/* |--- COUNTDOWN ---| */
 
 .sticky {
   position: -webkit-sticky; /* Safari */
@@ -555,6 +505,7 @@ mat-step form mat-card-content, mat-step form mat-card-actions {
   padding-top: 16px;
 }
 
+/* |--- INSTRUCTIONS SECTIONS ---| */
 
 .instructions-section {
   max-width: 80%;
@@ -567,7 +518,6 @@ mat-step form mat-card-content, mat-step form mat-card-actions {
 .instructions-section mat-card {
   margin: auto;
 }
-
 
 .instructions-section mat-card-actions {
   text-align: center;
@@ -584,8 +534,6 @@ mat-step form mat-card-content, mat-step form mat-card-actions {
   border-bottom: 1px solid rgba(0, 0, 0, 0.12);
   font-weight: lighter !important;
 }
-
-/* |--- ANNOTATION STYLES --| */
 
 .annotations {
   margin-bottom: 1%;
@@ -711,4 +659,231 @@ mat-step form mat-card-content, mat-step form mat-card-actions {
 .reference-radio-group-button {
   margin-top: 2px;
   margin-bottom: 2px;
+}
+
+.pairwise{
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+}
+
+/*
+  Classes when the statement is not selected
+  @AggiunteAbbondo
+*/
+
+.pairwise_value_selected{
+  text-align: center;width:100%;margin:0 auto
+}
+
+.boxtext{
+  width: 80%;
+  background-color: rgba(0, 0, 0, 0.1);
+  height: 30%;
+  border-radius: 10px;
+  margin:0 auto;
+  padding: 5px;
+  margin-top: 10px;
+  text-align: center;
+  justify-content: center; /* align horizontal */
+  align-items: center;
+}
+
+.boxvalues{
+  width: 50%;
+  height: 100%;
+  margin:0 auto;
+  margin-top: 15px;
+}
+.caption {
+  display: block;
+}
+.statementTitle{
+  text-align: center
+}
+
+
+/*
+  Classes pairwise splited
+  @AggiunteAbbondo
+*/
+.pairwise-cointainer{
+
+  position: -webkit-sticky; /* Safari */
+  position: sticky;
+  top: 0;
+  margin: 20px;
+  z-index: 110;
+  background-color: #FCFCFC;
+  width: 100%;
+  
+}
+.divsplit{
+  display: table;
+  border-spacing: 40px;
+  width: 100%;
+}
+.statementsplit{
+  display: table-cell;
+  width: 50%;
+  background-color:#FCFCFC;
+  height: 100%;
+  padding-top: 1px;
+  margin-top: -1px;
+  overflow: hidden;
+  border-radius:5px;
+  cursor: pointer;
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+  z-index: 50;
+  position:relative;
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+.boxtextsplit{
+  width: 80%;
+  background-color: rgba(0, 0, 0, 0.1);
+  height: 30%;
+  border-radius: 10px;
+  margin:0 auto;
+  padding: 5px;
+  margin-top: 10px;
+  text-align: center;
+  justify-content: center; /* align horizontal */
+  align-items: center;
+}
+.spanboxtext{
+  height: 100%;
+}
+
+.boxvaluessplit{
+  width: 100%;
+  height: 100%;
+  margin-left: 3%;
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+
+
+
+.captionsplit {
+  display: block;
+  margin: 5px;
+}
+.statementTitlesplit{
+  text-align: center
+}
+
+.titlepairwise{
+  font-size: 25px;
+  font-weight: bold;
+  text-align: center;
+}
+
+/*
+  Pairwise splitted dimension css
+  @AggiunteAbbondo
+*/
+.dimension-content-split{
+  display: table;
+  border-spacing: 2cm 0px;
+  width: 100%;
+  margin-bottom: 30px;
+}
+.dimension-split-inside{
+  display: table-cell;
+  margin-bottom: 30px;
+
+}
+.spanDocument{
+  font-size: 15px;
+  font-weight: bold;
+  text-align: center;
+  padding-bottom: 20px;
+}
+
+
+.dimension-name-center{
+  text-align: center;
+}
+
+
+
+.div_radiobutton_check_pairwise{
+  margin:0 auto;
+  text-align: center;
+  display: block;
+  clear: both;
+}
+.radiobutton_check_pairwise{
+  margin-left:25px;
+  margin-bottom: 20px;
+
+}
+
+.spanbutton{
+  font-size: 20px;
+  font-weight: bold;
+}
+.both{
+  font-size: 15px;
+}
+
+.dimension-box{
+  display: table-cell;
+  background-color: #FCFCFC;
+  padding-top: 1px;
+  margin-top: -1px;
+  overflow: hidden;
+  border-radius:5px;
+  cursor: pointer;
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+}
+.test{
+  opacity: 100%;
+  z-index: 110;
+}
+
+//Phone respoinsive
+
+@media only screen and (max-width: 1000px) {
+  .dimension-split-inside{
+    display: table-row;
+  }
+  .dimension-box{
+    display: table-row;
+  }
+  .statementsplit{
+    display: table-row;
+  }
+  .statementsplitafterclicked{
+    display: table-row;
+  }
+  .tester{
+    display: table-row;
+  }
+  .boxtextsplit{
+    height: 30%;
+  }
+  .pairwise-cointainer{
+    position: relative;
+  }
+}
+
+.parent {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+
+}
+
+.tester{
+  width: 330px;
+  height: 330px;
+  position:absolute;
+  top: 0;
+  left: 0;
+  opacity: 0%;
 }

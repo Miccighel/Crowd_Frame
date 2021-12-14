@@ -5,7 +5,7 @@ import {
     Component,
     ViewChild,
     ViewChildren,
-    QueryList, OnInit
+    QueryList, OnInit, Input, ElementRef
 } from "@angular/core";
 /* Reactive forms modules */
 import {AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
@@ -38,15 +38,20 @@ import {NoteStandard} from "../../models/notes_standard";
 import {NoteLaws} from "../../models/notes_laws";
 import {MatRadioChange} from "@angular/material/radio";
 import {MatCheckboxChange} from "@angular/material/checkbox";
-import {ButtonDirective} from "./skeleton.directive";
+import {Object} from 'aws-sdk/clients/customerprofiles';
+
 import {SectionService} from "../../services/section.service";
-import CryptoES from "crypto-es";
+import {DynamoDBService} from "../../services/dynamoDB.service";
+import { Subject } from "rxjs";
+import { fadeIn } from "../chatbot/animations";
+
 
 /* Component HTML Tag definition */
 @Component({
     selector: 'app-skeleton',
     templateUrl: './skeleton.component.html',
     styleUrls: ['./skeleton.component.scss'],
+    animations: [fadeIn],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
@@ -66,6 +71,7 @@ export class SkeletonComponent implements OnInit {
     configService: ConfigService;
     /* Service which wraps the interaction with S3 */
     S3Service: S3Service;
+    dynamoDBService: DynamoDBService;
     /* Service to detect user's device */
     deviceDetectorService: DeviceDetectorService;
     /* Service to log to the server */
@@ -178,11 +184,7 @@ export class SkeletonComponent implements OnInit {
 
     /* |--------- TASK SETTINGS - DECLARATION - (see task.json)---------| */
 
-    /* Name of the current task */
-    taskName: string;
-
-    /* Batch name of the current task */
-    batchName: string;
+    modality: string;
 
     /* Settings of the current task */
     settings: SettingsTask
@@ -267,6 +269,7 @@ export class SkeletonComponent implements OnInit {
         ngxService: NgxUiLoaderService,
         configService: ConfigService,
         S3Service: S3Service,
+        dynamoDBService: DynamoDBService,
         deviceDetectorService: DeviceDetectorService,
         client: HttpClient,
         formBuilder: FormBuilder,
@@ -280,6 +283,7 @@ export class SkeletonComponent implements OnInit {
         this.ngxService = ngxService;
         this.configService = configService;
         this.S3Service = S3Service;
+        this.dynamoDBService = dynamoDBService;
 
         this.actionLogger = actionLogger
 
@@ -301,9 +305,6 @@ export class SkeletonComponent implements OnInit {
         });
         this.tokenInputValid = false;
 
-        this.taskName = this.configService.environment.taskName;
-        this.batchName = this.configService.environment.batchName;
-
         /* |--------- HIT ELEMENTS - INITIALIZATION - (see: hit.json) ---------| */
 
         this.currentTry = 1;
@@ -322,7 +323,7 @@ export class SkeletonComponent implements OnInit {
         /* |--------- LOGGING ELEMENTS - INITIALIZATION ---------| */
 
         this.sequenceNumber = 0
-        this.logOnConsole = this.configService.environment.logOnConsole
+        this.logOnConsole = this.configService.environment.log_on_console
 
         /* |--------- CONFIGURATION GENERATOR INTEGRATION - INITIALIZATION ---------| */
 
@@ -330,11 +331,11 @@ export class SkeletonComponent implements OnInit {
 
     }
 
+    
     /* |--------- MAIN FLOW IMPLEMENTATION ---------| */
-
     /* To follow the execution flow of the skeleton the functions needs to be read somehow in order (i.e., from top to bottom) */
     public async ngOnInit() {
-
+        
         this.ngxService.start()
 
         let url = new URL(window.location.href);
@@ -345,7 +346,7 @@ export class SkeletonComponent implements OnInit {
 
             // Log session start
             if (this.logger)
-                this.logInit(this.workerIdentifier, this.taskName, this.batchName, this.client, this.logOnConsole);
+                this.logInit(this.workerIdentifier, this.configService.environment.taskName, this.configService.environment.batchName, this.client, this.logOnConsole);
             else
                 this.actionLogger = null;
 
@@ -360,7 +361,6 @@ export class SkeletonComponent implements OnInit {
                             this.worker = new Worker(this.workerIdentifier, this.S3Service.getWorkerFolder(this.configService.environment, null, this.workerIdentifier), cloudflareData, window.navigator, this.deviceDetectorService.getDeviceInfo())
                             this.sectionService.taskAllowed = taskAllowed
                             this.sectionService.checkCompleted = true
-
                             this.changeDetector.detectChanges()
                             /* The loading spinner is stopped */
                             this.ngxService.stop();
@@ -419,64 +419,121 @@ export class SkeletonComponent implements OnInit {
     * If the worker has already started the task in the past he is not allowed to continue the task.
     */
     public async performWorkerStatusCheck() {
-        /* The worker identifiers of the current task are downloaded */
-        let currentWorkers = await this.S3Service.downloadWorkers(this.configService.environment)
 
-        /* Legacy version of this software used a "started" attributed to generate a dictionary instead of a "blacklist" attribute */
-        if ('started' in currentWorkers) {
-            currentWorkers['blacklist'] = currentWorkers['started']
-            delete currentWorkers['started']
+        let taskAllowed = true
+        let batchesStatus = {}
+        let tablesACL = await this.dynamoDBService.listTables(this.configService.environment)
+        let workersManual = await this.S3Service.downloadWorkers(this.configService.environment)
+        let workersACL = await this.dynamoDBService.getWorker(this.configService.environment, this.workerIdentifier)
+
+        /* To blacklist a previous batch its worker list is picked up */
+        for (let batchName of this.blacklistBatches) {
+            if (!(batchName in batchesStatus)) {
+                let workers = await this.S3Service.downloadWorkers(this.configService.environment, batchName)
+                batchesStatus[batchName] = {}
+                batchesStatus[batchName]['blacklist'] = workers['blacklist']
+                /* Was the past batch a legacy one? */
+                for (let tableName in tablesACL['TableNames']) {
+                    if (batchName == tableName) {
+                        batchesStatus[batchName]['tableName'] = tableName
+                    }
+                }
+            }
         }
 
-        let blacklistedInCurrentTask = false;
-
-        /* Check if the worker is blacklisted within the current task */
-        for (let currentWorker of currentWorkers['blacklist']) if (currentWorker == this.workerIdentifier) blacklistedInCurrentTask = true;
-
-        /* If he is not blacklisted in the current back the check can continue for the previous batches */
-        if (!blacklistedInCurrentTask) {
-
-            /* If the current worker was blacklisted in a previous batch he must be blocked... */
-            for (let blacklistBatch of this.blacklistBatches) {
-                let blacklistedWorkers = await this.S3Service.downloadWorkers(this.configService.environment, blacklistBatch)
-                for (let currentWorker of blacklistedWorkers['blacklist']) {
-                    if (currentWorker == this.workerIdentifier) {
-                        if (!currentWorkers["blacklist"].includes(this.workerIdentifier))
-                            currentWorkers['blacklist'].push(this.workerIdentifier);
+        /* To whitelist a previous batch its blacklist is picked up */
+        for (let batchName of this.whitelistBatches) {
+            if (!(batchName in batchesStatus)) {
+                let workers = await this.S3Service.downloadWorkers(this.configService.environment, batchName)
+                batchesStatus[batchName] = {}
+                batchesStatus[batchName]['whitelist'] = workers['blacklist']
+                for (let tableName in tablesACL['TableNames']) {
+                    if (batchName == tableName) {
+                        batchesStatus[batchName]['tableName'] = tableName
                     }
                 }
             }
+        }
 
-            for (let whitelistBatch of this.whitelistBatches) {
-                let whitelistedWorkers = await this.S3Service.downloadWorkers(this.configService.environment, whitelistBatch)
-                for (let currentWorker of whitelistedWorkers['blacklist']) {
-                    if (currentWorker == this.workerIdentifier) {
-                        if (!currentWorkers["whitelist"].includes(this.workerIdentifier))
-                            currentWorkers['whitelist'].push(this.workerIdentifier);
+        /* The true checking operation starts here */
+
+        /* Check to verify if the current worker was present into a previous legacy or dynamo-db based blacklisted batch */
+        for (let batchName in batchesStatus) {
+            let batchStatus = batchesStatus[batchName]
+            if ('blacklist' in batchStatus) {
+                if ('tableName' in batchStatus) {
+                    let rawWorker = await this.dynamoDBService.getWorker(this.configService.environment, this.workerIdentifier, batchStatus['tableName'])
+                    if ('Items' in rawWorker) {
+                        for (let worker of rawWorker['Items']) {
+                            if (this.workerIdentifier == worker['identifier']) {
+                                taskAllowed = false
+                            }
+                        }
                     }
-                }
-            }
-
-            /* If the worker was not blacklisted he is allowed to perform the task */
-            if (!currentWorkers["blacklist"].includes(this.workerIdentifier)) {
-                currentWorkers['blacklist'].push(this.workerIdentifier);
-                let uploadStatus = await this.S3Service.uploadWorkers(this.configService.environment, currentWorkers);
-                return true;
-            } else {
-                /* If the worker was blacklisted within a previous batch but whitelisted within the current batch he is allowed to perform the task */
-                if (currentWorkers["blacklist"].includes(this.workerIdentifier) && currentWorkers["whitelist"].includes(this.workerIdentifier)) {
-                    let uploadStatus = await this.S3Service.uploadWorkers(this.configService.environment, currentWorkers);
-                    return true
                 } else {
-                    let uploadStatus = await this.S3Service.uploadWorkers(this.configService.environment, currentWorkers);
-                    return false
+                    for (let workerIdentifier of batchStatus['blacklist']) {
+                        if (this.workerIdentifier == workerIdentifier) {
+                            taskAllowed = false
+                        }
+                    }
                 }
             }
-
-        } else {
-            /* If a returning worker for the current batch is found he is not allowed to perform the task */
-            return false
         }
+
+        /* Check to verify if the current worker was present into a previous legacy or dynamo-db based whitelisted batch */
+        for (let batchName in batchesStatus) {
+            let batchStatus = batchesStatus[batchName]
+            if ('whitelist' in batchStatus) {
+                if ('tableName' in batchStatus) {
+                    let rawWorker = await this.dynamoDBService.getWorker(this.configService.environment, this.workerIdentifier, batchStatus['tableName'])
+                    if ('Items' in rawWorker) {
+                        for (let worker of rawWorker['Items']) {
+                            if (this.workerIdentifier == worker['identifier']) {
+                                taskAllowed = true
+                            }
+                        }
+                    }
+                } else {
+                    for (let workerIdentifier of batchStatus['whitelist']) {
+                        if (this.workerIdentifier == workerIdentifier) {
+                            taskAllowed = true
+                        }
+                    }
+                }
+            }
+        }
+
+        /* Check to verify if the current worker already accessed the current task using the dynamo-db based acl */
+        if ('Items' in workersACL) {
+            for (let worker of workersACL['Items']) {
+                if (this.workerIdentifier == worker['identifier']) {
+                    taskAllowed = false
+                    return taskAllowed
+                }
+            }
+        }
+
+        /* Check to verify if the current worker is manually blacklisted into the current batch */
+        for (let worker of workersManual['blacklist']) {
+            if (this.workerIdentifier == worker) {
+                taskAllowed = false
+                return taskAllowed
+            }
+        }
+
+
+        /* Check to verify if the current worker is manually whitelisted into the current batch using the dynamo-db based acl */
+
+        for (let worker of workersManual['whitelist']) {
+            if (this.workerIdentifier == worker) {
+                taskAllowed = true
+            }
+        }
+
+        if (taskAllowed)
+            await this.dynamoDBService.insertWorker(this.configService.environment, this.workerIdentifier, this.currentTry)
+
+        return taskAllowed
     }
 
     /*
@@ -505,6 +562,7 @@ export class SkeletonComponent implements OnInit {
     *  The Document interface can be found at this path: ../../../../data/build/task/document.ts
     */
     public async performTaskSetup() {
+        console.log("ciao")
         /* The token input has been already validated, this is just to be sure */
         if (this.tokenForm.valid) {
 
@@ -516,16 +574,17 @@ export class SkeletonComponent implements OnInit {
             /* The hits stored on Amazon S3 are retrieved */
             let hits = await this.S3Service.downloadHits(this.configService.environment)
 
-      /* Scan each entry for the token input */
-      for (let currentHit of hits) {
-        /* If the token input of the current hit matches with the one inserted by the worker the right hit has been found */
-        if (this.tokenInput.value === currentHit.token_input) {
-          this.hit = currentHit;
-          this.tokenOutput = currentHit.token_output;
-          this.unitId = currentHit.unit_id
-          this.actionLogger.unitId = this.unitId
-        }
-      }
+            /* Scan each entry for the token input */
+            for (let currentHit of hits) {
+                /* If the token input of the current hit matches with the one inserted by the worker the right hit has been found */
+                if (this.tokenInput.value === currentHit.token_input) {
+                    this.hit = currentHit;
+                    this.tokenOutput = currentHit.token_output;
+                    this.unitId = currentHit.unit_id
+                    if (this.logger)
+                        this.actionLogger.unitId = this.unitId
+                }
+            }
 
             /* The token input field is disabled and the task interface can be shown */
             this.tokenInput.disable();
@@ -543,7 +602,6 @@ export class SkeletonComponent implements OnInit {
             let rawDocuments = this.hit.documents;
             for (let index = 0; index < rawDocuments.length; index++) {
                 let currentDocument = rawDocuments[index];
-                //console.log(currentDocument['time'])
                 this.documents.push(new Document(index, currentDocument));
             }
 
@@ -603,30 +661,61 @@ export class SkeletonComponent implements OnInit {
             /* The dimensions stored on Amazon S3 are retrieved */
             let rawDimensions = await this.S3Service.downloadDimensions(this.configService.environment)
             this.dimensionsAmount = rawDimensions.length;
-
             /* Each dimension is parsed using the Dimension class */
             for (let index = 0; index < this.dimensionsAmount; index++) this.dimensions.push(new Dimension(index, rawDimensions[index]));
+            /**Iniziliazziare il vettore degli statement */
+            this.dimensionValueinsert();
 
             for (let index = 0; index < this.documentsAmount; index++) {
                 let controlsConfig = {};
-                for (let index_dimension = 0; index_dimension < this.dimensions.length; index_dimension++) {
-                    let dimension = this.dimensions[index_dimension];
-                    if (dimension.scale) {
-                        if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.required]);
-                        if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value`] = new FormControl((Math.round(((<ScaleInterval>dimension.scale).min + (<ScaleInterval>dimension.scale).max) / 2)), [Validators.required]);
-                        if (dimension.scale.type == "magnitude_estimation") {
-                            if ((<ScaleMagnitude>dimension.scale).lower_bound) {
-                                controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min), Validators.required]);
-                            } else {
-                                controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min + 1), Validators.required]);
+
+                if (this.settings.modality == 'pairwise') {
+                    if (this.documents[index] != undefined) {
+                        if (this.documents[index] != null) controlsConfig[`pairwise_value_selected`] = new FormControl('', [Validators.required]);
+                    }
+                    for (let index_dimension = 0; index_dimension < this.dimensions.length; index_dimension++) {
+                        let dimension = this.dimensions[index_dimension];
+                        if (dimension.scale) {
+
+                            for (let i = 0; i < this.documents[index]['statements'].length; i++) {
+                                if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value_${i}`] = new FormControl('', [Validators.required]);
+                                if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value_${i}`] = new FormControl('', [Validators.required]);
+                                if (dimension.scale.type == "magnitude_estimation") {
+                                    if ((<ScaleMagnitude>dimension.scale).lower_bound) {
+                                        controlsConfig[`${dimension.name}_value_${i}`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min), Validators.required]);
+                                    } else {
+                                        controlsConfig[`${dimension.name}_value_${i}`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min + 1), Validators.required]);
+                                    }
+                                }
+                                if (dimension.justification) controlsConfig[`${dimension.name}_justification_${i}`] = new FormControl('', [Validators.required, this.validateJustification.bind(this)])
                             }
+                            if (dimension.url) controlsConfig[`${dimension.name}_url`] = new FormControl('', [Validators.required, this.validateSearchEngineUrl.bind(this)]);
                         }
                     }
-                    if (dimension.justification) controlsConfig[`${dimension.name}_justification`] = new FormControl('', [Validators.required, this.validateJustification.bind(this)])
-                    if (dimension.url) controlsConfig[`${dimension.name}_url`] = new FormControl('', [Validators.required, this.validateSearchEngineUrl.bind(this)]);
+                } else {
+
+                    for (let index_dimension = 0; index_dimension < this.dimensions.length; index_dimension++) {
+                        let dimension = this.dimensions[index_dimension];
+                        if (dimension.scale) {
+                            if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.required]);
+                            if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value`] = new FormControl(((<ScaleInterval>dimension.scale).min), [Validators.required]);
+                            if (dimension.scale.type == "magnitude_estimation") {
+                                if ((<ScaleMagnitude>dimension.scale).lower_bound) {
+                                    controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min), Validators.required]);
+                                } else {
+                                    controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min + 1), Validators.required]);
+                                }
+                            }
+                        }
+                        if (dimension.justification) controlsConfig[`${dimension.name}_justification`] = new FormControl('', [Validators.required, this.validateJustification.bind(this)])
+                        if (dimension.url) controlsConfig[`${dimension.name}_url`] = new FormControl('', [Validators.required, this.validateSearchEngineUrl.bind(this)]);
+                    }
                 }
                 this.documentsForm[index] = this.formBuilder.group(controlsConfig)
             }
+
+            //console.log(this.dimensions)
+            //console.log(this.taskInstructions)
 
             this.dimensionsSelectedValues = new Array<object>(this.documentsAmount);
             for (let index = 0; index < this.dimensionsSelectedValues.length; index++) {
@@ -634,7 +723,6 @@ export class SkeletonComponent implements OnInit {
                 this.dimensionsSelectedValues[index]["data"] = [];
                 this.dimensionsSelectedValues[index]["amount"] = 0;
             }
-
 
             /* |--------- SEARCH ENGINE INTEGRATION (see: search_engine.json | https://github.com/Miccighel/CrowdXplorer) ---------| */
 
@@ -716,8 +804,6 @@ export class SkeletonComponent implements OnInit {
                 }
             }
 
-            /* |--------- LOGGING ELEMENTS ---------| */
-
             /* The array of accesses counter is initialized */
             this.elementsAccesses = new Array<number>(this.documentsAmount + this.questionnaireAmount);
             for (let index = 0; index < this.elementsAccesses.length; index++) this.elementsAccesses[index] = 0;
@@ -732,6 +818,7 @@ export class SkeletonComponent implements OnInit {
             /* The task is now started and the worker is looking at the first questionnaire, so the first start timestamp is saved */
             this.timestampsStart[0].push(Math.round(Date.now() / 1000));
 
+
             /* |--------- FINALIZATION ---------| */
 
             /* Section service gets updated with loaded values */
@@ -741,10 +828,10 @@ export class SkeletonComponent implements OnInit {
             this.changeDetector.detectChanges();
 
             /* If there are no questionnaires and the countdown time is set, enable the first countdown */
-            if (this.settings.countdown_time >= 0 && this.questionnaireAmountStart == 0) this.countdown.toArray()[0].begin();
-
-            /* trigger the changeDetection again */
-            this.changeDetector.detectChanges();
+            if (this.settings.countdown_time >= 0 && this.questionnaireAmountStart == 0) {
+                this.countdown.toArray()[0].begin();
+                this.changeDetector.detectChanges();
+            }
 
             /* The loading spinner is stopped */
             this.ngxService.stop();
@@ -780,8 +867,6 @@ export class SkeletonComponent implements OnInit {
         for (let dimension of this.dimensions) {
             if (dimension.style) {
                 if (dimension.style.type == kind && dimension.style.position == position) filteredDimensions.push(dimension)
-            } else {
-                if (kind == "list" && position == "bottom") filteredDimensions.push(dimension)
             }
         }
         return filteredDimensions
@@ -1058,7 +1143,7 @@ export class SkeletonComponent implements OnInit {
     public handleCountdown(event, i) {
         if (event.left == 0) {
             this.countdownsExpired[i] = true
-            if(this.settings.countdown_behavior=='disable_form')
+            if (this.settings.countdown_behavior == 'disable_form')
                 this.documentsForm[i].disable()
         }
     }
@@ -1438,27 +1523,71 @@ export class SkeletonComponent implements OnInit {
     }
 
     public filterNotes(notes: Note[]) {
-        var result: Note[] = []
+        var with_duplicates: Note[] = []
         for (let note of notes) {
             if (note instanceof NoteLaws) {
                 if (note.year != 0 && note.number != 0 && note.type == "reference" && !note.withoutDetails && !note.deleted) {
-                    result.push(note)
+                    with_duplicates.push(note)
+                }
+                for (let innerNote of note.innerAnnotations) {
+                    if (innerNote instanceof NoteLaws) {
+                        if (!innerNote.deleted && !innerNote.withoutDetails && innerNote.year != 0 && innerNote.number != 0) {
+                            with_duplicates.push(innerNote)
+                        }
+                    }
                 }
             }
+            var without_duplicates: Note[] = []
+            without_duplicates.push(with_duplicates[0])
+            for (let noteToCheck of with_duplicates) {
+                if (noteToCheck instanceof NoteLaws) {
+                    var duplicate = false
+                    for (let noteWD of without_duplicates) {
+                        if (noteWD instanceof NoteLaws) {
+                            if (noteToCheck.year == noteWD.year && noteToCheck.number == noteWD.number) {
+                                duplicate = true
+                            }
+                        }
+                    }
+                    if (!duplicate) {
+                        without_duplicates.push(noteToCheck)
+                    }
+                }
+            }
+            if (without_duplicates[0]) {
+                return without_duplicates
+            } else {
+                var empty: Note[] = []
+                return empty
+            }
         }
-        return result
     }
 
     public referenceRadioChange($event: MatRadioChange, documentIndex: number, noteIndex: number) {
         let currentNote = this.notes[documentIndex][noteIndex]
         if (currentNote instanceof NoteLaws) {
             if ($event.value == "null") {
-                currentNote.year = 0
-                currentNote.number = 0
+                this.resetDetails(currentNote)
             } else {
                 let fields = $event.value.split("-")
-                currentNote.year = fields[0]
-                currentNote.number = fields[1]
+                currentNote.year = Number(fields[0])
+                currentNote.number = Number(fields[1])
+            }
+        }
+    }
+
+    public innerReferenceRadioChange($event: MatRadioChange, documentIndex: number, noteIndex: number, innerNoteIndex: number) {
+        let currentNote = this.notes[documentIndex][noteIndex]
+        if (currentNote instanceof NoteLaws) {
+            currentNote = currentNote.innerAnnotations[innerNoteIndex]
+            if (currentNote instanceof NoteLaws) {
+                if ($event.value == "null") {
+                    this.resetDetails(currentNote)
+                } else {
+                    let fields = $event.value.split("-")
+                    currentNote.year = Number(fields[0])
+                    currentNote.number = Number(fields[1])
+                }
             }
         }
     }
@@ -1468,6 +1597,7 @@ export class SkeletonComponent implements OnInit {
         if (currentNote instanceof NoteLaws) {
             if ($event.checked) {
                 currentNote.withoutDetails = true
+                this.resetDetails(currentNote)
                 this.checkEnabledNotes(documentIndex)
             } else {
                 currentNote.withoutDetails = false
@@ -1527,47 +1657,32 @@ export class SkeletonComponent implements OnInit {
         }
     }
 
-    public auxCEN(note: Note) {
-        var booleans: Boolean[] = []
-        if (note instanceof NoteLaws) {
-            for (let n of note.innerAnnotations) {
-                if (!n.deleted) {
-                    if ((n.number != 0 && n.year != 0) || n.withoutDetails) {
-                        booleans.push(true)
-                    } else {
-                        booleans.push(false)
-                    }
-                }
-            }
-            if (note.containsReferences) {
-                if (booleans.length == 0) {
-                    return false
-                } else {
-                    let checker = array => array.every(Boolean)
-                    if (checker(booleans)) {
-                        return true
-                    } else {
-                        return false
-                    }
-                }
-            } else {
-                return true
+
+    public resetRadioButton(documentIndex: number, noteIndex: number, innerNoteIndex?: number) {
+        var currentNote: NoteStandard
+        if (!innerNoteIndex) {
+            currentNote = this.notes[documentIndex][noteIndex]
+        } else {
+            currentNote = this.notes[documentIndex][noteIndex]
+            if (currentNote instanceof NoteLaws) {
+                currentNote = currentNote.innerAnnotations[innerNoteIndex]
             }
         }
-    }
-
-    public resetRadioButton(documentIndex: number, noteIndex: number) {
-        let currentNote = this.notes[documentIndex][noteIndex]
         if (currentNote instanceof NoteLaws) {
-            // console.log("Sto cercando " + currentNote.year + " " + currentNote.number)
             for (let note of this.notes[documentIndex]) {
                 if (note instanceof NoteLaws) {
-                    if (!note.deleted && note.type != "reference") {
-                        // console.log("Nota " + note.year + " " + note.number)
+                    if (!note.deleted && note.withoutDetails) {
                         if (note.year == currentNote.year && note.number == currentNote.number) {
-                            // console.log("Annotazione resettata: " + note.current_text)
-                            note.year = 0
-                            note.number = 0
+                            this.resetDetails(note)
+                        }
+                    }
+                    for (let innerNote of note.innerAnnotations) {
+                        if (innerNote instanceof NoteLaws) {
+                            if (!innerNote.deleted && innerNote.withoutDetails) {
+                                if (innerNote.year == currentNote.year && innerNote.number == currentNote.number) {
+                                    this.resetDetails(innerNote)
+                                }
+                            }
                         }
                     }
                 }
@@ -1591,6 +1706,7 @@ export class SkeletonComponent implements OnInit {
     public performInnerAnnotationLaws(documentIndex: number, noteIndex: number, innerNoteIndex: number) {
         let mainNote = this.notes[documentIndex][noteIndex]
         if (mainNote instanceof NoteLaws) {
+            this.resetRadioButton(documentIndex, noteIndex, innerNoteIndex)
             let currentNote = mainNote.innerAnnotations[innerNoteIndex]
             let year = (<HTMLInputElement>document.getElementById("year-" + innerNoteIndex + "-" + noteIndex + "." + documentIndex)).value
             let number = (<HTMLInputElement>document.getElementById("number-" + innerNoteIndex + "-" + noteIndex + "." + documentIndex)).value
@@ -1607,12 +1723,19 @@ export class SkeletonComponent implements OnInit {
         document.querySelector(`[data-timestamp='${note_timestamp}']`).setAttribute("style", `background-color: ${note.color};`)
     }
 
+    public resetDetails(note: NoteLaws) {
+        note.year = 0
+        note.number = 0
+    }
+
     public radioChange($event: MatRadioChange, documentIndex: number, noteIndex: number) {
         let currentNote = this.notes[documentIndex][noteIndex]
         if (currentNote instanceof NoteLaws) {
             switch ($event.value) {
                 case "insertion": {
+                    this.resetDetails(currentNote)
                     currentNote.type = "insertion"
+                    currentNote.withoutDetails = true
                     currentNote.containsReferences = false
                     currentNote.innerAnnotations = []
                     currentNote.color = this.colors[1]
@@ -1621,7 +1744,9 @@ export class SkeletonComponent implements OnInit {
                     break
                 }
                 case "substitution": {
+                    this.resetDetails(currentNote)
                     currentNote.type = "substitution"
+                    currentNote.withoutDetails = true
                     currentNote.containsReferences = false
                     currentNote.innerAnnotations = []
                     currentNote.color = this.colors[2]
@@ -1630,7 +1755,9 @@ export class SkeletonComponent implements OnInit {
                     break
                 }
                 case "repeal": {
+                    this.resetDetails(currentNote)
                     currentNote.type = "repeal"
+                    currentNote.withoutDetails = true
                     currentNote.containsReferences = false
                     currentNote.innerAnnotations = []
                     currentNote.color = this.colors[0]
@@ -1639,28 +1766,15 @@ export class SkeletonComponent implements OnInit {
                     break
                 }
                 case "reference": {
+                    this.resetDetails(currentNote)
                     currentNote.type = "reference"
-                    currentNote.containsReferences = true
+                    currentNote.containsReferences = false
                     currentNote.innerAnnotations = []
                     currentNote.color = this.colors[3]
                     this.changeSpanColor(documentIndex, noteIndex)
                     this.checkEnabledNotes(documentIndex)
                     break
                 }
-            }
-        }
-    }
-
-    public checkboxChange($event: MatCheckboxChange, documentIndex: number, noteIndex: number) {
-        let currentNote = this.notes[documentIndex][noteIndex]
-        if (currentNote instanceof NoteLaws) {
-            if ($event.checked) {
-                currentNote.containsReferences = true
-                this.checkEnabledNotes(documentIndex)
-            } else {
-                currentNote.containsReferences = false
-                currentNote.innerAnnotations = []
-                this.checkEnabledNotes(documentIndex)
             }
         }
     }
@@ -1701,11 +1815,14 @@ export class SkeletonComponent implements OnInit {
         return undeletedNotes
     }
 
-    public referenceRadioButtonCheck(documentIndex: number, noteIndex: number) {
-        let currentNote = this.notes[documentIndex][noteIndex]
+    public innerReferenceRadioButtonCheck(documentIndex: number, noteIndex: number, innerNoteIndex: number) {
+        var currentNote = this.notes[documentIndex][noteIndex]
         if (currentNote instanceof NoteLaws) {
-            if (currentNote.year == 0 && currentNote.number == 0) {
-                return true
+            currentNote = currentNote.innerAnnotations[innerNoteIndex]
+            if (currentNote instanceof NoteLaws) {
+                if (currentNote.year == 0 && currentNote.number == 0) {
+                    return true
+                }
             }
         }
         return false
@@ -1722,6 +1839,16 @@ export class SkeletonComponent implements OnInit {
         return undeletedNotes
     }
 
+
+    public auxCEN(note) {
+        return false
+    }
+
+    public referenceRadioButtonCheck(i, index) {
+    }
+
+    public checkboxChange(event, i, index) {
+    }
 
     /* |--------- QUALITY CHECKS ---------| */
 
@@ -1759,7 +1886,6 @@ export class SkeletonComponent implements OnInit {
 
         /* Booleans to hold result of checks */
         let globalValidityCheck: boolean;
-        let goldQuestionCheck: boolean;
         let timeSpentCheck: boolean;
         let timeCheckAmount = this.timeCheckAmount;
 
@@ -1820,6 +1946,12 @@ export class SkeletonComponent implements OnInit {
 
         if (!(this.worker.identifier === null)) {
             /* The result of quality check control  for the current try is uploaded to the Amazon S3 bucket along with the gold configuration. */
+            let data = {}
+            let actionInfo = {
+                try: this.currentTry,
+                sequence: this.sequenceNumber,
+                element: "checks"
+            };
             let qualityCheckData = {
                 globalFormValidity: globalValidityCheck,
                 timeSpentCheck: timeSpentCheck,
@@ -1827,6 +1959,9 @@ export class SkeletonComponent implements OnInit {
                 goldChecks: goldChecks,
                 goldConfiguration: goldConfiguration
             };
+            data["info"] = actionInfo
+            data["checks"] = qualityCheckData
+            await this.dynamoDBService.insertData(this.configService.environment, this.workerIdentifier, this.unitId, this.currentTry, this.sequenceNumber, data)
             let uploadStatus = await this.S3Service.uploadQualityCheck(
                 this.configService.environment,
                 this.worker,
@@ -1834,6 +1969,7 @@ export class SkeletonComponent implements OnInit {
                 qualityCheckData,
                 this.currentTry
             )
+            this.sequenceNumber = this.sequenceNumber + 1
         }
 
         /* Detect changes within the DOM and stop the spinner */
@@ -1885,6 +2021,22 @@ export class SkeletonComponent implements OnInit {
     }
 
     // |--------- AMAZON AWS INTEGRATION - FUNCTIONS ---------|
+
+    public handleQuestionnaireFilled(data) {
+        this.questionnairesForm[data['step']] = data['questionnaireForm']
+        this.performLogging(data['action'], data['step'])
+        if (data['action'] == 'Next') {
+            this.nextStep()
+        } else {
+            if (data['action'] == 'Back') {
+                this.previousStep()
+            } else {
+                this.nextStep()
+                this.performQualityCheck()
+            }
+        }
+
+    }
 
     /*
      * This function interacts with an Amazon S3 bucket to store each data produced within the task.
@@ -2009,11 +2161,15 @@ export class SkeletonComponent implements OnInit {
             }
 
             let data = {}
-
+            let actionInfo = {
+                try: this.currentTry,
+                sequence: this.sequenceNumber,
+                element: "data"
+            };
             /* The full information about task setup (currentDocument.e., its document and questionnaire structures) are uploaded, only once */
             let taskData = {
-                task_id: this.taskName,
-                batch_name: this.batchName,
+                task_id: this.configService.environment.taskName,
+                batch_name: this.configService.environment.batchName,
                 worker_id: this.worker.identifier,
                 unit_id: this.unitId,
                 token_input: this.tokenInput.value,
@@ -2025,6 +2181,7 @@ export class SkeletonComponent implements OnInit {
                 documents_amount: this.documentsAmount,
                 dimensions_amount: this.dimensionsAmount,
             };
+            data["info"] = actionInfo
             /* General info about task */
             data["task"] = taskData
             /* The answers of the current worker to the questionnaire */
@@ -2037,7 +2194,11 @@ export class SkeletonComponent implements OnInit {
             data["worker"] = this.worker
             /* await (this.upload(`${this.workerFolder}/worker.json`, this.worker)); */
 
-            let uploadStatus = await this.S3Service.uploadTaskData(this.configService.environment, this.worker, this.unitId, data)
+            if (this.sequenceNumber <= 0) {
+                let uploadStatus = await this.S3Service.uploadTaskData(this.configService.environment, this.worker, this.unitId, data)
+                await this.dynamoDBService.insertData(this.configService.environment, this.workerIdentifier, this.unitId, this.currentTry, this.sequenceNumber, data)
+                this.sequenceNumber = this.sequenceNumber + 1
+            }
 
             /* If the worker has completed a questionnaire */
             if (completedElement < this.questionnaireAmountStart || (completedElement >= this.questionnaireAmountStart + this.documentsAmount)) {
@@ -2083,6 +2244,7 @@ export class SkeletonComponent implements OnInit {
                 data["accesses"] = accessesAmount + 1
 
                 let uploadStatus = await this.S3Service.uploadQuestionnaire(this.configService.environment, this.worker, this.unitId, data, this.currentTry, completedQuestionnaire, accessesAmount + 1, this.sequenceNumber)
+                await this.dynamoDBService.insertData(this.configService.environment, this.workerIdentifier, this.unitId, this.currentTry, this.sequenceNumber, data)
 
                 /* The amount of accesses to the current questionnaire is incremented */
                 this.sequenceNumber = this.sequenceNumber + 1
@@ -2128,11 +2290,11 @@ export class SkeletonComponent implements OnInit {
                 let timestampsElapsed = this.timestampsElapsed[completedElement];
                 data["timestamps_elapsed"] = timestampsElapsed
                 /* Countdown time and corresponding flag */
-                let countdownTimeStart = (this.settings.countdown_time>=0) ? this.documentsCountdownTime[completedDocument] : []
+                let countdownTimeStart = (this.settings.countdown_time >= 0) ? this.documentsCountdownTime[completedDocument] : []
                 data["countdowns_times_start"] = countdownTimeStart
-                let countdownTime = (this.settings.countdown_time>=0) ? Number(this.countdown[completedDocument]["i"]["text"]) : []
+                let countdownTime = (this.settings.countdown_time >= 0) ? Number(this.countdown.toArray()[completedDocument]["i"]["text"]) : []
                 data["countdowns_times_left"] = countdownTime
-                let countdown_expired = (this.settings.countdown_time>=0) ? this.countdownsExpired[completedDocument] : []
+                let countdown_expired = (this.settings.countdown_time >= 0) ? this.countdownsExpired[completedDocument] : []
                 data["countdowns_expired"] = countdown_expired
                 /* Number of accesses to the current document (currentDocument.e., how many times the worker reached the document with a "Back" or "Next" action */
                 let accesses = accessesAmount + 1
@@ -2145,6 +2307,7 @@ export class SkeletonComponent implements OnInit {
                 data["responses_selected"] = responsesSelected
 
                 let uploadStatus = await this.S3Service.uploadDocument(this.configService.environment, this.worker, this.unitId, data, this.currentTry, completedDocument, accessesAmount + 1, this.sequenceNumber)
+                await this.dynamoDBService.insertData(this.configService.environment, this.workerIdentifier, this.unitId, this.currentTry, this.sequenceNumber, data)
 
                 /* The amount of accesses to the current document is incremented */
                 this.elementsAccesses[completedElement] = accessesAmount + 1;
@@ -2202,6 +2365,9 @@ export class SkeletonComponent implements OnInit {
                 /* If the last element is a document */
 
                 let uploadStatus = await this.S3Service.uploadFinalData(this.configService.environment, this.worker, this.unitId, data, this.currentTry)
+                await this.dynamoDBService.insertData(this.configService.environment, this.workerIdentifier, this.unitId, this.currentTry, this.sequenceNumber, data)
+
+                this.sequenceNumber = this.sequenceNumber + 1
 
             }
 
@@ -2214,7 +2380,17 @@ export class SkeletonComponent implements OnInit {
      * The comment can be typed in a textarea and when the worker clicks the "Send" button such comment is uploaded to an Amazon S3 bucket.
      */
     public async performCommentSaving() {
+        let data = {}
+        let actionInfo = {
+            try: this.currentTry,
+            sequence: this.sequenceNumber,
+            element: "comment"
+        };
+        data["info"] = actionInfo
+        data['value'] = this.commentForm.value
         let uploadStatus = await this.S3Service.uploadComment(this.configService.environment, this.worker, this.unitId, this.commentForm.value, this.currentTry)
+        await this.dynamoDBService.insertData(this.configService.environment, this.workerIdentifier, this.unitId, this.currentTry, this.sequenceNumber, data)
+        this.sequenceNumber = this.sequenceNumber + 1
         this.commentSent = true;
     }
 
@@ -2275,4 +2451,118 @@ export class SkeletonComponent implements OnInit {
         return {start: start, end: end};
     }
 
+
+    /*
+    * //@AggiunteAbbondo
+    /* contains the last element(pairwise) selected */
+    valueCheck: number
+    //selected_statement:string;
+    selected_stetements: Object[] = [];
+    checkedValue = new Array();
+
+    /*
+    //@AggiunteAbbondo
+      Funziona che cambia il colore del div dello statemente
+
+      this.checkedValue[documentnumber][0][0]=true mette al true la prima dimension cosi da venire visuallizata
+    */
+    public changeColor(valueData: Object, documentnumber: number) {
+        //this.selected_statement=valueData["value"]
+        //this.selected_stetements[documentnumber]=valueData["value"];
+        let a = document.getElementById("StatementA." + documentnumber) as HTMLInputElement
+        let b = document.getElementById("StatementB." + documentnumber) as HTMLInputElement
+        if (valueData["value"] == "A") {
+            a.style.backgroundColor = "#B6BDE2"
+            b.style.backgroundColor = "#FCFCFC"
+        } else if (valueData["value"] == "B") {
+            b.style.backgroundColor = "#B6BDE2"
+            a.style.backgroundColor = "#FCFCFC"
+        } else {
+            b.style.backgroundColor = "#B6BDE2"
+            a.style.backgroundColor = "#B6BDE2"
+        }
+
+
+        if (valueData['source']['_checked'] == true) {
+
+            // mette al true la prima dimension del primo documento cosi da venire visualizzata
+            this.checkedValue[documentnumber][0][0] = true
+            this.checkedValue[documentnumber][0][1] = true
+        }
+    }
+
+    //@AggiunteAbbondo
+    // metodo che crea l'array tridimensionale
+    public dimensionValueinsert() {
+        for (let i = 0; i < this.documentsAmount; i++) {
+            let statement = new Array();
+            for (let j = 0; j < this.dimensionsAmount; j++) {
+                let pairwise = new Array()
+                pairwise[0] = false
+                pairwise[1] = false
+                statement[j] = pairwise
+            }
+            this.checkedValue[i] = statement
+        }
+
+    }
+
+    //@AggiunteAbbondo
+    // Metodo che cambia la lettera che mostrata sulla scritta Answer for Statement
+    public changeletter(index: number) {
+        if (index == 0) {
+            return 'A';
+        } else {
+            return 'B';
+        }
+    }
+
+    //@AggiunteAbbondo
+    //Metodo che controllo se le due dimension(Scale) precedenti sono state cliccate
+    public checkdimension(documentnumber: number, dimensionnumber: number) {
+        if (this.checkedValue[documentnumber][dimensionnumber][0] == true && this.checkedValue[documentnumber][dimensionnumber][1] == true) {
+            return true
+        } else {
+            return false
+        }
+    }
+
+    //@AggiunteAbbondo
+    //Cambia il valore delle dimesion(Scale) da false a  true
+    public changeValue(documentnumber: number, dimensionnumber: number, j: number) {
+        if (dimensionnumber >= this.dimensionsAmount) {
+        } else {
+            this.checkedValue[documentnumber][dimensionnumber][j] = true
+        }
+    }
+
+    //@AggiunteAbbondo
+    //Cambia il colore del radio button una volta cliccato sullo statement
+    public changeColorRadio(valueData: Object, document_index: number) {
+        let a = document.getElementById("radioStatementA." + document_index) as HTMLInputElement
+        let b = document.getElementById("radioStatementB." + document_index) as HTMLInputElement
+        if (valueData["value"] == "A") {
+            if (b.classList.contains('mat-radio-checked')) {
+                b.classList.remove('mat-radio-checked')
+            }
+            a.classList.add('mat-radio-checked')
+        } else {
+            if (a.classList.contains('mat-radio-checked')) {
+                a.classList.remove('mat-radio-checked')
+            }
+            b.classList.add('mat-radio-checked')
+        }
+    }
+
+    //@AggiunteAbbondo
+    //Cambia il colore per gli altri due radio quanto si clicca sullo radio centrale
+    public changeBoth(document_index: number) {
+        let a = document.getElementById("radioStatementA." + document_index) as HTMLInputElement
+        let b = document.getElementById("radioStatementB." + document_index) as HTMLInputElement
+
+        b.classList.remove('mat-radio-checked')
+        a.classList.remove('mat-radio-checked')
+    }
 }
+
+  

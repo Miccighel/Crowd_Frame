@@ -32,6 +32,7 @@ speed-measure-plugin*.json
 .history/*
 
 # misc
+/.angular/cache
 /.sass-cache
 /connect.lock
 /coverage
@@ -64,6 +65,8 @@ data/.env
 # File generated when configuring AWS
 data/aws/generated/*
 
+.vscode/settings.json
+
 # Outputs of build phase
 data/tasks/*
 data/build/deploy/*
@@ -76,5 +79,10 @@ data/build/config/admin.json
 local/log.md
 local/*
 
-
 data/build/skeleton/goldChecker.ts
+
+data/result/*
+
+.cache/*
+
+

@@ -1,0 +1,63 @@
+ <div class="chat-box" >
+    <div class="chat-box-header">
+        <div class="operator-status">
+          {{operator.status}}
+          <span class="operator-status-online">●</span>
+        </div>
+        <chat-avatar [image]="operator.avatar"></chat-avatar>
+        <h3 class="operator-name">
+          {{operator.name}}
+        </h3>
+    </div>
+    <div *ngIf="fixedMessage" class="chat-box-header" style="background-color: #B9D6F2; color: black;">
+      {{ fixedMessage }}
+    </div>
+    <div class="chat-box-main">
+      <div class="chat-message-bottom" #bottom></div>
+
+      <ng-container>
+        <div #typing class="chat-message-received" style="width: 17%;">
+          <div>
+            <chat-avatar [image]="operator.avatar" class="chat-message-from-avatar"></chat-avatar>
+            <div class="chat-message-text">
+              <div class="type" style="margin:3px; margin-top:0px">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+            </div>
+          </div>
+          <div class="chat-message-date"></div>
+          <div class="chat-message-date"></div>
+        </div>
+      </ng-container>
+
+      <ng-container *ngFor="let message of messages">
+        <div class="chat-message" [class.chat-message-received]="message.type === 'received'"
+             [@fadeIn]
+             [class.chat-message-sent]="message.type === 'sent'">
+          <div>
+            <chat-avatar [image]="message.from.avatar" class="chat-message-from-avatar"></chat-avatar>
+            <div class="chat-message-text">
+              {{message.text}}
+            </div>
+          </div>
+          <div class="chat-message-date">
+            {{message.date | date: 'short'}}
+          </div>
+        </div>
+      </ng-container>
+      
+      
+    </div>
+    
+    <div class="chat-box-footer">
+    <div class="button-prompt" #buttons style="display: inline-block;">
+      <button type="button" class="btn btn-primary" (click)="buttonInput('Yes')">Yes</button>
+      <button type="button" class="btn btn-primary" (click)="buttonInput('No')">No</button>
+    </div>
+      <chat-input (send)="sendMessage($event)"></chat-input>
+    </div>
+  </div>
+  
+

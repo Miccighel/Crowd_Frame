@@ -1,0 +1,20 @@
+{
+    "User": {
+        "Path": "/Crowd_Frame/",
+        "UserName": "mturk-user",
+        "UserId": "AIDAV44FLHBGMIUDNBYLH",
+        "Arn": "arn:aws:iam::405617195084:user/Crowd_Frame/mturk-user",
+        "CreateDate": "2021-11-22 08:59:47+00:00"
+    },
+    "ResponseMetadata": {
+        "RequestId": "ddc2199a-1cc8-4c0e-81a0-7050c6f4729c",
+        "HTTPStatusCode": 200,
+        "HTTPHeaders": {
+            "x-amzn-requestid": "ddc2199a-1cc8-4c0e-81a0-7050c6f4729c",
+            "content-type": "text/xml",
+            "content-length": "493",
+            "date": "Mon, 22 Nov 2021 09:42:18 GMT"
+        },
+        "RetryAttempts": 0
+    }
+}

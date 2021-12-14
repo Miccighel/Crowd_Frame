@@ -54,6 +54,11 @@ import {ButtonDirective, CrowdXplorerDirective, InputDirective, RadioDirective, 
 import {SectionService} from "./services/section.service";
 import {from, Observable} from "rxjs";
 import {tap} from "rxjs/operators";
+import { QuestionnaireComponent } from './components/questionnaire/questionnaire.component';
+import { ChatWidgetComponent } from './components/chatbot/chat-widget/chat-widget.component';
+import { ChatInputComponent } from './components/chatbot/chat-input/chat-input.component';
+import { ChatAvatarComponent } from './components/chatbot/chat-avatar/chat-avatar.component';
+import { ChatButtonsComponent } from './components/chatbot/chat-buttons/chat-buttons.component';
 
 function initActionLogger(actionLogger: ActionLogger): () => Observable<any>{
   return() => from(actionLogger.downloadOpt()).pipe(tap(data => {
@@ -65,6 +70,9 @@ function initActionLogger(actionLogger: ActionLogger): () => Observable<any>{
 
 @NgModule({
   declarations: [
+    ChatAvatarComponent,
+    ChatInputComponent,
+    ChatWidgetComponent,
     SkeletonComponent,
     CrowdXplorer,
     TruncatePipe,
@@ -76,7 +84,9 @@ function initActionLogger(actionLogger: ActionLogger): () => Observable<any>{
     SkeletonDirective,
     InputDirective,
     RadioDirective,
-    CrowdXplorerDirective
+    CrowdXplorerDirective,
+    QuestionnaireComponent,
+    ChatButtonsComponent
   ],
   imports: [
     BrowserModule,

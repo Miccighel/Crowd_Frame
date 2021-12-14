@@ -50,7 +50,7 @@ export class FakerService {
     /* A request to FakeJSON API is performed and an Observable an array of <FakerSearchResponse> items is returned */
     return this.client.post<Array<FakerSearchResponse>>(this.endPoint,
       {
-        "token": "sPblHj23AzPvKp84rdr0ng",
+        "token": "rHbvIkFUIUi-0lEcy8eJJQ",
         "parameters": {
           "code": 200
         },

@@ -71,3 +71,57 @@ body {
 .insert-highlight {
   background-color: #DFF652;
 }
+
+.image-example {
+  text-align: center;
+  text-decoration: solid;
+  margin: auto;
+  max-width: 70%;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* |--- GENERAL STYLES  --| */
+
+.radio-button-group {
+  display: flex;
+  flex-direction: column;
+  margin: 15px 0;
+}
+
+.radio-button-group-horizontal {
+  display: inline;
+}
+
+.radio-button {
+  margin: 5px;
+}
+
+button:nth-child(2) {
+  margin-left: 5px;
+}
+
+mat-card-title {
+  padding-top: 1% !important;
+  padding-bottom: 1% !important;
+  margin-bottom: 0.5% !important;
+  margin-top: 0.5% !important;
+  font-weight: initial !important;
+}
+
+.text-lighter {
+  font-weight: lighter;
+}
+
+mat-horizontal-stepper mat-card-content, mat-horizontal-stepper mat-card-title, mat-horizontal-stepper mat-card-actions {
+  width: 75% !important;
+  margin: auto !important;
+}
+
+
+button {
+  text-transform: uppercase !important;
+}

@@ -358,7 +358,7 @@
                             <td class="p-0 pr-16px">
                               <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimensionMap.get('description').valid" appearance="fill">
                                 <mat-label>Description</mat-label>
-                                <input matInput type="text" formControlName="description" required>
+                                <input matInput type="text" formControlName="description">
                               </mat-form-field>
                             </td>
                             <td class="p-0 pr-16px">
@@ -724,6 +724,24 @@
         </mat-card-header>
         <mat-divider></mat-divider>
         <mat-card-content>
+
+          <!-- Modality -->
+          <table class="width-100 mt-8px">
+            <tr>
+              <td class="p-0">
+                  <mat-form-field matLine class="width-100" [hideRequiredMarker]="taskSettingsForm.get('modality').valid" appearance="fill">
+                    <mat-label>Modality</mat-label>
+                    <mat-select matInput formControlName="modality" required>
+                      <mat-option *ngFor="let modalityType of modalityTypes" [value]="modalityType.value">
+                        {{modalityType.viewValue}}
+                      </mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </td>
+            </tr>
+          </table>
+
+          <mat-divider [inset]="true"></mat-divider>
 
           <!-- Allowed Tries, Time Check Amount-->
           <table class="width-100 mt-8px">

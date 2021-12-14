@@ -12,7 +12,8 @@ export class Dimension {
   description?: string;
   justification?: Justification;
   url?: boolean;
-  scale?: ScaleCategorical | ScaleInterval | ScaleMagnitude;
+  pairwise?:boolean;
+  scale?: ScaleCategorical | ScaleInterval | ScaleMagnitude | ScalePairwise;
   gold?: boolean;
   style: Style;
 
@@ -31,6 +32,7 @@ export class Dimension {
     this.description =        data['description'] ? data["description"] : null;
     this.justification =      data['justification'] ? new Justification(data['justification']) : null;
     this.url =                data['url'] ? data["url"] : null;
+    this.pairwise=            data['pairwise']? data["pairwise"]: null;
     if(data['scale']) {
       switch (data['scale']['type']) {
         case 'categorical':
@@ -42,6 +44,9 @@ export class Dimension {
         case 'magnitude_estimation':
           this.scale = new ScaleMagnitude(data['scale'])
           break;
+        case 'pairwise':
+          this.scale=new ScalePairwise(data['scale'])
+          break;
       }
     } else {
       this.scale = null
@@ -52,6 +57,7 @@ export class Dimension {
   }
 
 }
+
 
 export class Justification {
 
@@ -78,6 +84,16 @@ export class Scale {
     this.type = data["type"];
   }
 
+}
+
+export class ScalePairwise extends Scale{
+  index:number;
+  constructor(
+     data:JSON
+  ){
+     super(data)
+     this.index = data['id'];
+  }
 }
 
 export class ScaleCategorical extends Scale{

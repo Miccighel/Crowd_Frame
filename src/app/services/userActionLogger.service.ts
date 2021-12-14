@@ -99,8 +99,8 @@ export class ActionLogger {
     }
     this.http.get('https://api.ipify.org/?format=json').subscribe(res => {
       details['ip'] = res['ip']
+      this.log('context', details)
     })
-    this.log('context', details)
   }
 
   /**

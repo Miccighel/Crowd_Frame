@@ -8,7 +8,7 @@ import {MatStepper} from "@angular/material/stepper";
 import {S3Service} from "../../services/s3.service";
 import {ConfigService} from "../../services/config.service";
 import {NgxUiLoaderService} from "ngx-ui-loader";
-import {LocalStorageService} from '../../services/local-storage.service';
+import {LocalStorageService} from '../../services/localStorage.service';
 /* File handling helpers */
 import {ReadFile, ReadMode} from "ngx-file-helpers";
 import {Question, Questionnaire} from "../../models/questionnaire";
@@ -169,6 +169,10 @@ export class GeneratorComponent {
     taskSettingsForm: FormGroup;
     taskSettingsFetched: SettingsTask
     taskSettingsSerialized: string
+    modalityTypes: ModalityType[] = [
+        {value: 'pointwise', viewValue: 'Pointwise'},
+        {value: 'pairwise', viewValue: 'Pairwise'},
+    ];
     countdownBehavior: ModalityType[] = [
         {value: 'disable_form', viewValue: 'Disable Forms'},
         {value: 'hide_attributes', viewValue: 'Hide Attributes'},
@@ -335,15 +339,15 @@ export class GeneratorComponent {
 
         let differentTask = false
         let serializedTaskName = this.localStorageService.getItem('task-name')
-        if(serializedTaskName) {
-            if(serializedTaskName!=this.configService.environment.taskName) differentTask = true
+        if (serializedTaskName) {
+            if (serializedTaskName != this.configService.environment.taskName) differentTask = true
         } else {
             this.localStorageService.setItem(`task-name`, JSON.stringify(this.configService.environment.taskName))
         }
         let differentBatch = false
         let serializedBatchName = this.localStorageService.getItem('batch-name')
-        if(serializedBatchName) {
-            if(serializedBatchName!=this.configService.environment.batchName) differentBatch = true
+        if (serializedBatchName) {
+            if (serializedBatchName != this.configService.environment.batchName) differentBatch = true
         } else {
             this.localStorageService.setItem(`batch-name`, JSON.stringify(this.configService.environment.batchName))
         }
@@ -513,6 +517,7 @@ export class GeneratorComponent {
         this.batchesTreeInitialization = false
 
         this.taskSettingsForm = this._formBuilder.group({
+            modality: this.taskSettingsFetched ? this.taskSettingsFetched.modality ? this.taskSettingsFetched.modality : '' : '',
             allowed_tries: this.taskSettingsFetched ? this.taskSettingsFetched.allowed_tries ? this.taskSettingsFetched.allowed_tries : '' : '',
             time_check_amount: this.taskSettingsFetched ? this.taskSettingsFetched.time_check_amount ? this.taskSettingsFetched.time_check_amount : '' : '',
             attributes: this._formBuilder.array([]),
@@ -538,17 +543,17 @@ export class GeneratorComponent {
         if (this.taskSettingsFetched.messages) if (this.taskSettingsFetched.messages.length > 0) this.taskSettingsFetched.messages.forEach((message, messageIndex) => this.addMessage(message))
         if (this.taskSettingsFetched.annotator) if (this.taskSettingsFetched.annotator.type == "options") this.taskSettingsFetched.annotator.values.forEach((optionValue, optionValueIndex) => this.addOptionValue(optionValue))
         if (this.taskSettingsFetched.countdown_time >= 0) {
-            if(this.taskSettingsFetched.countdown_modality=='attribute') {
-                if(this.taskSettingsFetched.countdown_attribute_values) {
-                    for(let countdownAttribute of this.taskSettingsFetched.countdown_attribute_values) {
+            if (this.taskSettingsFetched.countdown_modality == 'attribute') {
+                if (this.taskSettingsFetched.countdown_attribute_values) {
+                    for (let countdownAttribute of this.taskSettingsFetched.countdown_attribute_values) {
                         this.updateCountdownAttribute(countdownAttribute)
                     }
                 }
             }
         }
         if (this.taskSettingsFetched.countdown_time >= 0) {
-            if(this.taskSettingsFetched.countdown_modality=='position') {
-                if(this.taskSettingsFetched.countdown_position_values) {
+            if (this.taskSettingsFetched.countdown_modality == 'position') {
+                if (this.taskSettingsFetched.countdown_position_values) {
                     for (let countdownPosition of this.taskSettingsFetched.countdown_position_values) {
                         this.updateCountdownPosition(countdownPosition)
                     }
@@ -1289,7 +1294,7 @@ export class GeneratorComponent {
     updateLogOption(el: string, action: string) {
         let truthValue = this.taskSettingsForm.get('logOption').value[el][action] != true;
         if (action == 'general') {
-            for(let key in this.taskSettingsForm.get('logOption').value[el])
+            for (let key in this.taskSettingsForm.get('logOption').value[el])
                 this.taskSettingsForm.get('logOption').value[el][key] = truthValue
         } else
             this.taskSettingsForm.get('logOption').value[el][action] = truthValue
@@ -1312,23 +1317,42 @@ export class GeneratorComponent {
         }
         this.hitsAttributes = []
         this.hitsAttributesValues = {}
+
         if (this.hitsDetected > 0) {
             let hits = JSON.parse(JSON.stringify(this.hitsParsed))
             let document = hits[0]['documents'][0]
             this.hitsPositions = hits[0]['documents'].length
-            for (let attribute in document) {
-                if (!(attribute in this.hitsAttributes)) {
-                    this.hitsAttributes.push(attribute)
-                    this.hitsAttributesValues[attribute] = []
+            if ('statements' in document) {
+                for (let attribute in document['statements'][0]) {
+                    if (!(attribute in this.hitsAttributes)) {
+                        this.hitsAttributes.push(attribute)
+                        this.hitsAttributesValues[attribute] = []
+                    }
+                }
+            } else {
+                for (let attribute in document) {
+                    if (!(attribute in this.hitsAttributes)) {
+                        this.hitsAttributes.push(attribute)
+                        this.hitsAttributesValues[attribute] = []
+                    }
                 }
             }
+
             for (let hit of hits) {
                 for (let document of hit['documents']) {
-                    Object.entries(document).forEach(
-                        ([attribute, value]) => {
-                            if(!this.hitsAttributesValues[attribute].includes(value)) this.hitsAttributesValues[attribute].push(value)
-                        }
-                    );
+                    if('statements' in document) {
+                        Object.entries(document['statements'][0]).forEach(
+                            ([attribute, value]) => {
+                                if (!this.hitsAttributesValues[attribute].includes(value)) this.hitsAttributesValues[attribute].push(value)
+                            }
+                        )
+                    } else {
+                        Object.entries(document).forEach(
+                            ([attribute, value]) => {
+                                if (!this.hitsAttributesValues[attribute].includes(value)) this.hitsAttributesValues[attribute].push(value)
+                            }
+                        );
+                    }
                 }
             }
         }
@@ -1421,7 +1445,7 @@ export class GeneratorComponent {
             this.countdownPositionValues().clear()
         } else {
             this.taskSettingsForm.get('countdown_modality').setValidators([Validators.required]);
-            if(this.taskSettingsForm.get('countdown_modality').value=='attribute')
+            if (this.taskSettingsForm.get('countdown_modality').value == 'attribute')
                 this.taskSettingsForm.get('countdown_attribute').setValidators([Validators.required]);
         }
     }
@@ -1431,7 +1455,7 @@ export class GeneratorComponent {
     }
 
     updateCountdownModality() {
-        if(this.taskSettingsForm.get('countdown_modality').value=="attribute") {
+        if (this.taskSettingsForm.get('countdown_modality').value == "attribute") {
             this.countdownPositionValues().clear()
         } else {
             this.taskSettingsForm.get('countdown_attribute').setValue('')
@@ -1442,7 +1466,7 @@ export class GeneratorComponent {
     }
 
     updateCountdownAttribute(countdownAttribute = null) {
-        if(countdownAttribute) {
+        if (countdownAttribute) {
             let control = this._formBuilder.group({
                 name: countdownAttribute['name'],
                 time: countdownAttribute['time']
@@ -1468,7 +1492,7 @@ export class GeneratorComponent {
     }
 
     updateCountdownPosition(countdownPosition = null) {
-        if(countdownPosition) {
+        if (countdownPosition) {
             let control = this._formBuilder.group({
                 position: countdownPosition['name'],
                 time: countdownPosition['time']
@@ -1476,7 +1500,7 @@ export class GeneratorComponent {
             this.countdownPositionValues().push(control)
         } else {
             this.countdownPositionValues().clear()
-            for(let index = 0;index<this.hitsPositions;index++) {
+            for (let index = 0; index < this.hitsPositions; index++) {
                 let control = this._formBuilder.group({
                     position: index,
                     time: '',
@@ -1524,7 +1548,7 @@ export class GeneratorComponent {
             label: option ? option['label'] ? option['label'] : '' : '',
             color: option ? option['color'] ? option['color'] : '' : ''
         }))
-        if(!option) {
+        if (!option) {
             this.annotatorOptionColors.push("")
         }
     }
@@ -1561,7 +1585,7 @@ export class GeneratorComponent {
         }
         this.batchesTree.forEach((taskNode, taskIndex) => {
             taskNode["batches"].forEach((batchNode, batchIndex) => {
-                if(batch.get('name').value == batchNode['batch']){
+                if (batch.get('name').value == batchNode['batch']) {
                     this.batchesTree[taskIndex]["batches"][batchIndex]['blacklist'] = batch.get('blacklist').value
                     this.localStorageService.setItem("batches-tree", JSON.stringify(this.batchesTree))
                 }
@@ -1579,7 +1603,7 @@ export class GeneratorComponent {
         }
         this.batchesTree.forEach((taskNode, taskIndex) => {
             taskNode["batches"].forEach((batchNode, batchIndex) => {
-                if(batch.get('name').value == batchNode['batch']){
+                if (batch.get('name').value == batchNode['batch']) {
                     this.batchesTree[taskIndex]["batches"][batchIndex]['whitelist'] = batch.get('whitelist').value
                     this.localStorageService.setItem("batches-tree", JSON.stringify(this.batchesTree))
                 }
@@ -1615,7 +1639,7 @@ export class GeneratorComponent {
         if (!taskSettingsJSON.setAnnotator) taskSettingsJSON.annotator = false
         delete taskSettingsJSON.setAnnotator
 
-        if(taskSettingsJSON.annotator.type == "options") {
+        if (taskSettingsJSON.annotator.type == "options") {
             taskSettingsJSON.annotator.values.forEach((option, index) => {
                 option["color"] = this.annotatorOptionColors[index]
             });
@@ -1659,7 +1683,7 @@ export class GeneratorComponent {
                 taskSettingsJSON['attributes'][attributeIndex] = attribute
             }
         }
-        if(this.batchesTree) {
+        if (this.batchesTree) {
             let blacklist_batches = []
             let whitelist_batches = []
             for (let batch of taskSettingsJSON.batches) {
