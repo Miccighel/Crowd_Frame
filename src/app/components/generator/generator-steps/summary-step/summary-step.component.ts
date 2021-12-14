@@ -1,5 +1,5 @@
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import { S3Service } from 'src/app/services/s3.service';
+import {S3Service} from 'src/app/services/s3.service';
 import {ConfigService} from "../../../../services/config.service";
 import {LocalStorageService} from "../../../../services/localStorage.service";
 import {QuestionnaireStepComponent} from "../questionnaire-step/questionnaire-step.component";
@@ -77,7 +77,8 @@ export class SummaryStepComponent implements OnInit {
         this.resetEmitter = new EventEmitter<boolean>();
     }
 
-    ngOnInit(): void {}
+    ngOnInit(): void {
+    }
 
     public updateFullPath() {
         this.fullS3Path = this.S3Service.getTaskDataS3Path(this.configService.environment, this.configService.environment.taskName, this.configService.environment.batchName)
@@ -96,7 +97,6 @@ export class SummaryStepComponent implements OnInit {
         let searchEngineSettingsPromise = this.S3Service.uploadSearchEngineSettings(this.configService.environment, this.searchEngineStep.configurationSerialized)
         let taskSettingsPromise = this.S3Service.uploadTaskSettings(this.configService.environment, this.taskSettingsStep.configurationSerialized)
         let workerChecksPromise = this.S3Service.uploadWorkersCheck(this.configService.environment, this.workerChecksStep.configurationSerialized)
-        console.log(this.taskSettingsStep.configurationSerialized)
         questionnairePromise.then(result => {
             if (!result["failed"]) {
                 this.questionnairesPath = this.S3Service.getQuestionnairesConfigPath(this.configService.environment)
@@ -138,6 +138,10 @@ export class SummaryStepComponent implements OnInit {
             } else this.workerChecksPath = "Failure"
         })
         this.uploadCompleted = true
+    }
+
+    public resetConfiguration() {
+        this.resetEmitter.emit(true)
     }
 
 }

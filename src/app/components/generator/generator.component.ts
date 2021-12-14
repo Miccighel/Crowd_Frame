@@ -257,8 +257,9 @@ export class GeneratorComponent {
         this.workerChecksStep.ngOnInit()
     }
 
-    async clearClonedBatch() {
+    async restoreGenerator() {
         this.ngxService.startLoader('generator-inner')
+        this.generator.selectedIndex=1
         this.batchCloned = new FormControl();
         this.localStorageService.clear()
         this.configService.environment['taskName'] = this.configService.environment['taskNameInitial']

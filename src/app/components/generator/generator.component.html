@@ -73,6 +73,7 @@
                     [searchEngineStep]="searchEngineStep"
                     [taskSettingsStep]="taskSettingsStep"
                     [workerChecksStep]="workerChecksStep"
+                    (resetEmitter)="this.restoreGenerator()"
             ></app-summary-step>
         </mat-step>
     </ng-container>
@@ -108,7 +109,7 @@
         </mat-select>
     </mat-form-field>
     <p *ngIf="this.batchesTreeInitialization && this.batchesTree.length <= 0">No other batches detected</p>
-    <button mat-flat-button color="primary" class="width-100" *ngIf="this.taskCloned && this.batchesTreeInitialization" (click)="clearClonedBatch()">
+    <button mat-flat-button color="primary" class="width-100" *ngIf="this.taskCloned && this.batchesTreeInitialization" (click)="restoreGenerator()">
         Clear
     </button>
 </mat-expansion-panel>

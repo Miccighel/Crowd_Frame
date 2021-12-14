@@ -150,7 +150,7 @@ export class QuestionnaireStepComponent implements OnInit {
     addQuestion(questionnaireIndex: number, questionIndex = null as number, question = null as Question) {
         this.questions(questionnaireIndex).push(this._formBuilder.group({
             name: question ? question.name ? question.name : '' : '',
-            text: question ? question.name ? question.name : '' : '',
+            text: question ? question.text ? question.text : '' : '',
             answers: this._formBuilder.array([])
         }));
         if (question && question.answers) for (let answer of question.answers) this.addAnswer(questionnaireIndex, questionIndex, answer)

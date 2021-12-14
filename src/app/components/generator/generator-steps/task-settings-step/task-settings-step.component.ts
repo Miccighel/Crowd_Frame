@@ -451,13 +451,16 @@ export class TaskSettingsStepComponent implements OnInit {
         for (let attributeControl of this.hitAttributes().controls) {
             attributeControl.get('annotate').setValue(false)
         }
-        this.annotator().get('type').setValue('')
         if (this.formStep.get('setAnnotator').value == false) {
             this.annotator().get('type').clearValidators();
+            this.annotator().get('type').clearAsyncValidators();
+            this.annotatorOptionValues().clear()
         } else {
             this.annotator().get('type').setValidators([Validators.required, this.positiveNumber.bind(this)]);
         }
-        this.annotator().get('type').updateValueAndValidity();
+        this.annotator().get('type').updateValueAndValidity()
+        this.annotatorOptionValues().updateValueAndValidity()
+        this.setAnnotatorType()
         this.resetHitAttributes()
     }
 
