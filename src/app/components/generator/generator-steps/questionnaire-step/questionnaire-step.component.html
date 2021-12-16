@@ -39,14 +39,14 @@
                             </table>
 
                             <!-- Description -->
-                            <div *ngIf="questionnaire.get('type').value == 'likert'">
+                            <div>
                                 <mat-divider [inset]="true"></mat-divider>
                                 <table class="width-100 mt-16px">
                                     <tr>
                                         <td class="p-0">
                                             <mat-form-field class="width-100" [hideRequiredMarker]="questionnaire.get('description').valid" appearance="fill">
                                                 <mat-label>Description</mat-label>
-                                                <textarea matInput formControlName="description" required></textarea>
+                                                <textarea matInput formControlName="description"></textarea>
                                             </mat-form-field>
                                         </td>
                                     </tr>

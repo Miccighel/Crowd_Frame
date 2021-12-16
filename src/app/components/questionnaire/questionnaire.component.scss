@@ -82,6 +82,10 @@ mat-form-field {
   padding-left: 0.75%;
 }
 
+.questionnaire-matrix {
+  margin-top: 2%;
+}
+
 .questionnaire-matrix .matrix-header {
   padding-top: 1.5%;
   padding-bottom: 1.5%;
@@ -109,19 +113,22 @@ mat-form-field {
 
 .questionnaire-matrix .matrix-header > div:first-child {
   flex-basis: 20%;
-  text-align: justify;
 }
 
 .questionnaire-matrix mat-radio-group {
   margin-top: 1%;
   margin-bottom: 1%;
+  padding-left: 1%;
+  padding-right: 1%;
+  padding-bottom: 1%;
   display: flex;
   align-items: center;
   justify-content: flex-start;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
 }
 
 .questionnaire-matrix mat-radio-group > div:first-child {
-  text-align: justify;
+  text-align: left;
   flex-basis: 20%;
 }
 

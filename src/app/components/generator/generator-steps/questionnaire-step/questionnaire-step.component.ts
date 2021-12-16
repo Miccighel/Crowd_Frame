@@ -128,10 +128,6 @@ export class QuestionnaireStepComponent implements OnInit {
     updateQuestionnaire(questionnaireIndex) {
         let questionnaire = this.questionnaires().at(questionnaireIndex);
 
-        questionnaire.get('description').setValue('');
-        questionnaire.get('description').clearValidators();
-        questionnaire.get('description').updateValueAndValidity();
-
         this.questions(questionnaireIndex).clear();
         this.mapping(questionnaireIndex).clear();
 

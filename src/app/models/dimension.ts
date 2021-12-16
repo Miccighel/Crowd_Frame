@@ -119,6 +119,7 @@ export class Mapping {
   label: string;
   description: string;
   value: string;
+  separator?: boolean;
 
   constructor(
     index: number,
@@ -127,9 +128,10 @@ export class Mapping {
 
     this.index = index;
 
-    this.label =        data["label"];
-    this.description =  data["description"];
-    this.value =        data["value"];
+    this.label =        data["label"]
+    this.description =  data["description"]
+    this.value =        data["value"]
+    this.separator =    data["separator"] ? data["separator"] : false
   }
 
 }

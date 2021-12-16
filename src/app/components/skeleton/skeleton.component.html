@@ -128,13 +128,13 @@
 
                         <!-- Evaluation instructions markup -->
                         <div *ngIf="this.instructionsAmount>0" class="evaluation-instructions">
+                            <mat-divider [inset]="true"></mat-divider>
+                            <h2>Instructions</h2>
+                            <mat-divider [inset]="true"></mat-divider>
                             <div *ngFor="let instruction of this.instructions">
-                                <mat-divider [inset]="true"></mat-divider>
                                 <h2>{{instruction.caption}}</h2>
-                                <mat-divider [inset]="true"></mat-divider>
                                 <div [innerHTML]="instruction.text"></div>
                             </div>
-                            <mat-divider [inset]="true"></mat-divider>
                         </div>
 
                         <!--- Countdown markup --->
@@ -547,17 +547,20 @@
                                         <div class="dimension-content">
 
                                             <ng-container *ngIf="dimension.style.orientation=='vertical'">
-
                                                 <ng-container *ngIf="dimension.scale.type=='categorical'">
                                                     <div>
                                                         <mat-radio-group aria-labelledby="radio-button-label" class="radio-button-group" formControlName="{{(dimension.name).concat('_value')}}">
-                                                            <mat-radio-button *ngFor="let mapping of dimension.scale.mapping let k=index"
-                                                                              class="radio-button" value="{{mapping.value}}"
-                                                                              (change)="storeDimensionValue($event, i, dimension.index)"
-                                                                              [disabled]="this.countdownsExpired[i]">
-                                                                <span>{{mapping.label}}</span>
-                                                                <span *ngIf="mapping.description.length>0"> ({{mapping.description}})</span>
-                                                            </mat-radio-button>
+                                                            <ng-container *ngFor="let mapping of dimension.scale.mapping let k=index">
+                                                                <mat-divider *ngIf="mapping.separator" [inset]="true"></mat-divider>
+                                                                <mat-radio-button
+                                                                        value="{{mapping.value}}"
+                                                                        (change)="storeDimensionValue($event, i, dimension.index);changeValue(document.index,dimension.index+1,j)"
+                                                                        [disabled]="this.countdownsExpired[i]"
+                                                                        [ngClass]="mapping.separator ? 'radio-button radio-button-separated' : 'radio-button'">
+                                                                    <span>{{mapping.label}}</span>
+                                                                    <span *ngIf="mapping.description.length>0"> ({{mapping.description}})</span>
+                                                                </mat-radio-button>
+                                                            </ng-container>
                                                         </mat-radio-group>
                                                     </div>
                                                 </ng-container>
@@ -651,13 +654,12 @@
                                                         <div class="dimension-split-inside dimension-box" *ngFor="let test of document.statements; let j=index">
                                                             <p class="spanDocument"> Answer for Statement {{changeletter(j)}}</p>
                                                             <mat-radio-group style="margin-left: 10px;" aria-labelledby="radio-button-label" class="radio-button-group" formControlName="{{(dimension.name).concat('_value_').concat(j)}}">
-                                                                <mat-radio-button
-                                                                        *ngFor="let mapping of dimension.scale.mapping let k=index"
-                                                                        class="radio-button" value="{{mapping.value}}"
-                                                                        (change)="storeDimensionValue($event, i, dimension.index);changeValue(document.index,dimension.index+1,j)"
-                                                                        [disabled]="this.countdownsExpired[i]">
-                                                                    <span>{{mapping.label}}</span>
-                                                                    <span *ngIf="mapping.description.length>0">({{mapping.description}})</span>
+                                                                <mat-radio-button *ngFor="let mapping of dimension.scale.mapping let k=index"
+                                                                                  class="radio-button" value="{{mapping.value}}"
+                                                                                  (change)="storeDimensionValue($event, i, dimension.index)"
+                                                                                  [disabled]="this.countdownsExpired[i]">
+                                                                    <span>{{mapping.label}}</span><span *ngIf="mapping.description.length>0">
+                                                                    ({{mapping.description}})</span>
                                                                 </mat-radio-button>
                                                             </mat-radio-group>
                                                         </div>
@@ -767,8 +769,7 @@
                                                 <mat-error *ngIf="checkFormControl(documentsForm[i],(dimension.name).concat('_url'), 'required')">
                                                     This field is required
                                                 </mat-error>
-                                                <mat-error
-                                                        *ngIf="checkFormControl(documentsForm[i], (dimension.name).concat('_url'), 'invalidSearchEngineUrl')">
+                                                <mat-error *ngIf="checkFormControl(documentsForm[i], (dimension.name).concat('_url'), 'invalidSearchEngineUrl')">
                                                     Please select (or copy & paste) one of the URLs shown above.
                                                 </mat-error>
                                             </mat-form-field>
@@ -784,12 +785,8 @@
                                                 <ng-container>
                                                     <span class="matrix-header-text">{{mapping.label}}</span>
                                                 </ng-container>
-                                                <br/>
-                                                <ng-container *ngIf="mapping.value<=0">
-                                                    <span class="matrix-header-value">({{mapping.value}})</span>
-                                                </ng-container>
-                                                <ng-container *ngIf="mapping.value>0">
-                                                    <span class="matrix-header-value">(+{{mapping.value}})</span>
+                                                <ng-container *ngIf="mapping.value">
+                                                    <span class="matrix-header-value"> ({{mapping.value}})</span>
                                                 </ng-container>
                                             </div>
                                         </div>
@@ -800,14 +797,12 @@
                                         <mat-radio-group aria-labelledby="radio-button-label" formControlName="{{(dimension.name).concat('_value')}}">
                                             <div>
                                                 <p>
-                                                    <strong>{{this.capitalize(dimension.name)}}:
-                                                    </strong><strong>{{dimension.description.toLowerCase().split(")")[0]}}
-                                                    )</strong>{{dimension.description.toLowerCase().split(")")[1]}})
+                                                    <strong>{{this.capitalize(dimension.name)}}:</strong>
+                                                    {{dimension.description.toLowerCase()}}
                                                 </p>
                                             </div>
                                             <div *ngFor="let mapping of dimension.scale.mapping; let k=index">
-                                                <mat-radio-button class="radio-button" value="{{mapping.value}}"
-                                                                  (change)="storeDimensionValue($event, i,dimension.index)"></mat-radio-button>
+                                                <mat-radio-button class="radio-button" value="{{mapping.value}}" (change)="storeDimensionValue($event, i,dimension.index)"></mat-radio-button>
                                             </div>
                                         </mat-radio-group>
                                     </div>
@@ -862,41 +857,41 @@
                             Back
                         </button>
                         <button mat-flat-button color="primary" matStepperNext *ngIf="i+1<this.documentsAmount && this.annotator"
-                                [disabled]="((!documentsForm[i].valid && documentsForm[i].status != 'DISABLED' ) || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted || !checkAnnotationConsistency(i))"
+                                [disabled]="((!documentsForm[i].valid || documentsForm[i].status == 'DISABLED' ) || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted || !checkAnnotationConsistency(i))"
                                 (click)="performLogging('Next', i); nextStep()">
                             Next
                         </button>
                         <button mat-flat-button color="primary" matStepperNext *ngIf="i+1<this.documentsAmount && !this.annotator"
-                                [disabled]="(!documentsForm[i].valid && documentsForm[i].status != 'DISABLED'  || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted)"
+                                [disabled]="(!documentsForm[i].valid || documentsForm[i].status == 'DISABLED'  || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted)"
                                 (click)="performLogging('Next', i); nextStep()">
                             Next
                         </button>
 
                         <button mat-flat-button color="primary" matStepperNext
                                 *ngIf="i+1>=this.documentsAmount && this.annotator && this.questionnaireAmountEnd > 0"
-                                [disabled]="(!documentsForm[i].valid && documentsForm[i].status != 'DISABLED'  || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted || !checkAnnotationConsistency(i))"
+                                [disabled]="(!documentsForm[i].valid || documentsForm[i].status == 'DISABLED'  || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted || !checkAnnotationConsistency(i))"
                                 (click)="performLogging('Next', i); nextStep()">
                             Next
                         </button>
 
                         <button mat-flat-button color="primary" matStepperNext
                                 *ngIf="i+1>=this.documentsAmount && !this.annotator  && this.questionnaireAmountEnd > 0"
-                                [disabled]="(!documentsForm[i].valid && documentsForm[i].status != 'DISABLED'  || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted)"
+                                [disabled]="(!documentsForm[i].valid || documentsForm[i].status == 'DISABLED'  || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted)"
                                 (click)="performLogging('Next', i); nextStep()">
                             Next
                         </button>
 
                         <button mat-flat-button color="primary" matStepperNext
                                 *ngIf="i+1>=this.documentsAmount && this.questionnaireAmountEnd == 0 && !this.annotator"
-                                [disabled]="(!documentsForm[i].valid && documentsForm[i].status != 'DISABLED'  || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted)"
-                                (click)="performLogging('Finish', i); performQualityCheck(); nextStep();">
+                                [disabled]="(!documentsForm[i].valid || documentsForm[i].status == 'DISABLED'  || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted)"
+                                (click)="performQualityCheck(); performLogging('Finish', i); nextStep();">
                             Finish
                         </button>
 
                         <button mat-flat-button color="primary" matStepperNext
                                 *ngIf="i+1>=this.documentsAmount && this.questionnaireAmountEnd == 0 && this.annotator"
-                                [disabled]="(!documentsForm[i].valid && documentsForm[i].status != 'DISABLED'  || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted || !checkAnnotationConsistency(i))"
-                                (click)="performLogging('Finish', i); performQualityCheck(); nextStep();">
+                                [disabled]="(!documentsForm[i].valid || documentsForm[i].status == 'DISABLED'  || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted || !checkAnnotationConsistency(i))"
+                                (click)="performQualityCheck(); performLogging('Finish', i); nextStep();">
                             Finish
                         </button>
 
