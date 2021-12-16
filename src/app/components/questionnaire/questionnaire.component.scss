@@ -109,7 +109,6 @@ mat-form-field {
 
 .questionnaire-matrix .matrix-header > div:first-child {
   flex-basis: 20%;
-  text-align: justify;
 }
 
 .questionnaire-matrix mat-radio-group {
@@ -121,7 +120,7 @@ mat-form-field {
 }
 
 .questionnaire-matrix mat-radio-group > div:first-child {
-  text-align: justify;
+  text-align: left;
   flex-basis: 20%;
 }
 
