@@ -1,3 +1,7 @@
+::ng-deep .mat-horizontal-stepper-header {
+  pointer-events: none !important;
+}
+
 mat-horizontal-stepper mat-card-content, mat-horizontal-stepper mat-card-title, mat-horizontal-stepper mat-card-actions {
   width: 75% !important;
   margin: auto !important;
@@ -143,6 +147,11 @@ mat-horizontal-stepper mat-card-content, mat-horizontal-stepper mat-card-title, 
 .radio-group-button {
   margin-left: 7px;
   margin-right: 7px;
+}
+
+.radio-button-separated  {
+  font-style: italic;
+  font-weight: normal;
 }
 
 .inner-annotation-text {

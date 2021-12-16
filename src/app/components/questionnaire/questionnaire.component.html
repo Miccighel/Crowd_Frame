@@ -91,7 +91,7 @@
             <!-- Likert questionnaire markup -->
             <mat-card-content *ngIf="questionnaire.type=='likert'" class="questionnaire-matrix">
                 <p *ngIf="questionnaire.description">{{questionnaire.description}}</p>
-                <mat-divider [inset]="true"></mat-divider>
+                <mat-divider *ngIf="questionnaire.description" [inset]="true"></mat-divider>
                 <div class="matrix-header">
                     <div></div>
                     <div *ngFor="let mapping of questionnaire.mappings; let k=index">

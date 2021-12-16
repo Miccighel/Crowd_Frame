@@ -799,8 +799,6 @@ export class SkeletonComponent implements OnInit {
                 this.documentsForm[index] = this.formBuilder.group(controlsConfig)
             }
 
-            console.log(this.dimensions)
-
             this.dimensionsSelectedValues = new Array<object>(this.documentsAmount);
             for (let index = 0; index < this.dimensionsSelectedValues.length; index++) {
                 this.dimensionsSelectedValues[index] = {};

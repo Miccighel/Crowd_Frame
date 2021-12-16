@@ -91,7 +91,7 @@
 
 <!-- Task body section -->
 
-<mat-horizontal-stepper [linear]="false" labelPosition="bottom" #stepper *ngIf="questionnaires && documents && dimensions  && this.sectionService.taskStarted">
+<mat-horizontal-stepper [linear]="true" labelPosition="bottom" #stepper *ngIf="questionnaires && documents && dimensions  && this.sectionService.taskStarted">
 
     <!-- Questionnaire markup -->
     <ng-container *ngFor="let questionnaire of questionnaires; let i=index">
@@ -132,7 +132,7 @@
                             <h2>Instructions</h2>
                             <mat-divider [inset]="true"></mat-divider>
                             <div *ngFor="let instruction of this.instructions">
-                                <p>{{instruction.caption}}</p>
+                                <h2>{{instruction.caption}}</h2>
                                 <div [innerHTML]="instruction.text"></div>
                             </div>
                         </div>
@@ -547,18 +547,18 @@
                                         <div class="dimension-content">
 
                                             <ng-container *ngIf="dimension.style.orientation=='vertical'">
-
                                                 <ng-container *ngIf="dimension.scale.type=='categorical'">
                                                     <div>
                                                         <mat-radio-group aria-labelledby="radio-button-label" class="radio-button-group" formControlName="{{(dimension.name).concat('_value')}}">
                                                             <ng-container *ngFor="let mapping of dimension.scale.mapping let k=index">
                                                                 <mat-divider *ngIf="mapping.separator" [inset]="true"></mat-divider>
                                                                 <mat-radio-button
-                                                                        class="radio-button" value="{{mapping.value}}"
+                                                                        value="{{mapping.value}}"
                                                                         (change)="storeDimensionValue($event, i, dimension.index);changeValue(document.index,dimension.index+1,j)"
-                                                                        [disabled]="this.countdownsExpired[i]">
+                                                                        [disabled]="this.countdownsExpired[i]"
+                                                                        [ngClass]="mapping.separator ? 'radio-button radio-button-separated' : 'radio-button'">
                                                                     <span>{{mapping.label}}</span>
-                                                                    <span *ngIf="mapping.description.length>0">({{mapping.description}})</span>
+                                                                    <span *ngIf="mapping.description.length>0"> ({{mapping.description}})</span>
                                                                 </mat-radio-button>
                                                             </ng-container>
                                                         </mat-radio-group>
@@ -785,11 +785,8 @@
                                                 <ng-container>
                                                     <span class="matrix-header-text">{{mapping.label}}</span>
                                                 </ng-container>
-                                                <ng-container *ngIf="mapping.value<=0">
-                                                    <span class="matrix-header-value">({{mapping.value}})</span>
-                                                </ng-container>
-                                                <ng-container *ngIf="mapping.value>0">
-                                                    <span class="matrix-header-value">(+{{mapping.value}})</span>
+                                                <ng-container *ngIf="mapping.value">
+                                                    <span class="matrix-header-value"> ({{mapping.value}})</span>
                                                 </ng-container>
                                             </div>
                                         </div>
@@ -860,40 +857,40 @@
                             Back
                         </button>
                         <button mat-flat-button color="primary" matStepperNext *ngIf="i+1<this.documentsAmount && this.annotator"
-                                [disabled]="((!documentsForm[i].valid && documentsForm[i].status != 'DISABLED' ) || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted || !checkAnnotationConsistency(i))"
+                                [disabled]="((!documentsForm[i].valid || documentsForm[i].status == 'DISABLED' ) || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted || !checkAnnotationConsistency(i))"
                                 (click)="performLogging('Next', i); nextStep()">
                             Next
                         </button>
                         <button mat-flat-button color="primary" matStepperNext *ngIf="i+1<this.documentsAmount && !this.annotator"
-                                [disabled]="(!documentsForm[i].valid && documentsForm[i].status != 'DISABLED'  || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted)"
+                                [disabled]="(!documentsForm[i].valid || documentsForm[i].status == 'DISABLED'  || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted)"
                                 (click)="performLogging('Next', i); nextStep()">
                             Next
                         </button>
 
                         <button mat-flat-button color="primary" matStepperNext
                                 *ngIf="i+1>=this.documentsAmount && this.annotator && this.questionnaireAmountEnd > 0"
-                                [disabled]="(!documentsForm[i].valid && documentsForm[i].status != 'DISABLED'  || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted || !checkAnnotationConsistency(i))"
+                                [disabled]="(!documentsForm[i].valid || documentsForm[i].status == 'DISABLED'  || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted || !checkAnnotationConsistency(i))"
                                 (click)="performLogging('Next', i); nextStep()">
                             Next
                         </button>
 
                         <button mat-flat-button color="primary" matStepperNext
                                 *ngIf="i+1>=this.documentsAmount && !this.annotator  && this.questionnaireAmountEnd > 0"
-                                [disabled]="(!documentsForm[i].valid && documentsForm[i].status != 'DISABLED'  || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted)"
+                                [disabled]="(!documentsForm[i].valid || documentsForm[i].status == 'DISABLED'  || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted)"
                                 (click)="performLogging('Next', i); nextStep()">
                             Next
                         </button>
 
                         <button mat-flat-button color="primary" matStepperNext
                                 *ngIf="i+1>=this.documentsAmount && this.questionnaireAmountEnd == 0 && !this.annotator"
-                                [disabled]="(!documentsForm[i].valid && documentsForm[i].status != 'DISABLED'  || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted)"
+                                [disabled]="(!documentsForm[i].valid || documentsForm[i].status == 'DISABLED'  || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted)"
                                 (click)="performQualityCheck(); performLogging('Finish', i); nextStep();">
                             Finish
                         </button>
 
                         <button mat-flat-button color="primary" matStepperNext
                                 *ngIf="i+1>=this.documentsAmount && this.questionnaireAmountEnd == 0 && this.annotator"
-                                [disabled]="(!documentsForm[i].valid && documentsForm[i].status != 'DISABLED'  || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted || !checkAnnotationConsistency(i))"
+                                [disabled]="(!documentsForm[i].valid || documentsForm[i].status == 'DISABLED'  || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted || !checkAnnotationConsistency(i))"
                                 (click)="performQualityCheck(); performLogging('Finish', i); nextStep();">
                             Finish
                         </button>
