@@ -37,7 +37,7 @@
     "@angular-devkit/build-angular": "^13.1.2",
     "@angular/cli": "^13.1.2",
     "@angular/compiler-cli": "~13.1.1",
-    "@types/node": "~16.11.11",
+    "@types/node": "~16.11.14",
     "typescript": "4.4.4"
   },
   "browser": {

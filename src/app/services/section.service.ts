@@ -166,7 +166,9 @@ export class SectionService{
   }
 
   decreaseIndex() {
-    this.documentIndex = this._documentIndex - 1
+    if(this._documentIndex>0) {
+      this.documentIndex = this._documentIndex - 1
+    }
   }
 
   private updateSection(){

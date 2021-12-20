@@ -531,8 +531,7 @@
                                             <mat-error *ngIf="checkFormControl(documentsForm[i],(dimension.name).concat('_url'), 'required')">
                                                 This field is required
                                             </mat-error>
-                                            <mat-error
-                                                    *ngIf="checkFormControl(documentsForm[i], (dimension.name).concat('_url'), 'invalidSearchEngineUrl')">
+                                            <mat-error *ngIf="checkFormControl(documentsForm[i], (dimension.name).concat('_url'), 'invalidSearchEngineUrl')">
                                                 Please select (or copy & paste) one of the URLs shown above.
                                             </mat-error>
                                         </mat-form-field>
