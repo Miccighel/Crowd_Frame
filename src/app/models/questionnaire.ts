@@ -71,7 +71,6 @@ export class Question {
 
     name: string
     type: string
-    parent?: string
     nameFull?: string
     required?: boolean
     text?: string
@@ -90,7 +89,6 @@ export class Question {
 
         this.name = data["name"]
         this.type = data['type']
-        this.parent = data['parent'] ? data["parent"] : null
         this.nameFull = null
         this.text = data['text'] ? data["text"] : null
         this.required = data['required']
@@ -105,14 +103,6 @@ export class Question {
         this.detail = data['detail'] ? new Detail(data["detail"]) : null;
         this.showDetail = data['show_detail'] ? data['show_detail'] : false;
         this.freeText = data['free_text'] ? data['free_text'] : false;
-    }
-
-    public controlName() {
-        if (this.parent) {
-            return `${this.parent}_${this.name}`
-        } else {
-            return this.name
-        }
     }
 
 }
@@ -163,6 +153,7 @@ export class Mapping {
     index: number;
 
     label: string;
+    key: string;
     value: string;
 
     constructor(
@@ -173,6 +164,7 @@ export class Mapping {
         this.index = index;
 
         this.label = data["label"];
+        this.key = data["key"];
         this.value = data["value"];
     }
 

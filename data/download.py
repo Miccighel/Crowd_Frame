@@ -19,7 +19,6 @@ import datetime
 import xml.etree.ElementTree as Xml
 from rich.console import Console
 from tqdm import tqdm
-from botocore.errorfactory import ClientError
 
 console = Console()
 pp = pprint.PrettyPrinter(indent=4)
@@ -93,10 +92,20 @@ def load_column_names(task, ip, uag, questionnaires, dimensions, documents):
 
     for questionnaire in questionnaires:
         for question in questionnaire["questions"]:
-            columns.append(f"q_{questionnaire['index']}_{question['name']}_question")
-            columns.append(f"q_{questionnaire['index']}_{question['name']}_answer")
-            columns.append(f"q_{questionnaire['index']}_{question['name']}_value")
+            columns.append(f"q_{questionnaire['index']}_{question['name']}_index")
+            columns.append(f"q_{questionnaire['index']}_{question['name']}_name")
+            columns.append(f"q_{questionnaire['index']}_{question['name']}_type")
+            columns.append(f"q_{questionnaire['index']}_{question['name']}_name_full")
+            columns.append(f"q_{questionnaire['index']}_{question['name']}_required")
+            columns.append(f"q_{questionnaire['index']}_{question['name']}_show_detail")
             columns.append(f"q_{questionnaire['index']}_{question['name']}_free_text")
+            columns.append(f"q_{questionnaire['index']}_{question['name']}_text")
+            columns.append(f"q_{questionnaire['index']}_{question['name']}_answer_value")
+            columns.append(f"q_{questionnaire['index']}_{question['name']}_answer_text")
+            columns.append(f"q_{questionnaire['index']}_{question['name']}_answer_mapping_index")
+            columns.append(f"q_{questionnaire['index']}_{question['name']}_answer_mapping_key")
+            columns.append(f"q_{questionnaire['index']}_{question['name']}_answer_mapping_label")
+            columns.append(f"q_{questionnaire['index']}_{question['name']}_answer_mapping_value")
         columns.append(f"q_{questionnaire['index']}_time_elapsed")
         columns.append(f"q_{questionnaire['index']}_accesses")
 
@@ -190,6 +199,8 @@ response = s3.list_objects(Bucket=aws_private_bucket, Prefix=f"{task_name}/", De
 for path in response['CommonPrefixes']:
     batch_name = path.get('Prefix').split("/")[1]
     task_batch_names.append(batch_name)
+
+task_batch_names = ["V2-Pilot-0"]
 
 console.print(f"Batch names: [white on black]{', '.join(task_batch_names)}")
 console.print(f"Tables data: [white on black]{', '.join(task_data_tables)}")
@@ -770,6 +781,7 @@ if not os.path.exists(df_data_path):
             data_partial = worker_snapshot['data_partial']
 
             column_names = load_column_names(task, ip, uag, questionnaires, dimensions, documents)
+
             for column in column_names:
                 if column not in dataframe:
                     dataframe[column] = np.nan
@@ -797,11 +809,11 @@ if not os.path.exists(df_data_path):
                     row['time_submit'] = data_try['time_submit'] if 'time_submit' in data_try else None
 
                     accesses = data_try['serialization']["accesses"]
-                    timestampsElapsed = data_try['serialization']["timestamps_elapsed"]
+                    timestamps_elapsed = data_try['serialization']["timestamps_elapsed"]
                     timestampsStart = data_try['serialization']["timestamps_start"]
                     timestampsEnd = data_try['serialization']["timestamps_end"]
                     questionnaireAnswers = data_try['serialization']["questionnaires_answers"]
-                    documentAnswers = data_try['serialization']["documents_answers"]
+                    document_answers = data_try['serialization']["documents_answers"]
                     countdownsStart = data_try['serialization']["countdowns_times_start"]
                     countdownsLeft = data_try['serialization']["countdowns_times_left"]
                     countdownsExpired = data_try['serialization']["countdowns_expired"]
@@ -822,25 +834,38 @@ if not os.path.exists(df_data_path):
                                 row["comment_text"] = sanitize_string(comment_data['serialization']['comment'])
 
                         for index_main, current_answers in enumerate(questionnaireAnswers):
-                            questions = current_answers.keys()
-                            for index_sub, question in enumerate(questions):
-                                question_data = questionnaires[index_main]["questions"][index_sub]
-                                row[f"q_{questionnaires[index_main]['index']}_{question}_index"] = question_data["index"]
-                                row[f"q_{questionnaires[index_main]['index']}_{question}_name"] = question_data["name"]
-                                row[f"q_{questionnaires[index_main]['index']}_{question}_type"] = question_data["type"] if "type" in question_data else None
-                                row[f"q_{questionnaires[index_main]['index']}_{question}_name_full"] = question_data["nameFull"]
-                                row[f"q_{questionnaires[index_main]['index']}_{question}_required"] = question_data["required"] if "required" in question_data else None
-                                row[f"q_{questionnaires[index_main]['index']}_{question}_detail"] = question_data["detail"] if "detail" in question_data else None
-                                row[f"q_{questionnaires[index_main]['index']}_{question}_show_detail"] = question_data["showDetail"] if "showDetail" in question_data else None
-                                row[f"q_{questionnaires[index_main]['index']}_{question}_free_text"] = question_data["freeText"] if "freeText" in question_data else None
-                                row[f"q_{questionnaires[index_main]['index']}_{question}_text"] = question_data["text"]
-                                row[f"q_{questionnaires[index_main]['index']}_{question}_value"] = current_answers[question]
-                                if questionnaires[index_main]["type"] == "standard":
-                                    row[f"q_{questionnaires[index_main]['index']}_{question}_answer"] = question_data["answers"][int(current_answers[question])]
-                                else:
-                                    row[f"q_{questionnaires[index_main]['index']}_{question}_answer"] = np.nan
-                                row[f"q_{questionnaires[index_main]['index']}_time_elapsed"] = round(timestampsElapsed[questionnaires[index_main]['index']], 2)
-                                row[f"q_{questionnaires[index_main]['index']}_accesses"] = accesses[questionnaires[index_main]['index']]
+
+                            questionnaire = questionnaires[index_main]
+
+                            for index_sub, question in enumerate(questionnaire["questions"]):
+
+                                answer = None
+                                for question_name, answer_current in current_answers.items():
+                                    question_name_parsed = question_name.replace("_answer", "")
+                                    if question_name_parsed == question["name"]:
+                                        answer = answer_current
+
+                                row[f"q_{questionnaire['index']}_{question['index']}_index"] = question['index']
+                                row[f"q_{questionnaire['index']}_{question['index']}_name"] = question['name']
+                                row[f"q_{questionnaire['index']}_{question['index']}_name_full"] = question['nameFull'] if "nameFull" in question else None
+                                row[f"q_{questionnaire['index']}_{question['index']}_type"] = question['type'] if "type" in question else None
+                                row[f"q_{questionnaire['index']}_{question['index']}_required"] = question['required'] if "required" in question else None
+                                row[f"q_{questionnaire['index']}_{question['index']}_detail"] = question['detail'] if "detail" in question else None
+                                row[f"q_{questionnaire['index']}_{question['index']}_show_detail"] = question['show_detail'] if "show_detail" in question else None
+                                row[f"q_{questionnaire['index']}_{question['index']}_free_text"] = question['free_text'] if "free_text" in question else None
+                                row[f"q_{questionnaire['index']}_{question['index']}_text"] = question['text']
+                                row[f"q_{questionnaire['index']}_{question['index']}_answer_value"] = answer
+                                if questionnaire['type'] == 'standard':
+                                    row[f"q_{questionnaire['index']}_{question['index']}_answer_text"] = question['answers'][int(answer)]
+                                elif questionnaire['type'] == 'likert':
+                                    mapping = questionnaire['mappings'][int(answer)]
+                                    row[f"q_{questionnaire['index']}_{question['index']}_answer_mapping_index"] = mapping['index']
+                                    row[f"q_{questionnaire['index']}_{question['index']}_answer_mapping_key"] = mapping['key'] if "key" in mapping else None
+                                    row[f"q_{questionnaire['index']}_{question['index']}_answer_mapping_label"] = mapping['label']
+                                    row[f"q_{questionnaire['index']}_{question['index']}_answer_mapping_value"] = mapping['value']
+
+                                row[f"q_{questionnaire['index']}_time_elapsed"] = round(timestamps_elapsed[questionnaire['index']], 2)
+                                row[f"q_{questionnaire['index']}_accesses"] = accesses[questionnaire['index']]
 
                         for index, data in enumerate(countdownsStart):
                             row["doc_countdown_time_start"] = data
@@ -850,10 +875,13 @@ if not os.path.exists(df_data_path):
                             row["doc_countdown_time_text"] = data['text']
                             row["doc_countdown_time_expired"] = countdownsExpired[index]
 
-                        for index, current_answers in enumerate(documentAnswers):
+                        for index, current_answers in enumerate(document_answers):
                             current_attributes = documents[index].keys()
-                            for currentAttribute in current_attributes:
-                                row[f"doc_{currentAttribute}"] = documents[index][currentAttribute]
+                            for current_attribute in current_attributes:
+                                current_attribute_value =  documents[index][current_attribute]
+                                if type(current_attribute_value)==str:
+                                    current_attribute_value =  re.sub('\n', '', current_attribute_value)
+                                row[f"doc_{current_attribute}"] = current_attribute_value
                             for dimension in dimensions:
                                 if dimension['scale'] is not None:
                                     value = current_answers[f"{dimension['name']}_value"]
@@ -900,17 +928,17 @@ if not os.path.exists(df_data_path):
                             else:
                                 row["doc_time_end"] = timestampsEnd[index + task['questionnaire_amount']][0]
 
-                            if timestampsElapsed[index + task['questionnaire_amount']] is None:
+                            if timestamps_elapsed[index + task['questionnaire_amount']] is None:
                                 row["doc_time_elapsed"] = np.nan
                             else:
-                                row["doc_time_elapsed"] = round(timestampsElapsed[index + task['questionnaire_amount']], 2)
+                                row["doc_time_elapsed"] = round(timestamps_elapsed[index + task['questionnaire_amount']], 2)
 
                             row["doc_accesses"] = accesses[index]
 
-                            if timestampsElapsed[index + task['questionnaire_amount']] is None:
+                            if timestamps_elapsed[index + task['questionnaire_amount']] is None:
                                 row["doc_time_elapsed"] = np.nan
                             else:
-                                row["doc_time_elapsed"] = round(timestampsElapsed[index + task['questionnaire_amount']], 2)
+                                row["doc_time_elapsed"] = round(timestamps_elapsed[index + task['questionnaire_amount']], 2)
 
                             dataframe = dataframe.append(row, ignore_index=True)
 
@@ -949,8 +977,11 @@ if not os.path.exists(df_data_path):
 
                     current_attributes = documents[document_data['serialization']['info']['index']].keys()
                     current_answers = document_data['serialization']['answers']
-                    for currentAttribute in current_attributes:
-                        row[f"doc_{currentAttribute}"] = documents[document_data['serialization']['info']['index']][currentAttribute]
+                    for current_attribute in current_attributes:
+                        current_attribute_value = documents[document_data['serialization']['info']['index']][current_attribute]
+                        if type(current_attribute_value) == str:
+                            current_attribute_value = re.sub('\n', '', current_attribute_value)
+                        row[f"doc_{current_attribute}"] = current_attribute_value
                     for dimension in dimensions:
                         if dimension['scale'] is not None:
                             value = current_answers[f"{dimension['name']}_value"]
@@ -1006,19 +1037,38 @@ if not os.path.exists(df_data_path):
 
                 for questionnaire_data in data_partial['questionnaires_answers']:
 
+                    questionnaire = questionnaires[questionnaire_data['serialization']['info']['index']]
                     current_answers = questionnaire_data['serialization']['answers']
-                    questions = current_answers.keys()
-                    for index_sub, question in enumerate(questions):
-                        row[f"q_{questionnaires[questionnaire_data['serialization']['info']['index']]}_{question}_question"] = questionnaires[questionnaire_data['serialization']['info']['index']]["questions"][index_sub]["text"]
-                        row[f"q_{questionnaires[questionnaire_data['serialization']['info']['index']]['index']}_{question}_value"] = current_answers[question]
-                        if questionnaires[questionnaire_data['serialization']['info']['index']]["type"] == "standard":
-                            row[f"q_{questionnaires[questionnaire_data['serialization']['info']['index']]['index']}_{question}_answer"] = \
-                                questionnaires[questionnaire_data['serialization']['info']['index']]["questions"][index_sub]["answers"][int(current_answers[question])]
-                        else:
-                            row[f"q_{questionnaires[questionnaire_data['serialization']['info']['index']]['index']}_{question}_answer"] = np.nan
-                        row[f"q_{questionnaires[questionnaire_data['serialization']['info']['index']]['index']}_time_elapsed"] = round(
-                            timestampsElapsed[questionnaires[questionnaire_data['serialization']['info']['index']]['index']], 2)
-                        row[f"q_{questionnaires[questionnaire_data['serialization']['info']['index']]['index']}_accesses"] = accesses[questionnaires[questionnaire_data['serialization']['info']['index']]['index']]
+
+                    for index_sub, question in enumerate(questionnaire["questions"]):
+
+                        answer = None
+                        for question_name, answer_current in current_answers.items():
+                            question_name_parsed = question_name.replace("_answer", "")
+                            if question_name_parsed == question["name"]:
+                                answer = answer_current
+
+                        row[f"q_{questionnaire['index']}_{question['index']}_index"] = question['index']
+                        row[f"q_{questionnaire['index']}_{question['index']}_name"] = question['name']
+                        row[f"q_{questionnaire['index']}_{question['index']}_name_full"] = question['nameFull'] if "nameFull" in question else None
+                        row[f"q_{questionnaire['index']}_{question['index']}_type"] = question['type'] if "type" in question else None
+                        row[f"q_{questionnaire['index']}_{question['index']}_required"] = question['required'] if "required" in question else None
+                        row[f"q_{questionnaire['index']}_{question['index']}_detail"] = question['detail'] if "detail" in question else None
+                        row[f"q_{questionnaire['index']}_{question['index']}_show_detail"] = question['show_detail'] if "show_detail" in question else None
+                        row[f"q_{questionnaire['index']}_{question['index']}_free_text"] = question['free_text'] if "free_text" in question else None
+                        row[f"q_{questionnaire['index']}_{question['index']}_text"] = question['text']
+                        row[f"q_{questionnaire['index']}_{question['index']}_answer_value"] = answer
+                        if questionnaire['type'] == 'standard':
+                            row[f"q_{questionnaire['index']}_{question['index']}_answer_text"] = question['answers'][int(answer)]
+                        elif questionnaire['type'] == 'likert':
+                            mapping = questionnaire['mappings'][int(answer)]
+                            row[f"q_{questionnaire['index']}_{question['index']}_answer_mapping_index"] = mapping['index']
+                            row[f"q_{questionnaire['index']}_{question['index']}_answer_mapping_key"] = mapping['key'] if "key" in mapping else None
+                            row[f"q_{questionnaire['index']}_{question['index']}_answer_mapping_label"] = mapping['label']
+                            row[f"q_{questionnaire['index']}_{question['index']}_answer_mapping_value"] = mapping['value']
+
+                        row[f"q_{questionnaire['index']}_time_elapsed"] = round(timestamps_elapsed[questionnaire['index']], 2)
+                        row[f"q_{questionnaire['index']}_accesses"] = accesses[questionnaire['index']]
 
                 if ('time_submit') in row:
                     dataframe = dataframe.append(row, ignore_index=True)
@@ -1067,7 +1117,7 @@ dataframe = pd.DataFrame(columns=[
 
 
 def parse_dimensions_selected(df, worker_id, worker_paid, task, info, documents, dimensions, dimensions_selected_data, timestamp_start, timestamp_end):
-    for document_index, dimensions_selected in enumerate(dimensions_selected_data):
+    for index_current, dimensions_selected in enumerate(dimensions_selected_data):
 
         for dimension_current in dimensions_selected['data']:
 
@@ -1138,7 +1188,7 @@ if not os.path.exists(df_dim_path):
 
                 for data_try in data_full:
 
-                    timestampsElapsed = data_try['serialization']["timestamps_elapsed"]
+                    timestamps_elapsed = data_try['serialization']["timestamps_elapsed"]
                     timestampsStart = data_try['serialization']["timestamps_start"]
                     timestampsEnd = data_try['serialization']["timestamps_end"]
                     info = data_try['serialization']["info"]
@@ -1159,7 +1209,7 @@ if not os.path.exists(df_dim_path):
                 timestamps_found = []
 
                 for document_data in data_partial['documents_answers']:
-                    timestampsElapsed = document_data['serialization']["timestamps_elapsed"]
+                    timestamps_elapsed = document_data['serialization']["timestamps_elapsed"]
                     timestampsStart = document_data['serialization']["timestamps_start"]
                     timestampsEnd = document_data['serialization']["timestamps_end"]
                     info = document_data['serialization']["info"]
@@ -1206,23 +1256,33 @@ dataframe = pd.DataFrame(columns=[
 
 
 def parse_responses(df, worker_id, worker_paid, info, queries, responses_retrieved, responses_selected):
-    for document_index, responses_retrieved_document in enumerate(responses_retrieved):
-        for query_index, response_retrieved in enumerate(responses_retrieved_document["data"]):
+    for index_current, responses_retrieved_document in enumerate(responses_retrieved):
+        for index_current_sub, response_retrieved in enumerate(responses_retrieved_document["data"]):
             row = {
                 "worker_id": worker_id,
                 "worker_paid": worker_paid,
                 "current_try": int(info['try']),
-                "document_index": document_index,
-                "document_id": documents[document_index]['id'],
+                "document_index": response_retrieved['document'],
+                "document_id": documents[response_retrieved['document']]['id'],
                 "query_index": response_retrieved['query']
             }
             query_text = np.nan
-            for query in queries[document_index]["data"]:
-                if response_retrieved["query"] == query['index']:
-                    query_text = query["text"]
+            try:
+                print(queries)
+                assert False
+                for query in queries[int(response_retrieved['document'])]["data"]:
+                    if response_retrieved["query"] == query['index']:
+                        query_text = query["text"]
+            except KeyError:
+                print(worker_id)
+                print(int(response_retrieved['document']))
+                print(queries)
+                assert False
+
             row['query_text'] = query_text
             row['query_timestamp'] = response_retrieved['timestamp']
             for response_index, response in enumerate(response_retrieved['response']):
+
                 row["response_index"] = response_index
                 row["response_url"] = response["url"]
                 row["response_name"] = response["name"]
@@ -1239,7 +1299,7 @@ def parse_responses(df, worker_id, worker_paid, info, queries, responses_retriev
                 if len(row_check) == 0:
                     df.loc[len(df)] = row
 
-    for document_index, responses_selected_document in enumerate(responses_selected):
+    for index_current, responses_selected_document in enumerate(responses_selected):
         for response_index, response_selected in enumerate(responses_selected_document["data"]):
             row = df.loc[
                 (df["worker_id"] == worker_id) &
