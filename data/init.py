@@ -815,32 +815,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             console.print("[green]Policies correctly set up")
 
         status.start()
-        status.update('Queue service setup')
-        time.sleep(2)
-
-        queue = {}
-        queue_name = "Crowd_Frame-Queue"
-        if 'QueueUrls' not in sqs_client.list_queues(QueueNamePrefix=queue_name):
-            with open(f"{folder_aws_path}policy/SQSPolicy.json") as f:
-                policy_document = json.dumps(json.load(f))
-            queue = sqs_client.create_queue(
-                QueueName=queue_name,
-                Attributes={'Policy': policy_document}
-            )
-            status.stop()
-            console.print("Queue created")
-        else:
-            queue = sqs_client.get_queue_url(QueueName=queue_name, QueueOwnerAWSAccountId=aws_account_id)
-            status.stop()
-            console.print("Queue already created")
-        attributes = sqs_client.get_queue_attributes(
-            QueueUrl=queue['QueueUrl'],
-            AttributeNames=['All']
-        )
-        queue['Attributes'] = attributes['Attributes']
-        serialize_json(folder_aws_generated_path, f"queue_{queue_name}.json", queue)
-
-        status.start()
         status.update('Gateway setup')
         time.sleep(2)
 
@@ -910,9 +884,38 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             console.print(f"Table {table_logging_name} already created")
 
         status.start()
+        status.update('Queue service setup')
+        time.sleep(2)
+
+        queue = {}
+        queue_name = "Crowd_Frame-Queue"
+        queue_new = False
+        if 'QueueUrls' not in sqs_client.list_queues(QueueNamePrefix=queue_name):
+            with open(f"{folder_aws_path}policy/SQSPolicy.json") as f:
+                policy_document = json.dumps(json.load(f))
+            queue = sqs_client.create_queue(
+                QueueName=queue_name,
+                Attributes={'Policy': policy_document}
+            )
+            queue_new = True
+            status.stop()
+            console.print("Queue created")
+        else:
+            queue = sqs_client.get_queue_url(QueueName=queue_name, QueueOwnerAWSAccountId=aws_account_id)
+            status.stop()
+            console.print("Queue already created")
+        attributes = sqs_client.get_queue_attributes(
+            QueueUrl=queue['QueueUrl'],
+            AttributeNames=['All']
+        )
+        queue['Attributes'] = attributes['Attributes']
+        serialize_json(folder_aws_generated_path, f"queue_{queue_name}.json", queue)
+
+        status.start()
         status.update('Lambda setup')
         time.sleep(2)
         function_name = 'Crowd_Frame-Logger'
+        function_new = False
         try:
             response = lambda_client.create_function(
                 FunctionName=function_name,
@@ -923,7 +926,21 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 Timeout=10,
                 PackageType='Zip'
             )
+            function_new = True
             serialize_json(folder_aws_generated_path, f"lambda_{function_name}.json", response)
+            console.print('[green]Function created.')
+        except lambda_client.exceptions.ResourceConflictException as error:
+            console.print(f"[yellow]Function already created.")
+        status.stop()
+
+        status.start()
+        status.update('Event source mapping between queue and lambda setup')
+        time.sleep(2)
+        source_mappings = lambda_client.list_event_source_mappings(EventSourceArn=queue['Attributes']['QueueArn'])
+        if queue_new or function_new or len(source_mappings['EventSourceMappings'])<=0:
+            for mapping in source_mappings['EventSourceMappings']:
+                lambda_client.delete_event_source_mapping(UUID=mapping['UUID'])
+            time.sleep(65)
             response = lambda_client.create_event_source_mapping(
                 EventSourceArn=queue['Attributes']['QueueArn'],
                 FunctionName=function_name,
@@ -933,9 +950,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             )
             console.print(f"Event source mapping between {queue_name} and {function_name} created.")
             serialize_json(folder_aws_generated_path, f"lambda_event_source_mapping_{response['UUID']}.json", response)
-            console.print('[green]Function created.')
-        except lambda_client.exceptions.ResourceConflictException as error:
-            console.print(f"[yellow]Function already created.")
+        else:
+            console.print(f"[yellow]Event source mapping already created.")
         status.stop()
 
     elif server_config == "custom":

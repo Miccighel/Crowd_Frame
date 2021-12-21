@@ -112,7 +112,7 @@
   let taskLink = $("#task-link").attr("href");
   let rawParams = "?" + $("iframe").prevObject[0].location.href.split("?")[1];
   let urlParams = new URLSearchParams(rawParams);
-  $("#task-link").attr("href", taskLink + `?workerID=${urlParams.get('workerId')}`);
+  $("#task-link").attr("href", taskLink + `?workerID=${urlParams.get('workerId')}&platform=mturk`);
 
   let workerForm = $("#worker-form");
   let tokenInput = $("#token-input");

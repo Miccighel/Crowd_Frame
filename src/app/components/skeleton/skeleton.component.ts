@@ -101,6 +101,8 @@ export class SkeletonComponent implements OnInit {
     /* Unique identifier of the current worker */
     workerIdentifier: string;
 
+    platform: string
+
     /* Object to encapsulate all worker-related information */
     worker: Worker
 
@@ -345,6 +347,9 @@ export class SkeletonComponent implements OnInit {
 
             /* If there is an external worker which is trying to perform the task, check its status */
             if (!(this.workerIdentifier === null)) {
+
+                this.platform = url.searchParams.get("platform");
+
                 /* The performWorkerStatusCheck function checks worker's status and its result is interpreted as a success|error callback */
                 this.performWorkerStatusCheck().then(taskAllowed => {
                     /* But at the end of the day it's just a boolean so we launch a call to Cloudflare to trace the worker and we use such boolean in the second callback */
@@ -352,7 +357,7 @@ export class SkeletonComponent implements OnInit {
                         this.client.get('https://www.cloudflare.com/cdn-cgi/trace', {responseType: 'text'}).subscribe(
                             /* If we retrieve some data from Cloudflare we use them to populate worker's object */
                             cloudflareData => {
-                                this.worker = new Worker(this.workerIdentifier, this.S3Service.getWorkerFolder(this.configService.environment, null, this.workerIdentifier), cloudflareData, window.navigator, this.deviceDetectorService.getDeviceInfo())
+                                this.worker = new Worker(this.workerIdentifier, this.platform, this.S3Service.getWorkerFolder(this.configService.environment, null, this.workerIdentifier), cloudflareData, window.navigator, this.deviceDetectorService.getDeviceInfo())
                                 this.sectionService.taskAllowed = taskAllowed
                                 this.sectionService.checkCompleted = true
                                 this.changeDetector.detectChanges()
@@ -361,7 +366,7 @@ export class SkeletonComponent implements OnInit {
                             },
                             /* Otherwise we won't have such information */
                             error => {
-                                this.worker = new Worker(this.workerIdentifier, this.S3Service.getWorkerFolder(this.configService.environment, null, this.workerIdentifier), null, window.navigator, this.deviceDetectorService.getDeviceInfo())
+                                this.worker = new Worker(this.workerIdentifier, this.platform, this.S3Service.getWorkerFolder(this.configService.environment, null, this.workerIdentifier), null, window.navigator, this.deviceDetectorService.getDeviceInfo())
                                 this.sectionService.taskAllowed = taskAllowed
                                 this.sectionService.checkCompleted = true
                                 this.changeDetector.detectChanges()
@@ -370,7 +375,7 @@ export class SkeletonComponent implements OnInit {
                             }
                         )
                     } else {
-                        this.worker = new Worker(this.workerIdentifier, this.S3Service.getWorkerFolder(this.configService.environment, null, this.workerIdentifier), null, window.navigator, this.deviceDetectorService.getDeviceInfo())
+                        this.worker = new Worker(this.workerIdentifier,  this.platform, this.S3Service.getWorkerFolder(this.configService.environment, null, this.workerIdentifier), null, window.navigator, this.deviceDetectorService.getDeviceInfo())
                         this.sectionService.taskAllowed = taskAllowed
                         this.sectionService.checkCompleted = true
                         this.changeDetector.detectChanges()
@@ -380,7 +385,7 @@ export class SkeletonComponent implements OnInit {
                 })
                 /* If there is not any worker ID we simply load the task. A sort of testing mode. */
             } else {
-                this.worker = new Worker(null, null, null, null, null)
+                this.worker = new Worker(null, null, null, null, null, null)
                 this.sectionService.checkCompleted = true
                 this.changeDetector.detectChanges()
                 this.ngxService.stop()
@@ -537,7 +542,7 @@ export class SkeletonComponent implements OnInit {
         }
 
         if (taskAllowed)
-            await this.dynamoDBService.insertWorker(this.configService.environment, this.workerIdentifier, this.currentTry)
+            await this.dynamoDBService.insertWorker(this.configService.environment, this.workerIdentifier, this.platform, this.currentTry)
 
         return taskAllowed
     }
@@ -935,10 +940,14 @@ export class SkeletonComponent implements OnInit {
     }
 
     public nextStep() {
+        let stepper = document.getElementById('stepper');
+        stepper.scrollIntoView();
         this.sectionService.increaseIndex()
     }
 
     public previousStep() {
+        let stepper = document.getElementById('stepper');
+        stepper.scrollIntoView();
         this.sectionService.decreaseIndex()
     }
 
@@ -2368,6 +2377,7 @@ export class SkeletonComponent implements OnInit {
                 task_id: this.configService.environment.taskName,
                 batch_name: this.configService.environment.batchName,
                 worker_id: this.worker.identifier,
+                platform: this.worker.platform,
                 unit_id: this.unitId,
                 token_input: this.tokenInput.value,
                 token_output: this.tokenOutput,
