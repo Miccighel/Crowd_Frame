@@ -214,6 +214,7 @@ resources_path = f"result/{task_name}/Resources/"
 data_path = f"result/{task_name}/Data/"
 hit_data_path = f"result/hits_data.csv"
 workers_acl_path = f"{models_path}workers_acl.csv"
+workers_acl_path = f"{models_path}workers_acl.csv"
 
 os.makedirs(models_path, exist_ok=True)
 os.makedirs(resources_path, exist_ok=True)
@@ -349,13 +350,16 @@ if not os.path.exists(workers_acl_path):
                     "worker_try": worker_try
                 }, ignore_index=True)
     df_acl['worker_id'] = df_acl['worker_id'].astype(str)
-    df_acl.to_csv(workers_acl_path, index=False)
-    console.print(f"Workers ACL data file serialized at path: [cyan on white]{workers_acl_path}")
+    if df_acl.shape[0] > 0:
+        df_acl.to_csv(workers_acl_path, index=False)
+        console.print(f"Dataframe shape: {df_acl.shape}")
+        console.print(f"Workers ACL data file serialized at path: [cyan on white]{workers_acl_path}")
+    else:
+        console.print(f"Dataframe shape: {df_acl.shape}")
+        console.print(f"Workers ACL [yellow]empty[/yellow], dataframe not serialized.")
 else:
     df_acl = pd.read_csv(workers_acl_path)
     console.print(f"Workers ACL [yellow]already detected[/yellow], skipping download")
-
-console.print(f"Workers ACL data file serialized at path: [cyan on white]{workers_acl_path}")
 
 worker_identifiers = np.unique(df_acl['worker_id'].values)
 console.print(f"Unique worker identifiers found: [green]{len(worker_identifiers)}")
@@ -728,21 +732,34 @@ if not os.path.exists(df_log_path):
     dataframes_partial = []
     df_partials_paths = glob(f"{df_log_partial_folder_path}/*")
 
-    console.print(f"Merging together [cyan on white]{len(df_partials_paths)}[/cyan on white] partial log dataframes")
+    console.print(f"Merging together {len(df_partials_paths)} partial log dataframes")
 
     for df_partial_path in tqdm(df_partials_paths):
         dataframes_partial.append(pd.read_csv(df_partial_path))
-    dataframe = pd.concat(dataframes_partial, ignore_index=True)
-    dataframe.sort_values(by=['worker_id', 'sequence'], ascending=True, inplace=True)
-    dataframe.to_csv(df_log_path, index=False)
+    if len(dataframes_partial) > 0:
+        dataframe = pd.concat(dataframes_partial, ignore_index=True)
+        dataframe.sort_values(by=['worker_id', 'sequence'], ascending=True, inplace=True)
+        dataframe.to_csv(df_log_path, index=False)
+
+    console.print(f"Log data found: [green]{len(dataframe)}")
+
+    if dataframe.shape[0] > 0:
+        dataframe.to_csv(df_log_path, index=False)
+        console.print(f"Dataframe shape: {dataframe.shape}")
+        console.print(f"Log data file serialized at path: [cyan on white]{df_log_path}")
+    else:
+        console.print(f"Dataframe shape: {dataframe.shape}")
+        console.print(f"Log dataframe [yellow]empty[/yellow], dataframe not serialized.")
 
     if os.path.exists(df_log_path):
         shutil.make_archive(f"{models_path}Logs-Partial", 'zip', df_log_partial_folder_path)
         if os.path.exists(f"{models_path}Logs-Partial.zip"):
             shutil.rmtree(df_log_partial_folder_path)
 
-    console.print(f"Log data found: [green]{len(dataframe)}")
-    console.print(f"Dataframe serialized at path: [cyan on white]{df_log_path}")
+    _, _, files = next(os.walk(df_log_partial_folder_path))
+    file_count = len(files)
+    if file_count <= 0:
+        shutil.rmtree(df_log_partial_folder_path)
 
 else:
     console.print(f"Logs dataframe [yellow]already detected[/yellow], skipping creation")
@@ -878,9 +895,9 @@ if not os.path.exists(df_data_path):
                         for index, current_answers in enumerate(document_answers):
                             current_attributes = documents[index].keys()
                             for current_attribute in current_attributes:
-                                current_attribute_value =  documents[index][current_attribute]
-                                if type(current_attribute_value)==str:
-                                    current_attribute_value =  re.sub('\n', '', current_attribute_value)
+                                current_attribute_value = documents[index][current_attribute]
+                                if type(current_attribute_value) == str:
+                                    current_attribute_value = re.sub('\n', '', current_attribute_value)
                                 row[f"doc_{current_attribute}"] = current_attribute_value
                             for dimension in dimensions:
                                 if dimension['scale'] is not None:
@@ -1075,16 +1092,20 @@ if not os.path.exists(df_data_path):
 
     empty_cols = [col for col in dataframe.columns if dataframe[col].isnull().all()]
     dataframe.drop(empty_cols, axis=1, inplace=True)
-    dataframe["paid"].replace({0.0: False, 1.0: True}, inplace=True)
-    dataframe["gold_checks"].replace({0.0: False, 1.0: True}, inplace=True)
-    dataframe["time_spent_check"].replace({0.0: False, 1.0: True}, inplace=True)
-    dataframe["time_spent_check"].replace({0.0: False, 1.0: True}, inplace=True)
-    dataframe["global_form_validity"].replace({0.0: False, 1.0: True}, inplace=True)
-    dataframe.drop_duplicates(inplace=True)
-    dataframe.rename(columns={'paid': 'worker_paid'}, inplace=True)
-    dataframe.to_csv(df_data_path, index=False)
-
-    console.print(f"Dataframe serialized at path: [cyan on white]{df_data_path}")
+    if dataframe.shape[0] > 0:
+        dataframe["paid"].replace({0.0: False, 1.0: True}, inplace=True)
+        dataframe["gold_checks"].replace({0.0: False, 1.0: True}, inplace=True)
+        dataframe["time_spent_check"].replace({0.0: False, 1.0: True}, inplace=True)
+        dataframe["time_spent_check"].replace({0.0: False, 1.0: True}, inplace=True)
+        dataframe["global_form_validity"].replace({0.0: False, 1.0: True}, inplace=True)
+        dataframe.rename(columns={'paid': 'worker_paid'}, inplace=True)
+        dataframe.drop_duplicates(inplace=True)
+        dataframe.to_csv(df_data_path, index=False)
+        console.print(f"Dataframe shape: {dataframe.shape}")
+        console.print(f"Workers data dataframe serialized at path: [cyan on white]{df_data_path}")
+    else:
+        console.print(f"Dataframe shape: {dataframe.shape}")
+        console.print(f"Workers data dataframe [yellow]empty[/yellow], dataframe not serialized.")
 
 else:
 
@@ -1093,7 +1114,9 @@ else:
 
 console.rule("6 - Building [cyan on white]workers_dimensions_selection[/cyan on white] dataframe")
 
-df_data = pd.read_csv(df_data_path)
+if os.path.exists(df_data_path):
+    df_data = pd.read_csv(df_data_path)
+
 df_dim_path = f"{models_path}workers_dimensions_selection.csv"
 dataframe = pd.DataFrame(columns=[
     "worker_id",
@@ -1225,9 +1248,14 @@ if not os.path.exists(df_dim_path):
                     dataframe = parse_dimensions_selected(dataframe, worker_id, worker_paid, task, info, documents, dimensions, dimensions_selected_data, timestamp_start, timestamp_end)
 
     dataframe.drop_duplicates(inplace=True)
-    dataframe.to_csv(df_dim_path, index=False)
 
-    console.print(f"Dataframe serialized at path: [cyan on white]{df_dim_path}")
+    if dataframe.shape[0] > 0:
+        dataframe.to_csv(df_dim_path, index=False)
+        console.print(f"Dataframe shape: {dataframe.shape}")
+        console.print(f"Dimension analysis dataframe serialized at path: [cyan on white]{df_dim_path}")
+    else:
+        console.print(f"Dataframe shape: {dataframe.shape}")
+        console.print(f"Dimension analysis dataframe [yellow]empty[/yellow], dataframe not serialized.")
 
 else:
 
@@ -1236,7 +1264,9 @@ else:
 
 console.rule("7 - Building [cyan on white]workers_urls[/cyan on white] dataframe")
 
-df_data = pd.read_csv(df_data_path)
+if os.path.exists(df_data_path):
+    df_data = pd.read_csv(df_data_path)
+
 df_url_path = f"{models_path}workers_urls.csv"
 dataframe = pd.DataFrame(columns=[
     "worker_id",
@@ -1353,30 +1383,16 @@ if not os.path.exists(df_url_path):
                     dataframe = parse_responses(dataframe, worker_id, worker_paid, info, queries, responses_retrieved, responses_selected)
 
     dataframe.drop_duplicates(inplace=True)
-    dataframe.to_csv(df_url_path, index=False)
 
-    console.print(f"Dataframe serialized at path: [cyan on white]{df_url_path}")
+    if dataframe.shape[0] > 0:
+        dataframe.to_csv(df_url_path, index=False)
+        console.print(f"Dataframe shape: {dataframe.shape}")
+        console.print(f"Worker urls dataframe serialized at path: [cyan on white]{df_dim_path}")
+    else:
+        console.print(f"Dataframe shape: {dataframe.shape}")
+        console.print(f"Worker urls dataframe [yellow]empty[/yellow], dataframe not serialized.")
 
 else:
 
     console.print(f"URL analysis dataframe [yellow]already detected[/yellow], skipping creation")
     console.print(f"Serialized at path: [cyan on white]{df_url_path}")
-
-# console.rule("4 - Checking missing HITs")
-#
-# hits_missing = []
-# hits = load_json(f"result/{task_name}/Task/hits.json")
-# df = pd.read_csv(df_data_path)
-# for hit in hits:
-#     unit_data = df.loc[df['unit_id'] == hit['unit_id']]
-#     if len(unit_data) <= 0:
-#         hits_missing.append(hit)
-#
-# if len(hits_missing) > 0:
-#     console.print(f"Missing HITs: {len(hits_missing)}")
-#     path_missing = f"{models_path}hits_missing.json"
-#     with open(path_missing, 'w', encoding='utf-8') as f:
-#         json.dump(hits_missing, f, ensure_ascii=False, indent=4)
-#     console.print(f"Serialized at path: [cyan on white]{path_missing}")
-# else:
-#     console.print(f"There aren't missing HITS for task [cyan on white]{task_name}")

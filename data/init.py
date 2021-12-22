@@ -1069,10 +1069,10 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             Description="Allows Budgets to create and manage AWS resources on your behalf "
         )
         console.print(f"[green]Role {role_name} created")
+        serialize_json(folder_aws_generated_path, f"role_{role['Role']['RoleName']}.json", role)
     except iam_client.exceptions.EntityAlreadyExistsException:
         console.print(f"[yellow]Role {role_name} already created")
     iam_client.attach_role_policy(RoleName=role_name,PolicyArn=policy['Arn'])
-    serialize_json(folder_aws_generated_path, f"role_{role['Role']['RoleName']}.json", role)
 
     try:
         response = budget_client.create_budget(

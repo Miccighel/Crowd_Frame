@@ -118,7 +118,7 @@
                         Back
                     </button>
                     <button mat-flat-button color="primary" matStepperNext
-                            *ngIf="(step+1 < this.questionnaireAmountStart && this.questionnaireAmountEnd>=0) && position=='start'"
+                            *ngIf="(step+1 <= this.questionnaireAmountStart && this.questionnaireAmountEnd>=0  && this.documentsAmount > 0) && position=='start'"
                             [disabled]="!questionnaireForm.valid || this.taskCompleted"
                             (click)="emitQuestionnaireFilled('Next',step)">
                         Next
