@@ -895,7 +895,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 policy_document = json.dumps(json.load(f))
             queue = sqs_client.create_queue(
                 QueueName=queue_name,
-                Attributes={'Policy': policy_document}
+                Attributes={'Policy': policy_document},
+                VisibilityTimeout=120
             )
             queue_new = True
             status.stop()
@@ -923,7 +924,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 Handler='index.handler',
                 Role=f'arn:aws:iam::{aws_account_id}:role{iam_path}LambdaToDynamoDBAndS3',
                 Code={'ZipFile': open(f"{folder_aws_path}index.zip", 'rb').read()},
-                Timeout=10,
+                Timeout=20,
                 PackageType='Zip'
             )
             function_new = True
@@ -940,13 +941,11 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         if queue_new or function_new or len(source_mappings['EventSourceMappings'])<=0:
             for mapping in source_mappings['EventSourceMappings']:
                 lambda_client.delete_event_source_mapping(UUID=mapping['UUID'])
-            time.sleep(65)
+            time.sleep(61)
             response = lambda_client.create_event_source_mapping(
                 EventSourceArn=queue['Attributes']['QueueArn'],
                 FunctionName=function_name,
                 Enabled=True,
-                BatchSize=1000,
-                MaximumBatchingWindowInSeconds=30
             )
             console.print(f"Event source mapping between {queue_name} and {function_name} created.")
             serialize_json(folder_aws_generated_path, f"lambda_event_source_mapping_{response['UUID']}.json", response)
@@ -981,7 +980,10 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 "Principal": {
                     "Service": "budgets.amazonaws.com"
                 },
-                "Action": "sts:AssumeRole"
+                "Action": [
+                    "sts:AssumeRole",
+                    "iam:AttachUserPolicy"
+                ]
             }
         ]
     }

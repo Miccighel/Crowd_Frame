@@ -931,7 +931,7 @@ export class SkeletonComponent implements OnInit {
 
     /* Logging service initialization */
     public logInit(workerIdentifier, taskName, batchName, http: HttpClient, logOnConsole: boolean) {
-        this.actionLogger.logInit(workerIdentifier, taskName, batchName, http, logOnConsole);
+        this.actionLogger.logInit(this.configService.environment.bucket, workerIdentifier, taskName, batchName, http, logOnConsole);
     }
 
     /* Section service gets updated with questionnaire and document amounts */
