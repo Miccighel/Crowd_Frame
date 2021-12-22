@@ -727,7 +727,8 @@ if not os.path.exists(df_log_path):
                                 row[detail_kind_parsed] = detail_val
                             dataframe.loc[len(dataframe)] = row
 
-            dataframe.to_csv(log_df_partial_path, index=False)
+            if len(dataframe) > 0:
+                dataframe.to_csv(log_df_partial_path, index=False)
 
     dataframes_partial = []
     df_partials_paths = glob(f"{df_log_partial_folder_path}/*")
@@ -735,15 +736,13 @@ if not os.path.exists(df_log_path):
     console.print(f"Merging together {len(df_partials_paths)} partial log dataframes")
 
     for df_partial_path in tqdm(df_partials_paths):
-        dataframes_partial.append(pd.read_csv(df_partial_path))
+        partial_df = pd.read_csv(df_partial_path)
+        if partial_df.shape[0] > 0:
+            dataframes_partial.append(partial_df)
     if len(dataframes_partial) > 0:
         dataframe = pd.concat(dataframes_partial, ignore_index=True)
         dataframe.sort_values(by=['worker_id', 'sequence'], ascending=True, inplace=True)
-        dataframe.to_csv(df_log_path, index=False)
-
-    console.print(f"Log data found: [green]{len(dataframe)}")
-
-    if dataframe.shape[0] > 0:
+        console.print(f"Log data found: [green]{len(dataframe)}")
         dataframe.to_csv(df_log_path, index=False)
         console.print(f"Dataframe shape: {dataframe.shape}")
         console.print(f"Log data file serialized at path: [cyan on white]{df_log_path}")
@@ -756,10 +755,14 @@ if not os.path.exists(df_log_path):
         if os.path.exists(f"{models_path}Logs-Partial.zip"):
             shutil.rmtree(df_log_partial_folder_path)
 
-    _, _, files = next(os.walk(df_log_partial_folder_path))
-    file_count = len(files)
-    if file_count <= 0:
-        shutil.rmtree(df_log_partial_folder_path)
+    file_count = 0
+    try:
+        _, _, files = next(os.walk(df_log_partial_folder_path))
+        file_count = len(files)
+        if file_count <= 0:
+            shutil.rmtree(df_log_partial_folder_path)
+    except StopIteration:
+        pass
 
 else:
     console.print(f"Logs dataframe [yellow]already detected[/yellow], skipping creation")
@@ -1274,6 +1277,8 @@ dataframe = pd.DataFrame(columns=[
     "current_try",
     "document_index",
     "document_id",
+    "dimension_index",
+    "dimension_name",
     "query_index",
     "query_text",
     "query_timestamp",
@@ -1288,27 +1293,27 @@ dataframe = pd.DataFrame(columns=[
 def parse_responses(df, worker_id, worker_paid, info, queries, responses_retrieved, responses_selected):
     for index_current, responses_retrieved_document in enumerate(responses_retrieved):
         for index_current_sub, response_retrieved in enumerate(responses_retrieved_document["data"]):
+
             row = {
                 "worker_id": worker_id,
                 "worker_paid": worker_paid,
                 "current_try": int(info['try']),
                 "document_index": response_retrieved['document'],
                 "document_id": documents[response_retrieved['document']]['id'],
+                "dimension_index": response_retrieved['dimension'],
+                "dimension_name": dimensions[response_retrieved['dimension']]['name'],
                 "query_index": response_retrieved['query']
             }
             query_text = np.nan
-            try:
-                print(queries)
-                assert False
+
+            if type(queries) == list:
                 for query in queries[int(response_retrieved['document'])]["data"]:
                     if response_retrieved["query"] == query['index']:
                         query_text = query["text"]
-            except KeyError:
-                print(worker_id)
-                print(int(response_retrieved['document']))
-                print(queries)
-                assert False
-
+            else:
+                for query in queries["data"]:
+                    if response_retrieved["query"] == query['index']:
+                        query_text = query["text"]
             row['query_text'] = query_text
             row['query_timestamp'] = response_retrieved['timestamp']
             for response_index, response in enumerate(response_retrieved['response']):
@@ -1322,6 +1327,7 @@ def parse_responses(df, worker_id, worker_paid, info, queries, responses_retriev
                     (df["worker_id"] == row["worker_id"]) &
                     (df["current_try"] == row["current_try"]) &
                     (df["document_index"] == row["document_index"]) &
+                    (df["dimension_index"] == row["dimension_index"]) &
                     (df["query_index"] == row["query_index"]) &
                     (df["query_timestamp"] == row["query_timestamp"]) &
                     (df["response_index"] == response_index)
@@ -1335,6 +1341,7 @@ def parse_responses(df, worker_id, worker_paid, info, queries, responses_retriev
                 (df["worker_id"] == worker_id) &
                 (df["current_try"] == int(info['try'])) &
                 (df["document_index"] == response_selected["document"]) &
+                (df["dimension_index"] == response_selected["dimension"]) &
                 (df["query_index"] == response_selected["query"]) &
                 (df["response_url"] == response_selected["response"]['url']) &
                 (df["response_name"] == response_selected["response"]['name']) &
