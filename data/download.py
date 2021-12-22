@@ -200,8 +200,6 @@ for path in response['CommonPrefixes']:
     batch_name = path.get('Prefix').split("/")[1]
     task_batch_names.append(batch_name)
 
-task_batch_names = ["V2-Pilot-0"]
-
 console.print(f"Batch names: [white on black]{', '.join(task_batch_names)}")
 console.print(f"Tables data: [white on black]{', '.join(task_data_tables)}")
 console.print(f"Tables log: [white on black]{', '.join(task_log_tables)}")
