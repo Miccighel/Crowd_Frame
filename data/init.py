@@ -45,6 +45,7 @@ folder_build_deploy_path = "build/deploy/"
 folder_build_skeleton_path = "build/skeleton/"
 folder_tasks_path = "tasks/"
 
+
 def serialize_json(folder, filename, data):
     if not os.path.exists(folder):
         os.makedirs(folder, exist_ok=True)
@@ -940,7 +941,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         status.update('Event source mapping between queue and lambda setup')
         time.sleep(2)
         source_mappings = lambda_client.list_event_source_mappings(EventSourceArn=queue['Attributes']['QueueArn'])
-        if queue_new or function_new or len(source_mappings['EventSourceMappings'])<=0:
+        if queue_new or function_new or len(source_mappings['EventSourceMappings']) <= 0:
             for mapping in source_mappings['EventSourceMappings']:
                 lambda_client.delete_event_source_mapping(UUID=mapping['UUID'])
             time.sleep(61)
@@ -973,7 +974,78 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     role_name = "Budgeting"
     budget_name = "crowdsourcing-tasks"
 
-    policy_document = {
+    budget_policy_document = {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Action": [
+                    "budgets:*"
+                ],
+                "Resource": "*"
+            },
+            {
+                "Effect": "Allow",
+                "Action": [
+                    "aws-portal:ViewBilling"
+                ],
+                "Resource": "*"
+            },
+            {
+                "Effect": "Allow",
+                "Action": [
+                    "iam:PassRole"
+                ],
+                "Resource": "*",
+                "Condition": {
+                    "StringEquals": {
+                        "iam:PassedToService": "budgets.amazonaws.com"
+                    }
+                }
+            },
+            {
+                "Effect": "Allow",
+                "Action": [
+                    "aws-portal:ModifyBilling",
+                    "ec2:DescribeInstances",
+                    "iam:ListGroups",
+                    "iam:ListPolicies",
+                    "iam:ListRoles",
+                    "iam:ListUsers",
+                    "iam:AttachUserPolicy",
+                    "organizations:ListAccounts",
+                    "organizations:ListOrganizationalUnitsForParent",
+                    "organizations:ListPolicies",
+                    "organizations:ListRoots",
+                    "rds:DescribeDBInstances",
+                    "sns:ListTopics"
+                ],
+                "Resource": "*"
+            }
+        ]
+    }
+
+    try:
+        policy = iam_client.create_policy(
+            PolicyName='Budgeting',
+            Description="Provides access to the budgeting configurationn required by Crowd_Frame",
+            PolicyDocument=json.dumps(budget_policy_document),
+            Path=iam_path
+        )
+        console.print(f"[green]Policy creation completed[/green], HTTP STATUS CODE: {policy['ResponseMetadata']['HTTPStatusCode']}.")
+        policy = policy['Policy']
+    except iam_client.exceptions.EntityAlreadyExistsException:
+        policies = iam_client.list_policies(
+            PathPrefix=iam_path
+        )['Policies']
+        for result in policies:
+            if result['PolicyName'] == 'Budgeting':
+                policy = result
+                console.print(f"[yellow]Policy already created")
+                break
+    serialize_json(folder_aws_generated_path, f"policy_{policy['PolicyName']}.json", policy)
+
+    role_policy_document = {
         "Version": "2012-10-17",
         "Statement": [
             {
@@ -984,7 +1056,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 },
                 "Action": [
                     "sts:AssumeRole",
-                    "iam:AttachUserPolicy"
                 ]
             }
         ]
@@ -994,17 +1065,14 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         role = iam_client.create_role(
             RoleName=role_name,
             Path=iam_path,
-            AssumeRolePolicyDocument=json.dumps(policy_document),
+            AssumeRolePolicyDocument=json.dumps(role_policy_document),
             Description="Allows Budgets to create and manage AWS resources on your behalf "
         )
         console.print(f"[green]Role {role_name} created")
-        serialize_json(folder_aws_generated_path, f"role_{role['Role']['RoleName']}.json", role)
-        iam_client.attach_role_policy(
-            RoleName=role_name,
-            PolicyArn=f"arn:aws:iam::aws:policy/AWSBudgetsActionsWithAWSResourceControlAccess"
-        )
     except iam_client.exceptions.EntityAlreadyExistsException:
         console.print(f"[yellow]Role {role_name} already created")
+    iam_client.attach_role_policy(RoleName=role_name,PolicyArn=policy['Arn'])
+    serialize_json(folder_aws_generated_path, f"role_{role['Role']['RoleName']}.json", role)
 
     try:
         response = budget_client.create_budget(
@@ -1450,7 +1518,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     sample_element = {}
 
-    if len(documents)>0:
+    if len(documents) > 0:
 
         sample_element = documents.pop()
 
@@ -1858,6 +1926,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     folder_tasks_batch_mturk_path = f"{folder_tasks_batch_path}mturk/"
     folder_tasks_batch_task_path = f"{folder_tasks_batch_path}task/"
     folder_tasks_batch_config_path = f"{folder_tasks_batch_path}config/"
+
 
     def upload(path, bucket, key, title, content_type, acl=None):
         panel = Panel(
