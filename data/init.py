@@ -895,8 +895,10 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 policy_document = json.dumps(json.load(f))
             queue = sqs_client.create_queue(
                 QueueName=queue_name,
-                Attributes={'Policy': policy_document},
-                VisibilityTimeout=120
+                Attributes={
+                    'Policy': policy_document,
+                    'VisibilityTimeout': '120'
+                }
             )
             queue_new = True
             status.stop()
