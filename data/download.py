@@ -359,6 +359,7 @@ else:
     df_acl = pd.read_csv(workers_acl_path)
     console.print(f"Workers ACL [yellow]already detected[/yellow], skipping download")
 
+df_acl['worker_id'] = df_acl['worker_id'].astype(str)
 worker_identifiers = np.unique(df_acl['worker_id'].values)
 console.print(f"Unique worker identifiers found: [green]{len(worker_identifiers)}")
 
@@ -384,9 +385,9 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
         worker_snapshot_path = f"result/{task_name}/Data/{worker_id}.json"
         worker_folder_s3 = f"{aws_private_bucket}/{task_name}/Data/{worker_id}/"
 
-        if not os.path.exists(worker_snapshot_path):
+        status.update(f"Downloading worker data, Identifier: {worker_id}, Total: {worker_counter}/{len(worker_identifiers)}")
 
-            status.update(f"Downloading worker data, Identifier: {worker_id}, Total: {worker_counter}/{len(worker_identifiers)}")
+        if not os.path.exists(worker_snapshot_path):
 
             worker_data = {}
             for table_name in task_data_tables:
@@ -545,7 +546,7 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
                                 'type': item['type']['S'],
                                 'time_server': item['server_time']['N'],
                                 'time_client': item['client_time']['N'],
-                                'details': json.loads(item['details']['S'])
+                                'details': json.loads(item['details']['S']) if 'S' in item['details'] else None
                             }
                             worker_object['logs'].append(data)
 
@@ -568,7 +569,7 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
             with open(worker_snapshot_path, 'w', encoding='utf-8') as f:
                 json.dump(worker_snapshot, f, ensure_ascii=False, separators=(',', ':'))
 
-            worker_counter += 1
+        worker_counter += 1
 
     if worker_counter > 0:
         console.print(f"Data fetching for {worker_counter} workers [green]completed")
@@ -594,8 +595,6 @@ column_names = [
 ]
 counter = 0
 
-dataframe = pd.DataFrame(columns=column_names)
-
 if not os.path.exists(df_log_path):
 
     os.makedirs(df_log_partial_folder_path, exist_ok=True)
@@ -608,6 +607,8 @@ if not os.path.exists(df_log_path):
         log_df_partial_path = f"{df_log_partial_folder_path}{worker_id}.csv"
 
         if not os.path.exists(log_df_partial_path):
+
+            dataframe = pd.DataFrame(columns=column_names)
 
             for worker_snapshot in worker_snapshots:
 
@@ -647,15 +648,18 @@ if not os.path.exists(df_log_path):
                         if data_log['type'] == 'keySequence':
                             if 'section' not in dataframe.columns:
                                 dataframe['section'] = np.nan
+                            if 'key_sequence_index' not in dataframe.columns:
+                                dataframe['key_sequence_index'] = np.nan
                             if 'key_sequence_timestamp' not in dataframe.columns:
                                 dataframe['timestamp'] = np.nan
                             if 'key_sequence_key' not in dataframe.columns:
-                                dataframe['key'] = np.nan
+                                dataframe['key_sequence_key'] = np.nan
                             if 'sentence' not in dataframe.columns:
                                 dataframe['sentence'] = np.nan
                             row['section'] = log_details['section']
                             row['sentence'] = log_details['sentence']
-                            for key_sequence in log_details['keySequence']:
+                            for index, key_sequence in enumerate(log_details['keySequence']):
+                                row['key_sequence_index'] = index
                                 row['key_sequence_timestamp'] = key_sequence['timeStamp']
                                 row['key_sequence_key'] = key_sequence['key'] if 'key' in key_sequence else np.nan
                                 dataframe.loc[len(dataframe)] = row
@@ -699,8 +703,28 @@ if not os.path.exists(df_log_path):
                                     dataframe[attribute_parsed] = np.nan
                                 row[attribute_parsed] = value
                             dataframe.loc[len(dataframe)] = row
-                        else:
-                            if data_log['type'] == 'context':
+                        elif data_log['type'] == 'queryResults':
+                            if 'section' not in dataframe.columns:
+                                dataframe['section'] = np.nan
+                            if 'url_index' not in dataframe.columns:
+                                dataframe['url_index'] = np.nan
+                            if 'url_text' not in dataframe.columns:
+                                dataframe['url_text'] = np.nan
+                            row['section'] = log_details['section']
+                            for index, url in enumerate(log_details['urlArray']):
+                                row['url_index'] = index
+                                row['url_text'] = url
+                                dataframe.loc[len(dataframe)] = row
+                        elif data_log['type'] == 'copy' or data_log['type'] == 'cut':
+                            for attribute, value in log_details.items():
+                                attribute_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute).lower()
+                                if attribute_parsed not in dataframe.columns:
+                                    dataframe[attribute_parsed] = np.nan
+                                if attribute_parsed == 'target':
+                                    row[attribute_parsed] = value.replace("\n", '')
+                            dataframe.loc[len(dataframe)] = row
+                        elif data_log['type'] == 'context':
+                            if data_log['type'] == 'context' and log_details is not None:
                                 worker_uag = log_details['ua']
                                 url = f"http://api.userstack.com/detect?access_key={user_stack_token}&ua={worker_uag}"
                                 if os.path.exists(uag_file):
@@ -716,14 +740,57 @@ if not os.path.exists(df_log_path):
                                     ip_data = ip_info_handler.getDetails(worker_ip).all
                                     with open(ip_file, 'w', encoding='utf-8') as f:
                                         json.dump(ip_data, f, ensure_ascii=False, indent=4)
-                            for detail_kind, detail_val in log_details.items():
-                                detail_kind_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', detail_kind).lower()
-                                if detail_kind_parsed not in dataframe.columns:
-                                    dataframe[detail_kind_parsed] = np.nan
-                                if type(detail_val) == str:
-                                    detail_val.replace('\n', '')
-                                row[detail_kind_parsed] = detail_val
+                            if log_details is not None:
+                                for detail_kind, detail_val in log_details.items():
+                                    detail_kind_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', detail_kind).lower()
+                                    if detail_kind_parsed not in dataframe.columns:
+                                        dataframe[detail_kind_parsed] = np.nan
+                                    if type(detail_val) == str:
+                                        detail_val.replace('\n', '')
+                                    row[detail_kind_parsed] = detail_val
                             dataframe.loc[len(dataframe)] = row
+                        elif data_log['type'] == 'init' or \
+                            data_log['type'] == 'window_blur' or \
+                            data_log['type'] == 'window_focus' or \
+                            data_log['type'] == 'resize' or \
+                            data_log['type'] == 'button' or \
+                            data_log['type'] == 'unload' or \
+                            data_log['type'] == 'shortcut' or \
+                            data_log['type'] == 'radioChange' or \
+                            data_log['type'] == 'scroll':
+                            for attribute, value in log_details.items():
+                                attribute_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute).lower()
+                                if attribute_parsed not in dataframe.columns:
+                                    dataframe[attribute_parsed] = np.nan
+                                row[attribute_parsed] = value
+                            dataframe.loc[len(dataframe)] = row
+                        elif data_log['type'] == 'selection':
+                            for attribute, value in log_details.items():
+                                attribute_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute).lower()
+                                if attribute_parsed not in dataframe.columns:
+                                    dataframe[attribute_parsed] = np.nan
+                                if attribute_parsed == 'selected':
+                                    row[attribute_parsed] = value.replace("\n", '')
+                            dataframe.loc[len(dataframe)] = row
+                        elif data_log['type'] == 'paste' or data_log['type'] == 'text':
+                            for attribute, value in log_details.items():
+                                attribute_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute).lower()
+                                if attribute_parsed not in dataframe.columns:
+                                    dataframe[attribute_parsed] = np.nan
+                                if attribute_parsed == 'text':
+                                    row[attribute_parsed] = value.replace("\n", '')
+                            dataframe.loc[len(dataframe)] = row
+                        elif data_log['type'] == 'query':
+                            if 'section' not in dataframe.columns:
+                                dataframe['section'] = np.nan
+                            if 'query' not in dataframe.columns:
+                                dataframe['query'] = np.nan
+                            row['section'] = log_details['section']
+                            row['query'] = log_details['query'].replace("\n", '')
+                        else:
+                            print(data_log['type'])
+                            print(log_details)
+                            assert False
 
             if len(dataframe) > 0:
                 dataframe.to_csv(log_df_partial_path, index=False)
@@ -1401,3 +1468,22 @@ else:
 
     console.print(f"URL analysis dataframe [yellow]already detected[/yellow], skipping creation")
     console.print(f"Serialized at path: [cyan on white]{df_url_path}")
+
+# console.rule("4 - Checking missing HITs")
+#
+# hits_missing = []
+# hits = load_json(f"result/{task_name}/Task/hits.json")
+# df = pd.read_csv(df_data_path)
+# for hit in hits:
+#     unit_data = df.loc[df['unit_id'] == hit['unit_id']]
+#     if len(unit_data) <= 0:
+#         hits_missing.append(hit)
+#
+# if len(hits_missing) > 0:
+#     console.print(f"Missing HITs: {len(hits_missing)}")
+#     path_missing = f"{models_path}hits_missing.json"
+#     with open(path_missing, 'w', encoding='utf-8') as f:
+#         json.dump(hits_missing, f, ensure_ascii=False, indent=4)
+#     console.print(f"Serialized at path: [cyan on white]{path_missing}")
+# else:
+#     console.print(f"There aren't missing HITS for task [cyan on white]{task_name}")
