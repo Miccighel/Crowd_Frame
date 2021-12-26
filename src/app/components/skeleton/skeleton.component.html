@@ -1,5 +1,5 @@
 <!-- First instruction page shown when the worker starts the skeleton -->
-<div class="instructions-section" *ngIf="this.sectionService.currentSection == 'instructions-section'">
+<div class="instructions-section" *ngIf="this.sectionService.checkCompleted && this.sectionService.currentSection == 'instructions-section'">
     <mat-card>
         <mat-card-content *ngIf="!this.sectionService.checkCompleted || !taskInstructions">
             <mat-progress-bar mode="indeterminate"></mat-progress-bar>
@@ -883,14 +883,14 @@
                         <button mat-flat-button color="primary" matStepperNext
                                 *ngIf="i+1>=this.documentsAmount && this.questionnaireAmountEnd == 0 && !this.annotator"
                                 [disabled]="(!documentsForm[i].valid || documentsForm[i].status == 'DISABLED'  || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted)"
-                                (click)="performQualityCheck(); performLogging('Finish', i); nextStep();">
+                                (click)="performLogging('Finish', i); nextStep();">
                             Finish
                         </button>
 
                         <button mat-flat-button color="primary" matStepperNext
                                 *ngIf="i+1>=this.documentsAmount && this.questionnaireAmountEnd == 0 && this.annotator"
                                 [disabled]="(!documentsForm[i].valid || documentsForm[i].status == 'DISABLED'  || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted || !checkAnnotationConsistency(i))"
-                                (click)="performQualityCheck(); performLogging('Finish', i); nextStep();">
+                                (click)="performLogging('Finish', i); nextStep();">
                             Finish
                         </button>
 

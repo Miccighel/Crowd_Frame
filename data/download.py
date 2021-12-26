@@ -197,8 +197,8 @@ for table_name in dynamo_db_tables:
 
 response = s3.list_objects(Bucket=aws_private_bucket, Prefix=f"{task_name}/", Delimiter='/')
 for path in response['CommonPrefixes']:
-    batch_name = path.get('Prefix').split("/")[1]
-    task_batch_names.append(batch_name)
+    current_batch_name = path.get('Prefix').split("/")[1]
+    task_batch_names.append(current_batch_name)
 
 console.print(f"Batch names: [white on black]{', '.join(task_batch_names)}")
 console.print(f"Tables data: [white on black]{', '.join(task_data_tables)}")
@@ -314,13 +314,13 @@ prefix = f"{task_name}/"
 task_config_folder = f"{folder_result_path}/Task/"
 if not os.path.exists(task_config_folder):
     response = s3.list_objects(Bucket=aws_private_bucket, Prefix=prefix, Delimiter='/')
-    for batch_name in task_batch_names:
-        response_batch = s3.list_objects(Bucket=aws_private_bucket, Prefix=f"{prefix}{batch_name}/Task/", Delimiter='/')
-        os.makedirs(f"{task_config_folder}{batch_name}/", exist_ok=True)
+    for current_batch_name in task_batch_names:
+        response_batch = s3.list_objects(Bucket=aws_private_bucket, Prefix=f"{prefix}{current_batch_name}/Task/", Delimiter='/')
+        os.makedirs(f"{task_config_folder}{current_batch_name}/", exist_ok=True)
         for path_batch in response_batch['Contents']:
             file_key = path_batch['Key']
             file_name = file_key.split('/')[-1]
-            destination_path = f"{task_config_folder}{batch_name}/{file_name}"
+            destination_path = f"{task_config_folder}{current_batch_name}/{file_name}"
             if not os.path.exists(destination_path):
                 console.print(f"Source: [cyan on white]{file_key}[/cyan on white], Destination: [cyan on white]{destination_path}[/cyan on white]")
                 s3.download_file(aws_private_bucket, file_key, f"{destination_path}")
@@ -569,6 +569,41 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
             with open(worker_snapshot_path, 'w', encoding='utf-8') as f:
                 json.dump(worker_snapshot, f, ensure_ascii=False, separators=(',', ':'))
 
+        # else:
+        #     snapshot_edited = False
+        #     worker_snapshots = load_json(worker_snapshot_path)
+        #     for snapshot_index, snapshot in enumerate(worker_snapshots):
+        #         checks = snapshot['checks']
+        #         if len(snapshot['data_full'])>0:
+        #             for data_try in snapshot['data_full']:
+        #                 try_number = data_try['serialization']['info']['try']
+        #                 check_current = None
+        #                 check_index = -1
+        #                 for check_index, check_data in enumerate(checks):
+        #                     if check_data['serialization']['info']['try'] == try_number:
+        #                         check_index = check_index
+        #                         check_current = check_data
+        #                 if check_current is not None:
+        #                     if not check_current['serialization']['checks']['timeSpentCheck']:
+        #                         time_spent_check = True
+        #                         time_check_amount = float(check_current['serialization']['checks']['timeCheckAmount'])
+        #                         timestamps_elapsed = data_try['serialization']['timestamps_elapsed']
+        #                         for timestamp_elapsed in timestamps_elapsed:
+        #                             if timestamp_elapsed is not None:
+        #                                 if float(timestamp_elapsed)<time_check_amount:
+        #                                     time_spent_check = False
+        #                             else:
+        #                                 time_spent_check = False
+        #                         check_current['serialization']['checks']['timeSpentCheck'] = time_spent_check
+        #                         worker_snapshots[snapshot_index]['checks'][check_index] = check_current
+        #                         if check_current['serialization']['checks']['globalFormValidity'] == True and check_current['serialization']['checks']['timeSpentCheck'] == True and any(
+        #                             check_current['serialization']['checks']['goldChecks']):
+        #                             worker_snapshots[snapshot_index]['task']['paid'] = True
+        #                         snapshot_edited = True
+        #     if snapshot_edited:
+        #         with open(worker_snapshot_path, 'w', encoding='utf-8') as f:
+        #             json.dump(worker_snapshots, f)
+
         worker_counter += 1
 
     if worker_counter > 0:
@@ -651,7 +686,7 @@ if not os.path.exists(df_log_path):
                             if 'key_sequence_index' not in dataframe.columns:
                                 dataframe['key_sequence_index'] = np.nan
                             if 'key_sequence_timestamp' not in dataframe.columns:
-                                dataframe['timestamp'] = np.nan
+                                dataframe['key_sequence_timestamp'] = np.nan
                             if 'key_sequence_key' not in dataframe.columns:
                                 dataframe['key_sequence_key'] = np.nan
                             if 'sentence' not in dataframe.columns:
@@ -1052,8 +1087,7 @@ if not os.path.exists(df_data_path):
                     row["doc_countdown_time_start"] = document_data['serialization']['countdowns_times_start'][0] if len(document_data['serialization']['countdowns_times_start']) > 0 else np.nan
                     row["doc_countdown_time_value"] = document_data['serialization']['countdowns_times_left']['value'] if len(document_data['serialization']['countdowns_times_left']) > 0 else np.nan
                     row["doc_countdown_time_text"] = document_data['serialization']['countdowns_times_left']['text'] if len(document_data['serialization']['countdowns_times_left']) > 0 else np.nan
-                    row["doc_countdown_time_expired"] = document_data['serialization']["countdowns_expired"][document_data['serialization']['info']['index']] if len(
-                        document_data['serialization']["countdowns_expired"]) > 0 else np.nan
+                    row["doc_countdown_time_expired"] = document_data['serialization']["countdowns_expired"][document_data['serialization']['info']['index']] if len(document_data['serialization']["countdowns_expired"]) > 0 else np.nan
 
                     row["global_form_validity"] = False
                     row["gold_checks"] = False
@@ -1124,6 +1158,8 @@ if not os.path.exists(df_data_path):
 
                     questionnaire = questionnaires[questionnaire_data['serialization']['info']['index']]
                     current_answers = questionnaire_data['serialization']['answers']
+                    timestamps_elapsed = questionnaire_data['serialization']["timestamps_elapsed"]
+                    accesses = questionnaire_data['serialization']["accesses"]
 
                     for index_sub, question in enumerate(questionnaire["questions"]):
 
@@ -1152,8 +1188,8 @@ if not os.path.exists(df_data_path):
                             row[f"q_{questionnaire['index']}_{question['index']}_answer_mapping_label"] = mapping['label']
                             row[f"q_{questionnaire['index']}_{question['index']}_answer_mapping_value"] = mapping['value']
 
-                        row[f"q_{questionnaire['index']}_time_elapsed"] = round(timestamps_elapsed[questionnaire['index']], 2)
-                        row[f"q_{questionnaire['index']}_accesses"] = accesses[questionnaire['index']]
+                        row[f"q_{questionnaire['index']}_time_elapsed"] = round(timestamps_elapsed, 2) if timestamps_elapsed is not None else None
+                        row[f"q_{questionnaire['index']}_accesses"] = accesses
 
                 if ('time_submit') in row:
                     dataframe = dataframe.append(row, ignore_index=True)
@@ -1180,7 +1216,26 @@ else:
     console.print(f"Workers dataframe [yellow]already detected[/yellow], skipping creation")
     console.print(f"Serialized at path: [cyan on white]{df_data_path}")
 
-console.rule("6 - Building [cyan on white]workers_dimensions_selection[/cyan on white] dataframe")
+console.rule("6 - Checking missing HITs")
+
+hits_missing = []
+hits = load_json(f"{task_config_folder}{batch_name}/hits.json")
+df = pd.read_csv(df_data_path)
+for hit in hits:
+    unit_data = df.loc[df['unit_id'] == hit['unit_id']]
+    if len(unit_data) <= 0:
+        print(hit)
+        hits_missing.append(hit)
+if len(hits_missing) > 0:
+    console.print(f"Missing HITs: {len(hits_missing)}")
+    path_missing = f"{task_config_folder}{batch_name}/hits_missing.json"
+    with open(path_missing, 'w', encoding='utf-8') as f:
+        json.dump(hits_missing, f, ensure_ascii=False, indent=4)
+    console.print(f"Serialized at path: [cyan on white]{path_missing}")
+else:
+    console.print(f"There aren't missing HITS for task [cyan on white]{task_name}")
+
+console.rule("7 - Building [cyan on white]workers_dimensions_selection[/cyan on white] dataframe")
 
 if os.path.exists(df_data_path):
     df_data = pd.read_csv(df_data_path)
@@ -1330,7 +1385,7 @@ else:
     console.print(f"Dimensions analysis dataframe [yellow]already detected[/yellow], skipping creation")
     console.print(f"Serialized at path: [cyan on white]{df_dim_path}")
 
-console.rule("7 - Building [cyan on white]workers_urls[/cyan on white] dataframe")
+console.rule("8 - Building [cyan on white]workers_urls[/cyan on white] dataframe")
 
 if os.path.exists(df_data_path):
     df_data = pd.read_csv(df_data_path)
@@ -1468,22 +1523,3 @@ else:
 
     console.print(f"URL analysis dataframe [yellow]already detected[/yellow], skipping creation")
     console.print(f"Serialized at path: [cyan on white]{df_url_path}")
-
-# console.rule("4 - Checking missing HITs")
-#
-# hits_missing = []
-# hits = load_json(f"result/{task_name}/Task/hits.json")
-# df = pd.read_csv(df_data_path)
-# for hit in hits:
-#     unit_data = df.loc[df['unit_id'] == hit['unit_id']]
-#     if len(unit_data) <= 0:
-#         hits_missing.append(hit)
-#
-# if len(hits_missing) > 0:
-#     console.print(f"Missing HITs: {len(hits_missing)}")
-#     path_missing = f"{models_path}hits_missing.json"
-#     with open(path_missing, 'w', encoding='utf-8') as f:
-#         json.dump(hits_missing, f, ensure_ascii=False, indent=4)
-#     console.print(f"Serialized at path: [cyan on white]{path_missing}")
-# else:
-#     console.print(f"There aren't missing HITS for task [cyan on white]{task_name}")
