@@ -95,29 +95,9 @@ export class HitRequest{
     }
 
     getMinimumWorkersNumber(): number{
-        let cat = new Map();
-        for(let category of this.categories){
-            let level_map = new Map();
-            for(let level of category.getLevels()){
-                level_map.set(level, new Array<string>());
-            }
-            cat.set(category.getId(), level_map);
-        }
-        for(let item of this.items){
-            for(let c of item.getCategories()){
-                let c_id = c.getId();
-                let c_level = c.getLevel();
-
-                cat.get(c_id).get(c_level).push(item.getId());
-            }
-        }
-        let max = 0;
-        cat.forEach((levels) => {
-            levels.forEach(docs => {
-                if(docs.length > max) max = docs.length;
-            });
-        })
-        return max * this.min_item_repetitions;
+        let hit_size = this.categories.at(0).getLevels().length * this.categories.at(0).getWorkerAssignments();
+        let num_item = this.items.length;
+        return Math.ceil(num_item * this.min_item_repetitions)/hit_size;
     }
 
 }
@@ -165,6 +145,10 @@ class Property{
 
     getLevels(): Array<string>{
         return this.levels;
+    }
+
+    getItemAssignment(): number{
+        return this.item_assignments;
     }
 }
 

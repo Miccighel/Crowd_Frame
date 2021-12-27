@@ -13,10 +13,12 @@ import { Assignment } from '../models/hitSolution';
 export class HitsSolverService {
 
   //solverEndPointRunner = "http://158.110.146.213:18080/runner/BSA/";
-  solverEndPointRunner = "https://7c28926d-149b-4908-9999-fe2f66231d65.mock.pstmn.io/runner/BSA";
+  //solverEndPointRunner = "https://7c28926d-149b-4908-9999-fe2f66231d65.mock.pstmn.io/runner/BSA";
+  solverEndPointRunner = "http://localhost:5000/runner/BSA";
 
   //solverEndPoint = "http://158.110.146.213:18080";
-  solverEndPoint = "https://7c28926d-149b-4908-9999-fe2f66231d65.mock.pstmn.io";
+  //solverEndPoint = "https://7c28926d-149b-4908-9999-fe2f66231d65.mock.pstmn.io";
+  solverEndPoint = "http://localhost:5000";
 
   selectedRunner: string;
 

@@ -569,10 +569,21 @@ export class SkeletonComponent implements OnInit {
         return {"invalid": "This token is not valid."}
     }
 
+    /**
+     * This function uses the HitSolver service to check if the solution for the hit is ready.
+     * If the solution isn't ready the function waits for two seconds and then send a new request
+     * to the HitSolver. This process continue until a solution is available.
+     * When a solution is available, then, a new hit is created in the original format of the
+     * framework. At the end the taskSetup function is launched that continues the setup of all other
+     * stuff.
+     * @param url 
+     * @param task_id 
+     * @param docs 
+     */
     public checkHitStatus(url: string, task_id: string, docs: Array<JSON>){
         this.HitsSolverService.checkSolutionStatus(url).subscribe(response => {
             if(response['finished'] == false){
-                /* Wait two seconds to check the recheck the solution status */
+                /* Wait two seconds to repull the solution from the solver */
                 setTimeout(() => {}, 2000);
                 this.checkHitStatus(url, task_id, docs);
             }else{
@@ -585,6 +596,7 @@ export class SkeletonComponent implements OnInit {
                         documents_number: receivedHit.documents_number,
                         documents: receivedHit.documents
                     }
+                    console.log(receivedHit)
                     this.taskSetup();
                 })
             }
@@ -872,14 +884,14 @@ export class SkeletonComponent implements OnInit {
                     if (this.logger)
                         this.actionLogger.unitId = this.unitId;
 
-                    /* A new request is created from the list of documents with parameters min_item_repetitions = 1 and min_item_quality_level = 0 */
-                    let req = this.HitsSolverService.createRequest(docs, 1, 0);
+                    /* A new request is created from the list of documents with parameters min_item_repetitions = 3 and min_item_quality_level = 0 */
+                    let req = this.HitsSolverService.createRequest(docs, 3, 0);
                     /* The request is submitted to the Hit Solver */
                     this.HitsSolverService.submitRequest(req).subscribe(response => {
                         let task_id = response.task_id;
                         let url = response.url;
                         
-                        /*  */
+                        /* The function to check for the solution is launched */
                         this.checkHitStatus(url, task_id, docs);
                     });
                 }
