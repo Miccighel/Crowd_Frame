@@ -1,5 +1,5 @@
 import {Component, EventEmitter, OnInit, Output} from '@angular/core';
-import { S3Service } from 'src/app/services/s3.service';
+import {S3Service} from 'src/app/services/s3.service';
 import {ConfigService} from "../../../../services/config.service";
 import {LocalStorageService} from "../../../../services/localStorage.service";
 import {SettingsSearchEngine} from "../../../../models/settingsSearchEngine";
@@ -49,6 +49,10 @@ export class SearchEngineStepComponent implements OnInit {
         this.configService = configService
         this.S3Service = S3Service
         this.localStorageService = localStorageService
+        this.initalizeControls()
+    }
+
+    public initalizeControls() {
         this.dataStored = new SettingsSearchEngine()
         this.formStep = this._formBuilder.group({
             source: [''],
@@ -62,6 +66,7 @@ export class SearchEngineStepComponent implements OnInit {
         if (serializedSearchEngineSettings) {
             this.dataStored = new SettingsSearchEngine(JSON.parse(serializedSearchEngineSettings))
         } else {
+            this.initalizeControls()
             let rawSearchEngineSettings = await this.S3Service.downloadSearchEngineSettings(this.configService.environment)
             this.dataStored = new SettingsSearchEngine(rawSearchEngineSettings)
             this.localStorageService.setItem(`search-engine-settings`, JSON.stringify(rawSearchEngineSettings))

@@ -74,7 +74,7 @@
 
         <mat-progress-bar *ngIf="this.uploadStarted && !this.uploadCompleted" mode="indeterminate"></mat-progress-bar>
 
-        <ng-container *ngIf="!this.uploadStarted && this.uploadCompleted">
+        <ng-container *ngIf="this.uploadCompleted">
             <mat-divider [inset]="true"></mat-divider>
             <h4 class="mb-0">Upload result:</h4>
             <mat-list>
@@ -105,6 +105,9 @@
                 !(this.questionnaireStep.formStep.valid && this.dimensionsStep.formStep.valid && this.generalInstructionsStep.formStep.valid && this.evaluationInstructionsStep.formStep.valid &&
                 this.searchEngineStep.formStep.valid && (this.taskSettingsStep.formStep.valid && this.taskSettingsStep.hitsDetected>0) && this.workerChecksStep.formStep.valid)" (click)="uploadConfiguration()">
             Upload
+        </button>
+        <button mat-flat-button color="warn" *ngIf="this.uploadCompleted" (click)="resetConfiguration()">
+            Start Over
         </button>
     </mat-card-actions>
 

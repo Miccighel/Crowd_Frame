@@ -79,6 +79,9 @@ export class CrowdXplorer {
     pubmedSearchResponse: PubmedSearchResponse;
     pubmedSummaryResponse: PubmedSummaryResponse;
 
+    /* Angular Reactive Form builder (see https://angular.io/guide/reactive-forms) */
+    formBuilder: FormBuilder;
+
     /* |--------- CONTROL FLOW & UI ELEMENTS - DECLARATION ---------| */
 
     /* Search form UI controls */
@@ -86,6 +89,7 @@ export class CrowdXplorer {
     searchStarted: boolean;
     searchInProgress: boolean;
     query: FormControl;
+    urls: FormControl;
 
     /* Boolean flag */
     searchPerformed: boolean;
@@ -100,6 +104,7 @@ export class CrowdXplorer {
 
     @Input() countdownExpired: boolean
     @Input() countdownBehavior: string
+
 
     /* Search results table UI variables and controls */
     resultsAmount = 0;
@@ -134,11 +139,7 @@ export class CrowdXplorer {
         this.fakerService = fakerService;
         this.pubmedService = pubmedService;
         this.configService = configService;
-
-        /* The form control for user query is initialized and bound with its synchronous validator(s) */
-        this.query = new FormControl('', [Validators.required]);
-        /* The search form is initialized by adding each form control */
-        this.searchForm = formBuilder.group({"query": this.query});
+        this.formBuilder  = formBuilder
 
         /* |--------- CONTROL FLOW & UI ELEMENTS - INITIALIZATION ---------| */
 
@@ -153,6 +154,17 @@ export class CrowdXplorer {
 
         this.apiKey = this.configService.environment.bing_api_key
         this.loadSettings()
+
+        /* The form control for user query is initialized and bound with its synchronous validator(s) */
+        this.query = new FormControl('', [Validators.required]);
+        this.urls = new FormControl('', [Validators.required]);
+        /* The search form is initialized by adding each form control */
+        this.searchForm = formBuilder.group(
+            {
+                "query": this.query,
+                "urls": this.urls
+            }
+        );
 
     }
 

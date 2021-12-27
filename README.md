@@ -65,10 +65,10 @@ issues](https://badgen.net/github/issues/Miccighel/Crowd_Frame/)](https://GitHub
 
 6. Clone the repo [Miccighel/Crowd_Frame](https://github.com/Miccighel/Crowd_Frame)
 
-7. Install the Yarn global binary
+7. Enable the Yarn global binary
 
    ````
-   npm install -g yarn
+   corepack enable
    ````
 
 8. Move to repo folder:
@@ -80,7 +80,7 @@ issues](https://badgen.net/github/issues/Miccighel/Crowd_Frame/)](https://GitHub
 9. Switch to Yarn newest version
 
    ````
-   yarn set version berry
+   yarn set version stable
    ````
 
 10. Install the dependencies:

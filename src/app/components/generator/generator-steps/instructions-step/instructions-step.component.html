@@ -1,8 +1,8 @@
 <form [formGroup]="formStep">
     <mat-card [class.mat-elevation-z3]="true">
         <mat-card-header>
-            <mat-card-title>Step #3: General Instructions</mat-card-title>
-            <mat-card-subtitle>Third, define all General Instructions here</mat-card-subtitle>
+            <mat-card-title>Step #{{index}}: {{title}}</mat-card-title>
+            <mat-card-subtitle>Please, define all {{title}} here</mat-card-subtitle>
         </mat-card-header>
         <mat-divider></mat-divider>
         <mat-card-content>

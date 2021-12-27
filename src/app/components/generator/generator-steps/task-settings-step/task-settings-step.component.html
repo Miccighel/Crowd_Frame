@@ -171,8 +171,7 @@
                             <td class="p-0 pr-16px" [formGroupName]="valueIndex">
                                 <mat-form-field class="width-100" matLine [hideRequiredMarker]="value.valid" appearance="fill">
                                     <mat-label>HTML Color (#123456)</mat-label>
-                                    <input matInput formControlName="color" [value]="this.annotatorOptionColors[valueIndex]" [(colorPicker)]="this.annotatorOptionColors[valueIndex]"
-                                           (colorPickerChange)="updateOptionColor($event, valueIndex)" required>
+                                    <input matInput formControlName="color" [(colorPicker)]="this.annotatorOptionColors[valueIndex]" (colorPickerChange)="updateOptionColor($event, valueIndex)">
                                 </mat-form-field>
                             </td>
                             <td class="p-0 center">

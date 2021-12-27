@@ -40,7 +40,7 @@ import {NoteLaws} from "../../models/annotators/notes_laws";
 import {MatRadioChange} from "@angular/material/radio";
 import {MatCheckboxChange} from "@angular/material/checkbox";
 import {Object} from 'aws-sdk/clients/customerprofiles';
-
+/* Services */
 import {SectionService} from "../../services/section.service";
 import {DynamoDBService} from "../../services/dynamoDB.service";
 import {SettingsWorker} from "../../models/settingsWorker";
@@ -71,7 +71,7 @@ export class SkeletonComponent implements OnInit {
     S3Service: S3Service;
     /* Service which wraps the interaction with the Hits solver*/
     HitsSolverService: HitsSolverService;
-    
+
     dynamoDBService: DynamoDBService;
     /* Service to detect user's device */
     deviceDetectorService: DeviceDetectorService;
@@ -104,6 +104,8 @@ export class SkeletonComponent implements OnInit {
 
     /* Unique identifier of the current worker */
     workerIdentifier: string;
+
+    platform: string
 
     /* Object to encapsulate all worker-related information */
     worker: Worker
@@ -151,6 +153,7 @@ export class SkeletonComponent implements OnInit {
     questionnairesForm: FormGroup[];
     /* Reference to the current questionnaires */
     questionnaires: Array<Questionnaire>;
+
     /* Number of different questionnaires inserted within task's body */
     questionnaireAmount: number;
     questionnaireAmountStart: number;
@@ -350,6 +353,9 @@ export class SkeletonComponent implements OnInit {
 
             /* If there is an external worker which is trying to perform the task, check its status */
             if (!(this.workerIdentifier === null)) {
+
+                this.platform = url.searchParams.get("platform");
+
                 /* The performWorkerStatusCheck function checks worker's status and its result is interpreted as a success|error callback */
                 this.performWorkerStatusCheck().then(taskAllowed => {
                     /* But at the end of the day it's just a boolean so we launch a call to Cloudflare to trace the worker and we use such boolean in the second callback */
@@ -357,7 +363,7 @@ export class SkeletonComponent implements OnInit {
                         this.client.get('https://www.cloudflare.com/cdn-cgi/trace', {responseType: 'text'}).subscribe(
                             /* If we retrieve some data from Cloudflare we use them to populate worker's object */
                             cloudflareData => {
-                                this.worker = new Worker(this.workerIdentifier, this.S3Service.getWorkerFolder(this.configService.environment, null, this.workerIdentifier), cloudflareData, window.navigator, this.deviceDetectorService.getDeviceInfo())
+                                this.worker = new Worker(this.workerIdentifier, this.platform, this.S3Service.getWorkerFolder(this.configService.environment, null, this.workerIdentifier), cloudflareData, window.navigator, this.deviceDetectorService.getDeviceInfo())
                                 this.sectionService.taskAllowed = taskAllowed
                                 this.sectionService.checkCompleted = true
                                 this.changeDetector.detectChanges()
@@ -366,20 +372,18 @@ export class SkeletonComponent implements OnInit {
                             },
                             /* Otherwise we won't have such information */
                             error => {
-                                this.worker = new Worker(this.workerIdentifier, this.S3Service.getWorkerFolder(this.configService.environment, null, this.workerIdentifier), null, window.navigator, this.deviceDetectorService.getDeviceInfo())
+                                this.worker = new Worker(this.workerIdentifier, this.platform, this.S3Service.getWorkerFolder(this.configService.environment, null, this.workerIdentifier), null, window.navigator, this.deviceDetectorService.getDeviceInfo())
                                 this.sectionService.taskAllowed = taskAllowed
                                 this.sectionService.checkCompleted = true
-
                                 this.changeDetector.detectChanges()
                                 /* The loading spinner is stopped */
                                 this.ngxService.stop();
                             }
                         )
                     } else {
-                        this.worker = new Worker(this.workerIdentifier, this.S3Service.getWorkerFolder(this.configService.environment, null, this.workerIdentifier), null, window.navigator, this.deviceDetectorService.getDeviceInfo())
+                        this.worker = new Worker(this.workerIdentifier, this.platform, this.S3Service.getWorkerFolder(this.configService.environment, null, this.workerIdentifier), null, window.navigator, this.deviceDetectorService.getDeviceInfo())
                         this.sectionService.taskAllowed = taskAllowed
                         this.sectionService.checkCompleted = true
-
                         this.changeDetector.detectChanges()
                         /* The loading spinner is stopped */
                         this.ngxService.stop();
@@ -387,9 +391,8 @@ export class SkeletonComponent implements OnInit {
                 })
                 /* If there is not any worker ID we simply load the task. A sort of testing mode. */
             } else {
-                this.worker = new Worker(null, null, null, null, null)
+                this.worker = new Worker(null, null, null, null, null, null)
                 this.sectionService.checkCompleted = true
-
                 this.changeDetector.detectChanges()
                 this.ngxService.stop()
             }
@@ -420,7 +423,7 @@ export class SkeletonComponent implements OnInit {
         this.blacklistBatches = this.settingsWorker.blacklist_batches
         this.whitelistBatches = this.settingsWorker.whitelist_batches
         this.annotator = this.settingsTask.annotator
-        this.logger = this.settingsTask.logger
+        this.logger = this.settingsTask.log_enable
     }
 
     /*
@@ -434,19 +437,20 @@ export class SkeletonComponent implements OnInit {
         if (this.settingsWorker.block) {
 
             let batchesStatus = {}
-            let tablesACL = await this.dynamoDBService.listTables(this.configService.environment)
+            let tables = await this.dynamoDBService.listTables(this.configService.environment)
             let workersManual = await this.S3Service.downloadWorkers(this.configService.environment)
             let workersACL = await this.dynamoDBService.getWorker(this.configService.environment, this.workerIdentifier)
 
             /* To blacklist a previous batch its worker list is picked up */
             for (let batchName of this.blacklistBatches) {
+                let previousTaskName = batchName.split("/")[0]
+                let previousBatchName = batchName.split("/")[1]
                 if (!(batchName in batchesStatus)) {
                     let workers = await this.S3Service.downloadWorkers(this.configService.environment, batchName)
                     batchesStatus[batchName] = {}
                     batchesStatus[batchName]['blacklist'] = workers['blacklist']
-                    /* Was the past batch a legacy one? */
-                    for (let tableName in tablesACL['TableNames']) {
-                        if (batchName == tableName) {
+                    for (let tableName of tables['TableNames']) {
+                        if (tableName.includes(`${previousTaskName}_${previousBatchName}_ACL`)) {
                             batchesStatus[batchName]['tableName'] = tableName
                         }
                     }
@@ -455,12 +459,14 @@ export class SkeletonComponent implements OnInit {
 
             /* To whitelist a previous batch its blacklist is picked up */
             for (let batchName of this.whitelistBatches) {
+                let previousTaskName = batchName.split("/")[0]
+                let previousBatchName = batchName.split("/")[1]
                 if (!(batchName in batchesStatus)) {
                     let workers = await this.S3Service.downloadWorkers(this.configService.environment, batchName)
                     batchesStatus[batchName] = {}
                     batchesStatus[batchName]['whitelist'] = workers['blacklist']
-                    for (let tableName in tablesACL['TableNames']) {
-                        if (batchName == tableName) {
+                    for (let tableName of tables['TableNames']) {
+                        if (tableName.includes(`${previousTaskName}_${previousBatchName}_ACL`)) {
                             batchesStatus[batchName]['tableName'] = tableName
                         }
                     }
@@ -545,7 +551,7 @@ export class SkeletonComponent implements OnInit {
         }
 
         if (taskAllowed)
-            await this.dynamoDBService.insertWorker(this.configService.environment, this.workerIdentifier, this.currentTry)
+            await this.dynamoDBService.insertWorker(this.configService.environment, this.workerIdentifier, this.platform, this.currentTry)
 
         return taskAllowed
     }
@@ -569,6 +575,7 @@ export class SkeletonComponent implements OnInit {
         return {"invalid": "This token is not valid."}
     }
 
+    
     /**
      * This function uses the HitSolver service to check if the solution for the hit is ready.
      * If the solution isn't ready the function waits for two seconds and then send a new request
@@ -580,7 +587,7 @@ export class SkeletonComponent implements OnInit {
      * @param task_id 
      * @param docs 
      */
-    public checkHitStatus(url: string, task_id: string, docs: Array<JSON>){
+     public checkHitStatus(url: string, task_id: string, docs: Array<JSON>){
         this.HitsSolverService.checkSolutionStatus(url).subscribe(response => {
             if(response['finished'] == false){
                 /* Wait two seconds to repull the solution from the solver */
@@ -611,7 +618,6 @@ export class SkeletonComponent implements OnInit {
     */
     public async taskSetup() {
 
-        /* The token input field is disabled and the task interface can be shown */
         this.tokenInput.disable();
         this.sectionService.taskStarted = true;
 
@@ -655,10 +661,89 @@ export class SkeletonComponent implements OnInit {
         for (let index = 0; index < this.questionnaires.length; index++) {
             let questionnaire = this.questionnaires[index];
             if (questionnaire.type == "standard" || questionnaire.type == "likert") {
-                /* If the questionnaire is a standard one it means that it has only questions where answers must be selected
-                    * within a group of radio buttons; only a required validator is required to check answer presence */
                 let controlsConfig = {};
-                for (let index_question = 0; index_question < questionnaire.questions.length; index_question++) controlsConfig[`${this.questionnaires[index].questions[index_question].name}`] = new FormControl('', [Validators.required])
+                for (let indexQuestion = 0; indexQuestion < questionnaire.questions.length; indexQuestion++) {
+                    let currentQuestion = this.questionnaires[index].questions[indexQuestion]
+                    if (currentQuestion.type != 'section') {
+                        let controlName = `${currentQuestion.name}`
+                        let validators = []
+                        if (currentQuestion.required) validators = [Validators.required]
+                        if (currentQuestion.type == 'number') validators.concat([Validators.min(0), Validators.max(100)])
+                        if (currentQuestion.type == 'email') validators.push(Validators.email)
+                        controlsConfig[`${controlName}_answer`] = new FormControl('', validators)
+                        if (currentQuestion.freeText) controlsConfig[`${controlName}_free_text`] = new FormControl('')
+                    }
+                    if (currentQuestion.questions) {
+                        for (let indexQuestionSub = 0; indexQuestionSub < currentQuestion.questions.length; indexQuestionSub++) {
+                            let currentQuestionSub = currentQuestion.questions[indexQuestionSub]
+                            if (currentQuestionSub.type != 'section') {
+                                let controlNameSub = `${currentQuestion.nameFull}_${currentQuestionSub.name}`
+                                let validators = []
+                                if (currentQuestionSub.required) validators = [Validators.required]
+                                if (currentQuestionSub.type == 'number') validators.concat([Validators.min(0), Validators.max(100)])
+                                if (currentQuestionSub.type == 'email') validators.push(Validators.email)
+                                controlsConfig[`${controlNameSub}_answer`] = new FormControl('', validators)
+                                if (currentQuestionSub.freeText) controlsConfig[`${controlNameSub}_free_text`] = new FormControl('')
+                            }
+                            if (currentQuestionSub.questions) {
+                                for (let indexQuestionSubSub = 0; indexQuestionSubSub < currentQuestionSub.questions.length; indexQuestionSubSub++) {
+                                    let currentQuestionSubSub = currentQuestionSub.questions[indexQuestionSubSub]
+                                    if (currentQuestionSubSub.type != 'section') {
+                                        let controlNameSubSub = `${currentQuestionSub.nameFull}_${currentQuestionSubSub.name}`
+                                        let validators = []
+                                        if (currentQuestionSubSub.required) validators = [Validators.required]
+                                        if (currentQuestionSubSub.type == 'number') validators.concat([Validators.min(0), Validators.max(100)])
+                                        if (currentQuestionSubSub.type == 'email') validators.push(Validators.email)
+                                        controlsConfig[`${controlNameSubSub}_answer`] = new FormControl('', validators)
+                                        if (currentQuestionSubSub.freeText) controlsConfig[`${controlNameSubSub}_free_text`] = new FormControl('')
+                                    }
+                                    if (currentQuestionSubSub.questions) {
+                                        for (let indexQuestionSubSubSub = 0; indexQuestionSubSubSub < currentQuestionSubSub.questions.length; indexQuestionSubSubSub++) {
+                                            let currentQuestionSubSubSub = currentQuestionSubSub.questions[indexQuestionSubSubSub]
+                                            if (currentQuestionSubSubSub.type != 'section') {
+                                                let controlNameSubSubSub = `${currentQuestionSubSub.nameFull}_${currentQuestionSubSubSub.name}`
+                                                let validators = []
+                                                if (currentQuestionSubSubSub.required) validators = [Validators.required]
+                                                if (currentQuestionSubSubSub.type == 'number') validators.concat([Validators.min(0), Validators.max(100)])
+                                                if (currentQuestionSubSubSub.type == 'email') validators.push(Validators.email)
+                                                controlsConfig[`${controlNameSubSubSub}_answer`] = new FormControl('', validators)
+                                                if (currentQuestionSubSubSub.freeText) controlsConfig[`${controlNameSubSubSub}_free_text`] = new FormControl('')
+                                            }
+                                            if (currentQuestionSubSubSub.questions) {
+                                                for (let indexQuestionSubSubSubSub = 0; indexQuestionSubSubSubSub < currentQuestionSubSubSub.questions.length; indexQuestionSubSubSubSub++) {
+                                                    let currentQuestionSubSubSubSub = currentQuestionSubSubSub.questions[indexQuestionSubSubSubSub]
+                                                    if (currentQuestionSubSubSubSub.type != 'section') {
+                                                        let controlNameSubSubSubSub = `${currentQuestionSubSubSub.nameFull}_${currentQuestionSubSubSubSub.name}`
+                                                        let validators = []
+                                                        if (currentQuestionSubSubSubSub.required) validators = [Validators.required]
+                                                        if (currentQuestionSubSubSubSub.type == 'number') validators.concat([Validators.min(0), Validators.max(100)])
+                                                        if (currentQuestionSubSubSubSub.type == 'email') validators.push(Validators.email)
+                                                        controlsConfig[`${controlNameSubSubSubSub}_answer`] = new FormControl('', validators)
+                                                        if (currentQuestionSubSubSubSub.freeText) controlsConfig[`${controlNameSubSubSubSub}_free_text`] = new FormControl('')
+                                                    }
+                                                    if (currentQuestionSubSubSubSub.questions) {
+                                                        for (let indexQuestionSubSubSubSubSub = 0; indexQuestionSubSubSubSubSub < currentQuestionSubSubSubSub.questions.length; indexQuestionSubSubSubSubSub++) {
+                                                            let currentQuestionSubSubSubSubSub = currentQuestionSubSubSubSub.questions[indexQuestionSubSubSubSubSub]
+                                                            if (currentQuestionSubSubSubSubSub.type != 'section') {
+                                                                let controlNameSubSubSubSubSub = `${currentQuestionSubSubSubSub.nameFull}_${currentQuestionSubSubSubSubSub.name}`
+                                                                let validators = []
+                                                                if (currentQuestionSubSubSubSubSub.required) validators = [Validators.required]
+                                                                if (currentQuestionSubSubSubSubSub.type == 'number') validators.concat([Validators.min(0), Validators.max(100)])
+                                                                if (currentQuestionSubSubSubSubSub.type == 'email') validators.push(Validators.email)
+                                                                controlsConfig[`${controlNameSubSubSubSubSub}_answer`] = new FormControl('', validators)
+                                                                if (currentQuestionSubSubSubSubSub.freeText) controlsConfig[`${controlNameSubSubSubSubSub}_free_text`] = new FormControl('')
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
                 this.questionnairesForm[index] = this.formBuilder.group(controlsConfig)
             } else {
                 /* If the questionnaire is a CRT one it means that it has only one question where the answer must be a number between 0 and 100 chosen by user; required, max and min validators are needed */
@@ -812,8 +897,10 @@ export class SkeletonComponent implements OnInit {
 
         /* Indexes of the gold elements are retrieved */
         for (let index = 0; index < this.documentsAmount; index++) {
-            if (this.documents[index].id.includes('GOLD')) {
-                this.goldDocuments.push(this.documents[index])
+            if ('id' in this.documents[index]) {
+                if (this.documents[index]['id'].includes('GOLD')) {
+                    this.goldDocuments.push(this.documents[index])
+                }
             }
         }
 
@@ -840,7 +927,6 @@ export class SkeletonComponent implements OnInit {
         /* The task is now started and the worker is looking at the first questionnaire, so the first start timestamp is saved */
         this.timestampsStart[0].push(Math.round(Date.now() / 1000));
 
-
         /* |--------- FINALIZATION ---------| */
 
         /* Section service gets updated with loaded values */
@@ -857,7 +943,6 @@ export class SkeletonComponent implements OnInit {
 
         /* The loading spinner is stopped */
         this.ngxService.stop();
-
     }
 
     public async performTaskSetup() {
@@ -867,12 +952,10 @@ export class SkeletonComponent implements OnInit {
             /* The loading spinner is started */
             this.ngxService.start();
 
-            /* |--------- HIT ELEMENTS (see: hit.json) ---------| */
-
-            /* The hits stored on Amazon S3 are retrieved */
+            /* The tokens stored on Amazon S3 are retrieved */
             let tokens = await this.S3Service.downloadTokens(this.configService.environment)
 
-            /* The documents list stored on Amazon S3 is retrieved */
+            /* The documents stored on Amazon S3 are retrieved */
             let docs = await this.S3Service.downloadDocs(this.configService.environment)
             
             /* Scan each entry for the token input */
@@ -891,7 +974,7 @@ export class SkeletonComponent implements OnInit {
                         let task_id = response.task_id;
                         let url = response.url;
                         
-                        /* The function to check for the solution is launched */
+                        /* The function to check for a solution is launched */
                         this.checkHitStatus(url, task_id, docs);
                     });
                 }
@@ -904,7 +987,7 @@ export class SkeletonComponent implements OnInit {
 
     /* Logging service initialization */
     public logInit(workerIdentifier, taskName, batchName, http: HttpClient, logOnConsole: boolean) {
-        this.actionLogger.logInit(workerIdentifier, taskName, batchName, http, logOnConsole);
+        this.actionLogger.logInit(this.configService.environment.bucket, workerIdentifier, taskName, batchName, http, logOnConsole);
     }
 
     /* Section service gets updated with questionnaire and document amounts */
@@ -913,10 +996,14 @@ export class SkeletonComponent implements OnInit {
     }
 
     public nextStep() {
+        let stepper = document.getElementById('stepper');
+        stepper.scrollIntoView();
         this.sectionService.increaseIndex()
     }
 
     public previousStep() {
+        let stepper = document.getElementById('stepper');
+        stepper.scrollIntoView();
         this.sectionService.decreaseIndex()
     }
 
@@ -1237,6 +1324,120 @@ export class SkeletonComponent implements OnInit {
         }
 
         return finalTime;
+    }
+
+    /* |--------- PAIRWISE ---------| */
+
+    /*
+    * //@AggiunteAbbondo
+    /* contains the last element(pairwise) selected */
+    valueCheck: number
+    //selected_statement:string;
+    selected_stetements: Object[] = [];
+    checkedValue = new Array();
+
+    /*
+    //@AggiunteAbbondo
+      Funziona che cambia il colore del div dello statemente
+
+      this.checkedValue[documentnumber][0][0]=true mette al true la prima dimension cosi da venire visuallizata
+    */
+    public changeColor(valueData: Object, documentnumber: number) {
+        //this.selected_statement=valueData["value"]
+        //this.selected_stetements[documentnumber]=valueData["value"];
+        let a = document.getElementById("StatementA." + documentnumber) as HTMLInputElement
+        let b = document.getElementById("StatementB." + documentnumber) as HTMLInputElement
+        if (valueData["value"] == "A") {
+            a.style.backgroundColor = "#B6BDE2"
+            b.style.backgroundColor = "#FCFCFC"
+        } else if (valueData["value"] == "B") {
+            b.style.backgroundColor = "#B6BDE2"
+            a.style.backgroundColor = "#FCFCFC"
+        } else {
+            b.style.backgroundColor = "#B6BDE2"
+            a.style.backgroundColor = "#B6BDE2"
+        }
+
+
+        if (valueData['source']['_checked'] == true) {
+
+            // mette al true la prima dimension del primo documento cosi da venire visualizzata
+            this.checkedValue[documentnumber][0][0] = true
+            this.checkedValue[documentnumber][0][1] = true
+        }
+    }
+
+    //@AggiunteAbbondo
+    // metodo che crea l'array tridimensionale
+    public dimensionValueinsert() {
+        for (let i = 0; i < this.documentsAmount; i++) {
+            let statement = new Array();
+            for (let j = 0; j < this.dimensionsAmount; j++) {
+                let pairwise = new Array()
+                pairwise[0] = false
+                pairwise[1] = false
+                statement[j] = pairwise
+            }
+            this.checkedValue[i] = statement
+        }
+
+    }
+
+    //@AggiunteAbbondo
+    // Metodo che cambia la lettera che mostrata sulla scritta Answer for Statement
+    public changeletter(index: number) {
+        if (index == 0) {
+            return 'A';
+        } else {
+            return 'B';
+        }
+    }
+
+    //@AggiunteAbbondo
+    //Metodo che controllo se le due dimension(Scale) precedenti sono state cliccate
+    public checkdimension(documentnumber: number, dimensionnumber: number) {
+        if (this.checkedValue[documentnumber][dimensionnumber][0] == true && this.checkedValue[documentnumber][dimensionnumber][1] == true) {
+            return true
+        } else {
+            return false
+        }
+    }
+
+    //@AggiunteAbbondo
+    //Cambia il valore delle dimesion(Scale) da false a  true
+    public changeValue(documentnumber: number, dimensionnumber: number, j: number) {
+        if (dimensionnumber >= this.dimensionsAmount) {
+        } else {
+            this.checkedValue[documentnumber][dimensionnumber][j] = true
+        }
+    }
+
+    //@AggiunteAbbondo
+    //Cambia il colore del radio button una volta cliccato sullo statement
+    public changeColorRadio(valueData: Object, document_index: number) {
+        let a = document.getElementById("radioStatementA." + document_index) as HTMLInputElement
+        let b = document.getElementById("radioStatementB." + document_index) as HTMLInputElement
+        if (valueData["value"] == "A") {
+            if (b.classList.contains('mat-radio-checked')) {
+                b.classList.remove('mat-radio-checked')
+            }
+            a.classList.add('mat-radio-checked')
+        } else {
+            if (a.classList.contains('mat-radio-checked')) {
+                a.classList.remove('mat-radio-checked')
+            }
+            b.classList.add('mat-radio-checked')
+        }
+    }
+
+    //@AggiunteAbbondo
+    //Cambia il colore per gli altri due radio quanto si clicca sullo radio centrale
+    public changeBoth(document_index: number) {
+        let a = document.getElementById("radioStatementA." + document_index) as HTMLInputElement
+        let b = document.getElementById("radioStatementB." + document_index) as HTMLInputElement
+
+        b.classList.remove('mat-radio-checked')
+        a.classList.remove('mat-radio-checked')
     }
 
 
@@ -1935,107 +2136,6 @@ export class SkeletonComponent implements OnInit {
         return (questionnaireFormValidity && documentsFormValidity)
     }
 
-    /*
-     * This function performs the checks needed to ensure that the worker has made a quality work.
-     * Three checks are performed:
-     * 1) GLOBAL VALIDITY CHECK (QUESTIONNAIRE + DOCUMENTS): Verifies that each field of each form has valid values
-     * 2) GOLD QUESTION CHECK:   Implements a custom check on gold elements retrieved using their ids.
-     *                           An element is gold if its id contains the word "GOLD-".
-     * 3) TIME SPENT CHECK:      Verifies if the time spent by worker on each document and questionnaire is higher than
-     *                           <timeCheckAmount> seconds, using the <timestampsElapsed> array
-     * If each check is successful, the task can end. If the worker has some tries left, the task is reset.
-     */
-    public performQualityCheck() {
-
-        /* The loading spinner is started */
-        this.ngxService.start();
-
-        /* The current try is completed and the final can shall begin */
-        this.sectionService.taskCompleted = true
-
-        /* Booleans to hold result of checks */
-        let globalValidityCheck: boolean;
-        let timeSpentCheck: boolean;
-        let timeCheckAmount = this.timeCheckAmount;
-
-        /* Array that stores the results of each check */
-        let computedChecks = []
-
-        /* Handful expression to check an array of booleans */
-        let checker = array => array.every(Boolean);
-
-        /* 1) GLOBAL VALIDITY CHECK performed here */
-        globalValidityCheck = this.performGlobalValidityCheck();
-        computedChecks.push(globalValidityCheck)
-
-        /* 2) GOLD ELEMENTS CHECK performed here */
-
-        let goldConfiguration = []
-        /* For each gold document its attribute, answers and notes are retrieved to build a gold configuration */
-        for (let goldDocument of this.goldDocuments) {
-            let currentConfiguration = {}
-            currentConfiguration["document"] = goldDocument
-            let answers = {}
-            for (let goldDimension of this.goldDimensions) {
-                for (let [attribute, value] of Object.entries(this.documentsForm[goldDocument.index].value)) {
-                    let dimensionName = attribute.split("_")[0]
-                    if (dimensionName == goldDimension.name) {
-                        answers[attribute] = value
-                    }
-                }
-            }
-            currentConfiguration["answers"] = answers
-            currentConfiguration["notes"] = this.notes ? this.notes[goldDocument.index] : []
-            goldConfiguration.push(currentConfiguration)
-        }
-
-        /* The gold configuration is evaluated using the static method implemented within the GoldChecker class */
-        let goldChecks = GoldChecker.performGoldCheck(goldConfiguration)
-
-        /* Since there is a boolean for each gold element, the corresponding array is checked using the checker expression
-         * to understand if each boolean is true */
-        computedChecks.push(checker(goldChecks))
-
-        /* 3) TIME SPENT CHECK performed here */
-        timeSpentCheck = true;
-        for (let i = 0; i < this.timestampsElapsed.length; i++) if (this.timestampsElapsed[i] < timeCheckAmount) timeSpentCheck = false;
-        computedChecks.push(timeSpentCheck)
-
-        /* If each check is true, the task is successful, otherwise the task is failed (but not over if there are more tries) */
-
-        let data = {}
-        let actionInfo = {
-            try: this.currentTry,
-            sequence: this.sequenceNumber,
-            element: "checks"
-        };
-        let qualityCheckData = {
-            globalFormValidity: globalValidityCheck,
-            timeSpentCheck: timeSpentCheck,
-            timeCheckAmount: timeCheckAmount,
-            goldChecks: goldChecks,
-            goldConfiguration: goldConfiguration
-        };
-        data["info"] = actionInfo
-        data["checks"] = qualityCheckData
-        this.qualityChecksOutcome = data
-
-        if (checker(computedChecks)) {
-            this.sectionService.taskSuccessful = true;
-            this.sectionService.taskFailed = false;
-
-        } else {
-            this.sectionService.taskSuccessful = false;
-            this.sectionService.taskFailed = true;
-        }
-
-        /* Detect changes within the DOM and stop the spinner */
-        this.changeDetector.detectChanges();
-
-        /* The loading spinner is stopped */
-        this.ngxService.stop();
-
-    }
 
     /*
      * This function resets the task by bringing the worker to the first document if he still has some available tries.
@@ -2081,7 +2181,6 @@ export class SkeletonComponent implements OnInit {
 
     public handleQuestionnaireFilled(data) {
         this.questionnairesForm[data['step']] = data['questionnaireForm']
-        this.performQualityCheck()
         this.performLogging(data['action'], data['step'])
         if (data['action'] == 'Next') {
             this.nextStep()
@@ -2102,6 +2201,12 @@ export class SkeletonComponent implements OnInit {
      * Moreover, this function stores the timestamps used to check how much time the worker spends on each document.
      */
     public async performLogging(action: string, documentIndex: number) {
+
+        if (action == "Finish") {
+            /* The current try is completed and the final can shall begin */
+            this.sectionService.taskCompleted = true
+            this.ngxService.start()
+        }
 
         /* The countdowns are stopped and resumed to the left or to the right of the current document,
         *  depending on the chosen action ("Back" or "Next") */
@@ -2148,74 +2253,74 @@ export class SkeletonComponent implements OnInit {
             }
         }
 
-        /* If there is a worker ID then the data should be uploaded to the S3 bucket */
-
-        if (!(this.worker.identifier === null)) {
-
-            /* IMPORTANT: The current document document_index is the stepper current document_index AFTER the transition
+        /* IMPORTANT: The current document document_index is the stepper current document_index AFTER the transition
              * If a NEXT action is performed at document 3, the stepper current document_index is 4.
              * If a BACK action is performed at document 3, the stepper current document_index is 2.
              * This is tricky only for the following switch which has to set the start/end
              * timestamps for the previous/following document. */
-            let currentElement = this.stepper.selectedIndex;
-            /* completedElement is the document_index of the document/questionnaire in which the user was before */
-            let completedElement = this.stepper.selectedIndex;
+        let currentElement = this.stepper.selectedIndex;
+        /* completedElement is the document_index of the document/questionnaire in which the user was before */
+        let completedElement = this.stepper.selectedIndex;
 
-            switch (action) {
-                case "Next":
-                    completedElement = currentElement - 1;
-                    break;
-                case "Back":
-                    completedElement = currentElement + 1;
-                    break;
-                case "Finish":
-                    completedElement = this.questionnaireAmountStart + this.documentsAmount + this.questionnaireAmountEnd - 1;
-                    currentElement = this.questionnaireAmountStart + this.documentsAmount + this.questionnaireAmountEnd - 1;
-                    break;
-            }
+        switch (action) {
+            case "Next":
+                completedElement = currentElement - 1;
+                break;
+            case "Back":
+                completedElement = currentElement + 1;
+                break;
+            case "Finish":
+                completedElement = this.questionnaireAmountStart + this.documentsAmount + this.questionnaireAmountEnd - 1;
+                currentElement = this.questionnaireAmountStart + this.documentsAmount + this.questionnaireAmountEnd - 1;
+                break;
+        }
 
-            let timeInSeconds = Date.now() / 1000;
-            switch (action) {
-                case "Next":
-                    /*
-                     * If a transition to the following document is performed the current timestamp is:
-                     * the start timestamp for the document at <stepper.selectedIndex>
-                     * the end timestamps for the document at <stepper.selectedIndex - 1>
-                     */
-                    this.timestampsStart[currentElement].push(timeInSeconds);
-                    this.timestampsEnd[completedElement].push(timeInSeconds);
-                    break;
-                case "Back":
-                    /*
-                     * If a transition to the previous document is performed the current timestamp is:
-                     * the start timestamp for the document at <stepper.selectedIndex>
-                     * the end timestamps for the document at <stepper.selectedIndex + 1>
-                     */
-                    this.timestampsStart[currentElement].push(timeInSeconds);
-                    this.timestampsEnd[completedElement].push(timeInSeconds);
-                    break;
-                case "Finish":
-                    /* If the task finishes, the current timestamp is the end timestamp for the current document. */
-                    this.timestampsEnd[currentElement].push(timeInSeconds);
-                    break;
-            }
+        let timeInSeconds = Date.now() / 1000;
+        switch (action) {
+            case "Next":
+                /*
+                 * If a transition to the following document is performed the current timestamp is:
+                 * the start timestamp for the document at <stepper.selectedIndex>
+                 * the end timestamps for the document at <stepper.selectedIndex - 1>
+                 */
+                this.timestampsStart[currentElement].push(timeInSeconds);
+                this.timestampsEnd[completedElement].push(timeInSeconds);
+                break;
+            case "Back":
+                /*
+                 * If a transition to the previous document is performed the current timestamp is:
+                 * the start timestamp for the document at <stepper.selectedIndex>
+                 * the end timestamps for the document at <stepper.selectedIndex + 1>
+                 */
+                this.timestampsStart[currentElement].push(timeInSeconds);
+                this.timestampsEnd[completedElement].push(timeInSeconds);
+                break;
+            case "Finish":
+                /* If the task finishes, the current timestamp is the end timestamp for the current document. */
+                this.timestampsEnd[currentElement].push(timeInSeconds);
+                break;
+        }
 
-            /*
-             * The general idea with start and end timestamps is that each time a worker goes to
-             * the next document, the current timestamp is the start timestamp for such document
-             * and the end timestamp for the previous and viceversa
-             */
+        /*
+         * The general idea with start and end timestamps is that each time a worker goes to
+         * the next document, the current timestamp is the start timestamp for such document
+         * and the end timestamp for the previous and viceversa
+         */
 
-            /* In the corresponding array the elapsed timestamps for each document are computed */
-            for (let i = 0; i < this.documentsAmount + this.questionnaireAmount; i++) {
-                let totalSecondsElapsed = 0;
-                for (let k = 0; k < this.timestampsEnd[i].length; k++) {
-                    if (this.timestampsStart[i][k] !== null && this.timestampsEnd[i][k] !== null) {
-                        totalSecondsElapsed = totalSecondsElapsed + (Number(this.timestampsEnd[i][k]) - Number(this.timestampsStart[i][k]))
-                    }
+        /* In the corresponding array the elapsed timestamps for each document are computed */
+        for (let i = 0; i < this.documentsAmount + this.questionnaireAmount; i++) {
+            let totalSecondsElapsed = 0;
+            for (let k = 0; k < this.timestampsEnd[i].length; k++) {
+                if (this.timestampsStart[i][k] !== null && this.timestampsEnd[i][k] !== null) {
+                    totalSecondsElapsed = totalSecondsElapsed + (Number(this.timestampsEnd[i][k]) - Number(this.timestampsStart[i][k]))
                 }
-                this.timestampsElapsed[i] = totalSecondsElapsed
             }
+            this.timestampsElapsed[i] = totalSecondsElapsed
+        }
+
+        /* If there is a worker ID then the data should be uploaded to the S3 bucket */
+
+        if (!(this.worker.identifier === null)) {
 
             let data = {}
             let actionInfo = {
@@ -2228,6 +2333,7 @@ export class SkeletonComponent implements OnInit {
                 task_id: this.configService.environment.taskName,
                 batch_name: this.configService.environment.batchName,
                 worker_id: this.worker.identifier,
+                platform: this.worker.platform,
                 unit_id: this.unitId,
                 token_input: this.tokenInput.value,
                 token_output: this.tokenOutput,
@@ -2376,6 +2482,86 @@ export class SkeletonComponent implements OnInit {
 
             if (completedElement >= (this.questionnaireAmountStart + this.documentsAmount + this.questionnaireAmountEnd) - 1) {
 
+                /*
+                * This section performs the checks needed to ensure that the worker has made a quality work.
+                * Three checks are performed:
+                * 1) GLOBAL VALIDITY CHECK (QUESTIONNAIRE + DOCUMENTS): Verifies that each field of each form has valid values
+                * 2) GOLD QUESTION CHECK:   Implements a custom check on gold elements retrieved using their ids.
+                *                           An element is gold if its id contains the word "GOLD-".
+                * 3) TIME SPENT CHECK:      Verifies if the time spent by worker on each document and questionnaire is higher than
+                *                           <timeCheckAmount> seconds, using the <timestampsElapsed> array
+                * If each check is successful, the task can end. If the worker has some tries left, the task is reset.
+                */
+
+                let globalValidityCheck: boolean;
+                let timeSpentCheck: boolean;
+                let timeCheckAmount = this.timeCheckAmount;
+
+                /* Array that stores the results of each check */
+                let computedChecks = []
+
+                /* Handful expression to check an array of booleans */
+                let checker = array => array.every(Boolean);
+
+                /* 1) GLOBAL VALIDITY CHECK performed here */
+                globalValidityCheck = this.performGlobalValidityCheck();
+                computedChecks.push(globalValidityCheck)
+
+                /* 2) GOLD ELEMENTS CHECK performed here */
+
+                let goldConfiguration = []
+                /* For each gold document its attribute, answers and notes are retrieved to build a gold configuration */
+                for (let goldDocument of this.goldDocuments) {
+                    let currentConfiguration = {}
+                    currentConfiguration["document"] = goldDocument
+                    let answers = {}
+                    for (let goldDimension of this.goldDimensions) {
+                        for (let [attribute, value] of Object.entries(this.documentsForm[goldDocument.index].value)) {
+                            let dimensionName = attribute.split("_")[0]
+                            if (dimensionName == goldDimension.name) {
+                                answers[attribute] = value
+                            }
+                        }
+                    }
+                    currentConfiguration["answers"] = answers
+                    currentConfiguration["notes"] = this.notes ? this.notes[goldDocument.index] : []
+                    goldConfiguration.push(currentConfiguration)
+                }
+
+                /* The gold configuration is evaluated using the static method implemented within the GoldChecker class */
+                let goldChecks = GoldChecker.performGoldCheck(goldConfiguration)
+
+                /* Since there is a boolean for each gold element, the corresponding array is checked using the checker expression
+                 * to understand if each boolean is true */
+                computedChecks.push(checker(goldChecks))
+
+                /* 3) TIME SPENT CHECK performed here */
+                timeSpentCheck = true;
+                this.timestampsElapsed.forEach(item => {
+                    if (item < timeCheckAmount) timeSpentCheck = false;
+                });
+                computedChecks.push(timeSpentCheck)
+
+                /* If each check is true, the task is successful, otherwise the task is failed (but not over if there are more tries) */
+
+                let checks = {}
+                let qualityCheckData = {
+                    globalFormValidity: globalValidityCheck,
+                    timeSpentCheck: timeSpentCheck,
+                    timeCheckAmount: timeCheckAmount,
+                    goldChecks: goldChecks,
+                    goldConfiguration: goldConfiguration
+                };
+                checks["info"] = {
+                    try: this.currentTry,
+                    sequence: this.sequenceNumber,
+                    element: "checks"
+                };
+                checks["checks"] = qualityCheckData
+                this.qualityChecksOutcome = checks
+
+                this.sequenceNumber = this.sequenceNumber + 1
+
                 /* All data about documents are uploaded, only once */
                 let actionInfo = {
                     action: action,
@@ -2420,8 +2606,9 @@ export class SkeletonComponent implements OnInit {
                 /* Responses by search engine ordered by worker's click for the current document */
                 data["responses_selected"] = this.searchEngineSelectedResponses
                 /* If the last element is a document */
-
                 this.qualityChecksOutcome["info"]["sequence"] = this.sequenceNumber
+                data["checks"] = this.qualityChecksOutcome
+
                 await this.dynamoDBService.insertData(this.configService.environment, this.workerIdentifier, this.unitId, this.currentTry, this.sequenceNumber, this.qualityChecksOutcome)
                 await this.S3Service.uploadQualityCheck(
                     this.configService.environment,
@@ -2435,6 +2622,22 @@ export class SkeletonComponent implements OnInit {
                 await this.dynamoDBService.insertData(this.configService.environment, this.workerIdentifier, this.unitId, this.currentTry, this.sequenceNumber, data)
                 this.sequenceNumber = this.sequenceNumber + 1
 
+                this.sectionService.taskCompleted = true
+
+                if (checker(computedChecks)) {
+                    this.sectionService.taskSuccessful = true;
+                    this.sectionService.taskFailed = false;
+
+                } else {
+                    this.sectionService.taskSuccessful = false;
+                    this.sectionService.taskFailed = true;
+                }
+
+                this.ngxService.stop()
+
+                this.changeDetector.detectChanges()
+
+
             }
 
         }
@@ -2446,17 +2649,19 @@ export class SkeletonComponent implements OnInit {
      * The comment can be typed in a textarea and when the worker clicks the "Send" button such comment is uploaded to an Amazon S3 bucket.
      */
     public async performCommentSaving() {
-        let data = {}
-        let actionInfo = {
-            try: this.currentTry,
-            sequence: this.sequenceNumber,
-            element: "comment"
-        };
-        data["info"] = actionInfo
-        data['value'] = this.commentForm.value
-        let uploadStatus = await this.S3Service.uploadComment(this.configService.environment, this.worker, this.unitId, this.commentForm.value, this.currentTry)
-        await this.dynamoDBService.insertData(this.configService.environment, this.workerIdentifier, this.unitId, this.currentTry, this.sequenceNumber, data)
-        this.sequenceNumber = this.sequenceNumber + 1
+        if (!(this.workerIdentifier === null)) {
+            let data = {}
+            let actionInfo = {
+                try: this.currentTry,
+                sequence: this.sequenceNumber,
+                element: "comment"
+            };
+            data["info"] = actionInfo
+            data['comment'] = this.commentForm.value["comment"]
+            let uploadStatus = await this.S3Service.uploadComment(this.configService.environment, this.worker, this.unitId, data, this.currentTry)
+            await this.dynamoDBService.insertData(this.configService.environment, this.workerIdentifier, this.unitId, this.currentTry, this.sequenceNumber, data)
+            this.sequenceNumber = this.sequenceNumber + 1
+        }
         this.commentSent = true;
     }
 
@@ -2518,116 +2723,4 @@ export class SkeletonComponent implements OnInit {
     }
 
 
-    /*
-    * //@AggiunteAbbondo
-    /* contains the last element(pairwise) selected */
-    valueCheck: number
-    //selected_statement:string;
-    selected_stetements: Object[] = [];
-    checkedValue = new Array();
-
-    /*
-    //@AggiunteAbbondo
-      Funziona che cambia il colore del div dello statemente
-      this.checkedValue[documentnumber][0][0]=true mette al true la prima dimension cosi da venire visuallizata
-    */
-    public changeColor(valueData: Object, documentnumber: number) {
-        //this.selected_statement=valueData["value"]
-        //this.selected_stetements[documentnumber]=valueData["value"];
-        let a = document.getElementById("StatementA." + documentnumber) as HTMLInputElement
-        let b = document.getElementById("StatementB." + documentnumber) as HTMLInputElement
-        if (valueData["value"] == "A") {
-            a.style.backgroundColor = "#B6BDE2"
-            b.style.backgroundColor = "#FCFCFC"
-        } else if (valueData["value"] == "B") {
-            b.style.backgroundColor = "#B6BDE2"
-            a.style.backgroundColor = "#FCFCFC"
-        } else {
-            b.style.backgroundColor = "#B6BDE2"
-            a.style.backgroundColor = "#B6BDE2"
-        }
-
-
-        if (valueData['source']['_checked'] == true) {
-
-            // mette al true la prima dimension del primo documento cosi da venire visualizzata
-            this.checkedValue[documentnumber][0][0] = true
-            this.checkedValue[documentnumber][0][1] = true
-        }
-    }
-
-    //@AggiunteAbbondo
-    // metodo che crea l'array tridimensionale
-    public dimensionValueinsert() {
-        for (let i = 0; i < this.documentsAmount; i++) {
-            let statement = new Array();
-            for (let j = 0; j < this.dimensionsAmount; j++) {
-                let pairwise = new Array()
-                pairwise[0] = false
-                pairwise[1] = false
-                statement[j] = pairwise
-            }
-            this.checkedValue[i] = statement
-        }
-
-    }
-
-    //@AggiunteAbbondo
-    // Metodo che cambia la lettera che mostrata sulla scritta Answer for Statement
-    public changeletter(index: number) {
-        if (index == 0) {
-            return 'A';
-        } else {
-            return 'B';
-        }
-    }
-
-    //@AggiunteAbbondo
-    //Metodo che controllo se le due dimension(Scale) precedenti sono state cliccate
-    public checkdimension(documentnumber: number, dimensionnumber: number) {
-        if (this.checkedValue[documentnumber][dimensionnumber][0] == true && this.checkedValue[documentnumber][dimensionnumber][1] == true) {
-            return true
-        } else {
-            return false
-        }
-    }
-
-    //@AggiunteAbbondo
-    //Cambia il valore delle dimesion(Scale) da false a  true
-    public changeValue(documentnumber: number, dimensionnumber: number, j: number) {
-        if (dimensionnumber >= this.dimensionsAmount) {
-        } else {
-            this.checkedValue[documentnumber][dimensionnumber][j] = true
-        }
-    }
-
-    //@AggiunteAbbondo
-    //Cambia il colore del radio button una volta cliccato sullo statement
-    public changeColorRadio(valueData: Object, document_index: number) {
-        let a = document.getElementById("radioStatementA." + document_index) as HTMLInputElement
-        let b = document.getElementById("radioStatementB." + document_index) as HTMLInputElement
-        if (valueData["value"] == "A") {
-            if (b.classList.contains('mat-radio-checked')) {
-                b.classList.remove('mat-radio-checked')
-            }
-            a.classList.add('mat-radio-checked')
-        } else {
-            if (a.classList.contains('mat-radio-checked')) {
-                a.classList.remove('mat-radio-checked')
-            }
-            b.classList.add('mat-radio-checked')
-        }
-    }
-
-    //@AggiunteAbbondo
-    //Cambia il colore per gli altri due radio quanto si clicca sullo radio centrale
-    public changeBoth(document_index: number) {
-        let a = document.getElementById("radioStatementA." + document_index) as HTMLInputElement
-        let b = document.getElementById("radioStatementB." + document_index) as HTMLInputElement
-
-        b.classList.remove('mat-radio-checked')
-        a.classList.remove('mat-radio-checked')
-    }
 }
-
-  

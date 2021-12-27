@@ -60,17 +60,15 @@ export class QuestionnaireStepComponent implements OnInit {
         this.configService = configService
         this.S3Service = S3Service
         this.localStorageService = localStorageService
+        this.initializeControls()
+    }
+
+    public initializeControls() {
         this.dataStored = []
         this.formStep = this._formBuilder.group({
             questionnaires: this._formBuilder.array([])
         });
         this.formEmitter = new EventEmitter<FormGroup>();
-    }
-
-    public resetData() {
-        this.formStep = this._formBuilder.group({
-            questionnaires: this._formBuilder.array([])
-        });
     }
 
     public async ngOnInit() {
@@ -83,6 +81,8 @@ export class QuestionnaireStepComponent implements OnInit {
                 this.dataStored.push(JSON.parse(item))
             })
         } else {
+            console.log(this.configService.environment)
+            this.initializeControls()
             let rawQuestionnaires = await this.S3Service.downloadQuestionnaires(this.configService.environment)
             rawQuestionnaires.forEach((data, index) => {
                 let questionnaire = new Questionnaire(index, data)
@@ -128,10 +128,6 @@ export class QuestionnaireStepComponent implements OnInit {
     updateQuestionnaire(questionnaireIndex) {
         let questionnaire = this.questionnaires().at(questionnaireIndex);
 
-        questionnaire.get('description').setValue('');
-        questionnaire.get('description').clearValidators();
-        questionnaire.get('description').updateValueAndValidity();
-
         this.questions(questionnaireIndex).clear();
         this.mapping(questionnaireIndex).clear();
 
@@ -150,7 +146,7 @@ export class QuestionnaireStepComponent implements OnInit {
     addQuestion(questionnaireIndex: number, questionIndex = null as number, question = null as Question) {
         this.questions(questionnaireIndex).push(this._formBuilder.group({
             name: question ? question.name ? question.name : '' : '',
-            text: question ? question.name ? question.name : '' : '',
+            text: question ? question.text ? question.text : '' : '',
             answers: this._formBuilder.array([])
         }));
         if (question && question.answers) for (let answer of question.answers) this.addAnswer(questionnaireIndex, questionIndex, answer)
@@ -215,6 +211,11 @@ export class QuestionnaireStepComponent implements OnInit {
                 case 'likert':
                     for (let questionIndex in questionnaire.questions) {
                         delete questionnaire.questions[questionIndex].answers;
+                        questionnaire.questions[questionIndex]['type'] = 'mcq'
+                        questionnaire.questions[questionIndex]['required'] = true
+                        questionnaire.questions[questionIndex]['free_text'] = false
+                        questionnaire.questions[questionIndex]['detail'] = null
+                        questionnaire.questions[questionIndex]['show_detail'] = false
                     }
                     break;
 
@@ -226,6 +227,11 @@ export class QuestionnaireStepComponent implements OnInit {
                             answersStringArray.push(questionnaire.questions[questionIndex].answers[answerIndex].answer);
                         }
                         questionnaire.questions[questionIndex].answers = answersStringArray;
+                        questionnaire.questions[questionIndex]['type'] = 'mcq'
+                        questionnaire.questions[questionIndex]['required'] = true
+                        questionnaire.questions[questionIndex]['free_text'] = false
+                        questionnaire.questions[questionIndex]['detail'] = null
+                        questionnaire.questions[questionIndex]['show_detail'] = false
                     }
                     delete questionnaire.mapping;
                     break;

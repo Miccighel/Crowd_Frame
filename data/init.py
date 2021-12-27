@@ -45,6 +45,7 @@ folder_build_deploy_path = "build/deploy/"
 folder_build_skeleton_path = "build/skeleton/"
 folder_tasks_path = "tasks/"
 
+
 def serialize_json(folder, filename, data):
     if not os.path.exists(folder):
         os.makedirs(folder, exist_ok=True)
@@ -592,7 +593,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         console.print(f"[yellow]Bucket already created[/yellow], HTTP STATUS CODE: {error.response['ResponseMetadata']['HTTPStatusCode']}.")
     except s3_client.exceptions.BucketAlreadyOwnedByYou as error:
         console.print(f"[yellow]Bucket already created[/yellow], HTTP STATUS CODE: {error.response['ResponseMetadata']['HTTPStatusCode']}.")
-
+    except s3_client.exceptions.BucketAlreadyOwnedByYou as error:
+        console.print(f"[yellow]Bucket already created[/yellow], HTTP STATUS CODE: {error.response['ResponseMetadata']['HTTPStatusCode']}.")
 
     response = s3_client.put_public_access_block(
         Bucket=aws_private_bucket,
@@ -814,32 +816,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             console.print("[green]Policies correctly set up")
 
         status.start()
-        status.update('Queue service setup')
-        time.sleep(2)
-
-        queue = {}
-        queue_name = "Crowd_Frame-Queue"
-        if 'QueueUrls' not in sqs_client.list_queues(QueueNamePrefix=queue_name):
-            with open(f"{folder_aws_path}policy/SQSPolicy.json") as f:
-                policy_document = json.dumps(json.load(f))
-            queue = sqs_client.create_queue(
-                QueueName=queue_name,
-                Attributes={'Policy': policy_document}
-            )
-            status.stop()
-            console.print("Queue created")
-        else:
-            queue = sqs_client.get_queue_url(QueueName=queue_name, QueueOwnerAWSAccountId=aws_account_id)
-            status.stop()
-            console.print("Queue already created")
-        attributes = sqs_client.get_queue_attributes(
-            QueueUrl=queue['QueueUrl'],
-            AttributeNames=['All']
-        )
-        queue['Attributes'] = attributes['Attributes']
-        serialize_json(folder_aws_generated_path, f"queue_{queue_name}.json", queue)
-
-        status.start()
         status.update('Gateway setup')
         time.sleep(2)
 
@@ -909,9 +885,41 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             console.print(f"Table {table_logging_name} already created")
 
         status.start()
+        status.update('Queue service setup')
+        time.sleep(2)
+
+        queue = {}
+        queue_name = "Crowd_Frame-Queue"
+        queue_new = False
+        if 'QueueUrls' not in sqs_client.list_queues(QueueNamePrefix=queue_name):
+            with open(f"{folder_aws_path}policy/SQSPolicy.json") as f:
+                policy_document = json.dumps(json.load(f))
+            queue = sqs_client.create_queue(
+                QueueName=queue_name,
+                Attributes={
+                    'Policy': policy_document,
+                    'VisibilityTimeout': '120'
+                }
+            )
+            queue_new = True
+            status.stop()
+            console.print("Queue created")
+        else:
+            queue = sqs_client.get_queue_url(QueueName=queue_name, QueueOwnerAWSAccountId=aws_account_id)
+            status.stop()
+            console.print("Queue already created")
+        attributes = sqs_client.get_queue_attributes(
+            QueueUrl=queue['QueueUrl'],
+            AttributeNames=['All']
+        )
+        queue['Attributes'] = attributes['Attributes']
+        serialize_json(folder_aws_generated_path, f"queue_{queue_name}.json", queue)
+
+        status.start()
         status.update('Lambda setup')
         time.sleep(2)
         function_name = 'Crowd_Frame-Logger'
+        function_new = False
         try:
             response = lambda_client.create_function(
                 FunctionName=function_name,
@@ -919,22 +927,33 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 Handler='index.handler',
                 Role=f'arn:aws:iam::{aws_account_id}:role{iam_path}LambdaToDynamoDBAndS3',
                 Code={'ZipFile': open(f"{folder_aws_path}index.zip", 'rb').read()},
-                Timeout=10,
+                Timeout=20,
                 PackageType='Zip'
             )
+            function_new = True
             serialize_json(folder_aws_generated_path, f"lambda_{function_name}.json", response)
+            console.print('[green]Function created.')
+        except lambda_client.exceptions.ResourceConflictException as error:
+            console.print(f"[yellow]Function already created.")
+        status.stop()
+
+        status.start()
+        status.update('Event source mapping between queue and lambda setup')
+        time.sleep(2)
+        source_mappings = lambda_client.list_event_source_mappings(EventSourceArn=queue['Attributes']['QueueArn'])
+        if queue_new or function_new or len(source_mappings['EventSourceMappings']) <= 0:
+            for mapping in source_mappings['EventSourceMappings']:
+                lambda_client.delete_event_source_mapping(UUID=mapping['UUID'])
+            time.sleep(61)
             response = lambda_client.create_event_source_mapping(
                 EventSourceArn=queue['Attributes']['QueueArn'],
                 FunctionName=function_name,
                 Enabled=True,
-                BatchSize=1000,
-                MaximumBatchingWindowInSeconds=30
             )
             console.print(f"Event source mapping between {queue_name} and {function_name} created.")
             serialize_json(folder_aws_generated_path, f"lambda_event_source_mapping_{response['UUID']}.json", response)
-            console.print('[green]Function created.')
-        except lambda_client.exceptions.ResourceConflictException as error:
-            console.print(f"[yellow]Function already created.")
+        else:
+            console.print(f"[yellow]Event source mapping already created.")
         status.stop()
 
     elif server_config == "custom":
@@ -955,7 +974,78 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     role_name = "Budgeting"
     budget_name = "crowdsourcing-tasks"
 
-    policy_document = {
+    budget_policy_document = {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Action": [
+                    "budgets:*"
+                ],
+                "Resource": "*"
+            },
+            {
+                "Effect": "Allow",
+                "Action": [
+                    "aws-portal:ViewBilling"
+                ],
+                "Resource": "*"
+            },
+            {
+                "Effect": "Allow",
+                "Action": [
+                    "iam:PassRole"
+                ],
+                "Resource": "*",
+                "Condition": {
+                    "StringEquals": {
+                        "iam:PassedToService": "budgets.amazonaws.com"
+                    }
+                }
+            },
+            {
+                "Effect": "Allow",
+                "Action": [
+                    "aws-portal:ModifyBilling",
+                    "ec2:DescribeInstances",
+                    "iam:ListGroups",
+                    "iam:ListPolicies",
+                    "iam:ListRoles",
+                    "iam:ListUsers",
+                    "iam:AttachUserPolicy",
+                    "organizations:ListAccounts",
+                    "organizations:ListOrganizationalUnitsForParent",
+                    "organizations:ListPolicies",
+                    "organizations:ListRoots",
+                    "rds:DescribeDBInstances",
+                    "sns:ListTopics"
+                ],
+                "Resource": "*"
+            }
+        ]
+    }
+
+    try:
+        policy = iam_client.create_policy(
+            PolicyName='Budgeting',
+            Description="Provides access to the budgeting configurationn required by Crowd_Frame",
+            PolicyDocument=json.dumps(budget_policy_document),
+            Path=iam_path
+        )
+        console.print(f"[green]Policy creation completed[/green], HTTP STATUS CODE: {policy['ResponseMetadata']['HTTPStatusCode']}.")
+        policy = policy['Policy']
+    except iam_client.exceptions.EntityAlreadyExistsException:
+        policies = iam_client.list_policies(
+            PathPrefix=iam_path
+        )['Policies']
+        for result in policies:
+            if result['PolicyName'] == 'Budgeting':
+                policy = result
+                console.print(f"[yellow]Policy already created")
+                break
+    serialize_json(folder_aws_generated_path, f"policy_{policy['PolicyName']}.json", policy)
+
+    role_policy_document = {
         "Version": "2012-10-17",
         "Statement": [
             {
@@ -964,7 +1054,9 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 "Principal": {
                     "Service": "budgets.amazonaws.com"
                 },
-                "Action": "sts:AssumeRole"
+                "Action": [
+                    "sts:AssumeRole",
+                ]
             }
         ]
     }
@@ -973,17 +1065,14 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         role = iam_client.create_role(
             RoleName=role_name,
             Path=iam_path,
-            AssumeRolePolicyDocument=json.dumps(policy_document),
+            AssumeRolePolicyDocument=json.dumps(role_policy_document),
             Description="Allows Budgets to create and manage AWS resources on your behalf "
         )
         console.print(f"[green]Role {role_name} created")
         serialize_json(folder_aws_generated_path, f"role_{role['Role']['RoleName']}.json", role)
-        iam_client.attach_role_policy(
-            RoleName=role_name,
-            PolicyArn=f"arn:aws:iam::aws:policy/AWSBudgetsActionsWithAWSResourceControlAccess"
-        )
     except iam_client.exceptions.EntityAlreadyExistsException:
         console.print(f"[yellow]Role {role_name} already created")
+    iam_client.attach_role_policy(RoleName=role_name,PolicyArn=policy['Arn'])
 
     try:
         response = budget_client.create_budget(
@@ -1197,11 +1286,17 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             sample_questionnaires = [
                 {
                     "type": "standard",
+                    "description": "This is a standard questionnaire",
                     "position": "start",
                     "questions": [
                         {
                             "name": "age",
                             "text": "What is your age range?",
+                            "type": "mcq",
+                            "required": True,
+                            "free_text": False,
+                            "show_detail": False,
+                            "detail": None,
                             "answers": [
                                 "0-18",
                                 "19-25",
@@ -1215,6 +1310,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 },
                 {
                     "type": "crt",
+                    "description": "This is a CRT questionnaire",
                     "position": "start",
                     "questions": [
                         {
@@ -1418,10 +1514,16 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.print(f"Reading hits file")
     console.print(f"Path: [italic]{hits_file}[/italic]")
     hits = read_json(hits_file)
-    sample_element = hits.pop()['documents'].pop()
+    documents = hits.pop()['documents']
 
-    if not 'id' in sample_element.keys():
-        raise Exception("Your hits.json file does not contains an attributed called \"id\"!")
+    sample_element = {}
+
+    if len(documents) > 0:
+
+        sample_element = documents.pop()
+
+        if not 'id' in sample_element.keys():
+            raise Exception("Your hits.json file does not contains an attributed called \"id\"!")
 
     # This class provides a representation of a single document stored in single hit stored in the Amazon S3 bucket.
     # The attribute <document_index> is additional and should not be touched and passed in the constructor.
@@ -1824,6 +1926,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     folder_tasks_batch_mturk_path = f"{folder_tasks_batch_path}mturk/"
     folder_tasks_batch_task_path = f"{folder_tasks_batch_path}task/"
     folder_tasks_batch_config_path = f"{folder_tasks_batch_path}config/"
+
 
     def upload(path, bucket, key, title, content_type, acl=None):
         panel = Panel(

@@ -1,5 +1,5 @@
 import {Component, EventEmitter, OnInit, Output} from '@angular/core';
-import { S3Service } from 'src/app/services/s3.service';
+import {S3Service} from 'src/app/services/s3.service';
 import {ConfigService} from "../../../../services/config.service";
 import {LocalStorageService} from "../../../../services/localStorage.service";
 import {FormArray, FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
@@ -87,6 +87,10 @@ export class TaskSettingsStepComponent implements OnInit {
         this.configService = configService
         this.S3Service = S3Service
         this.localStorageService = localStorageService
+        this.initializeControls()
+    }
+
+    public initializeControls() {
         this.dataStored = new SettingsTask()
         this.formStep = this._formBuilder.group({
             modality: '',
@@ -121,6 +125,7 @@ export class TaskSettingsStepComponent implements OnInit {
         if (serializedTaskSettings) {
             this.dataStored = new SettingsTask(JSON.parse(serializedTaskSettings))
         } else {
+            this.initializeControls()
             let rawTaskSettings = await this.S3Service.downloadTaskSettings(this.configService.environment)
             this.dataStored = new SettingsTask(rawTaskSettings)
             this.localStorageService.setItem(`task-settings`, JSON.stringify(rawTaskSettings))
@@ -155,9 +160,9 @@ export class TaskSettingsStepComponent implements OnInit {
             countdown_attribute_values: this._formBuilder.array([]),
             countdown_position_values: this._formBuilder.array([]),
             messages: this._formBuilder.array([]),
-            logger: !!this.dataStored.logger,
-            logOption: this.dataStored.logOption,
-            serverEndpoint: this.dataStored.serverEndpoint
+            logger: !!this.dataStored.log_enable,
+            logOption: this.dataStored.log_option,
+            serverEndpoint: this.dataStored.log_server_endpoint
         });
         if (this.dataStored.messages) if (this.dataStored.messages.length > 0) this.dataStored.messages.forEach((message, messageIndex) => this.addMessage(message))
         if (this.dataStored.annotator) if (this.dataStored.annotator.type == "options") this.dataStored.annotator.values.forEach((optionValue, optionValueIndex) => this.addOptionValue(optionValue))
@@ -234,18 +239,20 @@ export class TaskSettingsStepComponent implements OnInit {
             let hits = JSON.parse(JSON.stringify(this.hitsParsed))
             let document = hits[0]['documents'][0]
             this.hitsPositions = hits[0]['documents'].length
-            if ('statements' in document) {
-                for (let attribute in document['statements'][0]) {
-                    if (!(attribute in this.hitsAttributes)) {
-                        this.hitsAttributes.push(attribute)
-                        this.hitsAttributesValues[attribute] = []
+            if (this.hitsPositions > 0) {
+                if ('statements' in document) {
+                    for (let attribute in document['statements'][0]) {
+                        if (!(attribute in this.hitsAttributes)) {
+                            this.hitsAttributes.push(attribute)
+                            this.hitsAttributesValues[attribute] = []
+                        }
                     }
-                }
-            } else {
-                for (let attribute in document) {
-                    if (!(attribute in this.hitsAttributes)) {
-                        this.hitsAttributes.push(attribute)
-                        this.hitsAttributesValues[attribute] = []
+                } else {
+                    for (let attribute in document) {
+                        if (!(attribute in this.hitsAttributes)) {
+                            this.hitsAttributes.push(attribute)
+                            this.hitsAttributesValues[attribute] = []
+                        }
                     }
                 }
             }
@@ -444,13 +451,16 @@ export class TaskSettingsStepComponent implements OnInit {
         for (let attributeControl of this.hitAttributes().controls) {
             attributeControl.get('annotate').setValue(false)
         }
-        this.annotator().get('type').setValue('')
         if (this.formStep.get('setAnnotator').value == false) {
             this.annotator().get('type').clearValidators();
+            this.annotator().get('type').clearAsyncValidators();
+            this.annotatorOptionValues().clear()
         } else {
             this.annotator().get('type').setValidators([Validators.required, this.positiveNumber.bind(this)]);
         }
-        this.annotator().get('type').updateValueAndValidity();
+        this.annotator().get('type').updateValueAndValidity()
+        this.annotatorOptionValues().updateValueAndValidity()
+        this.setAnnotatorType()
         this.resetHitAttributes()
     }
 
