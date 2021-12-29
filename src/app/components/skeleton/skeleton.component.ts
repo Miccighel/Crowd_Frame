@@ -2151,7 +2151,6 @@ export class SkeletonComponent implements OnInit {
 
         if (action == "Finish") {
             /* The current try is completed and the final can shall begin */
-            this.sectionService.taskCompleted = true
             this.ngxService.start()
         }
 
@@ -2263,6 +2262,87 @@ export class SkeletonComponent implements OnInit {
                 }
             }
             this.timestampsElapsed[i] = totalSecondsElapsed
+        }
+
+        if (action == "Finish") {
+
+            /*
+                   * This section performs the checks needed to ensure that the worker has made a quality work.
+                   * Three checks are performed:
+                   * 1) GLOBAL VALIDITY CHECK (QUESTIONNAIRE + DOCUMENTS): Verifies that each field of each form has valid values
+                   * 2) GOLD QUESTION CHECK:   Implements a custom check on gold elements retrieved using their ids.
+                   *                           An element is gold if its id contains the word "GOLD-".
+                   * 3) TIME SPENT CHECK:      Verifies if the time spent by worker on each document and questionnaire is higher than
+                   *                           <timeCheckAmount> seconds, using the <timestampsElapsed> array
+                   * If each check is successful, the task can end. If the worker has some tries left, the task is reset.
+                   */
+
+            let globalValidityCheck: boolean;
+            let timeSpentCheck: boolean;
+            let timeCheckAmount = this.timeCheckAmount;
+
+            /* Array that stores the results of each check */
+            let computedChecks = []
+
+            /* Handful expression to check an array of booleans */
+            let checker = array => array.every(Boolean);
+
+            /* 1) GLOBAL VALIDITY CHECK performed here */
+            globalValidityCheck = this.performGlobalValidityCheck();
+            computedChecks.push(globalValidityCheck)
+
+            /* 2) GOLD ELEMENTS CHECK performed here */
+
+            let goldConfiguration = []
+            /* For each gold document its attribute, answers and notes are retrieved to build a gold configuration */
+            for (let goldDocument of this.goldDocuments) {
+                let currentConfiguration = {}
+                currentConfiguration["document"] = goldDocument
+                let answers = {}
+                for (let goldDimension of this.goldDimensions) {
+                    for (let [attribute, value] of Object.entries(this.documentsForm[goldDocument.index].value)) {
+                        let dimensionName = attribute.split("_")[0]
+                        if (dimensionName == goldDimension.name) {
+                            answers[attribute] = value
+                        }
+                    }
+                }
+                currentConfiguration["answers"] = answers
+                currentConfiguration["notes"] = this.notes ? this.notes[goldDocument.index] : []
+                goldConfiguration.push(currentConfiguration)
+            }
+
+            /* The gold configuration is evaluated using the static method implemented within the GoldChecker class */
+            let goldChecks = GoldChecker.performGoldCheck(goldConfiguration)
+
+            /* Since there is a boolean for each gold element, the corresponding array is checked using the checker expression
+             * to understand if each boolean is true */
+            computedChecks.push(checker(goldChecks))
+
+            /* 3) TIME SPENT CHECK performed here */
+            timeSpentCheck = true;
+            this.timestampsElapsed.forEach(item => {
+                if (item < timeCheckAmount) timeSpentCheck = false;
+            });
+            computedChecks.push(timeSpentCheck)
+
+            /* If each check is true, the task is successful, otherwise the task is failed (but not over if there are more tries) */
+
+            let checks = {}
+            let qualityCheckData = {
+                globalFormValidity: globalValidityCheck,
+                timeSpentCheck: timeSpentCheck,
+                timeCheckAmount: timeCheckAmount,
+                goldChecks: goldChecks,
+                goldConfiguration: goldConfiguration
+            };
+            checks["info"] = {
+                try: this.currentTry,
+                sequence: this.sequenceNumber,
+                element: "checks"
+            };
+            checks["checks"] = qualityCheckData
+            this.qualityChecksOutcome = checks
         }
 
         /* If there is a worker ID then the data should be uploaded to the S3 bucket */
@@ -2429,86 +2509,6 @@ export class SkeletonComponent implements OnInit {
 
             if (completedElement >= (this.questionnaireAmountStart + this.documentsAmount + this.questionnaireAmountEnd) - 1) {
 
-                /*
-                * This section performs the checks needed to ensure that the worker has made a quality work.
-                * Three checks are performed:
-                * 1) GLOBAL VALIDITY CHECK (QUESTIONNAIRE + DOCUMENTS): Verifies that each field of each form has valid values
-                * 2) GOLD QUESTION CHECK:   Implements a custom check on gold elements retrieved using their ids.
-                *                           An element is gold if its id contains the word "GOLD-".
-                * 3) TIME SPENT CHECK:      Verifies if the time spent by worker on each document and questionnaire is higher than
-                *                           <timeCheckAmount> seconds, using the <timestampsElapsed> array
-                * If each check is successful, the task can end. If the worker has some tries left, the task is reset.
-                */
-
-                let globalValidityCheck: boolean;
-                let timeSpentCheck: boolean;
-                let timeCheckAmount = this.timeCheckAmount;
-
-                /* Array that stores the results of each check */
-                let computedChecks = []
-
-                /* Handful expression to check an array of booleans */
-                let checker = array => array.every(Boolean);
-
-                /* 1) GLOBAL VALIDITY CHECK performed here */
-                globalValidityCheck = this.performGlobalValidityCheck();
-                computedChecks.push(globalValidityCheck)
-
-                /* 2) GOLD ELEMENTS CHECK performed here */
-
-                let goldConfiguration = []
-                /* For each gold document its attribute, answers and notes are retrieved to build a gold configuration */
-                for (let goldDocument of this.goldDocuments) {
-                    let currentConfiguration = {}
-                    currentConfiguration["document"] = goldDocument
-                    let answers = {}
-                    for (let goldDimension of this.goldDimensions) {
-                        for (let [attribute, value] of Object.entries(this.documentsForm[goldDocument.index].value)) {
-                            let dimensionName = attribute.split("_")[0]
-                            if (dimensionName == goldDimension.name) {
-                                answers[attribute] = value
-                            }
-                        }
-                    }
-                    currentConfiguration["answers"] = answers
-                    currentConfiguration["notes"] = this.notes ? this.notes[goldDocument.index] : []
-                    goldConfiguration.push(currentConfiguration)
-                }
-
-                /* The gold configuration is evaluated using the static method implemented within the GoldChecker class */
-                let goldChecks = GoldChecker.performGoldCheck(goldConfiguration)
-
-                /* Since there is a boolean for each gold element, the corresponding array is checked using the checker expression
-                 * to understand if each boolean is true */
-                computedChecks.push(checker(goldChecks))
-
-                /* 3) TIME SPENT CHECK performed here */
-                timeSpentCheck = true;
-                this.timestampsElapsed.forEach(item => {
-                    if (item < timeCheckAmount) timeSpentCheck = false;
-                });
-                computedChecks.push(timeSpentCheck)
-
-                /* If each check is true, the task is successful, otherwise the task is failed (but not over if there are more tries) */
-
-                let checks = {}
-                let qualityCheckData = {
-                    globalFormValidity: globalValidityCheck,
-                    timeSpentCheck: timeSpentCheck,
-                    timeCheckAmount: timeCheckAmount,
-                    goldChecks: goldChecks,
-                    goldConfiguration: goldConfiguration
-                };
-                checks["info"] = {
-                    try: this.currentTry,
-                    sequence: this.sequenceNumber,
-                    element: "checks"
-                };
-                checks["checks"] = qualityCheckData
-                this.qualityChecksOutcome = checks
-
-                this.sequenceNumber = this.sequenceNumber + 1
-
                 /* All data about documents are uploaded, only once */
                 let actionInfo = {
                     action: action,
@@ -2569,23 +2569,35 @@ export class SkeletonComponent implements OnInit {
                 await this.dynamoDBService.insertData(this.configService.environment, this.workerIdentifier, this.unitId, this.currentTry, this.sequenceNumber, data)
                 this.sequenceNumber = this.sequenceNumber + 1
 
-                this.sectionService.taskCompleted = true
-
-                if (checker(computedChecks)) {
-                    this.sectionService.taskSuccessful = true;
-                    this.sectionService.taskFailed = false;
-
-                } else {
-                    this.sectionService.taskSuccessful = false;
-                    this.sectionService.taskFailed = true;
-                }
-
-                this.ngxService.stop()
-
-                this.changeDetector.detectChanges()
-
 
             }
+
+        }
+
+        if (action == "Finish") {
+
+            let checker = array => array.every(Boolean);
+
+            let checksOutcome = []
+
+            checksOutcome.push(this.qualityChecksOutcome['checks']['globalFormValidity'])
+            checksOutcome.push(this.qualityChecksOutcome['checks']['timeSpentCheck'])
+            checksOutcome.push(checker(this.qualityChecksOutcome['checks']['goldChecks']))
+
+            if (checker(checksOutcome)) {
+                this.sectionService.taskSuccessful = true;
+                this.sectionService.taskFailed = false;
+
+            } else {
+                this.sectionService.taskSuccessful = false;
+                this.sectionService.taskFailed = true;
+            }
+
+            this.sectionService.taskCompleted = true;
+
+            this.ngxService.stop()
+
+            this.changeDetector.detectChanges()
 
         }
 
