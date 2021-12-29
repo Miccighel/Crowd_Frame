@@ -1221,10 +1221,10 @@ console.rule("6 - Checking missing HITs")
 hits_missing = []
 hits = load_json(f"{task_config_folder}{batch_name}/hits.json")
 df = pd.read_csv(df_data_path)
+df = df.loc[df['worker_paid']==True]
 for hit in hits:
     unit_data = df.loc[df['unit_id'] == hit['unit_id']]
     if len(unit_data) <= 0:
-        print(hit)
         hits_missing.append(hit)
 if len(hits_missing) > 0:
     console.print(f"Missing HITs: {len(hits_missing)}")
