@@ -1,5 +1,5 @@
 <!-- First instruction page shown when the worker starts the skeleton -->
-<div class="instructions-section" *ngIf="this.sectionService.currentSection == 'instructions-section'">
+<div class="instructions-section" *ngIf="this.sectionService.checkCompleted && this.sectionService.currentSection == 'instructions-section'">
     <mat-card>
         <mat-card-content *ngIf="!this.sectionService.checkCompleted || !taskInstructions">
             <mat-progress-bar mode="indeterminate"></mat-progress-bar>
@@ -91,7 +91,7 @@
 
 <!-- Task body section -->
 
-<mat-horizontal-stepper [linear]="true" labelPosition="bottom" #stepper *ngIf="questionnaires && documents && dimensions  && this.sectionService.taskStarted">
+<mat-horizontal-stepper [linear]="true" labelPosition="bottom" id="stepper" #stepper *ngIf="questionnaires && documents && dimensions  && this.sectionService.taskStarted">
 
     <!-- Questionnaire markup -->
     <ng-container *ngFor="let questionnaire of questionnaires; let i=index">
@@ -531,8 +531,7 @@
                                             <mat-error *ngIf="checkFormControl(documentsForm[i],(dimension.name).concat('_url'), 'required')">
                                                 This field is required
                                             </mat-error>
-                                            <mat-error
-                                                    *ngIf="checkFormControl(documentsForm[i], (dimension.name).concat('_url'), 'invalidSearchEngineUrl')">
+                                            <mat-error *ngIf="checkFormControl(documentsForm[i], (dimension.name).concat('_url'), 'invalidSearchEngineUrl')">
                                                 Please select (or copy & paste) one of the URLs shown above.
                                             </mat-error>
                                         </mat-form-field>
@@ -884,14 +883,14 @@
                         <button mat-flat-button color="primary" matStepperNext
                                 *ngIf="i+1>=this.documentsAmount && this.questionnaireAmountEnd == 0 && !this.annotator"
                                 [disabled]="(!documentsForm[i].valid || documentsForm[i].status == 'DISABLED'  || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted)"
-                                (click)="performQualityCheck(); performLogging('Finish', i); nextStep();">
+                                (click)="performLogging('Finish', i); nextStep();">
                             Finish
                         </button>
 
                         <button mat-flat-button color="primary" matStepperNext
                                 *ngIf="i+1>=this.documentsAmount && this.questionnaireAmountEnd == 0 && this.annotator"
                                 [disabled]="(!documentsForm[i].valid || documentsForm[i].status == 'DISABLED'  || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted || !checkAnnotationConsistency(i))"
-                                (click)="performQualityCheck(); performLogging('Finish', i); nextStep();">
+                                (click)="performLogging('Finish', i); nextStep();">
                             Finish
                         </button>
 

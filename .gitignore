@@ -64,6 +64,7 @@ data/.env
 
 # File generated when configuring AWS
 data/aws/generated/*
+data/aws/backup/*
 
 .vscode/settings.json
 
@@ -86,3 +87,4 @@ data/result/*
 .cache/*
 
 
+data/Logs-Partial.zip
