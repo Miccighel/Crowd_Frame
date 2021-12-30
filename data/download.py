@@ -312,9 +312,8 @@ hit_df = pd.read_csv(hit_data_path)
 
 prefix = f"{task_name}/"
 task_config_folder = f"{folder_result_path}/Task/"
-if not os.path.exists(task_config_folder):
-    response = s3.list_objects(Bucket=aws_private_bucket, Prefix=prefix, Delimiter='/')
-    for current_batch_name in task_batch_names:
+for current_batch_name in task_batch_names:
+    if not os.path.exists(f"{task_config_folder}{current_batch_name}/"):
         response_batch = s3.list_objects(Bucket=aws_private_bucket, Prefix=f"{prefix}{current_batch_name}/Task/", Delimiter='/')
         os.makedirs(f"{task_config_folder}{current_batch_name}/", exist_ok=True)
         for path_batch in response_batch['Contents']:
@@ -326,8 +325,8 @@ if not os.path.exists(task_config_folder):
                 s3.download_file(aws_private_bucket, file_key, f"{destination_path}")
             else:
                 console.print(f"Source: [cyan on white]{file_key}[/cyan on white] [yellow]already detected[/yellow], skipping download")
-else:
-    console.print(f"Task configuration [yellow]already detected[/yellow], skipping download")
+    else:
+        console.print(f"Task configuration for batch [green]${current_batch_name}[/green] [yellow]already detected[/yellow], skipping download")
 
 console.rule("3 - Fetching worker data")
 
@@ -1087,7 +1086,8 @@ if not os.path.exists(df_data_path):
                     row["doc_countdown_time_start"] = document_data['serialization']['countdowns_times_start'][0] if len(document_data['serialization']['countdowns_times_start']) > 0 else np.nan
                     row["doc_countdown_time_value"] = document_data['serialization']['countdowns_times_left']['value'] if len(document_data['serialization']['countdowns_times_left']) > 0 else np.nan
                     row["doc_countdown_time_text"] = document_data['serialization']['countdowns_times_left']['text'] if len(document_data['serialization']['countdowns_times_left']) > 0 else np.nan
-                    row["doc_countdown_time_expired"] = document_data['serialization']["countdowns_expired"][document_data['serialization']['info']['index']] if len(document_data['serialization']["countdowns_expired"]) > 0 else np.nan
+                    row["doc_countdown_time_expired"] = document_data['serialization']["countdowns_expired"][document_data['serialization']['info']['index']] if len(
+                        document_data['serialization']["countdowns_expired"]) > 0 else np.nan
 
                     row["global_form_validity"] = False
                     row["gold_checks"] = False
@@ -1221,7 +1221,7 @@ console.rule("6 - Checking missing HITs")
 hits_missing = []
 hits = load_json(f"{task_config_folder}{batch_name}/hits.json")
 df = pd.read_csv(df_data_path)
-df = df.loc[df['worker_paid']==True]
+df = df.loc[df['worker_paid'] == True]
 for hit in hits:
     unit_data = df.loc[df['unit_id'] == hit['unit_id']]
     if len(unit_data) <= 0:
