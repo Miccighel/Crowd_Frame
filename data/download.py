@@ -326,7 +326,7 @@ for current_batch_name in task_batch_names:
             else:
                 console.print(f"Source: [cyan on white]{file_key}[/cyan on white] [yellow]already detected[/yellow], skipping download")
     else:
-        console.print(f"Task configuration for batch [green]${current_batch_name}[/green] [yellow]already detected[/yellow], skipping download")
+        console.print(f"Task configuration for batch [green]{current_batch_name}[/green] [yellow]already detected[/yellow], skipping download")
 
 console.rule("3 - Fetching worker data")
 
@@ -392,15 +392,16 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
             for table_name in task_data_tables:
                 worker_data[table_name] = []
             for table_name in task_data_tables:
-                response = dynamo_db.query(
+                paginator = dynamo_db.get_paginator('query')
+                for page in paginator.paginate(
                     TableName=table_name,
                     KeyConditionExpression="identifier = :worker",
                     ExpressionAttributeValues={
                         ":worker": {'S': worker_id}
-                    }
-                )['Items']
-                for item in response:
-                    worker_data[table_name].append(item)
+                    }, Select='ALL_ATTRIBUTES'
+                ):
+                    for item in page['Items']:
+                        worker_data[table_name].append(item)
 
             worker_snapshot = []
 
