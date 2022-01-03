@@ -77,6 +77,121 @@
                 </table>
             </div>
 
+            <mat-divider [inset]="true"></mat-divider>
+            
+            <!-- Loading of documents -->
+            <h3 class="lighter">Documents</h3>
+            <table class="width-100 mt-16px">
+                <tr>
+                    <td>
+                        <button mat-flat-button color="primary" class="indent" ngxFilePicker [readMode]="readMode" (filePick)="docsFile = $event" (readEnd)="updateDocsFile()" accept="application/json">
+                            Select documents file
+                        </button>
+                        <ng-container *ngIf="!this.docsFileName">
+                            <code>your_file.json</code>
+                        </ng-container>
+                        <ng-container *ngIf="this.docsDetected <= 0">
+                            <code>invalid file</code>
+                        </ng-container>
+                        <ng-container *ngIf="this.docsDetected> 0">
+                            <code>Filename: {{ this.docsFileName }}, Documents detected: {{ this.docsDetected }}, Filesize: {{this.docsSize}} Kb</code>
+                        </ng-container>
+                    </td>
+                </tr>
+                <tr *ngIf="this.docsDetected<=0">
+                    <td>
+                        <mat-error class="mb-8px indent">
+                            This JSON file does not contain any valid document. Please, review your selection.
+                        </mat-error>
+                    </td>
+                </tr>
+            </table>
+
+            <div class="mt-8px mb-16px indent" formGroupName="documents" *ngIf="this.docsDetected> 0">
+                <table class="width-100 mt-16px">
+                    <tr *ngIf="this.docsDetected > 0">
+                        <td>
+                            <mat-form-field matLine class="width-100" [hideRequiredMarker]="this.documentsOptions().get('min_docs_repetitions').valid" appearance="fill">
+                                <mat-label>Minimum documents repetitions in hits</mat-label>
+                                <input matInput type="number" min="1" formControlName="min_docs_repetitions" required placeholder="1">
+                            </mat-form-field>
+                        </td>
+                    </tr>
+                </table>
+                
+                <div class="hit-attributes mt-8px mb-16px indent">
+                    <div *ngFor="let value of docCategories().controls; let valueIndex = index" formArrayName="doc_categories">
+                        <table class="width-100">
+                            <tr>
+                                <td class="p-0 width-75 pr-16px" [formGroupName]="valueIndex">
+                                    <h3>{{this.docCategory(valueIndex)}}</h3>
+                                    <!-- <h3>{{//this.docsCategories[valueIndex]}}</h3> -->
+                                </td>
+                                <td class="p-0 width-100 pr-16px" [formGroupName]="valueIndex">
+                                    <span>Number of values: {{this.docCategoryValues(valueIndex)}}</span>
+                                    <!-- <span>Number of values: {{this.docsCategoriesValues[this.docsCategories[valueIndex]].length}}</span>-->
+                                </td>
+                                <td class="p-0 width-100 pr-16px" [formGroupName]="valueIndex">
+                                    <mat-checkbox color="primary" formControlName="selected" (change)="updateDocCategory(valueIndex)">
+                                        Use as category
+                                    </mat-checkbox>
+                                </td>
+                                <td class="p-0 center" [formGroupName]="valueIndex">
+                                    <mat-form-field class="width-100" appearance="fill">
+                                        <mat-label>Worker assignments</mat-label>
+                                        <input matInput type="number" placeholder="0" formControlName="worker_assignment">
+                                    </mat-form-field>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div>
+                        <table class="width-100">
+                            <tr>
+                                <td class="p-0 pr-16px">
+                                    <button mat-flat-button color="primary" class="mb-16px indent" (click)="this.checkCategoriesSelection()" [disabled]="this.hit_size != 0">
+                                        Check selection
+                                    </button>
+                                </td>
+                                <td>
+                                    <button mat-flat-button color="primary" class="mb-16px indent" (click)="this.resetCategorySelection()" [disabled]="this.hit_size == 0">
+                                        Reset selection
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <mat-error class="mb-8px indent" *ngIf="this.hit_size == -1">
+                                        Error in the worker assignment typed values. Please, review your selection.
+                                    </mat-error>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                <!-- Worker number form -->
+                <table class="width-100 mt-16px">
+                    <tr *ngIf="this.docsDetected > 0">
+                        <td>
+                            <mat-form-field matLine class="width-100" [hideRequiredMarker]="this.documentsOptions().get('workers_number').valid" appearance="fill">
+                                <mat-label>Workers number</mat-label>
+                                <input matInput type="number" min="1" formControlName="workers_number" required placeholder="1">
+                            </mat-form-field>
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- Send request button -->
+                <table class="width-100 mt-16px">
+                    <tr *ngIf="this.docsDetected > 0">
+                        <td>
+                            <button mat-flat-button color="primary" class="indent" (click)="sendRequestToHitSolver()" [disabled]="this.hit_size <= 0 ">
+                                Send request to the solver
+                            </button>
+                        </td>
+                    </tr>
+                </table>
+            </div>
 
             <mat-divider [inset]="true"></mat-divider>
 

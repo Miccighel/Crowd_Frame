@@ -27,7 +27,7 @@ export class HitRequest{
         this.createProperties();
 
         /* Instantiation of the categories from a sample of the given documents */ 
-        this.createCategoriesFromDocs(docs);
+        this.createCategoriesFromDocs(docs, ['party']);
 
         if(this.checkCategoriesWorkerAssignment()){
             // Instantiation of the items from the given array of documents
@@ -46,8 +46,7 @@ export class HitRequest{
         this.properties.push(new Property("p1", ["l1"], 1));
     }
 
-    createCategoriesFromDocs(docs: Array<JSON>){
-        let possibleCategories = ['party']
+    createCategoriesFromDocs(docs: Array<JSON>, possibleCategories: Array<string>){
         let doc_sample = docs[0];
         let categories = Object.keys(doc_sample).filter((el) => possibleCategories.includes(el))
         
@@ -79,7 +78,7 @@ export class HitRequest{
 
     createWorkers(){
         /**
-         * At the moment all the workers have only one propery (p1) with the same level (l1)
+         * At the moment all the workers have only one property (p1) with the same level (l1)
          */
         let workers_length = this.getMinimumWorkersNumber();
         console.log(`Minimum number of workers needed: ${workers_length}`)
@@ -98,6 +97,92 @@ export class HitRequest{
         let hit_size = this.categories.at(0).getLevels().length * this.categories.at(0).getWorkerAssignments();
         let num_item = this.items.length;
         return Math.ceil(num_item * this.min_item_repetitions)/hit_size;
+    }
+
+    setCategories(categories: Array<string>, worker_assignment: Array<Object>, docs: Array<JSON>){
+        for(let category of this.categories){
+            if(categories.includes(category.getId())){
+                if(category.getWorkerAssignments() != worker_assignment[category.getId()])
+                    category.setWorkerAssignments(worker_assignment[category.getId()])
+            }else{
+                this.removeCategory(category)
+            }
+        }
+        let newCategories = []
+        for(let category of categories){
+            if(!this.contains(category)){
+                newCategories.push(category)
+            }
+        }
+        this.createCategoriesFromDocs(docs, newCategories)
+        for(let category of this.categories){
+            if(categories.includes(category.getId())){
+                if(category.getWorkerAssignments() != worker_assignment[category.getId()])
+                    category.setWorkerAssignments(worker_assignment[category.getId()])
+            }
+        }
+        for(let item of this.items){
+            let id = item.getId()
+            let doc = this.getDoc(docs, id)
+            if(doc){
+                for(let c of newCategories){
+                    item.getCategories().push(new ItemCategory(c, doc[`${c}`]))
+                }
+            }
+        }
+    }
+
+    getDoc(docs: Array<JSON>, id: string){
+        for(let d of docs){
+            if(d['id'] == id)
+                return d
+        }
+        return null
+    }
+
+    contains(category: string){
+        for(let cat of this.categories){
+            if(cat.getId() == category) return true
+        }
+        return false
+    }
+
+    removeCategory(category: Category){
+        let index = this.categories.indexOf(category);
+        this.categories.splice(index, 1)
+
+        for(let item of this.items){
+            index = -1
+            for(let c of item.getCategories()){
+                if(c.getId() == category.getId()){
+                    index = item.getCategories().indexOf(c)
+                }
+            }
+            if(index > -1) {
+                item.getCategories().splice(index, 1)
+            }
+        }
+    }
+
+    setWorkers(num_workers: number){
+        if(this.workers.length > num_workers){
+            let n = num_workers - this.workers.length
+
+            let workers_expertise = 0;
+            let current_workers = this.workers.length
+            for(let i = current_workers; i < current_workers + n; i++){
+                let worker_id = `W${i}`;
+                let worker_properties = new Array<WorkerProperty>();
+                for(let property of this.properties){
+                    worker_properties.push(new WorkerProperty(property.getId(), property.getLevels().at(0)))
+                }
+                this.workers.push(new HitWorker(worker_id, workers_expertise, worker_properties));
+            }
+
+        }else if(this.workers.length < num_workers){
+            let new_workers = this.workers.slice(0, num_workers)
+            this.workers = new_workers
+        }
     }
 
 }
@@ -124,6 +209,10 @@ class Category{
 
     getWorkerAssignments(): number{
         return this.worker_assignments;
+    }
+
+    setWorkerAssignments(worker_assignments: number) {
+        this.worker_assignments = worker_assignments
     }
 }
 
@@ -168,6 +257,10 @@ class Item{
 
     getCategories(){
         return this.categories;
+    }
+
+    setCategories(categories: Array<ItemCategory>){
+        this.categories = categories;
     }
 }
 

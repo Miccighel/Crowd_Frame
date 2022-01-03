@@ -104,6 +104,29 @@ export class SettingsTask {
 
 }
 
+export class DocCategory {
+    
+    name: string;
+    name_pretty: string;
+    values_number: number;
+    selected: boolean;
+    worker_assignment: number;
+
+    constructor(
+        name: string,
+        values_number: number,
+        worker_assignment: number,
+        selected?: boolean,
+        name_pretty?: string,
+    ){
+        this.name = name
+        this.name_pretty = name_pretty ? name_pretty : titleize(name.replace("_", " "))
+        this.values_number = values_number
+        this.selected = selected ? selected : false;
+        this.worker_assignment = worker_assignment
+    }
+}
+
 export class Attribute {
 
     index: number;

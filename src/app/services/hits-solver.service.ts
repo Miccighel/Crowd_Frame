@@ -14,11 +14,11 @@ export class HitsSolverService {
 
   //solverEndPointRunner = "http://158.110.146.213:18080/runner/BSA/";
   //solverEndPointRunner = "https://7c28926d-149b-4908-9999-fe2f66231d65.mock.pstmn.io/runner/BSA";
-  solverEndPointRunner = "http://localhost:5000/runner/BSA";
+  solverEndPointRunner = "http://localhost:18080/runner/BSA";
 
   //solverEndPoint = "http://158.110.146.213:18080";
   //solverEndPoint = "https://7c28926d-149b-4908-9999-fe2f66231d65.mock.pstmn.io";
-  solverEndPoint = "http://localhost:5000";
+  solverEndPoint = "http://localhost:18080";
 
   selectedRunner: string;
 
@@ -78,9 +78,9 @@ export class HitsSolverService {
    * This function choose randomly an assignment from assignments array
    * and then builds a hit using the array of JSON docs
    */
-  createHit(assigments: Array<Assignment>, docs: Array<JSON>){
-    let idx = Math.floor(Math.random() * (assigments.length));
-    let assignment = assigments[idx].Assignments;
+  createHit(response: HitSolution, docs: Array<JSON>){
+    let idx = Math.floor(Math.random() * (response.solution.Workers.length));
+    let assignment = response.solution.Workers[idx].Assignments;
 
     let dcms = new Array();
     for(let item of assignment){
@@ -90,9 +90,33 @@ export class HitsSolverService {
     let hit = {
       documents_number: dcms.length,
       documents: dcms,
+      unit_id: `unit_${idx}`,
+      token_input: 'ABCDEFGHILM',
+      token_output: 'MNOPQRSTUVZ'
     };
     
     return hit;
+  }
+
+  createHits(response: HitSolution, docs: Array<JSON>){
+    let hits = []
+    let assignments = response.solution.Workers;
+    for(let assignment of assignments){
+      let dcms = []
+      for(let item of assignment.Assignments){
+        let doc = this.getDocument(docs, item)
+        dcms.push(doc)
+      }
+      let hit = {
+        documents_number: dcms.length,
+        documents: dcms,
+        unit_id: `unit_${assignments.indexOf(assignment)}`,
+        token_input: 'ABCDEFGHILM',
+        token_output: 'MNOPQRSTUVZ'
+      }
+      hits.push(hit)
+    }
+    return hits
   }
 
   getDocument(docs: Array<JSON>, id: string): JSON{

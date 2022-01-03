@@ -595,11 +595,12 @@ export class SkeletonComponent implements OnInit {
                 this.checkHitStatus(url, task_id, docs);
             }else{
                 this.HitsSolverService.getSolution(task_id).subscribe(response => {
-                    let receivedHit = this.HitsSolverService.createHit(response.solution.Workers, docs);
+                    console.log(response)
+                    let receivedHit = this.HitsSolverService.createHit(response, docs);
                     this.hit = {
-                        unit_id: this.unitId,
-                        token_input: '',
-                        token_output: this.tokenOutput,
+                        unit_id: receivedHit.unit_id,
+                        token_input: receivedHit.token_input,
+                        token_output: receivedHit.token_output,
                         documents_number: receivedHit.documents_number,
                         documents: receivedHit.documents
                     }

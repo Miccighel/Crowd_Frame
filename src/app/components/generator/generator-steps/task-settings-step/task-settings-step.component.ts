@@ -1,9 +1,11 @@
 import {Component, EventEmitter, OnInit, Output} from '@angular/core';
 import {S3Service} from 'src/app/services/s3.service';
 import {ConfigService} from "../../../../services/config.service";
+import {HitsSolverService} from "src/app/services/hits-solver.service";
 import {LocalStorageService} from "../../../../services/localStorage.service";
+import {NgxUiLoaderService} from 'ngx-ui-loader';
 import {FormArray, FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
-import {Attribute, SettingsTask} from "../../../../models/settingsTask";
+import {Attribute, DocCategory, SettingsTask} from "../../../../models/settingsTask";
 import {ReadFile, ReadMode} from "ngx-file-helpers";
 import {Hit} from "../../../../models/hit";
 
@@ -35,6 +37,10 @@ export class TaskSettingsStepComponent implements OnInit {
     S3Service: S3Service;
     /* Service which wraps the interaction with browser's local storage */
     localStorageService: LocalStorageService;
+    /* Service which wraps the interaction with the Hits solver*/
+    HitsSolverService: HitsSolverService;
+    /* Service to provide loading screens */
+    ngxService: NgxUiLoaderService;
 
     /* STEP #6 - Task Settings */
 
@@ -74,6 +80,17 @@ export class TaskSettingsStepComponent implements OnInit {
     hitsDetected: number
     readMode: ReadMode
 
+    /* Variables to handle docs file upoload */
+    docsFile: ReadFile
+    docsFileName: string
+    docsParsed: Array<JSON>
+    docsParsedString: string
+    docsCategories: Array<string>
+    docsCategoriesValues: Object
+    docsSize: number
+    docsDetected: number
+    hit_size: number;
+
     configurationSerialized: string
 
     @Output() formEmitter: EventEmitter<FormGroup>;
@@ -82,11 +99,15 @@ export class TaskSettingsStepComponent implements OnInit {
         localStorageService: LocalStorageService,
         configService: ConfigService,
         S3Service: S3Service,
+        ngxService: NgxUiLoaderService,
+        HitsSolverService: HitsSolverService,
         private _formBuilder: FormBuilder,
     ) {
         this.configService = configService
         this.S3Service = S3Service
         this.localStorageService = localStorageService
+        this.ngxService = ngxService
+        this.HitsSolverService = HitsSolverService
         this.initializeControls()
     }
 
@@ -96,6 +117,11 @@ export class TaskSettingsStepComponent implements OnInit {
             modality: '',
             allowed_tries: '',
             time_check_amount: '',
+            documents: this._formBuilder.group({
+                min_docs_repetitions: 1,
+                doc_categories: this._formBuilder.array([]),
+                workers_number: '',
+            }),
             attributes: this._formBuilder.array([]),
             setAnnotator: false,
             annotator: this._formBuilder.group({
@@ -115,6 +141,7 @@ export class TaskSettingsStepComponent implements OnInit {
             logOption: false,
             serverEndpoint: ''
         });
+        this.hit_size = 0
         /* Read mode during hits file upload*/
         this.readMode = ReadMode.text
         this.formEmitter = new EventEmitter<FormGroup>();
@@ -145,6 +172,11 @@ export class TaskSettingsStepComponent implements OnInit {
             modality: this.dataStored ? this.dataStored.modality ? this.dataStored.modality : '' : '',
             allowed_tries: this.dataStored ? this.dataStored.allowed_tries ? this.dataStored.allowed_tries : '' : '',
             time_check_amount: this.dataStored ? this.dataStored.time_check_amount ? this.dataStored.time_check_amount : '' : '',
+            documents: this._formBuilder.group({
+                min_docs_repetitions: 1,
+                doc_categories: this._formBuilder.array([]),
+                workers_number: '',
+            }),
             attributes: this._formBuilder.array([]),
             setAnnotator: !!this.dataStored.annotator,
             annotator: this._formBuilder.group({
@@ -185,6 +217,7 @@ export class TaskSettingsStepComponent implements OnInit {
             }
         }
         let hitsPromise = this.loadHits()
+        let docsPromise = this.loadDocs()
         this.formStep.valueChanges.subscribe(form => {
             this.serializeConfiguration()
         })
@@ -205,6 +238,29 @@ export class TaskSettingsStepComponent implements OnInit {
             }
             this.localStorageService.setItem(`hits`, JSON.stringify(hits))
             this.updateHitsFile(hits)
+        }
+    }
+
+    async loadHitsFromResponse(hits) {
+        console.log("Response hits")
+        console.log(hits)
+        this.localStorageService.setItem(`hits`, JSON.stringify(hits))
+        this.updateHitsFile(hits)
+    }
+
+    async loadDocs() {
+        let docs = JSON.parse(this.localStorageService.getItem('documents'))
+        if (docs) {
+            this.updateDocsFile(docs)
+            this.localStorageService.setItem(`documents`, JSON.stringify(docs))
+        }else{
+            let docs = []
+            try{
+                docs = await this.S3Service.downloadDocs(this.configService.environment)
+            } catch (exception){
+            }
+            this.localStorageService.setItem(`documents`, JSON.stringify(docs))
+            this.updateDocsFile(docs)
         }
     }
 
@@ -292,6 +348,68 @@ export class TaskSettingsStepComponent implements OnInit {
         }
     }
 
+    updateDocsFile(docs = null){
+        this.docsParsed = docs ? docs : JSON.parse(this.docsFile.content) as Array<JSON>
+        this.docsParsedString = JSON.stringify(this.docsParsed)
+        if(!docs){
+            this.localStorageService.setItem(`documents`, JSON.stringify(this.docsParsed))
+        }
+        if(this.docsParsed.length > 0){
+            this.docsDetected = this.docsParsed.length
+        }else{
+            this.docsDetected = 0
+        }
+
+        this.docsCategories = []
+        this.docsCategoriesValues = {}
+
+        if(this.docsDetected > 0){
+            let docs = JSON.parse(JSON.stringify(this.docsParsed))
+            let doc_sample = docs[0]
+         
+            let excludedDocumentsAttributes = ['id', 'statement', 'date', 'name']
+            for(let attribute in doc_sample){
+                if(!excludedDocumentsAttributes.includes(attribute)){
+                    if(!(attribute in this.docsCategories)){
+                        this.docsCategories.push(attribute)
+                        this.docsCategoriesValues[attribute] = []
+                    }
+                }
+            }
+        }
+        for (let doc of docs){
+            Object.entries(doc).forEach(
+                ([attribute, value]) => {
+                    if(this.docsCategories.includes(attribute)){
+                        if(!this.docsCategoriesValues[attribute].includes(value)) 
+                            this.docsCategoriesValues[attribute].push(value)
+                    }
+                }
+            )
+        }
+        this.documentsOptions().get('min_docs_repetitions').valueChanges.subscribe(
+            data => {
+                if(data != null) this.updateWorkerNumber(data)
+            }
+        )
+        this.resetCategorySelection()
+        this.docCategories().clear({emitEvent: true})
+        this.docsCategories.forEach(
+            category => {
+                this.addDocCategory(category, new DocCategory(
+                    category, this.docsCategoriesValues[category].length, 0))
+            })
+        this.resetWorkerAssignment()
+
+        if(this.docsFile){
+            this.docsSize = Math.round(this.docsFile.size / 1024)
+            this.docsFileName = this.docsFile.name
+        }else{
+            this.docsSize = (new TextEncoder().encode(this.hitsParsed.toString())).length
+            this.docsFileName = "docs.json"
+        }
+    }
+
     hitAttributes() {
         return this.formStep.get('attributes') as FormArray;
     }
@@ -340,6 +458,161 @@ export class TaskSettingsStepComponent implements OnInit {
         }
         this.resetHitAttributes()
     }
+
+    documentsOptions(): FormGroup{
+        return this.formStep.get('documents') as FormGroup;
+    }
+
+    docCategories(): FormArray{
+        return this.documentsOptions().get('doc_categories') as FormArray;
+    }
+
+    docCategory(valueIndex){
+        return this.docCategories().at(valueIndex).get('name_pretty').value;
+    }
+
+    docCategoryValues(valueIndex){
+        return this.docCategories().at(valueIndex).get('values_number').value;
+    }
+
+    addDocCategory(name: string, category = null as DocCategory) {
+        this.docCategories().push(this._formBuilder.group({
+            name: name,
+            name_pretty: category ? category.name_pretty ? category.name_pretty: name : name,
+            values_number: category ? category.values_number ? category.values_number: 0 : 0,
+            selected: category ? category.selected ? category.selected : false: false,
+            worker_assignment: category ? category.worker_assignment ? category.worker_assignment : 0 : 0
+        }))
+    }
+
+    resetWorkerAssignment(){
+        for(let category of this.docCategories().controls){
+            category.get('worker_assignment').disable()
+        }
+    }
+
+    updateDocCategory(categoryIndex){
+        let category = this.docCategories().at(categoryIndex)
+        if(category.get('selected').value == true) {
+            category.get('worker_assignment').enable()
+            category.get('worker_assignment').setValue(1)
+        } else{
+            category.get('worker_assignment').setValue(0)
+            category.get('worker_assignment').disable()
+        }
+    }
+
+    checkCategoriesSelection(){
+        let size = []
+        for(let category of this.docCategories().controls){
+            if(category.get('selected').value == true){
+                let name = category.get('name').value
+                let worker_assignment = Math.round(category.get('worker_assignment').value)
+                let values_number = this.docsCategoriesValues[name].length
+                size.push(worker_assignment * values_number)
+            }
+        }
+        if(size.length == 0){
+            this.hit_size = 0
+        }
+        if(size.length > 0) {
+            if(size.every((val, i, arr) => val == arr[0])){
+                this.hit_size = size[0]
+                for(let category of this.docCategories().controls){
+                    category.get('selected').disable()
+                    category.get('worker_assignment').disable()
+                }
+                let min_docs_rep = this.documentsOptions().get('min_docs_repetitions').value
+                let min_workers_number = Math.ceil((this.docsDetected * min_docs_rep) / this.hit_size)
+
+                let workers_number = this.documentsOptions().get('workers_number') 
+                workers_number.setValue(min_workers_number)
+                workers_number.addValidators(Validators.min(min_workers_number))
+            } else {
+                this.hit_size = -1
+            }
+        }
+    }
+
+    resetCategorySelection(){
+        this.hit_size = 0
+        this.resetWorkerAssignment()
+        this.documentsOptions().get('min_docs_repetitions').setValue(1)
+        this.documentsOptions().get('workers_number').setValue('')
+        for(let category of this.docCategories().controls){
+            category.get('selected').enable()
+            category.get('selected').setValue(false)
+            category.get('worker_assignment').setValue(0)
+        }
+        let workers_number = this.documentsOptions().get('workers_number') 
+        workers_number.clearValidators()
+        workers_number.addValidators(Validators.min(1))
+    }
+
+    updateWorkerNumber(min_docs_rep){
+        if(this.hit_size > 0){
+            let min_workers_number = Math.ceil((this.docsDetected * min_docs_rep) / this.hit_size)
+            let workers_number = this.documentsOptions().get('workers_number') 
+            workers_number.setValue(min_workers_number)
+            workers_number.addValidators(Validators.min(min_workers_number))
+        }
+    }
+
+    sendRequestToHitSolver(){
+        let min_docs_rep = this.documentsOptions().get('min_docs_repetitions').value
+        let selectedCategories = []
+        let selectedWorkerAssignment = []
+        for (let category of this.docCategories().controls){
+            if(category.get('selected').value == true){
+                let name = category.get('name').value 
+                let worker_assignment = category.get('worker_assignment').value
+                selectedCategories.push(name)
+                selectedWorkerAssignment[name] = worker_assignment
+            }
+        }
+
+        let workers_number = this.documentsOptions().get('workers_number').value
+        let req = this.HitsSolverService.createRequest(this.docsParsed, min_docs_rep, 0);
+        req.setCategories(selectedCategories, selectedWorkerAssignment, this.docsParsed)
+        req.setWorkers(workers_number)
+        console.log(JSON.stringify(req))
+        
+        this.ngxService.start()
+        this.HitsSolverService.submitRequest(req).subscribe(response => {
+            let task_id = response.task_id;
+            let url = response.url;
+            
+            /* The function to check for a solution is launched */
+            this.checkHitStatus(url, task_id, this.docsParsed);
+        });
+    }
+
+    /**
+     * This function uses the HitSolver service to check if the solution for the hit is ready.
+     * If the solution isn't ready the function waits two seconds and then send a new request
+     * to the HitSolver. This process continues until a solution is available.
+     * When a solution is available, then, a new array of hit is created in the original format of the
+     * framework.
+     * @param url 
+     * @param task_id 
+     * @param docs 
+     */
+         public checkHitStatus(url: string, task_id: string, docs: Array<JSON>){
+            this.HitsSolverService.checkSolutionStatus(url).subscribe(response => {
+                if(response['finished'] == false){
+                    /* Wait two seconds to repull the solution from the solver */
+                    setTimeout(() => {}, 2000);
+                    this.checkHitStatus(url, task_id, docs);
+                }else{
+                    this.HitsSolverService.getSolution(task_id).subscribe(response => {
+                        let receivedHit = this.HitsSolverService.createHits(response, docs);
+
+                        this.loadHitsFromResponse(receivedHit)
+                        this.ngxService.stop()
+                    })
+                }
+            });
+        }
 
     resetCountdown() {
         if (this.formStep.get('setCountdownTime').value == false) {
