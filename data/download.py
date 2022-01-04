@@ -1155,45 +1155,45 @@ if not os.path.exists(df_data_path):
                     else:
                         row["doc_time_elapsed"] = round(document_data['serialization']['timestamps_elapsed'], 2)
 
-                for questionnaire_data in data_partial['questionnaires_answers']:
+                    for questionnaire_data in data_partial['questionnaires_answers']:
 
-                    questionnaire = questionnaires[questionnaire_data['serialization']['info']['index']]
-                    current_answers = questionnaire_data['serialization']['answers']
-                    timestamps_elapsed = questionnaire_data['serialization']["timestamps_elapsed"]
-                    accesses = questionnaire_data['serialization']["accesses"]
+                        questionnaire = questionnaires[questionnaire_data['serialization']['info']['index']]
+                        current_answers = questionnaire_data['serialization']['answers']
+                        timestamps_elapsed = questionnaire_data['serialization']["timestamps_elapsed"]
+                        accesses = questionnaire_data['serialization']["accesses"]
 
-                    for index_sub, question in enumerate(questionnaire["questions"]):
+                        for index_sub, question in enumerate(questionnaire["questions"]):
 
-                        answer = None
-                        for question_name, answer_current in current_answers.items():
-                            question_name_parsed = question_name.replace("_answer", "")
-                            if question_name_parsed == question["name"]:
-                                answer = answer_current
+                            answer = None
+                            for question_name, answer_current in current_answers.items():
+                                question_name_parsed = question_name.replace("_answer", "")
+                                if question_name_parsed == question["name"]:
+                                    answer = answer_current
 
-                        row[f"q_{questionnaire['index']}_{question['index']}_index"] = question['index']
-                        row[f"q_{questionnaire['index']}_{question['index']}_name"] = question['name']
-                        row[f"q_{questionnaire['index']}_{question['index']}_name_full"] = question['nameFull'] if "nameFull" in question else None
-                        row[f"q_{questionnaire['index']}_{question['index']}_type"] = question['type'] if "type" in question else None
-                        row[f"q_{questionnaire['index']}_{question['index']}_required"] = question['required'] if "required" in question else None
-                        row[f"q_{questionnaire['index']}_{question['index']}_detail"] = question['detail'] if "detail" in question else None
-                        row[f"q_{questionnaire['index']}_{question['index']}_show_detail"] = question['show_detail'] if "show_detail" in question else None
-                        row[f"q_{questionnaire['index']}_{question['index']}_free_text"] = question['free_text'] if "free_text" in question else None
-                        row[f"q_{questionnaire['index']}_{question['index']}_text"] = question['text']
-                        row[f"q_{questionnaire['index']}_{question['index']}_answer_value"] = answer
-                        if questionnaire['type'] == 'standard':
-                            row[f"q_{questionnaire['index']}_{question['index']}_answer_text"] = question['answers'][int(answer)]
-                        elif questionnaire['type'] == 'likert':
-                            mapping = questionnaire['mappings'][int(answer)]
-                            row[f"q_{questionnaire['index']}_{question['index']}_answer_mapping_index"] = mapping['index']
-                            row[f"q_{questionnaire['index']}_{question['index']}_answer_mapping_key"] = mapping['key'] if "key" in mapping else None
-                            row[f"q_{questionnaire['index']}_{question['index']}_answer_mapping_label"] = mapping['label']
-                            row[f"q_{questionnaire['index']}_{question['index']}_answer_mapping_value"] = mapping['value']
+                            row[f"q_{questionnaire['index']}_{question['index']}_index"] = question['index']
+                            row[f"q_{questionnaire['index']}_{question['index']}_name"] = question['name']
+                            row[f"q_{questionnaire['index']}_{question['index']}_name_full"] = question['nameFull'] if "nameFull" in question else None
+                            row[f"q_{questionnaire['index']}_{question['index']}_type"] = question['type'] if "type" in question else None
+                            row[f"q_{questionnaire['index']}_{question['index']}_required"] = question['required'] if "required" in question else None
+                            row[f"q_{questionnaire['index']}_{question['index']}_detail"] = question['detail'] if "detail" in question else None
+                            row[f"q_{questionnaire['index']}_{question['index']}_show_detail"] = question['show_detail'] if "show_detail" in question else None
+                            row[f"q_{questionnaire['index']}_{question['index']}_free_text"] = question['free_text'] if "free_text" in question else None
+                            row[f"q_{questionnaire['index']}_{question['index']}_text"] = question['text']
+                            row[f"q_{questionnaire['index']}_{question['index']}_answer_value"] = answer
+                            if questionnaire['type'] == 'standard':
+                                row[f"q_{questionnaire['index']}_{question['index']}_answer_text"] = question['answers'][int(answer)]
+                            elif questionnaire['type'] == 'likert':
+                                mapping = questionnaire['mappings'][int(answer)]
+                                row[f"q_{questionnaire['index']}_{question['index']}_answer_mapping_index"] = mapping['index']
+                                row[f"q_{questionnaire['index']}_{question['index']}_answer_mapping_key"] = mapping['key'] if "key" in mapping else None
+                                row[f"q_{questionnaire['index']}_{question['index']}_answer_mapping_label"] = mapping['label']
+                                row[f"q_{questionnaire['index']}_{question['index']}_answer_mapping_value"] = mapping['value']
 
-                        row[f"q_{questionnaire['index']}_time_elapsed"] = round(timestamps_elapsed, 2) if timestamps_elapsed is not None else None
-                        row[f"q_{questionnaire['index']}_accesses"] = accesses
+                            row[f"q_{questionnaire['index']}_time_elapsed"] = round(timestamps_elapsed, 2) if timestamps_elapsed is not None else None
+                            row[f"q_{questionnaire['index']}_accesses"] = accesses
 
-                if ('time_submit') in row:
-                    dataframe = dataframe.append(row, ignore_index=True)
+                    if ('time_submit') in row:
+                        dataframe = dataframe.append(row, ignore_index=True)
 
     empty_cols = [col for col in dataframe.columns if dataframe[col].isnull().all()]
     dataframe.drop(empty_cols, axis=1, inplace=True)
