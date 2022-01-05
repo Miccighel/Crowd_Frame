@@ -88,6 +88,7 @@ def load_column_names(task, ip, uag, questionnaires, dimensions, documents):
 
     for attribute in task.keys():
         columns.append(attribute)
+    columns.append("try_current")
     columns.append("time_submit")
 
     for questionnaire in questionnaires:
@@ -939,6 +940,8 @@ if not os.path.exists(df_data_path):
                     countdownsExpired = data_try['serialization']["countdowns_expired"]
                     info = data_try['serialization']["info"]
 
+                    row['try_current'] = info['try']
+
                     if info['element'] == 'all' and info['action'] == 'Finish':
 
                         for check_data in checks:
@@ -1066,8 +1069,6 @@ if not os.path.exists(df_data_path):
 
                 row = {}
                 row['worker_id'] = worker_id
-                row['try_last'] = 0
-                row['paid'] = False
 
                 for attribute, value in task.items():
                     row[attribute] = value
@@ -1080,7 +1081,16 @@ if not os.path.exists(df_data_path):
 
                 for document_data in data_partial['documents_answers']:
 
+                    row['try_current'] = document_data['serialization']['info']['try']
+
                     row['time_submit'] = document_data['time_submit']
+
+                    for check_data in checks:
+                        if int(check_data['serialization']['info']['try']) == int(document_data['serialization']['info']['try']):
+                            row["global_form_validity"] = check_data['serialization']["checks"]["globalFormValidity"]
+                            row["gold_checks"] = any(check_data['serialization']["checks"]["goldChecks"])
+                            row["time_check_amount"] = check_data['serialization']["checks"]["timeCheckAmount"]
+                            row["time_spent_check"] = check_data['serialization']["checks"]["timeSpentCheck"]
 
                     row["doc_accesses"] = document_data['serialization']['accesses']
 
@@ -1089,11 +1099,6 @@ if not os.path.exists(df_data_path):
                     row["doc_countdown_time_text"] = document_data['serialization']['countdowns_times_left']['text'] if len(document_data['serialization']['countdowns_times_left']) > 0 else np.nan
                     row["doc_countdown_time_expired"] = document_data['serialization']["countdowns_expired"][document_data['serialization']['info']['index']] if len(
                         document_data['serialization']["countdowns_expired"]) > 0 else np.nan
-
-                    row["global_form_validity"] = False
-                    row["gold_checks"] = False
-                    row["time_check_amount"] = False
-                    row["time_spent_check"] = False
 
                     current_attributes = documents[document_data['serialization']['info']['index']].keys()
                     current_answers = document_data['serialization']['answers']
