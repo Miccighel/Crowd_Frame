@@ -1711,7 +1711,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     folder_build_result = f"../dist/"
 
-    command = "ng build --configuration=\"production\" --output-hashing=none"
+    command = "yarn run build --configuration=\"production\" --output-hashing=none"
     console.print(f"[green on black]{command}")
     process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
     for line in process.stdout:
