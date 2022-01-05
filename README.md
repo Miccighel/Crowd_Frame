@@ -115,7 +115,7 @@ issues](https://badgen.net/github/issues/Miccighel/Crowd_Frame/)](https://GitHub
      deploy_config=true
      ````
 
-14. Install python packages with `pip install package_name`:
+14. Install python packages with `pip install -r your_repo_folder/requirements.txt`:
 
   ````
   boto3==1.18.21
