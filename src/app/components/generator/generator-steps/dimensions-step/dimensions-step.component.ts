@@ -189,7 +189,7 @@ export class DimensionsStepComponent implements OnInit {
             }
         }
         this.dimensions().push(this._formBuilder.group({
-            name: name,
+            name: [name, [Validators.pattern('[a-zA-Z0-9-]*')]],
             name_pretty: name_pretty,
             description: description,
             gold: gold,
