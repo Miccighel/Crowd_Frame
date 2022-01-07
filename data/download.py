@@ -169,7 +169,7 @@ folder_result_path = f"result/{task_name}/"
 os.makedirs(folder_result_path, exist_ok=True)
 
 boto_session = boto3.Session(profile_name='mturk-user')
-mturk = boto_session.client('mturk', region_name='us-east-1')
+mturk = boto_session.client('mturk', region_name='us-east-1', endpoint_url='https://mturk-requester-sandbox.us-east-1.amazonaws.com')
 boto_session = boto3.Session(profile_name='config-user')
 s3 = boto_session.client('s3', region_name=aws_region)
 s3_resource = boto_session.resource('s3')
