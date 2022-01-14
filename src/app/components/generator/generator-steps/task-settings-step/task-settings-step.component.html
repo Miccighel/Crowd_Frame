@@ -15,7 +15,7 @@
                     <td class="p-0">
                         <mat-form-field matLine class="width-100" [hideRequiredMarker]="formStep.get('modality').valid" appearance="fill">
                             <mat-label>Modality</mat-label>
-                            <mat-select matInput formControlName="modality" required>
+                            <mat-select matInput formControlName="modality" required (selectionChange)="emitModality($event)">
                                 <mat-option *ngFor="let modalityType of modalityTypes" [value]="modalityType.value">
                                     {{modalityType.viewValue}}
                                 </mat-option>

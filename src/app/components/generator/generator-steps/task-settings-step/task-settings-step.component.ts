@@ -77,6 +77,7 @@ export class TaskSettingsStepComponent implements OnInit {
     configurationSerialized: string
 
     @Output() formEmitter: EventEmitter<FormGroup>;
+    @Output() modalityEmitter: EventEmitter<string>;
 
     constructor(
         localStorageService: LocalStorageService,
@@ -118,6 +119,7 @@ export class TaskSettingsStepComponent implements OnInit {
         /* Read mode during hits file upload*/
         this.readMode = ReadMode.text
         this.formEmitter = new EventEmitter<FormGroup>();
+        this.modalityEmitter = new EventEmitter<string>();
     }
 
     public async ngOnInit() {
@@ -164,6 +166,7 @@ export class TaskSettingsStepComponent implements OnInit {
             logOption: this.dataStored.log_option,
             serverEndpoint: this.dataStored.log_server_endpoint
         });
+        if(this.dataStored.modality) this.emitModality(this.dataStored.modality)
         if (this.dataStored.messages) if (this.dataStored.messages.length > 0) this.dataStored.messages.forEach((message, messageIndex) => this.addMessage(message))
         if (this.dataStored.annotator) if (this.dataStored.annotator.type == "options") this.dataStored.annotator.values.forEach((optionValue, optionValueIndex) => this.addOptionValue(optionValue))
         if (this.dataStored.countdown_time >= 0) {
@@ -206,6 +209,10 @@ export class TaskSettingsStepComponent implements OnInit {
             this.localStorageService.setItem(`hits`, JSON.stringify(hits))
             this.updateHitsFile(hits)
         }
+    }
+
+    emitModality(data) {
+        this.modalityEmitter.emit(data['value'])
     }
 
     updateLogOption(el: string, action: string) {

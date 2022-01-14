@@ -1,5 +1,5 @@
 /* Core modules */
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, ViewChild} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, ViewChild} from '@angular/core';
 /* Reactive forms modules */
 import {FormBuilder, FormControl, FormGroup} from '@angular/forms';
 /* Material design modules */
@@ -64,6 +64,7 @@ export class GeneratorComponent {
     /* STEP #6 - Task Settings */
     @ViewChild(TaskSettingsStepComponent) taskSettingsStep: TaskSettingsStepComponent;
     taskSettingsStepForm: FormGroup
+    @Input() taskModality: string
 
     /* STEP #7 - Worker Checks */
 
@@ -327,6 +328,10 @@ export class GeneratorComponent {
 
     public storeWorkerChecksForm(data: FormGroup) {
         this.workerChecksStepForm = data
+    }
+
+    public storeTaskModality(data: string) {
+        this.taskModality = data
     }
 
     /* |--------- OTHER AMENITIES ---------| */

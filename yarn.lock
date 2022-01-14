@@ -1661,18 +1661,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@kolkov/angular-editor@npm:^1.2.0":
-  version: 1.2.0
-  resolution: "@kolkov/angular-editor@npm:1.2.0"
+"@kolkov/angular-editor@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "@kolkov/angular-editor@npm:2.0.0"
   dependencies:
-    tslib: ^2.0.0
+    tslib: ^2.3.0
   peerDependencies:
-    "@angular/common": ">=8.0.0 <13"
-    "@angular/core": ">=8.0.0 <13"
-    "@angular/forms": ">=8.0.0 <13"
-    "@angular/platform-browser": ">=8.0.0 <13"
-    rxjs: ^6.x.x
-  checksum: a6bb5a2a9ac23e9828b4a9ad23d5e89c95c46a6838dc70f35e58c905a67ff693632a14376aed66d1174bfcfd7540fa884a616c407ff5cd1d2429620a9ef1bb4b
+    "@angular/common": ">=13 <14"
+    "@angular/core": ">=13 <14"
+  checksum: 545edab3f9f31ac07254a29384c9d20914a9246c3f56503f445a4efe54a91dcddd2d1b5545747552763a100c039da221c5060f83b05f45e13e1345ed74c34210
   languageName: node
   linkType: hard
 
@@ -1858,10 +1855,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:~16.11.15":
-  version: 16.11.15
-  resolution: "@types/node@npm:16.11.15"
-  checksum: 30969f1c43d85ee645f1ff28640d25b8b7748bbd3cb31aeebc2799fa9f7aa580782430309496c82983a92009afe52e46b50b9b996cea697f62e93f27eb8f5eb5
+"@types/node@npm:~16.11.19":
+  version: 16.11.19
+  resolution: "@types/node@npm:16.11.19"
+  checksum: a9ba0cd1e61c8ad50f3fc9c2b37b795bf0286dacb39dcc985da90328abf0c5151dffe9932d20bc9a6a52c3ce7bfc1e5a7c2dc1416480fb84f1c2d70e25caeba0
   languageName: node
   linkType: hard
 
@@ -2354,9 +2351,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"aws-sdk@npm:^2.1048.0":
-  version: 2.1048.0
-  resolution: "aws-sdk@npm:2.1048.0"
+"aws-sdk@npm:^2.1057.0":
+  version: 2.1057.0
+  resolution: "aws-sdk@npm:2.1057.0"
   dependencies:
     buffer: 4.9.2
     events: 1.1.1
@@ -2367,7 +2364,7 @@ __metadata:
     url: 0.10.3
     uuid: 3.3.2
     xml2js: 0.4.19
-  checksum: 4c9b56b52b1530628f7fa4dd2e0ec9104d9a6fc7b8d9adc4441c7fbae5e8e1922718fe41c79b6cf65842c2f2d342c1db11b283bfe9cf1eff021cd8ea458c9817
+  checksum: 6eb7dc9181b9449cff3fe7dc7f8f77a260afbb698764aea72807a8b6bee12772eeeb0b8eeb977d66b7bc02103c0f893bb2188ab78532251d8285ff94221b3b45
   languageName: node
   linkType: hard
 
@@ -3064,9 +3061,9 @@ __metadata:
     "@angular/platform-browser-dynamic": ~13.1.2
     "@angular/router": ~13.1.2
     "@funktechno/texthighlighter": ^2.1.2
-    "@kolkov/angular-editor": ^1.2.0
-    "@types/node": ~16.11.15
-    aws-sdk: ^2.1048.0
+    "@kolkov/angular-editor": ^2.0.0
+    "@types/node": ~16.11.19
+    aws-sdk: ^2.1057.0
     crypto-es: ^1.2.7
     ngx-color-picker: ^11.0.0
     ngx-countdown: ^12.0.1

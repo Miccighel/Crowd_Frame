@@ -1,4 +1,4 @@
-import {Component, EventEmitter, OnInit, Output} from '@angular/core';
+import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {S3Service} from 'src/app/services/s3.service';
 import {ConfigService} from "../../../../services/config.service";
 import {LocalStorageService} from "../../../../services/localStorage.service";
@@ -75,6 +75,16 @@ export class DimensionsStepComponent implements OnInit {
 
     configurationSerialized: string
 
+    taskModality: string
+    @Input() set modality(value: string) {
+        this.taskModality = value;
+        if(this.taskModality!='pairwise') {
+            for (let dimension of this.dimensions().controls) {
+                dimension.get('pairwise').setValue(false)
+            }
+        }
+    }
+
     @Output() formEmitter: EventEmitter<FormGroup>;
 
     constructor(
@@ -134,11 +144,12 @@ export class DimensionsStepComponent implements OnInit {
     }
 
     addDimension(dimensionIndex = null, dimension = null as Dimension) {
-        let name, name_pretty, description, gold, setJustification, justification, url, setScale, scale, setStyle, style;
+        let name, name_pretty, description, gold, pairwise, setJustification, justification, url, setScale, scale, setStyle, style;
         name = dimension ? dimension.name ? dimension.name : '' : '';
         name_pretty = dimension ? dimension.name_pretty ? dimension.name_pretty : '' : '';
         description = dimension ? dimension.description ? dimension.description : '' : '';
         gold = dimension ? dimension.gold ? dimension.gold : false : false
+        pairwise = dimension ? dimension.pairwise ? dimension.pairwise : false : false
         setJustification = dimension ? dimension.justification ? dimension.justification : false : false;
         justification = this._formBuilder.group({text: '', min_words: ''})
         if (dimension) {
@@ -193,6 +204,7 @@ export class DimensionsStepComponent implements OnInit {
             name_pretty: name_pretty,
             description: description,
             gold: gold,
+            pairwise: pairwise,
             setJustification: setJustification,
             justification: justification,
             url: url,

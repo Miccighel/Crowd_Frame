@@ -1335,6 +1335,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 "name": "sample-dimension",
                 "name_pretty": "Sample Dimension",
                 "description": "Lorem ipsum dolor sit amet",
+                "gold": False,
+                "pairwise": False,
                 "url": False,
                 "justification": False,
                 "scale": {
