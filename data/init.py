@@ -1288,6 +1288,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                     "type": "standard",
                     "description": "This is a standard questionnaire",
                     "position": "start",
+                    "allow_back": False,
                     "questions": [
                         {
                             "name": "age",
@@ -1312,6 +1313,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                     "type": "crt",
                     "description": "This is a CRT questionnaire",
                     "position": "start",
+                    "allow_back": False,
                     "questions": [
                         {
                             "name": "farmers",

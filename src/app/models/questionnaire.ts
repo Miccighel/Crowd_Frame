@@ -6,7 +6,7 @@ export class Questionnaire {
 
     type: string;
     description?: string;
-    allowBack?: boolean;
+    allow_back?: boolean;
     position?: string;
     questions: Array<Question>;
     mappings: Array<Mapping>;
@@ -20,7 +20,7 @@ export class Questionnaire {
 
         this.description = data['description'] ? data["description"] : null;
         this.position = data['position'] ? data["position"] : null;
-        this.allowBack = data['allow_back'] ? data["allow_back"] : false;
+        this.allow_back = data['allow_back'] ? data["allow_back"] : false;
         this.type = data["type"];
         this.questions = new Array<Question>();
         for (let index = 0; index < data["questions"].length; index++) this.questions.push(new Question(index, data["questions"][index]))
