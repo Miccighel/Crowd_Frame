@@ -81,7 +81,6 @@ export class QuestionnaireStepComponent implements OnInit {
                 this.dataStored.push(JSON.parse(item))
             })
         } else {
-            console.log(this.configService.environment)
             this.initializeControls()
             let rawQuestionnaires = await this.S3Service.downloadQuestionnaires(this.configService.environment)
             rawQuestionnaires.forEach((data, index) => {
