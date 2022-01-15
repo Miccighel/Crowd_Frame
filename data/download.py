@@ -309,8 +309,6 @@ console.print(f"HITs data available at path: [cyan on white]{hit_data_path}")
 
 console.rule("2 - Fetching task configuration")
 
-hit_df = pd.read_csv(hit_data_path)
-
 prefix = f"{task_name}/"
 task_config_folder = f"{folder_result_path}/Task/"
 for current_batch_name in task_batch_names:
