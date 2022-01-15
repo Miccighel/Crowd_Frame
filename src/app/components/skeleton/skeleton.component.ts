@@ -16,7 +16,6 @@ import {CountdownComponent} from 'ngx-countdown';
 import {NgxUiLoaderService} from 'ngx-ui-loader';
 import {ConfigService} from "../../services/config.service";
 import {S3Service} from "../../services/s3.service";
-import {HitsSolverService} from "src/app/services/hits-solver.service";
 import {DeviceDetectorService} from "ngx-device-detector";
 /* Task models */
 import {Document} from "../../../../data/build/skeleton/document";
@@ -69,9 +68,6 @@ export class SkeletonComponent implements OnInit {
     configService: ConfigService;
     /* Service which wraps the interaction with S3 */
     S3Service: S3Service;
-    /* Service which wraps the interaction with the Hits solver*/
-    HitsSolverService: HitsSolverService;
-
     dynamoDBService: DynamoDBService;
     /* Service to detect user's device */
     deviceDetectorService: DeviceDetectorService;
@@ -268,7 +264,6 @@ export class SkeletonComponent implements OnInit {
         ngxService: NgxUiLoaderService,
         configService: ConfigService,
         S3Service: S3Service,
-        HitsSolverService: HitsSolverService,
         dynamoDBService: DynamoDBService,
         deviceDetectorService: DeviceDetectorService,
         client: HttpClient,
@@ -283,7 +278,6 @@ export class SkeletonComponent implements OnInit {
         this.ngxService = ngxService;
         this.configService = configService;
         this.S3Service = S3Service;
-        this.HitsSolverService = HitsSolverService;
         this.dynamoDBService = dynamoDBService;
 
         this.actionLogger = actionLogger
@@ -575,164 +569,153 @@ export class SkeletonComponent implements OnInit {
         return {"invalid": "This token is not valid."}
     }
 
-    
-    /**
-     * This function uses the HitSolver service to check if the solution for the hit is ready.
-     * If the solution isn't ready the function waits for two seconds and then send a new request
-     * to the HitSolver. This process continue until a solution is available.
-     * When a solution is available, then, a new hit is created in the original format of the
-     * framework. At the end the taskSetup function is launched that continues the setup of all other
-     * stuff.
-     * @param url 
-     * @param task_id 
-     * @param docs 
-     */
-     public checkHitStatus(url: string, task_id: string, docs: Array<JSON>){
-        this.HitsSolverService.checkSolutionStatus(url).subscribe(response => {
-            if(response['finished'] == false){
-                /* Wait two seconds to repull the solution from the solver */
-                setTimeout(() => {}, 2000);
-                this.checkHitStatus(url, task_id, docs);
-            }else{
-                this.HitsSolverService.getSolution(task_id).subscribe(response => {
-                    console.log(response)
-                    let receivedHit = this.HitsSolverService.createHit(response, docs);
-                    this.hit = {
-                        unit_id: receivedHit.unit_id,
-                        token_input: receivedHit.token_input,
-                        token_output: receivedHit.token_output,
-                        documents_number: receivedHit.documents_number,
-                        documents: receivedHit.documents
-                    }
-                    console.log(receivedHit)
-                    this.taskSetup();
-                })
-            }
-        });
-    }
-
     /*
     *  This function retrieves the hit identified by the validated token input inserted by the current worker and sets the task up accordingly.
     *  Such hit is represented by an Hit object. The task is set up by parsing the hit content as an Array of Document objects.
     *  Therefore, to use a customize the task the Document interface must be adapted to correctly parse each document's field.
     *  The Document interface can be found at this path: ../../../../data/build/task/document.ts
     */
-    public async taskSetup() {
+    public async performTaskSetup() {
 
-        this.tokenInput.disable();
-        this.sectionService.taskStarted = true;
+        /* The token input has been already validated, this is just to be sure */
+        if (this.tokenForm.valid) {
 
-        this.documentsAmount = this.hit.documents.length;
+            /* The loading spinner is started */
+            this.ngxService.start();
 
-        /* The array of documents is initialized */
-        this.documents = new Array<Document>();
+            /* |--------- HIT ELEMENTS (see: hit.json) ---------| */
 
-        /* A form for each document is initialized */
-        this.documentsForm = new Array<FormGroup>();
+            /* The hits stored on Amazon S3 are retrieved */
+            let hits = await this.S3Service.downloadHits(this.configService.environment)
 
-        /*  Each document of the current hit is parsed using the Document interface.  */
-        let rawDocuments = this.hit.documents;
-        for (let index = 0; index < rawDocuments.length; index++) {
-            let currentDocument = rawDocuments[index];
-            this.documents.push(new Document(index, currentDocument));
-        }
+            /* Scan each entry for the token input */
+            for (let currentHit of hits) {
+                /* If the token input of the current hit matches with the one inserted by the worker the right hit has been found */
+                if (this.tokenInput.value === currentHit.token_input) {
+                    this.hit = currentHit;
+                    this.tokenOutput = currentHit.token_output;
+                    this.unitId = currentHit.unit_id
+                    if (this.logger)
+                        this.actionLogger.unitId = this.unitId
+                }
+            }
 
-        /* |--------- QUESTIONNAIRE ELEMENTS (see: questionnaires.json) ---------| */
+            /* The token input field is disabled and the task interface can be shown */
+            this.tokenInput.disable();
+            this.sectionService.taskStarted = true;
 
-        /* The array of questionnaires is initialized */
-        this.questionnaires = new Array<Questionnaire>();
+            this.documentsAmount = this.hit.documents.length;
 
-        /* The questionnaires stored on Amazon S3 are retrieved */
-        let rawQuestionnaires = await this.S3Service.downloadQuestionnaires(this.configService.environment)
+            /* The array of documents is initialized */
+            this.documents = new Array<Document>();
 
-        this.questionnaireAmount = rawQuestionnaires.length;
-        this.questionnaireAmountStart = 0;
-        this.questionnaireAmountEnd = 0;
+            /* A form for each document is initialized */
+            this.documentsForm = new Array<FormGroup>();
 
-        /* Each questionnaire is parsed using the Questionnaire class */
-        for (let index = 0; index < this.questionnaireAmount; index++) {
-            let questionnaire = new Questionnaire(index, rawQuestionnaires[index])
-            this.questionnaires.push(questionnaire);
-            if (questionnaire.position == "start" || questionnaire.position == null) this.questionnaireAmountStart = this.questionnaireAmountStart + 1
-            if (questionnaire.position == "end") this.questionnaireAmountEnd = this.questionnaireAmountEnd + 1
-        }
+            /*  Each document of the current hit is parsed using the Document interface.  */
+            let rawDocuments = this.hit.documents;
+            for (let index = 0; index < rawDocuments.length; index++) {
+                let currentDocument = rawDocuments[index];
+                this.documents.push(new Document(index, currentDocument));
+            }
 
-        /* A form for each questionnaire is initialized */
-        this.questionnairesForm = new Array<FormGroup>();
-        for (let index = 0; index < this.questionnaires.length; index++) {
-            let questionnaire = this.questionnaires[index];
-            if (questionnaire.type == "standard" || questionnaire.type == "likert") {
-                let controlsConfig = {};
-                for (let indexQuestion = 0; indexQuestion < questionnaire.questions.length; indexQuestion++) {
-                    let currentQuestion = this.questionnaires[index].questions[indexQuestion]
-                    if (currentQuestion.type != 'section') {
-                        let controlName = `${currentQuestion.name}`
-                        let validators = []
-                        if (currentQuestion.required) validators = [Validators.required]
-                        if (currentQuestion.type == 'number') validators.concat([Validators.min(0), Validators.max(100)])
-                        if (currentQuestion.type == 'email') validators.push(Validators.email)
-                        controlsConfig[`${controlName}_answer`] = new FormControl('', validators)
-                        if (currentQuestion.freeText) controlsConfig[`${controlName}_free_text`] = new FormControl('')
-                    }
-                    if (currentQuestion.questions) {
-                        for (let indexQuestionSub = 0; indexQuestionSub < currentQuestion.questions.length; indexQuestionSub++) {
-                            let currentQuestionSub = currentQuestion.questions[indexQuestionSub]
-                            if (currentQuestionSub.type != 'section') {
-                                let controlNameSub = `${currentQuestion.nameFull}_${currentQuestionSub.name}`
-                                let validators = []
-                                if (currentQuestionSub.required) validators = [Validators.required]
-                                if (currentQuestionSub.type == 'number') validators.concat([Validators.min(0), Validators.max(100)])
-                                if (currentQuestionSub.type == 'email') validators.push(Validators.email)
-                                controlsConfig[`${controlNameSub}_answer`] = new FormControl('', validators)
-                                if (currentQuestionSub.freeText) controlsConfig[`${controlNameSub}_free_text`] = new FormControl('')
-                            }
-                            if (currentQuestionSub.questions) {
-                                for (let indexQuestionSubSub = 0; indexQuestionSubSub < currentQuestionSub.questions.length; indexQuestionSubSub++) {
-                                    let currentQuestionSubSub = currentQuestionSub.questions[indexQuestionSubSub]
-                                    if (currentQuestionSubSub.type != 'section') {
-                                        let controlNameSubSub = `${currentQuestionSub.nameFull}_${currentQuestionSubSub.name}`
-                                        let validators = []
-                                        if (currentQuestionSubSub.required) validators = [Validators.required]
-                                        if (currentQuestionSubSub.type == 'number') validators.concat([Validators.min(0), Validators.max(100)])
-                                        if (currentQuestionSubSub.type == 'email') validators.push(Validators.email)
-                                        controlsConfig[`${controlNameSubSub}_answer`] = new FormControl('', validators)
-                                        if (currentQuestionSubSub.freeText) controlsConfig[`${controlNameSubSub}_free_text`] = new FormControl('')
-                                    }
-                                    if (currentQuestionSubSub.questions) {
-                                        for (let indexQuestionSubSubSub = 0; indexQuestionSubSubSub < currentQuestionSubSub.questions.length; indexQuestionSubSubSub++) {
-                                            let currentQuestionSubSubSub = currentQuestionSubSub.questions[indexQuestionSubSubSub]
-                                            if (currentQuestionSubSubSub.type != 'section') {
-                                                let controlNameSubSubSub = `${currentQuestionSubSub.nameFull}_${currentQuestionSubSubSub.name}`
-                                                let validators = []
-                                                if (currentQuestionSubSubSub.required) validators = [Validators.required]
-                                                if (currentQuestionSubSubSub.type == 'number') validators.concat([Validators.min(0), Validators.max(100)])
-                                                if (currentQuestionSubSubSub.type == 'email') validators.push(Validators.email)
-                                                controlsConfig[`${controlNameSubSubSub}_answer`] = new FormControl('', validators)
-                                                if (currentQuestionSubSubSub.freeText) controlsConfig[`${controlNameSubSubSub}_free_text`] = new FormControl('')
-                                            }
-                                            if (currentQuestionSubSubSub.questions) {
-                                                for (let indexQuestionSubSubSubSub = 0; indexQuestionSubSubSubSub < currentQuestionSubSubSub.questions.length; indexQuestionSubSubSubSub++) {
-                                                    let currentQuestionSubSubSubSub = currentQuestionSubSubSub.questions[indexQuestionSubSubSubSub]
-                                                    if (currentQuestionSubSubSubSub.type != 'section') {
-                                                        let controlNameSubSubSubSub = `${currentQuestionSubSubSub.nameFull}_${currentQuestionSubSubSubSub.name}`
-                                                        let validators = []
-                                                        if (currentQuestionSubSubSubSub.required) validators = [Validators.required]
-                                                        if (currentQuestionSubSubSubSub.type == 'number') validators.concat([Validators.min(0), Validators.max(100)])
-                                                        if (currentQuestionSubSubSubSub.type == 'email') validators.push(Validators.email)
-                                                        controlsConfig[`${controlNameSubSubSubSub}_answer`] = new FormControl('', validators)
-                                                        if (currentQuestionSubSubSubSub.freeText) controlsConfig[`${controlNameSubSubSubSub}_free_text`] = new FormControl('')
-                                                    }
-                                                    if (currentQuestionSubSubSubSub.questions) {
-                                                        for (let indexQuestionSubSubSubSubSub = 0; indexQuestionSubSubSubSubSub < currentQuestionSubSubSubSub.questions.length; indexQuestionSubSubSubSubSub++) {
-                                                            let currentQuestionSubSubSubSubSub = currentQuestionSubSubSubSub.questions[indexQuestionSubSubSubSubSub]
-                                                            if (currentQuestionSubSubSubSubSub.type != 'section') {
-                                                                let controlNameSubSubSubSubSub = `${currentQuestionSubSubSubSub.nameFull}_${currentQuestionSubSubSubSubSub.name}`
-                                                                let validators = []
-                                                                if (currentQuestionSubSubSubSubSub.required) validators = [Validators.required]
-                                                                if (currentQuestionSubSubSubSubSub.type == 'number') validators.concat([Validators.min(0), Validators.max(100)])
-                                                                if (currentQuestionSubSubSubSubSub.type == 'email') validators.push(Validators.email)
-                                                                controlsConfig[`${controlNameSubSubSubSubSub}_answer`] = new FormControl('', validators)
-                                                                if (currentQuestionSubSubSubSubSub.freeText) controlsConfig[`${controlNameSubSubSubSubSub}_free_text`] = new FormControl('')
+            /* |--------- QUESTIONNAIRE ELEMENTS (see: questionnaires.json) ---------| */
+
+            /* The array of questionnaires is initialized */
+            this.questionnaires = new Array<Questionnaire>();
+
+            /* The questionnaires stored on Amazon S3 are retrieved */
+            let rawQuestionnaires = await this.S3Service.downloadQuestionnaires(this.configService.environment)
+
+            this.questionnaireAmount = rawQuestionnaires.length;
+            this.questionnaireAmountStart = 0;
+            this.questionnaireAmountEnd = 0;
+
+            /* Each questionnaire is parsed using the Questionnaire class */
+            for (let index = 0; index < this.questionnaireAmount; index++) {
+                let questionnaire = new Questionnaire(index, rawQuestionnaires[index])
+                this.questionnaires.push(questionnaire);
+                if (questionnaire.position == "start" || questionnaire.position == null) this.questionnaireAmountStart = this.questionnaireAmountStart + 1
+                if (questionnaire.position == "end") this.questionnaireAmountEnd = this.questionnaireAmountEnd + 1
+            }
+
+            /* A form for each questionnaire is initialized */
+            this.questionnairesForm = new Array<FormGroup>();
+            for (let index = 0; index < this.questionnaires.length; index++) {
+                let questionnaire = this.questionnaires[index];
+                if (questionnaire.type == "standard" || questionnaire.type == "likert") {
+                    let controlsConfig = {};
+                    for (let indexQuestion = 0; indexQuestion < questionnaire.questions.length; indexQuestion++) {
+                        let currentQuestion = this.questionnaires[index].questions[indexQuestion]
+                        if (currentQuestion.type != 'section') {
+                            let controlName = `${currentQuestion.name}`
+                            let validators = []
+                            if (currentQuestion.required) validators = [Validators.required]
+                            if (currentQuestion.type == 'number') validators.concat([Validators.min(0), Validators.max(100)])
+                            if (currentQuestion.type == 'email') validators.push(Validators.email)
+                            controlsConfig[`${controlName}_answer`] = new FormControl('', validators)
+                            if (currentQuestion.freeText) controlsConfig[`${controlName}_free_text`] = new FormControl('')
+                        }
+                        if (currentQuestion.questions) {
+                            for (let indexQuestionSub = 0; indexQuestionSub < currentQuestion.questions.length; indexQuestionSub++) {
+                                let currentQuestionSub = currentQuestion.questions[indexQuestionSub]
+                                if (currentQuestionSub.type != 'section') {
+                                    let controlNameSub = `${currentQuestion.nameFull}_${currentQuestionSub.name}`
+                                    let validators = []
+                                    if (currentQuestionSub.required) validators = [Validators.required]
+                                    if (currentQuestionSub.type == 'number') validators.concat([Validators.min(0), Validators.max(100)])
+                                    if (currentQuestionSub.type == 'email') validators.push(Validators.email)
+                                    controlsConfig[`${controlNameSub}_answer`] = new FormControl('', validators)
+                                    if (currentQuestionSub.freeText) controlsConfig[`${controlNameSub}_free_text`] = new FormControl('')
+                                }
+                                if (currentQuestionSub.questions) {
+                                    for (let indexQuestionSubSub = 0; indexQuestionSubSub < currentQuestionSub.questions.length; indexQuestionSubSub++) {
+                                        let currentQuestionSubSub = currentQuestionSub.questions[indexQuestionSubSub]
+                                        if (currentQuestionSubSub.type != 'section') {
+                                            let controlNameSubSub = `${currentQuestionSub.nameFull}_${currentQuestionSubSub.name}`
+                                            let validators = []
+                                            if (currentQuestionSubSub.required) validators = [Validators.required]
+                                            if (currentQuestionSubSub.type == 'number') validators.concat([Validators.min(0), Validators.max(100)])
+                                            if (currentQuestionSubSub.type == 'email') validators.push(Validators.email)
+                                            controlsConfig[`${controlNameSubSub}_answer`] = new FormControl('', validators)
+                                            if (currentQuestionSubSub.freeText) controlsConfig[`${controlNameSubSub}_free_text`] = new FormControl('')
+                                        }
+                                        if (currentQuestionSubSub.questions) {
+                                            for (let indexQuestionSubSubSub = 0; indexQuestionSubSubSub < currentQuestionSubSub.questions.length; indexQuestionSubSubSub++) {
+                                                let currentQuestionSubSubSub = currentQuestionSubSub.questions[indexQuestionSubSubSub]
+                                                if (currentQuestionSubSubSub.type != 'section') {
+                                                    let controlNameSubSubSub = `${currentQuestionSubSub.nameFull}_${currentQuestionSubSubSub.name}`
+                                                    let validators = []
+                                                    if (currentQuestionSubSubSub.required) validators = [Validators.required]
+                                                    if (currentQuestionSubSubSub.type == 'number') validators.concat([Validators.min(0), Validators.max(100)])
+                                                    if (currentQuestionSubSubSub.type == 'email') validators.push(Validators.email)
+                                                    controlsConfig[`${controlNameSubSubSub}_answer`] = new FormControl('', validators)
+                                                    if (currentQuestionSubSubSub.freeText) controlsConfig[`${controlNameSubSubSub}_free_text`] = new FormControl('')
+                                                }
+                                                if (currentQuestionSubSubSub.questions) {
+                                                    for (let indexQuestionSubSubSubSub = 0; indexQuestionSubSubSubSub < currentQuestionSubSubSub.questions.length; indexQuestionSubSubSubSub++) {
+                                                        let currentQuestionSubSubSubSub = currentQuestionSubSubSub.questions[indexQuestionSubSubSubSub]
+                                                        if (currentQuestionSubSubSubSub.type != 'section') {
+                                                            let controlNameSubSubSubSub = `${currentQuestionSubSubSub.nameFull}_${currentQuestionSubSubSubSub.name}`
+                                                            let validators = []
+                                                            if (currentQuestionSubSubSubSub.required) validators = [Validators.required]
+                                                            if (currentQuestionSubSubSubSub.type == 'number') validators.concat([Validators.min(0), Validators.max(100)])
+                                                            if (currentQuestionSubSubSubSub.type == 'email') validators.push(Validators.email)
+                                                            controlsConfig[`${controlNameSubSubSubSub}_answer`] = new FormControl('', validators)
+                                                            if (currentQuestionSubSubSubSub.freeText) controlsConfig[`${controlNameSubSubSubSub}_free_text`] = new FormControl('')
+                                                        }
+                                                        if (currentQuestionSubSubSubSub.questions) {
+                                                            for (let indexQuestionSubSubSubSubSub = 0; indexQuestionSubSubSubSubSub < currentQuestionSubSubSubSub.questions.length; indexQuestionSubSubSubSubSub++) {
+                                                                let currentQuestionSubSubSubSubSub = currentQuestionSubSubSubSub.questions[indexQuestionSubSubSubSubSub]
+                                                                if (currentQuestionSubSubSubSubSub.type != 'section') {
+                                                                    let controlNameSubSubSubSubSub = `${currentQuestionSubSubSubSub.nameFull}_${currentQuestionSubSubSubSubSub.name}`
+                                                                    let validators = []
+                                                                    if (currentQuestionSubSubSubSubSub.required) validators = [Validators.required]
+                                                                    if (currentQuestionSubSubSubSubSub.type == 'number') validators.concat([Validators.min(0), Validators.max(100)])
+                                                                    if (currentQuestionSubSubSubSubSub.type == 'email') validators.push(Validators.email)
+                                                                    controlsConfig[`${controlNameSubSubSubSubSub}_answer`] = new FormControl('', validators)
+                                                                    if (currentQuestionSubSubSubSubSub.freeText) controlsConfig[`${controlNameSubSubSubSubSub}_free_text`] = new FormControl('')
+                                                                }
                                                             }
                                                         }
                                                     }
@@ -744,242 +727,205 @@ export class SkeletonComponent implements OnInit {
                             }
                         }
                     }
+                    this.questionnairesForm[index] = this.formBuilder.group(controlsConfig)
+                } else {
+                    /* If the questionnaire is a CRT one it means that it has only one question where the answer must be a number between 0 and 100 chosen by user; required, max and min validators are needed */
+                    let controlsConfig = {};
+                    for (let index_question = 0; index_question < questionnaire.questions.length; index_question++) controlsConfig[`${this.questionnaires[index].questions[index_question].name}`] = new FormControl('', [Validators.max(100), Validators.min(0), Validators.required])
+                    this.questionnairesForm[index] = this.formBuilder.group(controlsConfig)
                 }
-                this.questionnairesForm[index] = this.formBuilder.group(controlsConfig)
-            } else {
-                /* If the questionnaire is a CRT one it means that it has only one question where the answer must be a number between 0 and 100 chosen by user; required, max and min validators are needed */
-                let controlsConfig = {};
-                for (let index_question = 0; index_question < questionnaire.questions.length; index_question++) controlsConfig[`${this.questionnaires[index].questions[index_question].name}`] = new FormControl('', [Validators.max(100), Validators.min(0), Validators.required])
-                this.questionnairesForm[index] = this.formBuilder.group(controlsConfig)
             }
-        }
 
-        /* |--------- INSTRUCTIONS DIMENSIONS (see: instructions_dimensions.json) ---------| */
+            /* |--------- INSTRUCTIONS DIMENSIONS (see: instructions_dimensions.json) ---------| */
 
-        /* The evaluation instructions stored on Amazon S3 are retrieved */
-        let rawInstructions = await this.S3Service.downloadEvaluationInstructions(this.configService.environment)
-        this.instructionsAmount = rawInstructions.length;
+            /* The evaluation instructions stored on Amazon S3 are retrieved */
+            let rawInstructions = await this.S3Service.downloadEvaluationInstructions(this.configService.environment)
+            this.instructionsAmount = rawInstructions.length;
 
-        /* The instructions are parsed using the Instruction class */
-        this.instructions = new Array<Instruction>();
-        for (let index = 0; index < this.instructionsAmount; index++) this.instructions.push(new Instruction(index, rawInstructions[index]));
+            /* The instructions are parsed using the Instruction class */
+            this.instructions = new Array<Instruction>();
+            for (let index = 0; index < this.instructionsAmount; index++) this.instructions.push(new Instruction(index, rawInstructions[index]));
 
-        /* |--------- DIMENSIONS ELEMENTS (see: dimensions.json) ---------| */
+            /* |--------- DIMENSIONS ELEMENTS (see: dimensions.json) ---------| */
 
-        /* The array of dimensions is initialized */
-        this.dimensions = new Array<Dimension>();
+            /* The array of dimensions is initialized */
+            this.dimensions = new Array<Dimension>();
 
-        /* The dimensions stored on Amazon S3 are retrieved */
-        let rawDimensions = await this.S3Service.downloadDimensions(this.configService.environment)
-        this.dimensionsAmount = rawDimensions.length;
-        /* Each dimension is parsed using the Dimension class */
-        for (let index = 0; index < this.dimensionsAmount; index++) this.dimensions.push(new Dimension(index, rawDimensions[index]));
-        /**Iniziliazziare il vettore degli statement */
-        this.dimensionValueinsert();
+            /* The dimensions stored on Amazon S3 are retrieved */
+            let rawDimensions = await this.S3Service.downloadDimensions(this.configService.environment)
+            this.dimensionsAmount = rawDimensions.length;
+            /* Each dimension is parsed using the Dimension class */
+            for (let index = 0; index < this.dimensionsAmount; index++) this.dimensions.push(new Dimension(index, rawDimensions[index]));
+            /**Iniziliazziare il vettore degli statement */
+            this.dimensionValueinsert();
 
-        for (let index = 0; index < this.documentsAmount; index++) {
-            let controlsConfig = {};
+            for (let index = 0; index < this.documentsAmount; index++) {
+                let controlsConfig = {};
 
-            if (this.settingsTask.modality == 'pairwise') {
-                if (this.documents[index] != undefined) {
-                    if (this.documents[index] != null) controlsConfig[`pairwise_value_selected`] = new FormControl('', [Validators.required]);
-                }
-                for (let index_dimension = 0; index_dimension < this.dimensions.length; index_dimension++) {
-                    let dimension = this.dimensions[index_dimension];
-                    if (dimension.scale) {
+                if (this.settingsTask.modality == 'pairwise') {
+                    if (this.documents[index] != undefined) {
+                        if (this.documents[index] != null) controlsConfig[`pairwise_value_selected`] = new FormControl('', [Validators.required]);
+                    }
+                    for (let index_dimension = 0; index_dimension < this.dimensions.length; index_dimension++) {
+                        let dimension = this.dimensions[index_dimension];
+                        if (dimension.scale) {
 
-                        for (let i = 0; i < this.documents[index]['statements'].length; i++) {
-                            if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value_${i}`] = new FormControl('', [Validators.required]);
-                            if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value_${i}`] = new FormControl('', [Validators.required]);
+                            for (let i = 0; i < this.documents[index]['statements'].length; i++) {
+                                if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value_${i}`] = new FormControl('', [Validators.required]);
+                                if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value_${i}`] = new FormControl('', [Validators.required]);
+                                if (dimension.scale.type == "magnitude_estimation") {
+                                    if ((<ScaleMagnitude>dimension.scale).lower_bound) {
+                                        controlsConfig[`${dimension.name}_value_${i}`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min), Validators.required]);
+                                    } else {
+                                        controlsConfig[`${dimension.name}_value_${i}`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min + 1), Validators.required]);
+                                    }
+                                }
+                                if (dimension.justification) controlsConfig[`${dimension.name}_justification_${i}`] = new FormControl('', [Validators.required, this.validateJustification.bind(this)])
+                            }
+                            if (dimension.url) controlsConfig[`${dimension.name}_url`] = new FormControl('', [Validators.required, this.validateSearchEngineUrl.bind(this)]);
+                        }
+                    }
+                } else {
+
+                    for (let index_dimension = 0; index_dimension < this.dimensions.length; index_dimension++) {
+                        let dimension = this.dimensions[index_dimension];
+                        if (dimension.scale) {
+                            if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.required]);
+                            if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value`] = new FormControl(((<ScaleInterval>dimension.scale).min), [Validators.required]);
                             if (dimension.scale.type == "magnitude_estimation") {
                                 if ((<ScaleMagnitude>dimension.scale).lower_bound) {
-                                    controlsConfig[`${dimension.name}_value_${i}`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min), Validators.required]);
+                                    controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min), Validators.required]);
                                 } else {
-                                    controlsConfig[`${dimension.name}_value_${i}`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min + 1), Validators.required]);
+                                    controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min + 1), Validators.required]);
                                 }
                             }
-                            if (dimension.justification) controlsConfig[`${dimension.name}_justification_${i}`] = new FormControl('', [Validators.required, this.validateJustification.bind(this)])
                         }
+                        if (dimension.justification) controlsConfig[`${dimension.name}_justification`] = new FormControl('', [Validators.required, this.validateJustification.bind(this)])
                         if (dimension.url) controlsConfig[`${dimension.name}_url`] = new FormControl('', [Validators.required, this.validateSearchEngineUrl.bind(this)]);
                     }
                 }
-            } else {
+                this.documentsForm[index] = this.formBuilder.group(controlsConfig)
+            }
 
-                for (let index_dimension = 0; index_dimension < this.dimensions.length; index_dimension++) {
-                    let dimension = this.dimensions[index_dimension];
-                    if (dimension.scale) {
-                        if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.required]);
-                        if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value`] = new FormControl(((<ScaleInterval>dimension.scale).min), [Validators.required]);
-                        if (dimension.scale.type == "magnitude_estimation") {
-                            if ((<ScaleMagnitude>dimension.scale).lower_bound) {
-                                controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min), Validators.required]);
-                            } else {
-                                controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min + 1), Validators.required]);
-                            }
-                        }
+            this.dimensionsSelectedValues = new Array<object>(this.documentsAmount);
+            for (let index = 0; index < this.dimensionsSelectedValues.length; index++) {
+                this.dimensionsSelectedValues[index] = {};
+                this.dimensionsSelectedValues[index]["data"] = [];
+                this.dimensionsSelectedValues[index]["amount"] = 0;
+            }
+
+            /* |--------- SEARCH ENGINE INTEGRATION (see: search_engine.json | https://github.com/Miccighel/CrowdXplorer) ---------| */
+
+            this.searchEngineQueries = new Array<object>(this.documentsAmount);
+            for (let index = 0; index < this.searchEngineQueries.length; index++) {
+                this.searchEngineQueries[index] = {};
+                this.searchEngineQueries[index]["data"] = [];
+                this.searchEngineQueries[index]["amount"] = 0;
+            }
+            this.currentQuery = 0;
+            this.searchEngineRetrievedResponses = new Array<object>(this.documentsAmount);
+            for (let index = 0; index < this.searchEngineRetrievedResponses.length; index++) {
+                this.searchEngineRetrievedResponses[index] = {};
+                this.searchEngineRetrievedResponses[index]["data"] = [];
+                this.searchEngineRetrievedResponses[index]["amount"] = 0;
+            }
+            this.searchEngineSelectedResponses = new Array<object>(this.documentsAmount);
+            for (let index = 0; index < this.searchEngineSelectedResponses.length; index++) {
+                this.searchEngineSelectedResponses[index] = {};
+                this.searchEngineSelectedResponses[index]["data"] = [];
+                this.searchEngineSelectedResponses[index]["amount"] = 0;
+            }
+
+            /* |--------- TASK SETTINGS (see task.json)---------| */
+
+            if (this.annotator) {
+                switch (this.annotator.type) {
+                    case "options":
+                        this.annotationOptions = this.formBuilder.group({
+                            label: new FormControl('')
+                        });
+                        this.notes = new Array<Array<NoteStandard>>(this.documentsAmount);
+                        for (let i = 0; i < this.notes.length; i++) this.notes[i] = [];
+                        break;
+                    case "laws":
+                        this.notes = new Array<Array<NoteLaws>>(this.documentsAmount);
+                        for (let i = 0; i < this.notes.length; i++) this.notes[i] = [];
+                }
+            }
+
+            this.annotationButtonsDisabled = new Array<boolean>();
+            for (let index = 0; index < this.documentsAmount; index++) {
+                this.annotationButtonsDisabled.push(true)
+            }
+
+            this.notesDone = [false, false, false, false, false]
+
+            /* |--------- COUNTDOWN ---------| */
+
+            this.countdownsExpired = new Array<boolean>(this.documentsAmount);
+            for (let index = 0; index < this.documentsAmount; index++) this.countdownsExpired[index] = false;
+
+            this.documentsCountdownTime = new Array<number>(this.documentsAmount);
+            for (let index = 0; index < this.documents.length; index++) {
+                let position = this.settingsTask.countdown_modality == 'position' ? this.documents[index]['index'] : null;
+                let attribute = this.settingsTask.countdown_modality == 'attribute' ? this.documents[index][this.settingsTask.countdown_attribute] : null;
+                this.documentsCountdownTime[index] = this.updateCountdownTime(position, attribute)
+            }
+
+            this.hideAttributes = false
+
+            /* |--------- QUALITY CHECKS ---------| */
+
+            this.goldDocuments = new Array<Document>();
+
+            /* Indexes of the gold elements are retrieved */
+            for (let index = 0; index < this.documentsAmount; index++) {
+                if ('id' in this.documents[index]) {
+                    if (this.documents[index]['id'].includes('GOLD')) {
+                        this.goldDocuments.push(this.documents[index])
                     }
-                    if (dimension.justification) controlsConfig[`${dimension.name}_justification`] = new FormControl('', [Validators.required, this.validateJustification.bind(this)])
-                    if (dimension.url) controlsConfig[`${dimension.name}_url`] = new FormControl('', [Validators.required, this.validateSearchEngineUrl.bind(this)]);
                 }
             }
-            this.documentsForm[index] = this.formBuilder.group(controlsConfig)
-        }
 
-        this.dimensionsSelectedValues = new Array<object>(this.documentsAmount);
-        for (let index = 0; index < this.dimensionsSelectedValues.length; index++) {
-            this.dimensionsSelectedValues[index] = {};
-            this.dimensionsSelectedValues[index]["data"] = [];
-            this.dimensionsSelectedValues[index]["amount"] = 0;
-        }
+            this.goldDimensions = new Array<Dimension>();
 
-        /* |--------- SEARCH ENGINE INTEGRATION (see: search_engine.json | https://github.com/Miccighel/CrowdXplorer) ---------| */
-
-        this.searchEngineQueries = new Array<object>(this.documentsAmount);
-        for (let index = 0; index < this.searchEngineQueries.length; index++) {
-            this.searchEngineQueries[index] = {};
-            this.searchEngineQueries[index]["data"] = [];
-            this.searchEngineQueries[index]["amount"] = 0;
-        }
-        this.currentQuery = 0;
-        this.searchEngineRetrievedResponses = new Array<object>(this.documentsAmount);
-        for (let index = 0; index < this.searchEngineRetrievedResponses.length; index++) {
-            this.searchEngineRetrievedResponses[index] = {};
-            this.searchEngineRetrievedResponses[index]["data"] = [];
-            this.searchEngineRetrievedResponses[index]["amount"] = 0;
-        }
-        this.searchEngineSelectedResponses = new Array<object>(this.documentsAmount);
-        for (let index = 0; index < this.searchEngineSelectedResponses.length; index++) {
-            this.searchEngineSelectedResponses[index] = {};
-            this.searchEngineSelectedResponses[index]["data"] = [];
-            this.searchEngineSelectedResponses[index]["amount"] = 0;
-        }
-
-        /* |--------- TASK SETTINGS (see task.json)---------| */
-
-        if (this.annotator) {
-            switch (this.annotator.type) {
-                case "options":
-                    this.annotationOptions = this.formBuilder.group({
-                        label: new FormControl('')
-                    });
-                    this.notes = new Array<Array<NoteStandard>>(this.documentsAmount);
-                    for (let i = 0; i < this.notes.length; i++) this.notes[i] = [];
-                    break;
-                case "laws":
-                    this.notes = new Array<Array<NoteLaws>>(this.documentsAmount);
-                    for (let i = 0; i < this.notes.length; i++) this.notes[i] = [];
-            }
-        }
-
-        this.annotationButtonsDisabled = new Array<boolean>();
-        for (let index = 0; index < this.documentsAmount; index++) {
-            this.annotationButtonsDisabled.push(true)
-        }
-
-        this.notesDone = [false, false, false, false, false]
-
-        /* |--------- COUNTDOWN ---------| */
-
-        this.countdownsExpired = new Array<boolean>(this.documentsAmount);
-        for (let index = 0; index < this.documentsAmount; index++) this.countdownsExpired[index] = false;
-
-        this.documentsCountdownTime = new Array<number>(this.documentsAmount);
-        for (let index = 0; index < this.documents.length; index++) {
-            let position = this.settingsTask.countdown_modality == 'position' ? this.documents[index]['index'] : null;
-            let attribute = this.settingsTask.countdown_modality == 'attribute' ? this.documents[index][this.settingsTask.countdown_attribute] : null;
-            this.documentsCountdownTime[index] = this.updateCountdownTime(position, attribute)
-        }
-
-        this.hideAttributes = false
-
-        /* |--------- QUALITY CHECKS ---------| */
-
-        this.goldDocuments = new Array<Document>();
-
-        /* Indexes of the gold elements are retrieved */
-        for (let index = 0; index < this.documentsAmount; index++) {
-            if ('id' in this.documents[index]) {
-                if (this.documents[index]['id'].includes('GOLD')) {
-                    this.goldDocuments.push(this.documents[index])
+            /* Indexes of the gold dimensions are retrieved */
+            for (let index = 0; index < this.dimensionsAmount; index++) {
+                if (this.dimensions[index].gold) {
+                    this.goldDimensions.push(this.dimensions[index])
                 }
             }
-        }
 
-        this.goldDimensions = new Array<Dimension>();
+            /* The array of accesses counter is initialized */
+            this.elementsAccesses = new Array<number>(this.documentsAmount + this.questionnaireAmount);
+            for (let index = 0; index < this.elementsAccesses.length; index++) this.elementsAccesses[index] = 0;
 
-        /* Indexes of the gold dimensions are retrieved */
-        for (let index = 0; index < this.dimensionsAmount; index++) {
-            if (this.dimensions[index].gold) {
-                this.goldDimensions.push(this.dimensions[index])
-            }
-        }
+            /* Arrays of start, end and elapsed timestamps are initialized to track how much time the worker spends
+             * on each document, including each questionnaire */
+            this.timestampsStart = new Array<Array<number>>(this.documentsAmount + this.questionnaireAmount);
+            this.timestampsEnd = new Array<Array<number>>(this.documentsAmount + this.questionnaireAmount);
+            this.timestampsElapsed = new Array<number>(this.documentsAmount + this.questionnaireAmount);
+            for (let i = 0; i < this.timestampsStart.length; i++) this.timestampsStart[i] = [];
+            for (let i = 0; i < this.timestampsEnd.length; i++) this.timestampsEnd[i] = [];
+            /* The task is now started and the worker is looking at the first questionnaire, so the first start timestamp is saved */
+            this.timestampsStart[0].push(Math.round(Date.now() / 1000));
 
-        /* The array of accesses counter is initialized */
-        this.elementsAccesses = new Array<number>(this.documentsAmount + this.questionnaireAmount);
-        for (let index = 0; index < this.elementsAccesses.length; index++) this.elementsAccesses[index] = 0;
+            /* |--------- FINALIZATION ---------| */
 
-        /* Arrays of start, end and elapsed timestamps are initialized to track how much time the worker spends
-            * on each document, including each questionnaire */
-        this.timestampsStart = new Array<Array<number>>(this.documentsAmount + this.questionnaireAmount);
-        this.timestampsEnd = new Array<Array<number>>(this.documentsAmount + this.questionnaireAmount);
-        this.timestampsElapsed = new Array<number>(this.documentsAmount + this.questionnaireAmount);
-        for (let i = 0; i < this.timestampsStart.length; i++) this.timestampsStart[i] = [];
-        for (let i = 0; i < this.timestampsEnd.length; i++) this.timestampsEnd[i] = [];
-        /* The task is now started and the worker is looking at the first questionnaire, so the first start timestamp is saved */
-        this.timestampsStart[0].push(Math.round(Date.now() / 1000));
+            /* Section service gets updated with loaded values */
+            this.updateAmounts()
 
-        /* |--------- FINALIZATION ---------| */
-
-        /* Section service gets updated with loaded values */
-        this.updateAmounts()
-
-        /* Detect changes within the DOM and update the page */
-        this.changeDetector.detectChanges();
-
-        /* If there are no questionnaires and the countdown time is set, enable the first countdown */
-        if (this.settingsTask.countdown_time >= 0 && this.questionnaireAmountStart == 0) {
-            this.countdown.toArray()[0].begin();
+            /* Detect changes within the DOM and update the page */
             this.changeDetector.detectChanges();
-        }
 
-        /* The loading spinner is stopped */
-        this.ngxService.stop();
-    }
-
-    public async performTaskSetup() {
-        /* The token input has been already validated, this is just to be sure */
-        if (this.tokenForm.valid) {
-
-            /* The loading spinner is started */
-            this.ngxService.start();
-
-            /* The tokens stored on Amazon S3 are retrieved */
-            let tokens = await this.S3Service.downloadTokens(this.configService.environment)
-
-            /* The documents stored on Amazon S3 are retrieved */
-            let docs = await this.S3Service.downloadDocs(this.configService.environment)
-            
-            /* Scan each entry for the token input */
-            for (let token of tokens) {
-                /* If the token input of the current hit matches with the one inserted by the worker the right hit has been found */
-                if (this.tokenInput.value === token.token_input) {
-                    this.tokenOutput = token.token_output;
-                    this.unitId = token.unit_id
-                    if (this.logger)
-                        this.actionLogger.unitId = this.unitId;
-
-                    /* A new request is created from the list of documents with parameters min_item_repetitions = 3 and min_item_quality_level = 0 */
-                    let req = this.HitsSolverService.createRequest(docs, 3, 0);
-                    /* The request is submitted to the Hit Solver */
-                    this.HitsSolverService.submitRequest(req).subscribe(response => {
-                        let task_id = response.task_id;
-                        let url = response.url;
-                        
-                        /* The function to check for a solution is launched */
-                        this.checkHitStatus(url, task_id, docs);
-                    });
-                }
+            /* If there are no questionnaires and the countdown time is set, enable the first countdown */
+            if (this.settingsTask.countdown_time >= 0 && this.questionnaireAmountStart == 0) {
+                this.countdown.toArray()[0].begin();
+                this.changeDetector.detectChanges();
             }
+
+            /* The loading spinner is stopped */
+            this.ngxService.stop();
 
         }
     }
@@ -2205,7 +2151,6 @@ export class SkeletonComponent implements OnInit {
 
         if (action == "Finish") {
             /* The current try is completed and the final can shall begin */
-            this.sectionService.taskCompleted = true
             this.ngxService.start()
         }
 
@@ -2317,6 +2262,87 @@ export class SkeletonComponent implements OnInit {
                 }
             }
             this.timestampsElapsed[i] = totalSecondsElapsed
+        }
+
+        if (action == "Finish") {
+
+            /*
+                   * This section performs the checks needed to ensure that the worker has made a quality work.
+                   * Three checks are performed:
+                   * 1) GLOBAL VALIDITY CHECK (QUESTIONNAIRE + DOCUMENTS): Verifies that each field of each form has valid values
+                   * 2) GOLD QUESTION CHECK:   Implements a custom check on gold elements retrieved using their ids.
+                   *                           An element is gold if its id contains the word "GOLD-".
+                   * 3) TIME SPENT CHECK:      Verifies if the time spent by worker on each document and questionnaire is higher than
+                   *                           <timeCheckAmount> seconds, using the <timestampsElapsed> array
+                   * If each check is successful, the task can end. If the worker has some tries left, the task is reset.
+                   */
+
+            let globalValidityCheck: boolean;
+            let timeSpentCheck: boolean;
+            let timeCheckAmount = this.timeCheckAmount;
+
+            /* Array that stores the results of each check */
+            let computedChecks = []
+
+            /* Handful expression to check an array of booleans */
+            let checker = array => array.every(Boolean);
+
+            /* 1) GLOBAL VALIDITY CHECK performed here */
+            globalValidityCheck = this.performGlobalValidityCheck();
+            computedChecks.push(globalValidityCheck)
+
+            /* 2) GOLD ELEMENTS CHECK performed here */
+
+            let goldConfiguration = []
+            /* For each gold document its attribute, answers and notes are retrieved to build a gold configuration */
+            for (let goldDocument of this.goldDocuments) {
+                let currentConfiguration = {}
+                currentConfiguration["document"] = goldDocument
+                let answers = {}
+                for (let goldDimension of this.goldDimensions) {
+                    for (let [attribute, value] of Object.entries(this.documentsForm[goldDocument.index].value)) {
+                        let dimensionName = attribute.split("_")[0]
+                        if (dimensionName == goldDimension.name) {
+                            answers[attribute] = value
+                        }
+                    }
+                }
+                currentConfiguration["answers"] = answers
+                currentConfiguration["notes"] = this.notes ? this.notes[goldDocument.index] : []
+                goldConfiguration.push(currentConfiguration)
+            }
+
+            /* The gold configuration is evaluated using the static method implemented within the GoldChecker class */
+            let goldChecks = GoldChecker.performGoldCheck(goldConfiguration)
+
+            /* Since there is a boolean for each gold element, the corresponding array is checked using the checker expression
+             * to understand if each boolean is true */
+            computedChecks.push(checker(goldChecks))
+
+            /* 3) TIME SPENT CHECK performed here */
+            timeSpentCheck = true;
+            this.timestampsElapsed.forEach(item => {
+                if (item < timeCheckAmount) timeSpentCheck = false;
+            });
+            computedChecks.push(timeSpentCheck)
+
+            /* If each check is true, the task is successful, otherwise the task is failed (but not over if there are more tries) */
+
+            let checks = {}
+            let qualityCheckData = {
+                globalFormValidity: globalValidityCheck,
+                timeSpentCheck: timeSpentCheck,
+                timeCheckAmount: timeCheckAmount,
+                goldChecks: goldChecks,
+                goldConfiguration: goldConfiguration
+            };
+            checks["info"] = {
+                try: this.currentTry,
+                sequence: this.sequenceNumber,
+                element: "checks"
+            };
+            checks["checks"] = qualityCheckData
+            this.qualityChecksOutcome = checks
         }
 
         /* If there is a worker ID then the data should be uploaded to the S3 bucket */
@@ -2483,86 +2509,6 @@ export class SkeletonComponent implements OnInit {
 
             if (completedElement >= (this.questionnaireAmountStart + this.documentsAmount + this.questionnaireAmountEnd) - 1) {
 
-                /*
-                * This section performs the checks needed to ensure that the worker has made a quality work.
-                * Three checks are performed:
-                * 1) GLOBAL VALIDITY CHECK (QUESTIONNAIRE + DOCUMENTS): Verifies that each field of each form has valid values
-                * 2) GOLD QUESTION CHECK:   Implements a custom check on gold elements retrieved using their ids.
-                *                           An element is gold if its id contains the word "GOLD-".
-                * 3) TIME SPENT CHECK:      Verifies if the time spent by worker on each document and questionnaire is higher than
-                *                           <timeCheckAmount> seconds, using the <timestampsElapsed> array
-                * If each check is successful, the task can end. If the worker has some tries left, the task is reset.
-                */
-
-                let globalValidityCheck: boolean;
-                let timeSpentCheck: boolean;
-                let timeCheckAmount = this.timeCheckAmount;
-
-                /* Array that stores the results of each check */
-                let computedChecks = []
-
-                /* Handful expression to check an array of booleans */
-                let checker = array => array.every(Boolean);
-
-                /* 1) GLOBAL VALIDITY CHECK performed here */
-                globalValidityCheck = this.performGlobalValidityCheck();
-                computedChecks.push(globalValidityCheck)
-
-                /* 2) GOLD ELEMENTS CHECK performed here */
-
-                let goldConfiguration = []
-                /* For each gold document its attribute, answers and notes are retrieved to build a gold configuration */
-                for (let goldDocument of this.goldDocuments) {
-                    let currentConfiguration = {}
-                    currentConfiguration["document"] = goldDocument
-                    let answers = {}
-                    for (let goldDimension of this.goldDimensions) {
-                        for (let [attribute, value] of Object.entries(this.documentsForm[goldDocument.index].value)) {
-                            let dimensionName = attribute.split("_")[0]
-                            if (dimensionName == goldDimension.name) {
-                                answers[attribute] = value
-                            }
-                        }
-                    }
-                    currentConfiguration["answers"] = answers
-                    currentConfiguration["notes"] = this.notes ? this.notes[goldDocument.index] : []
-                    goldConfiguration.push(currentConfiguration)
-                }
-
-                /* The gold configuration is evaluated using the static method implemented within the GoldChecker class */
-                let goldChecks = GoldChecker.performGoldCheck(goldConfiguration)
-
-                /* Since there is a boolean for each gold element, the corresponding array is checked using the checker expression
-                 * to understand if each boolean is true */
-                computedChecks.push(checker(goldChecks))
-
-                /* 3) TIME SPENT CHECK performed here */
-                timeSpentCheck = true;
-                this.timestampsElapsed.forEach(item => {
-                    if (item < timeCheckAmount) timeSpentCheck = false;
-                });
-                computedChecks.push(timeSpentCheck)
-
-                /* If each check is true, the task is successful, otherwise the task is failed (but not over if there are more tries) */
-
-                let checks = {}
-                let qualityCheckData = {
-                    globalFormValidity: globalValidityCheck,
-                    timeSpentCheck: timeSpentCheck,
-                    timeCheckAmount: timeCheckAmount,
-                    goldChecks: goldChecks,
-                    goldConfiguration: goldConfiguration
-                };
-                checks["info"] = {
-                    try: this.currentTry,
-                    sequence: this.sequenceNumber,
-                    element: "checks"
-                };
-                checks["checks"] = qualityCheckData
-                this.qualityChecksOutcome = checks
-
-                this.sequenceNumber = this.sequenceNumber + 1
-
                 /* All data about documents are uploaded, only once */
                 let actionInfo = {
                     action: action,
@@ -2623,23 +2569,35 @@ export class SkeletonComponent implements OnInit {
                 await this.dynamoDBService.insertData(this.configService.environment, this.workerIdentifier, this.unitId, this.currentTry, this.sequenceNumber, data)
                 this.sequenceNumber = this.sequenceNumber + 1
 
-                this.sectionService.taskCompleted = true
-
-                if (checker(computedChecks)) {
-                    this.sectionService.taskSuccessful = true;
-                    this.sectionService.taskFailed = false;
-
-                } else {
-                    this.sectionService.taskSuccessful = false;
-                    this.sectionService.taskFailed = true;
-                }
-
-                this.ngxService.stop()
-
-                this.changeDetector.detectChanges()
-
 
             }
+
+        }
+
+        if (action == "Finish") {
+
+            let checker = array => array.every(Boolean);
+
+            let checksOutcome = []
+
+            checksOutcome.push(this.qualityChecksOutcome['checks']['globalFormValidity'])
+            checksOutcome.push(this.qualityChecksOutcome['checks']['timeSpentCheck'])
+            checksOutcome.push(checker(this.qualityChecksOutcome['checks']['goldChecks']))
+
+            if (checker(checksOutcome)) {
+                this.sectionService.taskSuccessful = true;
+                this.sectionService.taskFailed = false;
+
+            } else {
+                this.sectionService.taskSuccessful = false;
+                this.sectionService.taskFailed = true;
+            }
+
+            this.sectionService.taskCompleted = true;
+
+            this.ngxService.stop()
+
+            this.changeDetector.detectChanges()
 
         }
 

@@ -16,172 +16,48 @@ export class HitRequest{
      * @param min_item_repetitions : minimum number of repetitions of the same document in different assigments 
      * @param min_item_quality_level : minimum quality level for each item in the assignment
      */
-    constructor(docs: Array<JSON>, min_item_repetitions: number, min_item_quality_level: number){
+    constructor(min_item_repetitions: number, min_item_quality_level: number){
         /* Generation of a random id is given by the current date and a random number in the interval 0:100000 */
         this.id = (Date.now() + Math.floor(Math.random() * 100000)).toString();
         
         this.min_item_repetitions = min_item_repetitions;
-        this.min_item_quality_level = min_item_quality_level;
+        this.min_item_quality_level = min_item_quality_level;           
+    }
 
-        /* Instantiation of the properties of the request */ 
-        this.createProperties();
+    addCategory(categoryId: string, worker_assignment: number){
+        this.categories.push(new Category(categoryId, new Array<string>(), worker_assignment))
+    }
 
-        /* Instantiation of the categories from a sample of the given documents */ 
-        this.createCategoriesFromDocs(docs, ['party']);
-
-        if(this.checkCategoriesWorkerAssignment()){
-            // Instantiation of the items from the given array of documents
-            this.createItems(docs);
-
-            // Instantiation of a minimum number of 'fake' workers that is needed
-            // to get a correct assignment
-            this.createWorkers();
-
-        }else{
-            console.log("The request cannot be created because categories settings are incompatible (Check worker_assignments values)")
-        }            
+    addItems(docs: Array<JSON>, idAttribute: string){
+        for(let i = 0; i < docs.length; i++) {
+            let item_id = docs[i][idAttribute];
+            let item_categories = new Array<ItemCategory>()
+            for(let category of this.categories){
+                if(!category.getLevels().includes(docs[i][`${category.getId()}`]))
+                    category.addLevel(docs[i][`${category.getId()}`])
+                item_categories.push(new ItemCategory(category.getId(), docs[i][`${category.getId()}`]))
+            }
+            this.items.push(new Item(item_id, item_categories));
+        }
     }
 
     createProperties(){
         this.properties.push(new Property("p1", ["l1"], 1));
     }
 
-    createCategoriesFromDocs(docs: Array<JSON>, possibleCategories: Array<string>){
-        let doc_sample = docs[0];
-        let categories = Object.keys(doc_sample).filter((el) => possibleCategories.includes(el))
-        
-        for (let c of categories){
-            let values = new Array<string>();
-            for(let i = 0; i < docs.length; i++)
-                if(!values.includes(docs[i][c])) values.push(docs[i][c]);
-            this.categories.push(new Category(c, values, 1))
-        }
-    }
-
-    checkCategoriesWorkerAssignment(){
-        let hit_lengths = new Array()
-        for(let cat of this.categories)
-            hit_lengths.push(cat.getLevels().length*cat.getWorkerAssignments());
-        return hit_lengths.every(value => value == hit_lengths[0])
-    }
-
-    createItems(docs: Array<JSON>){
-        for(let i = 0; i < docs.length; i++){
-            let item_id = docs[i]["id"];
-            let item_categories = new Array<ItemCategory>(); 
-            for(let category of this.categories){
-                    item_categories.push(new ItemCategory(category.getId(), docs[i][`${category.getId()}`]))
-            }
-            this.items.push(new Item(item_id, item_categories));
-        }
-    }
-
-    createWorkers(){
+    addWorkers(workers_number: number){
         /**
          * At the moment all the workers have only one property (p1) with the same level (l1)
          */
-        let workers_length = this.getMinimumWorkersNumber();
-        console.log(`Minimum number of workers needed: ${workers_length}`)
+        let num_workers = workers_number
         let workers_expertise = 0;
-        for(let i = 0; i < workers_length; i++){
+        for(let i = 0; i < num_workers; i++){
             let worker_id = `W${i}`;
             let worker_properties = new Array<WorkerProperty>();
             for(let property of this.properties){
                 worker_properties.push(new WorkerProperty(property.getId(), property.getLevels().at(0)))
             }
             this.workers.push(new HitWorker(worker_id, workers_expertise, worker_properties));
-        }
-    }
-
-    getMinimumWorkersNumber(): number{
-        let hit_size = this.categories.at(0).getLevels().length * this.categories.at(0).getWorkerAssignments();
-        let num_item = this.items.length;
-        return Math.ceil(num_item * this.min_item_repetitions)/hit_size;
-    }
-
-    setCategories(categories: Array<string>, worker_assignment: Array<Object>, docs: Array<JSON>){
-        for(let category of this.categories){
-            if(categories.includes(category.getId())){
-                if(category.getWorkerAssignments() != worker_assignment[category.getId()])
-                    category.setWorkerAssignments(worker_assignment[category.getId()])
-            }else{
-                this.removeCategory(category)
-            }
-        }
-        let newCategories = []
-        for(let category of categories){
-            if(!this.contains(category)){
-                newCategories.push(category)
-            }
-        }
-        this.createCategoriesFromDocs(docs, newCategories)
-        for(let category of this.categories){
-            if(categories.includes(category.getId())){
-                if(category.getWorkerAssignments() != worker_assignment[category.getId()])
-                    category.setWorkerAssignments(worker_assignment[category.getId()])
-            }
-        }
-        for(let item of this.items){
-            let id = item.getId()
-            let doc = this.getDoc(docs, id)
-            if(doc){
-                for(let c of newCategories){
-                    item.getCategories().push(new ItemCategory(c, doc[`${c}`]))
-                }
-            }
-        }
-    }
-
-    getDoc(docs: Array<JSON>, id: string){
-        for(let d of docs){
-            if(d['id'] == id)
-                return d
-        }
-        return null
-    }
-
-    contains(category: string){
-        for(let cat of this.categories){
-            if(cat.getId() == category) return true
-        }
-        return false
-    }
-
-    removeCategory(category: Category){
-        let index = this.categories.indexOf(category);
-        this.categories.splice(index, 1)
-
-        for(let item of this.items){
-            index = -1
-            for(let c of item.getCategories()){
-                if(c.getId() == category.getId()){
-                    index = item.getCategories().indexOf(c)
-                }
-            }
-            if(index > -1) {
-                item.getCategories().splice(index, 1)
-            }
-        }
-    }
-
-    setWorkers(num_workers: number){
-        if(this.workers.length > num_workers){
-            let n = num_workers - this.workers.length
-
-            let workers_expertise = 0;
-            let current_workers = this.workers.length
-            for(let i = current_workers; i < current_workers + n; i++){
-                let worker_id = `W${i}`;
-                let worker_properties = new Array<WorkerProperty>();
-                for(let property of this.properties){
-                    worker_properties.push(new WorkerProperty(property.getId(), property.getLevels().at(0)))
-                }
-                this.workers.push(new HitWorker(worker_id, workers_expertise, worker_properties));
-            }
-
-        }else if(this.workers.length < num_workers){
-            let new_workers = this.workers.slice(0, num_workers)
-            this.workers = new_workers
         }
     }
 
@@ -205,6 +81,10 @@ class Category{
     
     getLevels(): Array<string>{
         return this.levels;
+    }
+
+    addLevel(level: string) {
+        this.levels.push(level)
     }
 
     getWorkerAssignments(): number{

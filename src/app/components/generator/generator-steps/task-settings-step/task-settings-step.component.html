@@ -101,7 +101,7 @@
                 <tr *ngIf="this.docsDetected<=0">
                     <td>
                         <mat-error class="mb-8px indent">
-                            This JSON file does not contain any valid document. Please, review your selection.
+                            {{ this.errorMessage }}
                         </mat-error>
                     </td>
                 </tr>
@@ -123,23 +123,32 @@
                     <div *ngFor="let value of docCategories().controls; let valueIndex = index" formArrayName="doc_categories">
                         <table class="width-100">
                             <tr>
-                                <td class="p-0 width-75 pr-16px" [formGroupName]="valueIndex">
-                                    <h3>{{this.docCategory(valueIndex)}}</h3>
-                                    <!-- <h3>{{//this.docsCategories[valueIndex]}}</h3> -->
+                                <td class="p-0 width-20 pr-16px" [formGroupName]="valueIndex">
+                                    <h3>{{this.docCategory(valueIndex).get('name_pretty').value}}</h3>
                                 </td>
-                                <td class="p-0 width-100 pr-16px" [formGroupName]="valueIndex">
-                                    <span>Number of values: {{this.docCategoryValues(valueIndex)}}</span>
-                                    <!-- <span>Number of values: {{this.docsCategoriesValues[this.docsCategories[valueIndex]].length}}</span>-->
+                                <td class="p-0 width-20 pr-16px center" [formGroupName]="valueIndex">
+                                    <span>Number of values: {{this.docCategory(valueIndex).get('values_number').value}}</span>
                                 </td>
-                                <td class="p-0 width-100 pr-16px" [formGroupName]="valueIndex">
-                                    <mat-checkbox color="primary" formControlName="selected" (change)="updateDocCategory(valueIndex)">
+                                <td class="p-0 width-20 pr-16px center" [formGroupName]="valueIndex">
+                                    <span *ngIf="this.docCategory(valueIndex).get('balanced').value">
+                                        {{this.getCategoryReport(this.docCategory(valueIndex).get('name').value)}}
+                                    </span>
+                                    <span *ngIf="!this.docCategory(valueIndex).get('balanced').value">
+                                        {{this.getCategoryReport(this.docCategory(valueIndex).get('name').value)}}
+                                    </span>
+                                </td>
+                                <td class="p-0 width-20 pr-16px center" [formGroupName]="valueIndex">
+                                    <mat-checkbox color="primary" formControlName="selected" (change)="updateDocCategory(valueIndex)" *ngIf="this.docCategory(valueIndex).get('balanced').value">
                                         Use as category
                                     </mat-checkbox>
+                                    <span *ngIf="!this.docCategory(valueIndex).get('balanced').value" class="highlight-orange">
+                                        Unbalanced attribute.
+                                    </span>
                                 </td>
                                 <td class="p-0 center" [formGroupName]="valueIndex">
                                     <mat-form-field class="width-100" appearance="fill">
                                         <mat-label>Worker assignments</mat-label>
-                                        <input matInput type="number" placeholder="0" formControlName="worker_assignment">
+                                        <input matInput type="number" placeholder="0" formControlName="worker_assignment" min="1">
                                     </mat-form-field>
                                 </td>
                             </tr>
@@ -149,19 +158,19 @@
                         <table class="width-100">
                             <tr>
                                 <td class="p-0 pr-16px">
-                                    <button mat-flat-button color="primary" class="mb-16px indent" (click)="this.checkCategoriesSelection()" [disabled]="this.hit_size != 0">
+                                    <button mat-flat-button color="primary" class="mb-16px indent" (click)="this.checkCategoriesSelection()" [disabled]="this.hitDimension != 0">
                                         Check selection
                                     </button>
                                 </td>
                                 <td>
-                                    <button mat-flat-button color="primary" class="mb-16px indent" (click)="this.resetCategorySelection()" [disabled]="this.hit_size == 0">
+                                    <button mat-flat-button color="primary" class="mb-16px indent" (click)="this.resetCategorySelection()" [disabled]="this.hitDimension == 0">
                                         Reset selection
                                     </button>
                                 </td>
                             </tr>
                             <tr>
                                 <td>
-                                    <mat-error class="mb-8px indent" *ngIf="this.hit_size == -1">
+                                    <mat-error class="mb-8px indent" *ngIf="this.hitDimension == -1">
                                         Error in the worker assignment typed values. Please, review your selection.
                                     </mat-error>
                                 </td>
@@ -185,9 +194,14 @@
                 <table class="width-100 mt-16px">
                     <tr *ngIf="this.docsDetected > 0">
                         <td>
-                            <button mat-flat-button color="primary" class="indent" (click)="sendRequestToHitSolver()" [disabled]="this.hit_size <= 0 ">
+                            <button mat-flat-button color="primary" class="indent" (click)="sendRequestToHitSolver()" [disabled]="this.hitDimension<= 0 ">
                                 Send request to the solver
                             </button>
+                        </td>
+                        <td>
+                            <span class="mb-8px indent" *ngIf="this.solutionStatus != ''">
+                                {{this.solutionStatus}}
+                            </span>
                         </td>
                     </tr>
                 </table>

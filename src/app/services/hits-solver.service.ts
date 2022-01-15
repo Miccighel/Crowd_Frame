@@ -5,42 +5,47 @@ import { Observable } from 'rxjs';
 import { HitResponse } from '../models/hitResponse';
 import { HitRequest } from '../models/hitRequest';
 import { HitSolution } from '../models/hitSolution';
-import { Assignment } from '../models/hitSolution';
 
 @Injectable({
   providedIn: 'root'
 })
 export class HitsSolverService {
 
-  //solverEndPointRunner = "http://158.110.146.213:18080/runner/BSA/";
-  //solverEndPointRunner = "https://7c28926d-149b-4908-9999-fe2f66231d65.mock.pstmn.io/runner/BSA";
-  solverEndPointRunner = "http://localhost:18080/runner/BSA";
-
-  //solverEndPoint = "http://158.110.146.213:18080";
-  //solverEndPoint = "https://7c28926d-149b-4908-9999-fe2f66231d65.mock.pstmn.io";
-  solverEndPoint = "http://localhost:18080";
-
+  solverEndPoint = "http://localhost:80";
   selectedRunner: string;
-
-  runnersList: Array<string>
-
+  runners: Array<string>
   client: HttpClient;
+
+  ready: boolean;
 
   constructor(client: HttpClient) {
     this.client = client;
+    this.ready = false
+  }
+
+  init(){
+    this.getSolverConfiguration().subscribe(
+      response => {
+        this.setRunners(response)
+      },
+      error => {
+        this.ready = false
+      }
+    )
   }
 
   getSolverConfiguration(): Observable<JSON>{
     return this.client.get<JSON>(this.solverEndPoint);
   }
 
-  setRunnerList(response){
-    this.runnersList = response.runners;
+  setRunners(response){
+    this.runners = response.runners;
     this.setRunner(0)
   }
 
   setRunner(idx: number){
-    this.selectedRunner = this.runnersList[idx];
+    this.selectedRunner = this.runners[idx];
+    this.ready = true
   }
 
   getRunner(){
@@ -52,8 +57,16 @@ export class HitsSolverService {
     return this.client.get<JSON>(url)
   }
 
-  createRequest(docs: Array<JSON>, min_item_rep: number, min_item_quality_level: number): HitRequest{
-    return new HitRequest(docs, min_item_rep, min_item_quality_level);
+  createRequest(docs: Array<JSON>, identificationAttribute: string, min_item_rep: number, min_item_quality_level: number, categories: Array<string>, worker_assignment: Array<Object>, num_workers: number): HitRequest{
+    let req = new HitRequest(min_item_rep, min_item_quality_level)
+    categories.forEach(category => {
+      req.addCategory(category, worker_assignment[category])
+    })
+    req.addItems(docs, identificationAttribute)
+    req.createProperties()
+    req.addWorkers(num_workers)
+
+    return req
   }
   
   submitRequest(req: HitRequest): Observable<HitResponse>{
@@ -62,7 +75,8 @@ export class HitsSolverService {
           'Content-Type': 'application/json',
           'Accept': '*/*'
     });
-    return this.client.post<HitResponse>(this.solverEndPointRunner, req,
+    let url = `${this.solverEndPoint}${this.selectedRunner}`
+    return this.client.post<HitResponse>(url, req,
       {headers: head});
   }
 
@@ -74,45 +88,42 @@ export class HitsSolverService {
     return this.client.get<HitSolution>(`${this.solverEndPoint}/solution/${task_id}`)
   }
 
-  /**
-   * This function choose randomly an assignment from assignments array
-   * and then builds a hit using the array of JSON docs
-   */
-  createHit(response: HitSolution, docs: Array<JSON>){
-    let idx = Math.floor(Math.random() * (response.solution.Workers.length));
-    let assignment = response.solution.Workers[idx].Assignments;
-
-    let dcms = new Array();
-    for(let item of assignment){
-      let doc = this.getDocument(docs, item)
-      dcms.push(doc);
+  generateToken(length: number){
+    let token = ""
+    let characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    for(let i = 0; i < length; i++){
+      token += characters.charAt(Math.floor(Math.random() * characters.length))
     }
-    let hit = {
-      documents_number: dcms.length,
-      documents: dcms,
-      unit_id: `unit_${idx}`,
-      token_input: 'ABCDEFGHILM',
-      token_output: 'MNOPQRSTUVZ'
-    };
-    
-    return hit;
+    return token
+  }
+
+  addToken(length: number, tokens: Array<string>){  
+    let token = this.generateToken(length)
+    while(tokens.includes(token)) token = this.generateToken(11)
+    return token
   }
 
   createHits(response: HitSolution, docs: Array<JSON>){
     let hits = []
     let assignments = response.solution.Workers;
+
+    let generated_tokens = []
     for(let assignment of assignments){
       let dcms = []
       for(let item of assignment.Assignments){
         let doc = this.getDocument(docs, item)
         dcms.push(doc)
       }
+
+      let tokenInput = this.addToken(11, generated_tokens)
+      let tokenOutput = this.addToken(11, generated_tokens)
+
       let hit = {
         documents_number: dcms.length,
         documents: dcms,
         unit_id: `unit_${assignments.indexOf(assignment)}`,
-        token_input: 'ABCDEFGHILM',
-        token_output: 'MNOPQRSTUVZ'
+        token_input: tokenInput,
+        token_output: tokenOutput
       }
       hits.push(hit)
     }
