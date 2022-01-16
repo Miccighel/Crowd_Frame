@@ -1288,6 +1288,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                     "type": "standard",
                     "description": "This is a standard questionnaire",
                     "position": "start",
+                    "allow_back": False,
                     "questions": [
                         {
                             "name": "age",
@@ -1312,6 +1313,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                     "type": "crt",
                     "description": "This is a CRT questionnaire",
                     "position": "start",
+                    "allow_back": False,
                     "questions": [
                         {
                             "name": "farmers",
@@ -1333,6 +1335,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 "name": "sample-dimension",
                 "name_pretty": "Sample Dimension",
                 "description": "Lorem ipsum dolor sit amet",
+                "gold": False,
+                "pairwise": False,
                 "url": False,
                 "justification": False,
                 "scale": {
@@ -1711,7 +1715,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     folder_build_result = f"../dist/"
 
-    command = "ng build --configuration=\"production\" --output-hashing=none"
+    command = "yarn run build --configuration=\"production\" --output-hashing=none"
     console.print(f"[green on black]{command}")
     process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
     for line in process.stdout:

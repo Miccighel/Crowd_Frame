@@ -88,6 +88,7 @@ def load_column_names(task, ip, uag, questionnaires, dimensions, documents):
 
     for attribute in task.keys():
         columns.append(attribute)
+    columns.append("try_current")
     columns.append("time_submit")
 
     for questionnaire in questionnaires:
@@ -308,13 +309,10 @@ console.print(f"HITs data available at path: [cyan on white]{hit_data_path}")
 
 console.rule("2 - Fetching task configuration")
 
-hit_df = pd.read_csv(hit_data_path)
-
 prefix = f"{task_name}/"
 task_config_folder = f"{folder_result_path}/Task/"
-if not os.path.exists(task_config_folder):
-    response = s3.list_objects(Bucket=aws_private_bucket, Prefix=prefix, Delimiter='/')
-    for current_batch_name in task_batch_names:
+for current_batch_name in task_batch_names:
+    if not os.path.exists(f"{task_config_folder}{current_batch_name}/"):
         response_batch = s3.list_objects(Bucket=aws_private_bucket, Prefix=f"{prefix}{current_batch_name}/Task/", Delimiter='/')
         os.makedirs(f"{task_config_folder}{current_batch_name}/", exist_ok=True)
         for path_batch in response_batch['Contents']:
@@ -326,8 +324,8 @@ if not os.path.exists(task_config_folder):
                 s3.download_file(aws_private_bucket, file_key, f"{destination_path}")
             else:
                 console.print(f"Source: [cyan on white]{file_key}[/cyan on white] [yellow]already detected[/yellow], skipping download")
-else:
-    console.print(f"Task configuration [yellow]already detected[/yellow], skipping download")
+    else:
+        console.print(f"Task configuration for batch [green]{current_batch_name}[/green] [yellow]already detected[/yellow], skipping download")
 
 console.rule("3 - Fetching worker data")
 
@@ -393,15 +391,16 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
             for table_name in task_data_tables:
                 worker_data[table_name] = []
             for table_name in task_data_tables:
-                response = dynamo_db.query(
+                paginator = dynamo_db.get_paginator('query')
+                for page in paginator.paginate(
                     TableName=table_name,
                     KeyConditionExpression="identifier = :worker",
                     ExpressionAttributeValues={
                         ":worker": {'S': worker_id}
-                    }
-                )['Items']
-                for item in response:
-                    worker_data[table_name].append(item)
+                    }, Select='ALL_ATTRIBUTES'
+                ):
+                    for item in page['Items']:
+                        worker_data[table_name].append(item)
 
             worker_snapshot = []
 
@@ -939,6 +938,8 @@ if not os.path.exists(df_data_path):
                     countdownsExpired = data_try['serialization']["countdowns_expired"]
                     info = data_try['serialization']["info"]
 
+                    row['try_current'] = info['try']
+
                     if info['element'] == 'all' and info['action'] == 'Finish':
 
                         for check_data in checks:
@@ -1023,7 +1024,6 @@ if not os.path.exists(df_data_path):
                                                 row[f"doc_{dimension['name']}_index"] = mapping['index']
                                                 row[f"doc_{dimension['name']}_description"] = mapping['description']
                                     else:
-                                        row[f"doc_{dimension['name']}_value"] = np.nan
                                         row[f"doc_{dimension['name']}_label"] = np.nan
                                         row[f"doc_{dimension['name']}_index"] = np.nan
                                         row[f"doc_{dimension['name']}_description"] = np.nan
@@ -1066,8 +1066,6 @@ if not os.path.exists(df_data_path):
 
                 row = {}
                 row['worker_id'] = worker_id
-                row['try_last'] = 0
-                row['paid'] = False
 
                 for attribute, value in task.items():
                     row[attribute] = value
@@ -1080,19 +1078,24 @@ if not os.path.exists(df_data_path):
 
                 for document_data in data_partial['documents_answers']:
 
+                    row['try_current'] = document_data['serialization']['info']['try']
+
                     row['time_submit'] = document_data['time_submit']
+
+                    for check_data in checks:
+                        if int(check_data['serialization']['info']['try']) == int(document_data['serialization']['info']['try']):
+                            row["global_form_validity"] = check_data['serialization']["checks"]["globalFormValidity"]
+                            row["gold_checks"] = any(check_data['serialization']["checks"]["goldChecks"])
+                            row["time_check_amount"] = check_data['serialization']["checks"]["timeCheckAmount"]
+                            row["time_spent_check"] = check_data['serialization']["checks"]["timeSpentCheck"]
 
                     row["doc_accesses"] = document_data['serialization']['accesses']
 
                     row["doc_countdown_time_start"] = document_data['serialization']['countdowns_times_start'][0] if len(document_data['serialization']['countdowns_times_start']) > 0 else np.nan
                     row["doc_countdown_time_value"] = document_data['serialization']['countdowns_times_left']['value'] if len(document_data['serialization']['countdowns_times_left']) > 0 else np.nan
                     row["doc_countdown_time_text"] = document_data['serialization']['countdowns_times_left']['text'] if len(document_data['serialization']['countdowns_times_left']) > 0 else np.nan
-                    row["doc_countdown_time_expired"] = document_data['serialization']["countdowns_expired"][document_data['serialization']['info']['index']] if len(document_data['serialization']["countdowns_expired"]) > 0 else np.nan
-
-                    row["global_form_validity"] = False
-                    row["gold_checks"] = False
-                    row["time_check_amount"] = False
-                    row["time_spent_check"] = False
+                    row["doc_countdown_time_expired"] = document_data['serialization']["countdowns_expired"][document_data['serialization']['info']['index']] if len(
+                        document_data['serialization']["countdowns_expired"]) > 0 else np.nan
 
                     current_attributes = documents[document_data['serialization']['info']['index']].keys()
                     current_answers = document_data['serialization']['answers']
@@ -1154,45 +1157,45 @@ if not os.path.exists(df_data_path):
                     else:
                         row["doc_time_elapsed"] = round(document_data['serialization']['timestamps_elapsed'], 2)
 
-                for questionnaire_data in data_partial['questionnaires_answers']:
+                    for questionnaire_data in data_partial['questionnaires_answers']:
 
-                    questionnaire = questionnaires[questionnaire_data['serialization']['info']['index']]
-                    current_answers = questionnaire_data['serialization']['answers']
-                    timestamps_elapsed = questionnaire_data['serialization']["timestamps_elapsed"]
-                    accesses = questionnaire_data['serialization']["accesses"]
+                        questionnaire = questionnaires[questionnaire_data['serialization']['info']['index']]
+                        current_answers = questionnaire_data['serialization']['answers']
+                        timestamps_elapsed = questionnaire_data['serialization']["timestamps_elapsed"]
+                        accesses = questionnaire_data['serialization']["accesses"]
 
-                    for index_sub, question in enumerate(questionnaire["questions"]):
+                        for index_sub, question in enumerate(questionnaire["questions"]):
 
-                        answer = None
-                        for question_name, answer_current in current_answers.items():
-                            question_name_parsed = question_name.replace("_answer", "")
-                            if question_name_parsed == question["name"]:
-                                answer = answer_current
+                            answer = None
+                            for question_name, answer_current in current_answers.items():
+                                question_name_parsed = question_name.replace("_answer", "")
+                                if question_name_parsed == question["name"]:
+                                    answer = answer_current
 
-                        row[f"q_{questionnaire['index']}_{question['index']}_index"] = question['index']
-                        row[f"q_{questionnaire['index']}_{question['index']}_name"] = question['name']
-                        row[f"q_{questionnaire['index']}_{question['index']}_name_full"] = question['nameFull'] if "nameFull" in question else None
-                        row[f"q_{questionnaire['index']}_{question['index']}_type"] = question['type'] if "type" in question else None
-                        row[f"q_{questionnaire['index']}_{question['index']}_required"] = question['required'] if "required" in question else None
-                        row[f"q_{questionnaire['index']}_{question['index']}_detail"] = question['detail'] if "detail" in question else None
-                        row[f"q_{questionnaire['index']}_{question['index']}_show_detail"] = question['show_detail'] if "show_detail" in question else None
-                        row[f"q_{questionnaire['index']}_{question['index']}_free_text"] = question['free_text'] if "free_text" in question else None
-                        row[f"q_{questionnaire['index']}_{question['index']}_text"] = question['text']
-                        row[f"q_{questionnaire['index']}_{question['index']}_answer_value"] = answer
-                        if questionnaire['type'] == 'standard':
-                            row[f"q_{questionnaire['index']}_{question['index']}_answer_text"] = question['answers'][int(answer)]
-                        elif questionnaire['type'] == 'likert':
-                            mapping = questionnaire['mappings'][int(answer)]
-                            row[f"q_{questionnaire['index']}_{question['index']}_answer_mapping_index"] = mapping['index']
-                            row[f"q_{questionnaire['index']}_{question['index']}_answer_mapping_key"] = mapping['key'] if "key" in mapping else None
-                            row[f"q_{questionnaire['index']}_{question['index']}_answer_mapping_label"] = mapping['label']
-                            row[f"q_{questionnaire['index']}_{question['index']}_answer_mapping_value"] = mapping['value']
+                            row[f"q_{questionnaire['index']}_{question['index']}_index"] = question['index']
+                            row[f"q_{questionnaire['index']}_{question['index']}_name"] = question['name']
+                            row[f"q_{questionnaire['index']}_{question['index']}_name_full"] = question['nameFull'] if "nameFull" in question else None
+                            row[f"q_{questionnaire['index']}_{question['index']}_type"] = question['type'] if "type" in question else None
+                            row[f"q_{questionnaire['index']}_{question['index']}_required"] = question['required'] if "required" in question else None
+                            row[f"q_{questionnaire['index']}_{question['index']}_detail"] = question['detail'] if "detail" in question else None
+                            row[f"q_{questionnaire['index']}_{question['index']}_show_detail"] = question['show_detail'] if "show_detail" in question else None
+                            row[f"q_{questionnaire['index']}_{question['index']}_free_text"] = question['free_text'] if "free_text" in question else None
+                            row[f"q_{questionnaire['index']}_{question['index']}_text"] = question['text']
+                            row[f"q_{questionnaire['index']}_{question['index']}_answer_value"] = answer
+                            if questionnaire['type'] == 'standard':
+                                row[f"q_{questionnaire['index']}_{question['index']}_answer_text"] = question['answers'][int(answer)]
+                            elif questionnaire['type'] == 'likert':
+                                mapping = questionnaire['mappings'][int(answer)]
+                                row[f"q_{questionnaire['index']}_{question['index']}_answer_mapping_index"] = mapping['index']
+                                row[f"q_{questionnaire['index']}_{question['index']}_answer_mapping_key"] = mapping['key'] if "key" in mapping else None
+                                row[f"q_{questionnaire['index']}_{question['index']}_answer_mapping_label"] = mapping['label']
+                                row[f"q_{questionnaire['index']}_{question['index']}_answer_mapping_value"] = mapping['value']
 
-                        row[f"q_{questionnaire['index']}_time_elapsed"] = round(timestamps_elapsed, 2) if timestamps_elapsed is not None else None
-                        row[f"q_{questionnaire['index']}_accesses"] = accesses
+                            row[f"q_{questionnaire['index']}_time_elapsed"] = round(timestamps_elapsed, 2) if timestamps_elapsed is not None else None
+                            row[f"q_{questionnaire['index']}_accesses"] = accesses
 
-                if ('time_submit') in row:
-                    dataframe = dataframe.append(row, ignore_index=True)
+                    if ('time_submit') in row:
+                        dataframe = dataframe.append(row, ignore_index=True)
 
     empty_cols = [col for col in dataframe.columns if dataframe[col].isnull().all()]
     dataframe.drop(empty_cols, axis=1, inplace=True)
@@ -1221,10 +1224,10 @@ console.rule("6 - Checking missing HITs")
 hits_missing = []
 hits = load_json(f"{task_config_folder}{batch_name}/hits.json")
 df = pd.read_csv(df_data_path)
+df = df.loc[df['worker_paid'] == True]
 for hit in hits:
     unit_data = df.loc[df['unit_id'] == hit['unit_id']]
     if len(unit_data) <= 0:
-        print(hit)
         hits_missing.append(hit)
 if len(hits_missing) > 0:
     console.print(f"Missing HITs: {len(hits_missing)}")

@@ -23,9 +23,9 @@
 
     <!-- Step #2 - Dimensions -->
 
-    <mat-step [stepControl]="dimensionsStepForm">
+    <mat-step [stepControl]="dimensionsStepForm" *ngIf="this.taskSettingsStep">
         <ng-template matStepLabel>Dimensions</ng-template>
-        <app-dimensions-step (formEmitter)="storeDimensionsForm($event)"></app-dimensions-step>
+        <app-dimensions-step (formEmitter)="storeDimensionsForm($event)" [modality]="this.taskModality"></app-dimensions-step>
     </mat-step>
 
     <!-- Step #3 - General Instructions -->
@@ -52,7 +52,7 @@
     <!-- Step #6 - Task Settings -->
     <mat-step [stepControl]="taskSettingsStepForm">
         <ng-template matStepLabel>Task Settings</ng-template>
-        <app-task-settings-step (formEmitter)="storeTaskSettingsForm($event)"></app-task-settings-step>
+        <app-task-settings-step (formEmitter)="storeTaskSettingsForm($event)" (modalityEmitter)="storeTaskModality($event)"></app-task-settings-step>
     </mat-step>
 
     <!-- Step #7 - Worker Checks -->

@@ -81,7 +81,6 @@ export class QuestionnaireStepComponent implements OnInit {
                 this.dataStored.push(JSON.parse(item))
             })
         } else {
-            console.log(this.configService.environment)
             this.initializeControls()
             let rawQuestionnaires = await this.S3Service.downloadQuestionnaires(this.configService.environment)
             rawQuestionnaires.forEach((data, index) => {
@@ -113,6 +112,7 @@ export class QuestionnaireStepComponent implements OnInit {
             type: questionnaire ? questionnaire.type ? questionnaire.type : '' : '',
             description: questionnaire ? questionnaire.description ? questionnaire.description : '' : '',
             position: questionnaire ? questionnaire.position ? questionnaire.position : '' : '',
+            allow_back: questionnaire ? questionnaire.allow_back ? questionnaire.allow_back : false : false,
             questions: this._formBuilder.array([]),
             mapping: this._formBuilder.array([])
         }))

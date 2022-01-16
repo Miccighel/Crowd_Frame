@@ -70,6 +70,15 @@
                                 </tr>
                             </table>
 
+                            <mat-divider [inset]="true"></mat-divider>
+
+                            <!-- Allow Back -->
+                            <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="allow_back">
+                                Allow Back
+                            </mat-slide-toggle>
+
+                            <mat-divider [inset]="true"></mat-divider>
+
                             <!-- Questions -->
                             <div *ngIf="questionnaire.get('type').value != ''" formArrayName="questions">
                                 <mat-divider [inset]="true"></mat-divider>

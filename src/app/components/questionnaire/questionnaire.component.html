@@ -112,7 +112,7 @@
             <mat-card-actions>
                 <p class="form-note">
                     <button mat-flat-button color="primary" matStepperPrevious
-                            *ngIf="step>0 && position=='end' || this.questionnaire.allowBack"
+                            *ngIf="step>0 && position=='end' || this.questionnaire.allow_back"
                             [disabled]="!questionnaireForm.valid ||this.taskCompleted"
                             (click)="emitQuestionnaireFilled('Back',step)">
                         Back
