@@ -213,7 +213,6 @@ resources_path = f"result/{task_name}/Resources/"
 data_path = f"result/{task_name}/Data/"
 hit_data_path = f"result/hits_data.csv"
 workers_acl_path = f"{models_path}workers_acl.csv"
-workers_acl_path = f"{models_path}workers_acl.csv"
 
 os.makedirs(models_path, exist_ok=True)
 os.makedirs(resources_path, exist_ok=True)
@@ -1062,7 +1061,14 @@ if not os.path.exists(df_data_path):
 
                             dataframe = dataframe.append(row, ignore_index=True)
 
-            else:
+            if len(data_partial) > 0:
+
+                last_full_try = 1
+                most_rec_try = 1
+                dataframe_worker = dataframe.loc[dataframe['worker_id'] == worker_id]
+                if dataframe_worker.shape[0] > 0:
+                    most_rec_try = dataframe_worker.loc[dataframe_worker['try_current'].idxmax()]['try_current']
+                    last_full_try = dataframe_worker.loc[dataframe_worker['try_last'].idxmax()]['try_last']
 
                 row = {}
                 row['worker_id'] = worker_id
@@ -1079,123 +1085,124 @@ if not os.path.exists(df_data_path):
                 for document_data in data_partial['documents_answers']:
 
                     row['try_current'] = document_data['serialization']['info']['try']
-
                     row['time_submit'] = document_data['time_submit']
 
-                    for check_data in checks:
-                        if int(check_data['serialization']['info']['try']) == int(document_data['serialization']['info']['try']):
-                            row["global_form_validity"] = check_data['serialization']["checks"]["globalFormValidity"]
-                            row["gold_checks"] = any(check_data['serialization']["checks"]["goldChecks"])
-                            row["time_check_amount"] = check_data['serialization']["checks"]["timeCheckAmount"]
-                            row["time_spent_check"] = check_data['serialization']["checks"]["timeSpentCheck"]
+                    if (int(last_full_try) > int(most_rec_try)) and (int(row['try_current']) > int(most_rec_try)):
 
-                    row["doc_accesses"] = document_data['serialization']['accesses']
+                        for check_data in checks:
+                            if int(check_data['serialization']['info']['try']) == int(document_data['serialization']['info']['try']):
+                                row["global_form_validity"] = check_data['serialization']["checks"]["globalFormValidity"]
+                                row["gold_checks"] = any(check_data['serialization']["checks"]["goldChecks"])
+                                row["time_check_amount"] = check_data['serialization']["checks"]["timeCheckAmount"]
+                                row["time_spent_check"] = check_data['serialization']["checks"]["timeSpentCheck"]
 
-                    row["doc_countdown_time_start"] = document_data['serialization']['countdowns_times_start'][0] if len(document_data['serialization']['countdowns_times_start']) > 0 else np.nan
-                    row["doc_countdown_time_value"] = document_data['serialization']['countdowns_times_left']['value'] if len(document_data['serialization']['countdowns_times_left']) > 0 else np.nan
-                    row["doc_countdown_time_text"] = document_data['serialization']['countdowns_times_left']['text'] if len(document_data['serialization']['countdowns_times_left']) > 0 else np.nan
-                    row["doc_countdown_time_expired"] = document_data['serialization']["countdowns_expired"][document_data['serialization']['info']['index']] if len(
-                        document_data['serialization']["countdowns_expired"]) > 0 else np.nan
+                        row["doc_accesses"] = document_data['serialization']['accesses']
 
-                    current_attributes = documents[document_data['serialization']['info']['index']].keys()
-                    current_answers = document_data['serialization']['answers']
-                    for current_attribute in current_attributes:
-                        current_attribute_value = documents[document_data['serialization']['info']['index']][current_attribute]
-                        if type(current_attribute_value) == str:
-                            current_attribute_value = re.sub('\n', '', current_attribute_value)
-                        row[f"doc_{current_attribute}"] = current_attribute_value
-                    for dimension in dimensions:
-                        if dimension['scale'] is not None:
-                            value = current_answers[f"{dimension['name']}_value"]
-                            if type(value) == str:
-                                value = value.strip()
-                                value = re.sub('\n', '', value)
-                            row[f"doc_{dimension['name']}_value"] = value
-                            if dimension["scale"]["type"] == "categorical":
-                                for mapping in dimension["scale"]['mapping']:
-                                    label = mapping['label'].lower().split(" ")
-                                    label = '-'.join([str(c) for c in label])
-                                    value_int = None
-                                    try:
-                                        value_int = int(value)
-                                    except:
-                                        value_int = 0
-                                    if int(mapping['value']) == value_int:
-                                        row[f"doc_{dimension['name']}_label"] = label
-                                        row[f"doc_{dimension['name']}_index"] = mapping['index']
-                                        row[f"doc_{dimension['name']}_description"] = mapping['description']
+                        row["doc_countdown_time_start"] = document_data['serialization']['countdowns_times_start'][0] if len(document_data['serialization']['countdowns_times_start']) > 0 else np.nan
+                        row["doc_countdown_time_value"] = document_data['serialization']['countdowns_times_left']['value'] if len(document_data['serialization']['countdowns_times_left']) > 0 else np.nan
+                        row["doc_countdown_time_text"] = document_data['serialization']['countdowns_times_left']['text'] if len(document_data['serialization']['countdowns_times_left']) > 0 else np.nan
+                        row["doc_countdown_time_expired"] = document_data['serialization']["countdowns_expired"][document_data['serialization']['info']['index']] if len(
+                            document_data['serialization']["countdowns_expired"]) > 0 else np.nan
+
+                        current_attributes = documents[document_data['serialization']['info']['index']].keys()
+                        current_answers = document_data['serialization']['answers']
+                        for current_attribute in current_attributes:
+                            current_attribute_value = documents[document_data['serialization']['info']['index']][current_attribute]
+                            if type(current_attribute_value) == str:
+                                current_attribute_value = re.sub('\n', '', current_attribute_value)
+                            row[f"doc_{current_attribute}"] = current_attribute_value
+                        for dimension in dimensions:
+                            if dimension['scale'] is not None:
+                                value = current_answers[f"{dimension['name']}_value"]
+                                if type(value) == str:
+                                    value = value.strip()
+                                    value = re.sub('\n', '', value)
+                                row[f"doc_{dimension['name']}_value"] = value
+                                if dimension["scale"]["type"] == "categorical":
+                                    for mapping in dimension["scale"]['mapping']:
+                                        label = mapping['label'].lower().split(" ")
+                                        label = '-'.join([str(c) for c in label])
+                                        value_int = None
+                                        try:
+                                            value_int = int(value)
+                                        except:
+                                            value_int = 0
+                                        if int(mapping['value']) == value_int:
+                                            row[f"doc_{dimension['name']}_label"] = label
+                                            row[f"doc_{dimension['name']}_index"] = mapping['index']
+                                            row[f"doc_{dimension['name']}_description"] = mapping['description']
+                                else:
+                                    row[f"doc_{dimension['name']}_value"] = np.nan
+                                    row[f"doc_{dimension['name']}_label"] = np.nan
+                                    row[f"doc_{dimension['name']}_index"] = np.nan
+                                    row[f"doc_{dimension['name']}_description"] = np.nan
+                            if dimension['justification']:
+                                justification = current_answers[f"{dimension['name']}_justification"].strip()
+                                justification = re.sub('\n', '', justification)
+                                row[f"doc_{dimension['name']}_justification"] = justification
                             else:
-                                row[f"doc_{dimension['name']}_value"] = np.nan
-                                row[f"doc_{dimension['name']}_label"] = np.nan
-                                row[f"doc_{dimension['name']}_index"] = np.nan
-                                row[f"doc_{dimension['name']}_description"] = np.nan
-                        if dimension['justification']:
-                            justification = current_answers[f"{dimension['name']}_justification"].strip()
-                            justification = re.sub('\n', '', justification)
-                            row[f"doc_{dimension['name']}_justification"] = justification
+                                row[f"doc_{dimension['name']}_justification"] = np.nan
+                            if dimension['url']:
+                                row[f"doc_{dimension['name']}_url"] = current_answers[f"{dimension['name']}_url"]
+                            else:
+                                row[f"doc_{dimension['name']}_url"] = np.nan
+
+                        row["doc_accesses"] = document_data['serialization']['accesses']
+
+                        if document_data['serialization']['timestamps_start'] is None:
+                            row["doc_time_start"] = np.nan
                         else:
-                            row[f"doc_{dimension['name']}_justification"] = np.nan
-                        if dimension['url']:
-                            row[f"doc_{dimension['name']}_url"] = current_answers[f"{dimension['name']}_url"]
+                            row["doc_time_start"] = round(document_data['serialization']['timestamps_start'][0], 2)
+
+                        if document_data['serialization']['timestamps_end'] is None:
+                            row["doc_time_end"] = np.nan
                         else:
-                            row[f"doc_{dimension['name']}_url"] = np.nan
+                            row["doc_time_end"] = round(document_data['serialization']['timestamps_end'][0], 2)
 
-                    row["doc_accesses"] = document_data['serialization']['accesses']
+                        if document_data['serialization']['timestamps_elapsed'] is None:
+                            row["doc_time_elapsed"] = np.nan
+                        else:
+                            row["doc_time_elapsed"] = round(document_data['serialization']['timestamps_elapsed'], 2)
 
-                    if document_data['serialization']['timestamps_start'] is None:
-                        row["doc_time_start"] = np.nan
-                    else:
-                        row["doc_time_start"] = round(document_data['serialization']['timestamps_start'][0], 2)
+                        for questionnaire_data in data_partial['questionnaires_answers']:
 
-                    if document_data['serialization']['timestamps_end'] is None:
-                        row["doc_time_end"] = np.nan
-                    else:
-                        row["doc_time_end"] = round(document_data['serialization']['timestamps_end'][0], 2)
+                            questionnaire = questionnaires[questionnaire_data['serialization']['info']['index']]
+                            current_answers = questionnaire_data['serialization']['answers']
+                            timestamps_elapsed = questionnaire_data['serialization']["timestamps_elapsed"]
+                            accesses = questionnaire_data['serialization']["accesses"]
 
-                    if document_data['serialization']['timestamps_elapsed'] is None:
-                        row["doc_time_elapsed"] = np.nan
-                    else:
-                        row["doc_time_elapsed"] = round(document_data['serialization']['timestamps_elapsed'], 2)
+                            for index_sub, question in enumerate(questionnaire["questions"]):
 
-                    for questionnaire_data in data_partial['questionnaires_answers']:
+                                answer = None
+                                for question_name, answer_current in current_answers.items():
+                                    question_name_parsed = question_name.replace("_answer", "")
+                                    if question_name_parsed == question["name"]:
+                                        answer = answer_current
 
-                        questionnaire = questionnaires[questionnaire_data['serialization']['info']['index']]
-                        current_answers = questionnaire_data['serialization']['answers']
-                        timestamps_elapsed = questionnaire_data['serialization']["timestamps_elapsed"]
-                        accesses = questionnaire_data['serialization']["accesses"]
+                                row[f"q_{questionnaire['index']}_{question['index']}_index"] = question['index']
+                                row[f"q_{questionnaire['index']}_{question['index']}_name"] = question['name']
+                                row[f"q_{questionnaire['index']}_{question['index']}_name_full"] = question['nameFull'] if "nameFull" in question else None
+                                row[f"q_{questionnaire['index']}_{question['index']}_type"] = question['type'] if "type" in question else None
+                                row[f"q_{questionnaire['index']}_{question['index']}_required"] = question['required'] if "required" in question else None
+                                row[f"q_{questionnaire['index']}_{question['index']}_detail"] = question['detail'] if "detail" in question else None
+                                row[f"q_{questionnaire['index']}_{question['index']}_show_detail"] = question['show_detail'] if "show_detail" in question else None
+                                row[f"q_{questionnaire['index']}_{question['index']}_free_text"] = question['free_text'] if "free_text" in question else None
+                                row[f"q_{questionnaire['index']}_{question['index']}_text"] = question['text']
+                                row[f"q_{questionnaire['index']}_{question['index']}_answer_value"] = answer
+                                if questionnaire['type'] == 'standard':
+                                    row[f"q_{questionnaire['index']}_{question['index']}_answer_text"] = question['answers'][int(answer)]
+                                elif questionnaire['type'] == 'likert':
+                                    mapping = questionnaire['mappings'][int(answer)]
+                                    row[f"q_{questionnaire['index']}_{question['index']}_answer_mapping_index"] = mapping['index']
+                                    row[f"q_{questionnaire['index']}_{question['index']}_answer_mapping_key"] = mapping['key'] if "key" in mapping else None
+                                    row[f"q_{questionnaire['index']}_{question['index']}_answer_mapping_label"] = mapping['label']
+                                    row[f"q_{questionnaire['index']}_{question['index']}_answer_mapping_value"] = mapping['value']
 
-                        for index_sub, question in enumerate(questionnaire["questions"]):
+                                row[f"q_{questionnaire['index']}_time_elapsed"] = round(timestamps_elapsed, 2) if timestamps_elapsed is not None else None
+                                row[f"q_{questionnaire['index']}_accesses"] = accesses
 
-                            answer = None
-                            for question_name, answer_current in current_answers.items():
-                                question_name_parsed = question_name.replace("_answer", "")
-                                if question_name_parsed == question["name"]:
-                                    answer = answer_current
-
-                            row[f"q_{questionnaire['index']}_{question['index']}_index"] = question['index']
-                            row[f"q_{questionnaire['index']}_{question['index']}_name"] = question['name']
-                            row[f"q_{questionnaire['index']}_{question['index']}_name_full"] = question['nameFull'] if "nameFull" in question else None
-                            row[f"q_{questionnaire['index']}_{question['index']}_type"] = question['type'] if "type" in question else None
-                            row[f"q_{questionnaire['index']}_{question['index']}_required"] = question['required'] if "required" in question else None
-                            row[f"q_{questionnaire['index']}_{question['index']}_detail"] = question['detail'] if "detail" in question else None
-                            row[f"q_{questionnaire['index']}_{question['index']}_show_detail"] = question['show_detail'] if "show_detail" in question else None
-                            row[f"q_{questionnaire['index']}_{question['index']}_free_text"] = question['free_text'] if "free_text" in question else None
-                            row[f"q_{questionnaire['index']}_{question['index']}_text"] = question['text']
-                            row[f"q_{questionnaire['index']}_{question['index']}_answer_value"] = answer
-                            if questionnaire['type'] == 'standard':
-                                row[f"q_{questionnaire['index']}_{question['index']}_answer_text"] = question['answers'][int(answer)]
-                            elif questionnaire['type'] == 'likert':
-                                mapping = questionnaire['mappings'][int(answer)]
-                                row[f"q_{questionnaire['index']}_{question['index']}_answer_mapping_index"] = mapping['index']
-                                row[f"q_{questionnaire['index']}_{question['index']}_answer_mapping_key"] = mapping['key'] if "key" in mapping else None
-                                row[f"q_{questionnaire['index']}_{question['index']}_answer_mapping_label"] = mapping['label']
-                                row[f"q_{questionnaire['index']}_{question['index']}_answer_mapping_value"] = mapping['value']
-
-                            row[f"q_{questionnaire['index']}_time_elapsed"] = round(timestamps_elapsed, 2) if timestamps_elapsed is not None else None
-                            row[f"q_{questionnaire['index']}_accesses"] = accesses
-
-                    if ('time_submit') in row:
-                        dataframe = dataframe.append(row, ignore_index=True)
+                        if ('time_submit') in row:
+                            dataframe = dataframe.append(row, ignore_index=True)
 
     empty_cols = [col for col in dataframe.columns if dataframe[col].isnull().all()]
     dataframe.drop(empty_cols, axis=1, inplace=True)
@@ -1250,7 +1257,8 @@ dataframe = pd.DataFrame(columns=[
     "task_id",
     "batch_name",
     "unit_id",
-    'current_try',
+    'try_last',
+    'try_current',
     'dimension_index',
     'dimension_name',
     'timestamp_start',
@@ -1263,7 +1271,8 @@ dataframe = pd.DataFrame(columns=[
     'document_index',
     'document_id'
 ])
-
+dataframe['try_last'] = dataframe['try_last'].astype(float)
+dataframe['try_current'] = dataframe['try_current'].astype(float)
 
 def parse_dimensions_selected(df, worker_id, worker_paid, task, info, documents, dimensions, dimensions_selected_data, timestamp_start, timestamp_end):
     for index_current, dimensions_selected in enumerate(dimensions_selected_data):
@@ -1292,7 +1301,8 @@ def parse_dimensions_selected(df, worker_id, worker_paid, task, info, documents,
                 'task_id': task['task_id'],
                 'batch_name': task['batch_name'],
                 'unit_id': task['unit_id'],
-                'current_try': info['try'],
+                'try_last': task['try_last'],
+                'try_current': info['try'],
                 'document_index': dimension_current['document'],
                 'document_id': documents[dimension_current['document']]['id'],
                 'dimension_index': dimension_current['dimension'],
@@ -1353,7 +1363,14 @@ if not os.path.exists(df_dim_path):
 
                         dataframe = parse_dimensions_selected(dataframe, worker_id, worker_paid, task, info, documents, dimensions, dimensions_selected_data, timestamp_start, timestamp_end)
 
-            else:
+            if len(data_partial) > 0:
+
+                last_full_try = 1
+                most_rec_try = 1
+                dataframe_worker = dataframe.loc[dataframe['worker_id'] == worker_id]
+                if dataframe_worker.shape[0] > 0:
+                    most_rec_try = dataframe_worker.loc[dataframe_worker['try_current'].idxmax()]['try_current']
+                    last_full_try = dataframe_worker.loc[dataframe_worker['try_last'].idxmax()]['try_last']
 
                 timestamps_found = []
 
@@ -1363,15 +1380,17 @@ if not os.path.exists(df_dim_path):
                     timestampsEnd = document_data['serialization']["timestamps_end"]
                     info = document_data['serialization']["info"]
 
-                    timestamp_first = timestamp_start
-                    timestamp_first_parsed = datetime.datetime.fromtimestamp(timestamp_first)
-                    timestamps_found = [timestamp_first_parsed]
+                    if (int(last_full_try) > int(most_rec_try)) and (int(info['try']) > int(most_rec_try)):
 
-                    counter = 0
+                        timestamp_first = timestamp_start
+                        timestamp_first_parsed = datetime.datetime.fromtimestamp(timestamp_first)
+                        timestamps_found = [timestamp_first_parsed]
 
-                    dimensions_selected_data = [document_data['serialization']["dimensions_selected"]]
+                        counter = 0
 
-                    dataframe = parse_dimensions_selected(dataframe, worker_id, worker_paid, task, info, documents, dimensions, dimensions_selected_data, timestamp_start, timestamp_end)
+                        dimensions_selected_data = [document_data['serialization']["dimensions_selected"]]
+
+                        dataframe = parse_dimensions_selected(dataframe, worker_id, worker_paid, task, info, documents, dimensions, dimensions_selected_data, timestamp_start, timestamp_end)
 
     dataframe.drop_duplicates(inplace=True)
 
@@ -1397,7 +1416,8 @@ df_url_path = f"{models_path}workers_urls.csv"
 dataframe = pd.DataFrame(columns=[
     "worker_id",
     "worker_paid",
-    "current_try",
+    "try_last",
+    "try_current",
     "document_index",
     "document_id",
     "dimension_index",
@@ -1411,16 +1431,18 @@ dataframe = pd.DataFrame(columns=[
     "response_snippet",
     "index_selected"
 ])
+dataframe['try_last'] = dataframe['try_last'].astype(float)
+dataframe['try_current'] = dataframe['try_current'].astype(float)
 
-
-def parse_responses(df, worker_id, worker_paid, info, queries, responses_retrieved, responses_selected):
+def parse_responses(df, worker_id, worker_paid, task, info, queries, responses_retrieved, responses_selected):
     for index_current, responses_retrieved_document in enumerate(responses_retrieved):
         for index_current_sub, response_retrieved in enumerate(responses_retrieved_document["data"]):
 
             row = {
                 "worker_id": worker_id,
                 "worker_paid": worker_paid,
-                "current_try": int(info['try']),
+                "try_last": task['try_last'],
+                "try_current": info['try'],
                 "document_index": response_retrieved['document'],
                 "document_id": documents[response_retrieved['document']]['id'],
                 "dimension_index": response_retrieved['dimension'],
@@ -1448,7 +1470,8 @@ def parse_responses(df, worker_id, worker_paid, info, queries, responses_retriev
                 row["index_selected"] = -1
                 row_check = df.loc[
                     (df["worker_id"] == row["worker_id"]) &
-                    (df["current_try"] == row["current_try"]) &
+                    (df["try_last"] == task['try_last']) &
+                    (df["try_current"] == row["try_current"]) &
                     (df["document_index"] == row["document_index"]) &
                     (df["dimension_index"] == row["dimension_index"]) &
                     (df["query_index"] == row["query_index"]) &
@@ -1462,7 +1485,8 @@ def parse_responses(df, worker_id, worker_paid, info, queries, responses_retriev
         for response_index, response_selected in enumerate(responses_selected_document["data"]):
             row = df.loc[
                 (df["worker_id"] == worker_id) &
-                (df["current_try"] == int(info['try'])) &
+                (df["try_last"] == task['try_last']) &
+                (df["try_current"] == info['try']) &
                 (df["document_index"] == response_selected["document"]) &
                 (df["dimension_index"] == response_selected["dimension"]) &
                 (df["query_index"] == response_selected["query"]) &
@@ -1500,9 +1524,16 @@ if not os.path.exists(df_url_path):
                     responses_retrieved = data_try['serialization']['responses_retrieved']
                     responses_selected = data_try['serialization']['responses_selected']
 
-                    dataframe = parse_responses(dataframe, worker_id, worker_paid, info, queries, responses_retrieved, responses_selected)
+                    dataframe = parse_responses(dataframe, worker_id, worker_paid, task, info, queries, responses_retrieved, responses_selected)
 
-            else:
+            if len(data_partial) > 0:
+
+                last_full_try = 1
+                most_rec_try = 1
+                dataframe_worker = dataframe.loc[dataframe['worker_id'] == worker_id]
+                if dataframe_worker.shape[0] > 0:
+                    most_rec_try = dataframe_worker.loc[dataframe_worker['try_current'].idxmax()]['try_current']
+                    last_full_try = dataframe_worker.loc[dataframe_worker['try_last'].idxmax()]['try_last']
 
                 for document_data in data_partial['documents_answers']:
                     info = document_data['serialization']['info']
@@ -1510,7 +1541,8 @@ if not os.path.exists(df_url_path):
                     responses_retrieved = [document_data['serialization']['responses_retrieved']]
                     responses_selected = [document_data['serialization']['responses_selected']]
 
-                    dataframe = parse_responses(dataframe, worker_id, worker_paid, info, queries, responses_retrieved, responses_selected)
+                    if (int(last_full_try) > int(most_rec_try)) and (int(info['try']) > int(most_rec_try)):
+                        dataframe = parse_responses(dataframe, worker_id, worker_paid, task, info, queries, responses_retrieved, responses_selected)
 
     dataframe.drop_duplicates(inplace=True)
 
