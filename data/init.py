@@ -304,8 +304,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                                 lines = f.readlines()
                                 for line in lines:
                                     if line.strip() == f'[{user}]':
-                                        print(f"Line: {line.strip()}")
-                                        print(f"User: [{user}]")
                                         line_index = line_counter
                                     line_counter += 1
                             if line_index is not None:
