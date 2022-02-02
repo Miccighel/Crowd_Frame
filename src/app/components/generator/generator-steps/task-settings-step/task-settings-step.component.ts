@@ -113,7 +113,7 @@ export class TaskSettingsStepComponent implements OnInit {
             countdown_position_values: this._formBuilder.array([]),
             messages: this._formBuilder.array([]),
             logger: false,
-            logOption: false,
+            logger_option: false,
             serverEndpoint: ''
         });
         /* Read mode during hits file upload*/
@@ -162,9 +162,9 @@ export class TaskSettingsStepComponent implements OnInit {
             countdown_attribute_values: this._formBuilder.array([]),
             countdown_position_values: this._formBuilder.array([]),
             messages: this._formBuilder.array([]),
-            logger: !!this.dataStored.log_enable,
-            logOption: this.dataStored.log_option,
-            serverEndpoint: this.dataStored.log_server_endpoint
+            logger: !!this.dataStored.logger_enable,
+            logger_option: this.dataStored.logger_options,
+            server_endpoint: this.dataStored.logger_server_endpoint
         });
         if(this.dataStored.modality) this.emitModality(this.dataStored.modality)
         if (this.dataStored.messages) if (this.dataStored.messages.length > 0) this.dataStored.messages.forEach((message, messageIndex) => this.addMessage(message))
@@ -215,17 +215,23 @@ export class TaskSettingsStepComponent implements OnInit {
         this.modalityEmitter.emit(data['value'])
     }
 
-    updateLogOption(el: string, action: string) {
-        let truthValue = this.formStep.get('logOption').value[el][action] != true;
+    updateLoggerOption(el: string, action: string) {
+        let truthValue = this.formStep.get('logger_option').value[el][action] != true;
         if (action == 'general') {
-            for (let key in this.formStep.get('logOption').value[el])
-                this.formStep.get('logOption').value[el][key] = truthValue
-        } else
-            this.formStep.get('logOption').value[el][action] = truthValue
+            for (let key in this.formStep.get('logger_option').value[el]) {
+                let value = this.formStep.get('logger_option').value
+                value[el][key] = truthValue
+                this.formStep.get('logger_option').setValue(value)
+            }
+        } else {
+            let value = this.formStep.get('logger_option').value
+            value[el][action] = truthValue
+            this.formStep.get('logger_option').setValue(value)
+        }
     }
 
     updateServerEndpoint() {
-        return this.formStep.get('serverEndpoint').value
+        return this.formStep.get('server_endpoint').value
     }
 
     updateHitsFile(hits = null) {
@@ -513,6 +519,8 @@ export class TaskSettingsStepComponent implements OnInit {
     serializeConfiguration() {
 
         let taskSettingsJSON = JSON.parse(JSON.stringify(this.formStep.value));
+
+        console.log(taskSettingsJSON)
 
         if (!taskSettingsJSON.setAnnotator) taskSettingsJSON.annotator = false
         delete taskSettingsJSON.setAnnotator

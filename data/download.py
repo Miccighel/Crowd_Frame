@@ -28,6 +28,7 @@ load_dotenv(dotenv_path=env_path)
 
 mail_contact = os.getenv('mail_contact')
 profile_name = os.getenv('profile_name')
+platform_name = os.getenv('platform_name')
 task_name = os.getenv('task_name')
 batch_name = os.getenv('batch_name')
 admin_user = os.getenv('admin_user')
@@ -42,7 +43,7 @@ budget_limit = os.getenv('budget_limit')
 bing_api_key = os.getenv('bing_api_key')
 ip_info_token = os.getenv('ip_info_token')
 user_stack_token = os.getenv('user_stack_token')
-
+fake_json_token = os.getenv('fake_json_token')
 
 def serialize_json(folder, filename, data):
     if not os.path.exists(folder):
@@ -177,6 +178,9 @@ bucket = s3_resource.Bucket(aws_private_bucket)
 dynamo_db = boto3.client('dynamodb', region_name=aws_region)
 dynamo_db_resource = boto3.resource('dynamodb', region_name=aws_region)
 ip_info_handler = ipinfo.getHandler(ip_info_token)
+
+if platform_name.lower() != 'mturk' and platform_name.lower()!='prolific':
+    raise Exception("Value for 'platform_name' variable invalid. Use 'mturk' or 'prolific'.")
 
 next_token = ''
 hit_counter = 0

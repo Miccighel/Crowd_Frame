@@ -84,6 +84,7 @@ load_dotenv(dotenv_path=env_path)
 
 mail_contact = os.getenv('mail_contact')
 profile_name = os.getenv('profile_name')
+platform_name = os.getenv('platform_name')
 task_name = os.getenv('task_name')
 batch_name = os.getenv('batch_name')
 admin_user = os.getenv('admin_user')
@@ -98,6 +99,7 @@ budget_limit = os.getenv('budget_limit')
 bing_api_key = os.getenv('bing_api_key')
 ip_info_token = os.getenv('ip_info_token')
 user_stack_token = os.getenv('user_stack_token')
+fake_json_token = os.getenv('fake_json_token')
 
 table_logging_name = f"Crowd_Frame-{task_name}_{batch_name}_Logger"
 table_data_name = f"Crowd_Frame-{task_name}_{batch_name}_Data"
@@ -111,6 +113,9 @@ console.rule("0 - Initialization")
 
 console.print("[bold]Init.py[/bold] script launched")
 console.print(f"Working directory: [bold]{os.getcwd()}[/bold]")
+
+if platform_name.lower() != 'mturk' and platform_name.lower()!='prolific':
+    raise Exception("Value for 'platform_name' variable invalid. Use 'mturk' or 'prolific'.")
 
 console.rule("1 - Configuration policy")
 
@@ -1159,6 +1164,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     environment_dict = {
         "production": 'true',
         "configuration_local": 'false',
+        "platformName": platform_name,
         "taskName": task_name,
         "batchName": batch_name,
         "region": aws_region,
@@ -1166,6 +1172,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         "aws_id_key": aws_worker_access_id,
         "aws_secret_key": aws_worker_access_secret,
         "bing_api_key": bing_api_key,
+        "fake_json_token": fake_json_token,
         "log_on_console": 'false',
         "log_server_config": f"{server_config}",
         "table_acl_name": f"{table_acl_name}",
@@ -1195,6 +1202,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     environment_dict = {
         "production": 'false',
         "configuration_local": 'false',
+        "platform_name": platform_name,
         "taskName": task_name,
         "batchName": batch_name,
         "region": aws_region,
@@ -1202,6 +1210,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         "aws_id_key": aws_worker_access_id,
         "aws_secret_key": aws_worker_access_secret,
         "bing_api_key": bing_api_key,
+        "fake_json_token": fake_json_token,
         "log_on_console": 'true',
         "log_server_config": f"{server_config}",
         "table_acl_name": f"{table_acl_name}",
@@ -1413,8 +1422,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         with open(f"{folder_build_task_path}{filename}", 'w') as file:
             sample_settings = {
                 "modality": f"pointwise",
-                "task_name": f"{task_name}",
-                "batch_name": f"{batch_name}",
                 "allowed_tries": 10,
                 "time_check_amount": 3,
                 "attributes": [
@@ -1439,7 +1446,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 "countdown_attribute_values": [],
                 "countdown_position_values": [],
                 "logger": False,
-                "logOption": {
+                "logger_option": {
                     "button": {
                         "general": False,
                         "click": False
@@ -1483,7 +1490,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                         "resize": False
                     }
                 },
-                "serverEndpoint": logging_endpoint,
+                "server_endpoint": logging_endpoint,
                 "messages": ["You have already started this task without finishing it"]
             }
             print(json.dumps(sample_settings, indent=4), file=file)

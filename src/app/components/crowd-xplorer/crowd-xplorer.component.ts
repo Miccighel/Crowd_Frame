@@ -30,16 +30,17 @@ import {S3Service} from "../../services/s3.service";
 
 /*
 * This class implements a custom search engine which can be used for Crowdsourcing tasks.
-* Please, remember to review the environment variables in ../environments/ folder.
-* File environment.ts --- DEVELOPMENT ENVIRONMENT
-* File environment.prod.ts --- PRODUCTION ENVIRONMENT
 */
+
 export class CrowdXplorer {
 
     /* |--------- SEARCH ENGINE SETTINGS - DECLARATION ---------| */
 
     /* Microsoft Search API key */
-    apiKey: string
+    bingApiKey: string
+
+    /* fakeJSON token */
+    fakeJSONToken: string
 
     /*
      * Service to query:
@@ -152,7 +153,8 @@ export class CrowdXplorer {
 
         /* |--------- SEARCH ENGINE SETTINGS - INITIALIZATION ---------| */
 
-        this.apiKey = this.configService.environment.bing_api_key
+        this.bingApiKey = this.configService.environment.bing_api_key
+        this.fakeJSONToken = this.configService.environment.fake_json_token
         this.loadSettings()
 
         /* The form control for user query is initialized and bound with its synchronous validator(s) */
@@ -204,7 +206,7 @@ export class CrowdXplorer {
             /* The search operation for Bing Web Search is performed */
             /* This is done by subscribing to an Observable of <BingWebSearchResponse> items */
             case "BingWebSearch": {
-                this.bingService.performWebSearch(this.apiKey, query).subscribe(
+                this.bingService.performWebSearch(this.bingApiKey, query).subscribe(
                     searchResponse => {
                         /* We are interested in parsing the webPages property of a <BingWebSearchResponse> */
                         if (searchResponse.hasOwnProperty("webPages")) {
@@ -234,7 +236,7 @@ export class CrowdXplorer {
                 break;
             }
             case "FakerWebSearch": {
-                this.fakerService.performWebSearch(query).subscribe(
+                this.fakerService.performWebSearch(this.fakeJSONToken, query).subscribe(
                     searchResponse => {
                         /* We are interested in parsing the webPages property of a BingWebSearchResponse */
                         if (searchResponse.length > 0) {

@@ -98,11 +98,6 @@ export class SkeletonComponent implements OnInit {
 
     /* |--------- WORKER ATTRIBUTES - DECLARATION ---------| */
 
-    /* Unique identifier of the current worker */
-    workerIdentifier: string;
-
-    platform: string
-
     /* Object to encapsulate all worker-related information */
     worker: Worker
 
@@ -190,23 +185,8 @@ export class SkeletonComponent implements OnInit {
     settingsTask: SettingsTask
     settingsWorker: SettingsWorker
 
-    /* Number of allowed tries */
-    allowedTries: number;
-
-    /* Time allowed to be spent on each document */
-    timeCheckAmount: number;
-
-    /* Batches to blacklist */
-    blacklistBatches: Array<string>
-
-    /* Batches to whitelist */
-    whitelistBatches: Array<string>
-
     /* Optional countdown to use for each document */
     documentsCountdownTime: Array<number>
-
-    /* Optional document time value for each document */
-    timeOfDocument: number
 
     /* References to the HTML elements */
     @ViewChildren('countdownElement') countdown: QueryList<CountdownComponent>;
@@ -214,8 +194,6 @@ export class SkeletonComponent implements OnInit {
     countdownsExpired: Array<boolean>;
     hideAttributes: boolean;
 
-    /* Object to encapsulate annotator's settings */
-    annotator: Annotator
     /* Available options to label an annotation */
     annotationOptions: FormGroup;
     /* Arrays to store user annotations, one for each document within a Hit */
@@ -245,7 +223,6 @@ export class SkeletonComponent implements OnInit {
 
     /* |--------- LOGGING ELEMENTS - DECLARATION ---------| */
     sequenceNumber: number
-    logger: boolean
     loggerOpt: Object
     logOnConsole: boolean
     serverEndpoint: string
@@ -294,7 +271,7 @@ export class SkeletonComponent implements OnInit {
 
         /* |--------- CONTROL FLOW & UI ELEMENTS - INITIALIZATION ---------| */
 
-        this.tokenInput = new FormControl('', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
+        this.tokenInput = new FormControl('ABCDEFGHILM', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
         this.tokenForm = formBuilder.group({
             "tokenInput": this.tokenInput
         });
@@ -337,60 +314,68 @@ export class SkeletonComponent implements OnInit {
 
         /* The task settings are loaded */
         this.loadSettings().then(() => {
-            this.workerIdentifier = url.searchParams.get("workerID");
 
-            // Log session start
-            if (this.logger)
-                this.logInit(this.workerIdentifier, this.configService.environment.taskName, this.configService.environment.batchName, this.client, this.logOnConsole);
+            /* The GET URL parameters are parsed and used to init worker's instance */
+            let paramsFetched: Record<string, string> = {};
+            url.searchParams.forEach((value, param) => {
+                if (param.toLowerCase().includes('workerid')) {
+                    paramsFetched['identifier'] = value
+                } else {
+                    param = param.replace(/(?:^|\.?)([A-Z])/g, function (x, y) {
+                        return "_" + y.toLowerCase()
+                    }).replace(/^_/, "")
+                    paramsFetched[param] = value
+                }
+            })
+
+            this.worker = new Worker(paramsFetched)
+
+            /* The logging service is enabled if it is needed */
+            if (this.settingsTask.logger_enable)
+                this.logInit(this.worker.identifier, this.configService.environment.taskName, this.configService.environment.batchName, this.client, this.logOnConsole);
             else
                 this.actionLogger = null;
 
-            /* If there is an external worker which is trying to perform the task, check its status */
-            if (!(this.workerIdentifier === null)) {
+            /* Anonymous  function that unlocks the task depending on performWorkerStatusCheck outcome */
+            let unlockTask = function (changeDetector: ChangeDetectorRef, ngxService: NgxUiLoaderService, sectionService: SectionService, taskAllowed: boolean) {
+                sectionService.taskAllowed = taskAllowed
+                sectionService.checkCompleted = true
+                changeDetector.detectChanges()
+                /* The loading spinner is stopped */
+                ngxService.stop();
+            };
 
-                this.platform = url.searchParams.get("platform");
+            /* If there is an external worker which is trying to perform the task, check its status */
+            if (!(this.worker.identifier === null)) {
 
                 /* The performWorkerStatusCheck function checks worker's status and its result is interpreted as a success|error callback */
                 this.performWorkerStatusCheck().then(taskAllowed => {
-                    /* But at the end of the day it's just a boolean so we launch a call to Cloudflare to trace the worker and we use such boolean in the second callback */
+
+                    /* The worker's remote S3 folder is retrieved */
+                    this.worker.folder = this.S3Service.getWorkerFolder(this.configService.environment, this.worker)
+                    /* Some worker properties are loaded using ngxDeviceDetector npm package capabilities... */
+                    this.worker.updateProperties('ngxdevicedetector', this.deviceDetectorService.getDeviceInfo())
+                    /* ... or the simple Navigator DOM's object */
+                    this.worker.updateProperties('navigator', window.navigator)
+
+                    /* But at the end of the day it's just a boolean, so we launch a call to Cloudflare to trace the worker, and we use such boolean in the second callback */
                     if (this.settingsWorker.analysis) {
                         this.client.get('https://www.cloudflare.com/cdn-cgi/trace', {responseType: 'text'}).subscribe(
                             /* If we retrieve some data from Cloudflare we use them to populate worker's object */
                             cloudflareData => {
-                                this.worker = new Worker(this.workerIdentifier, this.platform, this.S3Service.getWorkerFolder(this.configService.environment, null, this.workerIdentifier), cloudflareData, window.navigator, this.deviceDetectorService.getDeviceInfo())
-                                this.sectionService.taskAllowed = taskAllowed
-                                this.sectionService.checkCompleted = true
-                                this.changeDetector.detectChanges()
-                                /* The loading spinner is stopped */
-                                this.ngxService.stop();
+                                this.worker.updateProperties('cloudflare', cloudflareData)
+                                unlockTask(this.changeDetector, this.ngxService, this.sectionService, taskAllowed)
                             },
-                            /* Otherwise we won't have such information */
-                            error => {
-                                this.worker = new Worker(this.workerIdentifier, this.platform, this.S3Service.getWorkerFolder(this.configService.environment, null, this.workerIdentifier), null, window.navigator, this.deviceDetectorService.getDeviceInfo())
-                                this.sectionService.taskAllowed = taskAllowed
-                                this.sectionService.checkCompleted = true
-                                this.changeDetector.detectChanges()
-                                /* The loading spinner is stopped */
-                                this.ngxService.stop();
-                            }
+                            /* Otherwise, we won't have such information */
+                            error => unlockTask(this.changeDetector, this.ngxService, this.sectionService, taskAllowed)
                         )
-                    } else {
-                        this.worker = new Worker(this.workerIdentifier, this.platform, this.S3Service.getWorkerFolder(this.configService.environment, null, this.workerIdentifier), null, window.navigator, this.deviceDetectorService.getDeviceInfo())
-                        this.sectionService.taskAllowed = taskAllowed
-                        this.sectionService.checkCompleted = true
-                        this.changeDetector.detectChanges()
-                        /* The loading spinner is stopped */
-                        this.ngxService.stop();
-                    }
+                    } else unlockTask(this.changeDetector, this.ngxService, this.sectionService, taskAllowed)
                 })
                 /* If there is not any worker ID we simply load the task. A sort of testing mode. */
-            } else {
-                this.worker = new Worker(null, null, null, null, null, null)
-                this.sectionService.checkCompleted = true
-                this.changeDetector.detectChanges()
-                this.ngxService.stop()
-            }
+            } else unlockTask(this.changeDetector, this.ngxService, this.sectionService, true)
+
         })
+
 
         /* |--------- INSTRUCTIONS MAIN (see: instructions_main.json) ---------| */
 
@@ -412,12 +397,6 @@ export class SkeletonComponent implements OnInit {
     public async loadSettings() {
         this.settingsTask = new SettingsTask(await this.S3Service.downloadTaskSettings(this.configService.environment))
         this.settingsWorker = new SettingsWorker(await this.S3Service.downloadWorkers(this.configService.environment))
-        this.allowedTries = this.settingsTask.allowed_tries
-        this.timeCheckAmount = this.settingsTask.time_check_amount
-        this.blacklistBatches = this.settingsWorker.blacklist_batches
-        this.whitelistBatches = this.settingsWorker.whitelist_batches
-        this.annotator = this.settingsTask.annotator
-        this.logger = this.settingsTask.log_enable
     }
 
     /*
@@ -433,10 +412,10 @@ export class SkeletonComponent implements OnInit {
             let batchesStatus = {}
             let tables = await this.dynamoDBService.listTables(this.configService.environment)
             let workersManual = await this.S3Service.downloadWorkers(this.configService.environment)
-            let workersACL = await this.dynamoDBService.getWorker(this.configService.environment, this.workerIdentifier)
+            let workersACL = await this.dynamoDBService.getWorker(this.configService.environment, this.worker.identifier)
 
             /* To blacklist a previous batch its worker list is picked up */
-            for (let batchName of this.blacklistBatches) {
+            for (let batchName of this.settingsWorker.blacklist_batches) {
                 let previousTaskName = batchName.split("/")[0]
                 let previousBatchName = batchName.split("/")[1]
                 if (!(batchName in batchesStatus)) {
@@ -452,7 +431,7 @@ export class SkeletonComponent implements OnInit {
             }
 
             /* To whitelist a previous batch its blacklist is picked up */
-            for (let batchName of this.whitelistBatches) {
+            for (let batchName of this.settingsWorker.whitelist_batches) {
                 let previousTaskName = batchName.split("/")[0]
                 let previousBatchName = batchName.split("/")[1]
                 if (!(batchName in batchesStatus)) {
@@ -474,17 +453,17 @@ export class SkeletonComponent implements OnInit {
                 let batchStatus = batchesStatus[batchName]
                 if ('blacklist' in batchStatus) {
                     if ('tableName' in batchStatus) {
-                        let rawWorker = await this.dynamoDBService.getWorker(this.configService.environment, this.workerIdentifier, batchStatus['tableName'])
+                        let rawWorker = await this.dynamoDBService.getWorker(this.configService.environment, this.worker.identifier, batchStatus['tableName'])
                         if ('Items' in rawWorker) {
                             for (let worker of rawWorker['Items']) {
-                                if (this.workerIdentifier == worker['identifier']) {
+                                if (this.worker.identifier == worker['identifier']) {
                                     taskAllowed = false
                                 }
                             }
                         }
                     } else {
                         for (let workerIdentifier of batchStatus['blacklist']) {
-                            if (this.workerIdentifier == workerIdentifier) {
+                            if (this.worker.identifier == workerIdentifier) {
                                 taskAllowed = false
                             }
                         }
@@ -497,17 +476,17 @@ export class SkeletonComponent implements OnInit {
                 let batchStatus = batchesStatus[batchName]
                 if ('whitelist' in batchStatus) {
                     if ('tableName' in batchStatus) {
-                        let rawWorker = await this.dynamoDBService.getWorker(this.configService.environment, this.workerIdentifier, batchStatus['tableName'])
+                        let rawWorker = await this.dynamoDBService.getWorker(this.configService.environment, this.worker.identifier, batchStatus['tableName'])
                         if ('Items' in rawWorker) {
                             for (let worker of rawWorker['Items']) {
-                                if (this.workerIdentifier == worker['identifier']) {
+                                if (this.worker.identifier == worker['identifier']) {
                                     taskAllowed = true
                                 }
                             }
                         }
                     } else {
                         for (let workerIdentifier of batchStatus['whitelist']) {
-                            if (this.workerIdentifier == workerIdentifier) {
+                            if (this.worker.identifier == workerIdentifier) {
                                 taskAllowed = true
                             }
                         }
@@ -518,7 +497,7 @@ export class SkeletonComponent implements OnInit {
             /* Check to verify if the current worker already accessed the current task using the dynamo-db based acl */
             if ('Items' in workersACL) {
                 for (let worker of workersACL['Items']) {
-                    if (this.workerIdentifier == worker['identifier']) {
+                    if (this.worker.identifier == worker['identifier']) {
                         taskAllowed = false
                         return taskAllowed
                     }
@@ -527,7 +506,7 @@ export class SkeletonComponent implements OnInit {
 
             /* Check to verify if the current worker is manually blacklisted into the current batch */
             for (let worker of workersManual['blacklist']) {
-                if (this.workerIdentifier == worker) {
+                if (this.worker.identifier == worker) {
                     taskAllowed = false
                     return taskAllowed
                 }
@@ -537,7 +516,7 @@ export class SkeletonComponent implements OnInit {
             /* Check to verify if the current worker is manually whitelisted into the current batch using the dynamo-db based acl */
 
             for (let worker of workersManual['whitelist']) {
-                if (this.workerIdentifier == worker) {
+                if (this.worker.identifier == worker) {
                     taskAllowed = true
                 }
             }
@@ -545,7 +524,7 @@ export class SkeletonComponent implements OnInit {
         }
 
         if (taskAllowed)
-            await this.dynamoDBService.insertWorker(this.configService.environment, this.workerIdentifier, this.platform, this.currentTry)
+            await this.dynamoDBService.insertWorker(this.configService.environment, this.worker, this.currentTry)
 
         return taskAllowed
     }
@@ -595,7 +574,7 @@ export class SkeletonComponent implements OnInit {
                     this.hit = currentHit;
                     this.tokenOutput = currentHit.token_output;
                     this.unitId = currentHit.unit_id
-                    if (this.logger)
+                    if (this.settingsTask.logger_enable)
                         this.actionLogger.unitId = this.unitId
                 }
             }
@@ -838,8 +817,8 @@ export class SkeletonComponent implements OnInit {
 
             /* |--------- TASK SETTINGS (see task.json)---------| */
 
-            if (this.annotator) {
-                switch (this.annotator.type) {
+            if (this.settingsTask.annotator) {
+                switch (this.settingsTask.annotator.type) {
                     case "options":
                         this.annotationOptions = this.formBuilder.group({
                             label: new FormControl('')
@@ -939,7 +918,7 @@ export class SkeletonComponent implements OnInit {
 
     /* Section service gets updated with questionnaire and document amounts */
     public updateAmounts() {
-        this.sectionService.updateAmounts(this.questionnaireAmount, this.documentsAmount, this.allowedTries)
+        this.sectionService.updateAmounts(this.questionnaireAmount, this.documentsAmount, this.settingsTask.allowed_tries)
     }
 
     public nextStep() {
@@ -1515,7 +1494,7 @@ export class SkeletonComponent implements OnInit {
         if (requiredAttributes.length > 0) {
             check = false
         }
-        if (!this.annotator) {
+        if (!this.settingsTask.annotator) {
             check = true
         }
         return check
@@ -2107,7 +2086,7 @@ export class SkeletonComponent implements OnInit {
         this.stepper.selectedIndex = this.questionnaireAmountStart;
 
         /* Decrease the remaining tries amount*/
-        this.allowedTries = this.allowedTries - 1;
+        this.settingsTask.allowed_tries = this.settingsTask.allowed_tries - 1;
 
         /* Increases the current try document_index */
         this.currentTry = this.currentTry + 1;
@@ -2188,7 +2167,7 @@ export class SkeletonComponent implements OnInit {
         }
 
         /* The yellow leftover notes are marked as deleted */
-        if (this.annotator) {
+        if (this.settingsTask.annotator) {
             if (this.notes[documentIndex]) {
                 if (this.notes[documentIndex].length > 0) {
                     let element = this.notes[documentIndex][this.notes[documentIndex].length - 1]
@@ -2267,19 +2246,19 @@ export class SkeletonComponent implements OnInit {
         if (action == "Finish") {
 
             /*
-                   * This section performs the checks needed to ensure that the worker has made a quality work.
-                   * Three checks are performed:
-                   * 1) GLOBAL VALIDITY CHECK (QUESTIONNAIRE + DOCUMENTS): Verifies that each field of each form has valid values
-                   * 2) GOLD QUESTION CHECK:   Implements a custom check on gold elements retrieved using their ids.
-                   *                           An element is gold if its id contains the word "GOLD-".
-                   * 3) TIME SPENT CHECK:      Verifies if the time spent by worker on each document and questionnaire is higher than
-                   *                           <timeCheckAmount> seconds, using the <timestampsElapsed> array
-                   * If each check is successful, the task can end. If the worker has some tries left, the task is reset.
-                   */
+             * This section performs the checks needed to ensure that the worker has made a quality work.
+             * Three checks are performed:
+             * 1) GLOBAL VALIDITY CHECK (QUESTIONNAIRE + DOCUMENTS): Verifies that each field of each form has valid values
+             * 2) GOLD QUESTION CHECK:   Implements a custom check on gold elements retrieved using their ids.
+             *                           An element is gold if its id contains the word "GOLD-".
+             * 3) TIME SPENT CHECK:      Verifies if the time spent by worker on each document and questionnaire is higher than
+             *                           <timeCheckAmount> seconds, using the <timestampsElapsed> array
+             * If each check is successful, the task can end. If the worker has some tries left, the task is reset.
+             */
 
             let globalValidityCheck: boolean;
             let timeSpentCheck: boolean;
-            let timeCheckAmount = this.timeCheckAmount;
+            let timeCheckAmount = this.settingsTask.time_check_amount;
 
             /* Array that stores the results of each check */
             let computedChecks = []
@@ -2357,14 +2336,14 @@ export class SkeletonComponent implements OnInit {
             };
             /* The full information about task setup (currentDocument.e., its document and questionnaire structures) are uploaded, only once */
             let taskData = {
+                platform_name: this.configService.environment.platform_name,
                 task_id: this.configService.environment.taskName,
                 batch_name: this.configService.environment.batchName,
                 worker_id: this.worker.identifier,
-                platform: this.worker.platform,
                 unit_id: this.unitId,
                 token_input: this.tokenInput.value,
                 token_output: this.tokenOutput,
-                tries_amount: this.allowedTries,
+                tries_amount: this.settingsTask.allowed_tries,
                 questionnaire_amount: this.questionnaireAmount,
                 questionnaire_amount_start: this.questionnaireAmountStart,
                 questionnaire_amount_end: this.questionnaireAmountEnd,
@@ -2386,7 +2365,7 @@ export class SkeletonComponent implements OnInit {
 
             if (this.sequenceNumber <= 0) {
                 let uploadStatus = await this.S3Service.uploadTaskData(this.configService.environment, this.worker, this.unitId, data)
-                await this.dynamoDBService.insertData(this.configService.environment, this.workerIdentifier, this.unitId, this.currentTry, this.sequenceNumber, data)
+                await this.dynamoDBService.insertData(this.configService.environment, this.worker.identifier, this.unitId, this.currentTry, this.sequenceNumber, data)
                 this.sequenceNumber = this.sequenceNumber + 1
             }
 
@@ -2434,7 +2413,7 @@ export class SkeletonComponent implements OnInit {
                 data["accesses"] = accessesAmount + 1
 
                 let uploadStatus = await this.S3Service.uploadQuestionnaire(this.configService.environment, this.worker, this.unitId, data, this.currentTry, completedQuestionnaire, accessesAmount + 1, this.sequenceNumber)
-                await this.dynamoDBService.insertData(this.configService.environment, this.workerIdentifier, this.unitId, this.currentTry, this.sequenceNumber, data)
+                await this.dynamoDBService.insertData(this.configService.environment, this.worker.identifier, this.unitId, this.currentTry, this.sequenceNumber, data)
 
                 /* The amount of accesses to the current questionnaire is incremented */
                 this.sequenceNumber = this.sequenceNumber + 1
@@ -2497,7 +2476,7 @@ export class SkeletonComponent implements OnInit {
                 data["responses_selected"] = responsesSelected
 
                 let uploadStatus = await this.S3Service.uploadDocument(this.configService.environment, this.worker, this.unitId, data, this.currentTry, completedDocument, accessesAmount + 1, this.sequenceNumber)
-                await this.dynamoDBService.insertData(this.configService.environment, this.workerIdentifier, this.unitId, this.currentTry, this.sequenceNumber, data)
+                await this.dynamoDBService.insertData(this.configService.environment, this.worker.identifier, this.unitId, this.currentTry, this.sequenceNumber, data)
 
                 /* The amount of accesses to the current document is incremented */
                 this.elementsAccesses[completedElement] = accessesAmount + 1;
@@ -2556,7 +2535,7 @@ export class SkeletonComponent implements OnInit {
                 this.qualityChecksOutcome["info"]["sequence"] = this.sequenceNumber
                 data["checks"] = this.qualityChecksOutcome
 
-                await this.dynamoDBService.insertData(this.configService.environment, this.workerIdentifier, this.unitId, this.currentTry, this.sequenceNumber, this.qualityChecksOutcome)
+                await this.dynamoDBService.insertData(this.configService.environment, this.worker.identifier, this.unitId, this.currentTry, this.sequenceNumber, this.qualityChecksOutcome)
                 await this.S3Service.uploadQualityCheck(
                     this.configService.environment,
                     this.worker,
@@ -2566,7 +2545,7 @@ export class SkeletonComponent implements OnInit {
                 )
                 this.sequenceNumber = this.sequenceNumber + 1
                 let uploadStatus = await this.S3Service.uploadFinalData(this.configService.environment, this.worker, this.unitId, data, this.currentTry)
-                await this.dynamoDBService.insertData(this.configService.environment, this.workerIdentifier, this.unitId, this.currentTry, this.sequenceNumber, data)
+                await this.dynamoDBService.insertData(this.configService.environment, this.worker.identifier, this.unitId, this.currentTry, this.sequenceNumber, data)
                 this.sequenceNumber = this.sequenceNumber + 1
 
 
@@ -2608,7 +2587,7 @@ export class SkeletonComponent implements OnInit {
      * The comment can be typed in a textarea and when the worker clicks the "Send" button such comment is uploaded to an Amazon S3 bucket.
      */
     public async performCommentSaving() {
-        if (!(this.workerIdentifier === null)) {
+        if (!(this.worker.identifier === null)) {
             let data = {}
             let actionInfo = {
                 try: this.currentTry,
@@ -2618,7 +2597,7 @@ export class SkeletonComponent implements OnInit {
             data["info"] = actionInfo
             data['comment'] = this.commentForm.value["comment"]
             let uploadStatus = await this.S3Service.uploadComment(this.configService.environment, this.worker, this.unitId, data, this.currentTry)
-            await this.dynamoDBService.insertData(this.configService.environment, this.workerIdentifier, this.unitId, this.currentTry, this.sequenceNumber, data)
+            await this.dynamoDBService.insertData(this.configService.environment, this.worker.identifier, this.unitId, this.currentTry, this.sequenceNumber, data)
             this.sequenceNumber = this.sequenceNumber + 1
         }
         this.commentSent = true;

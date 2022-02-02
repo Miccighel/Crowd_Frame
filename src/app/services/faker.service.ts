@@ -22,7 +22,7 @@ export class FakerService {
   // |--------- ELEMENTS - DECLARATION ---------|
 
   /* FakeJSON Search API key */
-  token = 'sPblHj23AzPvKp84rdr0ng';
+  token : string
   /* Fake JSON Search endpoint */
   endPoint = "https://app.fakejson.com/q";
 
@@ -44,7 +44,7 @@ export class FakerService {
   /*
    * This function uses the text received as a parameter to perform a request to fakeJSON
    */
-  public performWebSearch(query: string): Observable<Array<FakerSearchResponse>> {
+  public performWebSearch(token:string, query: string): Observable<Array<FakerSearchResponse>> {
     /* The user query is saved */
     this.query = query;
     /* A request to FakeJSON API is performed and an Observable an array of <FakerSearchResponse> items is returned */

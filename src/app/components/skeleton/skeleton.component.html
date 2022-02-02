@@ -149,13 +149,13 @@
                             <ng-container *ngFor="let attribute of this.settingsTask.attributes; let k=index">
                                 <div *ngIf="attribute.show" class="attribute">
                                     <p>
-                                        <span class="attribute-label" *ngIf="!this.annotator">
+                                        <span class="attribute-label" *ngIf="!this.settingsTask.annotator">
                                             <strong>{{attribute.name_pretty}}</strong>: {{(this.countdownsExpired[i] && this.settingsTask.countdown_behavior == "hide_attributes") ? "---------- text_hidden ----------" : document[attribute.name]}}
                                         </span>
-                                        <span class="attribute-label" *ngIf="this.annotator && !attribute.annotate">
+                                        <span class="attribute-label" *ngIf="this.settingsTask.annotator && !attribute.annotate">
                                             <strong>{{attribute.name_pretty}}</strong>: {{(this.countdownsExpired[i] && this.settingsTask.countdown_behavior == "hide_attributes") ? "---------- text_hidden ----------" : document[attribute.name]}}
                                         </span>
-                                        <span class="attribute-label" *ngIf="this.annotator && this.annotator.type=='options'&& attribute.annotate">
+                                        <span class="attribute-label" *ngIf="this.settingsTask.annotator && this.settingsTask.annotator.type=='options'&& attribute.annotate">
                                             <strong>{{attribute.name_pretty}}</strong>:
                                             <span id="document-{{i}}-attribute-{{k}}"
                                                   (mouseup)="performAnnotation(i, k, this.notes, this.changeDetector)"
@@ -163,7 +163,7 @@
                                                 {{(this.countdownsExpired[i] && this.settingsTask.countdown_behavior == "hide_attributes") ? "---------- text_hidden ----------" : document[attribute.name]}}
                                             </span>
                                         </span>
-                                        <span class="attribute-label" *ngIf="this.annotator && this.annotator.type=='laws'&& attribute.annotate">
+                                        <span class="attribute-label" *ngIf="this.settingsTask.annotator && this.settingsTask.annotator.type=='laws'&& attribute.annotate">
                                             <strong>{{attribute.name_pretty}}</strong>:
                                             <span id="document-{{i}}-attribute-{{k}}">TO BE IMPLEMENTED</span>
                                         </span>
@@ -171,13 +171,13 @@
                                 </div>
                             </ng-container>
                         </div>
-                        <div class="statement" *ngIf="(this.annotator && this.annotator.type=='laws')">
+                        <div class="statement" *ngIf="(this.settingsTask.annotator && this.settingsTask.annotator.type=='laws')">
                             <ul>
                                 <li class="law_content_li">
                                     <div class="statement-div">
                                         <span style="white-space: pre-wrap;" #statementText id="statement-{{i}}"
-                                              (mouseup)="performHighlighting(this.changeDetector, $event, i, this.notes, this.annotator)"
-                                              (touchend)="performHighlighting(this.changeDetector, $event, i, this.notes, this.annotator)"
+                                              (mouseup)="performHighlighting(this.changeDetector, $event, i, this.notes, this.settingsTask.annotator)"
+                                              (touchend)="performHighlighting(this.changeDetector, $event, i, this.notes, this.settingsTask.annotator)"
                                               class="statement-text">{{this.checkEnabledNotes(i)}}
                                             {{(this.countdownsExpired[i] && this.settingsTask.countdown_behavior == "hide_attributes") ? "---------- text_hidden ----------" : document.article_text}}
                                         </span>
@@ -252,21 +252,21 @@
                         </ng-container>
 
 
-                        <ng-container *ngIf="(this.annotator && this.annotator.type=='options')">
+                        <ng-container *ngIf="(this.settingsTask.annotator && this.settingsTask.annotator.type=='options')">
 
                             <!-- Annotation buttons markup -->
-                            <div *ngIf="this.annotator" id="annotation-buttons-{{i}}" class="annotation-buttons">
+                            <div *ngIf="this.settingsTask.annotator" id="annotation-buttons-{{i}}" class="annotation-buttons">
                                 <button
                                         [style.background-color]="value.color"
                                         [style.opacity]="!this.annotationButtonsDisabled[i] ? 1 : 0.3" class="ann-button-{{i}}"
-                                        *ngFor="let value of annotator.values" [disabled]="this.annotationButtonsDisabled[i]" mat-flat-button
+                                        *ngFor="let value of this.settingsTask.annotator.values" [disabled]="this.annotationButtonsDisabled[i]" mat-flat-button
                                         (click)="handleAnnotationOption(value,i)">{{value.label}}
                                 </button>
                             </div>
                             <br/>
 
                             <!-- Finalized notes table markup -->
-                            <div *ngIf="this.annotator && checkUndeletedNotesPresence(this.notes[i])" class="annotations">
+                            <div *ngIf="this.settingsTask.annotator && checkUndeletedNotesPresence(this.notes[i])" class="annotations">
                                 <table class="mat-table">
                                     <tr class="mat-header-row">
                                         <th class="mat-header-cell">Text</th>
@@ -289,7 +289,7 @@
 
                         </ng-container>
 
-                        <ng-container *ngIf="(this.annotator && this.annotator.type=='laws')">
+                        <ng-container *ngIf="(this.settingsTask.annotator && this.settingsTask.annotator.type=='laws')">
 
                             <!-- Annotation recap -->
                             <div class="annotations" *ngIf="checkUndeletedNotesPresenceLaws(this.notes[i])">
@@ -386,8 +386,8 @@
                                                         <strong>Evidenzia il riferimento interno:</strong>
                                                     </div>
                                                     <div class="inner-annotation-reference" id="note-current-{{noteIndex}}.{{i}}">
-                                                        <span (mouseup)="performInnerHighlighting(this.changeDetector, $event, i, noteIndex, note.innerAnnotations, this.annotator)"
-                                                              (touchend)="performInnerHighlighting(this.changeDetector, $event, i, noteIndex, note.innerAnnotations, this.annotator)"
+                                                        <span (mouseup)="performInnerHighlighting(this.changeDetector, $event, i, noteIndex, note.innerAnnotations, this.settingsTask.annotator)"
+                                                              (touchend)="performInnerHighlighting(this.changeDetector, $event, i, noteIndex, note.innerAnnotations, this.settingsTask.annotator)"
                                                               id="references-{{noteIndex}}.{{i}}">{{note.current_text}}</span>
                                                     </div>
                                                     <div *ngFor="let innerNotes of note.innerAnnotations; let innerNoteIndex = index">
@@ -855,40 +855,40 @@
                                 (click)="performLogging('Back', i); previousStep()">
                             Back
                         </button>
-                        <button mat-flat-button color="primary" matStepperNext *ngIf="i+1<this.documentsAmount && this.annotator"
+                        <button mat-flat-button color="primary" matStepperNext *ngIf="i+1<this.documentsAmount && this.settingsTask.annotator"
                                 [disabled]="((!documentsForm[i].valid || documentsForm[i].status == 'DISABLED' ) || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted || !checkAnnotationConsistency(i))"
                                 (click)="performLogging('Next', i); nextStep()">
                             Next
                         </button>
-                        <button mat-flat-button color="primary" matStepperNext *ngIf="i+1<this.documentsAmount && !this.annotator"
+                        <button mat-flat-button color="primary" matStepperNext *ngIf="i+1<this.documentsAmount && !this.settingsTask.annotator"
                                 [disabled]="(!documentsForm[i].valid || documentsForm[i].status == 'DISABLED'  || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted)"
                                 (click)="performLogging('Next', i); nextStep()">
                             Next
                         </button>
 
                         <button mat-flat-button color="primary" matStepperNext
-                                *ngIf="i+1>=this.documentsAmount && this.annotator && this.questionnaireAmountEnd > 0"
+                                *ngIf="i+1>=this.documentsAmount && this.settingsTask.annotator && this.questionnaireAmountEnd > 0"
                                 [disabled]="(!documentsForm[i].valid || documentsForm[i].status == 'DISABLED'  || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted || !checkAnnotationConsistency(i))"
                                 (click)="performLogging('Next', i); nextStep()">
                             Next
                         </button>
 
                         <button mat-flat-button color="primary" matStepperNext
-                                *ngIf="i+1>=this.documentsAmount && !this.annotator  && this.questionnaireAmountEnd > 0"
+                                *ngIf="i+1>=this.documentsAmount && !this.settingsTask.annotator  && this.questionnaireAmountEnd > 0"
                                 [disabled]="(!documentsForm[i].valid || documentsForm[i].status == 'DISABLED'  || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted)"
                                 (click)="performLogging('Next', i); nextStep()">
                             Next
                         </button>
 
                         <button mat-flat-button color="primary" matStepperNext
-                                *ngIf="i+1>=this.documentsAmount && this.questionnaireAmountEnd == 0 && !this.annotator"
+                                *ngIf="i+1>=this.documentsAmount && this.questionnaireAmountEnd == 0 && !this.settingsTask.annotator"
                                 [disabled]="(!documentsForm[i].valid || documentsForm[i].status == 'DISABLED'  || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted)"
                                 (click)="performLogging('Finish', i); nextStep();">
                             Finish
                         </button>
 
                         <button mat-flat-button color="primary" matStepperNext
-                                *ngIf="i+1>=this.documentsAmount && this.questionnaireAmountEnd == 0 && this.annotator"
+                                *ngIf="i+1>=this.documentsAmount && this.questionnaireAmountEnd == 0 && this.settingsTask.annotator"
                                 [disabled]="(!documentsForm[i].valid || documentsForm[i].status == 'DISABLED'  || !this.searchEngineRetrievedResponses[i] || this.sectionService.taskCompleted || !checkAnnotationConsistency(i))"
                                 (click)="performLogging('Finish', i); nextStep();">
                             Finish
@@ -953,7 +953,7 @@
         </div>
         <!-- Retry section - shown when the worker does not pass the quality checks but has some tries left -->
         <div id="retry-section" class="outcome-section container"
-             *ngIf="this.sectionService.taskCompleted && this.sectionService.taskFailed && allowedTries>0">
+             *ngIf="this.sectionService.taskCompleted && this.sectionService.taskFailed && this.settingsTask.allowed_tries>0">
             <mat-card>
                 <mat-card-title class="retry-title">
                     <h3>Failure, but...</h3>
@@ -981,7 +981,7 @@
         </div>
         <!-- Failure section - shown when the worker does not pass the quality checks and does not has tries left -->
         <div id="failure-section" class="outcome-section container"
-             *ngIf="this.sectionService.taskCompleted && this.sectionService.taskFailed && allowedTries <= 0">
+             *ngIf="this.sectionService.taskCompleted && this.sectionService.taskFailed && this.settingsTask.allowed_tries <= 0">
             <mat-card>
                 <mat-card-title class="failure-title">
                     <h4>Failure</h4>

@@ -56,16 +56,18 @@ export class DynamoDBService {
 
     }
 
-    public async insertWorker(config, worker_id, platform, current_try) {
+    public async insertWorker(config, worker, current_try) {
         let params = {
             TableName: config["table_acl_name"],
             Item: {
-                identifier: {S: worker_id},
-                platform: {S: platform ? platform : "none"},
                 try: {S: current_try.toString()},
                 time: {S: (new Date().toUTCString())}
             }
         };
+        for (const [param, value] of Object.entries(worker.paramsFetched)) {
+            params["Item"][param] = {}
+            params["Item"][param]['S'] = value
+        }
         return await this.loadDynamoDB(config).putItem(params).promise();
     }
 
