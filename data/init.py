@@ -500,6 +500,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                     "dynamodb:PutItem",
                     "dynamodb:GetItem",
                     "dynamodb:Query",
+                    "dynamodb:Scan",
                     "dynamodb:ListTables"
                 ],
                 "Resource": "*"
@@ -758,7 +759,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             TableName=table_name,
             AttributeDefinitions=[
                 {'AttributeName': 'identifier', 'AttributeType': 'S'},
-                {'AttributeName': 'unit_id', 'AttributeType': 'S'}
+                {'AttributeName': 'unit_id', 'AttributeType': 'S'},
+                {'AttributeName': 'time', 'AttributeType': 'S'}
             ],
             KeySchema=[{'AttributeName': 'identifier', 'KeyType': 'HASH'}],
             GlobalSecondaryIndexes=[
@@ -768,6 +770,10 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                         {
                             'AttributeName': 'unit_id',
                             'KeyType': 'HASH',
+                        },
+                        {
+                            'AttributeName': 'time',
+                            'KeyType': 'RANGE'
                         }
                     ],
                     "Projection": {

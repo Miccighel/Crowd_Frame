@@ -41,7 +41,7 @@ export class DynamoDBService {
         return await client.listTables(params).promise()
     }
 
-    public async getWorker(config, worker_id, table = null) {
+    public async getWorkerACLRecord(config, worker_id, table = null) {
         let docClient = this.loadDynamoDBDocumentClient(config)
         let params = {
             TableName: table ? table : config["table_acl_name"],
@@ -56,16 +56,30 @@ export class DynamoDBService {
         return await docClient.query(params).promise()
     }
 
-    public async getUnitID(config, unit_id, table = null) {
+    public async getUnitIDACLRecord(config, unit_id, table = null) {
         let docClient = this.loadDynamoDBDocumentClient(config)
         /* Secondary index defined on unit_id attribute of ACL table */
         let params = {
             TableName: table ? table : config["table_acl_name"],
             IndexName: 'unit_id-index',
+            ScanIndexForward: true,
             KeyConditionExpression: "unit_id = :unit_id",
             ExpressionAttributeValues: {":unit_id": unit_id},
         };
         return await docClient.query(params).promise()
+    }
+
+    public async scanUnitIDACLRecord(config, table = null, lastEvaluatedKey = null) {
+        let docClient = this.loadDynamoDBDocumentClient(config)
+        /* Secondary index defined on unit_id attribute of ACL table */
+        let params = {
+            TableName: table ? table : config["table_acl_name"],
+            IndexName: 'unit_id-index',
+            ScanIndexForward: true,
+        };
+        if(lastEvaluatedKey)
+            params['ExclusiveStartKey'] = lastEvaluatedKey
+        return await docClient.scan(params).promise()
     }
 
     public async insertWorker(config, worker, current_try) {
@@ -83,16 +97,18 @@ export class DynamoDBService {
         return await this.loadDynamoDB(config).putItem(params).promise();
     }
 
-    public async insertUnitId(config, entry) {
+    public async insertUnitId(config, entry, current_try, updateTime = false) {
         let params = {
             TableName: config["table_acl_name"],
             Item: {}
         };
-        console.log(params)
         for (const [param, value] of Object.entries(entry)) {
             params["Item"][param] = {}
             params["Item"][param]['S'] = value
         }
+        params["Item"]['try']['S'] = current_try.toString()
+        if (updateTime)
+            params["Item"]['time']['S'] = new Date().toUTCString()
         return await this.loadDynamoDB(config).putItem(params).promise();
     }
 
