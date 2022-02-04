@@ -114,7 +114,7 @@ console.rule("0 - Initialization")
 console.print("[bold]Init.py[/bold] script launched")
 console.print(f"Working directory: [bold]{os.getcwd()}[/bold]")
 
-if platform_name.lower() != 'mturk' and platform_name.lower()!='prolific':
+if platform_name.lower() != 'mturk' and platform_name.lower() != 'prolific':
     raise Exception("Value for 'platform_name' variable invalid. Use 'mturk' or 'prolific'.")
 
 console.rule("1 - Configuration policy")
@@ -756,8 +756,25 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         table_name = table_acl_name
         table = dynamodb_client.create_table(
             TableName=table_name,
-            AttributeDefinitions=[{'AttributeName': 'identifier', 'AttributeType': 'S'}],
+            AttributeDefinitions=[
+                {'AttributeName': 'identifier', 'AttributeType': 'S'},
+                {'AttributeName': 'unit_id', 'AttributeType': 'S'}
+            ],
             KeySchema=[{'AttributeName': 'identifier', 'KeyType': 'HASH'}],
+            GlobalSecondaryIndexes=[
+                {
+                    'IndexName': 'unit_id-index',
+                    'KeySchema': [
+                        {
+                            'AttributeName': 'unit_id',
+                            'KeyType': 'HASH',
+                        }
+                    ],
+                    "Projection": {
+                        "ProjectionType": "ALL"
+                    },
+                }
+            ],
             BillingMode='PAY_PER_REQUEST'
         )
         serialize_json(folder_aws_generated_path, f"dynamodb_table_{table_name}.json", table)
@@ -1075,7 +1092,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         serialize_json(folder_aws_generated_path, f"role_{role['Role']['RoleName']}.json", role)
     except iam_client.exceptions.EntityAlreadyExistsException:
         console.print(f"[yellow]Role {role_name} already created")
-    iam_client.attach_role_policy(RoleName=role_name,PolicyArn=policy['Arn'])
+    iam_client.attach_role_policy(RoleName=role_name, PolicyArn=policy['Arn'])
 
     try:
         response = budget_client.create_budget(
@@ -1202,7 +1219,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     environment_dict = {
         "production": 'false',
         "configuration_local": 'false',
-        "platform_name": platform_name,
+        "platformName": platform_name,
         "taskName": task_name,
         "batchName": batch_name,
         "region": aws_region,

@@ -8,7 +8,8 @@ import * as AWS from "aws-sdk";
 
 export class DynamoDBService {
 
-    constructor() {}
+    constructor() {
+    }
 
     public loadDynamoDB(config) {
         let region = config["region"];
@@ -40,7 +41,7 @@ export class DynamoDBService {
         return await client.listTables(params).promise()
     }
 
-    public async getWorker(config, worker_id, table=null) {
+    public async getWorker(config, worker_id, table = null) {
         let docClient = this.loadDynamoDBDocumentClient(config)
         let params = {
             TableName: table ? table : config["table_acl_name"],
@@ -53,7 +54,18 @@ export class DynamoDBService {
             }
         };
         return await docClient.query(params).promise()
+    }
 
+    public async getUnitID(config, unit_id, table = null) {
+        let docClient = this.loadDynamoDBDocumentClient(config)
+        /* Secondary index defined on unit_id attribute of ACL table */
+        let params = {
+            TableName: table ? table : config["table_acl_name"],
+            IndexName: 'unit_id-index',
+            KeyConditionExpression: "unit_id = :unit_id",
+            ExpressionAttributeValues: {":unit_id": unit_id},
+        };
+        return await docClient.query(params).promise()
     }
 
     public async insertWorker(config, worker, current_try) {
@@ -65,6 +77,19 @@ export class DynamoDBService {
             }
         };
         for (const [param, value] of Object.entries(worker.paramsFetched)) {
+            params["Item"][param] = {}
+            params["Item"][param]['S'] = value
+        }
+        return await this.loadDynamoDB(config).putItem(params).promise();
+    }
+
+    public async insertUnitId(config, entry) {
+        let params = {
+            TableName: config["table_acl_name"],
+            Item: {}
+        };
+        console.log(params)
+        for (const [param, value] of Object.entries(entry)) {
             params["Item"][param] = {}
             params["Item"][param]['S'] = value
         }
@@ -83,7 +108,6 @@ export class DynamoDBService {
         };
         return await this.loadDynamoDB(config).putItem(params).promise();
     }
-
 
 
 }

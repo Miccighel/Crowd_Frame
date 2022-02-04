@@ -1234,20 +1234,21 @@ console.rule("6 - Checking missing HITs")
 
 hits_missing = []
 hits = load_json(f"{task_config_folder}{batch_name}/hits.json")
-df = pd.read_csv(df_data_path)
-df = df.loc[df['worker_paid'] == True]
-for hit in hits:
-    unit_data = df.loc[df['unit_id'] == hit['unit_id']]
-    if len(unit_data) <= 0:
-        hits_missing.append(hit)
-if len(hits_missing) > 0:
-    console.print(f"Missing HITs: {len(hits_missing)}")
-    path_missing = f"{task_config_folder}{batch_name}/hits_missing.json"
-    with open(path_missing, 'w', encoding='utf-8') as f:
-        json.dump(hits_missing, f, ensure_ascii=False, indent=4)
-    console.print(f"Serialized at path: [cyan on white]{path_missing}")
-else:
-    console.print(f"There aren't missing HITS for task [cyan on white]{task_name}")
+if os.path.exists(df_data_path):
+    df = pd.read_csv(df_data_path)
+    df = df.loc[df['worker_paid'] == True]
+    for hit in hits:
+        unit_data = df.loc[df['unit_id'] == hit['unit_id']]
+        if len(unit_data) <= 0:
+            hits_missing.append(hit)
+    if len(hits_missing) > 0:
+        console.print(f"Missing HITs: {len(hits_missing)}")
+        path_missing = f"{task_config_folder}{batch_name}/hits_missing.json"
+        with open(path_missing, 'w', encoding='utf-8') as f:
+            json.dump(hits_missing, f, ensure_ascii=False, indent=4)
+        console.print(f"Serialized at path: [cyan on white]{path_missing}")
+    else:
+        console.print(f"There aren't missing HITS for task [cyan on white]{task_name}")
 
 console.rule("7 - Building [cyan on white]workers_dimensions_selection[/cyan on white] dataframe")
 
@@ -1325,7 +1326,7 @@ def parse_dimensions_selected(df, worker_id, worker_paid, task, info, documents,
     return df
 
 
-if not os.path.exists(df_dim_path):
+if not os.path.exists(df_dim_path) and os.path.exists(df_data_path):
 
     for workers_snapshot_path in tqdm(workers_snapshot_paths):
 

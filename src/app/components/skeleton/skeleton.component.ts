@@ -271,7 +271,7 @@ export class SkeletonComponent implements OnInit {
 
         /* |--------- CONTROL FLOW & UI ELEMENTS - INITIALIZATION ---------| */
 
-        this.tokenInput = new FormControl('ABCDEFGHILM', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
+        this.tokenInput = new FormControl('', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
         this.tokenForm = formBuilder.group({
             "tokenInput": this.tokenInput
         });
@@ -346,29 +346,92 @@ export class SkeletonComponent implements OnInit {
             };
 
             /* If there is an external worker which is trying to perform the task, check its status */
-            if (!(this.worker.identifier === null)) {
+            if (!(this.worker.identifier == null)) {
 
                 /* The performWorkerStatusCheck function checks worker's status and its result is interpreted as a success|error callback */
-                this.performWorkerStatusCheck().then(taskAllowed => {
+                this.performWorkerStatusCheck().then(async taskAllowed => {
 
-                    /* The worker's remote S3 folder is retrieved */
-                    this.worker.folder = this.S3Service.getWorkerFolder(this.configService.environment, this.worker)
-                    /* Some worker properties are loaded using ngxDeviceDetector npm package capabilities... */
-                    this.worker.updateProperties('ngxdevicedetector', this.deviceDetectorService.getDeviceInfo())
-                    /* ... or the simple Navigator DOM's object */
-                    this.worker.updateProperties('navigator', window.navigator)
+                    if (taskAllowed) {
 
-                    /* But at the end of the day it's just a boolean, so we launch a call to Cloudflare to trace the worker, and we use such boolean in the second callback */
-                    if (this.settingsWorker.analysis) {
-                        this.client.get('https://www.cloudflare.com/cdn-cgi/trace', {responseType: 'text'}).subscribe(
-                            /* If we retrieve some data from Cloudflare we use them to populate worker's object */
-                            cloudflareData => {
-                                this.worker.updateProperties('cloudflare', cloudflareData)
-                                unlockTask(this.changeDetector, this.ngxService, this.sectionService, taskAllowed)
-                            },
-                            /* Otherwise, we won't have such information */
-                            error => unlockTask(this.changeDetector, this.ngxService, this.sectionService, taskAllowed)
-                        )
+                        /* The worker's remote S3 folder is retrieved */
+                        this.worker.folder = this.S3Service.getWorkerFolder(this.configService.environment, this.worker)
+                        this.worker.setParameter('folder', this.worker.folder)
+                        this.worker.setParameter('paid', 'false')
+                        this.worker.setParameter('in_progress', 'false')
+                        /* Some worker properties are loaded using ngxDeviceDetector npm package capabilities... */
+                        this.worker.updateProperties('ngxdevicedetector', this.deviceDetectorService.getDeviceInfo())
+                        /* ... or the simple Navigator DOM's object */
+                        this.worker.updateProperties('navigator', window.navigator)
+
+                        if (this.configService.environment.platformName == 'prolific') {
+
+                            let hits = await this.S3Service.downloadHits(this.configService.environment)
+                            let hitAssigned = false
+
+                            let workerData = await this.dynamoDBService.getWorker(this.configService.environment, this.worker.identifier)
+                            if (workerData['Items'].length <= 0) {
+                                for (let hit of hits) {
+                                    let aclEntries = await this.dynamoDBService.getUnitID(this.configService.environment, hit['unit_id'])
+                                    if (aclEntries['Items'].length <= 0) {
+                                        this.worker.setParameter('unit_id', hit['unit_id'])
+                                        this.worker.setParameter('in_progress', 'true')
+                                        this.tokenInput.setValue(hit['token_input'])
+                                        await this.dynamoDBService.insertWorker(this.configService.environment, this.worker, this.currentTry)
+                                        hitAssigned = true
+                                        break
+                                    }
+                                }
+
+                                if (!hitAssigned) {
+                                    for (let hit of hits) {
+                                        let aclEntries = await this.dynamoDBService.getUnitID(this.configService.environment, hit['unit_id'])
+                                        for (let aclEntry of aclEntries['Items']) {
+                                            if (aclEntry['paid'] == 'false' && aclEntry['in_progress'] == 'true') {
+                                                this.worker.setParameter('unit_id', aclEntry['unit_id'])
+                                                this.worker.setParameter('in_progress', 'true')
+                                                this.tokenInput.setValue(hit['token_input'])
+                                                hitAssigned = true
+                                                await this.dynamoDBService.insertWorker(this.configService.environment, this.worker, this.currentTry)
+                                                aclEntry['in_progress'] = 'false'
+                                                await this.dynamoDBService.insertUnitId(this.configService.environment, aclEntry)
+                                                break
+                                            }
+                                        }
+                                        if (hitAssigned)
+                                            break
+                                    }
+                                }
+
+                            } else {
+                                // task overbooking
+                                hitAssigned = true
+                                taskAllowed = false
+                                this.tokenInput.setValue(workerData['token_input'])
+                            }
+
+                            if (!hitAssigned)
+                                taskAllowed = false
+
+                        } else {
+
+                            await this.dynamoDBService.insertWorker(this.configService.environment, this.worker, this.currentTry)
+
+                        }
+
+                        /* But at the end of the day it's just a boolean, so we launch a call to Cloudflare to trace the worker, and we use such boolean in the second callback */
+                        if (this.settingsWorker.analysis) {
+                            this.client.get('https://www.cloudflare.com/cdn-cgi/trace', {responseType: 'text'}).subscribe(
+                                /* If we retrieve some data from Cloudflare we use them to populate worker's object */
+                                cloudflareData => {
+                                    this.worker.updateProperties('cloudflare', cloudflareData)
+                                    unlockTask(this.changeDetector, this.ngxService, this.sectionService, taskAllowed)
+                                },
+                                /* Otherwise, we won't have such information */
+                                error => unlockTask(this.changeDetector, this.ngxService, this.sectionService, taskAllowed)
+                            )
+
+                        } else unlockTask(this.changeDetector, this.ngxService, this.sectionService, taskAllowed)
+
                     } else unlockTask(this.changeDetector, this.ngxService, this.sectionService, taskAllowed)
                 })
                 /* If there is not any worker ID we simply load the task. A sort of testing mode. */
@@ -522,9 +585,6 @@ export class SkeletonComponent implements OnInit {
             }
 
         }
-
-        if (taskAllowed)
-            await this.dynamoDBService.insertWorker(this.configService.environment, this.worker, this.currentTry)
 
         return taskAllowed
     }
@@ -2326,7 +2386,7 @@ export class SkeletonComponent implements OnInit {
 
         /* If there is a worker ID then the data should be uploaded to the S3 bucket */
 
-        if (!(this.worker.identifier === null)) {
+        if (!(this.worker.identifier == null)) {
 
             let data = {}
             let actionInfo = {
@@ -2336,7 +2396,7 @@ export class SkeletonComponent implements OnInit {
             };
             /* The full information about task setup (currentDocument.e., its document and questionnaire structures) are uploaded, only once */
             let taskData = {
-                platform_name: this.configService.environment.platform_name,
+                platform_name: this.configService.environment.platformName,
                 task_id: this.configService.environment.taskName,
                 batch_name: this.configService.environment.batchName,
                 worker_id: this.worker.identifier,
@@ -2571,7 +2631,6 @@ export class SkeletonComponent implements OnInit {
                 this.sectionService.taskSuccessful = false;
                 this.sectionService.taskFailed = true;
             }
-
             this.sectionService.taskCompleted = true;
 
             this.ngxService.stop()
@@ -2580,6 +2639,23 @@ export class SkeletonComponent implements OnInit {
 
         }
 
+        /* Lastly, we update the ACL */
+
+        if (!(this.worker.identifier == null)) {
+            if (this.sectionService.taskSuccessful) {
+                this.worker.setParameter('in_progress', false)
+                this.worker.setParameter('paid', true)
+                await this.dynamoDBService.insertWorker(this.configService.environment, this.worker, this.currentTry)
+            } else {
+                if (this.settingsTask.allowed_tries > this.currentTry) {
+                    this.worker.setParameter('in_progress', false)
+                    this.worker.setParameter('paid', false)
+                    await this.dynamoDBService.insertWorker(this.configService.environment, this.worker, this.currentTry)
+                }
+            }
+        }
+
+
     }
 
     /*
@@ -2587,7 +2663,7 @@ export class SkeletonComponent implements OnInit {
      * The comment can be typed in a textarea and when the worker clicks the "Send" button such comment is uploaded to an Amazon S3 bucket.
      */
     public async performCommentSaving() {
-        if (!(this.worker.identifier === null)) {
+        if (!(this.worker.identifier == null)) {
             let data = {}
             let actionInfo = {
                 try: this.currentTry,
