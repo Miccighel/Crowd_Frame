@@ -39,6 +39,7 @@ deploy_config = strtobool(deploy_config) if deploy_config is not None else False
 aws_region = os.getenv('aws_region')
 aws_private_bucket = os.getenv('aws_private_bucket')
 aws_deploy_bucket = os.getenv('aws_deploy_bucket')
+prolific_completion_code = os.getenv('prolific_completion_code')
 budget_limit = os.getenv('budget_limit')
 bing_api_key = os.getenv('bing_api_key')
 ip_info_token = os.getenv('ip_info_token')

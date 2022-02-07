@@ -95,6 +95,7 @@ deploy_config = strtobool(deploy_config) if deploy_config is not None else False
 aws_region = os.getenv('aws_region')
 aws_private_bucket = os.getenv('aws_private_bucket')
 aws_deploy_bucket = os.getenv('aws_deploy_bucket')
+prolific_completion_code = os.getenv('prolific_completion_code')
 budget_limit = os.getenv('budget_limit')
 bing_api_key = os.getenv('bing_api_key')
 ip_info_token = os.getenv('ip_info_token')
@@ -760,7 +761,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             AttributeDefinitions=[
                 {'AttributeName': 'identifier', 'AttributeType': 'S'},
                 {'AttributeName': 'unit_id', 'AttributeType': 'S'},
-                {'AttributeName': 'time', 'AttributeType': 'S'}
+                {'AttributeName': 'time_arrival', 'AttributeType': 'S'},
             ],
             KeySchema=[{'AttributeName': 'identifier', 'KeyType': 'HASH'}],
             GlobalSecondaryIndexes=[
@@ -772,7 +773,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                             'KeyType': 'HASH',
                         },
                         {
-                            'AttributeName': 'time',
+                            'AttributeName': 'time_arrival',
                             'KeyType': 'RANGE'
                         }
                     ],
@@ -1194,6 +1195,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         "bucket": aws_private_bucket,
         "aws_id_key": aws_worker_access_id,
         "aws_secret_key": aws_worker_access_secret,
+        "prolific_completion_code": prolific_completion_code,
         "bing_api_key": bing_api_key,
         "fake_json_token": fake_json_token,
         "log_on_console": 'false',
@@ -1232,6 +1234,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         "bucket": aws_private_bucket,
         "aws_id_key": aws_worker_access_id,
         "aws_secret_key": aws_worker_access_secret,
+        "prolific_completion_code": prolific_completion_code,
         "bing_api_key": bing_api_key,
         "fake_json_token": fake_json_token,
         "log_on_console": 'true',
@@ -1384,8 +1387,12 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                         }
                     ]
                 },
-                "gold_question_check": False,
-                "style": False
+                "style": {
+                    "type": "list",
+                    "position": "middle",
+                    "orientation": "vertical",
+                    "separator": False
+                }
             }]
             print(json.dumps(sample_dimensions, indent=4), file=file)
 

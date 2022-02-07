@@ -41,7 +41,7 @@ export class DynamoDBService {
         return await client.listTables(params).promise()
     }
 
-    public async getWorkerACLRecord(config, worker_id, table = null) {
+    public async getACLRecordWorkerId(config, worker_id, table = null) {
         let docClient = this.loadDynamoDBDocumentClient(config)
         let params = {
             TableName: table ? table : config["table_acl_name"],
@@ -56,7 +56,7 @@ export class DynamoDBService {
         return await docClient.query(params).promise()
     }
 
-    public async getUnitIDACLRecord(config, unit_id, table = null) {
+    public async getACLRecordUnitId(config, unit_id, table = null) {
         let docClient = this.loadDynamoDBDocumentClient(config)
         /* Secondary index defined on unit_id attribute of ACL table */
         let params = {
@@ -69,7 +69,7 @@ export class DynamoDBService {
         return await docClient.query(params).promise()
     }
 
-    public async scanUnitIDACLRecord(config, table = null, lastEvaluatedKey = null) {
+    public async scanACLRecordUnitId(config, table = null, lastEvaluatedKey = null) {
         let docClient = this.loadDynamoDBDocumentClient(config)
         /* Secondary index defined on unit_id attribute of ACL table */
         let params = {
@@ -77,19 +77,27 @@ export class DynamoDBService {
             IndexName: 'unit_id-index',
             ScanIndexForward: true,
         };
-        if(lastEvaluatedKey)
+        if (lastEvaluatedKey)
             params['ExclusiveStartKey'] = lastEvaluatedKey
         return await docClient.scan(params).promise()
     }
 
-    public async insertWorker(config, worker, current_try) {
+    public async insertACLRecordWorkerID(config, worker, current_try, updateArrivalTime, updateCompletionTime) {
         let params = {
             TableName: config["table_acl_name"],
             Item: {
-                try: {S: current_try.toString()},
-                time: {S: (new Date().toUTCString())}
+                try: {S: current_try.toString()}
             }
         };
+        if (updateArrivalTime) {
+            params["Item"]['time_arrival'] = {}
+            params["Item"]['time_arrival']['S'] = new Date().toUTCString()
+        }
+
+        if (updateCompletionTime) {
+            params["Item"]['time_completion'] = {}
+            params["Item"]['time_completion']['S'] = new Date().toUTCString()
+        }
         for (const [param, value] of Object.entries(worker.paramsFetched)) {
             params["Item"][param] = {}
             params["Item"][param]['S'] = value
@@ -97,7 +105,7 @@ export class DynamoDBService {
         return await this.loadDynamoDB(config).putItem(params).promise();
     }
 
-    public async insertUnitId(config, entry, current_try, updateTime = false) {
+    public async insertACLRecordUnitId(config, entry, current_try, updateArrivalTime = false) {
         let params = {
             TableName: config["table_acl_name"],
             Item: {}
@@ -107,12 +115,12 @@ export class DynamoDBService {
             params["Item"][param]['S'] = value
         }
         params["Item"]['try']['S'] = current_try.toString()
-        if (updateTime)
-            params["Item"]['time']['S'] = new Date().toUTCString()
+        if (updateArrivalTime)
+            params["Item"]['time_arrival']['S'] = new Date().toUTCString()
         return await this.loadDynamoDB(config).putItem(params).promise();
     }
 
-    public async insertData(config, worker_id, unit_id, current_try, sequence_number, data) {
+    public async insertDataRecord(config, worker_id, unit_id, current_try, sequence_number, data) {
         let params = {
             TableName: config["table_data_name"],
             Item: {

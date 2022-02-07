@@ -52,42 +52,20 @@
     </form>
 </div>
 
-<!--
-     If the worker has a valid token input and has not started the task
-     render the task's body section and do not render the <alreadyStarted>
-     section. This behavior depends on <this.sectionService.taskAllowed> flag
--->
-<ng-template *ngIf="(this.sectionService.taskAllowed); else alreadyStarted"></ng-template>
-
 <!-- Already started section -->
-<ng-template #alreadyStarted>
-    <div id="already-started-section" class="outcome-section container">
-        <div>
-            <mat-card>
-                <mat-card-title class="failure-title">
-                    <h4>Failure</h4>
-                </mat-card-title>
-                <!-- If some messages are set in task.json -->
-                <mat-card-content *ngIf="this.settingsTask.messages">
-                    <h2>You are not allowed to participate to this experiment because either:</h2>
-                    <ul>
-                        <li *ngFor="let message of this.settingsTask.messages; let i=index">- {{message}}</li>
-                    </ul>
-                    <h6>If you believe that this is an error, please contact us through Amazon MTurk. Sorry for the inconvenience.
-                    </h6>
-                </mat-card-content>
-                <!-- Otherwise a standard message is shown -->
-                <mat-card-content *ngIf="!this.settingsTask.messages">
-                    <h2>
-                        Either you have already started this task without finishing it, or you have already participated to a
-                        variant of this experiment.<br/> For this reason, you are not allowed to take a part in this experiment.
-                        If you believe that this is an error, please contact us through Amazon MTurk. Sorry for the inconvenience.
-                    </h2>
-                </mat-card-content>
-            </mat-card>
-        </div>
-    </div>
-</ng-template>
+
+<app-outcome-section *ngIf="!this.sectionService.taskAllowed"
+                     [taskAllowed]="this.sectionService.taskAllowed"
+                     [taskSuccessful]="this.sectionService.taskSuccessful"
+                     [taskFailed]="this.sectionService.taskFailed"
+                     [taskCompleted]="this.sectionService.taskCompleted"
+                     [triesAllowed]="this.settingsTask.allowed_tries"
+                     [tryCurrent]="this.currentTry"
+                     [messages]="this.settingsTask.messages"
+                     [tokenOutput]="this.tokenOutput"
+                     (commentEmitter)="performCommentSaving($event)"
+                     (performReset)="this.performReset()"
+></app-outcome-section>
 
 <!-- Task body section -->
 
@@ -925,85 +903,18 @@
     <!-- Outcome markup -->
     <mat-step *ngIf="documents" [editable]="false">
         <ng-template matStepLabel> Outcome</ng-template>
-        <!-- Success section - shown when the worker successfully completes the task -->
-        <div id="success-section" class="outcome-section container" *ngIf="this.sectionService.taskCompleted && this.sectionService.taskSuccessful">
-            <mat-card>
-                <mat-card-title class="success-title">
-                    <h4>Success</h4>
-                </mat-card-title>
-                <mat-card-content>
-                    <h2>
-                        Congratulations, you have successfully completed this task. To be paid you now have to copy your output
-                        token
-                        (shown below)
-                        back to the Amazon Mechanical Turk task page. Feel free to leave any comment in the box below to help us
-                        improve our research.
-                    </h2>
-                    <h1>{{tokenOutput}}</h1>
-                    <form [formGroup]="commentForm" class="comment-form">
-                        <mat-form-field appearance="fill">
-                            <textarea matInput [disabled]="commentSent" placeholder="Your comment here" formControlName="comment" rows="5"></textarea>
-                        </mat-form-field>
-                    </form>
-                    <button mat-flat-button color="primary" [disabled]="commentSent || !commentForm.valid " (click)="performCommentSaving()"> Send
-                    </button>
-                    <span class="comment-sent-label" *ngIf="commentSent">Thank you!</span>
-                </mat-card-content>
-            </mat-card>
-        </div>
-        <!-- Retry section - shown when the worker does not pass the quality checks but has some tries left -->
-        <div id="retry-section" class="outcome-section container"
-             *ngIf="this.sectionService.taskCompleted && this.sectionService.taskFailed && this.settingsTask.allowed_tries>0">
-            <mat-card>
-                <mat-card-title class="retry-title">
-                    <h3>Failure, but...</h3>
-                </mat-card-title>
-                <mat-card-content>
-                    <h2>
-                        Your work was not good enough, so you are not allowed to submit this task.
-                        As stated in the instructions, some quality checks are performed in this task.
-                        You see this message because you have not passed one or more of such checks.
-                        Nevertheless, you are allowed to retry this task. To do so, please click on the reset button below.
-                        Feel free to leave any comment in the box below.
-                    </h2>
-                    <button mat-flat-button color="primary" (click)="performReset()">Reset</button>
-                    <form [formGroup]="commentForm" class="comment-form">
-                        <mat-form-field appearance="fill">
-                            <textarea matInput [disabled]="commentSent" placeholder="Your comment here" formControlName="comment" rows="5"></textarea>
-                        </mat-form-field>
-                    </form>
-                    <button mat-flat-button color="primary" [disabled]="commentSent || !commentForm.valid "
-                            (click)="performCommentSaving()"> Send
-                    </button>
-                    <span class="comment-sent-label" *ngIf="commentSent">Thank you!</span>
-                </mat-card-content>
-            </mat-card>
-        </div>
-        <!-- Failure section - shown when the worker does not pass the quality checks and does not has tries left -->
-        <div id="failure-section" class="outcome-section container"
-             *ngIf="this.sectionService.taskCompleted && this.sectionService.taskFailed && this.settingsTask.allowed_tries <= 0">
-            <mat-card>
-                <mat-card-title class="failure-title">
-                    <h4>Failure</h4>
-                </mat-card-title>
-                <mat-card-content>
-                    <h2>
-                        Your work was not good enough, so you are not allowed to submit this task.
-                        As stated in the instructions, some quality checks are performed in this task.
-                        You see this message because you have not passed one or more of such checks.
-                        Feel free to leave any comment in the box below.
-                    </h2>
-                    <form [formGroup]="commentForm" class="comment-form">
-                        <mat-form-field appearance="fill">
-                            <textarea matInput [disabled]="commentSent" placeholder="Your comment here" formControlName="comment" rows="5"></textarea>
-                        </mat-form-field>
-                    </form>
-                    <button mat-flat-button color="primary" [disabled]="commentSent || !commentForm.valid " (click)="performCommentSaving()"> Send
-                    </button>
-                    <span class="comment-sent-label" *ngIf="commentSent">Thank you!</span>
-                </mat-card-content>
-            </mat-card>
-        </div>
+        <app-outcome-section
+                [taskAllowed]="this.sectionService.taskAllowed"
+                [taskSuccessful]="this.sectionService.taskSuccessful"
+                [taskFailed]="this.sectionService.taskFailed"
+                [taskCompleted]="this.sectionService.taskCompleted"
+                [triesAllowed]="this.settingsTask.allowed_tries"
+                [tryCurrent]="this.currentTry"
+                [messages]="this.settingsTask.messages"
+                [tokenOutput]="this.tokenOutput"
+                (commentEmitter)="performCommentSaving($event)"
+                (performReset)="this.performReset()"
+        ></app-outcome-section>
     </mat-step>
 
 </mat-horizontal-stepper>

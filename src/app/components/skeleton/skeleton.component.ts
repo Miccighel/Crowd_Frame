@@ -43,6 +43,8 @@ import {Object} from 'aws-sdk/clients/customerprofiles';
 import {SectionService} from "../../services/section.service";
 import {DynamoDBService} from "../../services/dynamoDB.service";
 import {SettingsWorker} from "../../models/settingsWorker";
+import {OutcomeSectionComponent} from "./outcome-section/outcome-section.component";
+import {DimensionsStepComponent} from "../generator/generator-steps/dimensions-step/dimensions-step.component";
 
 /* Component HTML Tag definition */
 @Component({
@@ -204,14 +206,10 @@ export class SkeletonComponent implements OnInit {
     notesDone: boolean[];
     colors: string[] = ["#F36060", "#DFF652", "#FFA500", "#FFFF7B"]
 
-    /* |--------- COMMENT ELEMENTS - DECLARATION ---------| */
+    /* |--------- OUTCOME SECTION ELEMENTS - DECLARATION ---------| */
 
-    /* Final comment form reference */
-    commentForm: FormGroup;
-    /* Final comment form textarea */
-    comment: FormControl;
-    /* Flag to check if the comment has been correctly sent to S3 */
-    commentSent: boolean;
+    /* Reference to the outcome section component */
+    @ViewChild(OutcomeSectionComponent) outcomeSection: OutcomeSectionComponent;
 
     /* |--------- QUALITY CHECKS - DECLARATION ---------| */
 
@@ -284,13 +282,6 @@ export class SkeletonComponent implements OnInit {
         /* |--------- SEARCH ENGINE INTEGRATION - INITIALIZATION - (see: search_engine.json | https://github.com/Miccighel/CrowdXplorer) ---------| */
 
         this.resultsFound = false;
-
-        /* |--------- COMMENT ELEMENTS - INITIALIZATION ---------| */
-
-        this.comment = new FormControl('');
-        this.commentForm = formBuilder.group({
-            "comment": this.comment,
-        });
 
         /* |--------- LOGGING ELEMENTS - INITIALIZATION ---------| */
 
@@ -380,18 +371,18 @@ export class SkeletonComponent implements OnInit {
                             }
 
                             /* An ACL record for the current worker is searched */
-                            let workerACLRecord = await this.dynamoDBService.getWorkerACLRecord(this.configService.environment, this.worker.identifier)
+                            let workerACLRecord = await this.dynamoDBService.getACLRecordWorkerId(this.configService.environment, this.worker.identifier)
                             /* It there is not any record, an available HIT can be assigned to him */
                             if (workerACLRecord['Items'].length <= 0) {
                                 for (let hit of hits) {
                                     /* The status of each HIT is checked */
-                                    let unitACLRecords = await this.dynamoDBService.getUnitIDACLRecord(this.configService.environment, hit['unit_id'])
+                                    let unitACLRecords = await this.dynamoDBService.getACLRecordUnitId(this.configService.environment, hit['unit_id'])
                                     /* If is has not been assigned, the current worker can receive it */
                                     if (unitACLRecords['Items'].length <= 0) {
                                         /* Call to the previous function */
                                         assignHit(this.worker, hit, this.tokenInput)
                                         /* The worker's ACL record is then updated */
-                                        await this.dynamoDBService.insertWorker(this.configService.environment, this.worker, this.currentTry)
+                                        await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker, this.currentTry, true, false)
                                         /* As soon as a HIT is assigned to the current worker the search can be stopped */
                                         hitAssigned = true
                                         break
@@ -405,13 +396,13 @@ export class SkeletonComponent implements OnInit {
 
                                     /* The whole set of ACL records must be scanned to find the oldest worker that participated in the task but abandoned it */
                                     let wholeEntries = []
-                                    let aclEntries = await this.dynamoDBService.scanUnitIDACLRecord(this.configService.environment)
+                                    let aclEntries = await this.dynamoDBService.scanACLRecordUnitId(this.configService.environment)
                                     for (let aclEntry of aclEntries.Items) {
                                         wholeEntries.push(aclEntry)
                                     }
                                     let lastEvaluatedKey = aclEntries.LastEvaluatedKey
                                     while (typeof lastEvaluatedKey != "undefined") {
-                                        aclEntries = await this.dynamoDBService.scanUnitIDACLRecord(this.configService.environment, null, lastEvaluatedKey)
+                                        aclEntries = await this.dynamoDBService.scanACLRecordUnitId(this.configService.environment, null, lastEvaluatedKey)
                                         lastEvaluatedKey = aclEntries.LastEvaluatedKey
                                         for (let aclEntry of aclEntries.Items) {
                                             wholeEntries.push(aclEntry)
@@ -437,10 +428,10 @@ export class SkeletonComponent implements OnInit {
                                             assignHit(this.worker, hitFound, this.tokenInput)
                                             hitAssigned = true
                                             /* The record for the current worker is updated */
-                                            await this.dynamoDBService.insertWorker(this.configService.environment, this.worker, this.currentTry)
+                                            await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker, this.currentTry, true, false)
                                             /* The record for the worker that abandoned/returned the task is updated */
                                             aclEntry['in_progress'] = 'false'
-                                            await this.dynamoDBService.insertUnitId(this.configService.environment, aclEntry, this.currentTry, false)
+                                            await this.dynamoDBService.insertACLRecordUnitId(this.configService.environment, aclEntry, this.currentTry, false)
                                             /* As soon a slot for the current HIT is freed and assigned to the current worker the search can be stopped */
                                             break
                                         }
@@ -464,7 +455,7 @@ export class SkeletonComponent implements OnInit {
                                     for (let hit of hits) {
                                         if (hit['unit_id'] == aclEntry['unit_id']) {
                                             this.tokenInput.setValue(hit['token_input'])
-                                            await this.dynamoDBService.insertUnitId(this.configService.environment, aclEntry, this.currentTry, true)
+                                            await this.dynamoDBService.insertACLRecordUnitId(this.configService.environment, aclEntry, this.currentTry, true)
                                             hitAssigned = true
                                             break
                                         }
@@ -478,7 +469,7 @@ export class SkeletonComponent implements OnInit {
                             if (!hitAssigned)
                                 taskAllowed = false
 
-                        } else await this.dynamoDBService.insertWorker(this.configService.environment, this.worker, this.currentTry)
+                        } else await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker, this.currentTry, true, false)
 
                         /* We launch a call to Cloudflare to trace the worker */
                         if (this.settingsWorker.analysis) {
@@ -537,7 +528,7 @@ export class SkeletonComponent implements OnInit {
             let batchesStatus = {}
             let tables = await this.dynamoDBService.listTables(this.configService.environment)
             let workersManual = await this.S3Service.downloadWorkers(this.configService.environment)
-            let workersACL = await this.dynamoDBService.getWorkerACLRecord(this.configService.environment, this.worker.identifier)
+            let workersACL = await this.dynamoDBService.getACLRecordWorkerId(this.configService.environment, this.worker.identifier)
 
             /* To blacklist a previous batch its worker list is picked up */
             for (let batchName of this.settingsWorker.blacklist_batches) {
@@ -578,7 +569,7 @@ export class SkeletonComponent implements OnInit {
                 let batchStatus = batchesStatus[batchName]
                 if ('blacklist' in batchStatus) {
                     if ('tableName' in batchStatus) {
-                        let rawWorker = await this.dynamoDBService.getWorkerACLRecord(this.configService.environment, this.worker.identifier, batchStatus['tableName'])
+                        let rawWorker = await this.dynamoDBService.getACLRecordWorkerId(this.configService.environment, this.worker.identifier, batchStatus['tableName'])
                         if ('Items' in rawWorker) {
                             for (let worker of rawWorker['Items']) {
                                 if (this.worker.identifier == worker['identifier']) {
@@ -601,7 +592,7 @@ export class SkeletonComponent implements OnInit {
                 let batchStatus = batchesStatus[batchName]
                 if ('whitelist' in batchStatus) {
                     if ('tableName' in batchStatus) {
-                        let rawWorker = await this.dynamoDBService.getWorkerACLRecord(this.configService.environment, this.worker.identifier, batchStatus['tableName'])
+                        let rawWorker = await this.dynamoDBService.getACLRecordWorkerId(this.configService.environment, this.worker.identifier, batchStatus['tableName'])
                         if ('Items' in rawWorker) {
                             for (let worker of rawWorker['Items']) {
                                 if (this.worker.identifier == worker['identifier']) {
@@ -2194,10 +2185,6 @@ export class SkeletonComponent implements OnInit {
         /* The loading spinner is started */
         this.ngxService.start();
 
-        /* Control variables to restore the state of task */
-        this.comment.setValue("");
-        this.commentSent = false;
-
         this.sectionService.taskFailed = false;
         this.sectionService.taskSuccessful = false;
         this.sectionService.taskCompleted = false;
@@ -2219,6 +2206,8 @@ export class SkeletonComponent implements OnInit {
                 this.countdown.toArray()[0].resume();
             }
         }
+
+        this.outcomeSection.commentSent = false
 
         /* The loading spinner is stopped */
         this.ngxService.stop();
@@ -2486,8 +2475,7 @@ export class SkeletonComponent implements OnInit {
             /* await (this.upload(`${this.workerFolder}/worker.json`, this.worker)); */
 
             if (this.sequenceNumber <= 0) {
-                let uploadStatus = await this.S3Service.uploadTaskData(this.configService.environment, this.worker, this.unitId, data)
-                await this.dynamoDBService.insertData(this.configService.environment, this.worker.identifier, this.unitId, this.currentTry, this.sequenceNumber, data)
+                await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker.identifier, this.unitId, this.currentTry, this.sequenceNumber, data)
                 this.sequenceNumber = this.sequenceNumber + 1
             }
 
@@ -2534,8 +2522,7 @@ export class SkeletonComponent implements OnInit {
                 /* Number of accesses to the current questionnaire (which must be always 1, since the worker cannot go back */
                 data["accesses"] = accessesAmount + 1
 
-                let uploadStatus = await this.S3Service.uploadQuestionnaire(this.configService.environment, this.worker, this.unitId, data, this.currentTry, completedQuestionnaire, accessesAmount + 1, this.sequenceNumber)
-                await this.dynamoDBService.insertData(this.configService.environment, this.worker.identifier, this.unitId, this.currentTry, this.sequenceNumber, data)
+                await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker.identifier, this.unitId, this.currentTry, this.sequenceNumber, data)
 
                 /* The amount of accesses to the current questionnaire is incremented */
                 this.sequenceNumber = this.sequenceNumber + 1
@@ -2597,8 +2584,7 @@ export class SkeletonComponent implements OnInit {
                 let responsesSelected = this.searchEngineSelectedResponses[completedDocument];
                 data["responses_selected"] = responsesSelected
 
-                let uploadStatus = await this.S3Service.uploadDocument(this.configService.environment, this.worker, this.unitId, data, this.currentTry, completedDocument, accessesAmount + 1, this.sequenceNumber)
-                await this.dynamoDBService.insertData(this.configService.environment, this.worker.identifier, this.unitId, this.currentTry, this.sequenceNumber, data)
+                await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker.identifier, this.unitId, this.currentTry, this.sequenceNumber, data)
 
                 /* The amount of accesses to the current document is incremented */
                 this.elementsAccesses[completedElement] = accessesAmount + 1;
@@ -2657,17 +2643,9 @@ export class SkeletonComponent implements OnInit {
                 this.qualityChecksOutcome["info"]["sequence"] = this.sequenceNumber
                 data["checks"] = this.qualityChecksOutcome
 
-                await this.dynamoDBService.insertData(this.configService.environment, this.worker.identifier, this.unitId, this.currentTry, this.sequenceNumber, this.qualityChecksOutcome)
-                await this.S3Service.uploadQualityCheck(
-                    this.configService.environment,
-                    this.worker,
-                    this.unitId,
-                    this.qualityChecksOutcome,
-                    this.currentTry
-                )
+                await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker.identifier, this.unitId, this.currentTry, this.sequenceNumber, this.qualityChecksOutcome)
                 this.sequenceNumber = this.sequenceNumber + 1
-                let uploadStatus = await this.S3Service.uploadFinalData(this.configService.environment, this.worker, this.unitId, data, this.currentTry)
-                await this.dynamoDBService.insertData(this.configService.environment, this.worker.identifier, this.unitId, this.currentTry, this.sequenceNumber, data)
+                await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker.identifier, this.unitId, this.currentTry, this.sequenceNumber, data)
                 this.sequenceNumber = this.sequenceNumber + 1
 
 
@@ -2699,32 +2677,29 @@ export class SkeletonComponent implements OnInit {
 
             this.changeDetector.detectChanges()
 
-        }
-
-        /* Lastly, we update the ACL */
-
-        if (!(this.worker.identifier == null)) {
-            if (this.sectionService.taskSuccessful) {
-                this.worker.setParameter('in_progress', false)
-                this.worker.setParameter('paid', true)
-                await this.dynamoDBService.insertWorker(this.configService.environment, this.worker, this.currentTry)
-            } else {
-                if (this.settingsTask.allowed_tries > this.currentTry) {
+            /* Lastly, we update the ACL */
+            if (!(this.worker.identifier == null)) {
+                if (this.sectionService.taskSuccessful) {
                     this.worker.setParameter('in_progress', false)
-                    this.worker.setParameter('paid', false)
-                    await this.dynamoDBService.insertWorker(this.configService.environment, this.worker, this.currentTry)
+                    this.worker.setParameter('paid', true)
+                    await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker, this.currentTry, false, true)
+                } else {
+                    if (this.settingsTask.allowed_tries > this.currentTry) {
+                        this.worker.setParameter('in_progress', false)
+                        this.worker.setParameter('paid', false)
+                        await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker, this.currentTry, false, true)
+                    }
                 }
             }
+
         }
-
-
     }
 
     /*
      * This function gives the possibility to the worker to provide a comment when a try is finished, successfully or not.
      * The comment can be typed in a textarea and when the worker clicks the "Send" button such comment is uploaded to an Amazon S3 bucket.
      */
-    public async performCommentSaving() {
+    public async performCommentSaving(comment) {
         if (!(this.worker.identifier == null)) {
             let data = {}
             let actionInfo = {
@@ -2733,12 +2708,11 @@ export class SkeletonComponent implements OnInit {
                 element: "comment"
             };
             data["info"] = actionInfo
-            data['comment'] = this.commentForm.value["comment"]
-            let uploadStatus = await this.S3Service.uploadComment(this.configService.environment, this.worker, this.unitId, data, this.currentTry)
-            await this.dynamoDBService.insertData(this.configService.environment, this.worker.identifier, this.unitId, this.currentTry, this.sequenceNumber, data)
+            data['comment'] = comment
+            await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker.identifier, this.unitId, this.currentTry, this.sequenceNumber, data)
             this.sequenceNumber = this.sequenceNumber + 1
         }
-        this.commentSent = true;
+        this.outcomeSection.commentSent = true
     }
 
     /* |--------- OTHER AMENITIES ---------| */

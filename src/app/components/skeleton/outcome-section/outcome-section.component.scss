@@ -1,0 +1,127 @@
+/* |--- OUTCOME SECTION STYLES ---| */
+
+/* |--- General ---| */
+
+
+.outcome-section {
+  margin: 2% auto;
+  width: 95%;
+}
+
+.outcome-section mat-card {
+  padding-top: 0.01%;
+  padding-bottom: 1.5%;
+  margin: auto;
+}
+
+.outcome-section mat-card-title {
+  text-align: center;
+  text-transform: uppercase;
+  margin: 1% auto 0.5%;
+}
+
+.outcome-section mat-card-content {
+  text-align: center;
+  p {
+    font-size: 1.5em;
+  }
+}
+
+.outcome-section h2 {
+  margin-bottom: 0;
+}
+
+.outcome-section h4 {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.outcome-section h6 {
+  margin-top: 0;
+}
+
+.comment-form {
+  mat-form-field {
+    width: 100%;
+  }
+  margin-top: 2%
+}
+
+.outcome-section .comment-sent-label {
+  text-transform: uppercase;
+  padding: 0.5%;
+  margin-left: 1%;
+  font-weight: bold;
+  color: #66bb6a;
+}
+
+/* |--- Success section ---| */
+
+.success-title {
+  background-color: #66bb6a;
+  color: white;
+}
+
+#success-section mat-card-content {
+  text-align: center;
+}
+
+#success-section mat-card-content h2 {
+  text-align: justify;
+  font-weight: bold;
+}
+
+/* |--- Failure section ---| */
+
+#failure-section mat-card-content {
+  text-align: center;
+}
+
+#failure-section mat-card-content h2 {
+  text-align: justify;
+  font-weight: bold;
+}
+
+.failure-title {
+  color: white;
+  background-color: #ef5350;
+}
+
+#failure-section button {
+  margin: auto;
+  width: 10%;
+  height: 2.3em;
+}
+
+/* |--- Retry section ---| */
+
+#retry-section mat-card-content {
+  text-align: center;
+}
+
+#retry-section mat-card-content h2 {
+  text-align: justify;
+  font-weight: bold;
+}
+
+#retry-section button {
+  margin: auto;
+  width: 10%;
+  height: 2.3em;
+}
+
+.retry-title {
+  background-color: #ff4081;
+  color: white;
+}
+
+/* |--- ALREADY STARTED SECTION STYLES ---| */
+
+#already-started-section {
+  margin-top: 2%;
+}
+
+#already-started-section h2 {
+  text-align: justify;
+  font-weight: bold;
+}
