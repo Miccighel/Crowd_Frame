@@ -363,6 +363,13 @@ mat-horizontal-stepper mat-card-content, mat-horizontal-stepper mat-card-title, 
   padding-top: 16px;
 }
 
+/* NOT ALLOWED SECTION */
+
+#already-started-section {
+  margin: auto;
+  width: 96%;
+}
+
 /* |--- INSTRUCTIONS SECTIONS ---| */
 
 .instructions-section {

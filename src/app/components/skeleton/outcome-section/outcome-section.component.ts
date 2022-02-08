@@ -18,6 +18,7 @@ export class OutcomeSectionComponent implements OnInit {
     /* Flag to check if the comment has been correctly sent to S3 */
     commentSent: boolean;
 
+    @Input() platformName: string
     @Input() taskAllowed: boolean
     @Input() taskSuccessful: boolean
     @Input() taskCompleted: boolean
@@ -26,6 +27,7 @@ export class OutcomeSectionComponent implements OnInit {
     @Input() tryCurrent: number
     @Input() messages: Array<string>
     @Input() tokenOutput: string
+    @Input() completionCode: string
 
     @Output() performReset: EventEmitter<boolean>;
     @Output() commentEmitter: EventEmitter<string>;
@@ -47,6 +49,10 @@ export class OutcomeSectionComponent implements OnInit {
     }
 
     ngOnInit(): void {}
+
+    public completeTask() {
+        window.open(`https://app.prolific.co/submissions/complete?cc=${this.completionCode}`, "_blank");
+    }
 
     public performCommentSaving() {
         this.commentEmitter.emit(this.commentForm.get('comment').value)

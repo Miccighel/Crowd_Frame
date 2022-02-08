@@ -2,10 +2,24 @@
 
 /* |--- General ---| */
 
+ul li {
+  font-size: 1.3em;
+}
+
+p.text-desc {
+  font-size: 1.5em;
+  margin-top: 1%;
+  margin-bottom: 1%;
+}
+
+p.text-desc-small {
+  font-size: 1.3em;
+  margin-top: 1%;
+  margin-bottom: 1%;
+}
 
 .outcome-section {
   margin: 2% auto;
-  width: 95%;
 }
 
 .outcome-section mat-card {
@@ -20,14 +34,29 @@
   margin: 1% auto 0.5%;
 }
 
-.outcome-section mat-card-content {
-  text-align: center;
-  p {
-    font-size: 1.5em;
-  }
+
+.success-title {
+  background-color: #66bb6a;
+  color: white;
+}
+
+.failure-title {
+  color: white;
+  background-color: #ef5350;
+}
+
+.retry-title {
+  background-color: #ff4081;
+  color: white;
 }
 
 .outcome-section h2 {
+  margin-bottom: 0;
+  text-align: center;
+}
+
+.outcome-section h3 {
+  margin-top: 0;
   margin-bottom: 0;
 }
 
@@ -40,11 +69,28 @@
   margin-top: 0;
 }
 
+.outcome-section div {
+  margin: auto;
+  text-align: center;
+}
+
+#button-completion {
+  font-size: 2em;
+  width: 50%;
+  height: 80px;
+  margin-bottom: 1.5%;
+}
+
 .comment-form {
+  margin-top: 1.5%;
+
   mat-form-field {
     width: 100%;
   }
-  margin-top: 2%
+}
+
+#comment-button {
+  text-align: center;
 }
 
 .outcome-section .comment-sent-label {
@@ -55,73 +101,7 @@
   color: #66bb6a;
 }
 
-/* |--- Success section ---| */
-
-.success-title {
-  background-color: #66bb6a;
-  color: white;
-}
-
-#success-section mat-card-content {
+.outcome-section #not-allowed-section {
   text-align: center;
-}
-
-#success-section mat-card-content h2 {
-  text-align: justify;
-  font-weight: bold;
-}
-
-/* |--- Failure section ---| */
-
-#failure-section mat-card-content {
-  text-align: center;
-}
-
-#failure-section mat-card-content h2 {
-  text-align: justify;
-  font-weight: bold;
-}
-
-.failure-title {
-  color: white;
-  background-color: #ef5350;
-}
-
-#failure-section button {
   margin: auto;
-  width: 10%;
-  height: 2.3em;
-}
-
-/* |--- Retry section ---| */
-
-#retry-section mat-card-content {
-  text-align: center;
-}
-
-#retry-section mat-card-content h2 {
-  text-align: justify;
-  font-weight: bold;
-}
-
-#retry-section button {
-  margin: auto;
-  width: 10%;
-  height: 2.3em;
-}
-
-.retry-title {
-  background-color: #ff4081;
-  color: white;
-}
-
-/* |--- ALREADY STARTED SECTION STYLES ---| */
-
-#already-started-section {
-  margin-top: 2%;
-}
-
-#already-started-section h2 {
-  text-align: justify;
-  font-weight: bold;
 }

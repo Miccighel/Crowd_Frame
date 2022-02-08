@@ -53,7 +53,7 @@ import {ButtonDirective, CrowdXplorerDirective, InputDirective, RadioDirective, 
 import {SectionService} from "./services/section.service";
 import {from, Observable} from "rxjs";
 import {tap} from "rxjs/operators";
-import {QuestionnaireComponent} from './components/questionnaire/questionnaire.component';
+import {QuestionnaireComponent} from './components/skeleton/questionnaire/questionnaire.component';
 import {WorkerChecksStepComponent} from './components/generator/generator-steps/worker-checks-step/worker-checks-step.component';
 import {QuestionnaireStepComponent} from './components/generator/generator-steps/questionnaire-step/questionnaire-step.component';
 import {InstructionsStepComponent} from './components/generator/generator-steps/instructions-step/instructions-step.component';
@@ -61,7 +61,7 @@ import {SearchEngineStepComponent} from './components/generator/generator-steps/
 import {DimensionsStepComponent} from './components/generator/generator-steps/dimensions-step/dimensions-step.component';
 import { TaskSettingsStepComponent } from './components/generator/generator-steps/task-settings-step/task-settings-step.component';
 import { SummaryStepComponent } from './components/generator/generator-steps/summary-step/summary-step.component';
-import { QuestionComponent } from './components/questionnaire/question/question.component';
+import { QuestionComponent } from './components/skeleton/questionnaire/question/question.component';
 import { OutcomeSectionComponent } from './components/skeleton/outcome-section/outcome-section.component';
 
 function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {

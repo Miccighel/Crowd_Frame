@@ -12,66 +12,73 @@
         </mat-card-title>
 
         <ng-container *ngIf="!taskAllowed">
-            <mat-card-content *ngIf="this.messages">
-                <h2>You are not allowed to participate to this experiment because:</h2>
-                <ul>
-                    <li *ngFor="let message of this.messages; let i=index"><p>{{message}}</p></li>
-                </ul>
-                <h2>If you believe that this is an error, please contact us. Sorry for the inconvenience.</h2>
+            <mat-card-content *ngIf="this.messages" id="not-allowed-section">
+                <h2>You are not allowed to participate to this experiment.</h2>
+                <p class="text-desc">Please, read the messages shown below. If you believe that this is an error, please contact us. Sorry for the inconvenience.</p>
+                <p class="text-desc-small" *ngFor="let message of this.messages; let i=index">{{(i + 1)}}) {{message}}</p>
             </mat-card-content>
             <!-- Otherwise a standard message is shown -->
             <mat-card-content *ngIf="!this.messages">
-                <h2>
-                    Either you have already started this task without finishing it, or you have already participated to a
-                    variant of this experiment.<br/> For this reason, you are not allowed to take a part in this experiment.
-                    If you believe that this is an error, please contact us. Sorry for the inconvenience.
-                </h2>
+                <h2>You have already started this task without finishing it, or you have already participated to a variant of this experiment deployed in the past.</h2>
+                <p class="text-desc">
+                    You are not allowed to take a part in this experiment. If you believe that this is an error, please contact us. Sorry for the inconvenience.
+                </p>
             </mat-card-content>
         </ng-container>
 
         <mat-card-content *ngIf="taskAllowed">
 
-            <h2>
-                <span>
-                    Your work was not good enough, so you are not allowed to submit this task.
-                    As stated in the instructions, some quality checks are performed in this task.
-                    You see this message because you have not passed one or more of such checks.
-                    Nevertheless, you are allowed to retry this task. To do so, please click on the reset button below.
-                    Feel free to leave any comment in the box below.
-                </span>
-                <span *ngIf="taskAllowed && taskCompleted && taskFailed && !taskSuccessful && (triesAllowed>0 && tryCurrent <= triesAllowed)">
-                    Your work was not good enough, so you are not allowed to submit this task.
-                    As stated in the instructions, some quality checks are performed in this task.
-                    You see this message because you have not passed one or more of such checks.
-                    Nevertheless, you are allowed to retry this task. To do so, please click on the reset button below.
-                    Feel free to leave any comment in the box below.
-                </span>
-                <span *ngIf="taskAllowed && taskCompleted && taskFailed && !taskSuccessful && (triesAllowed<=0 || (triesAllowed>0 && tryCurrent > triesAllowed))">
-                    Your work was not good enough, so you are not allowed to submit this task.
-                    As stated in the instructions, some quality checks are performed in this task.
-                    You see this message because you have not passed one or more of such checks.
-                    Feel free to leave any comment in the box below.
-                </span>
-                <span *ngIf="taskAllowed && taskCompleted && !taskFailed && taskSuccessful && (triesAllowed>0 && tryCurrent <= triesAllowed)">
-                    Congratulations, you have successfully completed this task. To be paid you now have to copy your output token (shown below)
-                    back to the Amazon Mechanical Turk task page. Feel free to leave any comment in the box below to help us improve our research.
-                </span>
-            </h2>
+            <p *ngIf="taskAllowed && taskCompleted && taskFailed && !taskSuccessful && (triesAllowed>0 && tryCurrent <= triesAllowed)" class="text-desc">
+                Your work was not good enough, so you are not allowed to submit this task.
+                As stated in the instructions, some quality checks are performed in this task.
+                You see this message because you have not passed one or more of such checks.
+                Nevertheless, you are allowed to retry this task. To do so, please click on the reset button below.
+            </p>
+            <p *ngIf="taskAllowed && taskCompleted && taskFailed && !taskSuccessful && (triesAllowed<=0 || (triesAllowed>0 && tryCurrent > triesAllowed))" class="text-desc">
+                Your work was not good enough, so you are not allowed to submit this task.
+                As stated in the instructions, some quality checks are performed in this task.
+                You see this message because you have not passed one or more of such checks.
+            </p>
 
-            <div *ngIf="taskAllowed && taskCompleted && !taskFailed && taskSuccessful && (triesAllowed>0 && tryCurrent <= triesAllowed)">
-                <h1>{{tokenOutput}}</h1>
+            <ng-container *ngIf="this.platformName=='mturk' && taskAllowed && taskCompleted && !taskFailed && taskSuccessful && (triesAllowed>0 && tryCurrent <= triesAllowed)">
+                <p class="text-desc">
+                    Congratulations, you have successfully completed this task. To be paid you now have to copy your output token (shown below)
+                    back to the Amazon Mechanical Turk task page.
+                </p>
+
+                <div>
+                    <h1>{{tokenOutput}}</h1>
+                </div>
+            </ng-container>
+
+            <ng-container *ngIf="this.platformName=='prolific' && taskAllowed && taskCompleted && !taskFailed && taskSuccessful && (triesAllowed>0 && tryCurrent <= triesAllowed)">
+                <p class="text-desc">
+                    Congratulations, you have successfully completed this task. To be paid you just have to click the completion button (shown below).
+                </p>
+                <div>
+                    <button mat-flat-button color="primary" id="button-completion" (click)="completeTask()">Complete</button>
+                </div>
+            </ng-container>
+
+            <div *ngIf="taskAllowed && taskCompleted && taskFailed && !taskSuccessful && (triesAllowed>0 && tryCurrent <= triesAllowed)">
+                <button mat-raised-button color="primary" (click)="this.performReset.emit(true)">Reset</button>
             </div>
 
-            <button mat-flat-button color="primary" (click)="this.performReset.emit(true)">Reset</button>
-            <form [formGroup]="commentForm" class="comment-form">
-                <mat-form-field appearance="fill">
-                    <textarea matInput [disabled]="commentSent" placeholder="Your comment here" formControlName="comment" rows="5"></textarea>
-                </mat-form-field>
-            </form>
-            <button mat-flat-button color="primary" [disabled]="commentSent || !commentForm.valid "
-                    (click)="performCommentSaving()"> Send
-            </button>
-            <span class="comment-sent-label" *ngIf="commentSent">Thank you!</span>
+            <mat-divider [inset]="true"></mat-divider>
+
+            <div class="comment-box">
+                <p class="text-desc">Feel free to leave any comment in the box below to help us improve our research.</p>
+                <form [formGroup]="commentForm" class="comment-form">
+                    <mat-form-field appearance="fill">
+                        <textarea matInput [disabled]="commentSent" placeholder="Your comment here" formControlName="comment" rows="5"></textarea>
+                    </mat-form-field>
+                </form>
+                <button id="comment-button" mat-flat-button color="primary" [disabled]="commentSent || !commentForm.valid "
+                        (click)="performCommentSaving()"> Send
+                </button>
+                <span class="comment-sent-label" *ngIf="commentSent">Thank you!</span>
+            </div>
+
         </mat-card-content>
     </mat-card>
 </div>
