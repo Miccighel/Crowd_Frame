@@ -1,0 +1,294 @@
+<form [formGroup]="formStep">
+
+    <!-- Header -->
+    <mat-card [class.mat-elevation-z3]="true">
+        <mat-card-header>
+            <mat-card-title>Step #6: Task Settings</mat-card-title>
+            <mat-card-subtitle>Sixth, define all Task Settings here</mat-card-subtitle>
+        </mat-card-header>
+        <mat-divider></mat-divider>
+        <mat-card-content>
+
+            <!-- Modality -->
+            <table class="width-100 mt-8px">
+                <tr>
+                    <td class="p-0">
+                        <mat-form-field matLine class="width-100" [hideRequiredMarker]="formStep.get('modality').valid" appearance="fill">
+                            <mat-label>Modality</mat-label>
+                            <mat-select matInput formControlName="modality" required (selectionChange)="emitModality($event)">
+                                <mat-option *ngFor="let modalityType of modalityTypes" [value]="modalityType.value">
+                                    {{modalityType.viewValue}}
+                                </mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                    </td>
+                </tr>
+            </table>
+
+            <mat-divider [inset]="true"></mat-divider>
+
+            <!-- Allowed Tries, Time Check Amount-->
+            <table class="width-100 mt-8px">
+                <tr>
+                    <td class="p-0 pr-16px">
+                        <mat-form-field matLine class="width-100" [hideRequiredMarker]="formStep.get('allowed_tries').valid" appearance="fill">
+                            <mat-label>Allowed Tries</mat-label>
+                            <input matInput type="number" min="0" formControlName="allowed_tries" required>
+                        </mat-form-field>
+                    </td>
+                    <td class="p-0">
+                        <mat-form-field matLine class="width-100" [hideRequiredMarker]="formStep.get('time_check_amount').valid" appearance="fill">
+                            <mat-label>Time Check Amount</mat-label>
+                            <input matInput type="number" min="0" formControlName="time_check_amount" required>
+                        </mat-form-field>
+                    </td>
+                </tr>
+            </table>
+
+            <mat-divider [inset]="true"></mat-divider>
+
+            <!-- Logging -->
+            <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="logger">
+                Logger
+            </mat-slide-toggle>
+
+            <mat-form-field matLine class="width-100" appearance="fill" *ngIf="formStep.get('logger').value">
+                <mat-label>Logging server URL</mat-label>
+                <input matInput type="text" formControlName="serverEndpoint" required (blur)="updateServerEndpoint()">
+            </mat-form-field>
+
+            <div *ngIf="formStep.get('logger').value">
+                <table class="width-100" style="border-collapse: collapse">
+                    <tr *ngFor="let item of this.formStep.get('logOption').value | keyvalue" style="border-bottom: thin solid lightgray">
+                        <th align="left">
+                            <mat-checkbox color="primary" [checked]="this.formStep.get('logOption').value[item.key]['general']" (change)="updateLogOption(item.key.toString(),'general')">
+                                {{item.key.toUpperCase()}} events
+                            </mat-checkbox>
+                        </th>
+                        <ng-container *ngFor="let prop of this.formStep.get('logOption').value[item.key] | keyvalue">
+                            <td *ngIf="prop.key != 'general'">
+                                <mat-checkbox color="primary" [checked]="this.formStep.get('logOption').value[item.key][prop.key]" [disabled]="!this.formStep.get('logOption').value[item.key]['general']"
+                                              (change)="updateLogOption(item.key.toString(), prop.key.toString())">
+                                    {{prop.key.toUpperCase()}}
+                                </mat-checkbox>
+                            </td>
+                        </ng-container>
+                    </tr>
+                </table>
+            </div>
+
+
+            <mat-divider [inset]="true"></mat-divider>
+
+            <!-- Hits file-->
+            <h3 class="lighter">Hits & Attributes</h3>
+            <table class="width-100 mt-16px">
+                <tr>
+                    <td>
+                        <button mat-flat-button color="primary" class="indent" ngxFilePicker [readMode]="readMode" (filePick)="hitsFile = $event" (readEnd)="updateHitsFile()" accept="application/json">
+                            Select Hits File
+                        </button>
+                        <ng-container *ngIf="!this.hitsFileName">
+                            <code>your_file.json</code>
+                        </ng-container>
+                        <ng-container *ngIf="this.hitsDetected <= 0">
+                            <code>invalid file</code>
+                        </ng-container>
+                        <ng-container *ngIf="this.hitsDetected > 0">
+                            <code>Filename: {{ this.hitsFileName }}, Hits detected: {{this.hitsDetected}}, Filesize: {{this.hitsSize}} Kb</code>
+                        </ng-container>
+                    </td>
+                </tr>
+                <tr *ngIf="this.hitsDetected<=0">
+                    <td>
+                        <mat-error class="mb-8px indent">
+                            This JSON file does not contain any valid hit. Please, review your selection.
+                        </mat-error>
+                    </td>
+                </tr>
+            </table>
+
+            <div class="hit-attributes mt-8px mb-16px indent">
+                <div *ngFor="let value of hitAttributes().controls; let valueIndex = index" formArrayName="attributes" class="p-5px">
+                    <div>
+                        <ng-container [formGroupName]="valueIndex">
+                            <h3>{{this.hitsAttributes[valueIndex]}}</h3>
+                            <mat-form-field class="width-100" appearance="fill">
+                                <input matInput type="text" placeholder="name_pretty" formControlName="name_pretty">
+                            </mat-form-field>
+                            <mat-checkbox color="primary" formControlName="show" (change)="updateHitAttribute(valueIndex)">
+                                Show
+                            </mat-checkbox>
+                            <mat-checkbox color="primary" formControlName="annotate" (change)="updateHitAttribute(valueIndex)">
+                                Enable Annotations
+                            </mat-checkbox>
+                            <mat-checkbox color="primary" formControlName="required">
+                                Required
+                            </mat-checkbox>
+                        </ng-container>
+                    </div>
+                </div>
+            </div>
+
+            <mat-divider [inset]="true"></mat-divider>
+
+            <!-- Annotator: Type -->
+            <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="setAnnotator" (change)="resetAnnotator()">
+                Annotator
+            </mat-slide-toggle>
+
+            <div *ngIf="formStep.get('setAnnotator').value" formGroupName="annotator">
+                <table class="width-100">
+                    <tr>
+                        <td class="p-0 pr-16px">
+                            <mat-form-field matLine class="width-100" [hideRequiredMarker]="formStep.get('annotator').valid" appearance="fill">
+                                <mat-label>Type</mat-label>
+                                <mat-select matInput formControlName="type" (selectionChange)="setAnnotatorType()" required>
+                                    <mat-option *ngFor="let annotatorType of annotatorTypes" [value]="annotatorType.value">
+                                        {{annotatorType.viewValue}}
+                                    </mat-option>
+                                </mat-select>
+                            </mat-form-field>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Mapping -->
+            <div *ngIf="annotator().get('type').value == 'options'" formGroupName="annotator">
+                <button mat-flat-button color="primary" class="mb-16px indent" (click)="addOptionValue()">
+                    Add Option
+                </button>
+                <div *ngFor="let value of annotatorOptionValues().controls; let valueIndex = index" formArrayName="values">
+                    <table class="width-100">
+                        <tr>
+                            <td class="p-0 pr-16px" [formGroupName]="valueIndex">
+                                <mat-form-field class="width-100" matLine [hideRequiredMarker]="value.valid" appearance="fill">
+                                    <mat-label>Label</mat-label>
+                                    <input matInput type="text" formControlName="label" required>
+                                </mat-form-field>
+                            </td>
+                            <td class="p-0 pr-16px" [formGroupName]="valueIndex">
+                                <mat-form-field class="width-100" matLine [hideRequiredMarker]="value.valid" appearance="fill">
+                                    <mat-label>HTML Color (#123456)</mat-label>
+                                    <input matInput formControlName="color" [(colorPicker)]="this.annotatorOptionColors[valueIndex]" (colorPickerChange)="updateOptionColor($event, valueIndex)">
+                                </mat-form-field>
+                            </td>
+                            <td class="p-0 center">
+                                <button mat-flat-button color="primary" class="mb-16px" (click)="removeAnnotatorOptionValue(valueIndex)"
+                                        [disabled]="valueIndex == '0' && annotatorOptionValues().controls.length == 1">
+                                    Remove Option
+                                </button>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <mat-divider [inset]="true"></mat-divider>
+
+            <!-- Countdown Time -->
+            <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="setCountdownTime" (change)="resetCountdown()">
+                Countdown
+            </mat-slide-toggle>
+
+            <mat-form-field matLine class="width-100" [hideRequiredMarker]="formStep.get('countdown_time').valid" appearance="fill" *ngIf="this.formStep.get('setCountdownTime').value">
+                <mat-label>Time</mat-label>
+                <input matInput type="number" min="0" formControlName="countdown_time" required>
+                <mat-error *ngIf="checkFormControl(formStep,'countdown_time', 'invalid')">
+                    A positive or zero number is required
+                </mat-error>
+            </mat-form-field>
+
+            <mat-form-field class="width-100" appearance="fill" *ngIf="this.formStep.get('setCountdownTime').value">
+                <mat-label>Behavior</mat-label>
+                <mat-select matInput formControlName="countdown_behavior" required>
+                    <mat-option *ngFor="let countdownBehavior of countdownBehavior" [value]="countdownBehavior.value">
+                        {{countdownBehavior.viewValue}}
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+
+
+            <mat-slide-toggle color="primary" class="mb-16px" formControlName="setAdditionalTimes" (change)="resetAdditionalTimes()" *ngIf="this.formStep.get('setCountdownTime').value">
+                Additional Times
+            </mat-slide-toggle>
+
+            <mat-form-field class="width-100" appearance="fill" *ngIf="this.formStep.get('setCountdownTime').value && this.formStep.get('setAdditionalTimes').value">
+                <mat-label>Modality</mat-label>
+                <mat-select matInput formControlName="countdown_modality" required (selectionChange)="updateCountdownModality()">
+                    <mat-option *ngFor="let additionalTimeModality of additionalTimeModalities" [value]="additionalTimeModality.value">
+                        {{additionalTimeModality.viewValue}}
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+
+            <mat-form-field class="width-100" appearance="fill"
+                            *ngIf="this.formStep.get('countdown_modality').value == 'attribute' && this.formStep.get('setCountdownTime').value && this.formStep.get('setAdditionalTimes').value">
+                <mat-label>Attribute</mat-label>
+                <mat-select matInput formControlName="countdown_attribute" (selectionChange)="updateCountdownAttribute()" required>
+                    <mat-option *ngFor="let attribute of hitsAttributes" [value]="attribute">
+                        {{attribute}}
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+
+            <div formArrayName="countdown_attribute_values"
+                 *ngIf="this.formStep.get('countdown_modality').value == 'attribute' && this.formStep.get('setCountdownTime').value && this.formStep.get('setAdditionalTimes').value && this.hitsAttributesValues">
+                <mat-form-field
+                        matLine [hideRequiredMarker]="countdownAttributeControl.get('time').valid" appearance="fill" class="indent p-2px"
+                        *ngFor="let countdownAttributeControl of this.countdownAttributeValues().controls; let countdownAttributeIndex = index"
+                        [formGroupName]="countdownAttributeIndex">
+                    <mat-label>{{this.hitsAttributesValues[(this.formStep.get('countdown_attribute').value)][countdownAttributeIndex]}}</mat-label>
+                    <input matInput type="number" formControlName="time" min="0" required>
+                </mat-form-field>
+            </div>
+
+            <div formArrayName="countdown_position_values"
+                 *ngIf="this.formStep.get('countdown_modality').value == 'position' && this.formStep.get('setCountdownTime').value && this.formStep.get('setAdditionalTimes').value">
+                <mat-form-field
+                        matLine [hideRequiredMarker]="countdownPositionControl.get('time').valid" appearance="fill" class="indent p-2px"
+                        *ngFor="let countdownPositionControl of this.countdownPositionValues().controls; let countdownPositionIndex = index"
+                        [formGroupName]="countdownPositionIndex">
+                    <mat-label>Position {{countdownPositionIndex}}</mat-label>
+                    <input matInput type="number" formControlName="time" min="0" required>
+                </mat-form-field>
+            </div>
+
+            <mat-divider [inset]="true"></mat-divider>
+
+            <!-- Messages -->
+            <div formArrayName="messages">
+                <button mat-flat-button color="primary" class="mt-16px mb-16px indent" (click)="addMessage()">
+                    Add Message
+                </button>
+                <div *ngFor="let msg of messages().controls; let messageIndex = index" [formGroupName]="messageIndex">
+                    <table class="width-100">
+                        <tr>
+                            <td class="p-0 pr-16px">
+                                <mat-form-field matLine class="width-100" [hideRequiredMarker]="msg.get('message').valid" appearance="fill">
+                                    <mat-label>Message</mat-label>
+                                    <input matInput type="text" formControlName="message" required>
+                                </mat-form-field>
+                            </td>
+                            <td class="p-0 center">
+                                <button mat-flat-button color="primary" class="mb-16px" (click)="removeMessage(messageIndex)">
+                                    Remove Message
+                                </button>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+        </mat-card-content>
+
+        <mat-divider></mat-divider>
+
+        <mat-card-actions>
+            <button mat-flat-button color="primary" matStepperPrevious>Back</button>
+            <button mat-flat-button color="primary" matStepperNext>Next</button>
+        </mat-card-actions>
+
+    </mat-card>
+</form>

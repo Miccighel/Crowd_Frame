@@ -1,5 +1,6 @@
 /* |--- GENERAL STYLES --| */
 
+
 html, body {
   height: 100%;
 }
@@ -10,21 +11,48 @@ body {
   background-color: rgba(0, 0, 0, .10);
 }
 
-.mat-horizontal-content-container {
-  padding-left: 0 !important;
-  padding-right: 0 !important;
-  overflow: visible !important;
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+button {
+  text-transform: uppercase;
+}
+
+button:nth-child(2) {
+  margin-left: 5px;
+}
+
+mat-horizontal-stepper {
+  background: transparent !important;
+}
+
+mat-card-content mat-form-field label {
+  font-weight: bold;
+}
+
+mat-card-title {
+  padding-top: 1% !important;
+  padding-bottom: 1% !important;
+  margin-bottom: 0.5% !important;
+  font-weight: initial !important;
+}
+
+mat-card mat-card-content {
+  margin-top: 1% !important;
+}
+
+mat-card .mat-card-subtitle {
+  margin-top: 0 !important;
 }
 
 .mat-radio-label {
   white-space: normal !important;
 }
 
-.mat-radio-label {
-  white-space: normal !important;
-}
 
-.mat-card>.mat-card-actions:last-child {
+.mat-card > .mat-card-actions:last-child {
   margin-bottom: 0 !important;
 }
 
@@ -35,8 +63,8 @@ body {
 .mat-dialog-container h2 {
   padding-top: 1% !important;
   padding-bottom: 1% !important;
-  border-top: 1px solid rgba(0,0,0,.12);
-  border-bottom: 1px solid rgba(0,0,0,.12);
+  border-top: 1px solid rgba(0, 0, 0, .12);
+  border-bottom: 1px solid rgba(0, 0, 0, .12);
   font-weight: lighter !important;
 }
 
@@ -79,17 +107,9 @@ body {
   max-width: 70%;
 }
 
-img {
-  max-width: 100%;
-  height: auto;
-}
-
-/* |--- GENERAL STYLES  --| */
-
 .radio-button-group {
   display: flex;
   flex-direction: column;
-  margin: 15px 0;
 }
 
 .radio-button-group-horizontal {
@@ -100,28 +120,87 @@ img {
   margin: 5px;
 }
 
-button:nth-child(2) {
-  margin-left: 5px;
-}
-
-mat-card-title {
-  padding-top: 1% !important;
-  padding-bottom: 1% !important;
-  margin-bottom: 0.5% !important;
-  margin-top: 0.5% !important;
-  font-weight: initial !important;
-}
-
 .text-lighter {
   font-weight: lighter;
 }
 
-mat-horizontal-stepper mat-card-content, mat-horizontal-stepper mat-card-title, mat-horizontal-stepper mat-card-actions {
-  width: 75% !important;
-  margin: auto !important;
+.checkbox {
+  padding-left: 24px;
+  padding-bottom: 12px;
 }
 
+.lighter {
+  font-weight: lighter;
+}
 
-button {
-  text-transform: uppercase !important;
+.border {
+  border: 1px solid #ddd;
+}
+
+.indent {
+  margin-left: 16px;
+}
+
+.double-indent {
+  margin-left: 32px;
+}
+
+.left {
+  text-align: left;
+}
+
+.center {
+  text-align: center;
+}
+
+.right {
+  text-align: right;
+}
+
+.width-100 {
+  width: 100% !important;
+}
+
+.p-0 {
+  padding: 0 !important;
+}
+
+.p-2px {
+  padding: 2px !important;
+}
+
+.p-5px {
+  padding: 5px !important;
+}
+
+.p-16px {
+  padding: 16px !important;
+}
+
+.pr-16px {
+  padding-right: 16px !important;
+}
+
+.mt-0 {
+  margin-top: 0 !important;
+}
+
+.mt-8px {
+  margin-top: 8px !important;
+}
+
+.mt-16px {
+  margin-top: 16px !important;
+}
+
+.mb-0 {
+  margin-bottom: 0 !important;
+}
+
+.mb-8px {
+  margin-bottom: 8px !important;
+}
+
+.mb-16px {
+  margin-bottom: 16px !important;
 }

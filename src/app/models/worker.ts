@@ -1,20 +1,23 @@
 export class Worker {
 
   identifier: string;
+  platform: string;
   folder: string
   cloudflareProperties: Object;
   navigatorProperties: Object;
   ngxDeviceDetectorProperties: Object;
 
   constructor(
-    mturkId: string,
+    workerIdentifier: string,
+    platform: string,
     folder: string,
     cloudflareData: string,
     navigator: Navigator,
     ngxDeviceDetectorData: Object,
   ) {
 
-    this.identifier = mturkId
+    this.identifier = workerIdentifier
+    this.platform = platform
     this.folder = folder
     let unwantedProperties = [
       "registerProtocolHandler",

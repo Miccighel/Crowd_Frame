@@ -149,6 +149,11 @@ mat-horizontal-stepper mat-card-content, mat-horizontal-stepper mat-card-title, 
   margin-right: 7px;
 }
 
+.radio-button-separated  {
+  font-style: italic;
+  font-weight: normal;
+}
+
 .inner-annotation-text {
   margin-top: 5px;
   margin-bottom: 5px;
@@ -239,6 +244,10 @@ mat-horizontal-stepper mat-card-content, mat-horizontal-stepper mat-card-title, 
 
 .dimension .magnitude_estimation {
   font-size: 2em;
+}
+
+.dimension-matrix-container {
+  margin-bottom: 2%;
 }
 
 .dimension-matrix .matrix-header .matrix-header-value, .dimension-matrix .matrix-header .matrix-header-text {

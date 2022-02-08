@@ -13,12 +13,10 @@ export class SettingsTask {
     countdown_attribute?: string;
     countdown_attribute_values?: Array<JSON>;
     countdown_position_values?: Array<number>;
-    blacklist_batches: Array<string>;
-    whitelist_batches: Array<string>;
     messages?: Array<string>;
-    logger?: boolean;
-    logOption?: Object;
-    serverEndpoint?: string;
+    log_enable?: boolean;
+    log_option?: Object;
+    log_server_endpoint?: string;
 
     constructor(
         data = null as JSON
@@ -54,8 +52,8 @@ export class SettingsTask {
         this.countdown_attribute = data ? data["countdown_attribute"] ? data['countdown_attribute'] : null : null;
         this.countdown_attribute_values = new Array<JSON>()
         if (data) if ('countdown_attribute_values' in data) for (let value of data["countdown_attribute_values"] as Array<JSON>) this.countdown_attribute_values.push(value)
-        this.logger = data ? !!data["logger"] : false;
-        this.logOption = data ? data['logOption'] ? data['logOption'] : {
+        this.log_enable = data ? !!data["logger"] : false;
+        this.log_option = data ? data['logOption'] ? data['logOption'] : {
             "button": {
                 "general": 'false',
                 "click": 'false'
@@ -99,14 +97,7 @@ export class SettingsTask {
                 "resize": 'false'
             }
         } : {};
-        this.serverEndpoint = data ? data['serverEndpoint'] ? data['serverEndpoint'] : "" : "";
-        this.blacklist_batches = new Array<string>();
-        if (data)
-            if ('blacklist_batches' in data)
-                for (let batch of data["blacklist_batches"] as Array<string>)
-                    this.blacklist_batches.push(batch)
-        this.whitelist_batches = new Array<string>();
-        if (data) if ('whitelist_batches' in data) for (let batch of data["whitelist_batches"] as Array<string>) this.whitelist_batches.push(batch)
+        this.log_server_endpoint = data ? data['serverEndpoint'] ? data['serverEndpoint'] : "" : "";
         this.messages = new Array<string>();
         if (data) if (data['messages']) for (let message of data["messages"]) this.messages.push(message)
     }

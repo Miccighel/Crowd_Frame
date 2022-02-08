@@ -9,12 +9,12 @@ import {MatPaginator} from "@angular/material/paginator";
 import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
 /* Services */
 import {BingService} from '../../services/bing.service';
-import {BingWebSearchResponse} from "../../models/bingWebSearchResponse";
+import {BingWebSearchResponse} from "../../models/crowd-xplorer/bingWebSearchResponse";
 import {FakerService} from "../../services/faker.service";
-import {FakerSearchResponse} from "../../models/fakerSearchResponse";
+import {FakerSearchResponse} from "../../models/crowd-xplorer/fakerSearchResponse";
 import {PubmedService} from "../../services/pudmed.service";
-import {PubmedSearchResponse} from "../../models/pubmedSearchResponse";
-import {PubmedSummaryResponse} from '../../models/pubmedSummaryResponse';
+import {PubmedSearchResponse} from "../../models/crowd-xplorer/pubmedSearchResponse";
+import {PubmedSummaryResponse} from '../../models/crowd-xplorer/pubmedSummaryResponse';
 import {ConfigService} from "../../services/config.service";
 import * as AWS from "aws-sdk";
 import {SettingsSearchEngine} from "../../models/settingsSearchEngine";
@@ -79,6 +79,9 @@ export class CrowdXplorer {
     pubmedSearchResponse: PubmedSearchResponse;
     pubmedSummaryResponse: PubmedSummaryResponse;
 
+    /* Angular Reactive Form builder (see https://angular.io/guide/reactive-forms) */
+    formBuilder: FormBuilder;
+
     /* |--------- CONTROL FLOW & UI ELEMENTS - DECLARATION ---------| */
 
     /* Search form UI controls */
@@ -86,20 +89,22 @@ export class CrowdXplorer {
     searchStarted: boolean;
     searchInProgress: boolean;
     query: FormControl;
+    urls: FormControl;
 
     /* Boolean flag */
     searchPerformed: boolean;
 
     /* Event emitters to integrate Binger in other components */
     /* EMITTER: Query inserted by user */
-    @Output() queryEmitter: EventEmitter<string>;
+    @Output() queryEmitter = new EventEmitter<string>();
     /* EMITTER: Responses retrieved by search engine */
-    @Output() resultEmitter: EventEmitter<Object>;
+    @Output() resultEmitter = new EventEmitter<Object>();
     /* EMITTER: Response selected by user */
-    @Output() selectedRowEmitter: EventEmitter<Object>;
+    @Output() selectedRowEmitter = new EventEmitter<Object>();
 
     @Input() countdownExpired: boolean
     @Input() countdownBehavior: string
+
 
     /* Search results table UI variables and controls */
     resultsAmount = 0;
@@ -134,22 +139,13 @@ export class CrowdXplorer {
         this.fakerService = fakerService;
         this.pubmedService = pubmedService;
         this.configService = configService;
-
-        /* The form control for user query is initialized and bound with its synchronous validator(s) */
-        this.query = new FormControl('', [Validators.required]);
-        /* The search form is initialized by adding each form control */
-        this.searchForm = formBuilder.group({"query": this.query});
+        this.formBuilder  = formBuilder
 
         /* |--------- CONTROL FLOW & UI ELEMENTS - INITIALIZATION ---------| */
 
         /* Control booleans */
         this.searchStarted = true;
         this.searchInProgress = false;
-
-        /* EMITTER: each emitter is initialized with the corresponding datatype to be emitted */
-        this.queryEmitter = new EventEmitter<string>();
-        this.resultEmitter = new EventEmitter<Object>();
-        this.selectedRowEmitter = new EventEmitter<Object>();
 
         /* The random digits for the current instances are generated */
         this.digits = this.randomDigits();
@@ -158,6 +154,17 @@ export class CrowdXplorer {
 
         this.apiKey = this.configService.environment.bing_api_key
         this.loadSettings()
+
+        /* The form control for user query is initialized and bound with its synchronous validator(s) */
+        this.query = new FormControl('', [Validators.required]);
+        this.urls = new FormControl('', [Validators.required]);
+        /* The search form is initialized by adding each form control */
+        this.searchForm = formBuilder.group(
+            {
+                "query": this.query,
+                "urls": this.urls
+            }
+        );
 
     }
 

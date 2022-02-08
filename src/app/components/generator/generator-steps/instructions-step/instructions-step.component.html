@@ -1,0 +1,68 @@
+<form [formGroup]="formStep">
+    <mat-card [class.mat-elevation-z3]="true">
+        <mat-card-header>
+            <mat-card-title>Step #{{index}}: {{title}}</mat-card-title>
+            <mat-card-subtitle>Please, define all {{title}} here</mat-card-subtitle>
+        </mat-card-header>
+        <mat-divider></mat-divider>
+        <mat-card-content>
+
+            <div formArrayName="instructions">
+
+                <div *ngFor="let instruction of instructions().controls; let instructionIndex = index" [formGroupName]="instructionIndex">
+
+                    <mat-card [class.mat-elevation-z3]="true">
+                        <mat-card-header>
+                            <mat-card-title class="lighter">Instruction {{instructionIndex + 1}}</mat-card-title>
+                        </mat-card-header>
+                        <mat-divider></mat-divider>
+                        <mat-card-content>
+
+                            <!-- Caption -->
+                            <table class="width-100 mt-8px">
+                                <tr>
+                                    <td class="p-0">
+                                        <mat-form-field matLine class="width-100" appearance="fill">
+                                            <mat-label>Caption</mat-label>
+                                            <input matInput type="text" formControlName="caption">
+                                        </mat-form-field>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <div>
+                                <angular-editor id="{{type}}-instruction-{{instructionIndex}}-text" formControlName="text"
+                                                [config]="editorConfig"></angular-editor>
+                            </div>
+
+                        </mat-card-content>
+
+                        <mat-divider></mat-divider>
+
+                        <mat-card-actions class="right">
+                            <button mat-flat-button color="primary" (click)="removeInstruction(instructionIndex)">
+                                Remove General Instruction
+                            </button>
+                        </mat-card-actions>
+
+                    </mat-card>
+
+                </div>
+
+            </div>
+
+            <button mat-flat-button color="primary" (click)="addInstruction()">
+                Add Instruction
+            </button>
+
+        </mat-card-content>
+
+        <mat-divider></mat-divider>
+
+        <mat-card-actions>
+            <button mat-flat-button color="primary" matStepperPrevious>Back</button>
+            <button mat-flat-button color="primary" matStepperNext>Next</button>
+        </mat-card-actions>
+
+    </mat-card>
+</form>

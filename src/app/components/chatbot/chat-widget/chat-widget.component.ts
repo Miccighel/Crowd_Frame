@@ -1,315 +1,1227 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, HostListener, Input, OnInit, ViewChild } from '@angular/core'
-import { Subject } from 'rxjs'
+import { animationFrameScheduler, Subject } from 'rxjs'
 import { fadeIn } from '../animations'
-import {NgxUiLoaderService} from 'ngx-ui-loader';
+import { NgxUiLoaderService } from 'ngx-ui-loader';
 import { start } from 'repl';
 import { Dimension } from 'aws-sdk/clients/costexplorer';
+import { integer } from 'aws-sdk/clients/cloudfront';
+import { threadId } from 'worker_threads';
 
-// creo msg random di risposta
-const randomMessages = [
-  'Nice to meet you',
-  'Hello!',
-  'How are you?',
-  'Not too bad, thanks',
-  'What do you do?',
-  'Can I help you?',
-  'That\'s awesome',
-  'Bye',
-  ':)',
+import {S3Service} from "../../../services/s3.service";
+import { DynamoDBService } from 'src/app/services/dynamoDB.service';
+import {ConfigService} from "../../../services/config.service";
+import { json } from 'stream/consumers';
+import { Athena } from 'aws-sdk';
+
+// Messaggi random
+const randomMessagesFirstPart = [
+    'OK!',
+    'Gotcha!',
+    'Makes sense!',
+    'Sure!',
+    'I see!',
+    'Thanks!',
+    'Thank you!'
 ]
 
-// funzioncine per prendere il random msg
-const rand = (max: number) => Math.floor(Math.random() * max)
-const getRandomMessage = () => randomMessages[rand(randomMessages.length)]
+const randomMessagesSecondPart = [
+    'Let\'s proceed...',
+    'Let me write that down...',
+    'The next question is...',
+    'On to the next question...',
+    'The following question is...'
+]
 
+const rand = (max: number) => Math.floor(Math.random() * max)
+const getRandomMessage = () => randomMessagesFirstPart[rand(randomMessagesFirstPart.length)] + " " +
+    randomMessagesSecondPart[rand(randomMessagesSecondPart.length)]
+
+// Main  
 @Component({
-  selector: 'chat-widget',
-  templateUrl: './chat-widget.component.html',
-  styleUrls: ['./chat-widget.component.css'],
-  animations: [fadeIn],
-  changeDetection: ChangeDetectionStrategy.OnPush
+    selector: 'chat-widget',
+    templateUrl: './chat-widget.component.html',
+    styleUrls: ['./chat-widget.component.css'],
+    animations: [fadeIn],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ChatWidgetComponent implements OnInit {
-  @ViewChild('bottom') bottom!: ElementRef
-  @ViewChild('buttons', { static: true }) buttons!: ElementRef
-  @ViewChild('typing', { static: true }) typing!: ElementRef
-  @Input() private questionnaires!: any
-  @Input() private docs!: any
-  @Input() private settings!: any
-  @Input() private instructions!: any
+    @ViewChild('bottom') bottom!: ElementRef 
+    @ViewChild('buttonsYN', { static: true }) buttonsYN!: ElementRef
+    @ViewChild('buttonsNum', { static: true }) buttonsNum!: ElementRef
+    @ViewChild('buttonsCM', { static: true }) buttonsCM!: ElementRef
+    @ViewChild('fixedMsg', { static: true }) fixedMsg!: ElementRef
+    @ViewChild('typing', { static: true }) typing!: ElementRef
+    @ViewChild('inputBox', { static: true }) inputBox!: ElementRef
 
-  @Input() private taskInstructions!: any
-  @Input() private hits!: any
-  @Input() private dims!: any
+    @Input() private docs!: any
+    @Input() private settings!: any
+    @Input() private instructions!: any
+    @Input() private taskInstructions!: any
 
-  changeDetector: ChangeDetectorRef;
-  ngxService: NgxUiLoaderService;
-  fixedMessage : string;
-  expectedTypeOfMessage : string
-  repeat:string
-  subTaskIndex = 0;
-  taskIndex = 0;
-  instructionPhase = false
-  taskPhase = false
-  endTaskPhase= false
-  statementProvided=false
-  firstMsg=true
-  reviewPhase=false
-  reviewAnswersShown=false
-  ignoreMsg:boolean
-  answers : string[] = [];
+    @Input() private config!: any
+    @Input() private workerID!: any
+    @Input() private unitID!: any
+    @Input() private currentTry!: any
+    @Input() private seqNum!: any
+    @Input() private commentForm!: any
 
-  instr = ["Hi! Instructions for the task: ...", "Would you like to play a test round?"];
-  dimensions = ["Truthfulness", "Confidence", "Correctness"];
-  dimensionsDescription = [
-    "state if the statement is true, as opposed to false.",
-    "you consider yourself knowledgeable/expert about the topic, as opposed to novice/beginner.",
-    "the statement is expressed in an accurate way, as opposed to being incorrect and/or reporting  mistaken information.",
-  ];
-  hit = [
-    "6,400 Ohioans ... lost manufacturing jobs in the month of September. - Mitt Romney 2012",
-    "Yes, We can! - Barack Obama 2008"
-  ];
-  taskReview = [];
-  endOfTaskMessage = ["Thank you for completing the task!"];
+    @Input() private worker!: any
+    @Input() private questionnaires!: any
+    @Input() private hits!: any
+    @Input() private dims!: any
 
-  constructor(changeDetector: ChangeDetectorRef, ngxService: NgxUiLoaderService) {
-    this.changeDetector=changeDetector
-    this.ngxService=ngxService
-  }
-  public focus = new Subject()
+    @Input() private tokenInput!: any
+    @Input() private tokenOutput!: any
+    @Input() private allowedTries!: any
+    @Input() private questionnaireAmount!: any
+    @Input() private questionnaireAmountStart!: any
+    @Input() private questionnaireAmountEnd!: any
+    @Input() private documentsAmount!: any
+    @Input() private dimensionsAmount!: any
 
-  public operator = {
-    name: 'Fake News Bot',
-    status: 'online',
-    avatar:'https://randomuser.me/api/portraits/lego/0.jpg'
-  }
+    changeDetector: ChangeDetectorRef;
+    ngxService: NgxUiLoaderService;
+    
+    S3Service: S3Service;
+    dynamoDBService: DynamoDBService;
+    configService: ConfigService;
 
-  public client = {
-    name: 'Worker',
-    user: 'test_user',
-    status: 'online',
-    avatar: `https://storage.proboards.com/6172192/images/gKhXFw_5W0SD4nwuMev1.png`,
-  }
+    // Indexes
+    taskIndex: integer // Tiene il conto della task attuale
+    subTaskIndex: integer // Tiene il conto della dimensione attuale
+    currentQuestion: integer
+    currentQuestionnaire: integer
+    commentIndex: integer
+    charLimit: integer
+    indexDimSel: integer[]
+    goldLow: integer
+    goldHigh: integer
 
-  public messages: any[] = []
+    /* Arrays to record timestamps, one for each document within a Hit */
+    timestampsStart: Array<Array<number>>;
+    timestampsEnd: Array<Array<number>>;
+    timestampsElapsed: Array<number>;
+    answersPretty: {}[]
+    dimensionSelected: {}[]
+    queryTotal: {}[]
+    responsesRetrievedTotal: {}[]
+    responsesSelectedTotal: {}[]
+    dimsSelected: {}[]
+    query: {}[]
+    queryRetrieved: {}[]
+    querySelected: {}[]
+    
+    // Flag
+    instructionPhase: boolean // True: ci troviamo nella fase iniziale di instruzioni
+    ignoreMsg: boolean // True: ignora i messaggi in input
+    taskPhase: boolean // True: siamo nella fase di task vera e propria
+    endTaskPhase: boolean // True: siamo nella fase finale
+    statementProvided: boolean // True: ho già mostrato all'utente lo statement durante questa fase
+    reviewPhase: boolean // True: ci troviamo nella fase di review
+    reviewAnswersShown: boolean // True: la review delle risposte è stata mostrata
+    pickReview: boolean // True: stiamo attendendo input per modificare una dimension
+    dimensionReviewPrinted: boolean
+    statementJump: boolean // True: siamo nella fase di salto degli statement
+    waitForUrl: boolean // True: stiamo attendendo un url
+    awaitingAnswer: boolean
+    questionnairePhase: boolean
+    questionnaireReview: boolean
+    commentPhase: boolean
+    action: string
+    disableInput: boolean
+    queryIndex: integer[]
 
-  public addMessage(from: { name: string; status: string; avatar: string; user?: string; }, text: string, type: 'received' | 'sent') {
-    // unshift aggiunge elementi all'inizio del vettore
-    this.messages.unshift({
-      from,
-      text,
-      type,
-      date: new Date().getTime(),
-    })
-    this.scrollToBottom()
-  }
+    // Variables
+    fixedMessage: string // Messaggio sempre visibile in alto nel chatbot
+    answers: any // Memorizzo le risposte di un singolo statement
+    answersURL: string[] // Memorizzo gli url
+    numberBtn: string[] // Utilizzato per generare i bottoni numerici
+    questionnaireAnswers: any
+    queue:integer
+    buttonsVisibility: integer //0: nulla, 1: YS, 2: CM, 3: Num
+    placeholderInput: string
+    tryNumber: integer // Numero di tentativi per completare
+    accessesAmount: integer[] //Numero di accessi agli elementi
 
-  // scrolla diretto in fondo
-  public scrollToBottom() {
-    if (this.bottom !== undefined) {
-      this.bottom.nativeElement.scrollIntoView()
+    // Messaggi per l'utente
+    instr = ["Hello! I'm Fakebot and I'll be helping you complete this task! You can find the <b>instructions</b> in the top left corner of this page, just press the button whenever you need. Nothing will break down, I promise!",
+        "Would you like to play a test round?"]
+    endOfTaskMessage = ["Oh! That was it! Thank you for completing the task! Here's your token: ..."];
+    repeat = "Please type a integer number between -2 and 2"
+
+    constructor(changeDetector: ChangeDetectorRef,
+        configService: ConfigService,
+        ngxService: NgxUiLoaderService,
+        S3Service: S3Service,
+        dynamoDBService: DynamoDBService) {
+        this.changeDetector = changeDetector
+        this.configService = configService;
+        this.ngxService = ngxService
+        this.S3Service = S3Service;
+        this.dynamoDBService = dynamoDBService;
+               
+        //inizializzo i vettori
+        this.answers = [];
+        for(var y: number = 0; y < 11; y++) {
+            this.answers[y] = [];
+            for(var j: number = 0; j< 10; j++) {
+                this.answers[y][j] = [];
+            }
+        }
+        this.questionnaireAnswers = new Array(10).fill("")        
+        this.accessesAmount = new Array(11).fill(0)
+        this.indexDimSel = new Array(11).fill(0)
+        this.queryIndex = new Array(11).fill(0)
+        this.answersURL= new Array(11).fill("")    
     }
-  }
 
-  // inutilizzato
-  public focusMessage() {
-    this.focus.next(true)
-  }
+    public operator = {
+        name: 'Fake News Bot',
+        status: 'online',
+        avatar: 'https://randomuser.me/api/portraits/lego/0.jpg'
+    }
 
-  // invio un msg random
-  public randomMessage() {
-    this.addMessage(this.operator, getRandomMessage(), 'received')
-  }
+    public client = {
+        name: 'Worker',
+        user: 'test_user',
+        status: 'online',
+        avatar: `https://storage.proboards.com/6172192/images/gKhXFw_5W0SD4nwuMev1.png`,
+    }
 
-  // all'inizio invio dei messaggi di benvenuto
-  ngOnInit() {
-    // stampo le istruzioni iniziali
-    this.typing.nativeElement.style.display="none"
-    this.instructionPhase=true
-    console.log(this.dims)
-    this.addMessage(this.operator, this.instr[0], 'received')
-    this.addMessage(this.operator, this.instr[1], 'received')
-    this.ignoreMsg=false
-    //this.addMessage(this.operator, this.dims[0].name_pretty, 'received')
-    //this.addMessage(this.operator, this.taskInstructions[0].text, 'received')
-  }
+    public messages: any[] = []
 
-  // aggiunta del msg alla chat
-  public sendMessage({ message }:any) {
-    //setTimeout(() => this.typing.nativeElement.style.display="block", 0)
-    if (message.trim() === '') {
-      return
+    async ngOnInit() {
+        this.typing.nativeElement.style.display = "none"
+        this.buttonsYN.nativeElement.style.display = "none"
+        // Inizializzo
+        this.ignoreMsg = false
+        this.subTaskIndex = 0
+        this.taskIndex = 0
+        this.dimensionReviewPrinted = false
+        this.reviewAnswersShown = false
+        this.pickReview = false
+        this.statementJump = false
+        this.waitForUrl = false
+        this.awaitingAnswer=false
+        this.currentQuestionnaire=0
+        this.currentQuestion=0
+        this.questionnaireReview=false
+        this.questionnairePhase=true
+        this.statementProvided=false
+        this.queue=0
+        this.buttonsVisibility=0
+        this.placeholderInput=""
+        this.tryNumber=1
+        this.commentPhase = false
+        this.commentIndex = 3
+        this.charLimit = 500
+        this.dimsSelected=[]
+        this.query=[]
+        this.queryRetrieved=[]
+        this.querySelected=[]
+        this.answersPretty=[]
+        this.dimensionSelected=[]
+        this.queryTotal=[]
+        this.responsesSelectedTotal=[]
+        this.responsesRetrievedTotal=[]
+        this.action = "Next"
+        this.disableInput=false
+        // Stampo le istruzioni iniziali
+        this.typingAnimation(this.instr[0])
+        this.typingAnimation("First, a few questions about yourself!")
+        /* Arrays of start, end and elapsed timestamps are initialized to track how much time the worker spends
+             * on each document, including each questionnaire */
+        this.timestampsStart = new Array<Array<number>>(this.documentsAmount + this.questionnaireAmount);
+        this.timestampsEnd = new Array<Array<number>>(this.documentsAmount + this.questionnaireAmount);
+        this.timestampsElapsed = new Array<number>(this.documentsAmount + this.questionnaireAmount);
+        for (let i = 0; i < this.timestampsStart.length; i++) this.timestampsStart[i] = [];
+        for (let i = 0; i < this.timestampsEnd.length; i++) this.timestampsEnd[i] = [];
+        for (let i = 0; i < this.timestampsElapsed.length; i++) this.timestampsElapsed[i] = 0;
+        /* The task is now started and the worker is looking at the first questionnaire, so the first start timestamp is saved */
+        this.timestampsStart[this.currentQuestionnaire].push(Math.round(Date.now() / 1000));
+        setTimeout(() => this.questionnaireP("0"), 5000)
+
+        // PRIMO INVIO DATI ALL'AVVIO
+        let data = {}
+        
+        let actionInfo = {
+            try: this.currentTry,
+            sequence: this.seqNum,
+            element: "data"
+        };
+        let taskData = {
+            task_id: this.configService.environment.taskName,
+            batch_name: this.configService.environment.batchName,
+            worker_id: this.worker.identifier,
+            unit_id: this.unitID,
+            token_input: this.tokenInput.value,
+            token_output: this.tokenOutput,
+            tries_amount: this.allowedTries,
+            questionnaire_amount: this.questionnaireAmount,
+            questionnaire_amount_start: this.questionnaireAmountStart,
+            questionnaire_amount_end: this.questionnaireAmountEnd,
+            documents_amount: this.documentsAmount,
+            dimensions_amount: this.dimensionsAmount,
+        };
+
+        data["info"] = actionInfo
+        /* General info about task */
+        data["task"] = taskData
+        /* The answers of the current worker to the questionnaire */
+        data["questionnaires"] = this.questionnaires
+        /* The parsed document contained in current worker's hit */
+        data["documents"] = this.docs
+        /* The dimensions of the answers of each worker */
+        data["dimensions"] = this.dims
+        /* General info about worker */
+        data["worker"] = this.worker
+        //await this.dynamoDBService.insertData(this.configService.environment,this.workerID,this.unitID, this.tryNumber,this.seqNum, data)
+        this.seqNum+=1
+    }
+
+    // Scrolla in basso
+    public scrollToBottom() {
+        if (this.bottom !== undefined) {
+            this.bottom.nativeElement.scrollIntoView()
+        }
+    }
+
+    private generateArrayNum(number){
+        let foos = [];
+        for (var i = 2; i <= number; i++) {
+            foos.push(i.toString());
+        }
+        return foos
+    }
+
+    // Utilizzo dei bottoni
+    public buttonInput(message: string) {
+        this.sendMessage({ message })
+    }
+
+    // Controllo che un messaggio abbia valori compresi tra min e max e che sia un numero
+    private validMsg(msg, min, max) {
+        if ((isNaN(+msg) || (+msg % 1) != 0 || (+msg < min || +msg > max))) {
+            return false
+        }
+        return true
+    }
+
+    private urlValid(msg){
+        let pattern = new RegExp('^(https?:\\/\\/)?'+ // protocol
+            '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|'+ // domain name
+            '((\\d{1,3}\\.){3}\\d{1,3}))'+ // OR ip (v4) address
+            '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*'+ // port and path
+            '(\\?[;&a-z\\d%_.~+=-]*)?'+ // query string
+            '(\\#[-a-z\\d_]*)?$','i'); // fragment locator
+        return !!pattern.test(msg) //&& ((msg.includes("politifact.com") || (msg.includes("abc.net.au"))))
+        //"politifact.com", "abc.net.au" TODO controlla che siano questi
+    }
+
+    // Invio un messaggio random
+    public randomMessage() {
+        this.typingAnimation(getRandomMessage())
+    }
+
+
+    private validateTask(){
+        let nameArray=[]
+        for (let i = 0; i < this.hits.documents.length; i++) {
+            nameArray[i] = this.hits.documents[i].name
+        }
+        this.goldHigh = nameArray.indexOf("GOLD-HIGH")
+        this.goldLow = nameArray.indexOf("GOLD-LOW")
+        return (this.answers[this.goldHigh][0] > this.answers[this.goldLow][0])
     }
     
-    this.addMessage(this.client, message, 'sent')
-    if (this.ignoreMsg){return}
-
-    // END TASK PHASE
-    if (this.endTaskPhase){
-      this.endP()
-      return
+    // Stampa lo statement corrente e lo setta come messaggio fissato
+    private printStatement() {
+        this.accessesAmount[this.taskIndex]+=1
+        this.fixedMsg.nativeElement.style.display = "inline-block"
+        document.getElementById(this.taskIndex.toString()).style.backgroundColor="red"
+        this.typingAnimation("Statement: <b>" + this.hits.documents[this.taskIndex].statement + "</b> - " +
+            this.hits.documents[this.taskIndex].claimant + " " + this.hits.documents[this.taskIndex].date)
+        this.fixedMessage = "Statement: <b>" + this.hits.documents[this.taskIndex].statement + "</b><br>" +
+        "Speaker: <b>"+ this.hits.documents[this.taskIndex].claimant + "</b><br>" +
+        "Date: <b>"+ this.hits.documents[this.taskIndex].date         
     }
 
-    //INSTRUCTION PHASE
-    if (this.instructionPhase) {
-      this.instructionP(message)
+    // Stampa la dimensione corrente
+    private printDimension() {
+        let out = ""
+        if(this.dims[this.subTaskIndex].name_pretty){
+            out = "Please rate the <b>" + this.dims[this.subTaskIndex].name_pretty +
+                "</b> of the statement.<br><b>" +
+                this.dims[this.subTaskIndex].name_pretty + "</b>: " + this.dims[this.subTaskIndex].description +
+                "<br>Please type a integer number between -2 and 2."
+        }else{
+            out="Please rate the <b>" + this.dims[this.subTaskIndex].name +
+                "</b> of the statement.<br><b>" +
+                this.dims[this.subTaskIndex].name + "</b>: " + this.dims[this.subTaskIndex].description +
+                "<br>Please type a integer number between -2 and 2."
+        }
+        if(this.answers[this.taskIndex][this.subTaskIndex]!=""){
+            out+="<br>You previously answered <b>"+this.answers[this.taskIndex][this.subTaskIndex]+"</b>."
+        }
+        this.typingAnimation(out)
+    }
+
+    // Creo la stringa con le risposte date allo statement attuale
+    private createAnswerString(){
+        let recap = ""
+        for (let i = 0; i < this.dims.length; i++) {
+            if(this.dims[i].name_pretty){
+                recap +=  (i+1) +". <b>"+ this.dims[i].name_pretty + "</b>: "+this.answers[this.taskIndex][i] +
+                 " ("+this.dims[i].scale.mapping[+this.answers[this.taskIndex][i]+2].label+ ")<br><br>"
+            }else{
+                recap +=  (i+1) +". <b>"+ this.dims[i].name + "</b>: "+this.answers[this.taskIndex][i] +
+                 " ("+this.dims[i].scale.mapping[+this.answers[this.taskIndex][i]+2].label+ ")<br><br>"
+            }
+        }
+        recap+= (this.dims.length+1) + ".<b> URL</b>: "+this.answersURL[this.taskIndex]+ "<br>"
+        return recap
+    }
+
+    // Creo una stringa con tutti gli statement
+    private createStatementString(){
+        let statements = ""
+        for (let i = 0; i < this.hits.documents.length; i++) {
+            statements += "Statement "+(i + 1) + ": <b>" + this.hits.documents[i].statement + "</b> - " +
+            this.hits.documents[i].claimant + " " + this.hits.documents[i].date + "<br><br>"
+        }
+        return statements
+    }
+
+    private createAnswersPretty(){
+        let ans={}
+        let addOn = "_value"
+        ans["overall-truthfulness"+addOn]=this.answers[this.taskIndex][0]
+        ans["overall-truthfulness_url"]=this.answersURL[this.taskIndex]
+        for (let i = 1; i < this.dims.length;i++) {
+            ans[this.dims[i].name+addOn]=this.answers[this.taskIndex][i]
+        }
+        return ans
+    }
+
+    private createQuestionnaireAnswersPretty(){
+        let vect = []
+        let addOn = "_answer"
+        for (let y = 0; y<this.questionnaireAmount-1; y++){
+            let ans={}
+            if (y==0){
+                for (let i = 0; i < 7; i++) {
+                    ans[this.questionnaires[0].questions[i].name+addOn] = this.questionnaireAnswers[i]-1                
+                }
+            }else{
+                ans[this.questionnaires[y].questions[0].name]=this.questionnaireAnswers[6+y]
+            }
+            vect.push(ans)
+        }
+        return vect
     }
     
-    //TASK PHASE
-    if (this.taskPhase){
-      this.taskP(message)
+    private async sendQuestionnaireData(){
+        let answer=this.createQuestionnaireAnswersPretty()
+        for (let i = 0; i<this.questionnaireAmount;i++){
+            // SECONDO INVIO DATI ALLA FINE DEL QUESTIONARIO
+            let data = {}
+            let actionInfo = {
+                action: "Next", // nel questionnaire non può tornare indietro
+                access: 1,
+                try: this.currentTry,
+                index: i, //TODO rivedi che non son sicuro, forse sempre 0?
+                sequence: this.seqNum,
+                element: "questionnaire"
+            };
+            /* Info about the performed action ("Next"? "Back"? From where?) */
+            data["info"] = actionInfo
+            /* Worker's answers to the current questionnaire */
+            data["answers"] = answer[i]
+            /* Start, end and elapsed timestamps for the current questionnaire */
+            data["timestamps_start"] = this.timestampsStart[i]
+            data["timestamps_end"] = this.timestampsEnd[i]
+            data["timestamps_elapsed"] = this.timestampsElapsed[i]
+            /* Number of accesses to the current questionnaire (which must be always 1, since the worker cannot go back */
+            data["accesses"] = 1
+            //await this.dynamoDBService.insertData(this.configService.environment,this.worker.identifier,this.unitID, this.tryNumber,this.seqNum,data)
+            this.seqNum+=1
+        }        
     }
     
-    //REVIEW PHASE
-    if (this.reviewPhase){
-      this.reviewP(message)
-    }
-
-    this.scrollToBottom()
-  
-  }
-
-
-  private instructionP(message:string){
-    let startMsg: string
-      if (message.trim() === "Yes") {
-        startMsg="Then let's start!"
-      }
-      else if (message.trim() === "No") {
-        startMsg="Then let's skip!"
-        //skip one task
-        this.taskIndex+=1
-      } else {return}
-      this.typingAnimation(startMsg)
-      //this.addMessage(this.operator, startMsg, 'received')
-      this.buttons.nativeElement.style.display="none"
-      this.taskPhase=true; //passiamo alla next phase
-      this.instructionPhase=false; //finiamo la instruction phase
-      this.firstMsg=true
-
-  }
-
-  private taskP(message:string){
-    this.answers[this.subTaskIndex-1]=message
-    // fine subtask
-    if (this.dimensions.length <= this.subTaskIndex  &&  this.validMsg(message)){
-      this.endOfSubtask()
-      this.reviewP(message)
-      return
-    }
-    //controllo il msg
-    if (!this.validMsg(message) && !this.firstMsg){
-      this.repeat="Please type a number between 1 and 5"
-      this.typingAnimation(this.repeat)
-      //this.addMessage(this.operator, "Please type a number between 1 and 5", 'received')
-      return
-    } 
-    else {
-      //Altrimenti, SUBTASK
-      if (!this.statementProvided){
-        this.printStatement()
-      }
-    this.printDimension()
-    this.answers[this.subTaskIndex]=message
-    }
-    //non eseguo controlli sul primo msg, ma sugli altri si
-    this.firstMsg=false
-    }
-
-  
-
-  private reviewP(message:string){
-    if (!this.reviewAnswersShown){
-      this.buttons.nativeElement.style.display="inline-block"
-      //this.addMessage(this.operator, "Let's review your answers! Proceed?", 'received')
-      this.typingAnimation("Let's review your answers!")
-      for (let i=0; i<this.dimensions.length ;i++){
-        this.typingAnimation(this.dimensions[i]+": "+this.answers[i])
-      }
-      this.typingAnimation("Confirm your answers?")
-      this.reviewAnswersShown=true;
-    }
-    if (message.trim() === "Yes") {
-      this.reviewPhase=false
-      this.taskPhase=true
-      this.taskIndex+=1
-      this.reviewAnswersShown=false
-      this.firstMsg=true
-      
-      if (this.hit.length <= this.taskIndex){
-        this.endP()
+    private printQuestion(){
+        let q=this.questionnaires[this.currentQuestionnaire].questions[this.currentQuestion].text
+        this.typingAnimation(q)
         return
-      } 
     }
-    else if (message.trim() === "No") {
-      //redo
-      this.reviewPhase=false
-      this.taskPhase=true
-      this.reviewAnswersShown=false
-      this.firstMsg=true
-      this.typingAnimation("Let's try that again!")
-    } else {return}
-    this.buttons.nativeElement.style.display="none"
-    this.subTaskIndex=0
-    this.taskP(message)
-  }
 
-  private endP(){
-    //this.addMessage(this.operator, this.endOfTaskMessage[0], 'received')
-    this.typingAnimation(this.endOfTaskMessage[0])
-    this.endTaskPhase=false
-  }
-
-  private endOfSubtask(){
-    this.statementProvided=false
-    this.taskPhase=false
-    this.reviewPhase=true
-  }
-
-  private endOfTask(){
-    this.endTaskPhase=true
-    this.taskPhase=false
-  }
-
-  private printStatement(){
-    //this.addMessage(this.operator, "Statement: "+ this.hit[this.taskIndex], 'received')
-    this.typingAnimation("Statement: "+ this.hit[this.taskIndex])
-    this.fixedMessage = this.hit[this.taskIndex]
-    this.statementProvided=true;
-  }
-
-  private printDimension(){
-    /*this.addMessage(this.operator, 
-      "Please rate the " + this.dimensions[this.subTaskIndex] + " of the statement. Please type a number between 1 and 5. "+
-      this.dimensions[this.subTaskIndex] + ": " + this.dimensionsDescription[this.subTaskIndex], 'received')
-    *///this.currentAnswers[this.subTaskIndex]=message
-    this.typingAnimation( "Please rate the " + this.dimensions[this.subTaskIndex] + " of the statement. Please type a number between 1 and 5. "+
-    this.dimensions[this.subTaskIndex] + ": " + this.dimensionsDescription[this.subTaskIndex])
-    this.subTaskIndex+=1;
-  }
-
-  private validMsg(msg){
-    if ((isNaN(+msg) || (+msg < 1 || +msg > 5))){
-      return false
+    private createQuestionnaireAnswers(){
+        let l=this.questionnaires[this.currentQuestionnaire].questions[this.currentQuestion].answers
+        let recap = ""
+        for (let i = 0; i < l.length; i++) {
+            recap +=  (i+1) +". <b>"+l[i] +"</b><br><br>"
+        }
+        recap+= "Please type the number associated with the correct answer"
+        return recap
     }
-    return true
-  }
 
-  // aggiunta del msg alla chat
-  public buttonInput(message : string) {
-    this.sendMessage({message})
-    this.buttons.nativeElement.style.display="none"
-  }
+    private createQuestionnaireRecap(){
+        let recap=""
+        for (let i = 0; i < this.questionnaireAnswers.length; i++) {
+            if (i<7){
+                recap +=  (i+1) +". Question: <b>"+ this.questionnaires[0].questions[i].text+ "</b><br>Answer:<b> "+
+                this.questionnaires[0].questions[i].answers[this.questionnaireAnswers[i]-1] +"</b><br><br>"
+            }else{
+                recap +=  (i+1) +". Question: <b>"+ this.questionnaires[i-6].questions[0].text+ "</b><br>Answer:<b> "+
+                this.questionnaireAnswers[i] +"</b><br><br>"
+            }
+        }
+        return recap
+    }
 
-  public typingAnimation(message:string){
-    this.typing.nativeElement.style.display="block"
-    this.ignoreMsg=true
-    setTimeout(() => this.typing.nativeElement.style.display="none", 1000)
-    setTimeout(() => this.addMessage(this.operator, message, 'received'), 1000)
-    setTimeout(() => this.changeDetector.detectChanges(), 1000)
-    setTimeout(() => this.scrollToBottom(), 1000)
-    setTimeout(() => this.ignoreMsg=false, 1000)
-  }
+    
+    public getUrl(row){
+        if (this.waitForUrl){
+            this.placeholderInput=row.url
+        }
+        let q = {}
+        q["document"]=this.taskIndex
+        q["dimension"]=this.subTaskIndex
+        q["query"]=this.queryRetrieved.length//this.queryIndex[this.taskIndex] // TODO differenze???
+        q["index"]=this.responsesRetrievedTotal.length
+        q["timestamp"]=Math.round(Date.now() / 1000)
+        q["response"]=row
+        this.querySelected.push(q)
+        return
+    }
+
+    public storeSearchEngineRetrievedResponse(resp){
+        let q = {}
+        q["document"]=this.taskIndex
+        q["dimension"]=this.subTaskIndex
+        q["query"]=this.queryRetrieved.length//this.queryIndex[this.taskIndex] // TODO differenze???
+        q["index"]=this.responsesRetrievedTotal.length
+        q["timestamp"]=Math.round(Date.now() / 1000)
+        q["response"]=resp
+        this.queryRetrieved.push(q)
+    }
+
+    public storeSearchEngineUserQuery(text){
+        this.placeholderInput=""
+        this.disableInput=false
+        this.inputBox.nativeElement.style.background="rgb(63, 81, 181)"
+        let q = {}
+        q["document"]=this.taskIndex
+        q["dimension"]=this.subTaskIndex
+        q["index"]=this.responsesRetrievedTotal.length
+        q["timestamp"]=Math.round(Date.now() / 1000)
+        q["text"]=text
+        this.query.push(q)
+        this.queryIndex[this.taskIndex]+=1
+    }
+
+    // Aggiunta di un messaggio scritto dall'utente a messages
+    public addMessageClient(from: { name: string; status: string; avatar: string; user?: string; }, text: any, type: 'received' | 'sent') {
+        // unshift aggiunge elementi all'inizio del vettore
+        this.messages.unshift({
+            from,
+            text,
+            type,
+            date: new Date().getTime(),
+        })
+        this.changeDetector.detectChanges()
+        this.scrollToBottom()
+    }
+
+    // Aggiunta di un elemento a messages
+    public addMessage(from: { name: string; status: string; avatar: string; user?: string; }, text: any, type: 'received' | 'sent') {
+        // unshift aggiunge elementi all'inizio del vettore
+        this.messages.unshift({
+            from,
+            text,
+            type,
+            date: new Date().getTime(),
+        })
+        this.queue-=1
+        if (this.queue == 0) {
+            this.typing.nativeElement.style.display = "none" // Tolgo l'animazione di scrittura
+            this.ignoreMsg = false
+            if(this.buttonsVisibility==1){
+                this.buttonsYN.nativeElement.style.display = "inline-block"
+            }
+            if(this.buttonsVisibility==2){
+                this.buttonsCM.nativeElement.style.display = "inline-block"
+            }
+            if(this.buttonsVisibility==3){
+                this.buttonsNum.nativeElement.style.display = "inline-block"
+            }
+        }
+        this.changeDetector.detectChanges()
+        this.scrollToBottom()
+    }
+
+    // Stampa il messaggio inviato dal bot dopo un delay
+    public typingAnimation(message: string) {
+        this.typing.nativeElement.style.display = "block" // Mostro l'animazione di scrittura
+        this.queue+=1
+        this.ignoreMsg = true // Ignoro i messaggi in arrivo mentre scrivo
+        setTimeout(() => this.addMessage(this.operator, message, 'received'), this.queue*0) // modifica speed
+        this.changeDetector.detectChanges()
+        this.scrollToBottom()
+    }
+
+    // Core
+    public async sendMessage({ message }: any) {
+        // Se il messaggio è vuoto, ignoro
+        if (message.trim() === '') {
+            return
+        }
+        // Mostro il messaggio in chat
+        this.addMessageClient(this.client, message, 'sent')
+        if (this.ignoreMsg) { return } // Se il messaggio è da ignorare, lo ignoro
+
+        // COMMENTO FINALE
+        if (this.commentPhase){
+            if (this.commentIndex==0 || this.charLimit<=0){
+                this.commentPhase=false
+                this.typingAnimation("Thank you for sharing your thoughts! See you next time!")
+                return
+            }
+            this.commentIndex-=1
+            this.charLimit-=message.length
+            let data = {}
+            let actionInfo = {
+                try: this.currentTry,
+                sequence: this.seqNum,
+                element: "comment"
+            };
+            this.commentForm.value = message
+            data["info"] = actionInfo
+            data["comment"] = this.commentForm.value
+            //await this.dynamoDBService.insertData(this.configService.environment,this.worker.identifier,this.unitID, this.tryNumber,this.seqNum,data)
+            this.seqNum+=1
+        }
+
+        // END TASK PHASE
+        if (this.endTaskPhase) {
+            this.endP(message)
+            return
+        }
+
+        //QUESTIONNAIRE PHASE
+        if (this.questionnairePhase) {
+            this.questionnaireP(message)
+        }
+
+        //INSTRUCTION PHASE
+        if (this.instructionPhase) {
+            this.instructionP(message)
+        }
+   
+        //TASK PHASE
+        if (this.taskPhase) {
+            this.taskP(message)
+        }
+        //REVIEW PHASE
+        if (this.reviewPhase) {
+            this.reviewP(message)
+        }
+    }
+
+    // Fase di fine task
+    private async endP(message) {
+        if(this.statementJump){
+            this.taskIndex = +message-1
+            this.printStatement()
+            this.endTaskPhase=false
+            this.reviewPhase=true
+            this.reviewAnswersShown=false
+            this.buttonsNum.nativeElement.style.display = "none"
+            this.buttonsVisibility=0
+            this.reviewP(message)
+            // print answers e avvia come la review
+        }else{
+            if (message.trim().toLowerCase() === "yes") {
+                this.action = "Back"
+                this.typingAnimation(this.createStatementString()+"Which statement would you like to jump to?")
+                this.buttonsYN.nativeElement.style.display = "none"
+                this.buttonsVisibility=0
+                this.numberBtn=this.generateArrayNum(10)
+                //this.buttonsNum.nativeElement.style.display = "inline-block"
+                this.buttonsVisibility=3
+                this.statementJump = true
+            }
+            else if (message.trim().toLowerCase() === "no") {
+                this.action = "Next"
+                // INVIO DATI ALLA FINE DEL TASK
+                let data={}
+                /* All data about documents are uploaded, only once */
+                let actionInfo = {
+                    action: "Finish",
+                    try: this.currentTry,
+                    sequence: this.seqNum,
+                    element: "all"
+                };
+                let taskData = {
+                    task_id: this.configService.environment.taskName,
+                    batch_name: this.configService.environment.batchName,
+                    worker_id: this.worker.identifier,
+                    unit_id: this.unitID,
+                    token_input: this.tokenInput.value,
+                    token_output: this.tokenOutput,
+                    tries_amount: this.allowedTries,
+                    questionnaire_amount: this.questionnaireAmount,
+                    questionnaire_amount_start: this.questionnaireAmountStart,
+                    questionnaire_amount_end: this.questionnaireAmountEnd,
+                    documents_amount: this.documentsAmount,
+                    dimensions_amount: this.dimensionsAmount,
+                };
+                
+                /* Info about each performed action ("Next"? "Back"? From where?) */
+                data["info"] = actionInfo
+                data["task"] = taskData
+                data["questionnaires"] = this.questionnaires
+                data["documents"] = this.docs
+                data["dimensions"] = this.dims
+                data["worker"] = this.worker
+                data["questionnaires_answers"] = this.createQuestionnaireAnswersPretty()
+                data["documents_answers"] = this.answersPretty
+                data["notes"] = []
+                /* Worker's dimensions selected values for the current document */
+                data["dimensions_selected"] = this.dimensionSelected
+                /* Start, end and elapsed timestamps for each document */
+                data["timestamps_start"] = this.timestampsStart
+                data["timestamps_end"] = this.timestampsEnd
+                data["timestamps_elapsed"] = this.timestampsElapsed
+                /* Countdown time and corresponding flag for each document */
+                let countdownTimes = [];
+                let countdownTimesStart = [];
+                let countdownExpired = [];
+                data["countdowns_times_start"] = countdownTimesStart
+                data["countdowns_times_left"] = countdownTimes
+                data["countdowns_expired"] = countdownExpired
+                /* Number of accesses to each document (currentDocument.e., how many times the worker reached the document with a "Back" or "Next" action */
+                data["accesses"] =this.accessesAmount
+                /* Worker's search engine queries for each document */
+                data["queries"] = this.queryTotal
+                /* Responses retrieved by search engine for each worker's query for each document */
+                data["responses_retrieved"] = this.responsesRetrievedTotal
+                /* Responses by search engine ordered by worker's click for the current document */
+                data["responses_selected"] = this.responsesSelectedTotal
+                /* If the last element is a document */
+                //await this.dynamoDBService.insertData(this.configService.environment,this.worker.identifier,this.unitID, this.tryNumber,this.seqNum,data)
+                this.seqNum+=1
+
+                // INVIO DATI COL CONTROLLO QUALITA
+                let validTry=this.validateTask()
+                let goldConfiguration=[]
+                let goldH={}
+                let goldL={}
+                let gh=this.hits.documents[this.goldHigh]
+                gh["index"]=this.goldHigh
+                let gl=this.hits.documents[this.goldLow]
+                gl["index"]=this.goldLow
+                goldH["document"] = gh
+                goldL["document"] = gl
+                let ah={}
+                ah["overall-truthfulness_value"]=this.answers[this.goldHigh][0]
+                ah["overall-truthfulness_url"]=this.answersURL[this.goldHigh]
+                let al={}
+                al["overall-truthfulness_value"]=this.answers[this.goldLow][0]
+                al["overall-truthfulness_url"]=this.answersURL[this.goldLow]                
+                goldH["answers"]=ah
+                goldL["answers"]=al
+                goldL["notes"] = []
+                goldH["notes"] = []
+                goldConfiguration=[goldL, goldH]
+                data = {}
+                let actionInfoCheck = {
+                    try: this.currentTry,
+                    sequence: this.seqNum,
+                    element: "checks"
+                };
+                let qualityCheckData = {
+                    globalFormValidity: validTry,
+                    timeSpentCheck: "",
+                    timeCheckAmount: "",
+                    goldChecks: [validTry],
+                    goldConfiguration: goldConfiguration
+                };
+                data["info"] = actionInfoCheck
+                data["checks"] = qualityCheckData
+                //await this.dynamoDBService.insertData(this.configService.environment,this.worker.identifier,this.unitID, this.tryNumber,this.seqNum,data)
+                this.seqNum+=1
+
+                if(!validTry){
+                    this.typingAnimation("Failure! Let's try again")
+                    if(this.tryNumber>=3){
+                        this.typingAnimation("Sorry, you are not eligible for completing this task. Please close this page.")
+                        this.ignoreMsg=true
+                        this.endTaskPhase=false
+                        return
+                    }
+                    this.tryNumber+=1
+                    this.endTaskPhase = false
+                    this.taskPhase = true;
+                    // Reinizializzo
+                    for (let i=0; i<11; i++){
+                        document.getElementById(i.toString()).style.backgroundColor="rgb(63, 81, 181)"
+                    }
+                    this.typing.nativeElement.style.display = "none"
+                    this.buttonsYN.nativeElement.style.display = "none"
+                    this.ignoreMsg = true
+                    this.subTaskIndex = 0
+                    this.taskIndex = 0
+                    this.dimensionReviewPrinted = false
+                    this.reviewAnswersShown = false
+                    this.pickReview = false
+                    this.statementJump = false
+                    this.waitForUrl = false
+                    this.awaitingAnswer=false
+                    this.statementProvided=false
+                    this.buttonsVisibility=0
+                    this.taskP("0")
+                    return                  
+                }
+                this.buttonsYN.nativeElement.style.display = "none"
+                this.buttonsVisibility=0
+                this.typingAnimation(this.endOfTaskMessage[0])
+                this.typingAnimation("You may now close the page, but if there's anything you want to share feel free to type a message!")
+                this.endTaskPhase = false
+                this.commentPhase = true                    
+            } else { return }
+        }
+    }
+
+    // Fase di istruzioni
+    private instructionP(message: string) {
+        /*
+        let startMsg: string
+        if (message.trim().toLowerCase() === "yes") {
+            startMsg = "OK! Let's start!"
+        }
+        else if (message.trim().toLowerCase() === "no") {
+            startMsg = "OK! Let's get to the real thing!"
+            // Salta la prima subtask TODO
+            //this.taskIndex += 1
+        } else { return }
+        this.typingAnimation(startMsg)
+        this.buttonsYN.nativeElement.style.display = "none" // Non mostro più i messaggi y/n
+        this.buttonsVisibility=0*/
+        this.taskPhase = true; // Passiamo alla task phase
+        this.instructionPhase = false; // Finita la instruction phase
+        this.ignoreMsg = true
+        this.typingAnimation("I'll now show you some statements and for each one I'll ask you some questions. Please use the search bar on the left to search for info about those statement and answer my questions")
+        this.taskP("p")
+    }
+
+    // Fase di task
+    private taskP(message: string) {
+        // Se sto chiedendo l'url
+        if (this.waitForUrl){
+            if (!this.urlValid(message)){
+                this.typingAnimation("Please type or select a valid url, try using the search bar on the right!")
+                return
+            }
+            this.waitForUrl = false
+            this.disableInput=false
+            this.answersURL[this.taskIndex]=message
+            this.placeholderInput=""
+            this.ignoreMsg=true
+        }
+        // dimensioni finite
+        if (this.dims.length <= this.subTaskIndex && this.validMsg(message, -2, +2)) {
+            this.answers[this.taskIndex][this.subTaskIndex-1] = message
+            let dimSel = {}
+            dimSel["document"] = this.taskIndex
+            dimSel["dimension"] = this.subTaskIndex-1
+            dimSel["index"] = this.indexDimSel[this.taskIndex]
+            dimSel["timestamp"] = Math.round(Date.now() / 1000)
+            dimSel["value"] = message
+            this.dimsSelected.push(dimSel)
+            this.indexDimSel[this.taskIndex] += 1
+
+            this.statementProvided = false
+            this.taskPhase = false
+            this.reviewPhase = true
+            this.reviewAnswersShown=false
+            this.reviewP(message)
+            return
+        }
+        // non siamo ne all'url ne abbiamo finito se il msg non è valido ritorno, altrimenti procedo
+        if (!this.validMsg(message, -2, +2) && !this.ignoreMsg) {
+            this.typingAnimation(this.repeat)
+            return
+        }
+        else {            
+            if (!this.statementProvided) {
+                this.printStatement()
+                this.waitForUrl = true
+                this.disableInput=true
+                this.inputBox.nativeElement.style.background="gray"
+                this.typingAnimation("Please use the search bar on the right to search for information about the truthfulness of the statement. Once you find a suitable result, please type or select its url")
+                this.timestampsStart[this.currentQuestionnaire+this.taskIndex].push(Math.round(Date.now() / 1000));
+                this.statementProvided = true
+                return
+            }
+            if (!this.ignoreMsg) {
+                this.answers[this.taskIndex][this.subTaskIndex-1] = message
+                let dimSel={}
+                dimSel["document"]=this.taskIndex
+                dimSel["dimension"]=this.subTaskIndex-1
+                dimSel["index"]=this.indexDimSel[this.taskIndex]
+                dimSel["timestamp"]=Math.round(Date.now() / 1000)
+                dimSel["value"]=message
+                this.dimsSelected.push(dimSel)
+                this.indexDimSel[this.taskIndex]+=1
+                this.randomMessage()
+            }
+            this.printDimension()
+            this.subTaskIndex+=1
+        }
+        // Non eseguo controlli sul primo msg, ma sugli altri si
+        this.ignoreMsg = false
+    }
+
+    // Fase di review
+    private async reviewP(message: string) {
+        if(this.questionnaireReview){
+            if(this.pickReview){
+                if(this.awaitingAnswer){
+                    if (this.currentQuestionnaire==0){
+                        if (!this.validMsg(message, 1, this.questionnaires[this.currentQuestionnaire].questions[this.currentQuestion].answers.length)){
+                            this.typingAnimation("Please type a valid integer number")
+                            return
+                        }
+                    }
+                    if (this.currentQuestionnaire>=1){
+                        if (!this.validMsg(message, 1,100)){
+                            this.typingAnimation("Please type a integer number between 1 and 100")
+                            return
+                        }
+                    }
+                    this.questionnaireAnswers[this.currentQuestion]=message
+                    this.reviewAnswersShown=false
+                    this.buttonsNum.nativeElement.style.display = "none"
+                    this.buttonsVisibility=0
+                    this.pickReview=false
+                    this.awaitingAnswer=false
+                }else{
+                    if (!this.validMsg(message, 1, 10)){
+                        this.typingAnimation("Please type a valid integer number")
+                        return
+                    }
+                    this.currentQuestion=+message-1
+                    if (+message-1<7){                        
+                        this.currentQuestionnaire=0
+                        this.printQuestion()
+                    }else{
+                        this.currentQuestionnaire=+message-7
+                        this.buttonsNum.nativeElement.style.display = "none"
+                        this.buttonsVisibility=0
+                        this.typingAnimation(this.questionnaires[this.currentQuestionnaire].questions[0].text)
+                    }                    
+                    if (this.currentQuestionnaire==0){
+                        this.typingAnimation(this.createQuestionnaireAnswers())
+                        this.numberBtn=this.generateArrayNum(this.questionnaires[this.currentQuestionnaire].questions[this.currentQuestion].answers.length)
+                        //this.buttonsNum.nativeElement.style.display = "inline-block"
+                        this.buttonsVisibility=3
+                    }
+                    this.awaitingAnswer=true
+                    this.buttonsCM.nativeElement.style.display = "none"
+                    this.buttonsVisibility=0
+                    return
+                }                
+            }
+            if(!this.reviewAnswersShown){
+                this.typingAnimation("Let's review your answers!") 
+                this.typingAnimation(this.createQuestionnaireRecap()+"<br>Confirm your answers?")
+                this.reviewAnswersShown=true
+                //this.buttonsCM.nativeElement.style.display = "inline-block"
+                this.buttonsVisibility=2
+                return
+            }
+            if (message.trim().toLowerCase() === "confirm") {
+                this.buttonsCM.nativeElement.style.display = "none"
+                this.buttonsVisibility=0
+                // Passo al prossimo phase, resetto
+                this.typingAnimation("Good, let's begin the real task!")
+                // TEST ROUND this.typingAnimation(this.instr[1])
+                this.instructionPhase = true
+                this.awaitingAnswer=false
+                this.questionnaireReview=false
+                this.reviewAnswersShown=false
+                this.buttonsNum.nativeElement.style.display = "none"
+                this.buttonsVisibility=0
+                // TEST ROUND this.buttonsVisibility=1
+                this.pickReview=false
+                this.reviewPhase=false
+                this.sendQuestionnaireData()
+                this.instructionP("0")// TEST ROUND
+                return
+            }
+            else if (message.trim().toLowerCase() === "modify") {
+                this.buttonsCM.nativeElement.style.display = "none"
+                this.buttonsVisibility=0
+                this.numberBtn=this.generateArrayNum(10)
+                //this.buttonsNum.nativeElement.style.display = "inline-block"
+                this.buttonsVisibility=3
+                this.typingAnimation("Which one would you like to modify?")
+                this.pickReview=true
+                return
+            } else { return }
+        }
+        // Se stiamo modificando una dimensione
+        if (this.pickReview) {
+            if (this.dimensionReviewPrinted){ // Dimensione printata
+                if (this.waitForUrl){
+                    if (!this.urlValid(message)){
+                        this.typingAnimation("Please type a valid url, try using the search bar on the right!")
+                        return
+                    }
+                    this.waitForUrl = false
+                    this.placeholderInput=""
+                    this.answersURL[this.taskIndex]=message
+                    // Resetto
+                    this.reviewAnswersShown=false
+                    this.pickReview=false
+                }else{
+                    if (!this.validMsg(message, -2, 2)){
+                        this.typingAnimation(this.repeat)
+                        return
+                    }
+                    let dimSel={}
+                    dimSel["document"]=this.taskIndex
+                    dimSel["dimension"]=this.subTaskIndex-1
+                    dimSel["index"]=this.indexDimSel[this.taskIndex]
+                    dimSel["timestamp"]=Math.round(Date.now() / 1000)
+                    dimSel["value"]=message
+                    this.dimsSelected.push(dimSel)
+                    this.indexDimSel[this.taskIndex]+=1                   
+                    this.answers[this.taskIndex][this.subTaskIndex] = message // Salvo i nuovi dati
+                    // Resetto
+                    this.reviewAnswersShown=false
+                    this.pickReview=false
+                }                
+            }else{
+                if (!this.validMsg(message, 1, 10)){
+                    this.typingAnimation("Please type a integer number between 1 and 10")
+                    return
+                }
+                this.buttonsNum.nativeElement.style.display = "none"
+                this.buttonsVisibility=0      
+                if (message.trim()=="10"){
+                    this.waitForUrl=true
+                    this.typingAnimation("Sure, please enter the correct url")
+                }else{
+                    // Salvo l'input e mostro la dimensione richiesta         
+                    this.subTaskIndex = +message -1
+                    this.printDimension()
+                }
+                this.dimensionReviewPrinted=true
+                return
+            }
+        }
+        // Ripeto questa fase finchè non ricevo un Confirm
+        if (!this.reviewAnswersShown) {
+            //this.buttonsCM.nativeElement.style.display = "inline-block"
+            this.buttonsVisibility=2
+            this.typingAnimation("Let's review your answers!")            
+            this.typingAnimation(this.createAnswerString() + "<br>Confirm your answers?")
+            this.reviewAnswersShown = true;
+            return
+        }
+        if (message.trim().toLowerCase() === "confirm") {
+            this.buttonsCM.nativeElement.style.display = "none"
+            this.buttonsVisibility=0
+            document.getElementById(this.taskIndex.toString()).style.backgroundColor="green"
+            // Se era l'ultimo statement, passo alla fase finale this.hits.documents.length
+            if (this.hits.documents.length-1 <= this.taskIndex || this.statementJump) {
+                this.statementJump=false
+                this.taskPhase=false
+                this.endTaskPhase=true
+                this.reviewPhase = false
+                this.reviewAnswersShown = false
+                this.numberBtn=this.generateArrayNum(11)
+                this.typingAnimation("OK! Would you like to jump to a specific statement?")
+                //this.buttonsYN.nativeElement.style.display = "inline-block"
+                this.buttonsVisibility=1
+                // Printa gli statement, new funzione
+                this.taskPhase=false
+                this.endTaskPhase=true
+                // INVIO DATI ALLA FINE DI OGNI CONFERMA DI UNO STATEMENT
+                this.timestampsEnd[this.currentQuestionnaire+this.taskIndex].push(Math.round(Date.now() / 1000));
+                this.timestampsElapsed[this.currentQuestionnaire+this.taskIndex]+=Number(this.timestampsEnd[this.currentQuestionnaire+this.taskIndex][this.timestampsEnd[this.currentQuestionnaire+this.taskIndex].length-1]) - Number(this.timestampsStart[this.currentQuestionnaire+this.taskIndex][this.timestampsEnd[this.currentQuestionnaire+this.taskIndex].length-1])
+                this.sendDataStatement()
+                return
+            }
+            this.timestampsEnd[this.currentQuestionnaire+this.taskIndex].push(Math.round(Date.now() / 1000));
+            this.timestampsElapsed[this.currentQuestionnaire+this.taskIndex]+=Number(this.timestampsEnd[this.currentQuestionnaire+this.taskIndex][this.timestampsEnd[this.currentQuestionnaire+this.taskIndex].length-1]) - Number(this.timestampsStart[this.currentQuestionnaire+this.taskIndex][this.timestampsEnd[this.currentQuestionnaire+this.taskIndex].length-1])
+            this.sendDataStatement() // INVIO DATI ALLA FINE DI OGNI CONFERMA DI UNO STATEMENT
+            // Passo al prossimo statement, resetto
+            this.randomMessage()
+            this.reviewPhase = false
+            this.taskPhase = true
+            this.taskIndex += 1
+            this.reviewAnswersShown = false
+            this.ignoreMsg = true
+            this.subTaskIndex = 0
+            this.taskP(message)     
+        }
+        else if (message.trim().toLowerCase() === "modify") {
+            this.buttonsCM.nativeElement.style.display = "none"
+            this.buttonsVisibility=0
+            this.numberBtn=this.generateArrayNum(10)
+            //this.buttonsNum.nativeElement.style.display = "inline-block"
+            this.buttonsVisibility=3
+            this.typingAnimation("Which dimension would you like to change?")
+            this.pickReview=true // Passo alla fase di modifica
+            this.dimensionReviewPrinted=false // Reset
+            return
+        } else { return }
+    }
+
+    private questionnaireP(message){
+        if (this.currentQuestionnaire==0){
+            if (this.awaitingAnswer){
+                if (!this.validMsg(message,1,this.questionnaires[this.currentQuestionnaire].questions[this.currentQuestion].answers.length)){
+                    this.typingAnimation("Please type a integer number between 1 and "+this.questionnaires[this.currentQuestionnaire].questions[this.currentQuestion].answers.length)
+                    return
+                }
+                this.buttonsNum.nativeElement.style.display = "none"
+                this.buttonsVisibility=0
+                this.questionnaireAnswers[this.currentQuestion]=message
+                this.randomMessage()
+                this.currentQuestion+=1
+                this.awaitingAnswer=false
+            }    
+            if (this.currentQuestion>=this.questionnaires[this.currentQuestionnaire].questions.length){
+                this.timestampsEnd[this.currentQuestionnaire].push(Math.round(Date.now() / 1000));
+                this.timestampsElapsed[this.currentQuestionnaire]=Number(this.timestampsEnd[this.currentQuestionnaire][this.timestampsEnd[this.currentQuestionnaire].length-1])-Number(this.timestampsStart[this.currentQuestionnaire][this.timestampsStart[this.currentQuestionnaire].length-1])
+                this.currentQuestionnaire+=1
+            }else{
+                this.printQuestion()
+                this.typingAnimation(this.createQuestionnaireAnswers())
+                this.numberBtn=this.generateArrayNum(this.questionnaires[this.currentQuestionnaire].questions[this.currentQuestion].answers.length)
+                //this.buttonsNum.nativeElement.style.display = "inline-block"
+                this.buttonsVisibility=3
+                this.awaitingAnswer=true
+                return
+            }
+        }
+        if (this.currentQuestionnaire>=1){
+            if (this.awaitingAnswer){
+                if (!this.validMsg(message,1,100)){
+                    this.typingAnimation("Please type a integer number between 1 and 100")
+                    return
+                }
+                this.buttonsNum.nativeElement.style.display = "none"
+                this.buttonsVisibility=0
+                this.questionnaireAnswers[this.currentQuestion]=message
+                this.currentQuestion+=1
+                this.randomMessage()
+                this.timestampsEnd[this.currentQuestionnaire].push(Math.round(Date.now() / 1000));
+                this.timestampsElapsed[this.currentQuestionnaire]=Number(this.timestampsEnd[this.currentQuestionnaire][this.timestampsEnd[this.currentQuestionnaire].length-1])-Number(this.timestampsStart[this.currentQuestionnaire][this.timestampsStart[this.currentQuestionnaire].length-1])
+                this.currentQuestionnaire+=1
+                this.awaitingAnswer=false
+
+                if (this.currentQuestionnaire>=this.questionnaires.length){
+                    this.questionnairePhase=false
+                    this.reviewPhase=true
+                    this.questionnaireReview=true
+                    return
+                }
+            }
+            this.typingAnimation(this.questionnaires[this.currentQuestionnaire].questions[0].text)
+            this.timestampsStart[this.currentQuestionnaire].push(Math.round(Date.now() / 1000));
+            this.awaitingAnswer=true
+        }        
+    }
+
+    private async sendDataStatement(){
+        // INVIO DATI ALLA FINE DI OGNI CONFERMA DI UNO STATEMENT
+        let data = {}
+
+        let actionInfo = {
+            action: this.action, //Next se sto procedendo normalemnte, back se sto reviewando
+            access: this.accessesAmount[this.taskIndex],
+            try: this.currentTry,
+            index: this.taskIndex, // dove siamo arrivati
+            sequence: this.seqNum,
+            element: "document"
+        };
+        /* Info about the performed action ("Next"? "Back"? From where?) */
+        data["info"] = actionInfo
+        /* Worker's answers for the current document */
+        let answers = this.createAnswersPretty();
+        this.answersPretty.push(answers)
+        data["answers"] = answers
+        data["notes"] = []
+        /* Worker's dimensions selected values for the current document */
+        let dimensionsSelectedValues = {}
+        dimensionsSelectedValues["data"] = this.dimsSelected
+        dimensionsSelectedValues["amount"] = dimensionsSelectedValues["data"].length
+        data["dimensions_selected"] = dimensionsSelectedValues
+
+        let queries = {}
+        queries["data"] = this.query
+        queries["amount"] = queries["data"].length
+        data["queries"] = queries
+
+        /* Start, end and elapsed timestamps for the current document */
+        let timestampsStart = this.timestampsStart[this.currentQuestionnaire+this.taskIndex];
+        data["timestamps_start"] = timestampsStart
+        let timestampsEnd = this.timestampsEnd[this.currentQuestionnaire+this.taskIndex];
+        data["timestamps_end"] = timestampsEnd
+        data["timestamps_elapsed"] = this.timestampsElapsed[this.currentQuestionnaire+this.taskIndex]
+
+        /* Countdown time and corresponding flag */
+        data["countdowns_times_start"] = []
+        data["countdowns_times_left"] = []
+        data["countdowns_expired"] = []
+        /* Number of accesses to the current document (currentDocument.e., how many times the worker reached the document with a "Back" or "Next" action */
+        data["accesses"] = this.accessesAmount[this.taskIndex]
+
+        let resRet = {}
+        resRet["data"] = this.queryRetrieved
+        let n = 0
+        for (let i=0; i < this.queryRetrieved.length; i++){
+            n+=this.queryRetrieved[i]["response"].length
+        }
+        resRet["amount"] = n
+        resRet["groups"] = resRet["data"].length
+        /* Responses retrieved by search engine for each worker's query for the current document */
+        data["responses_retrieved"] = resRet
+        let resSel ={}
+        resSel["data"] = this.querySelected
+        resSel["amount"] = resSel["data"].length 
+        /* Responses by search engine ordered by worker's click for the current document */
+        data["responses_selected"] = resSel
+        //await this.dynamoDBService.insertData(this.configService.environment,this.worker.identifier,this.unitID, this.tryNumber,this.seqNum, data)
+        this.seqNum += 1
+        let elem={}
+        elem["data"]=this.dimsSelected
+        elem["amount"]=this.dimsSelected.length
+        if(this.dimsSelected.length>=1) this.dimensionSelected.push(elem)
+
+        let elem1={}
+        elem1["data"]=this.query
+        elem1["amount"]=this.query.length
+        if(this.query.length>=1) this.queryTotal.push(elem1)
+
+        let elem2={}
+        elem2["data"]=this.queryRetrieved
+        elem2["amount"]=this.queryRetrieved.length
+        if(this.queryRetrieved.length>=1) this.responsesRetrievedTotal.push(elem2)
+
+        let elem3={}
+        elem3["data"]=this.querySelected
+        elem3["amount"]=this.querySelected.length
+        if(this.querySelected.length>=1) this.responsesSelectedTotal.push(elem3)
+
+        this.dimsSelected=[]
+        this.query=[]
+        this.queryRetrieved=[]
+        this.querySelected=[]
+    }
 }
 

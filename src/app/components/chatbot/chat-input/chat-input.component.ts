@@ -10,7 +10,8 @@ export class ChatInputComponent implements OnInit {
   @Input() public buttonText = '↩︎'
   @Input() public focus = new EventEmitter()
   @Output() public send = new EventEmitter()
-  @Input() private msgType! : string
+  @Input() public pholder! : string
+  @Input() public disableInput! : string
   @ViewChild('message', { static: true }) message!: ElementRef
   @ViewChild('buttons') buttons!: ElementRef
 
@@ -45,17 +46,8 @@ export class ChatInputComponent implements OnInit {
     this.focusMessage()
   }
 
-  onSubmitButton(button: boolean) {
-    // prendo il msg, se è vuoto non faccio nulla
-    let message =""
-    if (button){
-      message = "Yes"
-    }
-    else {
-      message = "No"
-    }
-    // invio il messaggio
-    this.send.emit({ message })
+  ngOnChanges(){
+    this.message.nativeElement.value=this.pholder
+    this.message.nativeElement.disabled=this.disableInput
   }
-
 }

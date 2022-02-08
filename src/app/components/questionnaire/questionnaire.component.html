@@ -1,7 +1,7 @@
 <div class="container">
-    <form [formGroup]="questionnaireForm" class="questionnaire-form">
-        <mat-card>
+    <form [formGroup]="questionnaireForm">
 
+        <mat-card>
             <mat-divider [inset]="true"></mat-divider>
             <mat-card-title *ngIf="questionnaire.type=='standard'">Please answer the following questions</mat-card-title>
             <mat-card-title *ngIf="questionnaire.type=='crt'">Please answer the following question</mat-card-title>
@@ -9,42 +9,72 @@
             <mat-divider [inset]="true"></mat-divider>
 
             <!-- Standard questionnaire markup -->
-            <mat-card-content *ngIf="questionnaire.type=='standard'" class="questionnaire-body">
-                <mat-radio-group *ngFor="let question of questionnaire.questions; let j=index" aria-labelledby="radio-button-label"
-                                 class="radio-button-group question" formControlName="{{question.name}}">
-                    <p class="questionnaire-question">{{question.text}}</p>
-                    <mat-divider [inset]="true"></mat-divider>
-                    <mat-radio-button *ngFor="let answer of question.answers; let k=index" class="radio-button" value="{{k}}">
-                        {{answer}}</mat-radio-button>
-                    <mat-expansion-panel hideToggle *ngIf="question.detail" class="question-detail" (opened)="question.showDetail = true"
-                                         (closed)="question.showDetail = false">
-                        <mat-expansion-panel-header class="mat-button">
-                            <mat-panel-title>
-                                {{question.showDetail ? 'Hide details' : 'Show details'}}
-                            </mat-panel-title>
-                            <mat-panel-description>
-                                {{question.detail.text}}
-                            </mat-panel-description>
-                        </mat-expansion-panel-header>
-                        <div class="question-detail-element" *ngFor="let element of question.detail.elements; let m=index">
-                            {{element.key}}
-                            <ul>
-                                <li *ngFor="let item of element.items; let n=index">{{item}}</li>
-                            </ul>
+            <mat-card-content *ngIf="questionnaire.type=='standard' && this.questionnaireForm">
+                <div class="questionnaire-description">
+                    <p *ngIf="questionnaire.description">{{questionnaire.description}}</p>
+                </div>
+                <ng-container *ngFor="let question of this.questionnaire.questions; let j=index">
+                    <app-question
+                            [index]="(j+1).toString()"
+                            [question]="question"
+                            [questionForm]="questionnaireForm">
+                    </app-question>
+                    <ng-container *ngFor="let questionSub of question.questions; let k=index">
+                        <div class="indent-1">
+                            <app-question
+                                    [index]="(j+1).toString().concat('.').concat((k+1).toString())"
+                                    [question]="questionSub"
+                                    [questionForm]="questionnaireForm">
+                            </app-question>
+                            <ng-container *ngFor="let questionSubSub of questionSub.questions; let l=index">
+                                <div class="indent-2">
+                                    <app-question
+                                            [index]="(j+1).toString().concat('.').concat((k+1).toString()).concat('.').concat((l+1).toString())"
+                                            [question]="questionSubSub"
+                                            [questionForm]="questionnaireForm">
+                                    </app-question>
+                                    <ng-container *ngFor="let questionSubSubSub of questionSubSub.questions; let m=index">
+                                        <div class="indent-3">
+                                            <app-question
+                                                    [index]="(j+1).toString().concat('.').concat((k+1).toString()).concat('.').concat((l+1).toString()).concat('.').concat((m+1).toString())"
+                                                    [question]="questionSubSubSub"
+                                                    [questionForm]="questionnaireForm">
+                                            </app-question>
+                                            <ng-container *ngFor="let questionSubSubSubSub of questionSubSubSub.questions; let n=index">
+                                                <div class="indent-4">
+                                                    <app-question
+                                                            [index]="(j+1).toString().concat('.').concat((k+1).toString()).concat('.').concat((l+1).toString()).concat('.').concat((m+1).toString()).concat('.').concat((n+1).toString())"
+                                                            [question]="questionSubSubSubSub"
+                                                            [questionForm]="questionnaireForm">
+                                                    </app-question>
+                                                    <ng-container *ngFor="let questionSubSubSubSubSub of questionSubSubSubSub.questions; let o=index">
+                                                        <div class="indent-5">
+                                                            <app-question
+                                                                    [index]="(j+1).toString().concat('.').concat((k+1).toString()).concat('.').concat((l+1).toString()).concat('.').concat((m+1).toString()).concat('.').concat((n+1).toString()).concat('.').concat((o+1).toString())"
+                                                                    [question]="questionSubSubSubSubSub"
+                                                                    [questionForm]="questionnaireForm">
+                                                            </app-question>
+                                                        </div>
+                                                    </ng-container>
+                                                </div>
+                                            </ng-container>
+                                        </div>
+                                    </ng-container>
+                                </div>
+                            </ng-container>
                         </div>
-                    </mat-expansion-panel>
-                </mat-radio-group>
+                    </ng-container>
+                </ng-container>
             </mat-card-content>
 
             <!-- CRT questionnaire markup -->
-            <mat-card-content *ngIf="questionnaire.type=='crt'" class="questionnaire-body">
-                <ng-container *ngFor="let question of questionnaire.questions; let j=index">
-                    <p class="questionnaire-question">{{question.text}}</p>
+            <mat-card-content *ngIf="questionnaire.type=='crt'">
+                <div *ngFor="let question of questionnaire.questions; let j=index" class="question-box">
+                    <p class="question-text">{{question.text}}</p>
                     <mat-divider [inset]="true"></mat-divider>
-                    <mat-form-field appearance="fill">
+                    <mat-form-field appearance="fill" class="questionnaire-crt-value">
                         <mat-label>Answer</mat-label>
-
-                        <input matInput type="number" placeholder="0" min="0" formControlName="{{question.name}}" class="questionnaire-value">
+                        <input matInput type="number" placeholder="0" min="0" formControlName="{{question.name}}">
                         <mat-error *ngIf="checkFormControl(questionnaireForm,question.name, 'required')">
                             This field is required
                         </mat-error>
@@ -55,23 +85,22 @@
                             Max value allowed: 100
                         </mat-error>
                     </mat-form-field>
-                </ng-container>
+                </div>
             </mat-card-content>
 
             <!-- Likert questionnaire markup -->
             <mat-card-content *ngIf="questionnaire.type=='likert'" class="questionnaire-matrix">
                 <p *ngIf="questionnaire.description">{{questionnaire.description}}</p>
-                <mat-divider [inset]="true"></mat-divider>
+                <mat-divider *ngIf="questionnaire.description" [inset]="true"></mat-divider>
                 <div class="matrix-header">
                     <div></div>
                     <div *ngFor="let mapping of questionnaire.mappings; let k=index">
                         <span class="matrix-header-text">{{mapping.label}}</span>
                     </div>
                 </div>
-
-                <mat-radio-group aria-labelledby="radio-button-label" *ngFor="let question of questionnaire.questions; let m=index" formControlName="{{question.name}}">
+                <mat-radio-group aria-labelledby="radio-button-label" *ngFor="let question of questionnaire.questions; let m=index" formControlName="{{question.name}}_answer">
                     <div>
-                        <p>{{m + 1}}) {{question.text}}</p>
+                        <p class="question-text">{{m + 1}} - {{question.text}}</p>
                     </div>
                     <div *ngFor="let mapping of questionnaire.mappings">
                         <mat-radio-button class="radio-button" value="{{mapping.value}}"></mat-radio-button>
@@ -82,27 +111,33 @@
             <!-- Next button markup -->
             <mat-card-actions>
                 <p class="form-note">
-                    <button mat-flat-button color="primary" matStepperNext
-                            *ngIf="position=='start'"
-                            [disabled]="(!questionnaireForm.valid || this.sectionService.taskCompleted)"
-                            (click)="emitQuestionnaireFilled('Next',step)">
-                        Next
-                    </button>
                     <button mat-flat-button color="primary" matStepperPrevious
-                            *ngIf="step>0 && position=='end'"
-                            [disabled]="this.sectionService.taskCompleted"
+                            *ngIf="step>0 && position=='end' || this.questionnaire.allow_back"
+                            [disabled]="!questionnaireForm.valid ||this.taskCompleted"
                             (click)="emitQuestionnaireFilled('Back',step)">
                         Back
                     </button>
                     <button mat-flat-button color="primary" matStepperNext
+                            *ngIf="(step+1 <= this.questionnaireAmountStart && this.questionnaireAmountEnd>=0  && this.documentsAmount > 0) && position=='start'"
+                            [disabled]="!questionnaireForm.valid || this.taskCompleted"
+                            (click)="emitQuestionnaireFilled('Next',step)">
+                        Next
+                    </button>
+                    <button mat-flat-button color="primary" matStepperNext
+                            *ngIf="(step+1 >= this.questionnaireAmountStart && this.questionnaireAmountEnd <= 0 && this.documentsAmount<=0) && position=='start'"
+                            [disabled]="!questionnaireForm.valid || this.taskCompleted"
+                            (click)="emitQuestionnaireFilled('Finish',step)">
+                        Finish
+                    </button>
+                    <button mat-flat-button color="primary" matStepperNext
                             *ngIf="step+1 >= this.questionnaireAmountStart + this.documentsAmount && step+1 < (this.questionnaireAmountStart + this.documentsAmount + this.questionnaireAmountEnd) -1  && position=='end'"
-                            [disabled]="!questionnaireForm.valid"
+                            [disabled]="!questionnaireForm.valid || this.taskCompleted"
                             (click)="emitQuestionnaireFilled('Next',step)">
                         Next
                     </button>
                     <button mat-flat-button color="primary" matStepperNext
                             *ngIf="step+1 >= (this.questionnaireAmountStart + this.documentsAmount + this.questionnaireAmountEnd) - 1  && position=='end'"
-                            [disabled]="questionnaireForm.valid"
+                            [disabled]="!questionnaireForm.valid || this.taskCompleted"
                             (click)="emitQuestionnaireFilled('Finish',step)">
                         Finish
                     </button>

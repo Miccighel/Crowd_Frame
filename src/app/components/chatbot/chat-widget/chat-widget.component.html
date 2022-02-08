@@ -1,63 +1,95 @@
- <div class="chat-box" >
-    <div class="chat-box-header">
-        <div class="operator-status">
-          {{operator.status}}
-          <span class="operator-status-online">●</span>
-        </div>
-        <chat-avatar [image]="operator.avatar"></chat-avatar>
-        <h3 class="operator-name">
-          {{operator.name}}
-        </h3>
-    </div>
-    <div *ngIf="fixedMessage" class="chat-box-header" style="background-color: #B9D6F2; color: black;">
-      {{ fixedMessage }}
-    </div>
-    <div class="chat-box-main">
-      <div class="chat-message-bottom" #bottom></div>
+<div class="chatbot-section" >
 
-      <ng-container>
-        <div #typing class="chat-message-received" style="width: 17%;">
-          <div>
-            <chat-avatar [image]="operator.avatar" class="chat-message-from-avatar"></chat-avatar>
-            <div class="chat-message-text">
-              <div class="type" style="margin:3px; margin-top:0px">
-                <span></span>
-                <span></span>
-                <span></span>
-              </div>
+<div class="chat-box">
+  <div class="chat-box-header">
+    <div class="operator-status">
+      {{operator.status}}
+      <span class="operator-status-online">●</span>
+    </div>
+    <chat-avatar [image]="operator.avatar"></chat-avatar>
+    <h3 class="operator-name">
+      {{operator.name}}
+    </h3>
+  </div>
+  
+  <div class="chat-box-header" #fixedMsg
+  style="background-color: #f5f5f5; color: white; min-height: 3%; display: none;">
+    <div id="0" class="dot" style="margin-left:4%;"><b>1</b></div>
+    <div id="1" class="dot" style="margin-left:13%;"><b>2</b></div>
+    <div id="2" class="dot" style="margin-left:22%"><b>3</b></div>
+    <div id="3" class="dot" style="margin-left:31%"><b>4</b></div>
+    <div id="4" class="dot" style="margin-left:40%"><b>5</b></div>
+    <div id="5" class="dot" style="margin-left:49%"><b>6</b></div>
+    <div id="6" class="dot" style="margin-left:58%"><b>7</b></div>
+    <div id="7" class="dot" style="margin-left:67%"><b>8</b></div>
+    <div id="8" class="dot" style="margin-left:76%"><b>9</b></div>
+    <div id="9" class="dot" style="margin-left:85%"><b>10</b></div>
+    <div id="10" class="dot" style="margin-left:94%"><b>11</b></div>
+  </div>
+  
+  <div *ngIf="fixedMessage" [innerHTML]="fixedMessage" class="chat-box-header"
+    style="background-color: rgb(63, 81, 181); color: white; font-size: larger; height: auto;">
+  </div>
+
+  <div class="chat-box-main">
+    <div class="chat-message-bottom" #bottom></div>
+    <ng-container>
+      <div #typing class="chat-message-received" style="width:15%;">
+        <div>
+          <chat-avatar [image]="operator.avatar" class="chat-message-from-avatar"></chat-avatar>
+          <div class="chat-message-text">
+            <div class="type" style="margin:3px; margin-top:0px">
+              <span></span>
+              <span></span>
+              <span></span>
             </div>
           </div>
-          <div class="chat-message-date"></div>
-          <div class="chat-message-date"></div>
         </div>
-      </ng-container>
+        <div class="chat-message-date"></div>
+        <div class="chat-message-date"></div>
+      </div>
+    </ng-container>
 
-      <ng-container *ngFor="let message of messages">
-        <div class="chat-message" [class.chat-message-received]="message.type === 'received'"
-             [@fadeIn]
-             [class.chat-message-sent]="message.type === 'sent'">
-          <div>
-            <chat-avatar [image]="message.from.avatar" class="chat-message-from-avatar"></chat-avatar>
-            <div class="chat-message-text">
-              {{message.text}}
-            </div>
-          </div>
-          <div class="chat-message-date">
-            {{message.date | date: 'short'}}
+    <ng-container *ngFor="let message of messages">
+      <div class="chat-message" [class.chat-message-received]="message.type === 'received'" [@fadeIn]
+        [class.chat-message-sent]="message.type === 'sent'">
+        <div>
+          <chat-avatar [image]="message.from.avatar" class="chat-message-from-avatar"></chat-avatar>
+          <div class="chat-message-text" [innerHTML]="message.text">
+
           </div>
         </div>
-      </ng-container>
-      
-      
+        <div class="chat-message-date">
+          {{message.date | date: 'short'}}
+        </div>
+      </div>
+    </ng-container>
+  </div>
+
+  <div #inputBox class="chat-box-footer">
+    <div class="button-prompt" #buttonsNum style="display: none;">
+      <button type="button" class="btn btn-secondary" (click)="buttonInput('1')" style="margin-left: 7%;">1</button>
+      <button *ngFor="let num of numberBtn; let i = index" type="button" class="btn btn-secondary"
+      (click)="buttonInput(num)">{{num}}</button>
     </div>
-    
-    <div class="chat-box-footer">
-    <div class="button-prompt" #buttons style="display: inline-block;">
+
+    <div class="button-prompt" #buttonsYN style="display: none;">
       <button type="button" class="btn btn-primary" (click)="buttonInput('Yes')">Yes</button>
       <button type="button" class="btn btn-primary" (click)="buttonInput('No')">No</button>
     </div>
-      <chat-input (send)="sendMessage($event)"></chat-input>
+    <div class="button-prompt" #buttonsCM style="display: none;">
+      <button type="button" class="btn btn-primary" (click)="buttonInput('Confirm')">Confirm</button>
+      <button type="button" class="btn btn-primary" (click)="buttonInput('Modify')">Modify</button>
     </div>
+    <chat-input (send)="sendMessage($event)" [pholder]="placeholderInput" [disableInput]="disableInput" ></chat-input>
   </div>
-  
+</div>
 
+<div style="border-radius: 5px; max-height: 100%; overflow: auto; width: 45%; height: 100%;
+background-color: white;margin-left: 5%; box-shadow: 0 5px 40px rgba(0, 0, 0, 0.16);">
+    <app-crowd-xplorer (selectedRowEmitter)="getUrl($event)"
+    (resultEmitter)="storeSearchEngineRetrievedResponse($event)"
+    (queryEmitter)="storeSearchEngineUserQuery($event)"
+    ></app-crowd-xplorer>
+</div>
+</div>
