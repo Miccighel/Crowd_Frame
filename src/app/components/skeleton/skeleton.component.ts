@@ -181,23 +181,23 @@ export class SkeletonComponent implements OnInit {
 
         let url = new URL(window.location.href);
 
+        /* The GET URL parameters are parsed and used to init worker's instance */
+        let paramsFetched: Record<string, string> = {};
+        url.searchParams.forEach((value, param) => {
+            if (param.toLowerCase().includes('workerid')) {
+                paramsFetched['identifier'] = value
+            } else {
+                param = param.replace(/(?:^|\.?)([A-Z])/g, function (x, y) {
+                    return "_" + y.toLowerCase()
+                }).replace(/^_/, "")
+                paramsFetched[param] = value
+            }
+        })
+
+        this.worker = new Worker(paramsFetched)
+
         /* The task settings are loaded */
         this.loadSettings().then(() => {
-
-            /* The GET URL parameters are parsed and used to init worker's instance */
-            let paramsFetched: Record<string, string> = {};
-            url.searchParams.forEach((value, param) => {
-                if (param.toLowerCase().includes('workerid')) {
-                    paramsFetched['identifier'] = value
-                } else {
-                    param = param.replace(/(?:^|\.?)([A-Z])/g, function (x, y) {
-                        return "_" + y.toLowerCase()
-                    }).replace(/^_/, "")
-                    paramsFetched[param] = value
-                }
-            })
-
-            this.worker = new Worker(paramsFetched)
 
             /* The logging service is enabled if it is needed */
             if (this.task.settings.logger_enable)
@@ -1274,7 +1274,7 @@ export class SkeletonComponent implements OnInit {
 
         this.computeTimestamps(currentElement, completedElement, action)
         this.handleCountdowns(currentElement, documentIndex, action)
-        if(this.task.settings.annotator.type=='options') this.annotatorOptions.handleNotes(completedElement)
+        if (this.task.settings.annotator.type == 'options') this.annotatorOptions.handleNotes(completedElement)
 
         let qualityChecks = null
         if (action == "Finish") {
