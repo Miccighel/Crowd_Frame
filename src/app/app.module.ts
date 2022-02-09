@@ -1,6 +1,6 @@
 /* Core imports */
 import {BrowserModule} from '@angular/platform-browser';
-import {APP_INITIALIZER, Injector, NgModule} from '@angular/core';
+import {APP_INITIALIZER, NgModule} from '@angular/core';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {HttpClientModule} from "@angular/common/http";
 import {createCustomElement} from "@angular/elements";
@@ -63,7 +63,9 @@ import { TaskSettingsStepComponent } from './components/generator/generator-step
 import { SummaryStepComponent } from './components/generator/generator-steps/summary-step/summary-step.component';
 import { QuestionComponent } from './components/skeleton/questionnaire/question/question.component';
 import { OutcomeSectionComponent } from './components/skeleton/outcome-section/outcome-section.component';
-import { AnnotatorLawsComponent } from './components/skeleton/pointwise/annotators/annotator-laws/annotator-laws.component';
+import { AnnotatorLawsComponent } from './components/skeleton/pointwise/elements/annotator-laws/annotator-laws.component';
+import { AnnotatorOptionsComponent } from './components/skeleton/pointwise/elements/annotator-options/annotator-options.component';
+import { ElementPointwiseComponent } from './components/skeleton/pointwise/elements/element-pointwise/element-pointwise.component';
 
 function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
     return () => from(actionLogger.downloadOpt()).pipe(tap(data => {
@@ -97,7 +99,9 @@ function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
         SummaryStepComponent,
         QuestionComponent,
         OutcomeSectionComponent,
-        AnnotatorLawsComponent
+        AnnotatorLawsComponent,
+        AnnotatorOptionsComponent,
+        ElementPointwiseComponent
     ],
     imports: [
         BrowserModule,

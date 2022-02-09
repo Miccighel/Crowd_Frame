@@ -34,13 +34,13 @@
                            (focus)="this.tokenForm.updateValueAndValidity()" (paste)="this.tokenForm.updateValueAndValidity()"
                            (keyup)="this.tokenForm.updateValueAndValidity()" (keydown)="this.tokenForm.updateValueAndValidity()"
                            (keyup.enter)="performTaskSetup()">
-                    <mat-error *ngIf="checkFormControl(tokenForm,'tokenInput', 'required')">
+                    <mat-error *ngIf="this.utilsService.checkFormControl(tokenForm,'tokenInput', 'required')">
                         This field is required
                     </mat-error>
-                    <mat-error *ngIf="checkFormControl(tokenForm,'tokenInput', 'invalid')">
+                    <mat-error *ngIf="this.utilsService.checkFormControl(tokenForm,'tokenInput', 'invalid')">
                         This token input is invalid
                     </mat-error>
-                    <mat-error *ngIf="checkFormControl(tokenForm,'tokenInput', 'maxlength')">
+                    <mat-error *ngIf="this.utilsService.checkFormControl(tokenForm,'tokenInput', 'maxlength')">
                         This token input should be 11 characters long
                     </mat-error>
                 </mat-form-field>
@@ -124,32 +124,14 @@
                             </h1>
                         </div>
 
-                        <div class="statement" *ngIf="(this.task.settings.modality=='pointwise')">
-                            <ng-container *ngFor="let attribute of this.task.settings.attributes; let k=index">
-                                <div *ngIf="attribute.show" class="attribute">
-                                    <p class="attribute-label" *ngIf="!this.task.settings.annotator">
-                                        <strong>{{attribute.name_pretty}}</strong>: {{(this.task.countdownsExpired[i] && this.task.settings.countdown_behavior == "hide_attributes") ? "---------- text_hidden ----------" : document[attribute.name]}}
-                                    </p>
-                                    <p class="attribute-label" *ngIf="this.task.settings.annotator && !attribute.annotate">
-                                        <strong>{{attribute.name_pretty}}</strong>: {{(this.task.countdownsExpired[i] && this.task.settings.countdown_behavior == "hide_attributes") ? "---------- text_hidden ----------" : document[attribute.name]}}
-                                    </p>
-                                    <p class="attribute-label" *ngIf="this.task.settings.annotator && this.task.settings.annotator.type=='options'&& attribute.annotate">
-                                        <strong>{{attribute.name_pretty}}</strong>:
-                                        <span id="document-{{i}}-attribute-{{k}}"
-                                              (mouseup)="performAnnotation(i, k, this.task.notes, this.changeDetector)"
-                                              (touchend)="performAnnotation(i, k, this.task.notes, this.changeDetector)">
-                                                {{(this.task.countdownsExpired[i] && this.task.settings.countdown_behavior == "hide_attributes") ? "---------- text_hidden ----------" : document[attribute.name]}}
-                                            </span>
-                                    </p>
-
-                                </div>
-                            </ng-container>
-                        </div>
-
                         <ng-container *ngIf="(this.task.settings.modality=='pointwise')">
 
+                            <ng-container *ngIf="!(this.task.settings.annotator)">
+                                <app-element-pointwise [task]="this.task" [documentIndex]="i"></app-element-pointwise>
+                            </ng-container>
                             <ng-container *ngIf="(this.task.settings.annotator)">
-                                <app-annotator-laws *ngIf="(this.task.settings.annotator.type=='laws')" [task]="this.task"></app-annotator-laws>
+                                <app-annotator-laws *ngIf="(this.task.settings.annotator.type=='laws')" [task]="this.task" [documentIndex]="i"></app-annotator-laws>
+                                <app-annotator-options *ngIf="(this.task.settings.annotator.type=='options')" [task]="this.task" [documentIndex]="i"></app-annotator-options>
                             </ng-container>
 
                         </ng-container>
@@ -221,44 +203,6 @@
                         </ng-container>
 
 
-                        <ng-container *ngIf="(this.task.settings.annotator && this.task.settings.annotator.type=='options')">
-
-                            <!-- Annotation buttons markup -->
-                            <div *ngIf="this.task.settings.annotator" id="annotation-buttons-{{i}}" class="annotation-buttons">
-                                <button
-                                        [style.background-color]="value.color"
-                                        [style.opacity]="!this.task.annotationsDisabled[i] ? 1 : 0.3" class="ann-button-{{i}}"
-                                        *ngFor="let value of this.task.settings.annotator.values" [disabled]="this.task.annotationsDisabled[i]" mat-flat-button
-                                        (click)="handleAnnotationOption(value,i)">{{value.label}}
-                                </button>
-                            </div>
-                            <br/>
-
-                            <!-- Finalized notes table markup -->
-                            <div *ngIf="this.task.settings.annotator && checkUndeletedNotesPresence(this.task.notes[i])" class="annotations">
-                                <table class="mat-table">
-                                    <tr class="mat-header-row">
-                                        <th class="mat-header-cell">Text</th>
-                                        <th class="mat-header-cell">Annotation</th>
-                                        <th class="mat-header-cell">Actions</th>
-                                    </tr>
-                                    <tr *ngFor="let note of this.task.notes[i]; let noteIndex = index">
-                                        <ng-container *ngIf="note.deleted == false && note.option != 'not_selected'">
-                                            <td class="mat-cell"><span [style.background-color]="note.color">{{note.current_text}}</span></td>
-                                            <td class="mat-cell"><code>{{capitalize(note.option)}}</code></td>
-                                            <td class="mat-cell">
-                                                <button (click)="removeAnnotation(i, noteIndex, this.changeDetector)" mat-flat-button color="warn">
-                                                    Delete
-                                                </button>
-                                            </td>
-                                        </ng-container>
-                                    </tr>
-                                </table>
-                            </div>
-
-                        </ng-container>
-
-
                         <ng-template #dimensionList let-dimensions="dimensions" let-i="i">
 
                             <div *ngFor="let dimension of dimensions; let j=index" class="dimension'">
@@ -267,8 +211,8 @@
                                     <div class="dimension-name">
                                         <div>
                                             <mat-divider [inset]="true"></mat-divider>
-                                            <h2 *ngIf="!dimension.name_pretty">{{capitalize(dimension.name)}}</h2>
-                                            <h2 *ngIf="dimension.name_pretty">{{capitalize(dimension.name_pretty)}}</h2>
+                                            <h2 *ngIf="!dimension.name_pretty">{{this.utilsService.capitalize(dimension.name)}}</h2>
+                                            <h2 *ngIf="dimension.name_pretty">{{this.utilsService.capitalize(dimension.name_pretty)}}</h2>
                                             <mat-divider [inset]="true"></mat-divider>
                                         </div>
                                     </div>
@@ -286,8 +230,8 @@
                                     <div [ngClass]="'dimension-content-split'">
                                         <div [ngClass]="'dimension-name-center'">
                                             <mat-divider [inset]="true"></mat-divider>
-                                            <h2 *ngIf="!dimension.name_pretty">{{capitalize(dimension.name)}}</h2>
-                                            <h2 *ngIf="dimension.name_pretty">{{capitalize(dimension.name_pretty)}}</h2>
+                                            <h2 *ngIf="!dimension.name_pretty">{{this.utilsService.capitalize(dimension.name)}}</h2>
+                                            <h2 *ngIf="dimension.name_pretty">{{this.utilsService.capitalize(dimension.name_pretty)}}</h2>
                                             <mat-divider [inset]="true"></mat-divider>
                                         </div>
                                     </div>
@@ -320,10 +264,10 @@
                                             <button mat-icon-button matPrefix>
                                                 <mat-icon>{{'arrow_right_alt'}}</mat-icon>
                                             </button>
-                                            <mat-error *ngIf="checkFormControl(documentsForm[i],(dimension.name).concat('_url'), 'required')">
+                                            <mat-error *ngIf="this.utilsService.checkFormControl(documentsForm[i],(dimension.name).concat('_url'), 'required')">
                                                 This field is required
                                             </mat-error>
-                                            <mat-error *ngIf="checkFormControl(documentsForm[i], (dimension.name).concat('_url'), 'invalidSearchEngineUrl')">
+                                            <mat-error *ngIf="this.utilsService.checkFormControl(documentsForm[i], (dimension.name).concat('_url'), 'invalidSearchEngineUrl')">
                                                 Please select (or copy & paste) one of the URLs shown above.
                                             </mat-error>
                                         </mat-form-field>
@@ -378,10 +322,10 @@
                                                         <input *ngIf="!dimension.scale.lower_bound" matInput type="number" placeholder="" formControlName="{{(dimension.name).concat('_value')}}" min="{{dimension.scale.min+1}}"
                                                                (change)="this.task.storeDimensionValue($event, i, dimension.index)" class="magnitude_estimation"
                                                                [disabled]="this.task.countdownsExpired[i]">
-                                                        <mat-error *ngIf="checkFormControl(documentsForm[i], (dimension.name).concat('_value'), 'required')">
+                                                        <mat-error *ngIf="this.utilsService.checkFormControl(documentsForm[i], (dimension.name).concat('_value'), 'required')">
                                                             This field is required
                                                         </mat-error>
-                                                        <mat-error *ngIf="checkFormControl(documentsForm[i], (dimension.name).concat('_value'), 'min')">
+                                                        <mat-error *ngIf="this.utilsService.checkFormControl(documentsForm[i], (dimension.name).concat('_value'), 'min')">
                                                             <span *ngIf="dimension.scale.lower_bound">Min value allowed: {{dimension.scale.min}}</span>
                                                             <span *ngIf="!dimension.scale.lower_bound">Min value allowed: {{dimension.scale.min + 1}}</span>
                                                         </mat-error>
@@ -412,13 +356,13 @@
                                                         <mat-form-field appearance="fill" class="width-100">
                                                             <mat-label>{{dimension.justification.text}}</mat-label>
                                                             <textarea matInput formControlName="{{dimension.name}}_justification" rows="5"></textarea>
-                                                            <mat-error *ngIf="checkFormControl(documentsForm[i],(dimension.name).concat('_justification'), 'required')">
+                                                            <mat-error *ngIf="this.utilsService.checkFormControl(documentsForm[i],(dimension.name).concat('_justification'), 'required')">
                                                                 This field is required
                                                             </mat-error>
-                                                            <mat-error *ngIf="checkFormControl(documentsForm[i],(dimension.name).concat('_justification'), 'longer')">
+                                                            <mat-error *ngIf="this.utilsService.checkFormControl(documentsForm[i],(dimension.name).concat('_justification'), 'longer')">
                                                                 This justification must have at least {{dimension.justification.min_words}} words.
                                                             </mat-error>
-                                                            <mat-error *ngIf="checkFormControl(documentsForm[i],(dimension.name).concat('_justification'), 'invalid')">
+                                                            <mat-error *ngIf="this.utilsService.checkFormControl(documentsForm[i],(dimension.name).concat('_justification'), 'invalid')">
                                                                 You cannot use the selected search engine url as part of the justification.
                                                             </mat-error>
                                                         </mat-form-field>
@@ -487,10 +431,10 @@
                                                                        min="{{dimension.scale.min+1}}"
                                                                        (change)="this.task.storeDimensionValue($event, i, dimension.index); changeValue(document.index,dimension.index+1,j)" class="magnitude_estimation"
                                                                        [disabled]="this.task.countdownsExpired[i]">
-                                                                <mat-error *ngIf="checkFormControl(documentsForm[i], (dimension.name).concat('_value_').concat(j), 'required')">
+                                                                <mat-error *ngIf="this.utilsService.checkFormControl(documentsForm[i], (dimension.name).concat('_value_').concat(j), 'required')">
                                                                     This field is required
                                                                 </mat-error>
-                                                                <mat-error *ngIf="checkFormControl(documentsForm[i], (dimension.name).concat('_value_').concat(j), 'min')">
+                                                                <mat-error *ngIf="this.utilsService.checkFormControl(documentsForm[i], (dimension.name).concat('_value_').concat(j), 'min')">
                                                                     <span *ngIf="dimension.scale.lower_bound">Min value allowed: {{dimension.scale.min}}</span>
                                                                     <span *ngIf="!dimension.scale.lower_bound">Min value allowed: {{dimension.scale.min + 1}}</span>
                                                                 </mat-error>
@@ -509,13 +453,13 @@
                                                         <mat-form-field appearance="fill">
                                                             <mat-label>{{dimension.justification.text}}</mat-label>
                                                             <textarea matInput formControlName="{{dimension.name}}_justification_{{j}}" rows="3"></textarea>
-                                                            <mat-error *ngIf="checkFormControl(documentsForm[i],(dimension.name).concat('_justification_').concat(j), 'required')">
+                                                            <mat-error *ngIf="this.utilsService.checkFormControl(documentsForm[i],(dimension.name).concat('_justification_').concat(j), 'required')">
                                                                 This field is required
                                                             </mat-error>
-                                                            <mat-error *ngIf="checkFormControl(documentsForm[i],(dimension.name).concat('_justification_').concat(j), 'longer')">
+                                                            <mat-error *ngIf="this.utilsService.checkFormControl(documentsForm[i],(dimension.name).concat('_justification_').concat(j), 'longer')">
                                                                 This justification must have at least {{dimension.justification.minWords}} words.
                                                             </mat-error>
-                                                            <mat-error *ngIf="checkFormControl(documentsForm[i],(dimension.name).concat('_justification_').concat(j), 'invalid')">
+                                                            <mat-error *ngIf="this.utilsService.checkFormControl(documentsForm[i],(dimension.name).concat('_justification_').concat(j), 'invalid')">
                                                                 You cannot use the selected search engine url as part of the justification.
                                                             </mat-error>
                                                         </mat-form-field>
@@ -558,10 +502,10 @@
                                                 <button mat-icon-button matPrefix>
                                                     <mat-icon>{{'arrow_right_alt'}}</mat-icon>
                                                 </button>
-                                                <mat-error *ngIf="checkFormControl(documentsForm[i],(dimension.name).concat('_url'), 'required')">
+                                                <mat-error *ngIf="this.utilsService.checkFormControl(documentsForm[i],(dimension.name).concat('_url'), 'required')">
                                                     This field is required
                                                 </mat-error>
-                                                <mat-error *ngIf="checkFormControl(documentsForm[i], (dimension.name).concat('_url'), 'invalidSearchEngineUrl')">
+                                                <mat-error *ngIf="this.utilsService.checkFormControl(documentsForm[i], (dimension.name).concat('_url'), 'invalidSearchEngineUrl')">
                                                     Please select (or copy & paste) one of the URLs shown above.
                                                 </mat-error>
                                             </mat-form-field>
@@ -589,7 +533,7 @@
                                         <mat-radio-group aria-labelledby="radio-button-label" formControlName="{{(dimension.name).concat('_value')}}">
                                             <div>
                                                 <p>
-                                                    <strong>{{this.capitalize(dimension.name)}}:</strong>
+                                                    <strong>{{this.utilsService.capitalize(dimension.name)}}:</strong>
                                                     {{dimension.description.toLowerCase()}}
                                                 </p>
                                             </div>

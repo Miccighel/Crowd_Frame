@@ -19,38 +19,30 @@ import {S3Service} from "../../services/s3.service";
 import {DeviceDetectorService} from "ngx-device-detector";
 /* Task models */
 import {Document} from "../../../../data/build/skeleton/document";
-import {Hit} from "../../models/hit";
 import {Task} from "../../models/task";
-import {Questionnaire} from "../../models/questionnaire";
 import {Dimension, ScaleInterval, ScaleMagnitude} from "../../models/dimension";
-import {Instruction} from "../../models/instructions";
-import {Note} from "../../models/annotators/notes";
 import {Worker} from "../../models/worker";
-import {Annotator, SettingsTask} from "../../models/settingsTask";
+import {SettingsTask} from "../../models/settingsTask";
 import {GoldChecker} from "../../../../data/build/skeleton/goldChecker";
 import {ActionLogger} from "../../services/userActionLogger.service";
-/* Annotator functions */
-import {doHighlight} from "@funktechno/texthighlighter/lib";
 /* HTTP Client */
 import {HttpClient, HttpHeaders} from "@angular/common/http";
 /* Material modules */
 import {MatSnackBar} from "@angular/material/snack-bar";
-import {NoteStandard} from "../../models/annotators/notes_standard";
-import {NoteLaws} from "../../models/annotators/notes_laws";
-import {MatRadioChange} from "@angular/material/radio";
-import {MatCheckboxChange} from "@angular/material/checkbox";
 import {Object} from 'aws-sdk/clients/customerprofiles';
 /* Services */
 import {SectionService} from "../../services/section.service";
 import {DynamoDBService} from "../../services/dynamoDB.service";
 import {SettingsWorker} from "../../models/settingsWorker";
 import {OutcomeSectionComponent} from "./outcome-section/outcome-section.component";
+import {AnnotatorOptionsComponent} from "./pointwise/elements/annotator-options/annotator-options.component";
+import {UtilsService} from "../../services/utils.service";
 
 /* Component HTML Tag definition */
 @Component({
     selector: 'app-skeleton',
     templateUrl: './skeleton.component.html',
-    styleUrls: ['./skeleton.component.scss'],
+    styleUrls: ['./skeleton.component.scss', './skeleton.shared.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
@@ -77,6 +69,7 @@ export class SkeletonComponent implements OnInit {
     actionLogger: ActionLogger
     /* Service to track current section */
     sectionService: SectionService
+    utilsService: UtilsService
 
     /* HTTP client and headers */
     client: HttpClient;
@@ -109,9 +102,8 @@ export class SkeletonComponent implements OnInit {
     /* Array of form references, one for each questionnaire within a Hit */
     questionnairesForm: FormGroup[];
 
-    /* |--------- TASK SETTINGS - DECLARATION - (see task.json)---------| */
-
-    settingsWorker: SettingsWorker
+    /* Reference to the outcome section component */
+    @ViewChild(AnnotatorOptionsComponent) annotatorOptions: AnnotatorOptionsComponent;
 
     /* |--------- COUNTDOWN HANDLING ---------| */
 
@@ -120,7 +112,6 @@ export class SkeletonComponent implements OnInit {
 
     /* Available options to label an annotation */
     annotationOptions: FormGroup;
-
 
     /* |--------- OUTCOME SECTION ELEMENTS - DECLARATION ---------| */
 
@@ -141,20 +132,23 @@ export class SkeletonComponent implements OnInit {
         formBuilder: FormBuilder,
         snackBar: MatSnackBar,
         actionLogger: ActionLogger,
-        sectionService: SectionService
+        sectionService: SectionService,
+        utilsService: UtilsService
     ) {
         /* |--------- SERVICES & CO. - INITIALIZATION ---------| */
 
-        this.changeDetector = changeDetector;
-        this.ngxService = ngxService;
-        this.configService = configService;
-        this.S3Service = S3Service;
-        this.dynamoDBService = dynamoDBService;
+        this.changeDetector = changeDetector
+        this.ngxService = ngxService
+        this.configService = configService
+        this.S3Service = S3Service
+        this.dynamoDBService = dynamoDBService
         this.actionLogger = actionLogger
         this.sectionService = sectionService
-        this.deviceDetectorService = deviceDetectorService;
-        this.client = client;
-        this.formBuilder = formBuilder;
+        this.deviceDetectorService = deviceDetectorService
+        this.utilsService = utilsService
+
+        this.client = client
+        this.formBuilder = formBuilder
         this.snackBar = snackBar
 
         this.ngxService.start();
@@ -358,7 +352,7 @@ export class SkeletonComponent implements OnInit {
                         } else await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker, this.task.tryCurrent)
 
                         /* We launch a call to Cloudflare to trace the worker */
-                        if (this.settingsWorker.analysis) {
+                        if (this.worker.settings.analysis) {
                             this.client.get('https://www.cloudflare.com/cdn-cgi/trace', {responseType: 'text'}).subscribe(
                                 /* If we retrieve some data from Cloudflare we use them to populate worker's object */
                                 cloudflareData => {
@@ -392,7 +386,7 @@ export class SkeletonComponent implements OnInit {
     */
     public async loadSettings() {
         this.task.settings = new SettingsTask(await this.S3Service.downloadTaskSettings(this.configService.environment))
-        this.settingsWorker = new SettingsWorker(await this.S3Service.downloadWorkers(this.configService.environment))
+        this.worker.settings = new SettingsWorker(await this.S3Service.downloadWorkers(this.configService.environment))
     }
 
     /*
@@ -403,7 +397,7 @@ export class SkeletonComponent implements OnInit {
 
         let taskAllowed = true
 
-        if (this.settingsWorker.block) {
+        if (this.worker.settings.block) {
 
             let batchesStatus = {}
             let tables = await this.dynamoDBService.listTables(this.configService.environment)
@@ -411,7 +405,7 @@ export class SkeletonComponent implements OnInit {
             let workersACL = await this.dynamoDBService.getACLRecordWorkerId(this.configService.environment, this.worker.identifier)
 
             /* To blacklist a previous batch its worker list is picked up */
-            for (let batchName of this.settingsWorker.blacklist_batches) {
+            for (let batchName of this.worker.settings.blacklist_batches) {
                 let previousTaskName = batchName.split("/")[0]
                 let previousBatchName = batchName.split("/")[1]
                 if (!(batchName in batchesStatus)) {
@@ -427,7 +421,7 @@ export class SkeletonComponent implements OnInit {
             }
 
             /* To whitelist a previous batch its blacklist is picked up */
-            for (let batchName of this.settingsWorker.whitelist_batches) {
+            for (let batchName of this.worker.settings.whitelist_batches) {
                 let previousTaskName = batchName.split("/")[0]
                 let previousBatchName = batchName.split("/")[1]
                 if (!(batchName in batchesStatus)) {
@@ -830,7 +824,7 @@ export class SkeletonComponent implements OnInit {
                         }
                     }
                 }
-                const allControls = this.getControlGroup(control).controls;
+                const allControls = this.utilsService.getControlGroup(control).controls;
                 let currentControl = Object.keys(allControls).find(name => control === allControls[name])
                 let currentDimensionName = currentControl.split("_")[0]
                 for (let dimension of this.task.dimensions) if (dimension.name == currentDimensionName) if (dimension.justification.min_words) minWords = dimension.justification.min_words
@@ -1020,142 +1014,6 @@ export class SkeletonComponent implements OnInit {
         a.classList.remove('mat-radio-checked')
     }
 
-
-    /* |--------- ANNOTATOR ---------| */
-
-    /*
-     * This function intercepts the annotation event triggered by a worker by selecting a substring of the document's text.
-     * It cleans previous not finalized notes and checks if the new note which is about to be created overlaps with a previous finalized note;
-     * if it is not an overlap the new note is finally created and pushed inside the corresponding data structure. After such step
-     * the annotation button is enabled and the worker is allowed to choose the type of the created annotation
-     */
-    public performAnnotation(documentIndex: number, attributeIndex: number, notes: Array<Array<Note>>, changeDetector) {
-
-        /* If there is a leftover note (i.e., its type was not selected by current worker [it is "yellow"]) it is marked as deleted */
-        for (let note of notes[documentIndex]) {
-            if (note.option == "not_selected" && !note.deleted) {
-                note.ignored = true
-                this.removeAnnotation(documentIndex, notes[documentIndex].length - 1, changeDetector)
-            }
-        }
-
-        /* The hit element which triggered the annotation event is detected */
-        let domElement = null
-        let noteIdentifier = `document-${documentIndex}-attribute-${attributeIndex}`
-        if (this.deviceDetectorService.isMobile() || this.deviceDetectorService.isTablet()) {
-            const selection = document.getSelection();
-            if (selection) domElement = document.getElementById(noteIdentifier);
-        } else domElement = document.getElementById(noteIdentifier);
-
-        if (domElement) {
-
-            /* The container of the annotated element is cloned and the event bindings are attached again */
-            let elementContainerClone = domElement.cloneNode(true)
-            elementContainerClone.addEventListener('mouseup', () => this.performAnnotation(documentIndex, attributeIndex, notes, changeDetector))
-            elementContainerClone.addEventListener('touchend', () => this.performAnnotation(documentIndex, attributeIndex, notes, changeDetector))
-
-            /* the doHighlight function of the library is called and the flow is handled within two different callback */
-            doHighlight(domElement, false, {
-                /* the onBeforeHighlight event is called before the creation of the yellow highlight to encase the selected text */
-                onBeforeHighlight: (range: Range) => {
-                    let attributeIndex = parseInt(domElement.id.split("-")[3])
-                    let notesForDocument = notes[documentIndex]
-                    if (range.toString().trim().length == 0)
-                        return false
-                    let indexes = this.getSelectionCharacterOffsetWithin(domElement)
-                    /* To detect an overlap the indexes of the current annotation are check with respect to each annotation previously created */
-                    for (let note of notesForDocument) {
-                        if (note.deleted == false && note.attribute_index == attributeIndex) if (indexes["start"] < note.index_end && note.index_start < indexes["end"]) return false
-                    }
-                    return true
-                },
-                /* the onAfterHighlight event is called after the creation of the yellow highlight to encase the selected text */
-                onAfterHighlight: (range, highlight) => {
-                    if (highlight.length > 0) {
-                        if (highlight[0]["outerText"]) notes[documentIndex].push(new NoteStandard(documentIndex, attributeIndex, range, highlight))
-                        return true
-                    }
-                }
-            })
-
-        }
-
-        /* The annotation option button is enabled if there is an highlighted but not annotated note
-         * and is disabled if all the notes of the current document are annotated */
-        let notSelectedNotesCheck = false
-        for (let note of this.task.notes[documentIndex]) {
-            if (note.option == "not_selected" && note.deleted == false) {
-                notSelectedNotesCheck = true
-                this.task.annotationsDisabled[documentIndex] = false
-                break
-            }
-        }
-        if (!notSelectedNotesCheck) this.task.annotationsDisabled[documentIndex] = true
-
-        this.changeDetector.detectChanges()
-    }
-
-    /*
-     * This function finds the domElement of each note of a document using the timestamp of
-     * the note itself and sets the CSS styles of the chosen option
-     */
-    public handleAnnotationOption(value, documentIndex: number) {
-        this.task.notes[documentIndex].forEach((element, index) => {
-            if (index === this.task.notes[documentIndex].length - 1) {
-                if (!element.deleted) {
-                    element.color = value.color
-                    element.option = value.label
-                    let noteElement = <HTMLElement>document.querySelector(`[data-timestamp='${element.timestamp_created}']`)
-                    noteElement.style.backgroundColor = value.color
-                    noteElement.style.userSelect = "none"
-                    noteElement.style.webkitUserSelect = "none"
-                    noteElement.style.pointerEvents = "none"
-                    noteElement.style.touchAction = "none"
-                    noteElement.style.cursor = "no-drop"
-                }
-            }
-        })
-        /* The annotation option button of the current document is disabled; the processing is terminated  */
-        this.task.annotationsDisabled[documentIndex] = true
-        this.changeDetector.detectChanges()
-    }
-
-    /*
-     * This function removes a particular annotation when the worker clicks on the "Delete" button
-     * The corresponding object is not truly deleted, to preserve annotation behavior. It is simply marked as "deleted".
-     */
-    public removeAnnotation(documentIndex: number, noteIndex: number, changeDetector) {
-        /* The wanted note is selected and marked as deleted at the current timestamp */
-        let currentNote = this.task.notes[documentIndex][noteIndex]
-        currentNote.markDeleted()
-        currentNote.timestamp_deleted = Date.now()
-        /* The corresponding HTML element is selected by using note timestamp; its text is preserved
-         * and inserted back in DOM as a simple text node and the HTML is deleted */
-        let domElement = document.querySelector(`[data-timestamp='${currentNote.timestamp_created}']`)
-        let textNode = document.createTextNode(currentNote.current_text)
-        domElement.parentNode.insertBefore(textNode, domElement);
-        domElement.remove()
-        /* The element is then normalized to join each text node */
-        //document.querySelector(`.statement-${documentIndex}`).normalize()
-        changeDetector.detectChanges()
-    }
-
-    /*
-     * This function checks the presence of undeleted worker's notes. If there it as least one undeleted note, the summary table is shown
-     */
-    public checkUndeletedNotesPresence(notes) {
-        let undeletedNotes = false
-        for (let note of notes) {
-            if (note.deleted == false && note.option != "not_selected") {
-                undeletedNotes = true
-                break
-            }
-        }
-        return undeletedNotes
-    }
-
-
-
     /* |--------- QUALITY CHECKS ---------| */
 
     /*
@@ -1226,20 +1084,6 @@ export class SkeletonComponent implements OnInit {
             }
         }
 
-    }
-
-    public handleNotes(documentIndex: number) {
-        /* The yellow leftover notes are marked as deleted */
-        if (this.task.settings.annotator) {
-            if (this.task.notes[documentIndex]) {
-                if (this.task.notes[documentIndex].length > 0) {
-                    let element = this.task.notes[documentIndex][this.task.notes[documentIndex].length - 1]
-                    if (element.option == "not_selected" && !element.deleted) {
-                        this.removeAnnotation(documentIndex, this.task.notes[documentIndex].length - 1, this.changeDetector)
-                    }
-                }
-            }
-        }
     }
 
     public handleCountdowns(currentElement: number, documentIndex: number, action: string) {
@@ -1429,8 +1273,8 @@ export class SkeletonComponent implements OnInit {
         }
 
         this.computeTimestamps(currentElement, completedElement, action)
-        this.handleNotes(documentIndex)
         this.handleCountdowns(currentElement, documentIndex, action)
+        if(this.task.settings.annotator.type=='options') this.annotatorOptions.handleNotes(completedElement)
 
         let qualityChecks = null
         if (action == "Finish") {
@@ -1718,59 +1562,10 @@ export class SkeletonComponent implements OnInit {
 
     /* |--------- OTHER AMENITIES ---------| */
 
-    protected getControlGroup(c: AbstractControl): FormGroup | FormArray {
-        return c.parent;
-    }
-
-    /*
-     * This function retrieves the string associated to an error code thrown by a form field validator.
-     */
-    public checkFormControl(form: FormGroup, field: string, key: string): boolean {
-        return form.get(field).hasError(key);
-    }
-
     public showSnackbar(message, action, duration) {
         this.snackBar.open(message, action, {
             duration: duration,
         });
-    }
-
-    public capitalize(word: string) {
-        if (!word) return word;
-        let text = word.split("-")
-        let str = ""
-        for (word of text) str = str + " " + word[0].toUpperCase() + word.substr(1).toLowerCase();
-        return str.trim()
-    }
-
-
-    public getSelectionCharacterOffsetWithin(element) {
-        var start = 0;
-        var end = 0;
-        var doc = element.ownerDocument || element.document;
-        var win = doc.defaultView || doc.parentWindow;
-        var sel;
-        if (typeof win.getSelection != "undefined") {
-            sel = win.getSelection();
-            if (sel.rangeCount > 0) {
-                var range = win.getSelection().getRangeAt(0);
-                var preCaretRange = range.cloneRange();
-                preCaretRange.selectNodeContents(element);
-                preCaretRange.setEnd(range.startContainer, range.startOffset);
-                start = preCaretRange.toString().length;
-                preCaretRange.setEnd(range.endContainer, range.endOffset);
-                end = preCaretRange.toString().length;
-            }
-        } else if ((sel = doc.selection) && sel.type != "Control") {
-            var textRange = sel.createRange();
-            var preCaretTextRange = doc.body.createTextRange();
-            preCaretTextRange.moveToElementText(element);
-            preCaretTextRange.setEndPoint("EndToStart", textRange);
-            start = preCaretTextRange.text.length;
-            preCaretTextRange.setEndPoint("EndToEnd", textRange);
-            end = preCaretTextRange.text.length;
-        }
-        return {start: start, end: end};
     }
 
 

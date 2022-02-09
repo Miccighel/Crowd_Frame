@@ -10,14 +10,15 @@ import {NoteStandard} from "../../../../../models/annotators/notes_standard";
 import {DeviceDetectorService} from "ngx-device-detector";
 import {SectionService} from "../../../../../services/section.service";
 import {dom} from "@funktechno/texthighlighter/lib/Utils";
+import {UtilsService} from "../../../../../services/utils.service";
 
 @Component({
     selector: 'app-annotator-laws',
     templateUrl: './annotator-laws.component.html',
-    styleUrls: ['./annotator-laws.component.scss'],
+    styleUrls: ['./annotator-laws.component.scss', '../../../skeleton.shared.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AnnotatorLawsComponent implements OnInit {
+export class AnnotatorLawsComponent {
 
     /* Change detector to manually intercept changes on DOM */
     changeDetector: ChangeDetectorRef;
@@ -25,26 +26,23 @@ export class AnnotatorLawsComponent implements OnInit {
     /* Service to detect user's device */
     deviceDetectorService: DeviceDetectorService;
     sectionService: SectionService;
-
-    documentIndex: number
+    utilsService: UtilsService
 
     @Input() task: Task
-    @Input() attributeIndex: number
+    @Input() documentIndex: number
 
     colors: string[] = ["#F36060", "#DFF652", "#FFA500", "#FFFF7B"]
 
     constructor(
         changeDetector: ChangeDetectorRef,
         deviceDetectorService: DeviceDetectorService,
-        sectionService: SectionService
+        sectionService: SectionService,
+        utilsService: UtilsService
     ) {
         this.changeDetector = changeDetector
         this.deviceDetectorService = deviceDetectorService
         this.sectionService = sectionService
-        this.documentIndex = this.sectionService.documentIndex
-    }
-
-    ngOnInit(): void {
+        this.utilsService = utilsService
     }
 
     public performHighlighting(task: Task, changeDetector, event: Object, documentIndex: number, attributeIndex: number) {
@@ -68,7 +66,7 @@ export class AnnotatorLawsComponent implements OnInit {
                     let notesForDocument = this.task.notes[documentIndex]
                     if (range.toString().trim().length == 0)
                         return false
-                    let indexes = this.getSelectionCharacterOffsetWithin(domElement)
+                    let indexes = this.utilsService.getSelectionCharacterOffsetWithin(domElement)
                     /* To detect an overlap the indexes of the current annotation are check with respect to each annotation previously created */
                     for (let note of notesForDocument) {
                         if (note.deleted == false && note.attribute_index == attributeIndex) if (indexes["start"] < note.index_end && note.index_start < indexes["end"]) return false
@@ -107,7 +105,7 @@ export class AnnotatorLawsComponent implements OnInit {
                     let notesForDocument = this.task.notes[documentIndex]
                     if (range.toString().trim().length == 0)
                         return false
-                    let indexes = this.getSelectionCharacterOffsetWithin(domElement)
+                    let indexes = this.utilsService.getSelectionCharacterOffsetWithin(domElement)
                     /* To detect an overlap the indexes of the current annotation are check with respect to each annotation previously created */
                     for (let note of notesForDocument) {
                         if (note.deleted == false && note.attribute_index == attributeIndex) if (indexes["start"] < note.index_end && note.index_start < indexes["end"]) return false
@@ -502,32 +500,4 @@ export class AnnotatorLawsComponent implements OnInit {
         }
     }
 
-    public getSelectionCharacterOffsetWithin(element) {
-        var start = 0;
-        var end = 0;
-        var doc = element.ownerDocument || element.document;
-        var win = doc.defaultView || doc.parentWindow;
-        var sel;
-        if (typeof win.getSelection != "undefined") {
-            sel = win.getSelection();
-            if (sel.rangeCount > 0) {
-                var range = win.getSelection().getRangeAt(0);
-                var preCaretRange = range.cloneRange();
-                preCaretRange.selectNodeContents(element);
-                preCaretRange.setEnd(range.startContainer, range.startOffset);
-                start = preCaretRange.toString().length;
-                preCaretRange.setEnd(range.endContainer, range.endOffset);
-                end = preCaretRange.toString().length;
-            }
-        } else if ((sel = doc.selection) && sel.type != "Control") {
-            var textRange = sel.createRange();
-            var preCaretTextRange = doc.body.createTextRange();
-            preCaretTextRange.moveToElementText(element);
-            preCaretTextRange.setEndPoint("EndToStart", textRange);
-            start = preCaretTextRange.text.length;
-            preCaretTextRange.setEndPoint("EndToEnd", textRange);
-            end = preCaretTextRange.text.length;
-        }
-        return {start: start, end: end};
-    }
 }

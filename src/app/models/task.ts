@@ -210,7 +210,7 @@ export class Task {
     }
 
     public getElementsNumber() {
-        return this.questionnaireAmountStart + this.questionnaireAmount + this.questionnaireAmountEnd
+        return this.questionnaireAmountStart + this.documentsAmount + this.questionnaireAmountEnd
     }
 
     public loadAccessCounter() {
@@ -446,6 +446,20 @@ export class Task {
             check = true
         }
         return check
+    }
+
+    /*
+     * This function checks the presence of undeleted worker's notes. If there it as least one undeleted note, the summary table is shown
+     */
+    public checkUndeletedNotesPresence(notes) {
+        let undeletedNotes = false
+        for (let note of notes) {
+            if (note.deleted == false && note.option != "not_selected") {
+                undeletedNotes = true
+                break
+            }
+        }
+        return undeletedNotes
     }
 
     public updateCountdownTime(position: number = null, attribute: string = null) {

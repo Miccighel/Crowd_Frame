@@ -2,52 +2,6 @@ h3 {
   text-align: center;
 }
 
-.statement {
-  margin-bottom: 1.5%;
-  border: 0;
-  box-shadow: 0 0 0 0;
-  border-radius: 0;
-  background-color: #eaeaea;
-  //position:-webkit-sticky;
-  //position:sticky;
-  //top: 42px;
-  //z-index: 1000;
-}
-
-.statement ul {
-  padding-left: 2%;
-  list-style: none;
-}
-
-.statement ul li {
-  padding-top: 2%;
-  padding-bottom: 2%;
-  font-size: 1.1em;
-}
-
-.statement {
-  padding-top: 1%;
-  padding-bottom: 1%;
-
-  .attribute {
-    padding: 1% 1% 1% 2%;
-    font-size: 1.2em;
-
-    p {
-      margin: 0;
-    }
-  }
-}
-
-.statement mat-expansion-panel-header {
-  margin-bottom: 1.5%;
-}
-
-.statement .mat-expansion-panel-header-title {
-  display: inline;
-  width: 20%;
-  flex-grow: 0;
-}
 
 /* LAWS ANNOTATION STYLES */
 

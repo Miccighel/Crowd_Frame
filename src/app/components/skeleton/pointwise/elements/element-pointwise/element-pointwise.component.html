@@ -1,0 +1,9 @@
+<div class="statement" *ngIf="(this.task.settings.modality=='pointwise')">
+    <ng-container *ngFor="let attribute of this.task.settings.attributes; let k=index">
+        <div *ngIf="attribute.show" class="attribute">
+            <p class="attribute-label">
+                <strong>{{attribute.name_pretty}}</strong>: {{(this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior == "hide_attributes") ? "---------- text_hidden ----------" : this.task.documents[this.documentIndex][attribute.name]}}
+            </p>
+        </div>
+    </ng-container>
+</div>

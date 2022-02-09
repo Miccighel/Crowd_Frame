@@ -1,6 +1,7 @@
 <ng-container *ngFor="let attribute of this.task.settings.attributes; let k=index">
-    <div class="statement" *ngIf="attribute.annotate">
-        <span class="attribute-label">
+    <div class="statement" *ngIf="attribute.annotate && attribute.show">
+        <div class="attribute">
+            <span class="attribute-label">
             <h3>{{attribute.name_pretty}}</h3>
             <ul>
                 <li class="law_content_li">
@@ -15,6 +16,7 @@
                 </li>
             </ul>
         </span>
+        </div>
     </div>
     <ng-container *ngIf="attribute.annotate">
         <!-- Annotation recap -->
