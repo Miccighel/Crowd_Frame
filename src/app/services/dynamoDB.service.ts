@@ -82,41 +82,18 @@ export class DynamoDBService {
         return await docClient.scan(params).promise()
     }
 
-    public async insertACLRecordWorkerID(config, worker, current_try, updateArrivalTime, updateCompletionTime) {
+    public async insertACLRecordWorkerID(config, worker, current_try) {
         let params = {
             TableName: config["table_acl_name"],
             Item: {
-                try: {S: current_try.toString()}
+                try_current: {}
             }
         };
-        if (updateArrivalTime) {
-            params["Item"]['time_arrival'] = {}
-            params["Item"]['time_arrival']['S'] = new Date().toUTCString()
-        }
-
-        if (updateCompletionTime) {
-            params["Item"]['time_completion'] = {}
-            params["Item"]['time_completion']['S'] = new Date().toUTCString()
-        }
         for (const [param, value] of Object.entries(worker.paramsFetched)) {
             params["Item"][param] = {}
             params["Item"][param]['S'] = value
         }
-        return await this.loadDynamoDB(config).putItem(params).promise();
-    }
-
-    public async insertACLRecordUnitId(config, entry, current_try, updateArrivalTime = false) {
-        let params = {
-            TableName: config["table_acl_name"],
-            Item: {}
-        };
-        for (const [param, value] of Object.entries(entry)) {
-            params["Item"][param] = {}
-            params["Item"][param]['S'] = value
-        }
-        params["Item"]['try']['S'] = current_try.toString()
-        if (updateArrivalTime)
-            params["Item"]['time_arrival']['S'] = new Date().toUTCString()
+        params["Item"]['try_current']['S'] = current_try.toString()
         return await this.loadDynamoDB(config).putItem(params).promise();
     }
 

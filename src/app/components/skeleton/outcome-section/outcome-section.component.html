@@ -1,17 +1,20 @@
 <!-- Retry section - shown when the worker does not pass the quality checks but has some tries left -->
 <div class="outcome-section">
     <mat-card>
-        <mat-card-title class="retry-title" *ngIf="this.taskAllowed && this.taskCompleted && this.taskFailed && !this.taskSuccessful && (this.triesAllowed>0 && this.tryCurrent <= this.triesAllowed)">
+        <mat-card-title class="retry-title" *ngIf="this.sectionService.taskAllowed && this.sectionService.taskCompleted && this.sectionService.taskFailed && !this.sectionService.taskSuccessful && (this.triesAllowed>0 && this.tryCurrent <= this.triesAllowed)">
             <h3>Failure, but...</h3>
         </mat-card-title>
-        <mat-card-title class="failure-title" *ngIf="!taskAllowed || taskAllowed && taskCompleted && taskFailed && !taskSuccessful && (triesAllowed<=0 || (triesAllowed>0 && tryCurrent > triesAllowed))">
+        <mat-card-title class="failure-title" *ngIf="!this.sectionService.taskAllowed && !this.sectionService.taskOverbooking || this.sectionService.taskAllowed && this.sectionService.taskCompleted && this.sectionService.taskFailed && !this.sectionService.taskSuccessful && (triesAllowed<=0 || (triesAllowed>0 && tryCurrent > triesAllowed))">
             <h4>Failure</h4>
         </mat-card-title>
-        <mat-card-title class="success-title" *ngIf="taskAllowed && taskCompleted && !taskFailed && taskSuccessful && (triesAllowed>0 && tryCurrent <= triesAllowed)">
+        <mat-card-title class="overbooking-title" *ngIf="!this.sectionService.taskAllowed && this.sectionService.taskOverbooking || this.sectionService.taskAllowed && this.sectionService.taskCompleted && this.sectionService.taskFailed && !this.sectionService.taskSuccessful && (triesAllowed<=0 || (triesAllowed>0 && tryCurrent > triesAllowed))">
+            <h4>Overbooking</h4>
+        </mat-card-title>
+        <mat-card-title class="success-title" *ngIf="this.sectionService.taskAllowed && this.sectionService.taskCompleted && !this.sectionService.taskFailed && this.sectionService.taskSuccessful && (triesAllowed>0 && tryCurrent <= triesAllowed)">
             <h4>Success</h4>
         </mat-card-title>
 
-        <ng-container *ngIf="!taskAllowed">
+        <ng-container *ngIf="!this.sectionService.taskAllowed && !this.sectionService.taskOverbooking">
             <mat-card-content *ngIf="this.messages" id="not-allowed-section">
                 <h2>You are not allowed to participate to this experiment.</h2>
                 <p class="text-desc">Please, read the messages shown below. If you believe that this is an error, please contact us. Sorry for the inconvenience.</p>
@@ -21,37 +24,44 @@
             <mat-card-content *ngIf="!this.messages">
                 <h2>You have already started this task without finishing it, or you have already participated to a variant of this experiment deployed in the past.</h2>
                 <p class="text-desc">
-                    You are not allowed to take a part in this experiment. If you believe that this is an error, please contact us. Sorry for the inconvenience.
+                    You are not allowed to take part in this experiment. If you believe that this is an error, please contact us. Sorry for the inconvenience.
                 </p>
             </mat-card-content>
         </ng-container>
+        <ng-container *ngIf="!this.sectionService.taskAllowed && this.sectionService.taskOverbooking">
+            <mat-card-content>
+                <h2>Every HIT of the current task has already been assigned to a worker.</h2>
+                <p class="text-desc">
+                    You are not allowed to take part in this experiment. If you reached this point, you have been recruited wrongly. Please, contact us. Sorry for the inconvenience.
+                </p>
+            </mat-card-content>
+        </ng-container>
+        <mat-card-content *ngIf="this.sectionService.taskAllowed">
 
-        <mat-card-content *ngIf="taskAllowed">
-
-            <p *ngIf="taskAllowed && taskCompleted && taskFailed && !taskSuccessful && (triesAllowed>0 && tryCurrent <= triesAllowed)" class="text-desc">
+            <p *ngIf="this.sectionService.taskAllowed && this.sectionService.taskCompleted && this.sectionService.taskFailed && !this.sectionService.taskSuccessful && (triesAllowed>0 && tryCurrent <= triesAllowed)" class="text-desc">
                 Your work was not good enough, so you are not allowed to submit this task.
                 As stated in the instructions, some quality checks are performed in this task.
                 You see this message because you have not passed one or more of such checks.
                 Nevertheless, you are allowed to retry this task. To do so, please click on the reset button below.
             </p>
-            <p *ngIf="taskAllowed && taskCompleted && taskFailed && !taskSuccessful && (triesAllowed<=0 || (triesAllowed>0 && tryCurrent > triesAllowed))" class="text-desc">
+            <p *ngIf="this.sectionService.taskAllowed && this.sectionService.taskCompleted && this.sectionService.taskFailed && !this.sectionService.taskSuccessful && (triesAllowed<=0 || (triesAllowed>0 && tryCurrent > triesAllowed))" class="text-desc">
                 Your work was not good enough, so you are not allowed to submit this task.
                 As stated in the instructions, some quality checks are performed in this task.
                 You see this message because you have not passed one or more of such checks.
             </p>
 
-            <ng-container *ngIf="this.platformName=='mturk' && taskAllowed && taskCompleted && !taskFailed && taskSuccessful && (triesAllowed>0 && tryCurrent <= triesAllowed)">
+            <ng-container *ngIf="this.platformName=='mturk' && this.sectionService.taskAllowed && this.sectionService.taskCompleted && !this.sectionService.taskFailed && this.sectionService.taskSuccessful && (triesAllowed>0 && tryCurrent <= triesAllowed)">
                 <p class="text-desc">
                     Congratulations, you have successfully completed this task. To be paid you now have to copy your output token (shown below)
                     back to the Amazon Mechanical Turk task page.
                 </p>
-
                 <div>
                     <h1>{{tokenOutput}}</h1>
                 </div>
             </ng-container>
 
-            <ng-container *ngIf="this.platformName=='prolific' && taskAllowed && taskCompleted && !taskFailed && taskSuccessful && (triesAllowed>0 && tryCurrent <= triesAllowed)">
+            <ng-container
+                    *ngIf="this.platformName=='prolific' && this.sectionService.taskAllowed && this.sectionService.taskCompleted && !this.sectionService.taskFailed && this.sectionService.taskSuccessful && (triesAllowed>0 && tryCurrent <= triesAllowed)">
                 <p class="text-desc">
                     Congratulations, you have successfully completed this task. To be paid you just have to click the completion button (shown below).
                 </p>
@@ -60,7 +70,7 @@
                 </div>
             </ng-container>
 
-            <div *ngIf="taskAllowed && taskCompleted && taskFailed && !taskSuccessful && (triesAllowed>0 && tryCurrent <= triesAllowed)">
+            <div *ngIf="this.sectionService.taskAllowed && this.sectionService.taskCompleted && this.sectionService.taskFailed && !this.sectionService.taskSuccessful && (triesAllowed>0 && tryCurrent <= triesAllowed)">
                 <button mat-raised-button color="primary" (click)="this.performReset.emit(true)">Reset</button>
             </div>
 

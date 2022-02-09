@@ -235,6 +235,7 @@ export class SkeletonComponent implements OnInit {
                         this.worker.setParameter('folder', this.worker.folder)
                         this.worker.setParameter('paid', 'false')
                         this.worker.setParameter('in_progress', 'false')
+                        this.worker.setParameter('time_arrival', new Date().toUTCString())
                         /* Some worker properties are loaded using ngxDeviceDetector npm package capabilities... */
                         this.worker.updateProperties('ngxdevicedetector', this.deviceDetectorService.getDeviceInfo())
                         /* ... or the simple Navigator DOM's object */
@@ -268,7 +269,7 @@ export class SkeletonComponent implements OnInit {
                                         /* Call to the previous function */
                                         assignHit(this.worker, hit, this.tokenInput)
                                         /* The worker's ACL record is then updated */
-                                        await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker, this.task.tryCurrent, true, false)
+                                        await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker, this.task.tryCurrent)
                                         /* As soon as a HIT is assigned to the current worker the search can be stopped */
                                         hitAssigned = true
                                         break
@@ -314,10 +315,10 @@ export class SkeletonComponent implements OnInit {
                                             assignHit(this.worker, hitFound, this.tokenInput)
                                             hitAssigned = true
                                             /* The record for the current worker is updated */
-                                            await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker, this.task.tryCurrent, true, false)
+                                            await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker, this.task.tryCurrent)
                                             /* The record for the worker that abandoned/returned the task is updated */
                                             aclEntry['in_progress'] = 'false'
-                                            await this.dynamoDBService.insertACLRecordUnitId(this.configService.environment, aclEntry, this.task.tryCurrent, false)
+                                            await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, aclEntry, this.task.tryCurrent)
                                             /* As soon a slot for the current HIT is freed and assigned to the current worker the search can be stopped */
                                             break
                                         }
@@ -341,7 +342,7 @@ export class SkeletonComponent implements OnInit {
                                     for (let hit of hits) {
                                         if (hit['unit_id'] == aclEntry['unit_id']) {
                                             this.tokenInput.setValue(hit['token_input'])
-                                            await this.dynamoDBService.insertACLRecordUnitId(this.configService.environment, aclEntry, this.task.tryCurrent, true)
+                                            await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, aclEntry, this.task.tryCurrent)
                                             hitAssigned = true
                                             break
                                         }
@@ -351,13 +352,12 @@ export class SkeletonComponent implements OnInit {
                             }
 
                             /* If after the whole workflow still a HIT has not been assigned to the current worker, we ran out of this */
-                            // TODO: This needs to be verified
                             if (!hitAssigned) {
-                                console.log("There")
+                                this.sectionService.taskOverbooking = true
                                 taskAllowed = false
                             }
 
-                        } else await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker, this.task.tryCurrent, true, false)
+                        } else await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker, this.task.tryCurrent)
 
                         /* We launch a call to Cloudflare to trace the worker */
                         if (this.settingsWorker.analysis) {
@@ -2221,12 +2221,14 @@ export class SkeletonComponent implements OnInit {
                 if (this.sectionService.taskSuccessful) {
                     this.worker.setParameter('in_progress', 'false')
                     this.worker.setParameter('paid', 'true')
-                    await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker, this.task.tryCurrent, false, true)
+                    this.worker.setParameter('time_completion', new Date().toUTCString())
+                    await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker, this.task.tryCurrent)
                 } else {
                     if (this.task.settings.allowed_tries > this.task.tryCurrent) {
                         this.worker.setParameter('in_progress', 'false')
                         this.worker.setParameter('paid', 'false')
-                        await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker, this.task.tryCurrent, false, true)
+                        this.worker.setParameter('time_completion', new Date().toUTCString())
+                        await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker, this.task.tryCurrent)
                     }
                 }
             }

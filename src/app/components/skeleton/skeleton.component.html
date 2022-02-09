@@ -58,10 +58,6 @@
     <app-outcome-section
             *ngIf="!this.sectionService.taskAllowed"
             [platformName]="this.configService.environment.platformName"
-            [taskAllowed]="this.sectionService.taskAllowed"
-            [taskSuccessful]="this.sectionService.taskSuccessful"
-            [taskFailed]="this.sectionService.taskFailed"
-            [taskCompleted]="this.sectionService.taskCompleted"
             [triesAllowed]="this.task.settings.allowed_tries"
             [tryCurrent]="this.task.tryCurrent"
             [messages]="this.task.settings.messages"
@@ -910,10 +906,6 @@
         <ng-template matStepLabel> Outcome</ng-template>
         <app-outcome-section
                 [platformName]="this.configService.environment.platformName"
-                [taskAllowed]="this.sectionService.taskAllowed"
-                [taskSuccessful]="this.sectionService.taskSuccessful"
-                [taskFailed]="this.sectionService.taskFailed"
-                [taskCompleted]="this.sectionService.taskCompleted"
                 [triesAllowed]="this.task.settings.allowed_tries"
                 [tryCurrent]="this.task.tryCurrent"
                 [messages]="this.task.settings.messages"

@@ -14,6 +14,7 @@ export class SectionService{
   private _taskCompleted: boolean;
   private _taskSuccessful: boolean;
   private _taskFailed: boolean;
+  private _taskOverbooking: boolean;
 
   private _checkCompleted: boolean;
   private _taskInstructionsRead: boolean;
@@ -60,6 +61,11 @@ export class SectionService{
 
   set taskFailed(value: boolean) {
     this._taskFailed = value;
+    this.updateSection()
+  }
+
+  set taskOverbooking(value: boolean) {
+    this._taskOverbooking = value;
     this.updateSection()
   }
 
@@ -116,6 +122,10 @@ export class SectionService{
 
   get taskFailed(): boolean {
     return this._taskFailed;
+  }
+
+  get taskOverbooking(): boolean {
+    return this._taskOverbooking;
   }
 
   get checkCompleted(): boolean {

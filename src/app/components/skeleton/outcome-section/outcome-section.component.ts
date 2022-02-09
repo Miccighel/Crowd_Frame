@@ -1,5 +1,6 @@
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {FormBuilder, FormControl, FormGroup} from "@angular/forms";
+import {SectionService} from "../../../services/section.service";
 
 @Component({
     selector: 'app-outcome-section',
@@ -10,6 +11,8 @@ export class OutcomeSectionComponent implements OnInit {
 
     /* Angular Reactive Form builder (see https://angular.io/guide/reactive-forms) */
     formBuilder: FormBuilder;
+    /* Service to track current section */
+    sectionService: SectionService
 
     /* |--------- COMMENT ELEMENTS - DECLARATION ---------| */
 
@@ -19,10 +22,6 @@ export class OutcomeSectionComponent implements OnInit {
     commentSent: boolean;
 
     @Input() platformName: string
-    @Input() taskAllowed: boolean
-    @Input() taskSuccessful: boolean
-    @Input() taskCompleted: boolean
-    @Input() taskFailed: boolean
     @Input() triesAllowed: number
     @Input() tryCurrent: number
     @Input() messages: Array<string>
@@ -32,9 +31,13 @@ export class OutcomeSectionComponent implements OnInit {
     @Output() performReset: EventEmitter<boolean>;
     @Output() commentEmitter: EventEmitter<string>;
 
-    constructor(formBuilder: FormBuilder) {
+    constructor(
+        formBuilder: FormBuilder,
+        sectionService: SectionService
+    ) {
 
-        this.formBuilder = formBuilder;
+        this.formBuilder = formBuilder
+        this.sectionService = sectionService
 
         this.performReset = new EventEmitter<boolean>()
         this.commentEmitter = new EventEmitter<string>()
