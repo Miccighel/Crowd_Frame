@@ -2264,10 +2264,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:~16.11.21":
-  version: 16.11.21
-  resolution: "@types/node@npm:16.11.21"
-  checksum: 75b679dc6375cf09bc14a2d1b344be6f3fd8ea50f212b0d60970dc9e175cef45e44c284c716eb9e766ffa52d0c83b689adb3d1911b6dd8649c560b8f77442a22
+"@types/node@npm:~16.11.22":
+  version: 16.11.22
+  resolution: "@types/node@npm:16.11.22"
+  checksum: 9d879b9b0427e21a11e3162917553d5bc3c7d68d1ef4aa631512144801fe59bc3b4da5965e7ea7c2db99394487b543d4f2499b318e12392574802ac4f975b7c4
   languageName: node
   linkType: hard
 
@@ -3550,13 +3550,13 @@ __metadata:
     "@angular/router": ~13.2.2
     "@funktechno/texthighlighter": ^2.1.2
     "@kolkov/angular-editor": ^2.0.0
-    "@types/node": ~16.11.21
+    "@types/node": ~16.11.22
     aws-sdk: ^2.1071.0
     crypto-es: ^1.2.7
     ngx-color-picker: ^12.0.0
-    ngx-countdown: ^12.0.1
-    ngx-device-detector: ^2.2.1
-    ngx-file-helpers: ^6.0.1
+    ngx-countdown: ^13.0.0
+    ngx-device-detector: ^3.0.0
+    ngx-file-helpers: ^7.0.0
     ngx-ui-loader: ^11.0.0
     rxjs: ^7.4.0
     titleize: ^3.0.0
@@ -6179,36 +6179,36 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ngx-countdown@npm:^12.0.1":
-  version: 12.0.1
-  resolution: "ngx-countdown@npm:12.0.1"
+"ngx-countdown@npm:^13.0.0":
+  version: 13.0.0
+  resolution: "ngx-countdown@npm:13.0.0"
   dependencies:
-    tslib: ^2.1.0
-  checksum: d3c87b703dcd95d9e268bd65fc5453f8b067f8b08f0bb74d958833cb16e1def39e4792700eb4fc21aabeef85287ac3a6008350a1dd2e54288166bb336a5dc02a
+    tslib: ^2.3.0
+  checksum: 5884a36a64b5051ee7e81b006a300e4b8cb54cf77f5e699688d1def5b0f9a4c1ed81194e4b90b81c0d20a5c09433de42b348f36381be22d74f05cc196098f7f7
   languageName: node
   linkType: hard
 
-"ngx-device-detector@npm:^2.2.1":
-  version: 2.2.1
-  resolution: "ngx-device-detector@npm:2.2.1"
+"ngx-device-detector@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "ngx-device-detector@npm:3.0.0"
   dependencies:
     tslib: ^2.0.0
   peerDependencies:
     "@angular/common": ">=7.0.0 <=13.0.0 || ^13.0.0"
     "@angular/core": ">=7.0.0 <=13.0.0 || ^13.0.0"
-  checksum: 7856e1a71225f1c3005fcbcc9b42c0ff3d367f1d624f7ddfa65e66584eead499cafe312c3a1cdf4ddf20201fbdd6f1fb1573cffeb7b50331766ad6ffc30d951f
+  checksum: 5ce62e88d404b9ebb64a220eb5db6e2437b6fdb63faf7dd72df3242a770bc3b88088fec0c4022d1cc0c2376633a733667bbf9b51d4bca88e404a236da2f8861a
   languageName: node
   linkType: hard
 
-"ngx-file-helpers@npm:^6.0.1":
-  version: 6.0.1
-  resolution: "ngx-file-helpers@npm:6.0.1"
+"ngx-file-helpers@npm:^7.0.0":
+  version: 7.0.0
+  resolution: "ngx-file-helpers@npm:7.0.0"
   dependencies:
-    tslib: ^2.1.0
+    tslib: ^2.3.0
   peerDependencies:
-    "@angular/common": ^12.0.0
-    "@angular/core": ^12.0.0
-  checksum: 1a61f3771170c178dcd8cc33119451d25ce90823c6b72ee4ec78d1f326ebd2fdf63915e115b58a022cb76e5068b7f26344dcd7a77c4f6d26d5c7708796af107c
+    "@angular/common": ^13.0.0
+    "@angular/core": ^13.0.0
+  checksum: edbdfc8919f9202f9e9a3b6c94b77591fb0a38669a4913d971d451a8ad2d69a6f3495bcb7a16e0c5504618bf10cc3714eb2f767273ac2372b579ff61ec5d2614
   languageName: node
   linkType: hard
 
@@ -8394,7 +8394,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tslib@npm:2.3.1, tslib@npm:^2.0.0, tslib@npm:^2.1.0, tslib@npm:^2.3.0":
+"tslib@npm:2.3.1, tslib@npm:^2.0.0, tslib@npm:^2.3.0":
   version: 2.3.1
   resolution: "tslib@npm:2.3.1"
   checksum: de17a98d4614481f7fcb5cd53ffc1aaf8654313be0291e1bfaee4b4bb31a20494b7d218ff2e15017883e8ea9626599b3b0e0229c18383ba9dce89da2adf15cb9
