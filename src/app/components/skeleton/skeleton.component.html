@@ -127,42 +127,38 @@
                         <div class="statement" *ngIf="(this.task.settings.modality=='pointwise')">
                             <ng-container *ngFor="let attribute of this.task.settings.attributes; let k=index">
                                 <div *ngIf="attribute.show" class="attribute">
-                                    <p>
-                                        <span class="attribute-label" *ngIf="!this.task.settings.annotator">
+                                        <p class="attribute-label" *ngIf="!this.task.settings.annotator">
                                             <strong>{{attribute.name_pretty}}</strong>: {{(this.task.countdownsExpired[i] && this.task.settings.countdown_behavior == "hide_attributes") ? "---------- text_hidden ----------" : document[attribute.name]}}
-                                        </span>
-                                        <span class="attribute-label" *ngIf="this.task.settings.annotator && !attribute.annotate">
+                                        </p>
+                                        <p class="attribute-label" *ngIf="this.task.settings.annotator && !attribute.annotate">
                                             <strong>{{attribute.name_pretty}}</strong>: {{(this.task.countdownsExpired[i] && this.task.settings.countdown_behavior == "hide_attributes") ? "---------- text_hidden ----------" : document[attribute.name]}}
-                                        </span>
-                                        <span class="attribute-label" *ngIf="this.task.settings.annotator && this.task.settings.annotator.type=='options'&& attribute.annotate">
+                                        </p>
+                                        <p class="attribute-label" *ngIf="this.task.settings.annotator && this.task.settings.annotator.type=='options'&& attribute.annotate">
                                             <strong>{{attribute.name_pretty}}</strong>:
                                             <span id="document-{{i}}-attribute-{{k}}"
                                                   (mouseup)="performAnnotation(i, k, this.task.notes, this.changeDetector)"
                                                   (touchend)="performAnnotation(i, k, this.task.notes, this.changeDetector)">
                                                 {{(this.task.countdownsExpired[i] && this.task.settings.countdown_behavior == "hide_attributes") ? "---------- text_hidden ----------" : document[attribute.name]}}
                                             </span>
-                                        </span>
+                                        </p>
                                         <span class="attribute-label" *ngIf="this.task.settings.annotator && this.task.settings.annotator.type=='laws'&& attribute.annotate">
                                             <strong>{{attribute.name_pretty}}</strong>:
-                                            <span id="document-{{i}}-attribute-{{k}}">TO BE IMPLEMENTED</span>
+                                            <ul>
+                                                <li class="law_content_li">
+                                                    <div class="statement-div">
+                                                        <span id="document-{{i}}-attribute-{{k}}" style="white-space: pre-wrap;" #statementText class="statement-text"
+                                                              (mouseup)="performHighlighting(this.task, this.changeDetector, $event, i, k)"
+                                                              (touchend)="performHighlighting(this.task, this.changeDetector, $event, i, k)">
+                                                            {{this.checkEnabledNotes(i)}}{{(this.task.countdownsExpired[i] && this.task.settings.countdown_behavior == "hide_attributes") ? "---------- text_hidden ----------" : document[attribute.name]}}
+                                                        </span>
+                                                    </div>
+                                                </li>
+                                            </ul>
+
                                         </span>
-                                    </p>
+
                                 </div>
                             </ng-container>
-                        </div>
-                        <div class="statement" *ngIf="(this.task.settings.annotator && this.task.settings.annotator.type=='laws')">
-                            <ul>
-                                <li class="law_content_li">
-                                    <div class="statement-div">
-                                        <span style="white-space: pre-wrap;" #statementText id="statement-{{i}}"
-                                              (mouseup)="performHighlighting(this.changeDetector, $event, i, this.task.notes, this.task.settings.annotator)"
-                                              (touchend)="performHighlighting(this.changeDetector, $event, i, this.task.notes, this.task.settings.annotator)"
-                                              class="statement-text">{{this.checkEnabledNotes(i)}}
-                                            {{(this.task.countdownsExpired[i] && this.task.settings.countdown_behavior == "hide_attributes") ? "---------- text_hidden ----------" : document.article_text}}
-                                        </span>
-                                    </div>
-                                </li>
-                            </ul>
                         </div>
 
                         <ng-container *ngIf="(this.task.settings.modality=='pairwise')">
@@ -364,8 +360,8 @@
                                                         <strong>Evidenzia il riferimento interno:</strong>
                                                     </div>
                                                     <div class="inner-annotation-reference" id="note-current-{{noteIndex}}.{{i}}">
-                                                        <span (mouseup)="performInnerHighlighting(this.changeDetector, $event, i, noteIndex, note.innerAnnotations, this.task.settings.annotator)"
-                                                              (touchend)="performInnerHighlighting(this.changeDetector, $event, i, noteIndex, note.innerAnnotations, this.task.settings.annotator)"
+                                                        <span (mouseup)="performInnerHighlighting(this.task, this.changeDetector, $event, i, noteIndex)"
+                                                              (touchend)="performInnerHighlighting(this.task, this.changeDetector, $event, i, noteIndex)"
                                                               id="references-{{noteIndex}}.{{i}}">{{note.current_text}}</span>
                                                     </div>
                                                     <div *ngFor="let innerNotes of note.innerAnnotations; let innerNoteIndex = index">

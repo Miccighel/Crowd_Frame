@@ -1188,36 +1188,32 @@ export class SkeletonComponent implements OnInit {
         return undeletedNotes
     }
 
-    public performHighlighting(changeDetector, event: Object, documentIndex: number, notes, annotator: Annotator) {
+    public performHighlighting(task: Task, changeDetector, event: Object, documentIndex: number, attributeIndex: number) {
         let domElement = null
         if (this.deviceDetectorService.isMobile() || this.deviceDetectorService.isTablet()) {
             const selection = document.getSelection();
             if (selection) {
-                domElement = document.getElementById(`statement-${documentIndex}`);
+                domElement = document.getElementById(`document-${documentIndex}-attribute-${attributeIndex}`);
             }
         } else {
-            domElement = document.getElementById(`statement-${documentIndex}`);
+            domElement = document.getElementById(`document-${documentIndex}-attribute-${attributeIndex}`);
         }
         if (domElement) {
             let first_clone = document.querySelectorAll(`.statement-text`)[documentIndex].cloneNode(true)
-            first_clone.addEventListener('mouseup', (e) => this.performHighlighting(changeDetector, event, documentIndex, notes, annotator))
-            first_clone.addEventListener('touchend', (e) => this.performHighlighting(changeDetector, event, documentIndex, notes, annotator))
+            first_clone.addEventListener('mouseup', (e) => this.performHighlighting(task, changeDetector, event, documentIndex, attributeIndex))
+            first_clone.addEventListener('touchend', (e) => this.performHighlighting(task, changeDetector, event, documentIndex, attributeIndex))
             const highlightMade = doHighlight(domElement, true, {
                 onAfterHighlight(range, highlight) {
                     const selection = document.getSelection();
                     if (highlight.length > 0) {
                         if (highlight[0]["outerText"]) {
                             selection.empty()
-                            let notesForDocument = notes[documentIndex]
+                            let notesForDocument = task.notes[documentIndex]
                             range["endContainer"]["children"]
                             let newAnnotation = new NoteLaws(documentIndex, range, highlight)
                             let noteAlreadyFound = false
                             for (let note of notesForDocument) {
                                 if (!note.deleted && newAnnotation.current_text.includes(note.current_text)) {
-                                    /* let element = document.querySelectorAll(`.statement-text`)[documentIndex]
-                                    document.querySelectorAll(".law_content_li")[documentIndex].append(first_clone)
-                                    element.remove()
-                                    return true */
                                     note.deleted = true
                                 }
                             }
@@ -1229,9 +1225,9 @@ export class SkeletonComponent implements OnInit {
                                         if (newAnnotation.current_text.length > notesForDocument[index].current_text.length) notesForDocument.splice(index, 1);
                                     }
                                 }
-                                notes[documentIndex] = notesForDocument
+                                task.notes[documentIndex] = notesForDocument
                                 notesForDocument.unshift(newAnnotation)
-                                notes[documentIndex] = notesForDocument
+                                task.notes[documentIndex] = notesForDocument
                                 changeDetector.detectChanges()
                                 return true
                             }
@@ -1246,7 +1242,7 @@ export class SkeletonComponent implements OnInit {
         }
     }
 
-    public performInnerHighlighting(changeDetector, event: Object, documentIndex: number, noteIndex: number, notes, annotator: Annotator) {
+    public performInnerHighlighting(task: Task, changeDetector, event: Object, documentIndex: number, noteIndex: number) {
         let domElement = null
         if (this.deviceDetectorService.isMobile() || this.deviceDetectorService.isTablet()) {
             const selection = document.getSelection();
@@ -1258,15 +1254,15 @@ export class SkeletonComponent implements OnInit {
         }
         if (domElement) {
             let first_clone = document.getElementById(`references-${noteIndex}.${documentIndex}`).cloneNode(true)
-            first_clone.addEventListener('mouseup', (e) => this.performInnerHighlighting(changeDetector, event, documentIndex, noteIndex, notes, annotator))
-            first_clone.addEventListener('touchend', (e) => this.performInnerHighlighting(changeDetector, event, documentIndex, noteIndex, notes, annotator))
+            first_clone.addEventListener('mouseup', (e) => this.performInnerHighlighting(task, changeDetector, event, documentIndex, noteIndex))
+            first_clone.addEventListener('touchend', (e) => this.performInnerHighlighting(task, changeDetector, event, documentIndex, noteIndex))
             const highlightMade = doHighlight(domElement, true, {
                 onAfterHighlight(range, highlight) {
                     const selection = document.getSelection();
                     if (highlight.length > 0) {
                         if (highlight[0]["outerText"]) {
                             selection.empty()
-                            let notesForDocument = notes
+                            let notesForDocument = task.notes[documentIndex]
                             range["endContainer"]["children"]
                             let newAnnotation = new NoteLaws(documentIndex, range, highlight)
                             let noteAlreadyFound = false
