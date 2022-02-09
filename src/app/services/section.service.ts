@@ -80,7 +80,7 @@ export class SectionService{
   }
 
   set documentIndex(value: number) {
-    this._documentIndex = value;
+    this._documentIndex = value - this.questionnaireAmount;
     this.updateSection()
   }
 

@@ -31,6 +31,7 @@ export class Task {
 
     /* Array of documents */
     documents: Array<Document>;
+    currentDocument: number
 
     /* Array of task instructions. Each object represents a paragraph with an optional caption made of steps */
     instructionsGeneral: Array<Instruction>;
@@ -113,20 +114,21 @@ export class Task {
             this.searchEngineSelectedResponses[index]["amount"] = 0;
         }
         if (this.settings.annotator) {
+            this.notesDone = new Array<boolean>();
+            this.annotationsDisabled = new Array<boolean>();
             switch (this.settings.annotator.type) {
                 case "options":
                     this.notes = new Array<Array<NoteStandard>>(this.documentsAmount);
                     for (let i = 0; i < this.notes.length; i++) this.notes[i] = [];
+                    for (let index = 0; index < this.notes.length; index++) this.annotationsDisabled.push(true)
                     break;
                 case "laws":
                     this.notes = new Array<Array<NoteLaws>>(this.documentsAmount);
+                    this.notesDone = new Array<boolean>(this.documentsAmount);
                     for (let i = 0; i < this.notes.length; i++) this.notes[i] = [];
+                    for (let i = 0; i < this.notesDone.length; i++) this.notesDone[i] = false;
+                    break
             }
-            this.annotationsDisabled = new Array<boolean>();
-            for (let index = 0; index < this.documentsAmount; index++) {
-                this.annotationsDisabled.push(true)
-            }
-            this.notesDone = [false, false, false, false, false]
         }
         if (this.settings.countdown_time >= 0) {
             this.documentsCountdownTime = new Array<number>(this.documentsAmount);
@@ -410,6 +412,40 @@ export class Task {
             /* IMPORTANT: the document_index of the last selected response for a document will be <amount -1> */
             this.searchEngineSelectedResponses[document.index]['amount'] = 1
         }
+    }
+
+    /*
+     * This function checks if each undeleted note of a document has a corresponding
+     * option; if this is true the worker can proceed to the following element
+     */
+    public checkAnnotationConsistency(documentIndex: number) {
+        let requiredAttributes = []
+        for (let attribute of this.settings.attributes) {
+            if (attribute.required) {
+                requiredAttributes.push(attribute.index)
+            }
+        }
+        let check = false
+        this.notes[documentIndex].forEach((element) => {
+            if (element instanceof NoteStandard) {
+                if (!element.deleted && element.option != "not_selected") {
+                    const index = requiredAttributes.indexOf(element.attribute_index);
+                    if (index > -1) {
+                        requiredAttributes.splice(index, 1);
+                    }
+                    check = true
+                }
+            } else {
+                if (!element.deleted) check = true
+            }
+        })
+        if (requiredAttributes.length > 0) {
+            check = false
+        }
+        if (!this.settings.annotator) {
+            check = true
+        }
+        return check
     }
 
     public updateCountdownTime(position: number = null, attribute: string = null) {

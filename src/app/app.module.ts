@@ -63,6 +63,7 @@ import { TaskSettingsStepComponent } from './components/generator/generator-step
 import { SummaryStepComponent } from './components/generator/generator-steps/summary-step/summary-step.component';
 import { QuestionComponent } from './components/skeleton/questionnaire/question/question.component';
 import { OutcomeSectionComponent } from './components/skeleton/outcome-section/outcome-section.component';
+import { AnnotatorLawsComponent } from './components/skeleton/pointwise/annotators/annotator-laws/annotator-laws.component';
 
 function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
     return () => from(actionLogger.downloadOpt()).pipe(tap(data => {
@@ -95,7 +96,8 @@ function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
         TaskSettingsStepComponent,
         SummaryStepComponent,
         QuestionComponent,
-        OutcomeSectionComponent
+        OutcomeSectionComponent,
+        AnnotatorLawsComponent
     ],
     imports: [
         BrowserModule,

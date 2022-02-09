@@ -52,82 +52,6 @@ mat-horizontal-stepper mat-card-content, mat-horizontal-stepper mat-card-title, 
   flex-grow: 0;
 }
 
-.statement-div {
-  max-width: 600px;
-  margin: auto;
-  font-size: large;
-  line-height: 1.5;
-  text-align: center;
-}
-
-.annotation-recap {
-  padding-bottom: 3px;
-}
-
-.annotation-quote {
-  display: flex;
-  height: 0%;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-}
-
-.inner-annotation-quote {
-  display: flex;
-  height: 0%;
-  align-items: center;
-  justify-content: space-evenly;
-  width: 100%;
-}
-
-.annotation-current-text {
-  display: flex;
-  margin-left: 5px;
-  height: 0%;
-  align-items: center;
-}
-
-.annotation-options {
-  display: flex;
-  margin: auto;
-  padding: 5px;
-  justify-content:center;
-  height: 0%;
-  align-items: center;
-  text-align: right;
-  max-width: 650px;
-}
-
-.annotation-type {
-  text-align: center;
-  padding-top: 5px;
-}
-
-.inner-annotation-reference {
-  background-color: #F0F0F0;
-  padding: 5px;
-}
-
-.inner-annotation-checkbox-delete {
-  text-align: center;
-  padding-top: 5px;
-}
-
-.reference-form {
-  margin-top: 5px;
-  margin-bottom: 5px;
-  text-align: center;
-  justify-content: space-evenly;
-  border-style: dashed;
-  border-color: dimgray;
-  padding: 5px;
-}
-
-.reference-radio-group-button {
-  margin-top: 2px;
-  margin-bottom: 2px;
-}
-
 .mat-radio-group {
   //display: flex; remove for pairwise method
   text-align: center;
@@ -154,33 +78,16 @@ mat-horizontal-stepper mat-card-content, mat-horizontal-stepper mat-card-title, 
   font-weight: normal;
 }
 
-.inner-annotation-text {
-  margin-top: 5px;
-  margin-bottom: 5px;
-
-  justify-content: space-evenly;
-  border-style: dashed;
-  border-color: dimgray;
-  padding: 5px;
-}
-
-
 .document-section mat-form-field {
   margin-bottom: 1%;
   max-width: 70%;
 }
-
 
 .form-note {
   button:last-child {
     margin-right: 1%;
   }
   font-size: 1em;
-}
-
-
-.inner-annotation-delete {
-  margin-left: 5px;
 }
 
 .url-field {
@@ -438,7 +345,6 @@ mat-horizontal-stepper mat-card-content, mat-horizontal-stepper mat-card-title, 
   text-align: center;
 }
 
-
 .annotation-buttons {
   text-align: center;
 }
@@ -447,95 +353,17 @@ mat-horizontal-stepper mat-card-content, mat-horizontal-stepper mat-card-title, 
   color: black;
 }
 
-/* LAWS ANNOTATION STYLES */
+/*
+  Classes when the statement is not selected
+  @AggiunteAbbondo
+*/
 
-
-.statement-div {
-  max-width: 600px;
-  margin: auto;
-  font-size: 1.2em;
-  line-height: 1.5;
-  text-align: center;
-}
-
-.annotation-recap {
-  padding-bottom: 3px;
-}
-
-.annotation-quote {
-  display: flex;
-  height: 0%;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-}
-
-.inner-annotation-quote {
-  display: flex;
-  height: 0%;
-  align-items: center;
-  justify-content: space-evenly;
-  width: 100%;
-}
-
-.annotation-current-text {
-  display: flex;
-  margin-left: 5px;
-  height: 0%;
-  align-items: center;
-}
-
-.annotation-options {
-  display: flex;
-  margin: auto;
-  padding: 5px;
-  justify-content: center;
-  height: 0%;
-  align-items: center;
-  text-align: right;
-  max-width: 650px;
-}
-
-.annotation-type {
-  text-align: center;
-  padding-top: 5px;
-}
-
-.inner-annotation-reference {
-  background-color: #F0F0F0;
-  padding: 5px;
-}
-
-.inner-annotation-checkbox-delete {
-  text-align: center;
-  padding-top: 5px;
-}
-
-.reference-form {
-  margin-top: 5px;
-  margin-bottom: 5px;
-  text-align: center;
-  justify-content: space-evenly;
-  border-style: dashed;
-  border-color: dimgray;
-  padding: 5px;
-}
-
-.reference-radio-group-button {
-  margin-top: 2px;
-  margin-bottom: 2px;
-}
 
 .pairwise{
   width: 100%;
   display: flex;
   align-items: flex-end;
 }
-
-/*
-  Classes when the statement is not selected
-  @AggiunteAbbondo
-*/
 
 .pairwise_value_selected{
   text-align: center;width:100%;margin:0 auto

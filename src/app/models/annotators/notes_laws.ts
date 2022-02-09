@@ -10,12 +10,13 @@ export class NoteLaws extends Note {
   innerAnnotations: Array<NoteLaws>
 
   constructor(
-    index: number,
+    document_index: number,
+    attribute_index: number,
     range: JSON,
     data: JSON,
     color = "#ffffff"
   ) {
-    super(index, 0, range, data, color)
+    super(document_index, attribute_index, range, data, color)
     this.year = 0;
     this.number = 0;
     this.type = "reference";
