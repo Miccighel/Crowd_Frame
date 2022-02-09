@@ -2824,20 +2824,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"aws-sdk@npm:^2.1060.0":
-  version: 2.1060.0
-  resolution: "aws-sdk@npm:2.1060.0"
+"aws-sdk@npm:^2.1071.0":
+  version: 2.1071.0
+  resolution: "aws-sdk@npm:2.1071.0"
   dependencies:
     buffer: 4.9.2
     events: 1.1.1
     ieee754: 1.1.13
-    jmespath: 0.15.0
+    jmespath: 0.16.0
     querystring: 0.2.0
     sax: 1.2.1
     url: 0.10.3
     uuid: 3.3.2
     xml2js: 0.4.19
-  checksum: b66003fa739dc03490aa05f7119545e30b1f02598b1ad24ee29d414d4049493d36e3c54ae80366b6d8bfdababc10e9003fb0696c6fdc7cadf37d780f8308a32f
+  checksum: 957350d1b5606f1d2d3100ac40c988f6fbb68d9a129e6f55cfffc363aac28ece2ecee59427680ebf82c557a9572efe545aac4ce2e48c9944f5155310ebd98901
   languageName: node
   linkType: hard
 
@@ -3551,9 +3551,9 @@ __metadata:
     "@funktechno/texthighlighter": ^2.1.2
     "@kolkov/angular-editor": ^2.0.0
     "@types/node": ~16.11.21
-    aws-sdk: ^2.1060.0
+    aws-sdk: ^2.1071.0
     crypto-es: ^1.2.7
-    ngx-color-picker: ^11.0.0
+    ngx-color-picker: ^12.0.0
     ngx-countdown: ^12.0.1
     ngx-device-detector: ^2.2.1
     ngx-file-helpers: ^6.0.1
@@ -5496,10 +5496,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jmespath@npm:0.15.0":
-  version: 0.15.0
-  resolution: "jmespath@npm:0.15.0"
-  checksum: 353bb9e69cc4c1560be0a4df43cb4020abc246e1c60cb5b55dcc76d8c858383f1633faf22ccaf6a5e09568a2077d0f4f1e989e6fcfd496b5cef87964cc8cb9e7
+"jmespath@npm:0.16.0":
+  version: 0.16.0
+  resolution: "jmespath@npm:0.16.0"
+  checksum: 2d602493a1e4addfd1350ac8c9d54b1b03ed09e305fd863bab84a4ee1f52868cf939dd1a08c5cdea29ce9ba8f86875ebb458b6ed45dab3e1c3f2694503fb2fd9
   languageName: node
   linkType: hard
 
@@ -6166,16 +6166,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ngx-color-picker@npm:^11.0.0":
-  version: 11.0.0
-  resolution: "ngx-color-picker@npm:11.0.0"
+"ngx-color-picker@npm:^12.0.0":
+  version: 12.0.0
+  resolution: "ngx-color-picker@npm:12.0.0"
   dependencies:
-    tslib: ^2.0.0
+    tslib: ^2.3.0
   peerDependencies:
     "@angular/common": ">=9.0.0"
     "@angular/core": ">=9.0.0"
     "@angular/forms": ">=9.0.0"
-  checksum: 8fb6f10cb458925c94a2d237961fbf11aa3360589fc9addfb1bc9e2a5a54dc40738fadf2932030630a03d7910e35166f8db6cbf539a031d909b3b5b198cc56a8
+  checksum: 6e8f9676ddfc390e4a4d0e7751e97cebd4b16b6cb4086254e9f5f5823ada12a5ee101a2a868f726a1b1dc412fa47aee885173461228d2a9904ed36041df38772
   languageName: node
   linkType: hard
 
