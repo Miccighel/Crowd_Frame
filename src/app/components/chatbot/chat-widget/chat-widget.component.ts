@@ -29,7 +29,8 @@ const randomMessagesSecondPart = [
     'Let me write that down...',
     'The next question is...',
     'On to the next question...',
-    'The following question is...'
+    'The following question is...',
+    'Here\'s the next question...'
 ]
 
 const rand = (max: number) => Math.floor(Math.random() * max)
@@ -130,6 +131,7 @@ export class ChatWidgetComponent implements OnInit {
     action: string
     disableInput: boolean
     queryIndex: integer[]
+    sendData=false
 
     // Variables
     fixedMessage: string // Messaggio sempre visibile in alto nel chatbot
@@ -238,7 +240,7 @@ export class ChatWidgetComponent implements OnInit {
         for (let i = 0; i < this.timestampsEnd.length; i++) this.timestampsEnd[i] = [];
         for (let i = 0; i < this.timestampsElapsed.length; i++) this.timestampsElapsed[i] = 0;
         /* The task is now started and the worker is looking at the first questionnaire, so the first start timestamp is saved */
-        this.timestampsStart[this.currentQuestionnaire].push(Math.round(Date.now() / 1000));
+        this.timestampsStart[this.currentQuestionnaire].push(Date.now() / 1000);
         setTimeout(() => this.questionnaireP("0"), 5000)
 
         // PRIMO INVIO DATI ALL'AVVIO
@@ -275,7 +277,7 @@ export class ChatWidgetComponent implements OnInit {
         data["dimensions"] = this.dims
         /* General info about worker */
         data["worker"] = this.worker
-        //await this.dynamoDBService.insertData(this.configService.environment,this.workerID,this.unitID, this.tryNumber,this.seqNum, data)
+        if (this.sendData) await this.dynamoDBService.insertData(this.configService.environment,this.workerID,this.unitID, this.tryNumber,this.seqNum, data)
         this.seqNum+=1
     }
 
@@ -314,7 +316,7 @@ export class ChatWidgetComponent implements OnInit {
             '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*'+ // port and path
             '(\\?[;&a-z\\d%_.~+=-]*)?'+ // query string
             '(\\#[-a-z\\d_]*)?$','i'); // fragment locator
-        return !!pattern.test(msg) //&& ((msg.includes("politifact.com") || (msg.includes("abc.net.au"))))
+        return !!pattern.test(msg) && ((msg.includes("politifact.com") || (msg.includes("abc.net.au"))))
         //"politifact.com", "abc.net.au" TODO controlla che siano questi
     }
 
@@ -341,9 +343,9 @@ export class ChatWidgetComponent implements OnInit {
         document.getElementById(this.taskIndex.toString()).style.backgroundColor="red"
         this.typingAnimation("Statement: <b>" + this.hits.documents[this.taskIndex].statement + "</b> - " +
             this.hits.documents[this.taskIndex].claimant + " " + this.hits.documents[this.taskIndex].date)
-        this.fixedMessage = "Statement: <b>" + this.hits.documents[this.taskIndex].statement + "</b><br>" +
-        "Speaker: <b>"+ this.hits.documents[this.taskIndex].claimant + "</b><br>" +
-        "Date: <b>"+ this.hits.documents[this.taskIndex].date         
+        this.fixedMessage = "<b>Statement</b>: " + this.hits.documents[this.taskIndex].statement + "<br>" +
+        "<b>Speaker</b>: "+ this.hits.documents[this.taskIndex].claimant + "<br>" +
+        "<b>Date</b>: "+ this.hits.documents[this.taskIndex].date       
     }
 
     // Stampa la dimensione corrente
@@ -443,7 +445,7 @@ export class ChatWidgetComponent implements OnInit {
             data["timestamps_elapsed"] = this.timestampsElapsed[i]
             /* Number of accesses to the current questionnaire (which must be always 1, since the worker cannot go back */
             data["accesses"] = 1
-            //await this.dynamoDBService.insertData(this.configService.environment,this.worker.identifier,this.unitID, this.tryNumber,this.seqNum,data)
+            if (this.sendData) await this.dynamoDBService.insertData(this.configService.environment,this.worker.identifier,this.unitID, this.tryNumber,this.seqNum,data)
             this.seqNum+=1
         }        
     }
@@ -486,9 +488,9 @@ export class ChatWidgetComponent implements OnInit {
         let q = {}
         q["document"]=this.taskIndex
         q["dimension"]=this.subTaskIndex
-        q["query"]=this.queryRetrieved.length//this.queryIndex[this.taskIndex] // TODO differenze???
+        q["query"]=this.queryRetrieved.length
         q["index"]=this.responsesRetrievedTotal.length
-        q["timestamp"]=Math.round(Date.now() / 1000)
+        q["timestamp"]=Date.now() / 1000
         q["response"]=row
         this.querySelected.push(q)
         return
@@ -498,9 +500,9 @@ export class ChatWidgetComponent implements OnInit {
         let q = {}
         q["document"]=this.taskIndex
         q["dimension"]=this.subTaskIndex
-        q["query"]=this.queryRetrieved.length//this.queryIndex[this.taskIndex] // TODO differenze???
+        q["query"]=this.queryRetrieved.length
         q["index"]=this.responsesRetrievedTotal.length
-        q["timestamp"]=Math.round(Date.now() / 1000)
+        q["timestamp"]=Date.now() / 1000
         q["response"]=resp
         this.queryRetrieved.push(q)
     }
@@ -513,7 +515,7 @@ export class ChatWidgetComponent implements OnInit {
         q["document"]=this.taskIndex
         q["dimension"]=this.subTaskIndex
         q["index"]=this.responsesRetrievedTotal.length
-        q["timestamp"]=Math.round(Date.now() / 1000)
+        q["timestamp"]=Date.now() / 1000
         q["text"]=text
         this.query.push(q)
         this.queryIndex[this.taskIndex]+=1
@@ -564,7 +566,7 @@ export class ChatWidgetComponent implements OnInit {
         this.typing.nativeElement.style.display = "block" // Mostro l'animazione di scrittura
         this.queue+=1
         this.ignoreMsg = true // Ignoro i messaggi in arrivo mentre scrivo
-        setTimeout(() => this.addMessage(this.operator, message, 'received'), this.queue*0) // modifica speed
+        setTimeout(() => this.addMessage(this.operator, message, 'received'), this.queue*800) // modifica speed
         this.changeDetector.detectChanges()
         this.scrollToBottom()
     }
@@ -597,7 +599,7 @@ export class ChatWidgetComponent implements OnInit {
             this.commentForm.value = message
             data["info"] = actionInfo
             data["comment"] = this.commentForm.value
-            //await this.dynamoDBService.insertData(this.configService.environment,this.worker.identifier,this.unitID, this.tryNumber,this.seqNum,data)
+            if (this.sendData) await this.dynamoDBService.insertData(this.configService.environment,this.worker.identifier,this.unitID, this.tryNumber,this.seqNum,data)
             this.seqNum+=1
         }
 
@@ -708,7 +710,7 @@ export class ChatWidgetComponent implements OnInit {
                 /* Responses by search engine ordered by worker's click for the current document */
                 data["responses_selected"] = this.responsesSelectedTotal
                 /* If the last element is a document */
-                //await this.dynamoDBService.insertData(this.configService.environment,this.worker.identifier,this.unitID, this.tryNumber,this.seqNum,data)
+                if (this.sendData) await this.dynamoDBService.insertData(this.configService.environment,this.worker.identifier,this.unitID, this.tryNumber,this.seqNum,data)
                 this.seqNum+=1
 
                 // INVIO DATI COL CONTROLLO QUALITA
@@ -748,7 +750,7 @@ export class ChatWidgetComponent implements OnInit {
                 };
                 data["info"] = actionInfoCheck
                 data["checks"] = qualityCheckData
-                //await this.dynamoDBService.insertData(this.configService.environment,this.worker.identifier,this.unitID, this.tryNumber,this.seqNum,data)
+                if (this.sendData) await this.dynamoDBService.insertData(this.configService.environment,this.worker.identifier,this.unitID, this.tryNumber,this.seqNum,data)
                 this.seqNum+=1
 
                 if(!validTry){
@@ -835,7 +837,7 @@ export class ChatWidgetComponent implements OnInit {
             dimSel["document"] = this.taskIndex
             dimSel["dimension"] = this.subTaskIndex-1
             dimSel["index"] = this.indexDimSel[this.taskIndex]
-            dimSel["timestamp"] = Math.round(Date.now() / 1000)
+            dimSel["timestamp"] = Date.now() / 1000
             dimSel["value"] = message
             this.dimsSelected.push(dimSel)
             this.indexDimSel[this.taskIndex] += 1
@@ -859,7 +861,7 @@ export class ChatWidgetComponent implements OnInit {
                 this.disableInput=true
                 this.inputBox.nativeElement.style.background="gray"
                 this.typingAnimation("Please use the search bar on the right to search for information about the truthfulness of the statement. Once you find a suitable result, please type or select its url")
-                this.timestampsStart[this.currentQuestionnaire+this.taskIndex].push(Math.round(Date.now() / 1000));
+                this.timestampsStart[this.currentQuestionnaire+this.taskIndex].push(Date.now() / 1000);
                 this.statementProvided = true
                 return
             }
@@ -869,7 +871,7 @@ export class ChatWidgetComponent implements OnInit {
                 dimSel["document"]=this.taskIndex
                 dimSel["dimension"]=this.subTaskIndex-1
                 dimSel["index"]=this.indexDimSel[this.taskIndex]
-                dimSel["timestamp"]=Math.round(Date.now() / 1000)
+                dimSel["timestamp"]=Date.now() / 1000
                 dimSel["value"]=message
                 this.dimsSelected.push(dimSel)
                 this.indexDimSel[this.taskIndex]+=1
@@ -993,7 +995,7 @@ export class ChatWidgetComponent implements OnInit {
                     dimSel["document"]=this.taskIndex
                     dimSel["dimension"]=this.subTaskIndex-1
                     dimSel["index"]=this.indexDimSel[this.taskIndex]
-                    dimSel["timestamp"]=Math.round(Date.now() / 1000)
+                    dimSel["timestamp"]=Date.now() / 1000
                     dimSel["value"]=message
                     this.dimsSelected.push(dimSel)
                     this.indexDimSel[this.taskIndex]+=1                   
@@ -1049,12 +1051,12 @@ export class ChatWidgetComponent implements OnInit {
                 this.taskPhase=false
                 this.endTaskPhase=true
                 // INVIO DATI ALLA FINE DI OGNI CONFERMA DI UNO STATEMENT
-                this.timestampsEnd[this.currentQuestionnaire+this.taskIndex].push(Math.round(Date.now() / 1000));
+                this.timestampsEnd[this.currentQuestionnaire+this.taskIndex].push(Date.now() / 1000);
                 this.timestampsElapsed[this.currentQuestionnaire+this.taskIndex]+=Number(this.timestampsEnd[this.currentQuestionnaire+this.taskIndex][this.timestampsEnd[this.currentQuestionnaire+this.taskIndex].length-1]) - Number(this.timestampsStart[this.currentQuestionnaire+this.taskIndex][this.timestampsEnd[this.currentQuestionnaire+this.taskIndex].length-1])
                 this.sendDataStatement()
                 return
             }
-            this.timestampsEnd[this.currentQuestionnaire+this.taskIndex].push(Math.round(Date.now() / 1000));
+            this.timestampsEnd[this.currentQuestionnaire+this.taskIndex].push(Date.now() / 1000);
             this.timestampsElapsed[this.currentQuestionnaire+this.taskIndex]+=Number(this.timestampsEnd[this.currentQuestionnaire+this.taskIndex][this.timestampsEnd[this.currentQuestionnaire+this.taskIndex].length-1]) - Number(this.timestampsStart[this.currentQuestionnaire+this.taskIndex][this.timestampsEnd[this.currentQuestionnaire+this.taskIndex].length-1])
             this.sendDataStatement() // INVIO DATI ALLA FINE DI OGNI CONFERMA DI UNO STATEMENT
             // Passo al prossimo statement, resetto
@@ -1095,7 +1097,7 @@ export class ChatWidgetComponent implements OnInit {
                 this.awaitingAnswer=false
             }    
             if (this.currentQuestion>=this.questionnaires[this.currentQuestionnaire].questions.length){
-                this.timestampsEnd[this.currentQuestionnaire].push(Math.round(Date.now() / 1000));
+                this.timestampsEnd[this.currentQuestionnaire].push(Date.now() / 1000);
                 this.timestampsElapsed[this.currentQuestionnaire]=Number(this.timestampsEnd[this.currentQuestionnaire][this.timestampsEnd[this.currentQuestionnaire].length-1])-Number(this.timestampsStart[this.currentQuestionnaire][this.timestampsStart[this.currentQuestionnaire].length-1])
                 this.currentQuestionnaire+=1
             }else{
@@ -1119,7 +1121,7 @@ export class ChatWidgetComponent implements OnInit {
                 this.questionnaireAnswers[this.currentQuestion]=message
                 this.currentQuestion+=1
                 this.randomMessage()
-                this.timestampsEnd[this.currentQuestionnaire].push(Math.round(Date.now() / 1000));
+                this.timestampsEnd[this.currentQuestionnaire].push(Date.now() / 1000);
                 this.timestampsElapsed[this.currentQuestionnaire]=Number(this.timestampsEnd[this.currentQuestionnaire][this.timestampsEnd[this.currentQuestionnaire].length-1])-Number(this.timestampsStart[this.currentQuestionnaire][this.timestampsStart[this.currentQuestionnaire].length-1])
                 this.currentQuestionnaire+=1
                 this.awaitingAnswer=false
@@ -1132,7 +1134,7 @@ export class ChatWidgetComponent implements OnInit {
                 }
             }
             this.typingAnimation(this.questionnaires[this.currentQuestionnaire].questions[0].text)
-            this.timestampsStart[this.currentQuestionnaire].push(Math.round(Date.now() / 1000));
+            this.timestampsStart[this.currentQuestionnaire].push(Date.now() / 1000);
             this.awaitingAnswer=true
         }        
     }
@@ -1196,7 +1198,7 @@ export class ChatWidgetComponent implements OnInit {
         resSel["amount"] = resSel["data"].length 
         /* Responses by search engine ordered by worker's click for the current document */
         data["responses_selected"] = resSel
-        //await this.dynamoDBService.insertData(this.configService.environment,this.worker.identifier,this.unitID, this.tryNumber,this.seqNum, data)
+        if (this.sendData) await this.dynamoDBService.insertData(this.configService.environment,this.worker.identifier,this.unitID, this.tryNumber,this.seqNum, data)
         this.seqNum += 1
         let elem={}
         elem["data"]=this.dimsSelected
