@@ -301,7 +301,7 @@ export class SkeletonComponent implements OnInit {
                                     }
 
                                     /* Each ACL record is sorted considering the timestamp, in ascending order */
-                                    wholeEntries.sort((a, b) => (a.time > b.time) ? 1 : -1)
+                                    wholeEntries.sort((a, b) => (a.time_arrival > b.time_arrival) ? 1 : -1)
 
                                     for (let aclEntry of wholeEntries) {
 
@@ -322,7 +322,7 @@ export class SkeletonComponent implements OnInit {
                                             await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker, this.task.tryCurrent)
                                             /* The record for the worker that abandoned/returned the task is updated */
                                             aclEntry['in_progress'] = 'false'
-                                            await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, aclEntry, this.task.tryCurrent)
+                                            await this.dynamoDBService.insertACLRecordUnitId(this.configService.environment, aclEntry, this.task.tryCurrent, false)
                                             /* As soon a slot for the current HIT is freed and assigned to the current worker the search can be stopped */
                                             break
                                         }
@@ -346,7 +346,7 @@ export class SkeletonComponent implements OnInit {
                                     for (let hit of hits) {
                                         if (hit['unit_id'] == aclEntry['unit_id']) {
                                             this.tokenInput.setValue(hit['token_input'])
-                                            await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, aclEntry, this.task.tryCurrent)
+                                            await this.dynamoDBService.insertACLRecordUnitId(this.configService.environment, aclEntry, this.task.tryCurrent, true)
                                             hitAssigned = true
                                             break
                                         }
@@ -1219,6 +1219,7 @@ export class SkeletonComponent implements OnInit {
             /* await (this.upload(`${this.workerFolder}/worker.json`, this.worker)); */
 
             if (this.task.sequenceNumber <= 0) {
+                console.log("here")
                 await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker.identifier, this.task.unitId, this.task.tryCurrent, this.task.sequenceNumber, data)
                 this.task.sequenceNumber = this.task.sequenceNumber + 1
             }

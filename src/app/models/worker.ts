@@ -12,7 +12,11 @@ export class Worker {
     constructor(
         paramsFetched: Record<string, string>,
     ) {
-        this.paramsFetched = paramsFetched
+        if(paramsFetched) {
+            this.paramsFetched = paramsFetched
+        } else {
+            this.paramsFetched = {}
+        }
         for (const [param, value] of Object.entries(this.paramsFetched)) {
             if (param.toLowerCase().includes('identifier')) {
                 this.identifier = value
