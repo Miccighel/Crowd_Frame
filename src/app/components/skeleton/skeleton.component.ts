@@ -736,7 +736,6 @@ export class SkeletonComponent implements OnInit {
 
             /* If there are no questionnaires and the countdown time is set, enable the first countdown */
             if (this.task.settings.countdown_time >= 0 && this.task.questionnaireAmountStart == 0) {
-                //this.countdown.forEach((countdown, index) => console.log(countdown));
                 this.countdown.first.begin();
             }
 
@@ -776,7 +775,6 @@ export class SkeletonComponent implements OnInit {
 
     public storeAssessmentForm(form, documentIndex) {
         this.assessmentForms[documentIndex] = form
-        console.log(this.assessmentForms)
     }
 
     /* |--------- COUNTDOWN ---------| */
@@ -1219,7 +1217,6 @@ export class SkeletonComponent implements OnInit {
             /* await (this.upload(`${this.workerFolder}/worker.json`, this.worker)); */
 
             if (this.task.sequenceNumber <= 0) {
-                console.log("here")
                 await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker.identifier, this.task.unitId, this.task.tryCurrent, this.task.sequenceNumber, data)
                 this.task.sequenceNumber = this.task.sequenceNumber + 1
             }
