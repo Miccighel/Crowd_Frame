@@ -195,7 +195,7 @@
             <mat-form-field matLine class="width-100" [hideRequiredMarker]="formStep.get('countdown_time').valid" appearance="fill" *ngIf="this.formStep.get('setCountdownTime').value">
                 <mat-label>Time</mat-label>
                 <input matInput type="number" min="0" formControlName="countdown_time" required>
-                <mat-error *ngIf="checkFormControl(formStep,'countdown_time', 'invalid')">
+                <mat-error *ngIf="this.utilsService.checkFormControl(formStep,'countdown_time', 'invalid')">
                     A positive or zero number is required
                 </mat-error>
             </mat-form-field>

@@ -1,0 +1,83 @@
+.dimension {
+
+  mat-form-field {
+    width: 100%;
+  }
+
+  margin-bottom: 1%;
+}
+
+.dimension-container {
+  display: flex;
+}
+
+.dimension-content {
+  flex-grow: 1;
+}
+
+.dimension-name {
+  margin-bottom: 1%;
+}
+
+.dimension-description {
+  margin-bottom: 1%;
+}
+
+.dimension-description p {
+  margin-bottom: 0;
+  margin-top: 0.5%;
+}
+
+.dimension-scale {
+  margin-bottom: 1%;
+}
+
+.dimension-url {
+  margin-bottom: 1%;
+}
+
+.dimension mat-radio-group {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.dimension .magnitude_estimation {
+  font-size: 2em;
+}
+
+.dimension-matrix-container {
+  margin-bottom: 2%;
+}
+
+.dimension-matrix .matrix-header .matrix-header-value, .dimension-matrix .matrix-header .matrix-header-text {
+  position: relative;
+  right: 5px;
+  text-align: center;
+}
+
+.dimension-matrix mat-radio-group {
+  margin-top: 1%;
+  margin-bottom: 1%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.dimension-matrix mat-radio-group > div:first-child {
+  text-align: justify;
+  flex-basis: 25%;
+}
+
+.dimension-matrix mat-radio-group > div {
+  order: 6;
+  text-align: center;
+  flex: 1;
+}
+
+.dimension-matrix mat-radio-group > div p {
+  margin: 0;
+}
+
+.dimension h2, .instructions h2 {
+  font-weight: lighter;
+}

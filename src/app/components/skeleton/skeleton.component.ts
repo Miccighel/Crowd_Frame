@@ -8,7 +8,7 @@ import {
     QueryList, OnInit
 } from "@angular/core";
 /* Reactive forms modules */
-import {AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
+import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
 import {MatFormField} from "@angular/material/form-field";
 import {MatStepper} from "@angular/material/stepper";
 import {CountdownComponent} from 'ngx-countdown';
@@ -18,9 +18,8 @@ import {ConfigService} from "../../services/config.service";
 import {S3Service} from "../../services/s3.service";
 import {DeviceDetectorService} from "ngx-device-detector";
 /* Task models */
-import {Document} from "../../../../data/build/skeleton/document";
 import {Task} from "../../models/task";
-import {Dimension, ScaleInterval, ScaleMagnitude} from "../../models/dimension";
+import {ScaleMagnitude} from "../../models/dimension";
 import {Worker} from "../../models/worker";
 import {SettingsTask} from "../../models/settingsTask";
 import {GoldChecker} from "../../../../data/build/skeleton/goldChecker";
@@ -34,9 +33,12 @@ import {Object} from 'aws-sdk/clients/customerprofiles';
 import {SectionService} from "../../services/section.service";
 import {DynamoDBService} from "../../services/dynamoDB.service";
 import {SettingsWorker} from "../../models/settingsWorker";
-import {OutcomeSectionComponent} from "./outcome-section/outcome-section.component";
+import {OutcomeSectionComponent} from "./pointwise/outcome/outcome-section.component";
 import {AnnotatorOptionsComponent} from "./pointwise/elements/annotator-options/annotator-options.component";
 import {UtilsService} from "../../services/utils.service";
+import {DebugService} from "../../services/debug.service";
+import {Hit} from "../../models/hit";
+import {DimensionPointwiseComponent} from "./pointwise/dimension/dimension-pointwise.component";
 
 /* Component HTML Tag definition */
 @Component({
@@ -70,6 +72,7 @@ export class SkeletonComponent implements OnInit {
     /* Service to track current section */
     sectionService: SectionService
     utilsService: UtilsService
+    debugService: DebugService
 
     /* HTTP client and headers */
     client: HttpClient;
@@ -97,13 +100,14 @@ export class SkeletonComponent implements OnInit {
     worker: Worker
 
     /* Array of form references, one for each document within a Hit */
-    documentsForm: FormGroup[];
+    assessmentForms: FormGroup[];
 
     /* Array of form references, one for each questionnaire within a Hit */
     questionnairesForm: FormGroup[];
 
     /* Reference to the outcome section component */
-    @ViewChild(AnnotatorOptionsComponent) annotatorOptions: AnnotatorOptionsComponent;
+    @ViewChildren(AnnotatorOptionsComponent) annotatorOptions: QueryList<AnnotatorOptionsComponent>;
+    @ViewChildren(DimensionPointwiseComponent) dimensionsPointwise: QueryList<DimensionPointwiseComponent>;
 
     /* |--------- COUNTDOWN HANDLING ---------| */
 
@@ -133,7 +137,8 @@ export class SkeletonComponent implements OnInit {
         snackBar: MatSnackBar,
         actionLogger: ActionLogger,
         sectionService: SectionService,
-        utilsService: UtilsService
+        utilsService: UtilsService,
+        debugService: DebugService
     ) {
         /* |--------- SERVICES & CO. - INITIALIZATION ---------| */
 
@@ -146,6 +151,7 @@ export class SkeletonComponent implements OnInit {
         this.sectionService = sectionService
         this.deviceDetectorService = deviceDetectorService
         this.utilsService = utilsService
+        this.debugService = debugService
 
         this.client = client
         this.formBuilder = formBuilder
@@ -178,6 +184,12 @@ export class SkeletonComponent implements OnInit {
         this.task.platformName = this.configService.environment.platformName
         this.task.taskName = this.configService.environment.taskName
         this.task.batchName = this.configService.environment.batchName
+
+        if (this.configService.environment.debug_mode) {
+            let hits = await this.S3Service.downloadHits(this.configService.environment)
+            this.tokenInput.setValue(this.debugService.selectRandomToken(hits))
+        }
+
 
         let url = new URL(window.location.href);
 
@@ -556,6 +568,7 @@ export class SkeletonComponent implements OnInit {
             for (let currentHit of hits) {
                 /* If the token input of the current hit matches with the one inserted by the worker the right hit has been found */
                 if (this.tokenInput.value === currentHit.token_input) {
+                    currentHit = currentHit as Hit
                     this.task.tokenInput = this.tokenInput.value
                     this.task.tokenOutput = currentHit.token_output;
                     this.task.unitId = currentHit.unit_id
@@ -573,7 +586,7 @@ export class SkeletonComponent implements OnInit {
             this.sectionService.taskStarted = true;
 
             /* A form for each document is initialized */
-            this.documentsForm = new Array<FormGroup>();
+            this.assessmentForms = new Array<FormGroup>();
 
             this.task.initializeQuestionnaires(await this.S3Service.downloadQuestionnaires(this.configService.environment))
 
@@ -704,31 +717,12 @@ export class SkeletonComponent implements OnInit {
                                         controlsConfig[`${dimension.name}_value_${i}`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min + 1), Validators.required]);
                                     }
                                 }
-                                if (dimension.justification) controlsConfig[`${dimension.name}_justification_${i}`] = new FormControl('', [Validators.required, this.validateJustification.bind(this)])
+                                //if (dimension.justification) controlsConfig[`${dimension.name}_justification_${i}`] = new FormControl('', [Validators.required, this.validateJustification.bind(this)])
                             }
-                            if (dimension.url) controlsConfig[`${dimension.name}_url`] = new FormControl('', [Validators.required, this.validateSearchEngineUrl.bind(this)]);
+                            //if (dimension.url) controlsConfig[`${dimension.name}_url`] = new FormControl('', [Validators.required, this.validateSearchEngineUrl.bind(this)]);
                         }
-                    }
-                } else {
-
-                    for (let index_dimension = 0; index_dimension < this.task.dimensions.length; index_dimension++) {
-                        let dimension = this.task.dimensions[index_dimension];
-                        if (dimension.scale) {
-                            if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.required]);
-                            if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value`] = new FormControl(((<ScaleInterval>dimension.scale).min), [Validators.required]);
-                            if (dimension.scale.type == "magnitude_estimation") {
-                                if ((<ScaleMagnitude>dimension.scale).lower_bound) {
-                                    controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min), Validators.required]);
-                                } else {
-                                    controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min + 1), Validators.required]);
-                                }
-                            }
-                        }
-                        if (dimension.justification) controlsConfig[`${dimension.name}_justification`] = new FormControl('', [Validators.required, this.validateJustification.bind(this)])
-                        if (dimension.url) controlsConfig[`${dimension.name}_url`] = new FormControl('', [Validators.required, this.validateSearchEngineUrl.bind(this)]);
                     }
                 }
-                this.documentsForm[index] = this.formBuilder.group(controlsConfig)
             }
 
             /* Section service gets updated with loaded values */
@@ -737,19 +731,19 @@ export class SkeletonComponent implements OnInit {
             this.task.loadAccessCounter()
             this.task.loadTimestamps()
 
-            /* If there are no questionnaires and the countdown time is set, enable the first countdown */
-            if (this.task.settings.countdown_time >= 0 && this.task.questionnaireAmountStart == 0) {
-                this.countdown.toArray()[0].begin();
-            }
-
             /* Detect changes within the DOM and update the page */
             this.changeDetector.detectChanges();
+
+            /* If there are no questionnaires and the countdown time is set, enable the first countdown */
+            if (this.task.settings.countdown_time >= 0 && this.task.questionnaireAmountStart == 0) {
+                //this.countdown.forEach((countdown, index) => console.log(countdown));
+                this.countdown.first.begin();
+            }
 
             /* The loading spinner is stopped */
             this.ngxService.stop();
 
         }
-        console.log(this.task)
     }
 
     /* |--------- LOGGING SERVICE & SECTION SERVICE ---------| */
@@ -778,112 +772,11 @@ export class SkeletonComponent implements OnInit {
         this.task.currentDocument = this.sectionService.documentIndex
     }
 
-    /* |--------- DIMENSIONS ELEMENTS (see: dimensions.json) ---------| */
+    /* |--------- DIMENSIONS ---------| */
 
-    /* This function is used to sort each dimension that a worker have to assess according the position specified */
-    public filterDimensions(kind: string, position: string) {
-        let filteredDimensions = []
-        for (let dimension of this.task.dimensions) {
-            if (dimension.style) {
-                if (dimension.style.type == kind && dimension.style.position == position) filteredDimensions.push(dimension)
-            }
-        }
-        return filteredDimensions
-    }
-
-    /*
-     * This function performs a validation of the worker justification field each time the current worker types or pastes in its inside
-     * if the worker types the selected url as part of the justification an <invalid> error is raised
-     * if the worker types a justification which has lesser than 15 words a <longer> error is raised
-     * IMPORTANT: the <return null> part means: THE FIELD IS VALID
-     */
-    public validateJustification(control: FormControl) {
-        /* The justification is divided into words and cleaned */
-        let minWords = 0
-        let words = control.value.split(' ')
-        let cleanedWords = new Array<string>()
-        for (let word of words) {
-            let trimmedWord = word.trim()
-            if (trimmedWord.length > 0) {
-                cleanedWords.push(trimmedWord)
-            }
-        }
-        if (this.stepper) {
-            /* If at least the first document has been reached */
-            if (this.stepper.selectedIndex >= this.task.questionnaireAmountStart && this.stepper.selectedIndex < this.task.getElementsNumber()) {
-                /* The current document document_index is selected */
-                let currentDocument = this.stepper.selectedIndex - this.task.questionnaireAmountStart;
-                /* If the user has selected some search engine responses for the current document */
-                if (this.task.searchEngineSelectedResponses[currentDocument]) {
-                    if (this.task.searchEngineSelectedResponses[currentDocument]['amount'] > 0) {
-                        let selectedUrl = Object.values(this.task.searchEngineSelectedResponses[currentDocument]["data"]).pop()
-                        let response = selectedUrl["response"]
-                        /* The controls are performed */
-                        for (let word of cleanedWords) {
-                            if (word == response["url"]) return {"invalid": "You cannot use the selected search engine url as part of the justification."}
-                        }
-                    }
-                }
-                const allControls = this.utilsService.getControlGroup(control).controls;
-                let currentControl = Object.keys(allControls).find(name => control === allControls[name])
-                let currentDimensionName = currentControl.split("_")[0]
-                for (let dimension of this.task.dimensions) if (dimension.name == currentDimensionName) if (dimension.justification.min_words) minWords = dimension.justification.min_words
-            }
-            return cleanedWords.length > minWords ? null : {"longer": "This is not valid."};
-        }
-    }
-
-    /* |--------- SEARCH ENGINE INTEGRATION (see: search_engine.json | https://github.com/Miccighel/CrowdXplorer) ---------| */
-
-    public handleSearchEngineRetrievedResponse(retrievedResponseData: Object, document: Document, dimension: Dimension) {
-        this.task.storeSearchEngineRetrievedResponse(retrievedResponseData, document, dimension)
-        this.documentsForm[document.index].controls[dimension.name.concat("_url")].enable();
-    }
-
-    public handleSearchEngineSelectedResponse(selectedResponseData: Object, document: Document, dimension: Dimension) {
-        this.task.storeSearchEngineSelectedResponse(selectedResponseData, document, dimension)
-        this.documentsForm[document.index].controls[dimension.name.concat("_url")].setValue(selectedResponseData['url']);
-    }
-
-    /*
-     * This function performs a validation of the worker url field each time the current worker types or pastes in its inside
-     * or when he selects one of the responses retrieved by the search engine. If the url present in the field is not equal
-     * to an url retrieved by the search engine an <invalidSearchEngineUrl> error is raised.
-     * IMPORTANT: the <return null> part means: THE FIELD IS VALID
-     */
-    public validateSearchEngineUrl(workerUrlFormControl: FormControl) {
-        /* If the stepped is initialized to something the task is started */
-        if (this.stepper) {
-            if (this.stepper.selectedIndex >= this.task.questionnaireAmountStart && this.stepper.selectedIndex < this.task.questionnaireAmountStart + this.task.documentsAmount) {
-                /* If the worker has interacted with the form control of a dimension */
-                if (this.task.currentDimension) {
-                    let currentDocument = this.stepper.selectedIndex - this.task.questionnaireAmountStart;
-                    /* If there are data for the current document */
-                    if (this.task.searchEngineRetrievedResponses[currentDocument]) {
-                        let retrievedResponses = this.task.searchEngineRetrievedResponses[currentDocument];
-                        if (retrievedResponses.hasOwnProperty("data")) {
-                            /* The current set of responses is the total amount - 1 */
-                            let currentSet = retrievedResponses["data"].length - 1;
-                            /* The responses retrieved by search engine are selected */
-                            let currentResponses = retrievedResponses["data"][currentSet]["response"];
-                            let currentDimension = retrievedResponses["data"][currentSet]["dimension"];
-                            /* Each response is scanned */
-                            for (let index = 0; index < currentResponses.length; index++) {
-                                /* As soon as an url that matches with the one selected/typed by the worker for the current dimension the validation is successful */
-                                if (workerUrlFormControl.value == currentResponses[index].url && this.task.currentDimension == currentDimension) return null;
-                            }
-                            /* If no matching url has been found, raise the error */
-                            return {invalidSearchEngineUrl: "Select (or copy & paste) one of the URLs shown above."}
-                        }
-                        return null
-                    }
-                    return null
-                }
-                return null
-            }
-            return null
-        }
-        return null
+    public storeAssessmentForm(form, documentIndex) {
+        this.assessmentForms[documentIndex] = form
+        console.log(this.assessmentForms)
     }
 
     /* |--------- COUNTDOWN ---------| */
@@ -893,10 +786,10 @@ export class SkeletonComponent implements OnInit {
      * and it simply sets the corresponding flag to false
      */
     public handleCountdown(event, i) {
-        if (event.left == 0) {
+        if (event['left'] == 0) {
             this.task.countdownsExpired[i] = true
-            if (this.task.settings.countdown_behavior == 'disable_form')
-                this.documentsForm[i].disable()
+            this.annotatorOptions.toArray()[i].changeDetector.detectChanges()
+            this.dimensionsPointwise.toArray()[i].changeDetector.detectChanges()
         }
     }
 
@@ -1026,7 +919,7 @@ export class SkeletonComponent implements OnInit {
         let questionnaireFormValidity = true;
         let documentsFormValidity = true;
         for (let index = 0; index < this.questionnairesForm.length; index++) if (this.questionnairesForm[index].valid == false) questionnaireFormValidity = false;
-        for (let index = 0; index < this.documentsForm.length; index++) if (this.documentsForm[index].valid == false) documentsFormValidity = false;
+        for (let index = 0; index < this.assessmentForms.length; index++) if (this.assessmentForms[index].valid == false) documentsFormValidity = false;
         return (questionnaireFormValidity && documentsFormValidity)
     }
 
@@ -1195,7 +1088,7 @@ export class SkeletonComponent implements OnInit {
             currentConfiguration["document"] = goldDocument
             let answers = {}
             for (let goldDimension of this.task.goldDimensions) {
-                for (let [attribute, value] of Object.entries(this.documentsForm[goldDocument.index].value)) {
+                for (let [attribute, value] of Object.entries(this.assessmentForms[goldDocument.index].value)) {
                     let dimensionName = attribute.split("_")[0]
                     if (dimensionName == goldDimension.name) {
                         answers[attribute] = value
@@ -1274,7 +1167,7 @@ export class SkeletonComponent implements OnInit {
 
         this.computeTimestamps(currentElement, completedElement, action)
         this.handleCountdowns(currentElement, documentIndex, action)
-        if (this.task.settings.annotator.type == 'options') this.annotatorOptions.handleNotes(completedElement)
+        if (this.task.settings.annotator.type == 'options') this.annotatorOptions.toArray()[documentIndex].handleNotes(completedElement)
 
         let qualityChecks = null
         if (action == "Finish") {
@@ -1401,7 +1294,7 @@ export class SkeletonComponent implements OnInit {
                 /* Info about the performed action ("Next"? "Back"? From where?) */
                 data["info"] = actionInfo
                 /* Worker's answers for the current document */
-                let answers = this.documentsForm[completedDocument].value;
+                let answers = this.assessmentForms[completedDocument].value;
                 data["answers"] = answers
                 let notes = (this.task.settings.annotator) ? this.task.notes[completedDocument] : []
                 data["notes"] = notes
@@ -1460,7 +1353,7 @@ export class SkeletonComponent implements OnInit {
                 for (let index = 0; index < this.questionnairesForm.length; index++) answers.push(this.questionnairesForm[index].value);
                 data["questionnaires_answers"] = answers
                 answers = [];
-                for (let index = 0; index < this.documentsForm.length; index++) answers.push(this.documentsForm[index].value);
+                for (let index = 0; index < this.assessmentForms.length; index++) answers.push(this.assessmentForms[index].value);
                 data["documents_answers"] = answers
                 let notes = (this.task.settings.annotator) ? this.task.notes : []
                 data["notes"] = notes

@@ -45,6 +45,7 @@ bing_api_key = os.getenv('bing_api_key')
 ip_info_token = os.getenv('ip_info_token')
 user_stack_token = os.getenv('user_stack_token')
 fake_json_token = os.getenv('fake_json_token')
+debug_mode = os.getenv('debug_mode')
 
 def serialize_json(folder, filename, data):
     if not os.path.exists(folder):

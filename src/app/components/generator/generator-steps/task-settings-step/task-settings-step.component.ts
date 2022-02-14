@@ -6,6 +6,7 @@ import {FormArray, FormBuilder, FormControl, FormGroup, Validators} from "@angul
 import {Attribute, SettingsTask} from "../../../../models/settingsTask";
 import {ReadFile, ReadMode} from "ngx-file-helpers";
 import {Hit} from "../../../../models/hit";
+import {UtilsService} from "../../../../services/utils.service";
 
 interface AnnotatorType {
     value: string;
@@ -35,6 +36,7 @@ export class TaskSettingsStepComponent implements OnInit {
     S3Service: S3Service;
     /* Service which wraps the interaction with browser's local storage */
     localStorageService: LocalStorageService;
+    utilsService: UtilsService;
 
     /* STEP #6 - Task Settings */
 
@@ -83,11 +85,13 @@ export class TaskSettingsStepComponent implements OnInit {
         localStorageService: LocalStorageService,
         configService: ConfigService,
         S3Service: S3Service,
+        utilsService: UtilsService,
         private _formBuilder: FormBuilder,
     ) {
         this.configService = configService
         this.S3Service = S3Service
         this.localStorageService = localStorageService
+        this.utilsService = utilsService
         this.initializeControls()
     }
 
@@ -240,6 +244,7 @@ export class TaskSettingsStepComponent implements OnInit {
         if (!hits) {
             this.localStorageService.setItem(`hits`, JSON.stringify(this.hitsParsed))
         }
+        console.log(this.hitsParsed)
         if (this.hitsParsed.length > 0) {
             this.hitsDetected = ("documents" in this.hitsParsed[0]) && ("token_input" in this.hitsParsed[0]) && ("token_output" in this.hitsParsed[0]) && ("unit_id" in this.hitsParsed[0]) ? this.hitsParsed.length : 0;
         } else {
@@ -360,7 +365,7 @@ export class TaskSettingsStepComponent implements OnInit {
             this.formStep.get('countdown_time').clearValidators();
             this.formStep.get('countdown_time').updateValueAndValidity();
         } else {
-            this.formStep.get('countdown_time').setValidators([Validators.required, this.positiveOrZeroNumber.bind(this)]);
+            this.formStep.get('countdown_time').setValidators([Validators.required, this.utilsService.positiveOrZeroNumber.bind(this)]);
             this.formStep.get('countdown_time').updateValueAndValidity();
         }
         this.resetAdditionalTimes()
@@ -469,7 +474,7 @@ export class TaskSettingsStepComponent implements OnInit {
             this.annotator().get('type').clearAsyncValidators();
             this.annotatorOptionValues().clear()
         } else {
-            this.annotator().get('type').setValidators([Validators.required, this.positiveNumber.bind(this)]);
+            this.annotator().get('type').setValidators([Validators.required, this.utilsService.positiveNumber.bind(this)]);
         }
         this.annotator().get('type').updateValueAndValidity()
         this.annotatorOptionValues().updateValueAndValidity()
@@ -580,28 +585,6 @@ export class TaskSettingsStepComponent implements OnInit {
 
         this.localStorageService.setItem(`task-settings`, JSON.stringify(taskSettingsJSON))
         this.configurationSerialized = JSON.stringify(taskSettingsJSON)
-    }
-
-    /* |--------- OTHER AMENITIES ---------| */
-
-    public checkFormControl(form: FormGroup, field: string, key: string): boolean {
-        return form.get(field).hasError(key);
-    }
-
-    public positiveOrZeroNumber(control: FormControl) {
-        if (Number(control.value) < 0) {
-            return {invalid: true};
-        } else {
-            return null;
-        }
-    }
-
-    public positiveNumber(control: FormControl) {
-        if (Number(control.value) < 1) {
-            return {invalid: true};
-        } else {
-            return null;
-        }
     }
 
 }

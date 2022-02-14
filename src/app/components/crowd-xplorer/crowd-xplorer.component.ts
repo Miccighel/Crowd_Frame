@@ -1,5 +1,5 @@
 /* Core modules */
-import {Component, EventEmitter, Input, Output, SimpleChanges, ViewChild} from '@angular/core';
+import {ChangeDetectorRef, Component, EventEmitter, Input, Output, SimpleChanges, ViewChild} from '@angular/core';
 /* Loading screen module */
 import {NgxUiLoaderService} from "ngx-ui-loader";
 /* Material design modules */
@@ -20,6 +20,7 @@ import * as AWS from "aws-sdk";
 import {SettingsSearchEngine} from "../../models/settingsSearchEngine";
 /* Debug config import */
 import {S3Service} from "../../services/s3.service";
+import {Task} from "../../models/task";
 
 /* Component HTML Tag definition */
 @Component({
@@ -66,6 +67,8 @@ export class CrowdXplorer {
     configService: ConfigService;
     /* Service which wraps the interaction with S3 */
     S3Service: S3Service;
+    /* Change detector to manually intercept changes on DOM */
+    changeDetector: ChangeDetectorRef;
 
     /* Implementation to query Bing Web Search (Service + REST Interface)*/
     bingService: BingService;
@@ -103,8 +106,8 @@ export class CrowdXplorer {
     /* EMITTER: Response selected by user */
     @Output() selectedRowEmitter = new EventEmitter<Object>();
 
-    @Input() countdownExpired: boolean
-    @Input() countdownBehavior: string
+    @Input() task: Task
+    @Input() documentIndex: number
 
 
     /* Search results table UI variables and controls */
@@ -122,6 +125,7 @@ export class CrowdXplorer {
     /* |--------- CONSTRUCTOR IMPLEMENTATION ---------| */
 
     constructor(
+        changeDetector: ChangeDetectorRef,
         ngxService: NgxUiLoaderService,
         S3Service: S3Service,
         bingService: BingService,
@@ -134,6 +138,7 @@ export class CrowdXplorer {
         /* |--------- SERVICES & CO. - INITIALIZATION ---------| */
 
         /* Service initialization */
+        this.changeDetector = changeDetector
         this.ngxService = ngxService;
         this.S3Service = S3Service;
         this.bingService = bingService;
@@ -168,12 +173,6 @@ export class CrowdXplorer {
             }
         );
 
-    }
-
-    ngOnChanges(changes: SimpleChanges) {
-        if (changes.countdownExpired.currentValue && this.countdownBehavior=='disable_form') {
-            this.searchForm.disable()
-        }
     }
 
     /*

@@ -132,17 +132,25 @@ export class Task {
         }
         if (this.settings.countdown_time >= 0) {
             this.documentsCountdownTime = new Array<number>(this.documentsAmount);
+            this.countdownsExpired = new Array<boolean>(this.documentsAmount);
             for (let index = 0; index < this.documents.length; index++) {
-                let position = this.settings.countdown_modality == 'position' ? this.documents[index]['index'] : null;
-                let attribute = this.settings.countdown_modality == 'attribute' ? this.documents[index][this.settings.countdown_attribute] : null;
-                this.documentsCountdownTime[index] = this.updateCountdownTime(position, attribute)
+                this.documentsCountdownTime[index] = this.settings.countdown_time;
+                if (this.settings.countdown_attribute_values[index]) {
+                    for (const attributeValue of Object.values(this.documents[index])) {
+                        if (attributeValue == this.settings.countdown_attribute_values[index]['name']) {
+                            this.documentsCountdownTime[index] = this.documentsCountdownTime[index] + this.settings.countdown_attribute_values[index]['time']
+                        }
+                    }
+                }
+                if (this.settings.countdown_position_values[index])
+                    this.documentsCountdownTime[index] = this.documentsCountdownTime[index] + this.settings.countdown_position_values[index]['time']
+                this.countdownsExpired[index] = false
+            }
+            for (let index = 0; index < this.documents.length; index++) {
                 this.countdownsExpired[index] = false
             }
         }
-        this.countdownsExpired = new Array<boolean>(this.documentsAmount);
-        for (let index = 0; index < this.documents.length; index++) {
-            this.countdownsExpired[index] = false
-        }
+
         this.goldDocuments = new Array<Document>();
         /* Indexes of the gold elements are retrieved */
         for (let index = 0; index < this.documentsAmount; index++) {
@@ -207,6 +215,17 @@ export class Task {
                 this.goldDimensions.push(this.dimensions[index])
             }
         }
+    }
+
+    /* This function is used to sort each dimension that a worker have to assess according the position specified */
+    public filterDimensions(kind: string, position: string) {
+        let filteredDimensions = []
+        for (let dimension of this.dimensions) {
+            if (dimension.style) {
+                if (dimension.style.type == kind && dimension.style.position == position) filteredDimensions.push(dimension)
+            }
+        }
+        return filteredDimensions
     }
 
     public getElementsNumber() {
@@ -460,24 +479,6 @@ export class Task {
             }
         }
         return undeletedNotes
-    }
-
-    public updateCountdownTime(position: number = null, attribute: string = null) {
-        let finalTime = this.settings.countdown_time
-        if (position) {
-            for (let positionData of this.settings.countdown_position_values) {
-                if (positionData['position'] == position) {
-                    finalTime = finalTime + positionData['time']
-                }
-            }
-        }
-        if (attribute) {
-            for (let attributeData of this.settings.countdown_attribute_values) {
-                if (attributeData['name'] == attribute)
-                    finalTime = finalTime + attributeData['time']
-            }
-        }
-        return finalTime;
     }
 
 }

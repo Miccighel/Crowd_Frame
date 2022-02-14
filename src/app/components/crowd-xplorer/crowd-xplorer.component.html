@@ -6,7 +6,7 @@
     </mat-form-field>
 
     <button mat-flat-button color="primary" class="search-button"
-            [disabled]="!query.valid || searchInProgress"
+            [disabled]="!query.valid || searchInProgress || (this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior=='disable_forms')"
             (click)="performWebSearch(searchInput.value)">{{searchInProgress === true ? 'SEARCHING...' : 'SEARCH'}}
     </button>
 
@@ -22,8 +22,8 @@
                         <br/>
                         <small>{{row.snippet}}</small>
                     </p>
-
-                    <mat-radio-button labelPosition="before" [disabled]="this.countdownExpired && this.countdownBehavior=='disable_form'" (change)="selectRow(row)" value="{{row.url}}">Select</mat-radio-button>
+                    <mat-radio-button labelPosition="before" [disabled]="this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior=='disable_forms'" (change)="selectRow(row)" value="{{row.url}}">Select
+                    </mat-radio-button>
                 </mat-cell>
             </ng-container>
         </mat-radio-group>

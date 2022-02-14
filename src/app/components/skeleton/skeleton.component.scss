@@ -1,162 +1,5 @@
-::ng-deep .mat-horizontal-stepper-header {
-  pointer-events: none !important;
-}
 
-.mat-radio-group {
-  //display: flex; remove for pairwise method
-  text-align: center;
-  justify-content: space-evenly;
-}
-
-.radio-group {
-  display: flex;
-  margin: auto;
-  padding: 5px;
-  justify-content: space-evenly;
-  height: 0%;
-  align-items: center;
-  max-width: 650px;
-}
-
-.radio-group-button {
-  margin-left: 7px;
-  margin-right: 7px;
-}
-
-.radio-button-separated  {
-  font-style: italic;
-  font-weight: normal;
-}
-
-.document-section mat-form-field {
-  margin-bottom: 1%;
-  max-width: 70%;
-}
-
-.form-note {
-  button:last-child {
-    margin-right: 1%;
-  }
-  font-size: 1em;
-}
-
-.url-field {
-  display: none;
-  padding-top: 0;
-  margin-top: 0;
-  margin-bottom: 1%;
-}
-
-.dimension {
-
-  mat-form-field {
-    width: 100%;
-  }
-
-  margin-bottom: 1%;
-}
-
-.dimension-container {
-  display: flex;
-}
-
-.dimension-counter {
-  flex-grow: 0;
-  flex-basis: 1%;
-  justify-content: center;
-  align-self: center;
-  vertical-align: top;
-  margin-right: 1%;
-}
-
-.dimension-content {
-  flex-grow: 1;
-}
-
-.dimension-name {
-  margin-bottom: 1%;
-}
-
-.dimension-description {
-  margin-bottom: 1%;
-}
-
-.dimension-description p {
-  margin-bottom: 0;
-  margin-top: 0.5%;
-}
-
-.dimension-scale {
-  margin-bottom: 1%;
-}
-
-.dimension-url {
-  margin-bottom: 1%;
-}
-
-.dimension mat-radio-group {
-  margin-top: 0;
-  margin-bottom: 0;
-}
-
-.dimension .magnitude_estimation {
-  font-size: 2em;
-}
-
-.dimension-matrix-container {
-  margin-bottom: 2%;
-}
-
-.dimension-matrix .matrix-header .matrix-header-value, .dimension-matrix .matrix-header .matrix-header-text {
-  position: relative;
-  right: 5px;
-  text-align: center;
-}
-
-.dimension-matrix mat-radio-group {
-  margin-top: 1%;
-  margin-bottom: 1%;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-}
-
-.dimension-matrix mat-radio-group > div:first-child {
-  text-align: justify;
-  flex-basis: 25%;
-}
-
-.dimension-matrix mat-radio-group > div {
-  order: 6;
-  text-align: center;
-  flex: 1;
-}
-
-.dimension-matrix mat-radio-group > div p {
-  margin: 0;
-}
-
-.dimension h2, .instructions h2 {
-  font-weight: lighter;
-}
-
-.result-cell {
-  width: 80%;
-}
-
-.action-cell {
-  width: 20%;
-}
-
-.mat-slider {
-  width: 100%;
-}
-
-.note-current-text {
-  max-width: 33%;
-}
-
-/* |--- TOKEN INPUT SECTION STYLES --| */
+/* |--- TOKEN INPUT SECTION --| */
 
 #token-section {
   margin-bottom: 2%;
@@ -191,14 +34,6 @@
   text-align: center;
 }
 
-/* Task specific styles */
-
-.evaluation-instructions {
-  h2 {
-    font-weight: lighter;
-  }
-  margin-bottom: 1%;
-}
 
 /* |--- COUNTDOWN ---| */
 
@@ -227,7 +62,14 @@
   width: 96%;
 }
 
-/* |--- INSTRUCTIONS SECTIONS ---| */
+/* |--- INSTRUCTIONS ---| */
+
+.evaluation-instructions {
+  h2 {
+    font-weight: lighter;
+  }
+  margin-bottom: 1%;
+}
 
 .instructions-section {
   max-width: 80%;

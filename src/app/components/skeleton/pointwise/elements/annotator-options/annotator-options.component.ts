@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, SimpleChanges} from '@angular/core';
 import {DeviceDetectorService} from "ngx-device-detector";
 import {Task} from "../../../../../models/task";
 import {SectionService} from "../../../../../services/section.service";

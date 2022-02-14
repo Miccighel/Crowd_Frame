@@ -1,6 +1,6 @@
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {FormBuilder, FormControl, FormGroup} from "@angular/forms";
-import {SectionService} from "../../../services/section.service";
+import {SectionService} from "../../../../services/section.service";
 
 @Component({
     selector: 'app-outcome-section',

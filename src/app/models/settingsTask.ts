@@ -15,7 +15,7 @@ export class SettingsTask {
     countdown_modality?: string;
     countdown_attribute?: string;
     countdown_attribute_values?: Array<JSON>;
-    countdown_position_values?: Array<number>;
+    countdown_position_values?: Array<JSON>;
     messages?: Array<string>;
     logger_enable?: boolean;
     logger_options?: Object;
@@ -55,6 +55,8 @@ export class SettingsTask {
         this.countdown_attribute = data ? 'countdown_attribute' in data ? data['countdown_attribute'] : null : null;
         this.countdown_attribute_values = new Array<JSON>()
         if (data) if ('countdown_attribute_values' in data) for (let value of data["countdown_attribute_values"] as Array<JSON>) this.countdown_attribute_values.push(value)
+        this.countdown_position_values = new Array<JSON>()
+        if (data) if ('countdown_position_values' in data) for (let value of data["countdown_position_values"] as Array<JSON>) this.countdown_position_values.push(value)
         this.logger_enable = data ? !!data["logger"] : false;
         this.logger_options = data ? data['logger_option'] ? data['logger_option'] : {
             "button": {

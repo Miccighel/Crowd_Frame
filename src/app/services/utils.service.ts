@@ -1,8 +1,8 @@
 import {Injectable} from "@angular/core";
-import {AbstractControl, FormArray, FormGroup} from "@angular/forms";
+import {AbstractControl, FormArray, FormControl, FormGroup} from "@angular/forms";
 
 @Injectable({
-  providedIn: 'root',
+    providedIn: 'root',
 })
 
 export class UtilsService {
@@ -53,6 +53,22 @@ export class UtilsService {
             end = preCaretTextRange.text.length;
         }
         return {start: start, end: end};
+    }
+
+    public positiveOrZeroNumber(control: FormControl) {
+        if (Number(control.value) < 0) {
+            return {invalid: true};
+        } else {
+            return null;
+        }
+    }
+
+    public positiveNumber(control: FormControl) {
+        if (Number(control.value) < 1) {
+            return {invalid: true};
+        } else {
+            return null;
+        }
     }
 
 }

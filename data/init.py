@@ -101,6 +101,7 @@ bing_api_key = os.getenv('bing_api_key')
 ip_info_token = os.getenv('ip_info_token')
 user_stack_token = os.getenv('user_stack_token')
 fake_json_token = os.getenv('fake_json_token')
+debug_mode = os.getenv('debug_mode')
 
 table_logging_name = f"Crowd_Frame-{task_name}_{batch_name}_Logger"
 table_data_name = f"Crowd_Frame-{task_name}_{batch_name}_Data"
@@ -1203,6 +1204,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         "table_acl_name": f"{table_acl_name}",
         "table_data_name": f"{table_data_name}",
         "table_log_name": f"{table_logging_name}",
+        "debug_mode": f"{debug_mode}"
     }
 
     os.makedirs(folder_build_env_path, exist_ok=True)
@@ -1241,7 +1243,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         "log_server_config": f"{server_config}",
         "table_acl_name": f"{table_acl_name}",
         "table_data_name": f"{table_data_name}",
-        "table_log_name": f"{table_logging_name}"
+        "table_log_name": f"{table_logging_name}",
+        "debug_mode": f"{debug_mode}"
     }
 
     with open(environment_development, 'w') as file:
