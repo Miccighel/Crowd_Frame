@@ -31,7 +31,6 @@ export class Task {
 
     /* Array of documents */
     documents: Array<Document>;
-    documentCurrent: number
     documentsPairwiseSelection: Array<Array<boolean>>;
 
     /* Array of task instructions. Each object represents a paragraph with an optional caption made of steps */
@@ -195,7 +194,7 @@ export class Task {
             if (questionnaire.position == "start" || questionnaire.position == null) this.questionnaireAmountStart = this.questionnaireAmountStart + 1
             if (questionnaire.position == "end") this.questionnaireAmountEnd = this.questionnaireAmountEnd + 1
         }
-
+        console.log(this.questionnaires)
     }
 
     public initializeInstructionsEvaluation(rawEvaluationInstructions) {
@@ -510,5 +509,7 @@ export class Task {
         }
         return undeletedNotes
     }
+
+
 
 }

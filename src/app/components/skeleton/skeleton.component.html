@@ -73,19 +73,13 @@
 
     <!-- Questionnaire markup -->
     <ng-container *ngFor="let questionnaire of this.task.questionnaires; let i=index">
-        <mat-step *ngIf="questionnaire.position=='start' || !questionnaire.position" [stepControl]="questionnairesForm[i]" [editable]="false">
+        <mat-step *ngIf="questionnaire.position=='start' || !questionnaire.position" [editable]="false">
             <ng-template matStepLabel>Q{{i + 1}}</ng-template>
             <app-questionnaire
-                    id="questionnaire-start-{{i}}"
-                    [step]="i"
+                    [questionnaireIndex]="i"
                     [position]=questionnaire.position
-                    [documentsAmount]="this.task.documentsAmount"
-                    [questionnaire]="questionnaire"
-                    [questionnaireAmount]="this.task.questionnaireAmount"
-                    [questionnaireAmountStart]="this.task.questionnaireAmountStart"
-                    [questionnaireAmountEnd]="this.task.questionnaireAmountEnd"
-                    [questionnaireForm]="questionnairesForm[i]"
-                    [taskCompleted]="this.sectionService.taskCompleted"
+                    [task]="this.task"
+                    (formEmitter)="updateQuestionnaireForm($event, i)"
                     (questionnaireFilled)="handleQuestionnaireFilled($event)">
             </app-questionnaire>
         </mat-step>
@@ -93,7 +87,7 @@
 
     <!-- Documents markup -->
     <mat-step *ngFor="let document of this.task.documents; let i=index" [editable]="true">
-        <div class=" container">
+        <div class="container">
             <mat-card>
 
                 <!-- Document header markup -->
@@ -174,16 +168,9 @@
         <mat-step *ngIf="questionnaire.position=='end' || !questionnaire.position" [stepControl]="questionnairesForm[i]" [editable]="false">
             <ng-template matStepLabel>Q{{i + 1}}</ng-template>
             <app-questionnaire
-                    id="questionnaire-end-{{i}}"
-                    [step]="i"
+                    [questionnaireIndex]="i"
                     [position]=questionnaire.position
-                    [documentsAmount]="this.task.documentsAmount"
-                    [questionnaire]="questionnaire"
-                    [questionnaireAmount]="this.task.questionnaireAmount"
-                    [questionnaireAmountStart]="this.task.questionnaireAmountStart"
-                    [questionnaireAmountEnd]="this.task.questionnaireAmountEnd"
-                    [questionnaireForm]="questionnairesForm[i]"
-                    [taskCompleted]="this.sectionService.taskCompleted"
+                    [task]="this.task"
                     (questionnaireFilled)="handleQuestionnaireFilled($event)">
             </app-questionnaire>
         </mat-step>
