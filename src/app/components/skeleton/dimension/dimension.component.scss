@@ -81,3 +81,55 @@
 .dimension h2, .instructions h2 {
   font-weight: lighter;
 }
+
+.dimension-counter {
+  flex-grow: 0;
+  flex-basis: 1%;
+  justify-content: center;
+  align-self: center;
+  vertical-align: top;
+  margin-right: 1%;
+}
+
+/*
+  Pairwise splitted dimension css
+  @AggiunteAbbondo
+*/
+.dimension-content-split{
+  display: table;
+  border-spacing: 2cm 0px;
+  width: 100%;
+  margin-bottom: 30px;
+}
+.dimension-split-inside{
+  display: table-cell;
+  margin-bottom: 30px;
+
+}
+.spanDocument{
+  font-size: 15px;
+  font-weight: bold;
+  text-align: center;
+  padding-bottom: 20px;
+}
+
+
+.dimension-name-center{
+  text-align: center;
+}
+
+
+.dimension-box{
+  display: table-cell;
+  background-color: #FCFCFC;
+  padding-top: 1px;
+  margin-top: -1px;
+  overflow: hidden;
+  border-radius:5px;
+  cursor: pointer;
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+}
+.test{
+  opacity: 100%;
+  z-index: 110;
+}

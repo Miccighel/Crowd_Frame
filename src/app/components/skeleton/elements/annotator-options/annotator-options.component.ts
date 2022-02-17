@@ -1,16 +1,16 @@
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, SimpleChanges} from '@angular/core';
 import {DeviceDetectorService} from "ngx-device-detector";
-import {Task} from "../../../../../models/task";
-import {SectionService} from "../../../../../services/section.service";
-import {Note} from "../../../../../models/annotators/notes";
+import {Task} from "../../../../models/task";
+import {SectionService} from "../../../../services/section.service";
+import {Note} from "../../../../models/annotators/notes";
 import {doHighlight} from "@funktechno/texthighlighter/lib";
-import {NoteStandard} from "../../../../../models/annotators/notes_standard";
-import {UtilsService} from "../../../../../services/utils.service";
+import {NoteStandard} from "../../../../models/annotators/notes_standard";
+import {UtilsService} from "../../../../services/utils.service";
 
 @Component({
     selector: 'app-annotator-options',
     templateUrl: './annotator-options.component.html',
-    styleUrls: ['./annotator-options.component.scss', '../../../skeleton.shared.component.scss'],
+    styleUrls: ['./annotator-options.component.scss', '../../skeleton.shared.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AnnotatorOptionsComponent {

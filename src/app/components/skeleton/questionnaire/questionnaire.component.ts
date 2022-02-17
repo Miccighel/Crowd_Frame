@@ -1,5 +1,5 @@
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {Questionnaire} from "../../../../models/questionnaire";
+import {Questionnaire} from "../../../models/questionnaire";
 import {FormGroup} from "@angular/forms";
 
 @Component({

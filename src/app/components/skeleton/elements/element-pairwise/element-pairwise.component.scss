@@ -1,0 +1,44 @@
+.pairwise-title {
+  font-size: 25px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.pairwise-cointainer {
+  width: 50%;
+  background-color: #FCFCFC;
+  text-align: center;
+  display: inline-block;
+}
+
+.element-box {
+  padding-top: 1%;
+  padding-bottom: 1%;
+}
+
+.element-box-title {
+  text-align: center
+}
+
+.element-box-values {
+  width: 80%;
+  background-color: rgba(0, 0, 0, 0.1);
+  height: 30%;
+  border-radius: 10px;
+  padding: 5px;
+  margin: 0 auto 4%;
+  text-align: center;
+  justify-content: center; /* align horizontal */
+  align-items: center;
+
+}
+
+.element-value-caption {
+  display: block;
+  margin: 5px;
+}
+
+.element-checkbox-selection-text {
+  font-size: 1.5em;
+  font-weight: bold;
+}

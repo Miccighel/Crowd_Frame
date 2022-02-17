@@ -33,12 +33,12 @@ import {Object} from 'aws-sdk/clients/customerprofiles';
 import {SectionService} from "../../services/section.service";
 import {DynamoDBService} from "../../services/dynamoDB.service";
 import {SettingsWorker} from "../../models/settingsWorker";
-import {OutcomeSectionComponent} from "./pointwise/outcome/outcome-section.component";
-import {AnnotatorOptionsComponent} from "./pointwise/elements/annotator-options/annotator-options.component";
+import {OutcomeSectionComponent} from "./outcome/outcome-section.component";
+import {AnnotatorOptionsComponent} from "./elements/annotator-options/annotator-options.component";
 import {UtilsService} from "../../services/utils.service";
 import {DebugService} from "../../services/debug.service";
 import {Hit} from "../../models/hit";
-import {DimensionPointwiseComponent} from "./pointwise/dimension/dimension-pointwise.component";
+import {DimensionComponent} from "./dimension/dimension.component";
 
 /* Component HTML Tag definition */
 @Component({
@@ -107,7 +107,7 @@ export class SkeletonComponent implements OnInit {
 
     /* Reference to the outcome section component */
     @ViewChildren(AnnotatorOptionsComponent) annotatorOptions: QueryList<AnnotatorOptionsComponent>;
-    @ViewChildren(DimensionPointwiseComponent) dimensionsPointwise: QueryList<DimensionPointwiseComponent>;
+    @ViewChildren(DimensionComponent) dimensionsPointwise: QueryList<DimensionComponent>;
 
     /* |--------- COUNTDOWN HANDLING ---------| */
 
@@ -186,10 +186,10 @@ export class SkeletonComponent implements OnInit {
         this.task.batchName = this.configService.environment.batchName
 
         if (this.configService.environment.debug_mode) {
+            this.enableTask()
             let hits = await this.S3Service.downloadHits(this.configService.environment)
             this.tokenInput.setValue(this.debugService.selectRandomToken(hits))
         }
-
 
         let url = new URL(window.location.href);
 
@@ -693,37 +693,6 @@ export class SkeletonComponent implements OnInit {
             /* |--------- DIMENSIONS ELEMENTS (see: dimensions.json) ---------| */
 
             this.task.initializeDimensions(await this.S3Service.downloadDimensions(this.configService.environment))
-            /**Iniziliazziare il vettore degli statement */
-            this.dimensionValueinsert();
-
-            for (let index = 0; index < this.task.documentsAmount; index++) {
-                let controlsConfig = {};
-
-                if (this.task.settings.modality == 'pairwise') {
-                    if (this.task.documents[index] != undefined) {
-                        if (this.task.documents[index] != null) controlsConfig[`pairwise_value_selected`] = new FormControl('', [Validators.required]);
-                    }
-                    for (let index_dimension = 0; index_dimension < this.task.dimensions.length; index_dimension++) {
-                        let dimension = this.task.dimensions[index_dimension];
-                        if (dimension.scale) {
-
-                            for (let i = 0; i < this.task.documents[index]['statements'].length; i++) {
-                                if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value_${i}`] = new FormControl('', [Validators.required]);
-                                if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value_${i}`] = new FormControl('', [Validators.required]);
-                                if (dimension.scale.type == "magnitude_estimation") {
-                                    if ((<ScaleMagnitude>dimension.scale).lower_bound) {
-                                        controlsConfig[`${dimension.name}_value_${i}`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min), Validators.required]);
-                                    } else {
-                                        controlsConfig[`${dimension.name}_value_${i}`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min + 1), Validators.required]);
-                                    }
-                                }
-                                //if (dimension.justification) controlsConfig[`${dimension.name}_justification_${i}`] = new FormControl('', [Validators.required, this.validateJustification.bind(this)])
-                            }
-                            //if (dimension.url) controlsConfig[`${dimension.name}_url`] = new FormControl('', [Validators.required, this.validateSearchEngineUrl.bind(this)]);
-                        }
-                    }
-                }
-            }
 
             /* Section service gets updated with loaded values */
             this.updateAmounts()
@@ -761,20 +730,30 @@ export class SkeletonComponent implements OnInit {
         let stepper = document.getElementById('stepper');
         stepper.scrollIntoView();
         this.sectionService.increaseIndex()
-        this.task.currentDocument = this.sectionService.documentIndex
+        this.task.documentCurrent = this.sectionService.documentIndex
     }
 
     public previousStep() {
         let stepper = document.getElementById('stepper');
         stepper.scrollIntoView();
         this.sectionService.decreaseIndex()
-        this.task.currentDocument = this.sectionService.documentIndex
+        this.task.documentCurrent = this.sectionService.documentIndex
     }
 
     /* |--------- DIMENSIONS ---------| */
 
-    public storeAssessmentForm(form, documentIndex) {
-        this.assessmentForms[documentIndex] = form
+    public updateAssessmentForm(form, documentIndex) {
+
+        if (this.assessmentForms[documentIndex]) {
+            let controlsConfig = {}
+            let previousControls = this.assessmentForms[documentIndex].controls
+            for (const [name, control] of Object.entries(previousControls)) controlsConfig[name] = control
+            for (const [name, control] of Object.entries(form.controls)) controlsConfig[name] = control
+            this.assessmentForms[documentIndex] = this.formBuilder.group(controlsConfig)
+            this.assessmentForms[documentIndex].setErrors(form.errors)
+        } else {
+            this.assessmentForms[documentIndex] = form
+        }
     }
 
     /* |--------- COUNTDOWN ---------| */
@@ -791,119 +770,6 @@ export class SkeletonComponent implements OnInit {
         }
     }
 
-    /* |--------- PAIRWISE ---------| */
-
-    /*
-    * //@AggiunteAbbondo
-    /* contains the last element(pairwise) selected */
-    valueCheck: number
-    //selected_statement:string;
-    selected_stetements: Object[] = [];
-    checkedValue = new Array();
-
-    /*
-    //@AggiunteAbbondo
-      Funziona che cambia il colore del div dello statemente
-
-      this.checkedValue[documentnumber][0][0]=true mette al true la prima dimension cosi da venire visuallizata
-    */
-    public changeColor(valueData: Object, documentnumber: number) {
-        //this.selected_statement=valueData["value"]
-        //this.selected_stetements[documentnumber]=valueData["value"];
-        let a = document.getElementById("StatementA." + documentnumber) as HTMLInputElement
-        let b = document.getElementById("StatementB." + documentnumber) as HTMLInputElement
-        if (valueData["value"] == "A") {
-            a.style.backgroundColor = "#B6BDE2"
-            b.style.backgroundColor = "#FCFCFC"
-        } else if (valueData["value"] == "B") {
-            b.style.backgroundColor = "#B6BDE2"
-            a.style.backgroundColor = "#FCFCFC"
-        } else {
-            b.style.backgroundColor = "#B6BDE2"
-            a.style.backgroundColor = "#B6BDE2"
-        }
-
-
-        if (valueData['source']['_checked'] == true) {
-
-            // mette al true la prima dimension del primo documento cosi da venire visualizzata
-            this.checkedValue[documentnumber][0][0] = true
-            this.checkedValue[documentnumber][0][1] = true
-        }
-    }
-
-    //@AggiunteAbbondo
-    // metodo che crea l'array tridimensionale
-    public dimensionValueinsert() {
-        for (let i = 0; i < this.task.documentsAmount; i++) {
-            let statement = new Array();
-            for (let j = 0; j < this.task.dimensionsAmount; j++) {
-                let pairwise = new Array()
-                pairwise[0] = false
-                pairwise[1] = false
-                statement[j] = pairwise
-            }
-            this.checkedValue[i] = statement
-        }
-
-    }
-
-    //@AggiunteAbbondo
-    // Metodo che cambia la lettera che mostrata sulla scritta Answer for Statement
-    public changeletter(index: number) {
-        if (index == 0) {
-            return 'A';
-        } else {
-            return 'B';
-        }
-    }
-
-    //@AggiunteAbbondo
-    //Metodo che controllo se le due dimension(Scale) precedenti sono state cliccate
-    public checkdimension(documentnumber: number, dimensionnumber: number) {
-        if (this.checkedValue[documentnumber][dimensionnumber][0] == true && this.checkedValue[documentnumber][dimensionnumber][1] == true) {
-            return true
-        } else {
-            return false
-        }
-    }
-
-    //@AggiunteAbbondo
-    //Cambia il valore delle dimesion(Scale) da false a  true
-    public changeValue(documentnumber: number, dimensionnumber: number, j: number) {
-        if (dimensionnumber >= this.task.dimensionsAmount) {
-        } else {
-            this.checkedValue[documentnumber][dimensionnumber][j] = true
-        }
-    }
-
-    //@AggiunteAbbondo
-    //Cambia il colore del radio button una volta cliccato sullo statement
-    public changeColorRadio(valueData: Object, document_index: number) {
-        let a = document.getElementById("radioStatementA." + document_index) as HTMLInputElement
-        let b = document.getElementById("radioStatementB." + document_index) as HTMLInputElement
-        if (valueData["value"] == "A") {
-            if (b.classList.contains('mat-radio-checked')) {
-                b.classList.remove('mat-radio-checked')
-            }
-            a.classList.add('mat-radio-checked')
-        } else {
-            if (a.classList.contains('mat-radio-checked')) {
-                a.classList.remove('mat-radio-checked')
-            }
-            b.classList.add('mat-radio-checked')
-        }
-    }
-
-    //@AggiunteAbbondo
-    //Cambia il colore per gli altri due radio quanto si clicca sullo radio centrale
-    public changeBoth(document_index: number) {
-        let a = document.getElementById("radioStatementA." + document_index) as HTMLInputElement
-        let b = document.getElementById("radioStatementB." + document_index) as HTMLInputElement
-
-        b.classList.remove('mat-radio-checked')
-        a.classList.remove('mat-radio-checked')
-    }
 
     /* |--------- QUALITY CHECKS ---------| */
 
@@ -1165,7 +1031,7 @@ export class SkeletonComponent implements OnInit {
 
         this.computeTimestamps(currentElement, completedElement, action)
         this.handleCountdowns(currentElement, documentIndex, action)
-        if (this.task.settings.annotator.type == 'options') this.annotatorOptions.toArray()[documentIndex].handleNotes(completedElement)
+        if(this.task.settings.annotator) if (this.task.settings.annotator.type == 'options') this.annotatorOptions.toArray()[documentIndex].handleNotes(completedElement)
 
         let qualityChecks = null
         if (action == "Finish") {

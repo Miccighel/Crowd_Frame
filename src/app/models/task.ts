@@ -31,7 +31,8 @@ export class Task {
 
     /* Array of documents */
     documents: Array<Document>;
-    currentDocument: number
+    documentCurrent: number
+    documentsPairwiseSelection: Array<Array<boolean>>;
 
     /* Array of task instructions. Each object represents a paragraph with an optional caption made of steps */
     instructionsGeneral: Array<Instruction>;
@@ -48,6 +49,7 @@ export class Task {
     dimensionsSelectedValues: Array<object>;
     /* Reference to the current dimension */
     currentDimension: number;
+    dimensionsPairwiseSelection = [];
 
     /* Array to store search engine queries and responses, one for each document within a Hit */
     searchEngineQueries: Array<object>;
@@ -113,9 +115,10 @@ export class Task {
             this.searchEngineSelectedResponses[index]["data"] = [];
             this.searchEngineSelectedResponses[index]["amount"] = 0;
         }
+
+        this.notesDone = new Array<boolean>();
+        this.annotationsDisabled = new Array<boolean>();
         if (this.settings.annotator) {
-            this.notesDone = new Array<boolean>();
-            this.annotationsDisabled = new Array<boolean>();
             switch (this.settings.annotator.type) {
                 case "options":
                     this.notes = new Array<Array<NoteStandard>>(this.documentsAmount);
@@ -129,28 +132,36 @@ export class Task {
                     for (let i = 0; i < this.notesDone.length; i++) this.notesDone[i] = false;
                     break
             }
+        } else {
+            this.notes = new Array<Array<NoteStandard>>(this.documentsAmount);
+            for (let i = 0; i < this.notes.length; i++) this.notes[i] = [];
+            for (let index = 0; index < this.notes.length; index++) this.annotationsDisabled.push(true)
         }
-        if (this.settings.countdown_time >= 0) {
-            this.documentsCountdownTime = new Array<number>(this.documentsAmount);
-            this.countdownsExpired = new Array<boolean>(this.documentsAmount);
-            for (let index = 0; index < this.documents.length; index++) {
-                this.documentsCountdownTime[index] = this.settings.countdown_time;
-                if (this.settings.countdown_attribute_values[index]) {
-                    for (const attributeValue of Object.values(this.documents[index])) {
-                        if (attributeValue == this.settings.countdown_attribute_values[index]['name']) {
-                            this.documentsCountdownTime[index] = this.documentsCountdownTime[index] + this.settings.countdown_attribute_values[index]['time']
-                        }
+        this.documentsCountdownTime = new Array<number>(this.documentsAmount);
+        this.countdownsExpired = new Array<boolean>(this.documentsAmount);
+        for (let index = 0; index < this.documents.length; index++) {
+            this.documentsCountdownTime[index] = this.settings.countdown_time;
+            if (this.settings.countdown_attribute_values[index]) {
+                for (const attributeValue of Object.values(this.documents[index])) {
+                    if (attributeValue == this.settings.countdown_attribute_values[index]['name']) {
+                        this.documentsCountdownTime[index] = this.documentsCountdownTime[index] + this.settings.countdown_attribute_values[index]['time']
                     }
                 }
-                if (this.settings.countdown_position_values[index])
-                    this.documentsCountdownTime[index] = this.documentsCountdownTime[index] + this.settings.countdown_position_values[index]['time']
-                this.countdownsExpired[index] = false
             }
-            for (let index = 0; index < this.documents.length; index++) {
-                this.countdownsExpired[index] = false
-            }
+            if (this.settings.countdown_position_values[index])
+                this.documentsCountdownTime[index] = this.documentsCountdownTime[index] + this.settings.countdown_position_values[index]['time']
+            this.countdownsExpired[index] = false
         }
-
+        for (let index = 0; index < this.documents.length; index++) {
+            this.countdownsExpired[index] = false
+        }
+        this.documentsPairwiseSelection = new Array<Array<boolean>>(this.documentsAmount);
+        for (let i = 0; i < this.documentsPairwiseSelection.length; i++) {
+            let selection = []
+            selection[0] = false
+            selection[1] = false
+            this.documentsPairwiseSelection[i] = selection
+        }
         this.goldDocuments = new Array<Document>();
         /* Indexes of the gold elements are retrieved */
         for (let index = 0; index < this.documentsAmount; index++) {
@@ -207,6 +218,16 @@ export class Task {
             this.dimensionsSelectedValues[index] = {};
             this.dimensionsSelectedValues[index]["data"] = [];
             this.dimensionsSelectedValues[index]["amount"] = 0;
+        }
+        /* @Cristian Abbondo */
+        /* Definizione array tridimensionale selezione elementi */
+        for (let i = 0; i < this.documentsAmount; i++) {
+            this.dimensionsPairwiseSelection[i] = []
+            for (let j = 0; j < this.dimensionsAmount; j++) {
+                this.dimensionsPairwiseSelection[i][j] = []
+                this.dimensionsPairwiseSelection[i][j][0] = false
+                this.dimensionsPairwiseSelection[i][j][1] = false
+            }
         }
         this.goldDimensions = new Array<Dimension>();
         /* Indexes of the gold dimensions are retrieved */
@@ -465,6 +486,15 @@ export class Task {
             check = true
         }
         return check
+    }
+
+    public checkAtLeastOneDocumentSelected(documentIndex: number) {
+        let atLeastOneDocument = false
+        for (let selection of this.documentsPairwiseSelection[documentIndex]) {
+            if (selection)
+                atLeastOneDocument = true
+        }
+        return atLeastOneDocument
     }
 
     /*

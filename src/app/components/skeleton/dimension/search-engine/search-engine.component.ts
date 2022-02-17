@@ -1,19 +1,19 @@
 import {ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
-import {SectionService} from "../../../../../services/section.service";
-import {UtilsService} from "../../../../../services/utils.service";
-import {Task} from "../../../../../models/task";
+import {SectionService} from "../../../../services/section.service";
+import {UtilsService} from "../../../../services/utils.service";
+import {Task} from "../../../../models/task";
 import {DeviceDetectorService} from "ngx-device-detector";
-import {Dimension} from "../../../../../models/dimension";
+import {Dimension} from "../../../../models/dimension";
 import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
 import {Object} from "aws-sdk/clients/customerprofiles";
-import {Document} from "../../../../../../../data/build/skeleton/document";
+import {Document} from "../../../../../../data/build/skeleton/document";
 import {MatStepper} from "@angular/material/stepper";
-import {CrowdXplorer} from "../../../../crowd-xplorer/crowd-xplorer.component";
+import {CrowdXplorer} from "./crowd-xplorer/crowd-xplorer.component";
 
 @Component({
     selector: 'app-search-engine',
     templateUrl: './search-engine.component.html',
-    styleUrls: ['./search-engine.component.scss', '../dimension.shared.component.scss']
+    styleUrls: ['./search-engine.component.scss']
 })
 export class SearchEngineComponent implements OnInit {
 
@@ -59,9 +59,10 @@ export class SearchEngineComponent implements OnInit {
         let controlsConfig = {};
         if (this.dimension.url) controlsConfig[`${this.dimension.name}_url`] = new FormControl('', [Validators.required, this.validateSearchEngineUrl.bind(this)]);
         this.searchEngineForm = this.formBuilder.group(controlsConfig)
-        this.searchEngineForm.valueChanges.subscribe(form => {
+        this.searchEngineForm.valueChanges.subscribe(values => {
             this.formEmitter.emit(this.searchEngineForm)
         })
+        this.formEmitter.emit(this.searchEngineForm)
     }
 
     /*

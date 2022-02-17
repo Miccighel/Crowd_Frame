@@ -33,7 +33,7 @@ import {MatToolbarModule} from "@angular/material/toolbar";
 import {MatSlideToggleModule} from '@angular/material/slide-toggle';
 /* Components imports */
 import {SkeletonComponent} from "./components/skeleton/skeleton.component";
-import {CrowdXplorer} from "./components/crowd-xplorer/crowd-xplorer.component";
+import {CrowdXplorer} from "./components/skeleton/dimension/search-engine/crowd-xplorer/crowd-xplorer.component";
 import {InstructionsComponent, InstructionsDialog} from "./components/skeleton/instructions/instructions.component";
 import {GeneratorComponent} from './components/generator/generator.component';
 import {LoaderComponent} from './components/loader/loader.component';
@@ -52,7 +52,7 @@ import {ButtonDirective, CrowdXplorerDirective, InputDirective, RadioDirective, 
 import {SectionService} from "./services/section.service";
 import {from, Observable} from "rxjs";
 import {tap} from "rxjs/operators";
-import {QuestionnaireComponent} from './components/skeleton/pointwise/questionnaire/questionnaire.component';
+import {QuestionnaireComponent} from './components/skeleton/questionnaire/questionnaire.component';
 import {WorkerChecksStepComponent} from './components/generator/generator-steps/worker-checks-step/worker-checks-step.component';
 import {QuestionnaireStepComponent} from './components/generator/generator-steps/questionnaire-step/questionnaire-step.component';
 import {InstructionsStepComponent} from './components/generator/generator-steps/instructions-step/instructions-step.component';
@@ -60,19 +60,20 @@ import {SearchEngineStepComponent} from './components/generator/generator-steps/
 import {DimensionsStepComponent} from './components/generator/generator-steps/dimensions-step/dimensions-step.component';
 import {TaskSettingsStepComponent} from './components/generator/generator-steps/task-settings-step/task-settings-step.component';
 import {SummaryStepComponent} from './components/generator/generator-steps/summary-step/summary-step.component';
-import {QuestionComponent} from './components/skeleton/pointwise/questionnaire/question/question.component';
-import {OutcomeSectionComponent} from './components/skeleton/pointwise/outcome/outcome-section.component';
-import {AnnotatorLawsComponent} from './components/skeleton/pointwise/elements/annotator-laws/annotator-laws.component';
-import {AnnotatorOptionsComponent} from './components/skeleton/pointwise/elements/annotator-options/annotator-options.component';
-import {ElementPointwiseComponent} from './components/skeleton/pointwise/elements/element-pointwise/element-pointwise.component';
-import {DimensionPointwiseComponent } from './components/skeleton/pointwise/dimension/dimension-pointwise.component';
-import { SearchEngineComponent } from './components/skeleton/pointwise/dimension/search-engine/search-engine.component';
+import {QuestionComponent} from './components/skeleton/questionnaire/question/question.component';
+import {OutcomeSectionComponent} from './components/skeleton/outcome/outcome-section.component';
+import {AnnotatorLawsComponent} from './components/skeleton/elements/annotator-laws/annotator-laws.component';
+import {AnnotatorOptionsComponent} from './components/skeleton/elements/annotator-options/annotator-options.component';
+import {ElementPointwiseComponent} from './components/skeleton/elements/element-pointwise/element-pointwise.component';
+import {DimensionComponent} from './components/skeleton/dimension/dimension.component';
+import {SearchEngineComponent} from './components/skeleton/dimension/search-engine/search-engine.component';
+import {ElementPairwiseComponent} from './components/skeleton/elements/element-pairwise/element-pairwise.component';
 
 function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
     return () => from(actionLogger.downloadOpt()).pipe(tap(data => {
-        actionLogger.opt = data['logOption']
+        actionLogger.opt = data['logger_option']
         actionLogger.isActive = data['logger']
-        actionLogger.endpoint = data['serverEndpoint']
+        actionLogger.endpoint = data['server_endpoint']
     }))
 }
 
@@ -103,8 +104,9 @@ function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
         AnnotatorLawsComponent,
         AnnotatorOptionsComponent,
         ElementPointwiseComponent,
-        DimensionPointwiseComponent,
-        SearchEngineComponent
+        DimensionComponent,
+        SearchEngineComponent,
+        ElementPairwiseComponent
     ],
     imports: [
         BrowserModule,

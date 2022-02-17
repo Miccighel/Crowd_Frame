@@ -1,6 +1,6 @@
-<form [formGroup]="this.searchEngineForm">
+<form [formGroup]="this.searchEngineForm" *ngIf="this.dimension.url">
     <!-- Dimension search engine interface markup -->
-    <div *ngIf="this.dimension.url" class="dimension-container dimension-url">
+    <div class="dimension-container dimension-url">
         <div class="dimension-counter">a.</div>
         <div class="dimension-content search-engine">
             <app-crowd-xplorer

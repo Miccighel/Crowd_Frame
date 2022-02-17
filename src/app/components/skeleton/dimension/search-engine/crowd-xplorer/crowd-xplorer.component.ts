@@ -1,5 +1,5 @@
 /* Core modules */
-import {ChangeDetectorRef, Component, EventEmitter, Input, Output, SimpleChanges, ViewChild} from '@angular/core';
+import {ChangeDetectorRef, Component, EventEmitter, Input, Output, ViewChild} from '@angular/core';
 /* Loading screen module */
 import {NgxUiLoaderService} from "ngx-ui-loader";
 /* Material design modules */
@@ -8,19 +8,18 @@ import {MatPaginator} from "@angular/material/paginator";
 /* Reactive forms modules */
 import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
 /* Services */
-import {BingService} from '../../services/bing.service';
-import {BingWebSearchResponse} from "../../models/crowd-xplorer/bingWebSearchResponse";
-import {FakerService} from "../../services/faker.service";
-import {FakerSearchResponse} from "../../models/crowd-xplorer/fakerSearchResponse";
-import {PubmedService} from "../../services/pudmed.service";
-import {PubmedSearchResponse} from "../../models/crowd-xplorer/pubmedSearchResponse";
-import {PubmedSummaryResponse} from '../../models/crowd-xplorer/pubmedSummaryResponse';
-import {ConfigService} from "../../services/config.service";
-import * as AWS from "aws-sdk";
-import {SettingsSearchEngine} from "../../models/settingsSearchEngine";
+import {BingService} from '../../../../../services/search_engine/bing.service';
+import {BingWebSearchResponse} from "../../../../../models/crowd-xplorer/bingWebSearchResponse";
+import {FakerService} from "../../../../../services/search_engine/faker.service";
+import {FakerSearchResponse} from "../../../../../models/crowd-xplorer/fakerSearchResponse";
+import {PubmedService} from "../../../../../services/search_engine/pudmed.service";
+import {PubmedSearchResponse} from "../../../../../models/crowd-xplorer/pubmedSearchResponse";
+import {PubmedSummaryResponse} from "../../../../../models/crowd-xplorer/pubmedSummaryResponse";
+import {ConfigService} from "../../../../../services/config.service";
+import {SettingsSearchEngine} from "../../../../../models/settingsSearchEngine";
 /* Debug config import */
-import {S3Service} from "../../services/s3.service";
-import {Task} from "../../models/task";
+import {S3Service} from "../../../../../services/s3.service";
+import {Task} from "../../../../../models/task";
 
 /* Component HTML Tag definition */
 @Component({
