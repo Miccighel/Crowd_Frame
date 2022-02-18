@@ -35,7 +35,6 @@ export class OutcomeSectionComponent implements OnInit {
         formBuilder: FormBuilder,
         sectionService: SectionService
     ) {
-
         this.formBuilder = formBuilder
         this.sectionService = sectionService
 
@@ -51,7 +50,8 @@ export class OutcomeSectionComponent implements OnInit {
 
     }
 
-    ngOnInit(): void {}
+    ngOnInit(): void {
+    }
 
     public completeTask() {
         window.open(`https://app.prolific.co/submissions/complete?cc=${this.completionCode}`, "_blank");

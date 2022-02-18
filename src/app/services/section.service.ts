@@ -185,6 +185,14 @@ export class SectionService {
         return this._instructionsAllowed;
     }
 
+    public stepIndexes() {
+        let steps = []
+        for (let i = 0; i < this.questionnaireAmountStart + this.documentsAmount + this.questionnaireAmountEnd; i++) {
+            steps[i] = i
+        }
+        return steps
+    }
+
     decreaseAllowedTries() {
         this.allowedTries = this._allowedTries - 1
     }

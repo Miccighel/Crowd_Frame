@@ -614,6 +614,14 @@ export class SkeletonComponent implements OnInit {
                 this.countdown.first.begin();
             }
 
+            this.sectionService.documentsAmount = this.task.documentsAmount
+            this.sectionService.questionnaireAmountStart = this.task.questionnaireAmountStart
+            this.sectionService.questionnaireAmountEnd = this.task.questionnaireAmountEnd
+            this.sectionService.questionnaireAmount = this.task.questionnaireAmount
+
+            /* Detect changes within the DOM and update the page */
+            this.changeDetector.detectChanges();
+
             /* The loading spinner is stopped */
             this.ngxService.stop();
 
