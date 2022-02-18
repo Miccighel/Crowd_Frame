@@ -33,7 +33,7 @@ import {MatToolbarModule} from "@angular/material/toolbar";
 import {MatSlideToggleModule} from '@angular/material/slide-toggle';
 /* Components imports */
 import {SkeletonComponent} from "./components/skeleton/skeleton.component";
-import {CrowdXplorer} from "./components/skeleton/dimension/search-engine/crowd-xplorer/crowd-xplorer.component";
+import {CrowdXplorer} from "./components/skeleton/document/dimension/search-engine/crowd-xplorer/crowd-xplorer.component";
 import {InstructionsComponent, InstructionsDialog} from "./components/skeleton/instructions/instructions.component";
 import {GeneratorComponent} from './components/generator/generator.component';
 import {LoaderComponent} from './components/loader/loader.component';
@@ -62,12 +62,13 @@ import {TaskSettingsStepComponent} from './components/generator/generator-steps/
 import {SummaryStepComponent} from './components/generator/generator-steps/summary-step/summary-step.component';
 import {QuestionComponent} from './components/skeleton/questionnaire/question/question.component';
 import {OutcomeSectionComponent} from './components/skeleton/outcome/outcome-section.component';
-import {AnnotatorLawsComponent} from './components/skeleton/elements/annotator-laws/annotator-laws.component';
-import {AnnotatorOptionsComponent} from './components/skeleton/elements/annotator-options/annotator-options.component';
-import {ElementPointwiseComponent} from './components/skeleton/elements/element-pointwise/element-pointwise.component';
-import {DimensionComponent} from './components/skeleton/dimension/dimension.component';
-import {SearchEngineComponent} from './components/skeleton/dimension/search-engine/search-engine.component';
-import {ElementPairwiseComponent} from './components/skeleton/elements/element-pairwise/element-pairwise.component';
+import {AnnotatorLawsComponent} from './components/skeleton/document/elements/annotator-laws/annotator-laws.component';
+import {AnnotatorOptionsComponent} from './components/skeleton/document/elements/annotator-options/annotator-options.component';
+import {ElementPointwiseComponent} from './components/skeleton/document/elements/element-pointwise/element-pointwise.component';
+import {DimensionComponent} from './components/skeleton/document/dimension/dimension.component';
+import {SearchEngineComponent} from './components/skeleton/document/dimension/search-engine/search-engine.component';
+import {ElementPairwiseComponent} from './components/skeleton/document/elements/element-pairwise/element-pairwise.component';
+import { DocumentComponent } from './components/skeleton/document/document.component';
 
 function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
     return () => from(actionLogger.downloadOpt()).pipe(tap(data => {
@@ -106,7 +107,8 @@ function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
         ElementPointwiseComponent,
         DimensionComponent,
         SearchEngineComponent,
-        ElementPairwiseComponent
+        ElementPairwiseComponent,
+        DocumentComponent
     ],
     imports: [
         BrowserModule,

@@ -8,18 +8,18 @@ import {MatPaginator} from "@angular/material/paginator";
 /* Reactive forms modules */
 import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
 /* Services */
-import {BingService} from '../../../../../services/search_engine/bing.service';
-import {BingWebSearchResponse} from "../../../../../models/crowd-xplorer/bingWebSearchResponse";
-import {FakerService} from "../../../../../services/search_engine/faker.service";
-import {FakerSearchResponse} from "../../../../../models/crowd-xplorer/fakerSearchResponse";
-import {PubmedService} from "../../../../../services/search_engine/pudmed.service";
-import {PubmedSearchResponse} from "../../../../../models/crowd-xplorer/pubmedSearchResponse";
-import {PubmedSummaryResponse} from "../../../../../models/crowd-xplorer/pubmedSummaryResponse";
-import {ConfigService} from "../../../../../services/config.service";
-import {SettingsSearchEngine} from "../../../../../models/settingsSearchEngine";
+import {BingService} from '../../../../../../services/search_engine/bing.service';
+import {BingWebSearchResponse} from "../../../../../../models/crowd-xplorer/bingWebSearchResponse";
+import {FakerService} from "../../../../../../services/search_engine/faker.service";
+import {FakerSearchResponse} from "../../../../../../models/crowd-xplorer/fakerSearchResponse";
+import {PubmedService} from "../../../../../../services/search_engine/pudmed.service";
+import {PubmedSearchResponse} from "../../../../../../models/crowd-xplorer/pubmedSearchResponse";
+import {PubmedSummaryResponse} from "../../../../../../models/crowd-xplorer/pubmedSummaryResponse";
+import {ConfigService} from "../../../../../../services/config.service";
+import {SettingsSearchEngine} from "../../../../../../models/settingsSearchEngine";
 /* Debug config import */
-import {S3Service} from "../../../../../services/s3.service";
-import {Task} from "../../../../../models/task";
+import {S3Service} from "../../../../../../services/s3.service";
+import {Task} from "../../../../../../models/task";
 
 /* Component HTML Tag definition */
 @Component({

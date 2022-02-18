@@ -69,12 +69,36 @@
 </div>
 
 <!-- Task body section -->
-<mat-horizontal-stepper [linear]="true" labelPosition="bottom" id="stepper" #stepper *ngIf="this.task.settings && this.task.documents && this.task.questionnaires && this.task.dimensions && this.sectionService.taskStarted">
+<mat-horizontal-stepper [linear]="true" labelPosition="bottom" id="stepper" #stepper *ngIf="this.sectionService.task">
 
     <mat-step *ngFor="let stepIndex of this.sectionService.stepIndexes()">
-        <ng-template matStepLabel>E{{stepIndex + 1}}</ng-template>
+        <ng-template matStepLabel>
+            {{this.task.getElementIndex(stepIndex)['elementType']}}<span *ngIf="this.task.getElementIndex(stepIndex)['elementType']!='Outcome'">{{stepIndex + 1}}</span>
+        </ng-template>
+        <app-questionnaire
+                *ngIf="this.task.getElementIndex(stepIndex)['elementType']=='Q'"
+                [questionnaireIndex]="this.task.getElementIndex(stepIndex)['elementIndex']"
+                (formEmitter)="this.storeQuestionnaireForm($event, this.task.getElementIndex(stepIndex)['elementIndex'])"
+        >
+        </app-questionnaire>
+        <app-document
+                *ngIf="this.task.getElementIndex(stepIndex)['elementType']=='D'"
+                [documentIndex]="this.task.getElementIndex(stepIndex)['elementIndex']"
+                (formEmitter)="this.storeDocumentForm($event, this.task.getElementIndex(stepIndex)['elementIndex'])"
+        ></app-document>
+        <app-outcome-section *ngIf="this.task.getElementIndex(stepIndex)['elementType']=='Outcome'"
+                             [platformName]="this.configService.environment.platformName"
+                             [triesAllowed]="this.task.settings.allowed_tries"
+                             [tryCurrent]="this.task.tryCurrent"
+                             [messages]="this.task.settings.messages"
+                             [tokenOutput]="this.task.tokenOutput"
+                             [completionCode]="this.configService.environment.prolific_completion_code"
+                             (commentEmitter)="performCommentSaving($event)"
+                             (performReset)="this.performReset()"
+        ></app-outcome-section>
+
 
     </mat-step>
 
-
 </mat-horizontal-stepper>
+

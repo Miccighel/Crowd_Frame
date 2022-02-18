@@ -1,15 +1,15 @@
 import {ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {DeviceDetectorService} from "ngx-device-detector";
-import {SectionService} from "../../../../services/section.service";
-import {UtilsService} from "../../../../services/utils.service";
-import {Task} from "../../../../models/task";
+import {SectionService} from "../../../../../services/section.service";
+import {UtilsService} from "../../../../../services/utils.service";
+import {Task} from "../../../../../models/task";
 import {Object} from "aws-sdk/clients/customerprofiles";
 import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
 
 @Component({
     selector: 'app-element-pairwise',
     templateUrl: './element-pairwise.component.html',
-    styleUrls: ['./element-pairwise.component.scss', '../../skeleton.shared.component.scss']
+    styleUrls: ['./element-pairwise.component.scss', '../../document.component.scss']
 })
 export class ElementPairwiseComponent implements OnInit {
 
@@ -24,9 +24,9 @@ export class ElementPairwiseComponent implements OnInit {
 
     selectionForms: FormGroup[]
 
-    @Input() task: Task
     @Input() documentIndex: number
 
+    task: Task
     documentLeftSelection: boolean
     documentRightSelection: boolean
 
@@ -44,6 +44,7 @@ export class ElementPairwiseComponent implements OnInit {
         this.sectionService = sectionService
         this.utilsService = utilsService
         this.formBuilder = formBuilder
+        this.task = this.sectionService.task
         this.formEmitter = new EventEmitter<FormGroup>();
     }
 

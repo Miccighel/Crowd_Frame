@@ -23,15 +23,13 @@ export class QuestionnaireComponent implements OnInit {
     /* Angular Reactive Form builder (see https://angular.io/guide/reactive-forms) */
     formBuilder: FormBuilder;
 
-    @Input() task: Task
-    @Input() position: string
     @Input() questionnaireIndex: number
 
+    task: Task
     questionnaire: Questionnaire
     questionnaireForm: FormGroup
 
-    @Output() formEmitter: EventEmitter<FormGroup>;
-    @Output() questionnaireFilled: EventEmitter<Object>;
+    @Output() formEmitter: EventEmitter<Object>;
 
     constructor(
         changeDetector: ChangeDetectorRef,
@@ -45,16 +43,15 @@ export class QuestionnaireComponent implements OnInit {
         this.utilsService = utilsService
         this.formBuilder = formBuilder
         this.formEmitter = new EventEmitter<FormGroup>();
-        this.questionnaireFilled = new EventEmitter<Object>()
+        this.task = this.sectionService.task
     }
 
     ngOnInit(): void {
         this.questionnaire = this.task.questionnaires[this.questionnaireIndex];
-        let questionnaire = this.task.questionnaires[this.questionnaireIndex];
-        if (questionnaire.type == "standard" || questionnaire.type == "likert") {
+        if (this.questionnaire.type == "standard" || this.questionnaire.type == "likert") {
             let controlsConfig = {};
-            for (let indexQuestion = 0; indexQuestion < questionnaire.questions.length; indexQuestion++) {
-                let currentQuestion = this.task.questionnaires[this.questionnaireIndex].questions[indexQuestion]
+            for (let indexQuestion = 0; indexQuestion < this.questionnaire.questions.length; indexQuestion++) {
+                let currentQuestion = this.questionnaire.questions[indexQuestion]
                 if (currentQuestion.type != 'section') {
                     let controlName = `${currentQuestion.name}`
                     let validators = []
@@ -139,22 +136,16 @@ export class QuestionnaireComponent implements OnInit {
         } else {
             /* If the questionnaire is a CRT one it means that it has only one question where the answer must be a number between 0 and 100 chosen by user; required, max and min validators are needed */
             let controlsConfig = {};
-            for (let index_question = 0; index_question < questionnaire.questions.length; index_question++) controlsConfig[`${this.task.questionnaires[this.questionnaireIndex].questions[index_question].name}`] = new FormControl('', [Validators.max(100), Validators.min(0), Validators.required])
+            for (let index_question = 0; index_question < this.questionnaire.questions.length; index_question++) controlsConfig[`${this.questionnaire.questions[index_question].name}`] = new FormControl('', [Validators.max(100), Validators.min(0), Validators.required])
             this.questionnaireForm = this.formBuilder.group(controlsConfig)
         }
-        this.questionnaireForm.valueChanges.subscribe(values => {
-            this.formEmitter.emit(this.questionnaireForm)
-        })
-        this.formEmitter.emit(this.questionnaireForm)
-
     }
 
-    public emitQuestionnaireFilled(action, step) {
-        this.questionnaireFilled.emit({
-            "questionnaireForm": this.questionnaireForm,
-            "action": action,
-            "step": step
-        });
+    public handleQuestionnaireCompletion(action: string){
+        this.formEmitter.emit({
+            "form": this.questionnaireForm,
+            "action": action
+        })
     }
 
 }

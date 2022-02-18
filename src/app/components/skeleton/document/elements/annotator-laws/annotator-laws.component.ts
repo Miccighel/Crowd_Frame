@@ -1,21 +1,21 @@
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, SimpleChanges} from '@angular/core';
-import {Task} from "../../../../models/task";
+import {Task} from "../../../../../models/task";
 import {Object} from "aws-sdk/clients/customerprofiles";
 import {doHighlight} from "@funktechno/texthighlighter/lib";
-import {NoteLaws} from "../../../../models/annotators/notes_laws";
-import {Note} from "../../../../models/annotators/notes";
+import {NoteLaws} from "../../../../../models/annotators/notes_laws";
+import {Note} from "../../../../../models/annotators/notes";
 import {MatRadioChange} from "@angular/material/radio";
 import {MatCheckboxChange} from "@angular/material/checkbox";
-import {NoteStandard} from "../../../../models/annotators/notes_standard";
+import {NoteStandard} from "../../../../../models/annotators/notes_standard";
 import {DeviceDetectorService} from "ngx-device-detector";
-import {SectionService} from "../../../../services/section.service";
+import {SectionService} from "../../../../../services/section.service";
 import {dom} from "@funktechno/texthighlighter/lib/Utils";
-import {UtilsService} from "../../../../services/utils.service";
+import {UtilsService} from "../../../../../services/utils.service";
 
 @Component({
     selector: 'app-annotator-laws',
     templateUrl: './annotator-laws.component.html',
-    styleUrls: ['./annotator-laws.component.scss', '../../skeleton.shared.component.scss'],
+    styleUrls: ['./annotator-laws.component.scss', '../../document.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AnnotatorLawsComponent {
@@ -28,7 +28,7 @@ export class AnnotatorLawsComponent {
     sectionService: SectionService;
     utilsService: UtilsService
 
-    @Input() task: Task
+    task: Task
     @Input() documentIndex: number
 
     colors: string[] = ["#F36060", "#DFF652", "#FFA500", "#FFFF7B"]
@@ -43,6 +43,7 @@ export class AnnotatorLawsComponent {
         this.deviceDetectorService = deviceDetectorService
         this.sectionService = sectionService
         this.utilsService = utilsService
+        this.task = sectionService.task
     }
 
     public performHighlighting(task: Task, changeDetector, event: Object, documentIndex: number, attributeIndex: number) {

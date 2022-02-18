@@ -1,6 +1,8 @@
 /* Core imports */
 import {Injectable} from '@angular/core';
 import * as AWS from "aws-sdk";
+import {Worker} from "../models/worker";
+import {Task} from "../models/task";
 
 @Injectable({
     providedIn: 'root'
@@ -113,16 +115,17 @@ export class DynamoDBService {
         return await this.loadDynamoDB(config).putItem(params).promise();
     }
 
-    public async insertDataRecord(config, worker_id, unit_id, current_try, sequence_number, data) {
+    public async insertDataRecord(config, worker: Worker, task: Task, data) {
         let params = {
             TableName: config["table_data_name"],
             Item: {
-                identifier: {S: worker_id},
-                sequence: {S: `${worker_id}-${unit_id}-${current_try}-${sequence_number}`},
+                identifier: {S: worker.identifier},
+                sequence: {S: `${worker.identifier}-${task.unitId}-${task.tryCurrent}-${task.sequenceNumber}`},
                 data: {S: JSON.stringify(data)},
                 time: {S: (new Date().toUTCString())}
             }
         };
+        task.sequenceNumber = task.sequenceNumber + 1
         return await this.loadDynamoDB(config).putItem(params).promise();
     }
 

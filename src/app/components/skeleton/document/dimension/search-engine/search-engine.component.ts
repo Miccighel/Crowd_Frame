@@ -1,12 +1,12 @@
 import {ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
-import {SectionService} from "../../../../services/section.service";
-import {UtilsService} from "../../../../services/utils.service";
-import {Task} from "../../../../models/task";
+import {SectionService} from "../../../../../services/section.service";
+import {UtilsService} from "../../../../../services/utils.service";
+import {Task} from "../../../../../models/task";
 import {DeviceDetectorService} from "ngx-device-detector";
-import {Dimension} from "../../../../models/dimension";
+import {Dimension} from "../../../../../models/dimension";
 import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
 import {Object} from "aws-sdk/clients/customerprofiles";
-import {Document} from "../../../../../../data/build/skeleton/document";
+import {Document} from "../../../../../../../data/build/skeleton/document";
 import {MatStepper} from "@angular/material/stepper";
 import {CrowdXplorer} from "./crowd-xplorer/crowd-xplorer.component";
 

@@ -1,16 +1,16 @@
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, SimpleChanges} from '@angular/core';
 import {DeviceDetectorService} from "ngx-device-detector";
-import {Task} from "../../../../models/task";
-import {SectionService} from "../../../../services/section.service";
-import {Note} from "../../../../models/annotators/notes";
+import {Task} from "../../../../../models/task";
+import {SectionService} from "../../../../../services/section.service";
+import {Note} from "../../../../../models/annotators/notes";
 import {doHighlight} from "@funktechno/texthighlighter/lib";
-import {NoteStandard} from "../../../../models/annotators/notes_standard";
-import {UtilsService} from "../../../../services/utils.service";
+import {NoteStandard} from "../../../../../models/annotators/notes_standard";
+import {UtilsService} from "../../../../../services/utils.service";
 
 @Component({
     selector: 'app-annotator-options',
     templateUrl: './annotator-options.component.html',
-    styleUrls: ['./annotator-options.component.scss', '../../skeleton.shared.component.scss'],
+    styleUrls: ['./annotator-options.component.scss', '../../document.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AnnotatorOptionsComponent {
@@ -23,7 +23,7 @@ export class AnnotatorOptionsComponent {
     sectionService: SectionService;
     utilsService: UtilsService
 
-    @Input() task: Task
+    task: Task
     @Input() documentIndex: number
 
     constructor(
@@ -36,6 +36,7 @@ export class AnnotatorOptionsComponent {
         this.deviceDetectorService = deviceDetectorService
         this.sectionService = sectionService
         this.utilsService = utilsService
+        this.task = sectionService.task
     }
 
     /*
@@ -131,13 +132,13 @@ export class AnnotatorOptionsComponent {
     }
 
     /* The yellow leftover notes are marked as deleted */
-    public handleNotes(documentIndex: number) {
+    public handleNotes() {
         if (this.task.settings.annotator) {
-            if (this.task.notes[documentIndex]) {
-                if (this.task.notes[documentIndex].length > 0) {
-                    let element = this.task.notes[documentIndex][this.task.notes[documentIndex].length - 1]
+            if (this.task.notes[this.documentIndex]) {
+                if (this.task.notes[this.documentIndex].length > 0) {
+                    let element = this.task.notes[this.documentIndex][this.task.notes[this.documentIndex].length - 1]
                     if (element.option == "not_selected" && !element.deleted) {
-                        this.removeAnnotation(documentIndex, this.task.notes[documentIndex].length - 1, this.changeDetector)
+                        this.removeAnnotation(this.documentIndex, this.task.notes[this.documentIndex].length - 1, this.changeDetector)
                     }
                 }
             }

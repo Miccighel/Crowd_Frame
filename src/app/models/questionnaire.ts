@@ -17,7 +17,6 @@ export class Questionnaire {
     ) {
 
         this.index = index;
-
         this.description = data['description'] ? data["description"] : null;
         this.position = data['position'] ? data["position"] : null;
         this.allow_back = data['allow_back'] ? data["allow_back"] : false;

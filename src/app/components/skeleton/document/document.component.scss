@@ -1,9 +1,4 @@
-:host ::ng-deep .mat-horizontal-stepper-header {
-  pointer-events: none !important;
-}
-
-
-mat-horizontal-stepper mat-card-content, mat-horizontal-stepper mat-card-title, mat-horizontal-stepper mat-card-actions {
+mat-card-content, mat-card-title, mat-card-actions {
   width: 75% !important;
   margin: auto !important;
 }
@@ -79,6 +74,35 @@ mat-horizontal-stepper mat-card-content, mat-horizontal-stepper mat-card-title, 
 .radio-button-separated {
   font-style: italic;
   font-weight: normal;
+}
+
+/* |--- COUNTDOWN ---| */
+
+.sticky {
+  position: -webkit-sticky; /* Safari */
+  position: sticky;
+  z-index: 1000;
+  background-color: rgb(255, 255, 123);
+  padding: 8px 0 8px 40px;
+  top: 0;
+  text-align: center;
+}
+
+.m-0 {
+  margin: 0;
+}
+
+.pt-16px {
+  padding-top: 16px;
+}
+
+/* |--- INSTRUCTIONS ---| */
+
+.evaluation-instructions {
+  h2 {
+    font-weight: lighter;
+  }
+  margin-bottom: 1%;
 }
 
 .document-section mat-form-field {

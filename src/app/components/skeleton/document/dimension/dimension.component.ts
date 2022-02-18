@@ -1,10 +1,10 @@
 import {ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, QueryList, ViewChild, ViewChildren} from '@angular/core';
-import {SectionService} from "../../../services/section.service";
-import {UtilsService} from "../../../services/utils.service";
-import {Task} from "../../../models/task";
+import {SectionService} from "../../../../services/section.service";
+import {UtilsService} from "../../../../services/utils.service";
+import {Task} from "../../../../models/task";
 import {DeviceDetectorService} from "ngx-device-detector";
 import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
-import {ScaleInterval, ScaleMagnitude} from "../../../models/dimension";
+import {ScaleInterval, ScaleMagnitude} from "../../../../models/dimension";
 import {Object} from "aws-sdk/clients/customerprofiles";
 import {MatStepper} from "@angular/material/stepper";
 import {SearchEngineComponent} from "./search-engine/search-engine.component";
@@ -12,7 +12,7 @@ import {SearchEngineComponent} from "./search-engine/search-engine.component";
 @Component({
     selector: 'app-dimension',
     templateUrl: './dimension.component.html',
-    styleUrls: ['./dimension.component.scss', '../skeleton.shared.component.scss']
+    styleUrls: ['./dimension.component.scss', '../document.component.scss']
 })
 export class DimensionComponent implements OnInit {
 
@@ -25,9 +25,10 @@ export class DimensionComponent implements OnInit {
     /* Angular Reactive Form builder (see https://angular.io/guide/reactive-forms) */
     formBuilder: FormBuilder;
 
-    @Input() task: Task
+
     @Input() documentIndex: number
 
+    task: Task
     assessmentForms: FormGroup[]
 
     @Output() formEmitter: EventEmitter<FormGroup>;
@@ -51,6 +52,9 @@ export class DimensionComponent implements OnInit {
     }
 
     ngOnInit() {
+
+        this.task = this.sectionService.task
+
         /* A form for each HIT's element is initialized */
         this.assessmentForms = new Array<FormGroup>(this.task.documentsAmount);
 

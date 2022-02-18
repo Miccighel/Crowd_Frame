@@ -10,8 +10,8 @@ import {Object} from "aws-sdk/clients/customerprofiles";
 
 export class Task {
 
+    /* Task settings and parameters */
     public settings: SettingsTask
-
     public platformName: string
     public taskName: string
     public batchName: string
@@ -86,6 +86,28 @@ export class Task {
     constructor() {
         this.tryCurrent = 1
         this.sequenceNumber = 0
+    }
+
+    public getElementIndex(stepIndex) {
+        let elementType = ""
+        let elementIndex = 0
+        if (stepIndex >= this.questionnaireAmountStart && stepIndex < this.questionnaireAmountStart + this.documentsAmount) {
+            elementType = "D"
+            elementIndex = stepIndex - this.questionnaireAmountStart
+        } else if (stepIndex < this.questionnaireAmountStart) {
+            elementType = "Q"
+            elementIndex = stepIndex
+        } else if (stepIndex == this.questionnaireAmountStart + this.documentsAmount && this.questionnaireAmountEnd > 0) {
+            elementType = "Q"
+            elementIndex = stepIndex - this.documentsAmount
+        } else if (stepIndex > this.questionnaireAmountStart + this.documentsAmount && this.questionnaireAmountEnd > 0)  {
+            elementType = "Outcome"
+            elementIndex = null
+        }
+        return {
+            "elementType": elementType,
+            "elementIndex": elementIndex,
+        }
     }
 
     public initializeDocuments(rawDocuments) {
@@ -194,7 +216,6 @@ export class Task {
             if (questionnaire.position == "start" || questionnaire.position == null) this.questionnaireAmountStart = this.questionnaireAmountStart + 1
             if (questionnaire.position == "end") this.questionnaireAmountEnd = this.questionnaireAmountEnd + 1
         }
-        console.log(this.questionnaires)
     }
 
     public initializeInstructionsEvaluation(rawEvaluationInstructions) {
@@ -510,6 +531,179 @@ export class Task {
         return undeletedNotes
     }
 
+    public buildTaskInitialPayload(worker) {
+        let data = {}
+        let actionInfo = {
+            try: this.tryCurrent,
+            sequence: this.sequenceNumber,
+            element: "data"
+        };
+        /* The full information about task setup (currentDocument.e., its document and questionnaire structures) are uploaded, only once */
+        let taskData = {
+            platform_name: this.platformName,
+            task_id: this.taskName,
+            batch_name: this.batchName,
+            worker_id: this.workerId,
+            unit_id: this.unitId,
+            token_input: this.tokenInput,
+            token_output: this.tokenOutput,
+            tries_amount: this.settings.allowed_tries,
+            questionnaire_amount: this.questionnaireAmount,
+            questionnaire_amount_start: this.questionnaireAmountStart,
+            questionnaire_amount_end: this.questionnaireAmountEnd,
+            documents_amount: this.documentsAmount,
+            dimensions_amount: this.dimensionsAmount
+        };
+        data["info"] = actionInfo
+        /* General info about task */
+        data["task"] = taskData
+        /* The answers of the current worker to the questionnaire */
+        data["questionnaires"] = this.questionnaires
+        /* The parsed document contained in current worker's hit */
+        data["documents"] = this.documents
+        /* The dimensions of the answers of each worker */
+        data["dimensions"] = this.dimensions
+        /* General info about worker */
+        data["worker"] = worker
+        return data
+    }
 
+    public buildTaskQuestionnairePayload(questionnaireIndex, answers, action) {
+        /* If the worker has completed the first questionnaire
+         * The partial data about the completed questionnaire are uploaded */
+        let data = {}
 
+        let actionInfo = {
+            action: action,
+            access: this.elementsAccesses[questionnaireIndex],
+            try: this.tryCurrent,
+            index: questionnaireIndex,
+            sequence: this.sequenceNumber,
+            element: "questionnaire"
+        };
+        /* Info about the performed action ("Next"? "Back"? From where?) */
+        data["info"] = actionInfo
+        /* Worker's answers to the current questionnaire */
+        data["answers"] = answers
+        /* Start, end and elapsed timestamps for the current questionnaire */
+        let timestampsStart = this.timestampsStart[questionnaireIndex];
+        data["timestamps_start"] = timestampsStart
+        let timestampsEnd = this.timestampsEnd[questionnaireIndex];
+        data["timestamps_end"] = timestampsEnd
+        let timestampsElapsed = this.timestampsElapsed[questionnaireIndex];
+        data["timestamps_elapsed"] = timestampsElapsed
+        /* Number of accesses to the current questionnaire (which must be always 1, since the worker cannot go back */
+        data["accesses"] = this.elementsAccesses[questionnaireIndex]
+        return data
+    }
+
+    public buildTaskDocumentPayload(documentIndex, answers, countdown, action) {
+        /* If the worker has completed the first questionnaire
+         * The partial data about the completed questionnaire are uploaded */
+        let data = {}
+
+        let actionInfo = {
+            action: action,
+            access: this.elementsAccesses[documentIndex],
+            try: this.tryCurrent,
+            index: documentIndex,
+            sequence: this.sequenceNumber,
+            element: "document"
+        };
+        /* Info about the performed action ("Next"? "Back"? From where?) */
+        data["info"] = actionInfo
+        /* Worker's answers for the current document */
+        data["answers"] = answers
+        let notes = (this.settings.annotator) ? this.notes[documentIndex] : []
+        data["notes"] = notes
+        /* Worker's dimensions selected values for the current document */
+        let dimensionsSelectedValues = this.dimensionsSelectedValues[documentIndex];
+        data["dimensions_selected"] = dimensionsSelectedValues
+        /* Worker's search engine queries for the current document */
+        let searchEngineQueries = this.searchEngineQueries[documentIndex];
+        data["queries"] = searchEngineQueries
+        /* Start, end and elapsed timestamps for the current document */
+        let timestampsStart = this.timestampsStart[documentIndex];
+        data["timestamps_start"] = timestampsStart
+        let timestampsEnd = this.timestampsEnd[documentIndex];
+        data["timestamps_end"] = timestampsEnd
+        let timestampsElapsed = this.timestampsElapsed[documentIndex];
+        data["timestamps_elapsed"] = timestampsElapsed
+        /* Countdown time and corresponding flag */
+        let countdownTimeStart = (this.settings.countdown_time >= 0) ? this.documentsCountdownTime[documentIndex] : []
+        data["countdowns_times_start"] = countdownTimeStart
+        let countdownTime = (this.settings.countdown_time >= 0) ? countdown : []
+        data["countdowns_times_left"] = countdownTime
+        let countdown_expired = (this.settings.countdown_time >= 0) ? this.countdownsExpired[documentIndex] : []
+        data["countdowns_expired"] = countdown_expired
+        /* Number of accesses to the current document (currentDocument.e., how many times the worker reached the document with a "Back" or "Next" action */
+        data["accesses"] = this.elementsAccesses[documentIndex];
+        /* Responses retrieved by search engine for each worker's query for the current document */
+        let responsesRetrieved = this.searchEngineRetrievedResponses[documentIndex];
+        data["responses_retrieved"] = responsesRetrieved
+        /* Responses by search engine ordered by worker's click for the current document */
+        let responsesSelected = this.searchEngineSelectedResponses[documentIndex];
+        data["responses_selected"] = responsesSelected
+        return data
+    }
+
+    public buildTaskFinalPayload(questionnairesForms, documentsForms, qualityChecks, countdowns, action) {
+        /* All data about documents are uploaded, only once */
+        let actionInfo = {
+            action: action,
+            try: this.tryCurrent,
+            element: "all"
+        };
+        let data = {}
+        /* Info about each performed action ("Next"? "Back"? From where?) */
+        data["info"] = actionInfo
+        let answers = [];
+        for (let index = 0; index < questionnairesForms.length; index++) answers.push(questionnairesForms[index].value);
+        data["questionnaires_answers"] = answers
+        answers = [];
+        for (let index = 0; index < documentsForms.length; index++) answers.push(documentsForms[index].value);
+        data["documents_answers"] = answers
+        let notes = (this.settings.annotator) ? this.notes : []
+        data["notes"] = notes
+        /* Worker's dimensions selected values for the current document */
+        data["dimensions_selected"] = this.dimensionsSelectedValues
+        /* Start, end and elapsed timestamps for each document */
+        data["timestamps_start"] = this.timestampsStart
+        data["timestamps_end"] = this.timestampsEnd
+        data["timestamps_elapsed"] = this.timestampsElapsed
+        /* Countdown time and corresponding flag for each document */
+        let countdownTimes = [];
+        let countdownTimesStart = [];
+        let countdownExpired = [];
+        if (this.settings.countdown_time >= 0)
+            for (let countdown of countdowns) countdownTimes.push(countdown["i"]);
+        if (this.settings.countdown_time >= 0)
+            for (let countdown of this.documentsCountdownTime) countdownTimesStart.push(countdown);
+        for (let index = 0; index < this.countdownsExpired.length; index++) countdownExpired.push(this.countdownsExpired[index]);
+        data["countdowns_times_start"] = countdownTimesStart
+        data["countdowns_times_left"] = countdownTimes
+        data["countdowns_expired"] = countdownExpired
+        /* Number of accesses to each document (currentDocument.e., how many times the worker reached the document with a "Back" or "Next" action */
+        data["accesses"] = this.elementsAccesses
+        /* Worker's search engine queries for each document */
+        data["queries"] = this.searchEngineQueries
+        /* Responses retrieved by search engine for each worker's query for each document */
+        data["responses_retrieved"] = this.searchEngineRetrievedResponses
+        /* Responses by search engine ordered by worker's click for the current document */
+        data["responses_selected"] = this.searchEngineSelectedResponses
+        /* If the last element is a document */
+        data["checks"] = qualityChecks
+        actionInfo["sequence"] = this.sequenceNumber
+        return data
+    }
+
+    public buildQualityChecksPayload(qualityChecks, action) {
+        qualityChecks['info'] = {
+            try: this.tryCurrent,
+            sequence: this.sequenceNumber,
+            element: "checks",
+            action: action
+        };
+        return qualityChecks
+    }
 }

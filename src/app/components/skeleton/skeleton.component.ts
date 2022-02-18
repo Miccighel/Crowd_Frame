@@ -1,17 +1,9 @@
 /* Core modules */
-import {
-    ChangeDetectionStrategy,
-    ChangeDetectorRef,
-    Component,
-    ViewChild,
-    ViewChildren,
-    QueryList, OnInit
-} from "@angular/core";
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, QueryList, ViewChild, ViewChildren} from "@angular/core";
 /* Reactive forms modules */
 import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
 import {MatFormField} from "@angular/material/form-field";
 import {MatStepper} from "@angular/material/stepper";
-import {CountdownComponent} from 'ngx-countdown';
 /* Services */
 import {NgxUiLoaderService} from 'ngx-ui-loader';
 import {ConfigService} from "../../services/config.service";
@@ -19,7 +11,6 @@ import {S3Service} from "../../services/s3.service";
 import {DeviceDetectorService} from "ngx-device-detector";
 /* Task models */
 import {Task} from "../../models/task";
-import {ScaleMagnitude} from "../../models/dimension";
 import {Worker} from "../../models/worker";
 import {SettingsTask} from "../../models/settingsTask";
 import {GoldChecker} from "../../../../data/build/skeleton/goldChecker";
@@ -34,17 +25,16 @@ import {SectionService} from "../../services/section.service";
 import {DynamoDBService} from "../../services/dynamoDB.service";
 import {SettingsWorker} from "../../models/settingsWorker";
 import {OutcomeSectionComponent} from "./outcome/outcome-section.component";
-import {AnnotatorOptionsComponent} from "./elements/annotator-options/annotator-options.component";
 import {UtilsService} from "../../services/utils.service";
 import {DebugService} from "../../services/debug.service";
 import {Hit} from "../../models/hit";
-import {DimensionComponent} from "./dimension/dimension.component";
+import {DocumentComponent} from "./document/document.component";
 
 /* Component HTML Tag definition */
 @Component({
     selector: 'app-skeleton',
     templateUrl: './skeleton.component.html',
-    styleUrls: ['./skeleton.component.scss', './skeleton.shared.component.scss'],
+    styleUrls: ['./skeleton.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
@@ -100,22 +90,11 @@ export class SkeletonComponent implements OnInit {
     worker: Worker
 
     /* Array of form references, one for each document within a Hit */
-    assessmentForms: FormGroup[];
+    documentsForm: FormGroup[];
+    @ViewChildren(DocumentComponent) documentComponent: QueryList<DocumentComponent>;
 
     /* Array of form references, one for each questionnaire within a Hit */
     questionnairesForm: FormGroup[];
-
-    /* Reference to the outcome section component */
-    @ViewChildren(AnnotatorOptionsComponent) annotatorOptions: QueryList<AnnotatorOptionsComponent>;
-    @ViewChildren(DimensionComponent) dimensionsPointwise: QueryList<DimensionComponent>;
-
-    /* |--------- COUNTDOWN HANDLING ---------| */
-
-    /* References to the HTML elements */
-    @ViewChildren('countdownElement') countdown: QueryList<CountdownComponent>;
-
-    /* Available options to label an annotation */
-    annotationOptions: FormGroup;
 
     /* |--------- OUTCOME SECTION ELEMENTS - DECLARATION ---------| */
 
@@ -181,6 +160,7 @@ export class SkeletonComponent implements OnInit {
         this.ngxService.start()
 
         this.task = new Task()
+        this.sectionService.task = this.task
         this.task.platformName = this.configService.environment.platformName
         this.task.taskName = this.configService.environment.taskName
         this.task.batchName = this.configService.environment.batchName
@@ -221,6 +201,7 @@ export class SkeletonComponent implements OnInit {
             let unlockTask = function (changeDetector: ChangeDetectorRef, ngxService: NgxUiLoaderService, sectionService: SectionService, taskAllowed: boolean) {
                 sectionService.taskAllowed = taskAllowed
                 sectionService.checkCompleted = true
+
                 changeDetector.detectChanges()
                 /* The loading spinner is stopped */
                 ngxService.stop();
@@ -231,6 +212,8 @@ export class SkeletonComponent implements OnInit {
 
                 /* The performWorkerStatusCheck function checks worker's status and its result is interpreted as a success|error callback */
                 this.performWorkerStatusCheck().then(async taskAllowed => {
+
+                    this.sectionService.taskAllowed = taskAllowed
 
                     if (taskAllowed) {
 
@@ -383,7 +366,6 @@ export class SkeletonComponent implements OnInit {
             } else unlockTask(this.changeDetector, this.ngxService, this.sectionService, true)
 
         })
-
 
         /* |--------- INSTRUCTIONS MAIN (see: instructions_main.json) ---------| */
 
@@ -558,6 +540,8 @@ export class SkeletonComponent implements OnInit {
         /* The token input has been already validated, this is just to be sure */
         if (this.tokenForm.valid) {
 
+            this.sectionService.taskStarted = true;
+
             /* The loading spinner is started */
             this.ngxService.start();
 
@@ -583,13 +567,11 @@ export class SkeletonComponent implements OnInit {
 
             /* The token input field is disabled and the task interface can be shown */
             this.tokenInput.disable();
-            this.sectionService.taskStarted = true;
 
             /* A form for each document is initialized */
-            this.assessmentForms = new Array<FormGroup>();
+            this.documentsForm = new Array<FormGroup>();
 
             let questionnaires = await this.S3Service.downloadQuestionnaires(this.configService.environment)
-            console.log(questionnaires)
             this.task.initializeQuestionnaires(questionnaires)
 
             /* A form for each questionnaire is initialized */
@@ -606,26 +588,13 @@ export class SkeletonComponent implements OnInit {
             this.task.loadAccessCounter()
             this.task.loadTimestamps()
 
-            /* Detect changes within the DOM and update the page */
-            this.changeDetector.detectChanges();
-
-            /* If there are no questionnaires and the countdown time is set, enable the first countdown */
-            if (this.task.settings.countdown_time >= 0 && this.task.questionnaireAmountStart == 0) {
-                this.countdown.first.begin();
-            }
-
-            this.sectionService.documentsAmount = this.task.documentsAmount
-            this.sectionService.questionnaireAmountStart = this.task.questionnaireAmountStart
-            this.sectionService.questionnaireAmountEnd = this.task.questionnaireAmountEnd
-            this.sectionService.questionnaireAmount = this.task.questionnaireAmount
-
-            /* Detect changes within the DOM and update the page */
-            this.changeDetector.detectChanges();
-
-            /* The loading spinner is stopped */
-            this.ngxService.stop();
 
         }
+
+        /* The loading spinner is stopped */
+        this.ngxService.stop();
+        this.changeDetector.detectChanges()
+
     }
 
     /* |--------- LOGGING SERVICE & SECTION SERVICE ---------| */
@@ -635,49 +604,8 @@ export class SkeletonComponent implements OnInit {
         this.actionLogger.logInit(this.configService.environment.bucket, workerIdentifier, taskName, batchName, http, logOnConsole);
     }
 
-    public nextStep() {
-        let stepper = document.getElementById('stepper');
-        stepper.scrollIntoView();
-        this.sectionService.increaseIndex()
-    }
-
-    public previousStep() {
-        let stepper = document.getElementById('stepper');
-        stepper.scrollIntoView();
-        this.sectionService.decreaseIndex()
-    }
-
     public updateQuestionnaireForm(form, questionnaireIndex) {
         this.questionnairesForm[questionnaireIndex] = form
-    }
-
-    /* |--------- DIMENSIONS ---------| */
-
-    public updateAssessmentForm(form, documentIndex) {
-        if (this.assessmentForms[documentIndex]) {
-            let controlsConfig = {}
-            let previousControls = this.assessmentForms[documentIndex].controls
-            for (const [name, control] of Object.entries(previousControls)) controlsConfig[name] = control
-            for (const [name, control] of Object.entries(form.controls)) controlsConfig[name] = control
-            this.assessmentForms[documentIndex] = this.formBuilder.group(controlsConfig)
-            this.assessmentForms[documentIndex].setErrors(form.errors)
-        } else {
-            this.assessmentForms[documentIndex] = form
-        }
-    }
-
-    /* |--------- COUNTDOWN ---------| */
-
-    /*
-     * This function intercept the event triggered when the time left to evaluate a document reaches 0
-     * and it simply sets the corresponding flag to false
-     */
-    public handleCountdown(event, i) {
-        if (event['left'] == 0) {
-            this.task.countdownsExpired[i] = true
-            this.annotatorOptions.toArray()[i].changeDetector.detectChanges()
-            this.dimensionsPointwise.toArray()[i].changeDetector.detectChanges()
-        }
     }
 
 
@@ -693,7 +621,7 @@ export class SkeletonComponent implements OnInit {
         let questionnaireFormValidity = true;
         let documentsFormValidity = true;
         for (let index = 0; index < this.questionnairesForm.length; index++) if (this.questionnairesForm[index].valid == false) questionnaireFormValidity = false;
-        for (let index = 0; index < this.assessmentForms.length; index++) if (this.assessmentForms[index].valid == false) documentsFormValidity = false;
+        for (let index = 0; index < this.documentsForm.length; index++) if (this.documentsForm[index].valid == false) documentsFormValidity = false;
         return (questionnaireFormValidity && documentsFormValidity)
     }
 
@@ -723,8 +651,8 @@ export class SkeletonComponent implements OnInit {
 
         /* The countdowns are set back to 0 */
         if (this.task.settings.countdown_time >= 0) {
-            if (this.countdown.toArray()[0].left > 0) {
-                this.countdown.toArray()[0].resume();
+            if (this.documentComponent[0].countdown.left > 0) {
+                this.documentComponent[0].countdown.resume();
             }
         }
 
@@ -735,55 +663,37 @@ export class SkeletonComponent implements OnInit {
 
     }
 
-    // |--------- AMAZON AWS INTEGRATION - FUNCTIONS ---------|
-
-    public handleQuestionnaireFilled(data) {
-        this.questionnairesForm[data['step']] = data['questionnaireForm']
-        this.produceData(data['action'], data['step'])
-        if (data['action'] == 'Next') {
-            this.nextStep()
-        } else {
-            if (data['action'] == 'Back') {
-                this.previousStep()
-            } else {
-                this.nextStep()
-            }
-        }
-
-    }
-
-    public handleCountdowns(currentElement: number, documentIndex: number, action: string) {
+    public handleCountdowns(currentDocument: number, completedDocument: number, action: string) {
         /* The countdowns are stopped and resumed to the left or to the right of the current document,
         *  depending on the chosen action ("Back" or "Next") */
-        if ((currentElement >= this.task.questionnaireAmountStart && currentElement < this.task.questionnaireAmountStart + this.task.documentsAmount) && this.task.settings.countdown_time >= 0) {
-            let currentIndex = currentElement - this.task.questionnaireAmountStart;
-            switch (action) {
-                case "Next":
-                    if (currentIndex > 0 && this.countdown.toArray()[currentIndex - 1].left > 0) {
-                        this.countdown.toArray()[currentIndex - 1].pause();
-                    }
-                    if (this.countdown.toArray()[currentIndex].left == this.task.documentsCountdownTime[documentIndex]) {
-                        this.countdown.toArray()[currentIndex].begin();
-                    } else if (this.countdown.toArray()[currentIndex].left > 0) {
-                        this.countdown.toArray()[currentIndex].resume();
-                    }
-                    break;
-                case "Back":
-                    if (this.countdown.toArray()[currentIndex + 1].left > 0) {
-                        this.countdown.toArray()[currentIndex + 1].pause();
-                    }
-                    if (this.countdown.toArray()[currentIndex].left == this.task.documentsCountdownTime[documentIndex]) {
-                        this.countdown.toArray()[currentIndex].begin();
-                    } else if (this.countdown.toArray()[currentIndex].left > 0) {
-                        this.countdown.toArray()[currentIndex].resume();
-                    }
-                    break;
-                case "Finish":
-                    if (this.countdown.toArray()[currentIndex - 1].left > 0) {
-                        this.countdown.toArray()[currentIndex - 1].pause();
-                    }
-                    break;
-            }
+        let currentIndex = currentDocument
+        let countdown = this.documentComponent[currentIndex].countdown
+        switch (action) {
+            case "Next":
+                if (currentIndex > 0 && countdown.toArray()[currentIndex - 1].left > 0) {
+                    countdown.toArray()[currentIndex - 1].pause();
+                }
+                if (countdown.toArray()[currentIndex].left == this.task.documentsCountdownTime[completedDocument]) {
+                    countdown.toArray()[currentIndex].begin();
+                } else if (countdown.toArray()[currentIndex].left > 0) {
+                    countdown.toArray()[currentIndex].resume();
+                }
+                break;
+            case "Back":
+                if (countdown.toArray()[currentIndex + 1].left > 0) {
+                    countdown.toArray()[currentIndex + 1].pause();
+                }
+                if (countdown.toArray()[currentIndex].left == this.task.documentsCountdownTime[completedDocument]) {
+                    countdown.toArray()[currentIndex].begin();
+                } else if (countdown.toArray()[currentIndex].left > 0) {
+                    countdown.toArray()[currentIndex].resume();
+                }
+                break;
+            case "Finish":
+                if (countdown.toArray()[currentIndex - 1].left > 0) {
+                    countdown.toArray()[currentIndex - 1].pause();
+                }
+                break;
         }
     }
 
@@ -861,7 +771,7 @@ export class SkeletonComponent implements OnInit {
             currentConfiguration["document"] = goldDocument
             let answers = {}
             for (let goldDimension of this.task.goldDimensions) {
-                for (let [attribute, value] of Object.entries(this.assessmentForms[goldDocument.index].value)) {
+                for (let [attribute, value] of Object.entries(this.documentsForm[goldDocument.index].value)) {
                     let dimensionName = attribute.split("_")[0]
                     if (dimensionName == goldDimension.name) {
                         answers[attribute] = value
@@ -907,24 +817,54 @@ export class SkeletonComponent implements OnInit {
     }
 
     /*
+     * This function gives the possibility to the worker to provide a comment when a try is finished, successfully or not.
+     * The comment can be typed in a textarea and when the worker clicks the "Send" button such comment is uploaded to an Amazon S3 bucket.
+     */
+    public async performCommentSaving(comment) {
+        if (!(this.worker.identifier == null)) {
+            let data = {}
+            let actionInfo = {
+                try: this.task.tryCurrent,
+                sequence: this.task.sequenceNumber,
+                element: "comment"
+            };
+            data["info"] = actionInfo
+            data['comment'] = comment
+            await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, data)
+            this.task.sequenceNumber = this.task.sequenceNumber + 1
+        }
+        this.outcomeSection.commentSent = true
+    }
+
+    public storeQuestionnaireForm(data, questionnaireIndex) {
+        this.questionnairesForm[questionnaireIndex] = data["form"]
+        let action = data["action"]
+        if (action) {
+            this.produceData(action, questionnaireIndex)
+        }
+    }
+
+    public storeDocumentForm(data, documentIndex) {
+        this.documentsForm[documentIndex] = data["form"]
+        let action = data["action"]
+        if (action) {
+            this.produceData(action, documentIndex)
+        }
+
+    }
+
+    /*
      * The data include questionnaire results, quality checks, worker hit, search engine results, etc.
      */
-    public async produceData(action: string, documentIndex: number) {
+    public async produceData(action: string, completedElement) {
+
 
         if (action == "Finish") {
             /* The current try is completed and the final can shall begin */
             this.ngxService.start()
         }
 
-        /* IMPORTANT: The current document document_index is the stepper current document_index AFTER the transition
-             * If a NEXT action is performed at document 3, the stepper current document_index is 4.
-             * If a BACK action is performed at document 3, the stepper current document_index is 2.
-             * This is tricky only for the following switch which has to set the start/end
-             * timestamps for the previous/following document. */
         let currentElement = this.stepper.selectedIndex;
-        /* completedElement is the document_index of the document/questionnaire in which the user was before */
-        let completedElement = this.stepper.selectedIndex;
-
         switch (action) {
             case "Next":
                 completedElement = currentElement - 1;
@@ -938,234 +878,68 @@ export class SkeletonComponent implements OnInit {
                 break;
         }
 
-        this.computeTimestamps(currentElement, completedElement, action)
-        this.handleCountdowns(currentElement, documentIndex, action)
-        if(this.task.settings.annotator) if (this.task.settings.annotator.type == 'options') this.annotatorOptions.toArray()[documentIndex].handleNotes(completedElement)
 
-        let qualityChecks = null
-        if (action == "Finish") {
-            qualityChecks = this.performQualityChecks()
-            qualityChecks['info'] = {
-                try: this.task.tryCurrent,
-                sequence: this.task.sequenceNumber,
-                element: "checks"
-            };
+        let completedElementData = this.task.getElementIndex(completedElement)
+        let currentElementData = this.task.getElementIndex(currentElement)
+        let completedElementType = completedElementData['elementType']
+        let completedElementIndex = completedElementData['elementIndex']
+        let currentElementType = currentElementData['elementType']
+        let currentElementIndex = currentElementData['elementIndex']
+
+        this.task.elementsAccesses[completedElementIndex] = this.task.elementsAccesses[completedElementIndex] + 1;
+
+        this.computeTimestamps(currentElementIndex, completedElementIndex, action)
+        if (this.task.settings.countdown_time) {
+            if (currentElementType == 'document') {
+                this.handleCountdowns(currentElementIndex, completedElementIndex, action)
+            }
+        }
+        if (this.task.settings.annotator) {
+            if (this.task.settings.annotator.type == 'options') {
+                if (completedElementType == 'document') {
+                    this.documentComponent[completedElementIndex].annotatorOptions.handleNotes()
+                }
+            }
         }
 
-        /* If there is a worker ID then the data should be uploaded to the S3 bucket */
+        let qualityChecks = null
+
+        if (action == "Finish") {
+            qualityChecks = this.performQualityChecks()
+            let qualityChecksPayload = this.task.buildQualityChecksPayload(qualityChecks, action)
+        }
 
         if (!(this.worker.identifier == null)) {
 
-            let data = {}
-            let actionInfo = {
-                try: this.task.tryCurrent,
-                sequence: this.task.sequenceNumber,
-                element: "data"
-            };
-            /* The full information about task setup (currentDocument.e., its document and questionnaire structures) are uploaded, only once */
-            let taskData = {
-                platform_name: this.configService.environment.platformName,
-                task_id: this.configService.environment.taskName,
-                batch_name: this.configService.environment.batchName,
-                worker_id: this.worker.identifier,
-                unit_id: this.task.unitId,
-                token_input: this.tokenInput.value,
-                token_output: this.task.tokenOutput,
-                tries_amount: this.task.settings.allowed_tries,
-                questionnaire_amount: this.task.questionnaireAmount,
-                questionnaire_amount_start: this.task.questionnaireAmountStart,
-                questionnaire_amount_end: this.task.questionnaireAmountEnd,
-                documents_amount: this.task.documentsAmount,
-                dimensions_amount: this.task.dimensionsAmount
-            };
-            data["info"] = actionInfo
-            /* General info about task */
-            data["task"] = taskData
-            /* The answers of the current worker to the questionnaire */
-            data["questionnaires"] = this.task.questionnaires
-            /* The parsed document contained in current worker's hit */
-            data["documents"] = this.task.documents
-            /* The dimensions of the answers of each worker */
-            data["dimensions"] = this.task.dimensions
-            /* General info about worker */
-            data["worker"] = this.worker
-            /* await (this.upload(`${this.workerFolder}/worker.json`, this.worker)); */
+            console.log(completedElementType)
 
             if (this.task.sequenceNumber <= 0) {
-                await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker.identifier, this.task.unitId, this.task.tryCurrent, this.task.sequenceNumber, data)
-                this.task.sequenceNumber = this.task.sequenceNumber + 1
+                let taskInitialPayload = this.task.buildTaskInitialPayload(this.worker)
+                await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, taskInitialPayload)
             }
 
-            /* If the worker has completed a questionnaire */
-            if (completedElement < this.task.questionnaireAmountStart || (completedElement >= this.task.questionnaireAmountStart + this.task.documentsAmount)) {
-
-                /* if the questionnaire it's at the end */
-
-                let completedQuestionnaire = 0
-                if (completedElement >= this.task.questionnaireAmountStart + this.task.documentsAmount) {
-                    completedQuestionnaire = completedElement - this.task.documentsAmount
-                } else {
-                    completedQuestionnaire = completedElement
-                }
-
-                /* The amount of accesses to the current questionnaire is retrieved */
-                let accessesAmount = this.task.elementsAccesses[completedElement];
-
-                /* If the worker has completed the first questionnaire
-                 * The partial data about the completed questionnaire are uploaded */
-
-                let data = {}
-
-                let actionInfo = {
-                    action: action,
-                    access: accessesAmount,
-                    try: this.task.tryCurrent,
-                    index: completedQuestionnaire,
-                    sequence: this.task.sequenceNumber,
-                    element: "questionnaire"
-                };
-                /* Info about the performed action ("Next"? "Back"? From where?) */
-                data["info"] = actionInfo
-                /* Worker's answers to the current questionnaire */
-                let answers = this.questionnairesForm[completedQuestionnaire].value;
-                data["answers"] = answers
-                /* Start, end and elapsed timestamps for the current questionnaire */
-                let timestampsStart = this.task.timestampsStart[completedElement];
-                data["timestamps_start"] = timestampsStart
-                let timestampsEnd = this.task.timestampsEnd[completedElement];
-                data["timestamps_end"] = timestampsEnd
-                let timestampsElapsed = this.task.timestampsElapsed[completedElement];
-                data["timestamps_elapsed"] = timestampsElapsed
-                /* Number of accesses to the current questionnaire (which must be always 1, since the worker cannot go back */
-                data["accesses"] = accessesAmount + 1
-
-                await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker.identifier, this.task.unitId, this.task.tryCurrent, this.task.sequenceNumber, data)
-
-                /* The amount of accesses to the current questionnaire is incremented */
-                this.task.sequenceNumber = this.task.sequenceNumber + 1
-                this.task.elementsAccesses[completedElement] = accessesAmount + 1;
-
-                /* If the worker has completed a document */
-            } else {
-
-                /* The document_index of the completed document is the completed element minus the questionnaire amount */
-                let completedDocument = completedElement - this.task.questionnaireAmountStart;
-
-                /* The amount of accesses to the current document is retrieved */
-                let accessesAmount = this.task.elementsAccesses[completedElement];
-
-                let data = {}
-
-                let actionInfo = {
-                    action: action,
-                    access: accessesAmount,
-                    try: this.task.tryCurrent,
-                    index: completedDocument,
-                    sequence: this.task.sequenceNumber,
-                    element: "document"
-                };
-                /* Info about the performed action ("Next"? "Back"? From where?) */
-                data["info"] = actionInfo
-                /* Worker's answers for the current document */
-                let answers = this.assessmentForms[completedDocument].value;
-                data["answers"] = answers
-                let notes = (this.task.settings.annotator) ? this.task.notes[completedDocument] : []
-                data["notes"] = notes
-                /* Worker's dimensions selected values for the current document */
-                let dimensionsSelectedValues = this.task.dimensionsSelectedValues[completedDocument];
-                data["dimensions_selected"] = dimensionsSelectedValues
-                /* Worker's search engine queries for the current document */
-                let searchEngineQueries = this.task.searchEngineQueries[completedDocument];
-                data["queries"] = searchEngineQueries
-                /* Start, end and elapsed timestamps for the current document */
-                let timestampsStart = this.task.timestampsStart[completedElement];
-                data["timestamps_start"] = timestampsStart
-                let timestampsEnd = this.task.timestampsEnd[completedElement];
-                data["timestamps_end"] = timestampsEnd
-                let timestampsElapsed = this.task.timestampsElapsed[completedElement];
-                data["timestamps_elapsed"] = timestampsElapsed
-                /* Countdown time and corresponding flag */
-                let countdownTimeStart = (this.task.settings.countdown_time >= 0) ? this.task.documentsCountdownTime[completedDocument] : []
-                data["countdowns_times_start"] = countdownTimeStart
-                let countdownTime = (this.task.settings.countdown_time >= 0) ? Number(this.countdown.toArray()[completedDocument]["i"]["text"]) : []
-                data["countdowns_times_left"] = countdownTime
-                let countdown_expired = (this.task.settings.countdown_time >= 0) ? this.task.countdownsExpired[completedDocument] : []
-                data["countdowns_expired"] = countdown_expired
-                /* Number of accesses to the current document (currentDocument.e., how many times the worker reached the document with a "Back" or "Next" action */
-                let accesses = accessesAmount + 1
-                data["accesses"] = accesses
-                /* Responses retrieved by search engine for each worker's query for the current document */
-                let responsesRetrieved = this.task.searchEngineRetrievedResponses[completedDocument];
-                data["responses_retrieved"] = responsesRetrieved
-                /* Responses by search engine ordered by worker's click for the current document */
-                let responsesSelected = this.task.searchEngineSelectedResponses[completedDocument];
-                data["responses_selected"] = responsesSelected
-
-                await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker.identifier, this.task.unitId, this.task.tryCurrent, this.task.sequenceNumber, data)
-
-                /* The amount of accesses to the current document is incremented */
-                this.task.elementsAccesses[completedElement] = accessesAmount + 1;
-                this.task.sequenceNumber = this.task.sequenceNumber + 1
-                /* If the worker has completed the last element the sequence number must be incremented again */
+            if (completedElementType == "Q") {
+                let questionnairePayload = this.task.buildTaskQuestionnairePayload(completedElementIndex, this.questionnairesForm[completedElementIndex].value, action)
+                await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, questionnairePayload)
             }
 
-            /* If the worker has completed the last element */
-
-            if (completedElement >= (this.task.questionnaireAmountStart + this.task.documentsAmount + this.task.questionnaireAmountEnd) - 1) {
-
-                /* All data about documents are uploaded, only once */
-                let actionInfo = {
-                    action: action,
-                    try: this.task.tryCurrent,
-                    sequence: this.task.sequenceNumber,
-                    element: "all"
-                };
-                /* Info about each performed action ("Next"? "Back"? From where?) */
-                data["info"] = actionInfo
-                let answers = [];
-                for (let index = 0; index < this.questionnairesForm.length; index++) answers.push(this.questionnairesForm[index].value);
-                data["questionnaires_answers"] = answers
-                answers = [];
-                for (let index = 0; index < this.assessmentForms.length; index++) answers.push(this.assessmentForms[index].value);
-                data["documents_answers"] = answers
-                let notes = (this.task.settings.annotator) ? this.task.notes : []
-                data["notes"] = notes
-                /* Worker's dimensions selected values for the current document */
-                data["dimensions_selected"] = this.task.dimensionsSelectedValues
-                /* Start, end and elapsed timestamps for each document */
-                data["timestamps_start"] = this.task.timestampsStart
-                data["timestamps_end"] = this.task.timestampsEnd
-                data["timestamps_elapsed"] = this.task.timestampsElapsed
-                /* Countdown time and corresponding flag for each document */
-                let countdownTimes = [];
-                let countdownTimesStart = [];
-                let countdownExpired = [];
-                if (this.task.settings.countdown_time >= 0)
-                    for (let countdown of this.countdown) countdownTimes.push(countdown["i"]);
-                if (this.task.settings.countdown_time >= 0)
-                    for (let countdown of this.task.documentsCountdownTime) countdownTimesStart.push(countdown);
-                for (let index = 0; index < this.task.countdownsExpired.length; index++) countdownExpired.push(this.task.countdownsExpired[index]);
-                data["countdowns_times_start"] = countdownTimesStart
-                data["countdowns_times_left"] = countdownTimes
-                data["countdowns_expired"] = countdownExpired
-                /* Number of accesses to each document (currentDocument.e., how many times the worker reached the document with a "Back" or "Next" action */
-                data["accesses"] = this.task.elementsAccesses
-                /* Worker's search engine queries for each document */
-                data["queries"] = this.task.searchEngineQueries
-                /* Responses retrieved by search engine for each worker's query for each document */
-                data["responses_retrieved"] = this.task.searchEngineRetrievedResponses
-                /* Responses by search engine ordered by worker's click for the current document */
-                data["responses_selected"] = this.task.searchEngineSelectedResponses
-                /* If the last element is a document */
-                qualityChecks["info"]["sequence"] = this.task.sequenceNumber
-                data["checks"] = qualityChecks
-
-                await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker.identifier, this.task.unitId, this.task.tryCurrent, this.task.sequenceNumber, qualityChecks)
-                this.task.sequenceNumber = this.task.sequenceNumber + 1
-                await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker.identifier, this.task.unitId, this.task.tryCurrent, this.task.sequenceNumber, data)
-                this.task.sequenceNumber = this.task.sequenceNumber + 1
-
+            if (completedElementType == "D") {
+                let countdown = null
+                if (this.task.settings.countdown_time)
+                    countdown = Number(this.documentComponent[completedElementIndex].countdown["i"]["text"])
+                let documentPayload = this.task.buildTaskDocumentPayload(completedElementIndex, this.documentsForm[completedElementIndex].value, countdown, action)
+                await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, documentPayload)
             }
+
+            if (completedElementIndex >= this.task.getElementsNumber()) {
+                let countdowns = []
+                if (this.task.settings.countdown_time)
+                    for (let index = 0; index < this.task.documentsAmount; index++) countdowns.push(this.documentComponent[index].countdown)
+                let fullPayload = this.task.buildTaskFinalPayload(this.questionnairesForm, this.documentsForm, qualityChecks, countdowns, action)
+                await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, fullPayload)
+                await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, qualityChecks)
+            }
+
 
         }
 
@@ -1174,13 +948,11 @@ export class SkeletonComponent implements OnInit {
             if (qualityChecks['globalOutcome']) {
                 this.sectionService.taskSuccessful = true;
                 this.sectionService.taskFailed = false;
-
             } else {
                 this.sectionService.taskSuccessful = false;
                 this.sectionService.taskFailed = true;
             }
             this.sectionService.taskCompleted = true;
-
 
             /* Lastly, we update the ACL */
             if (!(this.worker.identifier == null)) {
@@ -1204,26 +976,7 @@ export class SkeletonComponent implements OnInit {
             this.changeDetector.detectChanges()
 
         }
-    }
 
-    /*
-     * This function gives the possibility to the worker to provide a comment when a try is finished, successfully or not.
-     * The comment can be typed in a textarea and when the worker clicks the "Send" button such comment is uploaded to an Amazon S3 bucket.
-     */
-    public async performCommentSaving(comment) {
-        if (!(this.worker.identifier == null)) {
-            let data = {}
-            let actionInfo = {
-                try: this.task.tryCurrent,
-                sequence: this.task.sequenceNumber,
-                element: "comment"
-            };
-            data["info"] = actionInfo
-            data['comment'] = comment
-            await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker.identifier, this.task.unitId, this.task.tryCurrent, this.task.sequenceNumber, data)
-            this.task.sequenceNumber = this.task.sequenceNumber + 1
-        }
-        this.outcomeSection.commentSent = true
     }
 
     /* |--------- OTHER AMENITIES ---------| */

@@ -1,0 +1,72 @@
+<div class=" container">
+    <mat-card>
+        <!-- Document header markup -->
+        <mat-divider [inset]="true"></mat-divider>
+        <mat-card-title>Document Nr. {{documentIndex + 1}}</mat-card-title>
+        <mat-divider [inset]="true"></mat-divider>
+        <mat-card-content class="pt-16px">
+
+            <!-- Evaluation instructions markup -->
+            <div *ngIf="this.task.instructionsEvaluationAmount>0" class="evaluation-instructions">
+                <mat-divider [inset]="true"></mat-divider>
+                <h2>Instructions</h2>
+                <mat-divider [inset]="true"></mat-divider>
+                <div *ngFor="let instruction of this.task.instructionsEvaluation">
+                    <h2>{{instruction.caption}}</h2>
+                    <div [innerHTML]="instruction.text"></div>
+                </div>
+            </div>
+
+            <!--- Countdown markup --->
+            <div class="countdown sticky" *ngIf="this.task.settings.countdown_time>=0">
+                <h1 class="text-lighter m-0">
+                    Time left:
+                    <countdown #countdownElement [config]="{ demand: true, leftTime: this.task.documentsCountdownTime[documentIndex], format: 'mm:ss' }" (event)="handleCountdown($event, documentIndex)"></countdown>
+                </h1>
+            </div>
+
+            <ng-container *ngIf="(this.task.settings.modality=='pointwise')">
+                <ng-container *ngIf="!(this.task.settings.annotator)">
+                    <app-element-pointwise [documentIndex]="documentIndex"></app-element-pointwise>
+                </ng-container>
+                <ng-container *ngIf="(this.task.settings.annotator)">
+                    <app-annotator-laws *ngIf="(this.task.settings.annotator.type=='laws')" [documentIndex]="documentIndex"></app-annotator-laws>
+                    <app-annotator-options *ngIf="(this.task.settings.annotator.type=='options')" [documentIndex]="documentIndex"></app-annotator-options>
+                </ng-container>
+            </ng-container>
+            <ng-container *ngIf="(this.task.settings.modality=='pairwise')">
+                <app-element-pairwise [documentIndex]="documentIndex" (formEmitter)="updateDocumentForm($event)"></app-element-pairwise>
+            </ng-container>
+            <app-dimension [documentIndex]="documentIndex" (formEmitter)="updateDocumentForm($event)"></app-dimension>
+
+            <!-- "Back", "Next" and "Finish" actions markup -->
+            <mat-card-actions *ngIf="this.documentForm">
+                <button mat-flat-button color="primary" matStepperPrevious *ngIf="documentIndex>0"
+                        [disabled]="this.sectionService.taskCompleted"
+                        (click)="handleDocumentCompletion('Back')">
+                    Back
+                </button>
+                <button mat-flat-button color="primary" matStepperNext *ngIf="documentIndex+1<this.task.documentsAmount || (documentIndex+1>=this.task.documentsAmount && this.task.questionnaireAmountEnd > 0)"
+                        [disabled]="((!documentForm.valid || documentForm.status == 'DISABLED' ) || !this.task.searchEngineRetrievedResponses[documentIndex] || this.sectionService.taskCompleted || !this.task.checkAnnotationConsistency(documentIndex))"
+                        (click)="handleDocumentCompletion('Next')">
+                    Next
+                </button>
+                <button mat-flat-button color="primary" matStepperNext
+                        *ngIf="documentIndex+1>=this.task.documentsAmount && this.task.questionnaireAmountEnd == 0"
+                        [disabled]="(!documentForm.valid || documentForm.status == 'DISABLED'  || !this.task.searchEngineRetrievedResponses[documentIndex] || this.sectionService.taskCompleted || !this.task.checkAnnotationConsistency(documentIndex))"
+                        (click)="handleDocumentCompletion('Finish')">
+                    Finish
+                </button>
+            </mat-card-actions>
+            <mat-card-actions *ngIf="!this.documentForm">
+                <button mat-flat-button color="primary" matStepperNext *ngIf="documentIndex+1<this.task.documentsAmount || (documentIndex+1>=this.task.documentsAmount && this.task.questionnaireAmountEnd > 0)" [disabled]="true">
+                    Next
+                </button>
+            </mat-card-actions>
+
+
+        </mat-card-content>
+
+
+    </mat-card>
+</div>
