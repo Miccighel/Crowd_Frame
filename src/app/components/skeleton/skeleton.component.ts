@@ -933,7 +933,7 @@ export class SkeletonComponent implements OnInit {
                 let countdowns = []
                 if (this.task.settings.countdown_time)
                     for (let index = 0; index < this.task.documentsAmount; index++) countdowns.push(this.documentComponent[index].countdown)
-                let fullPayload = this.task.buildTaskFinalPayload(this.questionnairesForm, this.documentsForm, qualityChecks, countdowns, action)
+                let fullPayload = this.task.buildTaskFinalPayload(this.questionnairesForm, this.documentsForm, qualityChecksPayload, countdowns, action)
                 await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, fullPayload)
                 await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, qualityChecksPayload)
             }
