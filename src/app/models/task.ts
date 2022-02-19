@@ -92,15 +92,18 @@ export class Task {
         let elementType = ""
         let elementIndex = 0
         if (stepIndex >= this.questionnaireAmountStart && stepIndex < this.questionnaireAmountStart + this.documentsAmount) {
-            elementType = "D"
+            elementType = "S"
             elementIndex = stepIndex - this.questionnaireAmountStart
         } else if (stepIndex < this.questionnaireAmountStart) {
             elementType = "Q"
             elementIndex = stepIndex
-        } else if (stepIndex == this.questionnaireAmountStart + this.documentsAmount && this.questionnaireAmountEnd > 0) {
+        } else if (stepIndex >= this.questionnaireAmountStart + this.documentsAmount && stepIndex < this.getElementsNumber() &&  this.questionnaireAmountEnd > 0) {
             elementType = "Q"
             elementIndex = stepIndex - this.documentsAmount
-        } else if (stepIndex > this.questionnaireAmountStart + this.documentsAmount && this.questionnaireAmountEnd > 0)  {
+        } else if (stepIndex >= this.questionnaireAmountStart + this.documentsAmount && this.questionnaireAmountEnd == 0)  {
+            elementType = "Outcome"
+            elementIndex = null
+        }  else if (stepIndex >= this.questionnaireAmountStart + this.documentsAmount && stepIndex >= this.getElementsNumber() && this.questionnaireAmountEnd > 0)  {
             elementType = "Outcome"
             elementIndex = null
         }

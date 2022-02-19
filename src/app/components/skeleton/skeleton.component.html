@@ -30,7 +30,7 @@
                     <mat-label>
                         Insert your input token
                     </mat-label>
-                    <input matInput type="text" placeholder="your_mturk_token" formControlName="tokenInput" maxlength="11" class="input-token"
+                    <input matInput type="text" placeholder="your_token" formControlName="tokenInput" maxlength="11" class="input-token"
                            (focus)="this.tokenForm.updateValueAndValidity()" (paste)="this.tokenForm.updateValueAndValidity()"
                            (keyup)="this.tokenForm.updateValueAndValidity()" (keydown)="this.tokenForm.updateValueAndValidity()"
                            (keyup.enter)="performTaskSetup()">
@@ -82,7 +82,7 @@
         >
         </app-questionnaire>
         <app-document
-                *ngIf="this.task.getElementIndex(stepIndex)['elementType']=='D'"
+                *ngIf="this.task.getElementIndex(stepIndex)['elementType']=='S'"
                 [documentIndex]="this.task.getElementIndex(stepIndex)['elementIndex']"
                 (formEmitter)="this.storeDocumentForm($event, this.task.getElementIndex(stepIndex)['elementIndex'])"
         ></app-document>

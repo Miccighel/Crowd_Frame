@@ -165,7 +165,7 @@ export class SkeletonComponent implements OnInit {
         this.task.taskName = this.configService.environment.taskName
         this.task.batchName = this.configService.environment.batchName
 
-        if (this.configService.environment.debug_mode) {
+        if (this.configService.environment.debug_mode == 'true') {
             this.enableTask()
             let hits = await this.S3Service.downloadHits(this.configService.environment)
             this.tokenInput.setValue(this.debugService.selectRandomToken(hits))
@@ -201,7 +201,6 @@ export class SkeletonComponent implements OnInit {
             let unlockTask = function (changeDetector: ChangeDetectorRef, ngxService: NgxUiLoaderService, sectionService: SectionService, taskAllowed: boolean) {
                 sectionService.taskAllowed = taskAllowed
                 sectionService.checkCompleted = true
-
                 changeDetector.detectChanges()
                 /* The loading spinner is stopped */
                 ngxService.stop();
@@ -890,30 +889,29 @@ export class SkeletonComponent implements OnInit {
 
         this.computeTimestamps(currentElementIndex, completedElementIndex, action)
         if (this.task.settings.countdown_time) {
-            if (currentElementType == 'document') {
+            if (currentElementType == 'S') {
                 this.handleCountdowns(currentElementIndex, completedElementIndex, action)
             }
         }
         if (this.task.settings.annotator) {
             if (this.task.settings.annotator.type == 'options') {
-                if (completedElementType == 'document') {
+                if (completedElementType == 'S') {
                     this.documentComponent[completedElementIndex].annotatorOptions.handleNotes()
                 }
             }
         }
 
         let qualityChecks = null
+        let qualityChecksPayload = null
 
         if (action == "Finish") {
             qualityChecks = this.performQualityChecks()
-            let qualityChecksPayload = this.task.buildQualityChecksPayload(qualityChecks, action)
+            qualityChecksPayload = this.task.buildQualityChecksPayload(qualityChecks, action)
         }
 
         if (!(this.worker.identifier == null)) {
 
-            console.log(completedElementType)
-
-            if (this.task.sequenceNumber <= 0) {
+            if (completedElementIndex <= 0) {
                 let taskInitialPayload = this.task.buildTaskInitialPayload(this.worker)
                 await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, taskInitialPayload)
             }
@@ -923,7 +921,7 @@ export class SkeletonComponent implements OnInit {
                 await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, questionnairePayload)
             }
 
-            if (completedElementType == "D") {
+            if (completedElementType == "S") {
                 let countdown = null
                 if (this.task.settings.countdown_time)
                     countdown = Number(this.documentComponent[completedElementIndex].countdown["i"]["text"])
@@ -937,7 +935,7 @@ export class SkeletonComponent implements OnInit {
                     for (let index = 0; index < this.task.documentsAmount; index++) countdowns.push(this.documentComponent[index].countdown)
                 let fullPayload = this.task.buildTaskFinalPayload(this.questionnairesForm, this.documentsForm, qualityChecks, countdowns, action)
                 await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, fullPayload)
-                await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, qualityChecks)
+                await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, qualityChecksPayload)
             }
 
 
