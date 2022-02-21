@@ -1,7 +1,7 @@
 import {ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, QueryList, ViewChildren} from '@angular/core';
 import {SectionService} from "../../../services/section.service";
 import {UtilsService} from "../../../services/utils.service";
-import {FormBuilder, FormGroup} from "@angular/forms";
+import {AbstractControl, FormBuilder, FormGroup} from "@angular/forms";
 import {Task} from "../../../models/task";
 import {DeviceDetectorService} from "ngx-device-detector";
 import {Document} from "../../../../../data/build/skeleton/document";
@@ -39,7 +39,7 @@ export class DocumentComponent implements OnInit {
 
     task: Task
     document: Document
-    documentForm: FormGroup
+    assessmentForm: FormGroup
 
     @Output() formEmitter: EventEmitter<Object>;
 
@@ -68,16 +68,17 @@ export class DocumentComponent implements OnInit {
 
     /* |--------- DIMENSIONS ---------| */
 
-    public updateDocumentForm(form) {
-        if (this.documentForm) {
-            let controlsConfig = {}
-            let previousControls = this.documentForm.controls
-            for (const [name, control] of Object.entries(previousControls)) controlsConfig[name] = control
-            for (const [name, control] of Object.entries(form.controls)) controlsConfig[name] = control
-            this.documentForm = this.formBuilder.group(controlsConfig)
-            this.documentForm.setErrors(form.errors)
+    public storeAssessmentForm(form) {
+        if (!this.assessmentForm) {
+            this.assessmentForm = form
         } else {
-            this.documentForm = form
+            for (const [name, control] of Object.entries(form.controls)) {
+                if (control instanceof AbstractControl) {
+                    if (control.valid) {
+                        this.assessmentForm.get(name).setValue(form.get(name).value, {emitEvent: false})
+                    }
+                }
+            }
         }
     }
 
@@ -95,9 +96,9 @@ export class DocumentComponent implements OnInit {
         }
     }
 
-    public handleDocumentCompletion(action: string){
+    public handleDocumentCompletion(action: string) {
         this.formEmitter.emit({
-            "form": this.documentForm,
+            "form": this.assessmentForm,
             "action": action
         })
     }

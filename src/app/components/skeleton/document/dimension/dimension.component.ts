@@ -145,7 +145,8 @@ export class DimensionComponent implements OnInit {
 
     public storeSearchEngineUrl(urlFormGroup, dimensionIndex) {
         for (const [key, value] of Object.entries(urlFormGroup.controls)) {
-            this.assessmentForms[dimensionIndex].addControl(key, urlFormGroup.get(key))
+            if (!this.assessmentForms[dimensionIndex].get(key))
+                this.assessmentForms[dimensionIndex].addControl(key, urlFormGroup.get(key))
         }
     }
 

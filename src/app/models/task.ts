@@ -701,12 +701,14 @@ export class Task {
     }
 
     public buildQualityChecksPayload(qualityChecks, action) {
-        qualityChecks['info'] = {
+        let checks = {}
+        checks['info'] = {
             try: this.tryCurrent,
             sequence: this.sequenceNumber,
             element: "checks",
             action: action
         };
-        return qualityChecks
+        checks['checks'] = qualityChecks
+        return checks
     }
 }

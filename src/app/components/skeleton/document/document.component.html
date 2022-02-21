@@ -2,7 +2,7 @@
     <mat-card>
         <!-- Document header markup -->
         <mat-divider [inset]="true"></mat-divider>
-        <mat-card-title>Document Nr. {{documentIndex + 1}}</mat-card-title>
+        <mat-card-title>Statement Nr. {{documentIndex + 1}}</mat-card-title>
         <mat-divider [inset]="true"></mat-divider>
         <mat-card-content class="pt-16px">
 
@@ -35,30 +35,30 @@
                 </ng-container>
             </ng-container>
             <ng-container *ngIf="(this.task.settings.modality=='pairwise')">
-                <app-element-pairwise [documentIndex]="documentIndex" (formEmitter)="updateDocumentForm($event)"></app-element-pairwise>
+                <app-element-pairwise [documentIndex]="documentIndex" (formEmitter)="storeAssessmentForm($event)"></app-element-pairwise>
             </ng-container>
-            <app-dimension [documentIndex]="documentIndex" (formEmitter)="updateDocumentForm($event)"></app-dimension>
+            <app-dimension [documentIndex]="documentIndex" (formEmitter)="storeAssessmentForm($event)"></app-dimension>
 
             <!-- "Back", "Next" and "Finish" actions markup -->
-            <mat-card-actions *ngIf="this.documentForm">
+            <mat-card-actions *ngIf="this.assessmentForm">
                 <button mat-flat-button color="primary" matStepperPrevious *ngIf="documentIndex>0"
                         [disabled]="this.sectionService.taskCompleted"
                         (click)="handleDocumentCompletion('Back')">
                     Back
                 </button>
                 <button mat-flat-button color="primary" matStepperNext *ngIf="documentIndex+1<this.task.documentsAmount || (documentIndex+1>=this.task.documentsAmount && this.task.questionnaireAmountEnd > 0)"
-                        [disabled]="((!documentForm.valid || documentForm.status == 'DISABLED' ) || !this.task.searchEngineRetrievedResponses[documentIndex] || this.sectionService.taskCompleted || !this.task.checkAnnotationConsistency(documentIndex))"
+                        [disabled]="((!assessmentForm.valid || assessmentForm.status == 'DISABLED' ) || !this.task.searchEngineRetrievedResponses[documentIndex] || this.sectionService.taskCompleted || !this.task.checkAnnotationConsistency(documentIndex))"
                         (click)="handleDocumentCompletion('Next')">
                     Next
                 </button>
                 <button mat-flat-button color="primary" matStepperNext
                         *ngIf="documentIndex+1>=this.task.documentsAmount && this.task.questionnaireAmountEnd == 0"
-                        [disabled]="(!documentForm.valid || documentForm.status == 'DISABLED'  || !this.task.searchEngineRetrievedResponses[documentIndex] || this.sectionService.taskCompleted || !this.task.checkAnnotationConsistency(documentIndex))"
+                        [disabled]="(!assessmentForm.valid || assessmentForm.status == 'DISABLED'  || !this.task.searchEngineRetrievedResponses[documentIndex] || this.sectionService.taskCompleted || !this.task.checkAnnotationConsistency(documentIndex))"
                         (click)="handleDocumentCompletion('Finish')">
                     Finish
                 </button>
             </mat-card-actions>
-            <mat-card-actions *ngIf="!this.documentForm">
+            <mat-card-actions *ngIf="!this.assessmentForm">
                 <button mat-flat-button color="primary" matStepperNext *ngIf="documentIndex+1<this.task.documentsAmount || (documentIndex+1>=this.task.documentsAmount && this.task.questionnaireAmountEnd > 0)" [disabled]="true">
                     Next
                 </button>

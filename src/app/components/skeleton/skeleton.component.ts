@@ -820,6 +820,7 @@ export class SkeletonComponent implements OnInit {
      * The comment can be typed in a textarea and when the worker clicks the "Send" button such comment is uploaded to an Amazon S3 bucket.
      */
     public async performCommentSaving(comment) {
+         this.outcomeSection.commentSent = true
         if (!(this.worker.identifier == null)) {
             let data = {}
             let actionInfo = {
@@ -832,11 +833,11 @@ export class SkeletonComponent implements OnInit {
             await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, data)
             this.task.sequenceNumber = this.task.sequenceNumber + 1
         }
-        this.outcomeSection.commentSent = true
     }
 
     public storeQuestionnaireForm(data, questionnaireIndex) {
-        this.questionnairesForm[questionnaireIndex] = data["form"]
+        if (!this.questionnairesForm[questionnaireIndex])
+            this.questionnairesForm[questionnaireIndex] = data["form"]
         let action = data["action"]
         if (action) {
             this.produceData(action, questionnaireIndex)
@@ -844,7 +845,8 @@ export class SkeletonComponent implements OnInit {
     }
 
     public storeDocumentForm(data, documentIndex) {
-        this.documentsForm[documentIndex] = data["form"]
+        if (!this.documentsForm[documentIndex])
+            this.documentsForm[documentIndex] = data["form"]
         let action = data["action"]
         if (action) {
             this.produceData(action, documentIndex)
@@ -877,7 +879,8 @@ export class SkeletonComponent implements OnInit {
                 break;
         }
 
-
+        let completedElementBaseIndex = completedElement
+        let currentElementBaseIndex = currentElement
         let completedElementData = this.task.getElementIndex(completedElement)
         let currentElementData = this.task.getElementIndex(currentElement)
         let completedElementType = completedElementData['elementType']
@@ -885,9 +888,9 @@ export class SkeletonComponent implements OnInit {
         let currentElementType = currentElementData['elementType']
         let currentElementIndex = currentElementData['elementIndex']
 
-        this.task.elementsAccesses[completedElementIndex] = this.task.elementsAccesses[completedElementIndex] + 1;
+        this.task.elementsAccesses[completedElementBaseIndex] = this.task.elementsAccesses[completedElementBaseIndex] + 1;
 
-        this.computeTimestamps(currentElementIndex, completedElementIndex, action)
+        this.computeTimestamps(currentElementBaseIndex, completedElementBaseIndex, action)
         if (this.task.settings.countdown_time) {
             if (currentElementType == 'S') {
                 this.handleCountdowns(currentElementIndex, completedElementIndex, action)
@@ -911,7 +914,7 @@ export class SkeletonComponent implements OnInit {
 
         if (!(this.worker.identifier == null)) {
 
-            if (completedElementIndex <= 0) {
+            if (completedElementBaseIndex <= 0) {
                 let taskInitialPayload = this.task.buildTaskInitialPayload(this.worker)
                 await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, taskInitialPayload)
             }
@@ -929,7 +932,7 @@ export class SkeletonComponent implements OnInit {
                 await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, documentPayload)
             }
 
-            if (completedElementIndex >= this.task.getElementsNumber()) {
+            if (completedElementBaseIndex == this.task.getElementsNumber() - 1) {
                 let countdowns = []
                 if (this.task.settings.countdown_time)
                     for (let index = 0; index < this.task.documentsAmount; index++) countdowns.push(this.documentComponent[index].countdown)
@@ -937,7 +940,6 @@ export class SkeletonComponent implements OnInit {
                 await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, fullPayload)
                 await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, qualityChecksPayload)
             }
-
 
         }
 
