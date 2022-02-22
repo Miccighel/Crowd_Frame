@@ -47,6 +47,7 @@ user_stack_token = os.getenv('user_stack_token')
 fake_json_token = os.getenv('fake_json_token')
 debug_mode = os.getenv('debug_mode')
 
+
 def serialize_json(folder, filename, data):
     if not os.path.exists(folder):
         os.makedirs(folder, exist_ok=True)
@@ -181,7 +182,7 @@ dynamo_db = boto3.client('dynamodb', region_name=aws_region)
 dynamo_db_resource = boto3.resource('dynamodb', region_name=aws_region)
 ip_info_handler = ipinfo.getHandler(ip_info_token)
 
-if platform_name.lower() != 'mturk' and platform_name.lower()!='prolific':
+if platform_name.lower() != 'mturk' and platform_name.lower() != 'prolific':
     raise Exception("Value for 'platform_name' variable invalid. Use 'mturk' or 'prolific'.")
 
 next_token = ''
@@ -1019,12 +1020,7 @@ if not os.path.exists(df_data_path):
                                         for mapping in dimension["scale"]['mapping']:
                                             label = mapping['label'].lower().split(" ")
                                             label = '-'.join([str(c) for c in label])
-                                            value_int = None
-                                            try:
-                                                value_int = int(value)
-                                            except:
-                                                value_int = 0
-                                            if int(mapping['value']) == value_int:
+                                            if mapping['value'] == value:
                                                 row[f"doc_{dimension['name']}_label"] = label
                                                 row[f"doc_{dimension['name']}_index"] = mapping['index']
                                                 row[f"doc_{dimension['name']}_description"] = mapping['description']
@@ -1128,12 +1124,7 @@ if not os.path.exists(df_data_path):
                                     for mapping in dimension["scale"]['mapping']:
                                         label = mapping['label'].lower().split(" ")
                                         label = '-'.join([str(c) for c in label])
-                                        value_int = None
-                                        try:
-                                            value_int = int(value)
-                                        except:
-                                            value_int = 0
-                                        if int(mapping['value']) == value_int:
+                                        if mapping['value'] == value:
                                             row[f"doc_{dimension['name']}_label"] = label
                                             row[f"doc_{dimension['name']}_index"] = mapping['index']
                                             row[f"doc_{dimension['name']}_description"] = mapping['description']
@@ -1281,6 +1272,7 @@ dataframe = pd.DataFrame(columns=[
 dataframe['try_last'] = dataframe['try_last'].astype(float)
 dataframe['try_current'] = dataframe['try_current'].astype(float)
 
+
 def parse_dimensions_selected(df, worker_id, worker_paid, task, info, documents, dimensions, dimensions_selected_data, timestamp_start, timestamp_end):
     for index_current, dimensions_selected in enumerate(dimensions_selected_data):
 
@@ -1388,7 +1380,6 @@ if not os.path.exists(df_dim_path) and os.path.exists(df_data_path):
                     info = document_data['serialization']["info"]
 
                     if (int(last_full_try) > int(most_rec_try)) and (int(info['try']) > int(most_rec_try)):
-
                         timestamp_first = timestamp_start
                         timestamp_first_parsed = datetime.datetime.fromtimestamp(timestamp_first)
                         timestamps_found = [timestamp_first_parsed]
@@ -1440,6 +1431,7 @@ dataframe = pd.DataFrame(columns=[
 ])
 dataframe['try_last'] = dataframe['try_last'].astype(float)
 dataframe['try_current'] = dataframe['try_current'].astype(float)
+
 
 def parse_responses(df, worker_id, worker_paid, task, info, queries, responses_retrieved, responses_selected):
     for index_current, responses_retrieved_document in enumerate(responses_retrieved):
