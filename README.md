@@ -317,6 +317,30 @@ Any contributions you make are **greatly appreciated**.
 4. Push to the Branch (`git push origin feature/dev-branch`)
 5. Open a Pull Request
 
+## Original Article
+
+This software has been presented during The 15th ACM International WSDM Conference.
+
+````tex
+@inproceedings{conference-paper-wsdm2022,
+    author = {Soprano, Michael and Roitero, Kevin and Bombassei De Bona, Francesco and Mizzaro, Stefano},
+    title = {Crowd_Frame: A Simple and Complete Framework to Deploy Complex Crowdsourcing Tasks Off-the-Shelf},
+    year = {2022},
+    isbn = {9781450391320},
+    publisher = {Association for Computing Machinery},
+    address = {New York, NY, USA},
+    url = {https://doi.org/10.1145/3488560.3502182},
+    doi = {10.1145/3488560.3502182},
+    abstract = {Due to their relatively low cost and ability to scale, crowdsourcing based approaches are widely used to collect a large amount of human annotated data. To this aim, multiple crowdsourcing platforms exist, where requesters can upload tasks and workers can carry them out and obtain payment in return. Such platforms share a task design and deploy workflow that is often counter-intuitive and cumbersome. To address this issue, we propose Crowd_Frame, a simple and complete framework which allows to develop and deploy diverse types of complex crowdsourcing tasks in an easy and customizable way. We show the abilities of the proposed framework and we make it available to researchers and practitioners.},
+    booktitle = {Proceedings of the Fifteenth ACM International Conference on Web Search and Data Mining},
+    pages = {1605–1608},
+    numpages = {4},
+    keywords = {framework, crowdsourcing, user behavior},
+    location = {Virtual Event, AZ, USA},
+    series = {WSDM '22}
+}
+````
+
 ## References
 
 This software has been already used in the past to launch several crowdsourcing tasks that lead to results published.
