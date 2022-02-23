@@ -1,4 +1,5 @@
-<div class="container">
+<ng-template matStepLabel>{{this.questionnaire.index}}</ng-template>
+<div class="container" id="questionnaire-{{this.questionnaire.index}}">
     <form [formGroup]="questionnaireForm">
 
         <mat-card>
@@ -75,13 +76,13 @@
                     <mat-form-field appearance="fill" class="questionnaire-crt-value">
                         <mat-label>Answer</mat-label>
                         <input matInput type="number" placeholder="0" min="0" formControlName="{{question.name}}">
-                        <mat-error *ngIf="checkFormControl(questionnaireForm,question.name, 'required')">
+                        <mat-error *ngIf="this.utilsService.checkFormControl(questionnaireForm,question.name, 'required')">
                             This field is required
                         </mat-error>
-                        <mat-error *ngIf="checkFormControl(questionnaireForm,question.name, 'min')">
+                        <mat-error *ngIf="this.utilsService.checkFormControl(questionnaireForm,question.name, 'min')">
                             Min value allowed: 0
                         </mat-error>
-                        <mat-error *ngIf="checkFormControl(questionnaireForm,question.name, 'max')">
+                        <mat-error *ngIf="this.utilsService.checkFormControl(questionnaireForm,question.name, 'max')">
                             Max value allowed: 100
                         </mat-error>
                     </mat-form-field>
@@ -112,33 +113,21 @@
             <mat-card-actions>
                 <p class="form-note">
                     <button mat-flat-button color="primary" matStepperPrevious
-                            *ngIf="step>0 && position=='end' || this.questionnaire.allow_back"
-                            [disabled]="!questionnaireForm.valid ||this.taskCompleted"
-                            (click)="emitQuestionnaireFilled('Back',step)">
+                            *ngIf="this.questionnaire.index>0 && this.questionnaire.allow_back"
+                            [disabled]="this.sectionService.taskCompleted"
+                            (click)="handleQuestionnaireCompletion('Back')">
                         Back
                     </button>
                     <button mat-flat-button color="primary" matStepperNext
-                            *ngIf="(step+1 <= this.questionnaireAmountStart && this.questionnaireAmountEnd>=0  && this.documentsAmount > 0) && position=='start'"
-                            [disabled]="!questionnaireForm.valid || this.taskCompleted"
-                            (click)="emitQuestionnaireFilled('Next',step)">
+                            *ngIf="(this.questionnaire.index < this.task.questionnaireAmountStart) || (this.questionnaire.index>=this.task.questionnaireAmountStart + this.task.documentsAmount && this.questionnaire.index < this.task.getElementsNumber() && this.task.questionnaireAmountEnd>0)"
+                            [disabled]="!questionnaireForm.valid || this.sectionService.taskCompleted"
+                            (click)="handleQuestionnaireCompletion('Next')">
                         Next
                     </button>
                     <button mat-flat-button color="primary" matStepperNext
-                            *ngIf="(step+1 >= this.questionnaireAmountStart && this.questionnaireAmountEnd <= 0 && this.documentsAmount<=0) && position=='start'"
-                            [disabled]="!questionnaireForm.valid || this.taskCompleted"
-                            (click)="emitQuestionnaireFilled('Finish',step)">
-                        Finish
-                    </button>
-                    <button mat-flat-button color="primary" matStepperNext
-                            *ngIf="step+1 >= this.questionnaireAmountStart + this.documentsAmount && step+1 < (this.questionnaireAmountStart + this.documentsAmount + this.questionnaireAmountEnd) -1  && position=='end'"
-                            [disabled]="!questionnaireForm.valid || this.taskCompleted"
-                            (click)="emitQuestionnaireFilled('Next',step)">
-                        Next
-                    </button>
-                    <button mat-flat-button color="primary" matStepperNext
-                            *ngIf="step+1 >= (this.questionnaireAmountStart + this.documentsAmount + this.questionnaireAmountEnd) - 1  && position=='end'"
-                            [disabled]="!questionnaireForm.valid || this.taskCompleted"
-                            (click)="emitQuestionnaireFilled('Finish',step)">
+                            *ngIf="((this.questionnaire.index >= this.task.questionnaireAmountStart) && this.task.documentsAmount==0) || (this.questionnaire.index>=this.task.getElementsNumber() && this.task.questionnaireAmountEnd>0)"
+                            [disabled]="!questionnaireForm.valid || this.sectionService.taskCompleted"
+                            (click)="handleQuestionnaireCompletion('Finish')">
                         Finish
                     </button>
                     (*) you have to fill each field to proceed

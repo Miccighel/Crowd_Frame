@@ -1,0 +1,191 @@
+<ng-container *ngFor="let attribute of this.task.settings.attributes; let k=index">
+    <div class="statement" *ngIf="attribute.annotate && attribute.show">
+        <div class="attribute">
+            <span class="attribute-label">
+            <h3>{{attribute.name_pretty}}</h3>
+            <ul>
+                <li class="law_content_li">
+                    <div class="statement-div">
+                        <span id="document-{{this.documentIndex}}-attribute-{{k}}" style="white-space: pre-wrap;" #statementText class="statement-text"
+                              (mouseup)="performHighlighting(this.task, this.changeDetector, $event, this.documentIndex, k)"
+                              (touchend)="performHighlighting(this.task, this.changeDetector, $event, this.documentIndex, k)">
+                            {{this.checkEnabledNotes(this.documentIndex)}}
+                            {{(this.task.countdownsExpired[this.documentIndex] && this.task.settings.countdown_behavior == "hide_attributes") ? "---------- text_hidden ----------" : this.task.documents[this.documentIndex][attribute.name]}}
+                        </span>
+                    </div>
+                </li>
+            </ul>
+        </span>
+        </div>
+    </div>
+    <ng-container *ngIf="attribute.annotate">
+        <!-- Annotation recap -->
+        <div class="annotations" *ngIf="checkUndeletedNotesPresenceLaws(this.task.notes[documentIndex])">
+            <div *ngFor="let note of this.task.notes[documentIndex]; let noteIndex = index">
+                <ng-container *ngIf="note.deleted == false">
+                    <mat-divider [inset]="true"></mat-divider>
+                    <br/>
+                    <div *ngIf="checkIfLast(documentIndex, noteIndex)" style="height: 0%; text-align: center; margin-bottom: 1%; background-color: rgb(180, 180, 180); color: rgb(255, 0, 0);">
+                        ULTIMA ANNOTAZIONE ESEGUITA
+                    </div>
+                    <div class="annotation-quote">
+                        <div style="min-width: 101px;">
+                            <b>Hai selezionato:</b>
+                        </div>
+                        <div class="annotation-current-text">
+                            &nbsp;<span [style.background-color]="note.color">{{note.current_text}}</span>
+                        </div>
+                        <div class="inner-annotation-delete">
+                            <button (click)="removeAnnotationLaws(documentIndex, noteIndex)" mat-flat-button color="warn">Cancella
+                            </button>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="annotation-type">
+                            <div>
+                                <b>Questa annotazione è un/una:</b><br>
+                            </div>
+                            <div class="mat-radio-group">
+                                <div class="radio-group">
+                                    <mat-radio-group name="radio-group-{{documentIndex}}.{{noteIndex}}"
+                                                     (change)="radioChange($event, documentIndex, noteIndex)">
+                                        <div class="radio-group-button">
+                                            <mat-radio-button value="insertion">Inserimento
+                                            </mat-radio-button>
+                                        </div>
+                                        <div class="radio-group-button">
+                                            <mat-radio-button value="substitution">Sostituzione
+                                            </mat-radio-button>
+                                        </div>
+                                        <div class="radio-group-button">
+                                            <mat-radio-button value="repeal">Cancellazione
+                                            </mat-radio-button>
+                                        </div>
+                                        <div class="radio-group-button">
+                                            <mat-radio-button value="reference" [checked]="true">
+                                                Riferimento
+                                            </mat-radio-button>
+                                        </div>
+                                    </mat-radio-group>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="inner-annotation-checkbox-delete">
+                            <div class="inner-annotation-checkbox">
+                                <mat-checkbox (change)="checkboxChange($event, documentIndex, noteIndex)"
+                                              name="checkbox-{{noteIndex}}.{{documentIndex}}" [disabled]="note.type.includes('reference')"
+                                              [checked]="note.containsReferences">contiene un riferimento a una legge al suo interno
+                                </mat-checkbox>
+                                <br/>
+                                <mat-checkbox (change)="detailsCheckboxChange($event, documentIndex, noteIndex)"
+                                              name="details-checkbox-{{noteIndex}}.{{documentIndex}}" [disabled]="!note.type.includes('reference')"
+                                              [checked]="note.withoutDetails">non ci sono ulteriori dettagli
+                                </mat-checkbox>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div *ngIf="!note.containsReferences || note.withoutDetails">
+                        <div class='reference-form'>
+                            <strong>Si riferisce a:</strong>
+                            <mat-radio-group name="reference-radio-group-{{documentIndex}}.{{noteIndex}}"
+                                             (change)="this.referenceRadioChange($event, documentIndex, noteIndex)">
+                                <div class="reference-radio-group-button">
+                                    <mat-radio-button value="null">Non presente nel testo</mat-radio-button>
+                                </div>
+                                <div *ngFor="let note of this.filterNotes(this.task.notes[documentIndex]); let referredNoteIndex = index">
+                                    <div class="reference-radio-group-button">
+                                        <mat-radio-button value="{{note.year}}-{{note.number}}">{{note.year}}/{{note.number}}
+                                        </mat-radio-button>
+                                    </div>
+                                </div>
+                            </mat-radio-group>
+                        </div>
+                    </div>
+
+                    <div *ngIf="note.containsReferences">
+                        <ng-container *ngIf="!note.type.includes('reference')">
+                            <div class="inner-annotation-text">
+                                <div style="display: flex; justify-content: center; padding: 0.25%;">
+                                    <strong>Evidenzia il riferimento interno:</strong>
+                                </div>
+                                <div class="inner-annotation-reference" id="note-current-{{noteIndex}}.{{documentIndex}}">
+                          <span
+                                  (mouseup)="performInnerHighlighting(this.task, this.changeDetector, $event, documentIndex, k, noteIndex)"
+                                  (touchend)="performInnerHighlighting(this.task, this.changeDetector, $event, documentIndex, k, noteIndex)"
+                                  id="references-{{noteIndex}}.{{documentIndex}}">{{note.current_text}}>
+                          </span>
+                                </div>
+                                <div *ngFor="let innerNotes of note.innerAnnotations; let innerNoteIndex = index">
+                                    <ng-container *ngIf="!innerNotes.deleted"><br/>
+                                        <mat-divider [inset]="true"></mat-divider>
+                                        <div class="inner-annotation-quote" style="padding-top: 5px;">
+                                            <span [style.background-color]="innerNotes.color">{{innerNotes.current_text}}</span>
+                                        </div>
+                                        <div class="inner-annotation-checkbox-delete">
+                                            <mat-checkbox (change)="innerDetailsCheckboxChange($event, documentIndex, noteIndex, innerNoteIndex)"
+                                                          name="details-checkbox-{{innerNoteIndex}}-{{noteIndex}}.{{documentIndex}}"
+                                                          [disabled]="!innerNotes.type.includes('reference')"
+                                                          [checked]="innerNotes.withoutDetails">non ci sono ulteriori dettagli
+                                            </mat-checkbox>
+                                        </div>
+                                        <div *ngIf="innerNotes.type.includes('reference') && !innerNotes.withoutDetails"
+                                             class="annotation-options">
+                                            <div style="padding: 5px;">
+                                                <b>Numero legge:<br/><br/>
+                                                    Anno legge:</b>
+                                            </div>
+                                            <br/>
+                                            <div style="padding: 5px;"><input type="number"
+                                                                              name="number-{{innerNoteIndex}}-{{noteIndex}}.{{documentIndex}}"
+                                                                              id="number-{{innerNoteIndex}}-{{noteIndex}}.{{documentIndex}}" placeholder="00"
+                                                                              (change)="innerCheckIfSaved(documentIndex, noteIndex, innerNoteIndex)"
+                                                                              (keyup)="innerCheckIfSaved(documentIndex, noteIndex, innerNoteIndex)"><br/><br/>
+                                                <input type="number" name="year-{{innerNoteIndex}}-{{noteIndex}}.{{documentIndex}}"
+                                                       id="year-{{innerNoteIndex}}-{{noteIndex}}.{{documentIndex}}" placeholder="0000"
+                                                       (change)="innerCheckIfSaved(documentIndex, noteIndex, innerNoteIndex)"
+                                                       (keyup)="innerCheckIfSaved(documentIndex, noteIndex, innerNoteIndex)">
+                                            </div>
+                                            <div style="padding: 5px; padding-left: 7px;">
+                                                <button (click)="performInnerAnnotationLaws(documentIndex, noteIndex, innerNoteIndex)" mat-flat-button
+                                                        color="primary"
+                                                        id="save_button-{{innerNoteIndex}}-{{innerNoteIndex}}-{{noteIndex}}.{{documentIndex}}"
+                                                        [disabled]="innerCheckIfSaved(documentIndex, noteIndex, innerNoteIndex)">Salva
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <br/>
+                                        <div class="inner-annotation-checkbox-delete">
+                                            <button (click)="removeInnerAnnotationLaws(documentIndex, noteIndex, innerNoteIndex)" mat-flat-button
+                                                    color="warn">Cancella riferimento
+                                            </button>
+                                        </div>
+                                    </ng-container>
+                                </div>
+                            </div>
+                        </ng-container>
+                    </div>
+
+                    <div *ngIf="note.type.includes('reference') && !note.withoutDetails" class="annotation-options">
+                        <div style="padding: 5px;">
+                            <b>Numero legge:<br/><br/>Anno legge:</b>
+                        </div>
+                        <br/>
+                        <div style="padding: 5px;">
+                            <input type="number" name="number-{{noteIndex}}.{{documentIndex}}" id="number-{{noteIndex}}.{{documentIndex}}" placeholder="00"
+                                   (change)="checkIfSaved(documentIndex, noteIndex)"
+                                   (keyup)="checkIfSaved(documentIndex, noteIndex)">
+                            <br/><br/>
+                            <input type="number" name="year-{{noteIndex}}.{{documentIndex}}" id="year-{{noteIndex}}.{{documentIndex}}" placeholder="0000"
+                                   (change)="checkIfSaved(documentIndex, noteIndex)" (keyup)="checkIfSaved(documentIndex, noteIndex)">
+                        </div>
+                        <div style="padding: 5px; padding-left: 7px;">
+                            <button (click)="performAnnotationLaws(documentIndex, noteIndex)" mat-flat-button color="primary" id="save_button-{{noteIndex}}.{{documentIndex}}" [disabled]="checkIfSaved(documentIndex, noteIndex)">Salva
+                            </button>
+                        </div>
+                    </div>
+                </ng-container>
+            </div>
+        </div>
+    </ng-container>
+</ng-container>

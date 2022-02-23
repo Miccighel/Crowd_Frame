@@ -32,9 +32,9 @@ issues](https://badgen.net/github/issues/Miccighel/Crowd_Frame/)](https://GitHub
 
 ## Getting Started
 
-1. Create a [Amazon AWS Account](https://aws.amazon.com/it/)
+1. Create an [Amazon AWS Account](https://aws.amazon.com/it/)
 
-2. Create a new [IAM USER](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_users_create.html) ` your_iam_user`
+2. Create a new [IAM USER](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_users_create.html) `your_iam_user`
 
 3. Attach the `AdministratorAccess` policy
 
@@ -77,7 +77,7 @@ issues](https://badgen.net/github/issues/Miccighel/Crowd_Frame/)](https://GitHub
    cd ~/path/to/project
    ````
 
-9. Switch to Yarn newest version
+9. Switch to Yarn the newest version
 
    ````
    yarn set version stable
@@ -108,7 +108,7 @@ issues](https://badgen.net/github/issues/Miccighel/Crowd_Frame/)](https://GitHub
      batch_name=your_batch_name
      admin_user=your_admin_username
      admin_password=your_admin_password
-     server_config=aws
+     server_config=none
      aws_region=your_aws_region
      aws_private_bucket=your_private_bucket_name
      aws_deploy_bucket=your_deploy_bucket_name
@@ -252,18 +252,21 @@ The following table describes each environment variables that can be set in `you
 | :------------------: | :----------------------------------------------------------: | :----------------: | --------------------------- |
 |    `mail_contact`    | Contact mail to receive AWS budgeting related comunications  | :heavy_check_mark: | Valid email address         |
 |    `budget_limit`    | Maximum monthly money amount allowed to operate in USD; e.g., `5.0` | :heavy_check_mark: | Positive float number       |
-|     `task_name`      |             Identifier of the crowdsourcing task             | :heavy_check_mark: | Any string                  |
-|     `batch_name`     |             Identifier of a single task's batch              | :heavy_check_mark: | Any string                  |
-|     `admin_user`     |                  Username of the admin user                  | :heavy_check_mark: | Any string                  |
-|   `admin_password`   |                  Password of the admin user                  | :heavy_check_mark: | Any string                  |
-|     `aws_region`     |        Region of your AWS account; e.g., `us-east-1`         | :heavy_check_mark: | Valid AWS region identifier |
+|     `task_name`      | Identifier of the crowdsourcing task | :heavy_check_mark: | Any string                  |
+|     `batch_name`     | Identifier of a single task's batch | :heavy_check_mark: | Any string                  |
+|     `batch_prefix`   | Prefix of the identifiers of one or more task's batches. Use this variable to filter the final result set. | :x: | Any string            |
+|     `admin_user`     | Username of the admin user | :heavy_check_mark: | Any string                  |
+|   `admin_password`   | Password of the admin user | :heavy_check_mark: | Any string                  |
+|     `aws_region`     | Region of your AWS account; e.g., `us-east-1` | :heavy_check_mark: | Valid AWS region identifier |
 | `aws_private_bucket` | Name of the private S3 bucket in which to store task configuration and data | :heavy_check_mark: | String unique across AWS    |
 | `aws_deploy_bucket`  | Name of the public S3 bucket in which to deploy task source code | :heavy_check_mark: | String unique across AWS    |
 |   `server_config`    | Used to specify where the worker behavior logging interface is. Set it to `aws` to deploy the AWS-based infrastructure. Set it to `custom` if you want to provide a custom logging endpoint. Set it to `none` if you will not log worker behavior. | :heavy_check_mark: | `aws` or `custom` or `none` |
 |   `deploy_config`    | Allows uploading the task configuration available in the local machine. Set it to `false` if you already edited the configuration remotely to avoid overwriting it. | :heavy_check_mark: | `true` |
+|   `prolific_completion_code`    | Prolific study completion code. Provide here the code if you recruit crowd workers via Prolific. | :x: | Valid Prolific completion code |
 |   `ip_info_token`    | API Key to use ipinfo.com tracking functionalities. Set it to `true` if you enable the corresponding task setting. | :x: | `true` |
-|   `user_stack_token`    | API Key to use userstack.com user agent detection functionalities. Set it to `true` if you enable the corresponding task setting. | :x: | `true` |
-|    `bing_api_key`    |        API Key to use `BingWebSearch` search provider        |        :x:         | Valid  Bing API Key         |
+|   `user_stack_token` | API Key to use userstack.com user agent detection functionalities. Set it to `true` if you enable the corresponding task setting. | :x: | `true` |
+|    `bing_api_key`    | API Key to use `BingWebSearch` search provider. | :x: | Valid  Bing API Web Search Key         |
+|    `fake_json_token` | API Key to use `FakerWebSearch` search provider. Returns dummy responses useful to test the search engine. | :x:| Valid  fakeJSON.com API Key |
 
 ## Local Development
 
@@ -296,7 +299,7 @@ You may want to edit and test the task configuration locally. To enable local de
     	aws_id_key: "your_aws_key_id",
     	aws_secret_key: "your_aws_key_secret",
     	bing_api_key: "your_bing_api_key",
-    	logOnConsole: true,
+    	log_on_console: true,
     };
     ````
 
@@ -313,6 +316,30 @@ Any contributions you make are **greatly appreciated**.
 3. Commit your Changes (`git commit -m 'Add some Feature'`)
 4. Push to the Branch (`git push origin feature/dev-branch`)
 5. Open a Pull Request
+
+## Original Article
+
+This software has been presented during The 15th ACM International WSDM Conference.
+
+````tex
+@inproceedings{conference-paper-wsdm2022,
+    author = {Soprano, Michael and Roitero, Kevin and Bombassei De Bona, Francesco and Mizzaro, Stefano},
+    title = {Crowd_Frame: A Simple and Complete Framework to Deploy Complex Crowdsourcing Tasks Off-the-Shelf},
+    year = {2022},
+    isbn = {9781450391320},
+    publisher = {Association for Computing Machinery},
+    address = {New York, NY, USA},
+    url = {https://doi.org/10.1145/3488560.3502182},
+    doi = {10.1145/3488560.3502182},
+    abstract = {Due to their relatively low cost and ability to scale, crowdsourcing based approaches are widely used to collect a large amount of human annotated data. To this aim, multiple crowdsourcing platforms exist, where requesters can upload tasks and workers can carry them out and obtain payment in return. Such platforms share a task design and deploy workflow that is often counter-intuitive and cumbersome. To address this issue, we propose Crowd_Frame, a simple and complete framework which allows to develop and deploy diverse types of complex crowdsourcing tasks in an easy and customizable way. We show the abilities of the proposed framework and we make it available to researchers and practitioners.},
+    booktitle = {Proceedings of the Fifteenth ACM International Conference on Web Search and Data Mining},
+    pages = {1605–1608},
+    numpages = {4},
+    keywords = {framework, crowdsourcing, user behavior},
+    location = {Virtual Event, AZ, USA},
+    series = {WSDM '22}
+}
+````
 
 ## References
 

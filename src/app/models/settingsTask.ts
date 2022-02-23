@@ -2,21 +2,24 @@ import titleize from 'titleize';
 
 export class SettingsTask {
 
-  modality: string;
+    modality: string;
+    /* Number of allowed tries */
     allowed_tries: number;
+    /* Time allowed to be spent on each document */
     time_check_amount: number;
     attributes: Array<Attribute>
+    /* Object to encapsulate annotator's settings */
     annotator?: Annotator;
     countdown_time?: number;
     countdown_behavior?: string;
     countdown_modality?: string;
     countdown_attribute?: string;
     countdown_attribute_values?: Array<JSON>;
-    countdown_position_values?: Array<number>;
+    countdown_position_values?: Array<JSON>;
     messages?: Array<string>;
-    log_enable?: boolean;
-    log_option?: Object;
-    log_server_endpoint?: string;
+    logger_enable?: boolean;
+    logger_options?: Object;
+    logger_server_endpoint?: string;
 
     constructor(
         data = null as JSON
@@ -27,7 +30,7 @@ export class SettingsTask {
                 delete data['domains_to_filter']
             }
         }
-        this.modality =  data ? data['modality'] : null;
+        this.modality = data ? data['modality'] : null;
         this.allowed_tries = data ? parseInt((data["allowed_tries"])) : 0;
         this.time_check_amount = data ? parseInt((data["time_check_amount"])) : 0;
         this.attributes = new Array<Attribute>()
@@ -45,15 +48,17 @@ export class SettingsTask {
                 }
             }
         }
-        this.annotator = data ? data["annotator"] ? new Annotator(data["annotator"]) : null : null;
+        this.annotator = data ? data['annotator'] ? new Annotator(data["annotator"]) : null : null;
         this.countdown_time = data ? data["countdown_time"] >= 0 ? parseInt((data["countdown_time"])) : null : null;
-        this.countdown_behavior = data ? data["countdown_behavior"] ? data['countdown_behavior'] : null : null;
-        this.countdown_modality = data ? data["countdown_modality"] ? data['countdown_modality'] : null : null;
-        this.countdown_attribute = data ? data["countdown_attribute"] ? data['countdown_attribute'] : null : null;
+        this.countdown_behavior = data ? 'countdown_behavior' in data ? data['countdown_behavior'] : null : null;
+        this.countdown_modality = data ? 'countdown_modality' in data ? data['countdown_modality'] : null : null;
+        this.countdown_attribute = data ? 'countdown_attribute' in data ? data['countdown_attribute'] : null : null;
         this.countdown_attribute_values = new Array<JSON>()
         if (data) if ('countdown_attribute_values' in data) for (let value of data["countdown_attribute_values"] as Array<JSON>) this.countdown_attribute_values.push(value)
-        this.log_enable = data ? !!data["logger"] : false;
-        this.log_option = data ? data['logOption'] ? data['logOption'] : {
+        this.countdown_position_values = new Array<JSON>()
+        if (data) if ('countdown_position_values' in data) for (let value of data["countdown_position_values"] as Array<JSON>) this.countdown_position_values.push(value)
+        this.logger_enable = data ? !!data["logger"] : false;
+        this.logger_options = data ? data['logger_option'] ? data['logger_option'] : {
             "button": {
                 "general": 'false',
                 "click": 'false'
@@ -97,9 +102,9 @@ export class SettingsTask {
                 "resize": 'false'
             }
         } : {};
-        this.log_server_endpoint = data ? data['serverEndpoint'] ? data['serverEndpoint'] : "" : "";
+        this.logger_server_endpoint = data ? 'server_endpoint' in data ? data['server_endpoint'] : null: null;
         this.messages = new Array<string>();
-        if (data) if (data['messages']) for (let message of data["messages"]) this.messages.push(message)
+        if (data) if ('messages' in data) for (let message of data["messages"]) this.messages.push(message)
     }
 
 }

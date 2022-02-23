@@ -1,6 +1,8 @@
 /* Core imports */
 import {Injectable} from '@angular/core';
 import * as AWS from "aws-sdk";
+import {Worker} from "../models/worker";
+import {Task} from "../models/task";
 
 @Injectable({
     providedIn: 'root'
@@ -8,7 +10,8 @@ import * as AWS from "aws-sdk";
 
 export class DynamoDBService {
 
-    constructor() {}
+    constructor() {
+    }
 
     public loadDynamoDB(config) {
         let region = config["region"];
@@ -40,7 +43,7 @@ export class DynamoDBService {
         return await client.listTables(params).promise()
     }
 
-    public async getWorker(config, worker_id, table=null) {
+    public async getACLRecordWorkerId(config, worker_id, table = null) {
         let docClient = this.loadDynamoDBDocumentClient(config)
         let params = {
             TableName: table ? table : config["table_acl_name"],
@@ -53,35 +56,75 @@ export class DynamoDBService {
             }
         };
         return await docClient.query(params).promise()
-
     }
 
-    public async insertWorker(config, worker_id, platform, current_try) {
+    public async getACLRecordUnitId(config, unit_id, table = null) {
+        let docClient = this.loadDynamoDBDocumentClient(config)
+        /* Secondary index defined on unit_id attribute of ACL table */
+        let params = {
+            TableName: table ? table : config["table_acl_name"],
+            IndexName: 'unit_id-index',
+            ScanIndexForward: true,
+            KeyConditionExpression: "unit_id = :unit_id",
+            ExpressionAttributeValues: {":unit_id": unit_id},
+        };
+        return await docClient.query(params).promise()
+    }
+
+    public async scanACLRecordUnitId(config, table = null, lastEvaluatedKey = null) {
+        let docClient = this.loadDynamoDBDocumentClient(config)
+        /* Secondary index defined on unit_id attribute of ACL table */
+        let params = {
+            TableName: table ? table : config["table_acl_name"],
+            IndexName: 'unit_id-index',
+            ScanIndexForward: true,
+        };
+        if (lastEvaluatedKey)
+            params['ExclusiveStartKey'] = lastEvaluatedKey
+        return await docClient.scan(params).promise()
+    }
+
+    public async insertACLRecordWorkerID(config, worker) {
         let params = {
             TableName: config["table_acl_name"],
-            Item: {
-                identifier: {S: worker_id},
-                platform: {S: platform ? platform : "none"},
-                try: {S: current_try.toString()},
-                time: {S: (new Date().toUTCString())}
-            }
+            Item: {}
         };
+        params["Item"]['time_arrival'] = {}
+        params["Item"]['time_arrival']['S'] = new Date().toUTCString()
+        for (const [param, value] of Object.entries(worker.paramsFetched)) {
+            params["Item"][param] = {}
+            params["Item"][param]['S'] = value
+        }
         return await this.loadDynamoDB(config).putItem(params).promise();
     }
 
-    public async insertData(config, worker_id, unit_id, current_try, sequence_number, data) {
+    public async insertACLRecordUnitId(config, entry, current_try, updateArrivalTime = false) {
+        let params = {
+            TableName: config["table_acl_name"],
+            Item: {}
+        };
+        for (const [param, value] of Object.entries(entry)) {
+            params["Item"][param] = {}
+            params["Item"][param]['S'] = value
+        }
+        if (updateArrivalTime)
+            params["Item"]['time_arrival']['S'] = new Date().toUTCString()
+        return await this.loadDynamoDB(config).putItem(params).promise();
+    }
+
+    public async insertDataRecord(config, worker: Worker, task: Task, data) {
         let params = {
             TableName: config["table_data_name"],
             Item: {
-                identifier: {S: worker_id},
-                sequence: {S: `${worker_id}-${unit_id}-${current_try}-${sequence_number}`},
+                identifier: {S: worker.identifier},
+                sequence: {S: `${worker.identifier}-${task.unitId}-${task.tryCurrent}-${task.sequenceNumber}`},
                 data: {S: JSON.stringify(data)},
                 time: {S: (new Date().toUTCString())}
             }
         };
+        task.sequenceNumber = task.sequenceNumber + 1
         return await this.loadDynamoDB(config).putItem(params).promise();
     }
-
 
 
 }

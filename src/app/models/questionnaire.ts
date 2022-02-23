@@ -17,18 +17,17 @@ export class Questionnaire {
     ) {
 
         this.index = index;
-
         this.description = data['description'] ? data["description"] : null;
         this.position = data['position'] ? data["position"] : null;
         this.allow_back = data['allow_back'] ? data["allow_back"] : false;
         this.type = data["type"];
         this.questions = new Array<Question>();
-        for (let index = 0; index < data["questions"].length; index++) this.questions.push(new Question(index, data["questions"][index]))
+        if(data["questions"])
+            for (let index = 0; index < data["questions"].length; index++) this.questions.push(new Question(index, data["questions"][index]))
         if (data['mapping']) {
             this.mappings = new Array<Mapping>();
             for (let index = 0; index < data["mapping"].length; index++) this.mappings.push(new Mapping(index, data["mapping"][index]))
         }
-
         for (let indexQuestion = 0; indexQuestion < this.questions.length; indexQuestion++) {
             let currentQuestion = this.questions[indexQuestion]
             currentQuestion.nameFull = currentQuestion.name

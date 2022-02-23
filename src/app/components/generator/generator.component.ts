@@ -21,6 +21,7 @@ import {InstructionsStepComponent} from "./generator-steps/instructions-step/ins
 import {SearchEngineStepComponent} from "./generator-steps/search-engine-step/search-engine-step.component";
 import {DimensionsStepComponent} from "./generator-steps/dimensions-step/dimensions-step.component";
 import {TaskSettingsStepComponent} from "./generator-steps/task-settings-step/task-settings-step.component";
+import {UtilsService} from "../../services/utils.service";
 
 /* Component HTML Tag definition */
 @Component({
@@ -81,6 +82,7 @@ export class GeneratorComponent {
     S3Service: S3Service;
     /* Service which wraps the interaction with browser's local storage */
     localStorageService: LocalStorageService;
+    utilsService: UtilsService
     /* Change detector to manually intercept changes on DOM */
     changeDetector: ChangeDetectorRef;
 
@@ -136,6 +138,7 @@ export class GeneratorComponent {
         configService: ConfigService,
         S3Service: S3Service,
         localStorageService: LocalStorageService,
+        utilsService: UtilsService,
         private _formBuilder: FormBuilder,
     ) {
 
@@ -147,6 +150,7 @@ export class GeneratorComponent {
         this.S3Service = S3Service
         this.changeDetector = changeDetector
         this.localStorageService = localStorageService
+        this.utilsService = utilsService
         this.ngxService.startLoader('generator-inner')
 
         this.batchCloned = new FormControl();
@@ -332,12 +336,6 @@ export class GeneratorComponent {
 
     public storeTaskModality(data: string) {
         this.taskModality = data
-    }
-
-    /* |--------- OTHER AMENITIES ---------| */
-
-    public checkFormControl(form: FormGroup, field: string, key: string): boolean {
-        return form.get(field).hasError(key);
     }
 
 }

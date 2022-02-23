@@ -1,5 +1,5 @@
 /* Core modules */
-import {Component, EventEmitter, Input, Output, SimpleChanges, ViewChild} from '@angular/core';
+import {ChangeDetectorRef, Component, EventEmitter, Input, Output, ViewChild} from '@angular/core';
 /* Loading screen module */
 import {NgxUiLoaderService} from "ngx-ui-loader";
 /* Material design modules */
@@ -8,18 +8,18 @@ import {MatPaginator} from "@angular/material/paginator";
 /* Reactive forms modules */
 import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
 /* Services */
-import {BingService} from '../../services/bing.service';
-import {BingWebSearchResponse} from "../../models/crowd-xplorer/bingWebSearchResponse";
-import {FakerService} from "../../services/faker.service";
-import {FakerSearchResponse} from "../../models/crowd-xplorer/fakerSearchResponse";
-import {PubmedService} from "../../services/pudmed.service";
-import {PubmedSearchResponse} from "../../models/crowd-xplorer/pubmedSearchResponse";
-import {PubmedSummaryResponse} from '../../models/crowd-xplorer/pubmedSummaryResponse';
-import {ConfigService} from "../../services/config.service";
-import * as AWS from "aws-sdk";
-import {SettingsSearchEngine} from "../../models/settingsSearchEngine";
+import {BingService} from '../../../../../../services/search_engine/bing.service';
+import {BingWebSearchResponse} from "../../../../../../models/crowd-xplorer/bingWebSearchResponse";
+import {FakerService} from "../../../../../../services/search_engine/faker.service";
+import {FakerSearchResponse} from "../../../../../../models/crowd-xplorer/fakerSearchResponse";
+import {PubmedService} from "../../../../../../services/search_engine/pudmed.service";
+import {PubmedSearchResponse} from "../../../../../../models/crowd-xplorer/pubmedSearchResponse";
+import {PubmedSummaryResponse} from "../../../../../../models/crowd-xplorer/pubmedSummaryResponse";
+import {ConfigService} from "../../../../../../services/config.service";
+import {SettingsSearchEngine} from "../../../../../../models/settingsSearchEngine";
 /* Debug config import */
-import {S3Service} from "../../services/s3.service";
+import {S3Service} from "../../../../../../services/s3.service";
+import {Task} from "../../../../../../models/task";
 
 /* Component HTML Tag definition */
 @Component({
@@ -30,16 +30,17 @@ import {S3Service} from "../../services/s3.service";
 
 /*
 * This class implements a custom search engine which can be used for Crowdsourcing tasks.
-* Please, remember to review the environment variables in ../environments/ folder.
-* File environment.ts --- DEVELOPMENT ENVIRONMENT
-* File environment.prod.ts --- PRODUCTION ENVIRONMENT
 */
+
 export class CrowdXplorer {
 
     /* |--------- SEARCH ENGINE SETTINGS - DECLARATION ---------| */
 
     /* Microsoft Search API key */
-    apiKey: string
+    bingApiKey: string
+
+    /* fakeJSON token */
+    fakeJSONToken: string
 
     /*
      * Service to query:
@@ -65,6 +66,8 @@ export class CrowdXplorer {
     configService: ConfigService;
     /* Service which wraps the interaction with S3 */
     S3Service: S3Service;
+    /* Change detector to manually intercept changes on DOM */
+    changeDetector: ChangeDetectorRef;
 
     /* Implementation to query Bing Web Search (Service + REST Interface)*/
     bingService: BingService;
@@ -102,8 +105,8 @@ export class CrowdXplorer {
     /* EMITTER: Response selected by user */
     @Output() selectedRowEmitter = new EventEmitter<Object>();
 
-    @Input() countdownExpired: boolean
-    @Input() countdownBehavior: string
+    @Input() task: Task
+    @Input() documentIndex: number
 
 
     /* Search results table UI variables and controls */
@@ -121,6 +124,7 @@ export class CrowdXplorer {
     /* |--------- CONSTRUCTOR IMPLEMENTATION ---------| */
 
     constructor(
+        changeDetector: ChangeDetectorRef,
         ngxService: NgxUiLoaderService,
         S3Service: S3Service,
         bingService: BingService,
@@ -133,6 +137,7 @@ export class CrowdXplorer {
         /* |--------- SERVICES & CO. - INITIALIZATION ---------| */
 
         /* Service initialization */
+        this.changeDetector = changeDetector
         this.ngxService = ngxService;
         this.S3Service = S3Service;
         this.bingService = bingService;
@@ -152,7 +157,8 @@ export class CrowdXplorer {
 
         /* |--------- SEARCH ENGINE SETTINGS - INITIALIZATION ---------| */
 
-        this.apiKey = this.configService.environment.bing_api_key
+        this.bingApiKey = this.configService.environment.bing_api_key
+        this.fakeJSONToken = this.configService.environment.fake_json_token
         this.loadSettings()
 
         /* The form control for user query is initialized and bound with its synchronous validator(s) */
@@ -166,12 +172,6 @@ export class CrowdXplorer {
             }
         );
 
-    }
-
-    ngOnChanges(changes: SimpleChanges) {
-        if (changes.countdownExpired.currentValue && this.countdownBehavior=='disable_form') {
-            this.searchForm.disable()
-        }
     }
 
     /*
@@ -204,7 +204,7 @@ export class CrowdXplorer {
             /* The search operation for Bing Web Search is performed */
             /* This is done by subscribing to an Observable of <BingWebSearchResponse> items */
             case "BingWebSearch": {
-                this.bingService.performWebSearch(this.apiKey, query).subscribe(
+                this.bingService.performWebSearch(this.bingApiKey, query).subscribe(
                     searchResponse => {
                         /* We are interested in parsing the webPages property of a <BingWebSearchResponse> */
                         if (searchResponse.hasOwnProperty("webPages")) {
@@ -234,7 +234,7 @@ export class CrowdXplorer {
                 break;
             }
             case "FakerWebSearch": {
-                this.fakerService.performWebSearch(query).subscribe(
+                this.fakerService.performWebSearch(this.fakeJSONToken, query).subscribe(
                     searchResponse => {
                         /* We are interested in parsing the webPages property of a BingWebSearchResponse */
                         if (searchResponse.length > 0) {

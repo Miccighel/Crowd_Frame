@@ -54,21 +54,21 @@
 
             <mat-form-field matLine class="width-100" appearance="fill" *ngIf="formStep.get('logger').value">
                 <mat-label>Logging server URL</mat-label>
-                <input matInput type="text" formControlName="serverEndpoint" required (blur)="updateServerEndpoint()">
+                <input matInput type="text" formControlName="server_endpoint" (blur)="updateServerEndpoint()">
             </mat-form-field>
 
             <div *ngIf="formStep.get('logger').value">
                 <table class="width-100" style="border-collapse: collapse">
-                    <tr *ngFor="let item of this.formStep.get('logOption').value | keyvalue" style="border-bottom: thin solid lightgray">
+                    <tr *ngFor="let item of this.formStep.get('logger_option').value | keyvalue" style="border-bottom: thin solid lightgray">
                         <th align="left">
-                            <mat-checkbox color="primary" [checked]="this.formStep.get('logOption').value[item.key]['general']" (change)="updateLogOption(item.key.toString(),'general')">
+                            <mat-checkbox color="primary" [checked]="this.formStep.get('logger_option').value[item.key]['general']" (change)="updateLoggerOption(item.key.toString(),'general')">
                                 {{item.key.toUpperCase()}} events
                             </mat-checkbox>
                         </th>
-                        <ng-container *ngFor="let prop of this.formStep.get('logOption').value[item.key] | keyvalue">
+                        <ng-container *ngFor="let prop of this.formStep.get('logger_option').value[item.key] | keyvalue">
                             <td *ngIf="prop.key != 'general'">
-                                <mat-checkbox color="primary" [checked]="this.formStep.get('logOption').value[item.key][prop.key]" [disabled]="!this.formStep.get('logOption').value[item.key]['general']"
-                                              (change)="updateLogOption(item.key.toString(), prop.key.toString())">
+                                <mat-checkbox color="primary" [checked]="this.formStep.get('logger_option').value[item.key][prop.key]" [disabled]="!this.formStep.get('logger_option').value[item.key]['general']"
+                                              (change)="updateLoggerOption(item.key.toString(), prop.key.toString())">
                                     {{prop.key.toUpperCase()}}
                                 </mat-checkbox>
                             </td>
@@ -195,7 +195,7 @@
             <mat-form-field matLine class="width-100" [hideRequiredMarker]="formStep.get('countdown_time').valid" appearance="fill" *ngIf="this.formStep.get('setCountdownTime').value">
                 <mat-label>Time</mat-label>
                 <input matInput type="number" min="0" formControlName="countdown_time" required>
-                <mat-error *ngIf="checkFormControl(formStep,'countdown_time', 'invalid')">
+                <mat-error *ngIf="this.utilsService.checkFormControl(formStep,'countdown_time', 'invalid')">
                     A positive or zero number is required
                 </mat-error>
             </mat-form-field>

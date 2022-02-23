@@ -4,14 +4,16 @@ export class SettingsWorker {
     analysis: boolean;
     blacklist: Array<string>;
     whitelist: Array<string>;
+    /* Batches to blacklist */
     blacklist_batches: Array<string>;
+    /* Batches to whitelist */
     whitelist_batches: Array<string>;
 
     constructor(
         data = null as JSON
     ) {
-        this.block = data ? data["block"] ? data['block'] : true : true;
-        this.analysis = data ? data["analysis"] ? data['analysis'] : true : true;
+        this.block = data ? 'block' in data ? data['block'] : true : true;
+        this.analysis = data ? 'analysis' in data ? data['analysis'] : true : true;
         this.blacklist = new Array<string>();
         if (data) if ('blacklist' in data) for (let workerId of data["blacklist"] as Array<string>) this.blacklist.push(workerId)
         this.whitelist = new Array<string>();

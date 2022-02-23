@@ -6,6 +6,7 @@ import {FormArray, FormBuilder, FormControl, FormGroup, Validators} from "@angul
 import {Attribute, SettingsTask} from "../../../../models/settingsTask";
 import {ReadFile, ReadMode} from "ngx-file-helpers";
 import {Hit} from "../../../../models/hit";
+import {UtilsService} from "../../../../services/utils.service";
 
 interface AnnotatorType {
     value: string;
@@ -35,6 +36,7 @@ export class TaskSettingsStepComponent implements OnInit {
     S3Service: S3Service;
     /* Service which wraps the interaction with browser's local storage */
     localStorageService: LocalStorageService;
+    utilsService: UtilsService;
 
     /* STEP #6 - Task Settings */
 
@@ -83,11 +85,13 @@ export class TaskSettingsStepComponent implements OnInit {
         localStorageService: LocalStorageService,
         configService: ConfigService,
         S3Service: S3Service,
+        utilsService: UtilsService,
         private _formBuilder: FormBuilder,
     ) {
         this.configService = configService
         this.S3Service = S3Service
         this.localStorageService = localStorageService
+        this.utilsService = utilsService
         this.initializeControls()
     }
 
@@ -113,7 +117,7 @@ export class TaskSettingsStepComponent implements OnInit {
             countdown_position_values: this._formBuilder.array([]),
             messages: this._formBuilder.array([]),
             logger: false,
-            logOption: false,
+            logger_option: false,
             serverEndpoint: ''
         });
         /* Read mode during hits file upload*/
@@ -162,9 +166,9 @@ export class TaskSettingsStepComponent implements OnInit {
             countdown_attribute_values: this._formBuilder.array([]),
             countdown_position_values: this._formBuilder.array([]),
             messages: this._formBuilder.array([]),
-            logger: !!this.dataStored.log_enable,
-            logOption: this.dataStored.log_option,
-            serverEndpoint: this.dataStored.log_server_endpoint
+            logger: !!this.dataStored.logger_enable,
+            logger_option: this.dataStored.logger_options,
+            server_endpoint: this.dataStored.logger_server_endpoint
         });
         if(this.dataStored.modality) this.emitModality(this.dataStored.modality)
         if (this.dataStored.messages) if (this.dataStored.messages.length > 0) this.dataStored.messages.forEach((message, messageIndex) => this.addMessage(message))
@@ -215,17 +219,23 @@ export class TaskSettingsStepComponent implements OnInit {
         this.modalityEmitter.emit(data['value'])
     }
 
-    updateLogOption(el: string, action: string) {
-        let truthValue = this.formStep.get('logOption').value[el][action] != true;
+    updateLoggerOption(el: string, action: string) {
+        let truthValue = this.formStep.get('logger_option').value[el][action] != true;
         if (action == 'general') {
-            for (let key in this.formStep.get('logOption').value[el])
-                this.formStep.get('logOption').value[el][key] = truthValue
-        } else
-            this.formStep.get('logOption').value[el][action] = truthValue
+            for (let key in this.formStep.get('logger_option').value[el]) {
+                let value = this.formStep.get('logger_option').value
+                value[el][key] = truthValue
+                this.formStep.get('logger_option').setValue(value)
+            }
+        } else {
+            let value = this.formStep.get('logger_option').value
+            value[el][action] = truthValue
+            this.formStep.get('logger_option').setValue(value)
+        }
     }
 
     updateServerEndpoint() {
-        return this.formStep.get('serverEndpoint').value
+        return this.formStep.get('server_endpoint').value
     }
 
     updateHitsFile(hits = null) {
@@ -234,6 +244,7 @@ export class TaskSettingsStepComponent implements OnInit {
         if (!hits) {
             this.localStorageService.setItem(`hits`, JSON.stringify(this.hitsParsed))
         }
+        console.log(this.hitsParsed)
         if (this.hitsParsed.length > 0) {
             this.hitsDetected = ("documents" in this.hitsParsed[0]) && ("token_input" in this.hitsParsed[0]) && ("token_output" in this.hitsParsed[0]) && ("unit_id" in this.hitsParsed[0]) ? this.hitsParsed.length : 0;
         } else {
@@ -354,7 +365,7 @@ export class TaskSettingsStepComponent implements OnInit {
             this.formStep.get('countdown_time').clearValidators();
             this.formStep.get('countdown_time').updateValueAndValidity();
         } else {
-            this.formStep.get('countdown_time').setValidators([Validators.required, this.positiveOrZeroNumber.bind(this)]);
+            this.formStep.get('countdown_time').setValidators([Validators.required, this.utilsService.positiveOrZeroNumber.bind(this)]);
             this.formStep.get('countdown_time').updateValueAndValidity();
         }
         this.resetAdditionalTimes()
@@ -463,7 +474,7 @@ export class TaskSettingsStepComponent implements OnInit {
             this.annotator().get('type').clearAsyncValidators();
             this.annotatorOptionValues().clear()
         } else {
-            this.annotator().get('type').setValidators([Validators.required, this.positiveNumber.bind(this)]);
+            this.annotator().get('type').setValidators([Validators.required, this.utilsService.positiveNumber.bind(this)]);
         }
         this.annotator().get('type').updateValueAndValidity()
         this.annotatorOptionValues().updateValueAndValidity()
@@ -513,6 +524,8 @@ export class TaskSettingsStepComponent implements OnInit {
     serializeConfiguration() {
 
         let taskSettingsJSON = JSON.parse(JSON.stringify(this.formStep.value));
+
+        console.log(taskSettingsJSON)
 
         if (!taskSettingsJSON.setAnnotator) taskSettingsJSON.annotator = false
         delete taskSettingsJSON.setAnnotator
@@ -572,28 +585,6 @@ export class TaskSettingsStepComponent implements OnInit {
 
         this.localStorageService.setItem(`task-settings`, JSON.stringify(taskSettingsJSON))
         this.configurationSerialized = JSON.stringify(taskSettingsJSON)
-    }
-
-    /* |--------- OTHER AMENITIES ---------| */
-
-    public checkFormControl(form: FormGroup, field: string, key: string): boolean {
-        return form.get(field).hasError(key);
-    }
-
-    public positiveOrZeroNumber(control: FormControl) {
-        if (Number(control.value) < 0) {
-            return {invalid: true};
-        } else {
-            return null;
-        }
-    }
-
-    public positiveNumber(control: FormControl) {
-        if (Number(control.value) < 1) {
-            return {invalid: true};
-        } else {
-            return null;
-        }
     }
 
 }
