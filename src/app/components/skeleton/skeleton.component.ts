@@ -939,7 +939,6 @@ export class SkeletonComponent implements OnInit {
                 let fullPayload = this.task.buildTaskFinalPayload(this.questionnairesForm, this.documentsForm, qualityChecksPayload, countdowns, action)
                 await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, fullPayload)
                 await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, qualityChecksPayload)
-                console.log(qualityChecksPayload)
             }
 
         }
