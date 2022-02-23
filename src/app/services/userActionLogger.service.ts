@@ -23,6 +23,7 @@ export class ActionLogger {
     private workerID: string;
     private taskName: string;
     private batchName: string;
+    private tryCurrent: string;
     private _endpoint: string;
     private logOnConsole: boolean;
     private http: HttpClient;
@@ -59,6 +60,7 @@ export class ActionLogger {
             worker: this.workerID,
             task: this.taskName,
             batch: this.batchName,
+            try_current: parseInt(this.tryCurrent),
             client_time: new Date().getTime(),
             sequence: this.sequenceNumber++,
             details: details
@@ -113,12 +115,13 @@ export class ActionLogger {
      * @param http client initialized by the skeleton
      * @param logOnConsole true to log events only on console
      */
-    logInit(bucket: string, workerID: string, taskName: string, batchName: string, http: HttpClient, logOnConsole: boolean) {
+    logInit(bucket: string, workerID: string, taskName: string, batchName: string, tryCurrent: string, http: HttpClient, logOnConsole: boolean) {
         this.http = http;
         this.workerID = workerID;
         this.bucket = bucket;
         this.taskName = taskName;
         this.batchName = batchName;
+        this.tryCurrent = tryCurrent;
         this.logOnConsole = logOnConsole;
 
         let details = this.getCurrentSize()
@@ -261,7 +264,7 @@ export class ActionLogger {
             section: this.findSection(),
             startTime: obj.startTime,
             endTime: obj.endTime,
-            selected: document.getSelection().toString()
+            selected: document.getSelection().focusNode.textContent.toString()
         }
         this.log('selection', details)
     }
@@ -275,8 +278,8 @@ export class ActionLogger {
             section: this.findSection(),
             startTimestamp: obj.startTimeStamp,
             endTimestamp: obj.endTimeStamp,
-            x: window.pageXOffset,
-            y: window.pageYOffset
+            x: window.scrollX,
+            y: window.scrollY
         }
         this.log('scroll', details)
     }
@@ -364,7 +367,7 @@ export class ActionLogger {
         })
         let details = {
             section: this.findSection(),
-            urlArray: urlArray
+            urlAmount: urlArray.length
         }
         this.log('queryResults', details)
     }

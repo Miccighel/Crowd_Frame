@@ -10,6 +10,7 @@ import shutil
 import subprocess
 import textwrap
 import boto3
+from zipfile import ZipFile
 import pandas as pd
 import time
 import datetime
@@ -17,12 +18,13 @@ from distutils.util import strtobool
 from pathlib import Path
 from shutil import copy2
 from botocore.exceptions import ClientError
-from botocore.exceptions import ProfileNotFound
 from dotenv import load_dotenv
 from mako.template import Template
 from rich.console import Console
 from rich.panel import Panel
 from rich.progress import track
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 console = Console()
 
@@ -84,14 +86,13 @@ load_dotenv(dotenv_path=env_path)
 
 mail_contact = os.getenv('mail_contact')
 profile_name = os.getenv('profile_name')
-platform_name = os.getenv('platform_name')
 task_name = os.getenv('task_name')
 batch_name = os.getenv('batch_name')
+batch_prefix = os.getenv('batch_prefix')
 admin_user = os.getenv('admin_user')
 admin_password = os.getenv('admin_password')
-deploy_config = os.getenv('deploy_config')
 server_config = os.getenv('server_config')
-deploy_config = strtobool(deploy_config) if deploy_config is not None else False
+deploy_config = strtobool(os.getenv('deploy_config')) if os.getenv('deploy_config') is not None else False
 aws_region = os.getenv('aws_region')
 aws_private_bucket = os.getenv('aws_private_bucket')
 aws_deploy_bucket = os.getenv('aws_deploy_bucket')
@@ -116,8 +117,8 @@ console.rule("0 - Initialization")
 console.print("[bold]Init.py[/bold] script launched")
 console.print(f"Working directory: [bold]{os.getcwd()}[/bold]")
 
-if platform_name.lower() != 'mturk' and platform_name.lower() != 'prolific':
-    raise Exception("Value for 'platform_name' variable invalid. Use 'mturk' or 'prolific'.")
+if batch_prefix is None:
+    batch_prefix = ''
 
 console.rule("1 - Configuration policy")
 
@@ -843,55 +844,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         if not policies and roles:
             console.print("[green]Policies correctly set up")
 
-        status.start()
-        status.update('Gateway setup')
-        time.sleep(2)
-
-        if not any(api for api in api_gateway_client.get_apis()['Items'] if api['Name'] == api_gateway_name):
-            response = api_gateway_client.create_api(
-                CorsConfiguration={
-                    'AllowCredentials': False,
-                    'AllowHeaders': ['*'],
-                    'AllowMethods': ['POST'],
-                    'AllowOrigins': ['*'],
-                    'ExposeHeaders': ['*'],
-                    'MaxAge': 300
-                },
-                Name=api_gateway_name,
-                ProtocolType='HTTP'
-            )
-            serialize_json(folder_aws_generated_path, f"api_gateway_{api_gateway_name}.json", response)
-            api = dict((key, response[key]) for key in ['ApiEndpoint', 'ApiId'])
-            api['integration'] = api_gateway_client.create_integration(
-                ApiId=api['ApiId'],
-                IntegrationType='AWS_PROXY',
-                IntegrationSubtype='SQS-SendMessage',
-                PayloadFormatVersion='1.0',
-                CredentialsArn=f'arn:aws:iam::{aws_account_id}:role{iam_path}GatewayToSQS',
-                RequestParameters={
-                    'QueueUrl': f'https://sqs.{aws_region}.amazonaws.com/{aws_account_id}/{queue_name}',
-                    'MessageBody': '$request.body'
-                }
-            )
-            serialize_json(folder_aws_generated_path, f"api_gateway_integration_{api['integration']['IntegrationId']}.json", api['integration'])
-            response = api_gateway_client.create_route(
-                ApiId=api['ApiId'],
-                RouteKey='POST /log',
-                Target='integrations/' + api['integration']['IntegrationId']
-            )
-            serialize_json(folder_aws_generated_path, f"api_gateway_route_{response['RouteId']}.json", response)
-            response = api_gateway_client.create_stage(
-                ApiId=api['ApiId'],
-                StageName="$default",
-                AutoDeploy=True
-            )
-            serialize_json(folder_aws_generated_path, f"api_gateway_stage_{response['StageName']}.json", response)
-            console.print(f'[link={api["ApiEndpoint"]}/log]API endpoint[/link] created.')
-        else:
-            api = [api for api in api_gateway_client.get_apis()['Items'] if api['Name'] == api_gateway_name][0]
-            api = dict((key, api[key]) for key in ['ApiEndpoint', 'ApiId'])
-            status.stop()
-            console.print(f'[link={api["ApiEndpoint"]}/log]API endpoint[/link] already created')
 
         status.start()
         status.update(f"Table {table_logging_name} setup")
@@ -948,6 +900,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         time.sleep(2)
         function_name = 'Crowd_Frame-Logger'
         function_new = False
+        with ZipFile(f"{folder_aws_path}index.zip", 'w') as zipf:
+            zipf.write(f"{folder_aws_path}index.js", arcname='index.js')
         try:
             response = lambda_client.create_function(
                 FunctionName=function_name,
@@ -964,6 +918,56 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         except lambda_client.exceptions.ResourceConflictException as error:
             console.print(f"[yellow]Function already created.")
         status.stop()
+
+        status.start()
+        status.update('Gateway setup')
+        time.sleep(2)
+
+        if not any(api for api in api_gateway_client.get_apis()['Items'] if api['Name'] == api_gateway_name):
+            response = api_gateway_client.create_api(
+                CorsConfiguration={
+                    'AllowCredentials': False,
+                    'AllowHeaders': ['*'],
+                    'AllowMethods': ['POST'],
+                    'AllowOrigins': ['*'],
+                    'ExposeHeaders': ['*'],
+                    'MaxAge': 300
+                },
+                Name=api_gateway_name,
+                ProtocolType='HTTP'
+            )
+            serialize_json(folder_aws_generated_path, f"api_gateway_{api_gateway_name}.json", response)
+            api = dict((key, response[key]) for key in ['ApiEndpoint', 'ApiId'])
+            api['integration'] = api_gateway_client.create_integration(
+                ApiId=api['ApiId'],
+                IntegrationType='AWS_PROXY',
+                IntegrationSubtype='SQS-SendMessage',
+                PayloadFormatVersion='1.0',
+                CredentialsArn=f'arn:aws:iam::{aws_account_id}:role{iam_path}GatewayToSQS',
+                RequestParameters={
+                    'QueueUrl': f'https://sqs.{aws_region}.amazonaws.com/{aws_account_id}/{queue_name}',
+                    'MessageBody': '$request.body'
+                }
+            )
+            serialize_json(folder_aws_generated_path, f"api_gateway_integration_{api['integration']['IntegrationId']}.json", api['integration'])
+            response = api_gateway_client.create_route(
+                ApiId=api['ApiId'],
+                RouteKey='POST /log',
+                Target='integrations/' + api['integration']['IntegrationId']
+            )
+            serialize_json(folder_aws_generated_path, f"api_gateway_route_{response['RouteId']}.json", response)
+            response = api_gateway_client.create_stage(
+                ApiId=api['ApiId'],
+                StageName="$default",
+                AutoDeploy=True
+            )
+            serialize_json(folder_aws_generated_path, f"api_gateway_stage_{response['StageName']}.json", response)
+            console.print(f'[link={api["ApiEndpoint"]}/log]API endpoint[/link] created.')
+        else:
+            api = [api for api in api_gateway_client.get_apis()['Items'] if api['Name'] == api_gateway_name][0]
+            api = dict((key, api[key]) for key in ['ApiEndpoint', 'ApiId'])
+            status.stop()
+            console.print(f'[link={api["ApiEndpoint"]}/log]API endpoint[/link] already created')
 
         status.start()
         status.update('Event source mapping between queue and lambda setup')
@@ -1189,14 +1193,13 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     environment_dict = {
         "production": 'true',
         "configuration_local": 'false',
-        "platformName": platform_name,
         "taskName": task_name,
         "batchName": batch_name,
         "region": aws_region,
         "bucket": aws_private_bucket,
         "aws_id_key": aws_worker_access_id,
         "aws_secret_key": aws_worker_access_secret,
-        "prolific_completion_code": prolific_completion_code,
+        "prolific_completion_code": prolific_completion_code if prolific_completion_code else 'false',
         "bing_api_key": bing_api_key,
         "fake_json_token": fake_json_token,
         "log_on_console": 'false',
@@ -1214,6 +1217,11 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         for (env_var, value) in environment_dict.items():
             if env_var == 'production' or env_var == 'configuration_local' or env_var == 'log_on_console':
                 print(f"\t{env_var}: {value},", file=file)
+            elif env_var == 'prolific_completion_code':
+                if value != 'false':
+                    print(f"\t{env_var}: \"{value}\",", file=file)
+                else:
+                    print(f"\t{env_var}: {value},", file=file)
             else:
                 print(f"\t{env_var}: \"{value}\",", file=file)
         print("};", file=file)
@@ -1229,14 +1237,13 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     environment_dict = {
         "production": 'false',
         "configuration_local": 'false',
-        "platformName": platform_name,
         "taskName": task_name,
         "batchName": batch_name,
         "region": aws_region,
         "bucket": aws_private_bucket,
         "aws_id_key": aws_worker_access_id,
         "aws_secret_key": aws_worker_access_secret,
-        "prolific_completion_code": prolific_completion_code,
+        "prolific_completion_code": prolific_completion_code if prolific_completion_code else 'false',
         "bing_api_key": bing_api_key,
         "fake_json_token": fake_json_token,
         "log_on_console": 'true',
@@ -1252,6 +1259,11 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         for (env_var, value) in environment_dict.items():
             if env_var == 'production' or env_var == 'configuration_local' or env_var == 'log_on_console':
                 print(f"\t{env_var}: {value},", file=file)
+            elif env_var == 'prolific_completion_code':
+                if value != 'false':
+                    print(f"\t{env_var}: \"{value}\",", file=file)
+                else:
+                    print(f"\t{env_var}: {value},", file=file)
             else:
                 print(f"\t{env_var}: \"{value}\",", file=file)
         print("};", file=file)
@@ -1710,41 +1722,42 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         console.print("Class built")
         console.print(f"Path: [italic]{filename}[/italic]")
 
-    console.rule(f"22 - Amazon Mechanical Turk Landing Page")
-    status.start()
-    status.update(f"Istantiating Mako model")
-    time.sleep(2)
+    if not prolific_completion_code:
 
-    model = Template(filename=f"{folder_build_mturk_path}model.html")
-    mturk_page = model.render(
-        aws_region=aws_region,
-        aws_deploy_bucket=aws_deploy_bucket,
-        task_name=task_name,
-        batch_name=batch_name
-    )
-    mturk_page_file = f"{folder_build_mturk_path}index.html"
-    with open(mturk_page_file, 'w') as file:
-        print(mturk_page, file=file)
+        console.rule(f"22 - Amazon Mechanical Turk Landing Page")
+        status.start()
+        status.update(f"Istantiating Mako model")
+        time.sleep(2)
 
-    console.print(f"Model istantiated")
-    console.print(f"Path: {mturk_page_file}")
+        model = Template(filename=f"{folder_build_mturk_path}model.html")
+        mturk_page = model.render(
+            aws_region=aws_region,
+            aws_deploy_bucket=aws_deploy_bucket,
+            task_name=task_name,
+            batch_name=batch_name
+        )
+        mturk_page_file = f"{folder_build_mturk_path}index.html"
+        with open(mturk_page_file, 'w') as file:
+            print(mturk_page, file=file)
 
-    status.update(f"Generating tokens")
+        console.print(f"Model istantiated")
+        console.print(f"Path: {mturk_page_file}")
 
-    hits_file = f"{folder_build_task_path}hits.json"
-    mturk_tokens_file = f"{folder_build_mturk_path}tokens.csv"
-    console.print(f"Loading [cyan underline]hits.json[/cyan underline] file")
-    console.print(f"Path: [ital]{hits_file}")
-    hits = read_json(hits_file)
-    token_df = pd.DataFrame(columns=["token_input", "token_output"])
-    for hit in hits:
-        token_df = token_df.append({
-            "token_input": hit['token_input'],
-            "token_output": hit['token_output']
-        }, ignore_index=True)
-    token_df.to_csv(mturk_tokens_file, index=False)
-    console.print(f"Tokens for {len(hits)} hits generated")
-    console.print(f"Path: [italic]{mturk_tokens_file}")
+        status.update(f"Generating tokens")
+
+        hits_file = f"{folder_build_task_path}hits.json"
+        mturk_tokens_file = f"{folder_build_mturk_path}tokens.csv"
+        console.print(f"Loading [cyan underline]hits.json[/cyan underline] file")
+        console.print(f"Path: [ital]{hits_file}")
+        hits = read_json(hits_file)
+        token_df = pd.DataFrame(columns=["token_output"])
+        for hit in hits:
+            token_df = token_df.append({
+                "token_output": hit['token_output']
+            }, ignore_index=True)
+        token_df.to_csv(mturk_tokens_file, index=False)
+        console.print(f"Tokens for {len(hits)} hits generated")
+        console.print(f"Path: [italic]{mturk_tokens_file}")
 
     console.rule(f"23 - Task [cyan underline]{task_name}[/cyan underline]/[yellow underline]{batch_name}[/yellow underline] build")
     status.update(f"Executing build command, please wait")

@@ -84,12 +84,10 @@ export class DynamoDBService {
         return await docClient.scan(params).promise()
     }
 
-    public async insertACLRecordWorkerID(config, worker, current_try) {
+    public async insertACLRecordWorkerID(config, worker) {
         let params = {
             TableName: config["table_acl_name"],
-            Item: {
-                try: {S: current_try.toString()}
-            }
+            Item: {}
         };
         params["Item"]['time_arrival'] = {}
         params["Item"]['time_arrival']['S'] = new Date().toUTCString()
@@ -109,7 +107,6 @@ export class DynamoDBService {
             params["Item"][param] = {}
             params["Item"][param]['S'] = value
         }
-        params["Item"]['try']['S'] = current_try.toString()
         if (updateArrivalTime)
             params["Item"]['time_arrival']['S'] = new Date().toUTCString()
         return await this.loadDynamoDB(config).putItem(params).promise();

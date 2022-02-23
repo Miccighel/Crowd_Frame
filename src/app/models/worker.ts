@@ -8,11 +8,12 @@ export class Worker {
     folder: string
     paramsFetched: Record<string, string>
     propertiesFetched: Record<string, Object>
+    error: Object
 
     constructor(
         paramsFetched: Record<string, string>,
     ) {
-        if(paramsFetched) {
+        if (paramsFetched) {
             this.paramsFetched = paramsFetched
         } else {
             this.paramsFetched = {}
@@ -28,6 +29,7 @@ export class Worker {
     public setParameter(name: string, value: any) {
         this.paramsFetched[name] = value
     }
+
     public updateProperties(source: string, propertiesData: any) {
 
         let unwantedProperties = [
@@ -102,6 +104,9 @@ export class Worker {
                     this.propertiesFetched[`ngx_${this.convertToSnakeCase(property)}`] = value
                 }
             }
+        }
+        if (source.toLowerCase() == 'error') {
+            this.error = propertiesData
         }
     }
 

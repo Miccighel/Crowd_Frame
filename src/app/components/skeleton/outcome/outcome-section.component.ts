@@ -21,7 +21,6 @@ export class OutcomeSectionComponent implements OnInit {
     /* Flag to check if the comment has been correctly sent to S3 */
     commentSent: boolean;
 
-    @Input() platformName: string
     @Input() triesAllowed: number
     @Input() tryCurrent: number
     @Input() messages: Array<string>

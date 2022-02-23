@@ -50,7 +50,7 @@
                 You see this message because you have not passed one or more of such checks.
             </p>
 
-            <ng-container *ngIf="this.platformName=='mturk' && this.sectionService.taskAllowed && this.sectionService.taskCompleted && !this.sectionService.taskFailed && this.sectionService.taskSuccessful && (triesAllowed>0 && tryCurrent <= triesAllowed)">
+            <ng-container *ngIf="!this.completionCode && this.sectionService.taskAllowed && this.sectionService.taskCompleted && !this.sectionService.taskFailed && this.sectionService.taskSuccessful && (triesAllowed>0 && tryCurrent <= triesAllowed)">
                 <p class="text-desc">
                     Congratulations, you have successfully completed this task. To be paid you now have to copy your output token (shown below)
                     back to the Amazon Mechanical Turk task page.
@@ -60,8 +60,7 @@
                 </div>
             </ng-container>
 
-            <ng-container
-                    *ngIf="this.platformName=='prolific' && this.sectionService.taskAllowed && this.sectionService.taskCompleted && !this.sectionService.taskFailed && this.sectionService.taskSuccessful && (triesAllowed>0 && tryCurrent <= triesAllowed)">
+            <ng-container *ngIf="this.completionCode && this.sectionService.taskAllowed && this.sectionService.taskCompleted && !this.sectionService.taskFailed && this.sectionService.taskSuccessful && (triesAllowed>0 && tryCurrent <= triesAllowed)">
                 <p class="text-desc">
                     Congratulations, you have successfully completed this task. To be paid you just have to click the completion button (shown below).
                 </p>
