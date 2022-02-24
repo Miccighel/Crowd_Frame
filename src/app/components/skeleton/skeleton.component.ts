@@ -269,6 +269,7 @@ export class SkeletonComponent implements OnInit {
                                 let wholeEntries = []
                                 let aclEntries = await this.dynamoDBService.scanACLRecordUnitId(this.configService.environment)
                                 for (let aclEntry of aclEntries.Items) {
+                                    console.log(aclEntry['time_completion'])
                                     wholeEntries.push(aclEntry)
                                 }
                                 let lastEvaluatedKey = aclEntries.LastEvaluatedKey
@@ -286,9 +287,11 @@ export class SkeletonComponent implements OnInit {
                                 for (let aclEntry of wholeEntries) {
 
                                     /* If the worker that received the current unit did not complete it he abandoned or returned the task.
-                                       Thus, we free its slot, and we assign the HIT found to the current worker. */
+                                       Thus, we free its slot, and we assign the HIT found to the current worker.
+                                        This happens also if the worker does not have any try left, and thus it's entry has a completion time but the two flags are set to false.
+                                        */
 
-                                    if (aclEntry['paid'] == 'false' && aclEntry['in_progress'] == 'true') {
+                                    if ((aclEntry['paid'] == 'false' && aclEntry['in_progress'] == 'true' && !aclEntry['time_completion']) || (aclEntry['paid'] == 'false' && aclEntry['in_progress'] == 'false' && aclEntry['time_completion'])) {
                                         let hitFound = null
                                         for (let currentHit of hits) {
                                             if (currentHit['unit_id'] == aclEntry['unit_id']) {
@@ -962,8 +965,13 @@ export class SkeletonComponent implements OnInit {
                     this.worker.setParameter('time_completion', new Date().toUTCString())
                     await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker)
                 } else {
-                    if (this.task.settings.allowed_tries > this.task.tryCurrent) {
+                    if (this.task.tryCurrent<= this.task.settings.allowed_tries) {
                         this.worker.setParameter('in_progress', 'true')
+                        this.worker.setParameter('paid', 'false')
+                        this.worker.setParameter('time_completion', new Date().toUTCString())
+                        await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker)
+                    } else {
+                        this.worker.setParameter('in_progress', 'false')
                         this.worker.setParameter('paid', 'false')
                         this.worker.setParameter('time_completion', new Date().toUTCString())
                         await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker)

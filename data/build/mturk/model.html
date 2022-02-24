@@ -80,7 +80,7 @@
       <li>Insert the output token below, click Submit, and get paid</li>
       <li><strong>Beware that:</strong>
         <ol>
-          <li>We will perform cross checks so random output tokens will not be accepted</li>
+          <li>We will perform cross checks so random input/output tokens will not be accepted</li>
           <li>If you close the task's tab you will not be able to perform it again</li>
         </ol>
        </li>
@@ -114,9 +114,12 @@
   let tokenOutput = $("#token-output");
   let submitButton = $("#submit-button");
 
-  tokenOutput.on("change", () => {if(tokenOutput.val() === `${token_output}`) submitButton.prop("disabled", false); else submitButton.prop("disabled", true);});
-  tokenOutput.on("keyup", () => {if(tokenOutput.val() === `${token_output}`) submitButton.prop("disabled", false); else submitButton.prop("disabled", true);});
-  tokenOutput.on("paste", () => {if(tokenOutput.val() === `${token_output}`) submitButton.prop("disabled", false); else submitButton.prop("disabled", true);});
+  function getTokenOutputVal(){
+    return tokenOutput.val().replace(/\s+/g, '');
+  }
 
+  tokenOutput.on("change", () => {if (`${tokens}`.split(';').includes(getTokenOutputVal())) submitButton.prop("disabled", false); else submitButton.prop("disabled", true);});
+  tokenOutput.on("keyup", () => {if (`${tokens}`.split(';').includes(getTokenOutputVal())) submitButton.prop("disabled", false); else submitButton.prop("disabled", true);});
+  tokenOutput.on("paste", () => {if (`${tokens}`.split(';').includes(getTokenOutputVal())) submitButton.prop("disabled", false); else submitButton.prop("disabled", true);});
   </%text>
 </script>

@@ -1751,10 +1751,15 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         console.print(f"Loading [cyan underline]hits.json[/cyan underline] file")
         console.print(f"Path: [ital]{hits_file}")
         hits = read_json(hits_file)
-        token_df = pd.DataFrame(columns=["token_output"])
+        token_df = pd.DataFrame(columns=["tokens"])
+
         for hit in hits:
+            tokens = ""
+            for hit in hits:
+                tokens = f"{tokens};{hit['token_output']}"
+            tokens = tokens[1:]
             token_df = token_df.append({
-                "token_output": hit['token_output']
+                "tokens": tokens
             }, ignore_index=True)
         token_df.to_csv(mturk_tokens_file, index=False)
         console.print(f"Tokens for {len(hits)} hits generated")
