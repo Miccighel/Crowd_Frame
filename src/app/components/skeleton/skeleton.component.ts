@@ -600,7 +600,7 @@ export class SkeletonComponent implements OnInit {
 
     /* Logging service initialization */
     public logInit(workerIdentifier, taskName, batchName, http: HttpClient, logOnConsole: boolean) {
-        this.actionLogger.logInit(this.configService.environment.bucket, workerIdentifier, taskName, batchName, this.task.tryCurrent.toString(), http, logOnConsole);
+        this.actionLogger.logInit(this.configService.environment.bucket, workerIdentifier, taskName, batchName, http, logOnConsole);
     }
 
     public updateQuestionnaireForm(form, questionnaireIndex) {
@@ -963,7 +963,7 @@ export class SkeletonComponent implements OnInit {
                     await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker)
                 } else {
                     if (this.task.settings.allowed_tries > this.task.tryCurrent) {
-                        this.worker.setParameter('in_progress', 'false')
+                        this.worker.setParameter('in_progress', 'true')
                         this.worker.setParameter('paid', 'false')
                         this.worker.setParameter('time_completion', new Date().toUTCString())
                         await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker)

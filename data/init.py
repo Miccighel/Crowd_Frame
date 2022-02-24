@@ -900,8 +900,9 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         time.sleep(2)
         function_name = 'Crowd_Frame-Logger'
         function_new = False
-        with ZipFile(f"{folder_aws_path}index.zip", 'w') as zipf:
-            zipf.write(f"{folder_aws_path}index.js", arcname='index.js')
+        if not os.path.exists(f"{folder_aws_path}index.zip"):
+            with ZipFile(f"{folder_aws_path}index.zip", 'w') as zipf:
+                zipf.write(f"{folder_aws_path}index.js", arcname='index.js')
         try:
             response = lambda_client.create_function(
                 FunctionName=function_name,
