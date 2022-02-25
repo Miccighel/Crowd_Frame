@@ -23,6 +23,7 @@
     "@kolkov/angular-editor": "^2.0.0",
     "aws-sdk": "^2.1076.0",
     "crypto-es": "^1.2.7",
+    "flat-angular": "^1.6.0",
     "ngx-color-picker": "^12.0.0",
     "ngx-countdown": "^13.0.0",
     "ngx-device-detector": "^3.0.0",

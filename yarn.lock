@@ -3562,6 +3562,7 @@ __metadata:
     "@types/node": ~16.11.25
     aws-sdk: ^2.1076.0
     crypto-es: ^1.2.7
+    flat-angular: ^1.6.0
     ngx-color-picker: ^12.0.0
     ngx-countdown: ^13.0.0
     ngx-device-detector: ^3.0.0
@@ -4519,6 +4520,13 @@ __metadata:
     locate-path: ^5.0.0
     path-exists: ^4.0.0
   checksum: 4c172680e8f8c1f78839486e14a43ef82e9decd0e74145f40707cc42e7420506d5ec92d9a11c22bd2c48fb0c384ea05dd30e10dd152fefeec6f2f75282a8b844
+  languageName: node
+  linkType: hard
+
+"flat-angular@npm:^1.6.0":
+  version: 1.6.0
+  resolution: "flat-angular@npm:1.6.0"
+  checksum: 794802a5a0974d247fc77cd4ef20f5effbe7adcab477d98861afdd94aba4aabb16b532c5ab298249070685e81167207f886f546a3566d68ac114176aae5ed60e
   languageName: node
   linkType: hard
 
