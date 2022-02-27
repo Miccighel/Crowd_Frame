@@ -50,7 +50,6 @@ export class QuestionnaireComponent implements OnInit {
         this.questionnaire = this.task.questionnaires[this.questionnaireIndex];
         if (this.questionnaire.type == "standard" || this.questionnaire.type == "likert") {
             this.exploreSubQuestions(this.questionnaire.questions)
-
         } else {
             /* If the questionnaire is a CRT one it means that it has only one question where the answer must be a number between 0 and 100 chosen by user; required, max and min validators are needed */
             let controlsConfig = {};
@@ -65,10 +64,10 @@ export class QuestionnaireComponent implements OnInit {
 
     public exploreSubQuestions(obj: Array<Question>) {
         Object.entries(obj).forEach(
-            ([key, value]) => {
-                if ('questions' in value) {
-                    if (value['questions']) {
-                        console.log(value.name)
+            ([index, question]) => {
+                if ('questions' in question) {
+                    if (question['questions']) {
+                        console.log(question.name)
                         // Perform things
                         // let currentQuestion = this.questionnaire.questions[indexQuestion]
                         // if (currentQuestion.type != 'section') {
@@ -80,11 +79,11 @@ export class QuestionnaireComponent implements OnInit {
                         //     controlsConfig[`${controlName}_answer`] = new FormControl('', validators)
                         //     if (currentQuestion.freeText) controlsConfig[`${controlName}_free_text`] = new FormControl('')
                         // }
-                        this.exploreSubQuestions(value['questions'])
+                        this.exploreSubQuestions(question['questions'])
                     }
                 } else {
                     // Perform things
-                    console.log(value.name)
+                    console.log(question.name)
                 }
             }
         );

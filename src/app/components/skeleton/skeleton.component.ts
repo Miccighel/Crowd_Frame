@@ -220,8 +220,9 @@ export class SkeletonComponent implements OnInit {
                         this.worker.setParameter('task_name', this.configService.environment.taskName)
                         this.worker.setParameter('batch_name', this.configService.environment.batchName)
                         this.worker.setParameter('folder', this.worker.folder)
-                        this.worker.setParameter('paid', 'false')
-                        this.worker.setParameter('in_progress', 'false')
+                        this.worker.setParameter('paid', String(false))
+                        this.worker.setParameter('in_progress', String(false))
+                        this.worker.setParameter('try_left', String(this.task.settings.allowed_tries))
                         this.worker.setParameter('time_arrival', new Date().toUTCString())
                         /* Some worker properties are loaded using ngxDeviceDetector npm package capabilities... */
                         this.worker.updateProperties('ngxdevicedetector', this.deviceDetectorService.getDeviceInfo())
@@ -237,7 +238,7 @@ export class SkeletonComponent implements OnInit {
                            it also sets the HIT's input token in the form control */
                         let assignHit = function (worker, hit, tokenInput) {
                             worker.setParameter('unit_id', hit['unit_id'])
-                            worker.setParameter('in_progress', 'true')
+                            worker.setParameter('in_progress', String(true))
                             tokenInput.setValue(hit['token_input'])
                         }
 
@@ -262,14 +263,12 @@ export class SkeletonComponent implements OnInit {
 
                             /* If the flag is still false, it means that all the available HITs have been assigned once...
                                ... however, a worker have probably abandoned the task if someone reaches this point of the code. */
-
                             if (!hitAssigned) {
 
                                 /* The whole set of ACL records must be scanned to find the oldest worker that participated in the task but abandoned it */
                                 let wholeEntries = []
                                 let aclEntries = await this.dynamoDBService.scanACLRecordUnitId(this.configService.environment)
                                 for (let aclEntry of aclEntries.Items) {
-                                    console.log(aclEntry['time_completion'])
                                     wholeEntries.push(aclEntry)
                                 }
                                 let lastEvaluatedKey = aclEntries.LastEvaluatedKey
@@ -291,7 +290,8 @@ export class SkeletonComponent implements OnInit {
                                         This happens also if the worker does not have any try left, and thus it's entry has a completion time but the two flags are set to false.
                                         */
 
-                                    if ((aclEntry['paid'] == 'false' && aclEntry['in_progress'] == 'true' && !aclEntry['time_completion']) || (aclEntry['paid'] == 'false' && aclEntry['in_progress'] == 'false' && aclEntry['time_completion'])) {
+                                    if (((/true/i).test(aclEntry['paid']) == false && (/true/i).test(aclEntry['in_progress']) == true) && parseInt(aclEntry['try_left']) > 0) {
+
                                         let hitFound = null
                                         for (let currentHit of hits) {
                                             if (currentHit['unit_id'] == aclEntry['unit_id']) {
@@ -304,7 +304,7 @@ export class SkeletonComponent implements OnInit {
                                         /* The record for the current worker is updated */
                                         await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker)
                                         /* The record for the worker that abandoned/returned the task is updated */
-                                        aclEntry['in_progress'] = 'false'
+                                        aclEntry['in_progress'] = String(false)
                                         await this.dynamoDBService.insertACLRecordUnitId(this.configService.environment, aclEntry, this.task.tryCurrent, false)
                                         /* As soon a slot for the current HIT is freed and assigned to the current worker the search can be stopped */
                                         break
@@ -321,7 +321,7 @@ export class SkeletonComponent implements OnInit {
                             let aclEntry = workerACLRecord['Items'].pop()
                             /* If the two flags are set to false, s/he is a worker that abandoned the task earlier;
                                furthermore, his/her it has been assigned to someone else. It's a sort of overbooking. */
-                            if (aclEntry['in_progress'] == 'false' && aclEntry['paid'] == 'false') {
+                            if ((/true/i).test(aclEntry['in_progress']) == false && (/true/i).test(aclEntry['paid']) == false) {
                                 /* As of today, such a worker is not allowed to perform the task */
                                 taskAllowed = false
                             } else {
@@ -935,7 +935,7 @@ export class SkeletonComponent implements OnInit {
                 await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, documentPayload)
             }
 
-            if (completedElementBaseIndex == this.task.getElementsNumber() - 1 && action=="Finish") {
+            if (completedElementBaseIndex == this.task.getElementsNumber() - 1 && action == "Finish") {
                 let countdowns = []
                 if (this.task.settings.countdown_time)
                     for (let index = 0; index < this.task.documentsAmount; index++) countdowns.push(this.documentComponent[index].countdown)
@@ -960,22 +960,18 @@ export class SkeletonComponent implements OnInit {
             /* Lastly, we update the ACL */
             if (!(this.worker.identifier == null)) {
                 if (this.sectionService.taskSuccessful) {
-                    this.worker.setParameter('in_progress', 'false')
-                    this.worker.setParameter('paid', 'true')
+                    this.worker.setParameter('in_progress', String(false))
+                    this.worker.setParameter('paid', String(true))
                     this.worker.setParameter('time_completion', new Date().toUTCString())
+                    this.worker.setParameter('try_left', String(this.task.settings.allowed_tries - this.task.tryCurrent))
                     await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker)
                 } else {
-                    if (this.task.tryCurrent<= this.task.settings.allowed_tries) {
-                        this.worker.setParameter('in_progress', 'true')
-                        this.worker.setParameter('paid', 'false')
-                        this.worker.setParameter('time_completion', new Date().toUTCString())
-                        await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker)
-                    } else {
-                        this.worker.setParameter('in_progress', 'false')
-                        this.worker.setParameter('paid', 'false')
-                        this.worker.setParameter('time_completion', new Date().toUTCString())
-                        await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker)
-                    }
+                    this.worker.setParameter('in_progress', String(true))
+                    this.worker.setParameter('paid', String(false))
+                    this.worker.setParameter('try_left', String(this.task.settings.allowed_tries - this.task.tryCurrent))
+                    this.worker.setParameter('time_completion', new Date().toUTCString())
+                    await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker)
+
                 }
             }
 
