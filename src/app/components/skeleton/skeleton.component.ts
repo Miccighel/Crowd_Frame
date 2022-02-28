@@ -254,7 +254,7 @@ export class SkeletonComponent implements OnInit {
                                     /* Call to the previous function */
                                     assignHit(this.worker, hit, this.tokenInput)
                                     /* The worker's ACL record is then updated */
-                                    await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker)
+                                    await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker, true)
                                     /* As soon as a HIT is assigned to the current worker the search can be stopped */
                                     hitAssigned = true
                                     break
@@ -302,10 +302,10 @@ export class SkeletonComponent implements OnInit {
                                         assignHit(this.worker, hitFound, this.tokenInput)
                                         hitAssigned = true
                                         /* The record for the current worker is updated */
-                                        await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker)
+                                        await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker, true)
                                         /* The record for the worker that abandoned/returned the task is updated */
                                         aclEntry['in_progress'] = String(false)
-                                        await this.dynamoDBService.insertACLRecordUnitId(this.configService.environment, aclEntry, this.task.tryCurrent, false)
+                                        await this.dynamoDBService.insertACLRecordUnitId(this.configService.environment, aclEntry, this.task.tryCurrent, false, true)
                                         /* As soon a slot for the current HIT is freed and assigned to the current worker the search can be stopped */
                                         break
                                     }
@@ -329,7 +329,7 @@ export class SkeletonComponent implements OnInit {
                                 for (let hit of hits) {
                                     if (hit['unit_id'] == aclEntry['unit_id']) {
                                         this.tokenInput.setValue(hit['token_input'])
-                                        await this.dynamoDBService.insertACLRecordUnitId(this.configService.environment, aclEntry, this.task.tryCurrent, true)
+                                        await this.dynamoDBService.insertACLRecordUnitId(this.configService.environment, aclEntry, this.task.tryCurrent, true, false)
                                         hitAssigned = true
                                         break
                                     }
@@ -343,7 +343,6 @@ export class SkeletonComponent implements OnInit {
                             this.sectionService.taskOverbooking = true
                             taskAllowed = false
                         }
-
 
                         /* We launch a call to Cloudflare to trace the worker */
                         if (this.worker.settings.analysis) {
@@ -590,6 +589,10 @@ export class SkeletonComponent implements OnInit {
             this.task.loadAccessCounter()
             this.task.loadTimestamps()
 
+            if (!(this.worker.identifier == null)) {
+                let taskInitialPayload = this.task.buildTaskInitialPayload(this.worker)
+                await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, taskInitialPayload)
+            }
 
         }
 
@@ -913,14 +916,41 @@ export class SkeletonComponent implements OnInit {
         if (action == "Finish") {
             qualityChecks = this.performQualityChecks()
             qualityChecksPayload = this.task.buildQualityChecksPayload(qualityChecks, action)
+            if (qualityChecks['globalOutcome']) {
+                this.sectionService.taskSuccessful = true;
+                this.sectionService.taskFailed = false;
+            } else {
+                this.sectionService.taskSuccessful = false;
+                this.sectionService.taskFailed = true;
+            }
+            this.sectionService.taskCompleted = true;
+            /* Lastly, we update the ACL */
+            if (!(this.worker.identifier == null)) {
+                if (this.sectionService.taskSuccessful) {
+                    this.worker.setParameter('in_progress', String(false))
+                    this.worker.setParameter('paid', String(true))
+                    this.worker.setParameter('time_completion', new Date().toUTCString())
+                    this.worker.setParameter('try_left', String((this.task.settings.allowed_tries - this.task.tryCurrent)+1))
+                    await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker, false)
+                } else {
+                    if (this.task.tryCurrent >= this.task.settings.allowed_tries) {
+                        this.worker.setParameter('in_progress', String(false))
+                        this.worker.setParameter('paid', String(false))
+                        this.worker.setParameter('try_left', String((this.task.settings.allowed_tries - this.task.tryCurrent)+1))
+                        this.worker.setParameter('time_completion', new Date().toUTCString())
+                        await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker, false)
+                    } else {
+                        this.worker.setParameter('in_progress', String(true))
+                        this.worker.setParameter('paid', String(false))
+                        this.worker.setParameter('try_left', String((this.task.settings.allowed_tries - this.task.tryCurrent)+1))
+                        this.worker.setParameter('time_completion', new Date().toUTCString())
+                        await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker, false)
+                    }
+                }
+            }
         }
 
         if (!(this.worker.identifier == null)) {
-
-            if (completedElementBaseIndex <= 0) {
-                let taskInitialPayload = this.task.buildTaskInitialPayload(this.worker)
-                await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, taskInitialPayload)
-            }
 
             if (completedElementType == "Q") {
                 let questionnairePayload = this.task.buildTaskQuestionnairePayload(completedElementIndex, this.questionnairesForm[completedElementIndex].value, action)
@@ -936,49 +966,19 @@ export class SkeletonComponent implements OnInit {
             }
 
             if (completedElementBaseIndex == this.task.getElementsNumber() - 1 && action == "Finish") {
+                await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, qualityChecksPayload)
                 let countdowns = []
                 if (this.task.settings.countdown_time)
                     for (let index = 0; index < this.task.documentsAmount; index++) countdowns.push(this.documentComponent[index].countdown)
                 let fullPayload = this.task.buildTaskFinalPayload(this.questionnairesForm, this.documentsForm, qualityChecksPayload, countdowns, action)
                 await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, fullPayload)
-                await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, qualityChecksPayload)
             }
 
         }
 
         if (action == "Finish") {
-
-            if (qualityChecks['globalOutcome']) {
-                this.sectionService.taskSuccessful = true;
-                this.sectionService.taskFailed = false;
-            } else {
-                this.sectionService.taskSuccessful = false;
-                this.sectionService.taskFailed = true;
-            }
-            this.sectionService.taskCompleted = true;
-
-            /* Lastly, we update the ACL */
-            if (!(this.worker.identifier == null)) {
-                if (this.sectionService.taskSuccessful) {
-                    this.worker.setParameter('in_progress', String(false))
-                    this.worker.setParameter('paid', String(true))
-                    this.worker.setParameter('time_completion', new Date().toUTCString())
-                    this.worker.setParameter('try_left', String(this.task.settings.allowed_tries - this.task.tryCurrent))
-                    await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker)
-                } else {
-                    this.worker.setParameter('in_progress', String(true))
-                    this.worker.setParameter('paid', String(false))
-                    this.worker.setParameter('try_left', String(this.task.settings.allowed_tries - this.task.tryCurrent))
-                    this.worker.setParameter('time_completion', new Date().toUTCString())
-                    await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker)
-
-                }
-            }
-
             this.ngxService.stop()
-
             this.changeDetector.detectChanges()
-
         }
 
     }

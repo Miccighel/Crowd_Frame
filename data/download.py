@@ -330,14 +330,13 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
                     if table_base_name in table_name:
                         log_data_source = table_name
 
-                worker = {
+                snapshot = {
                     "source_data": data_source,
                     "source_acl": acl_data_source,
                     "source_log": log_data_source,
                     "task": {
                         "worker_id": worker_id,
                         "try_last": 0,
-                        "paid": False,
                     },
                     "checks": [],
                     "dimensions": {},
@@ -363,39 +362,39 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
                     worker_id = sequence[0]
                     unit_id = sequence[1]
                     current_try = sequence[2]
-                    worker['task']['try_last'] = max(int(worker['task']['try_last']), int(current_try))
+                    snapshot['task']['try_last'] = max(int(snapshot['task']['try_last']), int(current_try))
 
                     if data:
 
                         if data['info']['element'] == 'data':
                             for attribute, value in data['task'].items():
-                                worker['task'][attribute] = value
-                            worker['dimensions'] = data.pop('dimensions')
-                            worker['documents'] = data.pop('documents')
-                            worker['questionnaires'] = data.pop('questionnaires')
-                            worker['worker'] = data.pop('worker')
+                                snapshot['task'][attribute] = value
+                            snapshot['dimensions'] = data.pop('dimensions')
+                            snapshot['documents'] = data.pop('documents')
+                            snapshot['questionnaires'] = data.pop('questionnaires')
+                            snapshot['worker'] = data.pop('worker')
                         elif data['info']['element'] == 'all':
-                            worker['data_full'].append({
+                            snapshot['data_full'].append({
                                 "time_submit": time,
                                 "serialization": data
                             })
                         elif data['info']['element'] == 'document':
-                            worker['data_partial']['documents_answers'].append({
+                            snapshot['data_partial']['documents_answers'].append({
                                 "time_submit": time,
                                 "serialization": data
                             })
                         elif data['info']['element'] == 'questionnaire':
-                            worker['data_partial']['questionnaires_answers'].append({
+                            snapshot['data_partial']['questionnaires_answers'].append({
                                 "time_submit": time,
                                 "serialization": data
                             })
                         elif data['info']['element'] == 'checks':
-                            worker['checks'].append({
+                            snapshot['checks'].append({
                                 "time_submit": time,
                                 "serialization": data
                             })
                         elif data['info']['element'] == 'comment':
-                            worker['comments'].append({
+                            snapshot['comments'].append({
                                 "time_submit": time,
                                 "serialization": data
                             })
@@ -424,12 +423,10 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
                                 'time_client': item['client_time']['N'],
                                 'details': json.loads(item['details']['S']) if 'S' in item['details'] else None
                             }
-                            worker['logs'].append(data)
+                            snapshot['logs'].append(data)
 
-                worker['task']['paid'] = bool(worker['worker']['paramsFetched']['paid'])
-
-                if len(worker["data_full"]) > 0 or len(worker['data_partial']['documents_answers']) > 0 or len(worker['data_partial']['questionnaires_answers']):
-                    worker_snapshot.append(worker)
+                if len(snapshot["data_full"]) > 0 or len(snapshot['data_partial']['documents_answers']) > 0 or len(snapshot['data_partial']['questionnaires_answers']) > 0:
+                    worker_snapshot.append(snapshot)
 
             with open(worker_snapshot_path, 'w', encoding='utf-8') as f:
                 json.dump(worker_snapshot, f, ensure_ascii=False, separators=(',', ':'))
@@ -455,20 +452,20 @@ if not os.path.exists(df_acl_path):
 
         for worker_snapshot in worker_snapshots:
 
-            worker = worker_snapshot['worker']
+            snapshot = worker_snapshot['worker']
             task = worker_snapshot['task']
-            worker_id = worker['paramsFetched']['identifier']
+            worker_id = snapshot['paramsFetched']['identifier']
 
             row = {'worker_id': worker_id}
             for attribute, value in task.items():
                 row[attribute] = value
-            for attribute, value in worker['paramsFetched'].items():
+            for attribute, value in snapshot['paramsFetched'].items():
                 if attribute != 'identifier' and attribute != 'folder':
                     row[attribute] = value
             row['source_acl'] = worker_snapshot['source_acl']
             row['source_data'] = worker_snapshot['source_data']
             row['source_log'] = worker_snapshot['source_log']
-            for attribute, value in worker['paramsFetched'].items():
+            for attribute, value in snapshot['paramsFetched'].items():
                 if attribute == 'folder':
                     row[attribute] = value
 
@@ -555,35 +552,35 @@ if not os.path.exists(df_info_path):
 
         for worker_snapshot in worker_snapshots:
 
-            worker = worker_snapshot['worker']
+            snapshot = worker_snapshot['worker']
             logs = worker_snapshot['logs']
-            worker_id = worker['paramsFetched']['identifier']
+            worker_id = snapshot['paramsFetched']['identifier']
 
-            worker['uag'] = {}
-            worker['ip'] = {}
+            snapshot['uag'] = {}
+            snapshot['ip'] = {}
 
             if len(logs) > 0:
                 for data_log in logs:
                     if data_log['type'] == 'context':
-                        worker['uag'].update(fetch_uag_data(worker_id, data_log['details']['ua']))
-                        worker['ip'].update(fetch_ip_data(worker_id, data_log['details']['ip']))
+                        snapshot['uag'].update(fetch_uag_data(worker_id, data_log['details']['ua']))
+                        snapshot['ip'].update(fetch_ip_data(worker_id, data_log['details']['ip']))
 
-            if 'cf_uag' in worker["propertiesFetched"].keys():
-                worker_uag = worker['propertiesFetched']['cf_uag']
-                worker['uag'].update(fetch_uag_data(worker_id, worker_uag))
+            if 'cf_uag' in snapshot["propertiesFetched"].keys():
+                worker_uag = snapshot['propertiesFetched']['cf_uag']
+                snapshot['uag'].update(fetch_uag_data(worker_id, worker_uag))
 
-            if 'cf_ip' in worker["propertiesFetched"].keys():
-                worker_ip = worker['propertiesFetched']['cf_ip']
-                worker['ip'].update(fetch_ip_data(worker_id, worker_ip))
+            if 'cf_ip' in snapshot["propertiesFetched"].keys():
+                worker_ip = snapshot['propertiesFetched']['cf_ip']
+                snapshot['ip'].update(fetch_ip_data(worker_id, worker_ip))
 
             row = {'worker_id': worker_id}
-            for attribute, value in worker['propertiesFetched'].items():
+            for attribute, value in snapshot['propertiesFetched'].items():
                 if attribute not in ['nav_user_agent', 'ngx_user_agent', 'nav_app_version']:
                     row[attribute] = value
-            for attribute, value in worker['ip'].items():
+            for attribute, value in snapshot['ip'].items():
                 if attribute != 'ip':
                     row[f"ip_{attribute}"] = value
-            for attribute, value in worker['uag'].items():
+            for attribute, value in snapshot['uag'].items():
                 if attribute != 'ua':
                     row[f"uag_{attribute}"] = value
 
@@ -630,7 +627,7 @@ if not os.path.exists(df_log_path):
             for worker_snapshot in worker_snapshots:
 
                 worker_id = worker_snapshot['task']['worker_id']
-                worker_paid = worker_snapshot['task']['paid']
+                worker_paid = bool(strtobool(worker_snapshot['worker']['paramsFetched']['paid']))
 
                 task = worker_snapshot['task']
                 logs = worker_snapshot['logs']
@@ -877,7 +874,7 @@ if not os.path.exists(df_quest_path):
             source_data = worker_snapshot['source_data']
 
             worker_id = worker_snapshot['task']['worker_id']
-            worker_paid = worker_snapshot['task']['paid']
+            worker_paid = bool(strtobool(worker_snapshot['worker']['paramsFetched']['paid']))
 
             task = worker_snapshot['task']
             questionnaires = worker_snapshot['questionnaires']
@@ -902,6 +899,8 @@ if not os.path.exists(df_quest_path):
                     for attribute, value in task.items():
                         if attribute in column_names:
                             row[attribute] = value
+
+                    row['paid'] = worker_paid
 
                     row['time_submit'] = data_try['time_submit'] if 'time_submit' in data_try else None
 
@@ -1083,7 +1082,7 @@ if not os.path.exists(df_data_path):
             source_log = worker_snapshot['source_log']
 
             worker_id = worker_snapshot['task']['worker_id']
-            worker_paid = worker_snapshot['task']['paid']
+            worker_paid = bool(strtobool(worker_snapshot['worker']['paramsFetched']['paid']))
 
             task = worker_snapshot['task']
             dimensions = worker_snapshot['dimensions']
@@ -1092,6 +1091,7 @@ if not os.path.exists(df_data_path):
             logs = worker_snapshot['logs']
             comments = worker_snapshot['comments']
             checks = worker_snapshot['checks']
+            worker = worker_snapshot['worker']
             data_full = worker_snapshot['data_full']
             data_partial = worker_snapshot['data_partial']
 
@@ -1104,6 +1104,7 @@ if not os.path.exists(df_data_path):
             if len(data_full) > 0:
 
                 row['worker_id'] = worker_id
+                row['paid'] = worker_paid
 
                 for attribute, value in task.items():
                     if attribute in column_names:
@@ -1212,12 +1213,13 @@ if not os.path.exists(df_data_path):
 
                 row = {}
                 row['worker_id'] = worker_id
+                row['paid'] = worker_paid
 
                 for attribute, value in task.items():
                     if attribute in column_names:
                         row[attribute] = value
 
-                last_full_try = 1
+                last_full_try = 0
                 most_rec_try = 1
                 dataframe_worker = dataframe.loc[dataframe['worker_id'] == worker_id]
 
@@ -1230,13 +1232,20 @@ if not os.path.exists(df_data_path):
                     row['try_current'] = document_data['serialization']['info']['try']
                     row['time_submit'] = document_data['time_submit']
 
-                    if (int(last_full_try) > int(most_rec_try)) and (int(row['try_current']) > int(most_rec_try)):
+                    if (int(last_full_try) > int(most_rec_try)) and (int(row['try_current']) > int(most_rec_try)) or last_full_try == 0:
 
-                        row["global_outcome"] = checks["checks"]["globalOutcome"]
-                        row["global_form_validity"] = checks["checks"]["globalFormValidity"]
-                        row["gold_checks"] = any(checks["checks"]["goldChecks"])
-                        row["time_check_amount"] = checks["checks"]["timeCheckAmount"]
-                        row["time_spent_check"] = checks["checks"]["timeSpentCheck"]
+                        if len(checks) > 0:
+                            row["global_outcome"] = checks["checks"]["globalOutcome"]
+                            row["global_form_validity"] = checks["checks"]["globalFormValidity"]
+                            row["gold_checks"] = any(checks["checks"]["goldChecks"])
+                            row["time_check_amount"] = checks["checks"]["timeCheckAmount"]
+                            row["time_spent_check"] = checks["checks"]["timeSpentCheck"]
+                        else:
+                            row["global_outcome"] = False
+                            row["global_form_validity"] = False
+                            row["gold_checks"] = False
+                            row["time_check_amount"] = 0
+                            row["time_spent_check"] = False
 
                         row["doc_accesses"] = document_data['serialization']['accesses']
 
@@ -1301,6 +1310,7 @@ if not os.path.exists(df_data_path):
                         else:
                             row["doc_time_elapsed"] = round(document_data['serialization']['timestamps_elapsed'], 2)
 
+                        print(worker_id)
                         if ('time_submit') in row:
                             dataframe = dataframe.append(row, ignore_index=True)
 
@@ -1414,7 +1424,7 @@ if not os.path.exists(df_dim_path) and os.path.exists(df_data_path):
         for worker_snapshot in worker_snapshots:
 
             worker_id = worker_snapshot['task']['worker_id']
-            worker_paid = worker_snapshot['task']['paid']
+            worker_paid = bool(strtobool(worker_snapshot['worker']['paramsFetched']['paid']))
 
             task = worker_snapshot['task']
             dimensions = worker_snapshot['dimensions']
@@ -1591,7 +1601,7 @@ if not os.path.exists(df_url_path):
         for worker_snapshot in worker_snapshots:
 
             worker_id = worker_snapshot['task']['worker_id']
-            worker_paid = worker_snapshot['task']['paid']
+            worker_paid = bool(strtobool(worker_snapshot['worker']['paramsFetched']['paid']))
 
             task = worker_snapshot['task']
             dimensions = worker_snapshot['dimensions']

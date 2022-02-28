@@ -555,7 +555,8 @@ export class Task {
             questionnaire_amount_start: this.questionnaireAmountStart,
             questionnaire_amount_end: this.questionnaireAmountEnd,
             documents_amount: this.documentsAmount,
-            dimensions_amount: this.dimensionsAmount
+            dimensions_amount: this.dimensionsAmount,
+            settings: this.settings
         };
         data["info"] = actionInfo
         /* General info about task */

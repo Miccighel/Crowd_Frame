@@ -84,21 +84,23 @@ export class DynamoDBService {
         return await docClient.scan(params).promise()
     }
 
-    public async insertACLRecordWorkerID(config, worker) {
+    public async insertACLRecordWorkerID(config, worker, updateArrivalTime) {
         let params = {
             TableName: config["table_acl_name"],
             Item: {}
         };
-        params["Item"]['time_arrival'] = {}
-        params["Item"]['time_arrival']['S'] = new Date().toUTCString()
         for (const [param, value] of Object.entries(worker.paramsFetched)) {
             params["Item"][param] = {}
             params["Item"][param]['S'] = value
         }
+        if (updateArrivalTime) {
+            params["Item"]['time_arrival'] = {}
+            params["Item"]['time_arrival']['S'] = new Date().toUTCString()
+        }
         return await this.loadDynamoDB(config).putItem(params).promise();
     }
 
-    public async insertACLRecordUnitId(config, entry, current_try, updateArrivalTime = false) {
+    public async insertACLRecordUnitId(config, entry, current_try, updateArrivalTime = false, updateRemovalTime = false) {
         let params = {
             TableName: config["table_acl_name"],
             Item: {}
@@ -109,6 +111,11 @@ export class DynamoDBService {
         }
         if (updateArrivalTime)
             params["Item"]['time_arrival']['S'] = new Date().toUTCString()
+        if (updateRemovalTime) {
+            params["Item"]['time_removal'] = {}
+            params["Item"]['time_removal']['S'] = {}
+            params["Item"]['time_removal']['S'] = new Date().toUTCString()
+        }
         return await this.loadDynamoDB(config).putItem(params).promise();
     }
 
@@ -118,10 +125,19 @@ export class DynamoDBService {
             Item: {
                 identifier: {S: worker.identifier},
                 sequence: {S: `${worker.identifier}-${task.unitId}-${task.tryCurrent}-${task.sequenceNumber}`},
-                data: {S: JSON.stringify(data)},
-                time: {S: (new Date().toUTCString())}
             }
         };
+        for (const [key, value] of Object.entries(data['info'])) {
+            params['Item'][`${key}`] = {}
+            params['Item'][`${key}`]['S'] = {}
+            params['Item'][`${key}`]['S'] = value.toString()
+        }
+        params['Item']['time'] = {}
+        params['Item']['time']['S'] = {}
+        params['Item']['data'] = {}
+        params['Item']['data']['S'] = {}
+        params['Item']['time']['S'] = (new Date().toUTCString())
+        params['Item']['data']['S'] = JSON.stringify(data)
         task.sequenceNumber = task.sequenceNumber + 1
         return await this.loadDynamoDB(config).putItem(params).promise();
     }

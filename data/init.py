@@ -417,7 +417,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             "apigateway:POST",
             "dynamodb:CreateTable",
             "lambda:CreateFunction",
-            "lambda:CreateEventSourceMapping"
+            "lambda:CreateEventSourceMapping",
         ],
         "no_server": [
             "iam:GetUser",

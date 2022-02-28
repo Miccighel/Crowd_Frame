@@ -13,7 +13,10 @@
                 "dynamodb:PutItem",
                 "dynamodb:DescribeTable",
                 "dynamodb:ListTables",
-                "s3:PutObjectAcl"
+                "s3:PutObjectAcl",
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
             ],
             "Resource": "*"
         }
