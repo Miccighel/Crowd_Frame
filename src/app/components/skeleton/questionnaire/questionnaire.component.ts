@@ -28,6 +28,7 @@ export class QuestionnaireComponent implements OnInit {
     task: Task
     questionnaire: Questionnaire
     questionnaireForm: FormGroup
+    questionnaireControls: {}
 
     @Output() formEmitter: EventEmitter<Object>;
 
@@ -50,6 +51,7 @@ export class QuestionnaireComponent implements OnInit {
         this.questionnaire = this.task.questionnaires[this.questionnaireIndex];
         if (this.questionnaire.type == "standard" || this.questionnaire.type == "likert") {
             this.exploreSubQuestions(this.questionnaire.questions)
+            console.log(this.questionnaireControls)
         } else {
             /* If the questionnaire is a CRT one it means that it has only one question where the answer must be a number between 0 and 100 chosen by user; required, max and min validators are needed */
             let controlsConfig = {};
@@ -67,18 +69,8 @@ export class QuestionnaireComponent implements OnInit {
             ([index, question]) => {
                 if ('questions' in question) {
                     if (question['questions']) {
-                        console.log(question.name)
                         // Perform things
-                        // let currentQuestion = this.questionnaire.questions[indexQuestion]
-                        // if (currentQuestion.type != 'section') {
-                        //     let controlName = `${currentQuestion.name}`
-                        //     let validators = []
-                        //     if (currentQuestion.required) validators = [Validators.required]
-                        //     if (currentQuestion.type == 'number') validators.concat([Validators.min(0), Validators.max(100)])
-                        //     if (currentQuestion.type == 'email') validators.push(Validators.email)
-                        //     controlsConfig[`${controlName}_answer`] = new FormControl('', validators)
-                        //     if (currentQuestion.freeText) controlsConfig[`${controlName}_free_text`] = new FormControl('')
-                        // }
+                        console.log(question.name)
                         this.exploreSubQuestions(question['questions'])
                     }
                 } else {

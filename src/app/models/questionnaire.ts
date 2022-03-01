@@ -69,7 +69,7 @@ export class Question {
         }
         if (data['questions']) {
             this.questions = new Array<Question>();
-            this.questions.push(new Question(index, data["questions"][index]))
+            for (let index = 0; index < data["questions"].length; index++) this.questions.push((new Question(index, data["questions"][index])))
         }
         this.detail = data['detail'] ? new Detail(data["detail"]) : null;
         this.showDetail = data['show_detail'] ? data['show_detail'] : false;

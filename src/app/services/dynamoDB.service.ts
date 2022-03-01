@@ -128,9 +128,15 @@ export class DynamoDBService {
             }
         };
         for (const [key, value] of Object.entries(data['info'])) {
-            params['Item'][`${key}`] = {}
-            params['Item'][`${key}`]['S'] = {}
-            params['Item'][`${key}`]['S'] = value.toString()
+            if (key == 'sequence') {
+                params['Item']['sequence_number'] = {}
+                params['Item']['sequence_number']['S'] = {}
+                params['Item']['sequence_number']['S'] = value.toString()
+            } else {
+                params['Item']['sequence_number'] = {}
+                params['Item']['sequence_number']['S'] = {}
+                params['Item']['sequence_number']['S'] = value.toString()
+            }
         }
         params['Item']['time'] = {}
         params['Item']['time']['S'] = {}
