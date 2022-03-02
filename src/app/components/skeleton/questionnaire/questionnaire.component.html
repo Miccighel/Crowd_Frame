@@ -1,7 +1,6 @@
 <ng-template matStepLabel>{{this.questionnaire.index}}</ng-template>
 <div class="container" id="questionnaire-{{this.questionnaire.index}}">
     <form [formGroup]="questionnaireForm">
-
         <mat-card>
             <mat-divider [inset]="true"></mat-divider>
             <mat-card-title *ngIf="questionnaire.type=='standard'">Please answer the following questions</mat-card-title>
@@ -9,63 +8,119 @@
             <mat-card-title *ngIf="questionnaire.type=='likert'">Please assess the following questions</mat-card-title>
             <mat-divider [inset]="true"></mat-divider>
 
+            <ng-template #questionTemplate let-question>
+
+                <div class="indent" *ngIf="handleQuestionDependency(question)">
+
+                    <ng-container class="questionnaire-body">
+
+                        <p class="question-text">{{question.indexFull}} - {{question.text}}</p>
+                        <mat-divider [inset]="true"></mat-divider>
+
+                        <div *ngIf="question.type=='mcq'" class="question-box">
+                            <mat-radio-group aria-labelledby="radio-button-label" class="radio-button-group question" formControlName="{{question.nameFull}}_answer">
+                                <mat-radio-button *ngFor="let answer of question.answers; let k=index" class="radio-button" value="{{k}}">{{answer}}</mat-radio-button>
+                            </mat-radio-group>
+                        </div>
+
+
+                        <div *ngIf="question.type=='number'" class="question-box">
+                            <input *ngIf="!this.question.repeat" matInput type="number" placeholder="0" min="0" formControlName="{{question.nameFull}}_answer" class="questionnaire-value">
+                            <input *ngIf="this.question.repeat" matInput type="number" placeholder="0" min="0" max="{{this.question.times}}" formControlName="{{question.nameFull}}_answer" class="questionnaire-value">
+                        </div>
+
+                        <div *ngIf="question.type=='list'" class="question-box" formGroupName="{{question.nameFull}}_answer">
+                            <div *ngFor="let answer of question['answers']; let k=index">
+                                <mat-checkbox formControlName="{{k}}">
+                                    {{answer}}
+                                </mat-checkbox>
+                            </div>
+
+                        </div>
+
+
+                        <div *ngIf="question.type=='dropdown'" class="question-box">
+                            <mat-form-field appearance="fill">
+                                <mat-label>Value</mat-label>
+                                <mat-select formControlName="{{question.nameFull}}_answer">
+                                    <mat-option *ngFor="let answer of question.answers" [value]="answer">
+                                        {{answer}}
+                                    </mat-option>
+                                </mat-select>
+                            </mat-form-field>
+                        </div>
+
+                        <div *ngIf="question.type=='text'|| question.type=='email'" class="question-box">
+                            <mat-form-field appearance="fill" class="width-100">
+                                <textarea matInput placeholder="Your text here" formControlName="{{question.nameFull}}_answer" rows="3"></textarea>
+                            </mat-form-field>
+                        </div>
+
+                        <div *ngIf="question.freeText">
+                            <mat-form-field appearance="fill" class="width-100">
+                                <mat-label>Other</mat-label>
+                                <textarea matInput formControlName="{{question.nameFull}}_free_text" rows="3"></textarea>
+                            </mat-form-field>
+                        </div>
+
+
+                        <mat-error *ngIf="this.utilsService.hasError(questionnaireForm,question.nameFull.concat('_free_text'), 'required')">
+                            This field is required
+                        </mat-error>
+                        <mat-error *ngIf="this.utilsService.hasError(questionnaireForm,question.nameFull.concat('_answer'), 'required')">
+                            This field is required
+                        </mat-error>
+                        <mat-error *ngIf="this.utilsService.hasError(questionnaireForm,question.nameFull.concat('_answer'), 'email')">
+                            You must insert a valid email address
+                        </mat-error>
+                        <mat-error *ngIf="this.utilsService.hasError(questionnaireForm,question.nameFull.concat('_answer'), 'min')">
+                            Min value allowed: {{this.utilsService.getErrorMessage(questionnaireForm, question.nameFull.concat('_answer'), 'min')}}
+                        </mat-error>
+                        <mat-error *ngIf="this.utilsService.hasError(questionnaireForm,question.nameFull.concat('_answer'), 'max')">
+                            Max value allowed: {{this.utilsService.getErrorMessage(questionnaireForm, question.nameFull.concat('_answer'), 'max')}}
+                        </mat-error>
+
+                        <mat-expansion-panel hideToggle *ngIf="question.detail" class="question-detail" (opened)="question.showDetail = true" (closed)="question.showDetail = false">
+                            <mat-expansion-panel-header class="mat-button">
+                                <mat-panel-title>
+                                    {{question.showDetail ? 'Hide details' : 'Show details'}}
+                                </mat-panel-title>
+                                <mat-panel-description>
+                                    {{question.detail.text}}
+                                </mat-panel-description>
+                            </mat-expansion-panel-header>
+                            <div class="question-detail-element" *ngFor="let element of question.detail.elements; let m=index">
+                                {{element.key}}
+                                <ul>
+                                    <li *ngFor="let item of element.items; let n=index">{{item}}</li>
+                                </ul>
+                            </div>
+                        </mat-expansion-panel>
+                    </ng-container>
+                </div>
+
+                <div *ngIf="question.questions" class="indent">
+                    <!-- Invoke the recursive template. -->
+                    <ng-template ngFor [ngForOf]="question.questions" [ngForTemplate]="questionTemplate">
+                        <!--
+                            NOTE: The "$implicit" property of the ngFor context is what will
+                            be made available to the template ref's implicit let-node binding.
+                        -->
+                    </ng-template>
+                </div>
+
+            </ng-template>
+
+
             <!-- Standard questionnaire markup -->
-            <mat-card-content *ngIf="questionnaire.type=='standard' && this.questionnaireForm">
+            <mat-card-content *ngIf="questionnaire.type=='standard'">
                 <div class="questionnaire-description">
                     <p *ngIf="questionnaire.description">{{questionnaire.description}}</p>
                 </div>
-                <ng-container *ngFor="let question of this.questionnaire.questions; let j=index">
-                    <app-question
-                            [index]="(j+1).toString()"
-                            [question]="question"
-                            [questionForm]="questionnaireForm">
-                    </app-question>
-                    <ng-container *ngFor="let questionSub of question.questions; let k=index">
-                        <div class="indent-1">
-                            <app-question
-                                    [index]="(j+1).toString().concat('.').concat((k+1).toString())"
-                                    [question]="questionSub"
-                                    [questionForm]="questionnaireForm">
-                            </app-question>
-                            <ng-container *ngFor="let questionSubSub of questionSub.questions; let l=index">
-                                <div class="indent-2">
-                                    <app-question
-                                            [index]="(j+1).toString().concat('.').concat((k+1).toString()).concat('.').concat((l+1).toString())"
-                                            [question]="questionSubSub"
-                                            [questionForm]="questionnaireForm">
-                                    </app-question>
-                                    <ng-container *ngFor="let questionSubSubSub of questionSubSub.questions; let m=index">
-                                        <div class="indent-3">
-                                            <app-question
-                                                    [index]="(j+1).toString().concat('.').concat((k+1).toString()).concat('.').concat((l+1).toString()).concat('.').concat((m+1).toString())"
-                                                    [question]="questionSubSubSub"
-                                                    [questionForm]="questionnaireForm">
-                                            </app-question>
-                                            <ng-container *ngFor="let questionSubSubSubSub of questionSubSubSub.questions; let n=index">
-                                                <div class="indent-4">
-                                                    <app-question
-                                                            [index]="(j+1).toString().concat('.').concat((k+1).toString()).concat('.').concat((l+1).toString()).concat('.').concat((m+1).toString()).concat('.').concat((n+1).toString())"
-                                                            [question]="questionSubSubSubSub"
-                                                            [questionForm]="questionnaireForm">
-                                                    </app-question>
-                                                    <ng-container *ngFor="let questionSubSubSubSubSub of questionSubSubSubSub.questions; let o=index">
-                                                        <div class="indent-5">
-                                                            <app-question
-                                                                    [index]="(j+1).toString().concat('.').concat((k+1).toString()).concat('.').concat((l+1).toString()).concat('.').concat((m+1).toString()).concat('.').concat((n+1).toString()).concat('.').concat((o+1).toString())"
-                                                                    [question]="questionSubSubSubSubSub"
-                                                                    [questionForm]="questionnaireForm">
-                                                            </app-question>
-                                                        </div>
-                                                    </ng-container>
-                                                </div>
-                                            </ng-container>
-                                        </div>
-                                    </ng-container>
-                                </div>
-                            </ng-container>
-                        </div>
-                    </ng-container>
+                <ng-container *ngFor="let question of this.questionnaire.questions;">
+                    <ng-template [ngTemplateOutlet]="questionTemplate" [ngTemplateOutletContext]="{ $implicit: question}"></ng-template>
                 </ng-container>
+
             </mat-card-content>
 
             <!-- CRT questionnaire markup -->
@@ -76,13 +131,13 @@
                     <mat-form-field appearance="fill" class="questionnaire-crt-value">
                         <mat-label>Answer</mat-label>
                         <input matInput type="number" placeholder="0" min="0" formControlName="{{question.name}}">
-                        <mat-error *ngIf="this.utilsService.checkFormControl(questionnaireForm,question.name, 'required')">
+                        <mat-error *ngIf="this.utilsService.hasError(questionnaireForm,question.name, 'required')">
                             This field is required
                         </mat-error>
-                        <mat-error *ngIf="this.utilsService.checkFormControl(questionnaireForm,question.name, 'min')">
+                        <mat-error *ngIf="this.utilsService.hasError(questionnaireForm,question.name, 'min')">
                             Min value allowed: 0
                         </mat-error>
-                        <mat-error *ngIf="this.utilsService.checkFormControl(questionnaireForm,question.name, 'max')">
+                        <mat-error *ngIf="this.utilsService.hasError(questionnaireForm,question.name, 'max')">
                             Max value allowed: 100
                         </mat-error>
                     </mat-form-field>

@@ -34,13 +34,13 @@
                            (focus)="this.tokenForm.updateValueAndValidity()" (paste)="this.tokenForm.updateValueAndValidity()"
                            (keyup)="this.tokenForm.updateValueAndValidity()" (keydown)="this.tokenForm.updateValueAndValidity()"
                            (keyup.enter)="performTaskSetup()">
-                    <mat-error *ngIf="this.utilsService.checkFormControl(tokenForm,'tokenInput', 'required')">
+                    <mat-error *ngIf="this.utilsService.hasError(tokenForm,'tokenInput', 'required')">
                         This field is required
                     </mat-error>
-                    <mat-error *ngIf="this.utilsService.checkFormControl(tokenForm,'tokenInput', 'invalid')">
+                    <mat-error *ngIf="this.utilsService.hasError(tokenForm,'tokenInput', 'invalid')">
                         This token input is invalid
                     </mat-error>
-                    <mat-error *ngIf="this.utilsService.checkFormControl(tokenForm,'tokenInput', 'maxlength')">
+                    <mat-error *ngIf="this.utilsService.hasError(tokenForm,'tokenInput', 'maxlength')">
                         This token input should be 11 characters long
                     </mat-error>
                 </mat-form-field>

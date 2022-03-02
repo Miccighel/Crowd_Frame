@@ -17,10 +17,10 @@
                 <button mat-icon-button matPrefix>
                     <mat-icon>{{'arrow_right_alt'}}</mat-icon>
                 </button>
-                <mat-error *ngIf="this.utilsService.checkFormControl(searchEngineForm,(this.dimension.name).concat('_url'), 'required')">
+                <mat-error *ngIf="this.utilsService.hasError(searchEngineForm,(this.dimension.name).concat('_url'), 'required')">
                     This field is required
                 </mat-error>
-                <mat-error *ngIf="this.utilsService.checkFormControl(searchEngineForm, (this.dimension.name).concat('_url'), 'invalidSearchEngineUrl')">
+                <mat-error *ngIf="this.utilsService.hasError(searchEngineForm, (this.dimension.name).concat('_url'), 'invalidSearchEngineUrl')">
                     Please select (or copy & paste) one of the URLs shown above.
                 </mat-error>
             </mat-form-field>

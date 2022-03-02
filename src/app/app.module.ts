@@ -60,7 +60,6 @@ import {SearchEngineStepComponent} from './components/generator/generator-steps/
 import {DimensionsStepComponent} from './components/generator/generator-steps/dimensions-step/dimensions-step.component';
 import {TaskSettingsStepComponent} from './components/generator/generator-steps/task-settings-step/task-settings-step.component';
 import {SummaryStepComponent} from './components/generator/generator-steps/summary-step/summary-step.component';
-import {QuestionComponent} from './components/skeleton/questionnaire/question/question.component';
 import {OutcomeSectionComponent} from './components/skeleton/outcome/outcome-section.component';
 import {AnnotatorLawsComponent} from './components/skeleton/document/elements/annotator-laws/annotator-laws.component';
 import {AnnotatorOptionsComponent} from './components/skeleton/document/elements/annotator-options/annotator-options.component';
@@ -100,7 +99,6 @@ function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
         DimensionsStepComponent,
         TaskSettingsStepComponent,
         SummaryStepComponent,
-        QuestionComponent,
         OutcomeSectionComponent,
         AnnotatorLawsComponent,
         AnnotatorOptionsComponent,

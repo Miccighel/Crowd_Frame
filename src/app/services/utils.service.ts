@@ -10,12 +10,23 @@ export class UtilsService {
     /*
      * This function retrieves the string associated to an error code thrown by a form field validator.
      */
-    public checkFormControl(form: FormGroup, field: string, key: string): boolean {
-        return form.get(field).hasError(key);
+    public hasError(form: FormGroup, field: string, key: string): boolean {
+        let control = form.get(field)
+        if (control) {
+            return control.hasError(key)
+        } else {
+            return false
+        }
     }
 
-    public getControlGroup(c: AbstractControl): FormGroup | FormArray {
-        return c.parent;
+    public getErrorMessage(form: FormGroup, field: string, key: string): string {
+        switch (key) {
+            case 'min':
+                return form.get(field).errors[key][key]
+            case 'max':
+                return form.get(field).errors[key][key]
+        }
+
     }
 
     public capitalize(word: string) {

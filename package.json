@@ -31,6 +31,7 @@
     "ngx-ui-loader": "^11.0.0",
     "rxjs": "^7.4.0",
     "titleize": "^3.0.0",
+    "tree-model": "^1.0.7",
     "util": "^0.12.4",
     "zone.js": "~0.11.4"
   },

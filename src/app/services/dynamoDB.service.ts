@@ -133,9 +133,9 @@ export class DynamoDBService {
                 params['Item']['sequence_number']['S'] = {}
                 params['Item']['sequence_number']['S'] = value.toString()
             } else {
-                params['Item']['sequence_number'] = {}
-                params['Item']['sequence_number']['S'] = {}
-                params['Item']['sequence_number']['S'] = value.toString()
+                params['Item'][`${key}`] = {}
+                params['Item'][`${key}`]['S'] = {}
+                params['Item'][`${key}`]['S'] = value.toString()
             }
         }
         params['Item']['time'] = {}
