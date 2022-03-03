@@ -5,6 +5,7 @@ export class SettingsTask {
     modality: string;
     /* Number of allowed tries */
     allowed_tries: number;
+    time_assessment: number;
     /* Time allowed to be spent on each document */
     time_check_amount: number;
     attributes: Array<Attribute>
@@ -32,6 +33,7 @@ export class SettingsTask {
         }
         this.modality = data ? data['modality'] : null;
         this.allowed_tries = data ? parseInt((data["allowed_tries"])) : 0;
+        this.time_assessment = data ? parseInt((data["time_assessment"])) : 2;
         this.time_check_amount = data ? parseInt((data["time_check_amount"])) : 0;
         this.attributes = new Array<Attribute>()
         if (data) {

@@ -263,6 +263,9 @@ export class SkeletonComponent implements OnInit {
 
                             /* If the flag is still false, it means that all the available HITs have been assigned once...
                                ... however, a worker have probably abandoned the task if someone reaches this point of the code. */
+
+                            let lastUnpaidUnassignedHit = null
+
                             if (!hitAssigned) {
 
                                 /* The whole set of ACL records must be scanned to find the oldest worker that participated in the task but abandoned it */
@@ -285,12 +288,17 @@ export class SkeletonComponent implements OnInit {
 
                                 for (let aclEntry of wholeEntries) {
 
-                                    /* If the worker that received the current unit did not complete it he abandoned or returned the task.
-                                       Thus, we free its slot, and we assign the HIT found to the current worker.
-                                        This happens also if the worker does not have any try left, and thus it's entry has a completion time but the two flags are set to false.
-                                        */
+                                    /*
+                                    If the worker that received the current unit did not complete it he abandoned or returned the task.
+                                    Thus, we free its slot, and we assign the HIT found to the current worker.
+                                    This happens also if the worker does not have any try left, and thus it's entry has a completion time but the two flags are set to false.
+                                    */
 
-                                    if (((/true/i).test(aclEntry['paid']) == false && (/true/i).test(aclEntry['in_progress']) == true) && parseInt(aclEntry['try_left']) > 0) {
+                                    let timeArrival = new Date(aclEntry['time_arrival']).getTime()
+                                    let timeActual = new Date().getTime()
+                                    let hoursElapsed = Math.abs(timeActual - timeArrival) / 36e5;
+                                    if (((/true/i).test(aclEntry['paid']) == false && (/true/i).test(aclEntry['in_progress']) == true) && hoursElapsed > this.task.settings.time_assessment ||
+                                        ((/true/i).test(aclEntry['paid']) == false && (/true/i).test(aclEntry['in_progress']) == false) && parseInt(aclEntry['try_left'])<=1) {
 
                                         let hitFound = null
                                         for (let currentHit of hits) {
@@ -304,6 +312,7 @@ export class SkeletonComponent implements OnInit {
                                         /* The record for the current worker is updated */
                                         await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker, true)
                                         /* The record for the worker that abandoned/returned the task is updated */
+                                        aclEntry['time_expired'] = String(true)
                                         aclEntry['in_progress'] = String(false)
                                         await this.dynamoDBService.insertACLRecordUnitId(this.configService.environment, aclEntry, this.task.tryCurrent, false, true)
                                         /* As soon a slot for the current HIT is freed and assigned to the current worker the search can be stopped */
@@ -930,19 +939,19 @@ export class SkeletonComponent implements OnInit {
                     this.worker.setParameter('in_progress', String(false))
                     this.worker.setParameter('paid', String(true))
                     this.worker.setParameter('time_completion', new Date().toUTCString())
-                    this.worker.setParameter('try_left', String((this.task.settings.allowed_tries - this.task.tryCurrent)+1))
+                    this.worker.setParameter('try_left', String((this.task.settings.allowed_tries - this.task.tryCurrent) + 1))
                     await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker, false)
                 } else {
                     if (this.task.tryCurrent >= this.task.settings.allowed_tries) {
                         this.worker.setParameter('in_progress', String(false))
                         this.worker.setParameter('paid', String(false))
-                        this.worker.setParameter('try_left', String((this.task.settings.allowed_tries - this.task.tryCurrent)+1))
+                        this.worker.setParameter('try_left', String((this.task.settings.allowed_tries - this.task.tryCurrent) + 1))
                         this.worker.setParameter('time_completion', new Date().toUTCString())
                         await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker, false)
                     } else {
                         this.worker.setParameter('in_progress', String(true))
                         this.worker.setParameter('paid', String(false))
-                        this.worker.setParameter('try_left', String((this.task.settings.allowed_tries - this.task.tryCurrent)+1))
+                        this.worker.setParameter('try_left', String((this.task.settings.allowed_tries - this.task.tryCurrent) + 1))
                         this.worker.setParameter('time_completion', new Date().toUTCString())
                         await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker, false)
                     }

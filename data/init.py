@@ -1469,6 +1469,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             sample_settings = {
                 "modality": f"pointwise",
                 "allowed_tries": 10,
+                "time_assessment": 2,
                 "time_check_amount": 3,
                 "attributes": [
                     {
