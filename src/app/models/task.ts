@@ -562,7 +562,11 @@ export class Task {
         /* General info about task */
         data["task"] = taskData
         /* The answers of the current worker to the questionnaire */
-        data["questionnaires"] = this.questionnaires
+        let questionnaires = []
+        for (let questionnaire of this.questionnaires) {
+            questionnaires.push(questionnaire.serializable())
+        }
+        data["questionnaires"] = questionnaires
         /* The parsed document contained in current worker's hit */
         data["documents"] = this.documents
         /* The dimensions of the answers of each worker */

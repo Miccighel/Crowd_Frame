@@ -10,9 +10,9 @@
 
             <ng-template #questionTemplate let-question>
 
-                <div class="indent" *ngIf="handleQuestionDependency(question)">
+                <div class="indent">
 
-                    <ng-container class="questionnaire-body">
+                    <ng-container class="questionnaire-body" *ngIf="!question.dropped && handleQuestionDependency(question)">
 
                         <p class="question-text">{{question.indexFull}} - {{question.text}}</p>
                         <mat-divider [inset]="true"></mat-divider>
@@ -23,10 +23,9 @@
                             </mat-radio-group>
                         </div>
 
-
                         <div *ngIf="question.type=='number'" class="question-box">
                             <input *ngIf="!this.question.repeat" matInput type="number" placeholder="0" min="0" formControlName="{{question.nameFull}}_answer" class="questionnaire-value">
-                            <input *ngIf="this.question.repeat" matInput type="number" placeholder="0" min="0" max="{{this.question.times}}" formControlName="{{question.nameFull}}_answer" class="questionnaire-value">
+                            <input *ngIf="this.question.repeat" matInput type="number" placeholder="0" min="0" max="{{this.question.times}}" (change)="this.handleQuestionRepetition(question)" formControlName="{{question.nameFull}}_answer" class="questionnaire-value">
                         </div>
 
                         <div *ngIf="question.type=='list'" class="question-box" formGroupName="{{question.nameFull}}_answer">
@@ -35,9 +34,7 @@
                                     {{answer}}
                                 </mat-checkbox>
                             </div>
-
                         </div>
-
 
                         <div *ngIf="question.type=='dropdown'" class="question-box">
                             <mat-form-field appearance="fill">
@@ -117,9 +114,12 @@
                 <div class="questionnaire-description">
                     <p *ngIf="questionnaire.description">{{questionnaire.description}}</p>
                 </div>
-                <ng-container *ngFor="let question of this.questionnaire.questions;">
-                    <ng-template [ngTemplateOutlet]="questionTemplate" [ngTemplateOutletContext]="{ $implicit: question}"></ng-template>
+                <ng-container>
+                    <ng-container *ngFor="let question of this.questionnaire.treeCut.model.questions">
+                        <ng-template [ngTemplateOutlet]="questionTemplate" [ngTemplateOutletContext]="{ $implicit: question}"></ng-template>
+                    </ng-container>
                 </ng-container>
+
 
             </mat-card-content>
 
@@ -130,14 +130,14 @@
                     <mat-divider [inset]="true"></mat-divider>
                     <mat-form-field appearance="fill" class="questionnaire-crt-value">
                         <mat-label>Answer</mat-label>
-                        <input matInput type="number" placeholder="0" min="0" formControlName="{{question.name}}">
-                        <mat-error *ngIf="this.utilsService.hasError(questionnaireForm,question.name, 'required')">
+                        <input matInput type="number" placeholder="0" min="0" max="100" formControlName="{{question.name}}_answer">
+                        <mat-error *ngIf="this.utilsService.hasError(questionnaireForm, question.nameFull.concat('_answer'), 'required')">
                             This field is required
                         </mat-error>
-                        <mat-error *ngIf="this.utilsService.hasError(questionnaireForm,question.name, 'min')">
+                        <mat-error *ngIf="this.utilsService.hasError(questionnaireForm, question.nameFull.concat('_answer'), 'min')">
                             Min value allowed: 0
                         </mat-error>
-                        <mat-error *ngIf="this.utilsService.hasError(questionnaireForm,question.name, 'max')">
+                        <mat-error *ngIf="this.utilsService.hasError(questionnaireForm, question.nameFull.concat('_answer'), 'max')">
                             Max value allowed: 100
                         </mat-error>
                     </mat-form-field>

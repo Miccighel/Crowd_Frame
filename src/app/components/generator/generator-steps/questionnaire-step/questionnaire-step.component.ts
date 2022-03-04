@@ -3,7 +3,8 @@ import {S3Service} from 'src/app/services/s3.service';
 import {ConfigService} from "../../../../services/config.service";
 import {LocalStorageService} from "../../../../services/localStorage.service";
 import {FormArray, FormBuilder, FormGroup} from "@angular/forms";
-import {Question, Questionnaire} from "../../../../models/questionnaire";
+import {Questionnaire} from "../../../../models/questionnaire";
+import {Question} from "../../../../models/question";
 
 /* STEP #1 - Questionnaires */
 
@@ -85,7 +86,7 @@ export class QuestionnaireStepComponent implements OnInit {
             let rawQuestionnaires = await this.S3Service.downloadQuestionnaires(this.configService.environment)
             rawQuestionnaires.forEach((data, index) => {
                 let questionnaire = new Questionnaire(index, data)
-                this.dataStored.push(questionnaire)
+                this.dataStored.push(questionnaire.serializable())
                 this.localStorageService.setItem(`questionnaire-${index}`, JSON.stringify(questionnaire))
             })
         }
@@ -145,6 +146,7 @@ export class QuestionnaireStepComponent implements OnInit {
 
     addQuestion(questionnaireIndex: number, questionIndex = null as number, question = null as Question) {
         this.questions(questionnaireIndex).push(this._formBuilder.group({
+            index: question ? question.index ? question.index : questionIndex : questionIndex,
             name: question ? question.name ? question.name : '' : '',
             text: question ? question.text ? question.text : '' : '',
             answers: this._formBuilder.array([])

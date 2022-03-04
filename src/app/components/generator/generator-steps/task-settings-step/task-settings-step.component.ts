@@ -244,7 +244,6 @@ export class TaskSettingsStepComponent implements OnInit {
         if (!hits) {
             this.localStorageService.setItem(`hits`, JSON.stringify(this.hitsParsed))
         }
-        console.log(this.hitsParsed)
         if (this.hitsParsed.length > 0) {
             this.hitsDetected = ("documents" in this.hitsParsed[0]) && ("token_input" in this.hitsParsed[0]) && ("token_output" in this.hitsParsed[0]) && ("unit_id" in this.hitsParsed[0]) ? this.hitsParsed.length : 0;
         } else {
@@ -524,8 +523,6 @@ export class TaskSettingsStepComponent implements OnInit {
     serializeConfiguration() {
 
         let taskSettingsJSON = JSON.parse(JSON.stringify(this.formStep.value));
-
-        console.log(taskSettingsJSON)
 
         if (!taskSettingsJSON.setAnnotator) taskSettingsJSON.annotator = false
         delete taskSettingsJSON.setAnnotator
