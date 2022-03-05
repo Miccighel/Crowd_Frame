@@ -1340,6 +1340,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                     "allow_back": False,
                     "questions": [
                         {
+                            "index": 0,
                             "name": "age",
                             "text": "What is your age range?",
                             "type": "mcq",
@@ -1365,6 +1366,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                     "allow_back": False,
                     "questions": [
                         {
+                            "index": 0,
                             "name": "farmers",
                             "text": "If three farmers can plant three trees in three hours, how long would it take nine farmers to plant nine trees?"
                         }
