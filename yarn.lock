@@ -3675,7 +3675,7 @@ __metadata:
     ngx-countdown: ^13.0.0
     ngx-device-detector: ^3.0.0
     ngx-file-helpers: ^7.0.0
-    ngx-ui-loader: ^11.0.0
+    ngx-ui-loader: ^13.0.0
     rxjs: ^7.4.0
     titleize: ^3.0.0
     tree-model: ^1.0.7
@@ -6371,18 +6371,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ngx-ui-loader@npm:^11.0.0":
-  version: 11.0.0
-  resolution: "ngx-ui-loader@npm:11.0.0"
+"ngx-ui-loader@npm:^13.0.0":
+  version: 13.0.0
+  resolution: "ngx-ui-loader@npm:13.0.0"
   dependencies:
-    tslib: ^2.0.0
+    tslib: ^2.3.0
   peerDependencies:
-    "@angular/common": ">=11.0.0"
-    "@angular/core": ">=11.0.0"
-    "@angular/platform-browser": ">=11.0.0"
-    "@angular/router": ">=11.0.0"
-    rxjs: ">=6.6.0"
-  checksum: 8894b68c6102e5994479802473ed6cb3c3e6822c78a9540668a28d1a8ea815e9b495c6d154e2f76fdfa16970644f427b7455f616bd452376437869c73d0ba5d8
+    "@angular/common": ">=13.0.0"
+    "@angular/core": ">=13.0.0"
+  checksum: 3bcdf67b9f11ac8e9f061a9d68ab8c5147ccaf5cb23fac43bf15b6c402464bfc2e73ceb26f9cb0bf471061ea775ade06c3b51f83a66dd047301d79ccfc58b46a
   languageName: node
   linkType: hard
 
