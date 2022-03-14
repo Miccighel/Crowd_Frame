@@ -2372,10 +2372,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:~16.11.25":
-  version: 16.11.25
-  resolution: "@types/node@npm:16.11.25"
-  checksum: 0b6e25a81364be89256ad1a36341e27b387e646d3186e270108a8bb7b6ecdfdf5ae037aa1c75a5117b8a7509c80093b75431cd5cfcfbc4d553b52e7db2ca272e
+"@types/node@npm:~16.11.26":
+  version: 16.11.26
+  resolution: "@types/node@npm:16.11.26"
+  checksum: 57757caaba3f0d95de82198cb276a1002c49b710108c932a1d02d7c91ff2fa57cfe2dd19fde60853b6dd90b0964b3cf35557981d2628e20aed6a909057aedfe6
   languageName: node
   linkType: hard
 
@@ -2941,9 +2941,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"aws-sdk@npm:^2.1076.0":
-  version: 2.1076.0
-  resolution: "aws-sdk@npm:2.1076.0"
+"aws-sdk@npm:^2.1092.0":
+  version: 2.1092.0
+  resolution: "aws-sdk@npm:2.1092.0"
   dependencies:
     buffer: 4.9.2
     events: 1.1.1
@@ -2954,7 +2954,7 @@ __metadata:
     url: 0.10.3
     uuid: 3.3.2
     xml2js: 0.4.19
-  checksum: b618ff816886c4a43e9a684c05526fc3cfcf4da850b813d7defd1424705520f46b9427aac8eab8e6005f102fc26eed60445133e675e4503f11a2d55f8ed5f138
+  checksum: b1b715d55efc2000feb769f207c8a06954ae8faf5e88478b6932e8261714ae1ec70008009801eacf871669caa7027443dd49ada6450f5ead0f98ed124eea9056
   languageName: node
   linkType: hard
 
@@ -3667,8 +3667,8 @@ __metadata:
     "@angular/router": ~13.2.6
     "@funktechno/texthighlighter": ^2.1.2
     "@kolkov/angular-editor": ^2.0.0
-    "@types/node": ~16.11.25
-    aws-sdk: ^2.1076.0
+    "@types/node": ~16.11.26
+    aws-sdk: ^2.1092.0
     crypto-es: ^1.2.7
     flat-angular: ^1.6.0
     ngx-color-picker: ^12.0.0
@@ -3681,7 +3681,7 @@ __metadata:
     tree-model: ^1.0.7
     typescript: 4.5.5
     util: ^0.12.4
-    zone.js: ~0.11.4
+    zone.js: ~0.11.5
   languageName: unknown
   linkType: soft
 
@@ -9116,11 +9116,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zone.js@npm:~0.11.4":
-  version: 0.11.4
-  resolution: "zone.js@npm:0.11.4"
+"zone.js@npm:~0.11.5":
+  version: 0.11.5
+  resolution: "zone.js@npm:0.11.5"
   dependencies:
-    tslib: ^2.0.0
-  checksum: 20c3e39898019de4747a434a29ed528e5d730a674570c3e72775a57f9d57dba812e70d67c3932ff54e95db9b778f06a9b18119c5184dfd9552d3622544a6729f
+    tslib: ^2.3.0
+  checksum: 7dba3af83cc68e881e8a5cc549e4a7bab5f32c5289838f14eb251871816210a39ed8bcd89030593b56d469b4aa8271d644e71ad408fcadd4ccd61b8c7203f2ef
   languageName: node
   linkType: hard
