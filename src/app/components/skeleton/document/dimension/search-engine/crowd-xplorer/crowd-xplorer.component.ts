@@ -9,17 +9,17 @@ import {MatPaginator} from "@angular/material/paginator";
 import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
 /* Services */
 import {BingService} from '../../../../../../services/search_engine/bing.service';
-import {BingWebSearchResponse} from "../../../../../../models/crowd-xplorer/bingWebSearchResponse";
+import {BingWebSearchResponse} from "../../../../../../models/search_engine/bingWebSearchResponse";
 import {FakerService} from "../../../../../../services/search_engine/faker.service";
-import {FakerSearchResponse} from "../../../../../../models/crowd-xplorer/fakerSearchResponse";
+import {FakerSearchResponse} from "../../../../../../models/search_engine/fakerSearchResponse";
 import {PubmedService} from "../../../../../../services/search_engine/pudmed.service";
-import {PubmedSearchResponse} from "../../../../../../models/crowd-xplorer/pubmedSearchResponse";
-import {PubmedSummaryResponse} from "../../../../../../models/crowd-xplorer/pubmedSummaryResponse";
+import {PubmedSearchResponse} from "../../../../../../models/search_engine/pubmedSearchResponse";
+import {PubmedSummaryResponse} from "../../../../../../models/search_engine/pubmedSummaryResponse";
 import {ConfigService} from "../../../../../../services/config.service";
-import {SettingsSearchEngine} from "../../../../../../models/settingsSearchEngine";
+import {SearchEngineSettings} from "../../../../../../models/search_engine/searchEngineSettings";
 /* Debug config import */
-import {S3Service} from "../../../../../../services/s3.service";
-import {Task} from "../../../../../../models/task";
+import {S3Service} from "../../../../../../services/aws/s3.service";
+import {Task} from "../../../../../../models/skeleton/task";
 
 /* Component HTML Tag definition */
 @Component({
@@ -56,7 +56,7 @@ export class CrowdXplorer {
     /*
      * Object to wrap search engine settings
      */
-    settings: SettingsSearchEngine
+    settings: SearchEngineSettings
 
     /* |--------- SERVICES & CO. - DECLARATION ---------| */
 
@@ -179,7 +179,7 @@ export class CrowdXplorer {
      */
     public async loadSettings() {
         let rawSettings = await this.S3Service.downloadSearchEngineSettings(this.configService.environment)
-        this.settings = new SettingsSearchEngine(rawSettings)
+        this.settings = new SearchEngineSettings(rawSettings)
         this.source = this.settings.source
         this.domainsToFilter = this.settings.domains_filter
     }

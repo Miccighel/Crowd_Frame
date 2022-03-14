@@ -1,10 +1,14 @@
+/* Core */
 import {ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, QueryList, ViewChildren} from '@angular/core';
+import {AbstractControl, FormBuilder, FormGroup} from "@angular/forms";
+/* Services */
 import {SectionService} from "../../../services/section.service";
 import {UtilsService} from "../../../services/utils.service";
-import {AbstractControl, FormBuilder, FormGroup} from "@angular/forms";
-import {Task} from "../../../models/task";
 import {DeviceDetectorService} from "ngx-device-detector";
+/* Models */
+import {Task} from "../../../models/skeleton/task";
 import {Document} from "../../../../../data/build/skeleton/document";
+/* Components */
 import {AnnotatorOptionsComponent} from "./elements/annotator-options/annotator-options.component";
 import {DimensionComponent} from "./dimension/dimension.component";
 import {CountdownComponent} from "ngx-countdown";

@@ -3,8 +3,8 @@ import {Injectable} from '@angular/core';
 import {Observable} from "rxjs";
 /* HTTP handling modules */
 import {HttpClient, HttpHeaders} from '@angular/common/http';
-import {BingWebSearchResponse} from '../../models/crowd-xplorer/bingWebSearchResponse';
-import {BaseResponse} from "../../models/crowd-xplorer/baseResponse";
+import {BingWebSearchResponse} from '../../models/search_engine/bingWebSearchResponse';
+import {BaseResponse} from "../../models/search_engine/baseResponse";
 
 @Injectable({
   providedIn: 'root'

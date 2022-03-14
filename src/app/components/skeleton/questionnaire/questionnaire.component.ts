@@ -1,12 +1,16 @@
+/* Core */
 import {ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {Mapping, Questionnaire} from "../../../models/questionnaire";
-import {AbstractControl, FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
+import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
+/* Services */
 import {SectionService} from "../../../services/section.service";
 import {UtilsService} from "../../../services/utils.service";
 import {DeviceDetectorService} from "ngx-device-detector";
-import {Task} from "../../../models/task";
+/* Models */
+import {Questionnaire} from "../../../models/skeleton/questionnaires/questionnaire";
+import {Task} from "../../../models/skeleton/task";
+import {Question} from "../../../models/skeleton/questionnaires/question";
+/* Other */
 import * as TreeModel from "tree-model";
-import {Question} from "../../../models/question";
 
 @Component({
     selector: 'app-questionnaire',

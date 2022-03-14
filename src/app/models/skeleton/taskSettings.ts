@@ -1,6 +1,6 @@
 import titleize from 'titleize';
 
-export class SettingsTask {
+export class TaskSettings {
 
     modality: string;
     /* Number of allowed tries */

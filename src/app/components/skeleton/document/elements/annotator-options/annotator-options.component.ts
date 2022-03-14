@@ -1,11 +1,15 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, SimpleChanges} from '@angular/core';
-import {DeviceDetectorService} from "ngx-device-detector";
-import {Task} from "../../../../../models/task";
+/* Core */
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input} from '@angular/core';
+/* Models */
+import {Task} from "../../../../../models/skeleton/task";
+import {Note} from "../../../../../models/skeleton/annotators/notes";
+import {NoteStandard} from "../../../../../models/skeleton/annotators/notesStandard";
+/* Services */
 import {SectionService} from "../../../../../services/section.service";
-import {Note} from "../../../../../models/annotators/notes";
-import {doHighlight} from "@funktechno/texthighlighter/lib";
-import {NoteStandard} from "../../../../../models/annotators/notes_standard";
+import {DeviceDetectorService} from "ngx-device-detector";
 import {UtilsService} from "../../../../../services/utils.service";
+/* Other */
+import {doHighlight} from "@funktechno/texthighlighter/lib";
 
 @Component({
     selector: 'app-annotator-options',

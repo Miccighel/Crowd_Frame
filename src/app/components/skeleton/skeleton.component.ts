@@ -1,33 +1,31 @@
-/* Core modules */
+/* Core */
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, QueryList, ViewChild, ViewChildren} from "@angular/core";
-/* Reactive forms modules */
 import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
 import {MatFormField} from "@angular/material/form-field";
 import {MatStepper} from "@angular/material/stepper";
+import {HttpClient, HttpHeaders} from "@angular/common/http";
 /* Services */
 import {NgxUiLoaderService} from 'ngx-ui-loader';
 import {ConfigService} from "../../services/config.service";
-import {S3Service} from "../../services/s3.service";
+import {S3Service} from "../../services/aws/s3.service";
 import {DeviceDetectorService} from "ngx-device-detector";
-/* Task models */
-import {Task} from "../../models/task";
-import {Worker} from "../../models/worker";
-import {SettingsTask} from "../../models/settingsTask";
-import {GoldChecker} from "../../../../data/build/skeleton/goldChecker";
 import {ActionLogger} from "../../services/userActionLogger.service";
-/* HTTP Client */
-import {HttpClient, HttpHeaders} from "@angular/common/http";
-/* Material modules */
+/* Models */
+import {Task} from "../../models/skeleton/task";
+import {Worker} from "../../models/worker/worker";
+import {TaskSettings} from "../../models/skeleton/taskSettings";
+import {GoldChecker} from "../../../../data/build/skeleton/goldChecker";
+import {WorkerSettings} from "../../models/worker/workerSettings";
+import {Hit} from "../../models/skeleton/hit";
+/* Material Design */
 import {MatSnackBar} from "@angular/material/snack-bar";
-import {Object} from 'aws-sdk/clients/customerprofiles';
 /* Services */
 import {SectionService} from "../../services/section.service";
-import {DynamoDBService} from "../../services/dynamoDB.service";
-import {SettingsWorker} from "../../models/settingsWorker";
-import {OutcomeSectionComponent} from "./outcome/outcome-section.component";
+import {DynamoDBService} from "../../services/aws/dynamoDB.service";
 import {UtilsService} from "../../services/utils.service";
 import {DebugService} from "../../services/debug.service";
-import {Hit} from "../../models/hit";
+/* Components */
+import {OutcomeSectionComponent} from "./outcome/outcome-section.component";
 import {DocumentComponent} from "./document/document.component";
 
 /* Component HTML Tag definition */
@@ -389,8 +387,8 @@ export class SkeletonComponent implements OnInit {
     * This function interacts with an Amazon S3 bucket to retrieve and initialize the settings for the current task.
     */
     public async loadSettings() {
-        this.task.settings = new SettingsTask(await this.S3Service.downloadTaskSettings(this.configService.environment))
-        this.worker.settings = new SettingsWorker(await this.S3Service.downloadWorkers(this.configService.environment))
+        this.task.settings = new TaskSettings(await this.S3Service.downloadTaskSettings(this.configService.environment))
+        this.worker.settings = new WorkerSettings(await this.S3Service.downloadWorkers(this.configService.environment))
     }
 
     /*

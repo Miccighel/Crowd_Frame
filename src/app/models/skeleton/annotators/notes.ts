@@ -1,4 +1,4 @@
-import {Annotator} from "../settingsTask";
+import {Annotator} from "../taskSettings";
 
 export abstract class Note {
 

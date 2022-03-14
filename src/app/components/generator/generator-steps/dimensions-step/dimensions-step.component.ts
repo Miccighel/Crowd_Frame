@@ -1,9 +1,12 @@
+/* Core */
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {S3Service} from 'src/app/services/s3.service';
+import {FormArray, FormBuilder, FormGroup, Validators} from "@angular/forms";
+/* Services */
 import {ConfigService} from "../../../../services/config.service";
 import {LocalStorageService} from "../../../../services/localStorage.service";
-import {FormArray, FormBuilder, FormGroup, Validators} from "@angular/forms";
-import {Dimension, Mapping} from 'src/app/models/dimension';
+import {S3Service} from 'src/app/services/aws/s3.service';
+/* Models */
+import {Dimension, Mapping} from 'src/app/models/skeleton/dimension';
 
 interface ScaleType {
     value: string;

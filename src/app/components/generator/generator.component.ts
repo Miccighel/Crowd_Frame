@@ -1,27 +1,24 @@
-/* Core modules */
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, ViewChild} from '@angular/core';
-/* Reactive forms modules */
-import {FormBuilder, FormControl, FormGroup} from '@angular/forms';
-/* Material design modules */
-import {MatStepper} from "@angular/material/stepper";
+/* Core */
+import {ChangeDetectorRef, Component, Input, ViewChild} from '@angular/core'
+import {FormBuilder, FormControl, FormGroup} from '@angular/forms'
+/* Material Design */
+import {MatStepper} from "@angular/material/stepper"
 /* Services */
-import {NgxUiLoaderService} from "ngx-ui-loader";
-import {S3Service} from "../../services/s3.service";
-import {ConfigService} from "../../services/config.service";
-import {LocalStorageService} from '../../services/localStorage.service';
+import {NgxUiLoaderService} from "ngx-ui-loader"
+import {S3Service} from "../../services/aws/s3.service"
+import {ConfigService} from "../../services/config.service"
+import {UtilsService} from "../../services/utils.service"
+import {LocalStorageService} from '../../services/localStorage.service'
 /* Models */
-import {SettingsSearchEngine} from "../../models/settingsSearchEngine";
-import {SettingsTask} from "../../models/settingsTask";
-import {SettingsWorker} from "../../models/settingsWorker";
-import {AngularEditorConfig} from "@kolkov/angular-editor";
-/* Generator Components */
-import {WorkerChecksStepComponent} from "./generator-steps/worker-checks-step/worker-checks-step.component";
-import {QuestionnaireStepComponent} from "./generator-steps/questionnaire-step/questionnaire-step.component";
-import {InstructionsStepComponent} from "./generator-steps/instructions-step/instructions-step.component";
-import {SearchEngineStepComponent} from "./generator-steps/search-engine-step/search-engine-step.component";
-import {DimensionsStepComponent} from "./generator-steps/dimensions-step/dimensions-step.component";
-import {TaskSettingsStepComponent} from "./generator-steps/task-settings-step/task-settings-step.component";
-import {UtilsService} from "../../services/utils.service";
+import {AngularEditorConfig} from "@kolkov/angular-editor"
+/* Components */
+import {WorkerChecksStepComponent} from "./generator-steps/worker-checks-step/worker-checks-step.component"
+import {QuestionnaireStepComponent} from "./generator-steps/questionnaire-step/questionnaire-step.component"
+import {InstructionsStepComponent} from "./generator-steps/instructions-step/instructions-step.component"
+import {SearchEngineStepComponent} from "./generator-steps/search-engine-step/search-engine-step.component"
+import {DimensionsStepComponent} from "./generator-steps/dimensions-step/dimensions-step.component"
+import {TaskSettingsStepComponent} from "./generator-steps/task-settings-step/task-settings-step.component"
+
 
 /* Component HTML Tag definition */
 @Component({

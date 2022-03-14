@@ -1,4 +1,4 @@
-export class SettingsSearchEngine {
+export class SearchEngineSettings {
 
   source: string;
   domains_filter?: Array<string>;

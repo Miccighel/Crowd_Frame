@@ -1,9 +1,12 @@
+/* Core */
 import {Component, EventEmitter, OnInit, Output} from '@angular/core';
-import {S3Service} from 'src/app/services/s3.service';
+import {FormArray, FormBuilder, FormGroup} from "@angular/forms";
+/* Services */
+import {S3Service} from 'src/app/services/aws/s3.service';
 import {ConfigService} from "../../../../services/config.service";
 import {LocalStorageService} from "../../../../services/localStorage.service";
-import {SettingsSearchEngine} from "../../../../models/settingsSearchEngine";
-import {FormArray, FormBuilder, FormGroup} from "@angular/forms";
+/* Models */
+import {SearchEngineSettings} from "../../../../models/search_engine/searchEngineSettings";
 
 interface SourceType {
     value: string;
@@ -25,7 +28,7 @@ export class SearchEngineStepComponent implements OnInit {
 
     /* STEP #5 - Search Engine */
 
-    dataStored: SettingsSearchEngine
+    dataStored: SearchEngineSettings
 
     formStep: FormGroup;
 
@@ -53,7 +56,7 @@ export class SearchEngineStepComponent implements OnInit {
     }
 
     public initalizeControls() {
-        this.dataStored = new SettingsSearchEngine()
+        this.dataStored = new SearchEngineSettings()
         this.formStep = this._formBuilder.group({
             source: [''],
             domains_filter: this._formBuilder.array([])
@@ -64,11 +67,11 @@ export class SearchEngineStepComponent implements OnInit {
     public async ngOnInit() {
         let serializedSearchEngineSettings = this.localStorageService.getItem("search-engine-settings")
         if (serializedSearchEngineSettings) {
-            this.dataStored = new SettingsSearchEngine(JSON.parse(serializedSearchEngineSettings))
+            this.dataStored = new SearchEngineSettings(JSON.parse(serializedSearchEngineSettings))
         } else {
             this.initalizeControls()
             let rawSearchEngineSettings = await this.S3Service.downloadSearchEngineSettings(this.configService.environment)
-            this.dataStored = new SettingsSearchEngine(rawSearchEngineSettings)
+            this.dataStored = new SearchEngineSettings(rawSearchEngineSettings)
             this.localStorageService.setItem(`search-engine-settings`, JSON.stringify(rawSearchEngineSettings))
         }
         this.formStep = this._formBuilder.group({

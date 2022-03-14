@@ -1,8 +1,8 @@
-import {SettingsWorker} from "./settingsWorker";
+import {WorkerSettings} from "./workerSettings";
 
 export class Worker {
 
-    public settings: SettingsWorker
+    public settings: WorkerSettings
 
     identifier: string;
     folder: string

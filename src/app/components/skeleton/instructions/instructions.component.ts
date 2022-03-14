@@ -1,12 +1,12 @@
-/* Core modules */
+/* Core */
 import {Component, Inject, Input, OnInit, ViewEncapsulation} from '@angular/core';
-/* Material design modules */
+/* Material Design */
 import {MatDialog, MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
 /* Task models*/
-import {Instruction} from "../../../models/instructions";
+import {Instruction} from "../../../models/skeleton/instructions";
 /* Services */
 import {ConfigService} from "../../../services/config.service";
-/* Data interface for the underlying dialog component */
+/* Interfaces */
 export interface DialogData {}
 
 /* Component HTML Tag definition */

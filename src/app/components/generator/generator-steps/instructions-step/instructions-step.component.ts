@@ -1,9 +1,12 @@
+/* Core */
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {ConfigService} from "../../../../services/config.service";
-import {LocalStorageService} from "../../../../services/localStorage.service";
-import {S3Service} from "../../../../services/s3.service";
 import {FormArray, FormBuilder, FormGroup} from "@angular/forms";
-import {Instruction} from "../../../../models/instructions";
+/* Services */
+import {ConfigService} from "../../../../services/config.service";
+import {S3Service} from "../../../../services/aws/s3.service";
+import {LocalStorageService} from "../../../../services/localStorage.service";
+/* Models */
+import {Instruction} from "../../../../models/skeleton/instructions";
 
 @Component({
     selector: 'app-instructions-step',

@@ -1,4 +1,4 @@
-export class SettingsWorker {
+export class WorkerSettings {
 
     block: boolean;
     analysis: boolean;

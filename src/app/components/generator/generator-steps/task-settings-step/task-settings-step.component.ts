@@ -1,12 +1,15 @@
-import {Component, EventEmitter, OnInit, Output} from '@angular/core';
-import {S3Service} from 'src/app/services/s3.service';
-import {ConfigService} from "../../../../services/config.service";
-import {LocalStorageService} from "../../../../services/localStorage.service";
-import {FormArray, FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
-import {Attribute, SettingsTask} from "../../../../models/settingsTask";
-import {ReadFile, ReadMode} from "ngx-file-helpers";
-import {Hit} from "../../../../models/hit";
-import {UtilsService} from "../../../../services/utils.service";
+/* Core */
+import {Component, EventEmitter, OnInit, Output} from '@angular/core'
+import {FormArray, FormBuilder, FormGroup, Validators} from "@angular/forms"
+import {ReadFile, ReadMode} from "ngx-file-helpers"
+/* Services */
+import {S3Service} from 'src/app/services/aws/s3.service'
+import {ConfigService} from "../../../../services/config.service"
+import {LocalStorageService} from "../../../../services/localStorage.service"
+import {UtilsService} from "../../../../services/utils.service"
+/* Models */
+import {Attribute, TaskSettings} from "../../../../models/skeleton/taskSettings"
+import {Hit} from "../../../../models/skeleton/hit"
 
 interface AnnotatorType {
     value: string;
@@ -40,7 +43,7 @@ export class TaskSettingsStepComponent implements OnInit {
 
     /* STEP #6 - Task Settings */
 
-    dataStored: SettingsTask
+    dataStored: TaskSettings
     formStep: FormGroup;
 
     annotatorTypes: AnnotatorType[] = [
@@ -96,7 +99,7 @@ export class TaskSettingsStepComponent implements OnInit {
     }
 
     public initializeControls() {
-        this.dataStored = new SettingsTask()
+        this.dataStored = new TaskSettings()
         this.formStep = this._formBuilder.group({
             modality: '',
             allowed_tries: '',
@@ -129,11 +132,11 @@ export class TaskSettingsStepComponent implements OnInit {
     public async ngOnInit() {
         let serializedTaskSettings = this.localStorageService.getItem("task-settings")
         if (serializedTaskSettings) {
-            this.dataStored = new SettingsTask(JSON.parse(serializedTaskSettings))
+            this.dataStored = new TaskSettings(JSON.parse(serializedTaskSettings))
         } else {
             this.initializeControls()
             let rawTaskSettings = await this.S3Service.downloadTaskSettings(this.configService.environment)
-            this.dataStored = new SettingsTask(rawTaskSettings)
+            this.dataStored = new TaskSettings(rawTaskSettings)
             this.localStorageService.setItem(`task-settings`, JSON.stringify(rawTaskSettings))
         }
         this.annotatorOptionColors = ['#FFFF7B']

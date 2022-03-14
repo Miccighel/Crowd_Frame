@@ -1,13 +1,17 @@
+/* Core */
 import {ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
+import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
+/* Material Design */
+import {MatStepper} from "@angular/material/stepper";
+/* Services */
 import {SectionService} from "../../../../../services/section.service";
 import {UtilsService} from "../../../../../services/utils.service";
-import {Task} from "../../../../../models/task";
 import {DeviceDetectorService} from "ngx-device-detector";
-import {Dimension} from "../../../../../models/dimension";
-import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
-import {Object} from "aws-sdk/clients/customerprofiles";
+/* Models */
+import {Task} from "../../../../../models/skeleton/task";
+import {Dimension} from "../../../../../models/skeleton/dimension";
 import {Document} from "../../../../../../../data/build/skeleton/document";
-import {MatStepper} from "@angular/material/stepper";
+/* Components */
 import {CrowdXplorer} from "./crowd-xplorer/crowd-xplorer.component";
 
 @Component({
@@ -108,12 +112,12 @@ export class SearchEngineComponent implements OnInit {
 
     /* |--------- SEARCH ENGINE INTEGRATION (see: search_engine.json | https://github.com/Miccighel/CrowdXplorer) ---------| */
 
-    public handleSearchEngineRetrievedResponse(retrievedResponseData: Object, document: Document, dimension: Dimension) {
+    public handleSearchEngineRetrievedResponse(retrievedResponseData, document: Document, dimension: Dimension) {
         this.task.storeSearchEngineRetrievedResponse(retrievedResponseData, document, dimension)
         this.searchEngineForm.controls[dimension.name.concat("_url")].enable();
     }
 
-    public handleSearchEngineSelectedResponse(selectedResponseData: Object, document: Document, dimension: Dimension) {
+    public handleSearchEngineSelectedResponse(selectedResponseData, document: Document, dimension: Dimension) {
         this.task.storeSearchEngineSelectedResponse(selectedResponseData, document, dimension)
         this.searchEngineForm.controls[dimension.name.concat("_url")].setValue(selectedResponseData['url']);
     }

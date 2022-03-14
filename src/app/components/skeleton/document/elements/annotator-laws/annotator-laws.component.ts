@@ -1,16 +1,19 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, SimpleChanges} from '@angular/core';
-import {Task} from "../../../../../models/task";
-import {Object} from "aws-sdk/clients/customerprofiles";
-import {doHighlight} from "@funktechno/texthighlighter/lib";
-import {NoteLaws} from "../../../../../models/annotators/notes_laws";
-import {Note} from "../../../../../models/annotators/notes";
-import {MatRadioChange} from "@angular/material/radio";
-import {MatCheckboxChange} from "@angular/material/checkbox";
-import {NoteStandard} from "../../../../../models/annotators/notes_standard";
+/* Core */
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input} from '@angular/core';
+/* Models */
+import {NoteLaws} from "../../../../../models/skeleton/annotators/notesLaws";
+import {Note} from "../../../../../models/skeleton/annotators/notes";
+import {Task} from "../../../../../models/skeleton/task";
+import {NoteStandard} from "../../../../../models/skeleton/annotators/notesStandard";
+/* Services */
 import {DeviceDetectorService} from "ngx-device-detector";
 import {SectionService} from "../../../../../services/section.service";
-import {dom} from "@funktechno/texthighlighter/lib/Utils";
 import {UtilsService} from "../../../../../services/utils.service";
+/* Material Design */
+import {MatRadioChange} from "@angular/material/radio";
+import {MatCheckboxChange} from "@angular/material/checkbox";
+/* Other */
+import {doHighlight} from "@funktechno/texthighlighter/lib";
 
 @Component({
     selector: 'app-annotator-laws',

@@ -1,13 +1,16 @@
+/* Core */
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {S3Service} from 'src/app/services/s3.service';
-import {ConfigService} from "../../../../services/config.service";
-import {LocalStorageService} from "../../../../services/localStorage.service";
+/* Components */
 import {QuestionnaireStepComponent} from "../questionnaire-step/questionnaire-step.component";
 import {DimensionsStepComponent} from "../dimensions-step/dimensions-step.component";
 import {InstructionsStepComponent} from "../instructions-step/instructions-step.component";
 import {SearchEngineStepComponent} from "../search-engine-step/search-engine-step.component";
 import {TaskSettingsStepComponent} from "../task-settings-step/task-settings-step.component";
 import {WorkerChecksStepComponent} from "../worker-checks-step/worker-checks-step.component";
+/* Services */
+import {S3Service} from 'src/app/services/aws/s3.service';
+import {ConfigService} from "../../../../services/config.service";
+import {LocalStorageService} from "../../../../services/localStorage.service";
 
 @Component({
     selector: 'app-summary-step',

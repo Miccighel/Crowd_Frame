@@ -1,5 +1,8 @@
+/* Core */
 import {AfterViewInit, Directive, ElementRef, HostListener} from "@angular/core";
+/* Services */
 import {ActionLogger} from "../../services/userActionLogger.service";
+/* Other */
 import {fromEvent} from "rxjs";
 import {buffer, concatMap, debounceTime, filter, map, tap, throttleTime, take} from "rxjs/operators";
 

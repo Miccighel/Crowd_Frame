@@ -1,10 +1,13 @@
+/* Core */
 import {Component, EventEmitter, OnInit, Output} from '@angular/core';
-import {S3Service} from 'src/app/services/s3.service';
-import {ConfigService} from "../../../../services/config.service";
-import {LocalStorageService} from "../../../../services/localStorage.service";
 import {FormArray, FormBuilder, FormGroup} from "@angular/forms";
-import {Questionnaire} from "../../../../models/questionnaire";
-import {Question} from "../../../../models/question";
+/* Services */
+import {ConfigService} from "../../../../services/config.service";
+import {S3Service} from 'src/app/services/aws/s3.service';
+import {LocalStorageService} from "../../../../services/localStorage.service";
+/* Models */
+import {Questionnaire} from "../../../../models/skeleton/questionnaires/questionnaire";
+import {Question} from "../../../../models/skeleton/questionnaires/question";
 
 /* STEP #1 - Questionnaires */
 

@@ -1,17 +1,17 @@
-import {Document} from "../../../data/build/skeleton/document";
+import {Document} from "../../../../data/build/skeleton/document";
 import {Instruction} from "./instructions";
-import {Questionnaire} from "./questionnaire";
+import {Questionnaire} from "./questionnaires/questionnaire";
 import {Dimension} from "./dimension";
 import {Note} from "./annotators/notes";
-import {NoteStandard} from "./annotators/notes_standard";
-import {NoteLaws} from "./annotators/notes_laws";
-import {SettingsTask} from "./settingsTask";
+import {NoteStandard} from "./annotators/notesStandard";
+import {NoteLaws} from "./annotators/notesLaws";
+import {TaskSettings} from "./taskSettings";
 import {Object} from "aws-sdk/clients/customerprofiles";
 
 export class Task {
 
     /* Task settings and parameters */
-    public settings: SettingsTask
+    public settings: TaskSettings
     public platformName: string
     public taskName: string
     public batchName: string

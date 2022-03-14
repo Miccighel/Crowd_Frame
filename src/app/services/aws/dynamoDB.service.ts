@@ -1,8 +1,8 @@
 /* Core imports */
 import {Injectable} from '@angular/core';
 import * as AWS from "aws-sdk";
-import {Worker} from "../models/worker";
-import {Task} from "../models/task";
+import {Worker} from "../../models/worker/worker";
+import {Task} from "../../models/skeleton/task";
 
 @Injectable({
     providedIn: 'root'

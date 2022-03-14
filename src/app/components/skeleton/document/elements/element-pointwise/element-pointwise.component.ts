@@ -1,9 +1,11 @@
-import {ChangeDetectorRef, Component, Input, OnInit, SimpleChanges} from '@angular/core';
-import {DeviceDetectorService} from "ngx-device-detector";
+/* Core */
+import {ChangeDetectorRef, Component, Input} from '@angular/core';
+/* Services */
 import {SectionService} from "../../../../../services/section.service";
 import {UtilsService} from "../../../../../services/utils.service";
-import {Task} from "../../../../../models/task";
-import {Object} from "aws-sdk/clients/customerprofiles";
+import {DeviceDetectorService} from "ngx-device-detector";
+/* Models */
+import {Task} from "../../../../../models/skeleton/task";
 
 @Component({
     selector: 'app-element-pointwise',

@@ -1,18 +1,17 @@
-/* Core modules */
+/* Core */
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit} from '@angular/core';
+import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
 /* Services */
 import {ConfigService} from "../../services/config.service";
 import {NgxUiLoaderService} from "ngx-ui-loader";
-import {S3Service} from "../../services/s3.service";
-/* Reactive forms modules */
-import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
-/* Task models */
-import {Instruction} from "../../models/instructions";
-/* Material design modules */
+import {S3Service} from "../../services/aws/s3.service";
+/* Models */
+import {Instruction} from "../../models/skeleton/instructions";
+import {DebugService} from "../../services/debug.service";
+/* Material Design */
 import {MatSnackBar} from "@angular/material/snack-bar";
 /* Crypto */
 import CryptoES from 'crypto-es';
-import {DebugService} from "../../services/debug.service";
 
 /* Component HTML Tag definition */
 @Component({

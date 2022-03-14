@@ -1,10 +1,12 @@
+/* Core */
 import {ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
+/* Services */
 import {DeviceDetectorService} from "ngx-device-detector";
 import {SectionService} from "../../../../../services/section.service";
 import {UtilsService} from "../../../../../services/utils.service";
-import {Task} from "../../../../../models/task";
-import {Object} from "aws-sdk/clients/customerprofiles";
-import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
+/* Models */
+import {Task} from "../../../../../models/skeleton/task";
 
 @Component({
     selector: 'app-element-pairwise',
