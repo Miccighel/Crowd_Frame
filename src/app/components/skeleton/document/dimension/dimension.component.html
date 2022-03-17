@@ -29,6 +29,12 @@
 
                     <div *ngIf="dimension.scale" class="dimension-container dimension-scale">
 
+                        <div *ngIf="this.task.instructionsEvaluationScale" class="evaluation-instructions">
+                            <mat-divider *ngIf="!dimension.url" [inset]="true"></mat-divider>
+                            <h2>{{this.task.instructionsEvaluationScale.label}} - {{this.task.instructionsEvaluationScale.text}}</h2>
+                            <mat-divider [inset]="true"></mat-divider>
+                        </div>
+
                         <div class="dimension-content">
 
                             <ng-container *ngIf="dimension.style.orientation=='vertical'">
@@ -138,9 +144,9 @@
                 <div *ngIf="this.dimension.style.type=='matrix' && verifyUrlSelection()" class="dimension-matrix">
 
                     <ng-container>
-                        <div *ngIf="j==0" class="evaluation-instructions">
+                        <div *ngIf="j==0 && this.task.instructionsEvaluationScale" class="evaluation-instructions">
                             <mat-divider *ngIf="!dimension.url" [inset]="true"></mat-divider>
-                            <h2>C - Answer the following questions:</h2>
+                            <h2>{{this.task.instructionsEvaluationScale.label}} - {{this.task.instructionsEvaluationScale.text}}</h2>
                             <mat-divider [inset]="true"></mat-divider>
                         </div>
 

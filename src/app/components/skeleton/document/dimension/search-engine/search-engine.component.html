@@ -1,7 +1,7 @@
 <ng-container *ngIf="this.dimension.url">
     <div *ngIf="this.task.instructionsEvaluationUrl" class="evaluation-instructions">
         <mat-divider [inset]="true"></mat-divider>
-        <h2>B - {{this.task.instructionsEvaluationUrl.text}} </h2>
+        <h2>{{this.task.instructionsEvaluationUrl.label}} - {{this.task.instructionsEvaluationUrl.text}} </h2>
         <mat-divider [inset]="true"></mat-divider>
     </div>
     <form [formGroup]="this.searchEngineForm">

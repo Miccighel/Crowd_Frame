@@ -1,6 +1,6 @@
 <div *ngIf="this.task.instructionsEvaluationElement" class="evaluation-instructions">
     <mat-divider [inset]="true"></mat-divider>
-    <h2>A - {{this.task.instructionsEvaluationElement.text}}</h2>
+    <h2>{{this.task.instructionsEvaluationElement.label}} - {{this.task.instructionsEvaluationElement.text}}</h2>
     <mat-divider [inset]="true"></mat-divider>
 </div>
 <h2 class="pairwise-title">Select an element</h2>
