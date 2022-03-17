@@ -2,9 +2,7 @@ h3 {
   text-align: center;
 }
 
-
 /* LAWS ANNOTATION STYLES */
-
 
 .statement-div {
   max-width: 600px;
@@ -20,7 +18,7 @@ h3 {
 
 .annotation-quote {
   display: flex;
-  height: 0%;
+  height: 0;
   align-items: center;
   justify-content: space-between;
   width: 100%;
@@ -28,7 +26,7 @@ h3 {
 
 .inner-annotation-quote {
   display: flex;
-  height: 0%;
+  height: 0;
   align-items: center;
   justify-content: space-evenly;
   width: 100%;
@@ -37,7 +35,7 @@ h3 {
 .annotation-current-text {
   display: flex;
   margin-left: 5px;
-  height: 0%;
+  height: 0;
   align-items: center;
 }
 
@@ -46,7 +44,7 @@ h3 {
   margin: auto;
   padding: 5px;
   justify-content: center;
-  height: 0%;
+  height: 0;
   align-items: center;
   text-align: right;
   max-width: 650px;

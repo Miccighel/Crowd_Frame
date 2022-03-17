@@ -7,6 +7,10 @@ mat-horizontal-stepper mat-card-content, mat-horizontal-stepper mat-card-title, 
   margin: auto !important;
 }
 
+mat-horizontal-stepper mat-step-header {
+  font-size: large;
+}
+
 /* |--- TOKEN INPUT SECTION --| */
 
 #token-section {
@@ -29,7 +33,7 @@ mat-horizontal-stepper mat-card-content, mat-horizontal-stepper mat-card-title, 
 }
 
 #token-section input {
-  font-size: 2em;
+  font-size: 2rem;
   text-transform: uppercase;
 }
 

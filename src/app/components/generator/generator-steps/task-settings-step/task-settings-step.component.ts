@@ -121,7 +121,7 @@ export class TaskSettingsStepComponent implements OnInit {
             messages: this._formBuilder.array([]),
             logger: false,
             logger_option: false,
-            serverEndpoint: ''
+            server_endpoint: ''
         });
         /* Read mode during hits file upload*/
         this.readMode = ReadMode.text
@@ -151,9 +151,9 @@ export class TaskSettingsStepComponent implements OnInit {
             }
         }
         this.formStep = this._formBuilder.group({
-            modality: this.dataStored ? this.dataStored.modality ? this.dataStored.modality : '' : '',
-            allowed_tries: this.dataStored ? this.dataStored.allowed_tries ? this.dataStored.allowed_tries : '' : '',
-            time_check_amount: this.dataStored ? this.dataStored.time_check_amount ? this.dataStored.time_check_amount : '' : '',
+            modality: [this.dataStored ? this.dataStored.modality ? this.dataStored.modality : '' : '', [Validators.required]],
+            allowed_tries: [this.dataStored ? this.dataStored.allowed_tries ? this.dataStored.allowed_tries : '' : '', [Validators.required]],
+            time_check_amount: [this.dataStored ? this.dataStored.time_check_amount ? this.dataStored.time_check_amount : '' : '', [Validators.required]],
             attributes: this._formBuilder.array([]),
             setAnnotator: !!this.dataStored.annotator,
             annotator: this._formBuilder.group({
@@ -171,9 +171,9 @@ export class TaskSettingsStepComponent implements OnInit {
             messages: this._formBuilder.array([]),
             logger: !!this.dataStored.logger_enable,
             logger_option: this.dataStored.logger_options,
-            server_endpoint: this.dataStored.logger_server_endpoint
+            server_endpoint: [this.dataStored.logger_server_endpoint ? this.dataStored.logger_server_endpoint ? this.dataStored.logger_server_endpoint : '' : '', Validators.required]
         });
-        if(this.dataStored.modality) this.emitModality(this.dataStored.modality)
+        if (this.dataStored.modality) this.emitModality(this.dataStored.modality)
         if (this.dataStored.messages) if (this.dataStored.messages.length > 0) this.dataStored.messages.forEach((message, messageIndex) => this.addMessage(message))
         if (this.dataStored.annotator) if (this.dataStored.annotator.type == "options") this.dataStored.annotator.values.forEach((optionValue, optionValueIndex) => this.addOptionValue(optionValue))
         if (this.dataStored.countdown_time >= 0) {
@@ -220,6 +220,15 @@ export class TaskSettingsStepComponent implements OnInit {
 
     emitModality(data) {
         this.modalityEmitter.emit(data['value'])
+    }
+
+    updateLogger() {
+        if (this.formStep.get('logger').value == true) {
+            this.formStep.get('server_endpoint').addValidators([Validators.required])
+        } else {
+            this.formStep.get('server_endpoint').clearValidators()
+        }
+        this.formStep.get('server_endpoint').updateValueAndValidity()
     }
 
     updateLoggerOption(el: string, action: string) {
@@ -363,22 +372,27 @@ export class TaskSettingsStepComponent implements OnInit {
 
     resetCountdown() {
         if (this.formStep.get('setCountdownTime').value == false) {
-            this.formStep.get('countdown_time').setValue(false)
+            this.formStep.get('countdown_time').setValue('')
             this.formStep.get('countdown_time').clearValidators();
             this.formStep.get('countdown_time').updateValueAndValidity();
+            this.formStep.get('countdown_behavior').setValue('')
+            this.formStep.get('countdown_behavior').clearValidators();
+            this.formStep.get('countdown_behavior').updateValueAndValidity();
         } else {
             this.formStep.get('countdown_time').setValidators([Validators.required, this.utilsService.positiveOrZeroNumber.bind(this)]);
             this.formStep.get('countdown_time').updateValueAndValidity();
+            this.formStep.get('countdown_behavior').setValidators([Validators.required]);
+            this.formStep.get('countdown_behavior').updateValueAndValidity();
         }
         this.resetAdditionalTimes()
     }
 
     resetAdditionalTimes() {
         if (this.formStep.get('setAdditionalTimes').value == false) {
-            this.formStep.get('countdown_modality').setValue(false)
+            this.formStep.get('countdown_modality').setValue('')
             this.formStep.get('countdown_modality').clearValidators();
             this.formStep.get('countdown_modality').updateValueAndValidity();
-            this.formStep.get('countdown_attribute').setValue(false)
+            this.formStep.get('countdown_attribute').setValue('')
             this.formStep.get('countdown_attribute').clearValidators()
             this.formStep.get('countdown_attribute').updateValueAndValidity()
             this.countdownAttributeValues().clear()
@@ -461,8 +475,8 @@ export class TaskSettingsStepComponent implements OnInit {
     setAnnotatorType() {
         if (this.annotator().get('type').value == 'options' && this.annotatorOptionValues().length == 0) {
             this.annotatorOptionValues().push(this._formBuilder.group({
-                label: '',
-                color: ''
+                label: ['', [Validators.required]],
+                color: ['', [Validators.required]],
             }))
         }
     }
@@ -472,15 +486,17 @@ export class TaskSettingsStepComponent implements OnInit {
             attributeControl.get('annotate').setValue(false)
         }
         if (this.formStep.get('setAnnotator').value == false) {
+            this.annotator().get('type').setValue('')
             this.annotator().get('type').clearValidators();
             this.annotator().get('type').clearAsyncValidators();
-            this.annotatorOptionValues().clear()
+            for (let index = 0; index < this.annotatorOptionValues().controls.length; index++) {
+                this.removeAnnotatorOptionValue(index)
+            }
         } else {
-            this.annotator().get('type').setValidators([Validators.required, this.utilsService.positiveNumber.bind(this)]);
+            this.annotator().get('type').setValidators([Validators.required]);
+            this.setAnnotatorType()
         }
         this.annotator().get('type').updateValueAndValidity()
-        this.annotatorOptionValues().updateValueAndValidity()
-        this.setAnnotatorType()
         this.resetHitAttributes()
     }
 
@@ -491,8 +507,8 @@ export class TaskSettingsStepComponent implements OnInit {
 
     addOptionValue(option = null as Object) {
         this.annotatorOptionValues().push(this._formBuilder.group({
-            label: option ? option['label'] ? option['label'] : '' : '',
-            color: option ? option['color'] ? option['color'] : '' : ''
+            label: [option ? option['label'] ? option['label'] : '' : '', [Validators.required]],
+            color: [option ? option['color'] ? option['color'] : '' : '', [Validators.required]],
         }))
         if (!option) {
             this.annotatorOptionColors.push("")
@@ -513,7 +529,7 @@ export class TaskSettingsStepComponent implements OnInit {
 
     addMessage(message = null) {
         this.messages().push(this._formBuilder.group({
-            message: message ? message : ''
+            message: [message ? message : '', [Validators.required]]
         }))
     }
 

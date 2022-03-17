@@ -26,13 +26,16 @@
                             <table class="width-100 mt-8px">
                                 <tr>
                                     <td class="p-0">
-                                        <mat-form-field matLine class="width-100" [hideRequiredMarker]="questionnaire.get('type').valid" appearance="fill">
+                                        <mat-form-field matLine class="width-100" appearance="fill">
                                             <mat-label>Type</mat-label>
-                                            <mat-select matInput formControlName="type" required (selectionChange)="updateQuestionnaire(questionnaireIndex)">
+                                            <mat-select matInput formControlName="type" (selectionChange)="updateQuestionnaire(questionnaireIndex)">
                                                 <mat-option *ngFor="let questionnaireType of questionnaireTypes" [value]="questionnaireType.value">
                                                     {{questionnaireType.viewValue}}
                                                 </mat-option>
                                             </mat-select>
+                                            <mat-error>
+                                                <app-error-message [formField]="questionnaire.get('type')"></app-error-message>
+                                            </mat-error>
                                         </mat-form-field>
                                     </td>
                                 </tr>
@@ -44,7 +47,7 @@
                                 <table class="width-100 mt-16px">
                                     <tr>
                                         <td class="p-0">
-                                            <mat-form-field class="width-100" [hideRequiredMarker]="questionnaire.get('description').valid" appearance="fill">
+                                            <mat-form-field class="width-100" appearance="fill">
                                                 <mat-label>Description</mat-label>
                                                 <textarea matInput formControlName="description"></textarea>
                                             </mat-form-field>
@@ -58,13 +61,16 @@
                             <table class="width-100 mt-16px">
                                 <tr>
                                     <td class="p-0">
-                                        <mat-form-field class="width-100" [hideRequiredMarker]="questionnaire.get('position').valid" appearance="fill">
+                                        <mat-form-field class="width-100" appearance="fill">
                                             <mat-label>Position</mat-label>
-                                            <mat-select matInput formControlName="position" required>
+                                            <mat-select matInput formControlName="position">
                                                 <mat-option *ngFor="let questionnairePosition of questionnairePosition" [value]="questionnairePosition.value">
                                                     {{questionnairePosition.viewValue}}
                                                 </mat-option>
                                             </mat-select>
+                                            <mat-error>
+                                                <app-error-message [formField]="questionnaire.get('position')"></app-error-message>
+                                            </mat-error>
                                         </mat-form-field>
                                     </td>
                                 </tr>
@@ -89,15 +95,21 @@
                                     <table class="width-100">
                                         <tr>
                                             <td class="p-0 pr-16px">
-                                                <mat-form-field matLine class="width-100" [hideRequiredMarker]="question.get('name').valid" appearance="fill">
+                                                <mat-form-field matLine class="width-100" appearance="fill">
                                                     <mat-label>Name</mat-label>
-                                                    <input matInput type="text" formControlName="name" required>
+                                                    <input matInput type="text" formControlName="name">
+                                                    <mat-error>
+                                                        <app-error-message [formField]="question.get('name')"></app-error-message>
+                                                    </mat-error>
                                                 </mat-form-field>
                                             </td>
                                             <td class="p-0 pr-16px">
-                                                <mat-form-field matLine class="width-100" [hideRequiredMarker]="question.get('text').valid" appearance="fill">
+                                                <mat-form-field matLine class="width-100" appearance="fill">
                                                     <mat-label>Text</mat-label>
-                                                    <input matInput type="text" formControlName="text" required>
+                                                    <input matInput type="text" formControlName="text">
+                                                    <mat-error>
+                                                        <app-error-message [formField]="question.get('text')"></app-error-message>
+                                                    </mat-error>
                                                 </mat-form-field>
                                             </td>
                                             <td class="p-0 center">
@@ -118,9 +130,12 @@
                                             <table class="width-100 indent">
                                                 <tr>
                                                     <td class="p-0 pr-16px">
-                                                        <mat-form-field matLine class="width-100" [hideRequiredMarker]="answer.get('answer').valid" appearance="fill">
+                                                        <mat-form-field matLine class="width-100" appearance="fill">
                                                             <mat-label>Answer</mat-label>
-                                                            <input matInput type="text" formControlName="answer" required>
+                                                            <input matInput type="text" formControlName="answer">
+                                                            <mat-error>
+                                                                <app-error-message [formField]="answer.get('answer')"></app-error-message>
+                                                            </mat-error>
                                                         </mat-form-field>
                                                     </td>
                                                     <td class="p-0 center">
@@ -147,15 +162,21 @@
                                     <table class="width-100">
                                         <tr>
                                             <td class="p-0 pr-16px">
-                                                <mat-form-field matLine class="width-100" [hideRequiredMarker]="map.get('label').valid" appearance="fill">
+                                                <mat-form-field matLine class="width-100" appearance="fill">
                                                     <mat-label>Label</mat-label>
-                                                    <input matInput type="text" formControlName="label" required>
+                                                    <input matInput type="text" formControlName="label">
+                                                    <mat-error>
+                                                        <app-error-message [formField]="map.get('label')"></app-error-message>
+                                                    </mat-error>
                                                 </mat-form-field>
                                             </td>
                                             <td class="p-0 pr-16px">
-                                                <mat-form-field matLine class="width-100" [hideRequiredMarker]="map.get('value').valid" appearance="fill">
+                                                <mat-form-field matLine class="width-100" appearance="fill">
                                                     <mat-label>Value</mat-label>
-                                                    <input matInput type="text" formControlName="value" required>
+                                                    <input matInput type="text" formControlName="value">
+                                                    <mat-error>
+                                                        <app-error-message [formField]="map.get('value')"></app-error-message>
+                                                    </mat-error>
                                                 </mat-form-field>
                                             </td>
                                             <td class="p-0 center">

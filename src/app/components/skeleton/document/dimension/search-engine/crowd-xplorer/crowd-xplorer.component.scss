@@ -25,9 +25,13 @@ button#search-button {
 /* |--- RESULT TABLE --| */
 
 mat-cell {
+  font-size: medium;
   padding: 5px;
   p {
     width: 90%;
     padding-right: 1%;
+  }
+  .row-snippet {
+    font-size: small;
   }
 }

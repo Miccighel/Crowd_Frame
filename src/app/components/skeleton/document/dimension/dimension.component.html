@@ -19,12 +19,16 @@
                     <div *ngIf="dimension.description" class="dimension-container dimension-description">
                         <div class="dimension-content">
                             <p>{{dimension.description}}</p>
+                            <i *ngIf="dimension.example">
+                                {{dimension.example}}
+                            </i>
                         </div>
                     </div>
 
                     <app-search-engine [documentIndex]="documentIndex" [dimensionIndex]="j" [task]="this.task" (formEmitter)="storeSearchEngineUrl($event, j)"></app-search-engine>
 
                     <div *ngIf="dimension.scale" class="dimension-container dimension-scale">
+
                         <div class="dimension-content">
 
                             <ng-container *ngIf="dimension.style.orientation=='vertical'">
@@ -127,44 +131,55 @@
 
                 </div>
 
+                <!-- Dimension search engine interface markup -->
+                <app-search-engine [documentIndex]="documentIndex" [dimensionIndex]="j" [task]="this.task" (formEmitter)="storeSearchEngineUrl($event, j)"></app-search-engine>
+
                 <!-- Dimensions markup (matrix style) -->
-                <div *ngIf="this.dimension.style.type=='matrix'" class="dimension-matrix">
+                <div *ngIf="this.dimension.style.type=='matrix' && verifyUrlSelection()" class="dimension-matrix">
 
-                    <!-- Dimension search engine interface markup -->
-                    <app-search-engine [documentIndex]="documentIndex" [dimensionIndex]="j" [task]="this.task" (formEmitter)="storeSearchEngineUrl($event, j)"></app-search-engine>
-
-                    <!-- Dimension assessment matrix header markup -->
-                    <mat-radio-group *ngIf="j==0 && dimension.scale">
-                        <div></div>
-                        <div *ngFor="let mapping of dimension.scale.mapping; let k=index">
-                            <div class="matrix-header">
-                                <ng-container>
-                                    <span class="matrix-header-text">{{mapping.label}}</span>
-                                </ng-container>
-                                <ng-container *ngIf="mapping.value">
-                                    <span class="matrix-header-value"> ({{mapping.value}})</span>
-                                </ng-container>
-                            </div>
+                    <ng-container>
+                        <div *ngIf="j==0" class="evaluation-instructions">
+                            <mat-divider *ngIf="!dimension.url" [inset]="true"></mat-divider>
+                            <h2>C - Answer the following questions:</h2>
+                            <mat-divider [inset]="true"></mat-divider>
                         </div>
-                    </mat-radio-group>
 
-                    <!-- Dimension assessment fields markup -->
-                    <div *ngIf="dimension.scale">
-                        <mat-radio-group aria-labelledby="radio-button-label" formControlName="{{(dimension.name).concat('_value')}}">
-                            <div>
-                                <p>
-                                    <strong>{{this.utilsService.capitalize(dimension.name)}}:</strong>
-                                    {{dimension.description.toLowerCase()}}
-                                </p>
-                            </div>
+                        <!-- Dimension assessment matrix header markup -->
+                        <mat-radio-group *ngIf="j==0 && dimension.scale">
+                            <div></div>
                             <div *ngFor="let mapping of dimension.scale.mapping; let k=index">
-                                <mat-radio-button class="radio-button" value="{{mapping.value}}" (change)="this.task.storeDimensionValue($event, documentIndex,dimension.index)"></mat-radio-button>
+                                <div class="matrix-header">
+                                    <ng-container>
+                                        <span class="matrix-header-text">{{mapping.label}}</span>
+                                    </ng-container>
+                                    <ng-container *ngIf="mapping.value">
+                                        <span class="matrix-header-value"> ({{mapping.value}})</span>
+                                    </ng-container>
+                                </div>
                             </div>
                         </mat-radio-group>
-                    </div>
 
-                    <!-- Separator markup -->
-                    <mat-divider *ngIf="dimension.style.separator" [inset]="true"></mat-divider>
+                        <!-- Dimension assessment fields markup -->
+                        <div *ngIf="dimension.scale">
+                            <mat-radio-group aria-labelledby="radio-button-label" formControlName="{{(dimension.name).concat('_value')}}">
+                                <div>
+                                    <p>
+                                        <strong>{{this.utilsService.capitalize(dimension.name)}}:</strong>
+                                        {{dimension.description.toLowerCase()}}
+                                    </p>
+                                    <i *ngIf="dimension.example">
+                                        {{dimension.example}}
+                                    </i>
+                                </div>
+                                <div *ngFor="let mapping of dimension.scale.mapping; let k=index">
+                                    <mat-radio-button class="radio-button" value="{{mapping.value}}" (change)="this.task.storeDimensionValue($event, documentIndex,dimension.index)"></mat-radio-button>
+                                </div>
+                            </mat-radio-group>
+                        </div>
+
+                        <!-- Separator markup -->
+                        <mat-divider *ngIf="dimension.style.separator" [inset]="true"></mat-divider>
+                    </ng-container>
                 </div>
 
             </ng-container>
@@ -191,6 +206,9 @@
                         <div *ngIf="dimension.description" class="dimension-name-center">
                             <div class="dimension-split-inside">
                                 <p>{{dimension.description}}</p>
+                                <i *ngIf="dimension.example">
+                                    {{dimension.example}}
+                                </i>
                             </div>
                         </div>
 

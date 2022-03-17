@@ -24,16 +24,21 @@
                             <table class="width-100 mt-8px">
                                 <tr>
                                     <td class="p-0 pr-16px">
-                                        <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimension.get('name').valid" appearance="fill">
+                                        <mat-form-field matLine class="width-100" appearance="fill">
                                             <mat-label>Name</mat-label>
-                                            <input matInput type="text" formControlName="name" required>
-                                            <mat-error *ngIf="dimension.get('name').hasError('pattern')">Invalid character</mat-error>
+                                            <input matInput type="text" formControlName="name">
+                                            <mat-error>
+                                                <app-error-message [formField]="dimension.get('name')"></app-error-message>
+                                            </mat-error>
                                         </mat-form-field>
                                     </td>
                                     <td class="p-0">
                                         <mat-form-field matLine class="width-100" appearance="fill">
                                             <mat-label>Name Pretty</mat-label>
                                             <input matInput type="text" formControlName="name_pretty">
+                                            <mat-error>
+                                                <app-error-message [formField]="dimension.get('name_pretty')"></app-error-message>
+                                            </mat-error>
                                         </mat-form-field>
                                     </td>
                                 </tr>
@@ -41,6 +46,10 @@
                             <mat-form-field class="width-100" appearance="fill">
                                 <mat-label>Description</mat-label>
                                 <textarea matInput formControlName="description"></textarea>
+                            </mat-form-field>
+                            <mat-form-field class="width-100" appearance="fill">
+                                <mat-label>Example</mat-label>
+                                <textarea matInput formControlName="example"></textarea>
                             </mat-form-field>
 
                             <mat-divider [inset]="true"></mat-divider>
@@ -60,8 +69,7 @@
                             <mat-divider [inset]="true"></mat-divider>
 
                             <!-- Justification: Text, Min_Words -->
-                            <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="setJustification"
-                                              (change)="resetJustification(dimensionIndex)">
+                            <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="setJustification" (change)="resetJustification(dimensionIndex)">
                                 Justification
                             </mat-slide-toggle>
 
@@ -69,17 +77,21 @@
                                 <table class="width-100">
                                     <tr>
                                         <td class="p-0 pr-16px">
-                                            <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimension.get('justification').get('text').valid"
-                                                            appearance="fill">
+                                            <mat-form-field matLine class="width-100" appearance="fill">
                                                 <mat-label>Text</mat-label>
-                                                <input matInput type="text" formControlName="text" required>
+                                                <input matInput type="text" formControlName="text">
+                                                <mat-error>
+                                                    <app-error-message [formField]="dimension.get('justification').get('text')"></app-error-message>
+                                                </mat-error>
                                             </mat-form-field>
                                         </td>
                                         <td class="p-0">
-                                            <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimension.get('justification').get('min_words').valid"
-                                                            appearance="fill">
+                                            <mat-form-field matLine class="width-100" appearance="fill">
                                                 <mat-label>Minimum Words</mat-label>
-                                                <input matInput type="number" min="0" formControlName="min_words" required>
+                                                <input matInput type="number" min="0" formControlName="min_words">
+                                                <mat-error>
+                                                    <app-error-message [formField]="dimension.get('justification').get('min_words')"></app-error-message>
+                                                </mat-error>
                                             </mat-form-field>
                                         </td>
                                     </tr>
@@ -104,13 +116,16 @@
                                 <table class="width-100">
                                     <tr>
                                         <td class="p-0">
-                                            <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimension.get('scale').get('type').valid" appearance="fill">
+                                            <mat-form-field matLine class="width-100" appearance="fill">
                                                 <mat-label>Type</mat-label>
-                                                <mat-select matInput formControlName="type" required (selectionChange)="updateScale(dimensionIndex)">
+                                                <mat-select matInput formControlName="type" (selectionChange)="updateScale(dimensionIndex)">
                                                     <mat-option *ngFor="let scaleType of scaleTypes" [value]="scaleType.value">
                                                         {{scaleType.viewValue}}
                                                     </mat-option>
                                                 </mat-select>
+                                                <mat-error>
+                                                    <app-error-message [formField]="dimension.get('scale').get('type')"></app-error-message>
+                                                </mat-error>
                                             </mat-form-field>
                                         </td>
                                     </tr>
@@ -119,21 +134,30 @@
                                 <table class="width-100" *ngIf="dimension.get('scale').get('type').value == 'interval'">
                                     <tr>
                                         <td class="p-0 pr-16px">
-                                            <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimension.get('scale').get('min').valid" appearance="fill">
+                                            <mat-form-field matLine class="width-100" appearance="fill">
                                                 <mat-label>Minimum</mat-label>
-                                                <input matInput type="number" formControlName="min" required>
+                                                <input matInput type="number" formControlName="min">
+                                                <mat-error>
+                                                    <app-error-message [formField]="dimension.get('scale').get('min')"></app-error-message>
+                                                </mat-error>
                                             </mat-form-field>
                                         </td>
                                         <td class="p-0 pr-16px">
-                                            <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimension.get('scale').get('max').valid" appearance="fill">
+                                            <mat-form-field matLine class="width-100" appearance="fill">
                                                 <mat-label>Maximum</mat-label>
-                                                <input matInput type="number" formControlName="max" required>
+                                                <input matInput type="number" formControlName="max">
+                                                <mat-error>
+                                                    <app-error-message [formField]="dimension.get('scale').get('max')"></app-error-message>
+                                                </mat-error>
                                             </mat-form-field>
                                         </td>
                                         <td class="p-0">
-                                            <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimension.get('scale').get('step').valid" appearance="fill">
+                                            <mat-form-field matLine class="width-100" appearance="fill">
                                                 <mat-label>Step</mat-label>
-                                                <input matInput type="number" formControlName="step" required>
+                                                <input matInput type="number" formControlName="step">
+                                                <mat-error>
+                                                    <app-error-message [formField]="dimension.get('scale').get('step')"></app-error-message>
+                                                </mat-error>
                                             </mat-form-field>
                                         </td>
                                     </tr>
@@ -148,21 +172,30 @@
                                         <table class="width-100">
                                             <tr>
                                                 <td class="p-0 pr-16px">
-                                                    <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimensionMap.get('label').valid" appearance="fill">
+                                                    <mat-form-field matLine class="width-100" appearance="fill">
                                                         <mat-label>Label</mat-label>
-                                                        <input matInput type="text" formControlName="label" required>
+                                                        <input matInput type="text" formControlName="label">
+                                                        <mat-error>
+                                                            <app-error-message [formField]="dimensionMap.get('label')"></app-error-message>
+                                                        </mat-error>
                                                     </mat-form-field>
                                                 </td>
                                                 <td class="p-0 pr-16px">
-                                                    <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimensionMap.get('description').valid" appearance="fill">
+                                                    <mat-form-field matLine class="width-100" appearance="fill">
                                                         <mat-label>Description</mat-label>
                                                         <input matInput type="text" formControlName="description">
+                                                        <mat-error>
+                                                            <app-error-message [formField]="dimensionMap.get('description')"></app-error-message>
+                                                        </mat-error>
                                                     </mat-form-field>
                                                 </td>
                                                 <td class="p-0 pr-16px">
-                                                    <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimensionMap.get('value').valid" appearance="fill">
+                                                    <mat-form-field matLine class="width-100" appearance="fill">
                                                         <mat-label>Value</mat-label>
-                                                        <input matInput type="text" formControlName="value" required>
+                                                        <input matInput type="text" formControlName="value">
+                                                        <mat-error>
+                                                            <app-error-message [formField]="dimensionMap.get('value')"></app-error-message>
+                                                        </mat-error>
                                                     </mat-form-field>
                                                 </td>
                                                 <td class="p-0 center">
@@ -183,6 +216,9 @@
                                             <mat-form-field matLine class="width-100" appearance="fill">
                                                 <mat-label>Minimum</mat-label>
                                                 <input matInput type="number" formControlName="min">
+                                                <mat-error>
+                                                    <app-error-message [formField]="dimension.get('scale').get('min')"></app-error-message>
+                                                </mat-error>
                                             </mat-form-field>
                                         </td>
                                         <td class="pr-16px checkbox">
@@ -197,8 +233,7 @@
                             <mat-divider [inset]="true"></mat-divider>
 
                             <!-- Style: Type, Position, Orientation, Separator -->
-                            <mat-slide-toggle color="primary" *ngIf="dimension.get('setScale').value" class="mt-16px mb-16px" formControlName="setStyle"
-                                              (change)="resetStyle(dimensionIndex)">
+                            <mat-slide-toggle color="primary" *ngIf="dimension.get('setScale').value" class="mt-16px mb-16px" formControlName="setStyle" (change)="resetStyle(dimensionIndex)">
                                 Style
                             </mat-slide-toggle>
 
@@ -206,36 +241,42 @@
                                 <table class="width-100">
                                     <tr>
                                         <td class="p-0 pr-16px">
-                                            <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimension.get('style').get('styleType').valid"
-                                                            appearance="fill">
+                                            <mat-form-field matLine class="width-100" appearance="fill" required>
                                                 <mat-label>Type</mat-label>
-                                                <mat-select matInput formControlName="styleType" required (selectionChange)="updateStyleType(dimensionIndex)">
+                                                <mat-select matInput formControlName="styleType" (selectionChange)="updateStyleType(dimensionIndex)">
                                                     <mat-option *ngFor="let styleType of styleTypes" [value]="styleType.value">
                                                         {{styleType.viewValue}}
                                                     </mat-option>
                                                 </mat-select>
+                                                <mat-error>
+                                                    <app-error-message [formField]="dimension.get('style').get('styleType')"></app-error-message>
+                                                </mat-error>
                                             </mat-form-field>
                                         </td>
                                         <td class="p-0 pr-16px">
-                                            <mat-form-field matLine class="width-100" [hideRequiredMarker]="dimension.get('style').get('position').valid"
-                                                            appearance="fill">
+                                            <mat-form-field matLine class="width-100" appearance="fill" required>
                                                 <mat-label>Position</mat-label>
-                                                <mat-select matInput formControlName="position" required>
+                                                <mat-select matInput formControlName="position">
                                                     <mat-option *ngFor="let positionType of positionTypes" [value]="positionType.value">
                                                         {{positionType.viewValue}}
                                                     </mat-option>
                                                 </mat-select>
+                                                <mat-error>
+                                                    <app-error-message [formField]="dimension.get('style').get('position')"></app-error-message>
+                                                </mat-error>
                                             </mat-form-field>
                                         </td>
                                         <td class="p-0 pr-16px">
-                                            <mat-form-field matLine class="width-100" appearance="fill"
-                                                            [hideRequiredMarker]="dimension.get('style').get('position').valid">
+                                            <mat-form-field matLine class="width-100" appearance="fill">
                                                 <mat-label>Orientation</mat-label>
                                                 <mat-select matInput formControlName="orientation" required>
                                                     <mat-option *ngFor="let orientationType of orientationTypes" [value]="orientationType.value">
                                                         {{orientationType.viewValue}}
                                                     </mat-option>
                                                 </mat-select>
+                                                <mat-error>
+                                                    <app-error-message [formField]="dimension.get('style').get('orientation')"></app-error-message>
+                                                </mat-error>
                                             </mat-form-field>
                                         </td>
                                         <td class="p-0">

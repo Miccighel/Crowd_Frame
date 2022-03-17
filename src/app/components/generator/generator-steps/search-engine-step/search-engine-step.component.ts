@@ -1,6 +1,6 @@
 /* Core */
 import {Component, EventEmitter, OnInit, Output} from '@angular/core';
-import {FormArray, FormBuilder, FormGroup} from "@angular/forms";
+import {FormArray, FormBuilder, FormGroup, Validators} from "@angular/forms";
 /* Services */
 import {S3Service} from 'src/app/services/aws/s3.service';
 import {ConfigService} from "../../../../services/config.service";
@@ -92,7 +92,7 @@ export class SearchEngineStepComponent implements OnInit {
 
     addDomain(domain = null) {
         this.domains().push(this._formBuilder.group({
-            url: domain ? domain : ''
+            url: [domain ? domain : '', Validators.required]
         }))
     }
 

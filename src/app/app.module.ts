@@ -55,7 +55,8 @@ import {tap} from "rxjs/operators";
 import {QuestionnaireComponent} from './components/skeleton/questionnaire/questionnaire.component';
 import {WorkerChecksStepComponent} from './components/generator/generator-steps/worker-checks-step/worker-checks-step.component';
 import {QuestionnaireStepComponent} from './components/generator/generator-steps/questionnaire-step/questionnaire-step.component';
-import {InstructionsStepComponent} from './components/generator/generator-steps/instructions-step/instructions-step.component';
+import {InstructionsGeneralStep} from './components/generator/generator-steps/instructions-general-step/instructions-general-step.component';
+import {InstructionsEvaluationStepComponent} from './components/generator/generator-steps/instructions-evaluation-step/instructions-evaluation-step.component';
 import {SearchEngineStepComponent} from './components/generator/generator-steps/search-engine-step/search-engine-step.component';
 import {DimensionsStepComponent} from './components/generator/generator-steps/dimensions-step/dimensions-step.component';
 import {TaskSettingsStepComponent} from './components/generator/generator-steps/task-settings-step/task-settings-step.component';
@@ -68,6 +69,7 @@ import {DimensionComponent} from './components/skeleton/document/dimension/dimen
 import {SearchEngineComponent} from './components/skeleton/document/dimension/search-engine/search-engine.component';
 import {ElementPairwiseComponent} from './components/skeleton/document/elements/element-pairwise/element-pairwise.component';
 import { DocumentComponent } from './components/skeleton/document/document.component';
+import { ErrorMessageComponent } from './components/shared/error-message/error-message.component';
 
 function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
     return () => from(actionLogger.downloadOpt()).pipe(tap(data => {
@@ -94,7 +96,7 @@ function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
         QuestionnaireComponent,
         WorkerChecksStepComponent,
         QuestionnaireStepComponent,
-        InstructionsStepComponent,
+        InstructionsGeneralStep,
         SearchEngineStepComponent,
         DimensionsStepComponent,
         TaskSettingsStepComponent,
@@ -106,7 +108,9 @@ function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
         DimensionComponent,
         SearchEngineComponent,
         ElementPairwiseComponent,
-        DocumentComponent
+        DocumentComponent,
+        InstructionsEvaluationStepComponent,
+        ErrorMessageComponent
     ],
     imports: [
         BrowserModule,

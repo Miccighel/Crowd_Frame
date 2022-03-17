@@ -3,10 +3,6 @@
     <form [formGroup]="questionnaireForm">
         <mat-card>
             <mat-divider [inset]="true"></mat-divider>
-            <mat-card-title *ngIf="questionnaire.type=='standard'">Please answer the following questions</mat-card-title>
-            <mat-card-title *ngIf="questionnaire.type=='crt'">Please answer the following question</mat-card-title>
-            <mat-card-title *ngIf="questionnaire.type=='likert'">Please assess the following questions</mat-card-title>
-            <mat-divider [inset]="true"></mat-divider>
 
             <ng-template #questionTemplate let-question>
 
@@ -21,11 +17,21 @@
                             <mat-radio-group aria-labelledby="radio-button-label" class="radio-button-group question" formControlName="{{question.nameFull}}_answer">
                                 <mat-radio-button *ngFor="let answer of question.answers; let k=index" class="radio-button" value="{{k}}">{{answer}}</mat-radio-button>
                             </mat-radio-group>
+                            <mat-error>
+                                <app-error-message [formField]="this.questionnaireForm.get(question.nameFull.concat('_answer'))"></app-error-message>
+                            </mat-error>
                         </div>
 
                         <div *ngIf="question.type=='number'" class="question-box">
-                            <input *ngIf="!this.question.repeat" matInput type="number" placeholder="0" min="0" formControlName="{{question.nameFull}}_answer" class="questionnaire-value">
-                            <input *ngIf="this.question.repeat" matInput type="number" placeholder="0" min="0" max="{{this.question.times}}" (change)="this.handleQuestionRepetition(question)" formControlName="{{question.nameFull}}_answer" class="questionnaire-value">
+                            <mat-form-field>
+                                <input *ngIf="!this.question.repeat" matInput type="number" placeholder="0" min="0" formControlName="{{question.nameFull}}_answer" class="questionnaire-value">
+                                <input *ngIf="this.question.repeat" matInput type="number" placeholder="0" min="0" max="{{this.question.times}}" (change)="this.handleQuestionRepetition(question)"
+                                       formControlName="{{question.nameFull}}_answer" class="questionnaire-value">
+                                <mat-error>
+                                    <app-error-message [formField]="this.questionnaireForm.get(question.nameFull.concat('_answer'))"></app-error-message>
+                                </mat-error>
+                            </mat-form-field>
+
                         </div>
 
                         <div *ngIf="question.type=='list'" class="question-box" formGroupName="{{question.nameFull}}_answer">
@@ -44,12 +50,18 @@
                                         {{answer}}
                                     </mat-option>
                                 </mat-select>
+                                <mat-error>
+                                    <app-error-message [formField]="this.questionnaireForm.get(question.nameFull.concat('_answer'))"></app-error-message>
+                                </mat-error>
                             </mat-form-field>
                         </div>
 
                         <div *ngIf="question.type=='text'|| question.type=='email'" class="question-box">
                             <mat-form-field appearance="fill" class="width-100">
                                 <textarea matInput placeholder="Your text here" formControlName="{{question.nameFull}}_answer" rows="3"></textarea>
+                                <mat-error>
+                                    <app-error-message [formField]="this.questionnaireForm.get(question.nameFull.concat('_answer'))"></app-error-message>
+                                </mat-error>
                             </mat-form-field>
                         </div>
 
@@ -57,25 +69,12 @@
                             <mat-form-field appearance="fill" class="width-100">
                                 <mat-label>Other</mat-label>
                                 <textarea matInput formControlName="{{question.nameFull}}_free_text" rows="3"></textarea>
+                                <mat-error>
+                                    <app-error-message [formField]="this.questionnaireForm.get(question.nameFull.concat('_free_text'))"></app-error-message>
+                                </mat-error>
                             </mat-form-field>
                         </div>
 
-
-                        <mat-error *ngIf="this.utilsService.hasError(questionnaireForm,question.nameFull.concat('_free_text'), 'required')">
-                            This field is required
-                        </mat-error>
-                        <mat-error *ngIf="this.utilsService.hasError(questionnaireForm,question.nameFull.concat('_answer'), 'required')">
-                            This field is required
-                        </mat-error>
-                        <mat-error *ngIf="this.utilsService.hasError(questionnaireForm,question.nameFull.concat('_answer'), 'email')">
-                            You must insert a valid email address
-                        </mat-error>
-                        <mat-error *ngIf="this.utilsService.hasError(questionnaireForm,question.nameFull.concat('_answer'), 'min')">
-                            Min value allowed: {{this.utilsService.getErrorMessage(questionnaireForm, question.nameFull.concat('_answer'), 'min')}}
-                        </mat-error>
-                        <mat-error *ngIf="this.utilsService.hasError(questionnaireForm,question.nameFull.concat('_answer'), 'max')">
-                            Max value allowed: {{this.utilsService.getErrorMessage(questionnaireForm, question.nameFull.concat('_answer'), 'max')}}
-                        </mat-error>
 
                         <mat-expansion-panel hideToggle *ngIf="question.detail" class="question-detail" (opened)="question.showDetail = true" (closed)="question.showDetail = false">
                             <mat-expansion-panel-header class="mat-button">
@@ -131,14 +130,8 @@
                     <mat-form-field appearance="fill" class="questionnaire-crt-value">
                         <mat-label>Answer</mat-label>
                         <input matInput type="number" placeholder="0" min="0" max="100" formControlName="{{question.name}}_answer">
-                        <mat-error *ngIf="this.utilsService.hasError(questionnaireForm, question.nameFull.concat('_answer'), 'required')">
-                            This field is required
-                        </mat-error>
-                        <mat-error *ngIf="this.utilsService.hasError(questionnaireForm, question.nameFull.concat('_answer'), 'min')">
-                            Min value allowed: 0
-                        </mat-error>
-                        <mat-error *ngIf="this.utilsService.hasError(questionnaireForm, question.nameFull.concat('_answer'), 'max')">
-                            Max value allowed: 100
+                        <mat-error>
+                            <app-error-message [formField]="this.questionnaireForm.get(question.nameFull.concat('_answer'))"></app-error-message>
                         </mat-error>
                     </mat-form-field>
                 </div>

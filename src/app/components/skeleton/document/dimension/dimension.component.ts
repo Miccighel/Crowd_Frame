@@ -149,9 +149,25 @@ export class DimensionComponent implements OnInit {
 
     public storeSearchEngineUrl(urlFormGroup, dimensionIndex) {
         for (const [key, value] of Object.entries(urlFormGroup.controls)) {
-            if (!this.assessmentForms[dimensionIndex].get(key))
+            if (!this.assessmentForms[dimensionIndex].get(key) && this.task.dimensions[dimensionIndex].url) {
                 this.assessmentForms[dimensionIndex].addControl(key, urlFormGroup.get(key))
+            }
         }
+    }
+
+    public verifyUrlSelection() {
+        let result = true
+        for(let dimension of this.task.dimensions) {
+            if(dimension.url) {
+                let dimensionForm = this.assessmentForms[dimension.index]
+                if(dimensionForm.get(dimension.name.concat("_url"))) {
+                    let value = dimensionForm.get(dimension.name.concat("_url")).value
+                    if(!value)
+                        result = false
+                }
+            }
+        }
+        return result
     }
 
     /* |--------- PAIRWISE ---------| */

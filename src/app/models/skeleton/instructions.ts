@@ -4,29 +4,29 @@
  */
 export class Instruction {
 
-  /* DO NOT REMOVE THIS ATTRIBUTE */
-  index: number;
+    /* DO NOT REMOVE THIS ATTRIBUTE */
+    index: number;
+    caption?: string;
+    label?: string;
+    text: string;
 
-  caption?: string;
-  text: string;
+    constructor(
+        index: number,
+        data: JSON
+    ) {
+        /* DO NOT REMOVE THIS LINE */
+        this.index = index;
+        this.label = data['label'] ? data["label"] : null;
+        this.caption = data['caption'] ? data["caption"] : null;
 
-  constructor(
-    index: number,
-    data: JSON
-  ) {
-    /* DO NOT REMOVE THIS LINE */
-    this.index = index;
+        if ('steps' in data) {
+            let stepText: Array<string> = data['steps']
+            this.text = stepText.join("\r\n")
+            delete data['steps']
+        } else {
+            this.text = data['text'] ? data["text"] : null;
+        }
 
-    this.caption =    data['caption'] ? data["caption"] : null;
-
-    if('steps' in data) {
-      let stepText : Array<string> = data['steps']
-      this.text = stepText.join("\r\n")
-      delete data['steps']
-    } else {
-      this.text =    data['text'] ? data["text"] : null;
     }
-
-  }
 
 }

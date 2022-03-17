@@ -1,17 +1,13 @@
 <div class=" container">
     <mat-card>
-        <!-- Document header markup -->
-        <mat-divider [inset]="true"></mat-divider>
-        <mat-card-title>Statement Nr. {{documentIndex + 1}}</mat-card-title>
-        <mat-divider [inset]="true"></mat-divider>
         <mat-card-content class="pt-16px">
 
             <!-- Evaluation instructions markup -->
-            <div *ngIf="this.task.instructionsEvaluationAmount>0" class="evaluation-instructions">
+            <div *ngIf="this.task.instructionsEvaluationGeneralAmount>0" class="evaluation-instructions">
                 <mat-divider [inset]="true"></mat-divider>
                 <h2>Instructions</h2>
                 <mat-divider [inset]="true"></mat-divider>
-                <div *ngFor="let instruction of this.task.instructionsEvaluation">
+                <div *ngFor="let instruction of this.task.instructionsEvaluationGeneral">
                     <h2>{{instruction.caption}}</h2>
                     <div [innerHTML]="instruction.text"></div>
                 </div>

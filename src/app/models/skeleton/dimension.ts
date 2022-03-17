@@ -10,6 +10,7 @@ export class Dimension {
     name: string;
     name_pretty?: string;
     description?: string;
+    example?: string;
     justification?: Justification;
     url?: boolean;
     pairwise?: boolean;
@@ -30,6 +31,7 @@ export class Dimension {
         this.name = data["name"];
         this.name_pretty = data['name_pretty'] ? data["name_pretty"] : null;
         this.description = data['description'] ? data["description"] : null;
+        this.example = data['example'] ? data["example"] : null;
         this.justification = data['justification'] ? new Justification(data['justification']) : null;
         this.url = data['url'] ? data["url"] : null;
         this.pairwise = data['pairwise'] ? data["pairwise"] : null;

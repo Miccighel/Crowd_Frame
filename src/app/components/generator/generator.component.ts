@@ -14,7 +14,7 @@ import {AngularEditorConfig} from "@kolkov/angular-editor"
 /* Components */
 import {WorkerChecksStepComponent} from "./generator-steps/worker-checks-step/worker-checks-step.component"
 import {QuestionnaireStepComponent} from "./generator-steps/questionnaire-step/questionnaire-step.component"
-import {InstructionsStepComponent} from "./generator-steps/instructions-step/instructions-step.component"
+import {InstructionsGeneralStep} from "./generator-steps/instructions-general-step/instructions-general-step.component"
 import {SearchEngineStepComponent} from "./generator-steps/search-engine-step/search-engine-step.component"
 import {DimensionsStepComponent} from "./generator-steps/dimensions-step/dimensions-step.component"
 import {TaskSettingsStepComponent} from "./generator-steps/task-settings-step/task-settings-step.component"
@@ -48,11 +48,11 @@ export class GeneratorComponent {
     dimensionsStepForm: FormGroup
 
     /* STEP #3 - General Instructions */
-    @ViewChild('generalInstructions') generalInstructionsStep: InstructionsStepComponent;
+    @ViewChild('generalInstructions') generalInstructionsStep: InstructionsGeneralStep;
     generalInstructionsStepForm: FormGroup
 
     /* STEP #4 - Evaluation Instructions */
-    @ViewChild('evaluationInstructions') evaluationInstructionsStep: InstructionsStepComponent;
+    @ViewChild('evaluationInstructions') evaluationInstructionsStep: InstructionsGeneralStep;
     evaluationInstructionsStepForm: FormGroup
 
     /* STEP #5 - Search Engine */

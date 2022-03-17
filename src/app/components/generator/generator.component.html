@@ -32,14 +32,14 @@
 
     <mat-step [stepControl]="generalInstructionsStepForm">
         <ng-template matStepLabel>General Instructions</ng-template>
-        <app-instructions-step #generalInstructions [type]="'general'" [editorConfig]="this.editorConfig" [index]="3" [title]="'Third, define all General Instructions here'" (formEmitter)="storeGeneralInstructionsForm($event)"></app-instructions-step>
+        <app-instructions-step #generalInstructions [editorConfig]="this.editorConfig" (formEmitter)="storeGeneralInstructionsForm($event)"></app-instructions-step>
     </mat-step>
 
     <!-- Step #4 - Evaluation Instructions -->
 
     <mat-step [stepControl]="evaluationInstructionsStepForm">
         <ng-template matStepLabel>Evaluation Instructions</ng-template>
-        <app-instructions-step #evaluationInstructions [type]="'evaluation'" [editorConfig]="this.editorConfig" [index]="4" [title]="'Fourth, define all Evaluation Instructions here'" (formEmitter)="storeEvaluationlInstructionsForm($event)"></app-instructions-step>
+        <app-instructions-evaluation-step #evaluationInstructions [editorConfig]="this.editorConfig" (formEmitter)="storeEvaluationlInstructionsForm($event)"></app-instructions-evaluation-step>
     </mat-step>
 
     <!-- Step #5 - Search Engine -->

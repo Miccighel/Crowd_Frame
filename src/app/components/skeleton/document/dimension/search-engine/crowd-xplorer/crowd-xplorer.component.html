@@ -2,7 +2,8 @@
 
     <mat-form-field id="search-textarea" appearance="outline">
         <mat-label>Insert your query</mat-label>
-        <input #searchInput matInput formControlName="query" (keyup.enter)="performWebSearch(searchInput.value)">
+        <input #searchInput matInput type="search" formControlName="query" (keyup.enter)="performWebSearch(searchInput.value)">
+        <mat-icon matSuffix>search</mat-icon>
     </mat-form-field>
 
     <button mat-flat-button color="primary" class="search-button"
@@ -20,14 +21,13 @@
                         <br/>
                         <span>{{decodeURI(row.url)}}</span>
                         <br/>
-                        <small>{{row.snippet}}</small>
+                        <span class="row-snippet">{{row.snippet}}</span>
                     </p>
                     <mat-radio-button labelPosition="before" [disabled]="this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior=='disable_forms'" (change)="selectRow(row)" value="{{row.url}}">Select
                     </mat-radio-button>
                 </mat-cell>
             </ng-container>
         </mat-radio-group>
-
         <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
         <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
     </mat-table>

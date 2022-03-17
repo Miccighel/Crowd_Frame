@@ -1,8 +1,8 @@
 <form [formGroup]="formStep">
     <mat-card [class.mat-elevation-z3]="true">
         <mat-card-header>
-            <mat-card-title>Step #{{index}}: {{title}}</mat-card-title>
-            <mat-card-subtitle>Please, define all {{title}} here</mat-card-subtitle>
+            <mat-card-title>Step #3: General Instructions</mat-card-title>
+            <mat-card-subtitle>Third, define all the general instructions here</mat-card-subtitle>
         </mat-card-header>
         <mat-divider></mat-divider>
         <mat-card-content>
@@ -31,8 +31,10 @@
                             </table>
 
                             <div>
-                                <angular-editor id="{{type}}-instruction-{{instructionIndex}}-text" formControlName="text"
-                                                [config]="editorConfig"></angular-editor>
+                                <angular-editor id="instruction-general-{{instructionIndex}}-text" formControlName="text" [config]="editorConfig"></angular-editor>
+                                <mat-error>
+                                    <app-error-message [formField]="instruction.get('text')"></app-error-message>
+                                </mat-error>
                             </div>
 
                         </mat-card-content>

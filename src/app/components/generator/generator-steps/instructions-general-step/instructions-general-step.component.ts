@@ -1,6 +1,6 @@
 /* Core */
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {FormArray, FormBuilder, FormGroup} from "@angular/forms";
+import {FormArray, FormBuilder, FormGroup, Validators} from "@angular/forms";
 /* Services */
 import {ConfigService} from "../../../../services/config.service";
 import {S3Service} from "../../../../services/aws/s3.service";
@@ -10,10 +10,10 @@ import {Instruction} from "../../../../models/skeleton/instructions";
 
 @Component({
     selector: 'app-instructions-step',
-    templateUrl: './instructions-step.component.html',
+    templateUrl: './instructions-general-step.component.html',
     styleUrls: ['../../generator.component.scss']
 })
-export class InstructionsStepComponent implements OnInit {
+export class InstructionsGeneralStep implements OnInit {
 
     configService: ConfigService;
     /* Service which wraps the interaction with S3 */
@@ -21,10 +21,7 @@ export class InstructionsStepComponent implements OnInit {
     /* Service which wraps the interaction with browser's local storage */
     localStorageService: LocalStorageService;
 
-    @Input() type: string
     @Input() editorConfig
-    @Input() index: number
-    @Input() title: string
 
     dataStored: Array<Instruction>
 
@@ -56,25 +53,21 @@ export class InstructionsStepComponent implements OnInit {
 
     public async ngOnInit() {
 
-        let serializedInstructions = Object.keys(localStorage).filter((key) => key.startsWith(`${this.type}-instruction-`))
+        let serializedInstructions = Object.keys(localStorage).filter((key) => key.startsWith(`instruction-general-`))
         if (serializedInstructions.length > 0) {
             serializedInstructions.forEach(key => {
                 let index = key.split("-")[2]
-                let item = this.localStorageService.getItem(`${this.type}-instruction-${index}`)
+                let item = this.localStorageService.getItem(`instruction-general-${index}`)
                 this.dataStored.push(JSON.parse(item))
             })
         } else {
             this.initializeControls()
             let rawInstructions = null
-            if (this.type == 'general') {
-                rawInstructions = await this.S3Service.downloadGeneralInstructions(this.configService.environment)
-            } else {
-                rawInstructions = await this.S3Service.downloadEvaluationInstructions(this.configService.environment)
-            }
+            rawInstructions = await this.S3Service.downloadGeneralInstructions(this.configService.environment)
             rawInstructions.forEach((data, index) => {
                 let instruction = new Instruction(index, data)
                 this.dataStored.push(instruction)
-                this.localStorageService.setItem(`${this.type}-instruction-${index}`, JSON.stringify(instruction))
+                this.localStorageService.setItem(`instruction-general-${index}`, JSON.stringify(instruction))
             })
         }
         if (this.dataStored.length > 0) {
@@ -98,7 +91,7 @@ export class InstructionsStepComponent implements OnInit {
     addInstruction(instructionIndex = null, instruction = null as Instruction) {
         this.instructions().push(this._formBuilder.group({
             caption: instruction ? instruction.caption ? instruction.caption : '' : '',
-            text: instruction ? instruction.text ? instruction.text : '' : '',
+            text: [instruction ? instruction.text ? instruction.text : '' : '', [Validators.required]],
         }));
     }
 
@@ -109,12 +102,12 @@ export class InstructionsStepComponent implements OnInit {
     /* JSON Output */
 
     serializeConfiguration() {
-        let serializedInstructions = Object.keys(localStorage).filter((key) => key.startsWith(`${this.type}-instruction-`))
+        let serializedInstructions = Object.keys(localStorage).filter((key) => key.startsWith(`instruction-general-`))
         if (serializedInstructions.length > 0) serializedInstructions.forEach(key => this.localStorageService.removeItem(key))
         let instructionsJSON = JSON.parse(JSON.stringify(this.formStep.get(`instructions`).value));
         instructionsJSON.forEach((instruction, instructionIndex) => {
             if (instruction.caption == '') instruction.caption = false
-            this.localStorageService.setItem(`${this.type}-instruction-${instructionIndex}`, JSON.stringify(instruction))
+            this.localStorageService.setItem(`instruction-general-${instructionIndex}`, JSON.stringify(instruction))
         })
         this.configurationSerialized = JSON.stringify(instructionsJSON);
     }

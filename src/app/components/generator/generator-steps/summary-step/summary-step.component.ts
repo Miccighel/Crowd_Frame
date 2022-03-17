@@ -3,7 +3,7 @@ import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 /* Components */
 import {QuestionnaireStepComponent} from "../questionnaire-step/questionnaire-step.component";
 import {DimensionsStepComponent} from "../dimensions-step/dimensions-step.component";
-import {InstructionsStepComponent} from "../instructions-step/instructions-step.component";
+import {InstructionsGeneralStep} from "../instructions-general-step/instructions-general-step.component";
 import {SearchEngineStepComponent} from "../search-engine-step/search-engine-step.component";
 import {TaskSettingsStepComponent} from "../task-settings-step/task-settings-step.component";
 import {WorkerChecksStepComponent} from "../worker-checks-step/worker-checks-step.component";
@@ -28,8 +28,8 @@ export class SummaryStepComponent implements OnInit {
 
     @Input() questionnaireStep: QuestionnaireStepComponent
     @Input() dimensionsStep: DimensionsStepComponent
-    @Input() generalInstructionsStep: InstructionsStepComponent
-    @Input() evaluationInstructionsStep: InstructionsStepComponent
+    @Input() generalInstructionsStep: InstructionsGeneralStep
+    @Input() evaluationInstructionsStep: InstructionsGeneralStep
     @Input() searchEngineStep: SearchEngineStepComponent
     @Input() taskSettingsStep: TaskSettingsStepComponent
     @Input() workerChecksStep: WorkerChecksStepComponent

@@ -42,7 +42,7 @@
 }
 
 .dimension .magnitude_estimation {
-  font-size: 2em;
+  font-size: 1.2rem;
 }
 
 .dimension-matrix-container {
@@ -53,6 +53,10 @@
   position: relative;
   right: 5px;
   text-align: center;
+}
+
+.dimension-matrix .matrix-header-value {
+  font-size: large;
 }
 
 .dimension-matrix mat-radio-group {
@@ -75,8 +79,14 @@
 }
 
 .dimension-matrix mat-radio-group > div p {
-  margin: 0;
+  font-size: initial;
 }
+
+.dimension-matrix mat-radio-group > div i {
+  margin-top: 10pt;
+  font-size: initial;
+}
+
 
 .dimension h2, .instructions h2 {
   font-weight: lighter;

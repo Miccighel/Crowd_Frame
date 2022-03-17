@@ -79,9 +79,10 @@ export class DimensionsStepComponent implements OnInit {
     configurationSerialized: string
 
     taskModality: string
+
     @Input() set modality(value: string) {
         this.taskModality = value;
-        if(this.taskModality!='pairwise') {
+        if (this.taskModality != 'pairwise') {
             for (let dimension of this.dimensions().controls) {
                 dimension.get('pairwise').setValue(false)
             }
@@ -147,10 +148,11 @@ export class DimensionsStepComponent implements OnInit {
     }
 
     addDimension(dimensionIndex = null, dimension = null as Dimension) {
-        let name, name_pretty, description, gold, pairwise, setJustification, justification, url, setScale, scale, setStyle, style;
+        let name, name_pretty, description, example, gold, pairwise, setJustification, justification, url, setScale, scale, setStyle, style;
         name = dimension ? dimension.name ? dimension.name : '' : '';
         name_pretty = dimension ? dimension.name_pretty ? dimension.name_pretty : '' : '';
         description = dimension ? dimension.description ? dimension.description : '' : '';
+        example = dimension ? dimension.example ? dimension.example : '' : '';
         gold = dimension ? dimension.gold ? dimension.gold : false : false
         pairwise = dimension ? dimension.pairwise ? dimension.pairwise : false : false
         setJustification = dimension ? dimension.justification ? dimension.justification : false : false;
@@ -158,8 +160,8 @@ export class DimensionsStepComponent implements OnInit {
         if (dimension) {
             if (dimension.justification) {
                 justification = this._formBuilder.group({
-                    text: [dimension.justification.text],
-                    min_words: [dimension.justification.min_words]
+                    text: [dimension.justification.text, [Validators.required]],
+                    min_words: [dimension.justification.min_words, [Validators.required]]
                 })
             }
         }
@@ -176,12 +178,12 @@ export class DimensionsStepComponent implements OnInit {
         if (dimension) {
             if (dimension.scale) {
                 scale = this._formBuilder.group({
-                    type: [dimension.scale.type],
-                    min: [dimension.scale['min'] ? dimension.scale['min'] : dimension.scale['min'] == 0 ? 0 : ''],
-                    max: [dimension.scale['max'] ? dimension.scale['max'] : dimension.scale['max'] == 0 ? 0 : ''],
-                    step: [dimension.scale['step'] ? dimension.scale['step'] : dimension.scale['step'] == 0 ? 0 : ''],
+                    type: [dimension.scale.type, [Validators.required]],
+                    min: dimension.scale['min'] ? [dimension.scale['min'], [Validators.required]] : '',
+                    max: dimension.scale['max'] ? [dimension.scale['max'], [Validators.required]] : '',
+                    step: dimension.scale['step'] ? [dimension.scale['step'], [Validators.required]] : '',
                     mapping: this._formBuilder.array([]),
-                    lower_bound: [dimension.scale['lower_bound'] ? dimension.scale['lower_bound'] : '']
+                    lower_bound: dimension.scale['lower_bound'] ? dimension.scale['lower_bound'] : ''
                 })
             }
         }
@@ -195,17 +197,18 @@ export class DimensionsStepComponent implements OnInit {
         if (dimension) {
             if (dimension.style) {
                 style = this._formBuilder.group({
-                    styleType: [dimension.style.type],
-                    position: [dimension.style.position],
-                    orientation: [dimension.style.orientation],
+                    styleType: [dimension.style.type, [Validators.required]],
+                    position: [dimension.style.position, [Validators.required]],
+                    orientation: [dimension.style.orientation, [Validators.required]],
                     separator: [dimension.style.separator]
                 })
             }
         }
         this.dimensions().push(this._formBuilder.group({
-            name: [name, [Validators.pattern('[a-zA-Z0-9-]*')]],
+            name: [name, [Validators.pattern('[a-zA-Z0-9-]*'), Validators.required]],
             name_pretty: name_pretty,
             description: description,
+            example: example,
             gold: gold,
             pairwise: pairwise,
             setJustification: setJustification,
@@ -232,7 +235,6 @@ export class DimensionsStepComponent implements OnInit {
 
     resetJustification(dimensionIndex) {
         let dim = this.dimensions().at(dimensionIndex);
-
         dim.get('justification').get('text').setValue('');
         dim.get('justification').get('min_words').setValue('');
 
@@ -377,7 +379,7 @@ export class DimensionsStepComponent implements OnInit {
         this.dimensionMapping(dimensionIndex).push(this._formBuilder.group({
             label: mapping ? mapping.label ? mapping.label : '' : '',
             description: mapping ? mapping.description ? mapping.description : '' : '',
-            value: mapping ? mapping.value ? mapping.value : '' : ''
+            value: [mapping ? mapping.value ? mapping.value : '' : '', [Validators.required]]
         }))
     }
 

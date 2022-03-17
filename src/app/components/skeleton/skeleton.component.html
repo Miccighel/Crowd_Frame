@@ -11,7 +11,7 @@
             </ng-container>
         </mat-card-content>
         <mat-card-actions>
-            <button mat-flat-button color="primary" (click)="enableTask()" [disabled]="!this.sectionService.checkCompleted || !this.task.instructionsGeneral">
+            <button mat-flat-button color="primary" (click)="enableTask(); this.performTaskSetup()" [disabled]="!this.sectionService.checkCompleted || !this.task.instructionsGeneral">
                 Proceed
             </button>
         </mat-card-actions>
@@ -34,14 +34,8 @@
                            (focus)="this.tokenForm.updateValueAndValidity()" (paste)="this.tokenForm.updateValueAndValidity()"
                            (keyup)="this.tokenForm.updateValueAndValidity()" (keydown)="this.tokenForm.updateValueAndValidity()"
                            (keyup.enter)="performTaskSetup()">
-                    <mat-error *ngIf="this.utilsService.hasError(tokenForm,'tokenInput', 'required')">
-                        This field is required
-                    </mat-error>
-                    <mat-error *ngIf="this.utilsService.hasError(tokenForm,'tokenInput', 'invalid')">
-                        This token input is invalid
-                    </mat-error>
-                    <mat-error *ngIf="this.utilsService.hasError(tokenForm,'tokenInput', 'maxlength')">
-                        This token input should be 11 characters long
+                    <mat-error>
+                        <app-error-message [formField]="this.tokenForm.get('tokenInput')"></app-error-message>
                     </mat-error>
                 </mat-form-field>
             </mat-card-content>

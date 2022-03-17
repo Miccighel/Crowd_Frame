@@ -21,7 +21,7 @@ export class Task {
     public tokenOutput: string
     public tryCurrent: number
     public instructionsGeneralAmount: number
-    public instructionsEvaluationAmount: number
+    public instructionsEvaluationGeneralAmount: number
     public questionnaireAmount: number
     public questionnaireAmountStart: number
     public questionnaireAmountEnd: number
@@ -37,7 +37,10 @@ export class Task {
     instructionsGeneral: Array<Instruction>;
 
     /* Array of evaluation instructions. Each object represents a paragraph with an optional caption made of steps */
-    instructionsEvaluation: Array<Instruction>;
+    instructionsEvaluationGeneral: Array<Instruction>;
+    instructionsEvaluationElement: Instruction;
+    instructionsEvaluationUrl: Instruction;
+    instructionsEvaluationScale: Instruction;
 
     /* Reference to the current questionnaires */
     questionnaires: Array<Questionnaire>;
@@ -222,12 +225,17 @@ export class Task {
     }
 
     public initializeInstructionsEvaluation(rawEvaluationInstructions) {
-        this.instructionsEvaluationAmount = rawEvaluationInstructions.length;
-        /* The instructions are parsed using the Instruction class */
-        this.instructionsEvaluation = new Array<Instruction>();
-        for (let index = 0; index < this.instructionsEvaluationAmount; index++) {
-            this.instructionsEvaluation.push(new Instruction(index, rawEvaluationInstructions[index]));
+        this.instructionsEvaluationGeneralAmount = rawEvaluationInstructions["general"].length;
+        this.instructionsEvaluationGeneral = new Array<Instruction>();
+        for (let index = 0; index < this.instructionsEvaluationGeneralAmount; index++) {
+            this.instructionsEvaluationGeneral.push(new Instruction(index, rawEvaluationInstructions["general"][index]));
         }
+        if ('scale' in rawEvaluationInstructions)
+            this.instructionsEvaluationScale = new Instruction(0, rawEvaluationInstructions['scale'])
+        if ('url' in rawEvaluationInstructions)
+            this.instructionsEvaluationUrl = new Instruction(0, rawEvaluationInstructions['url'])
+        if ('element' in rawEvaluationInstructions)
+            this.instructionsEvaluationElement = new Instruction(0, rawEvaluationInstructions['element'])
     }
 
     public initializeDimensions(rawDimensions) {

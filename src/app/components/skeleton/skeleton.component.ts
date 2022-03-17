@@ -155,15 +155,14 @@ export class SkeletonComponent implements OnInit {
     /* To follow the execution flow of the skeleton the functions needs to be read somehow in order (i.e., from top to bottom) */
     public async ngOnInit() {
 
-        this.ngxService.start()
-
         this.task = new Task()
         this.sectionService.task = this.task
         this.task.taskName = this.configService.environment.taskName
         this.task.batchName = this.configService.environment.batchName
 
+        this.task.initializeInstructionsGeneral(await this.S3Service.downloadGeneralInstructions(this.configService.environment));
+
         if (this.configService.environment.debug_mode == 'true') {
-            this.enableTask()
             let hits = await this.S3Service.downloadHits(this.configService.environment)
             this.tokenInput.setValue(this.debugService.selectRandomToken(hits))
         }
@@ -195,12 +194,12 @@ export class SkeletonComponent implements OnInit {
                 this.actionLogger = null;
 
             /* Anonymous  function that unlocks the task depending on performWorkerStatusCheck outcome */
-            let unlockTask = function (changeDetector: ChangeDetectorRef, ngxService: NgxUiLoaderService, sectionService: SectionService, taskAllowed: boolean) {
-                sectionService.taskAllowed = taskAllowed
-                sectionService.checkCompleted = true
-                changeDetector.detectChanges()
+            let unlockTask = function (context, taskAllowed: boolean) {
+                context.sectionService.taskAllowed = taskAllowed
+                context.sectionService.checkCompleted = true
+                context.changeDetector.detectChanges()
                 /* The loading spinner is stopped */
-                ngxService.stop();
+                context.ngxService.stop();
             };
 
             /* If there is an external worker which is trying to perform the task, check its status */
@@ -262,8 +261,6 @@ export class SkeletonComponent implements OnInit {
                             /* If the flag is still false, it means that all the available HITs have been assigned once...
                                ... however, a worker have probably abandoned the task if someone reaches this point of the code. */
 
-                            let lastUnpaidUnassignedHit = null
-
                             if (!hitAssigned) {
 
                                 /* The whole set of ACL records must be scanned to find the oldest worker that participated in the task but abandoned it */
@@ -296,7 +293,7 @@ export class SkeletonComponent implements OnInit {
                                     let timeActual = new Date().getTime()
                                     let hoursElapsed = Math.abs(timeActual - timeArrival) / 36e5;
                                     if (((/true/i).test(aclEntry['paid']) == false && (/true/i).test(aclEntry['in_progress']) == true) && hoursElapsed > this.task.settings.time_assessment ||
-                                        ((/true/i).test(aclEntry['paid']) == false && (/true/i).test(aclEntry['in_progress']) == false) && parseInt(aclEntry['try_left'])<=1) {
+                                        ((/true/i).test(aclEntry['paid']) == false && (/true/i).test(aclEntry['in_progress']) == false) && parseInt(aclEntry['try_left']) <= 1) {
 
                                         let hitFound = null
                                         for (let currentHit of hits) {
@@ -351,33 +348,40 @@ export class SkeletonComponent implements OnInit {
                             taskAllowed = false
                         }
 
+                        if (this.configService.environment.debug_mode=='true' && taskAllowed) {
+                            this.enableTask()
+                            await this.performTaskSetup()
+                        }
+
                         /* We launch a call to Cloudflare to trace the worker */
                         if (this.worker.settings.analysis) {
                             this.client.get('https://www.cloudflare.com/cdn-cgi/trace', {responseType: 'text'}).subscribe(
                                 /* If we retrieve some data from Cloudflare we use them to populate worker's object */
                                 cloudflareData => {
                                     this.worker.updateProperties('cloudflare', cloudflareData)
-                                    unlockTask(this.changeDetector, this.ngxService, this.sectionService, taskAllowed)
+                                    unlockTask(this, taskAllowed)
                                 },
                                 /* Otherwise, we won't have such information */
                                 error => {
                                     this.worker.updateProperties('error', error)
-                                    unlockTask(this.changeDetector, this.ngxService, this.sectionService, taskAllowed);
+                                    unlockTask(this, taskAllowed);
                                 }
                             )
 
-                        } else unlockTask(this.changeDetector, this.ngxService, this.sectionService, taskAllowed)
+                        } else unlockTask(this, taskAllowed)
 
-                    } else unlockTask(this.changeDetector, this.ngxService, this.sectionService, taskAllowed)
+                    } else unlockTask(this, taskAllowed)
                 })
                 /* If there is not any worker ID we simply load the task. A sort of testing mode. */
-            } else unlockTask(this.changeDetector, this.ngxService, this.sectionService, true)
-
+            } else {
+                /* If the debug mode is active */
+                if(this.tokenInput.value!='') {
+                    this.enableTask()
+                    this.performTaskSetup()
+                }
+                unlockTask(this, true)
+            }
         })
-
-        /* |--------- INSTRUCTIONS MAIN (see: instructions_main.json) ---------| */
-
-        this.task.initializeInstructionsGeneral(await this.S3Service.downloadGeneralInstructions(this.configService.environment));
 
         this.changeDetector.detectChanges()
 
@@ -523,7 +527,7 @@ export class SkeletonComponent implements OnInit {
      */
     public enableTask() {
         this.sectionService.taskInstructionsRead = true
-        this.showSnackbar("If you have a very slow internet connection please wait a few seconds before clicking \"Start\".", "Dismiss", 15000)
+        this.showSnackbar("If you have a very slow internet connection please wait a few seconds", "Dismiss", 10000)
     }
 
     /*
@@ -545,13 +549,12 @@ export class SkeletonComponent implements OnInit {
     */
     public async performTaskSetup() {
 
+        this.ngxService.start()
+
         /* The token input has been already validated, this is just to be sure */
         if (this.tokenForm.valid) {
 
             this.sectionService.taskStarted = true;
-
-            /* The loading spinner is started */
-            this.ngxService.start();
 
             /* The hits stored on Amazon S3 are retrieved */
             let hits = await this.S3Service.downloadHits(this.configService.environment)

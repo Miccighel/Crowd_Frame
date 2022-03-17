@@ -1,5 +1,7 @@
 import {Injectable} from "@angular/core";
 import {AbstractControl, FormArray, FormControl, FormGroup} from "@angular/forms";
+import CryptoES from "crypto-es";
+import kdf = CryptoES.kdf;
 
 @Injectable({
     providedIn: 'root',
@@ -7,9 +9,6 @@ import {AbstractControl, FormArray, FormControl, FormGroup} from "@angular/forms
 
 export class UtilsService {
 
-    /*
-     * This function retrieves the string associated to an error code thrown by a form field validator.
-     */
     public hasError(form: FormGroup, field: string, key: string): boolean {
         let control = form.get(field)
         if (control) {
@@ -19,15 +18,35 @@ export class UtilsService {
         }
     }
 
-    public getErrorMessage(form: FormGroup, field: string, key: string): string {
-        switch (key) {
-            case 'min':
-                return form.get(field).errors[key][key]
-            case 'max':
-                return form.get(field).errors[key][key]
+    public getErrorMessage(field: AbstractControl) {
+        let messages = []
+        for (let errorKey of Object.keys(field.errors)) {
+            let message = ''
+            switch (errorKey) {
+                case 'min':
+                    message = `Min value required: ${field.errors[errorKey][errorKey]}`
+                    break;
+                case 'max':
+                    message = `Max value required: ${field.errors[errorKey][errorKey]}`
+                    break;
+                case 'required':
+                    message = "This field is required"
+                    break;
+                case 'pattern':
+                    message = `This field must not contain special characters`
+                    break;
+                case 'invalid':
+                    message = `This field is invalid`
+                    break;
+                default:
+                    message = field.errors[errorKey]
+                    break;
+            }
+            messages.push(message)
         }
-
+        return messages
     }
+
 
     public capitalize(word: string) {
         if (!word) return word;

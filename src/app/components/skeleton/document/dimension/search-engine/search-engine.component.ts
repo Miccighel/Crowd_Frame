@@ -114,11 +114,12 @@ export class SearchEngineComponent implements OnInit {
 
     public handleSearchEngineRetrievedResponse(retrievedResponseData, document: Document, dimension: Dimension) {
         this.task.storeSearchEngineRetrievedResponse(retrievedResponseData, document, dimension)
-        this.searchEngineForm.controls[dimension.name.concat("_url")].enable();
+        this.searchEngineForm.get(dimension.name.concat("_url")).enable();
     }
 
     public handleSearchEngineSelectedResponse(selectedResponseData, document: Document, dimension: Dimension) {
         this.task.storeSearchEngineSelectedResponse(selectedResponseData, document, dimension)
-        this.searchEngineForm.controls[dimension.name.concat("_url")].setValue(selectedResponseData['url']);
+        this.searchEngineForm.get(dimension.name.concat("_url")).setValue(selectedResponseData['url']);
+        this.formEmitter.emit(this.searchEngineForm)
     }
 }

@@ -23,7 +23,7 @@ mat-card-content, mat-card-title {
 .statement ul li {
   padding-top: 2%;
   padding-bottom: 2%;
-  font-size: 1.1em;
+  font-size: large;
 }
 
 .statement {
@@ -33,11 +33,12 @@ mat-card-content, mat-card-title {
 
 .attribute {
   padding: 1% 1% 1% 2%;
-  font-size: 1.2em;
+  font-size: large;
 
   p {
     margin: 0;
   }
+
 }
 
 .statement mat-expansion-panel-header {
@@ -100,7 +101,7 @@ mat-card-content, mat-card-title {
 
 .evaluation-instructions {
   h2 {
-    font-weight: lighter;
+    font-weight: normal;
   }
   margin-bottom: 1%;
 }

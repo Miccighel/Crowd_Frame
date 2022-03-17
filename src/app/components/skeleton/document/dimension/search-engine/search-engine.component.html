@@ -1,29 +1,36 @@
-<form [formGroup]="this.searchEngineForm" *ngIf="this.dimension.url">
-    <!-- Dimension search engine interface markup -->
-    <div class="dimension-container dimension-url">
-        <div class="dimension-content search-engine">
-            <app-crowd-xplorer
-                    *ngIf="this.dimension.url" id="app-crowd-xplorer-{{documentIndex}}-{{dimensionIndex}}"
-                    (resultEmitter)="handleSearchEngineRetrievedResponse($event, this.task.documents[documentIndex], this.dimension)"
-                    (queryEmitter)="this.task.storeSearchEngineUserQuery($event, this.task.documents[documentIndex], this.dimension)"
-                    (selectedRowEmitter)="handleSearchEngineSelectedResponse($event, this.task.documents[documentIndex], this.dimension)"
-                    [task]="this.task"
-                    [documentIndex]="documentIndex"
-            >
-            </app-crowd-xplorer>
-            <!-- Dimension search engine url field markup (hidden) -->
-            <mat-form-field *ngIf="dimension.url" class="url-field">
-                <input #urlField matInput type="text" formControlName="{{(this.dimension.name).concat('_url')}}">
-                <button mat-icon-button matPrefix>
-                    <mat-icon>{{'arrow_right_alt'}}</mat-icon>
-                </button>
-                <mat-error *ngIf="this.utilsService.hasError(searchEngineForm,(this.dimension.name).concat('_url'), 'required')">
-                    This field is required
-                </mat-error>
-                <mat-error *ngIf="this.utilsService.hasError(searchEngineForm, (this.dimension.name).concat('_url'), 'invalidSearchEngineUrl')">
-                    Please select (or copy & paste) one of the URLs shown above.
-                </mat-error>
-            </mat-form-field>
-        </div>
+<ng-container *ngIf="this.dimension.url">
+    <div *ngIf="this.task.instructionsEvaluationUrl" class="evaluation-instructions">
+        <mat-divider [inset]="true"></mat-divider>
+        <h2>B - {{this.task.instructionsEvaluationUrl.text}} </h2>
+        <mat-divider [inset]="true"></mat-divider>
     </div>
-</form>
+    <form [formGroup]="this.searchEngineForm">
+        <!-- Dimension search engine interface markup -->
+        <div class="dimension-container dimension-url">
+            <div class="dimension-content search-engine">
+                <app-crowd-xplorer
+                        id="app-crowd-xplorer-{{documentIndex}}-{{dimensionIndex}}"
+                        (resultEmitter)="handleSearchEngineRetrievedResponse($event, this.task.documents[documentIndex], this.dimension)"
+                        (queryEmitter)="this.task.storeSearchEngineUserQuery($event, this.task.documents[documentIndex], this.dimension)"
+                        (selectedRowEmitter)="handleSearchEngineSelectedResponse($event, this.task.documents[documentIndex], this.dimension)"
+                        [task]="this.task"
+                        [documentIndex]="documentIndex"
+                >
+                </app-crowd-xplorer>
+                <!-- Dimension search engine url field markup (hidden) -->
+                <mat-form-field class="url-field">
+                    <input #urlField matInput type="text" formControlName="{{(this.dimension.name).concat('_url')}}">
+                    <button mat-icon-button matPrefix>
+                        <mat-icon>{{'arrow_right_alt'}}</mat-icon>
+                    </button>
+                    <mat-error *ngIf="this.utilsService.hasError(searchEngineForm,(this.dimension.name).concat('_url'), 'required')">
+                        This field is required
+                    </mat-error>
+                    <mat-error *ngIf="this.utilsService.hasError(searchEngineForm, (this.dimension.name).concat('_url'), 'invalidSearchEngineUrl')">
+                        Please select (or copy & paste) one of the URLs shown above.
+                    </mat-error>
+                </mat-form-field>
+            </div>
+        </div>
+    </form>
+</ng-container>
