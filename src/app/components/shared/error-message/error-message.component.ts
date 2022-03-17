@@ -1,16 +1,17 @@
 import {Component, Input, OnInit} from '@angular/core';
-import {AbstractControl} from "@angular/forms";
+import {FormControl} from "@angular/forms";
 import {UtilsService} from "../../../services/utils.service";
 
 @Component({
     selector: 'app-error-message',
     templateUrl: './error-message.component.html',
+    styleUrls: ['./error-message.component.scss']
 })
 export class ErrorMessageComponent implements OnInit {
 
     public utilsService: UtilsService
 
-    @Input() formField: AbstractControl
+    @Input() formField: FormControl
 
     constructor(
         utilsService: UtilsService
