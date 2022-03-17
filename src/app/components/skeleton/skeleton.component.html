@@ -19,7 +19,7 @@
 </div>
 
 <!-- Instructions modal shown on the top  -->
-<app-instructions [instructions]="this.task.instructionsGeneral" *ngIf="this.sectionService.instructionsAllowed"></app-instructions>
+<app-instructions [task]="this.task" [worker]="this.worker" *ngIf="this.sectionService.instructionsAllowed"></app-instructions>
 
 <!-- Token input section -->
 <div id="token-section" class="container" *ngIf="this.sectionService.currentSection == 'token-section'">

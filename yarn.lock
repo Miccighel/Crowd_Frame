@@ -2948,9 +2948,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"aws-sdk@npm:^2.1092.0":
-  version: 2.1092.0
-  resolution: "aws-sdk@npm:2.1092.0"
+"aws-sdk@npm:^2.1095.0":
+  version: 2.1095.0
+  resolution: "aws-sdk@npm:2.1095.0"
   dependencies:
     buffer: 4.9.2
     events: 1.1.1
@@ -2961,7 +2961,7 @@ __metadata:
     url: 0.10.3
     uuid: 3.3.2
     xml2js: 0.4.19
-  checksum: b1b715d55efc2000feb769f207c8a06954ae8faf5e88478b6932e8261714ae1ec70008009801eacf871669caa7027443dd49ada6450f5ead0f98ed124eea9056
+  checksum: 29d2fc854479d67f43fec05a6ae93ef50f016d96b458dabd57641fb966ca1fc0b86ed4a15804cd69cd499037369f1f4672a1b403363de88912487a200044559b
   languageName: node
   linkType: hard
 
@@ -3675,10 +3675,10 @@ __metadata:
     "@funktechno/texthighlighter": ^2.1.2
     "@kolkov/angular-editor": ^2.0.0
     "@types/node": ~16.11.26
-    aws-sdk: ^2.1092.0
+    aws-sdk: ^2.1095.0
     crypto-es: ^1.2.7
     flat-angular: ^1.6.0
-    ngx-color-picker: ^12.0.0
+    ngx-color-picker: ^12.0.1
     ngx-countdown: ^13.0.0
     ngx-device-detector: ^3.0.0
     ngx-file-helpers: ^7.0.0
@@ -6332,16 +6332,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ngx-color-picker@npm:^12.0.0":
-  version: 12.0.0
-  resolution: "ngx-color-picker@npm:12.0.0"
+"ngx-color-picker@npm:^12.0.1":
+  version: 12.0.1
+  resolution: "ngx-color-picker@npm:12.0.1"
   dependencies:
     tslib: ^2.3.0
   peerDependencies:
     "@angular/common": ">=9.0.0"
     "@angular/core": ">=9.0.0"
     "@angular/forms": ">=9.0.0"
-  checksum: 6e8f9676ddfc390e4a4d0e7751e97cebd4b16b6cb4086254e9f5f5823ada12a5ee101a2a868f726a1b1dc412fa47aee885173461228d2a9904ed36041df38772
+  checksum: f0c2361ec92c4cd76ddf5561e9beeb1b5da56d4aafe929189c648bda21166c0cddd6d3e44278fd28eb76e00e24a9254a73de6b9ffff9d3b9197c052ea373577e
   languageName: node
   linkType: hard
 

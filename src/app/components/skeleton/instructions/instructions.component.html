@@ -1,6 +1,6 @@
 <mat-toolbar>
-  <button mat-flat-button color="primary" (click)="openDialog(this.instructions)">
-    Task Instructions
-  </button>
-  <h4>NO RETAKES</h4>
+    <button mat-flat-button color="primary" (click)="openDialog(this.task.instructionsGeneral)">
+        Task Instructions
+    </button>
+    <h4 *ngIf="this.worker.settings.block">NO RETAKES</h4>
 </mat-toolbar>
