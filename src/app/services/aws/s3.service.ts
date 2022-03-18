@@ -4,12 +4,12 @@ import * as AWS from "aws-sdk";
 /* Debug config import */
 import * as localRawDimensions from '../../../../data/build/task/dimensions.json';
 import * as localRawHits from '../../../../data/build/task/hits.json';
-import * as localRawInstructionsDimensions from '../../../../data/build/task/instructions_dimensions.json';
+import * as localRawInstructionsDimensions from '../../../../data/build/task/instructions_evaluation.json';
 import * as localRawQuestionnaires from '../../../../data/build/task/questionnaires.json';
 import * as localRawTaskSettings from '../../../../data/build/task/task.json';
 import * as localRawSearchEngineSettings from '../../../../data/build/task/search_engine.json';
 import * as localRawWorkers from '../../../../data/build/task/workers.json';
-import * as localRawInstructionsMain from '../../../../data/build/task/instructions_main.json';
+import * as localRawInstructionsMain from '../../../../data/build/task/instructions_general.json';
 import * as localRawAdmin from '../../../../data/build/config/admin.json';
 import {ManagedUpload} from "aws-sdk/clients/s3";
 import {Worker} from "../../models/worker/worker";
@@ -138,12 +138,12 @@ export class S3Service {
     }
 
     public downloadGeneralInstructions(config) {
-        let taskInstructionsFile = `${this.getFolder(config)}Task/instructions_main.json`;
+        let taskInstructionsFile = `${this.getFolder(config)}Task/instructions_general.json`;
         return (config["configuration_local"]) ? localRawInstructionsMain["default"] : this.download(config, taskInstructionsFile);
     }
 
     public downloadEvaluationInstructions(config) {
-        let dimensionsInstructionsFile = `${this.getFolder(config)}Task/instructions_dimensions.json`;
+        let dimensionsInstructionsFile = `${this.getFolder(config)}Task/instructions_evaluation.json`;
         return (config["configuration_local"]) ? localRawInstructionsDimensions["default"] : this.download(config, dimensionsInstructionsFile);
     }
 
@@ -184,11 +184,11 @@ export class S3Service {
     }
 
     public getTaskInstructionsConfigPath(config) {
-        return `${config.taskName}/${config.batchName}/Task/instructions_main.json`
+        return `${config.taskName}/${config.batchName}/Task/instructions_general.json`
     }
 
     public getDimensionsInstructionsConfigPath(config) {
-        return `${config.taskName}/${config.batchName}/Task/instructions_dimensions.json`
+        return `${config.taskName}/${config.batchName}/Task/instructions_evaluation.json`
     }
 
     public getSearchEngineSettingsConfigPath(config) {
@@ -220,11 +220,11 @@ export class S3Service {
     }
 
     public uploadTaskInstructionsConfig(config, data) {
-        return this.upload(config, `${config.taskName}/${config.batchName}/Task/instructions_main.json`, data)
+        return this.upload(config, `${config.taskName}/${config.batchName}/Task/instructions_general.json`, data)
     }
 
     public uploadDimensionsInstructionsConfig(config, data) {
-        return this.upload(config, `${config.taskName}/${config.batchName}/Task/instructions_dimensions.json`, data)
+        return this.upload(config, `${config.taskName}/${config.batchName}/Task/instructions_evaluation.json`, data)
     }
 
     public uploadSearchEngineSettings(config, data) {

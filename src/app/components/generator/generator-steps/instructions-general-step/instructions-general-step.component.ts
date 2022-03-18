@@ -7,6 +7,7 @@ import {S3Service} from "../../../../services/aws/s3.service";
 import {LocalStorageService} from "../../../../services/localStorage.service";
 /* Models */
 import {Instruction} from "../../../../models/skeleton/instructions";
+import {Questionnaire} from "../../../../models/skeleton/questionnaires/questionnaire";
 
 @Component({
     selector: 'app-instructions-step',
@@ -58,8 +59,9 @@ export class InstructionsGeneralStep implements OnInit {
             serializedInstructions.forEach(key => {
                 let index = key.split("-")[2]
                 let item = this.localStorageService.getItem(`instruction-general-${index}`)
-                this.dataStored.push(JSON.parse(item))
+                this.dataStored.push(new Instruction(parseInt(index), JSON.parse(item)))
             })
+            this.dataStored.sort((a, b) => (a.index > b.index) ? 1 : -1)
         } else {
             this.initializeControls()
             let rawInstructions = null

@@ -1414,7 +1414,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             }]
             print(json.dumps(sample_dimensions, indent=4), file=file)
 
-    filename = "instructions_main.json"
+    filename = "instructions_general.json"
     if os.path.exists(f"{folder_build_task_path}{filename}"):
         console.print(f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
     else:
@@ -1429,7 +1429,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             ]
             print(json.dumps(sample_instructions, indent=4), file=file)
 
-    filename = "instructions_dimensions.json"
+    filename = "instructions_evaluation.json"
     if os.path.exists(f"{folder_build_task_path}{filename}"):
         console.print(
             f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
@@ -1936,12 +1936,12 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         destination = f"{folder_tasks_batch_task_path}dimensions.json"
         copy(source, destination, "Dimensions")
 
-        source = f"{folder_build_task_path}instructions_dimensions.json"
-        destination = f"{folder_tasks_batch_task_path}instructions_dimensions.json"
+        source = f"{folder_build_task_path}instructions_evaluation.json"
+        destination = f"{folder_tasks_batch_task_path}instructions_evaluation.json"
         copy(source, destination, "Assessment Instructions")
 
-        source = f"{folder_build_task_path}instructions_main.json"
-        destination = f"{folder_tasks_batch_task_path}instructions_main.json"
+        source = f"{folder_build_task_path}instructions_general.json"
+        destination = f"{folder_tasks_batch_task_path}instructions_general.json"
         copy(source, destination, "General Instructions")
 
         source = f"{folder_build_task_path}questionnaires.json"
@@ -2018,12 +2018,12 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         key = f"{s3_private_task_path}hits.json"
         upload(iam_path, aws_private_bucket, key, "Hits", "application/json", 'bucket-owner-full-control')
 
-        iam_path = f"{folder_tasks_batch_task_path}instructions_dimensions.json"
-        key = f"{s3_private_task_path}instructions_dimensions.json"
+        iam_path = f"{folder_tasks_batch_task_path}instructions_evaluation.json"
+        key = f"{s3_private_task_path}instructions_evaluation.json"
         upload(iam_path, aws_private_bucket, key, "Assessment Instructions", "application/json", 'bucket-owner-full-control')
 
-        iam_path = f"{folder_tasks_batch_task_path}instructions_main.json"
-        key = f"{s3_private_task_path}instructions_main.json"
+        iam_path = f"{folder_tasks_batch_task_path}instructions_general.json"
+        key = f"{s3_private_task_path}instructions_general.json"
         upload(iam_path, aws_private_bucket, key, "General Instructions", "application/json", 'bucket-owner-full-control')
 
         iam_path = f"{folder_tasks_batch_task_path}questionnaires.json"

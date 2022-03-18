@@ -3,6 +3,8 @@
  * Each field of such dimensions must be mapped to an attribute of this class and set up in the constructor as it is shown.
  */
 
+import {Instruction} from "./instructions";
+
 export class Dimension {
 
     index: number;
@@ -12,7 +14,7 @@ export class Dimension {
     description?: string;
     example?: string;
     justification?: Justification;
-    url?: boolean;
+    url?: Url;
     pairwise?: boolean;
     scale?: ScaleCategorical | ScaleInterval | ScaleMagnitude | ScalePairwise;
     gold?: boolean;
@@ -33,7 +35,7 @@ export class Dimension {
         this.description = data['description'] ? data["description"] : null;
         this.example = data['example'] ? data["example"] : null;
         this.justification = data['justification'] ? new Justification(data['justification']) : null;
-        this.url = data['url'] ? data["url"] : null;
+        this.url = data['url'] ? new Url(data['url']) : null;
         this.pairwise = data['pairwise'] ? data["pairwise"] : null;
         if (data['scale']) {
             switch (data['scale']['type']) {
@@ -75,15 +77,31 @@ export class Justification {
 
 }
 
+export class Url {
+
+    enable: boolean;
+    instructions: Instruction;
+
+    constructor(
+        data: JSON
+    ) {
+        this.enable = !!data['enable']
+        data['instructions'] ? this.instructions = new Instruction(0, data['instructions']) : this.instructions = null
+    }
+
+}
+
 
 export class Scale {
 
     type: string;
+    instructions: Instruction
 
     constructor(
         data: JSON
     ) {
         this.type = data["type"];
+        data['instructions'] ? this.instructions = new Instruction(0, data['instructions']) : this.instructions = null
     }
 
 }

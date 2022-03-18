@@ -117,8 +117,9 @@ export class DimensionsStepComponent implements OnInit {
             serializedDimensions.forEach(key => {
                 let index = key.split("-")[1]
                 let item = this.localStorageService.getItem(`dimension-${index}`)
-                this.dataStored.push(JSON.parse(item))
+                this.dataStored.push(new Dimension(parseInt(index), JSON.parse(item)))
             })
+            this.dataStored.sort((a, b) => (a.index > b.index) ? 1 : -1)
         } else {
             this.initializeControls()
             let rawDimensions = await this.S3Service.downloadDimensions(this.configService.environment)
@@ -148,7 +149,7 @@ export class DimensionsStepComponent implements OnInit {
     }
 
     addDimension(dimensionIndex = null, dimension = null as Dimension) {
-        let name, name_pretty, description, example, gold, pairwise, setJustification, justification, url, setScale, scale, setStyle, style;
+        let name, name_pretty, description, example, gold, pairwise, setJustification, justification, setUrl, url, setScale, scale, setStyle, style;
         name = dimension ? dimension.name ? dimension.name : '' : '';
         name_pretty = dimension ? dimension.name_pretty ? dimension.name_pretty : '' : '';
         description = dimension ? dimension.description ? dimension.description : '' : '';
@@ -165,10 +166,25 @@ export class DimensionsStepComponent implements OnInit {
                 })
             }
         }
-        url = dimension ? dimension.url ? dimension.url : false : false
+        setUrl = dimension ? dimension.url ? dimension.url.enable : false : false
+        url = this._formBuilder.group({
+            enable: '',
+            setInstructions: false,
+            instructions: this._formBuilder.group({
+                caption: '',
+                label: '',
+                text: '',
+            }),
+        })
         setScale = dimension ? dimension.scale ? dimension.scale : false : false
         scale = this._formBuilder.group({
             type: '',
+            setInstructions: false,
+            instructions: this._formBuilder.group({
+                caption: '',
+                label: '',
+                text: '',
+            }),
             min: '',
             max: '',
             step: '',
@@ -176,15 +192,50 @@ export class DimensionsStepComponent implements OnInit {
             lower_bound: '',
         })
         if (dimension) {
+            if (dimension.url) {
+                let urlConfig = {
+                    enable: [dimension.url.enable, [Validators.required]],
+                    setInstructions: !!dimension.url['instructions'],
+                }
+                if (dimension.url.instructions) {
+                    urlConfig['instructions'] = this._formBuilder.group({
+                        caption: dimension.url.instructions['caption'],
+                        label: dimension.url.instructions['label'],
+                        text: [dimension.url.instructions['text'], [Validators.required]]
+                    })
+                } else {
+                    urlConfig['instructions'] = this._formBuilder.group({
+                        caption: '',
+                        label: '',
+                        text: ['', [Validators.required]]
+                    })
+                }
+                url = this._formBuilder.group(urlConfig)
+            }
             if (dimension.scale) {
-                scale = this._formBuilder.group({
+                let scaleConfig = {
                     type: [dimension.scale.type, [Validators.required]],
+                    setInstructions: !!dimension.scale['instructions'],
                     min: dimension.scale['min'] ? [dimension.scale['min'], [Validators.required]] : '',
                     max: dimension.scale['max'] ? [dimension.scale['max'], [Validators.required]] : '',
                     step: dimension.scale['step'] ? [dimension.scale['step'], [Validators.required]] : '',
                     mapping: this._formBuilder.array([]),
                     lower_bound: dimension.scale['lower_bound'] ? dimension.scale['lower_bound'] : ''
-                })
+                }
+                if (dimension.scale.instructions) {
+                    scaleConfig['instructions'] = this._formBuilder.group({
+                        caption: dimension.scale.instructions['caption'],
+                        label: dimension.scale.instructions['label'],
+                        text: [dimension.scale.instructions['text'], [Validators.required]]
+                    })
+                } else {
+                    scaleConfig['instructions'] = this._formBuilder.group({
+                        caption: '',
+                        label: '',
+                        text: ['', [Validators.required]]
+                    })
+                }
+                scale = this._formBuilder.group(scaleConfig)
             }
         }
         setStyle = dimension ? dimension.style ? dimension.style : false : false
@@ -213,6 +264,7 @@ export class DimensionsStepComponent implements OnInit {
             pairwise: pairwise,
             setJustification: setJustification,
             justification: justification,
+            setUrl: setUrl,
             url: url,
             setScale: setScale,
             scale: scale,
@@ -247,6 +299,38 @@ export class DimensionsStepComponent implements OnInit {
         }
         dim.get('justification').get('text').updateValueAndValidity();
         dim.get('justification').get('min_words').updateValueAndValidity();
+    }
+
+
+    resetUrl(dimensionIndex) {
+        let dim = this.dimensions().at(dimensionIndex);
+        this.instructionsUrl(dimensionIndex).get('label').setValue('')
+        this.instructionsUrl(dimensionIndex).get('caption').setValue('')
+        this.instructionsUrl(dimensionIndex).get('text').setValue('')
+        if (dim.get('url').get('setInstructions').value == true) {
+            this.instructionsUrl(dimensionIndex).get('text').addValidators([Validators.required])
+        } else {
+            this.instructionsUrl(dimensionIndex).get('text').clearValidators()
+        }
+        this.instructionsUrl(dimensionIndex).get('text').updateValueAndValidity()
+    }
+
+    instructionsUrl(dimensionIndex): FormGroup {
+        let dim = this.dimensions().at(dimensionIndex);
+        return dim.get(`url`).get('instructions') as FormGroup;
+    }
+
+    resetInstructionUrl(dimensionIndex) {
+        let dim = this.dimensions().at(dimensionIndex);
+        this.instructionsUrl(dimensionIndex).get('label').setValue('')
+        this.instructionsUrl(dimensionIndex).get('caption').setValue('')
+        this.instructionsUrl(dimensionIndex).get('text').setValue('')
+        if (dim.get('url').get('setInstructions').value == true) {
+            this.instructionsUrl(dimensionIndex).get('text').addValidators([Validators.required])
+        } else {
+            this.instructionsUrl(dimensionIndex).get('text').clearValidators()
+        }
+        this.instructionsUrl(dimensionIndex).get('text').updateValueAndValidity()
     }
 
     resetScale(dimensionIndex) {
@@ -322,6 +406,24 @@ export class DimensionsStepComponent implements OnInit {
                 default:
                     dim.get('setStyle').disable()
             }
+        }
+    }
+
+    instructionsScale(dimensionIndex): FormGroup {
+        let dim = this.dimensions().at(dimensionIndex);
+        return dim.get(`scale`).get('instructions') as FormGroup;
+    }
+
+    resetInstructionScale(dimensionIndex) {
+        let dim = this.dimensions().at(dimensionIndex);
+        if (dim.get('scale').get('setInstructions').value == true) {
+            this.instructionsScale(dimensionIndex).get('label').setValue('')
+            this.instructionsScale(dimensionIndex).get('caption').setValue('')
+            this.instructionsScale(dimensionIndex).get('text').setValue('')
+            this.instructionsScale(dimensionIndex).get('text').addValidators([Validators.required])
+            this.instructionsScale(dimensionIndex).get('text').updateValueAndValidity()
+        } else {
+            this.instructionsScale(dimensionIndex).get('text').clearValidators()
         }
     }
 
@@ -405,13 +507,25 @@ export class DimensionsStepComponent implements OnInit {
             if (!dimension.setJustification) dimension.justification = false
             delete dimension.setJustification;
 
-            dimension.url = !!dimension.url;
+            if (dimension.setUrl == true) {
+                dimension.url.enable = true
+                if (dimension.url.setInstructions == false) {
+                    dimension.url.instructions = false
+                }
+                delete dimension.url.setInstructions
+            } else {
+                dimension.url = false
+            }
+            delete dimension.setUrl;
 
             if (dimension.setScale == false) {
                 delete dimension.scale
                 dimension.scale = false
                 dimension.style = false
             } else {
+                if (dimension.scale.setInstructions == false) {
+                    dimension.scale.instructions = false
+                }
                 switch (dimension.scale.type) {
                     case 'categorical':
                         delete dimension.scale.min;
@@ -432,6 +546,7 @@ export class DimensionsStepComponent implements OnInit {
                     default:
                         break;
                 }
+                delete dimension.scale.setInstructions;
             }
             delete dimension.setScale;
 

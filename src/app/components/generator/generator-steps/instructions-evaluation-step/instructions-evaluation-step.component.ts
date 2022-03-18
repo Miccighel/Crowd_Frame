@@ -54,18 +54,6 @@ export class InstructionsEvaluationStepComponent implements OnInit {
                 caption: '',
                 label: '',
                 text: '',
-            }),
-            setUrl: false,
-            url: this._formBuilder.group({
-                caption: '',
-                label: '',
-                text: '',
-            }),
-            setScale: false,
-            scale: this._formBuilder.group({
-                caption: '',
-                label: '',
-                text: '',
             })
         });
         this.formEmitter = new EventEmitter<FormGroup>();
@@ -89,14 +77,6 @@ export class InstructionsEvaluationStepComponent implements OnInit {
         if (this.dataStored.element) {
             this.formStep.get('setElement').setValue(true)
             this.resetInstructionElement(this.dataStored.element)
-        }
-        if (this.dataStored.url) {
-            this.formStep.get('setUrl').setValue(true)
-            this.resetInstructionUrl(this.dataStored.url)
-        }
-        if (this.dataStored.scale) {
-            this.formStep.get('setScale').setValue(true)
-            this.resetInstructionScale(this.dataStored.scale)
         }
         this.formStep.valueChanges.subscribe(form => {
             this.serializeConfiguration()
@@ -144,44 +124,6 @@ export class InstructionsEvaluationStepComponent implements OnInit {
         }
     }
 
-    instructionsUrl(): FormGroup {
-        return this.formStep.get(`url`) as FormGroup;
-    }
-
-    resetInstructionUrl(instruction = null) {
-        if (this.formStep.get('setUrl').value == false) {
-            this.instructionsUrl().get('label').setValue('')
-            this.instructionsUrl().get('caption').setValue('')
-            this.instructionsUrl().get('text').setValue('')
-            this.formStep.clearValidators()
-        } else {
-            this.instructionsUrl().get('label').setValue(instruction ? instruction.label : '')
-            this.instructionsUrl().get('caption').setValue(instruction ? instruction.caption : '')
-            this.instructionsUrl().get('text').setValue(instruction ? instruction.text : '')
-            this.instructionsUrl().get('text').addValidators([Validators.required])
-            this.instructionsUrl().get('text').updateValueAndValidity()
-        }
-    }
-
-    instructionsScale(): FormGroup {
-        return this.formStep.get(`scale`) as FormGroup;
-    }
-
-    resetInstructionScale(instruction = null) {
-        if (this.formStep.get('setScale').value == false) {
-            this.instructionsScale().get('label').setValue('')
-            this.instructionsScale().get('caption').setValue('')
-            this.instructionsScale().get('text').setValue('')
-            this.formStep.clearValidators()
-        } else {
-            this.instructionsScale().get('label').setValue(instruction ? instruction.label : '')
-            this.instructionsScale().get('caption').setValue(instruction ? instruction.caption : '')
-            this.instructionsScale().get('text').setValue(instruction ? instruction.text : '')
-            this.instructionsScale().get('text').addValidators([Validators.required])
-            this.instructionsScale().get('text').updateValueAndValidity()
-        }
-    }
-
 
     /* JSON Output */
 
@@ -198,20 +140,6 @@ export class InstructionsEvaluationStepComponent implements OnInit {
             instructionsJSON['element']['label'] = instructionsJSON['element']['label'] == '' ? false : instructionsJSON['element']['label']
         }
         delete instructionsJSON.setElement
-        if (!instructionsJSON.setUrl) {
-            instructionsJSON['url'] = false
-        } else {
-            instructionsJSON['url']['caption'] = instructionsJSON['url']['caption'] == '' ? false : instructionsJSON['url']['caption']
-            instructionsJSON['url']['label'] = instructionsJSON['url']['label'] == '' ? false : instructionsJSON['url']['label']
-        }
-        delete instructionsJSON.setUrl
-        if (!instructionsJSON.setScale) {
-            instructionsJSON['scale'] = false
-        } else {
-            instructionsJSON['scale']['caption'] = instructionsJSON['scale']['caption'] == '' ? false : instructionsJSON['scale']['caption']
-            instructionsJSON['scale']['label'] = instructionsJSON['scale']['label'] == '' ? false : instructionsJSON['scale']['label']
-        }
-        delete instructionsJSON.setScale
         this.localStorageService.setItem(`instructions-evaluation`, JSON.stringify(instructionsJSON))
         this.configurationSerialized = JSON.stringify(instructionsJSON);
     }

@@ -101,9 +101,54 @@
                             <mat-divider [inset]="true"></mat-divider>
 
                             <!-- Url -->
-                            <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="url">
+                            <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="setUrl" (change)="resetUrl(dimensionIndex)">
                                 Url
                             </mat-slide-toggle>
+
+                            <div *ngIf="dimension.get('setUrl').value" formGroupName="url">
+
+                                <h2 class="initial">Enabled</h2>
+
+                                <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="setInstructions" (change)="resetInstructionUrl(dimensionIndex)">
+                                    <h3 class="initial">Add Instruction</h3>
+                                </mat-slide-toggle>
+
+                                <div *ngIf="dimension.get('url').get('setInstructions').value" formGroupName="instructions">
+                                    <table class="width-100 mt-8px">
+                                        <tr>
+                                            <td class="p-0">
+                                                <mat-form-field matLine class="width-100" appearance="fill">
+                                                    <mat-label>Label</mat-label>
+                                                    <input matInput type="text" formControlName="label">
+                                                </mat-form-field>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                    <table class="width-100 mt-8px">
+                                        <tr>
+                                            <td class="p-0">
+                                                <mat-form-field matLine class="width-100" appearance="fill">
+                                                    <mat-label>Caption</mat-label>
+                                                    <input matInput type="text" formControlName="caption">
+                                                </mat-form-field>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                    <table class="width-100 mt-8px">
+                                        <tr>
+                                            <td class="p-0">
+                                                <mat-form-field matLine class="width-100" appearance="fill">
+                                                    <mat-label>Text</mat-label>
+                                                    <input matInput type="text" formControlName="text">
+                                                    <mat-error>
+                                                        <app-error-message [formField]="this.instructionsScale(dimensionIndex).get('text')"></app-error-message>
+                                                    </mat-error>
+                                                </mat-form-field>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
 
                             <mat-divider [inset]="true"></mat-divider>
 
@@ -228,6 +273,46 @@
                                         </td>
                                     </tr>
                                 </table>
+
+                                <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="setInstructions" (change)="resetInstructionScale(dimensionIndex)">
+                                    <h3 class="initial">Add Instruction</h3>
+                                </mat-slide-toggle>
+
+                                <div *ngIf="dimension.get('scale').get('setInstructions').value" formGroupName="instructions">
+                                    <table class="width-100 mt-8px">
+                                        <tr>
+                                            <td class="p-0">
+                                                <mat-form-field matLine class="width-100" appearance="fill">
+                                                    <mat-label>Label</mat-label>
+                                                    <input matInput type="text" formControlName="label">
+                                                </mat-form-field>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                    <table class="width-100 mt-8px">
+                                        <tr>
+                                            <td class="p-0">
+                                                <mat-form-field matLine class="width-100" appearance="fill">
+                                                    <mat-label>Caption</mat-label>
+                                                    <input matInput type="text" formControlName="caption">
+                                                </mat-form-field>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                    <table class="width-100 mt-8px">
+                                        <tr>
+                                            <td class="p-0">
+                                                <mat-form-field matLine class="width-100" appearance="fill">
+                                                    <mat-label>Text</mat-label>
+                                                    <input matInput type="text" formControlName="text">
+                                                    <mat-error>
+                                                        <app-error-message [formField]="this.instructionsScale(dimensionIndex).get('text')"></app-error-message>
+                                                    </mat-error>
+                                                </mat-form-field>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
                             </div>
 
                             <mat-divider [inset]="true"></mat-divider>

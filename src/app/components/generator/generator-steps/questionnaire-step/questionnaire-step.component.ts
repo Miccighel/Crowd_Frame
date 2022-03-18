@@ -8,6 +8,7 @@ import {LocalStorageService} from "../../../../services/localStorage.service";
 /* Models */
 import {Questionnaire} from "../../../../models/skeleton/questionnaires/questionnaire";
 import {Question} from "../../../../models/skeleton/questionnaires/question";
+import {Dimension} from "../../../../models/skeleton/dimension";
 
 /* STEP #1 - Questionnaires */
 
@@ -82,8 +83,9 @@ export class QuestionnaireStepComponent implements OnInit {
             serializedQuestionnaires.forEach(questionnaireKey => {
                 let index = questionnaireKey.split("-")[1]
                 let item = this.localStorageService.getItem(`questionnaire-${index}`)
-                this.dataStored.push(JSON.parse(item))
+                this.dataStored.push(new Questionnaire(parseInt(index), JSON.parse(item)))
             })
+            this.dataStored.sort((a, b) => (a.index > b.index) ? 1 : -1)
         } else {
             this.initializeControls()
             let rawQuestionnaires = await this.S3Service.downloadQuestionnaires(this.configService.environment)

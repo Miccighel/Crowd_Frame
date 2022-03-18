@@ -29,9 +29,9 @@
 
                     <div *ngIf="dimension.scale" class="dimension-container dimension-scale">
 
-                        <div *ngIf="this.task.instructionsEvaluationScale" class="evaluation-instructions">
+                        <div *ngIf="this.dimension.scale.instructions" class="evaluation-instructions">
                             <mat-divider *ngIf="!dimension.url" [inset]="true"></mat-divider>
-                            <h2>{{this.task.instructionsEvaluationScale.label}} - {{this.task.instructionsEvaluationScale.text}}</h2>
+                            <h2>{{this.dimension.scale.instructions.label}} - {{this.dimension.scale.instructions.text}}</h2>
                             <mat-divider [inset]="true"></mat-divider>
                         </div>
 
@@ -144,9 +144,9 @@
                 <div *ngIf="this.dimension.style.type=='matrix' && verifyUrlSelection()" class="dimension-matrix">
 
                     <ng-container>
-                        <div *ngIf="j==0 && this.task.instructionsEvaluationScale" class="evaluation-instructions">
+                        <div *ngIf="this.dimension.scale.instructions" class="evaluation-instructions">
                             <mat-divider *ngIf="!dimension.url" [inset]="true"></mat-divider>
-                            <h2>{{this.task.instructionsEvaluationScale.label}} - {{this.task.instructionsEvaluationScale.text}}</h2>
+                            <h2>{{this.dimension.scale.instructions.label}} - {{this.dimension.scale.instructions.text}}</h2>
                             <mat-divider [inset]="true"></mat-divider>
                         </div>
 

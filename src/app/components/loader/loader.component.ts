@@ -121,8 +121,8 @@ export class LoaderComponent implements OnInit {
 
         /* |--------- LOADER SETTINGS - INITIALIZATION ---------| */
 
-        this.username = new FormControl('', [Validators.required]);
-        this.password = new FormControl('', [Validators.required]);
+        this.username = new FormControl('admin', [Validators.required]);
+        this.password = new FormControl('Puyes46r!', [Validators.required]);
 
         this.loginForm = formBuilder.group({
             "username": this.username,
