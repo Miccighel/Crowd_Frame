@@ -68,6 +68,7 @@ df_dim_path = f"{models_path}workers_dimensions_selection.csv"
 df_url_path = f"{models_path}workers_urls.csv"
 
 
+
 def serialize_json(folder, filename, data):
     if not os.path.exists(folder):
         os.makedirs(folder, exist_ok=True)
@@ -116,13 +117,17 @@ console.print(f"Working directory: [bold]{os.getcwd()}[/bold]")
 
 os.makedirs(folder_result_path, exist_ok=True)
 
+if profile_name is None:
+    profile_name = 'default'
+
 boto_session = boto3.Session(profile_name='mturk-user')
 mturk = boto_session.client('mturk', region_name='us-east-1')
 boto_session = boto3.Session(profile_name='config-user')
 s3 = boto_session.client('s3', region_name=aws_region)
 s3_resource = boto_session.resource('s3')
 bucket = s3_resource.Bucket(aws_private_bucket)
-dynamo_db = boto3.client('dynamodb', region_name=aws_region)
+boto_session = boto3.Session(profile_name=profile_name)
+dynamo_db = boto_session.client('dynamodb', region_name=aws_region)
 dynamo_db_resource = boto3.resource('dynamodb', region_name=aws_region)
 ip_info_handler = ipinfo.getHandler(ip_info_token)
 
