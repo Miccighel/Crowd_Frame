@@ -109,8 +109,10 @@ table_data_name = f"Crowd_Frame-{task_name}_{batch_name}_Data"
 table_acl_name = f"Crowd_Frame-{task_name}_{batch_name}_ACL"
 api_gateway_name = 'Crowd_Frame-API'
 
-boto_session = boto3.Session()
-iam_client = boto_session.client('iam', region_name=aws_region)
+if profile_name is None:
+    profile_name = 'default'
+
+iam_client = boto3.Session(profile_name=profile_name).client('iam', region_name=aws_region)
 
 console.rule("0 - Initialization")
 
@@ -378,7 +380,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     sqs_client = boto_session.client('sqs', region_name=aws_region)
     dynamodb_client = boto_session.client('dynamodb', region_name=aws_region)
     lambda_client = boto_session.client('lambda', region_name=aws_region)
-    budget_client = boto3.client('budgets', region_name=aws_region)
+    budget_client = boto3.Session(profile_name=profile_name).client('budgets', region_name=aws_region)
 
     console.rule(f"7 - [yellow]{root_user.user_name}[/yellow] policies check")
 
