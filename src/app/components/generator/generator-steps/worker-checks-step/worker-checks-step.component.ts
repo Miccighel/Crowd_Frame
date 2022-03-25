@@ -61,7 +61,6 @@ export class WorkerChecksStepComponent implements OnInit {
         this.dataStored = new WorkerSettings()
         this.formStep = this._formBuilder.group({
             block: '',
-            analysis: '',
             blacklist: '',
             whitelist: '',
             batches: this._formBuilder.array([]),
@@ -84,7 +83,6 @@ export class WorkerChecksStepComponent implements OnInit {
         }
         this.formStep = this._formBuilder.group({
             block: [this.dataStored.block ? this.dataStored.block : true],
-            analysis: [this.dataStored.block ? this.dataStored.block : true],
             blacklist: [this.dataStored.blacklist ? this.dataStored.blacklist : ''],
             whitelist: [this.dataStored.whitelist ? this.dataStored.whitelist : ''],
             batches: this._formBuilder.array([]),

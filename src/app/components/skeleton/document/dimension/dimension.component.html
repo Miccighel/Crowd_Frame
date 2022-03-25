@@ -151,15 +151,16 @@
                         </div>
 
                         <!-- Dimension assessment matrix header markup -->
-                        <mat-radio-group *ngIf="j==0 && dimension.scale">
+                        <!-- TODO: Find first dimension matrix with mapping -->
+                        <mat-radio-group *ngIf="j==1 && dimension.scale">
                             <div></div>
                             <div *ngFor="let mapping of dimension.scale.mapping; let k=index">
                                 <div class="matrix-header">
-                                    <ng-container>
-                                        <span class="matrix-header-text">{{mapping.label}}</span>
+                                    <ng-container *ngIf="mapping.label">
+                                        <strong class="matrix-header-value">{{mapping.label}}</strong>
                                     </ng-container>
-                                    <ng-container *ngIf="mapping.value">
-                                        <span class="matrix-header-value"> ({{mapping.value}})</span>
+                                    <ng-container *ngIf="mapping.description">
+                                        <span class="matrix-header-text"> ({{mapping.description}})</span>
                                     </ng-container>
                                 </div>
                             </div>
@@ -170,8 +171,9 @@
                             <mat-radio-group aria-labelledby="radio-button-label" formControlName="{{(dimension.name).concat('_value')}}">
                                 <div>
                                     <p>
-                                        <strong>{{this.utilsService.capitalize(dimension.name)}}:</strong>
-                                        {{dimension.description.toLowerCase()}}
+                                        <strong>
+                                            {{dimension.description}}
+                                        </strong>
                                     </p>
                                     <i *ngIf="dimension.example">
                                         {{dimension.example}}

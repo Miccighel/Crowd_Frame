@@ -71,6 +71,19 @@ export class DynamoDBService {
         return await docClient.query(params).promise()
     }
 
+    public async getACLRecordIpAddress(config, ip_address, table = null) {
+        let docClient = this.loadDynamoDBDocumentClient(config)
+        /* Secondary index defined on unit_id attribute of ACL table */
+        let params = {
+            TableName: table ? table : config["table_acl_name"],
+            IndexName: 'ip_address-index',
+            ScanIndexForward: true,
+            KeyConditionExpression: "ip_address = :ip_address",
+            ExpressionAttributeValues: {":ip_address": ip_address},
+        };
+        return await docClient.query(params).promise()
+    }
+
     public async scanACLRecordUnitId(config, table = null, lastEvaluatedKey = null) {
         let docClient = this.loadDynamoDBDocumentClient(config)
         /* Secondary index defined on unit_id attribute of ACL table */

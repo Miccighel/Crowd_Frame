@@ -16,8 +16,8 @@
 
         <ng-container *ngIf="!this.sectionService.taskAllowed && !this.sectionService.taskOverbooking">
             <mat-card-content *ngIf="this.messages" id="not-allowed-section">
-                <h2>You are not allowed to participate to this experiment.</h2>
-                <p class="text-desc">Please, read the messages shown below. If you believe that this is an error, please contact us. Sorry for the inconvenience.</p>
+                <h2>Something went wrong...</h2>
+                <p class="text-desc">Please, read the list of possible reasons below. Sorry for the inconvenience.</p>
                 <p class="text-desc-small" *ngFor="let message of this.messages; let i=index">{{(i + 1)}}) {{message}}</p>
             </mat-card-content>
             <!-- Otherwise a standard message is shown -->

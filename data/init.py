@@ -24,6 +24,7 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.progress import track
 import warnings
+
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 console = Console()
@@ -766,6 +767,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 {'AttributeName': 'identifier', 'AttributeType': 'S'},
                 {'AttributeName': 'unit_id', 'AttributeType': 'S'},
                 {'AttributeName': 'time_arrival', 'AttributeType': 'S'},
+                {'AttributeName': 'ip_address', 'AttributeType': 'S'},
             ],
             KeySchema=[{'AttributeName': 'identifier', 'KeyType': 'HASH'}],
             GlobalSecondaryIndexes=[
@@ -774,6 +776,22 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                     'KeySchema': [
                         {
                             'AttributeName': 'unit_id',
+                            'KeyType': 'HASH',
+                        },
+                        {
+                            'AttributeName': 'time_arrival',
+                            'KeyType': 'RANGE'
+                        }
+                    ],
+                    "Projection": {
+                        "ProjectionType": "ALL"
+                    },
+                },
+                {
+                    'IndexName': 'ip_address-index',
+                    'KeySchema': [
+                        {
+                            'AttributeName': 'ip_address',
                             'KeyType': 'HASH',
                         },
                         {
@@ -845,7 +863,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             console.print(f"The following roles were already created {roles}")
         if not policies and roles:
             console.print("[green]Policies correctly set up")
-
 
         status.start()
         status.update(f"Table {table_logging_name} setup")
@@ -1554,7 +1571,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         with open(f"{folder_build_task_path}{filename}", 'w') as file:
             sample_worker_checks = {
                 "block": True,
-                "analysis": True,
                 "blacklist": [],
                 "whitelist": [],
                 "blacklist_batches": [],
@@ -1636,10 +1652,10 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 element = json.loads(value)
                 if isinstance(element, dict):
                     print(wrapper.fill(f"this.{attribute} = new Array<JSON>()"), file=file)
-                    print(wrapper.fill(f"for (let index = 0; index < data[\"{attribute}\"].length; index++) this.{attribute}.push(data[\"{attribute}\"][index])"),file=file)
+                    print(wrapper.fill(f"for (let index = 0; index < data[\"{attribute}\"].length; index++) this.{attribute}.push(data[\"{attribute}\"][index])"), file=file)
                 elif isinstance(element, list):
                     print(wrapper.fill(f"this.{attribute} = new Array<String>()"), file=file)
-                    print(wrapper.fill(f"for (let index = 0; index < data[\"{attribute}\"].length; index++) this.{attribute}.push(data[\"{attribute}\"])"),file=file)
+                    print(wrapper.fill(f"for (let index = 0; index < data[\"{attribute}\"].length; index++) this.{attribute}.push(data[\"{attribute}\"])"), file=file)
                 else:
                     wrapper = textwrap.TextWrapper(initial_indent='\t\t\t', subsequent_indent='\t\t\t')
                     print(wrapper.fill(f"this.{attribute} = data[\"{attribute}\"]"), file=file)
@@ -1650,7 +1666,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                         print(wrapper.fill(f"for (let index = 0; index < data[\"{attribute}\"].length; index++) this.{attribute}.push(data[\"{attribute}\"][index])"), file=file)
                     else:
                         print(wrapper.fill(f"this.{attribute} = new Array<String>()"), file=file)
-                        print(wrapper.fill(f"for (let index = 0; index < data[\"{attribute}\"].length; index++) this.{attribute}.push(data[\"{attribute}\"])"),file=file)
+                        print(wrapper.fill(f"for (let index = 0; index < data[\"{attribute}\"].length; index++) this.{attribute}.push(data[\"{attribute}\"])"), file=file)
                 else:
                     wrapper = textwrap.TextWrapper(initial_indent='\t\t\t', subsequent_indent='\t\t\t')
                     print(wrapper.fill(f"this.{attribute} = data[\"{attribute}\"]"), file=file)

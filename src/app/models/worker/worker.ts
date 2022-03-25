@@ -110,6 +110,10 @@ export class Worker {
         }
     }
 
+    getIP(): string {
+        return this.propertiesFetched['cf_ip'].toString()
+    }
+
     convertToSnakeCase(property) {
         return property.replace(/(?:^|\.?)([A-Z])/g, function (x, y) {
             return "_" + y.toLowerCase()
