@@ -18,8 +18,7 @@ export class Instruction {
         this.index = index;
         this.label = data['label'] ? data["label"] : null;
         this.caption = data['caption'] ? data["caption"] : null;
-
-        if ('steps' in data) {
+        if (data['steps']) {
             let stepText: Array<string> = data['steps']
             this.text = stepText.join("\r\n")
             delete data['steps']

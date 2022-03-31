@@ -79,7 +79,11 @@ export class DocumentComponent implements OnInit {
             for (const [name, control] of Object.entries(form.controls)) {
                 if (control instanceof AbstractControl) {
                     if (control.valid) {
-                        this.assessmentForm.get(name).setValue(form.get(name).value, {emitEvent: false})
+                        if(this.assessmentForm.get(name))
+                            this.assessmentForm.get(name).setValue(form.get(name).value, {emitEvent: false})
+                        else {
+                            this.assessmentForm.addControl(name, form.get(name), {emitEvent: false})
+                        }
                     }
                 }
             }

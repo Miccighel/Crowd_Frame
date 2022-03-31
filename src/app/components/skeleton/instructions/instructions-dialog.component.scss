@@ -1,14 +1,25 @@
 /* |--- DIALOG STYLES  --| */
 
+.mat-dialog-container {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+p, li {
+  font-size: 1.1em;
+}
+
 h3 {
   margin: 0;
 }
 
 .close-button {
   text-align: center;
+  margin-top: 1%;
+  margin-bottom: 1%;
 }
 
-button{
+button {
   text-transform: uppercase;
   margin: auto;
 }
@@ -19,4 +30,9 @@ p {
 
 ul p {
   margin-bottom: 0.5%;
+}
+
+li {
+  margin-top: 5px;
+  margin-bottom: 5px;
 }

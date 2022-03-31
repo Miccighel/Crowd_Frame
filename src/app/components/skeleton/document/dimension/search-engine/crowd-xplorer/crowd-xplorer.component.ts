@@ -144,7 +144,7 @@ export class CrowdXplorer {
         this.fakerService = fakerService;
         this.pubmedService = pubmedService;
         this.configService = configService;
-        this.formBuilder  = formBuilder
+        this.formBuilder = formBuilder
 
         /* |--------- CONTROL FLOW & UI ELEMENTS - INITIALIZATION ---------| */
 
@@ -171,7 +171,6 @@ export class CrowdXplorer {
                 "urls": this.urls
             }
         );
-
     }
 
     /*
@@ -191,121 +190,124 @@ export class CrowdXplorer {
      */
     public performWebSearch(query: string) {
 
-        /* The loading screen is shown */
-        this.ngxService.startBackground();
+        if (query.length > 0) {
 
-        /* A search has been started */
-        this.searchInProgress = true;
+            /* The loading screen is shown */
+            this.ngxService.startBackground();
 
-        /* EMITTER: The user query is emitted to provide it to an eventual parent component */
-        this.queryEmitter.emit(query);
+            /* A search has been started */
+            this.searchInProgress = true;
 
-        switch (this.source) {
-            /* The search operation for Bing Web Search is performed */
-            /* This is done by subscribing to an Observable of <BingWebSearchResponse> items */
-            case "BingWebSearch": {
-                this.bingService.performWebSearch(this.bingApiKey, query).subscribe(
-                    searchResponse => {
-                        /* We are interested in parsing the webPages property of a <BingWebSearchResponse> */
-                        if (searchResponse.hasOwnProperty("webPages")) {
-                            /* Some results exist */
-                            this.resultsFound = true;
-                            /* The matching response is saved and filtered if the environment variable is not an empty array */
-                            this.bingWebSearchResponse = this.bingService.filterResponse(searchResponse, this.domainsToFilter);
-                            let decodedResponse = this.bingService.decodeResponse(this.bingWebSearchResponse);
-                            /* EMITTER: The matching response is emitted to provide it to an eventual parent component*/
-                            this.resultEmitter.emit(decodedResponse);
-                            /* The results amount is saved*/
-                            this.resultsAmount = decodedResponse.length;
-                            /* Each <webPage> item is saved into results table */
-                            this.dataSource.data = decodedResponse;
-                        } else {
-                            /* There are not any result */
-                            this.resultEmitter.emit([]);
-                            this.resultsFound = false;
-                            this.resultsAmount = 0;
-                            this.dataSource.data = [];
-                        }
-                        this.searchInProgress = false;
-                        /* The loading screen is hidden */
-                        this.ngxService.stopBackground();
-                    }
-                );
-                break;
-            }
-            case "FakerWebSearch": {
-                this.fakerService.performWebSearch(this.fakeJSONToken, query).subscribe(
-                    searchResponse => {
-                        /* We are interested in parsing the webPages property of a BingWebSearchResponse */
-                        if (searchResponse.length > 0) {
-                            /* Some results exist */
-                            this.resultsFound = true;
-                            /* The matching response is saved */
-                            this.fakerSearchResponse = searchResponse;
-                            let decodedResponse = this.fakerService.decodeResponse(searchResponse);
-                            /* EMITTER: The matching response is emitted to provide it to an eventual parent component*/
-                            this.resultEmitter.emit(decodedResponse);
-                            /* The results amount is saved*/
-                            this.resultsAmount = decodedResponse.length;
-                            /* Each <webPage> item is saved into results table */
-                            this.dataSource.data = decodedResponse;
-                        } else {
-                            /* There are not any result */
-                            this.resultEmitter.emit([]);
-                            this.resultsFound = false;
-                            this.resultsAmount = 0;
-                            this.dataSource.data = [];
-                        }
+            /* EMITTER: The user query is emitted to provide it to an eventual parent component */
+            this.queryEmitter.emit(query);
 
-                        this.searchInProgress = false;
-                        /* The loading screen is hidden */
-                        this.ngxService.stopBackground();
-                    }
-                );
-                break;
-            }
-            case "PubmedSearch": {
-                this.pubmedService.performWebSearch(query).subscribe(
-                    async searchResponse => {
-                        /* We are interested in parsing the webPages property of a BingWebSearchResponse */
-                        if (searchResponse.esearchresult.idlist.length > 0) {
-                            /* The matching response is saved */
-                            this.pubmedSearchResponse = searchResponse;
-                            /* EMITTER: The matching response is emitted to provide it to an eventual parent component*/
-                            //this.resultEmitter.emit(this.pubmedSearchResponse);
-                            let decodedResponses = []
-                            for (let index in this.pubmedSearchResponse.esearchresult.idlist) {
-                                let articleId = this.pubmedSearchResponse.esearchresult.idlist[index];
-                                this.pubmedService.retrieveArticle(articleId).subscribe(
-                                    summaryResponse => {
-                                        this.pubmedSummaryResponse = summaryResponse;
-                                        decodedResponses.push(this.pubmedService.decodeResponse(summaryResponse))
-                                    }
-                                );
+            switch (this.source) {
+                /* The search operation for Bing Web Search is performed */
+                /* This is done by subscribing to an Observable of <BingWebSearchResponse> items */
+                case "BingWebSearch": {
+                    this.bingService.performWebSearch(this.bingApiKey, query).subscribe(
+                        searchResponse => {
+                            /* We are interested in parsing the webPages property of a <BingWebSearchResponse> */
+                            if (searchResponse.hasOwnProperty("webPages")) {
                                 /* Some results exist */
                                 this.resultsFound = true;
+                                /* The matching response is saved and filtered if the environment variable is not an empty array */
+                                this.bingWebSearchResponse = this.bingService.filterResponse(searchResponse, this.domainsToFilter);
+                                let decodedResponse = this.bingService.decodeResponse(this.bingWebSearchResponse);
+                                /* EMITTER: The matching response is emitted to provide it to an eventual parent component*/
+                                this.resultEmitter.emit(decodedResponse);
                                 /* The results amount is saved*/
-                                this.resultsAmount = decodedResponses.length;
+                                this.resultsAmount = decodedResponse.length;
                                 /* Each <webPage> item is saved into results table */
-                                this.dataSource.data = decodedResponses;
-                                await this.delay(750)
+                                this.dataSource.data = decodedResponse;
+                            } else {
+                                /* There are not any result */
+                                this.resultEmitter.emit([]);
+                                this.resultsFound = false;
+                                this.resultsAmount = 0;
+                                this.dataSource.data = [];
                             }
-                            this.resultEmitter.emit(decodedResponses);
-                        } else {
-                            /* There are not any result */
-                            this.resultEmitter.emit([]);
-                            this.resultsFound = false;
-                            this.resultsAmount = 0;
-                            this.dataSource.data = [];
+                            this.searchInProgress = false;
+                            /* The loading screen is hidden */
+                            this.ngxService.stopBackground();
                         }
-                        /* The search operation for Bing Web Search is completed */
-                        this.searchPerformed = true;
-                        /* The loading screen is hidden */
-                        this.searchInProgress = false;
-                        this.ngxService.stopBackground();
-                    }
-                );
-                break;
+                    );
+                    break;
+                }
+                case "FakerWebSearch": {
+                    this.fakerService.performWebSearch(this.fakeJSONToken, query).subscribe(
+                        searchResponse => {
+                            /* We are interested in parsing the webPages property of a BingWebSearchResponse */
+                            if (searchResponse.length > 0) {
+                                /* Some results exist */
+                                this.resultsFound = true;
+                                /* The matching response is saved */
+                                this.fakerSearchResponse = searchResponse;
+                                let decodedResponse = this.fakerService.decodeResponse(searchResponse);
+                                /* EMITTER: The matching response is emitted to provide it to an eventual parent component*/
+                                this.resultEmitter.emit(decodedResponse);
+                                /* The results amount is saved*/
+                                this.resultsAmount = decodedResponse.length;
+                                /* Each <webPage> item is saved into results table */
+                                this.dataSource.data = decodedResponse;
+                            } else {
+                                /* There are not any result */
+                                this.resultEmitter.emit([]);
+                                this.resultsFound = false;
+                                this.resultsAmount = 0;
+                                this.dataSource.data = [];
+                            }
+
+                            this.searchInProgress = false;
+                            /* The loading screen is hidden */
+                            this.ngxService.stopBackground();
+                        }
+                    );
+                    break;
+                }
+                case "PubmedSearch": {
+                    this.pubmedService.performWebSearch(query).subscribe(
+                        async searchResponse => {
+                            /* We are interested in parsing the webPages property of a BingWebSearchResponse */
+                            if (searchResponse.esearchresult.idlist.length > 0) {
+                                /* The matching response is saved */
+                                this.pubmedSearchResponse = searchResponse;
+                                /* EMITTER: The matching response is emitted to provide it to an eventual parent component*/
+                                //this.resultEmitter.emit(this.pubmedSearchResponse);
+                                let decodedResponses = []
+                                for (let index in this.pubmedSearchResponse.esearchresult.idlist) {
+                                    let articleId = this.pubmedSearchResponse.esearchresult.idlist[index];
+                                    this.pubmedService.retrieveArticle(articleId).subscribe(
+                                        summaryResponse => {
+                                            this.pubmedSummaryResponse = summaryResponse;
+                                            decodedResponses.push(this.pubmedService.decodeResponse(summaryResponse))
+                                        }
+                                    );
+                                    /* Some results exist */
+                                    this.resultsFound = true;
+                                    /* The results amount is saved*/
+                                    this.resultsAmount = decodedResponses.length;
+                                    /* Each <webPage> item is saved into results table */
+                                    this.dataSource.data = decodedResponses;
+                                    await this.delay(750)
+                                }
+                                this.resultEmitter.emit(decodedResponses);
+                            } else {
+                                /* There are not any result */
+                                this.resultEmitter.emit([]);
+                                this.resultsFound = false;
+                                this.resultsAmount = 0;
+                                this.dataSource.data = [];
+                            }
+                            /* The search operation for Bing Web Search is completed */
+                            this.searchPerformed = true;
+                            /* The loading screen is hidden */
+                            this.searchInProgress = false;
+                            this.ngxService.stopBackground();
+                        }
+                    );
+                    break;
+                }
             }
         }
     }

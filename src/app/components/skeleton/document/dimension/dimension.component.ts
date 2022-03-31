@@ -9,7 +9,7 @@ import {UtilsService} from "../../../../services/utils.service";
 import {DeviceDetectorService} from "ngx-device-detector";
 /* Models */
 import {Task} from "../../../../models/skeleton/task";
-import {ScaleInterval, ScaleMagnitude} from "../../../../models/skeleton/dimension";
+import {ScaleCategorical, ScaleInterval, ScaleMagnitude} from "../../../../models/skeleton/dimension";
 /* Components */
 import {SearchEngineComponent} from "./search-engine/search-engine.component";
 
@@ -155,15 +155,39 @@ export class DimensionComponent implements OnInit {
         }
     }
 
-    public verifyUrlSelection() {
+    public verifyUrlSelection(position) {
+        let dimensionsToCheck = []
+        for (let dimension of this.task.dimensions) {
+            if(dimension.style.position==position) {
+                dimensionsToCheck.push(dimension)
+            }
+        }
         let result = true
-        for(let dimension of this.task.dimensions) {
-            if(dimension.url) {
+        for (let dimension of dimensionsToCheck) {
+             if (dimension.url) {
                 let dimensionForm = this.assessmentForms[dimension.index]
-                if(dimensionForm.get(dimension.name.concat("_url"))) {
+                if (dimensionForm.get(dimension.name.concat("_url"))) {
                     let value = dimensionForm.get(dimension.name.concat("_url")).value
-                    if(!value)
+                    if (!value)
                         result = false
+                }
+            }
+        }
+        return result
+    }
+
+    public verifyLabelsAndDesc(position) {
+        let dimensionsToCheck = []
+        for (let dimension of this.task.dimensions) {
+            if(dimension.style.position==position) {
+                dimensionsToCheck.push(dimension)
+            }
+        }
+        let result = true
+        for (let dimension of dimensionsToCheck) {
+             if (dimension.scale) {
+                if(dimension.scale.mapping) {
+                    console.log(dimension)
                 }
             }
         }

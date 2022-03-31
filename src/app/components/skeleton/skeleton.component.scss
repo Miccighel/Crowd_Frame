@@ -1,10 +1,18 @@
-:host ::ng-deep .mat-horizontal-stepper-header {
+::ng-deep .mat-horizontal-stepper-header {
   pointer-events: none !important;
 }
 
-mat-horizontal-stepper mat-card-content, mat-horizontal-stepper mat-card-title, mat-horizontal-stepper mat-card-actions {
+.mat-step-label {
+  display: none !important;
+}
+
+mat-horizontal-stepper mat-card-content, mat-horizontal-stepper mat-card-title {
   width: 75% !important;
   margin: auto !important;
+}
+
+mat-horizontal-stepper mat-card-actions {
+  margin: 1% auto auto;
 }
 
 mat-horizontal-stepper mat-step-header {
@@ -54,6 +62,14 @@ mat-horizontal-stepper mat-step-header {
   width: 96%;
 }
 
+.instructions-section span, .instructions-section span li, .instructions-section p {
+  font-size: 1.1rem;
+}
+
+.instructions-section span li {
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
 
 .instructions-section {
   max-width: 80%;

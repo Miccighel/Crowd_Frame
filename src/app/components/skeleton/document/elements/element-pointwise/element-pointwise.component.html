@@ -1,7 +1,5 @@
 <div *ngIf="this.task.instructionsEvaluationElement" class="evaluation-instructions">
-    <mat-divider [inset]="true"></mat-divider>
     <h2>{{this.task.instructionsEvaluationElement.label}} - {{this.task.instructionsEvaluationElement.text}}</h2>
-    <mat-divider [inset]="true"></mat-divider>
 </div>
 <div class="statement" *ngIf="(this.task.settings.modality=='pointwise')">
     <ng-container *ngFor="let attribute of this.task.settings.attributes; let k=index">

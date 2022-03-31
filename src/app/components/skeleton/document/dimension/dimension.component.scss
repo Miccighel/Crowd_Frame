@@ -55,27 +55,32 @@
   text-align: center;
 }
 
-.dimension-matrix .matrix-header-value {
-  font-size: large;
-}
-
 .dimension-matrix mat-radio-group {
-  margin-top: 1%;
-  margin-bottom: 1%;
   display: flex;
   align-items: center;
   justify-content: flex-start;
 }
 
-.dimension-matrix mat-radio-group > div:first-child {
-  text-align: justify;
-  flex-basis: 25%;
-}
-
 .dimension-matrix mat-radio-group > div {
-  order: 6;
   text-align: center;
   flex: 1;
+}
+
+.dimension-matrix mat-radio-group .matrix-header-body, .dimension-matrix mat-radio-group .matrix-header-body-wide {
+  font-size: large;
+  margin-bottom: 1%;
+}
+
+.dimension-matrix mat-radio-group .matrix-header-body-wide {
+  text-align: center;
+}
+
+.dimension-matrix mat-radio-group .matrix-header-body-wide:first-child {
+  margin-left: 15%;
+}
+
+.dimension-matrix mat-radio-group .matrix-value-description, .dimension-matrix mat-radio-group .matrix-value-description  {
+  text-align: justify;
 }
 
 .dimension-matrix mat-radio-group > div p {
@@ -87,6 +92,17 @@
   font-size: initial;
 }
 
+.dimension-matrix mat-radio-group > div {
+  text-align: center;
+}
+
+.dimension-matrix .evaluation-instructions {
+  margin-bottom: 2%;
+}
+
+.dimension-matrix p {
+  margin-bottom: 0;
+}
 
 .dimension h2, .instructions h2 {
   font-weight: lighter;

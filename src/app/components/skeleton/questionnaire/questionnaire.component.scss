@@ -1,3 +1,7 @@
+::ng-deep .mat-horizontal-stepper-header {
+  pointer-events: none !important;
+}
+
 mat-card-title {
   padding-top: 1% !important;
   padding-bottom: 1% !important;
@@ -6,19 +10,23 @@ mat-card-title {
   font-weight: initial !important;
 }
 
-mat-card-content, mat-card-title, mat-card-actions {
-  width: 75% !important;
-  margin: auto !important;
-}
-
-mat-form-field {
-  margin-bottom: 1%;
-}
-
 mat-checkbox {
   padding-top: 0.5%;
   padding-bottom: 0.5%;
   font-size: 1.2em;
+}
+
+mat-card-actions {
+  margin: auto auto auto;
+  width: 75%;
+}
+
+.questionnaire-standard {
+  margin-bottom: 1% !important;
+}
+
+.question-number ::ng-deep .mat-form-field-infix {
+  border: 0 !important;
 }
 
 /* Questionnaires form */
@@ -28,32 +36,20 @@ mat-form-field {
 }
 
 .question-text  {
-  margin-top: 1%;
-  margin-bottom: 1%;
-  font-size: 1.5em;
+  font-size: 1.3rem;
   font-weight: normal;
-}
-
-.question-box {
-  margin-top: 2%;
-  margin-bottom: 2%;
+  margin: 0 0 10px;
 }
 
 .questionnaire-description {
-  font-size: 1.5em;
+  font-size: 1.4em;
   font-weight: normal;
   font-style: italic;
-  margin-bottom: 2%;
-  margin-top: 1%;
+  margin-bottom: 1%;
 }
 
-.questionnaire-value {
-  font-size: 2em;
-}
-
-.questionnaire-crt-value {
-  margin-top: 1%;
-  font-size: 2em;
+.question-free-text-tall {
+  margin-top: 5px;
 }
 
 .mat-divider {
@@ -62,6 +58,30 @@ mat-form-field {
 
 .question label {
   font-weight: bold;
+}
+
+.question-mcq span {
+  font-size: 1.2em;
+}
+
+.questionnaire-value {
+  font-size: 1.2em;
+}
+
+::ng-deep .question-checkbox-field .mat-form-field-infix {
+  display: none;
+}
+
+::ng-deep .question-checkbox-field .mat-form-field-flex {
+  display: none;
+}
+
+::ng-deep .question-checkbox-field .mat-form-field-underline {
+  display: none;
+}
+
+::ng-deep .question-checkbox-field .mat-form-field-wrapper {
+  padding: 0;
 }
 
 .question .question-detail {
@@ -144,5 +164,5 @@ mat-form-field {
 
 .indent {
   margin-left: 2%;
-  margin-top: 2%;
+  margin-top: 1%;
 }

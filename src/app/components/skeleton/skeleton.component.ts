@@ -1,5 +1,5 @@
 /* Core */
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, QueryList, ViewChild, ViewChildren} from "@angular/core";
+import {AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, QueryList, ViewChild, ViewChildren, ViewEncapsulation} from "@angular/core";
 import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
 import {MatFormField} from "@angular/material/form-field";
 import {MatStepper} from "@angular/material/stepper";
@@ -34,7 +34,8 @@ import {LocalStorageService} from "../../services/localStorage.service";
     selector: 'app-skeleton',
     templateUrl: './skeleton.component.html',
     styleUrls: ['./skeleton.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    encapsulation: ViewEncapsulation.None,
 })
 
 /*
@@ -621,6 +622,8 @@ export class SkeletonComponent implements OnInit {
                 await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, taskInitialPayload)
             }
 
+            this.colorStepper(this.task.questionnaireAmount, this.task.documentsAmount)
+
         }
 
         /* The loading spinner is stopped */
@@ -1016,6 +1019,28 @@ export class SkeletonComponent implements OnInit {
         this.snackBar.open(message, action, {
             duration: duration,
         });
+    }
+
+    public colorStepper(questionnaireAmount, elementsAmount) {
+        let questionnairePercentual = ((questionnaireAmount) * 95) / (questionnaireAmount + elementsAmount)
+        let elementPercentual = ((elementsAmount) * (95)) / (questionnaireAmount + elementsAmount)
+        let submitPercentual = 100.0 - elementPercentual - questionnairePercentual
+        let stepper = document.getElementById('stepper')
+        let survey = document.createElement('div')
+        let statements = document.createElement('div')
+        let submit = document.createElement('div')
+        let bar = document.createElement('div')
+        survey.setAttribute("style", `width: ${questionnairePercentual}%;background-color:#4caf5088; text-align: center; float:left; padding-top:5px; padding-bottom:5px`);
+        survey.innerText = "Questionnaires"
+        statements.setAttribute("style", `width: ${elementPercentual}%;background-color:#03a9f455; text-align: center; float:left; padding-top:5px; padding-bottom:0px`);5
+        statements.innerText = "Statements"
+        submit.setAttribute("style", `width: ${submitPercentual}%;background-color:#fcaebc70; text-align: center; float:left; padding-top:5px; padding-bottom:5px`);
+        submit.innerText = "Outcome"
+        bar.setAttribute("style", `width: 98%; display:flex; margin:auto`);
+        if (questionnairePercentual > 0) bar.append(survey)
+        if (elementPercentual > 0) bar.append(statements)
+        bar.append(submit)
+        stepper.prepend(bar)
     }
 
 

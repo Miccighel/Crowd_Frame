@@ -20,29 +20,31 @@ export class UtilsService {
 
     public getErrorMessage(field: AbstractControl) {
         let messages = []
-        for (let errorKey of Object.keys(field.errors)) {
-            let message = ''
-            switch (errorKey) {
-                case 'min':
-                    message = `Min value required: ${field.errors[errorKey][errorKey]}`
-                    break;
-                case 'max':
-                    message = `Max value required: ${field.errors[errorKey][errorKey]}`
-                    break;
-                case 'required':
-                    message = "This field is required"
-                    break;
-                case 'pattern':
-                    message = `This field must not contain special characters`
-                    break;
-                case 'invalid':
-                    message = `This field is invalid`
-                    break;
-                default:
-                    message = field.errors[errorKey]
-                    break;
+        if(field.errors) {
+            for (let errorKey of Object.keys(field.errors)) {
+                let message = ''
+                switch (errorKey) {
+                    case 'min':
+                        message = `Min value required: ${field.errors[errorKey][errorKey]}`
+                        break;
+                    case 'max':
+                        message = `Max value required: ${field.errors[errorKey][errorKey]}`
+                        break;
+                    case 'required':
+                        message = "This field is required"
+                        break;
+                    case 'pattern':
+                        message = `This field must not contain special characters`
+                        break;
+                    case 'invalid':
+                        message = `This field is invalid`
+                        break;
+                    default:
+                        message = field.errors[errorKey]
+                        break;
+                }
+                messages.push(message)
             }
-            messages.push(message)
         }
         return messages
     }

@@ -41,8 +41,8 @@ export class Question {
             for (const [_, answer] of data["answers"].entries()) this.answers.push(answer)
         }
         this.detail = data['detail'] ? new Detail(data["detail"]) : null;
-        this.showDetail = data['show_detail'] ? data['show_detail'] : false;
-        this.freeText = data['free_text'] ? data['free_text'] : false;
+        this.showDetail = data['show_detail'] ? data['show_detail'] : null;
+        this.freeText = data['free_text'] ? data['free_text'] : null;
     }
 
 

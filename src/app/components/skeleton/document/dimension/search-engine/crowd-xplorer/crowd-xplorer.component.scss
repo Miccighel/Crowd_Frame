@@ -13,25 +13,37 @@ mat-card.xplorer-body {
 
 /* |--- USER QUERY ---| */
 
-mat-form-field#search-textarea {
-  width: 100%;
+.search-bar {
+  display: flex;
 }
 
-button#search-button {
-  width: 100%;
-  margin-bottom: 1.49375em;
+#search-textarea {
+  width: 75%;
+  .mat-form-field {
+    border-radius: 0 !important;
+  }
+}
+
+.search-button {
+  border-radius: 0;
+  width: 25%;
+  height: 50px;
+  margin-left: 0;
+  margin-top: 5px;
 }
 
 /* |--- RESULT TABLE --| */
 
+mat-header-cell {
+  font-size: medium;
+}
+
 mat-cell {
   font-size: medium;
   padding: 5px;
+
   p {
-    width: 90%;
+    width: 99%;
     padding-right: 1%;
-  }
-  .row-snippet {
-    font-size: small;
   }
 }

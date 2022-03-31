@@ -1,15 +1,15 @@
 <mat-card id="crowd-xplorer-{{digits}}" class="xplorer-body" [formGroup]="searchForm">
 
-    <mat-form-field id="search-textarea" appearance="outline">
-        <mat-label>Insert your query</mat-label>
-        <input #searchInput matInput type="search" formControlName="query" (keyup.enter)="performWebSearch(searchInput.value)">
-        <mat-icon matSuffix>search</mat-icon>
-    </mat-form-field>
-
-    <button mat-flat-button color="primary" class="search-button"
-            [disabled]="!query.valid || searchInProgress || (this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior=='disable_forms')"
-            (click)="performWebSearch(searchInput.value)">{{searchInProgress === true ? 'SEARCHING...' : 'SEARCH'}}
-    </button>
+    <div class="search-bar">
+        <mat-form-field id="search-textarea" appearance="outline">
+            <mat-label>Insert your query</mat-label>
+            <input #searchInput matInput type="search" formControlName="query" (keyup.enter)="performWebSearch(searchInput.value)">
+        </mat-form-field>
+        <button mat-flat-button color="primary" class="search-button"
+                [disabled]="!query.valid || searchInProgress || (this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior=='disable_forms')"
+                (click)="performWebSearch(searchInput.value)">{{searchInProgress === true ? 'SEARCHING...' : 'SEARCH'}}
+        </button>
+    </div>
 
     <mat-table [dataSource]="dataSource">
         <mat-radio-group formControlName="urls">
@@ -23,7 +23,7 @@
                         <br/>
                         <span class="row-snippet">{{row.snippet}}</span>
                     </p>
-                    <mat-radio-button labelPosition="before" [disabled]="this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior=='disable_forms'" (change)="selectRow(row)" value="{{row.url}}">Select
+                    <mat-radio-button labelPosition="before" [disabled]="this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior=='disable_forms'" (change)="selectRow(row)" value="{{row.url}}">
                     </mat-radio-button>
                 </mat-cell>
             </ng-container>

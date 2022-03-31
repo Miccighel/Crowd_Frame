@@ -39,18 +39,17 @@ mat-card-title {
   font-weight: initial !important;
 }
 
-mat-card mat-card-content {
-  margin-top: 1% !important;
+mat-card  {
+  margin:auto;
 }
 
-mat-card .mat-card-subtitle {
-  margin-top: 0 !important;
+mat-card-actions {
+  margin-top: 1%;
 }
 
 .mat-radio-label {
   white-space: normal !important;
 }
-
 
 .mat-card > .mat-card-actions:last-child {
   margin-bottom: 0 !important;
@@ -66,6 +65,10 @@ mat-card .mat-card-subtitle {
   border-top: 1px solid rgba(0, 0, 0, .12);
   border-bottom: 1px solid rgba(0, 0, 0, .12);
   font-weight: lighter !important;
+}
+
+.form-note {
+  margin: 0;
 }
 
 .angular-editor {

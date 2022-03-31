@@ -1,6 +1,6 @@
 /* Core */
 import {ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
+import {AbstractControl, FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
 /* Services */
 import {SectionService} from "../../../services/section.service";
 import {UtilsService} from "../../../services/utils.service";
@@ -86,7 +86,6 @@ export class QuestionnaireComponent implements OnInit {
             }
 
         }
-
         this.formEmitter.emit({
             "form": this.questionnaireForm,
             "action": null
@@ -150,14 +149,31 @@ export class QuestionnaireComponent implements OnInit {
             if (question.type == 'list') {
                 let answers = {}
                 question.answers.forEach((value, index) => {
-                    answers[index] = ''
+                    answers[index] = false
                 });
-                this.questionnaireForm.addControl(`${controlName}_answer`, this.formBuilder.group(answers))
+                this.questionnaireForm.addControl(`${controlName}_list`, this.formBuilder.group(answers))
+                this.questionnaireForm.addControl(`${controlName}_answer`, new FormControl('', [Validators.required]))
             } else {
                 this.questionnaireForm.addControl(`${controlName}_answer`, new FormControl('', validators))
             }
             if (question.freeText) this.questionnaireForm.addControl(`${controlName}_free_text`, new FormControl(''))
         }
+    }
+
+    public handleCheckbox(question, groupName) {
+        let controlValid = false
+        let formGroup = this.questionnaireForm.get(groupName)
+        let formControl = this.questionnaireForm.get(question.nameFull.concat('_answer'))
+        for (const [key, value] of Object.entries(formGroup.value)) {
+            if (value)
+                controlValid = true
+        }
+        if (!controlValid) {
+            formControl.setValue('')
+        } else {
+            formControl.setValue(formGroup.value)
+        }
+        formControl.markAsTouched()
     }
 
     public handleQuestionRepetition(question) {
@@ -215,7 +231,7 @@ export class QuestionnaireComponent implements OnInit {
                             droppedNode.walk(function (node) {
                                 if (node) {
                                     for (let question of this["questions"]) {
-                                        if (node.model.index == question.index) {
+                                        if (node.model.indexFull == question.indexFull) {
                                             this["questionsToRemove"].push(question)
                                         }
                                     }
@@ -226,6 +242,8 @@ export class QuestionnaireComponent implements OnInit {
                             for (let question of questionsToRemove) {
                                 this.questionnaireForm.removeControl(`${question.nameFull}_answer`)
                                 this.questionnaireForm.removeControl(`${question.nameFull}_free_text`)
+                                delete this.questionnaire.questionDependencies[question.nameFull]
+                                delete this.questionnaire.questionsToRepeat[question.nameFull]
                             }
                         }
                     }

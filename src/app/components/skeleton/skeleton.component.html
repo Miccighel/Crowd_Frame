@@ -65,9 +65,6 @@
 <mat-horizontal-stepper [linear]="true" labelPosition="bottom" id="stepper" #stepper *ngIf="this.sectionService.task">
 
     <mat-step *ngFor="let stepIndex of this.sectionService.stepIndexes()">
-        <ng-template matStepLabel>
-            {{this.task.getElementIndex(stepIndex)['elementType']}}<span *ngIf="this.task.getElementIndex(stepIndex)['elementType']!='Outcome'">{{stepIndex + 1}}</span>
-        </ng-template>
         <app-questionnaire
                 *ngIf="this.task.getElementIndex(stepIndex)['elementType']=='Q'"
                 [questionnaireIndex]="this.task.getElementIndex(stepIndex)['elementIndex']"

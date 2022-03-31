@@ -1,7 +1,8 @@
-<ng-template #dimensionTemplate let-dimensions="dimensions">
+<ng-template #dimensionTemplate let-dimensions="dimensions" let-position="position">
+
     <form [formGroup]="this.assessmentForms[documentIndex]">
 
-        <div *ngFor="let dimension of dimensions; let j=index" class="dimension'">
+        <div *ngFor="let dimension of dimensions" class="dimension'">
 
             <ng-container *ngIf="!dimension.pairwise">
 
@@ -9,11 +10,8 @@
                 <div *ngIf="dimension.style.type=='list'" class="dimension">
 
                     <div class="dimension-name">
-                        <div>
-                            <mat-divider [inset]="true"></mat-divider>
-                            <h2 *ngIf="!dimension.name_pretty">{{this.utilsService.capitalize(dimension.name)}}</h2>
-                            <h2 *ngIf="dimension.name_pretty">{{this.utilsService.capitalize(dimension.name_pretty)}}</h2>
-                            <mat-divider [inset]="true"></mat-divider>
+                        <div *ngIf="dimension.name_pretty">
+                            <h2>{{this.utilsService.capitalize(dimension.name_pretty)}}</h2>
                         </div>
                     </div>
                     <div *ngIf="dimension.description" class="dimension-container dimension-description">
@@ -24,8 +22,6 @@
                             </i>
                         </div>
                     </div>
-
-                    <app-search-engine [documentIndex]="documentIndex" [dimensionIndex]="j" [task]="this.task" (formEmitter)="storeSearchEngineUrl($event, j)"></app-search-engine>
 
                     <div *ngIf="dimension.scale" class="dimension-container dimension-scale">
 
@@ -135,59 +131,56 @@
                         </div>
                     </div>
 
+                    <!-- Dimension search engine interface markup -->
+                    <app-search-engine [documentIndex]="documentIndex" [dimensionIndex]="dimension.index" [task]="this.task" (formEmitter)="storeSearchEngineUrl($event, dimension.index)"></app-search-engine>
+
                 </div>
 
-                <!-- Dimension search engine interface markup -->
-                <app-search-engine [documentIndex]="documentIndex" [dimensionIndex]="j" [task]="this.task" (formEmitter)="storeSearchEngineUrl($event, j)"></app-search-engine>
 
                 <!-- Dimensions markup (matrix style) -->
-                <div *ngIf="this.dimension.style.type=='matrix' && verifyUrlSelection()" class="dimension-matrix">
+                <div *ngIf="dimension.style.type=='matrix'">
 
-                    <ng-container>
-                        <div *ngIf="this.dimension.scale.instructions" class="evaluation-instructions">
-                            <mat-divider *ngIf="!dimension.url" [inset]="true"></mat-divider>
-                            <h2>{{this.dimension.scale.instructions.label}} - {{this.dimension.scale.instructions.text}}</h2>
-                            <mat-divider [inset]="true"></mat-divider>
-                        </div>
+                    <!-- Dimension search engine interface markup -->
+                    <app-search-engine [documentIndex]="documentIndex" [dimensionIndex]="dimension.index" [task]="this.task" (formEmitter)="storeSearchEngineUrl($event, dimension.index)"></app-search-engine>
 
-                        <!-- Dimension assessment matrix header markup -->
-                        <!-- TODO: Find first dimension matrix with mapping -->
-                        <mat-radio-group *ngIf="j==1 && dimension.scale">
-                            <div></div>
-                            <div *ngFor="let mapping of dimension.scale.mapping; let k=index">
-                                <div class="matrix-header">
-                                    <ng-container *ngIf="mapping.label">
-                                        <strong class="matrix-header-value">{{mapping.label}}</strong>
-                                    </ng-container>
-                                    <ng-container *ngIf="mapping.description">
-                                        <span class="matrix-header-text"> ({{mapping.description}})</span>
-                                    </ng-container>
-                                </div>
+                    <ng-container *ngIf="verifyUrlSelection(position)">
+                        <div class="dimension-matrix">
+
+                            <div *ngIf="dimension.scale.instructions" class="evaluation-instructions">
+                                <h2>{{dimension.scale.instructions.label}} - {{dimension.scale.instructions.text}}</h2>
                             </div>
-                        </mat-radio-group>
 
-                        <!-- Dimension assessment fields markup -->
-                        <div *ngIf="dimension.scale">
-                            <mat-radio-group aria-labelledby="radio-button-label" formControlName="{{(dimension.name).concat('_value')}}">
-                                <div>
-                                    <p>
-                                        <strong>
-                                            {{dimension.description}}
-                                        </strong>
-                                    </p>
-                                    <i *ngIf="dimension.example">
-                                        {{dimension.example}}
-                                    </i>
-                                </div>
-                                <div *ngFor="let mapping of dimension.scale.mapping; let k=index">
-                                    <mat-radio-button class="radio-button" value="{{mapping.value}}" (change)="this.task.storeDimensionValue($event, documentIndex,dimension.index)"></mat-radio-button>
+                            <!-- Dimension assessment matrix header markup -->
+                            <!-- TODO: Find first dimension matrix with mapping -->
+                            <mat-radio-group class="matrix-header" *ngIf="dimension.scale">
+                                <div class="{{dimension.description ? 'matrix-header-body-wide' : 'matrix-header-body'}}" *ngFor="let mapping of dimension.scale.mapping; let k=index">
+                                    <div *ngIf="mapping.label">
+                                        <strong>{{mapping.label}}</strong>
+                                    </div>
+                                    <div *ngIf="mapping.description">
+                                        <span> ({{mapping.description}})</span>
+                                    </div>
                                 </div>
                             </mat-radio-group>
-                        </div>
 
-                        <!-- Separator markup -->
-                        <mat-divider *ngIf="dimension.style.separator" [inset]="true"></mat-divider>
+                            <!-- Dimension assessment fields markup -->
+                            <div *ngIf="dimension.scale">
+                                <mat-radio-group aria-labelledby="radio-button-label" class="matrix-value" formControlName="{{(dimension.name).concat('_value')}}">
+                                    <div class="matrix-value-description" *ngIf="dimension.description || dimension.example">
+                                        <p><strong>{{dimension.description}}</strong></p>
+                                        <p>{{dimension.example}}</p>
+                                    </div>
+                                    <div *ngFor="let mapping of dimension.scale.mapping; let k=index">
+                                        <mat-radio-button class="radio-button" value="{{mapping.value}}" (change)="this.task.storeDimensionValue($event, documentIndex,dimension.index)"></mat-radio-button>
+                                    </div>
+                                </mat-radio-group>
+                            </div>
+
+                            <!-- Separator markup -->
+                            <mat-divider *ngIf="dimension.style.separator" [inset]="true"></mat-divider>
+                        </div>
                     </ng-container>
+
                 </div>
 
             </ng-container>
@@ -220,7 +213,7 @@
                             </div>
                         </div>
 
-                        <app-search-engine [documentIndex]="documentIndex" [dimensionIndex]="j" [task]="this.task" (formEmitter)="storeSearchEngineUrl($event, j)"></app-search-engine>
+                        <app-search-engine [documentIndex]="documentIndex" [dimensionIndex]="dimension.index" [task]="this.task" (formEmitter)="storeSearchEngineUrl($event, dimension.index)"></app-search-engine>
 
                         <div *ngIf="dimension.scale" class="dimension-container dimension-scale">
                             <div class="dimension-content-split">
@@ -334,13 +327,17 @@
 
 <!-- Dimensions are then shown and filtered according to each position -->
 
-<ng-template *ngIf="this.assessmentForms && this.task.filterDimensions('list', 'top').length>0" [ngTemplateOutlet]="dimensionTemplate" [ngTemplateOutletContext]="{dimensions: this.task.filterDimensions('list', 'top')}"></ng-template>
-<ng-template *ngIf="this.assessmentForms && this.task.filterDimensions('matrix', 'top').length>0" [ngTemplateOutlet]="dimensionTemplate" [ngTemplateOutletContext]="{dimensions: this.task.filterDimensions('matrix', 'top')}"></ng-template>
-<ng-template *ngIf="this.assessmentForms && this.task.filterDimensions('list', 'middle').length>0" [ngTemplateOutlet]="dimensionTemplate" [ngTemplateOutletContext]="{dimensions: this.task.filterDimensions('list', 'middle')}"></ng-template>
+<ng-template *ngIf="this.assessmentForms && this.task.filterDimensions('list', 'top').length>0" [ngTemplateOutlet]="dimensionTemplate"
+             [ngTemplateOutletContext]="{dimensions: this.task.filterDimensions('list', 'top'), position:'top'}"></ng-template>
+<ng-template *ngIf="this.assessmentForms && this.task.filterDimensions('matrix', 'top').length>0" [ngTemplateOutlet]="dimensionTemplate"
+             [ngTemplateOutletContext]="{dimensions: this.task.filterDimensions('matrix', 'top'), position:'top'}"></ng-template>
+<ng-template *ngIf="this.assessmentForms && this.task.filterDimensions('list', 'middle').length>0" [ngTemplateOutlet]="dimensionTemplate"
+             [ngTemplateOutletContext]="{dimensions: this.task.filterDimensions('list', 'middle'), position:'middle'}"></ng-template>
 <ng-template *ngIf="this.assessmentForms && this.task.filterDimensions('matrix', 'middle').length>0" [ngTemplateOutlet]="dimensionTemplate"
-             [ngTemplateOutletContext]="{dimensions: this.task.filterDimensions('matrix', 'middle')}"></ng-template>
-<ng-template *ngIf="this.assessmentForms && this.task.filterDimensions('list', 'bottom').length>0" [ngTemplateOutlet]="dimensionTemplate" [ngTemplateOutletContext]="{dimensions: this.task.filterDimensions('list', 'bottom')}"></ng-template>
+             [ngTemplateOutletContext]="{dimensions: this.task.filterDimensions('matrix', 'middle'), position:'middle'}"></ng-template>
+<ng-template *ngIf="this.assessmentForms && this.task.filterDimensions('list', 'bottom').length>0" [ngTemplateOutlet]="dimensionTemplate"
+             [ngTemplateOutletContext]="{dimensions: this.task.filterDimensions('list', 'bottom'), position:'bottom'}"></ng-template>
 <ng-template *ngIf="this.assessmentForms && this.task.filterDimensions('matrix', 'bottom').length>0" [ngTemplateOutlet]="dimensionTemplate"
-             [ngTemplateOutletContext]="{dimensions: this.task.filterDimensions('matrix', 'bottom')}"></ng-template>
+             [ngTemplateOutletContext]="{dimensions: this.task.filterDimensions('matrix', 'bottom'), position:'bottom'}"></ng-template>
 
 
