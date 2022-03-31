@@ -24,24 +24,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular-devkit/architect@npm:0.1303.0":
-  version: 0.1303.0
-  resolution: "@angular-devkit/architect@npm:0.1303.0"
+"@angular-devkit/architect@npm:0.1303.1":
+  version: 0.1303.1
+  resolution: "@angular-devkit/architect@npm:0.1303.1"
   dependencies:
-    "@angular-devkit/core": 13.3.0
+    "@angular-devkit/core": 13.3.1
     rxjs: 6.6.7
-  checksum: e5dea9aa059dca9af8d6eaa96af646b97305ddfab4e5f3a13ef1d52c0612c0ca90fcf149d128381038fc021deadad7b36c10de298c63aab76c1592cdcec16984
+  checksum: 6eb4f1f2631eae852c8cbea5d46c01592cb1ee805546c37f6313e000f43bd1c403804ada86119ab7cf09e8b63a94286218a4784caaeff026853cf4de3bf2b3f7
   languageName: node
   linkType: hard
 
-"@angular-devkit/build-angular@npm:^13.3.0":
-  version: 13.3.0
-  resolution: "@angular-devkit/build-angular@npm:13.3.0"
+"@angular-devkit/build-angular@npm:^13.3.1":
+  version: 13.3.1
+  resolution: "@angular-devkit/build-angular@npm:13.3.1"
   dependencies:
     "@ampproject/remapping": 1.1.1
-    "@angular-devkit/architect": 0.1303.0
-    "@angular-devkit/build-webpack": 0.1303.0
-    "@angular-devkit/core": 13.3.0
+    "@angular-devkit/architect": 0.1303.1
+    "@angular-devkit/build-webpack": 0.1303.1
+    "@angular-devkit/core": 13.3.1
     "@babel/core": 7.16.12
     "@babel/generator": 7.16.8
     "@babel/helper-annotate-as-pure": 7.16.7
@@ -52,7 +52,7 @@ __metadata:
     "@babel/runtime": 7.16.7
     "@babel/template": 7.16.7
     "@discoveryjs/json-ext": 0.5.6
-    "@ngtools/webpack": 13.3.0
+    "@ngtools/webpack": 13.3.1
     ansi-colors: 4.1.1
     babel-loader: 8.2.3
     babel-plugin-istanbul: 6.1.1
@@ -87,7 +87,7 @@ __metadata:
     regenerator-runtime: 0.13.9
     resolve-url-loader: 5.0.0
     rxjs: 6.6.7
-    sass: 1.49.0
+    sass: 1.49.9
     sass-loader: 12.4.0
     semver: 7.3.5
     source-map-loader: 3.0.1
@@ -128,26 +128,26 @@ __metadata:
       optional: true
     tailwindcss:
       optional: true
-  checksum: 29fc2e84944b10714ad68b1e81ad225117aa7c6194a67a94f4edbffb21baa5476a006e2826f7309d46d47cb9d47767dc8f5b7ccff1a73f33aca5ba8359c2baae
+  checksum: b5feae6ab8749df00781b817c3034c6a26933e7a396eea0badcca4bfb0b875918ec3618c15e5eb8a1c401c0938b20f24904ace59388bcd950cecf0d718ed12c1
   languageName: node
   linkType: hard
 
-"@angular-devkit/build-webpack@npm:0.1303.0":
-  version: 0.1303.0
-  resolution: "@angular-devkit/build-webpack@npm:0.1303.0"
+"@angular-devkit/build-webpack@npm:0.1303.1":
+  version: 0.1303.1
+  resolution: "@angular-devkit/build-webpack@npm:0.1303.1"
   dependencies:
-    "@angular-devkit/architect": 0.1303.0
+    "@angular-devkit/architect": 0.1303.1
     rxjs: 6.6.7
   peerDependencies:
     webpack: ^5.30.0
     webpack-dev-server: ^4.0.0
-  checksum: b7f80c1ceb5116c5a288c8d7cb67bffa7eedeeb60840cf8a3ad0ffa8552ff1d608a36fe81d48370b6e420c0ffaad154bcbd1b4b99fcd171627ff2984bdb5cb0d
+  checksum: 971cae5693d6054b7c08f98509dcee05c2a06c5916a9e07b42c80cc3beff8a250022400d9553e00d774a90f156275ad512aa2ccea7730e71acc2b47ee9db7ce4
   languageName: node
   linkType: hard
 
-"@angular-devkit/core@npm:13.3.0":
-  version: 13.3.0
-  resolution: "@angular-devkit/core@npm:13.3.0"
+"@angular-devkit/core@npm:13.3.1":
+  version: 13.3.1
+  resolution: "@angular-devkit/core@npm:13.3.1"
   dependencies:
     ajv: 8.9.0
     ajv-formats: 2.1.1
@@ -160,20 +160,20 @@ __metadata:
   peerDependenciesMeta:
     chokidar:
       optional: true
-  checksum: 131f8462b8be0a42dcac6c9369cc4b927fa3febd8cbe7099c969fc4ca816334ca9e5970a8fe1353e95b40fe35e8c5b96a759d9f0a3a8864fe4a20df9a8ec3d8b
+  checksum: 735fb024f26287c7e35645382f63e6fc3962ada07c1a922e5635d732dd09d41c52258fec3ad02189de7777109dbcc7b56c5269d8bf07602758bc4aa1dcfbdfc4
   languageName: node
   linkType: hard
 
-"@angular-devkit/schematics@npm:13.3.0":
-  version: 13.3.0
-  resolution: "@angular-devkit/schematics@npm:13.3.0"
+"@angular-devkit/schematics@npm:13.3.1":
+  version: 13.3.1
+  resolution: "@angular-devkit/schematics@npm:13.3.1"
   dependencies:
-    "@angular-devkit/core": 13.3.0
+    "@angular-devkit/core": 13.3.1
     jsonc-parser: 3.0.0
     magic-string: 0.25.7
     ora: 5.4.1
     rxjs: 6.6.7
-  checksum: 788b2647641319f7ad4274f3c999b99e356f56f6cb6314e790c4c0a51b10d572fe9e0c1e8e7a2db19b823981f933a8575c32305ba20874c10771f5350b534d13
+  checksum: 8ec4eb7cd6024c0746db7c7aa8167b2d0fc7b0f7304b454214639fd415403d630f20222bc7ba00f98c0c08c5365955fd16cd94a955dc980eb7712ee3321fe531
   languageName: node
   linkType: hard
 
@@ -205,14 +205,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/cli@npm:^13.3.0":
-  version: 13.3.0
-  resolution: "@angular/cli@npm:13.3.0"
+"@angular/cli@npm:^13.3.1":
+  version: 13.3.1
+  resolution: "@angular/cli@npm:13.3.1"
   dependencies:
-    "@angular-devkit/architect": 0.1303.0
-    "@angular-devkit/core": 13.3.0
-    "@angular-devkit/schematics": 13.3.0
-    "@schematics/angular": 13.3.0
+    "@angular-devkit/architect": 0.1303.1
+    "@angular-devkit/core": 13.3.1
+    "@angular-devkit/schematics": 13.3.1
+    "@schematics/angular": 13.3.1
     "@yarnpkg/lockfile": 1.1.0
     ansi-colors: 4.1.1
     debug: 4.3.3
@@ -230,7 +230,7 @@ __metadata:
     uuid: 8.3.2
   bin:
     ng: bin/ng.js
-  checksum: 9c11c63ccd40fe68f972adb4f3daf35821519d9746376798b202029d8f9e9e24d25add30a7471bdda6fcdd0c6129262eed13d2b1f25c12d6088ce7fa0908d70a
+  checksum: e30dc5920e97f8477170f5998a3452f0d9743e768b62fb58cfa3908e40c98a1b4d1516ceb7bfdbaeb2b379d3e104a1e2f107e96347c36e01a34d6754a04fafe7
   languageName: node
   linkType: hard
 
@@ -2115,14 +2115,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ngtools/webpack@npm:13.3.0":
-  version: 13.3.0
-  resolution: "@ngtools/webpack@npm:13.3.0"
+"@ngtools/webpack@npm:13.3.1":
+  version: 13.3.1
+  resolution: "@ngtools/webpack@npm:13.3.1"
   peerDependencies:
     "@angular/compiler-cli": ^13.0.0
     typescript: ">=4.4.3 <4.7"
     webpack: ^5.30.0
-  checksum: 918e2ee280a2c0e2959b44f19164ec404f8d199cab64df49672faeb91176dd6a2cdde3c7b7b144e58ab6af7704c4575071ba715f538fa1ffd43666ca751354c8
+  checksum: d232fcfaf84ed1f553130f1ce0e978095ea57a85560cc3466ea083d265b4a46d84b35d7133f43b112b1d0d4a9e6ced93822798a0d4074fe32ed7e8eb80b76400
   languageName: node
   linkType: hard
 
@@ -2229,14 +2229,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@schematics/angular@npm:13.3.0":
-  version: 13.3.0
-  resolution: "@schematics/angular@npm:13.3.0"
+"@schematics/angular@npm:13.3.1":
+  version: 13.3.1
+  resolution: "@schematics/angular@npm:13.3.1"
   dependencies:
-    "@angular-devkit/core": 13.3.0
-    "@angular-devkit/schematics": 13.3.0
+    "@angular-devkit/core": 13.3.1
+    "@angular-devkit/schematics": 13.3.1
     jsonc-parser: 3.0.0
-  checksum: 35b8336ac261bf0ee4611bcf2cd1ced762af61997b0a2a26ca9dc028f228f463d398b880a379a66f3557cfb6f96fd67689d8e14f8a6c353f4681f91518a11b78
+  checksum: 72bcfb7c11b4acdfbf8497206dccf7aa2964fb693e0ccfb49724cc245100fca6bbff0f97bba46479bf3890442b24f72eee1152684e0ce66af4dce1aefea116f2
   languageName: node
   linkType: hard
 
@@ -3658,10 +3658,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "crowd-frame@workspace:."
   dependencies:
-    "@angular-devkit/build-angular": ^13.3.0
+    "@angular-devkit/build-angular": ^13.3.1
     "@angular/animations": ~13.3.1
     "@angular/cdk": ~13.3.2
-    "@angular/cli": ^13.3.0
+    "@angular/cli": ^13.3.1
     "@angular/common": ~13.3.1
     "@angular/compiler": ~13.3.1
     "@angular/compiler-cli": ~13.3.1
@@ -7857,16 +7857,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sass@npm:1.49.0":
-  version: 1.49.0
-  resolution: "sass@npm:1.49.0"
+"sass@npm:1.49.9":
+  version: 1.49.9
+  resolution: "sass@npm:1.49.9"
   dependencies:
     chokidar: ">=3.0.0 <4.0.0"
     immutable: ^4.0.0
     source-map-js: ">=0.6.2 <2.0.0"
   bin:
     sass: sass.js
-  checksum: 7cd60868594fb0b6fed87bf4870ad5a7da7e3746cb5127f3ede2565380f3e30ba2de72d64e9083f2d55d0de81f756894fe6d9314c97acb704cf9fc97fbbafd0c
+  checksum: e5653e3499274c5127dcb5c9e7c5f6930378fc61764d999a5d8965782e027181ed09714f94836dec74ef55e3a858107fe6c571954c0cab0ad0be5ab8e586829c
   languageName: node
   linkType: hard
 
