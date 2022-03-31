@@ -8,15 +8,19 @@
 
 mat-horizontal-stepper mat-card-content, mat-horizontal-stepper mat-card-title {
   width: 75% !important;
-  margin: auto !important;
+  margin: 1em auto !important;
 }
 
 mat-horizontal-stepper mat-card-actions {
-  margin: 1% auto auto;
+  margin: 1% auto 1em auto;
 }
 
 mat-horizontal-stepper mat-step-header {
   font-size: large;
+}
+
+mat-card-content {
+  padding-top: 1em;
 }
 
 /* |--- TOKEN INPUT SECTION --| */
@@ -62,14 +66,22 @@ mat-horizontal-stepper mat-step-header {
   width: 96%;
 }
 
-.instructions-section span, .instructions-section span li, .instructions-section p {
+.instructions-section mat-card-content span, .instructions-section mat-card-content p {
+  line-height: 150%;
   font-size: 1.1rem;
 }
 
-.instructions-section span li {
+.instructions-section mat-card-content span li {
+  font-size: 1.1rem;
+  line-height: 200%;
   margin-top: 5px;
   margin-bottom: 5px;
 }
+
+.instructions-section button {
+  font-size: large;
+}
+
 
 .instructions-section {
   max-width: 80%;
@@ -91,10 +103,8 @@ mat-horizontal-stepper mat-step-header {
   text-transform: uppercase;
 }
 
-.instructions-section h2 {
-  padding-top: 1% !important;
-  padding-bottom: 1% !important;
-  border-top: 1px solid rgba(0, 0, 0, 0.12);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
-  font-weight: lighter !important;
+.instructions-section h1 {
+  margin-bottom: 0;
+  text-align: center;
+  font-weight: normal;
 }

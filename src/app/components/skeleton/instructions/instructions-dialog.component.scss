@@ -5,18 +5,31 @@
   padding-bottom: 0 !important;
 }
 
-p, li {
+p {
   font-size: 1.1em;
+  line-height: 150%;
 }
 
-h3 {
-  margin: 0;
+li {
+  font-size: 1.1em;
+  line-height: 200%;
+}
+
+h1 {
+  margin-bottom: 0;
+  text-align: center;
+  font-weight: normal;
 }
 
 .close-button {
+
+  button {
+    font-size: initial;
+  }
+
   text-align: center;
-  margin-top: 1%;
-  margin-bottom: 1%;
+  margin-top: 0.5em;
+  margin-bottom: 1.5em;
 }
 
 button {

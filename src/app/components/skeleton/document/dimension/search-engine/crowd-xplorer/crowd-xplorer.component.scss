@@ -19,17 +19,18 @@ mat-card.xplorer-body {
 
 #search-textarea {
   width: 75%;
+
   .mat-form-field {
     border-radius: 0 !important;
   }
 }
 
 .search-button {
-  border-radius: 0;
   width: 25%;
   height: 50px;
-  margin-left: 0;
   margin-top: 5px;
+  margin-left: 5px;
+  border-radius: 4px;
 }
 
 /* |--- RESULT TABLE --| */

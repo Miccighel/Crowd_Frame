@@ -176,24 +176,6 @@ export class DimensionComponent implements OnInit {
         return result
     }
 
-    public verifyLabelsAndDesc(position) {
-        let dimensionsToCheck = []
-        for (let dimension of this.task.dimensions) {
-            if(dimension.style.position==position) {
-                dimensionsToCheck.push(dimension)
-            }
-        }
-        let result = true
-        for (let dimension of dimensionsToCheck) {
-             if (dimension.scale) {
-                if(dimension.scale.mapping) {
-                    console.log(dimension)
-                }
-            }
-        }
-        return result
-    }
-
     /* |--------- PAIRWISE ---------| */
 
     public unlockNextDimension(documentIndex: number, dimensionIndex: number) {

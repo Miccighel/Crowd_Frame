@@ -1,4 +1,4 @@
-<ng-container *ngIf="this.dimension.url">
+<div *ngIf="this.dimension.url" class="search-engine">
     <ng-container *ngIf="this.dimension.url.enable">
         <div *ngIf="this.dimension.url.instructions" class="evaluation-instructions">
             <h2>{{this.dimension.url.instructions.label}} - {{this.dimension.url.instructions.text}} </h2>
@@ -33,4 +33,4 @@
             </div>
         </form>
     </ng-container>
-</ng-container>
+</div>

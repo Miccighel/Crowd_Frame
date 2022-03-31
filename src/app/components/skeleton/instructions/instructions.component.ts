@@ -58,8 +58,8 @@ export class InstructionsComponent implements OnInit {
      */
     openDialog(instructions: Array<Instruction>): void {
         this.dialog.open(InstructionsDialog, {
-            width: '80%',
-            minHeight: '86%',
+            width: '60%',
+            minHeight: '85%',
             data: {instructions: instructions}
         });
     }

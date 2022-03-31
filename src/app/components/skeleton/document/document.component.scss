@@ -5,10 +5,9 @@ mat-card-content, mat-card-title {
 
 .statement {
   margin-bottom: 1.5%;
-  border: 0;
   box-shadow: 0 0 0 0;
   border-radius: 0;
-  background-color: #eaeaea;
+  border-left: 10px lightgray solid;
   //position:-webkit-sticky;
   //position:sticky;
   //top: 42px;

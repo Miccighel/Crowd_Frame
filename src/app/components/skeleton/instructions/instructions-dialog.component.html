@@ -1,6 +1,6 @@
 <div id="task-instructions" mat-dialog-content>
   <ng-container *ngFor="let instruction of this.instructions; let i=index">
-    <h2 *ngIf="instruction['caption']">{{instruction["caption"]}}</h2>
+    <h1 *ngIf="instruction['caption']">{{instruction["caption"]}}</h1>
     <span [innerHTML]="instruction['text']"></span>
   </ng-container>
 </div>

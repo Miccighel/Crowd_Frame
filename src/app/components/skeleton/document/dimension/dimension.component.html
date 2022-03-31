@@ -144,7 +144,7 @@
                     <app-search-engine [documentIndex]="documentIndex" [dimensionIndex]="dimension.index" [task]="this.task" (formEmitter)="storeSearchEngineUrl($event, dimension.index)"></app-search-engine>
 
                     <ng-container *ngIf="verifyUrlSelection(position)">
-                        <div class="dimension-matrix">
+                        <div class="{{this.task.verifyDimensionsQuantity(position)==1 ? 'dimension-matrix dimension-matrix-single' : 'dimension-matrix dimension-matrix-multiple'}}">
 
                             <div *ngIf="dimension.scale.instructions" class="evaluation-instructions">
                                 <h2>{{dimension.scale.instructions.label}} - {{dimension.scale.instructions.text}}</h2>
@@ -152,7 +152,7 @@
 
                             <!-- Dimension assessment matrix header markup -->
                             <!-- TODO: Find first dimension matrix with mapping -->
-                            <mat-radio-group class="matrix-header" *ngIf="dimension.scale">
+                            <mat-radio-group class="matrix-header" *ngIf="dimension.scale && this.task.getFirstDimension(position).index == dimension.index ">
                                 <div class="{{dimension.description ? 'matrix-header-body-wide' : 'matrix-header-body'}}" *ngFor="let mapping of dimension.scale.mapping; let k=index">
                                     <div *ngIf="mapping.label">
                                         <strong>{{mapping.label}}</strong>
@@ -167,8 +167,8 @@
                             <div *ngIf="dimension.scale">
                                 <mat-radio-group aria-labelledby="radio-button-label" class="matrix-value" formControlName="{{(dimension.name).concat('_value')}}">
                                     <div class="matrix-value-description" *ngIf="dimension.description || dimension.example">
-                                        <p><strong>{{dimension.description}}</strong></p>
-                                        <p>{{dimension.example}}</p>
+                                        <p class="description-main"><strong>{{dimension.description}}</strong></p>
+                                        <p class="description-sub">{{dimension.example}}</p>
                                     </div>
                                     <div *ngFor="let mapping of dimension.scale.mapping; let k=index">
                                         <mat-radio-button class="radio-button" value="{{mapping.value}}" (change)="this.task.storeDimensionValue($event, documentIndex,dimension.index)"></mat-radio-button>

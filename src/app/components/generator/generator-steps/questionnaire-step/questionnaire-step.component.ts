@@ -210,6 +210,8 @@ export class QuestionnaireStepComponent implements OnInit {
                 case 'crt':
                     delete questionnaire.description;
                     for (let questionIndex in questionnaire.questions) {
+                        questionnaire.questions[questionIndex]['type'] = 'number'
+                        questionnaire.questions[questionIndex]['required'] = true
                         delete questionnaire.questions[questionIndex].answers;
                     }
                     delete questionnaire.mapping;

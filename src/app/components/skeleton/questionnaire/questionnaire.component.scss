@@ -5,9 +5,14 @@
 mat-card-title {
   padding-top: 1% !important;
   padding-bottom: 1% !important;
-  margin-bottom: 0.5% !important;
+  margin-bottom: 2% !important;
   margin-top: 0.5% !important;
   font-weight: initial !important;
+}
+
+mat-card-content {
+  margin-top: 1%;
+  margin-bottom: 1%;
 }
 
 mat-checkbox {
@@ -17,7 +22,7 @@ mat-checkbox {
 }
 
 mat-card-actions {
-  margin: auto auto auto;
+  margin: 1% auto 1em auto;
   width: 75%;
 }
 

@@ -6,13 +6,13 @@
         </mat-card-content>
         <mat-card-content *ngIf="this.sectionService.checkCompleted && this.task.instructionsGeneral">
             <ng-container *ngFor="let instruction of this.task.instructionsGeneral; let i=index">
-                <h2 *ngIf="instruction['caption']">{{instruction["caption"]}}</h2>
+                <h1 *ngIf="instruction['caption']">{{instruction["caption"]}}</h1>
                 <span [innerHTML]="instruction.text"></span>
             </ng-container>
         </mat-card-content>
         <mat-card-actions>
             <button mat-flat-button color="primary" (click)="enableTask(); this.performTaskSetup()" [disabled]="!this.sectionService.checkCompleted || !this.task.instructionsGeneral">
-                Proceed
+                Start
             </button>
         </mat-card-actions>
     </mat-card>

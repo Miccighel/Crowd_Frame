@@ -45,6 +45,20 @@
   font-size: 1.2rem;
 }
 
+.dimension-matrix-single {
+  border: 2px solid lightgray;
+  border-radius: 8px;
+  padding: 10px;
+  margin-top: 3em;
+}
+
+.dimension-matrix-multiple mat-radio-group {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  padding-bottom: 20px;
+  padding-top: 10px;
+}
+
+
 .dimension-matrix-container {
   margin-bottom: 2%;
 }
@@ -79,8 +93,12 @@
   margin-left: 15%;
 }
 
-.dimension-matrix mat-radio-group .matrix-value-description, .dimension-matrix mat-radio-group .matrix-value-description  {
-  text-align: justify;
+.dimension-matrix mat-radio-group .matrix-value-description {
+  .description-main {
+    font-size: 1.2em;
+  }
+
+  text-align: left;
 }
 
 .dimension-matrix mat-radio-group > div p {
@@ -121,18 +139,20 @@
   Pairwise splitted dimension css
   @AggiunteAbbondo
 */
-.dimension-content-split{
+.dimension-content-split {
   display: table;
   border-spacing: 2cm 0px;
   width: 100%;
   margin-bottom: 30px;
 }
-.dimension-split-inside{
+
+.dimension-split-inside {
   display: table-cell;
   margin-bottom: 30px;
 
 }
-.spanDocument{
+
+.spanDocument {
   font-size: 15px;
   font-weight: bold;
   text-align: center;
@@ -140,22 +160,23 @@
 }
 
 
-.dimension-name-center{
+.dimension-name-center {
   text-align: center;
 }
 
 
-.dimension-box{
+.dimension-box {
   display: table-cell;
   background-color: #FCFCFC;
   padding-top: 1px;
   margin-top: -1px;
   overflow: hidden;
-  border-radius:5px;
+  border-radius: 5px;
   cursor: pointer;
   box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
 }
-.test{
+
+.test {
   opacity: 100%;
   z-index: 110;
 }

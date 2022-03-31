@@ -84,8 +84,8 @@ export class QuestionnaireComponent implements OnInit {
                     this.initializeFormControl(question)
                 }
             }
-
         }
+        console.log(this.questionnaireForm)
         this.formEmitter.emit({
             "form": this.questionnaireForm,
             "action": null

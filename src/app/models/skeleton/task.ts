@@ -280,6 +280,27 @@ export class Task {
         return filteredDimensions
     }
 
+    public verifyDimensionsQuantity(position) {
+        let dimensionsToCheck = []
+        for (let dimension of this.dimensions) {
+            if(dimension.style.position==position) {
+                dimensionsToCheck.push(dimension)
+            }
+        }
+        return dimensionsToCheck.length
+    }
+
+    public getFirstDimension(position) {
+        let dimensionFirst = null
+        for (let dimension of this.dimensions) {
+            if(dimension.style.position==position) {
+                dimensionFirst = dimension
+                break
+            }
+        }
+        return dimensionFirst
+    }
+
     public getElementsNumber() {
         return this.questionnaireAmountStart + this.documentsAmount + this.questionnaireAmountEnd
     }
