@@ -309,7 +309,9 @@ export class CrowdXplorer {
                     break;
                 }
             }
+
         }
+
     }
 
     /* VIEWCHILD: A reference to a mat-paginator html element is created and bound with the result table */

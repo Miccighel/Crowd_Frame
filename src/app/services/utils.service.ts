@@ -39,6 +39,9 @@ export class UtilsService {
                     case 'invalid':
                         message = `This field is invalid`
                         break;
+                    case 'email':
+                        message = `This field must contain a valid email address`
+                        break;
                     default:
                         message = field.errors[errorKey]
                         break;

@@ -39,6 +39,7 @@ export class SearchEngineComponent implements OnInit {
     dimension: Dimension
 
     @Output() formEmitter: EventEmitter<FormGroup>;
+    @Output() urlSelectedEmitter: EventEmitter<boolean>;
 
     /* References to task stepper and token forms */
     @ViewChild('stepper') stepper: MatStepper;
@@ -55,6 +56,7 @@ export class SearchEngineComponent implements OnInit {
         this.sectionService = sectionService
         this.utilsService = utilsService
         this.formBuilder = formBuilder
+        this.urlSelectedEmitter = new EventEmitter<boolean>();
         this.formEmitter = new EventEmitter<FormGroup>();
     }
 
@@ -67,6 +69,8 @@ export class SearchEngineComponent implements OnInit {
             this.formEmitter.emit(this.searchEngineForm)
         })
         this.formEmitter.emit(this.searchEngineForm)
+
+
     }
 
     /*
@@ -112,14 +116,28 @@ export class SearchEngineComponent implements OnInit {
 
     /* |--------- SEARCH ENGINE INTEGRATION (see: search_engine.json | https://github.com/Miccighel/CrowdXplorer) ---------| */
 
-    public handleSearchEngineRetrievedResponse(retrievedResponseData, document: Document, dimension: Dimension) {
-        this.task.storeSearchEngineRetrievedResponse(retrievedResponseData, document, dimension)
+    public handleSearchEngineRetrievedResponse(retrievedResponseData, documentCurrent: Document, dimension: Dimension) {
+        this.task.storeSearchEngineRetrievedResponse(retrievedResponseData, documentCurrent, dimension)
         this.searchEngineForm.get(dimension.name.concat("_url")).enable();
+        let labelsSelect = document.getElementsByClassName('label-select')
+        if (Array.from(labelsSelect).length <= 0) {
+            let headerRow = document.getElementsByClassName('mat-header-row')
+            for (let header of Array.from(headerRow)) {
+                let sel = document.createElement('div')
+                sel.setAttribute("style", `color:#0000008a;font-size:medium;font-weight:500;padding-right:0.75em;`);
+                sel.setAttribute("class", `label-select`);
+                sel.innerText = "Select"
+                header.append(sel)
+            }
+        }
+
+        //$('.cdk-table').css({'border': '2px solid lightgrey', 'border-radius' : '8px', 'padding' :' 5px  5px '})
     }
 
     public handleSearchEngineSelectedResponse(selectedResponseData, document: Document, dimension: Dimension) {
         this.task.storeSearchEngineSelectedResponse(selectedResponseData, document, dimension)
         this.searchEngineForm.get(dimension.name.concat("_url")).setValue(selectedResponseData['url']);
+        this.urlSelectedEmitter.emit(true)
         this.formEmitter.emit(this.searchEngineForm)
     }
 }

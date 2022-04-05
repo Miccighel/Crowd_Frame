@@ -144,18 +144,19 @@
                     <app-search-engine [documentIndex]="documentIndex" [dimensionIndex]="dimension.index" [task]="this.task" (formEmitter)="storeSearchEngineUrl($event, dimension.index)"></app-search-engine>
 
                     <ng-container *ngIf="verifyUrlSelection(position)">
-                        <div class="{{this.task.verifyDimensionsQuantity(position)==1 ? 'dimension-matrix dimension-matrix-single' : 'dimension-matrix dimension-matrix-multiple'}}">
 
-                            <div *ngIf="dimension.scale.instructions" class="evaluation-instructions">
-                                <h2>{{dimension.scale.instructions.label}} - {{dimension.scale.instructions.text}}</h2>
-                            </div>
+                        <div *ngIf="dimension.scale.instructions" class="dimension-matrix-instructions evaluation-instructions">
+                            <h2>{{dimension.scale.instructions.label}} - {{dimension.scale.instructions.text}}</h2>
+                        </div>
+
+                        <div class="{{this.task.verifyDimensionsQuantity(position)==1 ? 'dimension-matrix dimension-matrix-single' : 'dimension-matrix dimension-matrix-multiple'}}">
 
                             <!-- Dimension assessment matrix header markup -->
                             <!-- TODO: Find first dimension matrix with mapping -->
                             <mat-radio-group class="matrix-header" *ngIf="dimension.scale && this.task.getFirstDimension(position).index == dimension.index ">
                                 <div class="{{dimension.description ? 'matrix-header-body-wide' : 'matrix-header-body'}}" *ngFor="let mapping of dimension.scale.mapping; let k=index">
                                     <div *ngIf="mapping.label">
-                                        <strong>{{mapping.label}}</strong>
+                                        <strong [innerHTML]="mapping.labelSplitted()"></strong>
                                     </div>
                                     <div *ngIf="mapping.description">
                                         <span> ({{mapping.description}})</span>
@@ -167,13 +168,17 @@
                             <div *ngIf="dimension.scale">
                                 <mat-radio-group aria-labelledby="radio-button-label" class="matrix-value" formControlName="{{(dimension.name).concat('_value')}}">
                                     <div class="matrix-value-description" *ngIf="dimension.description || dimension.example">
-                                        <p class="description-main"><strong>{{dimension.description}}</strong></p>
-                                        <p class="description-sub">{{dimension.example}}</p>
+                                        <p class="{{dimension.example.length>0 ? 'description-main-with-sub' : 'description-main'}}"><strong>{{dimension.description}}</strong></p>
                                     </div>
                                     <div *ngFor="let mapping of dimension.scale.mapping; let k=index">
                                         <mat-radio-button class="radio-button" value="{{mapping.value}}" (change)="this.task.storeDimensionValue($event, documentIndex,dimension.index)"></mat-radio-button>
                                     </div>
                                 </mat-radio-group>
+                                <ng-container *ngIf="dimension.example">
+                                    <div *ngIf="dimension.example.length>0" class="description-sub">
+                                        <p>{{dimension.example}}</p>
+                                    </div>
+                                </ng-container>
                             </div>
 
                             <!-- Separator markup -->

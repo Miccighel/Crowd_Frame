@@ -35,6 +35,12 @@ mat-card.xplorer-body {
 
 /* |--- RESULT TABLE --| */
 
+mat-table {
+  border: 2px solid lightgrey;
+  border-radius: 8px;
+  padding: 5px 5px;
+}
+
 mat-header-cell {
   font-size: medium;
 }

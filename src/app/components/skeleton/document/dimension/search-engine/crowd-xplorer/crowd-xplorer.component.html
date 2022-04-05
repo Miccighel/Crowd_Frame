@@ -1,5 +1,4 @@
 <mat-card id="crowd-xplorer-{{digits}}" class="xplorer-body" [formGroup]="searchForm">
-
     <div class="search-bar">
         <mat-form-field id="search-textarea" appearance="outline">
             <mat-label>Insert your query</mat-label>
@@ -10,7 +9,6 @@
                 (click)="performWebSearch(searchInput.value)">{{searchInProgress === true ? 'SEARCHING...' : 'SEARCH'}}
         </button>
     </div>
-
     <mat-table [dataSource]="dataSource">
         <mat-radio-group formControlName="urls">
             <ng-container matColumnDef="{{displayedColumns}}">

@@ -1030,13 +1030,14 @@ export class SkeletonComponent implements OnInit {
         let statements = document.createElement('div')
         let submit = document.createElement('div')
         let bar = document.createElement('div')
-        survey.setAttribute("style", `width: ${questionnairePercentual}%;background-color:#4caf5088; text-align: center; float:left; padding-top:5px; padding-bottom:5px`);
+        survey.setAttribute("style", `width: ${questionnairePercentual}%;background-color:#d171f5; text-align: center; float:left; color: white;line-height: 2em; margin: 0 0.2em; border-radius: 2em;`);
         survey.innerText = "Questionnaires"
-        statements.setAttribute("style", `width: ${elementPercentual}%;background-color:#03a9f455; text-align: center; float:left; padding-top:5px; padding-bottom:0px`);5
+        statements.setAttribute("style", `width: ${elementPercentual}%;background-color:#59acf5; text-align: center; float:left; color: white;line-height: 2em; margin: 0 0.2em; border-radius: 2em;`);
         statements.innerText = "Statements"
-        submit.setAttribute("style", `width: ${submitPercentual}%;background-color:#fcaebc70; text-align: center; float:left; padding-top:5px; padding-bottom:5px`);
-        submit.innerText = "Outcome"
+        submit.setAttribute("style", `width: ${submitPercentual}%;background-color:#2ca841; text-align: center; float:left; color: white;line-height: 2em; margin: 0 0.2em; border-radius: 2em;`);
+        submit.innerText = "End"
         bar.setAttribute("style", `width: 98%; display:flex; margin:auto`);
+        bar.setAttribute("class", 'header-bar');
         if (questionnairePercentual > 0) bar.append(survey)
         if (elementPercentual > 0) bar.append(statements)
         bar.append(submit)

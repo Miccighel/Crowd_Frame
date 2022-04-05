@@ -85,7 +85,6 @@ export class QuestionnaireComponent implements OnInit {
                 }
             }
         }
-        console.log(this.questionnaireForm)
         this.formEmitter.emit({
             "form": this.questionnaireForm,
             "action": null
@@ -93,28 +92,28 @@ export class QuestionnaireComponent implements OnInit {
     }
 
     public handleQuestionDependency(question: Question) {
-        this.questionnaire.questionDependencies[question.nameFull] = true
         if (question.dependant) {
+            this.questionnaire.questionDependencies[question.nameFull] = false
             this.questionnaire.treeCut.walk(function (node) {
                 if (node) {
                     if (!node.isRoot()) {
-                        if (node.model.name == question.target) {
+                        if (node.model.name == question.target && question.indexFull.includes(node.model.indexFull)) {
                             let value = this['questionnaireForm'].get(`${node.model.nameFull}_answer`).value
                             if (value != '') {
                                 let label = node.model.answers[value]
                                 if (label == question.needed) {
                                     let controlName = `${question.nameFull}_answer`
-                                    this.questionnaire.questionDependencies[question.nameFull] = true
+                                    this['questionnaire']['questionDependencies'][question.nameFull] = true
                                     let validators = []
                                     if (question.required) validators.push(Validators.required)
                                     if (question.type == 'number') validators.concat([Validators.min(0), Validators.max(100)])
                                     if (question.type == 'email') validators.push(Validators.email)
-                                    this.questionnaireForm.get(controlName).setValidators(validators)
-                                } else {
-                                    this.questionnaire.questionDependencies[question.nameFull] = false
+                                    this['questionnaireForm'].get(controlName).setValidators(validators)
+                                    this['questionnaire']['questionDependencies'][question.nameFull] = true
                                 }
                             } else {
-                                this.questionnaire.questionDependencies[question.nameFull] = false
+                                let controlName = `${question.nameFull}_answer`
+                                this['questionnaireForm'].get(controlName).clearValidators()
                             }
                         }
                     }
@@ -122,15 +121,19 @@ export class QuestionnaireComponent implements OnInit {
                     return false
                 }
             }, this);
-        }
-        for (const [questionNameFull, value] of Object.entries(this.questionnaire.questionDependencies)) {
-            let controlName = `${questionNameFull}_answer`
-            if (!value) {
-                this.questionnaireForm.get(controlName).clearValidators()
-                this.questionnaireForm.get(controlName).setErrors(null)
+            for (const [questionNameFull, value] of Object.entries(this.questionnaire.questionDependencies)) {
+                let controlName = `${questionNameFull}_answer`
+                if (!value) {
+                    this.questionnaireForm.get(controlName).clearValidators()
+                    this.questionnaireForm.get(controlName).setErrors(null)
+                    this.questionnaireForm.get(controlName).setValue('')
+                    this.questionnaire.questionDependencies[questionNameFull] = false
+                }
             }
+            return this.questionnaire.questionDependencies[question.nameFull]
+        } else {
+            return true
         }
-        return this.questionnaire.questionDependencies[question.nameFull]
     }
 
     public initializeFormControl(question) {
@@ -199,18 +202,29 @@ export class QuestionnaireComponent implements OnInit {
                                     let indexFullUpdated = targetNode.model.indexFull.slice(0, -1).concat(i + 1)
                                     targetNode.walk(function (node) {
                                         if (node) {
+                                            if(node.model.target == questionToRepeat.name) {
+                                                if(node.model.text.includes(' nr. ')) {
+                                                    node.model.text = node.model.text.slice(0, -5).concat(" nr. ").concat(i + 1)
+                                                } else {
+                                                    node.model.text = node.model.text.concat(" nr. ").concat(i + 1)
+                                                }
+                                            }
                                             let indexSlice = (node.model.indexFull.slice(indexFullUpdated.length, node.model.indexFull.length))
                                             let indexFullNew = indexFullUpdated.concat(indexSlice)
-                                            let newQuestion = new Question(this["questionnaire"]["questionIndex"], node.model)
+                                            let newQuestion = new Question(this["questionnaire"]["lastQuestionIndex"], node.model)
                                             newQuestion.indexFull = indexFullNew
-                                            newQuestion.index = this["questionnaire"]["questionIndex"]
-                                            newQuestion.nameFull = newQuestion.nameFull.concat("_").concat(i.toString())
+                                            newQuestion.index = this["questionnaire"]["lastQuestionIndex"]
+                                            if (i > 0) {
+                                                newQuestion.nameFull = newQuestion.nameFull.slice(0, -2).concat("_").concat(i.toString())
+                                            } else {
+                                                newQuestion.nameFull = newQuestion.nameFull.concat("_").concat(i.toString())
+                                            }
                                             newQuestion.indexFull = node.model.indexFull
-                                            node.model.index = this["questionnaire"]["questionIndex"]
+                                            node.model.index = this["questionnaire"]["lastQuestionIndex"]
                                             node.model.indexFull = indexFullNew
                                             node.model.nameFull = newQuestion.nameFull
                                             node.model.dropped = newQuestion.dropped
-                                            this["questionnaire"]["questionIndex"] = this["questionnaire"]["questionIndex"] + 1
+                                            this["questionnaire"]["lastQuestionIndex"] = this["questionnaire"]["lastQuestionIndex"] + 1
                                             this["questionnaire"]["questions"].push(newQuestion)
                                         } else {
                                             return false
@@ -231,7 +245,7 @@ export class QuestionnaireComponent implements OnInit {
                             droppedNode.walk(function (node) {
                                 if (node) {
                                     for (let question of this["questions"]) {
-                                        if (node.model.indexFull == question.indexFull) {
+                                        if (question.index == node.model.index) {
                                             this["questionsToRemove"].push(question)
                                         }
                                     }
@@ -244,6 +258,7 @@ export class QuestionnaireComponent implements OnInit {
                                 this.questionnaireForm.removeControl(`${question.nameFull}_free_text`)
                                 delete this.questionnaire.questionDependencies[question.nameFull]
                                 delete this.questionnaire.questionsToRepeat[question.nameFull]
+                                this.questionnaire.questions = this.questionnaire.questions.filter(questionStored => questionStored.index != question.index);
                             }
                         }
                     }
@@ -253,6 +268,7 @@ export class QuestionnaireComponent implements OnInit {
     }
 
     public handleQuestionnaireCompletion(action: string) {
+        console.log(this.questionnaireForm.value)
         this.formEmitter.emit({
             "form": this.questionnaireForm,
             "action": action

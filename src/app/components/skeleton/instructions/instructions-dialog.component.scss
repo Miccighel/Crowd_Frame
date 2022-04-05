@@ -1,22 +1,24 @@
 /* |--- DIALOG STYLES  --| */
 
+#task-instructions div {
+  font-size: 1.2em;
+}
+
 .mat-dialog-container {
   padding-top: 0 !important;
   padding-bottom: 0 !important;
 }
 
 p {
-  font-size: 1.1em;
   line-height: 150%;
 }
 
 li {
-  font-size: 1.1em;
   line-height: 200%;
 }
 
 h1 {
-  margin-bottom: 0;
+  margin-bottom: 0.5em;
   text-align: center;
   font-weight: normal;
 }
@@ -28,7 +30,7 @@ h1 {
   }
 
   text-align: center;
-  margin-top: 0.5em;
+  margin-top: 1em;
   margin-bottom: 1.5em;
 }
 

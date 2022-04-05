@@ -5,7 +5,7 @@
 
             <ng-template #questionTemplate let-question>
 
-                <div class="indent">
+                <div *ngIf="!question.dropped" class="indent">
 
                     <ng-container class="questionnaire-body" *ngIf="!question.dropped && handleQuestionDependency(question)">
 
@@ -45,7 +45,6 @@
                                 </mat-error>
                             </mat-form-field>
                         </ng-container>
-
 
                         <div *ngIf="question.type=='dropdown'" class="question-box">
                             <mat-form-field appearance="fill" class="questionnaire-value">
@@ -116,8 +115,8 @@
 
             <!-- Standard questionnaire markup -->
             <mat-card-content *ngIf="questionnaire.type=='standard'" class="questionnaire-standard">
-                <div class="questionnaire-description">
-                    <span *ngIf="questionnaire.description">{{questionnaire.description}}</span>
+                <div class="questionnaire-description" *ngIf="questionnaire.description">
+                    <h3 *ngIf="questionnaire.description">{{questionnaire.description}}</h3>
                 </div>
                 <ng-container>
                     <ng-container *ngFor="let question of this.questionnaire.treeCut.model.questions">
@@ -133,7 +132,7 @@
                 <div *ngFor="let question of questionnaire.questions; let j=index" class="question-box">
                     <p class="question-text">{{question.text}}</p>
                     <mat-form-field appearance="fill" class="questionnaire-value">
-                        <mat-label>Answer  (*)</mat-label>
+                        <mat-label>Answer</mat-label>
                         <input matInput type="number" placeholder="0" min="0" max="100" formControlName="{{question.name}}_answer">
                         <mat-error>
                             <app-error-message [formField]="this.questionnaireForm.get(question.nameFull.concat('_answer'))"></app-error-message>

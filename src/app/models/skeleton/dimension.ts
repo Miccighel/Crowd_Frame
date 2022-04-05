@@ -155,6 +155,10 @@ export class Mapping {
         this.separator = data["separator"] ? data["separator"] : false
     }
 
+    labelSplitted() {
+        return this.label.split(" ").join('<br />')
+    }
+
 }
 
 export class ScaleInterval extends Scale {

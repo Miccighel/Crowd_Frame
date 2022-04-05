@@ -42,19 +42,21 @@
 }
 
 .dimension .magnitude_estimation {
-  font-size: 1.2rem;
+  font-size: 1.2em;
 }
+
 
 .dimension-matrix-single {
   border: 2px solid lightgray;
   border-radius: 8px;
   padding: 10px;
+}
+
+.dimension-matrix-instructions {
   margin-top: 3em;
 }
 
 .dimension-matrix-multiple mat-radio-group {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-  padding-bottom: 20px;
   padding-top: 10px;
 }
 
@@ -81,7 +83,7 @@
 }
 
 .dimension-matrix mat-radio-group .matrix-header-body, .dimension-matrix mat-radio-group .matrix-header-body-wide {
-  font-size: large;
+  font-size: initial;
   margin-bottom: 1%;
 }
 
@@ -94,11 +96,29 @@
 }
 
 .dimension-matrix mat-radio-group .matrix-value-description {
+
   .description-main {
     font-size: 1.2em;
+    padding-bottom: 20px;
+  }
+
+  .description-main-with-sub {
+    border: none;
+    padding-bottom: 0;
+    font-size: 1.1em;
   }
 
   text-align: left;
+}
+
+.dimension-matrix .description-sub {
+  p {
+    margin-top: 0;
+  }
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  margin: 0px 0 10px 0px;
+  font-size: 1.1em;
+  padding: 10px 15px 5px 0px;
 }
 
 .dimension-matrix mat-radio-group > div p {

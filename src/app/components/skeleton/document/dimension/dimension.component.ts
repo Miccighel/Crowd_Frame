@@ -103,7 +103,6 @@ export class DimensionComponent implements OnInit {
             this.assessmentForms[index] = assessmentForm
             this.formEmitter.emit(assessmentForm)
         }
-
     }
 
     /*

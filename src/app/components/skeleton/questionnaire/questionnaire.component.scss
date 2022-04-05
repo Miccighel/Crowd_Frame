@@ -41,16 +41,17 @@ mat-form-field {
 }
 
 .question-text  {
-  font-size: 1.3rem;
+  font-size: 1.3em;
   font-weight: normal;
-  margin: 0 0 10px;
 }
 
 .questionnaire-description {
   font-size: 1.4em;
   font-weight: normal;
-  font-style: italic;
   margin-bottom: 1%;
+  h3 {
+    margin-top: 0;
+  }
 }
 
 .question-free-text-tall {
