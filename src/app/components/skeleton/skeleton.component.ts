@@ -164,7 +164,7 @@ export class SkeletonComponent implements OnInit {
         this.sectionService.task = this.task
         this.task.taskName = this.configService.environment.taskName
         this.task.batchName = this.configService.environment.batchName
-
+        this.task.settings = new TaskSettings(await this.S3Service.downloadTaskSettings(this.configService.environment))
         this.task.initializeInstructionsGeneral(await this.S3Service.downloadGeneralInstructions(this.configService.environment));
 
         if (this.configService.environment.debug_mode == 'true') {
@@ -173,7 +173,6 @@ export class SkeletonComponent implements OnInit {
         }
 
         let url = new URL(window.location.href);
-
         /* The GET URL parameters are parsed and used to init worker's instance */
         let paramsFetched: Record<string, string> = {};
         url.searchParams.forEach((value, param) => {
@@ -200,218 +199,206 @@ export class SkeletonComponent implements OnInit {
 
         this.client.get('https://www.cloudflare.com/cdn-cgi/trace', {responseType: 'text'}).subscribe(
             /* If we retrieve some data from Cloudflare we use them to populate worker's object */
-            cloudflareData => {
-
+            async cloudflareData => {
                 this.worker.updateProperties('cloudflare', cloudflareData)
                 /* Some worker properties are loaded using ngxDeviceDetector npm package capabilities... */
                 this.worker.updateProperties('ngxdevicedetector', this.deviceDetectorService.getDeviceInfo())
                 /* ... or the simple Navigator DOM's object */
                 this.worker.updateProperties('navigator', window.navigator)
 
-                /* The task settings are loaded */
-                this.loadSettings().then(async () => {
-
-                    let workerIdGenerated = String(false)
-                    if ((this.worker.identifier == null)) {
-                        let workerACLRecord = await this.dynamoDBService.getACLRecordIpAddress(this.configService.environment, this.worker.getIP())
-                        if (workerACLRecord['Items'].length <= 0) {
+                let workerIdGenerated = String(false)
+                if ((this.worker.identifier == null)) {
+                    let workerACLRecord = await this.dynamoDBService.getACLRecordIpAddress(this.configService.environment, this.worker.getIP())
+                    if (workerACLRecord['Items'].length <= 0) {
+                        let identifierGenerated = this.utilsService.randomIdentifier(14).toUpperCase()
+                        this.worker.setParameter('identifier', identifierGenerated)
+                        this.worker.identifier = identifierGenerated
+                        workerIdGenerated = String(true)
+                    } else {
+                        let aclEntry = workerACLRecord["Items"].pop()
+                        let timeArrival = new Date(aclEntry['time_arrival']).getTime()
+                        let timeActual = new Date().getTime()
+                        let hoursElapsed = Math.abs(timeActual - timeArrival) / 36e5;
+                        if (((/true/i).test(aclEntry['paid']) == false && (/true/i).test(aclEntry['in_progress']) == true) && hoursElapsed > this.task.settings.time_assessment ||
+                            ((/true/i).test(aclEntry['paid']) == false && (/true/i).test(aclEntry['in_progress']) == false) && parseInt(aclEntry['try_left']) <= 1 ||
+                            ((/true/i).test(aclEntry['paid']) == true && (/true/i).test(aclEntry['in_progress']) == false)
+                        ) {
                             let identifierGenerated = this.utilsService.randomIdentifier(14).toUpperCase()
                             this.worker.setParameter('identifier', identifierGenerated)
                             this.worker.identifier = identifierGenerated
                             workerIdGenerated = String(true)
                         } else {
-                            let aclEntry = workerACLRecord["Items"].pop()
-                            let timeArrival = new Date(aclEntry['time_arrival']).getTime()
-                            let timeActual = new Date().getTime()
-                            let hoursElapsed = Math.abs(timeActual - timeArrival) / 36e5;
-                            if (((/true/i).test(aclEntry['paid']) == false && (/true/i).test(aclEntry['in_progress']) == true) && hoursElapsed > this.task.settings.time_assessment ||
-                                ((/true/i).test(aclEntry['paid']) == false && (/true/i).test(aclEntry['in_progress']) == false) && parseInt(aclEntry['try_left']) <= 1 ||
-                                ((/true/i).test(aclEntry['paid']) == true && (/true/i).test(aclEntry['in_progress']) == false)
-                            ) {
-                                let identifierGenerated = this.utilsService.randomIdentifier(14).toUpperCase()
-                                this.worker.setParameter('identifier', identifierGenerated)
-                                this.worker.identifier = identifierGenerated
-                                workerIdGenerated = String(true)
-                            } else {
-                                this.worker.setParameter('identifier', aclEntry['identifier'])
-                                this.worker.identifier = aclEntry['identifier']
-                            }
+                            this.worker.setParameter('identifier', aclEntry['identifier'])
+                            this.worker.identifier = aclEntry['identifier']
                         }
                     }
-                    /* The worker's remote S3 folder is retrieved */
-                    this.worker.folder = this.S3Service.getWorkerFolder(this.configService.environment, this.worker)
-                    this.worker.setParameter('task_name', this.configService.environment.taskName)
-                    this.worker.setParameter('batch_name', this.configService.environment.batchName)
-                    this.worker.setParameter('folder', this.worker.folder)
-                    this.worker.setParameter('paid', String(false))
-                    this.worker.setParameter('generated', workerIdGenerated)
-                    this.worker.setParameter('in_progress', String(false))
-                    this.worker.setParameter('try_left', String(this.task.settings.allowed_tries))
-                    this.worker.setParameter('time_arrival', new Date().toUTCString())
-                    this.worker.setParameter('ip_address', this.worker.getIP())
+                }
+                this.worker.settings = new WorkerSettings(await this.S3Service.downloadWorkers(this.configService.environment))
+                this.worker.folder = this.S3Service.getWorkerFolder(this.configService.environment, this.worker)
+                this.worker.setParameter('task_name', this.configService.environment.taskName)
+                this.worker.setParameter('batch_name', this.configService.environment.batchName)
+                this.worker.setParameter('folder', this.worker.folder)
+                this.worker.setParameter('paid', String(false))
+                this.worker.setParameter('generated', workerIdGenerated)
+                this.worker.setParameter('in_progress', String(false))
+                this.worker.setParameter('try_left', String(this.task.settings.allowed_tries))
+                this.worker.setParameter('time_arrival', new Date().toUTCString())
+                this.worker.setParameter('ip_address', this.worker.getIP())
 
-                    /* The logging service is enabled if it is needed */
-                    if (this.task.settings.logger_enable)
-                        this.logInit(this.worker.identifier, this.configService.environment.taskName, this.configService.environment.batchName, this.client, this.configService.environment.log_on_console);
-                    else
-                        this.actionLogger = null;
+                /* The logging service is enabled if it is needed */
+                if (this.task.settings.logger_enable)
+                    this.logInit(this.worker.identifier, this.configService.environment.taskName, this.configService.environment.batchName, this.client, this.configService.environment.log_on_console);
+                else
+                    this.actionLogger = null;
 
-                    /* The performWorkerStatusCheck function checks worker's status and its result is interpreted as a success|error callback */
-                    this.performWorkerStatusCheck().then(async taskAllowed => {
+                /* The performWorkerStatusCheck function checks worker's status and its result is interpreted as a success|error callback */
+                this.performWorkerStatusCheck().then(async taskAllowed => {
 
-                        this.sectionService.taskAllowed = taskAllowed
+                    this.sectionService.taskAllowed = taskAllowed
 
-                        if (taskAllowed) {
+                    if (taskAllowed) {
 
-                            /* We fetch the task's HITs */
-                            let hits = await this.S3Service.downloadHits(this.configService.environment)
-                            /* Flag to understand if there is a HIT assigned to the current worker */
-                            let hitAssigned = false
+                        /* We fetch the task's HITs */
+                        let hits = await this.S3Service.downloadHits(this.configService.environment)
+                        /* Flag to understand if there is a HIT assigned to the current worker */
+                        let hitAssigned = false
 
-                            /* Anonymous function to assing the found HIT to the worker and mark it as in progress.
-                               it also sets the HIT's input token in the form control */
-                            let assignHit = function (worker, hit, tokenInput) {
-                                worker.setParameter('unit_id', hit['unit_id'])
-                                worker.setParameter('in_progress', String(true))
-                                tokenInput.setValue(hit['token_input'])
+                        /* Anonymous function to assing the found HIT to the worker and mark it as in progress.
+                           it also sets the HIT's input token in the form control */
+                        let assignHit = function (worker, hit, tokenInput) {
+                            worker.setParameter('unit_id', hit['unit_id'])
+                            worker.setParameter('in_progress', String(true))
+                            tokenInput.setValue(hit['token_input'])
+                        }
+
+                        /* An ACL record for the current worker is searched */
+                        let workerACLRecord = await this.dynamoDBService.getACLRecordWorkerId(this.configService.environment, this.worker.identifier)
+                        /* It there is not any record, an available HIT can be assigned to him */
+                        if (workerACLRecord['Items'].length <= 0) {
+                            for (let hit of hits) {
+                                /* The status of each HIT is checked */
+                                let unitACLRecords = await this.dynamoDBService.getACLRecordUnitId(this.configService.environment, hit['unit_id'])
+                                /* If is has not been assigned, the current worker can receive it */
+                                if (unitACLRecords['Items'].length <= 0) {
+                                    /* Call to the previous function */
+                                    assignHit(this.worker, hit, this.tokenInput)
+                                    /* The worker's ACL record is then updated */
+                                    await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker, true)
+                                    /* As soon as a HIT is assigned to the current worker the search can be stopped */
+                                    hitAssigned = true
+                                    break
+                                }
                             }
 
-                            /* An ACL record for the current worker is searched */
-                            let workerACLRecord = await this.dynamoDBService.getACLRecordWorkerId(this.configService.environment, this.worker.identifier)
-                            /* It there is not any record, an available HIT can be assigned to him */
-                            if (workerACLRecord['Items'].length <= 0) {
-                                for (let hit of hits) {
-                                    /* The status of each HIT is checked */
-                                    let unitACLRecords = await this.dynamoDBService.getACLRecordUnitId(this.configService.environment, hit['unit_id'])
-                                    /* If is has not been assigned, the current worker can receive it */
-                                    if (unitACLRecords['Items'].length <= 0) {
-                                        /* Call to the previous function */
-                                        assignHit(this.worker, hit, this.tokenInput)
-                                        /* The worker's ACL record is then updated */
+                            /* If the flag is still false, it means that all the available HITs have been assigned once...
+                               ... however, a worker have probably abandoned the task if someone reaches this point of the code. */
+
+                            if (!hitAssigned) {
+
+                                /* The whole set of ACL records must be scanned to find the oldest worker that participated in the task but abandoned it */
+                                let wholeEntries = []
+                                let aclEntries = await this.dynamoDBService.scanACLRecordUnitId(this.configService.environment)
+                                for (let aclEntry of aclEntries.Items) {
+                                    wholeEntries.push(aclEntry)
+                                }
+                                let lastEvaluatedKey = aclEntries.LastEvaluatedKey
+                                while (typeof lastEvaluatedKey != "undefined") {
+                                    aclEntries = await this.dynamoDBService.scanACLRecordUnitId(this.configService.environment, null, lastEvaluatedKey)
+                                    lastEvaluatedKey = aclEntries.LastEvaluatedKey
+                                    for (let aclEntry of aclEntries.Items) {
+                                        wholeEntries.push(aclEntry)
+                                    }
+                                }
+
+                                /* Each ACL record is sorted considering the timestamp, in ascending order */
+                                wholeEntries.sort((a, b) => (a.time_arrival > b.time_arrival) ? 1 : -1)
+
+                                for (let aclEntry of wholeEntries) {
+
+                                    /*
+                                    If the worker that received the current unit did not complete it he abandoned or returned the task.
+                                    Thus, we free its slot, and we assign the HIT found to the current worker.
+                                    This happens also if the worker does not have any try left, and thus it's entry has a completion time but the two flags are set to false.
+                                    */
+
+                                    let timeArrival = new Date(aclEntry['time_arrival']).getTime()
+                                    let timeActual = new Date().getTime()
+                                    let hoursElapsed = Math.abs(timeActual - timeArrival) / 36e5;
+                                    if (((/true/i).test(aclEntry['paid']) == false && (/true/i).test(aclEntry['in_progress']) == true) && hoursElapsed > this.task.settings.time_assessment ||
+                                        ((/true/i).test(aclEntry['paid']) == false && (/true/i).test(aclEntry['in_progress']) == false) && parseInt(aclEntry['try_left']) <= 1) {
+                                        let hitFound = null
+                                        for (let currentHit of hits) {
+                                            if (currentHit['unit_id'] == aclEntry['unit_id']) {
+                                                hitFound = currentHit
+                                                break
+                                            }
+                                        }
+                                        assignHit(this.worker, hitFound, this.tokenInput)
+                                        hitAssigned = true
+                                        /* The record for the current worker is updated */
                                         await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker, true)
-                                        /* As soon as a HIT is assigned to the current worker the search can be stopped */
+                                        /* The record for the worker that abandoned/returned the task is updated */
+                                        aclEntry['time_expired'] = String(true)
+                                        aclEntry['in_progress'] = String(false)
+                                        await this.dynamoDBService.insertACLRecordUnitId(this.configService.environment, aclEntry, this.task.tryCurrent, false, true)
+                                        /* As soon a slot for the current HIT is freed and assigned to the current worker the search can be stopped */
+                                        break
+                                    }
+
+                                    /* As soon as a HIT is assigned to the current worker the search can be stopped */
+                                    if (hitAssigned) break
+                                }
+
+                            }
+
+                        } else {
+                            /* If an ACL record for the current worker already exists, he already received a HIT. */
+                            let aclEntry = workerACLRecord['Items'].pop()
+                            /* If the two flags are set to false, s/he is a worker that abandoned the task earlier;
+                               furthermore, his/her it has been assigned to someone else. It's a sort of overbooking. */
+                            if ((/true/i).test(aclEntry['in_progress']) == false && (/true/i).test(aclEntry['paid']) == false) {
+                                /* As of today, such a worker is not allowed to perform the task */
+                                taskAllowed = false
+                            } else {
+                                /* Otherwise, the corresponding hit is searched to set the input token */
+                                for (let hit of hits) {
+                                    if (hit['unit_id'] == aclEntry['unit_id']) {
+                                        this.tokenInput.setValue(hit['token_input'])
+                                        await this.dynamoDBService.insertACLRecordUnitId(this.configService.environment, aclEntry, this.task.tryCurrent, true, false)
                                         hitAssigned = true
                                         break
                                     }
                                 }
-
-                                /* If the flag is still false, it means that all the available HITs have been assigned once...
-                                   ... however, a worker have probably abandoned the task if someone reaches this point of the code. */
-
-                                if (!hitAssigned) {
-
-                                    /* The whole set of ACL records must be scanned to find the oldest worker that participated in the task but abandoned it */
-                                    let wholeEntries = []
-                                    let aclEntries = await this.dynamoDBService.scanACLRecordUnitId(this.configService.environment)
-                                    for (let aclEntry of aclEntries.Items) {
-                                        wholeEntries.push(aclEntry)
-                                    }
-                                    let lastEvaluatedKey = aclEntries.LastEvaluatedKey
-                                    while (typeof lastEvaluatedKey != "undefined") {
-                                        aclEntries = await this.dynamoDBService.scanACLRecordUnitId(this.configService.environment, null, lastEvaluatedKey)
-                                        lastEvaluatedKey = aclEntries.LastEvaluatedKey
-                                        for (let aclEntry of aclEntries.Items) {
-                                            wholeEntries.push(aclEntry)
-                                        }
-                                    }
-
-                                    /* Each ACL record is sorted considering the timestamp, in ascending order */
-                                    wholeEntries.sort((a, b) => (a.time_arrival > b.time_arrival) ? 1 : -1)
-
-                                    for (let aclEntry of wholeEntries) {
-
-                                        /*
-                                        If the worker that received the current unit did not complete it he abandoned or returned the task.
-                                        Thus, we free its slot, and we assign the HIT found to the current worker.
-                                        This happens also if the worker does not have any try left, and thus it's entry has a completion time but the two flags are set to false.
-                                        */
-
-                                        let timeArrival = new Date(aclEntry['time_arrival']).getTime()
-                                        let timeActual = new Date().getTime()
-                                        let hoursElapsed = Math.abs(timeActual - timeArrival) / 36e5;
-                                        if (((/true/i).test(aclEntry['paid']) == false && (/true/i).test(aclEntry['in_progress']) == true) && hoursElapsed > this.task.settings.time_assessment ||
-                                            ((/true/i).test(aclEntry['paid']) == false && (/true/i).test(aclEntry['in_progress']) == false) && parseInt(aclEntry['try_left']) <= 1) {
-                                            let hitFound = null
-                                            for (let currentHit of hits) {
-                                                if (currentHit['unit_id'] == aclEntry['unit_id']) {
-                                                    hitFound = currentHit
-                                                    break
-                                                }
-                                            }
-                                            assignHit(this.worker, hitFound, this.tokenInput)
-                                            hitAssigned = true
-                                            /* The record for the current worker is updated */
-                                            await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker, true)
-                                            /* The record for the worker that abandoned/returned the task is updated */
-                                            aclEntry['time_expired'] = String(true)
-                                            aclEntry['in_progress'] = String(false)
-                                            await this.dynamoDBService.insertACLRecordUnitId(this.configService.environment, aclEntry, this.task.tryCurrent, false, true)
-                                            /* As soon a slot for the current HIT is freed and assigned to the current worker the search can be stopped */
-                                            break
-                                        }
-
-                                        /* As soon as a HIT is assigned to the current worker the search can be stopped */
-                                        if (hitAssigned) break
-                                    }
-
-                                }
-
-                            } else {
-                                /* If an ACL record for the current worker already exists, he already received a HIT. */
-                                let aclEntry = workerACLRecord['Items'].pop()
-                                /* If the two flags are set to false, s/he is a worker that abandoned the task earlier;
-                                   furthermore, his/her it has been assigned to someone else. It's a sort of overbooking. */
-                                if ((/true/i).test(aclEntry['in_progress']) == false && (/true/i).test(aclEntry['paid']) == false) {
-                                    /* As of today, such a worker is not allowed to perform the task */
-                                    taskAllowed = false
-                                } else {
-                                    /* Otherwise, the corresponding hit is searched to set the input token */
-                                    for (let hit of hits) {
-                                        if (hit['unit_id'] == aclEntry['unit_id']) {
-                                            this.tokenInput.setValue(hit['token_input'])
-                                            await this.dynamoDBService.insertACLRecordUnitId(this.configService.environment, aclEntry, this.task.tryCurrent, true, false)
-                                            hitAssigned = true
-                                            break
-                                        }
-                                    }
-                                    taskAllowed = true
-                                }
+                                taskAllowed = true
                             }
+                        }
 
-                            /* If after the whole workflow still a HIT has not been assigned to the current worker, we ran out of this */
-                            if (!hitAssigned) {
-                                this.sectionService.taskOverbooking = true
-                                taskAllowed = false
-                            }
+                        /* If after the whole workflow still a HIT has not been assigned to the current worker, we ran out of this */
+                        if (!hitAssigned) {
+                            this.sectionService.taskOverbooking = true
+                            taskAllowed = false
+                        }
 
-                            if (this.configService.environment.debug_mode == 'true' && taskAllowed) {
-                                this.enableTask()
-                                await this.performTaskSetup()
-                            } else {
-                                unlockTask(this, taskAllowed)
-                            }
+                        if (this.configService.environment.debug_mode == 'true' && taskAllowed) {
+                            this.enableTask()
+                            await this.performTaskSetup()
+                        } else {
+                            unlockTask(this, taskAllowed)
+                        }
 
-                        } else unlockTask(this, taskAllowed)
-                    })
+                    } else unlockTask(this, taskAllowed)
                 })
             },
             /* Otherwise, we won't have such information */
-            error => {
+            async error => {
                 this.worker.updateProperties('error', error)
+                await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker, true)
                 unlockTask(this, false)
             }
         )
 
         this.changeDetector.detectChanges()
 
-    }
-
-    /*
-    * This function interacts with an Amazon S3 bucket to retrieve and initialize the settings for the current task.
-    */
-    public async loadSettings() {
-        this.task.settings = new TaskSettings(await this.S3Service.downloadTaskSettings(this.configService.environment))
-        this.worker.settings = new WorkerSettings(await this.S3Service.downloadWorkers(this.configService.environment))
     }
 
     /*
@@ -469,7 +456,6 @@ export class SkeletonComponent implements OnInit {
                 if ('blacklist' in batchStatus) {
                     if ('tableName' in batchStatus) {
                         let rawWorker = await this.dynamoDBService.getACLRecordIpAddress(this.configService.environment, this.worker.getIP(), batchStatus['tableName'])
-                        console.log(rawWorker)
                         if ('Items' in rawWorker) {
                             for (let worker of rawWorker['Items']) {
                                 if (this.worker.getIP() == worker['ip_address']) {

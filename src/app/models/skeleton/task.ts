@@ -91,6 +91,7 @@ export class Task {
         this.sequenceNumber = 0
     }
 
+
     public getElementIndex(stepIndex) {
         let elementType = ""
         let elementIndex = 0

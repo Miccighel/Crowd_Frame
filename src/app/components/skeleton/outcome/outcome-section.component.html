@@ -19,12 +19,13 @@
                 <h2>Something went wrong...</h2>
                 <p class="text-desc">Please, read the list of possible reasons below. Sorry for the inconvenience.</p>
                 <p class="text-desc-small" *ngFor="let message of this.messages; let i=index">{{(i + 1)}}) {{message}}</p>
+                <p class="text-desc">Contact us and explain us carefully your situation, if you want.</p>
             </mat-card-content>
             <!-- Otherwise a standard message is shown -->
             <mat-card-content *ngIf="!this.messages">
-                <h2>You have already started this task without finishing it, or you have already participated to a variant of this experiment deployed in the past.</h2>
+                <h2>>Something went wrong...</h2>
                 <p class="text-desc">
-                    You are not allowed to take part in this experiment. If you believe that this is an error, please contact us. Sorry for the inconvenience.
+                    Contact us and explain us carefully your situation, if you want.
                 </p>
             </mat-card-content>
         </ng-container>
@@ -32,10 +33,11 @@
             <mat-card-content>
                 <h2>Every HIT of the current task has already been assigned to a worker.</h2>
                 <p class="text-desc">
-                    You are not allowed to take part in this experiment. If you reached this point, you have been recruited wrongly. Please, return the HIT. Sorry for the inconvenience.
+                    If you reached this point, you have been recruited wrongly. Please, return your HIT. Sorry for the inconvenience.
                 </p>
             </mat-card-content>
         </ng-container>
+
         <mat-card-content *ngIf="this.sectionService.taskAllowed">
 
             <p *ngIf="this.sectionService.taskAllowed && this.sectionService.taskCompleted && this.sectionService.taskFailed && !this.sectionService.taskSuccessful && (triesAllowed>0 && tryCurrent <= triesAllowed)" class="text-desc">

@@ -268,7 +268,6 @@ export class QuestionnaireComponent implements OnInit {
     }
 
     public handleQuestionnaireCompletion(action: string) {
-        console.log(this.questionnaireForm.value)
         this.formEmitter.emit({
             "form": this.questionnaireForm,
             "action": action
