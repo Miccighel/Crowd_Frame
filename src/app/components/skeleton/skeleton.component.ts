@@ -841,19 +841,11 @@ export class SkeletonComponent implements OnInit {
      * This function gives the possibility to the worker to provide a comment when a try is finished, successfully or not.
      * The comment can be typed in a textarea and when the worker clicks the "Send" button such comment is uploaded to an Amazon S3 bucket.
      */
-    public async performCommentSaving(comment) {
+    public async performCommentSaving(data) {
         this.outcomeSection.commentSent = true
         if (!(this.worker.identifier == null)) {
-            let data = {}
-            let actionInfo = {
-                try: this.task.tryCurrent,
-                sequence: this.task.sequenceNumber,
-                element: "comment"
-            };
-            data["info"] = actionInfo
-            data['comment'] = comment
-            await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, data)
-            this.task.sequenceNumber = this.task.sequenceNumber + 1
+            let comment = this.task.buildCommentPayload(data)
+            await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, comment)
         }
     }
 

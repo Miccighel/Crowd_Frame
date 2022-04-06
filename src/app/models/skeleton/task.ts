@@ -101,13 +101,13 @@ export class Task {
         } else if (stepIndex < this.questionnaireAmountStart) {
             elementType = "Q"
             elementIndex = stepIndex
-        } else if (stepIndex >= this.questionnaireAmountStart + this.documentsAmount && stepIndex < this.getElementsNumber() &&  this.questionnaireAmountEnd > 0) {
+        } else if (stepIndex >= this.questionnaireAmountStart + this.documentsAmount && stepIndex < this.getElementsNumber() && this.questionnaireAmountEnd > 0) {
             elementType = "Q"
             elementIndex = stepIndex - this.documentsAmount
-        } else if (stepIndex >= this.questionnaireAmountStart + this.documentsAmount && this.questionnaireAmountEnd == 0)  {
+        } else if (stepIndex >= this.questionnaireAmountStart + this.documentsAmount && this.questionnaireAmountEnd == 0) {
             elementType = "Outcome"
             elementIndex = null
-        }  else if (stepIndex >= this.questionnaireAmountStart + this.documentsAmount && stepIndex >= this.getElementsNumber() && this.questionnaireAmountEnd > 0)  {
+        } else if (stepIndex >= this.questionnaireAmountStart + this.documentsAmount && stepIndex >= this.getElementsNumber() && this.questionnaireAmountEnd > 0) {
             elementType = "Outcome"
             elementIndex = null
         }
@@ -284,7 +284,7 @@ export class Task {
     public verifyDimensionsQuantity(position) {
         let dimensionsToCheck = []
         for (let dimension of this.dimensions) {
-            if(dimension.style.position==position) {
+            if (dimension.style.position == position) {
                 dimensionsToCheck.push(dimension)
             }
         }
@@ -294,7 +294,7 @@ export class Task {
     public getFirstDimension(position) {
         let dimensionFirst = null
         for (let dimension of this.dimensions) {
-            if(dimension.style.position==position) {
+            if (dimension.style.position == position) {
                 dimensionFirst = dimension
                 break
             }
@@ -745,5 +745,18 @@ export class Task {
         };
         checks['checks'] = qualityChecks
         return checks
+    }
+
+    public buildCommentPayload(comment) {
+        let data = {}
+        let actionInfo = {
+            try: this.tryCurrent,
+            sequence: this.sequenceNumber,
+            element: "comment"
+        };
+        data["info"] = actionInfo
+        data['comment'] = comment
+        this.sequenceNumber = this.sequenceNumber + 1
+        return data
     }
 }
