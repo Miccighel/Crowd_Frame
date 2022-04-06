@@ -11,30 +11,17 @@ import { HitSolution } from '../models/hitSolution';
 })
 export class HitsSolverService {
 
-  solverEndPoint = "http://localhost:80";
+  solverEndPoint: string;
   selectedRunner: string;
   runners: Array<string>
   client: HttpClient;
 
-  ready: boolean;
-
   constructor(client: HttpClient) {
     this.client = client;
-    this.ready = false
   }
 
-  init(){
-    this.getSolverConfiguration().subscribe(
-      response => {
-        this.setRunners(response)
-      },
-      error => {
-        this.ready = false
-      }
-    )
-  }
-
-  getSolverConfiguration(): Observable<JSON>{
+  getSolverConfiguration(config): Observable<JSON>{
+    this.solverEndPoint = config.environment.hit_solver_endpoint
     return this.client.get<JSON>(this.solverEndPoint);
   }
 
@@ -45,7 +32,6 @@ export class HitsSolverService {
 
   setRunner(idx: number){
     this.selectedRunner = this.runners[idx];
-    this.ready = true
   }
 
   getRunner(){
@@ -103,7 +89,7 @@ export class HitsSolverService {
     return token
   }
 
-  createHits(response: HitSolution, docs: Array<JSON>){
+  createHits(response: HitSolution, docs: Array<JSON>, identificationAttribute: string){
     let hits = []
     let assignments = response.solution.Workers;
 
@@ -111,7 +97,7 @@ export class HitsSolverService {
     for(let assignment of assignments){
       let dcms = []
       for(let item of assignment.Assignments){
-        let doc = this.getDocument(docs, item)
+        let doc = this.getDocument(docs, item, identificationAttribute)
         dcms.push(doc)
       }
 
@@ -130,9 +116,9 @@ export class HitsSolverService {
     return hits
   }
 
-  getDocument(docs: Array<JSON>, id: string): JSON{
+  getDocument(docs: Array<JSON>, id: string, identificationAttribute: string): JSON{
     for(let doc of docs){
-      if (doc['id'] == id) return doc;
+      if (doc[identificationAttribute] == id) return doc;
     }
   }
 

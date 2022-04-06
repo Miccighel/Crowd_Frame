@@ -12,7 +12,6 @@ import * as localRawWorkers from '../../../data/build/task/workers.json';
 import * as localRawInstructionsMain from '../../../data/build/task/instructions_main.json';
 import * as localRawAdmin from '../../../data/build/config/admin.json';
 import * as localRawDocs from '../../../data/build/task/docs.json';
-import * as localRawTokens from '../../../data/build/task/tokens.json';
 import {ManagedUpload} from "aws-sdk/clients/s3";
 import {Worker} from "../models/worker";
 
@@ -145,11 +144,6 @@ export class S3Service {
   public downloadDocs(config) {
     let docsFile = `${this.getFolder(config)}Task/docs.json`;
     return (config["configuration_local"]) ? localRawDocs["default"] : this.download(config, docsFile);
-  }
-
-  public downloadTokens(config) {
-    let tokensFile = `${this.getFolder(config)}Task/tokens.json`;
-    return (config["configuration_local"]) ? localRawTokens["default"] : this.download(config, tokensFile);
   }
 
   public downloadGeneralInstructions(config) {

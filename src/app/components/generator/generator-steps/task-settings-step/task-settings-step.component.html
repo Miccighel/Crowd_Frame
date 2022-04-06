@@ -100,7 +100,7 @@
                 </tr>
                 <tr *ngIf="this.docsDetected<=0">
                     <td>
-                        <mat-error class="mb-8px indent">
+                        <mat-error class="mt-8px mb-8px">
                             {{ this.errorMessage }}
                         </mat-error>
                     </td>
@@ -120,6 +120,7 @@
                 </table>
                 
                 <div class="hit-attributes mt-8px mb-16px indent">
+                    <mat-divider [inset]="true"></mat-divider>
                     <div *ngFor="let value of docCategories().controls; let valueIndex = index" formArrayName="doc_categories">
                         <table class="width-100">
                             <tr>
@@ -130,11 +131,8 @@
                                     <span>Number of values: {{this.docCategory(valueIndex).get('values_number').value}}</span>
                                 </td>
                                 <td class="p-0 width-20 pr-16px center" [formGroupName]="valueIndex">
-                                    <span *ngIf="this.docCategory(valueIndex).get('balanced').value">
-                                        {{this.getCategoryReport(this.docCategory(valueIndex).get('name').value)}}
-                                    </span>
-                                    <span *ngIf="!this.docCategory(valueIndex).get('balanced').value">
-                                        {{this.getCategoryReport(this.docCategory(valueIndex).get('name').value)}}
+                                    <span>
+                                        <pre>{{this.getCategoryReport(this.docCategory(valueIndex).get('name').value)}}</pre>
                                     </span>
                                 </td>
                                 <td class="p-0 width-20 pr-16px center" [formGroupName]="valueIndex">
@@ -142,7 +140,7 @@
                                         Use as category
                                     </mat-checkbox>
                                     <span *ngIf="!this.docCategory(valueIndex).get('balanced').value" class="highlight-orange">
-                                        Unbalanced attribute.
+                                        Unbalanced attribute
                                     </span>
                                 </td>
                                 <td class="p-0 center" [formGroupName]="valueIndex">
@@ -153,8 +151,9 @@
                                 </td>
                             </tr>
                         </table>
+                        <mat-divider [inset]="true"></mat-divider>
                     </div>
-                    <div>
+                    <div class="mt-16px">
                         <table class="width-100">
                             <tr>
                                 <td class="p-0 pr-16px">
@@ -194,14 +193,17 @@
                 <table class="width-100 mt-16px">
                     <tr *ngIf="this.docsDetected > 0">
                         <td>
-                            <button mat-flat-button color="primary" class="indent" (click)="sendRequestToHitSolver()" [disabled]="this.hitDimension<= 0 ">
+                            <button mat-flat-button color="primary" class="indent" (click)="sendRequestToHitSolver()" [disabled]="this.hitDimension<= 0 || !this.solverStatus">
                                 Send request to the solver
                             </button>
                         </td>
+                        <td *ngIf="!this.solverStatus">
+                            <mat-error>Solver is offline</mat-error>
+                        </td>
                         <td>
-                            <span class="mb-8px indent" *ngIf="this.solutionStatus != ''">
+                            <h3 class="mb-8px indent" *ngIf="this.solutionStatus != ''">
                                 {{this.solutionStatus}}
-                            </span>
+                            </h3>
                         </td>
                     </tr>
                 </table>

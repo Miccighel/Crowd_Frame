@@ -1,4 +1,4 @@
-import {Component, EventEmitter, OnInit, Output} from '@angular/core';
+import {ChangeDetectorRef, Component, EventEmitter, OnInit, Output} from '@angular/core';
 import {S3Service} from 'src/app/services/s3.service';
 import {ConfigService} from "../../../../services/config.service";
 import {HitsSolverService} from "src/app/services/hits-solver.service";
@@ -92,6 +92,7 @@ export class TaskSettingsStepComponent implements OnInit {
     identificationAttribute: string
     errorMessage: string
     solutionStatus: string
+    solverStatus: boolean
     hitDimension: number;
 
     configurationSerialized: string
@@ -106,14 +107,54 @@ export class TaskSettingsStepComponent implements OnInit {
         ngxService: NgxUiLoaderService,
         HitsSolverService: HitsSolverService,
         private _formBuilder: FormBuilder,
+        private cd: ChangeDetectorRef
     ) {
         this.configService = configService
         this.S3Service = S3Service
         this.localStorageService = localStorageService
         this.ngxService = ngxService
         this.HitsSolverService = HitsSolverService
-        this.HitsSolverService.init()
+        this.solverStatus = false
+        this.initHitSolver()
         this.initializeControls()
+    }
+
+    initHitSolver(){
+        this.HitsSolverService.getSolverConfiguration(this.configService).subscribe(
+            response => {
+                this.HitsSolverService.setRunners(response)
+                this.solverStatus = true
+                setTimeout(() => {
+                    this.checkSolverStatus()
+                }, 5000)
+            },
+            error => {
+                this.solverStatus = false
+                setTimeout(() => {
+                    this.checkSolverStatus()
+                }, 5000)
+            }
+        )
+    }
+
+    checkSolverStatus(){
+        this.HitsSolverService.getSolverConfiguration(this.configService).subscribe(
+            response => {
+                this.HitsSolverService.setRunners(response)
+                this.solverStatus = true
+                this.cd.detectChanges()
+                setTimeout(() => {
+                    this.checkSolverStatus()
+                }, 5000)
+            },
+            error => {
+                this.solverStatus = false
+                this.cd.detectChanges()
+                setTimeout(() => {
+                    this.checkSolverStatus()
+                }, 5000)
+            }
+        )
     }
 
     public initializeControls() {
@@ -369,6 +410,9 @@ export class TaskSettingsStepComponent implements OnInit {
             }
         }
 
+        this.resetCategorySelection()
+        this.docCategories().clear({emitEvent: true})
+
         this.docsCategories = []
         this.docsCategoriesValues = {}
 
@@ -382,7 +426,7 @@ export class TaskSettingsStepComponent implements OnInit {
                         this.docsCategoriesValues[attribute] = []
                     }
             }
-
+        
             for (let doc of docs){
                 Object.entries(doc).forEach(
                     ([attribute, value]) => {
@@ -393,17 +437,18 @@ export class TaskSettingsStepComponent implements OnInit {
                     }
                 )
             }
+
             this.documentsOptions().get('min_docs_repetitions').valueChanges.subscribe(
                 data => {
                     if(data != null) this.updateWorkerNumber(data)
                 }
             )
-            this.resetCategorySelection()
-            this.docCategories().clear({emitEvent: true})
-            let VALUES_LIMIT = 4
+
+            let VALUES_LIMIT = 6
+            
             this.docsCategories.forEach(
                 category => {
-                    // The interface shows only the attributes which number of values doesn't exceed the VALUES_LIMIT
+                    // The interface shows only the attributes which number of values that doesn't exceed the VALUES_LIMIT
                     if(this.docsCategoriesValues[category].length <= VALUES_LIMIT){
                         this.addDocCategory(category, new DocCategory(
                             category, this.docsCategoriesValues[category].length, 0), this.categoryIsBalanced(category))
@@ -518,15 +563,14 @@ export class TaskSettingsStepComponent implements OnInit {
 
     getCategoryReport(category){
         let report = ''
+        let MAX_VALUE_LENGTH = 12
         this.docsCategoriesValues[category].forEach(element => {
             let docs = []
             for(let doc of this.docsParsed){
                 if(doc[category] == element) docs.push(doc)
             }
-            if(report == '')
-                report+= `${element}: ${docs.length} documents`
-            else
-                report+= `; ${element}: ${docs.length} documents`
+            let el = (element.length > 0) ? (element.length > MAX_VALUE_LENGTH) ? element.substring(0, MAX_VALUE_LENGTH) + '..' : element : 'NO VALUE';
+            report += (report == '') ? `${el}: ${docs.length} documents` : `\n ${el}: ${docs.length} documents`;
         });
         return report
     }
@@ -653,13 +697,17 @@ export class TaskSettingsStepComponent implements OnInit {
         console.log(JSON.stringify(req))
         
         this.ngxService.startBackground()
-        this.solutionStatus = "Request has been sent to the solver"
         this.HitsSolverService.submitRequest(req).subscribe(response => {
+            this.solutionStatus = "Request has been sent to the solver"
             let task_id = response.task_id;
             let url = response.url;
             
             /* This function check */
             this.checkHitStatus(url, task_id, this.docsParsed, 2000);
+        },
+            error => {
+                this.solutionStatus = "Error on the solver. Please check if the solver is online."
+                this.ngxService.stopBackground()
         });
     }
 
@@ -678,12 +726,12 @@ export class TaskSettingsStepComponent implements OnInit {
         this.HitsSolverService.checkSolutionStatus(url).subscribe(response => {
             if(response['finished'] == false){
                 /* Wait to repull the solution from the solver */
-                setTimeout(() => {}, timeout);
-                this.checkHitStatus(url, task_id, docs, timeout);
+                setTimeout(() => {
+                    this.checkHitStatus(url, task_id, docs, timeout);
+                }, timeout);
             }else{
                 this.HitsSolverService.getSolution(task_id).subscribe(response => {
-                    let receivedHit = this.HitsSolverService.createHits(response, docs);
-
+                    let receivedHit = this.HitsSolverService.createHits(response, docs, this.identificationAttribute);
                     this.loadHitsFromResponse(receivedHit)
                     
                     this.ngxService.stopBackground()
