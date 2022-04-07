@@ -32,7 +32,9 @@ export class Question {
         this.type = data['type']
         this.nameFull = data['nameFull'] ? data["nameFull"] : null
         this.text = data['text'] ? data["text"] : null
+        this.dependant = data['dependant'] ? data["dependant"] : null
         this.repeat = data['repeat'] ? data["repeat"] : null
+        this.needed = data['needed'] ? data["needed"] : null
         this.target = data['target'] ? data["target"] : null
         this.times = data['times'] ? parseInt(data["times"]) : null
         this.required = data['required']

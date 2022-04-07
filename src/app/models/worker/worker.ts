@@ -114,6 +114,10 @@ export class Worker {
         return this.propertiesFetched['cf_ip'].toString()
     }
 
+    getUAG(): string {
+        return this.propertiesFetched['cf_uag'].toString()
+    }
+
     convertToSnakeCase(property) {
         return property.replace(/(?:^|\.?)([A-Z])/g, function (x, y) {
             return "_" + y.toLowerCase()

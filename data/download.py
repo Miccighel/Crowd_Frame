@@ -20,7 +20,9 @@ import datetime
 import xml.etree.ElementTree as Xml
 from rich.console import Console
 from tqdm import tqdm
+import collections
 import warnings
+pd.set_option('display.max_columns', None)
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 warnings.simplefilter(action='ignore', category=pd.errors.PerformanceWarning)
@@ -48,6 +50,8 @@ prolific_completion_code = os.getenv('prolific_completion_code')
 budget_limit = os.getenv('budget_limit')
 bing_api_key = os.getenv('bing_api_key')
 ip_info_token = os.getenv('ip_info_token')
+ip_geolocation_api_key = os.getenv('ip_geolocation_api_key')
+ip_api_api_key = os.getenv('ip_api_api_key')
 user_stack_token = os.getenv('user_stack_token')
 fake_json_token = os.getenv('fake_json_token')
 debug_mode = os.getenv('debug_mode')
@@ -66,7 +70,6 @@ df_quest_path = f"{models_path}workers_questionnaire.csv"
 df_data_path = f"{models_path}workers_answers.csv"
 df_dim_path = f"{models_path}workers_dimensions_selection.csv"
 df_url_path = f"{models_path}workers_urls.csv"
-
 
 
 def serialize_json(folder, filename, data):
@@ -108,6 +111,17 @@ def sanitize_string(x):
         return np.nan
 
 
+def flatten(d, parent_key='', sep='_'):
+    items = []
+    for k, v in d.items():
+        new_key = parent_key + sep + k if parent_key else k
+        if isinstance(v, collections.abc.MutableMapping):
+            items.extend(flatten(v, new_key, sep=sep).items())
+        else:
+            items.append((new_key, v))
+    return dict(items)
+
+
 console.rule("0 - Initialization")
 
 os.chdir("../data/")
@@ -129,7 +143,6 @@ bucket = s3_resource.Bucket(aws_private_bucket)
 boto_session = boto3.Session(profile_name=profile_name)
 dynamo_db = boto_session.client('dynamodb', region_name=aws_region)
 dynamo_db_resource = boto3.resource('dynamodb', region_name=aws_region)
-ip_info_handler = ipinfo.getHandler(ip_info_token)
 
 if batch_prefix is None:
     batch_prefix = ''
@@ -174,92 +187,94 @@ if not prolific_completion_code:
     with console.status(f"Downloading HITs, Token: {next_token}, Total: {token_counter}", spinner="aesthetic") as status:
         status.start()
 
-        while next_token != '' or next_token is not None:
-            if not os.path.exists(df_mturk_data_path):
-                console.print(f"[yellow]HITs data[/yellow] file not detected, creating it.")
-                hit_df = pd.DataFrame(columns=[
-                    "HITId", "HITTypeId", "Title", "Description", "Keywords", "Reward", "CreationTime", "MaxAssignments",
-                    "RequesterAnnotation", "AssignmentDurationInSeconds", "AutoApprovalDelayInSeconds", "Expiration",
-                    "NumberOfSimilarHITs", "LifetimeInSeconds", "AssignmentId", "WorkerId", "AssignmentStatus", "AcceptTime",
-                    "SubmitTime", "AutoApprovalTime", "ApprovalTime", "RejectionTime", "RequesterFeedback", "WorkTimeInSeconds",
-                    "LifetimeApprovalRate", "Last30DaysApprovalRate", "Last7DaysApprovalRate"
-                ])
-            else:
-                hit_df = pd.read_csv(df_mturk_data_path)
+        if not os.path.exists(df_mturk_data_path):
 
-            if next_token == '':
-                response = mturk.list_hits()
-            else:
-                response = mturk.list_hits(NextToken=next_token)
+            console.print(f"[yellow]HITs data[/yellow] file not detected, creating it.")
+            hit_df = pd.DataFrame(columns=[
+                "HITId", "HITTypeId", "Title", "Description", "Keywords", "Reward", "CreationTime", "MaxAssignments",
+                "RequesterAnnotation", "AssignmentDurationInSeconds", "AutoApprovalDelayInSeconds", "Expiration",
+                "NumberOfSimilarHITs", "LifetimeInSeconds", "AssignmentId", "WorkerId", "AssignmentStatus", "AcceptTime",
+                "SubmitTime", "AutoApprovalTime", "ApprovalTime", "RejectionTime", "RequesterFeedback", "WorkTimeInSeconds",
+                "LifetimeApprovalRate", "Last30DaysApprovalRate", "Last7DaysApprovalRate"
+            ])
 
-            try:
+            while next_token != '' or next_token is not None:
 
-                next_token = response['NextToken']
-                num_results = response['NumResults']
-                hits = response['HITs']
+                if next_token == '':
+                    response = mturk.list_hits()
+                else:
+                    response = mturk.list_hits(NextToken=next_token)
 
-                status.update(f"Downloading HITs, Token: {next_token}, Total: {token_counter}")
+                try:
 
-                for item in hits:
+                    next_token = response['NextToken']
+                    num_results = response['NumResults']
+                    hits = response['HITs']
 
-                    row = {}
-                    hit_id = item['HITId']
-                    available_records = hit_df.loc[hit_df['HITId'] == hit_id]
+                    status.update(f"Downloading HITs, Token: {next_token}, Total: {token_counter}")
 
-                    status.update(f"HIT Id: {hit_id}, Available Records: {len(available_records)}, Total: {hit_counter}")
+                    for item in hits:
 
-                    if len(available_records) <= 0:
+                        row = {}
+                        hit_id = item['HITId']
+                        available_records = hit_df.loc[hit_df['HITId'] == hit_id]
 
-                        hit_status = mturk.get_hit(HITId=hit_id)['HIT']
-                        token_input = None
-                        token_output = None
-                        question_parsed = Xml.fromstring(hit_status['Question'])
-                        for child in question_parsed:
-                            for string_splitted in child.text.split("\n"):
-                                string_sanitized = sanitize_string(string_splitted)
-                                if len(string_sanitized) > 0:
-                                    if 'tokenInputtext' in string_sanitized:
-                                        token_input = string_sanitized.replace('tokenInputtext', '')
-                                    if 'tokenOutputonchangeiftokenOutputval' in string_sanitized:
-                                        token_output = string_sanitized.replace('tokenOutputonchangeiftokenOutputval', '').split(" ")[0]
-                        hit_status[f"Input.token_input"] = token_input
-                        hit_status[f"Input.token_output"] = token_output
-                        hit_status.pop('Question')
-                        hit_status.pop('QualificationRequirements')
+                        status.update(f"HIT Id: {hit_id}, Available Records: {len(available_records)}, Total: {hit_counter}")
 
-                        for hit_status_attribute, hit_status_value in hit_status.items():
-                            row[hit_status_attribute] = hit_status_value
+                        if len(available_records) <= 0:
 
-                        hit_assignments = mturk.list_assignments_for_hit(HITId=hit_id, AssignmentStatuses=['Approved'])
-                        for hit_assignment in hit_assignments['Assignments']:
+                            hit_status = mturk.get_hit(HITId=hit_id)['HIT']
+                            token_input = None
+                            token_output = None
+                            question_parsed = Xml.fromstring(hit_status['Question'])
+                            for child in question_parsed:
+                                for string_splitted in child.text.split("\n"):
+                                    string_sanitized = sanitize_string(string_splitted)
+                                    if len(string_sanitized) > 0:
+                                        if 'tokenInputtext' in string_sanitized:
+                                            token_input = string_sanitized.replace('tokenInputtext', '')
+                                        if 'tokenOutputonchangeiftokenOutputval' in string_sanitized:
+                                            token_output = string_sanitized.replace('tokenOutputonchangeiftokenOutputval', '').split(" ")[0]
+                            hit_status[f"Input.token_input"] = token_input
+                            hit_status[f"Input.token_output"] = token_output
+                            hit_status.pop('Question')
+                            hit_status.pop('QualificationRequirements')
 
-                            answer_parsed = Xml.fromstring(hit_assignment['Answer'])[0]
-                            tag_title = None
-                            tag_value = None
-                            for child in answer_parsed:
-                                if 'QuestionIdentifier' in child.tag:
-                                    tag_title = child.text
-                                if 'FreeText' in child.tag:
-                                    tag_value = child.text
-                            hit_assignment[f"Answer.{tag_title}"] = tag_value
-                            hit_assignment.pop('Answer')
+                            for hit_status_attribute, hit_status_value in hit_status.items():
+                                row[hit_status_attribute] = hit_status_value
 
-                            for hit_assignment_attribute, hit_assignment_value in hit_assignment.items():
-                                row[hit_assignment_attribute] = hit_assignment_value
+                            hit_assignments = mturk.list_assignments_for_hit(HITId=hit_id, AssignmentStatuses=['Approved'])
+                            for hit_assignment in hit_assignments['Assignments']:
 
-                            hit_df = hit_df.append(row, ignore_index=True)
+                                answer_parsed = Xml.fromstring(hit_assignment['Answer'])[0]
+                                tag_title = None
+                                tag_value = None
+                                for child in answer_parsed:
+                                    if 'QuestionIdentifier' in child.tag:
+                                        tag_title = child.text
+                                    if 'FreeText' in child.tag:
+                                        tag_value = child.text
+                                hit_assignment[f"Answer.{tag_title}"] = tag_value
+                                hit_assignment.pop('Answer')
 
-                    hit_counter = hit_counter + 1
+                                for hit_assignment_attribute, hit_assignment_value in hit_assignment.items():
+                                    row[hit_assignment_attribute] = hit_assignment_value
 
-                token_counter += 1
-                hit_df.to_csv(df_mturk_data_path, index=False)
-            except KeyError:
-                console.print(f"Found tokens: {token_counter}, HITs: {hit_counter}")
-                break
+                                hit_df = hit_df.append(row, ignore_index=True)
+
+                        hit_counter = hit_counter + 1
+
+                    token_counter += 1
+                    hit_df.to_csv(df_mturk_data_path, index=False)
+                except KeyError:
+                    console.print(f"Found tokens: {token_counter}, HITs: {hit_counter}")
+                    break
+        else:
+            hit_df = pd.read_csv(df_mturk_data_path)
 
 console.print(f"HITs data available at path: [cyan on white]{df_mturk_data_path}")
 
-console.rule(f"2 - Fetching {task_name}/{batch_name} Configuration ")
+console.rule(f"2 - Fetching [green]{task_name}[/green] Configuration")
 
 prefix = f"{task_name}/"
 for current_batch_name in task_batch_names:
@@ -339,6 +354,7 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
                     "source_data": data_source,
                     "source_acl": acl_data_source,
                     "source_log": log_data_source,
+                    "source_path": worker_snapshot_path,
                     "task": {
                         "worker_id": worker_id,
                         "try_last": 0,
@@ -354,8 +370,6 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
                     "documents": {},
                     "questionnaires": {},
                     "logs": [],
-                    "ip": {},
-                    "uag": {}
                 }
 
                 for element in worker_session:
@@ -445,49 +459,52 @@ workers_snapshot_paths = glob(f"{data_path}/*")
 
 console.print(f"Workers Snapshots serialized at path: [cyan on white]{data_path}")
 
-console.rule("3 - Fetching Workers ACL")
+console.rule("4 - Fetching Workers ACL")
 
 if not os.path.exists(df_acl_path):
 
     df_acl = pd.DataFrame()
 
-    for workers_snapshot_path in tqdm(workers_snapshot_paths):
+    for worker_id in tqdm(worker_identifiers):
 
-        worker_snapshots = load_json(workers_snapshot_path)
+        worker_snapshot_path = None
 
-        for worker_snapshot in worker_snapshots:
+        for snapshot_path in workers_snapshot_paths:
+            if worker_id in snapshot_path:
+                worker_snapshot_path = snapshot_path
 
-            snapshot = worker_snapshot['worker']
-            task = worker_snapshot['task']
-            worker_id = snapshot['paramsFetched']['identifier']
+        row = {'worker_id': worker_id}
 
-            row = {'worker_id': worker_id}
-            for attribute, value in task.items():
-                row[attribute] = value
-            for attribute, value in snapshot['paramsFetched'].items():
-                if attribute != 'identifier' and attribute != 'folder':
-                    row[attribute] = value
-            row['source_acl'] = worker_snapshot['source_acl']
-            row['source_data'] = worker_snapshot['source_data']
-            row['source_log'] = worker_snapshot['source_log']
-            for attribute, value in snapshot['paramsFetched'].items():
-                if attribute == 'folder':
-                    row[attribute] = value
+        paginator = dynamo_db.get_paginator('query')
+        for page in paginator.paginate(
+            TableName=table_acl,
+            KeyConditionExpression="identifier = :worker",
+            ExpressionAttributeValues={
+                ":worker": {'S': worker_id},
+            }, Select='ALL_ATTRIBUTES'
+        ):
+            for item in page['Items']:
+                for attribute, value in item.items():
+                    if attribute != 'identifier':
+                        value = value['S']
+                        if 'false' in value or 'true' in value:
+                            value = bool(strtobool(value))
+                        row[attribute] = value
 
-            paginator = dynamo_db.get_paginator('query')
-            for page in paginator.paginate(
-                TableName=table_acl,
-                KeyConditionExpression="identifier = :worker",
-                ExpressionAttributeValues={
-                    ":worker": {'S': worker_id},
-                }, Select='ALL_ATTRIBUTES'
-            ):
-                for item in page['Items']:
-                    if item['task_name']['S'] == task['task_id'] and item['batch_name']['S'] == task['batch_name'] and item['unit_id']['S'] == task['unit_id']:
-                        for attribute, value in item.items():
-                            row.update({attribute: value['S']})
+        if worker_snapshot_path:
+            worker_snapshots = load_json(worker_snapshot_path)
+            for worker_snapshot in worker_snapshots:
+                task = worker_snapshot['task']
+                if task['task_id'] == row['task_name'] and task['batch_name'] == row['batch_name']:
+                    row['source_acl'] = worker_snapshot['source_acl']
+                    row['source_data'] = worker_snapshot['source_data']
+                    row['source_log'] = worker_snapshot['source_log']
+                    row['source_path'] = worker_snapshot['source_path']
+                    for attribute, value in task.items():
+                        if attribute != 'settings' and attribute != 'logger_server_endpoint' and attribute != 'messages':
+                            row[attribute] = value
 
-            df_acl = df_acl.append(row, ignore_index=True)
+        df_acl = df_acl.append(row, ignore_index=True)
 
     if len(df_acl) > 0:
         df_acl.to_csv(df_acl_path, index=False)
@@ -498,28 +515,29 @@ else:
     df_acl = pd.read_csv(df_acl_path)
     console.print(f"Workers ACL [yellow]already detected[/yellow], skipping download")
 
-
-def fetch_worker_key(worker_id, task_name, batch_name, unit_id):
-    worker_data = df_acl.loc[
-        (df_acl['worker_id'] == worker_id) &
-        (df_acl['task_name'] == task_name) &
-        (df_acl['batch_name'] == batch_name) &
-        (df_acl['unit_id'] == unit_id)]
-    return worker_data
-
-
-console.rule("4 - Building [cyan on white]workers_info[/cyan on white] dataframe")
+console.rule("5 - Building [cyan on white]workers_info[/cyan on white] Dataframe")
 
 
 def fetch_uag_data(worker_id, worker_uag):
     data = {}
     if worker_uag:
         uag_file = f"{resources_path}{worker_id}_uag.json"
-        url = f"http://api.userstack.com/detect?access_key={user_stack_token}&ua={worker_uag}"
         if os.path.exists(uag_file):
             ua_data = load_json(uag_file)
         else:
-            ua_data = requests.get(url).json()
+            ua_data = {}
+            if user_stack_token:
+                url = f"http://api.userstack.com/detect?access_key={user_stack_token}&ua={worker_uag}"
+                data_fetched = flatten(requests.get(url).json())
+                ua_data = data_fetched | ua_data
+                temp = {val: key for key, val in ua_data.items()}
+                ua_data = {val: key for key, val in temp.items()}
+            if ip_geolocation_api_key:
+                url = f"https://api.ipgeolocation.io/user-agent?apiKey={ip_geolocation_api_key}"
+                data_fetched = flatten(requests.get(url, headers={'User-Agent': worker_uag}).json())
+                ua_data = data_fetched | ua_data
+                temp = {val: key for key, val in ua_data.items()}
+                ua_data = {val: key for key, val in temp.items()}
             with open(uag_file, 'w', encoding='utf-8') as f:
                 json.dump(ua_data, f, ensure_ascii=False, indent=4)
         for attribute, value in ua_data.items():
@@ -538,8 +556,40 @@ def fetch_ip_data(worker_id, worker_ip):
         if os.path.exists(ip_file):
             ip_data = load_json(ip_file)
         else:
-            ip_data = ip_info_handler.getDetails(worker_ip).all
-            ip_data.update(ipapi.location(worker_ip, None, 'json'))
+            ip_data = {}
+            if ip_info_token:
+                ip_info_handler = ipinfo.getHandler(ip_info_token)
+                data_fetched = ip_info_handler.getDetails(worker_ip).all
+                ip_data = data_fetched | ip_data
+                temp = {val: key for key, val in ip_data.items()}
+                ip_data = {val: key for key, val in temp.items()}
+            if ip_geolocation_api_key:
+                url = f"https://api.ipgeolocation.io/ipgeo?apiKey={ip_geolocation_api_key}&ip={worker_ip}"
+                data_fetched = flatten(requests.get(url).json())
+                ip_data = data_fetched | ip_data
+                temp = {val: key for key, val in ip_data.items()}
+                ip_data = {val: key for key, val in temp.items()}
+                url = f"https://api.ipgeolocation.io/timezone?apiKey={ip_geolocation_api_key}&ip={worker_ip}"
+                data_fetched = flatten(requests.get(url).json())
+                ip_data = data_fetched | ip_data
+                temp = {val: key for key, val in ip_data.items()}
+                ip_data = {val: key for key, val in temp.items()}
+                url = f"https://api.ipgeolocation.io/astronomy?apiKey={ip_geolocation_api_key}&ip={worker_ip}"
+                data_fetched = flatten(requests.get(url).json())
+                ip_data = data_fetched | ip_data
+                temp = {val: key for key, val in ip_data.items()}
+                ip_data = {val: key for key, val in temp.items()}
+            if ip_api_api_key:
+                url = f"http://api.ipapi.com/{worker_ip}?access_key={ip_api_api_key}"
+                data_fetched = flatten(requests.get(url).json())
+                if 'location_languages' in data_fetched:
+                    location_languages = data_fetched.pop('location_languages')
+                    for index, lang_data in enumerate(location_languages):
+                        for key, value in lang_data.items():
+                            ip_data[f"location_language_{index}_{key}"] = value
+                ip_data = data_fetched | ip_data
+                temp = {val: key for key, val in ip_data.items()}
+                ip_data = {val: key for key, val in temp.items()}
             with open(ip_file, 'w', encoding='utf-8') as f:
                 json.dump(ip_data, f, ensure_ascii=False, indent=4)
         for attribute, value in ip_data.items():
@@ -547,49 +597,86 @@ def fetch_ip_data(worker_id, worker_ip):
     return data
 
 
+def find_snapshot_for_record(acl_record):
+    if acl_record['source_path'] is not np.nan:
+        snapshots = load_json(acl_record['source_path'])
+        for snapshot in snapshots:
+            if 'task' in snapshot:
+                if snapshot['task']['worker_id'] == acl_record['worker_id'] and \
+                    snapshot['task']['task_id'] == acl_record['task_name'] and \
+                    snapshot['task']['batch_name'] == acl_record['batch_name'] and \
+                    snapshot['task']['unit_id'] == acl_record['unit_id']:
+                    return snapshot
+    return {}
+
+def find_snapshost_for_task(acl_record):
+    snapshots_found = []
+    if acl_record['source_path'] is not np.nan:
+        snapshots = load_json(acl_record['source_path'])
+        for snapshot in snapshots:
+            if 'task' in snapshot:
+                if snapshot['task']['worker_id'] == acl_record['worker_id'] and \
+                    snapshot['task']['task_id'] == acl_record['task_name']:
+                    snapshots_found.append(snapshot)
+        return snapshots_found
+    return []
+
+
+def update_local_snapshot(acl_record, snapshot):
+    if acl_record['source_path'] is not np.nan:
+        snapshots = load_json(acl_record['source_path'])
+        position = None
+        for index, snapshot_candidate in enumerate(snapshots):
+            if snapshot['task']['worker_id'] == snapshot_candidate['task']['worker_id'] and \
+                snapshot['task']['task_id'] == snapshot_candidate['task']['task_id'] and \
+                snapshot['task']['batch_name'] == snapshot_candidate['task']['batch_name'] and \
+                snapshot['task']['unit_id'] == snapshot_candidate['task']['unit_id']:
+                position = index
+        if position:
+            snapshots[position] = snapshot
+            with open(snapshot['source_path'], 'w', encoding='utf-8') as f:
+                json.dump(snapshot, f, ensure_ascii=False)
+
+
 if not os.path.exists(df_info_path):
 
     df_info = pd.DataFrame()
 
-    for workers_snapshot_path in tqdm(workers_snapshot_paths):
+    for index, acl_record in tqdm(df_acl.iterrows(), total=df_acl.shape[0]):
 
-        worker_snapshots = load_json(workers_snapshot_path)
+        worker_id = acl_record['worker_id']
+        snapshot = find_snapshot_for_record(acl_record)
 
-        for worker_snapshot in worker_snapshots:
+        snapshot['uag'] = {}
+        snapshot['ip'] = {}
 
-            snapshot = worker_snapshot['worker']
-            logs = worker_snapshot['logs']
-            worker_id = snapshot['paramsFetched']['identifier']
+        snapshot['uag'].update(fetch_uag_data(worker_id, acl_record['user_agent']))
+        snapshot['ip'].update(fetch_ip_data(worker_id, acl_record['ip_address']))
 
-            snapshot['uag'] = {}
-            snapshot['ip'] = {}
+        temp = {val: key for key, val in snapshot['ip'].items()}
+        snapshot['ip'] = {val: key for key, val in temp.items()}
+        temp = {val: key for key, val in snapshot['uag'].items()}
+        snapshot['uag'] = {val: key for key, val in temp.items()}
 
-            if len(logs) > 0:
-                for data_log in logs:
-                    if data_log['type'] == 'context':
-                        snapshot['uag'].update(fetch_uag_data(worker_id, data_log['details']['ua']))
-                        snapshot['ip'].update(fetch_ip_data(worker_id, data_log['details']['ip']))
+        update_local_snapshot(acl_record, snapshot)
 
-            if 'cf_uag' in snapshot["propertiesFetched"].keys():
-                worker_uag = snapshot['propertiesFetched']['cf_uag']
-                snapshot['uag'].update(fetch_uag_data(worker_id, worker_uag))
+        row = {
+            'worker_id': worker_id,
+            'paid': acl_record['paid'],
+            'task_name': acl_record['task_name'],
+            'batch_name': acl_record['batch_name'],
+            'unit_id': acl_record['unit_id'],
+        }
 
-            if 'cf_ip' in snapshot["propertiesFetched"].keys():
-                worker_ip = snapshot['propertiesFetched']['cf_ip']
-                snapshot['ip'].update(fetch_ip_data(worker_id, worker_ip))
+        if 'worker' in snapshot:
+            for attribute, value in snapshot['worker']['propertiesFetched'].items():
+                row[attribute] = value
+        for attribute, value in snapshot['ip'].items():
+            row[f"ip_{attribute}"] = value
+        for attribute, value in snapshot['uag'].items():
+            row[f"uag_{attribute}"] = value
 
-            row = {'worker_id': worker_id}
-            for attribute, value in snapshot['propertiesFetched'].items():
-                if attribute not in ['nav_user_agent', 'ngx_user_agent', 'nav_app_version']:
-                    row[attribute] = value
-            for attribute, value in snapshot['ip'].items():
-                if attribute != 'ip':
-                    row[f"ip_{attribute}"] = value
-            for attribute, value in snapshot['uag'].items():
-                if attribute != 'ua':
-                    row[f"uag_{attribute}"] = value
-
-            df_info = df_info.append(row, ignore_index=True)
+        df_info = df_info.append(row, ignore_index=True)
 
     if len(df_info) > 0:
         df_info.to_csv(df_info_path, index=False)
@@ -599,11 +686,11 @@ else:
     console.print(f"Workers info dataframe [yellow]already detected[/yellow], skipping creation")
     console.print(f"Serialized at path: [cyan on white]{df_info_path}")
 
-console.rule("4 - Building [cyan on white]workers_logs[/cyan on white] dataframe")
+console.rule("6 - Building [cyan on white]workers_logs[/cyan on white] Dataframe")
 
 column_names = [
     "worker_id",
-    "worker_paid",
+    "paid",
     "batch_name",
     "unit_id",
     "task_started",
@@ -618,179 +705,176 @@ if not os.path.exists(df_log_path):
 
     os.makedirs(df_log_partial_folder_path, exist_ok=True)
 
-    for workers_snapshot_path in tqdm(workers_snapshot_paths):
+    for index, acl_record in tqdm(df_acl.iterrows(), total=df_acl.shape[0]):
 
-        worker_snapshots = load_json(workers_snapshot_path)
+        worker_id = acl_record['worker_id']
+        snapshots = find_snapshost_for_task(acl_record)
 
-        worker_id = os.path.basename(workers_snapshot_path).replace(".json", '')
         log_df_partial_path = f"{df_log_partial_folder_path}{worker_id}.csv"
 
         if not os.path.exists(log_df_partial_path):
 
             dataframe = pd.DataFrame(columns=column_names)
 
-            for worker_snapshot in worker_snapshots:
+            for snapshot in snapshots:
 
-                worker_id = worker_snapshot['task']['worker_id']
-                worker_paid = bool(strtobool(worker_snapshot['worker']['paramsFetched']['paid']))
+                if 'logs' in snapshot:
 
-                task = worker_snapshot['task']
-                logs = worker_snapshot['logs']
+                    logs = snapshot['logs']
 
-                uag_file = f"{resources_path}{worker_id}_uag.json"
-                ip_file = f"{resources_path}{worker_id}_ip.json"
+                    if len(logs) > 0:
 
-                if len(logs) > 0:
+                        task = snapshot['task']
+                        task_started = False
 
-                    task_started = False
+                        if len(snapshot['data_full']) > 0 or len(snapshot['data_partial']['documents_answers']) or len(snapshot['data_partial']['questionnaires_answers']) > 0:
+                            task_started = True
 
-                    if len(worker_snapshot['data_full']) > 0 or len(worker_snapshot['data_partial']['documents_answers']) or len(worker_snapshot['data_partial']['questionnaires_answers']) > 0:
-                        task_started = True
+                        for data_log in logs:
 
-                    for data_log in logs:
+                            row = {
+                                'worker_id': worker_id,
+                                'paid': acl_record['paid'],
+                                'task_name': data_log['task'],
+                                'batch_name': data_log['batch'],
+                                'unit_id': data_log['unit_id'],
+                                'task_started': task_started,
+                                'sequence': data_log['sequence'],
+                                'time_server': data_log['time_server'],
+                                'time_client': data_log['time_client'],
+                                'type': data_log['type'],
+                            }
 
-                        row = {
-                            'worker_id': worker_id,
-                            'task_id': data_log['task'],
-                            'batch_name': data_log['batch'],
-                            'unit_id': data_log['unit_id'],
-                            'task_started': task_started,
-                            'sequence': data_log['sequence'],
-                            'time_server': data_log['time_server'],
-                            'time_client': data_log['time_client'],
-                            'type': data_log['type'],
-                        }
+                            log_details = data_log['details']
 
-                        log_details = data_log['details']
-
-                        if data_log['type'] == 'keySequence':
-                            if 'section' not in dataframe.columns:
-                                dataframe['section'] = np.nan
-                            if 'key_sequence_index' not in dataframe.columns:
-                                dataframe['key_sequence_index'] = np.nan
-                            if 'key_sequence_timestamp' not in dataframe.columns:
-                                dataframe['key_sequence_timestamp'] = np.nan
-                            if 'key_sequence_key' not in dataframe.columns:
-                                dataframe['key_sequence_key'] = np.nan
-                            if 'sentence' not in dataframe.columns:
-                                dataframe['sentence'] = np.nan
-                            row['section'] = log_details['section']
-                            row['sentence'] = log_details['sentence']
-                            for index, key_sequence in enumerate(log_details['keySequence']):
-                                row['key_sequence_index'] = index
-                                row['key_sequence_timestamp'] = key_sequence['timeStamp']
-                                row['key_sequence_key'] = key_sequence['key'] if 'key' in key_sequence else np.nan
-                                dataframe.loc[len(dataframe)] = row
-                        elif data_log['type'] == 'movements':
-                            for attribute, value in log_details.items():
-                                attribute_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute).lower()
-                                attribute_parsed = f"{attribute_parsed}"
-                                if type(value) != dict and type(value) != list:
-                                    if attribute_parsed not in dataframe.columns:
-                                        dataframe[attribute_parsed] = np.nan
-                                    row[attribute_parsed] = value
-                            for movement_data in log_details['points']:
-                                for attribute, value in movement_data.items():
+                            if data_log['type'] == 'keySequence':
+                                if 'section' not in dataframe.columns:
+                                    dataframe['section'] = np.nan
+                                if 'key_sequence_index' not in dataframe.columns:
+                                    dataframe['key_sequence_index'] = np.nan
+                                if 'key_sequence_timestamp' not in dataframe.columns:
+                                    dataframe['key_sequence_timestamp'] = np.nan
+                                if 'key_sequence_key' not in dataframe.columns:
+                                    dataframe['key_sequence_key'] = np.nan
+                                if 'sentence' not in dataframe.columns:
+                                    dataframe['sentence'] = np.nan
+                                row['section'] = log_details['section']
+                                row['sentence'] = log_details['sentence']
+                                for index, key_sequence in enumerate(log_details['keySequence']):
+                                    row['key_sequence_index'] = index
+                                    row['key_sequence_timestamp'] = key_sequence['timeStamp']
+                                    row['key_sequence_key'] = key_sequence['key'] if 'key' in key_sequence else np.nan
+                                    dataframe.loc[len(dataframe)] = row
+                            elif data_log['type'] == 'movements':
+                                for attribute, value in log_details.items():
                                     attribute_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute).lower()
-                                    if type(value) == dict:
-                                        for attribute_sub, value_sub in value.items():
-                                            attribute_sub_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute_sub).lower()
-                                            attribute_sub_parsed = f"point_{attribute_parsed}_{attribute_sub_parsed}"
-                                            if attribute_sub_parsed not in dataframe.columns:
-                                                dataframe[attribute_sub_parsed] = np.nan
-                                            row[attribute_sub_parsed] = value_sub
-                                    else:
-                                        attribute_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute).lower()
-                                        attribute_parsed = f"point_{attribute_parsed}"
+                                    attribute_parsed = f"{attribute_parsed}"
+                                    if type(value) != dict and type(value) != list:
                                         if attribute_parsed not in dataframe.columns:
                                             dataframe[attribute_parsed] = np.nan
                                         row[attribute_parsed] = value
-                                dataframe.loc[len(dataframe)] = row
-                        elif data_log['type'] == 'click':
-                            for attribute, value in log_details.items():
-                                attribute_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute).lower()
-                                attribute_parsed = f"{attribute_parsed}"
-                                if type(value) != dict and type(value) != list:
+                                for movement_data in log_details['points']:
+                                    for attribute, value in movement_data.items():
+                                        attribute_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute).lower()
+                                        if type(value) == dict:
+                                            for attribute_sub, value_sub in value.items():
+                                                attribute_sub_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute_sub).lower()
+                                                attribute_sub_parsed = f"point_{attribute_parsed}_{attribute_sub_parsed}"
+                                                if attribute_sub_parsed not in dataframe.columns:
+                                                    dataframe[attribute_sub_parsed] = np.nan
+                                                row[attribute_sub_parsed] = value_sub
+                                        else:
+                                            attribute_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute).lower()
+                                            attribute_parsed = f"point_{attribute_parsed}"
+                                            if attribute_parsed not in dataframe.columns:
+                                                dataframe[attribute_parsed] = np.nan
+                                            row[attribute_parsed] = value
+                                    dataframe.loc[len(dataframe)] = row
+                            elif data_log['type'] == 'click':
+                                for attribute, value in log_details.items():
+                                    attribute_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute).lower()
+                                    attribute_parsed = f"{attribute_parsed}"
+                                    if type(value) != dict and type(value) != list:
+                                        if attribute_parsed not in dataframe.columns:
+                                            dataframe[attribute_parsed] = np.nan
+                                        row[attribute_parsed] = value
+                                for attribute, value in log_details['target'].items():
+                                    attribute_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute).lower()
+                                    attribute_parsed = f"target_{attribute_parsed}"
                                     if attribute_parsed not in dataframe.columns:
                                         dataframe[attribute_parsed] = np.nan
                                     row[attribute_parsed] = value
-                            for attribute, value in log_details['target'].items():
-                                attribute_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute).lower()
-                                attribute_parsed = f"target_{attribute_parsed}"
-                                if attribute_parsed not in dataframe.columns:
-                                    dataframe[attribute_parsed] = np.nan
-                                row[attribute_parsed] = value
-                            dataframe.loc[len(dataframe)] = row
-                        elif data_log['type'] == 'queryResults':
-                            if 'section' not in dataframe.columns:
-                                dataframe['section'] = np.nan
-                            if 'url_amount' not in dataframe.columns:
-                                dataframe['url_amount'] = np.nan
-                            row['section'] = log_details['section']
-                            row['url_amount'] = log_details['urlAmount']
-                        elif data_log['type'] == 'copy' or data_log['type'] == 'cut':
-                            for attribute, value in log_details.items():
-                                attribute_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute).lower()
-                                if attribute_parsed not in dataframe.columns:
-                                    dataframe[attribute_parsed] = np.nan
-                                if attribute_parsed == 'target':
-                                    row[attribute_parsed] = value.replace("\n", '')
-                            dataframe.loc[len(dataframe)] = row
-                        elif data_log['type'] == 'context':
-                            for detail_kind, detail_val in log_details.items():
-                                detail_kind_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', detail_kind).lower()
-                                if detail_kind_parsed not in dataframe.columns:
-                                    dataframe[detail_kind_parsed] = np.nan
-                                if type(detail_val) == str:
-                                    detail_val.replace('\n', '')
-                                row[detail_kind_parsed] = detail_val
-                            dataframe.loc[len(dataframe)] = row
-                        elif data_log['type'] == 'init' or \
-                            data_log['type'] == 'window_blur' or \
-                            data_log['type'] == 'window_focus' or \
-                            data_log['type'] == 'resize' or \
-                            data_log['type'] == 'button' or \
-                            data_log['type'] == 'unload' or \
-                            data_log['type'] == 'shortcut' or \
-                            data_log['type'] == 'radioChange' or \
-                            data_log['type'] == 'scroll':
-                            for attribute, value in log_details.items():
-                                attribute_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute).lower()
-                                if attribute_parsed not in dataframe.columns:
-                                    dataframe[attribute_parsed] = np.nan
-                                row[attribute_parsed] = value
-                            dataframe.loc[len(dataframe)] = row
-                        elif data_log['type'] == 'selection':
-                            for attribute, value in log_details.items():
-                                attribute_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute).lower()
-                                if attribute_parsed not in dataframe.columns:
-                                    dataframe[attribute_parsed] = np.nan
-                                if attribute_parsed == 'selected':
-                                    row[attribute_parsed] = value.replace("\n", '')
-                            dataframe.loc[len(dataframe)] = row
-                        elif data_log['type'] == 'paste' or data_log['type'] == 'text':
-                            for attribute, value in log_details.items():
-                                attribute_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute).lower()
-                                if attribute_parsed not in dataframe.columns:
-                                    dataframe[attribute_parsed] = np.nan
-                                if attribute_parsed == 'text':
-                                    row[attribute_parsed] = value.replace("\n", '')
-                            dataframe.loc[len(dataframe)] = row
-                        elif data_log['type'] == 'query':
-                            if 'section' not in dataframe.columns:
-                                dataframe['section'] = np.nan
-                            if 'query' not in dataframe.columns:
-                                dataframe['query'] = np.nan
-                            row['section'] = log_details['section']
-                            row['query'] = log_details['query'].replace("\n", '')
-                            dataframe.loc[len(dataframe)] = row
-                        else:
-                            print(data_log['type'])
-                            print(log_details)
-                            assert False
+                                dataframe.loc[len(dataframe)] = row
+                            elif data_log['type'] == 'queryResults':
+                                if 'section' not in dataframe.columns:
+                                    dataframe['section'] = np.nan
+                                if 'url_amount' not in dataframe.columns:
+                                    dataframe['url_amount'] = np.nan
+                                row['section'] = log_details['section']
+                                row['url_amount'] = log_details['urlAmount']
+                            elif data_log['type'] == 'copy' or data_log['type'] == 'cut':
+                                for attribute, value in log_details.items():
+                                    attribute_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute).lower()
+                                    if attribute_parsed not in dataframe.columns:
+                                        dataframe[attribute_parsed] = np.nan
+                                    if attribute_parsed == 'target':
+                                        row[attribute_parsed] = value.replace("\n", '')
+                                dataframe.loc[len(dataframe)] = row
+                            elif data_log['type'] == 'context':
+                                for detail_kind, detail_val in log_details.items():
+                                    detail_kind_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', detail_kind).lower()
+                                    if detail_kind_parsed not in dataframe.columns:
+                                        dataframe[detail_kind_parsed] = np.nan
+                                    if type(detail_val) == str:
+                                        detail_val.replace('\n', '')
+                                    row[detail_kind_parsed] = detail_val
+                                dataframe.loc[len(dataframe)] = row
+                            elif data_log['type'] == 'init' or \
+                                data_log['type'] == 'window_blur' or \
+                                data_log['type'] == 'window_focus' or \
+                                data_log['type'] == 'resize' or \
+                                data_log['type'] == 'button' or \
+                                data_log['type'] == 'unload' or \
+                                data_log['type'] == 'shortcut' or \
+                                data_log['type'] == 'radioChange' or \
+                                data_log['type'] == 'scroll':
+                                for attribute, value in log_details.items():
+                                    attribute_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute).lower()
+                                    if attribute_parsed not in dataframe.columns:
+                                        dataframe[attribute_parsed] = np.nan
+                                    row[attribute_parsed] = value
+                                dataframe.loc[len(dataframe)] = row
+                            elif data_log['type'] == 'selection':
+                                for attribute, value in log_details.items():
+                                    attribute_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute).lower()
+                                    if attribute_parsed not in dataframe.columns:
+                                        dataframe[attribute_parsed] = np.nan
+                                    if attribute_parsed == 'selected':
+                                        row[attribute_parsed] = value.replace("\n", '')
+                                dataframe.loc[len(dataframe)] = row
+                            elif data_log['type'] == 'paste' or data_log['type'] == 'text':
+                                for attribute, value in log_details.items():
+                                    attribute_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute).lower()
+                                    if attribute_parsed not in dataframe.columns:
+                                        dataframe[attribute_parsed] = np.nan
+                                    if attribute_parsed == 'text':
+                                        row[attribute_parsed] = value.replace("\n", '')
+                                dataframe.loc[len(dataframe)] = row
+                            elif data_log['type'] == 'query':
+                                if 'section' not in dataframe.columns:
+                                    dataframe['section'] = np.nan
+                                if 'query' not in dataframe.columns:
+                                    dataframe['query'] = np.nan
+                                row['section'] = log_details['section']
+                                row['query'] = log_details['query'].replace("\n", '')
+                                dataframe.loc[len(dataframe)] = row
+                            else:
+                                print(data_log['type'])
+                                print(log_details)
+                                assert False
 
-            if len(dataframe) > 0:
-                dataframe.to_csv(log_df_partial_path, index=False)
+                    if len(dataframe) > 0:
+                        dataframe.to_csv(log_df_partial_path, index=False)
 
     dataframes_partial = []
     df_partials_paths = glob(f"{df_log_partial_folder_path}/*")
@@ -829,57 +913,64 @@ else:
     console.print(f"Logs dataframe [yellow]already detected[/yellow], skipping creation")
     console.print(f"Serialized at path: [cyan on white]{df_log_path}")
 
-console.rule("5 - Building [cyan on white]workers_questionnaire[/cyan on white] dataframe")
 
+console.rule("7 - Building [cyan on white]workers_questionnaire[/cyan on white] dataframe")
 
 def load_quest_col_names(questionnaires):
+
     columns = []
 
     columns.append("worker_id")
     columns.append("paid")
-    columns.append("task_id")
+    columns.append("task_name")
     columns.append("batch_name")
     columns.append("unit_id")
-    columns.append("try_last")
     columns.append("try_current")
     columns.append("time_submit")
 
     for questionnaire in questionnaires:
-        for question in questionnaire["questions"]:
-            columns.append(f"q_{questionnaire['index']}_{question['name']}_index")
-            columns.append(f"q_{questionnaire['index']}_{question['name']}_name")
-            columns.append(f"q_{questionnaire['index']}_{question['name']}_type")
-            columns.append(f"q_{questionnaire['index']}_{question['name']}_name_full")
-            columns.append(f"q_{questionnaire['index']}_{question['name']}_required")
-            columns.append(f"q_{questionnaire['index']}_{question['name']}_show_detail")
-            columns.append(f"q_{questionnaire['index']}_{question['name']}_free_text")
-            columns.append(f"q_{questionnaire['index']}_{question['name']}_text")
-            columns.append(f"q_{questionnaire['index']}_{question['name']}_answer_value")
-            columns.append(f"q_{questionnaire['index']}_{question['name']}_answer_text")
-            columns.append(f"q_{questionnaire['index']}_{question['name']}_answer_mapping_index")
-            columns.append(f"q_{questionnaire['index']}_{question['name']}_answer_mapping_key")
-            columns.append(f"q_{questionnaire['index']}_{question['name']}_answer_mapping_label")
-            columns.append(f"q_{questionnaire['index']}_{question['name']}_answer_mapping_value")
-        columns.append(f"q_{questionnaire['index']}_time_elapsed")
-        columns.append(f"q_{questionnaire['index']}_accesses")
+        for attribute, value in questionnaire.items():
+            if type(value)!=list:
+                column_name = f"questionnaire_{attribute}"
+                if column_name not in columns:
+                    columns.append(column_name)
+    columns.append(f"questionnaire_time_elapsed")
+    columns.append(f"questionnaire_accesses")
+    for questionnaire in questionnaires:
+        for question in questionnaire['questions']:
+            for attribute, value in question.items():
+                if type(value) != list:
+                    column_name = f"question_{attribute}"
+                    if column_name not in columns:
+                        columns.append(column_name)
+        columns.append(f"question_answer_value")
+        columns.append(f"question_answer_text")
+        if questionnaire['type']== 'likert':
+            columns.append(f"question_answer_mapping_index")
+            columns.append(f"question_answer_mapping_key")
+            columns.append(f"question_answer_mapping_label")
+            columns.append(f"question_answer_mapping_value")
 
     return columns
-
 
 dataframe = pd.DataFrame()
 
 if not os.path.exists(df_quest_path):
 
-    for workers_snapshot_path in tqdm(workers_snapshot_paths):
+    for index, acl_record in tqdm(df_acl.iterrows(), total=df_acl.shape[0]):
 
-        worker_snapshots = load_json(workers_snapshot_path)
+        worker_id = acl_record['worker_id']
+        snapshots = find_snapshost_for_task(acl_record)
 
-        for worker_snapshot in worker_snapshots:
+        for worker_snapshot in snapshots:
 
             source_data = worker_snapshot['source_data']
 
-            worker_id = worker_snapshot['task']['worker_id']
-            worker_paid = bool(strtobool(worker_snapshot['worker']['paramsFetched']['paid']))
+            worker_id = acl_record['worker_id']
+            worker_paid = acl_record['paid']
+            task_name = acl_record['task_name']
+            batch_name = acl_record['batch_name']
+            unit_id = acl_record['unit_id']
 
             task = worker_snapshot['task']
             questionnaires = worker_snapshot['questionnaires']
@@ -901,11 +992,13 @@ if not os.path.exists(df_quest_path):
                     accesses = data_try['serialization']["accesses"]
                     timestamps_elapsed = data_try['serialization']["timestamps_elapsed"]
 
-                    for attribute, value in task.items():
-                        if attribute in column_names:
-                            row[attribute] = value
-
+                    row = {}
+                    row['worker_id'] = worker_id
                     row['paid'] = worker_paid
+                    row['task_name'] = task_name
+                    row['batch_name'] = batch_name
+                    row['unit_id'] = unit_id
+                    row['try_current'] = info['try']
 
                     row['time_submit'] = data_try['time_submit'] if 'time_submit' in data_try else None
 
@@ -915,6 +1008,12 @@ if not os.path.exists(df_quest_path):
 
                             questionnaire = questionnaires[index_main]
 
+                            for attribute, value in questionnaire.items():
+                                if type(value) != list:
+                                    row[f"questionnaire_{attribute}"] = value
+                            row[f"questionnaire_time_elapsed"] = round(timestamps_elapsed[questionnaire['index']], 2)
+                            row[f"questionnaire_accesses"] = accesses[questionnaire['index']]
+
                             for index_sub, question in enumerate(questionnaire["questions"]):
 
                                 answer = None
@@ -923,38 +1022,34 @@ if not os.path.exists(df_quest_path):
                                     if question_name_parsed == question["name"]:
                                         answer = answer_current
 
-                                row[f"q_{questionnaire['index']}_{question['index']}_index"] = question['index']
-                                row[f"q_{questionnaire['index']}_{question['index']}_name"] = question['name']
-                                row[f"q_{questionnaire['index']}_{question['index']}_name_full"] = question['nameFull'] if "nameFull" in question else None
-                                row[f"q_{questionnaire['index']}_{question['index']}_type"] = question['type'] if "type" in question else None
-                                row[f"q_{questionnaire['index']}_{question['index']}_required"] = question['required'] if "required" in question else None
-                                row[f"q_{questionnaire['index']}_{question['index']}_detail"] = question['detail'] if "detail" in question else None
-                                row[f"q_{questionnaire['index']}_{question['index']}_show_detail"] = question['show_detail'] if "show_detail" in question else None
-                                row[f"q_{questionnaire['index']}_{question['index']}_free_text"] = question['free_text'] if "free_text" in question else None
-                                row[f"q_{questionnaire['index']}_{question['index']}_text"] = question['text']
-                                row[f"q_{questionnaire['index']}_{question['index']}_answer_value"] = answer
+                                column_base_name = f"question"
+                                for attribute, value in question.items():
+                                    if type(value) != list:
+                                        row[f"question_{attribute}"] = value
+                                row[f"question_answer_value"] = answer
+
                                 if questionnaire['type'] == 'standard':
-                                    row[f"q_{questionnaire['index']}_{question['index']}_answer_text"] = question['answers'][int(answer)]
+                                    row[f"question_answer_text"] = question['answers'][int(answer)]
                                 elif questionnaire['type'] == 'likert':
                                     mapping = questionnaire['mappings'][int(answer)]
-                                    row[f"q_{questionnaire['index']}_{question['index']}_answer_mapping_index"] = mapping['index']
-                                    row[f"q_{questionnaire['index']}_{question['index']}_answer_mapping_key"] = mapping['key'] if "key" in mapping else None
-                                    row[f"q_{questionnaire['index']}_{question['index']}_answer_mapping_label"] = mapping['label']
-                                    row[f"q_{questionnaire['index']}_{question['index']}_answer_mapping_value"] = mapping['value']
+                                    row[f"question_answer_mapping_index"] = mapping['index']
+                                    row[f"question_answer_mapping_key"] = mapping['key'] if "key" in mapping else None
+                                    row[f"question_answer_mapping_label"] = mapping['label']
+                                    row[f"question_answer_mapping_value"] = mapping['value']
 
-                                row[f"q_{questionnaire['index']}_time_elapsed"] = round(timestamps_elapsed[questionnaire['index']], 2)
-                                row[f"q_{questionnaire['index']}_accesses"] = accesses[questionnaire['index']]
-
-                            dataframe = dataframe.append(row, ignore_index=True)
+                                dataframe = dataframe.append(row, ignore_index=True)
 
             if len(data_partial) > 0:
 
-                for attribute, value in task.items():
-                    if attribute in column_names:
-                        row[attribute] = value
 
                 for questionnaire_data in data_partial['questionnaires_answers']:
 
+                    row = {}
+                    row['worker_id'] = worker_id
+                    row['paid'] = worker_paid
+                    row['task_name'] = task_name
+                    row['batch_name'] = batch_name
+                    row['unit_id'] = unit_id
                     row['time_submit'] = questionnaire_data['time_submit']
 
                     questionnaire = questionnaires[questionnaire_data['serialization']['info']['index']]
@@ -965,56 +1060,63 @@ if not os.path.exists(df_quest_path):
 
                     row['try_current'] = info['try']
 
-                    for index_sub, question in enumerate(questionnaire["questions"]):
+                    data = dataframe.loc[
+                        (dataframe['worker_id']==row['worker_id'])&
+                        (dataframe['task_name']==row['task_name'])&
+                        (dataframe['batch_name']==row['batch_name'])&
+                        (dataframe['unit_id']==row['unit_id'])&
+                        (dataframe['try_current']==row['try_current'])&
+                        (dataframe['questionnaire_index']==questionnaire['index'])
+                    ]
 
-                        answer = None
-                        for question_name, answer_current in current_answers.items():
-                            question_name_parsed = question_name.replace("_answer", "")
-                            if question_name_parsed == question["name"]:
-                                answer = answer_current
+                    if data.shape[0] <= 0:
 
-                        row[f"q_{questionnaire['index']}_{question['index']}_index"] = question['index']
-                        row[f"q_{questionnaire['index']}_{question['index']}_name"] = question['name']
-                        row[f"q_{questionnaire['index']}_{question['index']}_name_full"] = question['nameFull'] if "nameFull" in question else None
-                        row[f"q_{questionnaire['index']}_{question['index']}_type"] = question['type'] if "type" in question else None
-                        row[f"q_{questionnaire['index']}_{question['index']}_required"] = question['required'] if "required" in question else None
-                        row[f"q_{questionnaire['index']}_{question['index']}_detail"] = question['detail'] if "detail" in question else None
-                        row[f"q_{questionnaire['index']}_{question['index']}_show_detail"] = question['show_detail'] if "show_detail" in question else None
-                        row[f"q_{questionnaire['index']}_{question['index']}_free_text"] = question['free_text'] if "free_text" in question else None
-                        row[f"q_{questionnaire['index']}_{question['index']}_text"] = question['text']
-                        row[f"q_{questionnaire['index']}_{question['index']}_answer_value"] = answer
-                        if questionnaire['type'] == 'standard':
-                            row[f"q_{questionnaire['index']}_{question['index']}_answer_text"] = question['answers'][int(answer)]
-                        elif questionnaire['type'] == 'likert':
-                            mapping = questionnaire['mappings'][int(answer)]
-                            row[f"q_{questionnaire['index']}_{question['index']}_answer_mapping_index"] = mapping['index']
-                            row[f"q_{questionnaire['index']}_{question['index']}_answer_mapping_key"] = mapping['key'] if "key" in mapping else None
-                            row[f"q_{questionnaire['index']}_{question['index']}_answer_mapping_label"] = mapping['label']
-                            row[f"q_{questionnaire['index']}_{question['index']}_answer_mapping_value"] = mapping['value']
+                        for attribute, value in questionnaire.items():
+                            if type(value) != list:
+                                row[f"questionnaire_{attribute}"] = value
+                        row[f"questionnaire_time_elapsed"] = round(timestamps_elapsed, 2)
+                        row[f"questionnaire_accesses"] = accesses
 
-                        row[f"q_{questionnaire['index']}_time_elapsed"] = round(timestamps_elapsed, 2) if timestamps_elapsed is not None else None
-                        row[f"q_{questionnaire['index']}_accesses"] = accesses
+                        for index_sub, question in enumerate(questionnaire["questions"]):
 
-                    dataframe = dataframe.append(row, ignore_index=True)
+                            answer = None
+                            for question_name, answer_current in current_answers.items():
+                                question_name_parsed = question_name.replace("_answer", "")
+                                if question_name_parsed == question["name"]:
+                                    answer = answer_current
+
+                            column_base_name = f"question"
+                            for attribute, value in question.items():
+                                if type(value) != list:
+                                    row[f"question_{attribute}"] = value
+                            row[f"question_answer_value"] = answer
+
+                            if questionnaire['type'] == 'standard':
+                                row[f"question_answer_text"] = question['answers'][int(answer)]
+                            elif questionnaire['type'] == 'likert':
+                                mapping = questionnaire['mappings'][int(answer)]
+                                row[f"question_answer_mapping_index"] = mapping['index']
+                                row[f"question_answer_mapping_key"] = mapping['key'] if "key" in mapping else None
+                                row[f"question_answer_mapping_label"] = mapping['label']
+                                row[f"question_answer_mapping_value"] = mapping['value']
+
+                            dataframe = dataframe.append(row, ignore_index=True)
 
     if dataframe.shape[0] > 0:
         empty_cols = [col for col in dataframe.columns if dataframe[col].isnull().all()]
-        dataframe.drop(empty_cols, axis=1, inplace=True)
         dataframe["paid"].replace({0.0: False, 1.0: True}, inplace=True)
-        dataframe["paid"] = dataframe["paid"].astype(bool)
-        dataframe.rename(columns={'paid': 'worker_paid'}, inplace=True)
-        dataframe.drop_duplicates(inplace=True)
         dataframe.to_csv(df_quest_path, index=False)
         console.print(f"Dataframe shape: {dataframe.shape}")
-        console.print(f"Workers data dataframe serialized at path: [cyan on white]{df_quest_path}")
+        console.print(f"Workers questionnaire dataframe serialized at path: [cyan on white]{df_quest_path}")
     else:
         console.print(f"Dataframe shape: {dataframe.shape}")
-        console.print(f"Workers data dataframe [yellow]empty[/yellow], dataframe not serialized.")
+        console.print(f"Workers questionnaire dataframe [yellow]empty[/yellow], dataframe not serialized.")
 else:
     console.print(f"Workers questionnaire dataframe [yellow]already detected[/yellow], skipping creation")
     console.print(f"Serialized at path: [cyan on white]{df_quest_path}")
 
-console.rule("5 - Building [cyan on white]workers_data[/cyan on white] dataframe")
+
+console.rule("8 - Building [cyan on white]workers_data[/cyan on white] dataframe")
 
 
 def load_data_col_names(dimensions, documents):
@@ -1076,18 +1178,13 @@ dataframe = pd.DataFrame()
 
 if not os.path.exists(df_data_path):
 
-    for workers_snapshot_path in tqdm(workers_snapshot_paths):
+    for index, acl_record in tqdm(df_acl.iterrows(), total=df_acl.shape[0]):
 
-        worker_snapshots = load_json(workers_snapshot_path)
+        worker_id = acl_record['worker_id']
+        worker_paid = acl_record['paid']
+        snapshots = find_snapshost_for_task(acl_record)
 
-        for worker_snapshot in worker_snapshots:
-
-            source_acl = worker_snapshot['source_acl']
-            source_data = worker_snapshot['source_data']
-            source_log = worker_snapshot['source_log']
-
-            worker_id = worker_snapshot['task']['worker_id']
-            worker_paid = bool(strtobool(worker_snapshot['worker']['paramsFetched']['paid']))
+        for worker_snapshot in snapshots:
 
             task = worker_snapshot['task']
             dimensions = worker_snapshot['dimensions']
@@ -1108,6 +1205,7 @@ if not os.path.exists(df_data_path):
 
             if len(data_full) > 0:
 
+                row = {}
                 row['worker_id'] = worker_id
                 row['paid'] = worker_paid
 
@@ -1127,18 +1225,18 @@ if not os.path.exists(df_data_path):
                     countdownsStart = data_try['serialization']["countdowns_times_start"]
                     countdownsLeft = data_try['serialization']["countdowns_times_left"]
                     countdownsExpired = data_try['serialization']["countdowns_expired"]
-                    checks = data_try['serialization']["checks"]
+                    checks_try = data_try['serialization']["checks"]
                     info = data_try['serialization']["info"]
 
                     row['try_current'] = info['try']
 
                     if info['element'] == 'all' and info['action'] == 'Finish':
 
-                        row["global_outcome"] = checks["checks"]["globalOutcome"]
-                        row["global_form_validity"] = checks["checks"]["globalFormValidity"]
-                        row["gold_checks"] = any(checks["checks"]["goldChecks"])
-                        row["time_check_amount"] = checks["checks"]["timeCheckAmount"]
-                        row["time_spent_check"] = checks["checks"]["timeSpentCheck"]
+                        row["global_outcome"] = checks_try["checks"]["globalOutcome"]
+                        row["global_form_validity"] = checks_try["checks"]["globalFormValidity"]
+                        row["gold_checks"] = any(checks_try["checks"]["goldChecks"])
+                        row["time_check_amount"] = checks_try["checks"]["timeCheckAmount"]
+                        row["time_spent_check"] = checks_try["checks"]["timeSpentCheck"]
 
                         for comment_data in comments:
                             if int(comment_data['serialization']['info']['try']) == int(info['try']):
@@ -1240,16 +1338,18 @@ if not os.path.exists(df_data_path):
                     if (int(last_full_try) > int(most_rec_try)) and (int(row['try_current']) > int(most_rec_try)) or last_full_try == 0:
 
                         if len(checks) > 0:
-                            row["global_outcome"] = checks["checks"]["globalOutcome"]
-                            row["global_form_validity"] = checks["checks"]["globalFormValidity"]
-                            row["gold_checks"] = any(checks["checks"]["goldChecks"])
-                            row["time_check_amount"] = checks["checks"]["timeCheckAmount"]
-                            row["time_spent_check"] = checks["checks"]["timeSpentCheck"]
+                            for check_data in checks:
+                                if check_data['serialization']["info"]['try'] == row['try_current']:
+                                    row["global_outcome"] = check_data['serialization']["checks"]["globalOutcome"]
+                                    row["global_form_validity"] = check_data['serialization']["checks"]["globalFormValidity"]
+                                    row["gold_checks"] = any(check_data['serialization']["checks"]["goldChecks"])
+                                    row["time_check_amount"] = check_data['serialization']["checks"]["timeCheckAmount"]
+                                    row["time_spent_check"] = check_data['serialization']["checks"]["timeSpentCheck"]
                         else:
                             row["global_outcome"] = False
                             row["global_form_validity"] = False
                             row["gold_checks"] = False
-                            row["time_check_amount"] = 0
+                            row["time_check_amount"] = np.nan
                             row["time_spent_check"] = False
 
                         row["doc_accesses"] = document_data['serialization']['accesses']
@@ -1315,7 +1415,6 @@ if not os.path.exists(df_data_path):
                         else:
                             row["doc_time_elapsed"] = round(document_data['serialization']['timestamps_elapsed'], 2)
 
-                        print(worker_id)
                         if ('time_submit') in row:
                             dataframe = dataframe.append(row, ignore_index=True)
 
@@ -1345,7 +1444,7 @@ else:
     console.print(f"Workers dataframe [yellow]already detected[/yellow], skipping creation")
     console.print(f"Serialized at path: [cyan on white]{df_data_path}")
 
-console.rule("6 - Building [cyan on white]workers_dimensions_selection[/cyan on white] dataframe")
+console.rule("9 - Building [cyan on white]workers_dimensions_selection[/cyan on white] dataframe")
 
 if os.path.exists(df_data_path):
     df_data = pd.read_csv(df_data_path)
@@ -1422,14 +1521,13 @@ def parse_dimensions_selected(df, worker_id, worker_paid, task, info, documents,
 
 if not os.path.exists(df_dim_path) and os.path.exists(df_data_path):
 
-    for workers_snapshot_path in tqdm(workers_snapshot_paths):
+    for index, acl_record in tqdm(df_acl.iterrows(), total=df_acl.shape[0]):
 
-        worker_snapshots = load_json(workers_snapshot_path)
+        worker_id = acl_record['worker_id']
+        worker_paid = acl_record['paid']
+        snapshots = find_snapshost_for_task(acl_record)
 
-        for worker_snapshot in worker_snapshots:
-
-            worker_id = worker_snapshot['task']['worker_id']
-            worker_paid = bool(strtobool(worker_snapshot['worker']['paramsFetched']['paid']))
+        for worker_snapshot in snapshots:
 
             task = worker_snapshot['task']
             dimensions = worker_snapshot['dimensions']
@@ -1505,7 +1603,7 @@ else:
     console.print(f"Dimensions analysis dataframe [yellow]already detected[/yellow], skipping creation")
     console.print(f"Serialized at path: [cyan on white]{df_dim_path}")
 
-console.rule("7 - Building [cyan on white]workers_urls[/cyan on white] dataframe")
+console.rule("10 - Building [cyan on white]workers_urls[/cyan on white] dataframe")
 
 if os.path.exists(df_data_path):
     df_data = pd.read_csv(df_data_path)
@@ -1599,11 +1697,13 @@ def parse_responses(df, worker_id, worker_paid, task, info, queries, responses_r
 
 if not os.path.exists(df_url_path):
 
-    for workers_snapshot_path in tqdm(workers_snapshot_paths):
+    for index, acl_record in tqdm(df_acl.iterrows(), total=df_acl.shape[0]):
 
-        worker_snapshots = load_json(workers_snapshot_path)
+        worker_id = acl_record['worker_id']
+        worker_paid = acl_record['paid']
+        snapshots = find_snapshost_for_task(acl_record)
 
-        for worker_snapshot in worker_snapshots:
+        for worker_snapshot in snapshots:
 
             worker_id = worker_snapshot['task']['worker_id']
             worker_paid = bool(strtobool(worker_snapshot['worker']['paramsFetched']['paid']))
@@ -1657,7 +1757,7 @@ else:
     console.print(f"URL analysis dataframe [yellow]already detected[/yellow], skipping creation")
     console.print(f"Serialized at path: [cyan on white]{df_url_path}")
 
-console.rule("8 - Checking missing HITs")
+console.rule("11 - Checking missing HITs")
 
 hits_missing = []
 hits = load_json(f"{task_config_folder}{batch_name}/hits.json")

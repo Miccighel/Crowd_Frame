@@ -244,6 +244,7 @@ export class SkeletonComponent implements OnInit {
                 this.worker.setParameter('try_left', String(this.task.settings.allowed_tries))
                 this.worker.setParameter('time_arrival', new Date().toUTCString())
                 this.worker.setParameter('ip_address', this.worker.getIP())
+                this.worker.setParameter('user_agent', this.worker.getUAG())
 
                 /* The logging service is enabled if it is needed */
                 if (this.task.settings.logger_enable)
@@ -363,7 +364,7 @@ export class SkeletonComponent implements OnInit {
                                 /* Otherwise, the corresponding hit is searched to set the input token */
                                 for (let hit of hits) {
                                     if (hit['unit_id'] == aclEntry['unit_id']) {
-                                        this.tokenInput.setValue(hit['token_input'])
+                                        assignHit(this.worker, hit, this.tokenInput)
                                         await this.dynamoDBService.insertACLRecordUnitId(this.configService.environment, aclEntry, this.task.tryCurrent, true, false)
                                         hitAssigned = true
                                         break
@@ -392,7 +393,6 @@ export class SkeletonComponent implements OnInit {
             /* Otherwise, we won't have such information */
             async error => {
                 this.worker.updateProperties('error', error)
-                await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker, true)
                 unlockTask(this, false)
             }
         )
@@ -937,6 +937,7 @@ export class SkeletonComponent implements OnInit {
                 if (this.sectionService.taskSuccessful) {
                     this.worker.setParameter('in_progress', String(false))
                     this.worker.setParameter('paid', String(true))
+                    this.worker.setParameter('unit_id', this.task.unitId)
                     this.worker.setParameter('time_completion', new Date().toUTCString())
                     this.worker.setParameter('try_left', String((this.task.settings.allowed_tries - this.task.tryCurrent) + 1))
                     await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker, false)
@@ -944,12 +945,14 @@ export class SkeletonComponent implements OnInit {
                     if (this.task.tryCurrent >= this.task.settings.allowed_tries) {
                         this.worker.setParameter('in_progress', String(false))
                         this.worker.setParameter('paid', String(false))
+                        this.worker.setParameter('unit_id', this.task.unitId)
                         this.worker.setParameter('try_left', String((this.task.settings.allowed_tries - this.task.tryCurrent) + 1))
                         this.worker.setParameter('time_completion', new Date().toUTCString())
                         await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker, false)
                     } else {
                         this.worker.setParameter('in_progress', String(true))
                         this.worker.setParameter('paid', String(false))
+                        this.worker.setParameter('unit_id', this.task.unitId)
                         this.worker.setParameter('try_left', String((this.task.settings.allowed_tries - this.task.tryCurrent) + 1))
                         this.worker.setParameter('time_completion', new Date().toUTCString())
                         await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker, false)
