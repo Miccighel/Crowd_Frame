@@ -67,6 +67,14 @@ export class Worker {
             "xr"
         ]
 
+        if (source.toLowerCase() == 'ipify') {
+            for (const [property, value] of Object.entries(propertiesData)) {
+                if (!unwantedProperties.includes(property)) {
+                    this.propertiesFetched[`ipify_${this.convertToSnakeCase(property)}`] = value
+                }
+            }
+        }
+
         if (source.toLowerCase() == 'cloudflare') {
             for (let property of (propertiesData).toString().split(/\n/)) {
                 if (property.length > 0 && !unwantedProperties.includes(property)) {
@@ -74,6 +82,7 @@ export class Worker {
                 }
             }
         }
+
         if (source.toLowerCase() == 'navigator') {
             propertiesData = propertiesData as Navigator
             for (let property in propertiesData) {
@@ -108,14 +117,42 @@ export class Worker {
         if (source.toLowerCase() == 'error') {
             this.error = propertiesData
         }
+
     }
 
-    getIP(): string {
-        return this.propertiesFetched['cf_ip'].toString()
+    getIP(): Object {
+         let ipData = {
+            ip: null,
+            source: null
+        }
+        if (this.propertiesFetched['cf_ip']) {
+            ipData["source"] = 'cf'
+            ipData["ip"] = this.propertiesFetched['cf_ip']
+        } else {
+            ipData["source"] = 'ipify'
+            ipData["ip"] = this.propertiesFetched['ipify_ip']
+        }
+        return ipData
     }
 
-    getUAG(): string {
-        return this.propertiesFetched['cf_uag'].toString()
+    getUAG(): Object {
+        let uagData = {
+            uag: null,
+            source: null
+        }
+        if (this.propertiesFetched['cf_uag']) {
+            uagData["source"] = 'cf'
+            uagData["uag"] = this.propertiesFetched['cf_uag']
+        } else {
+            if (this.propertiesFetched['ngx_user_agent']) {
+                uagData["source"] = 'ngx'
+                uagData["uag"] = this.propertiesFetched['ngx_user_agent']
+            } else {
+                uagData["source"] = 'nav'
+                uagData["uag"] = this.propertiesFetched['nav_user_agent']
+            }
+        }
+        return uagData
     }
 
     convertToSnakeCase(property) {

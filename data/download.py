@@ -130,6 +130,9 @@ console.print("[bold]Download.py[/bold] script launched")
 console.print(f"Working directory: [bold]{os.getcwd()}[/bold]")
 
 os.makedirs(folder_result_path, exist_ok=True)
+os.makedirs(models_path, exist_ok=True)
+os.makedirs(resources_path, exist_ok=True)
+os.makedirs(data_path, exist_ok=True)
 
 if profile_name is None:
     profile_name = 'default'
@@ -179,10 +182,6 @@ console.print(f"Tables ACL: [white on black]{', '.join(task_acl_tables)}")
 if not prolific_completion_code:
 
     console.rule("1 - Fetching MTurk Data")
-
-    os.makedirs(models_path, exist_ok=True)
-    os.makedirs(resources_path, exist_ok=True)
-    os.makedirs(data_path, exist_ok=True)
 
     with console.status(f"Downloading HITs, Token: {next_token}, Total: {token_counter}", spinner="aesthetic") as status:
         status.start()
@@ -473,38 +472,45 @@ if not os.path.exists(df_acl_path):
             if worker_id in snapshot_path:
                 worker_snapshot_path = snapshot_path
 
-        row = {'worker_id': worker_id}
+        for table_acl in task_acl_tables:
 
-        paginator = dynamo_db.get_paginator('query')
-        for page in paginator.paginate(
-            TableName=table_acl,
-            KeyConditionExpression="identifier = :worker",
-            ExpressionAttributeValues={
-                ":worker": {'S': worker_id},
-            }, Select='ALL_ATTRIBUTES'
-        ):
-            for item in page['Items']:
-                for attribute, value in item.items():
-                    if attribute != 'identifier':
-                        value = value['S']
-                        if 'false' in value or 'true' in value:
-                            value = bool(strtobool(value))
-                        row[attribute] = value
+            acl_presence = False
 
-        if worker_snapshot_path:
-            worker_snapshots = load_json(worker_snapshot_path)
-            for worker_snapshot in worker_snapshots:
-                task = worker_snapshot['task']
-                if task['task_id'] == row['task_name'] and task['batch_name'] == row['batch_name']:
-                    row['source_acl'] = worker_snapshot['source_acl']
-                    row['source_data'] = worker_snapshot['source_data']
-                    row['source_log'] = worker_snapshot['source_log']
-                    row['source_path'] = worker_snapshot['source_path']
-                    for attribute, value in task.items():
-                        if attribute != 'settings' and attribute != 'logger_server_endpoint' and attribute != 'messages':
-                            row[attribute] = value
+            row = {'worker_id': worker_id}
 
-        df_acl = df_acl.append(row, ignore_index=True)
+            paginator = dynamo_db.get_paginator('query')
+            for page in paginator.paginate(
+                TableName=table_acl,
+                KeyConditionExpression="identifier = :worker",
+                ExpressionAttributeValues={
+                    ":worker": {'S': worker_id},
+                }, Select='ALL_ATTRIBUTES'
+            ):
+                if len(page['Items'])>0:
+                    acl_presence=True
+                    for item in page['Items']:
+                        for attribute, value in item.items():
+                            if attribute != 'identifier':
+                                value = value['S']
+                                if 'false' in value or 'true' in value:
+                                    value = bool(strtobool(value))
+                                row[attribute] = value
+
+            if acl_presence and worker_snapshot_path:
+                worker_snapshots = load_json(worker_snapshot_path)
+                for worker_snapshot in worker_snapshots:
+                    task = worker_snapshot['task']
+                    if task['task_id'] == row['task_name'] and task['batch_name'] == row['batch_name']:
+                        row['source_acl'] = worker_snapshot['source_acl']
+                        row['source_data'] = worker_snapshot['source_data']
+                        row['source_log'] = worker_snapshot['source_log']
+                        row['source_path'] = worker_snapshot['source_path']
+                        for attribute, value in task.items():
+                            if attribute != 'settings' and attribute != 'logger_server_endpoint' and attribute != 'messages':
+                                row[attribute] = value
+
+            if acl_presence:
+                df_acl = df_acl.append(row, ignore_index=True)
 
     if len(df_acl) > 0:
         df_acl.to_csv(df_acl_path, index=False)
@@ -515,8 +521,8 @@ else:
     df_acl = pd.read_csv(df_acl_path)
     console.print(f"Workers ACL [yellow]already detected[/yellow], skipping download")
 
-console.rule("5 - Building [cyan on white]workers_info[/cyan on white] Dataframe")
 
+console.rule("5 - Building [cyan on white]workers_info[/cyan on white] Dataframe")
 
 def fetch_uag_data(worker_id, worker_uag):
     data = {}

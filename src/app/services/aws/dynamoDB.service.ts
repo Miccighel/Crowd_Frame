@@ -79,7 +79,7 @@ export class DynamoDBService {
             IndexName: 'ip_address-index',
             ScanIndexForward: true,
             KeyConditionExpression: "ip_address = :ip_address",
-            ExpressionAttributeValues: {":ip_address": ip_address},
+            ExpressionAttributeValues: {":ip_address": ip_address['ip']},
         };
         return await docClient.query(params).promise()
     }
