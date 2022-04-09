@@ -102,18 +102,36 @@ export class QuestionnaireComponent implements OnInit {
                             if (value != '') {
                                 let label = node.model.answers[value]
                                 if (label == question.needed) {
-                                    let controlName = `${question.nameFull}_answer`
-                                    this['questionnaire']['questionDependencies'][question.nameFull] = true
+                                    let controlName = `${question.nameFull}`
                                     let validators = []
                                     if (question.required) validators.push(Validators.required)
-                                    if (question.type == 'number') validators.concat([Validators.min(0), Validators.max(100)])
+                                    if (question.type == 'number') validators = validators.concat([Validators.min(0), Validators.max(100)])
                                     if (question.type == 'email') validators.push(Validators.email)
-                                    this['questionnaireForm'].get(controlName).setValidators(validators)
-                                    this['questionnaire']['questionDependencies'][question.nameFull] = true
+                                    if (question.repeat) {
+                                        validators.push(Validators.min(0))
+                                        validators.push(Validators.max(question.times))
+                                        if (!this['questionnaire'].questionsToRepeat.includes(question))
+                                            this['questionnaire'].questionsToRepeat.push(question)
+                                    }
+                                    if (question.type == 'list') {
+                                        let answers = {}
+                                        question.answers.forEach((value, index) => {
+                                            answers[index] = false
+                                        });
+                                        this['questionnaireForm'].addControl(`${controlName}_list`, this['formBuilder'].group(answers))
+                                        this['questionnaireForm'].addControl(`${controlName}_answer`, new FormControl('', [Validators.required]))
+                                    } else {
+                                        this['questionnaireForm'].addControl(`${controlName}_answer`, new FormControl('', validators))
+                                    }
+                                    if (question.freeText) this['questionnaireForm'].addControl(`${controlName}_free_text`, new FormControl(''))
+                                    this.questionnaire.questionDependencies[question.nameFull] = true
                                 }
                             } else {
                                 let controlName = `${question.nameFull}_answer`
-                                this['questionnaireForm'].get(controlName).clearValidators()
+                                let control = this['questionnaireForm'].get(controlName)
+                                if (control)
+                                    this['questionnaireForm'].get(controlName).clearValidators()
+                                this.questionnaire.questionDependencies[question.nameFull] = false
                             }
                         }
                     }
@@ -123,7 +141,8 @@ export class QuestionnaireComponent implements OnInit {
             }, this);
             for (const [questionNameFull, value] of Object.entries(this.questionnaire.questionDependencies)) {
                 let controlName = `${questionNameFull}_answer`
-                if (!value) {
+                let control = this['questionnaireForm'].get(controlName)
+                if (!value && control) {
                     this.questionnaireForm.get(controlName).clearValidators()
                     this.questionnaireForm.get(controlName).setErrors(null)
                     this.questionnaireForm.get(controlName).setValue('')
@@ -202,8 +221,8 @@ export class QuestionnaireComponent implements OnInit {
                                     let indexFullUpdated = targetNode.model.indexFull.slice(0, -1).concat(i + 1)
                                     targetNode.walk(function (node) {
                                         if (node) {
-                                            if(node.model.target == questionToRepeat.name) {
-                                                if(node.model.text.includes(' nr. ')) {
+                                            if (node.model.target == questionToRepeat.name) {
+                                                if (node.model.text.includes(' nr. ')) {
                                                     node.model.text = node.model.text.slice(0, -5).concat(" nr. ").concat(i + 1)
                                                 } else {
                                                     node.model.text = node.model.text.concat(" nr. ").concat(i + 1)
