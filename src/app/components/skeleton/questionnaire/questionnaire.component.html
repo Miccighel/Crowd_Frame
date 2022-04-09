@@ -23,7 +23,8 @@
                         <div *ngIf="question.type=='number'" class="question-box question-number">
                             <mat-form-field appearance="fill" class="questionnaire-value">
                                 <input *ngIf="!this.question.repeat" matInput type="number" placeholder="Choose a number" min="0" formControlName="{{question.nameFull}}_answer">
-                                <input *ngIf="this.question.repeat" matInput type="number" placeholder="Choose a number" min="0" max="{{this.question.times}}" (change)="this.handleQuestionRepetition(question)" formControlName="{{question.nameFull}}_answer">
+                                <input *ngIf="this.question.repeat" matInput type="number" placeholder="Choose a number" min="0" max="{{this.question.times}}" (change)="this.handleQuestionRepetition(question)"
+                                       formControlName="{{question.nameFull}}_answer">
                                 <mat-error>
                                     <app-error-message [formField]="this.questionnaireForm.get(question.nameFull.concat('_answer'))"></app-error-message>
                                 </mat-error>
@@ -170,13 +171,18 @@
                         Back
                     </button>
                     <button mat-flat-button color="primary" matStepperNext
-                            *ngIf="(this.questionnaire.index < this.task.questionnaireAmountStart - 1) || (this.questionnaire.index>=this.task.questionnaireAmountStart + this.task.documentsAmount && this.questionnaire.index < this.task.getElementsNumber() && this.task.questionnaireAmountEnd>0)"
+                            *ngIf="
+                            ((this.questionnaire.index < this.task.questionnaireAmountStart - 1) && this.task.documentsAmount==0) ||
+                            ((this.questionnaire.index <= this.task.questionnaireAmountStart - 1) && this.task.documentsAmount>0) ||
+                            (this.questionnaire.index>=this.task.questionnaireAmountStart-1 + this.task.documentsAmount && this.questionnaire.index < this.task.getElementsNumber() && this.task.questionnaireAmountEnd>0)"
                             [disabled]="!questionnaireForm.valid || this.sectionService.taskCompleted"
                             (click)="handleQuestionnaireCompletion('Next')">
                         Next
                     </button>
                     <button mat-flat-button color="primary" matStepperNext
-                            *ngIf="((this.questionnaire.index >= this.task.questionnaireAmountStart-1) && this.task.documentsAmount==0) || (this.questionnaire.index>=this.task.getElementsNumber() && this.task.questionnaireAmountEnd>0)"
+                            *ngIf="
+                            ((this.questionnaire.index >= this.task.questionnaireAmountStart-1) && this.task.documentsAmount==0) ||
+                            (this.questionnaire.index>=this.task.getElementsNumber() && this.task.questionnaireAmountEnd>0)"
                             [disabled]="!questionnaireForm.valid || this.sectionService.taskCompleted"
                             (click)="handleQuestionnaireCompletion('Finish')">
                         Finish
