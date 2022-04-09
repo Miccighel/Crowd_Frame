@@ -286,7 +286,8 @@ export class SkeletonComponent implements OnInit {
                 }
 
                 /* An ACL record for the current worker is searched */
-                let workerACLRecord = await this.dynamoDBService.getACLRecordWorkerId(this.configService.environment, this.worker.identifier)
+                let workerACLRecord = await this.dynamoDBService.getACLRecordIpAddress(this.configService.environment, this.worker.getIP())
+
                 /* It there is not any record, an available HIT can be assigned to him */
                 if (workerACLRecord['Items'].length <= 0) {
                     for (let hit of hits) {
@@ -420,7 +421,8 @@ export class SkeletonComponent implements OnInit {
             let batchesStatus = {}
             let tables = await this.dynamoDBService.listTables(this.configService.environment)
             let workersManual = await this.S3Service.downloadWorkers(this.configService.environment)
-            let workersACL = await this.dynamoDBService.getACLRecordWorkerId(this.configService.environment, this.worker.identifier)
+            let workersACL = await this.dynamoDBService.getACLRecordIpAddress(this.configService.environment, this.worker.getIP())
+
 
             /* To blacklist a previous batch its worker list is picked up */
             for (let batchName of this.worker.settings.blacklist_batches) {

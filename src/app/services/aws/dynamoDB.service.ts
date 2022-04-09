@@ -109,6 +109,12 @@ export class DynamoDBService {
         if (updateArrivalTime) {
             params["Item"]['time_arrival'] = {}
             params["Item"]['time_arrival']['S'] = new Date().toUTCString()
+            if (params['Item']['access_counter'])
+                params['Item']['access_counter']['S'] = (parseInt(params['Item']['access_counter']['S']) + 1).toString()
+            else {
+                params['Item']['access_counter'] = {}
+                params['Item']['access_counter']['S'] = '1'
+            }
         }
         return await this.loadDynamoDB(config).putItem(params).promise();
     }
@@ -124,6 +130,12 @@ export class DynamoDBService {
         }
         if (updateArrivalTime)
             params["Item"]['time_arrival']['S'] = new Date().toUTCString()
+            if (params['Item']['access_counter'])
+                    params['Item']['access_counter']['S'] = (parseInt(params['Item']['access_counter']['S']) + 1).toString()
+            else {
+                params['Item']['access_counter'] = {}
+                params['Item']['access_counter']['S'] = '1'
+            }
         if (updateRemovalTime) {
             params["Item"]['time_removal'] = {}
             params["Item"]['time_removal']['S'] = {}
