@@ -22,6 +22,7 @@ from rich.console import Console
 from tqdm import tqdm
 import collections
 import warnings
+
 pd.set_option('display.max_columns', None)
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -486,8 +487,8 @@ if not os.path.exists(df_acl_path):
                     ":worker": {'S': worker_id},
                 }, Select='ALL_ATTRIBUTES'
             ):
-                if len(page['Items'])>0:
-                    acl_presence=True
+                if len(page['Items']) > 0:
+                    acl_presence = True
                     for item in page['Items']:
                         for attribute, value in item.items():
                             if attribute != 'identifier':
@@ -521,8 +522,8 @@ else:
     df_acl = pd.read_csv(df_acl_path)
     console.print(f"Workers ACL [yellow]already detected[/yellow], skipping download")
 
-
 console.rule("5 - Building [cyan on white]workers_info[/cyan on white] Dataframe")
+
 
 def fetch_uag_data(worker_id, worker_uag):
     data = {}
@@ -614,6 +615,7 @@ def find_snapshot_for_record(acl_record):
                     snapshot['task']['unit_id'] == acl_record['unit_id']:
                     return snapshot
     return {}
+
 
 def find_snapshost_for_task(acl_record):
     snapshots_found = []
@@ -919,11 +921,10 @@ else:
     console.print(f"Logs dataframe [yellow]already detected[/yellow], skipping creation")
     console.print(f"Serialized at path: [cyan on white]{df_log_path}")
 
-
 console.rule("7 - Building [cyan on white]workers_questionnaire[/cyan on white] dataframe")
 
-def load_quest_col_names(questionnaires):
 
+def load_quest_col_names(questionnaires):
     columns = []
 
     columns.append("worker_id")
@@ -936,7 +937,7 @@ def load_quest_col_names(questionnaires):
 
     for questionnaire in questionnaires:
         for attribute, value in questionnaire.items():
-            if type(value)!=list:
+            if type(value) != list:
                 column_name = f"questionnaire_{attribute}"
                 if column_name not in columns:
                     columns.append(column_name)
@@ -946,18 +947,73 @@ def load_quest_col_names(questionnaires):
         for question in questionnaire['questions']:
             for attribute, value in question.items():
                 if type(value) != list:
-                    column_name = f"question_{attribute}"
+                    column_name = f"question_attribute_{attribute}"
                     if column_name not in columns:
                         columns.append(column_name)
         columns.append(f"question_answer_value")
         columns.append(f"question_answer_text")
-        if questionnaire['type']== 'likert':
+        columns.append(f"question_free_text_value")
+        if questionnaire['type'] == 'likert':
             columns.append(f"question_answer_mapping_index")
             columns.append(f"question_answer_mapping_key")
             columns.append(f"question_answer_mapping_label")
             columns.append(f"question_answer_mapping_value")
 
     return columns
+
+
+def parse_answers(row, questionnaire, question, answers):
+    answer_value = None
+    answer_free_text = None
+
+    for control_name, answer_current in answers.items():
+        if '_answer' in control_name:
+            question_name_parsed = control_name.replace("_answer", "")
+            if question_name_parsed == question["nameFull"]:
+                if question['type'] == 'list':
+                    selected_options = ""
+                    for option, selected in answer_current.items():
+                        if selected:
+                            selected_options = f"{selected_options}{option};"
+                    if len(selected_options)>0:
+                        selected_options = selected_options[:-1]
+                    answer_value = selected_options
+                else:
+                    answer_value = answer_current
+        if '_free_text' in control_name:
+            question_name_parsed = control_name.replace("_free_text", "")
+            if question_name_parsed == question["nameFull"]:
+                answer_free_text = answer_current
+
+    for attribute, value in question.items():
+        if type(value) != list:
+            row[f"question_attribute_{attribute}"] = value
+    row[f"question_answer_value"] = answer_value
+    row[f"question_free_text_value"] = answer_free_text
+
+    if questionnaire['type'] == 'standard':
+        if question['type'] == 'mcq':
+            if answer_value is not None:
+                row[f"question_answer_text"] = question['answers'][int(answer_value)]
+        if question['type'] == 'list':
+            if answer_value is not None:
+                selected_options = answer_value.split(";")
+                selected_options_text = ""
+                for option in selected_options:
+                    option_text = question['answers'][int(option)]
+                    selected_options_text = f"{selected_options_text}{option_text};"
+                if len(selected_options_text) > 0:
+                    selected_options_text = selected_options_text[:-1]
+                    row[f"question_answer_text"] = selected_options_text
+
+    elif questionnaire['type'] == 'likert':
+        mapping = questionnaire['mappings'][int(answer_value)]
+        row[f"question_answer_mapping_index"] = mapping['index']
+        row[f"question_answer_mapping_key"] = mapping['key'] if "key" in mapping else None
+        row[f"question_answer_mapping_label"] = mapping['label']
+        row[f"question_answer_mapping_value"] = mapping['value']
+    return row
+
 
 dataframe = pd.DataFrame()
 
@@ -1021,32 +1077,10 @@ if not os.path.exists(df_quest_path):
                             row[f"questionnaire_accesses"] = accesses[questionnaire['index']]
 
                             for index_sub, question in enumerate(questionnaire["questions"]):
-
-                                answer = None
-                                for question_name, answer_current in current_answers.items():
-                                    question_name_parsed = question_name.replace("_answer", "")
-                                    if question_name_parsed == question["name"]:
-                                        answer = answer_current
-
-                                column_base_name = f"question"
-                                for attribute, value in question.items():
-                                    if type(value) != list:
-                                        row[f"question_{attribute}"] = value
-                                row[f"question_answer_value"] = answer
-
-                                if questionnaire['type'] == 'standard':
-                                    row[f"question_answer_text"] = question['answers'][int(answer)]
-                                elif questionnaire['type'] == 'likert':
-                                    mapping = questionnaire['mappings'][int(answer)]
-                                    row[f"question_answer_mapping_index"] = mapping['index']
-                                    row[f"question_answer_mapping_key"] = mapping['key'] if "key" in mapping else None
-                                    row[f"question_answer_mapping_label"] = mapping['label']
-                                    row[f"question_answer_mapping_value"] = mapping['value']
-
+                                row = parse_answers(row, questionnaire, question, current_answers)
                                 dataframe = dataframe.append(row, ignore_index=True)
 
             if len(data_partial) > 0:
-
 
                 for questionnaire_data in data_partial['questionnaires_answers']:
 
@@ -1067,13 +1101,13 @@ if not os.path.exists(df_quest_path):
                     row['try_current'] = info['try']
 
                     data = dataframe.loc[
-                        (dataframe['worker_id']==row['worker_id'])&
-                        (dataframe['task_name']==row['task_name'])&
-                        (dataframe['batch_name']==row['batch_name'])&
-                        (dataframe['unit_id']==row['unit_id'])&
-                        (dataframe['try_current']==row['try_current'])&
-                        (dataframe['questionnaire_index']==questionnaire['index'])
-                    ]
+                        (dataframe['worker_id'] == row['worker_id']) &
+                        (dataframe['task_name'] == row['task_name']) &
+                        (dataframe['batch_name'] == row['batch_name']) &
+                        (dataframe['unit_id'] == row['unit_id']) &
+                        (dataframe['try_current'] == row['try_current']) &
+                        (dataframe['questionnaire_index'] == questionnaire['index'])
+                        ]
 
                     if data.shape[0] <= 0:
 
@@ -1084,33 +1118,23 @@ if not os.path.exists(df_quest_path):
                         row[f"questionnaire_accesses"] = accesses
 
                         for index_sub, question in enumerate(questionnaire["questions"]):
-
-                            answer = None
-                            for question_name, answer_current in current_answers.items():
-                                question_name_parsed = question_name.replace("_answer", "")
-                                if question_name_parsed == question["name"]:
-                                    answer = answer_current
-
-                            column_base_name = f"question"
-                            for attribute, value in question.items():
-                                if type(value) != list:
-                                    row[f"question_{attribute}"] = value
-                            row[f"question_answer_value"] = answer
-
-                            if questionnaire['type'] == 'standard':
-                                row[f"question_answer_text"] = question['answers'][int(answer)]
-                            elif questionnaire['type'] == 'likert':
-                                mapping = questionnaire['mappings'][int(answer)]
-                                row[f"question_answer_mapping_index"] = mapping['index']
-                                row[f"question_answer_mapping_key"] = mapping['key'] if "key" in mapping else None
-                                row[f"question_answer_mapping_label"] = mapping['label']
-                                row[f"question_answer_mapping_value"] = mapping['value']
-
+                            row = parse_answers(row, questionnaire, question, current_answers)
                             dataframe = dataframe.append(row, ignore_index=True)
 
     if dataframe.shape[0] > 0:
         empty_cols = [col for col in dataframe.columns if dataframe[col].isnull().all()]
         dataframe["paid"].replace({0.0: False, 1.0: True}, inplace=True)
+        dataframe["paid"] = dataframe["paid"].astype(bool)
+        dataframe["questionnaire_allow_back"].replace({0.0: False, 1.0: True}, inplace=True)
+        dataframe["questionnaire_allow_back"] = dataframe["questionnaire_allow_back"].astype(bool)
+        dataframe["question_attribute_required"].replace({0.0: False, 1.0: True}, inplace=True)
+        dataframe["question_attribute_required"] = dataframe["question_attribute_required"].astype(bool)
+        dataframe["question_attribute_freeText"].replace({0.0: False, 1.0: True}, inplace=True)
+        dataframe["question_attribute_freeText"] = dataframe["question_attribute_freeText"].astype(bool)
+        dataframe["question_attribute_dropped"].replace({0.0: False, 1.0: True}, inplace=True)
+        dataframe["question_attribute_dropped"] = dataframe["question_attribute_dropped"].astype(bool)
+        dataframe["question_attribute_showDetail"].replace({0.0: False, 1.0: True}, inplace=True)
+        dataframe["question_attribute_showDetail"] = dataframe["question_attribute_showDetail"].astype(bool)
         dataframe.to_csv(df_quest_path, index=False)
         console.print(f"Dataframe shape: {dataframe.shape}")
         console.print(f"Workers questionnaire dataframe serialized at path: [cyan on white]{df_quest_path}")
@@ -1120,7 +1144,6 @@ if not os.path.exists(df_quest_path):
 else:
     console.print(f"Workers questionnaire dataframe [yellow]already detected[/yellow], skipping creation")
     console.print(f"Serialized at path: [cyan on white]{df_quest_path}")
-
 
 console.rule("8 - Building [cyan on white]workers_data[/cyan on white] dataframe")
 
