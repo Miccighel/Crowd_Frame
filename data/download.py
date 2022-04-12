@@ -68,6 +68,7 @@ df_acl_path = f"{models_path}workers_acl.csv"
 df_info_path = f"{models_path}workers_info.csv"
 df_log_path = f"{models_path}workers_logs.csv"
 df_quest_path = f"{models_path}workers_questionnaire.csv"
+df_comm_path = f"{models_path}workers_comments.csv"
 df_data_path = f"{models_path}workers_answers.csv"
 df_dim_path = f"{models_path}workers_dimensions_selection.csv"
 df_url_path = f"{models_path}workers_urls.csv"
@@ -921,8 +922,86 @@ else:
     console.print(f"Logs dataframe [yellow]already detected[/yellow], skipping creation")
     console.print(f"Serialized at path: [cyan on white]{df_log_path}")
 
-console.rule("7 - Building [cyan on white]workers_questionnaire[/cyan on white] dataframe")
+console.rule("7 - Building [cyan on white]workers_comments[/cyan on white] dataframe")
 
+def load_comment_col_names():
+    columns = []
+
+    columns.append("worker_id")
+    columns.append("paid")
+    columns.append("task_name")
+    columns.append("batch_name")
+    columns.append("unit_id")
+    columns.append("time_submit")
+    columns.append("try_current")
+    columns.append("sequence_number")
+    columns.append("text")
+
+    return columns
+
+dataframe = pd.DataFrame()
+
+if not os.path.exists(df_comm_path):
+
+    for index, acl_record in tqdm(df_acl.iterrows(), total=df_acl.shape[0]):
+
+        worker_id = acl_record['worker_id']
+        snapshots = find_snapshost_for_task(acl_record)
+
+        for worker_snapshot in snapshots:
+
+            worker_id = acl_record['worker_id']
+            worker_paid = acl_record['paid']
+            task_name = acl_record['task_name']
+            batch_name = acl_record['batch_name']
+            unit_id = acl_record['unit_id']
+
+            data_full = worker_snapshot['data_full']
+            data_partial = worker_snapshot['data_partial']
+
+            column_names = load_comment_col_names()
+
+            for column in column_names:
+                if column not in dataframe:
+                    dataframe[column] = np.nan
+
+
+            row = {}
+            row['worker_id'] = worker_id
+            row['paid'] = worker_paid
+            row['task_name'] = task_name
+            row['batch_name'] = batch_name
+            row['unit_id'] = unit_id
+
+            if 'comments' in worker_snapshot:
+
+                comments = worker_snapshot['comments']
+
+                for comment in comments:
+
+                    if len(comment['serialization']['comment'])>0:
+                        row['try_current'] = comment['serialization']['info']['try']
+                        row['time_submit'] = comment['time_submit']
+                        row['sequence_number'] = comment['serialization']['info']['sequence']
+                        row['text'] = sanitize_string(comment['serialization']['comment'])
+                        dataframe = dataframe.append(row, ignore_index=True)
+
+    if dataframe.shape[0] > 0:
+        empty_cols = [col for col in dataframe.columns if dataframe[col].isnull().all()]
+        dataframe["paid"].replace({0.0: False, 1.0: True}, inplace=True)
+        dataframe["paid"] = dataframe["paid"].astype(bool)
+        dataframe.to_csv(df_comm_path, index=False)
+        console.print(f"Dataframe shape: {dataframe.shape}")
+        console.print(f"Workers comments dataframe serialized at path: [cyan on white]{df_comm_path}")
+    else:
+        console.print(f"Dataframe shape: {dataframe.shape}")
+        console.print(f"Workers comments dataframe [yellow]empty[/yellow], dataframe not serialized.")
+else:
+    console.print(f"Workers comments dataframe [yellow]already detected[/yellow], skipping creation")
+    console.print(f"Serialized at path: [cyan on white]{df_comm_path}")
+
+
+console.rule("8 - Building [cyan on white]workers_questionnaire[/cyan on white] dataframe")
 
 def load_quest_col_names(questionnaires):
     columns = []
@@ -1145,7 +1224,7 @@ else:
     console.print(f"Workers questionnaire dataframe [yellow]already detected[/yellow], skipping creation")
     console.print(f"Serialized at path: [cyan on white]{df_quest_path}")
 
-console.rule("8 - Building [cyan on white]workers_data[/cyan on white] dataframe")
+console.rule("9 - Building [cyan on white]workers_data[/cyan on white] dataframe")
 
 
 def load_data_col_names(dimensions, documents):
@@ -1196,9 +1275,6 @@ def load_data_col_names(dimensions, documents):
     columns.append("gold_checks")
     columns.append("time_spent_check")
     columns.append("time_check_amount")
-
-    columns.append("comment_time_submit")
-    columns.append("comment_text")
 
     return columns
 
@@ -1266,11 +1342,6 @@ if not os.path.exists(df_data_path):
                         row["gold_checks"] = any(checks_try["checks"]["goldChecks"])
                         row["time_check_amount"] = checks_try["checks"]["timeCheckAmount"]
                         row["time_spent_check"] = checks_try["checks"]["timeSpentCheck"]
-
-                        for comment_data in comments:
-                            if int(comment_data['serialization']['info']['try']) == int(info['try']):
-                                row["comment_time_submit"] = comment_data['time_submit']
-                                row["comment_text"] = sanitize_string(comment_data['serialization']['comment'])
 
                         for index, data in enumerate(countdownsStart):
                             row["doc_countdown_time_start"] = data
@@ -1473,7 +1544,7 @@ else:
     console.print(f"Workers dataframe [yellow]already detected[/yellow], skipping creation")
     console.print(f"Serialized at path: [cyan on white]{df_data_path}")
 
-console.rule("9 - Building [cyan on white]workers_dimensions_selection[/cyan on white] dataframe")
+console.rule("10 - Building [cyan on white]workers_dimensions_selection[/cyan on white] dataframe")
 
 if os.path.exists(df_data_path):
     df_data = pd.read_csv(df_data_path)
@@ -1632,7 +1703,7 @@ else:
     console.print(f"Dimensions analysis dataframe [yellow]already detected[/yellow], skipping creation")
     console.print(f"Serialized at path: [cyan on white]{df_dim_path}")
 
-console.rule("10 - Building [cyan on white]workers_urls[/cyan on white] dataframe")
+console.rule("11 - Building [cyan on white]workers_urls[/cyan on white] dataframe")
 
 if os.path.exists(df_data_path):
     df_data = pd.read_csv(df_data_path)
@@ -1786,22 +1857,22 @@ else:
     console.print(f"URL analysis dataframe [yellow]already detected[/yellow], skipping creation")
     console.print(f"Serialized at path: [cyan on white]{df_url_path}")
 
-console.rule("11 - Checking missing HITs")
+# console.rule("12 - Checking missing HITs")
 
-hits_missing = []
-hits = load_json(f"{task_config_folder}{batch_name}/hits.json")
-if os.path.exists(df_data_path):
-    df = pd.read_csv(df_data_path)
-    df = df.loc[df['worker_paid'] == True]
-    for hit in hits:
-        unit_data = df.loc[df['unit_id'] == hit['unit_id']]
-        if len(unit_data) <= 0:
-            hits_missing.append(hit)
-    if len(hits_missing) > 0:
-        console.print(f"Missing HITs: {len(hits_missing)}")
-        path_missing = f"{task_config_folder}{batch_name}/hits_missing.json"
-        with open(path_missing, 'w', encoding='utf-8') as f:
-            json.dump(hits_missing, f, ensure_ascii=False, indent=4)
-        console.print(f"Serialized at path: [cyan on white]{path_missing}")
-    else:
-        console.print(f"There aren't missing HITS for task [cyan on white]{task_name}")
+# hits_missing = []
+# hits = load_json(f"{task_config_folder}{batch_name}/hits.json")
+# if os.path.exists(df_data_path):
+#     df = pd.read_csv(df_data_path)
+#     df = df.loc[df['worker_paid'] == True]
+#     for hit in hits:
+#         unit_data = df.loc[df['unit_id'] == hit['unit_id']]
+#         if len(unit_data) <= 0:
+#             hits_missing.append(hit)
+#     if len(hits_missing) > 0:
+#         console.print(f"Missing HITs: {len(hits_missing)}")
+#         path_missing = f"{task_config_folder}{batch_name}/hits_missing.json"
+#         with open(path_missing, 'w', encoding='utf-8') as f:
+#             json.dump(hits_missing, f, ensure_ascii=False, indent=4)
+#         console.print(f"Serialized at path: [cyan on white]{path_missing}")
+#     else:
+#         console.print(f"There aren't missing HITS for task [cyan on white]{task_name}")
