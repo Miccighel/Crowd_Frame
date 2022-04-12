@@ -259,6 +259,7 @@ export class SkeletonComponent implements OnInit {
             this.worker.setParameter('in_progress', String(false))
             this.worker.setParameter('try_left', String(this.task.settings.allowed_tries))
             this.worker.setParameter('time_arrival', new Date().toUTCString())
+            this.worker.setParameter('time_expired', String(false))
             this.worker.setParameter('ip_address', this.worker.getIP()['ip'])
             this.worker.setParameter('ip_source', this.worker.getIP()['source'])
             this.worker.setParameter('user_agent', this.worker.getUAG()['uag'])
@@ -345,7 +346,7 @@ export class SkeletonComponent implements OnInit {
                                 let timeActual = new Date().getTime()
                                 let hoursElapsed = Math.abs(timeActual - timeArrival) / 36e5;
 
-                                if (((/true/i).test(aclEntry['paid']) == false && (/true/i).test(aclEntry['in_progress']) == true) && hoursElapsed > this.task.settings.time_assessment ||
+                                if (((/true/i).test(aclEntry['paid']) == false && (/true/i).test(aclEntry['in_progress']) == true) && hoursElapsed >= this.task.settings.time_assessment ||
                                     ((/true/i).test(aclEntry['paid']) == false && (/true/i).test(aclEntry['in_progress']) == true) && parseInt(aclEntry['try_left']) <= 1) {
                                     let hitFound = null
                                     for (let currentHit of hits) {
@@ -366,6 +367,7 @@ export class SkeletonComponent implements OnInit {
                                     );
                                     assignHit(this.worker, hitFound, this.tokenInput)
                                     updatedEntry['identifier'] = this.worker.identifier
+                                    updatedEntry['time_expired'] = false
                                     updatedEntry['in_progress'] = true
                                     for (const [param, value] of Object.entries(this.worker.paramsFetched)) {
                                         updatedEntry[param] = {}

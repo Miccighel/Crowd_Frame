@@ -128,7 +128,7 @@ export class DynamoDBService {
             params["Item"][param] = {}
             params["Item"][param]['S'] = value
         }
-        if (updateArrivalTime)
+        if (updateArrivalTime) {
             params["Item"]['time_arrival']['S'] = new Date().toUTCString()
             if (params['Item']['access_counter'])
                 params['Item']['access_counter']['S'] = (parseInt(params['Item']['access_counter']['S']) + 1).toString()
@@ -136,6 +136,7 @@ export class DynamoDBService {
                 params['Item']['access_counter'] = {}
                 params['Item']['access_counter']['S'] = '1'
             }
+        }
         if (updateRemovalTime) {
             params["Item"]['time_removal'] = {}
             params["Item"]['time_removal']['S'] = {}
