@@ -43,6 +43,7 @@ folder_build_path = "build/"
 folder_build_config_path = "build/config/"
 folder_build_task_path = "build/task/"
 folder_build_mturk_path = "build/mturk/"
+folder_build_toloka_path = "build/toloka/"
 folder_build_env_path = "build/environments/"
 folder_build_deploy_path = "build/deploy/"
 folder_build_skeleton_path = "build/skeleton/"
@@ -86,6 +87,7 @@ env_path = Path('.') / '.env'
 load_dotenv(dotenv_path=env_path)
 
 mail_contact = os.getenv('mail_contact')
+platform = os.getenv('platform')
 profile_name = os.getenv('profile_name')
 task_name = os.getenv('task_name')
 batch_name = os.getenv('batch_name')
@@ -123,6 +125,9 @@ console.print(f"Working directory: [bold]{os.getcwd()}[/bold]")
 
 if batch_prefix is None:
     batch_prefix = ''
+
+if platform is None:
+    platform = 'mturk'
 
 console.rule("1 - Configuration policy")
 
@@ -1214,6 +1219,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     environment_dict = {
         "production": 'true',
         "configuration_local": 'false',
+        "platform": platform if platform else 'mturk',
         "taskName": task_name,
         "batchName": batch_name,
         "region": aws_region,
@@ -1258,6 +1264,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     environment_dict = {
         "production": 'false',
         "configuration_local": 'false',
+        "platform": platform if platform else 'mturk',
         "taskName": task_name,
         "batchName": batch_name,
         "region": aws_region,
@@ -1745,7 +1752,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         console.print("Class built")
         console.print(f"Path: [italic]{filename}[/italic]")
 
-    if not prolific_completion_code:
+    if platform=='mturk':
 
         console.rule(f"22 - Amazon Mechanical Turk Landing Page")
         status.start()
@@ -1786,6 +1793,45 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         token_df.to_csv(mturk_tokens_file, index=False)
         console.print(f"Tokens for {len(hits)} hits generated")
         console.print(f"Path: [italic]{mturk_tokens_file}")
+
+    if platform=='toloka':
+
+        console.rule(f"22 - Toloka HTML Interface")
+        status.start()
+        status.update(f"Istantiating Mako model")
+        time.sleep(2)
+
+        model = Template(filename=f"{folder_build_toloka_path}model.html")
+        toloka_page = model.render(
+            aws_region=aws_region,
+            aws_deploy_bucket=aws_deploy_bucket,
+            task_name=task_name,
+            batch_name=batch_name
+        )
+        toloka_page_file = f"{folder_build_toloka_path}interface.html"
+        with open(toloka_page_file, 'w') as file:
+            print(toloka_page, file=file)
+
+        console.print(f"Model istantiated")
+        console.print(f"Path: {toloka_page_file}")
+
+        hits_file = f"{folder_build_task_path}hits.json"
+        toloka_tokens_file = f"{folder_build_toloka_path}tokens.tsv"
+        console.print(f"Loading [cyan underline]hits.json[/cyan underline] file")
+        console.print(f"Path: [ital]{hits_file}")
+        hits = read_json(hits_file)
+        token_df = pd.DataFrame(columns=["INPUT:token_input"])
+
+        # for hit in hits:
+        #     token_df = token_df.append({
+        #         "INPUT:token_input": hit['token_input']
+        #     }, ignore_index=True)
+        #     token_df = token_df.append({
+        #         "INPUT:token_input": None
+        #     }, ignore_index=True)
+        # token_df.to_csv(toloka_tokens_file, sep="\t", index=False)
+        console.print(f"Token for the current batch chosen")
+        console.print(f"Path: [italic]{toloka_tokens_file}")
 
     console.rule(f"23 - Task [cyan underline]{task_name}[/cyan underline]/[yellow underline]{batch_name}[/yellow underline] build")
     status.update(f"Executing build command, please wait")
@@ -1861,6 +1907,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     folder_tasks_batch_deploy_path = f"{folder_tasks_batch_path}deploy/"
     folder_tasks_batch_env_path = f"{folder_tasks_batch_path}environments/"
     folder_tasks_batch_mturk_path = f"{folder_tasks_batch_path}mturk/"
+    folder_tasks_batch_toloka_path = f"{folder_tasks_batch_path}toloka/"
     folder_tasks_batch_task_path = f"{folder_tasks_batch_path}task/"
     folder_tasks_batch_config_path = f"{folder_tasks_batch_path}config/"
     folder_tasks_batch_skeleton_path = f"{folder_tasks_batch_path}skeleton/"
@@ -1873,11 +1920,18 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     else:
         console.print("[yellow]Deploy folder already present")
     console.print(f"Path: [italic]{folder_tasks_batch_deploy_path}")
-    if not os.path.exists(folder_tasks_batch_mturk_path):
-        console.print("[green]Amazon Mechanical Turk assets folder created")
-        os.makedirs(folder_tasks_batch_mturk_path, exist_ok=True)
-    else:
-        console.print("[yellow]Amazon Mechanical Turk assets folder already present")
+    if platform=='mturk':
+        if not os.path.exists(folder_tasks_batch_mturk_path):
+            console.print("[green]Amazon Mechanical Turk assets folder created")
+            os.makedirs(folder_tasks_batch_mturk_path, exist_ok=True)
+        else:
+            console.print("[yellow]Amazon Mechanical Turk assets folder already present")
+    if platform == 'toloka':
+        if not os.path.exists(folder_tasks_batch_toloka_path):
+            console.print("[green]Toloka assets folder created")
+            os.makedirs(folder_tasks_batch_toloka_path, exist_ok=True)
+        else:
+            console.print("[yellow]Toloka assets folder already present")
     if not os.path.exists(folder_tasks_batch_env_path):
         console.print("[green]Environments folder created")
         os.makedirs(folder_tasks_batch_env_path, exist_ok=True)
@@ -1934,15 +1988,36 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     destination = f"{folder_tasks_batch_env_path}environment.prod.ts"
     copy(source, destination, "Prod Environment")
 
-    console.print(f"Copying files for [blue underline on white]{folder_build_mturk_path}[/blue underline on white] folder")
+    if platform=='toloka':
 
-    source = f"{folder_build_mturk_path}index.html"
-    destination = f"{folder_tasks_batch_mturk_path}index.html"
-    copy(source, destination, "Amazon Mechanical Turk landing page")
+        console.print(f"Copying files for [blue underline on white]{folder_build_toloka_path}[/blue underline on white] folder")
 
-    source = f"{folder_build_mturk_path}tokens.csv"
-    destination = f"{folder_tasks_batch_mturk_path}tokens.csv"
-    copy(source, destination, "Hits tokens")
+        source = f"{folder_build_toloka_path}interface.html"
+        destination = f"{folder_tasks_batch_toloka_path}interface.html"
+        copy(source, destination, "Toloka Page Markup")
+
+        source = f"{folder_build_toloka_path}interface.css"
+        destination = f"{folder_tasks_batch_toloka_path}interface.css"
+        copy(source, destination, "Toloka Page Stylesheet")
+
+        source = f"{folder_build_toloka_path}interface.js"
+        destination = f"{folder_tasks_batch_toloka_path}interface.js"
+        copy(source, destination, "Toloka Page Javascript")
+
+        source = f"{folder_build_toloka_path}tokens.tsv"
+        destination = f"{folder_tasks_batch_toloka_path}tokens.tsv"
+        copy(source, destination, "Hits tokens")
+
+    if platform == 'mturk':
+        console.print(f"Copying files for [blue underline on white]{folder_build_mturk_path}[/blue underline on white] folder")
+
+        source = f"{folder_build_mturk_path}index.html"
+        destination = f"{folder_tasks_batch_mturk_path}index.html"
+        copy(source, destination, "Amazon Mechanical Turk landing page")
+
+        source = f"{folder_build_mturk_path}tokens.csv"
+        destination = f"{folder_tasks_batch_mturk_path}tokens.csv"
+        copy(source, destination, "Hits tokens")
 
     if bool(deploy_config):
         console.print(f"Copying files for [blue underline on white]{folder_build_task_path}[/blue underline on white] folder")

@@ -26,7 +26,9 @@ export class OutcomeSectionComponent implements OnInit {
     @Input() triesAllowed: number
     @Input() tryCurrent: number
     @Input() messages: Array<string>
+    @Input() tokenInput: string
     @Input() tokenOutput: string
+    @Input() platform: string
     @Input() completionCode: string
 
     @Output() performReset: EventEmitter<boolean>;
