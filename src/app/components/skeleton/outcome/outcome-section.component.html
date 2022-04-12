@@ -4,17 +4,20 @@
         <mat-card-title class="retry-title" *ngIf="this.sectionService.taskAllowed && this.sectionService.taskCompleted && this.sectionService.taskFailed && !this.sectionService.taskSuccessful && (this.triesAllowed>0 && this.tryCurrent <= this.triesAllowed)">
             <h3>Failure, but...</h3>
         </mat-card-title>
-        <mat-card-title class="failure-title" *ngIf="!this.sectionService.taskAllowed && !this.sectionService.taskOverbooking || this.sectionService.taskAllowed && this.sectionService.taskCompleted && this.sectionService.taskFailed && !this.sectionService.taskSuccessful && (triesAllowed<=0 || (triesAllowed>0 && tryCurrent > triesAllowed))">
+        <mat-card-title class="failure-title" *ngIf="!this.sectionService.taskAllowed && !this.sectionService.taskOverbooking && !this.sectionService.taskAlreadyCompleted || this.sectionService.taskAllowed && this.sectionService.taskCompleted && this.sectionService.taskFailed && !this.sectionService.taskSuccessful && (triesAllowed<=0 || (triesAllowed>0 && tryCurrent > triesAllowed))">
             <h4>Failure</h4>
         </mat-card-title>
         <mat-card-title class="overbooking-title" *ngIf="!this.sectionService.taskAllowed && this.sectionService.taskOverbooking || this.sectionService.taskAllowed && this.sectionService.taskCompleted && this.sectionService.taskFailed && !this.sectionService.taskSuccessful && (triesAllowed<=0 || (triesAllowed>0 && tryCurrent > triesAllowed))">
             <h4>Overbooking</h4>
         </mat-card-title>
+        <mat-card-title class="warning-title" *ngIf="!this.sectionService.taskAllowed && this.sectionService.taskAlreadyCompleted || this.sectionService.taskAllowed && this.sectionService.taskCompleted && this.sectionService.taskFailed && !this.sectionService.taskSuccessful && (triesAllowed<=0 || (triesAllowed>0 && tryCurrent > triesAllowed))">
+            <h4>Warning</h4>
+        </mat-card-title>
         <mat-card-title class="success-title" *ngIf="this.sectionService.taskAllowed && this.sectionService.taskCompleted && !this.sectionService.taskFailed && this.sectionService.taskSuccessful && (triesAllowed>0 && tryCurrent <= triesAllowed)">
             <h4>Success</h4>
         </mat-card-title>
 
-        <ng-container *ngIf="!this.sectionService.taskAllowed && !this.sectionService.taskOverbooking">
+        <ng-container *ngIf="!this.sectionService.taskAllowed && !this.sectionService.taskOverbooking && !this.sectionService.taskAlreadyCompleted">
             <mat-card-content *ngIf="this.messages" id="not-allowed-section">
                 <h2>Something went wrong...</h2>
                 <p class="text-desc">Please, read the list of possible reasons below. Sorry for the inconvenience.</p>
@@ -34,6 +37,15 @@
                 <h2>Every HIT of the current task has already been assigned to a worker.</h2>
                 <p class="text-desc">
                     If you reached this point, you have been recruited wrongly. Please, return your HIT. Sorry for the inconvenience.
+                </p>
+            </mat-card-content>
+        </ng-container>
+
+        <ng-container *ngIf="!this.sectionService.taskAllowed && this.sectionService.taskAlreadyCompleted">
+            <mat-card-content>
+                <h2>You have already submitted successfully your HIT.</h2>
+                <p class="text-desc">
+                    You will be paid soon.
                 </p>
             </mat-card-content>
         </ng-container>

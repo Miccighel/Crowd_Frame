@@ -14,6 +14,7 @@ export class SectionService {
     private _taskCompleted: boolean;
     private _taskSuccessful: boolean;
     private _taskFailed: boolean;
+    private _taskAlreadyCompleted: boolean;
     private _taskOverbooking: boolean;
     private _checkCompleted: boolean;
     private _taskInstructionsRead: boolean;
@@ -29,6 +30,7 @@ export class SectionService {
         this._taskCompleted = false
         this._taskSuccessful = false
         this._taskFailed = false
+        this._taskAlreadyCompleted = false
         this._taskOverbooking = false
         this._stepIndex = 0
     }
@@ -90,6 +92,15 @@ export class SectionService {
 
     set taskFailed(value: boolean) {
         this._taskFailed = value;
+        this.updateSection()
+    }
+
+    get taskAlreadyCompleted(): boolean {
+        return this._taskAlreadyCompleted;
+    }
+
+    set taskAlreadyCompleted(value: boolean) {
+        this._taskAlreadyCompleted = value;
         this.updateSection()
     }
 

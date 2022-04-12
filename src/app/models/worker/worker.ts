@@ -30,6 +30,10 @@ export class Worker {
         this.paramsFetched[name] = value
     }
 
+    public getParameter(name: string) {
+        return this.paramsFetched[name]
+    }
+
     public updateProperties(source: string, propertiesData: any) {
 
         let unwantedProperties = [
