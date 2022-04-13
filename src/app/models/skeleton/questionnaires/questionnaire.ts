@@ -15,7 +15,6 @@ export class Questionnaire {
     treeOriginal: TreeModel.Node<JSON>
     treeCut: TreeModel.Node<JSON>
     lastQuestionIndex = 0;
-    questionsDropped: Array<Question>;
     questionsToRepeat = []
     questionDependencies = {}
 
@@ -29,7 +28,6 @@ export class Questionnaire {
         this.allow_back = data['allow_back'] ? data["allow_back"] : false;
         this.type = data["type"];
         this.questions = new Array<Question>();
-        this.questionsDropped = new Array<Question>();
         let treeModel = new TreeModel({"childrenPropertyName": 'questions'})
         this.treeCut = treeModel.parse(data)
         let nodesToDrop = []
@@ -99,8 +97,8 @@ export class Questionnaire {
         let questionnaireSerializabile = Object.assign({}, this);
         delete questionnaireSerializabile['treeOriginal']
         delete questionnaireSerializabile['treeCut']
+        delete questionnaireSerializabile['questions']
         delete questionnaireSerializabile['lastQuestionIndex']
-        delete questionnaireSerializabile['questionsDropped']
         delete questionnaireSerializabile['questionsToRepeat']
         delete questionnaireSerializabile['questionDependencies']
         return questionnaireSerializabile

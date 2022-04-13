@@ -966,7 +966,6 @@ export class SkeletonComponent implements OnInit {
 
         if (action == "Finish") {
             qualityChecks = this.performQualityChecks()
-            qualityChecksPayload = this.task.buildQualityChecksPayload(qualityChecks, action)
             if (qualityChecks['globalOutcome']) {
                 this.sectionService.taskSuccessful = true;
                 this.sectionService.taskFailed = false;
@@ -1013,12 +1012,8 @@ export class SkeletonComponent implements OnInit {
             }
 
             if (completedElementBaseIndex == this.task.getElementsNumber() - 1 && action == "Finish") {
+                qualityChecksPayload = this.task.buildQualityChecksPayload(qualityChecks)
                 await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, qualityChecksPayload)
-                let countdowns = []
-                if (this.task.settings.countdown_time)
-                    for (let index = 0; index < this.task.documentsAmount; index++) countdowns.push(this.documentComponent[index].countdown)
-                let fullPayload = this.task.buildTaskFinalPayload(this.questionnairesForm, this.documentsForm, qualityChecksPayload, countdowns, action)
-                await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, fullPayload)
             }
 
         }

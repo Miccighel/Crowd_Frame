@@ -217,40 +217,46 @@ export class QuestionnaireComponent implements OnInit {
                         });
                         if (updatedValue >= childNodes.length) {
                             for (let i = childNodes.length; i < updatedValue; i++) {
-                                if (childNodes.length < question.times) {
-                                    let indexFullUpdated = targetNode.model.indexFull.slice(0, -1).concat(i + 1)
-                                    targetNode.walk(function (node) {
-                                        if (node) {
-                                            if (node.model.target == questionToRepeat.name) {
-                                                if (node.model.text.includes(' nr. ')) {
-                                                    node.model.text = node.model.text.slice(0, -5).concat(" nr. ").concat(i + 1)
-                                                } else {
-                                                    node.model.text = node.model.text.concat(" nr. ").concat(i + 1)
-                                                }
-                                            }
-                                            let indexSlice = (node.model.indexFull.slice(indexFullUpdated.length, node.model.indexFull.length))
-                                            let indexFullNew = indexFullUpdated.concat(indexSlice)
-                                            let newQuestion = new Question(this["questionnaire"]["lastQuestionIndex"], node.model)
-                                            newQuestion.indexFull = indexFullNew
-                                            newQuestion.index = this["questionnaire"]["lastQuestionIndex"]
-                                            if (i > 0) {
-                                                newQuestion.nameFull = newQuestion.nameFull.slice(0, -2).concat("_").concat(i.toString())
+                                let indexFullUpdated = targetNode.model.indexFull.slice(0, -1).concat(i + 1)
+                                targetNode.walk(function (node) {
+                                    if (node) {
+                                        if (node.model.target == questionToRepeat.name) {
+                                            if (node.model.text.includes(' nr. ')) {
+                                                node.model.text = node.model.text.slice(0, -5).concat(" nr. ").concat(i + 1)
                                             } else {
-                                                newQuestion.nameFull = newQuestion.nameFull.concat("_").concat(i.toString())
+                                                node.model.text = node.model.text.concat(" nr. ").concat(i + 1)
                                             }
-                                            newQuestion.indexFull = node.model.indexFull
-                                            node.model.index = this["questionnaire"]["lastQuestionIndex"]
-                                            node.model.indexFull = indexFullNew
-                                            node.model.nameFull = newQuestion.nameFull
-                                            node.model.dropped = newQuestion.dropped
-                                            this["questionnaire"]["lastQuestionIndex"] = this["questionnaire"]["lastQuestionIndex"] + 1
-                                            this["questionnaire"]["questions"].push(newQuestion)
-                                        } else {
-                                            return false
                                         }
-                                    }, this);
-                                    parentNode.addChild(treeModel.parse(JSON.parse(JSON.stringify(targetNode.model))))
-                                }
+                                        let indexSlice = (node.model.indexFull.slice(indexFullUpdated.length, node.model.indexFull.length))
+                                        let indexFullNew = indexFullUpdated.concat(indexSlice)
+                                        let newQuestion = new Question(this["questionnaire"]["lastQuestionIndex"], node.model)
+                                        newQuestion.indexFull = indexFullNew
+                                        newQuestion.index = this["questionnaire"]["lastQuestionIndex"]
+                                        let nameFullUpdated = false
+                                        for (let j = 0; j <= questionToRepeat.times; j++) {
+                                            let addition = "_".concat(j.toString())
+                                            if (newQuestion.nameFull.includes(addition)) {
+                                                nameFullUpdated = true
+                                            }
+                                        }
+                                        if (nameFullUpdated)
+                                            newQuestion.nameFull = newQuestion.nameFull.slice(0, -2).concat("_").concat(i.toString())
+                                        else {
+                                            newQuestion.nameFull = newQuestion.nameFull.concat("_").concat(i.toString())
+                                        }
+                                        newQuestion.indexFull = indexFullNew
+                                        node.model.index = this["questionnaire"]["lastQuestionIndex"]
+                                        node.model.indexFull = indexFullNew
+                                        node.model.nameFull = newQuestion.nameFull
+                                        node.model.dropped = newQuestion.dropped
+                                        this["questionnaire"]["lastQuestionIndex"] = this["questionnaire"]["lastQuestionIndex"] + 1
+                                        this["questionnaire"]["questions"].push(newQuestion)
+                                    } else {
+                                        return false
+                                    }
+                                }, this);
+                                parentNode.addChild(treeModel.parse(JSON.parse(JSON.stringify(targetNode.model))))
+
                                 for (let question of this.questionnaire.questions) {
                                     if (!question.dropped) {
                                         this.initializeFormControl(question)
@@ -275,6 +281,7 @@ export class QuestionnaireComponent implements OnInit {
                             for (let question of questionsToRemove) {
                                 this.questionnaireForm.removeControl(`${question.nameFull}_answer`)
                                 this.questionnaireForm.removeControl(`${question.nameFull}_free_text`)
+                                this.questionnaireForm.removeControl(`${question.nameFull}_list`)
                                 delete this.questionnaire.questionDependencies[question.nameFull]
                                 delete this.questionnaire.questionsToRepeat[question.nameFull]
                                 this.questionnaire.questions = this.questionnaire.questions.filter(questionStored => questionStored.index != question.index);

@@ -1044,11 +1044,13 @@ def load_quest_col_names(questionnaires):
 def parse_answers(row, questionnaire, question, answers):
     answer_value = None
     answer_free_text = None
+    question_name_full = None
 
     for control_name, answer_current in answers.items():
         if '_answer' in control_name:
             question_name_parsed = control_name.replace("_answer", "")
-            if question_name_parsed == question["nameFull"]:
+            if question_name_parsed == question["nameFull"] or question["nameFull"] in question_name_parsed:
+                print(question)
                 if question['type'] == 'list':
                     selected_options = ""
                     for option, selected in answer_current.items():
@@ -1061,7 +1063,7 @@ def parse_answers(row, questionnaire, question, answers):
                     answer_value = answer_current
         if '_free_text' in control_name:
             question_name_parsed = control_name.replace("_free_text", "")
-            if question_name_parsed == question["nameFull"]:
+            if question_name_parsed == question["nameFull"] or question["nameFull"] in question_name_parsed:
                 answer_free_text = answer_current
 
     for attribute, value in question.items():
@@ -1214,6 +1216,7 @@ if not os.path.exists(df_quest_path):
         dataframe["question_attribute_dropped"] = dataframe["question_attribute_dropped"].astype(bool)
         dataframe["question_attribute_showDetail"].replace({0.0: False, 1.0: True}, inplace=True)
         dataframe["question_attribute_showDetail"] = dataframe["question_attribute_showDetail"].astype(bool)
+        assert False
         dataframe.to_csv(df_quest_path, index=False)
         console.print(f"Dataframe shape: {dataframe.shape}")
         console.print(f"Workers questionnaire dataframe serialized at path: [cyan on white]{df_quest_path}")

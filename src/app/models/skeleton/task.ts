@@ -610,7 +610,7 @@ export class Task {
         /* If the worker has completed the first questionnaire
          * The partial data about the completed questionnaire are uploaded */
         let data = {}
-
+        let questionnaire = this.questionnaires[questionnaireIndex]
         let actionInfo = {
             action: action,
             access: this.elementsAccesses[questionnaireIndex],
@@ -622,6 +622,12 @@ export class Task {
         /* Info about the performed action ("Next"? "Back"? From where?) */
         data["info"] = actionInfo
         /* Worker's answers to the current questionnaire */
+        let questionsFull = []
+        for (let question of questionnaire.questions) {
+            if (!question.dropped)
+                questionsFull.push(question)
+        }
+        data["questions"] = questionsFull
         data["answers"] = answers
         /* Start, end and elapsed timestamps for the current questionnaire */
         let timestampsStart = this.timestampsStart[questionnaireIndex];
@@ -685,63 +691,12 @@ export class Task {
         return data
     }
 
-    public buildTaskFinalPayload(questionnairesForms, documentsForms, qualityChecks, countdowns, action) {
-        /* All data about documents are uploaded, only once */
-        let actionInfo = {
-            action: action,
-            try: this.tryCurrent,
-            element: "all"
-        };
-        let data = {}
-        /* Info about each performed action ("Next"? "Back"? From where?) */
-        data["info"] = actionInfo
-        let answers = [];
-        for (let index = 0; index < questionnairesForms.length; index++) answers.push(questionnairesForms[index].value);
-        data["questionnaires_answers"] = answers
-        answers = [];
-        for (let index = 0; index < documentsForms.length; index++) answers.push(documentsForms[index].value);
-        data["documents_answers"] = answers
-        let notes = (this.settings.annotator) ? this.notes : []
-        data["notes"] = notes
-        /* Worker's dimensions selected values for the current document */
-        data["dimensions_selected"] = this.dimensionsSelectedValues
-        /* Start, end and elapsed timestamps for each document */
-        data["timestamps_start"] = this.timestampsStart
-        data["timestamps_end"] = this.timestampsEnd
-        data["timestamps_elapsed"] = this.timestampsElapsed
-        /* Countdown time and corresponding flag for each document */
-        let countdownTimes = [];
-        let countdownTimesStart = [];
-        let countdownExpired = [];
-        if (this.settings.countdown_time >= 0)
-            for (let countdown of countdowns) countdownTimes.push(countdown["i"]);
-        if (this.settings.countdown_time >= 0)
-            for (let countdown of this.documentsCountdownTime) countdownTimesStart.push(countdown);
-        for (let index = 0; index < this.countdownsExpired.length; index++) countdownExpired.push(this.countdownsExpired[index]);
-        data["countdowns_times_start"] = countdownTimesStart
-        data["countdowns_times_left"] = countdownTimes
-        data["countdowns_expired"] = countdownExpired
-        /* Number of accesses to each document (currentDocument.e., how many times the worker reached the document with a "Back" or "Next" action */
-        data["accesses"] = this.elementsAccesses
-        /* Worker's search engine queries for each document */
-        data["queries"] = this.searchEngineQueries
-        /* Responses retrieved by search engine for each worker's query for each document */
-        data["responses_retrieved"] = this.searchEngineRetrievedResponses
-        /* Responses by search engine ordered by worker's click for the current document */
-        data["responses_selected"] = this.searchEngineSelectedResponses
-        /* If the last element is a document */
-        data["checks"] = qualityChecks
-        actionInfo["sequence"] = this.sequenceNumber
-        return data
-    }
-
-    public buildQualityChecksPayload(qualityChecks, action) {
+    public buildQualityChecksPayload(qualityChecks) {
         let checks = {}
         checks['info'] = {
             try: this.tryCurrent,
             sequence: this.sequenceNumber,
             element: "checks",
-            action: action
         };
         checks['checks'] = qualityChecks
         return checks
