@@ -97,7 +97,6 @@ export class Questionnaire {
         let questionnaireSerializabile = Object.assign({}, this);
         delete questionnaireSerializabile['treeOriginal']
         delete questionnaireSerializabile['treeCut']
-        delete questionnaireSerializabile['questions']
         delete questionnaireSerializabile['lastQuestionIndex']
         delete questionnaireSerializabile['questionsToRepeat']
         delete questionnaireSerializabile['questionDependencies']
