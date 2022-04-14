@@ -362,7 +362,6 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
                     },
                     "checks": [],
                     "dimensions": {},
-                    "data_full": [],
                     "data_partial": {
                         "questionnaires_answers": [],
                         "documents_answers": []
@@ -393,11 +392,6 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
                             snapshot['documents'] = data.pop('documents')
                             snapshot['questionnaires'] = data.pop('questionnaires')
                             snapshot['worker'] = data.pop('worker')
-                        elif data['info']['element'] == 'all':
-                            snapshot['data_full'].append({
-                                "time_submit": time,
-                                "serialization": data
-                            })
                         elif data['info']['element'] == 'document':
                             snapshot['data_partial']['documents_answers'].append({
                                 "time_submit": time,
@@ -445,7 +439,7 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
                             }
                             snapshot['logs'].append(data)
 
-                if len(snapshot["data_full"]) > 0 or len(snapshot['data_partial']['documents_answers']) > 0 or len(snapshot['data_partial']['questionnaires_answers']) > 0:
+                if len(snapshot['data_partial']['documents_answers']) > 0 or len(snapshot['data_partial']['questionnaires_answers']) > 0:
                     worker_snapshot.append(snapshot)
 
             with open(worker_snapshot_path, 'w', encoding='utf-8') as f:
@@ -736,7 +730,7 @@ if not os.path.exists(df_log_path):
                         task = snapshot['task']
                         task_started = False
 
-                        if len(snapshot['data_full']) > 0 or len(snapshot['data_partial']['documents_answers']) or len(snapshot['data_partial']['questionnaires_answers']) > 0:
+                        if len(snapshot['data_partial']['documents_answers']) or len(snapshot['data_partial']['questionnaires_answers']) > 0:
                             task_started = True
 
                         for data_log in logs:
@@ -956,7 +950,6 @@ if not os.path.exists(df_comm_path):
             batch_name = acl_record['batch_name']
             unit_id = acl_record['unit_id']
 
-            data_full = worker_snapshot['data_full']
             data_partial = worker_snapshot['data_partial']
 
             column_names = load_comment_col_names()
@@ -1024,11 +1017,12 @@ def load_quest_col_names(questionnaires):
     columns.append(f"questionnaire_accesses")
     for questionnaire in questionnaires:
         for question in questionnaire['questions']:
-            for attribute, value in question.items():
-                if type(value) != list:
-                    column_name = f"question_attribute_{attribute}"
-                    if column_name not in columns:
-                        columns.append(column_name)
+            if not question['dropped']:
+                for attribute, value in question.items():
+                    if type(value) != list:
+                        column_name = f"question_attribute_{attribute}"
+                        if column_name not in columns:
+                            columns.append(column_name)
         columns.append(f"question_answer_value")
         columns.append(f"question_answer_text")
         columns.append(f"question_free_text_value")
@@ -1050,8 +1044,7 @@ def parse_answers(row, questionnaire, question, answers):
         if '_answer' in control_name:
             question_name_parsed = control_name.replace("_answer", "")
             if question_name_parsed == question["nameFull"] or question["nameFull"] in question_name_parsed:
-                print(question)
-                if question['type'] == 'list':
+                if type(answer_current)==dict:
                     selected_options = ""
                     for option, selected in answer_current.items():
                         if selected:
@@ -1075,14 +1068,20 @@ def parse_answers(row, questionnaire, question, answers):
     if questionnaire['type'] == 'standard':
         if question['type'] == 'mcq':
             if answer_value is not None:
-                row[f"question_answer_text"] = question['answers'][int(answer_value)]
+                try:
+                    row[f"question_answer_text"] = question['answers'][int(answer_value)]
+                except ValueError:
+                    row[f"question_answer_text"] = ''
         if question['type'] == 'list':
             if answer_value is not None:
                 selected_options = answer_value.split(";")
                 selected_options_text = ""
                 for option in selected_options:
-                    option_text = question['answers'][int(option)]
-                    selected_options_text = f"{selected_options_text}{option_text};"
+                    try:
+                        option_text = question['answers'][int(option)]
+                        selected_options_text = f"{selected_options_text}{option_text};"
+                    except ValueError:
+                        selected_options_text = ''
                 if len(selected_options_text) > 0:
                     selected_options_text = selected_options_text[:-1]
                     row[f"question_answer_text"] = selected_options_text
@@ -1117,7 +1116,6 @@ if not os.path.exists(df_quest_path):
 
             task = worker_snapshot['task']
             questionnaires = worker_snapshot['questionnaires']
-            data_full = worker_snapshot['data_full']
             data_partial = worker_snapshot['data_partial']
 
             column_names = load_quest_col_names(questionnaires)
@@ -1125,41 +1123,6 @@ if not os.path.exists(df_quest_path):
             for column in column_names:
                 if column not in dataframe:
                     dataframe[column] = np.nan
-
-            if len(data_full) > 0:
-
-                for data_try in data_full:
-
-                    info = data_try['serialization']["info"]
-                    questionnaireAnswers = data_try['serialization']["questionnaires_answers"]
-                    accesses = data_try['serialization']["accesses"]
-                    timestamps_elapsed = data_try['serialization']["timestamps_elapsed"]
-
-                    row = {}
-                    row['worker_id'] = worker_id
-                    row['paid'] = worker_paid
-                    row['task_name'] = task_name
-                    row['batch_name'] = batch_name
-                    row['unit_id'] = unit_id
-                    row['try_current'] = info['try']
-
-                    row['time_submit'] = data_try['time_submit'] if 'time_submit' in data_try else None
-
-                    if info['element'] == 'all' and info['action'] == 'Finish':
-
-                        for index_main, current_answers in enumerate(questionnaireAnswers):
-
-                            questionnaire = questionnaires[index_main]
-
-                            for attribute, value in questionnaire.items():
-                                if type(value) != list:
-                                    row[f"questionnaire_{attribute}"] = value
-                            row[f"questionnaire_time_elapsed"] = round(timestamps_elapsed[questionnaire['index']], 2)
-                            row[f"questionnaire_accesses"] = accesses[questionnaire['index']]
-
-                            for index_sub, question in enumerate(questionnaire["questions"]):
-                                row = parse_answers(row, questionnaire, question, current_answers)
-                                dataframe = dataframe.append(row, ignore_index=True)
 
             if len(data_partial) > 0:
 
@@ -1199,8 +1162,9 @@ if not os.path.exists(df_quest_path):
                         row[f"questionnaire_accesses"] = accesses
 
                         for index_sub, question in enumerate(questionnaire["questions"]):
-                            row = parse_answers(row, questionnaire, question, current_answers)
-                            dataframe = dataframe.append(row, ignore_index=True)
+                            if not question['dropped']:
+                                row = parse_answers(row, questionnaire, question, current_answers)
+                                dataframe = dataframe.append(row, ignore_index=True)
 
     if dataframe.shape[0] > 0:
         empty_cols = [col for col in dataframe.columns if dataframe[col].isnull().all()]
@@ -1216,7 +1180,6 @@ if not os.path.exists(df_quest_path):
         dataframe["question_attribute_dropped"] = dataframe["question_attribute_dropped"].astype(bool)
         dataframe["question_attribute_showDetail"].replace({0.0: False, 1.0: True}, inplace=True)
         dataframe["question_attribute_showDetail"] = dataframe["question_attribute_showDetail"].astype(bool)
-        assert False
         dataframe.to_csv(df_quest_path, index=False)
         console.print(f"Dataframe shape: {dataframe.shape}")
         console.print(f"Workers questionnaire dataframe serialized at path: [cyan on white]{df_quest_path}")
@@ -1302,7 +1265,6 @@ if not os.path.exists(df_data_path):
             comments = worker_snapshot['comments']
             checks = worker_snapshot['checks']
             worker = worker_snapshot['worker']
-            data_full = worker_snapshot['data_full']
             data_partial = worker_snapshot['data_partial']
 
             column_names = load_data_col_names(dimensions, documents)
@@ -1310,110 +1272,6 @@ if not os.path.exists(df_data_path):
             for column in column_names:
                 if column not in dataframe:
                     dataframe[column] = np.nan
-
-            if len(data_full) > 0:
-
-                row = {}
-                row['worker_id'] = worker_id
-                row['paid'] = worker_paid
-
-                for attribute, value in task.items():
-                    if attribute in column_names:
-                        row[attribute] = value
-
-                for data_try in data_full:
-
-                    row['time_submit'] = data_try['time_submit'] if 'time_submit' in data_try else None
-
-                    accesses = data_try['serialization']["accesses"]
-                    timestamps_elapsed = data_try['serialization']["timestamps_elapsed"]
-                    timestampsStart = data_try['serialization']["timestamps_start"]
-                    timestampsEnd = data_try['serialization']["timestamps_end"]
-                    document_answers = data_try['serialization']["documents_answers"]
-                    countdownsStart = data_try['serialization']["countdowns_times_start"]
-                    countdownsLeft = data_try['serialization']["countdowns_times_left"]
-                    countdownsExpired = data_try['serialization']["countdowns_expired"]
-                    checks_try = data_try['serialization']["checks"]
-                    info = data_try['serialization']["info"]
-
-                    row['try_current'] = info['try']
-
-                    if info['element'] == 'all' and info['action'] == 'Finish':
-
-                        row["global_outcome"] = checks_try["checks"]["globalOutcome"]
-                        row["global_form_validity"] = checks_try["checks"]["globalFormValidity"]
-                        row["gold_checks"] = any(checks_try["checks"]["goldChecks"])
-                        row["time_check_amount"] = checks_try["checks"]["timeCheckAmount"]
-                        row["time_spent_check"] = checks_try["checks"]["timeSpentCheck"]
-
-                        for index, data in enumerate(countdownsStart):
-                            row["doc_countdown_time_start"] = data
-
-                        for index, data in enumerate(countdownsLeft):
-                            row["doc_countdown_time_value"] = data['value']
-                            row["doc_countdown_time_text"] = data['text']
-                            row["doc_countdown_time_expired"] = countdownsExpired[index]
-
-                        for index, current_answers in enumerate(document_answers):
-                            current_attributes = documents[index].keys()
-                            for current_attribute in current_attributes:
-                                current_attribute_value = documents[index][current_attribute]
-                                if type(current_attribute_value) == str:
-                                    current_attribute_value = re.sub('\n', '', current_attribute_value)
-                                row[f"doc_{current_attribute}"] = current_attribute_value
-                            for dimension in dimensions:
-                                if dimension['scale'] is not None:
-                                    value = current_answers[f"{dimension['name']}_value"]
-                                    if type(value) == str:
-                                        value = value.strip()
-                                        value = re.sub('\n', '', value)
-                                    row[f"doc_{dimension['name']}_value"] = value
-                                    if dimension["scale"]["type"] == "categorical":
-                                        for mapping in dimension["scale"]['mapping']:
-                                            label = mapping['label'].lower().split(" ")
-                                            label = '-'.join([str(c) for c in label])
-                                            if mapping['value'] == value:
-                                                row[f"doc_{dimension['name']}_label"] = label
-                                                row[f"doc_{dimension['name']}_index"] = mapping['index']
-                                                row[f"doc_{dimension['name']}_description"] = mapping['description']
-                                    else:
-                                        row[f"doc_{dimension['name']}_label"] = np.nan
-                                        row[f"doc_{dimension['name']}_index"] = np.nan
-                                        row[f"doc_{dimension['name']}_description"] = np.nan
-                                if dimension['justification']:
-                                    justification = current_answers[f"{dimension['name']}_justification"].strip()
-                                    justification = re.sub('\n', '', justification)
-                                    row[f"doc_{dimension['name']}_justification"] = justification
-                                else:
-                                    row[f"doc_{dimension['name']}_justification"] = np.nan
-                                if dimension['url']:
-                                    row[f"doc_{dimension['name']}_url"] = current_answers[f"{dimension['name']}_url"]
-                                else:
-                                    row[f"doc_{dimension['name']}_url"] = np.nan
-
-                            if timestampsStart[index + task['questionnaire_amount']] is None:
-                                row["doc_time_start"] = np.nan
-                            else:
-                                row["doc_time_start"] = timestampsStart[index + task['questionnaire_amount']][0]
-
-                            if timestampsEnd[index + task['questionnaire_amount']] is None:
-                                row["doc_time_end"] = np.nan
-                            else:
-                                row["doc_time_end"] = timestampsEnd[index + task['questionnaire_amount']][0]
-
-                            if timestamps_elapsed[index + task['questionnaire_amount']] is None:
-                                row["doc_time_elapsed"] = np.nan
-                            else:
-                                row["doc_time_elapsed"] = round(timestamps_elapsed[index + task['questionnaire_amount']], 2)
-
-                            row["doc_accesses"] = accesses[index]
-
-                            if timestamps_elapsed[index + task['questionnaire_amount']] is None:
-                                row["doc_time_elapsed"] = np.nan
-                            else:
-                                row["doc_time_elapsed"] = round(timestamps_elapsed[index + task['questionnaire_amount']], 2)
-
-                            dataframe = dataframe.append(row, ignore_index=True)
 
             if len(data_partial) > 0:
 
@@ -1636,32 +1494,11 @@ if not os.path.exists(df_dim_path) and os.path.exists(df_data_path):
             dimensions = worker_snapshot['dimensions']
             documents = worker_snapshot['documents']
             questionnaires = worker_snapshot['questionnaires']
-            data_full = worker_snapshot['data_full']
             data_partial = worker_snapshot['data_partial']
 
             worker_data = df_data.loc[df_data['worker_id'] == worker_id]
             timestamp_start = worker_data['doc_time_start'].min()
             timestamp_end = worker_data['doc_time_start'].max()
-
-            if len(data_full) > 0:
-
-                for data_try in data_full:
-
-                    timestamps_elapsed = data_try['serialization']["timestamps_elapsed"]
-                    timestampsStart = data_try['serialization']["timestamps_start"]
-                    timestampsEnd = data_try['serialization']["timestamps_end"]
-                    info = data_try['serialization']["info"]
-
-                    timestamp_first = timestamp_start
-                    timestamp_first_parsed = datetime.datetime.fromtimestamp(timestamp_first)
-                    timestamps_found = [timestamp_first_parsed]
-
-                    counter = 0
-
-                    if info['element'] == 'all' and info['action'] == 'Finish':
-                        dimensions_selected_data = data_try['serialization']["dimensions_selected"]
-
-                        dataframe = parse_dimensions_selected(dataframe, worker_id, worker_paid, task, info, documents, dimensions, dimensions_selected_data, timestamp_start, timestamp_end)
 
             if len(data_partial) > 0:
 
@@ -1814,18 +1651,7 @@ if not os.path.exists(df_url_path):
             task = worker_snapshot['task']
             dimensions = worker_snapshot['dimensions']
             documents = worker_snapshot['documents']
-            data_full = worker_snapshot['data_full']
             data_partial = worker_snapshot['data_partial']
-
-            if len(data_full) > 0:
-
-                for data_try in data_full:
-                    info = data_try['serialization']['info']
-                    queries = data_try['serialization']['queries']
-                    responses_retrieved = data_try['serialization']['responses_retrieved']
-                    responses_selected = data_try['serialization']['responses_selected']
-
-                    dataframe = parse_responses(dataframe, worker_id, worker_paid, task, info, queries, responses_retrieved, responses_selected)
 
             if len(data_partial) > 0:
 
