@@ -1352,7 +1352,10 @@ if not os.path.exists(df_data_path):
                             else:
                                 row[f"doc_{dimension['name']}_justification"] = np.nan
                             if dimension['url']:
-                                row[f"doc_{dimension['name']}_url"] = current_answers[f"{dimension['name']}_url"]
+                                try:
+                                    row[f"doc_{dimension['name']}_url"] = current_answers[f"{dimension['name']}_url"]
+                                except KeyError:
+                                    print(current_answers)
                             else:
                                 row[f"doc_{dimension['name']}_url"] = np.nan
 
