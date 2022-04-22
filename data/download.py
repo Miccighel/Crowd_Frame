@@ -412,9 +412,6 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
                                 "time_submit": time,
                                 "serialization": data
                             })
-                        else:
-                            print(data)
-                            assert False
 
                 if log_data_source:
                     paginator = dynamo_db.get_paginator('query')
