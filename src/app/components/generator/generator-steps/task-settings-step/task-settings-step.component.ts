@@ -274,7 +274,6 @@ export class TaskSettingsStepComponent implements OnInit {
             }
         }
         let hitsPromise = this.loadHits()
-        let docsPromise = this.loadDocs()
         this.formStep.valueChanges.subscribe(form => {
             this.serializeConfiguration()
         })
@@ -307,15 +306,6 @@ export class TaskSettingsStepComponent implements OnInit {
         console.log(hits)
         this.localStorageService.setItem(`hits`, JSON.stringify(hits))
         this.updateHitsFile(hits)
-    }
-
-    async loadDocs() {
-        let docs = []
-        try{
-            docs = await this.S3Service.downloadDocs(this.configService.environment)
-        } catch (exception){
-        }
-        this.updateDocsFile(docs)
     }
 
     updateLogger() {
