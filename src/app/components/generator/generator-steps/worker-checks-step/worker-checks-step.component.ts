@@ -1,11 +1,14 @@
+/* Core */
 import {ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {MatChipInputEvent} from "@angular/material/chips";
 import {FormArray, FormBuilder, FormGroup} from "@angular/forms";
+import {MatChipInputEvent} from "@angular/material/chips";
 import {COMMA, ENTER} from "@angular/cdk/keycodes";
-import {SettingsWorker} from "../../../../models/settingsWorker";
+/* Services */
 import {LocalStorageService} from "../../../../services/localStorage.service";
 import {ConfigService} from "../../../../services/config.service";
-import {S3Service} from 'src/app/services/s3.service';
+import {S3Service} from 'src/app/services/aws/s3.service';
+/* Models */
+import {WorkerSettings} from "../../../../models/worker/workerSettings";
 
 @Component({
     selector: 'app-worker-checks',
@@ -30,7 +33,7 @@ export class WorkerChecksStepComponent implements OnInit {
 
     formStep: FormGroup;
 
-    dataStored = new SettingsWorker()
+    dataStored = new WorkerSettings()
 
     blacklistedWorkerId: Set<string>
     whitelistedWorkerId: Set<string>
@@ -55,10 +58,9 @@ export class WorkerChecksStepComponent implements OnInit {
     }
 
     public initializeControls() {
-        this.dataStored = new SettingsWorker()
+        this.dataStored = new WorkerSettings()
         this.formStep = this._formBuilder.group({
             block: '',
-            analysis: '',
             blacklist: '',
             whitelist: '',
             batches: this._formBuilder.array([]),
@@ -72,16 +74,15 @@ export class WorkerChecksStepComponent implements OnInit {
 
         let serializedWorkerChecks = this.localStorageService.getItem("worker-settings")
         if (serializedWorkerChecks) {
-            this.dataStored = new SettingsWorker(JSON.parse(serializedWorkerChecks))
+            this.dataStored = new WorkerSettings(JSON.parse(serializedWorkerChecks))
         } else {
             this.initializeControls()
             let rawWorkerChecks = await this.S3Service.downloadWorkers(this.configService.environment)
-            this.dataStored = new SettingsWorker(rawWorkerChecks)
+            this.dataStored = new WorkerSettings(rawWorkerChecks)
             this.localStorageService.setItem(`worker-settings`, JSON.stringify(rawWorkerChecks))
         }
         this.formStep = this._formBuilder.group({
             block: [this.dataStored.block ? this.dataStored.block : true],
-            analysis: [this.dataStored.block ? this.dataStored.block : true],
             blacklist: [this.dataStored.blacklist ? this.dataStored.blacklist : ''],
             whitelist: [this.dataStored.whitelist ? this.dataStored.whitelist : ''],
             batches: this._formBuilder.array([]),

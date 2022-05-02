@@ -1,7 +1,6 @@
-/* Core modules */
+/* Core */
 import {Pipe, PipeTransform} from "@angular/core";
-
-/* Pipe name */
+/* Pipes */
 @Pipe({name: 'truncate'})
 
 /*

@@ -1,0 +1,56 @@
+/* |--- LOADING SCREEN SPINNER --| */
+
+mat-spinner {
+  margin: auto;
+}
+
+/* |--- MAIN BODY ---| */
+
+mat-card.xplorer-body {
+  box-shadow: 0 0 0 0;
+  padding: 0;
+}
+
+/* |--- USER QUERY ---| */
+
+.search-bar {
+  display: flex;
+}
+
+#search-textarea {
+  width: 75%;
+
+  .mat-form-field {
+    border-radius: 0 !important;
+  }
+}
+
+.search-button {
+  width: 25%;
+  height: 50px;
+  margin-top: 5px;
+  margin-left: 5px;
+  border-radius: 4px;
+}
+
+/* |--- RESULT TABLE --| */
+
+mat-table {
+  border: 2px solid lightgrey;
+  border-radius: 8px;
+  padding: 5px 5px;
+}
+
+mat-header-cell {
+  font-size: medium;
+}
+
+mat-cell {
+  font-size: medium;
+  padding: 5px;
+
+  p {
+    width: 99%;
+    padding-right: 1%;
+  }
+}

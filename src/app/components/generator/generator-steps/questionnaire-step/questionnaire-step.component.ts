@@ -1,9 +1,14 @@
+/* Core */
 import {Component, EventEmitter, OnInit, Output} from '@angular/core';
-import {S3Service} from 'src/app/services/s3.service';
+import {FormArray, FormBuilder, FormGroup, Validators} from "@angular/forms";
+/* Services */
 import {ConfigService} from "../../../../services/config.service";
+import {S3Service} from 'src/app/services/aws/s3.service';
 import {LocalStorageService} from "../../../../services/localStorage.service";
-import {FormArray, FormBuilder, FormGroup} from "@angular/forms";
-import {Question, Questionnaire} from "../../../../models/questionnaire";
+/* Models */
+import {Questionnaire} from "../../../../models/skeleton/questionnaires/questionnaire";
+import {Question} from "../../../../models/skeleton/questionnaires/question";
+import {Dimension} from "../../../../models/skeleton/dimension";
 
 /* STEP #1 - Questionnaires */
 
@@ -78,15 +83,16 @@ export class QuestionnaireStepComponent implements OnInit {
             serializedQuestionnaires.forEach(questionnaireKey => {
                 let index = questionnaireKey.split("-")[1]
                 let item = this.localStorageService.getItem(`questionnaire-${index}`)
-                this.dataStored.push(JSON.parse(item))
+                this.dataStored.push(new Questionnaire(parseInt(index), JSON.parse(item)))
             })
+            this.dataStored.sort((a, b) => (a.index > b.index) ? 1 : -1)
         } else {
             this.initializeControls()
             let rawQuestionnaires = await this.S3Service.downloadQuestionnaires(this.configService.environment)
             rawQuestionnaires.forEach((data, index) => {
                 let questionnaire = new Questionnaire(index, data)
-                this.dataStored.push(questionnaire)
-                this.localStorageService.setItem(`questionnaire-${index}`, JSON.stringify(questionnaire))
+                this.dataStored.push(questionnaire.serializable())
+                this.localStorageService.setItem(`questionnaire-${index}`, JSON.stringify(questionnaire.serializable()))
             })
         }
         if (this.dataStored.length > 0) {
@@ -109,7 +115,7 @@ export class QuestionnaireStepComponent implements OnInit {
 
     addQuestionnaire(questionnaireIndex = null, questionnaire = null as Questionnaire) {
         this.questionnaires().push(this._formBuilder.group({
-            type: questionnaire ? questionnaire.type ? questionnaire.type : '' : '',
+            type: [questionnaire ? questionnaire.type ? questionnaire.type : '' : '', [Validators.required]],
             description: questionnaire ? questionnaire.description ? questionnaire.description : '' : '',
             position: questionnaire ? questionnaire.position ? questionnaire.position : '' : '',
             allow_back: questionnaire ? questionnaire.allow_back ? questionnaire.allow_back : false : false,
@@ -145,8 +151,9 @@ export class QuestionnaireStepComponent implements OnInit {
 
     addQuestion(questionnaireIndex: number, questionIndex = null as number, question = null as Question) {
         this.questions(questionnaireIndex).push(this._formBuilder.group({
-            name: question ? question.name ? question.name : '' : '',
-            text: question ? question.text ? question.text : '' : '',
+            index: question ? question.index ? question.index : questionIndex : questionIndex,
+            name: [question ? question.name ? question.name : '' : '', [Validators.required]],
+            text: [question ? question.text ? question.text : '' : '', [Validators.required]],
             answers: this._formBuilder.array([])
         }));
         if (question && question.answers) for (let answer of question.answers) this.addAnswer(questionnaireIndex, questionIndex, answer)
@@ -167,7 +174,7 @@ export class QuestionnaireStepComponent implements OnInit {
 
     addAnswer(questionnaireIndex: number, questionIndex: number, answer = null as string) {
         this.answers(questionnaireIndex, questionIndex).push(this._formBuilder.group({
-            answer: answer ? answer : ''
+            answer: [answer ? answer : '', [Validators.required]]
         }))
     }
 
@@ -183,8 +190,8 @@ export class QuestionnaireStepComponent implements OnInit {
 
     addMapping(questionnaireIndex: number) {
         this.mapping(questionnaireIndex).push(this._formBuilder.group({
-            label: '',
-            value: ''
+            label: ['', [Validators.required]],
+            value: ['', [Validators.required]]
         }))
     }
 
@@ -203,6 +210,8 @@ export class QuestionnaireStepComponent implements OnInit {
                 case 'crt':
                     delete questionnaire.description;
                     for (let questionIndex in questionnaire.questions) {
+                        questionnaire.questions[questionIndex]['type'] = 'number'
+                        questionnaire.questions[questionIndex]['required'] = true
                         delete questionnaire.questions[questionIndex].answers;
                     }
                     delete questionnaire.mapping;

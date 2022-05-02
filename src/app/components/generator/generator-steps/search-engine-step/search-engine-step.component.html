@@ -37,9 +37,12 @@
                     <table class="width-100">
                         <tr>
                             <td class="p-0 pr-16px">
-                                <mat-form-field matLine class="width-100" [hideRequiredMarker]="domain.get('url').valid" appearance="fill">
+                                <mat-form-field matLine class="width-100" appearance="fill">
                                     <mat-label>Domain</mat-label>
-                                    <input matInput type="text" formControlName="url" required>
+                                    <input matInput type="text" formControlName="url">
+                                    <mat-error>
+                                        <app-error-message [formField]="domain.get('url')"></app-error-message>
+                                    </mat-error>
                                 </mat-form-field>
                             </td>
                             <td class="p-0 center">

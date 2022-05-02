@@ -10,6 +10,7 @@ import shutil
 import subprocess
 import textwrap
 import boto3
+from zipfile import ZipFile
 import pandas as pd
 import time
 import datetime
@@ -17,12 +18,14 @@ from distutils.util import strtobool
 from pathlib import Path
 from shutil import copy2
 from botocore.exceptions import ClientError
-from botocore.exceptions import ProfileNotFound
 from dotenv import load_dotenv
 from mako.template import Template
 from rich.console import Console
 from rich.panel import Panel
 from rich.progress import track
+import warnings
+
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 console = Console()
 
@@ -40,6 +43,7 @@ folder_build_path = "build/"
 folder_build_config_path = "build/config/"
 folder_build_task_path = "build/task/"
 folder_build_mturk_path = "build/mturk/"
+folder_build_toloka_path = "build/toloka/"
 folder_build_env_path = "build/environments/"
 folder_build_deploy_path = "build/deploy/"
 folder_build_skeleton_path = "build/skeleton/"
@@ -83,34 +87,47 @@ env_path = Path('.') / '.env'
 load_dotenv(dotenv_path=env_path)
 
 mail_contact = os.getenv('mail_contact')
+platform = os.getenv('platform')
 profile_name = os.getenv('profile_name')
 task_name = os.getenv('task_name')
 batch_name = os.getenv('batch_name')
+batch_prefix = os.getenv('batch_prefix')
 admin_user = os.getenv('admin_user')
 admin_password = os.getenv('admin_password')
-deploy_config = os.getenv('deploy_config')
 server_config = os.getenv('server_config')
-deploy_config = strtobool(deploy_config) if deploy_config is not None else False
+deploy_config = strtobool(os.getenv('deploy_config')) if os.getenv('deploy_config') is not None else False
 aws_region = os.getenv('aws_region')
 aws_private_bucket = os.getenv('aws_private_bucket')
 aws_deploy_bucket = os.getenv('aws_deploy_bucket')
+prolific_completion_code = os.getenv('prolific_completion_code')
 budget_limit = os.getenv('budget_limit')
 bing_api_key = os.getenv('bing_api_key')
 ip_info_token = os.getenv('ip_info_token')
+ip_geolocation_api_key = os.getenv('ip_geolocation_api_key')
+ip_api_api_key = os.getenv('ip_api_api_key')
 user_stack_token = os.getenv('user_stack_token')
-
+fake_json_token = os.getenv('fake_json_token')
+debug_mode = os.getenv('debug_mode')
 table_logging_name = f"Crowd_Frame-{task_name}_{batch_name}_Logger"
 table_data_name = f"Crowd_Frame-{task_name}_{batch_name}_Data"
 table_acl_name = f"Crowd_Frame-{task_name}_{batch_name}_ACL"
 api_gateway_name = 'Crowd_Frame-API'
 
-boto_session = boto3.Session()
-iam_client = boto_session.client('iam', region_name=aws_region)
+if profile_name is None:
+    profile_name = 'default'
+
+iam_client = boto3.Session(profile_name=profile_name).client('iam', region_name=aws_region)
 
 console.rule("0 - Initialization")
 
 console.print("[bold]Init.py[/bold] script launched")
 console.print(f"Working directory: [bold]{os.getcwd()}[/bold]")
+
+if batch_prefix is None:
+    batch_prefix = ''
+
+if platform is None:
+    platform = 'mturk'
 
 console.rule("1 - Configuration policy")
 
@@ -304,8 +321,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                                 lines = f.readlines()
                                 for line in lines:
                                     if line.strip() == f'[{user}]':
-                                        print(f"Line: {line.strip()}")
-                                        print(f"User: [{user}]")
                                         line_index = line_counter
                                     line_counter += 1
                             if line_index is not None:
@@ -372,7 +387,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     sqs_client = boto_session.client('sqs', region_name=aws_region)
     dynamodb_client = boto_session.client('dynamodb', region_name=aws_region)
     lambda_client = boto_session.client('lambda', region_name=aws_region)
-    budget_client = boto3.client('budgets', region_name=aws_region)
+    budget_client = boto3.Session(profile_name=profile_name).client('budgets', region_name=aws_region)
 
     console.rule(f"7 - [yellow]{root_user.user_name}[/yellow] policies check")
 
@@ -411,7 +426,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             "apigateway:POST",
             "dynamodb:CreateTable",
             "lambda:CreateFunction",
-            "lambda:CreateEventSourceMapping"
+            "lambda:CreateEventSourceMapping",
         ],
         "no_server": [
             "iam:GetUser",
@@ -497,6 +512,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                     "dynamodb:PutItem",
                     "dynamodb:GetItem",
                     "dynamodb:Query",
+                    "dynamodb:Scan",
                     "dynamodb:ListTables"
                 ],
                 "Resource": "*"
@@ -753,8 +769,47 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         table_name = table_acl_name
         table = dynamodb_client.create_table(
             TableName=table_name,
-            AttributeDefinitions=[{'AttributeName': 'identifier', 'AttributeType': 'S'}],
+            AttributeDefinitions=[
+                {'AttributeName': 'identifier', 'AttributeType': 'S'},
+                {'AttributeName': 'unit_id', 'AttributeType': 'S'},
+                {'AttributeName': 'time_arrival', 'AttributeType': 'S'},
+                {'AttributeName': 'ip_address', 'AttributeType': 'S'},
+            ],
             KeySchema=[{'AttributeName': 'identifier', 'KeyType': 'HASH'}],
+            GlobalSecondaryIndexes=[
+                {
+                    'IndexName': 'unit_id-index',
+                    'KeySchema': [
+                        {
+                            'AttributeName': 'unit_id',
+                            'KeyType': 'HASH',
+                        },
+                        {
+                            'AttributeName': 'time_arrival',
+                            'KeyType': 'RANGE'
+                        }
+                    ],
+                    "Projection": {
+                        "ProjectionType": "ALL"
+                    },
+                },
+                {
+                    'IndexName': 'ip_address-index',
+                    'KeySchema': [
+                        {
+                            'AttributeName': 'ip_address',
+                            'KeyType': 'HASH',
+                        },
+                        {
+                            'AttributeName': 'time_arrival',
+                            'KeyType': 'RANGE'
+                        }
+                    ],
+                    "Projection": {
+                        "ProjectionType": "ALL"
+                    },
+                }
+            ],
             BillingMode='PAY_PER_REQUEST'
         )
         serialize_json(folder_aws_generated_path, f"dynamodb_table_{table_name}.json", table)
@@ -816,56 +871,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             console.print("[green]Policies correctly set up")
 
         status.start()
-        status.update('Gateway setup')
-        time.sleep(2)
-
-        if not any(api for api in api_gateway_client.get_apis()['Items'] if api['Name'] == api_gateway_name):
-            response = api_gateway_client.create_api(
-                CorsConfiguration={
-                    'AllowCredentials': False,
-                    'AllowHeaders': ['*'],
-                    'AllowMethods': ['POST'],
-                    'AllowOrigins': ['*'],
-                    'ExposeHeaders': ['*'],
-                    'MaxAge': 300
-                },
-                Name=api_gateway_name,
-                ProtocolType='HTTP'
-            )
-            serialize_json(folder_aws_generated_path, f"api_gateway_{api_gateway_name}.json", response)
-            api = dict((key, response[key]) for key in ['ApiEndpoint', 'ApiId'])
-            api['integration'] = api_gateway_client.create_integration(
-                ApiId=api['ApiId'],
-                IntegrationType='AWS_PROXY',
-                IntegrationSubtype='SQS-SendMessage',
-                PayloadFormatVersion='1.0',
-                CredentialsArn=f'arn:aws:iam::{aws_account_id}:role{iam_path}GatewayToSQS',
-                RequestParameters={
-                    'QueueUrl': f'https://sqs.{aws_region}.amazonaws.com/{aws_account_id}/{queue_name}',
-                    'MessageBody': '$request.body'
-                }
-            )
-            serialize_json(folder_aws_generated_path, f"api_gateway_integration_{api['integration']['IntegrationId']}.json", api['integration'])
-            response = api_gateway_client.create_route(
-                ApiId=api['ApiId'],
-                RouteKey='POST /log',
-                Target='integrations/' + api['integration']['IntegrationId']
-            )
-            serialize_json(folder_aws_generated_path, f"api_gateway_route_{response['RouteId']}.json", response)
-            response = api_gateway_client.create_stage(
-                ApiId=api['ApiId'],
-                StageName="$default",
-                AutoDeploy=True
-            )
-            serialize_json(folder_aws_generated_path, f"api_gateway_stage_{response['StageName']}.json", response)
-            console.print(f'[link={api["ApiEndpoint"]}/log]API endpoint[/link] created.')
-        else:
-            api = [api for api in api_gateway_client.get_apis()['Items'] if api['Name'] == api_gateway_name][0]
-            api = dict((key, api[key]) for key in ['ApiEndpoint', 'ApiId'])
-            status.stop()
-            console.print(f'[link={api["ApiEndpoint"]}/log]API endpoint[/link] already created')
-
-        status.start()
         status.update(f"Table {table_logging_name} setup")
         time.sleep(2)
 
@@ -920,6 +925,9 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         time.sleep(2)
         function_name = 'Crowd_Frame-Logger'
         function_new = False
+        if not os.path.exists(f"{folder_aws_path}index.zip"):
+            with ZipFile(f"{folder_aws_path}index.zip", 'w') as zipf:
+                zipf.write(f"{folder_aws_path}index.js", arcname='index.js')
         try:
             response = lambda_client.create_function(
                 FunctionName=function_name,
@@ -936,6 +944,56 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         except lambda_client.exceptions.ResourceConflictException as error:
             console.print(f"[yellow]Function already created.")
         status.stop()
+
+        status.start()
+        status.update('Gateway setup')
+        time.sleep(2)
+
+        if not any(api for api in api_gateway_client.get_apis()['Items'] if api['Name'] == api_gateway_name):
+            response = api_gateway_client.create_api(
+                CorsConfiguration={
+                    'AllowCredentials': False,
+                    'AllowHeaders': ['*'],
+                    'AllowMethods': ['POST'],
+                    'AllowOrigins': ['*'],
+                    'ExposeHeaders': ['*'],
+                    'MaxAge': 300
+                },
+                Name=api_gateway_name,
+                ProtocolType='HTTP'
+            )
+            serialize_json(folder_aws_generated_path, f"api_gateway_{api_gateway_name}.json", response)
+            api = dict((key, response[key]) for key in ['ApiEndpoint', 'ApiId'])
+            api['integration'] = api_gateway_client.create_integration(
+                ApiId=api['ApiId'],
+                IntegrationType='AWS_PROXY',
+                IntegrationSubtype='SQS-SendMessage',
+                PayloadFormatVersion='1.0',
+                CredentialsArn=f'arn:aws:iam::{aws_account_id}:role{iam_path}GatewayToSQS',
+                RequestParameters={
+                    'QueueUrl': f'https://sqs.{aws_region}.amazonaws.com/{aws_account_id}/{queue_name}',
+                    'MessageBody': '$request.body'
+                }
+            )
+            serialize_json(folder_aws_generated_path, f"api_gateway_integration_{api['integration']['IntegrationId']}.json", api['integration'])
+            response = api_gateway_client.create_route(
+                ApiId=api['ApiId'],
+                RouteKey='POST /log',
+                Target='integrations/' + api['integration']['IntegrationId']
+            )
+            serialize_json(folder_aws_generated_path, f"api_gateway_route_{response['RouteId']}.json", response)
+            response = api_gateway_client.create_stage(
+                ApiId=api['ApiId'],
+                StageName="$default",
+                AutoDeploy=True
+            )
+            serialize_json(folder_aws_generated_path, f"api_gateway_stage_{response['StageName']}.json", response)
+            console.print(f'[link={api["ApiEndpoint"]}/log]API endpoint[/link] created.')
+        else:
+            api = [api for api in api_gateway_client.get_apis()['Items'] if api['Name'] == api_gateway_name][0]
+            api = dict((key, api[key]) for key in ['ApiEndpoint', 'ApiId'])
+            status.stop()
+            console.print(f'[link={api["ApiEndpoint"]}/log]API endpoint[/link] already created')
 
         status.start()
         status.update('Event source mapping between queue and lambda setup')
@@ -1072,7 +1130,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         serialize_json(folder_aws_generated_path, f"role_{role['Role']['RoleName']}.json", role)
     except iam_client.exceptions.EntityAlreadyExistsException:
         console.print(f"[yellow]Role {role_name} already created")
-    iam_client.attach_role_policy(RoleName=role_name,PolicyArn=policy['Arn'])
+    iam_client.attach_role_policy(RoleName=role_name, PolicyArn=policy['Arn'])
 
     try:
         response = budget_client.create_budget(
@@ -1161,18 +1219,22 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     environment_dict = {
         "production": 'true',
         "configuration_local": 'false',
+        "platform": platform if platform else 'mturk',
         "taskName": task_name,
         "batchName": batch_name,
         "region": aws_region,
         "bucket": aws_private_bucket,
         "aws_id_key": aws_worker_access_id,
         "aws_secret_key": aws_worker_access_secret,
+        "prolific_completion_code": prolific_completion_code if prolific_completion_code else 'false',
         "bing_api_key": bing_api_key,
+        "fake_json_token": fake_json_token,
         "log_on_console": 'false',
         "log_server_config": f"{server_config}",
         "table_acl_name": f"{table_acl_name}",
         "table_data_name": f"{table_data_name}",
         "table_log_name": f"{table_logging_name}",
+        "debug_mode": f"{debug_mode}"
     }
 
     os.makedirs(folder_build_env_path, exist_ok=True)
@@ -1182,6 +1244,11 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         for (env_var, value) in environment_dict.items():
             if env_var == 'production' or env_var == 'configuration_local' or env_var == 'log_on_console':
                 print(f"\t{env_var}: {value},", file=file)
+            elif env_var == 'prolific_completion_code':
+                if value != 'false':
+                    print(f"\t{env_var}: \"{value}\",", file=file)
+                else:
+                    print(f"\t{env_var}: {value},", file=file)
             else:
                 print(f"\t{env_var}: \"{value}\",", file=file)
         print("};", file=file)
@@ -1197,18 +1264,22 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     environment_dict = {
         "production": 'false',
         "configuration_local": 'false',
+        "platform": platform if platform else 'mturk',
         "taskName": task_name,
         "batchName": batch_name,
         "region": aws_region,
         "bucket": aws_private_bucket,
         "aws_id_key": aws_worker_access_id,
         "aws_secret_key": aws_worker_access_secret,
+        "prolific_completion_code": prolific_completion_code if prolific_completion_code else 'false',
         "bing_api_key": bing_api_key,
+        "fake_json_token": fake_json_token,
         "log_on_console": 'true',
         "log_server_config": f"{server_config}",
         "table_acl_name": f"{table_acl_name}",
         "table_data_name": f"{table_data_name}",
-        "table_log_name": f"{table_logging_name}"
+        "table_log_name": f"{table_logging_name}",
+        "debug_mode": f"{debug_mode}"
     }
 
     with open(environment_development, 'w') as file:
@@ -1216,6 +1287,11 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         for (env_var, value) in environment_dict.items():
             if env_var == 'production' or env_var == 'configuration_local' or env_var == 'log_on_console':
                 print(f"\t{env_var}: {value},", file=file)
+            elif env_var == 'prolific_completion_code':
+                if value != 'false':
+                    print(f"\t{env_var}: \"{value}\",", file=file)
+                else:
+                    print(f"\t{env_var}: {value},", file=file)
             else:
                 print(f"\t{env_var}: \"{value}\",", file=file)
         print("};", file=file)
@@ -1291,6 +1367,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                     "allow_back": False,
                     "questions": [
                         {
+                            "index": 0,
                             "name": "age",
                             "text": "What is your age range?",
                             "type": "mcq",
@@ -1316,6 +1393,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                     "allow_back": False,
                     "questions": [
                         {
+                            "index": 0,
                             "name": "farmers",
                             "text": "If three farmers can plant three trees in three hours, how long would it take nine farmers to plant nine trees?"
                         }
@@ -1354,12 +1432,16 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                         }
                     ]
                 },
-                "gold_question_check": False,
-                "style": False
+                "style": {
+                    "type": "list",
+                    "position": "middle",
+                    "orientation": "vertical",
+                    "separator": False
+                }
             }]
             print(json.dumps(sample_dimensions, indent=4), file=file)
 
-    filename = "instructions_main.json"
+    filename = "instructions_general.json"
     if os.path.exists(f"{folder_build_task_path}{filename}"):
         console.print(f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
     else:
@@ -1374,7 +1456,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             ]
             print(json.dumps(sample_instructions, indent=4), file=file)
 
-    filename = "instructions_dimensions.json"
+    filename = "instructions_evaluation.json"
     if os.path.exists(f"{folder_build_task_path}{filename}"):
         console.print(
             f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
@@ -1415,9 +1497,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         with open(f"{folder_build_task_path}{filename}", 'w') as file:
             sample_settings = {
                 "modality": f"pointwise",
-                "task_name": f"{task_name}",
-                "batch_name": f"{batch_name}",
                 "allowed_tries": 10,
+                "time_assessment": 2,
                 "time_check_amount": 3,
                 "attributes": [
                     {
@@ -1441,7 +1522,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 "countdown_attribute_values": [],
                 "countdown_position_values": [],
                 "logger": False,
-                "logOption": {
+                "logger_option": {
                     "button": {
                         "general": False,
                         "click": False
@@ -1485,7 +1566,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                         "resize": False
                     }
                 },
-                "serverEndpoint": logging_endpoint,
+                "server_endpoint": logging_endpoint,
                 "messages": ["You have already started this task without finishing it"]
             }
             print(json.dumps(sample_settings, indent=4), file=file)
@@ -1498,7 +1579,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         with open(f"{folder_build_task_path}{filename}", 'w') as file:
             sample_worker_checks = {
                 "block": True,
-                "analysis": True,
                 "blacklist": [],
                 "whitelist": [],
                 "blacklist_batches": [],
@@ -1538,7 +1618,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         print("", file=file)
         wrapper = textwrap.TextWrapper(initial_indent='\t\t', subsequent_indent='\t\t')
         print(wrapper.fill("index: number;"), file=file)
-        print(wrapper.fill("countdownExpired: boolean;"), file=file)
         for attribute, value in sample_element.items():
             try:
                 element = json.loads(value)
@@ -1557,13 +1636,15 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                     f"Attribute with name: [cyan underline]{attribute}[/cyan underline] and type: {type(element)} found")
             except (TypeError, ValueError) as e:
                 if isinstance(value, list):
-                    print(wrapper.fill(f"{attribute}: Array<String>;"), file=file)
+                    if isinstance(value[0], dict):
+                        print(wrapper.fill(f"{attribute}: Array<JSON>;"), file=file)
+                    else:
+                        print(wrapper.fill(f"{attribute}: Array<String>;"), file=file)
                 elif isinstance(value, int) or isinstance(value, float):
                     print(wrapper.fill(f"{attribute}: number;"), file=file)
                 else:
                     print(wrapper.fill(f"{attribute}: string;"), file=file)
-                console.print(
-                    f"Attribute with name: [cyan underline]{attribute}[/cyan underline] and type: {type(value)} found")
+                console.print(f"Attribute with name: [cyan underline]{attribute}[/cyan underline] and type: {type(value)} found")
         print("", file=file)
         print(wrapper.fill(f"constructor ("), file=file)
         wrapper = textwrap.TextWrapper(initial_indent='\t\t\t', subsequent_indent='\t\t\t')
@@ -1579,23 +1660,21 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 element = json.loads(value)
                 if isinstance(element, dict):
                     print(wrapper.fill(f"this.{attribute} = new Array<JSON>()"), file=file)
-                    print(wrapper.fill(
-                        f"for (let index = 0; index < data[\"{attribute}\"].length; index++) this.{attribute}.push(data[\"{attribute}\"][index])"),
-                        file=file)
+                    print(wrapper.fill(f"for (let index = 0; index < data[\"{attribute}\"].length; index++) this.{attribute}.push(data[\"{attribute}\"][index])"), file=file)
                 elif isinstance(element, list):
                     print(wrapper.fill(f"this.{attribute} = new Array<String>()"), file=file)
-                    print(wrapper.fill(
-                        f"for (let index = 0; index < data[\"{attribute}\"].length; index++) this.{attribute}.push(data[\"{attribute}\"])"),
-                        file=file)
+                    print(wrapper.fill(f"for (let index = 0; index < data[\"{attribute}\"].length; index++) this.{attribute}.push(data[\"{attribute}\"])"), file=file)
                 else:
                     wrapper = textwrap.TextWrapper(initial_indent='\t\t\t', subsequent_indent='\t\t\t')
                     print(wrapper.fill(f"this.{attribute} = data[\"{attribute}\"]"), file=file)
             except (TypeError, ValueError) as e:
                 if isinstance(value, list):
-                    print(wrapper.fill(f"this.{attribute} = new Array<String>()"), file=file)
-                    print(wrapper.fill(
-                        f"for (let index = 0; index < data[\"{attribute}\"].length; index++) this.{attribute}.push(data[\"{attribute}\"])"),
-                        file=file)
+                    if isinstance(value[0], dict):
+                        print(wrapper.fill(f"this.{attribute} = new Array<JSON>()"), file=file)
+                        print(wrapper.fill(f"for (let index = 0; index < data[\"{attribute}\"].length; index++) this.{attribute}.push(data[\"{attribute}\"][index])"), file=file)
+                    else:
+                        print(wrapper.fill(f"this.{attribute} = new Array<String>()"), file=file)
+                        print(wrapper.fill(f"for (let index = 0; index < data[\"{attribute}\"].length; index++) this.{attribute}.push(data[\"{attribute}\"])"), file=file)
                 else:
                     wrapper = textwrap.TextWrapper(initial_indent='\t\t\t', subsequent_indent='\t\t\t')
                     print(wrapper.fill(f"this.{attribute} = data[\"{attribute}\"]"), file=file)
@@ -1673,41 +1752,86 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         console.print("Class built")
         console.print(f"Path: [italic]{filename}[/italic]")
 
-    console.rule(f"22 - Amazon Mechanical Turk Landing Page")
-    status.start()
-    status.update(f"Istantiating Mako model")
-    time.sleep(2)
+    if platform=='mturk':
 
-    model = Template(filename=f"{folder_build_mturk_path}model.html")
-    mturk_page = model.render(
-        aws_region=aws_region,
-        aws_deploy_bucket=aws_deploy_bucket,
-        task_name=task_name,
-        batch_name=batch_name
-    )
-    mturk_page_file = f"{folder_build_mturk_path}index.html"
-    with open(mturk_page_file, 'w') as file:
-        print(mturk_page, file=file)
+        console.rule(f"22 - Amazon Mechanical Turk Landing Page")
+        status.start()
+        status.update(f"Istantiating Mako model")
+        time.sleep(2)
 
-    console.print(f"Model istantiated")
-    console.print(f"Path: {mturk_page_file}")
+        model = Template(filename=f"{folder_build_mturk_path}model.html")
+        mturk_page = model.render(
+            aws_region=aws_region,
+            aws_deploy_bucket=aws_deploy_bucket,
+            task_name=task_name,
+            batch_name=batch_name
+        )
+        mturk_page_file = f"{folder_build_mturk_path}index.html"
+        with open(mturk_page_file, 'w') as file:
+            print(mturk_page, file=file)
 
-    status.update(f"Generating tokens")
+        console.print(f"Model istantiated")
+        console.print(f"Path: {mturk_page_file}")
 
-    hits_file = f"{folder_build_task_path}hits.json"
-    mturk_tokens_file = f"{folder_build_mturk_path}tokens.csv"
-    console.print(f"Loading [cyan underline]hits.json[/cyan underline] file")
-    console.print(f"Path: [ital]{hits_file}")
-    hits = read_json(hits_file)
-    token_df = pd.DataFrame(columns=["token_input", "token_output"])
-    for hit in hits:
-        token_df = token_df.append({
-            "token_input": hit['token_input'],
-            "token_output": hit['token_output']
-        }, ignore_index=True)
-    token_df.to_csv(mturk_tokens_file, index=False)
-    console.print(f"Tokens for {len(hits)} hits generated")
-    console.print(f"Path: [italic]{mturk_tokens_file}")
+        status.update(f"Generating tokens")
+
+        hits_file = f"{folder_build_task_path}hits.json"
+        mturk_tokens_file = f"{folder_build_mturk_path}tokens.csv"
+        console.print(f"Loading [cyan underline]hits.json[/cyan underline] file")
+        console.print(f"Path: [ital]{hits_file}")
+        hits = read_json(hits_file)
+        token_df = pd.DataFrame(columns=["tokens"])
+
+        for hit in hits:
+            tokens = ""
+            for hit in hits:
+                tokens = f"{tokens};{hit['token_output']}"
+            tokens = tokens[1:]
+            token_df = token_df.append({
+                "tokens": tokens
+            }, ignore_index=True)
+        token_df.to_csv(mturk_tokens_file, index=False)
+        console.print(f"Tokens for {len(hits)} hits generated")
+        console.print(f"Path: [italic]{mturk_tokens_file}")
+
+    if platform=='toloka':
+
+        console.rule(f"22 - Toloka HTML Interface")
+        status.start()
+        status.update(f"Istantiating Mako model")
+        time.sleep(2)
+
+        model = Template(filename=f"{folder_build_toloka_path}model.html")
+        toloka_page = model.render(
+            aws_region=aws_region,
+            aws_deploy_bucket=aws_deploy_bucket,
+            task_name=task_name,
+            batch_name=batch_name
+        )
+        toloka_page_file = f"{folder_build_toloka_path}interface.html"
+        with open(toloka_page_file, 'w') as file:
+            print(toloka_page, file=file)
+
+        console.print(f"Model istantiated")
+        console.print(f"Path: {toloka_page_file}")
+
+        hits_file = f"{folder_build_task_path}hits.json"
+        toloka_tokens_file = f"{folder_build_toloka_path}tokens.tsv"
+        console.print(f"Loading [cyan underline]hits.json[/cyan underline] file")
+        console.print(f"Path: [ital]{hits_file}")
+        hits = read_json(hits_file)
+        token_df = pd.DataFrame(columns=["INPUT:token_input"])
+
+        # for hit in hits:
+        #     token_df = token_df.append({
+        #         "INPUT:token_input": hit['token_input']
+        #     }, ignore_index=True)
+        #     token_df = token_df.append({
+        #         "INPUT:token_input": None
+        #     }, ignore_index=True)
+        # token_df.to_csv(toloka_tokens_file, sep="\t", index=False)
+        console.print(f"Token for the current batch chosen")
+        console.print(f"Path: [italic]{toloka_tokens_file}")
 
     console.rule(f"23 - Task [cyan underline]{task_name}[/cyan underline]/[yellow underline]{batch_name}[/yellow underline] build")
     status.update(f"Executing build command, please wait")
@@ -1783,6 +1907,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     folder_tasks_batch_deploy_path = f"{folder_tasks_batch_path}deploy/"
     folder_tasks_batch_env_path = f"{folder_tasks_batch_path}environments/"
     folder_tasks_batch_mturk_path = f"{folder_tasks_batch_path}mturk/"
+    folder_tasks_batch_toloka_path = f"{folder_tasks_batch_path}toloka/"
     folder_tasks_batch_task_path = f"{folder_tasks_batch_path}task/"
     folder_tasks_batch_config_path = f"{folder_tasks_batch_path}config/"
     folder_tasks_batch_skeleton_path = f"{folder_tasks_batch_path}skeleton/"
@@ -1795,11 +1920,18 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     else:
         console.print("[yellow]Deploy folder already present")
     console.print(f"Path: [italic]{folder_tasks_batch_deploy_path}")
-    if not os.path.exists(folder_tasks_batch_mturk_path):
-        console.print("[green]Amazon Mechanical Turk assets folder created")
-        os.makedirs(folder_tasks_batch_mturk_path, exist_ok=True)
-    else:
-        console.print("[yellow]Amazon Mechanical Turk assets folder already present")
+    if platform=='mturk':
+        if not os.path.exists(folder_tasks_batch_mturk_path):
+            console.print("[green]Amazon Mechanical Turk assets folder created")
+            os.makedirs(folder_tasks_batch_mturk_path, exist_ok=True)
+        else:
+            console.print("[yellow]Amazon Mechanical Turk assets folder already present")
+    if platform == 'toloka':
+        if not os.path.exists(folder_tasks_batch_toloka_path):
+            console.print("[green]Toloka assets folder created")
+            os.makedirs(folder_tasks_batch_toloka_path, exist_ok=True)
+        else:
+            console.print("[yellow]Toloka assets folder already present")
     if not os.path.exists(folder_tasks_batch_env_path):
         console.print("[green]Environments folder created")
         os.makedirs(folder_tasks_batch_env_path, exist_ok=True)
@@ -1856,15 +1988,36 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     destination = f"{folder_tasks_batch_env_path}environment.prod.ts"
     copy(source, destination, "Prod Environment")
 
-    console.print(f"Copying files for [blue underline on white]{folder_build_mturk_path}[/blue underline on white] folder")
+    if platform=='toloka':
 
-    source = f"{folder_build_mturk_path}index.html"
-    destination = f"{folder_tasks_batch_mturk_path}index.html"
-    copy(source, destination, "Amazon Mechanical Turk landing page")
+        console.print(f"Copying files for [blue underline on white]{folder_build_toloka_path}[/blue underline on white] folder")
 
-    source = f"{folder_build_mturk_path}tokens.csv"
-    destination = f"{folder_tasks_batch_mturk_path}tokens.csv"
-    copy(source, destination, "Hits tokens")
+        source = f"{folder_build_toloka_path}interface.html"
+        destination = f"{folder_tasks_batch_toloka_path}interface.html"
+        copy(source, destination, "Toloka Page Markup")
+
+        source = f"{folder_build_toloka_path}interface.css"
+        destination = f"{folder_tasks_batch_toloka_path}interface.css"
+        copy(source, destination, "Toloka Page Stylesheet")
+
+        source = f"{folder_build_toloka_path}interface.js"
+        destination = f"{folder_tasks_batch_toloka_path}interface.js"
+        copy(source, destination, "Toloka Page Javascript")
+
+        source = f"{folder_build_toloka_path}tokens.tsv"
+        destination = f"{folder_tasks_batch_toloka_path}tokens.tsv"
+        copy(source, destination, "Hits tokens")
+
+    if platform == 'mturk':
+        console.print(f"Copying files for [blue underline on white]{folder_build_mturk_path}[/blue underline on white] folder")
+
+        source = f"{folder_build_mturk_path}index.html"
+        destination = f"{folder_tasks_batch_mturk_path}index.html"
+        copy(source, destination, "Amazon Mechanical Turk landing page")
+
+        source = f"{folder_build_mturk_path}tokens.csv"
+        destination = f"{folder_tasks_batch_mturk_path}tokens.csv"
+        copy(source, destination, "Hits tokens")
 
     if bool(deploy_config):
         console.print(f"Copying files for [blue underline on white]{folder_build_task_path}[/blue underline on white] folder")
@@ -1877,12 +2030,12 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         destination = f"{folder_tasks_batch_task_path}dimensions.json"
         copy(source, destination, "Dimensions")
 
-        source = f"{folder_build_task_path}instructions_dimensions.json"
-        destination = f"{folder_tasks_batch_task_path}instructions_dimensions.json"
+        source = f"{folder_build_task_path}instructions_evaluation.json"
+        destination = f"{folder_tasks_batch_task_path}instructions_evaluation.json"
         copy(source, destination, "Assessment Instructions")
 
-        source = f"{folder_build_task_path}instructions_main.json"
-        destination = f"{folder_tasks_batch_task_path}instructions_main.json"
+        source = f"{folder_build_task_path}instructions_general.json"
+        destination = f"{folder_tasks_batch_task_path}instructions_general.json"
         copy(source, destination, "General Instructions")
 
         source = f"{folder_build_task_path}questionnaires.json"
@@ -1959,12 +2112,12 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         key = f"{s3_private_task_path}hits.json"
         upload(iam_path, aws_private_bucket, key, "Hits", "application/json", 'bucket-owner-full-control')
 
-        iam_path = f"{folder_tasks_batch_task_path}instructions_dimensions.json"
-        key = f"{s3_private_task_path}instructions_dimensions.json"
+        iam_path = f"{folder_tasks_batch_task_path}instructions_evaluation.json"
+        key = f"{s3_private_task_path}instructions_evaluation.json"
         upload(iam_path, aws_private_bucket, key, "Assessment Instructions", "application/json", 'bucket-owner-full-control')
 
-        iam_path = f"{folder_tasks_batch_task_path}instructions_main.json"
-        key = f"{s3_private_task_path}instructions_main.json"
+        iam_path = f"{folder_tasks_batch_task_path}instructions_general.json"
+        key = f"{s3_private_task_path}instructions_general.json"
         upload(iam_path, aws_private_bucket, key, "General Instructions", "application/json", 'bucket-owner-full-control')
 
         iam_path = f"{folder_tasks_batch_task_path}questionnaires.json"

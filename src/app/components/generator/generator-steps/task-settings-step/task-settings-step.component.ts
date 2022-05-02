@@ -1,13 +1,17 @@
-import {ChangeDetectorRef, Component, EventEmitter, OnInit, Output} from '@angular/core';
-import {S3Service} from 'src/app/services/s3.service';
-import {ConfigService} from "../../../../services/config.service";
-import {HitsSolverService} from "src/app/services/hits-solver.service";
-import {LocalStorageService} from "../../../../services/localStorage.service";
+/* Core */
+import {ChangeDetectorRef, Component, EventEmitter, OnInit, Output} from '@angular/core'
+import {FormArray, FormBuilder, FormGroup, Validators} from "@angular/forms"
+/* Services */
+import {S3Service} from 'src/app/services/aws/s3.service'
+import {ConfigService} from "../../../../services/config.service"
+import {LocalStorageService} from "../../../../services/localStorage.service"
 import {NgxUiLoaderService} from 'ngx-ui-loader';
-import {FormArray, FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
-import {Attribute, DocCategory, SettingsTask} from "../../../../models/settingsTask";
-import {ReadFile, ReadMode} from "ngx-file-helpers";
-import {Hit} from "../../../../models/hit";
+import {UtilsService} from "../../../../services/utils.service"
+import {HitsSolverService} from "src/app/services/hits-solver.service";
+import {ReadFile, ReadMode} from "ngx-file-helpers"
+/* Models */
+import {Hit} from "../../../../models/skeleton/hit"
+import {Attribute, DocCategory, TaskSettings} from "../../../../models/skeleton/taskSettings"
 
 interface AnnotatorType {
     value: string;
@@ -41,10 +45,11 @@ export class TaskSettingsStepComponent implements OnInit {
     HitsSolverService: HitsSolverService;
     /* Service to provide loading screens */
     ngxService: NgxUiLoaderService;
+    utilsService: UtilsService;
 
     /* STEP #6 - Task Settings */
 
-    dataStored: SettingsTask
+    dataStored: TaskSettings
     formStep: FormGroup;
 
     annotatorTypes: AnnotatorType[] = [
@@ -106,6 +111,7 @@ export class TaskSettingsStepComponent implements OnInit {
         S3Service: S3Service,
         ngxService: NgxUiLoaderService,
         HitsSolverService: HitsSolverService,
+        utilsService: UtilsService,
         private _formBuilder: FormBuilder,
         private cd: ChangeDetectorRef
     ) {
@@ -116,6 +122,7 @@ export class TaskSettingsStepComponent implements OnInit {
         this.HitsSolverService = HitsSolverService
         this.solverStatus = false
         this.initHitSolver()
+        this.utilsService = utilsService
         this.initializeControls()
     }
 
@@ -158,7 +165,7 @@ export class TaskSettingsStepComponent implements OnInit {
     }
 
     public initializeControls() {
-        this.dataStored = new SettingsTask()
+        this.dataStored = new TaskSettings()
         this.formStep = this._formBuilder.group({
             modality: '',
             allowed_tries: '',
@@ -184,8 +191,8 @@ export class TaskSettingsStepComponent implements OnInit {
             countdown_position_values: this._formBuilder.array([]),
             messages: this._formBuilder.array([]),
             logger: false,
-            logOption: false,
-            serverEndpoint: ''
+            logger_option: false,
+            server_endpoint: ''
         });
         this.hitDimension = 0
         this.errorMessage = ""
@@ -199,11 +206,11 @@ export class TaskSettingsStepComponent implements OnInit {
     public async ngOnInit() {
         let serializedTaskSettings = this.localStorageService.getItem("task-settings")
         if (serializedTaskSettings) {
-            this.dataStored = new SettingsTask(JSON.parse(serializedTaskSettings))
+            this.dataStored = new TaskSettings(JSON.parse(serializedTaskSettings))
         } else {
             this.initializeControls()
             let rawTaskSettings = await this.S3Service.downloadTaskSettings(this.configService.environment)
-            this.dataStored = new SettingsTask(rawTaskSettings)
+            this.dataStored = new TaskSettings(rawTaskSettings)
             this.localStorageService.setItem(`task-settings`, JSON.stringify(rawTaskSettings))
         }
         this.annotatorOptionColors = ['#FFFF7B']
@@ -218,9 +225,9 @@ export class TaskSettingsStepComponent implements OnInit {
             }
         }
         this.formStep = this._formBuilder.group({
-            modality: this.dataStored ? this.dataStored.modality ? this.dataStored.modality : '' : '',
-            allowed_tries: this.dataStored ? this.dataStored.allowed_tries ? this.dataStored.allowed_tries : '' : '',
-            time_check_amount: this.dataStored ? this.dataStored.time_check_amount ? this.dataStored.time_check_amount : '' : '',
+            modality: [this.dataStored ? this.dataStored.modality ? this.dataStored.modality : '' : '', [Validators.required]],
+            allowed_tries: [this.dataStored ? this.dataStored.allowed_tries ? this.dataStored.allowed_tries : '' : '', [Validators.required]],
+            time_check_amount: [this.dataStored ? this.dataStored.time_check_amount ? this.dataStored.time_check_amount : '' : '', [Validators.required]],
             documents: this._formBuilder.group({
                 min_docs_repetitions: 1,
                 doc_categories: this._formBuilder.array([]),
@@ -241,11 +248,11 @@ export class TaskSettingsStepComponent implements OnInit {
             countdown_attribute_values: this._formBuilder.array([]),
             countdown_position_values: this._formBuilder.array([]),
             messages: this._formBuilder.array([]),
-            logger: !!this.dataStored.log_enable,
-            logOption: this.dataStored.log_option,
-            serverEndpoint: this.dataStored.log_server_endpoint
+            logger: !!this.dataStored.logger_enable,
+            logger_option: this.dataStored.logger_options,
+            server_endpoint: [this.dataStored.logger_server_endpoint ? this.dataStored.logger_server_endpoint ? this.dataStored.logger_server_endpoint : '' : '', Validators.required]
         });
-        if(this.dataStored.modality) this.emitModality(this.dataStored.modality)
+        if (this.dataStored.modality) this.emitModality(this.dataStored.modality)
         if (this.dataStored.messages) if (this.dataStored.messages.length > 0) this.dataStored.messages.forEach((message, messageIndex) => this.addMessage(message))
         if (this.dataStored.annotator) if (this.dataStored.annotator.type == "options") this.dataStored.annotator.values.forEach((optionValue, optionValueIndex) => this.addOptionValue(optionValue))
         if (this.dataStored.countdown_time >= 0) {
@@ -290,7 +297,7 @@ export class TaskSettingsStepComponent implements OnInit {
             this.updateHitsFile(hits)
         }
     }
-    
+
     emitModality(data) {
         this.modalityEmitter.emit(data['value'])
     }
@@ -311,17 +318,32 @@ export class TaskSettingsStepComponent implements OnInit {
         this.updateDocsFile(docs)
     }
 
-    updateLogOption(el: string, action: string) {
-        let truthValue = this.formStep.get('logOption').value[el][action] != true;
+    updateLogger() {
+        if (this.formStep.get('logger').value == true) {
+            this.formStep.get('server_endpoint').addValidators([Validators.required])
+        } else {
+            this.formStep.get('server_endpoint').clearValidators()
+        }
+        this.formStep.get('server_endpoint').updateValueAndValidity()
+    }
+
+    updateLoggerOption(el: string, action: string) {
+        let truthValue = this.formStep.get('logger_option').value[el][action] != true;
         if (action == 'general') {
-            for (let key in this.formStep.get('logOption').value[el])
-                this.formStep.get('logOption').value[el][key] = truthValue
-        } else
-            this.formStep.get('logOption').value[el][action] = truthValue
+            for (let key in this.formStep.get('logger_option').value[el]) {
+                let value = this.formStep.get('logger_option').value
+                value[el][key] = truthValue
+                this.formStep.get('logger_option').setValue(value)
+            }
+        } else {
+            let value = this.formStep.get('logger_option').value
+            value[el][action] = truthValue
+            this.formStep.get('logger_option').setValue(value)
+        }
     }
 
     updateServerEndpoint() {
-        return this.formStep.get('serverEndpoint').value
+        return this.formStep.get('server_endpoint').value
     }
 
     updateHitsFile(hits = null) {
@@ -419,19 +441,19 @@ export class TaskSettingsStepComponent implements OnInit {
         if(this.docsDetected > 0){
             let docs = JSON.parse(JSON.stringify(this.docsParsed))
             let doc_sample = docs[0]
-         
+
             for(let attribute in doc_sample){
                     if(!(attribute in this.docsCategories)){
                         this.docsCategories.push(attribute)
                         this.docsCategoriesValues[attribute] = []
                     }
             }
-        
+
             for (let doc of docs){
                 Object.entries(doc).forEach(
                     ([attribute, value]) => {
                         if(this.docsCategories.includes(attribute)){
-                            if(!this.docsCategoriesValues[attribute].includes(value)) 
+                            if(!this.docsCategoriesValues[attribute].includes(value))
                                 this.docsCategoriesValues[attribute].push(value)
                         }
                     }
@@ -445,7 +467,7 @@ export class TaskSettingsStepComponent implements OnInit {
             )
 
             let VALUES_LIMIT = 6
-            
+
             this.docsCategories.forEach(
                 category => {
                     // The interface shows only the attributes which number of values that doesn't exceed the VALUES_LIMIT
@@ -460,7 +482,7 @@ export class TaskSettingsStepComponent implements OnInit {
                     category.get('selected').disable()
             }
             this.resetWorkerAssignment()
-        
+
             if(this.docCategories().length == 0) {
                 this.docsDetected = 0
                 this.errorMessage = "There's no category with a balanced number of documents."
@@ -548,7 +570,7 @@ export class TaskSettingsStepComponent implements OnInit {
         }
         for(let doc of docsParsed){
             for(let attr of attributes){
-                if(!attributeValues[attr].includes(doc[attr])) 
+                if(!attributeValues[attr].includes(doc[attr]))
                     attributeValues[attr].push(doc[attr])
             }
         }
@@ -631,7 +653,7 @@ export class TaskSettingsStepComponent implements OnInit {
             this.hitDimension = 0
         }
         if(hitDimensions.length > 0) {
-            // Requester has chosen at least 1 one categories from the list 
+            // Requester has chosen at least 1 one categories from the list
             if(hitDimensions.every((val, i, arr) => val == arr[0]) && hitDimensions[0] > 0){
                 // All the values in the hitDimensions array are equals
                 this.hitDimension = hitDimensions[0]
@@ -642,7 +664,7 @@ export class TaskSettingsStepComponent implements OnInit {
                 let min_docs_rep = this.documentsOptions().get('min_docs_repetitions').value
                 let min_workers_number = Math.ceil((this.docsDetected * min_docs_rep) / this.hitDimension)
 
-                let workers_number = this.documentsOptions().get('workers_number') 
+                let workers_number = this.documentsOptions().get('workers_number')
                 workers_number.setValue(min_workers_number)
                 workers_number.addValidators(Validators.min(min_workers_number))
             } else {
@@ -663,7 +685,7 @@ export class TaskSettingsStepComponent implements OnInit {
             category.get('selected').setValue(false)
             category.get('worker_assignment').setValue(0)
         }
-        let workers_number = this.documentsOptions().get('workers_number') 
+        let workers_number = this.documentsOptions().get('workers_number')
         workers_number.clearValidators()
         workers_number.addValidators(Validators.min(1))
         this.solutionStatus = ''
@@ -672,7 +694,7 @@ export class TaskSettingsStepComponent implements OnInit {
     updateWorkerNumber(min_docs_rep){
         if(this.hitDimension > 0){
             let min_workers_number = Math.ceil((this.docsDetected * min_docs_rep) / this.hitDimension)
-            let workers_number = this.documentsOptions().get('workers_number') 
+            let workers_number = this.documentsOptions().get('workers_number')
             workers_number.setValue(min_workers_number)
             workers_number.addValidators(Validators.min(min_workers_number))
         }
@@ -684,24 +706,24 @@ export class TaskSettingsStepComponent implements OnInit {
         let selectedWorkerAssignment = []
         for (let category of this.docCategories().controls){
             if(category.get('selected').value == true){
-                let name = category.get('name').value 
+                let name = category.get('name').value
                 let worker_assignment = category.get('worker_assignment').value
                 selectedCategories.push(name)
                 selectedWorkerAssignment[name] = worker_assignment
             }
         }
         let workers_number = this.documentsOptions().get('workers_number').value
-        let req = this.HitsSolverService.createRequest(this.docsParsed, this.identificationAttribute, min_docs_rep, 0, 
+        let req = this.HitsSolverService.createRequest(this.docsParsed, this.identificationAttribute, min_docs_rep, 0,
                                         selectedCategories, selectedWorkerAssignment, workers_number);
-        
+
         console.log(JSON.stringify(req))
-        
+
         this.ngxService.startBackground()
         this.HitsSolverService.submitRequest(req).subscribe(response => {
             this.solutionStatus = "Request has been sent to the solver"
             let task_id = response.task_id;
             let url = response.url;
-            
+
             /* This function check */
             this.checkHitStatus(url, task_id, this.docsParsed, 2000);
         },
@@ -717,9 +739,9 @@ export class TaskSettingsStepComponent implements OnInit {
      * to the HitSolver. This process continues until a solution is available.
      * When a solution is available, then, a new array of hit is created in the format of the
      * framework.
-     * @param url 
-     * @param task_id 
-     * @param docs 
+     * @param url
+     * @param task_id
+     * @param docs
      * @param timeout
      */
     public checkHitStatus(url: string, task_id: string, docs: Array<JSON>, timeout: number){
@@ -733,7 +755,7 @@ export class TaskSettingsStepComponent implements OnInit {
                 this.HitsSolverService.getSolution(task_id).subscribe(response => {
                     let receivedHit = this.HitsSolverService.createHits(response, docs, this.identificationAttribute);
                     this.loadHitsFromResponse(receivedHit)
-                    
+
                     this.ngxService.stopBackground()
                     this.solutionStatus = "Solution from the solver has been received"
                 })
@@ -743,22 +765,27 @@ export class TaskSettingsStepComponent implements OnInit {
 
     resetCountdown() {
         if (this.formStep.get('setCountdownTime').value == false) {
-            this.formStep.get('countdown_time').setValue(false)
+            this.formStep.get('countdown_time').setValue('')
             this.formStep.get('countdown_time').clearValidators();
             this.formStep.get('countdown_time').updateValueAndValidity();
+            this.formStep.get('countdown_behavior').setValue('')
+            this.formStep.get('countdown_behavior').clearValidators();
+            this.formStep.get('countdown_behavior').updateValueAndValidity();
         } else {
-            this.formStep.get('countdown_time').setValidators([Validators.required, this.positiveOrZeroNumber.bind(this)]);
+            this.formStep.get('countdown_time').setValidators([Validators.required, this.utilsService.positiveOrZeroNumber.bind(this)]);
             this.formStep.get('countdown_time').updateValueAndValidity();
+            this.formStep.get('countdown_behavior').setValidators([Validators.required]);
+            this.formStep.get('countdown_behavior').updateValueAndValidity();
         }
         this.resetAdditionalTimes()
     }
 
     resetAdditionalTimes() {
         if (this.formStep.get('setAdditionalTimes').value == false) {
-            this.formStep.get('countdown_modality').setValue(false)
+            this.formStep.get('countdown_modality').setValue('')
             this.formStep.get('countdown_modality').clearValidators();
             this.formStep.get('countdown_modality').updateValueAndValidity();
-            this.formStep.get('countdown_attribute').setValue(false)
+            this.formStep.get('countdown_attribute').setValue('')
             this.formStep.get('countdown_attribute').clearValidators()
             this.formStep.get('countdown_attribute').updateValueAndValidity()
             this.countdownAttributeValues().clear()
@@ -841,8 +868,8 @@ export class TaskSettingsStepComponent implements OnInit {
     setAnnotatorType() {
         if (this.annotator().get('type').value == 'options' && this.annotatorOptionValues().length == 0) {
             this.annotatorOptionValues().push(this._formBuilder.group({
-                label: '',
-                color: ''
+                label: ['', [Validators.required]],
+                color: ['', [Validators.required]],
             }))
         }
     }
@@ -852,15 +879,17 @@ export class TaskSettingsStepComponent implements OnInit {
             attributeControl.get('annotate').setValue(false)
         }
         if (this.formStep.get('setAnnotator').value == false) {
+            this.annotator().get('type').setValue('')
             this.annotator().get('type').clearValidators();
             this.annotator().get('type').clearAsyncValidators();
-            this.annotatorOptionValues().clear()
+            for (let index = 0; index < this.annotatorOptionValues().controls.length; index++) {
+                this.removeAnnotatorOptionValue(index)
+            }
         } else {
-            this.annotator().get('type').setValidators([Validators.required, this.positiveNumber.bind(this)]);
+            this.annotator().get('type').setValidators([Validators.required]);
+            this.setAnnotatorType()
         }
         this.annotator().get('type').updateValueAndValidity()
-        this.annotatorOptionValues().updateValueAndValidity()
-        this.setAnnotatorType()
         this.resetHitAttributes()
     }
 
@@ -871,8 +900,8 @@ export class TaskSettingsStepComponent implements OnInit {
 
     addOptionValue(option = null as Object) {
         this.annotatorOptionValues().push(this._formBuilder.group({
-            label: option ? option['label'] ? option['label'] : '' : '',
-            color: option ? option['color'] ? option['color'] : '' : ''
+            label: [option ? option['label'] ? option['label'] : '' : '', [Validators.required]],
+            color: [option ? option['color'] ? option['color'] : '' : '', [Validators.required]],
         }))
         if (!option) {
             this.annotatorOptionColors.push("")
@@ -893,7 +922,7 @@ export class TaskSettingsStepComponent implements OnInit {
 
     addMessage(message = null) {
         this.messages().push(this._formBuilder.group({
-            message: message ? message : ''
+            message: [message ? message : '', [Validators.required]]
         }))
     }
 
@@ -965,28 +994,6 @@ export class TaskSettingsStepComponent implements OnInit {
 
         this.localStorageService.setItem(`task-settings`, JSON.stringify(taskSettingsJSON))
         this.configurationSerialized = JSON.stringify(taskSettingsJSON)
-    }
-
-    /* |--------- OTHER AMENITIES ---------| */
-
-    public checkFormControl(form: FormGroup, field: string, key: string): boolean {
-        return form.get(field).hasError(key);
-    }
-
-    public positiveOrZeroNumber(control: FormControl) {
-        if (Number(control.value) < 0) {
-            return {invalid: true};
-        } else {
-            return null;
-        }
-    }
-
-    public positiveNumber(control: FormControl) {
-        if (Number(control.value) < 1) {
-            return {invalid: true};
-        } else {
-            return null;
-        }
     }
 
 }

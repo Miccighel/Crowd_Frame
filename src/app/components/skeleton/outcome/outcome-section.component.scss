@@ -1,0 +1,117 @@
+/* |--- OUTCOME SECTION STYLES ---| */
+
+/* |--- General ---| */
+
+ul li {
+  font-size: 1.3em;
+}
+
+p.text-desc {
+  font-size: 1.5em;
+  margin-top: 1%;
+  margin-bottom: 1%;
+}
+
+p.text-desc-small {
+  font-size: 1.3em;
+  margin-top: 1%;
+  margin-bottom: 1%;
+}
+
+.outcome-section {
+  margin: 2% auto;
+}
+
+.outcome-section mat-card {
+  padding-top: 0.01%;
+  padding-bottom: 1.5%;
+  margin: auto;
+}
+
+.outcome-section mat-card-title {
+  text-align: center;
+  text-transform: uppercase;
+  margin: 1% auto 0.5%;
+}
+
+
+.success-title {
+  background-color: #66bb6a;
+  color: white;
+}
+
+.failure-title {
+  color: white;
+  background-color: #ef5350;
+}
+
+.retry-title {
+  background-color: #ff4081;
+  color: white;
+}
+
+.overbooking-title {
+  background-color: #ff8c00;
+  color: white;
+}
+
+.warning-title {
+  background-color: #ff8c00;
+  color: white;
+}
+
+.outcome-section h2 {
+  margin-bottom: 0;
+  text-align: center;
+}
+
+.outcome-section h3 {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.outcome-section h4 {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.outcome-section h6 {
+  margin-top: 0;
+}
+
+.outcome-section div {
+  margin: auto;
+  text-align: center;
+}
+
+#button-completion {
+  font-size: 2em;
+  width: 50%;
+  height: 80px;
+  margin-bottom: 1.5%;
+}
+
+.comment-form {
+  margin-top: 1.5%;
+
+  mat-form-field {
+    width: 100%;
+  }
+}
+
+#comment-button {
+  text-align: center;
+}
+
+.outcome-section .comment-sent-label {
+  text-transform: uppercase;
+  padding: 0.5%;
+  margin-left: 1%;
+  font-weight: bold;
+  color: #66bb6a;
+}
+
+.outcome-section #not-allowed-section {
+  text-align: center;
+  margin: auto;
+}

@@ -1,11 +1,15 @@
+/* Core */
 import {AfterViewInit, Directive, ElementRef, HostListener} from "@angular/core";
+/* Services */
 import {ActionLogger} from "../../services/userActionLogger.service";
+/* Other */
 import {fromEvent} from "rxjs";
 import {buffer, concatMap, debounceTime, filter, map, tap, throttleTime, take} from "rxjs/operators";
 
 @Directive({selector: "button"})
 export class ButtonDirective {
-    constructor(private actionLogger: ActionLogger, private element: ElementRef) {}
+    constructor(private actionLogger: ActionLogger, private element: ElementRef) {
+    }
 
     ngAfterViewInit() {
         if (this.actionLogger.isActive) {
@@ -360,17 +364,18 @@ export class RadioDirective implements AfterViewInit {
 }
 
 @Directive({selector: "app-crowd-xplorer"})
-export class CrowdXplorerDirective{
-    constructor(private actionLogger: ActionLogger, private element: ElementRef) {}
+export class CrowdXplorerDirective {
+    constructor(private actionLogger: ActionLogger, private element: ElementRef) {
+    }
 
     @HostListener('queryEmitter', ['$event'])
-    onQuery(query){
+    onQuery(query) {
         if (this.actionLogger.isActive && this.actionLogger.opt['crowd-xplorer']['query'])
             this.actionLogger.onQuery(query)
     }
 
     @HostListener('resultEmitter', ['$event'])
-    onResults(results){
+    onResults(results) {
         if (this.actionLogger.isActive && this.actionLogger.opt['crowd-xplorer']['result'])
             this.actionLogger.onResult(results)
     }

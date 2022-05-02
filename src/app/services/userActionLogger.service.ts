@@ -1,7 +1,7 @@
 import {HttpClient, HttpHeaders} from "@angular/common/http";
 import {Injectable} from "@angular/core";
 import {SectionService} from "./section.service";
-import {S3Service} from "./s3.service";
+import {S3Service} from "./aws/s3.service";
 import {ConfigService} from "./config.service";
 
 /*
@@ -261,7 +261,7 @@ export class ActionLogger {
             section: this.findSection(),
             startTime: obj.startTime,
             endTime: obj.endTime,
-            selected: document.getSelection().toString()
+            selected: document.getSelection().focusNode.textContent.toString()
         }
         this.log('selection', details)
     }
@@ -275,8 +275,8 @@ export class ActionLogger {
             section: this.findSection(),
             startTimestamp: obj.startTimeStamp,
             endTimestamp: obj.endTimeStamp,
-            x: window.pageXOffset,
-            y: window.pageYOffset
+            x: window.scrollX,
+            y: window.scrollY
         }
         this.log('scroll', details)
     }
@@ -364,7 +364,7 @@ export class ActionLogger {
         })
         let details = {
             section: this.findSection(),
-            urlArray: urlArray
+            urlAmount: urlArray.length
         }
         this.log('queryResults', details)
     }

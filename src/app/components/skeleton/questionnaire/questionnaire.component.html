@@ -1,0 +1,195 @@
+<ng-template matStepLabel>{{this.questionnaire.index}}</ng-template>
+<div class="container" id="questionnaire-{{this.questionnaire.index}}">
+    <form [formGroup]="questionnaireForm">
+        <mat-card>
+
+            <ng-template #questionTemplate let-question>
+
+                <div *ngIf="!question.dropped" class="indent">
+
+                    <ng-container class="questionnaire-body" *ngIf="!question.dropped && handleQuestionDependency(question)">
+
+                        <p class="question-text">{{question.indexFull}} - {{question.text}}<span *ngIf="question.required"> (*)</span></p>
+
+                        <div *ngIf="question.type=='mcq'" class="question-box question-mcq">
+                            <mat-radio-group class="radio-button-group question" formControlName="{{question.nameFull}}_answer">
+                                <mat-radio-button *ngFor="let answer of question.answers; let k=index" class="radio-button" value="{{k}}"><span>{{answer}}</span></mat-radio-button>
+                            </mat-radio-group>
+                            <mat-error *ngIf="this.questionnaireForm.get(question.nameFull.concat('_answer')).touched">
+                                <app-error-message [formField]="this.questionnaireForm.get(question.nameFull.concat('_answer'))"></app-error-message>
+                            </mat-error>
+                        </div>
+
+                        <div *ngIf="question.type=='number'" class="question-box question-number">
+                            <mat-form-field appearance="fill" class="questionnaire-value">
+                                <input *ngIf="!this.question.repeat" matInput type="number" placeholder="Choose a number" min="0" formControlName="{{question.nameFull}}_answer">
+                                <input *ngIf="this.question.repeat" matInput type="number" placeholder="Choose a number" min="0" max="{{this.question.times}}" (change)="this.handleQuestionRepetition(question)"
+                                       formControlName="{{question.nameFull}}_answer">
+                                <mat-error>
+                                    <app-error-message [formField]="this.questionnaireForm.get(question.nameFull.concat('_answer'))"></app-error-message>
+                                </mat-error>
+                            </mat-form-field>
+                        </div>
+
+                        <ng-container *ngIf="question.type=='list'">
+                            <div class="question-box" formGroupName="{{question.nameFull}}_list">
+                                <div *ngFor="let answer of question['answers']; let k=index">
+                                    <mat-checkbox formControlName="{{k}}" (indeterminateChange)="handleCheckbox(question, question.nameFull.concat('_list'))" (change)="handleCheckbox(question, question.nameFull.concat('_list'))">
+                                        {{answer}}
+                                    </mat-checkbox>
+                                </div>
+                            </div>
+                            <mat-form-field appearance="standard" class="questionnaire-value question-checkbox-field">
+                                <input matInput formControlName="{{question.nameFull}}_answer">
+                                <mat-error>
+                                    <app-error-message [formField]="this.questionnaireForm.get(question.nameFull.concat('_answer'))"></app-error-message>
+                                </mat-error>
+                            </mat-form-field>
+                        </ng-container>
+
+                        <div *ngIf="question.type=='dropdown'" class="question-box">
+                            <mat-form-field appearance="fill" class="questionnaire-value">
+                                <mat-label>Value</mat-label>
+                                <mat-select formControlName="{{question.nameFull}}_answer">
+                                    <mat-option *ngFor="let answer of question.answers" [value]="answer">
+                                        {{answer}}
+                                    </mat-option>
+                                </mat-select>
+                                <mat-error>
+                                    <app-error-message [formField]="this.questionnaireForm.get(question.nameFull.concat('_answer'))"></app-error-message>
+                                </mat-error>
+                            </mat-form-field>
+                        </div>
+
+                        <div *ngIf="question.type=='text'|| question.type=='email'" class="question-box">
+                            <mat-form-field appearance="fill" class="questionnaire-value width-100">
+                                <mat-label>Answer</mat-label>
+                                <textarea matInput placeholder="Write your answer here" formControlName="{{question.nameFull}}_answer" rows="2"></textarea>
+                                <mat-error>
+                                    <app-error-message [formField]="this.questionnaireForm.get(question.nameFull.concat('_answer'))"></app-error-message>
+                                </mat-error>
+                            </mat-form-field>
+                        </div>
+
+                        <div *ngIf="question.free_text" class="{{question.required ? 'question-free-text-tall' : 'question-free-text'}}">
+                            <mat-form-field appearance="fill" class="questionnaire-value width-100">
+                                <mat-label>Other</mat-label>
+                                <textarea matInput placeholder="Write any additional detail here" formControlName="{{question.nameFull}}_free_text" rows="2"></textarea>
+                                <mat-error>
+                                    <app-error-message [formField]="this.questionnaireForm.get(question.nameFull.concat('_free_text'))"></app-error-message>
+                                </mat-error>
+                            </mat-form-field>
+                        </div>
+
+
+                        <mat-expansion-panel hideToggle *ngIf="question.detail" class="question-detail" (opened)="question.show_detail = true" (closed)="question.show_detail = false">
+                            <mat-expansion-panel-header class="mat-button">
+                                <mat-panel-title>
+                                    {{question.show_detail ? 'Hide details' : 'Show details'}}
+                                </mat-panel-title>
+                                <mat-panel-description>
+                                    {{question.detail.text}}
+                                </mat-panel-description>
+                            </mat-expansion-panel-header>
+                            <div class="question-detail-element" *ngFor="let element of question.detail.elements; let m=index">
+                                {{element.key}}
+                                <ul>
+                                    <li *ngFor="let item of element.items; let n=index">{{item}}</li>
+                                </ul>
+                            </div>
+                        </mat-expansion-panel>
+                    </ng-container>
+                </div>
+
+                <div *ngIf="question.questions" class="indent">
+                    <!-- Invoke the recursive template. -->
+                    <ng-template ngFor [ngForOf]="question.questions" [ngForTemplate]="questionTemplate">
+                        <!--
+                            NOTE: The "$implicit" property of the ngFor context is what will
+                            be made available to the template ref's implicit let-node binding.
+                        -->
+                    </ng-template>
+                </div>
+
+            </ng-template>
+
+
+            <!-- Standard questionnaire markup -->
+            <mat-card-content *ngIf="questionnaire.type=='standard'" class="questionnaire-standard">
+                <div class="questionnaire-description" *ngIf="questionnaire.description">
+                    <h3 *ngIf="questionnaire.description">{{questionnaire.description}}</h3>
+                </div>
+                <ng-container>
+                    <ng-container *ngFor="let question of this.questionnaire.treeCut.model.questions">
+                        <ng-template [ngTemplateOutlet]="questionTemplate" [ngTemplateOutletContext]="{ $implicit: question}"></ng-template>
+                    </ng-container>
+                </ng-container>
+
+
+            </mat-card-content>
+
+            <!-- CRT questionnaire markup -->
+            <mat-card-content *ngIf="questionnaire.type=='crt'">
+                <div *ngFor="let question of questionnaire.questions; let j=index" class="question-box">
+                    <p class="question-text">{{question.text}}</p>
+                    <mat-form-field appearance="fill" class="questionnaire-value">
+                        <mat-label>Answer</mat-label>
+                        <input matInput type="number" placeholder="0" min="0" max="100" formControlName="{{question.name}}_answer">
+                        <mat-error>
+                            <app-error-message [formField]="this.questionnaireForm.get(question.nameFull.concat('_answer'))"></app-error-message>
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+            </mat-card-content>
+
+            <!-- Likert questionnaire markup -->
+            <mat-card-content *ngIf="questionnaire.type=='likert'" class="questionnaire-matrix">
+                <p *ngIf="questionnaire.description">{{questionnaire.description}}</p>
+                <div class="matrix-header">
+                    <div></div>
+                    <div *ngFor="let mapping of questionnaire.mappings; let k=index">
+                        <span class="matrix-header-text">{{mapping.label}}</span>
+                    </div>
+                </div>
+                <mat-radio-group aria-labelledby="radio-button-label" *ngFor="let question of questionnaire.questions; let m=index" formControlName="{{question.name}}_answer">
+                    <div>
+                        <p class="question-text">{{m + 1}} - {{question.text}}</p>
+                    </div>
+                    <div *ngFor="let mapping of questionnaire.mappings">
+                        <mat-radio-button class="radio-button" value="{{mapping.value}}"></mat-radio-button>
+                    </div>
+                </mat-radio-group>
+            </mat-card-content>
+
+            <!-- Next button markup -->
+            <mat-card-actions>
+                <p class="form-note">
+                    <button mat-flat-button color="primary" matStepperPrevious
+                            *ngIf="this.questionnaire.index>0 && this.questionnaire.allow_back"
+                            [disabled]="this.sectionService.taskCompleted"
+                            (click)="handleQuestionnaireCompletion('Back')">
+                        Back
+                    </button>
+                    <button mat-flat-button color="primary" matStepperNext
+                            *ngIf="
+                            ((this.questionnaire.index < this.task.questionnaireAmountStart - 1) && this.task.documentsAmount==0) ||
+                            ((this.questionnaire.index <= this.task.questionnaireAmountStart - 1) && this.task.documentsAmount>0) ||
+                            (this.questionnaire.index>=this.task.questionnaireAmountStart-1 + this.task.documentsAmount && this.questionnaire.index < this.task.getElementsNumber() && this.task.questionnaireAmountEnd>0)"
+                            [disabled]="!questionnaireForm.valid || this.sectionService.taskCompleted"
+                            (click)="handleQuestionnaireCompletion('Next')">
+                        Next
+                    </button>
+                    <button mat-flat-button color="primary" matStepperNext
+                            *ngIf="
+                            ((this.questionnaire.index >= this.task.questionnaireAmountStart-1) && this.task.documentsAmount==0) ||
+                            (this.questionnaire.index>=this.task.getElementsNumber() && this.task.questionnaireAmountEnd>0)"
+                            [disabled]="!questionnaireForm.valid || this.sectionService.taskCompleted"
+                            (click)="handleQuestionnaireCompletion('Finish')">
+                        Finish
+                    </button>
+                    (*) Answer required to proceed
+                </p>
+            </mat-card-actions>
+        </mat-card>
+    </form>
+</div>

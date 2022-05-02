@@ -1,0 +1,202 @@
+.dimension {
+
+  mat-form-field {
+    width: 100%;
+  }
+
+  margin-bottom: 1%;
+}
+
+.dimension-container {
+  display: flex;
+}
+
+.dimension-content {
+  flex-grow: 1;
+}
+
+.dimension-name {
+  margin-bottom: 1%;
+}
+
+.dimension-description {
+  margin-bottom: 1%;
+}
+
+.dimension-description p {
+  margin-bottom: 0;
+  margin-top: 0.5%;
+}
+
+.dimension-scale {
+  margin-bottom: 1%;
+}
+
+.dimension-url {
+  margin-bottom: 1%;
+}
+
+.dimension mat-radio-group {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.dimension .magnitude_estimation {
+  font-size: 1.2em;
+}
+
+
+.dimension-matrix-single {
+  border: 2px solid lightgray;
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.dimension-matrix-instructions {
+  margin-top: 3em;
+}
+
+.dimension-matrix-multiple mat-radio-group {
+  padding-top: 10px;
+}
+
+
+.dimension-matrix-container {
+  margin-bottom: 2%;
+}
+
+.dimension-matrix .matrix-header .matrix-header-value, .dimension-matrix .matrix-header .matrix-header-text {
+  position: relative;
+  right: 5px;
+  text-align: center;
+}
+
+.dimension-matrix mat-radio-group {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.dimension-matrix mat-radio-group > div {
+  text-align: center;
+  flex: 1;
+}
+
+.dimension-matrix mat-radio-group .matrix-header-body, .dimension-matrix mat-radio-group .matrix-header-body-wide {
+  font-size: initial;
+  margin-bottom: 1%;
+}
+
+.dimension-matrix mat-radio-group .matrix-header-body-wide {
+  text-align: center;
+}
+
+.dimension-matrix mat-radio-group .matrix-header-body-wide:first-child {
+  margin-left: 15%;
+}
+
+.dimension-matrix mat-radio-group .matrix-value-description {
+
+  .description-main {
+    font-size: 1.2em;
+    padding-bottom: 20px;
+  }
+
+  .description-main-with-sub {
+    border: none;
+    padding-bottom: 0;
+    font-size: 1.1em;
+  }
+
+  text-align: left;
+}
+
+.dimension-matrix .description-sub {
+  p {
+    margin-top: 0;
+  }
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  margin: 0px 0 10px 0px;
+  font-size: 1.1em;
+  padding: 10px 15px 5px 0px;
+}
+
+.dimension-matrix mat-radio-group > div p {
+  font-size: initial;
+}
+
+.dimension-matrix mat-radio-group > div i {
+  margin-top: 10pt;
+  font-size: initial;
+}
+
+.dimension-matrix mat-radio-group > div {
+  text-align: center;
+}
+
+.dimension-matrix .evaluation-instructions {
+  margin-bottom: 2%;
+}
+
+.dimension-matrix p {
+  margin-bottom: 0;
+}
+
+.dimension h2, .instructions h2 {
+  font-weight: lighter;
+}
+
+.dimension-counter {
+  flex-grow: 0;
+  flex-basis: 1%;
+  justify-content: center;
+  align-self: center;
+  vertical-align: top;
+  margin-right: 1%;
+}
+
+/*
+  Pairwise splitted dimension css
+  @AggiunteAbbondo
+*/
+.dimension-content-split {
+  display: table;
+  border-spacing: 2cm 0px;
+  width: 100%;
+  margin-bottom: 30px;
+}
+
+.dimension-split-inside {
+  display: table-cell;
+  margin-bottom: 30px;
+
+}
+
+.spanDocument {
+  font-size: 15px;
+  font-weight: bold;
+  text-align: center;
+  padding-bottom: 20px;
+}
+
+
+.dimension-name-center {
+  text-align: center;
+}
+
+
+.dimension-box {
+  display: table-cell;
+  background-color: #FCFCFC;
+  padding-top: 1px;
+  margin-top: -1px;
+  overflow: hidden;
+  border-radius: 5px;
+  cursor: pointer;
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+}
+
+.test {
+  opacity: 100%;
+  z-index: 110;
+}

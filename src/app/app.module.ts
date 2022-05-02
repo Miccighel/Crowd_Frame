@@ -1,9 +1,8 @@
 /* Core imports */
 import {BrowserModule} from '@angular/platform-browser';
-import {APP_INITIALIZER, Injector, NgModule} from '@angular/core';
+import {APP_INITIALIZER, NgModule} from '@angular/core';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {HttpClientModule} from "@angular/common/http";
-import {createCustomElement} from "@angular/elements";
 /* Reactive forms imports */
 import {ReactiveFormsModule} from "@angular/forms";
 /* Angular Material imports */
@@ -34,8 +33,8 @@ import {MatToolbarModule} from "@angular/material/toolbar";
 import {MatSlideToggleModule} from '@angular/material/slide-toggle';
 /* Components imports */
 import {SkeletonComponent} from "./components/skeleton/skeleton.component";
-import {CrowdXplorer} from "./components/crowd-xplorer/crowd-xplorer.component";
-import {InstructionsComponent, InstructionsDialog} from "./components/instructions/instructions.component";
+import {CrowdXplorer} from "./components/skeleton/document/dimension/search-engine/crowd-xplorer/crowd-xplorer.component";
+import {InstructionsComponent, InstructionsDialog} from "./components/skeleton/instructions/instructions.component";
 import {GeneratorComponent} from './components/generator/generator.component';
 import {LoaderComponent} from './components/loader/loader.component';
 /* Pipes import */
@@ -53,21 +52,30 @@ import {ButtonDirective, CrowdXplorerDirective, InputDirective, RadioDirective, 
 import {SectionService} from "./services/section.service";
 import {from, Observable} from "rxjs";
 import {tap} from "rxjs/operators";
-import {QuestionnaireComponent} from './components/questionnaire/questionnaire.component';
+import {QuestionnaireComponent} from './components/skeleton/questionnaire/questionnaire.component';
 import {WorkerChecksStepComponent} from './components/generator/generator-steps/worker-checks-step/worker-checks-step.component';
 import {QuestionnaireStepComponent} from './components/generator/generator-steps/questionnaire-step/questionnaire-step.component';
-import {InstructionsStepComponent} from './components/generator/generator-steps/instructions-step/instructions-step.component';
+import {InstructionsGeneralStep} from './components/generator/generator-steps/instructions-general-step/instructions-general-step.component';
+import {InstructionsEvaluationStepComponent} from './components/generator/generator-steps/instructions-evaluation-step/instructions-evaluation-step.component';
 import {SearchEngineStepComponent} from './components/generator/generator-steps/search-engine-step/search-engine-step.component';
 import {DimensionsStepComponent} from './components/generator/generator-steps/dimensions-step/dimensions-step.component';
-import { TaskSettingsStepComponent } from './components/generator/generator-steps/task-settings-step/task-settings-step.component';
-import { SummaryStepComponent } from './components/generator/generator-steps/summary-step/summary-step.component';
-import { QuestionComponent } from './components/questionnaire/question/question.component';
+import {TaskSettingsStepComponent} from './components/generator/generator-steps/task-settings-step/task-settings-step.component';
+import {SummaryStepComponent} from './components/generator/generator-steps/summary-step/summary-step.component';
+import {OutcomeSectionComponent} from './components/skeleton/outcome/outcome-section.component';
+import {AnnotatorLawsComponent} from './components/skeleton/document/elements/annotator-laws/annotator-laws.component';
+import {AnnotatorOptionsComponent} from './components/skeleton/document/elements/annotator-options/annotator-options.component';
+import {ElementPointwiseComponent} from './components/skeleton/document/elements/element-pointwise/element-pointwise.component';
+import {DimensionComponent} from './components/skeleton/document/dimension/dimension.component';
+import {SearchEngineComponent} from './components/skeleton/document/dimension/search-engine/search-engine.component';
+import {ElementPairwiseComponent} from './components/skeleton/document/elements/element-pairwise/element-pairwise.component';
+import { DocumentComponent } from './components/skeleton/document/document.component';
+import { ErrorMessageComponent } from './components/shared/error-message/error-message.component';
 
 function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
     return () => from(actionLogger.downloadOpt()).pipe(tap(data => {
-        actionLogger.opt = data['logOption']
+        actionLogger.opt = data['logger_option']
         actionLogger.isActive = data['logger']
-        actionLogger.endpoint = data['serverEndpoint']
+        actionLogger.endpoint = data['server_endpoint']
     }))
 }
 
@@ -88,12 +96,21 @@ function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
         QuestionnaireComponent,
         WorkerChecksStepComponent,
         QuestionnaireStepComponent,
-        InstructionsStepComponent,
+        InstructionsGeneralStep,
         SearchEngineStepComponent,
         DimensionsStepComponent,
         TaskSettingsStepComponent,
         SummaryStepComponent,
-        QuestionComponent
+        OutcomeSectionComponent,
+        AnnotatorLawsComponent,
+        AnnotatorOptionsComponent,
+        ElementPointwiseComponent,
+        DimensionComponent,
+        SearchEngineComponent,
+        ElementPairwiseComponent,
+        DocumentComponent,
+        InstructionsEvaluationStepComponent,
+        ErrorMessageComponent
     ],
     imports: [
         BrowserModule,
