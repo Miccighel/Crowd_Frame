@@ -21,6 +21,7 @@ issues](https://badgen.net/github/issues/Miccighel/Crowd_Frame/)](https://GitHub
     <li><a href="#task-performing">Task Performing</a></li>
     <li><a href="#environment-variables">Environment Variables</a></li>
     <li><a href="#local-development">Local Development</li>
+    <li><a href="#troubleshooting">Troubleshooting</li>
     <li><a href="#references">References</li>
 </ul>
 
@@ -310,6 +311,12 @@ Now you can manually edit the configuration and test everything locally.
 
 :warning: _Remember_: each execution of the `init.py` script will overwrite this file :warning:
 
+## Troubleshooting
+
+Fixes for well-known errors:
+- The `docker` package, as of today, triggers the exception shown below on certain Windows-based python distributions because the `pypiwin32` dependency fails to run its post-install script.
+`NameError: name 'NpipeHTTPAdapter' is not defined. Install pypiwin32 package to enable npipe:// support` . To solve it run the following command from an elevated command prompt: `python your_python_folder/Scripts/pywin32_postinstall.py -install`.
+
 ## Contributing
 
 Any contributions you make are **greatly appreciated**.
@@ -437,4 +444,3 @@ SIGIR Conference on Research and Development in Information Retrieval (SIGIR 202
   year = {2020}
 }
 ````
-

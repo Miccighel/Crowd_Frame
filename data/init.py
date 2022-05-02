@@ -1,25 +1,19 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-import hashlib
-import hmac
 import json
+import docker
 import os
 import random
-import shutil
-import subprocess
-import textwrap
+import base64
 import boto3
 from zipfile import ZipFile
-import pandas as pd
 import time
-import datetime
 from distutils.util import strtobool
 from pathlib import Path
 from shutil import copy2
 from botocore.exceptions import ClientError
 from dotenv import load_dotenv
-from mako.template import Template
 from rich.console import Console
 from rich.panel import Panel
 from rich.progress import track
@@ -174,7 +168,10 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                     "lambda:CreateEventSourceMapping",
                     "lambda:ListEventSourceMappings",
                     "lambda:UpdateEventSourceMapping",
-                    "lambda:DeleteEventSourceMapping"
+                    "lambda:DeleteEventSourceMapping",
+                    "ecr:CreateRepository",
+                    "ecr:DescribeRepositories",
+                    "ecr:GetAuthorizationToken"
                 ],
                 "Resource": "*"
             }
@@ -385,6 +382,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     s3_client = boto_session.client('s3', region_name=aws_region)
     s3_resource = boto_session.resource('s3')
     sqs_client = boto_session.client('sqs', region_name=aws_region)
+    ecr_client = boto_session.client('ecr', region_name=aws_region)
     dynamodb_client = boto_session.client('dynamodb', region_name=aws_region)
     lambda_client = boto_session.client('lambda', region_name=aws_region)
     budget_client = boto3.Session(profile_name=profile_name).client('budgets', region_name=aws_region)
@@ -427,6 +425,9 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             "dynamodb:CreateTable",
             "lambda:CreateFunction",
             "lambda:CreateEventSourceMapping",
+            "ecr:CreateRepository",
+            "ecr:DescribeRepositories",
+            "ecr:GetAuthorizationToken"
         ],
         "no_server": [
             "iam:GetUser",
@@ -451,6 +452,9 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             "s3:HeadObject",
             "s3:ListObjects",
             "dynamodb:CreateTable",
+            "ecr:CreateRepository",
+            "ecr:DescribeRepositories",
+            "ecr:GetAuthorizationToken"
         ]
     }
 
@@ -1023,6 +1027,33 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         endpoint = ""
     else:
         raise Exception("Your [italic]server_config[/italic] environment variable must be set to [white on black]aws[/white on black], [white on black]custom[/white on black] or [white on black]none[/white on black]")
+
+    console.rule(f"15 - HITs Solver Setup")
+
+    try:
+        repository = ecr_client.create_repository(repositoryName='crowd_frame-solver')
+        console.print(f"Repository [green]crowd_frame-solver[/green] creation completed, HTTP STATUS CODE: {repository['ResponseMetadata']['HTTPStatusCode']}.")
+        repository = repository['repository']
+        serialize_json(folder_aws_generated_path, f"repository_crowd_frame-solver.json", policy)
+    except ecr_client.exceptions.RepositoryAlreadyExistsException:
+        repositories = ecr_client.describe_repositories(
+            repositoryNames=['crowd_frame-solver']
+        )['repositories']
+        for result in repositories:
+            if result['repositoryName'] == 'crowd_frame-solver':
+                repository = result
+                console.print(f"[yellow]Repository already created")
+                break
+    #print(repository)
+    token = ecr_client.get_authorization_token()
+    registry_url = token['authorizationData'][0]['proxyEndpoint']
+    username, password = base64.b64decode(token['authorizationData'][0]['authorizationToken']).decode('utf-8').split(":")
+    docker_client = docker.from_env()
+    image = docker_client.images.list(name='crowd_frame-solver').pop()
+    image.tag(repository=repository['repositoryUri'])
+    docker_client.login(username=username, password=password, registry=registry_url)
+    docker_client.images.push(repository['repositoryUri'])
+    assert False
 
     console.rule(f"15 - Budgeting setting")
     status.start()
