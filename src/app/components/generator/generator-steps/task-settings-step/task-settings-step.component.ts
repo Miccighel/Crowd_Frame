@@ -581,7 +581,7 @@ export class TaskSettingsStepComponent implements OnInit {
             for(let doc of this.docsParsed){
                 if(doc[category] == element) docs.push(doc)
             }
-            let el = (element.length > 0) ? (element.length > MAX_VALUE_LENGTH) ? element.substring(0, MAX_VALUE_LENGTH) + '..' : element : 'NO VALUE';
+            let el = (element) ? (element.length > 0) ? (element.length > MAX_VALUE_LENGTH) ? element.substring(0, MAX_VALUE_LENGTH) + '..' : element : 'NO VALUE' : 'NO VALUE'
             report += (report == '') ? `${el}: ${docs.length} documents` : `\n ${el}: ${docs.length} documents`;
         });
         return report
