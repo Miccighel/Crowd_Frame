@@ -1042,6 +1042,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     for container in container_list:
         console.print(f"Container with name [green]{container.name}[/green] and {container.image} deployed")
 
+    hit_solver_endpoint = "http://localhost"
+
     console.rule(f"16 - Budgeting setting")
     status.start()
     status.update(f"Creating role")
@@ -1250,7 +1252,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         "table_acl_name": f"{table_acl_name}",
         "table_data_name": f"{table_data_name}",
         "table_log_name": f"{table_logging_name}",
-        "debug_mode": f"{debug_mode}"
+        "hit_solver_endpoint": f"{hit_solver_endpoint}"
     }
 
     os.makedirs(folder_build_env_path, exist_ok=True)
@@ -1294,7 +1296,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         "table_acl_name": f"{table_acl_name}",
         "table_data_name": f"{table_data_name}",
         "table_log_name": f"{table_logging_name}",
-        "debug_mode": f"{debug_mode}"
+        "hit_solver_endpoint": f"{hit_solver_endpoint}"
     }
 
     with open(environment_development, 'w') as file:

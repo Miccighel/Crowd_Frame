@@ -167,11 +167,6 @@ export class SkeletonComponent implements OnInit {
         this.task.settings = new TaskSettings(await this.S3Service.downloadTaskSettings(this.configService.environment))
         this.task.initializeInstructionsGeneral(await this.S3Service.downloadGeneralInstructions(this.configService.environment));
 
-        if (this.configService.environment.debug_mode == 'true') {
-            let hits = await this.S3Service.downloadHits(this.configService.environment)
-            this.tokenInput.setValue(this.debugService.selectRandomToken(hits))
-        }
-
         let url = new URL(window.location.href);
         /* The GET URL parameters are parsed and used to init worker's instance */
         let paramsFetched: Record<string, string> = {};
