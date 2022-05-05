@@ -2,11 +2,17 @@
 # coding: utf-8
 
 import json
+from python_on_whales import DockerClient
 import docker
+from mako.template import Template
 import os
 from datetime import datetime
+import pandas as pd
+import subprocess
 import random
-import base64
+import hashlib
+import hmac
+import textwrap
 import boto3
 from zipfile import ZipFile
 import time
@@ -169,17 +175,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                     "lambda:ListEventSourceMappings",
                     "lambda:UpdateEventSourceMapping",
                     "lambda:DeleteEventSourceMapping",
-                    "ecr:CreateRepository",
-                    "ecr:DescribeRepositories",
-                    "ecr:DescribeRegistry",
-                    "ecr:DescribeImages",
-                    "ecr:GetAuthorizationToken",
-                    "ecr:PutImage",
-                    "ecr:BatchCheckLayerAvailability",
-                    "ecr:CompleteLayerUpload",
-                    "ecr:GetDownloadUrlForLayer",
-                    "ecr:InitiateLayerUpload",
-                    "ecr:UploadLayerPart"
                 ],
                 "Resource": "*"
             }
@@ -385,8 +380,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     s3_client = boto_session.client('s3', region_name=aws_region)
     s3_resource = boto_session.resource('s3')
     sqs_client = boto_session.client('sqs', region_name=aws_region)
-    ecr_client = boto_session.client('ecr', region_name=aws_region)
-    ecs_client = boto_session.client('ecs', region_name=aws_region)
     dynamodb_client = boto_session.client('dynamodb', region_name=aws_region)
     lambda_client = boto_session.client('lambda', region_name=aws_region)
     budget_client = boto3.Session(profile_name=profile_name).client('budgets', region_name=aws_region)
@@ -428,17 +421,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             "dynamodb:CreateTable",
             "lambda:CreateFunction",
             "lambda:CreateEventSourceMapping",
-            "ecr:CreateRepository",
-            "ecr:DescribeRepositories",
-            "ecr:DescribeRegistry",
-            "ecr:DescribeImages",
-            "ecr:GetAuthorizationToken",
-            "ecr:PutImage",
-            "ecr:BatchCheckLayerAvailability",
-            "ecr:CompleteLayerUpload",
-            "ecr:GetDownloadUrlForLayer",
-            "ecr:InitiateLayerUpload",
-            "ecr:UploadLayerPart"
         ],
         "no_server": [
             "iam:GetUser",
@@ -463,17 +445,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             "s3:GetObject",
             "s3:ListBucket",
             "dynamodb:CreateTable",
-            "ecr:CreateRepository",
-            "ecr:DescribeRepositories",
-            "ecr:DescribeRegistry",
-            "ecr:DescribeImages",
-            "ecr:GetAuthorizationToken",
-            "ecr:PutImage",
-            "ecr:BatchCheckLayerAvailability",
-            "ecr:CompleteLayerUpload",
-            "ecr:GetDownloadUrlForLayer",
-            "ecr:InitiateLayerUpload",
-            "ecr:UploadLayerPart"
         ]
     }
 
@@ -1037,168 +1008,40 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     console.rule(f"15 - HITs Solver setup")
 
-    status.update(f"Creating solver repository")
+    docker_client = docker.from_env()
+    docker_whales = DockerClient(compose_files=["docker/docker-compose.yml"])
 
-    repository_name = 'crowd_frame-solver'
-    repository_url = f"{aws_account_id}.dkr.ecr.{aws_region}.amazonaws.com/{repository_name}"
-    registry_id = ecr_client.describe_registry()['registryId']
-    try:
-        repository = ecr_client.create_repository(repositoryName=repository_name)
-        console.print(f"Repository ECR [green]{repository_name}[/green] creation completed, HTTP STATUS CODE: {repository['ResponseMetadata']['HTTPStatusCode']}.")
-        repository = repository['repository']
-        serialize_json(folder_aws_generated_path, f"repository_{repository_name}.json", repository)
-    except ecr_client.exceptions.RepositoryAlreadyExistsException:
-        repositories = ecr_client.describe_repositories(
-            repositoryNames=[repository_name]
-        )['repositories']
-        for result in repositories:
-            if result['repositoryName'] == repository_name:
-                repository = result
-                console.print(f"[yellow]Repository ECR already created")
-                break
-    images_list = ecr_client.describe_images(repositoryName=repository_name)['imageDetails']
-    image_name = repository_name
+    status.update(f"Fetching solver image")
+    image_name = 'miccighel/crowd_frame-solver'
     image_tag = 'latest'
-    image_found = False
-    for image_data in images_list:
-        if repository_name == image_data['repositoryName']:
-            image_found = True
-            image = image_data
-    if not image_found:
-        token = ecr_client.get_authorization_token()
-        registry_url = token['authorizationData'][0]['proxyEndpoint']
-        username, password = base64.b64decode(token['authorizationData'][0]['authorizationToken']).decode('utf-8').split(":")
-        docker_client = docker.from_env()
-        status.update(f"Fetching solver image")
-        try:
-            console.print(f"Solver image available locally with name [green]{image_name}[/green] and tag [blue]{image_tag}[/blue]")
-            image = docker_client.images.get(name=image_name)
-        except ImageNotFound:
-            console.print(f"Fetching solver image from Docker Hub repository [yellow]miccighel/{image_name}[/yellow] with tag [blue]{image_tag}[/blue]")
-            image = docker_client.images.pull(repository='miccighel/crowd_frame-solver', tag='latest')
-        image.tag(repository=repository_url, tag=image_tag)
-        console.print(f"Tagging image [green]{image_name}[/green] with ECR repository url: [blue]{repository_url}[/blue] and tag: [blue]{image_tag}")
-        docker_client.login(username=username, password=password, registry=registry_url)
-        status.update(f"Pushing image to ECR repository")
-        docker_client.images.push(repository=repository_url, tag=image_tag)
-    else:
-        console.print(f"Image pushed for repository [blue]{image['repositoryName']}[/blue] on: {image['imagePushedAt'].strftime('%Y/%m/%d %H:%M:%S')}")
-
-    status.update(f"Creating ECS cluster")
 
     try:
-        role = iam_client.create_service_linked_role(
-            AWSServiceName='ecs.amazonaws.com',
-            Description="Allows Interaction with ECS"
-        )
-        console.print(f"[green]AWSServiceRoleForECS role created")
-        serialize_json(folder_aws_generated_path, f"role_AWSServiceRoleForECS.json", role)
-    except iam_client.exceptions.InvalidInputException:
-        console.print(f"[yellow]AWSServiceRoleForECS role already created")
+        image = docker_client.images.get(f"{image_name}:{image_tag}")
+        console.print(f"Solver image available locally with name [green]{image_name}[/green] and tag [blue]{image_tag}[/blue]")
+    except ImageNotFound:
+        console.print(f"Fetching solver image from Docker Hub repository [yellow]{image_name}[/yellow] with tag [blue]{image_tag}[/blue]")
+        image = docker_client.images.pull(repository=image_name, tag=image_tag)
 
-    cluster_name = "Crowd_Frame-Services"
-    cluster_list = ecs_client.list_clusters()
-    cluster_found = False
-    for cluster_arn in cluster_list['clusterArns']:
-        if cluster_name in cluster_arn:
-            cluster_found = True
-    if not cluster_found:
-        cluster = ecs_client.create_cluster(
-            clusterName=cluster_name,
-            capacityProviders=['FARGATE']
-        )
-        console.print(f"Cluster ECS [green]{cluster_name}[/green] creation completed, HTTP STATUS CODE: {cluster['ResponseMetadata']['HTTPStatusCode']}.")
-        cluster = cluster['cluster']
-        serialize_json(folder_aws_generated_path, f"cluster_{cluster_name}.json", cluster)
-    else:
-        console.print(f"[yellow]Cluster {cluster_name} already created")
-        clusters_data = ecs_client.describe_clusters(clusters=[cluster_name])
-        for cluster_data in clusters_data['clusters']:
-            if cluster_name in cluster_data['clusterArn']:
-                cluster = cluster_data
+    status.update(f"Fetching reverse proxy image")
 
-    status.update(f"Creating task definition")
+    image_name = 'nginx'
+    image_tag = '1.17.10'
+    try:
+        image = docker_client.images.get(f"{image_name}:{image_tag}")
+        console.print(f"Reverse proxy image available locally with name [green]{image_name}[/green] and tag [blue]{image_tag}[/blue]")
+    except ImageNotFound:
+        console.print(f"Fetching reverse proxy image from Docker Hub repository [yellow]{image_name}[/yellow] with tag [blue]{image_tag}[/blue]")
+        image = docker_client.images.pull(repository=image_name, tag=image_tag)
 
-    task_definition_name = "Solver"
-    task_definitions_list = ecs_client.list_task_definition_families(
-        familyPrefix=task_definition_name,
-        status="ACTIVE"
-    )
-    task_definition_found = False
-    for family in task_definitions_list['families']:
-        if task_definition_name in family:
-            task_definition_found = True
+    status.update(f"Starting containers")
 
-    if not task_definition_found:
-        task_definition = ecs_client.register_task_definition(
-            executionRoleArn='arn:aws:iam::269559900417:role/ECSExec',
-            family="Solver",
-            cpu='1024',
-            memory='2048',
-            networkMode="awsvpc",
-            containerDefinitions=[
-                {
-                    'name': "Core",
-                    'image': f"{repository_url}:{image_tag}",
-                    'cpu': 512,
-                    'portMappings': [1
-                        {
-                            'containerPort': 18080,
-                            'hostPort': 18080,
-                            'protocol': 'tcp'
-                        },
-                    ],
-                    'essential': True,
-                    'entryPoint': [
-                        './IA_solver',
-                        '--main::method',
-                        'rest'
-                    ]
-                }, {
-                    'name': "Proxy",
-                    'image': "nginx:1.17.10",
-                    'cpu': 5121,
-                    'portMappings': [
-                        {
-                            'containerPort': 80,
-                            'hostPort': 80,
-                            'protocol': 'tcp'
-                        },
-                    ],
-                    'dependsOn': [
-                        {
-                            'containerName': 'Core',
-                            'condition': 'START'
-                        }
-                    ],
-                    'mountPoints': [
-                        {
-                            'sourceVolume': 'reverse_proxy',
-                            'containerPath': './reverse_proxy/nginx.conf:/etc/nginx/nginx.conf',
-                        },
-                    ],
-                },
-            ],
-            volumes=[
-                {
-                    "name": "reverse_proxy",
-                },
-            ],
-            requiresCompatibilities=["FARGATE"]
-        )
-        console.print(f"Task Definition [green]{task_definition_name}[/green] creation completed, HTTP STATUS CODE: {task_definition['ResponseMetadata']['HTTPStatusCode']}.")
-        task_definition = task_definition['taskDefinition']
-        serialize_json(folder_aws_generated_path, f"task_definition_{task_definition_name}.json", task_definition)
-    else:
-        console.print(f"[yellow]Task definition {task_definition_name} already created")
-        task_definition = ecs_client.describe_task_definition(taskDefinition=task_definition_name)
-        task_definition = task_definition['taskDefinition']
+    docker_whales.compose.up(detach=True)
 
-    console.print(ecs_client.describe_services(cluster=cluster_name, services=['Core']))
+    container_list = docker_client.containers.list()
+    for container in container_list:
+        console.print(f"Container with name [green]{container.name}[/green] and {container.image} deployed")
 
-    assert False
-
-    console.rule(f"1116 - Budgeting setting")
+    console.rule(f"16 - Budgeting setting")
     status.start()
     status.update(f"Creating role")
 
@@ -1329,11 +1172,11 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 },
                 'TimeUnit': "MONTHLY",
                 'TimePeriod': {
-                    'Start': datetime.datetime.now(),
-                    'End': datetime.datetime(2087, 6, 15)
+                    'Start': datetime.now(),
+                    'End': datetime(2087, 6, 15)
                 },
                 'BudgetType': "COST",
-                'LastUpdatedTime': datetime.datetime.now()
+                'LastUpdatedTime': datetime.now()
             }
         )
         console.print(f"[green]Budget {budget_name} created")
