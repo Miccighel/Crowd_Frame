@@ -414,8 +414,6 @@ export class SkeletonComponent implements OnInit {
                         taskAllowed = true
                     }
 
-                    console.log(taskAllowed)
-
                     this.unlockTask(taskAllowed)
 
                 } else {
