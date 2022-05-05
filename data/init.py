@@ -11,6 +11,7 @@ import pandas as pd
 import subprocess
 import random
 import hashlib
+import shutil
 import hmac
 import textwrap
 import boto3
