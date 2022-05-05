@@ -4,6 +4,7 @@
 import json
 import docker
 import os
+from datetime import datetime
 import random
 import base64
 import boto3
@@ -13,6 +14,7 @@ from distutils.util import strtobool
 from pathlib import Path
 from shutil import copy2
 from botocore.exceptions import ClientError
+from docker.errors import ImageNotFound
 from dotenv import load_dotenv
 from rich.console import Console
 from rich.panel import Panel
@@ -69,7 +71,6 @@ def read_json(path):
 def stop_sequence():
     console.print('\n\n')
     with console.status("Stopping the ship...", spinner="aesthetic"):
-        time.sleep(5)
         exit()
 
 
@@ -126,7 +127,6 @@ if platform is None:
 console.rule("1 - Configuration policy")
 
 with console.status("Generating configuration policy", spinner="aesthetic") as status:
-    time.sleep(2)
     configuration_policies = {
         "Version": "2012-10-17",
         "Statement": [
@@ -155,8 +155,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                     "s3:PutBucketCORS",
                     "s3:PutObject",
                     "s3:PutObjectAcl",
-                    "s3:HeadObject",
-                    "s3:ListObjects",
+                    "s3:GetObject",
+                    "s3:ListBucket",
                     "sqs:ListQueues",
                     "sqs:CreateQueue",
                     "sqs:GetQueueUrl",
@@ -171,7 +171,15 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                     "lambda:DeleteEventSourceMapping",
                     "ecr:CreateRepository",
                     "ecr:DescribeRepositories",
-                    "ecr:GetAuthorizationToken"
+                    "ecr:DescribeRegistry",
+                    "ecr:DescribeImages",
+                    "ecr:GetAuthorizationToken",
+                    "ecr:PutImage",
+                    "ecr:BatchCheckLayerAvailability",
+                    "ecr:CompleteLayerUpload",
+                    "ecr:GetDownloadUrlForLayer",
+                    "ecr:InitiateLayerUpload",
+                    "ecr:UploadLayerPart"
                 ],
                 "Resource": "*"
             }
@@ -202,7 +210,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     status.start()
     status.update(f"Generating user [yellow]{config_user_name}[/yellow] and attaching configuration policy")
-    time.sleep(2)
     try:
         user = iam_client.create_user(UserName=config_user_name, Path=iam_path)
         console.print(f"[green]User created[/green], HTTP STATUS CODE: {user['ResponseMetadata']['HTTPStatusCode']}.")
@@ -216,7 +223,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     status.start()
     status.update(f"Generating Amazon Mechanical Turk read-only access policy")
-    time.sleep(2)
 
     policy = {
         "Version": "2012-10-17",
@@ -259,7 +265,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     status.start()
     status.update(f"Generating user [yellow]{mturk_user_name}[/yellow] and attaching read-only Amazon MTurk access policy")
-    time.sleep(2)
     try:
         user = iam_client.create_user(UserName=mturk_user_name, Path=iam_path)
         console.print(f"[green]User created[/green], HTTP STATUS CODE: {user['ResponseMetadata']['HTTPStatusCode']}.")
@@ -273,7 +278,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     status.start()
     status.update("Adding users to local configuration file")
-    time.sleep(2)
 
     users = [config_user_name, mturk_user_name]
 
@@ -362,7 +366,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     status.start()
     status.update("Checking local configuration file")
-    time.sleep(2)
 
     method = None
     status.stop()
@@ -383,6 +386,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     s3_resource = boto_session.resource('s3')
     sqs_client = boto_session.client('sqs', region_name=aws_region)
     ecr_client = boto_session.client('ecr', region_name=aws_region)
+    ecs_client = boto_session.client('ecs', region_name=aws_region)
     dynamodb_client = boto_session.client('dynamodb', region_name=aws_region)
     lambda_client = boto_session.client('lambda', region_name=aws_region)
     budget_client = boto3.Session(profile_name=profile_name).client('budgets', region_name=aws_region)
@@ -391,7 +395,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     status.start()
     status.update(f"Checking if the required policies are correctly set up")
-    time.sleep(2)
 
     required_policies = {
         "server": [
@@ -414,8 +417,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             "s3:GetBucketCORS",
             "s3:PutBucketCORS",
             "s3:PutObject",
-            "s3:HeadObject",
-            "s3:ListObjects",
+            "s3:GetObject",
+            "s3:ListBucket",
             "sqs:ListQueues",
             "sqs:CreateQueue",
             "sqs:GetQueueAttributes",
@@ -427,7 +430,15 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             "lambda:CreateEventSourceMapping",
             "ecr:CreateRepository",
             "ecr:DescribeRepositories",
-            "ecr:GetAuthorizationToken"
+            "ecr:DescribeRegistry",
+            "ecr:DescribeImages",
+            "ecr:GetAuthorizationToken",
+            "ecr:PutImage",
+            "ecr:BatchCheckLayerAvailability",
+            "ecr:CompleteLayerUpload",
+            "ecr:GetDownloadUrlForLayer",
+            "ecr:InitiateLayerUpload",
+            "ecr:UploadLayerPart"
         ],
         "no_server": [
             "iam:GetUser",
@@ -449,12 +460,20 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             "s3:GetBucketCORS",
             "s3:PutBucketCORS",
             "s3:PutObject",
-            "s3:HeadObject",
-            "s3:ListObjects",
+            "s3:GetObject",
+            "s3:ListBucket",
             "dynamodb:CreateTable",
             "ecr:CreateRepository",
             "ecr:DescribeRepositories",
-            "ecr:GetAuthorizationToken"
+            "ecr:DescribeRegistry",
+            "ecr:DescribeImages",
+            "ecr:GetAuthorizationToken",
+            "ecr:PutImage",
+            "ecr:BatchCheckLayerAvailability",
+            "ecr:CompleteLayerUpload",
+            "ecr:GetDownloadUrlForLayer",
+            "ecr:InitiateLayerUpload",
+            "ecr:UploadLayerPart"
         ]
     }
 
@@ -488,7 +507,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     status.start()
     status.update(f"Creating policy to allow crowd workers interaction")
-    time.sleep(2)
 
     crowd_workers_policy = {
         "Version": "2012-10-17",
@@ -544,7 +562,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     status.start()
     status.update(f"Creating user")
-    time.sleep(2)
 
     user = None
     try:
@@ -592,7 +609,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     status.start()
     status.update(f"Creating bucket")
-    time.sleep(2)
 
     buckets = []
     for bucket in s3_resource.buckets.all():
@@ -607,7 +623,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 CreateBucketConfiguration={'LocationConstraint': aws_region}
             )
         serialize_json(folder_aws_generated_path, f"bucket_{aws_private_bucket}.json", private_bucket)
-        time.sleep(2)
         console.print(f"[green]Bucket creation completed[/green], HTTP STATUS CODE: {private_bucket['ResponseMetadata']['HTTPStatusCode']}.")
     except s3_client.exceptions.BucketAlreadyOwnedByYou as error:
         console.print(f"[yellow]Bucket already created[/yellow], HTTP STATUS CODE: {error.response['ResponseMetadata']['HTTPStatusCode']}.")
@@ -687,14 +702,12 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     status.start()
     status.update(f"Creating bucket")
-    time.sleep(2)
 
     try:
         if aws_region == 'us-east-1':
             deploy_bucket = s3_client.create_bucket(Bucket=aws_deploy_bucket)
         else:
             deploy_bucket = s3_client.create_bucket(Bucket=aws_deploy_bucket, CreateBucketConfiguration={'LocationConstraint': aws_region})
-        time.sleep(2)
         serialize_json(folder_aws_generated_path, f"bucket_{aws_deploy_bucket}.json", deploy_bucket)
         console.print(f"[green]Bucket creation completed[/green], HTTP STATUS CODE: {deploy_bucket['ResponseMetadata']['HTTPStatusCode']}.")
     except s3_client.exceptions.BucketAlreadyOwnedByYou as error:
@@ -817,15 +830,14 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             BillingMode='PAY_PER_REQUEST'
         )
         serialize_json(folder_aws_generated_path, f"dynamodb_table_{table_name}.json", table)
-        console.print(f"Table {table_acl_name} created")
+        console.print(f"Table [green]{table_acl_name}[/green] created")
     except dynamodb_client.exceptions.ResourceInUseException:
-        console.print(f"Table {table_acl_name} already created")
+        console.print(f"Table [cyan underline]{table_acl_name}[/cyan underline] already created")
 
     console.rule(f"14 - Logging infrastructure setup")
 
     status.start()
     status.update(f"Setting up policies")
-    time.sleep(2)
 
     console.print(f"Modality chosen: [cyan on white]{server_config}")
 
@@ -876,7 +888,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
         status.start()
         status.update(f"Table {table_logging_name} setup")
-        time.sleep(2)
 
         try:
             table_name = table_logging_name
@@ -895,7 +906,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
         status.start()
         status.update('Queue service setup')
-        time.sleep(2)
 
         queue = {}
         queue_name = "Crowd_Frame-Queue"
@@ -926,7 +936,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
         status.start()
         status.update('Lambda setup')
-        time.sleep(2)
         function_name = 'Crowd_Frame-Logger'
         function_new = False
         if not os.path.exists(f"{folder_aws_path}index.zip"):
@@ -951,7 +960,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
         status.start()
         status.update('Gateway setup')
-        time.sleep(2)
 
         if not any(api for api in api_gateway_client.get_apis()['Items'] if api['Name'] == api_gateway_name):
             response = api_gateway_client.create_api(
@@ -1001,7 +1009,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
         status.start()
         status.update('Event source mapping between queue and lambda setup')
-        time.sleep(2)
         source_mappings = lambda_client.list_event_source_mappings(EventSourceArn=queue['Attributes']['QueueArn'])
         if queue_new or function_new or len(source_mappings['EventSourceMappings']) <= 0:
             for mapping in source_mappings['EventSourceMappings']:
@@ -1028,37 +1035,172 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     else:
         raise Exception("Your [italic]server_config[/italic] environment variable must be set to [white on black]aws[/white on black], [white on black]custom[/white on black] or [white on black]none[/white on black]")
 
-    console.rule(f"15 - HITs Solver Setup")
+    console.rule(f"15 - HITs Solver setup")
 
+    status.update(f"Creating solver repository")
+
+    repository_name = 'crowd_frame-solver'
+    repository_url = f"{aws_account_id}.dkr.ecr.{aws_region}.amazonaws.com/{repository_name}"
+    registry_id = ecr_client.describe_registry()['registryId']
     try:
-        repository = ecr_client.create_repository(repositoryName='crowd_frame-solver')
-        console.print(f"Repository [green]crowd_frame-solver[/green] creation completed, HTTP STATUS CODE: {repository['ResponseMetadata']['HTTPStatusCode']}.")
+        repository = ecr_client.create_repository(repositoryName=repository_name)
+        console.print(f"Repository ECR [green]{repository_name}[/green] creation completed, HTTP STATUS CODE: {repository['ResponseMetadata']['HTTPStatusCode']}.")
         repository = repository['repository']
-        serialize_json(folder_aws_generated_path, f"repository_crowd_frame-solver.json", policy)
+        serialize_json(folder_aws_generated_path, f"repository_{repository_name}.json", repository)
     except ecr_client.exceptions.RepositoryAlreadyExistsException:
         repositories = ecr_client.describe_repositories(
-            repositoryNames=['crowd_frame-solver']
+            repositoryNames=[repository_name]
         )['repositories']
         for result in repositories:
-            if result['repositoryName'] == 'crowd_frame-solver':
+            if result['repositoryName'] == repository_name:
                 repository = result
-                console.print(f"[yellow]Repository already created")
+                console.print(f"[yellow]Repository ECR already created")
                 break
-    #print(repository)
-    token = ecr_client.get_authorization_token()
-    registry_url = token['authorizationData'][0]['proxyEndpoint']
-    username, password = base64.b64decode(token['authorizationData'][0]['authorizationToken']).decode('utf-8').split(":")
-    docker_client = docker.from_env()
-    image = docker_client.images.list(name='crowd_frame-solver').pop()
-    image.tag(repository=repository['repositoryUri'])
-    docker_client.login(username=username, password=password, registry=registry_url)
-    docker_client.images.push(repository['repositoryUri'])
+    images_list = ecr_client.describe_images(repositoryName=repository_name)['imageDetails']
+    image_name = repository_name
+    image_tag = 'latest'
+    image_found = False
+    for image_data in images_list:
+        if repository_name == image_data['repositoryName']:
+            image_found = True
+            image = image_data
+    if not image_found:
+        token = ecr_client.get_authorization_token()
+        registry_url = token['authorizationData'][0]['proxyEndpoint']
+        username, password = base64.b64decode(token['authorizationData'][0]['authorizationToken']).decode('utf-8').split(":")
+        docker_client = docker.from_env()
+        status.update(f"Fetching solver image")
+        try:
+            console.print(f"Solver image available locally with name [green]{image_name}[/green] and tag [blue]{image_tag}[/blue]")
+            image = docker_client.images.get(name=image_name)
+        except ImageNotFound:
+            console.print(f"Fetching solver image from Docker Hub repository [yellow]miccighel/{image_name}[/yellow] with tag [blue]{image_tag}[/blue]")
+            image = docker_client.images.pull(repository='miccighel/crowd_frame-solver', tag='latest')
+        image.tag(repository=repository_url, tag=image_tag)
+        console.print(f"Tagging image [green]{image_name}[/green] with ECR repository url: [blue]{repository_url}[/blue] and tag: [blue]{image_tag}")
+        docker_client.login(username=username, password=password, registry=registry_url)
+        status.update(f"Pushing image to ECR repository")
+        docker_client.images.push(repository=repository_url, tag=image_tag)
+    else:
+        console.print(f"Image pushed for repository [blue]{image['repositoryName']}[/blue] on: {image['imagePushedAt'].strftime('%Y/%m/%d %H:%M:%S')}")
+
+    status.update(f"Creating ECS cluster")
+
+    try:
+        role = iam_client.create_service_linked_role(
+            AWSServiceName='ecs.amazonaws.com',
+            Description="Allows Interaction with ECS"
+        )
+        console.print(f"[green]AWSServiceRoleForECS role created")
+        serialize_json(folder_aws_generated_path, f"role_AWSServiceRoleForECS.json", role)
+    except iam_client.exceptions.InvalidInputException:
+        console.print(f"[yellow]AWSServiceRoleForECS role already created")
+
+    cluster_name = "Crowd_Frame-Services"
+    cluster_list = ecs_client.list_clusters()
+    cluster_found = False
+    for cluster_arn in cluster_list['clusterArns']:
+        if cluster_name in cluster_arn:
+            cluster_found = True
+    if not cluster_found:
+        cluster = ecs_client.create_cluster(
+            clusterName=cluster_name,
+            capacityProviders=['FARGATE']
+        )
+        console.print(f"Cluster ECS [green]{cluster_name}[/green] creation completed, HTTP STATUS CODE: {cluster['ResponseMetadata']['HTTPStatusCode']}.")
+        cluster = cluster['cluster']
+        serialize_json(folder_aws_generated_path, f"cluster_{cluster_name}.json", cluster)
+    else:
+        console.print(f"[yellow]Cluster {cluster_name} already created")
+        clusters_data = ecs_client.describe_clusters(clusters=[cluster_name])
+        for cluster_data in clusters_data['clusters']:
+            if cluster_name in cluster_data['clusterArn']:
+                cluster = cluster_data
+
+    status.update(f"Creating task definition")
+
+    task_definition_name = "Solver"
+    task_definitions_list = ecs_client.list_task_definition_families(
+        familyPrefix=task_definition_name,
+        status="ACTIVE"
+    )
+    task_definition_found = False
+    for family in task_definitions_list['families']:
+        if task_definition_name in family:
+            task_definition_found = True
+
+    if not task_definition_found:
+        task_definition = ecs_client.register_task_definition(
+            executionRoleArn='arn:aws:iam::269559900417:role/ECSExec',
+            family="Solver",
+            cpu='1024',
+            memory='2048',
+            networkMode="awsvpc",
+            containerDefinitions=[
+                {
+                    'name': "Core",
+                    'image': f"{repository_url}:{image_tag}",
+                    'cpu': 512,
+                    'portMappings': [1
+                        {
+                            'containerPort': 18080,
+                            'hostPort': 18080,
+                            'protocol': 'tcp'
+                        },
+                    ],
+                    'essential': True,
+                    'entryPoint': [
+                        './IA_solver',
+                        '--main::method',
+                        'rest'
+                    ]
+                }, {
+                    'name': "Proxy",
+                    'image': "nginx:1.17.10",
+                    'cpu': 5121,
+                    'portMappings': [
+                        {
+                            'containerPort': 80,
+                            'hostPort': 80,
+                            'protocol': 'tcp'
+                        },
+                    ],
+                    'dependsOn': [
+                        {
+                            'containerName': 'Core',
+                            'condition': 'START'
+                        }
+                    ],
+                    'mountPoints': [
+                        {
+                            'sourceVolume': 'reverse_proxy',
+                            'containerPath': './reverse_proxy/nginx.conf:/etc/nginx/nginx.conf',
+                        },
+                    ],
+                },
+            ],
+            volumes=[
+                {
+                    "name": "reverse_proxy",
+                },
+            ],
+            requiresCompatibilities=["FARGATE"]
+        )
+        console.print(f"Task Definition [green]{task_definition_name}[/green] creation completed, HTTP STATUS CODE: {task_definition['ResponseMetadata']['HTTPStatusCode']}.")
+        task_definition = task_definition['taskDefinition']
+        serialize_json(folder_aws_generated_path, f"task_definition_{task_definition_name}.json", task_definition)
+    else:
+        console.print(f"[yellow]Task definition {task_definition_name} already created")
+        task_definition = ecs_client.describe_task_definition(taskDefinition=task_definition_name)
+        task_definition = task_definition['taskDefinition']
+
+    console.print(ecs_client.describe_services(cluster=cluster_name, services=['Core']))
+
     assert False
 
-    console.rule(f"15 - Budgeting setting")
+    console.rule(f"1116 - Budgeting setting")
     status.start()
     status.update(f"Creating role")
-    time.sleep(2)
 
     role_name = "Budgeting"
     budget_name = "crowdsourcing-tasks"
@@ -1117,7 +1259,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     try:
         policy = iam_client.create_policy(
             PolicyName='Budgeting',
-            Description="Provides access to the budgeting configurationn required by Crowd_Frame",
+            Description="Provides access to the budgeting configuration required by Crowd_Frame",
             PolicyDocument=json.dumps(budget_policy_document),
             Path=iam_path
         )
@@ -1242,7 +1384,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.rule(f"16 - Environment: [cyan underline]PRODUCTION[/cyan underline] creation")
     status.start()
     status.update(f"Creating environment")
-    time.sleep(2)
 
     environment_development = f"{folder_build_env_path}environment.ts"
     environment_production = f"{folder_build_env_path}environment.prod.ts"
@@ -1290,7 +1431,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.rule(f"17 - Environment: [cyan underline]DEVELOPMENT[/cyan underline] creation")
     status.start()
     status.update(f"Creating environment")
-    time.sleep(2)
 
     environment_dict = {
         "production": 'false',
@@ -1333,7 +1473,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.rule(f"18 - Admin Credentials Creation")
     status.start()
     status.update(f"Creating file [cyan underline]admin.json")
-    time.sleep(2)
 
     if not os.path.exists(folder_build_config_path):
         os.makedirs(folder_build_config_path, exist_ok=True)
@@ -1355,7 +1494,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.rule(f"19 - Sample task configuration")
     status.start()
     status.update(f"Generating a sample configuration if needed")
-    time.sleep(2)
 
     if not os.path.exists(folder_build_task_path):
         os.makedirs(folder_build_task_path, exist_ok=True)
@@ -1783,12 +1921,11 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         console.print("Class built")
         console.print(f"Path: [italic]{filename}[/italic]")
 
-    if platform=='mturk':
+    if platform == 'mturk':
 
         console.rule(f"22 - Amazon Mechanical Turk Landing Page")
         status.start()
         status.update(f"Istantiating Mako model")
-        time.sleep(2)
 
         model = Template(filename=f"{folder_build_mturk_path}model.html")
         mturk_page = model.render(
@@ -1825,12 +1962,10 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         console.print(f"Tokens for {len(hits)} hits generated")
         console.print(f"Path: [italic]{mturk_tokens_file}")
 
-    if platform=='toloka':
-
+    if platform == 'toloka':
         console.rule(f"22 - Toloka HTML Interface")
         status.start()
         status.update(f"Istantiating Mako model")
-        time.sleep(2)
 
         model = Template(filename=f"{folder_build_toloka_path}model.html")
         toloka_page = model.render(
@@ -1866,7 +2001,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     console.rule(f"23 - Task [cyan underline]{task_name}[/cyan underline]/[yellow underline]{batch_name}[/yellow underline] build")
     status.update(f"Executing build command, please wait")
-    time.sleep(2)
 
     folder_build_result = f"../dist/"
 
@@ -1932,7 +2066,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.rule(f"24 - Packaging Task [cyan underline]tasks/{task_name}/{batch_name}")
     status.start()
     status.update(f"Starting")
-    time.sleep(2)
 
     folder_tasks_batch_path = f"{folder_tasks_path}{task_name}/{batch_name}/"
     folder_tasks_batch_deploy_path = f"{folder_tasks_batch_path}deploy/"
@@ -1951,7 +2084,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     else:
         console.print("[yellow]Deploy folder already present")
     console.print(f"Path: [italic]{folder_tasks_batch_deploy_path}")
-    if platform=='mturk':
+    if platform == 'mturk':
         if not os.path.exists(folder_tasks_batch_mturk_path):
             console.print("[green]Amazon Mechanical Turk assets folder created")
             os.makedirs(folder_tasks_batch_mturk_path, exist_ok=True)
@@ -2019,8 +2152,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     destination = f"{folder_tasks_batch_env_path}environment.prod.ts"
     copy(source, destination, "Prod Environment")
 
-    if platform=='toloka':
-
+    if platform == 'toloka':
         console.print(f"Copying files for [blue underline on white]{folder_build_toloka_path}[/blue underline on white] folder")
 
         source = f"{folder_build_toloka_path}interface.html"
@@ -2104,7 +2236,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.rule(f"25 - Task [cyan underline]tasks/{task_name}/{batch_name} Deploy")
     status.start()
     status.update(f"Starting")
-    time.sleep(2)
 
     s3_private_generator_path = f"{task_name}/{batch_name}/Generator/"
     s3_private_task_path = f"{task_name}/{batch_name}/Task/"
@@ -2188,6 +2319,5 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.rule(f"26 - Public Link")
     status.start()
     status.update(f"Writing")
-    time.sleep(2)
 
     console.print(f"[bold white on black]https://{aws_deploy_bucket}.s3.{aws_region}.amazonaws.com/{task_name}/{batch_name}/index.html")
