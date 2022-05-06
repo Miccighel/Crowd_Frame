@@ -1238,7 +1238,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         )
     serialize_json(folder_aws_generated_path, f"budget_{budget_name}_action_{response['ActionId']}.json", response)
 
-    console.rule(f"16 - Environment: [cyan underline]PRODUCTION[/cyan underline] creation")
+    console.rule(f"17 - Environment: [cyan underline]PRODUCTION[/cyan underline] creation")
     status.start()
     status.update(f"Creating environment")
 
@@ -1285,7 +1285,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.print("File [cyan underline]environment.prod.ts[/cyan underline] generated")
     console.print(f"Path: [italic]{environment_production}[/italic]")
 
-    console.rule(f"17 - Environment: [cyan underline]DEVELOPMENT[/cyan underline] creation")
+    console.rule(f"18 - Environment: [cyan underline]DEVELOPMENT[/cyan underline] creation")
     status.start()
     status.update(f"Creating environment")
 
@@ -1327,7 +1327,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.print("File [cyan underline]environment.ts[/cyan underline] generated")
     console.print(f"Path: [italic]{environment_development}[/italic]")
 
-    console.rule(f"18 - Admin Credentials Creation")
+    console.rule(f"19 - Admin Credentials Creation")
     status.start()
     status.update(f"Creating file [cyan underline]admin.json")
 
@@ -1604,7 +1604,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         console.print(f"Config. file [italic white on yellow]{filename}[/italic white on yellow] not detected, generating a sample")
         with open(f"{folder_build_task_path}{filename}", 'w') as file:
             sample_worker_checks = {
-                "block": True,
+                "block": False,
                 "blacklist": [],
                 "whitelist": [],
                 "blacklist_batches": [],
