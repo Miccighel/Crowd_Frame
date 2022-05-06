@@ -91,7 +91,7 @@
 
             <mat-divider [inset]="true"></mat-divider>
 
-            <ng-container *ngIf="this.configService.environment.hit_solver_endpoint">
+            <ng-container *ngIf="this.configService.environment.hit_solver_endpoint && !this.configService.environment.production">
                 <!-- Loading of documents -->
                 <h3 class="lighter">Documents</h3>
                 <table class="width-100 mt-16px">

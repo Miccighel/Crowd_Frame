@@ -155,9 +155,21 @@ export class DimensionComponent implements OnInit {
     }
 
     public verifyUrlSelection(position) {
+        let positionsToCheck = []
+        if (position == 'top') {
+            positionsToCheck.push('top')
+        }
+        if(position=='middle') {
+            positionsToCheck.push('top')
+            positionsToCheck.push('middle')
+        }
+        if(position=='bottom') {
+            positionsToCheck.push('top')
+            positionsToCheck.push('middle')
+        }
         let dimensionsToCheck = []
         for (let dimension of this.task.dimensions) {
-            if(dimension.style.position==position) {
+            if(positionsToCheck.includes(dimension.style.position)) {
                 dimensionsToCheck.push(dimension)
             }
         }

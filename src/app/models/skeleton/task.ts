@@ -294,7 +294,7 @@ export class Task {
     public getFirstDimension(position) {
         let dimensionFirst = null
         for (let dimension of this.dimensions) {
-            if (dimension.style.position == position) {
+            if (dimension.style.position == position && dimension.scale) {
                 dimensionFirst = dimension
                 break
             }

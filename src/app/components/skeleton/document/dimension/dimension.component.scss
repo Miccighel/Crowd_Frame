@@ -50,19 +50,15 @@
   border: 2px solid lightgray;
   border-radius: 8px;
   padding: 10px;
+  margin-bottom: 2em;
 }
 
-.dimension-matrix-instructions {
-  margin-top: 3em;
+.dimension-matrix-multiple {
+  margin-bottom: 2em;
 }
-
-.dimension-matrix-multiple mat-radio-group {
-  padding-top: 10px;
-}
-
 
 .dimension-matrix-container {
-  margin-bottom: 2%;
+  margin-bottom: 1em;
 }
 
 .dimension-matrix .matrix-header .matrix-header-value, .dimension-matrix .matrix-header .matrix-header-text {
@@ -92,7 +88,7 @@
 }
 
 .dimension-matrix mat-radio-group .matrix-header-body-wide:first-child {
-  margin-left: 15%;
+  margin-left: 16%;
 }
 
 .dimension-matrix mat-radio-group .matrix-value-description {
@@ -121,12 +117,19 @@
   padding: 10px 15px 5px 0px;
 }
 
+.dimension-matrix .name-pretty {
+  p {
+    margin-top: 0;
+    text-align: left;
+    font-size: initial;
+  }
+}
+
 .dimension-matrix mat-radio-group > div p {
   font-size: initial;
 }
 
 .dimension-matrix mat-radio-group > div i {
-  margin-top: 10pt;
   font-size: initial;
 }
 
@@ -144,6 +147,10 @@
 
 .dimension h2, .instructions h2 {
   font-weight: lighter;
+}
+
+.dimension-matrix .dimension-separate {
+  background-color: #F8F8F8;
 }
 
 .dimension-counter {

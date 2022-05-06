@@ -93,6 +93,7 @@ platform = os.getenv('platform')
 profile_name = os.getenv('profile_name')
 task_name = os.getenv('task_name')
 batch_name = os.getenv('batch_name')
+task_title = os.getenv('task_title')
 batch_prefix = os.getenv('batch_prefix')
 admin_user = os.getenv('admin_user')
 admin_password = os.getenv('admin_password')
@@ -1909,10 +1910,18 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     shutil.rmtree(folder_build_result)
 
     model = Template(filename=f"{folder_build_deploy_path}model.html")
-    index_page = model.render(
-        task_name=task_name,
-        batch_name=batch_name
-    )
+    if task_title:
+        index_page = model.render(
+            task_title=task_title,
+            task_name=task_name,
+            batch_name=batch_name
+        )
+    else:
+        index_page = model.render(
+            task_title=None,
+            task_name=task_name,
+            batch_name=batch_name
+        )
     index_page_file = f"{folder_build_deploy_path}index.html"
     with open(index_page_file, 'w') as file:
         print(index_page, file=file)
