@@ -9,6 +9,7 @@ import { HitSolution } from '../models/hitSolution';
 @Injectable({
   providedIn: 'root'
 })
+
 export class HitsSolverService {
 
   solverEndPoint: string;

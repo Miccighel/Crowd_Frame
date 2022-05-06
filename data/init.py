@@ -98,6 +98,7 @@ admin_user = os.getenv('admin_user')
 admin_password = os.getenv('admin_password')
 server_config = os.getenv('server_config')
 deploy_config = strtobool(os.getenv('deploy_config')) if os.getenv('deploy_config') is not None else False
+enable_solver = strtobool(os.getenv('enable_solver')) if os.getenv('enable_solver') is not None else False
 aws_region = os.getenv('aws_region')
 aws_private_bucket = os.getenv('aws_private_bucket')
 aws_deploy_bucket = os.getenv('aws_deploy_bucket')
@@ -1009,40 +1010,50 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     console.rule(f"15 - HITs Solver setup")
 
-    docker_client = docker.from_env()
-    docker_whales = DockerClient(compose_files=["docker/docker-compose.yml"])
+    console.print(f"Environment variable [blue]enable_solver[/blue] value: [cyan]{enable_solver}")
 
-    status.update(f"Fetching solver image")
-    image_name = 'miccighel/crowd_frame-solver'
-    image_tag = 'latest'
+    if enable_solver:
 
-    try:
-        image = docker_client.images.get(f"{image_name}:{image_tag}")
-        console.print(f"Solver image available locally with name [green]{image_name}[/green] and tag [blue]{image_tag}[/blue]")
-    except ImageNotFound:
-        console.print(f"Fetching solver image from Docker Hub repository [yellow]{image_name}[/yellow] with tag [blue]{image_tag}[/blue]")
-        image = docker_client.images.pull(repository=image_name, tag=image_tag)
+        console.print(f"HITs solver deployment started")
 
-    status.update(f"Fetching reverse proxy image")
+        docker_client = docker.from_env()
+        docker_whales = DockerClient(compose_files=["docker/docker-compose.yml"])
 
-    image_name = 'nginx'
-    image_tag = '1.17.10'
-    try:
-        image = docker_client.images.get(f"{image_name}:{image_tag}")
-        console.print(f"Reverse proxy image available locally with name [green]{image_name}[/green] and tag [blue]{image_tag}[/blue]")
-    except ImageNotFound:
-        console.print(f"Fetching reverse proxy image from Docker Hub repository [yellow]{image_name}[/yellow] with tag [blue]{image_tag}[/blue]")
-        image = docker_client.images.pull(repository=image_name, tag=image_tag)
+        status.update(f"Fetching solver image")
+        image_name = 'miccighel/crowd_frame-solver'
+        image_tag = 'latest'
 
-    status.update(f"Starting containers")
+        try:
+            image = docker_client.images.get(f"{image_name}:{image_tag}")
+            console.print(f"Solver image available locally with name [green]{image_name}[/green] and tag [blue]{image_tag}[/blue]")
+        except ImageNotFound:
+            console.print(f"Fetching solver image from Docker Hub repository [yellow]{image_name}[/yellow] with tag [blue]{image_tag}[/blue]")
+            image = docker_client.images.pull(repository=image_name, tag=image_tag)
 
-    docker_whales.compose.up(detach=True)
+        status.update(f"Fetching reverse proxy image")
 
-    container_list = docker_client.containers.list()
-    for container in container_list:
-        console.print(f"Container with name [green]{container.name}[/green] and {container.image} deployed")
+        image_name = 'nginx'
+        image_tag = '1.17.10'
+        try:
+            image = docker_client.images.get(f"{image_name}:{image_tag}")
+            console.print(f"Reverse proxy image available locally with name [green]{image_name}[/green] and tag [blue]{image_tag}[/blue]")
+        except ImageNotFound:
+            console.print(f"Fetching reverse proxy image from Docker Hub repository [yellow]{image_name}[/yellow] with tag [blue]{image_tag}[/blue]")
+            image = docker_client.images.pull(repository=image_name, tag=image_tag)
 
-    hit_solver_endpoint = "http://localhost"
+        status.update(f"Starting containers")
+
+        docker_whales.compose.up(detach=True)
+
+        container_list = docker_client.containers.list()
+        for container in container_list:
+            console.print(f"Container with name [green]{container.name}[/green] and {container.image} deployed")
+
+        hit_solver_endpoint = "http://localhost"
+
+    else:
+        console.print("HITs solver not deployed")
+        hit_solver_endpoint = None
 
     console.rule(f"16 - Budgeting setting")
     status.start()
