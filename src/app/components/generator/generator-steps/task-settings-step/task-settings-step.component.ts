@@ -7,7 +7,7 @@ import {ConfigService} from "../../../../services/config.service"
 import {LocalStorageService} from "../../../../services/localStorage.service"
 import {NgxUiLoaderService} from 'ngx-ui-loader';
 import {UtilsService} from "../../../../services/utils.service"
-import {HitsSolverService} from "src/app/services/hits-solver.service";
+import {HitsSolverService} from "src/app/services/hitsSolver.service";
 import {ReadFile, ReadMode} from "ngx-file-helpers"
 /* Models */
 import {Hit} from "../../../../models/skeleton/hit"
