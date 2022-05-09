@@ -1039,7 +1039,7 @@ def parse_answers(row, questionnaire, question, answers):
     for control_name, answer_current in answers.items():
         if '_answer' in control_name:
             question_name_parsed = control_name.replace("_answer", "")
-            if question_name_parsed == question["nameFull"] or question["nameFull"] in question_name_parsed:
+            if question_name_parsed == question["nameFull"] or question_name_parsed in question['nameFull']:
                 if type(answer_current)==dict:
                     selected_options = ""
                     for option, selected in answer_current.items():
@@ -1052,7 +1052,7 @@ def parse_answers(row, questionnaire, question, answers):
                     answer_value = answer_current
         if '_free_text' in control_name:
             question_name_parsed = control_name.replace("_free_text", "")
-            if question_name_parsed == question["nameFull"] or question["nameFull"] in question_name_parsed:
+            if question_name_parsed == question["nameFull"]:
                 answer_free_text = answer_current
 
     for attribute, value in question.items():
@@ -1133,6 +1133,7 @@ if not os.path.exists(df_quest_path):
                     row['time_submit'] = questionnaire_data['time_submit']
 
                     questionnaire = questionnaires[questionnaire_data['serialization']['info']['index']]
+                    questions = questionnaire_data['serialization']['questions']
                     current_answers = questionnaire_data['serialization']['answers']
                     timestamps_elapsed = questionnaire_data['serialization']["timestamps_elapsed"]
                     info = questionnaire_data['serialization']["info"]
@@ -1157,7 +1158,7 @@ if not os.path.exists(df_quest_path):
                         row[f"questionnaire_time_elapsed"] = round(timestamps_elapsed, 2)
                         row[f"questionnaire_accesses"] = accesses
 
-                        for index_sub, question in enumerate(questionnaire["questions"]):
+                        for index_sub, question in enumerate(questions):
                             if not question['dropped']:
                                 row = parse_answers(row, questionnaire, question, current_answers)
                                 dataframe = dataframe.append(row, ignore_index=True)

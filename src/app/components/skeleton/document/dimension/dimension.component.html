@@ -169,7 +169,7 @@
                             <div *ngIf="dimension.scale" class="{{dimension.style.separator ? 'dimension-separate' : ''}}">
                                 <mat-radio-group aria-labelledby="radio-button-label" class="matrix-value" formControlName="{{(dimension.name).concat('_value')}}">
                                     <div class="name-pretty" *ngIf="dimension.name_pretty">
-                                        <p><strong><span *ngIf="!this.dimension.style.separator">{{i}} - </span>{{dimension.name_pretty}}</strong></p>
+                                        <p><strong><span *ngIf="!this.dimension.style.separator">{{i+1}} - </span>{{dimension.name_pretty}}</strong></p>
                                     </div>
                                     <div *ngFor="let mapping of dimension.scale.mapping; let k=index">
                                         <mat-radio-button class="radio-button" value="{{mapping.value}}" (change)="this.task.storeDimensionValue($event, documentIndex,dimension.index)"></mat-radio-button>
@@ -187,6 +187,27 @@
                                 </ng-container>
                             </div>
                         </div>
+
+                        <div *ngIf="dimension.justification" class="dimension-container dimension-justification">
+                            <div class="dimension-content justification">
+                                <div class="dimension-text-field">
+                                    <mat-form-field appearance="fill" class="width-100">
+                                        <mat-label>{{dimension.justification.text}}</mat-label>
+                                        <textarea matInput formControlName="{{dimension.name}}_justification" rows="5"></textarea>
+                                        <mat-error *ngIf="this.utilsService.hasError(assessmentForms[documentIndex],(dimension.name).concat('_justification'), 'required')">
+                                            This field is required
+                                        </mat-error>
+                                        <mat-error *ngIf="this.utilsService.hasError(assessmentForms[documentIndex],(dimension.name).concat('_justification'), 'longer')">
+                                            This justification must have at least {{dimension.justification.min_words}} words.
+                                        </mat-error>
+                                        <mat-error *ngIf="this.utilsService.hasError(assessmentForms[documentIndex],(dimension.name).concat('_justification'), 'invalid')">
+                                            You cannot use the selected search engine url as part of the justification.
+                                        </mat-error>
+                                    </mat-form-field>
+                                </div>
+                            </div>
+                        </div>
+
                     </ng-container>
 
                 </div>
