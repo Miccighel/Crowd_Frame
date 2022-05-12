@@ -1019,9 +1019,11 @@ def load_quest_col_names(questionnaires):
                         column_name = f"question_attribute_{attribute}"
                         if column_name not in columns:
                             columns.append(column_name)
+        columns.append(f"question_answers_values")
+        columns.append(f"question_answers_labels")
         columns.append(f"question_answer_value")
         columns.append(f"question_answer_text")
-        columns.append(f"question_free_text_value")
+        columns.append(f"question_answer_free_text")
         if questionnaire['type'] == 'likert':
             columns.append(f"question_answer_mapping_index")
             columns.append(f"question_answer_mapping_key")
@@ -1032,6 +1034,8 @@ def load_quest_col_names(questionnaires):
 
 
 def parse_answers(row, questionnaire, question, answers):
+
+
     answer_value = None
     answer_free_text = None
     question_name_full = None
@@ -1055,11 +1059,20 @@ def parse_answers(row, questionnaire, question, answers):
             if question_name_parsed == question["nameFull"]:
                 answer_free_text = answer_current
 
+
     for attribute, value in question.items():
+        if attribute== 'answers':
+            values = []
+            labels = []
+            for index, answer in enumerate(value):
+                values.append(str(index))
+                labels.append(answer)
+            row['question_answers_values'] = ':::'.join(values)
+            row['question_answers_labels'] = ':::'.join(labels)
         if type(value) != list:
             row[f"question_attribute_{attribute}"] = value
     row[f"question_answer_value"] = answer_value
-    row[f"question_free_text_value"] = answer_free_text
+    row[f"question_answer_free_text"] = answer_free_text
 
     if questionnaire['type'] == 'standard':
         if question['type'] == 'mcq':
