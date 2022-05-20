@@ -133,12 +133,12 @@ export class LoaderComponent implements OnInit {
 
     public async ngOnInit() {
 
-        this.ngxService.start()
+        this.ngxService.startLoader('skeleton')
 
         let url = new URL(window.location.href);
         this.adminAccess = url.searchParams.get("admin") == 'true'
 
-        this.ngxService.stop()
+        this.ngxService.stopLoader('skeleton')
 
     }
 

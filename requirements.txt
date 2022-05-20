@@ -8,4 +8,5 @@ rich==10.16.2
 tqdm==4.64.0
 numpy==1.21.5
 pandas==1.4.2
-python-on-whales=0.43.0
+toloka-kit==0.1.25
+python-on-whales==0.43.0

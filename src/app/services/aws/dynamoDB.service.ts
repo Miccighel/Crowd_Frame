@@ -97,7 +97,7 @@ export class DynamoDBService {
         return await docClient.scan(params).promise()
     }
 
-    public async insertACLRecordWorkerID(config, worker, updateArrivalTime) {
+    public async insertACLRecordWorkerID(config, worker) {
         let params = {
             TableName: config["table_acl_name"],
             Item: {}
@@ -105,16 +105,6 @@ export class DynamoDBService {
         for (const [param, value] of Object.entries(worker.paramsFetched)) {
             params["Item"][param] = {}
             params["Item"][param]['S'] = value
-        }
-        if (updateArrivalTime) {
-            params["Item"]['time_arrival'] = {}
-            params["Item"]['time_arrival']['S'] = new Date().toUTCString()
-        }
-        if (params['Item']['access_counter'])
-            params['Item']['access_counter']['S'] = (parseInt(params['Item']['access_counter']['S']) + 1).toString()
-        else {
-            params['Item']['access_counter'] = {}
-            params['Item']['access_counter']['S'] = '1'
         }
         return await this.loadDynamoDB(config).putItem(params).promise();
     }

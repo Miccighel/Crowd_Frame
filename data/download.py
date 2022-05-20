@@ -14,8 +14,9 @@ from pathlib import Path
 import boto3
 import pandas as pd
 import pprint
+import toloka.client as toloka
+from datetime import datetime
 from dotenv import load_dotenv
-import datetime
 import xml.etree.ElementTree as Xml
 from rich.console import Console
 from tqdm import tqdm
@@ -46,6 +47,7 @@ deploy_config = strtobool(deploy_config) if deploy_config is not None else False
 aws_region = os.getenv('aws_region')
 aws_private_bucket = os.getenv('aws_private_bucket')
 aws_deploy_bucket = os.getenv('aws_deploy_bucket')
+toloka_oauth_token = os.getenv('toloka_oauth_token')
 prolific_completion_code = os.getenv('prolific_completion_code')
 budget_limit = os.getenv('budget_limit')
 bing_api_key = os.getenv('bing_api_key')
@@ -63,6 +65,7 @@ data_path = f"result/{task_name}/Data/"
 df_log_partial_folder_path = f"{models_path}Logs-Partial/"
 task_config_folder = f"{folder_result_path}/Task/"
 df_mturk_data_path = f"{models_path}workers_mturk_data.csv"
+df_toloka_data_path = f"{models_path}workers_toloka_data.csv"
 df_acl_path = f"{models_path}workers_acl.csv"
 df_info_path = f"{models_path}workers_info.csv"
 df_log_path = f"{models_path}workers_logs.csv"
@@ -123,7 +126,10 @@ def flatten(d, parent_key='', sep='_'):
     return dict(items)
 
 
-console.rule("0 - Initialization")
+step_index = 1
+
+console.rule(f"{step_index} - Initialization")
+step_index = step_index + 1
 
 os.chdir("../data/")
 
@@ -175,106 +181,13 @@ for path in response['CommonPrefixes']:
     if batch_prefix in current_batch_name:
         task_batch_names.append(current_batch_name)
 
-console.print(f"Batch names: [white on black]{', '.join(task_batch_names)}")
-console.print(f"Tables data: [white on black]{', '.join(task_data_tables)}")
-console.print(f"Tables log: [white on black]{', '.join(task_log_tables)}")
-console.print(f"Tables ACL: [white on black]{', '.join(task_acl_tables)}")
+console.print(f"Batch names: [cyan]{', '.join(task_batch_names)}")
+console.print(f"Tables data: [cyan]{', '.join(task_data_tables)}")
+console.print(f"Tables log: [cyan]{', '.join(task_log_tables)}")
+console.print(f"Tables ACL: [cyan]{', '.join(task_acl_tables)}")
 
-if not prolific_completion_code:
-
-    console.rule("1 - Fetching MTurk Data")
-
-    with console.status(f"Downloading HITs, Token: {next_token}, Total: {token_counter}", spinner="aesthetic") as status:
-        status.start()
-
-        if not os.path.exists(df_mturk_data_path):
-
-            console.print(f"[yellow]HITs data[/yellow] file not detected, creating it.")
-            hit_df = pd.DataFrame(columns=[
-                "HITId", "HITTypeId", "Title", "Description", "Keywords", "Reward", "CreationTime", "MaxAssignments",
-                "RequesterAnnotation", "AssignmentDurationInSeconds", "AutoApprovalDelayInSeconds", "Expiration",
-                "NumberOfSimilarHITs", "LifetimeInSeconds", "AssignmentId", "WorkerId", "AssignmentStatus", "AcceptTime",
-                "SubmitTime", "AutoApprovalTime", "ApprovalTime", "RejectionTime", "RequesterFeedback", "WorkTimeInSeconds",
-                "LifetimeApprovalRate", "Last30DaysApprovalRate", "Last7DaysApprovalRate"
-            ])
-
-            while next_token != '' or next_token is not None:
-
-                if next_token == '':
-                    response = mturk.list_hits()
-                else:
-                    response = mturk.list_hits(NextToken=next_token)
-
-                try:
-
-                    next_token = response['NextToken']
-                    num_results = response['NumResults']
-                    hits = response['HITs']
-
-                    status.update(f"Downloading HITs, Token: {next_token}, Total: {token_counter}")
-
-                    for item in hits:
-
-                        row = {}
-                        hit_id = item['HITId']
-                        available_records = hit_df.loc[hit_df['HITId'] == hit_id]
-
-                        status.update(f"HIT Id: {hit_id}, Available Records: {len(available_records)}, Total: {hit_counter}")
-
-                        if len(available_records) <= 0:
-
-                            hit_status = mturk.get_hit(HITId=hit_id)['HIT']
-                            token_input = None
-                            token_output = None
-                            question_parsed = Xml.fromstring(hit_status['Question'])
-                            for child in question_parsed:
-                                for string_splitted in child.text.split("\n"):
-                                    string_sanitized = sanitize_string(string_splitted)
-                                    if len(string_sanitized) > 0:
-                                        if 'tokenInputtext' in string_sanitized:
-                                            token_input = string_sanitized.replace('tokenInputtext', '')
-                                        if 'tokenOutputonchangeiftokenOutputval' in string_sanitized:
-                                            token_output = string_sanitized.replace('tokenOutputonchangeiftokenOutputval', '').split(" ")[0]
-                            hit_status[f"Input.token_input"] = token_input
-                            hit_status[f"Input.token_output"] = token_output
-                            hit_status.pop('Question')
-                            hit_status.pop('QualificationRequirements')
-
-                            for hit_status_attribute, hit_status_value in hit_status.items():
-                                row[hit_status_attribute] = hit_status_value
-
-                            hit_assignments = mturk.list_assignments_for_hit(HITId=hit_id, AssignmentStatuses=['Approved'])
-                            for hit_assignment in hit_assignments['Assignments']:
-
-                                answer_parsed = Xml.fromstring(hit_assignment['Answer'])[0]
-                                tag_title = None
-                                tag_value = None
-                                for child in answer_parsed:
-                                    if 'QuestionIdentifier' in child.tag:
-                                        tag_title = child.text
-                                    if 'FreeText' in child.tag:
-                                        tag_value = child.text
-                                hit_assignment[f"Answer.{tag_title}"] = tag_value
-                                hit_assignment.pop('Answer')
-
-                                for hit_assignment_attribute, hit_assignment_value in hit_assignment.items():
-                                    row[hit_assignment_attribute] = hit_assignment_value
-
-                                hit_df = hit_df.append(row, ignore_index=True)
-
-                        hit_counter = hit_counter + 1
-
-                    token_counter += 1
-                    hit_df.to_csv(df_mturk_data_path, index=False)
-                except KeyError:
-                    console.print(f"Found tokens: {token_counter}, HITs: {hit_counter}")
-                    break
-        else:
-            hit_df = pd.read_csv(df_mturk_data_path)
-
-console.print(f"HITs data available at path: [cyan on white]{df_mturk_data_path}")
-
-console.rule(f"2 - Fetching [green]{task_name}[/green] Configuration")
+console.rule(f"{step_index} - Fetching [green]{task_name}[/green] Configuration")
+step_index = step_index + 1
 
 prefix = f"{task_name}/"
 for current_batch_name in task_batch_names:
@@ -450,7 +363,8 @@ workers_snapshot_paths = glob(f"{data_path}/*")
 
 console.print(f"Workers Snapshots serialized at path: [cyan on white]{data_path}")
 
-console.rule("4 - Fetching Workers ACL")
+console.rule(f"{step_index} - Fetching Workers ACL")
+step_index = step_index + 1
 
 if not os.path.exists(df_acl_path):
 
@@ -513,7 +427,339 @@ else:
     df_acl = pd.read_csv(df_acl_path)
     console.print(f"Workers ACL [yellow]already detected[/yellow], skipping download")
 
-console.rule("5 - Building [cyan on white]workers_info[/cyan on white] Dataframe")
+
+
+platforms = np.unique(df_acl['platform'].values)
+
+if 'mturk' in platforms:
+
+    console.rule(f"{step_index} - Fetching MTurk Data")
+    step_index = step_index + 1
+
+    with console.status(f"Downloading HITs, Token: {next_token}, Total: {token_counter}", spinner="aesthetic") as status:
+
+        if not os.path.exists(df_mturk_data_path):
+
+            console.print(f"[yellow]HITs data[/yellow] file not detected, creating it.")
+            hit_df = pd.DataFrame(columns=[
+                "HITId", "HITTypeId", "Title", "Description", "Keywords", "Reward", "CreationTime", "MaxAssignments",
+                "RequesterAnnotation", "AssignmentDurationInSeconds", "AutoApprovalDelayInSeconds", "Expiration",
+                "NumberOfSimilarHITs", "LifetimeInSeconds", "AssignmentId", "WorkerId", "AssignmentStatus", "AcceptTime",
+                "SubmitTime", "AutoApprovalTime", "ApprovalTime", "RejectionTime", "RequesterFeedback", "WorkTimeInSeconds",
+                "LifetimeApprovalRate", "Last30DaysApprovalRate", "Last7DaysApprovalRate"
+            ])
+
+            while next_token != '' or next_token is not None:
+
+                if next_token == '':
+                    response = mturk.list_hits()
+                else:
+                    response = mturk.list_hits(NextToken=next_token)
+
+                try:
+
+                    next_token = response['NextToken']
+                    num_results = response['NumResults']
+                    hits = response['HITs']
+
+                    status.update(f"Downloading HITs, Token: {next_token}, Total: {token_counter}")
+
+                    for item in hits:
+
+                        row = {}
+                        hit_id = item['HITId']
+                        available_records = hit_df.loc[hit_df['HITId'] == hit_id]
+
+                        status.update(f"HIT Id: {hit_id}, Available Records: {len(available_records)}, Total: {hit_counter}")
+
+                        if len(available_records) <= 0:
+
+                            hit_status = mturk.get_hit(HITId=hit_id)['HIT']
+                            token_input = None
+                            token_output = None
+                            question_parsed = Xml.fromstring(hit_status['Question'])
+                            for child in question_parsed:
+                                for string_splitted in child.text.split("\n"):
+                                    string_sanitized = sanitize_string(string_splitted)
+                                    if len(string_sanitized) > 0:
+                                        if 'tokenInputtext' in string_sanitized:
+                                            token_input = string_sanitized.replace('tokenInputtext', '')
+                                        if 'tokenOutputonchangeiftokenOutputval' in string_sanitized:
+                                            token_output = string_sanitized.replace('tokenOutputonchangeiftokenOutputval', '').split(" ")[0]
+                            hit_status[f"Input.token_input"] = token_input
+                            hit_status[f"Input.token_output"] = token_output
+                            hit_status.pop('Question')
+                            hit_status.pop('QualificationRequirements')
+
+                            for hit_status_attribute, hit_status_value in hit_status.items():
+                                row[hit_status_attribute] = hit_status_value
+
+                            hit_assignments = mturk.list_assignments_for_hit(HITId=hit_id, AssignmentStatuses=['Approved'])
+                            for hit_assignment in hit_assignments['Assignments']:
+
+                                answer_parsed = Xml.fromstring(hit_assignment['Answer'])[0]
+                                tag_title = None
+                                tag_value = None
+                                for child in answer_parsed:
+                                    if 'QuestionIdentifier' in child.tag:
+                                        tag_title = child.text
+                                    if 'FreeText' in child.tag:
+                                        tag_value = child.text
+                                hit_assignment[f"Answer.{tag_title}"] = tag_value
+                                hit_assignment.pop('Answer')
+
+                                for hit_assignment_attribute, hit_assignment_value in hit_assignment.items():
+                                    row[hit_assignment_attribute] = hit_assignment_value
+
+                                hit_df = hit_df.append(row, ignore_index=True)
+
+                        hit_counter = hit_counter + 1
+
+                    token_counter += 1
+                    hit_df.to_csv(df_mturk_data_path, index=False)
+                except KeyError:
+                    console.print(f"Found tokens: {token_counter}, HITs: {hit_counter}")
+                    break
+        else:
+            hit_df = pd.read_csv(df_mturk_data_path)
+
+    console.print(f"MTurk HITs data available at path: [cyan on white]{df_mturk_data_path}")
+
+if 'toloka' in platforms:
+
+    column_names = [
+        "worker_id",
+        "project_id",
+        "project_name",
+        "project_description",
+        "project_comment",
+        "pool_id",
+        "pool_requester_id",
+        "pool_requester_myself",
+        "pool_name",
+        "pool_description",
+        "pool_comment",
+        "pool_status",
+        "pool_creation_date",
+        "pool_expiration_date",
+        "pool_last_started",
+        "pool_last_stopped",
+        "pool_last_close_reason",
+        "pool_speed_quality_balance_type",
+        "pool_speed_quality_balance_percent",
+        "pool_assignment_reward",
+        "pool_assignment_max_duration_seconds",
+        "pool_priority",
+        "pool_auto_close_after_complete_delay_seconds",
+        "pool_auto_accept_solutions",
+        "pool_auto_accept_period_day",
+        "pool_issue_task_suite_in_creation_order",
+        "task_suite_id",
+        "task_suite_creation_date",
+        "task_suite_remaining_overlap",
+        "task_suite_mixed",
+        "task_suite_latitude",
+        "task_suite_longitude",
+        "assignment_id",
+        "assignment_user_id",
+        "assignment_comment",
+        "assignment_status",
+        "assignment_creation_date",
+        "assignment_accept_date",
+        "assignment_submit_date",
+        "assignment_expire_date",
+        "assignment_skip_date",
+        "assignment_reject_date",
+        "assignment_token_input",
+        "assignment_token_output",
+        "assignment_reward",
+        "assignment_rejected",
+        "assignment_automerged",
+        "assignment_mixed",
+        "user_id",
+        "user_country",
+        "user_languages",
+        "user_country_by_phone",
+        "user_country_by_ip",
+        "user_client_type",
+        "user_agent_type",
+        "user_device_category",
+        "user_os_family",
+        "user_os_version",
+        "user_os_version_major",
+        "user_os_version_minor",
+        "user_os_version_bugfix",
+        "user_adult_allowed",
+    ]
+
+    console.rule(f"{step_index} - Fetching Toloka Data")
+    step_index = step_index + 1
+
+    if not os.path.exists(df_toloka_data_path):
+
+        df_toloka = pd.DataFrame(columns=column_names)
+
+        toloka_client = toloka.TolokaClient(toloka_oauth_token, 'PRODUCTION')
+
+        df_acl_filt = df_acl.loc[df_acl['platform'] == 'toloka']
+        tokens_input = []
+        tokens_output = []
+        for batch_current in np.unique(df_acl_filt['batch_name'].values):
+            hits = load_json(f"{task_config_folder}{batch_current}/hits.json")
+            for hit in hits:
+                tokens_input.append(hit['token_input'])
+                tokens_output.append(hit['token_output'])
+        tokens_input = sorted(tokens_input)
+        tokens_output = sorted(tokens_output)
+
+        tokens_input_deployed = None
+        tokens_output_deployed = None
+
+        project_data = None
+        for project in toloka_client.get_projects():
+            for input_field, data in project.task_spec.input_spec.items():
+                if input_field == 'token_input' and data.allowed_values:
+                    tokens_input_deployed = sorted(data.allowed_values)
+            for output_field, data in project.task_spec.output_spec.items():
+                if output_field == 'token_output' and data.allowed_values:
+                    tokens_output_deployed = sorted(data.allowed_values)
+            if tokens_input == tokens_input_deployed and tokens_output == tokens_output_deployed:
+                console.print(f"Toloka project with name [cyan]{project.public_name}[/cyan] and ID [cyan]{project.id}[/cyan] found")
+                project_data = project
+                break
+
+        row = {
+            'project_id': project_data.id,
+            'project_name': project_data.public_name,
+            'project_description': project_data.public_description,
+            'project_comment': project_data.private_comment,
+        }
+
+        pool_counter = 0
+        task_suites_counter = 0
+        assignments_counter = 0
+
+        for pool in toloka_client.find_pools(project_id=project_data.id, status='CLOSED', sort=['last_started']).items:
+            console.print(f"Processing pool [cyan]{pool.id}")
+            row['pool_id'] = pool.id
+            row['pool_requester_id'] = pool.owner.id
+            row['pool_requester_myself'] = pool.owner.myself
+            row['pool_name'] = pool.private_name
+            row['pool_description'] = pool.public_description
+            row['pool_comment'] = pool.private_comment
+            row['pool_status'] = pool.status.value
+            row['pool_creation_date'] = pool.created.strftime("%Y-%m-%d %H:%M:%S")
+            row['pool_expiration_date'] = pool.will_expire.strftime("%Y-%m-%d %H:%M:%S")
+            row['pool_last_started'] = pool.last_started.strftime("%Y-%m-%d %H:%M:%S")
+            row['pool_last_stopped'] = pool.last_stopped.strftime("%Y-%m-%d %H:%M:%S")
+            row['pool_last_close_reason'] = pool.last_close_reason.value
+            row['pool_speed_quality_balance_type'] = pool._unexpected['speed_quality_balance']['type']
+            row['pool_speed_quality_balance_percent'] = pool._unexpected['speed_quality_balance']['percent']
+            row['pool_assignment_reward'] = pool.reward_per_assignment
+            row['pool_assignment_max_duration_seconds'] = pool.assignment_max_duration_seconds
+            row['pool_priority'] = pool.priority
+            row['pool_auto_close_after_complete_delay_seconds'] = pool.auto_close_after_complete_delay_seconds
+            row['pool_auto_accept_solutions'] = pool.auto_accept_solutions
+            row['pool_auto_accept_period_day'] = pool.auto_accept_period_day
+            row['pool_issue_task_suite_in_creation_order'] = pool.assignments_issuing_config.issue_task_suites_in_creation_order
+            pool_counter = pool_counter + 1
+            task_suites = []
+            for task_suite in toloka_client.find_task_suites(pool_id=pool.id, sort=['created']).items:
+                task_suites.append(task_suite)
+            for task_suite in tqdm(task_suites):
+                row['task_suite_id'] = task_suite.id
+                row['task_suite_creation_date'] = task_suite.created.strftime("%Y-%m-%d %H:%M:%S")
+                row['task_suite_remaining_overlap'] = task_suite.remaining_overlap
+                row['task_suite_mixed'] = task_suite.mixed
+                row['task_suite_latitude'] = task_suite.latitude
+                row['task_suite_longitude'] = task_suite.longitude
+                task_suites_counter = task_suites_counter + 1
+                for assignment in toloka_client.find_assignments(task_suite_id=task_suite.id, sort=['created']).items:
+                    row['assignment_id'] = assignment.id
+                    row['assignment_user_id'] = assignment.user_id
+                    row['assignment_comment'] = assignment.public_comment
+                    row['assignment_status'] = assignment.status.value
+                    row['assignment_creation_date'] = assignment.created.strftime("%Y-%m-%d %H:%M:%S")
+                    row['assignment_accept_date'] = assignment.accepted.strftime("%Y-%m-%d %H:%M:%S") if assignment.accepted else np.nan
+                    row['assignment_submit_date'] = assignment.submitted.strftime("%Y-%m-%d %H:%M:%S") if assignment.submitted else np.nan
+                    row['assignment_expire_date'] = assignment.expired.strftime("%Y-%m-%d %H:%M:%S") if assignment.expired else np.nan
+                    row['assignment_skip_date'] = assignment.skipped.strftime("%Y-%m-%d %H:%M:%S") if assignment.skipped else np.nan
+                    row['assignment_reject_date'] = assignment.rejected.strftime("%Y-%m-%d %H:%M:%S") if assignment.rejected else np.nan
+                    row['assignment_token_input'] = assignment.tasks[0].input_values['token_input']
+                    row['assignment_token_output'] = assignment.solutions[0].output_values['token_output'] if assignment.solutions else np.nan
+                    row['assignment_reward'] = assignment.reward
+                    row['assignment_rejected'] = assignment.rejected
+                    row['assignment_automerged'] = assignment.automerged
+                    row['assignment_mixed'] = assignment.mixed
+                    user_metadata = requests.get(f"https://toloka.yandex.com/api/v1/user-metadata/{assignment.user_id}", headers={'Authorization': f"OAuth {toloka_oauth_token}"}).json()
+                    row['user_id'] = assignment.user_id
+                    row['user_country'] = user_metadata['country']
+                    row['user_languages'] = ':::'.join(user_metadata['languages'])
+                    row['user_country_by_phone'] = user_metadata['attributes']['country_by_phone']
+                    row['user_country_by_ip'] = user_metadata['attributes']['country_by_ip']
+                    row['user_client_type'] = user_metadata['attributes']['client_type']
+                    row['user_agent_type'] = user_metadata['attributes']['user_agent_type']
+                    row['user_device_category'] = user_metadata['attributes']['device_category']
+                    row['user_os_family'] = user_metadata['attributes']['os_family']
+                    row['user_os_version'] = user_metadata['attributes']['os_version'] if 'os_version' in user_metadata['attributes'] else np.nan
+                    row['user_os_version_major'] = user_metadata['attributes']['os_version_major'] if 'os_version_major' in user_metadata['attributes'] else np.nan
+                    row['user_os_version_minor'] = user_metadata['attributes']['os_version_minor'] if 'os_version_minor' in user_metadata['attributes'] else np.nan
+                    row['user_os_version_bugfix'] = user_metadata['attributes']['os_version_bugfix'] if 'os_version_bugfix' in user_metadata['attributes'] else np.nan
+                    row['user_adult_allowed'] = user_metadata['adult_allowed']
+                    acl_rows = df_acl.loc[(df_acl['token_output']==row['assignment_token_output'])&(df_acl['platform']=='toloka')]
+                    if len(acl_rows)>1:
+                        acl_rows = acl_rows.sort_values(by='time_arrival', ascending=False)
+                        acl_rows = acl_rows.head(1)
+                        row['worker_id'] = acl_rows['worker_id'].values[0]
+                    else:
+                        if len(acl_rows['worker_id'].values)>0:
+                            row['worker_id'] = acl_rows['worker_id'].values[0]
+                        else:
+                            row['worker_id'] = np.nan
+                    assignments_counter = assignments_counter + 1
+                    df_toloka = df_toloka.append(row, ignore_index=True)
+
+        df_toloka.to_csv(df_toloka_data_path, index=False)
+
+        console.print(f"Pools found for the current task: [green]{pool_counter}[/green]")
+        console.print(f"Task suites found for the current task: [green]{task_suites_counter}[/green]")
+        console.print(f"Assignments found for the current task: [green]{assignments_counter}[/green]")
+
+        console.print(f"Dataframe shape: {df_toloka.shape}")
+        console.print(f"Toloka data file serialized at path: [cyan on black]{df_toloka_data_path}")
+
+    else:
+        toloka_data_df = pd.read_csv(df_toloka_data_path)
+        console.print(f"Toloka dataframe [yellow]already detected[/yellow], skipping creation")
+        console.print(f"Serialized at path: [cyan on black]{df_toloka_data_path}")
+
+
+console.rule(f"{step_index} - Building [cyan on white]workers_info[/cyan on white] Dataframe")
+step_index = step_index + 1
+
+def merge_dicts(dicts):
+    d = {}
+    for dict in dicts:
+        for key in dict:
+            try:
+                d[key].append(dict[key])
+            except KeyError:
+                d[key] = [dict[key]]
+    keys_filter = []
+    for item in d:
+        if len(d[item]) > 1:
+            seen = set()
+            lst = np.unique(list(filter(None, d[item])))
+            lst = [x for x in lst if x.lower() not in seen and not seen.add(x.lower())]
+            d[item] = ":::".join(lst)
+        else:
+            if d[item][0] is not None:
+                d[item] = d[item].pop()
+            else:
+                keys_filter.append(item)
+    for item in keys_filter:
+        d.pop(item)
+    return d
 
 
 def fetch_uag_data(worker_id, worker_uag):
@@ -523,19 +769,16 @@ def fetch_uag_data(worker_id, worker_uag):
         if os.path.exists(uag_file):
             ua_data = load_json(uag_file)
         else:
-            ua_data = {}
+            ua_data = []
             if user_stack_token:
                 url = f"http://api.userstack.com/detect?access_key={user_stack_token}&ua={worker_uag}"
                 data_fetched = flatten(requests.get(url).json())
-                ua_data = data_fetched | ua_data
-                temp = {val: key for key, val in ua_data.items()}
-                ua_data = {val: key for key, val in temp.items()}
+                ua_data.append(data_fetched)
             if ip_geolocation_api_key:
                 url = f"https://api.ipgeolocation.io/user-agent?apiKey={ip_geolocation_api_key}"
                 data_fetched = flatten(requests.get(url, headers={'User-Agent': worker_uag}).json())
-                ua_data = data_fetched | ua_data
-                temp = {val: key for key, val in ua_data.items()}
-                ua_data = {val: key for key, val in temp.items()}
+                ua_data.append(data_fetched)
+            ua_data = merge_dicts(ua_data)
             with open(uag_file, 'w', encoding='utf-8') as f:
                 json.dump(ua_data, f, ensure_ascii=False, indent=4)
         for attribute, value in ua_data.items():
@@ -554,29 +797,36 @@ def fetch_ip_data(worker_id, worker_ip):
         if os.path.exists(ip_file):
             ip_data = load_json(ip_file)
         else:
-            ip_data = {}
+            ip_data = []
             if ip_info_token:
                 ip_info_handler = ipinfo.getHandler(ip_info_token)
-                data_fetched = ip_info_handler.getDetails(worker_ip).all
-                ip_data = data_fetched | ip_data
-                temp = {val: key for key, val in ip_data.items()}
-                ip_data = {val: key for key, val in temp.items()}
+                ip_data.append(flatten(ip_info_handler.getDetails(worker_ip).all))
             if ip_geolocation_api_key:
                 url = f"https://api.ipgeolocation.io/ipgeo?apiKey={ip_geolocation_api_key}&ip={worker_ip}"
-                data_fetched = flatten(requests.get(url).json())
-                ip_data = data_fetched | ip_data
-                temp = {val: key for key, val in ip_data.items()}
-                ip_data = {val: key for key, val in temp.items()}
+                data_fixed = {}
+                for key, item in flatten(requests.get(url).json()).items():
+                    if key.startswith('geo_'):
+                        data_fixed[key.replace('geo_', '')] = item
+                    else:
+                        data_fixed[key] = item
+                ip_data.append(data_fixed)
                 url = f"https://api.ipgeolocation.io/timezone?apiKey={ip_geolocation_api_key}&ip={worker_ip}"
-                data_fetched = flatten(requests.get(url).json())
-                ip_data = data_fetched | ip_data
-                temp = {val: key for key, val in ip_data.items()}
-                ip_data = {val: key for key, val in temp.items()}
+                data_fixed = {}
+                for key, item in flatten(requests.get(url).json()).items():
+                    if key.startswith('timezone_') or key.startswith('geo_'):
+                        key_fixed = key.replace('timezone_', '').replace('geo_', '')
+                        data_fixed[key_fixed] = item
+                    else:
+                        data_fixed[key] = item
+                ip_data.append(data_fixed)
                 url = f"https://api.ipgeolocation.io/astronomy?apiKey={ip_geolocation_api_key}&ip={worker_ip}"
-                data_fetched = flatten(requests.get(url).json())
-                ip_data = data_fetched | ip_data
-                temp = {val: key for key, val in ip_data.items()}
-                ip_data = {val: key for key, val in temp.items()}
+                data_fixed = {}
+                for key, item in flatten(requests.get(url).json()).items():
+                    if key.startswith('location_'):
+                        data_fixed[key.replace('location_', '')] = item
+                    else:
+                        data_fixed[key] = item
+                ip_data.append(data_fixed)
             if ip_api_api_key:
                 url = f"http://api.ipapi.com/{worker_ip}?access_key={ip_api_api_key}"
                 data_fetched = flatten(requests.get(url).json())
@@ -584,10 +834,9 @@ def fetch_ip_data(worker_id, worker_ip):
                     location_languages = data_fetched.pop('location_languages')
                     for index, lang_data in enumerate(location_languages):
                         for key, value in lang_data.items():
-                            ip_data[f"location_language_{index}_{key}"] = value
-                ip_data = data_fetched | ip_data
-                temp = {val: key for key, val in ip_data.items()}
-                ip_data = {val: key for key, val in temp.items()}
+                            data_fetched[f"location_language_{index}_{key}"] = value
+                ip_data.append(data_fetched)
+            ip_data = merge_dicts(ip_data)
             with open(ip_file, 'w', encoding='utf-8') as f:
                 json.dump(ip_data, f, ensure_ascii=False, indent=4)
         for attribute, value in ip_data.items():
@@ -652,11 +901,6 @@ if not os.path.exists(df_info_path):
         snapshot['uag'].update(fetch_uag_data(worker_id, acl_record['user_agent']))
         snapshot['ip'].update(fetch_ip_data(worker_id, acl_record['ip_address']))
 
-        temp = {val: key for key, val in snapshot['ip'].items()}
-        snapshot['ip'] = {val: key for key, val in temp.items()}
-        temp = {val: key for key, val in snapshot['uag'].items()}
-        snapshot['uag'] = {val: key for key, val in temp.items()}
-
         update_local_snapshot(acl_record, snapshot)
 
         row = {
@@ -682,10 +926,13 @@ if not os.path.exists(df_info_path):
         console.print(f"Dataframe shape: {df_info.shape}")
         console.print(f"Workers info dataframe serialized at path: [cyan on white]{df_info_path}")
 else:
+    df_info = pd.read_csv(df_info_path)
     console.print(f"Workers info dataframe [yellow]already detected[/yellow], skipping creation")
     console.print(f"Serialized at path: [cyan on white]{df_info_path}")
 
-console.rule("6 - Building [cyan on white]workers_logs[/cyan on white] Dataframe")
+
+console.rule(f"{step_index} - Building [cyan on white]workers_logs[/cyan on white] Dataframe")
+step_index = step_index + 1
 
 column_names = [
     "worker_id",
@@ -912,7 +1159,9 @@ else:
     console.print(f"Logs dataframe [yellow]already detected[/yellow], skipping creation")
     console.print(f"Serialized at path: [cyan on white]{df_log_path}")
 
-console.rule("7 - Building [cyan on white]workers_comments[/cyan on white] dataframe")
+console.rule(f"{step_index} - Building [cyan on white]workers_comments[/cyan on white] dataframe")
+step_index = step_index + 1
+
 
 def load_comment_col_names():
     columns = []
@@ -928,6 +1177,7 @@ def load_comment_col_names():
     columns.append("text")
 
     return columns
+
 
 dataframe = pd.DataFrame()
 
@@ -954,7 +1204,6 @@ if not os.path.exists(df_comm_path):
                 if column not in dataframe:
                     dataframe[column] = np.nan
 
-
             row = {}
             row['worker_id'] = worker_id
             row['paid'] = worker_paid
@@ -968,7 +1217,7 @@ if not os.path.exists(df_comm_path):
 
                 for comment in comments:
 
-                    if len(comment['serialization']['comment'])>0:
+                    if len(comment['serialization']['comment']) > 0:
                         row['try_current'] = comment['serialization']['info']['try']
                         row['time_submit'] = comment['time_submit']
                         row['sequence_number'] = comment['serialization']['info']['sequence']
@@ -989,8 +1238,9 @@ else:
     console.print(f"Workers comments dataframe [yellow]already detected[/yellow], skipping creation")
     console.print(f"Serialized at path: [cyan on white]{df_comm_path}")
 
+console.rule(f"{step_index} - Building [cyan on white]workers_questionnaire[/cyan on white] dataframe")
+step_index = step_index + 1
 
-console.rule("8 - Building [cyan on white]workers_questionnaire[/cyan on white] dataframe")
 
 def load_quest_col_names(questionnaires):
     columns = []
@@ -1034,8 +1284,6 @@ def load_quest_col_names(questionnaires):
 
 
 def parse_answers(row, questionnaire, question, answers):
-
-
     answer_value = None
     answer_free_text = None
     question_name_full = None
@@ -1044,12 +1292,12 @@ def parse_answers(row, questionnaire, question, answers):
         if '_answer' in control_name:
             question_name_parsed = control_name.replace("_answer", "")
             if question_name_parsed == question["nameFull"] or question_name_parsed in question['nameFull']:
-                if type(answer_current)==dict:
+                if type(answer_current) == dict:
                     selected_options = ""
                     for option, selected in answer_current.items():
                         if selected:
                             selected_options = f"{selected_options}{option};"
-                    if len(selected_options)>0:
+                    if len(selected_options) > 0:
                         selected_options = selected_options[:-1]
                     answer_value = selected_options
                 else:
@@ -1059,9 +1307,8 @@ def parse_answers(row, questionnaire, question, answers):
             if question_name_parsed == question["nameFull"]:
                 answer_free_text = answer_current
 
-
     for attribute, value in question.items():
-        if attribute== 'answers':
+        if attribute == 'answers':
             values = []
             labels = []
             for index, answer in enumerate(value):
@@ -1200,7 +1447,8 @@ else:
     console.print(f"Workers questionnaire dataframe [yellow]already detected[/yellow], skipping creation")
     console.print(f"Serialized at path: [cyan on white]{df_quest_path}")
 
-console.rule("9 - Building [cyan on white]workers_data[/cyan on white] dataframe")
+console.rule(f"{step_index} - Building [cyan on white]workers_data[/cyan on white] dataframe")
+step_index = step_index + 1
 
 
 def load_data_col_names(dimensions, documents):
@@ -1408,8 +1656,8 @@ else:
     console.print(f"Workers dataframe [yellow]already detected[/yellow], skipping creation")
     console.print(f"Serialized at path: [cyan on white]{df_data_path}")
 
-
-console.rule("10 - Building [cyan on white]workers_dimensions_selection[/cyan on white] dataframe")
+console.rule(f"{step_index} - Building [cyan on white]workers_dimensions_selection[/cyan on white] dataframe")
+step_index = step_index + 1
 
 if os.path.exists(df_data_path):
     df_data = pd.read_csv(df_data_path)
@@ -1539,7 +1787,8 @@ else:
     console.print(f"Dimensions analysis dataframe [yellow]already detected[/yellow], skipping creation")
     console.print(f"Serialized at path: [cyan on white]{df_dim_path}")
 
-console.rule("11 - Building [cyan on white]workers_urls[/cyan on white] dataframe")
+console.rule(f"{step_index} - Building [cyan on white]workers_urls[/cyan on white] dataframe")
+step_index = step_index + 1
 
 if os.path.exists(df_data_path):
     df_data = pd.read_csv(df_data_path)

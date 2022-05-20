@@ -103,6 +103,7 @@ enable_solver = strtobool(os.getenv('enable_solver')) if os.getenv('enable_solve
 aws_region = os.getenv('aws_region')
 aws_private_bucket = os.getenv('aws_private_bucket')
 aws_deploy_bucket = os.getenv('aws_deploy_bucket')
+toloka_oauth_token = os.getenv('toloka_oauth_token')
 prolific_completion_code = os.getenv('prolific_completion_code')
 budget_limit = os.getenv('budget_limit')
 bing_api_key = os.getenv('bing_api_key')
@@ -1845,15 +1846,14 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         console.print(f"Path: [ital]{hits_file}")
         hits = read_json(hits_file)
         token_df = pd.DataFrame(columns=["INPUT:token_input"])
-
-        # for hit in hits:
-        #     token_df = token_df.append({
-        #         "INPUT:token_input": hit['token_input']
-        #     }, ignore_index=True)
-        #     token_df = token_df.append({
-        #         "INPUT:token_input": None
-        #     }, ignore_index=True)
-        # token_df.to_csv(toloka_tokens_file, sep="\t", index=False)
+        for hit in hits:
+            token_df = token_df.append({
+                 "INPUT:token_input": hit['token_input']
+            }, ignore_index=True)
+            token_df = token_df.append({
+                "INPUT:token_input": None
+            }, ignore_index=True)
+        token_df.to_csv(toloka_tokens_file, sep="\t", index=False)
         console.print(f"Token for the current batch chosen")
         console.print(f"Path: [italic]{toloka_tokens_file}")
 

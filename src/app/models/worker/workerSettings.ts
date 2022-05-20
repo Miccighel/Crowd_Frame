@@ -11,7 +11,7 @@ export class WorkerSettings {
     constructor(
         data = null as JSON
     ) {
-        this.block = data ? 'block' in data ? data['block'] : true : true;
+        this.block = data ? 'block' in data ? data['block'] : false : false;
         this.blacklist = new Array<string>();
         if (data) if ('blacklist' in data) for (let workerId of data["blacklist"] as Array<string>) this.blacklist.push(workerId)
         this.whitelist = new Array<string>();

@@ -22,7 +22,7 @@
             <h4>Success</h4>
         </mat-card-title>
 
-        <ng-container *ngIf="!this.sectionService.taskAllowed && !this.sectionService.taskOverbooking && !this.sectionService.taskAlreadyCompleted">
+        <ng-container *ngIf="!this.sectionService.taskAllowed && !this.sectionService.taskOverbooking && !this.sectionService.taskAlreadyCompleted && !this.sectionService.taskFailed">
             <mat-card-content *ngIf="this.messages" id="not-allowed-section">
                 <h2>Something went wrong...</h2>
                 <p class="text-desc">Please, read the list of possible reasons below. Sorry for the inconvenience.</p>
@@ -42,6 +42,15 @@
                 <h2>Every HIT of the current task has already been assigned to a worker.</h2>
                 <p class="text-desc">
                     If you reached this point, you have been recruited wrongly. Please, return your HIT. Sorry for the inconvenience.
+                </p>
+            </mat-card-content>
+        </ng-container>
+
+        <ng-container *ngIf="!this.sectionService.taskAllowed && this.sectionService.taskFailed">
+            <mat-card-content>
+                <h2>You failed to complete the task in the past.</h2>
+                <p class="text-desc">
+                    If you reached this point, please return your HIT. Sorry for the inconvenience.
                 </p>
             </mat-card-content>
         </ng-container>
