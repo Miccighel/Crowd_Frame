@@ -206,7 +206,8 @@ for current_batch_name in task_batch_names:
     else:
         console.print(f"Task configuration for batch [green]{current_batch_name}[/green] [yellow]already detected[/yellow], skipping download")
 
-console.rule("3 - Fetching Workers Snapshots")
+console.rule(f"{step_index}  - Fetching Workers Snapshots")
+step_index = step_index + 1
 
 worker_identifiers = []
 paginator = dynamo_db.get_paginator('scan')
