@@ -5,6 +5,12 @@ import json
 import os
 import shutil
 from glob import glob
+from json import JSONDecodeError
+import time
+import asyncio
+import aiohttp
+from aiohttp import ClientSession, ClientConnectorError, ClientResponseError, ServerDisconnectedError
+import tqdm
 import ipinfo
 import re
 import numpy as np
@@ -14,18 +20,22 @@ from pathlib import Path
 import boto3
 import pandas as pd
 import pprint
+import uuid
 import toloka.client as toloka
 from datetime import datetime
+from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 import xml.etree.ElementTree as Xml
 from rich.console import Console
-from tqdm import tqdm
 import collections
 import warnings
+
+from yarl import URL
 
 pd.set_option('display.max_columns', None)
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
+pd.options.mode.chained_assignment = None  # default='warn'
 warnings.simplefilter(action='ignore', category=pd.errors.PerformanceWarning)
 
 console = Console()
@@ -41,9 +51,10 @@ batch_name = os.getenv('batch_name')
 batch_prefix = os.getenv('batch_prefix')
 admin_user = os.getenv('admin_user')
 admin_password = os.getenv('admin_password')
-deploy_config = os.getenv('deploy_config')
 server_config = os.getenv('server_config')
-deploy_config = strtobool(deploy_config) if deploy_config is not None else False
+deploy_config = strtobool(os.getenv('deploy_config')) if os.getenv('deploy_config') is not None else False
+enable_solver = strtobool(os.getenv('enable_solver')) if os.getenv('enable_solver') is not None else False
+enable_crawling = strtobool(os.getenv('enable_crawling')) if os.getenv('enable_crawling') is not None else False
 aws_region = os.getenv('aws_region')
 aws_private_bucket = os.getenv('aws_private_bucket')
 aws_deploy_bucket = os.getenv('aws_deploy_bucket')
@@ -62,6 +73,9 @@ folder_result_path = f"result/{task_name}/"
 models_path = f"result/{task_name}/Dataframe/"
 resources_path = f"result/{task_name}/Resources/"
 data_path = f"result/{task_name}/Data/"
+crawling_path = f"result/{task_name}/Crawling/"
+crawling_path_source = f"result/{task_name}/Crawling/Source/"
+crawling_path_metadata = f"result/{task_name}/Crawling/Metadata/"
 df_log_partial_folder_path = f"{models_path}Logs-Partial/"
 task_config_folder = f"{folder_result_path}/Task/"
 df_mturk_data_path = f"{models_path}workers_mturk_data.csv"
@@ -74,6 +88,7 @@ df_comm_path = f"{models_path}workers_comments.csv"
 df_data_path = f"{models_path}workers_answers.csv"
 df_dim_path = f"{models_path}workers_dimensions_selection.csv"
 df_url_path = f"{models_path}workers_urls.csv"
+df_crawl_path = f"{models_path}workers_crawling.csv"
 
 
 def serialize_json(folder, filename, data):
@@ -140,6 +155,9 @@ os.makedirs(folder_result_path, exist_ok=True)
 os.makedirs(models_path, exist_ok=True)
 os.makedirs(resources_path, exist_ok=True)
 os.makedirs(data_path, exist_ok=True)
+os.makedirs(crawling_path, exist_ok=True)
+os.makedirs(crawling_path_source, exist_ok=True)
+os.makedirs(crawling_path_metadata, exist_ok=True)
 
 if profile_name is None:
     profile_name = 'default'
@@ -153,6 +171,10 @@ bucket = s3_resource.Bucket(aws_private_bucket)
 boto_session = boto3.Session(profile_name=profile_name)
 dynamo_db = boto_session.client('dynamodb', region_name=aws_region)
 dynamo_db_resource = boto3.resource('dynamodb', region_name=aws_region)
+ec2_client = boto3.client('ec2')
+aws_region_names = []
+for region_data in ec2_client.describe_regions()['Regions']:
+    aws_region_names.append(region_data['RegionName'])
 
 if batch_prefix is None:
     batch_prefix = ''
@@ -371,7 +393,7 @@ if not os.path.exists(df_acl_path):
 
     df_acl = pd.DataFrame()
 
-    for worker_id in tqdm(worker_identifiers):
+    for worker_id in tqdm.tqdm(worker_identifiers):
 
         worker_snapshot_path = None
 
@@ -419,16 +441,9 @@ if not os.path.exists(df_acl_path):
             if acl_presence:
                 df_acl = df_acl.append(row, ignore_index=True)
 
-    if len(df_acl) > 0:
-        df_acl.to_csv(df_acl_path, index=False)
-        console.print(f"Dataframe shape: {df_acl.shape}")
-        console.print(f"Workers info dataframe serialized at path: [cyan on white]{df_acl_path}")
-
 else:
     df_acl = pd.read_csv(df_acl_path)
     console.print(f"Workers ACL [yellow]already detected[/yellow], skipping download")
-
-
 
 platforms = np.unique(df_acl['platform'].values)
 
@@ -707,13 +722,13 @@ if 'toloka' in platforms:
                     row['user_os_version_minor'] = user_metadata['attributes']['os_version_minor'] if 'os_version_minor' in user_metadata['attributes'] else np.nan
                     row['user_os_version_bugfix'] = user_metadata['attributes']['os_version_bugfix'] if 'os_version_bugfix' in user_metadata['attributes'] else np.nan
                     row['user_adult_allowed'] = user_metadata['adult_allowed']
-                    acl_rows = df_acl.loc[(df_acl['token_output']==row['assignment_token_output'])&(df_acl['platform']=='toloka')]
-                    if len(acl_rows)>1:
+                    acl_rows = df_acl.loc[(df_acl['token_output'] == row['assignment_token_output']) & (df_acl['platform'] == 'toloka')]
+                    if len(acl_rows) > 1:
                         acl_rows = acl_rows.sort_values(by='time_arrival', ascending=False)
                         acl_rows = acl_rows.head(1)
                         row['worker_id'] = acl_rows['worker_id'].values[0]
                     else:
-                        if len(acl_rows['worker_id'].values)>0:
+                        if len(acl_rows['worker_id'].values) > 0:
                             row['worker_id'] = acl_rows['worker_id'].values[0]
                         else:
                             row['worker_id'] = np.nan
@@ -734,9 +749,9 @@ if 'toloka' in platforms:
         console.print(f"Toloka dataframe [yellow]already detected[/yellow], skipping creation")
         console.print(f"Serialized at path: [cyan on black]{df_toloka_data_path}")
 
-
 console.rule(f"{step_index} - Building [cyan on white]workers_info[/cyan on white] Dataframe")
 step_index = step_index + 1
+
 
 def merge_dicts(dicts):
     d = {}
@@ -891,7 +906,7 @@ if not os.path.exists(df_info_path):
 
     df_info = pd.DataFrame()
 
-    for index, acl_record in tqdm(df_acl.iterrows(), total=df_acl.shape[0]):
+    for index, acl_record in tqdm.tqdm(df_acl.iterrows(), total=df_acl.shape[0]):
 
         worker_id = acl_record['worker_id']
         snapshot = find_snapshot_for_record(acl_record)
@@ -931,7 +946,6 @@ else:
     console.print(f"Workers info dataframe [yellow]already detected[/yellow], skipping creation")
     console.print(f"Serialized at path: [cyan on white]{df_info_path}")
 
-
 console.rule(f"{step_index} - Building [cyan on white]workers_logs[/cyan on white] Dataframe")
 step_index = step_index + 1
 
@@ -952,7 +966,7 @@ if not os.path.exists(df_log_path):
 
     os.makedirs(df_log_partial_folder_path, exist_ok=True)
 
-    for index, acl_record in tqdm(df_acl.iterrows(), total=df_acl.shape[0]):
+    for index, acl_record in tqdm.tqdm(df_acl.iterrows(), total=df_acl.shape[0]):
 
         worker_id = acl_record['worker_id']
         snapshots = find_snapshost_for_task(acl_record)
@@ -1128,7 +1142,7 @@ if not os.path.exists(df_log_path):
 
     console.print(f"Merging together {len(df_partials_paths)} partial log dataframes")
 
-    for df_partial_path in tqdm(df_partials_paths):
+    for df_partial_path in tqdm.tqdm(df_partials_paths):
         partial_df = pd.read_csv(df_partial_path)
         if partial_df.shape[0] > 0:
             dataframes_partial.append(partial_df)
@@ -1184,7 +1198,7 @@ dataframe = pd.DataFrame()
 
 if not os.path.exists(df_comm_path):
 
-    for index, acl_record in tqdm(df_acl.iterrows(), total=df_acl.shape[0]):
+    for index, acl_record in tqdm.tqdm(df_acl.iterrows(), total=df_acl.shape[0]):
 
         worker_id = acl_record['worker_id']
         snapshots = find_snapshost_for_task(acl_record)
@@ -1356,7 +1370,7 @@ dataframe = pd.DataFrame()
 
 if not os.path.exists(df_quest_path):
 
-    for index, acl_record in tqdm(df_acl.iterrows(), total=df_acl.shape[0]):
+    for index, acl_record in tqdm.tqdm(df_acl.iterrows(), total=df_acl.shape[0]):
 
         worker_id = acl_record['worker_id']
         snapshots = find_snapshost_for_task(acl_record)
@@ -1394,7 +1408,11 @@ if not os.path.exists(df_quest_path):
                     row['time_submit'] = questionnaire_data['time_submit']
 
                     questionnaire = questionnaires[questionnaire_data['serialization']['info']['index']]
-                    questions = questionnaire_data['serialization']['questions']
+                    questions = None
+                    if 'questions' in questionnaire_data['serialization']:
+                        questions = questionnaire_data['serialization']['questions']
+                    else:
+                        questions = questionnaire['questions']
                     current_answers = questionnaire_data['serialization']['answers']
                     timestamps_elapsed = questionnaire_data['serialization']["timestamps_elapsed"]
                     info = questionnaire_data['serialization']["info"]
@@ -1508,7 +1526,7 @@ dataframe = pd.DataFrame()
 
 if not os.path.exists(df_data_path):
 
-    for index, acl_record in tqdm(df_acl.iterrows(), total=df_acl.shape[0]):
+    for index, acl_record in tqdm.tqdm(df_acl.iterrows(), total=df_acl.shape[0]):
 
         worker_id = acl_record['worker_id']
         worker_paid = acl_record['paid']
@@ -1701,7 +1719,7 @@ def parse_dimensions_selected(df, worker_id, worker_paid, task, info, documents,
                         label = mapping['label']
 
             timestamp_selection = float(dimension_current['timestamp'])
-            timestamp_selection_parsed = datetime.datetime.fromtimestamp(timestamp_selection)
+            timestamp_selection_parsed = datetime.fromtimestamp(timestamp_selection)
             timestamp_parsed_previous = timestamps_found[counter - 1]
             time_elapsed = (timestamp_selection_parsed - timestamp_parsed_previous).total_seconds()
             if time_elapsed < 0:
@@ -1735,7 +1753,7 @@ def parse_dimensions_selected(df, worker_id, worker_paid, task, info, documents,
 
 if not os.path.exists(df_dim_path) and os.path.exists(df_data_path):
 
-    for index, acl_record in tqdm(df_acl.iterrows(), total=df_acl.shape[0]):
+    for index, acl_record in tqdm.tqdm(df_acl.iterrows(), total=df_acl.shape[0]):
 
         worker_id = acl_record['worker_id']
         worker_paid = acl_record['paid']
@@ -1764,7 +1782,7 @@ if not os.path.exists(df_dim_path) and os.path.exists(df_data_path):
                     info = document_data['serialization']["info"]
 
                     timestamp_first = timestamp_start
-                    timestamp_first_parsed = datetime.datetime.fromtimestamp(timestamp_first)
+                    timestamp_first_parsed = datetime.fromtimestamp(timestamp_first)
                     timestamps_found = [timestamp_first_parsed]
 
                     counter = 0
@@ -1810,6 +1828,7 @@ dataframe = pd.DataFrame(columns=[
     "response_url",
     "response_name",
     "response_snippet",
+    "response_uuid",
     "index_selected"
 ])
 dataframe['try_last'] = dataframe['try_last'].astype(float)
@@ -1876,14 +1895,15 @@ def parse_responses(df, worker_id, worker_paid, task, info, queries, responses_r
                 (df["response_name"] == response_selected["response"]['name']) &
                 (df["response_snippet"] == response_selected["response"]['snippet'])
                 ]
-            df.at[row.index.values[0], 'index_selected'] = response_index
+            if len(row.index.values) > 0:
+                df.at[row.index.values[0], 'index_selected'] = response_index
 
     return df
 
 
 if not os.path.exists(df_url_path):
 
-    for index, acl_record in tqdm(df_acl.iterrows(), total=df_acl.shape[0]):
+    for index, acl_record in tqdm.tqdm(df_acl.iterrows(), total=df_acl.shape[0]):
 
         worker_id = acl_record['worker_id']
         worker_paid = acl_record['paid']
@@ -1910,6 +1930,10 @@ if not os.path.exists(df_url_path):
                     dataframe = parse_responses(dataframe, worker_id, worker_paid, task, info, queries, responses_retrieved, responses_selected)
 
     dataframe.drop_duplicates(inplace=True)
+    unique_urls = np.unique(dataframe['response_url'].values)
+    console.print(f"Generating UUIDs for {len(unique_urls)} unique URLs")
+    for url in tqdm.tqdm(unique_urls):
+        dataframe.loc[dataframe['response_url'] == url, 'response_uuid'] = uuid.uuid4()
 
     if dataframe.shape[0] > 0:
         dataframe.to_csv(df_url_path, index=False)
@@ -1920,9 +1944,195 @@ if not os.path.exists(df_url_path):
         console.print(f"Worker urls dataframe [yellow]empty[/yellow], dataframe not serialized.")
 
 else:
-
     console.print(f"URL analysis dataframe [yellow]already detected[/yellow], skipping creation")
     console.print(f"Serialized at path: [cyan on white]{df_url_path}")
+
+if enable_crawling:
+
+    console.rule(f"{step_index} - Crawling Search Results")
+    step_index = step_index + 1
+
+    df_url = pd.read_csv(df_url_path)
+    unique_urls = np.unique(df_url['response_url'])
+    console.print(f"Unique URLs: [green]{len(unique_urls)}")
+
+    start = time.time()
+
+    async def read_url(session, url):
+        try:
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.61/63 Safari/537.36 Edg/100.0.1185.39',
+                'Accept-Encoding': 'gzip'
+            }
+            async with session.get(url, headers=headers, timeout=6) as resp:
+                return url, resp, await resp.read()
+        except asyncio.TimeoutError as error:
+            return url, error
+        except ClientConnectorError as error:
+            return url, error
+
+    urls_to_crawl = 0
+    unique_urls_filt = []
+
+    for url_current in list(unique_urls):
+        url_data = df_url.loc[df_url['response_url'] == url_current]
+        if len(url_data) >= 1:
+            url_data = url_data.iloc[0]
+        page_metadata_path = f"{crawling_path_metadata}{url_data['response_uuid']}_metadata.json"
+        if not os.path.exists(page_metadata_path):
+            unique_urls_filt.append(url_current)
+        else:
+            metadata = load_json(page_metadata_path)
+            if metadata['response_error_code'] is not None:
+                unique_urls_filt.append(url_current)
+                os.remove(page_metadata_path)
+    urls_already_crawled = len(unique_urls) - len(unique_urls_filt)
+    urls_to_crawl = len(unique_urls_filt)
+    console.print(f"URLs to crawl: {len(unique_urls_filt)}/{len(unique_urls)} ({(len(unique_urls_filt) / len(unique_urls)) * 100}%)")
+    console.print(f"URLs already crawled: {urls_already_crawled}/{len(unique_urls)} ({(urls_already_crawled / len(unique_urls)) * 100}%)")
+
+    async def run_crawling():
+        urls = []
+        async with aiohttp.ClientSession() as session:
+            for url_current_filt in unique_urls_filt:
+                urls.append(asyncio.create_task(read_url(session, url_current_filt)))
+            responses = []
+            console.print("Processing responses...")
+            for request_current in tqdm.tqdm(asyncio.as_completed(urls), total=len(urls)):
+                try:
+                    responses.append(await request_current)
+                except ServerDisconnectedError as error:
+                    responses.append(error)
+            for index_response, response_current in enumerate(responses):
+                error_code = None
+                if type(response_current[1]) == asyncio.exceptions.TimeoutError:
+                    url_current = response_current[0]
+                    error_code = 'timeout_error'
+                elif type(response_current[1]) == ClientConnectorError:
+                    url_current = response_current[0]
+                    error_code = 'client_error'
+                else:
+                    url_current = response_current[0]
+                url_data = df_url.loc[
+                    (df_url['response_url'] == str(URL(url_current).with_scheme('https'))) |
+                    (df_url['response_url'] == str(URL(url_current).with_scheme('http')))
+                    ]
+                if len(url_data) >= 1:
+                    url_data = url_data.iloc[0]
+                response_uuid = url_data['response_uuid']
+                page_metadata_path = f"{crawling_path_metadata}{response_uuid}_metadata.json"
+                if not os.path.exists(page_metadata_path):
+                    row = {
+                        'response_uuid': response_uuid,
+                        'response_url': url_current,
+                        'response_timestamp': datetime.now().timestamp()
+                    }
+                    if error_code is not None:
+                        row['response_page_source_path'] = None
+                        row['response_error_code'] = error_code
+                    else:
+                        response_data = response_current[1]
+                        response_body = response_current[2]
+                        row['response_status_code'] = int(response_data.status)
+                        try:
+                            row['response_encoding'] = response_data.get_encoding().lower() if response_data.get_encoding() else None
+                        except RuntimeError:
+                            row['response_encoding'] = None
+                        row['response_content_length'] = response_data.content_length
+                        for header_text, header_value in response_data.headers.items():
+                            try:
+                                header_dict = json.loads(header_value)
+                                if type(header_dict) == dict:
+                                    header_dict_flat = flatten(header_dict)
+                                    for header_attribute_sub, header_value_sub in header_dict_flat.items():
+                                        if type(header_value_sub) == list:
+                                            for dict_index, dict_sub in enumerate(header_value_sub):
+                                                for header_attribute_sub_sub, header_value_sub_sub in dict_sub.items():
+                                                    header_text = f"response_header_{header_attribute_sub_sub.lower().replace('-', '_')}_{dict_index}"
+                                                    row[header_text] = header_value_sub_sub
+                                        else:
+                                            row[header_attribute_sub] = header_value_sub
+                                elif type(header_dict) == list:
+                                    for dict_index, dict_sub in enumerate(header_value):
+                                        for header_attribute_sub, header_value_sub in dict_sub.items():
+                                            header_text = f"response_header_{header_attribute_sub.lower().replace('-', '_')}_{dict_index}"
+                                            row[header_text] = header_value_sub
+                                else:
+                                    header_text = f"response_header_{header_text.lower().replace('-', '_')}"
+                                    row[header_text] = header_value
+                            except JSONDecodeError as error:
+                                header_text = f"response_header_{header_text.lower().replace('-', '_')}"
+                                row[header_text] = header_value
+
+                        if 'response_header_content_type' in row.keys():
+                            try:
+                                if 'text/html' in row['response_header_content_type']:
+                                    response_content_decoded = response_body.decode('utf-8')
+                                    page_source_path = f"{crawling_path_source}{response_uuid}_source.html"
+                                    soup = BeautifulSoup(response_content_decoded, 'html.parser')
+                                    soup_str = soup.prettify()
+                                    with open(page_source_path, 'w') as f:
+                                        f.write(soup_str)
+                                elif 'application/pdf' in row['response_header_content_type']:
+                                    page_source_path = f"{crawling_path_source}{response_uuid}_source.pdf"
+                                    with open(page_source_path, 'wb') as f:
+                                        f.write(response_body)
+                                elif 'text/plain' in row['response_header_content_type']:
+                                    response_content_decoded = response_body.decode('utf-8')
+                                    page_source_path = f"{crawling_path_source}{response_uuid}_source.txt"
+                                    with open(page_source_path, 'w') as f:
+                                        f.write(response_content_decoded)
+                                elif 'application/vnd.openxmlformats-officedocument.presentationml.presentation' in row['response_header_content_type']:
+                                    page_source_path = f"{crawling_path_source}{response_uuid}_source.pptx"
+                                    with open(page_source_path, 'wb') as f:
+                                        f.write(response_body)
+                                else:
+                                    print(url_current, row['response_header_content_type'])
+                                    assert False
+                                row['response_page_source_path'] = page_source_path
+                                row['response_error_code'] = None
+                            except UnicodeDecodeError:
+                                row['response_page_source_path'] = None
+                                row['response_error_code'] = 'encoding_error'
+                            except UnicodeEncodeError:
+                                row['response_page_source_path'] = None
+                                row['response_error_code'] = 'encoding_error'
+                        else:
+                            row['response_page_source_path'] = None
+                            row['response_error_code'] = 'empty_response'
+                    with open(page_metadata_path, 'w', encoding="utf-8") as f:
+                        json.dump(row, f, ensure_ascii=False, indent=4)
+
+
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(run_crawling())
+    end = time.time()
+    print(f"Time elapsed: {round(end-start)} seconds")
+
+    if urls_to_crawl>0 or not os.path.exists(df_crawl_path):
+        metadata_paths = glob(f"{crawling_path_metadata}/*")
+        columns = []
+        console.print(f"Loading attribute dictionary from [green]{len(metadata_paths)}[/green] metadata files")
+        for metadata_path in tqdm.tqdm(metadata_paths):
+            metadata = load_json(metadata_path)
+            for attribute in metadata:
+                if attribute not in columns:
+                    columns.append(attribute)
+        df_crawl = pd.DataFrame(columns=columns)
+        console.print(f"Adding metadata to final dataframe")
+        for metadata_path in tqdm.tqdm(metadata_paths):
+            metadata = load_json(metadata_path)
+            df_crawl = df_crawl.append(metadata, ignore_index=True)
+        df_crawl.to_csv(df_crawl_path, index=False)
+        df_crawl_correct = df_crawl[df_crawl["response_error_code"].isnull()]
+        console.print(f"Pages correctly crawled: [green]{len(df_crawl_correct)}/{len(unique_urls)}[/green] [cyan]({(len(df_crawl_correct) / len(unique_urls)) * 100}%)")
+        console.print(f"Dataframe shape: {df_crawl.shape}")
+        console.print(f"Worker crawling dataframe serialized at path: [cyan on white]{df_crawl_path}")
+    else:
+        console.print(f"Crawling dataframe [yellow]already detected[/yellow], skipping creation")
+        console.print(f"Serialized at path: [cyan on white]{df_crawl_path}")
+else:
+    console.print(f"Worker URLs crawling [yellow]not enabled[/yellow], skipping")
 
 # console.rule("12 - Checking missing HITs")
 

@@ -88,3 +88,5 @@ data/result/*
 
 
 data/Logs-Partial.zip
+data/build/toloka/interface.html
+data/build/toloka/tokens.tsv

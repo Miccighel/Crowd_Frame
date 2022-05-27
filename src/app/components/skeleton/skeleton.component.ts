@@ -253,6 +253,9 @@ export class SkeletonComponent implements OnInit {
             }
             this.worker.setParameter('task_name', this.configService.environment.taskName)
             this.worker.setParameter('batch_name', this.configService.environment.batchName)
+            if (this.worker.getParameter('platform') == null)
+                this.worker.setParameter('platform', 'custom')
+            this.worker.setParameter('batch_name', this.configService.environment.batchName)
             this.worker.setParameter('folder', this.S3Service.getWorkerFolder(this.configService.environment, this.worker))
             this.worker.setParameter('access_counter', String(1))
             this.worker.setParameter('paid', String(false))
