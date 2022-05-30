@@ -2022,7 +2022,26 @@ if enable_crawling:
                         print(resp.content_disposition)
                         assert False
             except asyncio.TimeoutError as error:
-                return url, error
+                error_code = 'timeout_error'
+                return url, error_code, error
+            except ClientPayloadError as error:
+                error_code = 'client_payload_error'
+                return url, error_code, error
+            except ClientConnectorError as error:
+                error_code = 'client_connector_error'
+                return url, error_code, error
+            except ServerDisconnectedError as error:
+                error_code = 'server_disconnected_error'
+                return url, error_code, error
+            except TooManyRedirects as error:
+                error_code = 'too_many_redirects_error'
+                return url, error_code, error
+            except ClientOSError as error:
+                error_code = 'client_os_error'
+                return url, error_code, error
+            except UnicodeDecodeError as error:
+                error_code = 'unicode_decode_error'
+                return url, error_code, error
 
 
     async def run_crawling():
@@ -2032,25 +2051,12 @@ if enable_crawling:
             urls.append(asyncio.create_task(read_url(url_current_filt)))
         console.print(f"Processing asynchronous requests")
         for request_current in tqdm.tqdm(asyncio.as_completed(urls), total=len(urls)):
+            response_current = await request_current
             error_code = None
-            try:
-                response_current = await request_current
-                url_current = response_current[0]
-                response_data = response_current[1]
-                if type(response_data) == asyncio.TimeoutError:
-                    error_code = 'timeout_error'
-            except ClientPayloadError as error:
-                error_code = 'client_payload_error'
-            except ClientConnectorError as error:
-                error_code = 'client_connector_error'
-            except ServerDisconnectedError as error:
-                error_code = 'server_disconnected_error'
-            except TooManyRedirects as error:
-                error_code = 'too_many_redirects_error'
-            except ClientOSError as error:
-                error_code = 'client_os_error'
-            except UnicodeDecodeError as error:
-                error_code = 'unicode_decode_error'
+            url_current = response_current[0]
+            error_code = response_current[1]
+            if type(error_code) != str:
+                error_code = None
             url_data = df_url.loc[
                 (df_url['response_url'] == str(URL(url_current).with_scheme('https'))) |
                 (df_url['response_url'] == str(URL(url_current).with_scheme('http'))) |
@@ -2067,7 +2073,8 @@ if enable_crawling:
                 'response_page_source_path': None,
                 "response_error_code": error_code
             }
-            if error_code != 'timeout_error':
+            if error_code is None:
+                response_data = response_current[1]
                 row['response_status_code'] = int(response_data.status)
                 try:
                     row['response_encoding'] = response_data.get_encoding().lower() if response_data.get_encoding() else None
@@ -2098,8 +2105,6 @@ if enable_crawling:
                     except JSONDecodeError as error:
                         header_text = f"response_header_{header_text.lower().replace('-', '_')}"
                         row[header_text] = header_value
-
-            if error_code is None:
                 try:
                     response_body = response_current[2]
                     if 'response_header_content_type' in row.keys():
@@ -2122,7 +2127,7 @@ if enable_crawling:
                                 f.write(response_content_decoded)
                         elif 'application/vnd.openxmlformats-officedocument.presentationml.presentation' in row['response_header_content_type']:
                             page_source_path = f"{crawling_path_source}{response_uuid}_source.pptx"
-                            with open(page_source_path, 'w') as f:
+                            with open(page_source_path, 'wb') as f:
                                 f.write(response_body)
                         elif 'application/octet-stream' in row['response_header_content_type']:
                             suffix = Path(url_current).suffix
@@ -2132,9 +2137,8 @@ if enable_crawling:
                         row['response_page_source_path'] = page_source_path
                 except UnicodeEncodeError:
                     row['response_error_code'] = 'unicode_encode_error'
-            with open(page_metadata_path, 'w', encoding="utf-8") as f:
-                json.dump(row, f, ensure_ascii=False, indent=4)
-
+                with open(page_metadata_path, 'w', encoding="utf-8") as f:
+                    json.dump(row, f, ensure_ascii=False, indent=4)
 
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
     loop = asyncio.get_event_loop()
