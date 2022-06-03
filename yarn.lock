@@ -174,7 +174,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/animations@npm:~14.0.0":
+"@angular/animations@npm:^14.0.0":
   version: 14.0.0
   resolution: "@angular/animations@npm:14.0.0"
   dependencies:
@@ -185,9 +185,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/cdk@npm:~13.3.8":
-  version: 13.3.8
-  resolution: "@angular/cdk@npm:13.3.8"
+"@angular/cdk@npm:^13.3.8":
+  version: 13.3.9
+  resolution: "@angular/cdk@npm:13.3.9"
   dependencies:
     parse5: ^5.0.0
     tslib: ^2.3.0
@@ -198,7 +198,7 @@ __metadata:
   dependenciesMeta:
     parse5:
       optional: true
-  checksum: ea7329ae61c579d04806628ec94efc6adbbe6fe266cd042796fb6fa708fe503c2977d32566f64f93d10a319713b0308f67c4837d61efce93f4df33cdca734f05
+  checksum: cf312f3dedcaab0d985c3f12df1141f566760d57af579b1d7e2b2c6f23ea2960f8c9bbfe2a0863f7ac7b0bdd85b579bad6d8ab6f84af7f17af21d11c1207a9fc
   languageName: node
   linkType: hard
 
@@ -232,7 +232,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/common@npm:~14.0.0":
+"@angular/common@npm:^14.0.0":
   version: 14.0.0
   resolution: "@angular/common@npm:14.0.0"
   dependencies:
@@ -244,7 +244,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/compiler-cli@npm:~14.0.0":
+"@angular/compiler-cli@npm:^14.0.0":
   version: 14.0.0
   resolution: "@angular/compiler-cli@npm:14.0.0"
   dependencies:
@@ -269,7 +269,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/compiler@npm:~14.0.0":
+"@angular/compiler@npm:^14.0.0":
   version: 14.0.0
   resolution: "@angular/compiler@npm:14.0.0"
   dependencies:
@@ -307,7 +307,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/forms@npm:~14.0.0":
+"@angular/forms@npm:^14.0.0":
   version: 14.0.0
   resolution: "@angular/forms@npm:14.0.0"
   dependencies:
@@ -338,7 +338,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/platform-browser-dynamic@npm:~14.0.0":
+"@angular/platform-browser-dynamic@npm:^14.0.0":
   version: 14.0.0
   resolution: "@angular/platform-browser-dynamic@npm:14.0.0"
   dependencies:
@@ -352,7 +352,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/platform-browser@npm:~14.0.0":
+"@angular/platform-browser@npm:^14.0.0":
   version: 14.0.0
   resolution: "@angular/platform-browser@npm:14.0.0"
   dependencies:
@@ -368,7 +368,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/router@npm:~14.0.0":
+"@angular/router@npm:^14.0.0":
   version: 14.0.0
   resolution: "@angular/router@npm:14.0.0"
   dependencies:
@@ -4119,19 +4119,19 @@ __metadata:
   resolution: "crowd-frame@workspace:."
   dependencies:
     "@angular-devkit/build-angular": ^14.0.0
-    "@angular/animations": ~14.0.0
-    "@angular/cdk": ~13.3.8
+    "@angular/animations": ^14.0.0
+    "@angular/cdk": ^13.3.8
     "@angular/cli": ^14.0.0
-    "@angular/common": ~14.0.0
-    "@angular/compiler": ~14.0.0
-    "@angular/compiler-cli": ~14.0.0
+    "@angular/common": ^14.0.0
+    "@angular/compiler": ^14.0.0
+    "@angular/compiler-cli": ^14.0.0
     "@angular/core": 14.0.0
     "@angular/elements": ^14.0.0
-    "@angular/forms": ~14.0.0
+    "@angular/forms": ^14.0.0
     "@angular/material": ^13.3.8
-    "@angular/platform-browser": ~14.0.0
-    "@angular/platform-browser-dynamic": ~14.0.0
-    "@angular/router": ~14.0.0
+    "@angular/platform-browser": ^14.0.0
+    "@angular/platform-browser-dynamic": ^14.0.0
+    "@angular/router": ^14.0.0
     "@funktechno/texthighlighter": ^2.1.2
     "@kolkov/angular-editor": ^2.0.0
     "@types/node": ~16.11.36
