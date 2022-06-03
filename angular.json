@@ -96,8 +96,7 @@
 				}
 			}
 		}
-	},
-	"defaultProject": "Crowd_Frame",
+  },
 	"cli": {
 		"analytics": "cd7f909b-9efe-4371-bb20-b49ab5fe8710",
 		"cache": {
