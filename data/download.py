@@ -4,6 +4,7 @@
 import json
 import os
 import shutil
+import sys
 from pathlib import Path
 from glob import glob
 from json import JSONDecodeError
@@ -19,6 +20,7 @@ import requests
 from distutils.util import strtobool
 from pathlib import Path
 import boto3
+import re
 import pandas as pd
 import pprint
 import uuid
@@ -142,6 +144,11 @@ def flatten(d, parent_key='', sep='_'):
     return dict(items)
 
 
+def camel_to_snake(name):
+    name = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
+    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', name).lower()
+
+
 step_index = 1
 
 console.rule(f"{step_index} - Initialization")
@@ -172,7 +179,7 @@ bucket = s3_resource.Bucket(aws_private_bucket)
 boto_session = boto3.Session(profile_name=profile_name)
 dynamo_db = boto_session.client('dynamodb', region_name=aws_region)
 dynamo_db_resource = boto3.resource('dynamodb', region_name=aws_region)
-ec2_client = boto3.client('ec2')
+ec2_client = boto_session.client('ec2', region_name=aws_region)
 aws_region_names = []
 for region_data in ec2_client.describe_regions()['Regions']:
     aws_region_names.append(region_data['RegionName'])
@@ -429,41 +436,26 @@ if not os.path.exists(df_acl_path):
             if acl_presence and worker_snapshot_path:
                 worker_snapshots = load_json(worker_snapshot_path)
                 for worker_snapshot in worker_snapshots:
+                    paid = False
+                    if len(worker_snapshot['checks']) > 0:
+                        check = worker_snapshot['checks'][-1:][0]['serialization']['checks']
+                        paid = check['timeSpentCheck'] and check['globalFormValidity'] and any(check['goldChecks'])
                     task = worker_snapshot['task']
-                    if task['task_id'] == row['task_name'] and task['batch_name'] == row['batch_name']:
-                        row['source_acl'] = worker_snapshot['source_acl']
-                        row['source_data'] = worker_snapshot['source_data']
-                        row['source_log'] = worker_snapshot['source_log']
-                        row['source_path'] = worker_snapshot['source_path']
-                        for attribute, value in task.items():
-                            if attribute != 'settings' and attribute != 'logger_server_endpoint' and attribute != 'messages':
-                                row[attribute] = value
+                    row['task_name'] = task['task_id']
+                    row['batch_name'] = task['batch_name']
+                    row['unit_id'] = task['unit_id']
+                    row['paid'] = paid
+                    row['source_acl'] = worker_snapshot['source_acl']
+                    row['source_data'] = worker_snapshot['source_data']
+                    row['source_log'] = worker_snapshot['source_log']
+                    row['source_path'] = worker_snapshot['source_path']
+                    for attribute, value in task.items():
+                        if attribute != 'settings' and attribute != 'logger_server_endpoint' and attribute != 'messages':
+                            row[attribute] = value
 
             if acl_presence:
                 df_acl = df_acl.append(row, ignore_index=True)
-
-    if len(df_acl) > 0:
-
-        df_acl_mal = df_acl.loc[df_acl['batch_name'] == 'V3-Malignani']
-        if (len(df_acl_mal) > 0):
-            df_acl_mal[['ip_address_split', 'ip_access_split']] = df_acl_mal['ip_address'].str.split(':::', 1, expand=True)
-            df_acl_filt = pd.DataFrame(columns=df_acl.columns)
-            for ip_address, df_filt in df_acl_mal.groupby("ip_address_split"):
-                row = df_filt.sort_values(by='ip_access_split', ascending=False)
-                row = row.head(1)
-                row_orig = df_acl.loc[df_acl['worker_id'] == row['worker_id'].values[0]]
-                row_orig['ip_address'] = ip_address
-                row_orig['platform'] = 'custom'
-                df_acl_filt = df_acl_filt.append(row_orig, ignore_index=True)
-            df_acl = df_acl.loc[df_acl['batch_name'] != 'V3-Malignani']
-            for index, row in df_acl_filt.iterrows():
-                df_acl = df_acl.append(row, ignore_index=True)
-
-        if batch_name == 'V3-Malignani-2':
-            df_acl['platform'] = 'custom'
-        df_acl.to_csv(df_acl_path, index=False)
-        console.print(f"Dataframe shape: {df_acl.shape}")
-        console.print(f"Workers info dataframe serialized at path: [cyan on white]{df_acl_path}")
+                break
 
 else:
     df_acl = pd.read_csv(df_acl_path)
@@ -779,12 +771,12 @@ step_index = step_index + 1
 
 def merge_dicts(dicts):
     d = {}
-    for dict in dicts:
-        for key in dict:
+    for dict_current in dicts:
+        for key in dict_current.keys():
             try:
-                d[key].append(dict[key])
+                d[key].append(dict_current[key])
             except KeyError:
-                d[key] = [dict[key]]
+                d[key] = [dict_current[key]]
     keys_filter = []
     for item in d:
         if len(d[item]) > 1:
@@ -809,18 +801,31 @@ def fetch_uag_data(worker_id, worker_uag):
         if os.path.exists(uag_file):
             ua_data = load_json(uag_file)
         else:
-            ua_data = []
-            if user_stack_token:
-                url = f"http://api.userstack.com/detect?access_key={user_stack_token}&ua={worker_uag}"
-                data_fetched = flatten(requests.get(url).json())
-                ua_data.append(data_fetched)
-            if ip_geolocation_api_key:
-                url = f"https://api.ipgeolocation.io/user-agent?apiKey={ip_geolocation_api_key}"
-                data_fetched = flatten(requests.get(url, headers={'User-Agent': worker_uag}).json())
-                ua_data.append(data_fetched)
-            ua_data = merge_dicts(ua_data)
-            with open(uag_file, 'w', encoding='utf-8') as f:
-                json.dump(ua_data, f, ensure_ascii=False, indent=4)
+            try:
+                ua_data = []
+                if user_stack_token:
+                    url = f"http://api.userstack.com/detect?access_key={user_stack_token}&ua={worker_uag}"
+                    response = requests.get(url)
+                    data_fetched = flatten(response.json())
+                    if 'success' in data_fetched.keys():
+                        if not data_fetched['success']:
+                            raise ValueError(f"Request to Userstack UAG detection service failed with error code {data_fetched['error_code']}. Remove of replace your `user_stack_token`")
+                    ua_data.append(data_fetched)
+                if ip_geolocation_api_key:
+                    url = f"https://api.ipgeolocation.io/user-agent?apiKey={ip_geolocation_api_key}"
+                    response = requests.get(url, headers={'User-Agent': worker_uag})
+                    if response.status_code != 200:
+                        raise ValueError(f"Request to Userstack UAG detection service (user-agent endpoint) failed with error code {response.status_code}. Remove of replace your `ip_geolocation_api_key`")
+                    else:
+                        data_fetched = flatten(requests.get(url, headers={'User-Agent': worker_uag}).json())
+                    ua_data.append(data_fetched)
+                ua_data = merge_dicts(ua_data)
+                ua_data = {camel_to_snake(key): ua_data[key] for key in ua_data}
+                with open(uag_file, 'w', encoding='utf-8') as f:
+                    json.dump(ua_data, f, ensure_ascii=False, indent=4)
+            except ValueError as error:
+                console.print(f"[red]{error}")
+                sys.exit(1)
         for attribute, value in ua_data.items():
             if type(value) == dict:
                 for attribute_sub, value_sub in value.items():
@@ -837,48 +842,70 @@ def fetch_ip_data(worker_id, worker_ip):
         if os.path.exists(ip_file):
             ip_data = load_json(ip_file)
         else:
-            ip_data = []
-            if ip_info_token:
-                ip_info_handler = ipinfo.getHandler(ip_info_token)
-                ip_data.append(flatten(ip_info_handler.getDetails(worker_ip).all))
-            if ip_geolocation_api_key:
-                url = f"https://api.ipgeolocation.io/ipgeo?apiKey={ip_geolocation_api_key}&ip={worker_ip}"
-                data_fixed = {}
-                for key, item in flatten(requests.get(url).json()).items():
-                    if key.startswith('geo_'):
-                        data_fixed[key.replace('geo_', '')] = item
+            try:
+                ip_data = []
+                if ip_info_token:
+                    ip_info_handler = ipinfo.getHandler(ip_info_token)
+                    ip_data.append(flatten(ip_info_handler.getDetails(worker_ip).all))
+                if ip_geolocation_api_key:
+                    url = f"https://api.ipgeolocation.io/ipgeo?apiKey={ip_geolocation_api_key}&ip={worker_ip}&include=hostnameFallbackLive,security"
+                    data_fixed = {}
+                    response = requests.get(url)
+                    if response.status_code != 200:
+                        raise ValueError(f"Request to Userstack IPGeolocation service (ipgeo endpoint) failed with error code {response.status_code}. Remove of replace your `ip_geolocation_api_key`")
                     else:
-                        data_fixed[key] = item
-                ip_data.append(data_fixed)
-                url = f"https://api.ipgeolocation.io/timezone?apiKey={ip_geolocation_api_key}&ip={worker_ip}"
-                data_fixed = {}
-                for key, item in flatten(requests.get(url).json()).items():
-                    if key.startswith('timezone_') or key.startswith('geo_'):
-                        key_fixed = key.replace('timezone_', '').replace('geo_', '')
-                        data_fixed[key_fixed] = item
+                        for key, item in flatten(response.json()).items():
+                            if key.startswith('geo_'):
+                                data_fixed[key.replace('geo_', '')] = item
+                            else:
+                                data_fixed[key] = item
+                    ip_data.append(data_fixed)
+                    url = f"https://api.ipgeolocation.io/timezone?apiKey={ip_geolocation_api_key}&ip={worker_ip}"
+                    data_fixed = {}
+                    response = requests.get(url)
+                    if response.status_code != 200:
+                        raise ValueError(f"Request to Userstack IPGeolocation service (timezone endpoint) failed with error code {response.status_code}. Remove of replace your `ip_geolocation_api_key`")
                     else:
-                        data_fixed[key] = item
-                ip_data.append(data_fixed)
-                url = f"https://api.ipgeolocation.io/astronomy?apiKey={ip_geolocation_api_key}&ip={worker_ip}"
-                data_fixed = {}
-                for key, item in flatten(requests.get(url).json()).items():
-                    if key.startswith('location_'):
-                        data_fixed[key.replace('location_', '')] = item
+                        for key, item in flatten(response.json()).items():
+                            if key.startswith('timezone_') or key.startswith('geo_'):
+                                key_fixed = key.replace('timezone_', '').replace('geo_', '')
+                                data_fixed[key_fixed] = item
+                            else:
+                                data_fixed[key] = item
+                    ip_data.append(data_fixed)
+                    url = f"https://api.ipgeolocation.io/astronomy?apiKey={ip_geolocation_api_key}&ip={worker_ip}"
+                    data_fixed = {}
+                    response = requests.get(url)
+                    if response.status_code != 200:
+                        raise ValueError(f"Request to Userstack IPGeolocation service (astronomy endpoint) failed with error code {response.status_code}. Remove of replace your `ip_geolocation_api_key`")
                     else:
-                        data_fixed[key] = item
-                ip_data.append(data_fixed)
-            if ip_api_api_key:
-                url = f"http://api.ipapi.com/{worker_ip}?access_key={ip_api_api_key}"
-                data_fetched = flatten(requests.get(url).json())
-                if 'location_languages' in data_fetched:
-                    location_languages = data_fetched.pop('location_languages')
-                    for index, lang_data in enumerate(location_languages):
-                        for key, value in lang_data.items():
-                            data_fetched[f"location_language_{index}_{key}"] = value
-                ip_data.append(data_fetched)
-            ip_data = merge_dicts(ip_data)
-            with open(ip_file, 'w', encoding='utf-8') as f:
-                json.dump(ip_data, f, ensure_ascii=False, indent=4)
+                        for key, item in flatten(response.json()).items():
+                            if key.startswith('location_'):
+                                data_fixed[key.replace('location_', '')] = item
+                            else:
+                                data_fixed[key] = item
+                    ip_data.append(data_fixed)
+                if ip_api_api_key:
+                    url = f"http://api.ipapi.com/{worker_ip}?access_key={ip_api_api_key}"
+                    response = requests.get(url)
+                    data_fetched = flatten(response.json())
+                    if 'success' in data_fetched.keys():
+                        if not data_fetched['success']:
+                            raise ValueError(f"Request to IPApi IP detection service failed with error code {data_fetched['error_code']}. Remove of replace your `ipapi_api_key`")
+                    data_fetched = flatten(requests.get(url).json())
+                    if 'location_languages' in data_fetched:
+                        location_languages = data_fetched.pop('location_languages')
+                        for index, lang_data in enumerate(location_languages):
+                            for key, value in lang_data.items():
+                                data_fetched[f"location_language_{index}_{key}"] = value
+                    ip_data.append(data_fetched)
+                ip_data = merge_dicts(ip_data)
+                ip_data = {camel_to_snake(key): ip_data[key] for key in ip_data}
+                with open(ip_file, 'w', encoding='utf-8') as f:
+                    json.dump(ip_data, f, ensure_ascii=False, indent=4)
+            except ValueError as error:
+                console.print(f"[red]{error}")
+                sys.exit(1)
         for attribute, value in ip_data.items():
             data[attribute] = value
     return data
@@ -1032,131 +1059,137 @@ if not os.path.exists(df_log_path):
 
                             log_details = data_log['details']
 
-                            if data_log['type'] == 'keySequence':
-                                if 'section' not in dataframe.columns:
-                                    dataframe['section'] = np.nan
-                                if 'key_sequence_index' not in dataframe.columns:
-                                    dataframe['key_sequence_index'] = np.nan
-                                if 'key_sequence_timestamp' not in dataframe.columns:
-                                    dataframe['key_sequence_timestamp'] = np.nan
-                                if 'key_sequence_key' not in dataframe.columns:
-                                    dataframe['key_sequence_key'] = np.nan
-                                if 'sentence' not in dataframe.columns:
-                                    dataframe['sentence'] = np.nan
-                                row['section'] = log_details['section']
-                                row['sentence'] = log_details['sentence']
-                                for index, key_sequence in enumerate(log_details['keySequence']):
-                                    row['key_sequence_index'] = index
-                                    row['key_sequence_timestamp'] = key_sequence['timeStamp']
-                                    row['key_sequence_key'] = key_sequence['key'] if 'key' in key_sequence else np.nan
-                                    dataframe.loc[len(dataframe)] = row
-                            elif data_log['type'] == 'movements':
-                                for attribute, value in log_details.items():
-                                    attribute_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute).lower()
-                                    attribute_parsed = f"{attribute_parsed}"
-                                    if type(value) != dict and type(value) != list:
-                                        if attribute_parsed not in dataframe.columns:
-                                            dataframe[attribute_parsed] = np.nan
-                                        row[attribute_parsed] = value
-                                for movement_data in log_details['points']:
-                                    for attribute, value in movement_data.items():
+                            if log_details:
+                                if data_log['type'] == 'keySequence':
+                                    if 'log_section' not in dataframe.columns:
+                                        dataframe['log_section'] = np.nan
+                                    if 'log_key_sequence_index' not in dataframe.columns:
+                                        dataframe['log_key_sequence_index'] = np.nan
+                                    if 'log_key_sequence_timestamp' not in dataframe.columns:
+                                        dataframe['log_key_sequence_timestamp'] = np.nan
+                                    if 'log_key_sequence_key' not in dataframe.columns:
+                                        dataframe['log_key_sequence_key'] = np.nan
+                                    if 'log_sentence' not in dataframe.columns:
+                                        dataframe['log_sentence'] = np.nan
+                                    row['log_section'] = log_details['section']
+                                    row['log_sentence'] = log_details['sentence']
+                                    for index, key_sequence in enumerate(log_details['keySequence']):
+                                        row['log_key_sequence_index'] = index
+                                        row['log_key_sequence_timestamp'] = key_sequence['timeStamp']
+                                        row['log_key_sequence_key'] = key_sequence['key'] if 'key' in key_sequence else np.nan
+                                        dataframe.loc[len(dataframe)] = row
+                                elif data_log['type'] == 'movements':
+                                    for attribute, value in log_details.items():
                                         attribute_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute).lower()
-                                        if type(value) == dict:
-                                            for attribute_sub, value_sub in value.items():
-                                                attribute_sub_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute_sub).lower()
-                                                attribute_sub_parsed = f"point_{attribute_parsed}_{attribute_sub_parsed}"
-                                                if attribute_sub_parsed not in dataframe.columns:
-                                                    dataframe[attribute_sub_parsed] = np.nan
-                                                row[attribute_sub_parsed] = value_sub
-                                        else:
-                                            attribute_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute).lower()
-                                            attribute_parsed = f"point_{attribute_parsed}"
+                                        attribute_parsed = f"log_{attribute_parsed}"
+                                        if type(value) != dict and type(value) != list:
                                             if attribute_parsed not in dataframe.columns:
                                                 dataframe[attribute_parsed] = np.nan
                                             row[attribute_parsed] = value
-                                    dataframe.loc[len(dataframe)] = row
-                            elif data_log['type'] == 'click':
-                                for attribute, value in log_details.items():
-                                    attribute_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute).lower()
-                                    attribute_parsed = f"{attribute_parsed}"
-                                    if type(value) != dict and type(value) != list:
+                                    for movement_data in log_details['points']:
+                                        for attribute, value in movement_data.items():
+                                            attribute_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute).lower()
+                                            if type(value) == dict:
+                                                for attribute_sub, value_sub in value.items():
+                                                    attribute_sub_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute_sub).lower()
+                                                    attribute_sub_parsed = f"log_point_{attribute_parsed}_{attribute_sub_parsed}"
+                                                    if attribute_sub_parsed not in dataframe.columns:
+                                                        dataframe[attribute_sub_parsed] = np.nan
+                                                    row[attribute_sub_parsed] = value_sub
+                                            else:
+                                                attribute_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute).lower()
+                                                attribute_parsed = f"log_point_{attribute_parsed}"
+                                                if attribute_parsed not in dataframe.columns:
+                                                    dataframe[attribute_parsed] = np.nan
+                                                row[attribute_parsed] = value
+                                        dataframe.loc[len(dataframe)] = row
+                                elif data_log['type'] == 'click':
+                                    for attribute, value in log_details.items():
+                                        attribute_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute).lower()
+                                        attribute_parsed = f"log_{attribute_parsed}"
+                                        if type(value) != dict and type(value) != list:
+                                            if attribute_parsed not in dataframe.columns:
+                                                dataframe[attribute_parsed] = np.nan
+                                            row[attribute_parsed] = value
+                                    for attribute, value in log_details['target'].items():
+                                        attribute_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute).lower()
+                                        attribute_parsed = f"log_target_{attribute_parsed}"
                                         if attribute_parsed not in dataframe.columns:
                                             dataframe[attribute_parsed] = np.nan
                                         row[attribute_parsed] = value
-                                for attribute, value in log_details['target'].items():
-                                    attribute_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute).lower()
-                                    attribute_parsed = f"target_{attribute_parsed}"
-                                    if attribute_parsed not in dataframe.columns:
-                                        dataframe[attribute_parsed] = np.nan
-                                    row[attribute_parsed] = value
-                                dataframe.loc[len(dataframe)] = row
-                            elif data_log['type'] == 'queryResults':
-                                if 'section' not in dataframe.columns:
-                                    dataframe['section'] = np.nan
-                                if 'url_amount' not in dataframe.columns:
-                                    dataframe['url_amount'] = np.nan
-                                row['section'] = log_details['section']
-                                row['url_amount'] = log_details['urlAmount']
-                            elif data_log['type'] == 'copy' or data_log['type'] == 'cut':
-                                for attribute, value in log_details.items():
-                                    attribute_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute).lower()
-                                    if attribute_parsed not in dataframe.columns:
-                                        dataframe[attribute_parsed] = np.nan
-                                    if attribute_parsed == 'target':
-                                        row[attribute_parsed] = value.replace("\n", '')
-                                dataframe.loc[len(dataframe)] = row
-                            elif data_log['type'] == 'context':
-                                for detail_kind, detail_val in log_details.items():
-                                    detail_kind_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', detail_kind).lower()
-                                    if detail_kind_parsed not in dataframe.columns:
-                                        dataframe[detail_kind_parsed] = np.nan
-                                    if type(detail_val) == str:
-                                        detail_val.replace('\n', '')
-                                    row[detail_kind_parsed] = detail_val
-                                dataframe.loc[len(dataframe)] = row
-                            elif data_log['type'] == 'init' or \
-                                data_log['type'] == 'window_blur' or \
-                                data_log['type'] == 'window_focus' or \
-                                data_log['type'] == 'resize' or \
-                                data_log['type'] == 'button' or \
-                                data_log['type'] == 'unload' or \
-                                data_log['type'] == 'shortcut' or \
-                                data_log['type'] == 'radioChange' or \
-                                data_log['type'] == 'scroll':
-                                for attribute, value in log_details.items():
-                                    attribute_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute).lower()
-                                    if attribute_parsed not in dataframe.columns:
-                                        dataframe[attribute_parsed] = np.nan
-                                    row[attribute_parsed] = value
-                                dataframe.loc[len(dataframe)] = row
-                            elif data_log['type'] == 'selection':
-                                for attribute, value in log_details.items():
-                                    attribute_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute).lower()
-                                    if attribute_parsed not in dataframe.columns:
-                                        dataframe[attribute_parsed] = np.nan
-                                    if attribute_parsed == 'selected':
-                                        row[attribute_parsed] = value.replace("\n", '')
-                                dataframe.loc[len(dataframe)] = row
-                            elif data_log['type'] == 'paste' or data_log['type'] == 'text':
-                                for attribute, value in log_details.items():
-                                    attribute_parsed = re.sub(r'(?<!^)(?=[A-Z])', '_', attribute).lower()
-                                    if attribute_parsed not in dataframe.columns:
-                                        dataframe[attribute_parsed] = np.nan
-                                    if attribute_parsed == 'text':
-                                        row[attribute_parsed] = value.replace("\n", '')
-                                dataframe.loc[len(dataframe)] = row
-                            elif data_log['type'] == 'query':
-                                if 'section' not in dataframe.columns:
-                                    dataframe['section'] = np.nan
-                                if 'query' not in dataframe.columns:
-                                    dataframe['query'] = np.nan
-                                row['section'] = log_details['section']
-                                row['query'] = log_details['query'].replace("\n", '')
-                                dataframe.loc[len(dataframe)] = row
+                                    dataframe.loc[len(dataframe)] = row
+                                elif data_log['type'] == 'queryResults':
+                                    if 'log_section' not in dataframe.columns:
+                                        dataframe['log_section'] = np.nan
+                                    if 'log_url_amount' not in dataframe.columns:
+                                        dataframe['log_url_amount'] = np.nan
+                                    row['log_section'] = log_details['section']
+                                    if 'urlAmount' in log_details:
+                                        row['log_url_amount'] = log_details['urlAmount']
+                                    else:
+                                        row['log_url_amount'] = len(log_details['urlArray'])
+                                elif data_log['type'] == 'copy' or data_log['type'] == 'cut':
+                                    for attribute, value in log_details.items():
+                                        attribute_parsed = f"log_{re.sub(r'(?<!^)(?=[A-Z])', '_', attribute).lower()}"
+                                        if attribute_parsed not in dataframe.columns:
+                                            dataframe[attribute_parsed] = np.nan
+                                        if attribute_parsed == 'target':
+                                            row[attribute_parsed] = value.replace("\n", '')
+                                    dataframe.loc[len(dataframe)] = row
+                                elif data_log['type'] == 'context':
+                                    for detail_kind, detail_val in log_details.items():
+                                        detail_kind_parsed = f"log_{re.sub(r'(?<!^)(?=[A-Z])', '_', detail_kind).lower()}"
+                                        if detail_kind_parsed not in dataframe.columns:
+                                            dataframe[detail_kind_parsed] = np.nan
+                                        if type(detail_val) == str:
+                                            detail_val.replace('\n', '')
+                                        row[detail_kind_parsed] = detail_val
+                                    dataframe.loc[len(dataframe)] = row
+                                elif data_log['type'] == 'init' or \
+                                    data_log['type'] == 'window_blur' or \
+                                    data_log['type'] == 'window_focus' or \
+                                    data_log['type'] == 'resize' or \
+                                    data_log['type'] == 'button' or \
+                                    data_log['type'] == 'unload' or \
+                                    data_log['type'] == 'shortcut' or \
+                                    data_log['type'] == 'radioChange' or \
+                                    data_log['type'] == 'scroll':
+                                    for attribute, value in log_details.items():
+                                        attribute_parsed = f"log_{re.sub(r'(?<!^)(?=[A-Z])', '_', attribute).lower()}"
+                                        if attribute_parsed not in dataframe.columns:
+                                            dataframe[attribute_parsed] = np.nan
+                                        row[attribute_parsed] = value
+                                    dataframe.loc[len(dataframe)] = row
+                                elif data_log['type'] == 'selection':
+                                    for attribute, value in log_details.items():
+                                        attribute_parsed = f"log_{re.sub(r'(?<!^)(?=[A-Z])', '_', attribute).lower()}"
+                                        if attribute_parsed not in dataframe.columns:
+                                            dataframe[attribute_parsed] = np.nan
+                                        if attribute_parsed == 'selected':
+                                            row[attribute_parsed] = value.replace("\n", '')
+                                    dataframe.loc[len(dataframe)] = row
+                                elif data_log['type'] == 'paste' or data_log['type'] == 'text':
+                                    for attribute, value in log_details.items():
+                                        attribute_parsed = f"log_{re.sub(r'(?<!^)(?=[A-Z])', '_', attribute).lower()}"
+                                        if attribute_parsed not in dataframe.columns:
+                                            dataframe[attribute_parsed] = np.nan
+                                        if attribute_parsed == 'text':
+                                            row[attribute_parsed] = value.replace("\n", '')
+                                    dataframe.loc[len(dataframe)] = row
+                                elif data_log['type'] == 'query':
+                                    if 'log_section' not in dataframe.columns:
+                                        dataframe['log_section'] = np.nan
+                                    if 'log_query' not in dataframe.columns:
+                                        dataframe['log_query'] = np.nan
+                                    row['log_section'] = log_details['section']
+                                    row['log_query'] = log_details['query'].replace("\n", '')
+                                    dataframe.loc[len(dataframe)] = row
+                                else:
+                                    print(data_log['type'])
+                                    print(log_details)
+                                    assert False
                             else:
-                                print(data_log['type'])
-                                print(log_details)
-                                assert False
+                                dataframe.loc[len(dataframe)] = row
 
                     if len(dataframe) > 0:
                         dataframe.to_csv(log_df_partial_path, index=False)
@@ -1302,7 +1335,14 @@ def load_quest_col_names(questionnaires):
     columns.append(f"questionnaire_accesses")
     for questionnaire in questionnaires:
         for question in questionnaire['questions']:
-            if not question['dropped']:
+            if 'dropped' in question:
+                if not question['dropped']:
+                    for attribute, value in question.items():
+                        if type(value) != list:
+                            column_name = f"question_attribute_{attribute}"
+                            if column_name not in columns:
+                                columns.append(column_name)
+            else:
                 for attribute, value in question.items():
                     if type(value) != list:
                         column_name = f"question_attribute_{attribute}"
@@ -1462,7 +1502,11 @@ if not os.path.exists(df_quest_path):
                         row[f"questionnaire_accesses"] = accesses
 
                         for index_sub, question in enumerate(questions):
-                            if not question['dropped']:
+                            if 'dropped' in question:
+                                if not question['dropped']:
+                                    row = parse_answers(row, questionnaire, question, current_answers)
+                                    dataframe = dataframe.append(row, ignore_index=True)
+                            else:
                                 row = parse_answers(row, questionnaire, question, current_answers)
                                 dataframe = dataframe.append(row, ignore_index=True)
 
@@ -1992,10 +2036,14 @@ if enable_crawling:
         if not os.path.exists(page_metadata_path):
             unique_urls_filt.append(url_current)
         else:
-            metadata = load_json(page_metadata_path)
-            if metadata['response_error_code'] is not None:
-                unique_urls_filt.append(url_current)
+            try:
+                metadata = load_json(page_metadata_path)
+                if metadata['response_error_code'] is not None:
+                    unique_urls_filt.append(url_current)
+                    os.remove(page_metadata_path)
+            except JSONDecodeError:
                 os.remove(page_metadata_path)
+                unique_urls_filt.append(url_current)
     urls_already_crawled = len(unique_urls) - len(unique_urls_filt)
     urls_to_crawl = len(unique_urls_filt)
     console.print(f"URLs to crawl: {len(unique_urls_filt)}/{len(unique_urls)} ({(len(unique_urls_filt) / len(unique_urls)) * 100}%)")
@@ -2037,6 +2085,9 @@ if enable_crawling:
                 error_code = 'too_many_redirects_error'
                 return url, error_code, error
             except ClientOSError as error:
+                error_code = 'client_os_error'
+                return url, error_code, error
+            except ClientResponseError as error:
                 error_code = 'client_os_error'
                 return url, error_code, error
             except UnicodeDecodeError as error:
@@ -2096,9 +2147,19 @@ if enable_crawling:
                                     row[f"response_header_{header_attribute_sub.lower().replace('-', '_')}"] = header_value_sub
                         elif type(header_dict) == list:
                             for dict_index, dict_sub in enumerate(header_value):
-                                for header_attribute_sub, header_value_sub in dict_sub.items():
-                                    header_text = f"response_header_{header_attribute_sub.lower().replace('-', '_')}_{dict_index}"
-                                    row[header_text] = header_value_sub
+                                if type(dict_sub) == dict:
+                                    for header_attribute_sub, header_value_sub in dict_sub.items():
+                                        header_text = f"response_header_{header_attribute_sub.lower().replace('-', '_')}_{dict_index}"
+                                        row[header_text] = header_value_sub
+                                else:
+                                    value_sub = json.loads(header_value)
+                                    if type(value_sub) == list:
+                                        for header_index_sub, header_value_sub in enumerate(value_sub):
+                                            header_text = f"response_header_{header_text.lower().replace('-', '_')}_{dict_index}_{header_index_sub}"
+                                            row[header_text] = header_value_sub
+                                    else:
+                                        print(value_sub)
+                                        assert False
                         else:
                             header_text = f"response_header_{header_text.lower().replace('-', '_')}"
                             row[header_text] = header_value
@@ -2131,21 +2192,42 @@ if enable_crawling:
                                 f.write(response_body)
                         elif 'application/octet-stream' in row['response_header_content_type']:
                             suffix = Path(url_current).suffix
+                            if 'response_header_content_disposition' in row.keys():
+                                content_disposition_split = row['response_header_content_disposition'].split(';')
+                                content_disposition_type = content_disposition_split[0]
+                                if content_disposition_type == 'attachment' and len(content_disposition_split) > 1:
+                                    content_disposition_attachment_filename = content_disposition_split[1].split("=")[1]
+                                    suffix = Path(content_disposition_attachment_filename).suffixes
+                                else:
+                                    print(row['response_header_content_disposition'])
                             page_source_path = f"{crawling_path_source}{response_uuid}_source{suffix}"
                             with open(page_source_path, 'wb') as f:
                                 f.write(response_body)
                         row['response_page_source_path'] = page_source_path
                 except UnicodeEncodeError:
                     row['response_error_code'] = 'unicode_encode_error'
-                with open(page_metadata_path, 'w', encoding="utf-8") as f:
-                    json.dump(row, f, ensure_ascii=False, indent=4)
+                try:
+                    with open(page_metadata_path, 'w', encoding="utf-8") as f:
+                        json.dump(row, f, ensure_ascii=False, indent=4)
+                except UnicodeEncodeError:
+                    row_fix = {}
+                    for attribute_fix, value_fix in row.items():
+                        if type(value_fix) == str:
+                            row_fix[attribute_fix] = value_fix.replace('\udc94', '')
+                        else:
+                            row_fix[attribute_fix] = value_fix
+                    with open(page_metadata_path, 'w', encoding="utf-8") as f:
+                        json.dump(row_fix, f, ensure_ascii=False, indent=4)
+
 
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-    loop = asyncio.get_event_loop()
+    loop = asyncio.ProactorEventLoop()
+    asyncio.set_event_loop(loop)
     loop.run_until_complete(run_crawling())
     end = time.time()
     print(f"Time elapsed: {round(end - start)} seconds")
 
+    metadata_dicts = []
     if urls_to_crawl > 0 or not os.path.exists(df_crawl_path):
         metadata_paths = glob(f"{crawling_path_metadata}/*")
         columns = []
@@ -2159,7 +2241,8 @@ if enable_crawling:
         console.print(f"Adding metadata to final dataframe")
         for metadata_path in tqdm.tqdm(metadata_paths):
             metadata = load_json(metadata_path)
-            df_crawl.loc[len(df_crawl)] = metadata
+            metadata_dicts.append(metadata)
+        df_crawl = pd.DataFrame.from_dict(metadata_dicts)
         df_crawl.to_csv(df_crawl_path, index=False)
         df_crawl_correct = df_crawl[df_crawl["response_error_code"].isnull()]
         console.print(f"Pages correctly crawled: [green]{len(df_crawl_correct)}/{len(unique_urls)}[/green] [cyan]({(len(df_crawl_correct) / len(unique_urls)) * 100}%)")
