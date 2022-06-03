@@ -1,6 +1,6 @@
 /* Core */
 import {Component, EventEmitter, OnInit, Output} from '@angular/core';
-import {FormArray, FormBuilder, FormGroup, Validators} from "@angular/forms";
+import {UntypedFormArray, UntypedFormBuilder, UntypedFormGroup, Validators} from "@angular/forms";
 /* Services */
 import {ConfigService} from "../../../../services/config.service";
 import {S3Service} from 'src/app/services/aws/s3.service';
@@ -40,7 +40,7 @@ export class QuestionnaireStepComponent implements OnInit {
 
     dataStored: Array<Questionnaire>
 
-    formStep: FormGroup;
+    formStep: UntypedFormGroup;
 
     questionnaireTypes: QuestionnaireType[] = [
         {value: 'crt', viewValue: 'CRT'},
@@ -54,13 +54,13 @@ export class QuestionnaireStepComponent implements OnInit {
 
     configurationSerialized: string
 
-    @Output() formEmitter: EventEmitter<FormGroup>;
+    @Output() formEmitter: EventEmitter<UntypedFormGroup>;
 
     constructor(
         localStorageService: LocalStorageService,
         configService: ConfigService,
         S3Service: S3Service,
-        private _formBuilder: FormBuilder,
+        private _formBuilder: UntypedFormBuilder,
     ) {
         this.configService = configService
         this.S3Service = S3Service
@@ -73,7 +73,7 @@ export class QuestionnaireStepComponent implements OnInit {
         this.formStep = this._formBuilder.group({
             questionnaires: this._formBuilder.array([])
         });
-        this.formEmitter = new EventEmitter<FormGroup>();
+        this.formEmitter = new EventEmitter<UntypedFormGroup>();
     }
 
     public async ngOnInit() {
@@ -109,8 +109,8 @@ export class QuestionnaireStepComponent implements OnInit {
 
     /* STEP #1 - Questionnaires */
 
-    questionnaires(): FormArray {
-        return this.formStep.get('questionnaires') as FormArray;
+    questionnaires(): UntypedFormArray {
+        return this.formStep.get('questionnaires') as UntypedFormArray;
     }
 
     addQuestionnaire(questionnaireIndex = null, questionnaire = null as Questionnaire) {
@@ -145,8 +145,8 @@ export class QuestionnaireStepComponent implements OnInit {
 
     /* SUB ELEMENT: Questions */
 
-    questions(questionnaireIndex: number): FormArray {
-        return this.questionnaires().at(questionnaireIndex).get('questions') as FormArray;
+    questions(questionnaireIndex: number): UntypedFormArray {
+        return this.questionnaires().at(questionnaireIndex).get('questions') as UntypedFormArray;
     }
 
     addQuestion(questionnaireIndex: number, questionIndex = null as number, question = null as Question) {
@@ -168,8 +168,8 @@ export class QuestionnaireStepComponent implements OnInit {
 
     /* SUB ELEMENT: Answers */
 
-    answers(questionnaireIndex: number, questionIndex: number): FormArray {
-        return this.questions(questionnaireIndex).at(questionIndex).get('answers') as FormArray;
+    answers(questionnaireIndex: number, questionIndex: number): UntypedFormArray {
+        return this.questions(questionnaireIndex).at(questionIndex).get('answers') as UntypedFormArray;
     }
 
     addAnswer(questionnaireIndex: number, questionIndex: number, answer = null as string) {
@@ -184,8 +184,8 @@ export class QuestionnaireStepComponent implements OnInit {
 
     /* SUB ELEMENT: Mappings  */
 
-    mapping(questionnaireIndex: number): FormArray {
-        return this.questionnaires().at(questionnaireIndex).get('mapping') as FormArray;
+    mapping(questionnaireIndex: number): UntypedFormArray {
+        return this.questionnaires().at(questionnaireIndex).get('mapping') as UntypedFormArray;
     }
 
     addMapping(questionnaireIndex: number) {

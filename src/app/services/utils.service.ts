@@ -1,5 +1,5 @@
 import {Injectable} from "@angular/core";
-import {AbstractControl, FormArray, FormControl, FormGroup} from "@angular/forms";
+import {AbstractControl, FormArray, UntypedFormControl, UntypedFormGroup} from "@angular/forms";
 import CryptoES from "crypto-es";
 import kdf = CryptoES.kdf;
 
@@ -9,7 +9,7 @@ import kdf = CryptoES.kdf;
 
 export class UtilsService {
 
-    public hasError(form: FormGroup, field: string, key: string): boolean {
+    public hasError(form: UntypedFormGroup, field: string, key: string): boolean {
         let control = form.get(field)
         if (control) {
             return control.hasError(key)
@@ -90,7 +90,7 @@ export class UtilsService {
         return {start: start, end: end};
     }
 
-    public positiveOrZeroNumber(control: FormControl) {
+    public positiveOrZeroNumber(control: UntypedFormControl) {
         if (Number(control.value) < 0) {
             return {invalid: true};
         } else {
@@ -98,7 +98,7 @@ export class UtilsService {
         }
     }
 
-    public positiveNumber(control: FormControl) {
+    public positiveNumber(control: UntypedFormControl) {
         if (Number(control.value) < 1) {
             return {invalid: true};
         } else {

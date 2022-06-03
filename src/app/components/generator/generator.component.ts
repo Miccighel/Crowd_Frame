@@ -1,6 +1,6 @@
 /* Core */
 import {ChangeDetectorRef, Component, Input, ViewChild} from '@angular/core'
-import {FormBuilder, FormControl, FormGroup} from '@angular/forms'
+import {UntypedFormBuilder, UntypedFormControl, UntypedFormGroup} from '@angular/forms'
 /* Material Design */
 import {MatStepper} from "@angular/material/stepper"
 /* Services */
@@ -40,34 +40,34 @@ export class GeneratorComponent {
     /* STEP #1 - Questionnaires */
 
     @ViewChild(QuestionnaireStepComponent) questionnaireStep: QuestionnaireStepComponent;
-    questionnaireStepForm: FormGroup
+    questionnaireStepForm: UntypedFormGroup
 
     /* STEP #2 - Dimensions */
 
     @ViewChild(DimensionsStepComponent) dimensionsStep: DimensionsStepComponent;
-    dimensionsStepForm: FormGroup
+    dimensionsStepForm: UntypedFormGroup
 
     /* STEP #3 - General Instructions */
     @ViewChild('generalInstructions') generalInstructionsStep: InstructionsGeneralStep;
-    generalInstructionsStepForm: FormGroup
+    generalInstructionsStepForm: UntypedFormGroup
 
     /* STEP #4 - Evaluation Instructions */
     @ViewChild('evaluationInstructions') evaluationInstructionsStep: InstructionsGeneralStep;
-    evaluationInstructionsStepForm: FormGroup
+    evaluationInstructionsStepForm: UntypedFormGroup
 
     /* STEP #5 - Search Engine */
     @ViewChild(SearchEngineStepComponent) searchEngineStep: SearchEngineStepComponent;
-    searchEngineStepForm: FormGroup
+    searchEngineStepForm: UntypedFormGroup
 
     /* STEP #6 - Task Settings */
     @ViewChild(TaskSettingsStepComponent) taskSettingsStep: TaskSettingsStepComponent;
-    taskSettingsStepForm: FormGroup
+    taskSettingsStepForm: UntypedFormGroup
     @Input() taskModality: string
 
     /* STEP #7 - Worker Checks */
 
     @ViewChild(WorkerChecksStepComponent) workerChecksStep: WorkerChecksStepComponent;
-    workerChecksStepForm: FormGroup
+    workerChecksStepForm: UntypedFormGroup
 
     /* |--------- SERVICES & CO - DECLARATION ---------| */
 
@@ -84,7 +84,7 @@ export class GeneratorComponent {
     changeDetector: ChangeDetectorRef;
 
     /* References to clone a previously deployed batch */
-    batchCloned: FormControl
+    batchCloned: UntypedFormControl
     taskCloned: boolean
 
     /* References to load deployed tasks names */
@@ -136,7 +136,7 @@ export class GeneratorComponent {
         S3Service: S3Service,
         localStorageService: LocalStorageService,
         utilsService: UtilsService,
-        private _formBuilder: FormBuilder,
+        private _formBuilder: UntypedFormBuilder,
     ) {
 
         /* |--------- SERVICES & CO. - INITIALIZATION ---------| */
@@ -150,7 +150,7 @@ export class GeneratorComponent {
         this.utilsService = utilsService
         this.ngxService.startLoader('generator-inner')
 
-        this.batchCloned = new FormControl();
+        this.batchCloned = new UntypedFormControl();
         this.taskCloned = false
 
         this.configService.environment['taskNameInitial'] = this.configService.environment['taskName']
@@ -262,7 +262,7 @@ export class GeneratorComponent {
     async restoreGenerator() {
         this.ngxService.startLoader('generator-inner')
         this.generator.selectedIndex=1
-        this.batchCloned = new FormControl();
+        this.batchCloned = new UntypedFormControl();
         this.localStorageService.clear()
         this.configService.environment['taskName'] = this.configService.environment['taskNameInitial']
         this.configService.environment['batchName'] = this.configService.environment['batchNameInitial']
@@ -291,43 +291,43 @@ export class GeneratorComponent {
 
     /* STEP #1 - Questionnaires */
 
-    public storeQuestionnaireForm(data: FormGroup) {
+    public storeQuestionnaireForm(data: UntypedFormGroup) {
         this.questionnaireStepForm = data
     }
 
     /* STEP #3 - General Instructions */
 
-    public storeGeneralInstructionsForm(data: FormGroup) {
+    public storeGeneralInstructionsForm(data: UntypedFormGroup) {
         this.generalInstructionsStepForm = data
     }
 
     /* STEP #2 - Dimensions */
 
-    public storeDimensionsForm(data: FormGroup) {
+    public storeDimensionsForm(data: UntypedFormGroup) {
         this.dimensionsStepForm = data
     }
 
     /* STEP #3 - Evaluation Instructions */
 
-    public storeEvaluationlInstructionsForm(data: FormGroup) {
+    public storeEvaluationlInstructionsForm(data: UntypedFormGroup) {
         this.evaluationInstructionsStepForm = data
     }
 
     /* STEP #5 - Search Engine */
 
-    public storeSearchEngineStepForm(data: FormGroup) {
+    public storeSearchEngineStepForm(data: UntypedFormGroup) {
         this.searchEngineStepForm = data
     }
 
     /* STEP #6 - Task Settings */
 
-    public storeTaskSettingsForm(data: FormGroup) {
+    public storeTaskSettingsForm(data: UntypedFormGroup) {
         this.taskSettingsStepForm = data
     }
 
     /* STEP #7 - Task Settings */
 
-    public storeWorkerChecksForm(data: FormGroup) {
+    public storeWorkerChecksForm(data: UntypedFormGroup) {
         this.workerChecksStepForm = data
     }
 

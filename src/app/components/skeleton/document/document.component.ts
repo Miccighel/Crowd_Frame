@@ -1,6 +1,6 @@
 /* Core */
 import {ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, QueryList, ViewChildren} from '@angular/core';
-import {AbstractControl, FormBuilder, FormGroup} from "@angular/forms";
+import {AbstractControl, UntypedFormBuilder, UntypedFormGroup} from "@angular/forms";
 /* Services */
 import {SectionService} from "../../../services/section.service";
 import {UtilsService} from "../../../services/utils.service";
@@ -27,7 +27,7 @@ export class DocumentComponent implements OnInit {
     sectionService: SectionService;
     utilsService: UtilsService
     /* Angular Reactive Form builder (see https://angular.io/guide/reactive-forms) */
-    formBuilder: FormBuilder;
+    formBuilder: UntypedFormBuilder;
 
     @Input() documentIndex: number
 
@@ -39,11 +39,11 @@ export class DocumentComponent implements OnInit {
     /* |--------- COUNTDOWN HANDLING ---------| */
 
     /* Available options to label an annotation */
-    annotationOptions: FormGroup;
+    annotationOptions: UntypedFormGroup;
 
     task: Task
     document: Document
-    assessmentForm: FormGroup
+    assessmentForm: UntypedFormGroup
 
     @Output() formEmitter: EventEmitter<Object>;
 
@@ -52,7 +52,7 @@ export class DocumentComponent implements OnInit {
         deviceDetectorService: DeviceDetectorService,
         sectionService: SectionService,
         utilsService: UtilsService,
-        formBuilder: FormBuilder
+        formBuilder: UntypedFormBuilder
     ) {
         this.changeDetector = changeDetector
         this.sectionService = sectionService

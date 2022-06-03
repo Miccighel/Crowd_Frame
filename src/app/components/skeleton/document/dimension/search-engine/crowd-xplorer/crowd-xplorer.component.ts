@@ -6,7 +6,7 @@ import {NgxUiLoaderService} from "ngx-ui-loader";
 import {MatTableDataSource} from '@angular/material/table';
 import {MatPaginator} from "@angular/material/paginator";
 /* Reactive forms modules */
-import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
+import {UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators} from "@angular/forms";
 /* Services */
 import {BingService} from '../../../../../../services/search_engine/bing.service';
 import {BingWebSearchResponse} from "../../../../../../models/search_engine/bingWebSearchResponse";
@@ -83,16 +83,16 @@ export class CrowdXplorer {
     pubmedSummaryResponse: PubmedSummaryResponse;
 
     /* Angular Reactive Form builder (see https://angular.io/guide/reactive-forms) */
-    formBuilder: FormBuilder;
+    formBuilder: UntypedFormBuilder;
 
     /* |--------- CONTROL FLOW & UI ELEMENTS - DECLARATION ---------| */
 
     /* Search form UI controls */
-    searchForm: FormGroup;
+    searchForm: UntypedFormGroup;
     searchStarted: boolean;
     searchInProgress: boolean;
-    query: FormControl;
-    urls: FormControl;
+    query: UntypedFormControl;
+    urls: UntypedFormControl;
 
     /* Boolean flag */
     searchPerformed: boolean;
@@ -131,7 +131,7 @@ export class CrowdXplorer {
         fakerService: FakerService,
         pubmedService: PubmedService,
         configService: ConfigService,
-        formBuilder: FormBuilder
+        formBuilder: UntypedFormBuilder
     ) {
 
         /* |--------- SERVICES & CO. - INITIALIZATION ---------| */
@@ -162,8 +162,8 @@ export class CrowdXplorer {
         this.loadSettings()
 
         /* The form control for user query is initialized and bound with its synchronous validator(s) */
-        this.query = new FormControl('', [Validators.required]);
-        this.urls = new FormControl('', [Validators.required]);
+        this.query = new UntypedFormControl('', [Validators.required]);
+        this.urls = new UntypedFormControl('', [Validators.required]);
         /* The search form is initialized by adding each form control */
         this.searchForm = formBuilder.group(
             {

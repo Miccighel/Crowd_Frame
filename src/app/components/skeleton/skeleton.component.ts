@@ -1,6 +1,6 @@
 /* Core */
 import {AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, QueryList, ViewChild, ViewChildren, ViewEncapsulation} from "@angular/core";
-import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
+import {UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators} from '@angular/forms';
 import {MatFormField} from "@angular/material/form-field";
 import {MatStepper} from "@angular/material/stepper";
 import {HttpClient, HttpHeaders} from "@angular/common/http";
@@ -70,15 +70,15 @@ export class SkeletonComponent implements OnInit {
     headers: HttpHeaders;
 
     /* Angular Reactive Form builder (see https://angular.io/guide/reactive-forms) */
-    formBuilder: FormBuilder;
+    formBuilder: UntypedFormBuilder;
 
     /* |--------- CONTROL FLOW & UI ELEMENTS - DECLARATION ---------| */
 
     /* References to task stepper and token forms */
     @ViewChild('stepper') stepper: MatStepper;
     @ViewChild('urlField') urlField: MatFormField;
-    tokenForm: FormGroup;
-    tokenInput: FormControl;
+    tokenForm: UntypedFormGroup;
+    tokenInput: UntypedFormControl;
     tokenInputValid: boolean;
 
     /* Snackbar reference */
@@ -91,11 +91,11 @@ export class SkeletonComponent implements OnInit {
     worker: Worker
 
     /* Array of form references, one for each document within a Hit */
-    documentsForm: FormGroup[];
+    documentsForm: UntypedFormGroup[];
     @ViewChildren(DocumentComponent) documentComponent: QueryList<DocumentComponent>;
 
     /* Array of form references, one for each questionnaire within a Hit */
-    questionnairesForm: FormGroup[];
+    questionnairesForm: UntypedFormGroup[];
 
     /* |--------- OUTCOME SECTION ELEMENTS - DECLARATION ---------| */
 
@@ -113,7 +113,7 @@ export class SkeletonComponent implements OnInit {
         dynamoDBService: DynamoDBService,
         deviceDetectorService: DeviceDetectorService,
         client: HttpClient,
-        formBuilder: FormBuilder,
+        formBuilder: UntypedFormBuilder,
         snackBar: MatSnackBar,
         actionLogger: ActionLogger,
         sectionService: SectionService,
@@ -143,7 +143,7 @@ export class SkeletonComponent implements OnInit {
 
         /* |--------- CONTROL FLOW & UI ELEMENTS - INITIALIZATION ---------| */
 
-        this.tokenInput = new FormControl('', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
+        this.tokenInput = new UntypedFormControl('', [Validators.required, Validators.maxLength(11)], this.validateTokenInput.bind(this));
         this.tokenForm = formBuilder.group({
             "tokenInput": this.tokenInput
         });
@@ -543,7 +543,7 @@ export class SkeletonComponent implements OnInit {
     * typed by the user inside within the hits.json file stored in the bucket.
     * If such token cannot be found, an error message is returned.
     */
-    public async validateTokenInput(control: FormControl) {
+    public async validateTokenInput(control: UntypedFormControl) {
         let hits = await this.S3Service.downloadHits(this.configService.environment)
         for (let hit of hits) if (hit.token_input === control.value) return null;
         return {"invalid": "This token is not valid."}
@@ -586,13 +586,13 @@ export class SkeletonComponent implements OnInit {
             this.tokenInput.disable();
 
             /* A form for each document is initialized */
-            this.documentsForm = new Array<FormGroup>();
+            this.documentsForm = new Array<UntypedFormGroup>();
 
             let questionnaires = await this.S3Service.downloadQuestionnaires(this.configService.environment)
             this.task.initializeQuestionnaires(questionnaires)
 
             /* A form for each questionnaire is initialized */
-            this.questionnairesForm = new Array<FormGroup>();
+            this.questionnairesForm = new Array<UntypedFormGroup>();
 
 
             /* The evaluation instructions stored on Amazon S3 are retrieved */

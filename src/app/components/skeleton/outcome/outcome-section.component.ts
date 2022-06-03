@@ -1,6 +1,6 @@
 /* Core */
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {FormBuilder, FormControl, FormGroup} from "@angular/forms";
+import {UntypedFormBuilder, UntypedFormControl, UntypedFormGroup} from "@angular/forms";
 /* Services */
 import {SectionService} from "../../../services/section.service";
 
@@ -12,14 +12,14 @@ import {SectionService} from "../../../services/section.service";
 export class OutcomeSectionComponent implements OnInit {
 
     /* Angular Reactive Form builder (see https://angular.io/guide/reactive-forms) */
-    formBuilder: FormBuilder;
+    formBuilder: UntypedFormBuilder;
     /* Service to track current section */
     sectionService: SectionService
 
     /* |--------- COMMENT ELEMENTS - DECLARATION ---------| */
 
     /* Final comment form reference */
-    commentForm: FormGroup;
+    commentForm: UntypedFormGroup;
     /* Flag to check if the comment has been correctly sent to S3 */
     commentSent: boolean;
 
@@ -35,7 +35,7 @@ export class OutcomeSectionComponent implements OnInit {
     @Output() commentEmitter: EventEmitter<string>;
 
     constructor(
-        formBuilder: FormBuilder,
+        formBuilder: UntypedFormBuilder,
         sectionService: SectionService
     ) {
         this.formBuilder = formBuilder
@@ -48,7 +48,7 @@ export class OutcomeSectionComponent implements OnInit {
 
         this.commentSent = false
         this.commentForm = formBuilder.group({
-            "comment": new FormControl(''),
+            "comment": new UntypedFormControl(''),
         });
 
     }

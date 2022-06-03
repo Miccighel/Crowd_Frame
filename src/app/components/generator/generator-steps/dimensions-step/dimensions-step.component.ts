@@ -1,6 +1,6 @@
 /* Core */
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {FormArray, FormBuilder, FormGroup, Validators} from "@angular/forms";
+import {UntypedFormArray, UntypedFormBuilder, UntypedFormGroup, Validators} from "@angular/forms";
 /* Services */
 import {ConfigService} from "../../../../services/config.service";
 import {LocalStorageService} from "../../../../services/localStorage.service";
@@ -51,7 +51,7 @@ export class DimensionsStepComponent implements OnInit {
 
     dataStored: Array<Dimension>
 
-    formStep: FormGroup;
+    formStep: UntypedFormGroup;
 
     scaleTypes: ScaleType[] = [
         {value: 'categorical', viewValue: 'Categorical'},
@@ -89,13 +89,13 @@ export class DimensionsStepComponent implements OnInit {
         }
     }
 
-    @Output() formEmitter: EventEmitter<FormGroup>;
+    @Output() formEmitter: EventEmitter<UntypedFormGroup>;
 
     constructor(
         localStorageService: LocalStorageService,
         configService: ConfigService,
         S3Service: S3Service,
-        private _formBuilder: FormBuilder,
+        private _formBuilder: UntypedFormBuilder,
     ) {
         this.configService = configService
         this.S3Service = S3Service
@@ -108,7 +108,7 @@ export class DimensionsStepComponent implements OnInit {
         this.formStep = this._formBuilder.group({
             dimensions: this._formBuilder.array([])
         });
-        this.formEmitter = new EventEmitter<FormGroup>();
+        this.formEmitter = new EventEmitter<UntypedFormGroup>();
     }
 
     public async ngOnInit() {
@@ -144,8 +144,8 @@ export class DimensionsStepComponent implements OnInit {
         this.formEmitter.emit(this.formStep)
     }
 
-    dimensions(): FormArray {
-        return this.formStep.get('dimensions') as FormArray;
+    dimensions(): UntypedFormArray {
+        return this.formStep.get('dimensions') as UntypedFormArray;
     }
 
     addDimension(dimensionIndex = null, dimension = null as Dimension) {
@@ -315,9 +315,9 @@ export class DimensionsStepComponent implements OnInit {
         this.instructionsUrl(dimensionIndex).get('text').updateValueAndValidity()
     }
 
-    instructionsUrl(dimensionIndex): FormGroup {
+    instructionsUrl(dimensionIndex): UntypedFormGroup {
         let dim = this.dimensions().at(dimensionIndex);
-        return dim.get(`url`).get('instructions') as FormGroup;
+        return dim.get(`url`).get('instructions') as UntypedFormGroup;
     }
 
     resetInstructionUrl(dimensionIndex) {
@@ -409,9 +409,9 @@ export class DimensionsStepComponent implements OnInit {
         }
     }
 
-    instructionsScale(dimensionIndex): FormGroup {
+    instructionsScale(dimensionIndex): UntypedFormGroup {
         let dim = this.dimensions().at(dimensionIndex);
-        return dim.get(`scale`).get('instructions') as FormGroup;
+        return dim.get(`scale`).get('instructions') as UntypedFormGroup;
     }
 
     resetInstructionScale(dimensionIndex) {
@@ -473,8 +473,8 @@ export class DimensionsStepComponent implements OnInit {
 
     /* SUB ELEMENT: Mapping */
 
-    dimensionMapping(dimensionIndex: number): FormArray {
-        return this.dimensions().at(dimensionIndex).get('scale').get('mapping') as FormArray;
+    dimensionMapping(dimensionIndex: number): UntypedFormArray {
+        return this.dimensions().at(dimensionIndex).get('scale').get('mapping') as UntypedFormArray;
     }
 
     addDimensionMapping(dimensionIndex: number, mapping = null as Mapping) {

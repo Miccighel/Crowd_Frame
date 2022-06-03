@@ -1,6 +1,6 @@
 /* Core */
 import {ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
+import {UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators} from "@angular/forms";
 /* Services */
 import {DeviceDetectorService} from "ngx-device-detector";
 import {SectionService} from "../../../../../services/section.service";
@@ -22,9 +22,9 @@ export class ElementPairwiseComponent implements OnInit {
     sectionService: SectionService;
     utilsService: UtilsService
     /* Angular Reactive Form builder (see https://angular.io/guide/reactive-forms) */
-    formBuilder: FormBuilder;
+    formBuilder: UntypedFormBuilder;
 
-    selectionForms: FormGroup[]
+    selectionForms: UntypedFormGroup[]
 
     @Input() documentIndex: number
 
@@ -32,14 +32,14 @@ export class ElementPairwiseComponent implements OnInit {
     documentLeftSelection: boolean
     documentRightSelection: boolean
 
-    @Output() formEmitter: EventEmitter<FormGroup>;
+    @Output() formEmitter: EventEmitter<UntypedFormGroup>;
 
     constructor(
         changeDetector: ChangeDetectorRef,
         deviceDetectorService: DeviceDetectorService,
         sectionService: SectionService,
         utilsService: UtilsService,
-        formBuilder: FormBuilder,
+        formBuilder: UntypedFormBuilder,
     ) {
         this.changeDetector = changeDetector
         this.deviceDetectorService = deviceDetectorService
@@ -47,16 +47,16 @@ export class ElementPairwiseComponent implements OnInit {
         this.utilsService = utilsService
         this.formBuilder = formBuilder
         this.task = this.sectionService.task
-        this.formEmitter = new EventEmitter<FormGroup>();
+        this.formEmitter = new EventEmitter<UntypedFormGroup>();
     }
 
     ngOnInit(): void {
         /* A form for each HIT's element is initialized */
-        this.selectionForms = new Array<FormGroup>(this.task.documentsAmount);
+        this.selectionForms = new Array<UntypedFormGroup>(this.task.documentsAmount);
         for (let index = 0; index < this.task.documentsAmount; index++) {
             let controlsConfig = {};
-            controlsConfig[`element_0_selected`] = new FormControl(this.task.documentsPairwiseSelection[index][0], [Validators.required]);
-            controlsConfig[`element_1_selected`] = new FormControl(this.task.documentsPairwiseSelection[index][1], [Validators.required]);
+            controlsConfig[`element_0_selected`] = new UntypedFormControl(this.task.documentsPairwiseSelection[index][0], [Validators.required]);
+            controlsConfig[`element_1_selected`] = new UntypedFormControl(this.task.documentsPairwiseSelection[index][1], [Validators.required]);
             let selectionForm = this.formBuilder.group(controlsConfig)
             selectionForm.valueChanges.subscribe(values => {
                 this.formEmitter.emit(selectionForm)

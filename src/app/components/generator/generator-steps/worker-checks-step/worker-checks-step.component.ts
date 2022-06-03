@@ -1,6 +1,6 @@
 /* Core */
 import {ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {FormArray, FormBuilder, FormGroup} from "@angular/forms";
+import {UntypedFormArray, UntypedFormBuilder, UntypedFormGroup} from "@angular/forms";
 import {MatChipInputEvent} from "@angular/material/chips";
 import {COMMA, ENTER} from "@angular/cdk/keycodes";
 /* Services */
@@ -31,7 +31,7 @@ export class WorkerChecksStepComponent implements OnInit {
     @Input() batchesTree: Array<JSON>
     @Input() batchesTreeInitialized: boolean
 
-    formStep: FormGroup;
+    formStep: UntypedFormGroup;
 
     dataStored = new WorkerSettings()
 
@@ -41,14 +41,14 @@ export class WorkerChecksStepComponent implements OnInit {
 
     configurationSerialized: string
 
-    @Output() formEmitter: EventEmitter<FormGroup>;
+    @Output() formEmitter: EventEmitter<UntypedFormGroup>;
 
     constructor(
         changeDetector: ChangeDetectorRef,
         localStorageService: LocalStorageService,
         configService: ConfigService,
         S3Service: S3Service,
-        private _formBuilder: FormBuilder,
+        private _formBuilder: UntypedFormBuilder,
     ) {
         this.changeDetector = changeDetector
         this.configService = configService
@@ -65,7 +65,7 @@ export class WorkerChecksStepComponent implements OnInit {
             whitelist: '',
             batches: this._formBuilder.array([]),
         })
-        this.formEmitter = new EventEmitter<FormGroup>();
+        this.formEmitter = new EventEmitter<UntypedFormGroup>();
     }
 
     public async ngOnInit() {
@@ -131,8 +131,8 @@ export class WorkerChecksStepComponent implements OnInit {
         this.serializeConfiguration()
     }
 
-    batches(): FormArray {
-        return this.formStep.get('batches') as FormArray;
+    batches(): UntypedFormArray {
+        return this.formStep.get('batches') as UntypedFormArray;
     }
 
     addBatch(batchNode) {

@@ -1,6 +1,6 @@
 /* Core */
 import {ChangeDetectorRef, Component, EventEmitter, OnInit, Output} from '@angular/core'
-import {FormArray, FormBuilder, FormGroup, Validators} from "@angular/forms"
+import {UntypedFormArray, UntypedFormBuilder, UntypedFormGroup, Validators} from "@angular/forms"
 /* Services */
 import {S3Service} from 'src/app/services/aws/s3.service'
 import {ConfigService} from "../../../../services/config.service"
@@ -50,7 +50,7 @@ export class TaskSettingsStepComponent implements OnInit {
     /* STEP #6 - Task Settings */
 
     dataStored: TaskSettings
-    formStep: FormGroup;
+    formStep: UntypedFormGroup;
 
     annotatorTypes: AnnotatorType[] = [
         {value: 'options', viewValue: 'Options'},
@@ -102,7 +102,7 @@ export class TaskSettingsStepComponent implements OnInit {
 
     configurationSerialized: string
 
-    @Output() formEmitter: EventEmitter<FormGroup>;
+    @Output() formEmitter: EventEmitter<UntypedFormGroup>;
     @Output() modalityEmitter: EventEmitter<string>;
 
     constructor(
@@ -112,7 +112,7 @@ export class TaskSettingsStepComponent implements OnInit {
         ngxService: NgxUiLoaderService,
         HitsSolverService: HitsSolverService,
         utilsService: UtilsService,
-        private _formBuilder: FormBuilder,
+        private _formBuilder: UntypedFormBuilder,
         private cd: ChangeDetectorRef
     ) {
         this.configService = configService
@@ -199,7 +199,7 @@ export class TaskSettingsStepComponent implements OnInit {
         this.solutionStatus = ""
         /* Read mode during hits file upload*/
         this.readMode = ReadMode.text
-        this.formEmitter = new EventEmitter<FormGroup>();
+        this.formEmitter = new EventEmitter<UntypedFormGroup>();
         this.modalityEmitter = new EventEmitter<string>();
     }
 
@@ -490,7 +490,7 @@ export class TaskSettingsStepComponent implements OnInit {
     }
 
     hitAttributes() {
-        return this.formStep.get('attributes') as FormArray;
+        return this.formStep.get('attributes') as UntypedFormArray;
     }
 
     addHitAttribute(name: string, attribute = null as Attribute) {
@@ -538,12 +538,12 @@ export class TaskSettingsStepComponent implements OnInit {
         this.resetHitAttributes()
     }
 
-    documentsOptions(): FormGroup{
-        return this.formStep.get('documents') as FormGroup;
+    documentsOptions(): UntypedFormGroup{
+        return this.formStep.get('documents') as UntypedFormGroup;
     }
 
-    docCategories(): FormArray{
-        return this.documentsOptions().get('doc_categories') as FormArray;
+    docCategories(): UntypedFormArray{
+        return this.documentsOptions().get('doc_categories') as UntypedFormArray;
     }
 
     docCategory(valueIndex){
@@ -790,7 +790,7 @@ export class TaskSettingsStepComponent implements OnInit {
     }
 
     countdownAttributeValues() {
-        return this.formStep.get('countdown_attribute_values') as FormArray;
+        return this.formStep.get('countdown_attribute_values') as UntypedFormArray;
     }
 
     updateCountdownModality() {
@@ -828,7 +828,7 @@ export class TaskSettingsStepComponent implements OnInit {
     }
 
     countdownPositionValues() {
-        return this.formStep.get('countdown_position_values') as FormArray;
+        return this.formStep.get('countdown_position_values') as UntypedFormArray;
     }
 
     updateCountdownPosition(countdownPosition = null) {
@@ -852,7 +852,7 @@ export class TaskSettingsStepComponent implements OnInit {
     }
 
     annotator() {
-        return this.formStep.get('annotator') as FormGroup
+        return this.formStep.get('annotator') as UntypedFormGroup
     }
 
     setAnnotatorType() {
@@ -884,8 +884,8 @@ export class TaskSettingsStepComponent implements OnInit {
     }
 
     /* SUB ELEMENT: Annotator */
-    annotatorOptionValues(): FormArray {
-        return this.formStep.get('annotator').get('values') as FormArray;
+    annotatorOptionValues(): UntypedFormArray {
+        return this.formStep.get('annotator').get('values') as UntypedFormArray;
     }
 
     addOptionValue(option = null as Object) {
@@ -906,8 +906,8 @@ export class TaskSettingsStepComponent implements OnInit {
         this.annotatorOptionValues().removeAt(valueIndex);
     }
 
-    messages(): FormArray {
-        return this.formStep.get('messages') as FormArray;
+    messages(): UntypedFormArray {
+        return this.formStep.get('messages') as UntypedFormArray;
     }
 
     addMessage(message = null) {

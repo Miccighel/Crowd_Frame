@@ -1,6 +1,6 @@
 /* Core */
 import {ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {AbstractControl, FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
+import {AbstractControl, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators} from "@angular/forms";
 /* Services */
 import {SectionService} from "../../../services/section.service";
 import {UtilsService} from "../../../services/utils.service";
@@ -27,13 +27,13 @@ export class QuestionnaireComponent implements OnInit {
     sectionService: SectionService;
     utilsService: UtilsService
     /* Angular Reactive Form builder (see https://angular.io/guide/reactive-forms) */
-    formBuilder: FormBuilder;
+    formBuilder: UntypedFormBuilder;
 
     @Input() questionnaireIndex: number
 
     task: Task
     questionnaire: Questionnaire
-    questionnaireForm: FormGroup
+    questionnaireForm: UntypedFormGroup
     nodes = []
 
     @Output() formEmitter: EventEmitter<Object>;
@@ -43,13 +43,13 @@ export class QuestionnaireComponent implements OnInit {
         deviceDetectorService: DeviceDetectorService,
         sectionService: SectionService,
         utilsService: UtilsService,
-        formBuilder: FormBuilder,
+        formBuilder: UntypedFormBuilder,
     ) {
         this.changeDetector = changeDetector
         this.sectionService = sectionService
         this.utilsService = utilsService
         this.formBuilder = formBuilder
-        this.formEmitter = new EventEmitter<FormGroup>();
+        this.formEmitter = new EventEmitter<UntypedFormGroup>();
         this.task = this.sectionService.task
     }
 
@@ -119,11 +119,11 @@ export class QuestionnaireComponent implements OnInit {
                                             answers[index] = false
                                         });
                                         this['questionnaireForm'].addControl(`${controlName}_list`, this['formBuilder'].group(answers))
-                                        this['questionnaireForm'].addControl(`${controlName}_answer`, new FormControl('', [Validators.required]))
+                                        this['questionnaireForm'].addControl(`${controlName}_answer`, new UntypedFormControl('', [Validators.required]))
                                     } else {
-                                        this['questionnaireForm'].addControl(`${controlName}_answer`, new FormControl('', validators))
+                                        this['questionnaireForm'].addControl(`${controlName}_answer`, new UntypedFormControl('', validators))
                                     }
-                                    if (question.freeText) this['questionnaireForm'].addControl(`${controlName}_free_text`, new FormControl(''))
+                                    if (question.freeText) this['questionnaireForm'].addControl(`${controlName}_free_text`, new UntypedFormControl(''))
                                     this.questionnaire.questionDependencies[question.nameFull] = true
                                 }
                             } else {
@@ -174,11 +174,11 @@ export class QuestionnaireComponent implements OnInit {
                     answers[index] = false
                 });
                 this.questionnaireForm.addControl(`${controlName}_list`, this.formBuilder.group(answers))
-                this.questionnaireForm.addControl(`${controlName}_answer`, new FormControl('', [Validators.required]))
+                this.questionnaireForm.addControl(`${controlName}_answer`, new UntypedFormControl('', [Validators.required]))
             } else {
-                this.questionnaireForm.addControl(`${controlName}_answer`, new FormControl('', validators))
+                this.questionnaireForm.addControl(`${controlName}_answer`, new UntypedFormControl('', validators))
             }
-            if (question.freeText) this.questionnaireForm.addControl(`${controlName}_free_text`, new FormControl(''))
+            if (question.freeText) this.questionnaireForm.addControl(`${controlName}_free_text`, new UntypedFormControl(''))
         }
     }
 

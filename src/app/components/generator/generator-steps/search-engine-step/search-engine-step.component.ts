@@ -1,6 +1,6 @@
 /* Core */
 import {Component, EventEmitter, OnInit, Output} from '@angular/core';
-import {FormArray, FormBuilder, FormGroup, Validators} from "@angular/forms";
+import {UntypedFormArray, UntypedFormBuilder, UntypedFormGroup, Validators} from "@angular/forms";
 /* Services */
 import {S3Service} from 'src/app/services/aws/s3.service';
 import {ConfigService} from "../../../../services/config.service";
@@ -30,7 +30,7 @@ export class SearchEngineStepComponent implements OnInit {
 
     dataStored: SearchEngineSettings
 
-    formStep: FormGroup;
+    formStep: UntypedFormGroup;
 
     sourceTypes: SourceType[] = [
         {value: null, viewValue: 'None'},
@@ -39,7 +39,7 @@ export class SearchEngineStepComponent implements OnInit {
         {value: 'PubmedSearch', viewValue: 'Pubmed'}
     ];
 
-    @Output() formEmitter: EventEmitter<FormGroup>;
+    @Output() formEmitter: EventEmitter<UntypedFormGroup>;
 
     configurationSerialized: string
 
@@ -47,7 +47,7 @@ export class SearchEngineStepComponent implements OnInit {
         localStorageService: LocalStorageService,
         configService: ConfigService,
         S3Service: S3Service,
-        private _formBuilder: FormBuilder,
+        private _formBuilder: UntypedFormBuilder,
     ) {
         this.configService = configService
         this.S3Service = S3Service
@@ -61,7 +61,7 @@ export class SearchEngineStepComponent implements OnInit {
             source: [''],
             domains_filter: this._formBuilder.array([])
         });
-        this.formEmitter = new EventEmitter<FormGroup>();
+        this.formEmitter = new EventEmitter<UntypedFormGroup>();
     }
 
     public async ngOnInit() {
@@ -86,8 +86,8 @@ export class SearchEngineStepComponent implements OnInit {
         this.formEmitter.emit(this.formStep)
     }
 
-    domains(): FormArray {
-        return this.formStep.get('domains_filter') as FormArray;
+    domains(): UntypedFormArray {
+        return this.formStep.get('domains_filter') as UntypedFormArray;
     }
 
     addDomain(domain = null) {

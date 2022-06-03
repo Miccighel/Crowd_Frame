@@ -1,6 +1,6 @@
 /* Core */
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {FormArray, FormBuilder, FormGroup, Validators} from "@angular/forms";
+import {UntypedFormArray, UntypedFormBuilder, UntypedFormGroup, Validators} from "@angular/forms";
 /* Services */
 import {ConfigService} from "../../../../services/config.service";
 import {S3Service} from "../../../../services/aws/s3.service";
@@ -26,17 +26,17 @@ export class InstructionsGeneralStep implements OnInit {
 
     dataStored: Array<Instruction>
 
-    formStep: FormGroup;
+    formStep: UntypedFormGroup;
 
     configurationSerialized: string
 
-    @Output() formEmitter: EventEmitter<FormGroup>;
+    @Output() formEmitter: EventEmitter<UntypedFormGroup>;
 
     constructor(
         configService: ConfigService,
         S3Service: S3Service,
         localStorageService: LocalStorageService,
-        private _formBuilder: FormBuilder,
+        private _formBuilder: UntypedFormBuilder,
     ) {
         this.configService = configService
         this.S3Service = S3Service
@@ -49,7 +49,7 @@ export class InstructionsGeneralStep implements OnInit {
         this.formStep = this._formBuilder.group({
             instructions: this._formBuilder.array([])
         });
-        this.formEmitter = new EventEmitter<FormGroup>();
+        this.formEmitter = new EventEmitter<UntypedFormGroup>();
     }
 
     public async ngOnInit() {
@@ -86,8 +86,8 @@ export class InstructionsGeneralStep implements OnInit {
 
 
     /* STEP #3 - General Instructions */
-    instructions(): FormArray {
-        return this.formStep.get(`instructions`) as FormArray;
+    instructions(): UntypedFormArray {
+        return this.formStep.get(`instructions`) as UntypedFormArray;
     }
 
     addInstruction(instructionIndex = null, instruction = null as Instruction) {

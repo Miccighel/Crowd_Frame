@@ -1,5 +1,5 @@
 import {Component, Input, OnInit} from '@angular/core';
-import {FormControl} from "@angular/forms";
+import {UntypedFormControl} from "@angular/forms";
 import {UtilsService} from "../../../services/utils.service";
 
 @Component({
@@ -11,7 +11,7 @@ export class ErrorMessageComponent implements OnInit {
 
     public utilsService: UtilsService
 
-    @Input() formField: FormControl
+    @Input() formField: UntypedFormControl
 
     constructor(
         utilsService: UtilsService

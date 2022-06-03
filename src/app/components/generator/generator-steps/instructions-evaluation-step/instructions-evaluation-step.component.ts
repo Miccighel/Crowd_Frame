@@ -1,6 +1,6 @@
 /* Core */
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {FormArray, FormBuilder, FormGroup, Validators} from "@angular/forms";
+import {UntypedFormArray, UntypedFormBuilder, UntypedFormGroup, Validators} from "@angular/forms";
 /* Services */
 import {ConfigService} from "../../../../services/config.service";
 import {S3Service} from "../../../../services/aws/s3.service";
@@ -28,17 +28,17 @@ export class InstructionsEvaluationStepComponent implements OnInit {
 
     dataStored: InstructionEvaluation
 
-    formStep: FormGroup;
+    formStep: UntypedFormGroup;
 
     configurationSerialized: string
 
-    @Output() formEmitter: EventEmitter<FormGroup>;
+    @Output() formEmitter: EventEmitter<UntypedFormGroup>;
 
     constructor(
         configService: ConfigService,
         S3Service: S3Service,
         localStorageService: LocalStorageService,
-        private _formBuilder: FormBuilder,
+        private _formBuilder: UntypedFormBuilder,
     ) {
         this.configService = configService
         this.S3Service = S3Service
@@ -56,7 +56,7 @@ export class InstructionsEvaluationStepComponent implements OnInit {
                 text: '',
             })
         });
-        this.formEmitter = new EventEmitter<FormGroup>();
+        this.formEmitter = new EventEmitter<UntypedFormGroup>();
     }
 
     public async ngOnInit() {
@@ -88,8 +88,8 @@ export class InstructionsEvaluationStepComponent implements OnInit {
 
     /* STEP #3 - General Instructions */
 
-    instructionsGeneral(): FormArray {
-        return this.formStep.get(`general`) as FormArray;
+    instructionsGeneral(): UntypedFormArray {
+        return this.formStep.get(`general`) as UntypedFormArray;
     }
 
     addInstructionGeneral(instructionIndex = null, instruction = null as Instruction) {
@@ -105,8 +105,8 @@ export class InstructionsEvaluationStepComponent implements OnInit {
         this.instructionsGeneral().removeAt(generalInstructionIndex);
     }
 
-    instructionsElement(): FormGroup {
-        return this.formStep.get(`element`) as FormGroup;
+    instructionsElement(): UntypedFormGroup {
+        return this.formStep.get(`element`) as UntypedFormGroup;
     }
 
     resetInstructionElement(instruction = null) {

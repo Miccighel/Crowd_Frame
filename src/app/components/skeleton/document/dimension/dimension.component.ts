@@ -1,6 +1,6 @@
 /* Core */
 import {ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, QueryList, ViewChild, ViewChildren} from '@angular/core';
-import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
+import {UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators} from "@angular/forms";
 /* Material Design */
 import {MatStepper} from "@angular/material/stepper";
 /* Services */
@@ -27,15 +27,15 @@ export class DimensionComponent implements OnInit {
     sectionService: SectionService;
     utilsService: UtilsService
     /* Angular Reactive Form builder (see https://angular.io/guide/reactive-forms) */
-    formBuilder: FormBuilder;
+    formBuilder: UntypedFormBuilder;
 
 
     @Input() documentIndex: number
 
     task: Task
-    assessmentForms: FormGroup[]
+    assessmentForms: UntypedFormGroup[]
 
-    @Output() formEmitter: EventEmitter<FormGroup>;
+    @Output() formEmitter: EventEmitter<UntypedFormGroup>;
 
     /* References to task stepper and token forms */
     @ViewChild('stepper') stepper: MatStepper;
@@ -46,13 +46,13 @@ export class DimensionComponent implements OnInit {
         deviceDetectorService: DeviceDetectorService,
         sectionService: SectionService,
         utilsService: UtilsService,
-        formBuilder: FormBuilder,
+        formBuilder: UntypedFormBuilder,
     ) {
         this.changeDetector = changeDetector
         this.sectionService = sectionService
         this.utilsService = utilsService
         this.formBuilder = formBuilder
-        this.formEmitter = new EventEmitter<FormGroup>();
+        this.formEmitter = new EventEmitter<UntypedFormGroup>();
     }
 
     ngOnInit() {
@@ -60,7 +60,7 @@ export class DimensionComponent implements OnInit {
         this.task = this.sectionService.task
 
         /* A form for each HIT's element is initialized */
-        this.assessmentForms = new Array<FormGroup>(this.task.documentsAmount);
+        this.assessmentForms = new Array<UntypedFormGroup>(this.task.documentsAmount);
 
         for (let index = 0; index < this.task.documentsAmount; index++) {
             let controlsConfig = {};
@@ -68,31 +68,31 @@ export class DimensionComponent implements OnInit {
                 let dimension = this.task.dimensions[index_dimension];
                 if (!dimension.pairwise) {
                     if (dimension.scale) {
-                        if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.required]);
-                        if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.min((<ScaleInterval>dimension.scale).min), Validators.required])
+                        if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value`] = new UntypedFormControl('', [Validators.required]);
+                        if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value`] = new UntypedFormControl('', [Validators.min((<ScaleInterval>dimension.scale).min), Validators.required])
                         if (dimension.scale.type == "magnitude_estimation") {
                             if ((<ScaleMagnitude>dimension.scale).lower_bound) {
-                                controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min), Validators.required]);
+                                controlsConfig[`${dimension.name}_value`] = new UntypedFormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min), Validators.required]);
                             } else {
-                                controlsConfig[`${dimension.name}_value`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min + 1), Validators.required]);
+                                controlsConfig[`${dimension.name}_value`] = new UntypedFormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min + 1), Validators.required]);
                             }
                         }
                     }
-                    if (dimension.justification) controlsConfig[`${dimension.name}_justification`] = new FormControl('', [Validators.required, this.validateJustification.bind(this)])
+                    if (dimension.justification) controlsConfig[`${dimension.name}_justification`] = new UntypedFormControl('', [Validators.required, this.validateJustification.bind(this)])
                 } else {
                     for (let j = 0; j < this.task.documents[index]['pairwise'].length; j++) {
                         if (dimension.scale) {
-                            if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value_element_${j}`] = new FormControl('', [Validators.required]);
-                            if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value_element_${j}`] = new FormControl('', [Validators.min((<ScaleInterval>dimension.scale).min), Validators.required])
+                            if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl('', [Validators.required]);
+                            if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl('', [Validators.min((<ScaleInterval>dimension.scale).min), Validators.required])
                             if (dimension.scale.type == "magnitude_estimation") {
                                 if ((<ScaleMagnitude>dimension.scale).lower_bound) {
-                                    controlsConfig[`${dimension.name}_value_element_${j}`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min), Validators.required]);
+                                    controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min), Validators.required]);
                                 } else {
-                                    controlsConfig[`${dimension.name}_value_element_${j}`] = new FormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min + 1), Validators.required]);
+                                    controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min + 1), Validators.required]);
                                 }
                             }
                         }
-                        if (dimension.justification) controlsConfig[`${dimension.name}_justification_element_${j}`] = new FormControl('', [Validators.required, this.validateJustification.bind(this)])
+                        if (dimension.justification) controlsConfig[`${dimension.name}_justification_element_${j}`] = new UntypedFormControl('', [Validators.required, this.validateJustification.bind(this)])
                     }
                 }
             }
@@ -111,7 +111,7 @@ export class DimensionComponent implements OnInit {
      * if the worker types a justification which has lesser than 15 words a <longer> error is raised
      * IMPORTANT: the <return null> part means: THE FIELD IS VALID
      */
-    public validateJustification(control: FormControl) {
+    public validateJustification(control: UntypedFormControl) {
         /* The justification is divided into words and cleaned */
         let minWords = 0
         let words = control.value.split(' ')

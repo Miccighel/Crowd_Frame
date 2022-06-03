@@ -1,6 +1,6 @@
 /* Core */
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit} from '@angular/core';
-import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
+import {UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators} from "@angular/forms";
 /* Services */
 import {ConfigService} from "../../services/config.service";
 import {NgxUiLoaderService} from "ngx-ui-loader";
@@ -72,9 +72,9 @@ export class LoaderComponent implements OnInit {
     initializationCompleted: boolean
 
     /* Login form and corresponding fields */
-    loginForm: FormGroup;
-    username: FormControl;
-    password: FormControl;
+    loginForm: UntypedFormGroup;
+    username: UntypedFormControl;
+    password: UntypedFormControl;
 
     /* Snackbar reference */
     snackBar: MatSnackBar
@@ -87,7 +87,7 @@ export class LoaderComponent implements OnInit {
         configService: ConfigService,
         S3Service: S3Service,
         debugService: DebugService,
-        formBuilder: FormBuilder,
+        formBuilder: UntypedFormBuilder,
         snackBar: MatSnackBar
     ) {
 
@@ -121,8 +121,8 @@ export class LoaderComponent implements OnInit {
 
         /* |--------- LOADER SETTINGS - INITIALIZATION ---------| */
 
-        this.username = new FormControl('', [Validators.required]);
-        this.password = new FormControl('', [Validators.required]);
+        this.username = new UntypedFormControl('', [Validators.required]);
+        this.password = new UntypedFormControl('', [Validators.required]);
 
         this.loginForm = formBuilder.group({
             "username": this.username,
@@ -188,7 +188,7 @@ export class LoaderComponent implements OnInit {
     /*
      * This function retrieves the string associated to an error code thrown by a form field validator.
      */
-    public checkFormControl(form: FormGroup, field: string, key: string): boolean {
+    public checkFormControl(form: UntypedFormGroup, field: string, key: string): boolean {
         return form.get(field).hasError(key);
     }
 

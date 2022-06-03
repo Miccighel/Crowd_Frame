@@ -1,6 +1,6 @@
 /* Core */
 import {ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
-import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
+import {UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators} from "@angular/forms";
 /* Material Design */
 import {MatStepper} from "@angular/material/stepper";
 /* Services */
@@ -28,17 +28,17 @@ export class SearchEngineComponent implements OnInit {
     sectionService: SectionService;
     utilsService: UtilsService
     /* Angular Reactive Form builder (see https://angular.io/guide/reactive-forms) */
-    formBuilder: FormBuilder;
+    formBuilder: UntypedFormBuilder;
 
     @Input() task: Task
     @Input() documentIndex: number
     @Input() dimensionIndex: number
 
-    searchEngineForm: FormGroup
+    searchEngineForm: UntypedFormGroup
 
     dimension: Dimension
 
-    @Output() formEmitter: EventEmitter<FormGroup>;
+    @Output() formEmitter: EventEmitter<UntypedFormGroup>;
     @Output() urlSelectedEmitter: EventEmitter<boolean>;
 
     /* References to task stepper and token forms */
@@ -50,20 +50,20 @@ export class SearchEngineComponent implements OnInit {
         deviceDetectorService: DeviceDetectorService,
         sectionService: SectionService,
         utilsService: UtilsService,
-        formBuilder: FormBuilder,
+        formBuilder: UntypedFormBuilder,
     ) {
         this.changeDetector = changeDetector
         this.sectionService = sectionService
         this.utilsService = utilsService
         this.formBuilder = formBuilder
         this.urlSelectedEmitter = new EventEmitter<boolean>();
-        this.formEmitter = new EventEmitter<FormGroup>();
+        this.formEmitter = new EventEmitter<UntypedFormGroup>();
     }
 
     ngOnInit() {
         this.dimension = this.task.dimensions[this.dimensionIndex]
         let controlsConfig = {};
-        if (this.dimension.url) controlsConfig[`${this.dimension.name}_url`] = new FormControl('', [Validators.required, this.validateSearchEngineUrl.bind(this)]);
+        if (this.dimension.url) controlsConfig[`${this.dimension.name}_url`] = new UntypedFormControl('', [Validators.required, this.validateSearchEngineUrl.bind(this)]);
         this.searchEngineForm = this.formBuilder.group(controlsConfig)
         this.searchEngineForm.valueChanges.subscribe(values => {
             this.formEmitter.emit(this.searchEngineForm)
@@ -79,7 +79,7 @@ export class SearchEngineComponent implements OnInit {
      * to an url retrieved by the search engine an <invalidSearchEngineUrl> error is raised.
      * IMPORTANT: the <return null> part means: THE FIELD IS VALID
      */
-    public validateSearchEngineUrl(workerUrlFormControl: FormControl) {
+    public validateSearchEngineUrl(workerUrlFormControl: UntypedFormControl) {
         /* If the stepped is initialized to something the task is started */
         if (this.stepper) {
             if (this.stepper.selectedIndex >= this.task.questionnaireAmountStart && this.stepper.selectedIndex < this.task.questionnaireAmountStart + this.task.documentsAmount) {
