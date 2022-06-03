@@ -2750,10 +2750,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:~16.11.36":
-  version: 16.11.36
-  resolution: "@types/node@npm:16.11.36"
-  checksum: 878e8e2032869785dd4f73dd862042c7eb588fb9a27199f1b493a7029438ccb58f96e203c35c2e66e08307ca3f9767133cae888958c15e031982f7e9719e5e47
+"@types/node@npm:~16.11.38":
+  version: 16.11.38
+  resolution: "@types/node@npm:16.11.38"
+  checksum: 471df020162098602fd77014c458e84f01f7faff3cddcc2b7739312a8b4f103bc0fab3dfc03641233d9f627c47fd82dfabc9b86413ef680e193c36b9aed322e6
   languageName: node
   linkType: hard
 
@@ -3317,9 +3317,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"aws-sdk@npm:^2.1145.0":
-  version: 2.1145.0
-  resolution: "aws-sdk@npm:2.1145.0"
+"aws-sdk@npm:^2.1148.0":
+  version: 2.1148.0
+  resolution: "aws-sdk@npm:2.1148.0"
   dependencies:
     buffer: 4.9.2
     events: 1.1.1
@@ -3328,9 +3328,9 @@ __metadata:
     querystring: 0.2.0
     sax: 1.2.1
     url: 0.10.3
-    uuid: 3.3.2
+    uuid: 8.0.0
     xml2js: 0.4.19
-  checksum: 698ace0e4c67ecc0ff02f06517911e78f928f4279a97b22f2657f4c9d34d2f55676d630c0cb66ec10fe39fdd59810b8518ff6203568136e4deb062377f11a9c5
+  checksum: 8f1fa1b754b4962fffe23d10bffec8e4ee26a731f7ad952a1bf69eb9c974f157606de8266cd1c388da35fd2694d59f05d5f393a55823e8dc1b707cf2b48a8d57
   languageName: node
   linkType: hard
 
@@ -4134,8 +4134,8 @@ __metadata:
     "@angular/router": ^14.0.0
     "@funktechno/texthighlighter": ^2.1.2
     "@kolkov/angular-editor": ^2.0.0
-    "@types/node": ~16.11.36
-    aws-sdk: ^2.1145.0
+    "@types/node": ~16.11.38
+    aws-sdk: ^2.1148.0
     crypto-es: ^1.2.7
     flat-angular: ^1.6.0
     ngx-color-picker: ^12.0.1
@@ -4143,7 +4143,7 @@ __metadata:
     ngx-device-detector: ^3.0.0
     ngx-file-helpers: ^7.0.0
     ngx-ui-loader: ^13.0.0
-    rxjs: ^7.4.0
+    rxjs: ^7.5.5
     titleize: ^3.0.0
     tree-model: ^1.0.7
     typescript: 4.7.2
@@ -8390,15 +8390,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rxjs@npm:^7.4.0":
-  version: 7.4.0
-  resolution: "rxjs@npm:7.4.0"
-  dependencies:
-    tslib: ~2.1.0
-  checksum: 6b33172a760dcad6882fdc836ee8cf1ebe160dd7eaad95c45a12338ffdaa96eb41e48e6c25bbd3d1fdf45075949ff447954bc17a9d01c688558a67967d09c114
-  languageName: node
-  linkType: hard
-
 "rxjs@npm:^7.5.5":
   version: 7.5.5
   resolution: "rxjs@npm:7.5.5"
@@ -9283,13 +9274,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tslib@npm:~2.1.0":
-  version: 2.1.0
-  resolution: "tslib@npm:2.1.0"
-  checksum: aa189c8179de0427b0906da30926fd53c59d96ec239dff87d6e6bc831f608df0cbd6f77c61dabc074408bd0aa0b9ae4ec35cb2c15f729e32f37274db5730cb78
-  languageName: node
-  linkType: hard
-
 "type-fest@npm:^0.21.3":
   version: 0.21.3
   resolution: "type-fest@npm:0.21.3"
@@ -9449,12 +9433,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"uuid@npm:3.3.2":
-  version: 3.3.2
-  resolution: "uuid@npm:3.3.2"
+"uuid@npm:8.0.0":
+  version: 8.0.0
+  resolution: "uuid@npm:8.0.0"
   bin:
-    uuid: ./bin/uuid
-  checksum: 8793629d2799f500aeea9fcd0aec6c4e9fbcc4d62ed42159ad96be345c3fffac1bbf61a23e18e2782600884fee05e6d4012ce4b70d0037c8e987533ae6a77870
+    uuid: dist/bin/uuid
+  checksum: 56d4e23aa7ac26fa2db6bd1778db34cb8c9f5a10df1770a27167874bf6705fc8f14a4ac414af58a0d96c7653b2bd4848510b29d1c2ef8c91ccb17429c1872b5e
   languageName: node
   linkType: hard
 
