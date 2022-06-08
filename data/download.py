@@ -145,8 +145,10 @@ def flatten(d, parent_key='', sep='_'):
 
 
 def camel_to_snake(name):
-    name = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
-    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', name).lower()
+    return '_'.join(
+        re.sub('([A-Z][a-z]+)', r' \1',
+            re.sub('([A-Z]+)', r' \1',
+                name.replace('-', ' '))).split()).lower()
 
 
 step_index = 1
@@ -456,6 +458,29 @@ if not os.path.exists(df_acl_path):
             if acl_presence:
                 df_acl = df_acl.append(row, ignore_index=True)
                 break
+
+    if len(df_acl) > 0:
+
+        df_acl_mal = df_acl.loc[df_acl['batch_name'] == 'V3-Malignani']
+        if (len(df_acl_mal) > 0):
+            df_acl_mal[['ip_address_split', 'ip_access_split']] = df_acl_mal['ip_address'].str.split(':::', 1, expand=True)
+            df_acl_filt = pd.DataFrame(columns=df_acl.columns)
+            for ip_address, df_filt in df_acl_mal.groupby("ip_address_split"):
+                row = df_filt.sort_values(by='ip_access_split', ascending=False)
+                row = row.head(1)
+                row_orig = df_acl.loc[df_acl['worker_id'] == row['worker_id'].values[0]]
+                row_orig['ip_address'] = ip_address
+                row_orig['platform'] = 'custom'
+                df_acl_filt = df_acl_filt.append(row_orig, ignore_index=True)
+            df_acl = df_acl.loc[df_acl['batch_name'] != 'V3-Malignani']
+            for index, row in df_acl_filt.iterrows():
+                df_acl = df_acl.append(row, ignore_index=True)
+
+        if batch_name == 'V3-Malignani-2':
+            df_acl['platform'] = 'custom'
+        df_acl.to_csv(df_acl_path, index=False)
+        console.print(f"Dataframe shape: {df_acl.shape}")
+        console.print(f"Workers info dataframe serialized at path: [cyan on white]{df_acl_path}")
 
 else:
     df_acl = pd.read_csv(df_acl_path)
@@ -2021,236 +2046,210 @@ if enable_crawling:
     step_index = step_index + 1
 
     df_url = pd.read_csv(df_url_path)
-    unique_urls = np.unique(df_url['response_url'])
-    console.print(f"Unique URLs: [green]{len(unique_urls)}")
+    df_url.drop_duplicates(subset='response_url', inplace=True)
+    unique_urls_amount = len(df_url)
+    console.print(f"Unique URLs: [green]{len(df_url)}")
 
-    urls_to_crawl = 0
-    unique_urls_filt = []
-
-    console.print("Checking crawling status")
-    for url_current in tqdm.tqdm(list(unique_urls)):
-        url_data = df_url.loc[df_url['response_url'] == url_current]
-        if len(url_data) >= 1:
-            url_data = url_data.iloc[0]
-        page_metadata_path = f"{crawling_path_metadata}{url_data['response_uuid']}_metadata.json"
-        if not os.path.exists(page_metadata_path):
-            unique_urls_filt.append(url_current)
-        else:
-            try:
-                metadata = load_json(page_metadata_path)
-                if metadata['response_error_code'] is not None:
-                    unique_urls_filt.append(url_current)
-                    os.remove(page_metadata_path)
-            except JSONDecodeError:
-                os.remove(page_metadata_path)
-                unique_urls_filt.append(url_current)
-    urls_already_crawled = len(unique_urls) - len(unique_urls_filt)
-    urls_to_crawl = len(unique_urls_filt)
-    console.print(f"URLs to crawl: {len(unique_urls_filt)}/{len(unique_urls)} ({(len(unique_urls_filt) / len(unique_urls)) * 100}%)")
-    console.print(f"URLs already crawled: {urls_already_crawled}/{len(unique_urls)} ({(urls_already_crawled / len(unique_urls)) * 100}%)")
+    if os.path.exists(df_crawl_path):
+        df_crawl = pd.read_csv(df_crawl_path)
+        console.print(f"Crawling dataframe [yellow]already detected[/yellow], loading in memory")
+        df_crawl_correct = df_crawl[df_crawl["response_error_code"].isnull()]
+        console.print(f"Pages correctly crawled: [green]{len(df_crawl_correct)}/{unique_urls_amount}[/green] [cyan]({(len(df_crawl_correct) / unique_urls_amount) * 100}%)")
+        url_crawled = list(df_crawl_correct['response_url'].values)
+        df_url = df_url[~df_url['response_url'].isin(url_crawled)]
+    else:
+        df_crawl = pd.DataFrame(columns=[
+            'response_uuid',
+            'response_url',
+            'response_timestamp',
+            "response_error_code",
+            'response_source_path',
+            'response_metadata_path'
+        ])
 
     start = time.time()
 
+    # Initialize connection pool
+    conn = aiohttp.TCPConnector(limit_per_host=100, limit=0, ttl_dns_cache=300)
+    PARALLEL_REQUESTS = 100
+    tasks = []
+    errors = []
+    results = []
 
-    async def read_url(url):
-        async with aiohttp.ClientSession() as session:
-            headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.61/63 Safari/537.36 Edg/100.0.1185.39',
-                'Accept-Encoding': 'gzip'
+    async def gather_with_concurrency(n):
+        semaphore = asyncio.Semaphore(n)
+        session = aiohttp.ClientSession(connector=conn)
+
+        def build_response_dict(url, type, uuid, data, body=None):
+            return {
+                'url': url,
+                'type': type,
+                'uuid': uuid,
+                'data': data,
+                'body': body
             }
-            try:
-                async with session.get(url, headers=headers) as resp:
-                    if 'octet-stream' in resp.content_type or 'application/pdf' in resp.content_type or 'application/vnd.openxmlformats-officedocument.presentationml.presentation' in resp.content_type:
-                        return url, resp, await resp.read()
-                    elif 'text/html' in resp.content_type or 'text/plain' or 'json' in resp.content_type:
-                        return url, resp, await resp.text()
-                    else:
-                        print(url)
-                        print(resp.content_type)
-                        print(resp.content_disposition)
-                        assert False
-            except asyncio.TimeoutError as error:
-                error_code = 'timeout_error'
-                return url, error_code, error
-            except ClientPayloadError as error:
-                error_code = 'client_payload_error'
-                return url, error_code, error
-            except ClientConnectorError as error:
-                error_code = 'client_connector_error'
-                return url, error_code, error
-            except ServerDisconnectedError as error:
-                error_code = 'server_disconnected_error'
-                return url, error_code, error
-            except TooManyRedirects as error:
-                error_code = 'too_many_redirects_error'
-                return url, error_code, error
-            except ClientOSError as error:
-                error_code = 'client_os_error'
-                return url, error_code, error
-            except ClientResponseError as error:
-                error_code = 'client_os_error'
-                return url, error_code, error
-            except UnicodeDecodeError as error:
-                error_code = 'unicode_decode_error'
-                return url, error_code, error
 
-
-    async def run_crawling():
-        urls = []
-        console.print(f"Generating asynchronous requests")
-        for url_current_filt in tqdm.tqdm(unique_urls_filt):
-            urls.append(asyncio.create_task(read_url(url_current_filt)))
-        console.print(f"Processing asynchronous requests")
-        for request_current in tqdm.tqdm(asyncio.as_completed(urls), total=len(urls)):
-            response_current = await request_current
-            error_code = None
-            url_current = response_current[0]
-            error_code = response_current[1]
-            if type(error_code) != str:
-                error_code = None
-            url_data = df_url.loc[
-                (df_url['response_url'] == str(URL(url_current).with_scheme('https'))) |
-                (df_url['response_url'] == str(URL(url_current).with_scheme('http'))) |
-                (df_url['response_url'] == url_current)
-                ]
-            if len(url_data) >= 1:
-                url_data = url_data.iloc[0]
-            response_uuid = url_data['response_uuid']
-            page_metadata_path = f"{crawling_path_metadata}{response_uuid}_metadata.json"
-            row = {
-                'response_uuid': response_uuid,
-                'response_url': url_current,
-                'response_timestamp': datetime.now().timestamp(),
-                'response_page_source_path': None,
-                "response_error_code": error_code
-            }
-            if error_code is None:
-                response_data = response_current[1]
-                row['response_status_code'] = int(response_data.status)
+        # heres the logic for the generator
+        async def get(row_url):
+            response_url = row_url['response_url']
+            response_uuid = row_url['response_uuid']
+            async with semaphore:
+                headers = {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.61/63 Safari/537.36 Edg/100.0.1185.39',
+                    'Accept-Encoding': 'gzip'
+                }
                 try:
-                    row['response_encoding'] = response_data.get_encoding().lower() if response_data.get_encoding() else None
+                    async with session.get(response_url, headers=headers, raise_for_status=True, timeout=30) as resp:
+                        if 'octet-stream' in resp.content_type or 'application/pdf' in resp.content_type or 'application/vnd.openxmlformats-officedocument.presentationml.presentation' in resp.content_type:
+                            return build_response_dict(response_url, 'data', response_uuid, resp, await resp.read())
+                        elif 'text/html' in resp.content_type or 'text/plain' or 'json' in resp.content_type:
+                            return build_response_dict(response_url, 'data', response_uuid, resp, await resp.text())
+                        else:
+                            print(response_url)
+                            print(resp.content_type)
+                            print(resp.content_disposition)
+                            assert False
+                except asyncio.TimeoutError as error:
+                    error_code = 'timeout_error'
+                    return build_response_dict(response_url, 'error', response_uuid, error, error_code)
+                except ClientPayloadError as error:
+                    error_code = 'client_payload_error'
+                    return build_response_dict(response_url, 'error', response_uuid, error, error_code)
+                except ClientConnectorError as error:
+                    error_code = 'client_connector_error'
+                    return build_response_dict(response_url, 'error', response_uuid, error, error_code)
+                except ServerDisconnectedError as error:
+                    error_code = 'server_disconnected_error'
+                    return build_response_dict(response_url, 'error', response_uuid, error, error_code)
+                except TooManyRedirects as error:
+                    error_code = 'too_many_redirects_error'
+                    return build_response_dict(response_url, 'error', response_uuid, error, error_code)
+                except ClientOSError as error:
+                    error_code = 'client_os_error'
+                    return build_response_dict(response_url, 'error', response_uuid, error, error_code)
+                except ClientResponseError as error:
+                    error_code = 'client_os_error'
+                    return build_response_dict(response_url, 'error', response_uuid, error, error_code)
+                except UnicodeDecodeError as error:
+                    error_code = 'unicode_decode_error'
+                    return build_response_dict(response_url, 'error', response_uuid, error, error_code)
+
+        console.print("Generating asynchronous requests")
+        for index, row_url in tqdm.tqdm(df_url.iterrows(), total=df_url.shape[0]):
+            tasks.append(asyncio.create_task(get(row_url)))
+
+        console.print("Processing asynchronous requests")
+        for request_current in tqdm.tqdm(asyncio.as_completed(tasks), total=len(tasks)):
+            result = await request_current
+            result_url = result['url']
+            result_type = result['type']
+            result_uuid = result['uuid']
+            result_data = result['data']
+            result_body = result['body']
+            result_metadata_path = f"{crawling_path_metadata}{result_uuid}_metadata.json"
+            row = {
+                'response_uuid': result_uuid,
+                'response_url': result_url,
+                'response_timestamp': datetime.now().timestamp(),
+                "response_error_code": None,
+                'response_source_path': None,
+                'response_metadata_path': None,
+            }
+            if result_type == 'error':
+                errors.append(result)
+                row['response_error_code'] = result_body
+                if hasattr(result_data, 'status'):
+                    row['response_status_code'] = result_data.status
+                with open(result_metadata_path, 'w', encoding="utf-8") as f:
+                    json.dump({
+                        'attributes': row,
+                        'data': str(result_data)
+                    }, f, ensure_ascii=False, indent=4)
+            else:
+                results.append(result)
+                row['response_status_code'] = result_data.status
+                try:
+                    row['response_encoding'] = result_data.get_encoding().lower() if result_data.get_encoding() else None
                 except RuntimeError:
                     row['response_encoding'] = None
-                row['response_content_length'] = response_data.content_length
-                for header_text, header_value in response_data.headers.items():
-                    try:
-                        header_dict = json.loads(header_value)
-                        if type(header_dict) == dict:
-                            header_dict_flat = flatten(header_dict)
-                            for header_attribute_sub, header_value_sub in header_dict_flat.items():
-                                if type(header_value_sub) == list:
-                                    for dict_index, dict_sub in enumerate(header_value_sub):
-                                        for header_attribute_sub_sub, header_value_sub_sub in dict_sub.items():
-                                            header_text = f"response_header_{header_attribute_sub_sub.lower().replace('-', '_')}_{dict_index}"
-                                            row[header_text] = header_value_sub_sub
-                                else:
-                                    row[f"response_header_{header_attribute_sub.lower().replace('-', '_')}"] = header_value_sub
-                        elif type(header_dict) == list:
-                            for dict_index, dict_sub in enumerate(header_value):
-                                if type(dict_sub) == dict:
-                                    for header_attribute_sub, header_value_sub in dict_sub.items():
-                                        header_text = f"response_header_{header_attribute_sub.lower().replace('-', '_')}_{dict_index}"
-                                        row[header_text] = header_value_sub
-                                else:
-                                    value_sub = json.loads(header_value)
-                                    if type(value_sub) == list:
-                                        for header_index_sub, header_value_sub in enumerate(value_sub):
-                                            header_text = f"response_header_{header_text.lower().replace('-', '_')}_{dict_index}_{header_index_sub}"
-                                            row[header_text] = header_value_sub
-                                    else:
-                                        print(value_sub)
-                                        assert False
+                row['response_content_length'] = result_data.content_length
+                row['response_content_type'] = result_data.content_length
+                headers = flatten(result_data.headers)
+                if 'Content-Type' in headers.keys():
+                    result_source_path = None
+                    row['response_content_type'] = headers['Content-Type']
+                    if 'text/html' in row['response_content_type']:
+                        result_source_path = f"{crawling_path_source}{result_uuid}_source.html"
+                        with open(result_source_path, 'w', encoding=row['response_encoding']) as f:
+                            f.write(result_body)
+                    elif 'application/pdf' in row['response_content_type']:
+                        result_source_path = f"{crawling_path_source}{result_uuid}_source.pdf"
+                        with open(result_source_path, 'wb') as f:
+                            f.write(result_body)
+                    elif 'text/plain' in row['response_content_type']:
+                        result_source_path = f"{crawling_path_source}{result_uuid}_source.txt"
+                        with open(result_source_path, 'w', encoding=row['response_encoding']) as f:
+                            f.write(result_body)
+                    elif 'json' in row['response_content_type']:
+                        response_content_decoded = result_body
+                        result_source_path = f"{crawling_path_source}{result_uuid}_source.json"
+                        with open(result_source_path, 'w', encoding=row['response_encoding']) as f:
+                            f.write(response_content_decoded)
+                    elif 'application/vnd.openxmlformats-officedocument.presentationml.presentation' in row['response_content_type']:
+                        result_source_path = f"{crawling_path_source}{result_uuid}_source.pptx"
+                        with open(result_source_path, 'wb') as f:
+                            f.write(result_body)
+                    elif 'application/octet-stream' in row['response_content_type']:
+                        if 'Content-Disposition' in headers.keys():
+                            row['response_content_disposition'] = headers['Content-Disposition']
+                            content_disposition_split = row['response_content_disposition'].split(';')
+                            content_disposition_type = content_disposition_split[0]
+                            if content_disposition_type == 'attachment' and len(content_disposition_split) > 1:
+                                content_disposition_attachment_filename = content_disposition_split[1].split("=")[1]
+                                suffix = Path(content_disposition_attachment_filename).suffixes
+                                result_source_path = f"{crawling_path_source}{result_uuid}_source{suffix}"
+                                with open(result_source_path, 'wb') as f:
+                                    f.write(result_body)
                         else:
-                            header_text = f"response_header_{header_text.lower().replace('-', '_')}"
-                            row[header_text] = header_value
-                    except JSONDecodeError as error:
-                        header_text = f"response_header_{header_text.lower().replace('-', '_')}"
-                        row[header_text] = header_value
-                try:
-                    response_body = response_current[2]
-                    if 'response_header_content_type' in row.keys():
-                        if 'text/html' in row['response_header_content_type']:
-                            page_source_path = f"{crawling_path_source}{response_uuid}_source.html"
-                            with open(page_source_path, 'w', encoding=row['response_encoding']) as f:
-                                f.write(response_body)
-                        elif 'application/pdf' in row['response_header_content_type']:
-                            page_source_path = f"{crawling_path_source}{response_uuid}_source.pdf"
-                            with open(page_source_path, 'wb') as f:
-                                f.write(response_body)
-                        elif 'text/plain' in row['response_header_content_type']:
-                            page_source_path = f"{crawling_path_source}{response_uuid}_source.txt"
-                            with open(page_source_path, 'w', encoding=row['response_encoding']) as f:
-                                f.write(response_body)
-                        elif 'json' in row['response_header_content_type']:
-                            response_content_decoded = response_body
-                            page_source_path = f"{crawling_path_source}{response_uuid}_source.json"
-                            with open(page_source_path, 'w', encoding=row['response_encoding']) as f:
-                                f.write(response_content_decoded)
-                        elif 'application/vnd.openxmlformats-officedocument.presentationml.presentation' in row['response_header_content_type']:
-                            page_source_path = f"{crawling_path_source}{response_uuid}_source.pptx"
-                            with open(page_source_path, 'wb') as f:
-                                f.write(response_body)
-                        elif 'application/octet-stream' in row['response_header_content_type']:
-                            suffix = Path(url_current).suffix
-                            if 'response_header_content_disposition' in row.keys():
-                                content_disposition_split = row['response_header_content_disposition'].split(';')
-                                content_disposition_type = content_disposition_split[0]
-                                if content_disposition_type == 'attachment' and len(content_disposition_split) > 1:
-                                    content_disposition_attachment_filename = content_disposition_split[1].split("=")[1]
-                                    suffix = Path(content_disposition_attachment_filename).suffixes
-                                else:
-                                    print(row['response_header_content_disposition'])
-                            page_source_path = f"{crawling_path_source}{response_uuid}_source{suffix}"
-                            with open(page_source_path, 'wb') as f:
-                                f.write(response_body)
-                        row['response_page_source_path'] = page_source_path
-                except UnicodeEncodeError:
-                    row['response_error_code'] = 'unicode_encode_error'
-                try:
-                    with open(page_metadata_path, 'w', encoding="utf-8") as f:
-                        json.dump(row, f, ensure_ascii=False, indent=4)
-                except UnicodeEncodeError:
-                    row_fix = {}
-                    for attribute_fix, value_fix in row.items():
+                            suffix = Path(result_url).suffix
+                            result_source_path = f"{crawling_path_source}{result_uuid}_source{suffix}"
+                            with open(result_source_path, 'wb') as f:
+                                f.write(result_body)
+                row['response_source_path'] = result_source_path
+                with open(result_metadata_path, 'w', encoding="utf-8") as f:
+                    headers_lower = dict((camel_to_snake(k), v) for k, v in headers.items())
+                    headers_lower_fix = {}
+                    for attribute_fix, value_fix in headers_lower.items():
                         if type(value_fix) == str:
-                            row_fix[attribute_fix] = value_fix.replace('\udc94', '')
+                            headers_lower_fix[attribute_fix] = value_fix.replace('\udc94', '')
                         else:
-                            row_fix[attribute_fix] = value_fix
-                    with open(page_metadata_path, 'w', encoding="utf-8") as f:
-                        json.dump(row_fix, f, ensure_ascii=False, indent=4)
+                            headers_lower_fix[attribute_fix] = value_fix
+                    json.dump({
+                        'attributes': row,
+                        'data': headers_lower_fix
+                    }, f, ensure_ascii=False, indent=4)
+            row['response_metadata_path'] = result_metadata_path
+            df_crawl.loc[len(df_crawl)] = row
+            if len(df_crawl) % 1000 == 0:
+                df_crawl.to_csv(df_crawl_path, index=False)
 
+        await session.close()
 
-    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-    loop = asyncio.ProactorEventLoop()
-    asyncio.set_event_loop(loop)
-    loop.run_until_complete(run_crawling())
-    end = time.time()
-    print(f"Time elapsed: {round(end - start)} seconds")
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(gather_with_concurrency(PARALLEL_REQUESTS))
+    conn.close()
 
-    metadata_dicts = []
-    if urls_to_crawl > 0 or not os.path.exists(df_crawl_path):
-        metadata_paths = glob(f"{crawling_path_metadata}/*")
-        columns = []
-        console.print(f"Loading attribute dictionary from [green]{len(metadata_paths)}[/green] metadata files")
-        for metadata_path in tqdm.tqdm(metadata_paths):
-            metadata = load_json(metadata_path)
-            for attribute in metadata:
-                if attribute not in columns:
-                    columns.append(attribute)
-        df_crawl = pd.DataFrame(columns=columns)
-        console.print(f"Adding metadata to final dataframe")
-        for metadata_path in tqdm.tqdm(metadata_paths):
-            metadata = load_json(metadata_path)
-            metadata_dicts.append(metadata)
-        df_crawl = pd.DataFrame.from_dict(metadata_dicts)
+    if df_crawl.shape[0] > 0:
         df_crawl.to_csv(df_crawl_path, index=False)
         df_crawl_correct = df_crawl[df_crawl["response_error_code"].isnull()]
-        console.print(f"Pages correctly crawled: [green]{len(df_crawl_correct)}/{len(unique_urls)}[/green] [cyan]({(len(df_crawl_correct) / len(unique_urls)) * 100}%)")
+        df_crawl_incorrect = df_crawl[df_crawl["response_error_code"] != np.nan]
+        console.print(f"Pages correctly crawled: [green]{len(df_crawl_correct)}/{unique_urls_amount}[/green] [cyan]({(len(df_crawl_correct) / unique_urls_amount) * 100}%)")
         console.print(f"Dataframe shape: {df_crawl.shape}")
         console.print(f"Worker crawling dataframe serialized at path: [cyan on white]{df_crawl_path}")
     else:
-        console.print(f"Crawling dataframe [yellow]already detected[/yellow], skipping creation")
-        console.print(f"Serialized at path: [cyan on white]{df_crawl_path}")
+        console.print(f"Dataframe shape: {dataframe.shape}")
+        console.print(f"Worker crawling dataframe [yellow]empty[/yellow], dataframe not serialized.")
+
 else:
     console.print(f"Worker URLs crawling [yellow]not enabled[/yellow], skipping")
 
