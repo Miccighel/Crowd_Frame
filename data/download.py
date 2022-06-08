@@ -460,24 +460,6 @@ if not os.path.exists(df_acl_path):
                 break
 
     if len(df_acl) > 0:
-
-        df_acl_mal = df_acl.loc[df_acl['batch_name'] == 'V3-Malignani']
-        if (len(df_acl_mal) > 0):
-            df_acl_mal[['ip_address_split', 'ip_access_split']] = df_acl_mal['ip_address'].str.split(':::', 1, expand=True)
-            df_acl_filt = pd.DataFrame(columns=df_acl.columns)
-            for ip_address, df_filt in df_acl_mal.groupby("ip_address_split"):
-                row = df_filt.sort_values(by='ip_access_split', ascending=False)
-                row = row.head(1)
-                row_orig = df_acl.loc[df_acl['worker_id'] == row['worker_id'].values[0]]
-                row_orig['ip_address'] = ip_address
-                row_orig['platform'] = 'custom'
-                df_acl_filt = df_acl_filt.append(row_orig, ignore_index=True)
-            df_acl = df_acl.loc[df_acl['batch_name'] != 'V3-Malignani']
-            for index, row in df_acl_filt.iterrows():
-                df_acl = df_acl.append(row, ignore_index=True)
-
-        if batch_name == 'V3-Malignani-2':
-            df_acl['platform'] = 'custom'
         df_acl.to_csv(df_acl_path, index=False)
         console.print(f"Dataframe shape: {df_acl.shape}")
         console.print(f"Workers info dataframe serialized at path: [cyan on white]{df_acl_path}")
@@ -2132,6 +2114,9 @@ if enable_crawling:
                     return build_response_dict(response_url, 'error', response_uuid, error, error_code)
                 except UnicodeDecodeError as error:
                     error_code = 'unicode_decode_error'
+                    return build_response_dict(response_url, 'error', response_uuid, error, error_code)
+                except UnicodeError as error:
+                    error_code = 'unicode_error'
                     return build_response_dict(response_url, 'error', response_uuid, error, error_code)
 
         console.print("Generating asynchronous requests")
