@@ -1404,6 +1404,9 @@ def parse_answers(row, questionnaire, question, answers):
             row['question_answers_labels'] = ':::'.join(labels)
         if type(value) != list:
             row[f"question_attribute_{attribute}"] = value
+    if question['type'] != 'mcq' and question['type'] != 'list':
+        row['question_answers_values'] = None
+        row['question_answers_labels'] = None
     row[f"question_answer_value"] = answer_value
     row[f"question_answer_free_text"] = answer_free_text
 
@@ -1434,6 +1437,7 @@ def parse_answers(row, questionnaire, question, answers):
         row[f"question_answer_mapping_key"] = mapping['key'] if "key" in mapping else None
         row[f"question_answer_mapping_label"] = mapping['label']
         row[f"question_answer_mapping_value"] = mapping['value']
+
     return row
 
 
