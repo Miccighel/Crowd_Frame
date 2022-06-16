@@ -2446,15 +2446,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@kolkov/angular-editor@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "@kolkov/angular-editor@npm:2.0.0"
+"@kolkov/angular-editor@npm:^2.1.0":
+  version: 2.1.0
+  resolution: "@kolkov/angular-editor@npm:2.1.0"
   dependencies:
     tslib: ^2.3.0
   peerDependencies:
-    "@angular/common": ">=13 <14"
-    "@angular/core": ">=13 <14"
-  checksum: 545edab3f9f31ac07254a29384c9d20914a9246c3f56503f445a4efe54a91dcddd2d1b5545747552763a100c039da221c5060f83b05f45e13e1345ed74c34210
+    "@angular/common": ">=14"
+    "@angular/core": ">=14"
+  checksum: f93220e1d3c84622422ece3d18fda9cda2393bdc115d039f6b3c09684728d0bd34a3f52bfb2eb5046522ce9e8bea45c9084038efd22825504ec69f6d79d479ac
   languageName: node
   linkType: hard
 
@@ -2750,10 +2750,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:~16.11.38":
-  version: 16.11.38
-  resolution: "@types/node@npm:16.11.38"
-  checksum: 471df020162098602fd77014c458e84f01f7faff3cddcc2b7739312a8b4f103bc0fab3dfc03641233d9f627c47fd82dfabc9b86413ef680e193c36b9aed322e6
+"@types/node@npm:~16.11.40":
+  version: 16.11.40
+  resolution: "@types/node@npm:16.11.40"
+  checksum: d586c2e263d490d9a24eabadcf3f8320ab203d5586f0ce41c55f8bb950b18964b277bbb99cc7f9de28f2bb1dd5a4ea5fb56eb3d35a65065c16cd1c5285a90495
   languageName: node
   linkType: hard
 
@@ -3317,9 +3317,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"aws-sdk@npm:^2.1148.0":
-  version: 2.1148.0
-  resolution: "aws-sdk@npm:2.1148.0"
+"aws-sdk@npm:^2.1154.0":
+  version: 2.1154.0
+  resolution: "aws-sdk@npm:2.1154.0"
   dependencies:
     buffer: 4.9.2
     events: 1.1.1
@@ -3330,7 +3330,7 @@ __metadata:
     url: 0.10.3
     uuid: 8.0.0
     xml2js: 0.4.19
-  checksum: 8f1fa1b754b4962fffe23d10bffec8e4ee26a731f7ad952a1bf69eb9c974f157606de8266cd1c388da35fd2694d59f05d5f393a55823e8dc1b707cf2b48a8d57
+  checksum: 94cc3e6ef143c73e3fa1ebb0aeca2e4b13debc1f0315bebb486a462001faa35ad5074d1c241f4d70f2deeb9a19297078e5ea3968304bb3065de980e572ae3fea
   languageName: node
   linkType: hard
 
@@ -4133,9 +4133,9 @@ __metadata:
     "@angular/platform-browser-dynamic": ^14.0.1
     "@angular/router": ^14.0.1
     "@funktechno/texthighlighter": ^2.1.2
-    "@kolkov/angular-editor": ^2.0.0
-    "@types/node": ~16.11.38
-    aws-sdk: ^2.1148.0
+    "@kolkov/angular-editor": ^2.1.0
+    "@types/node": ~16.11.40
+    aws-sdk: ^2.1154.0
     crypto-es: ^1.2.7
     flat-angular: ^1.6.0
     ngx-color-picker: ^12.0.1
@@ -4146,7 +4146,7 @@ __metadata:
     rxjs: ^7.5.5
     titleize: ^3.0.0
     tree-model: ^1.0.7
-    typescript: 4.7.2
+    typescript: 4.7.3
     util: ^0.12.4
     zone.js: ~0.11.5
   languageName: unknown
@@ -9298,23 +9298,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:4.7.2":
-  version: 4.7.2
-  resolution: "typescript@npm:4.7.2"
+"typescript@npm:4.7.3":
+  version: 4.7.3
+  resolution: "typescript@npm:4.7.3"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 5163585e6b56410f77d5483b698d9489bbee8902c99029eb70cf6d21525a186530ce19a00951af84eefd4a131cc51d0959f5118e25e70ab61f45ac4057dbd1ef
+  checksum: fd13a1ce53790a36bb8350e1f5e5e384b5f6cb9b0635114a6d01d49cb99916abdcfbc13c7521cdae2f2d3f6d8bc4a8ae7625edf645a04ee940588cd5e7597b2f
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@4.7.2#~builtin<compat/typescript>":
-  version: 4.7.2
-  resolution: "typescript@patch:typescript@npm%3A4.7.2#~builtin<compat/typescript>::version=4.7.2&hash=493e53"
+"typescript@patch:typescript@4.7.3#~builtin<compat/typescript>":
+  version: 4.7.3
+  resolution: "typescript@patch:typescript@npm%3A4.7.3#~builtin<compat/typescript>::version=4.7.3&hash=493e53"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 09d93fc0983d38eadd9b0427f790b49b4437f45002a87d447be3fbe53120880e87a91dd03e1d900498f99205d6e0b7c9784fe41fca11d56f4bbce371f74bb160
+  checksum: 8257ce7ecbbf9416da60045a76a99d473698ca9e973fa0ddab7137cacb1587255431176cbbcc801a650938c4dc8109ab88355774829a714fabe56a53a2fe4524
   languageName: node
   linkType: hard
 
