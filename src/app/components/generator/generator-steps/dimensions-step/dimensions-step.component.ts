@@ -222,7 +222,6 @@ export class DimensionsStepComponent implements OnInit {
                     mapping: this._formBuilder.array([]),
                     lower_bound: dimension.scale['lower_bound'] ? dimension.scale['lower_bound'] : ''
                 }
-                if (dimension.scale.instructions) {
                     scaleConfig['instructions'] = this._formBuilder.group({
                         caption: dimension.scale.instructions['caption'],
                         label: dimension.scale.instructions['label'],

@@ -121,7 +121,8 @@ export class TaskSettingsStepComponent implements OnInit {
         this.ngxService = ngxService
         this.HitsSolverService = HitsSolverService
         this.solverStatus = false
-        this.initHitSolver()
+        if (this.configService.environment.hit_solver_endpoint != "None")
+            this.initHitSolver()
         this.utilsService = utilsService
         this.initializeControls()
     }

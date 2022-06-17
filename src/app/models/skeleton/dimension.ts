@@ -57,7 +57,6 @@ export class Dimension {
         }
         this.style = data['style'] ? new Style(data['style']) : null
         this.gold = data['gold'] ? data['gold'] : null;
-
     }
 
 }
@@ -209,7 +208,7 @@ export class Style {
     ) {
         this.type = data['type']
         this.position = data['position']
-        this.orientation = data['orientation'] ? data["orientation"] : null;
+        this.orientation = data['orientation'];
         this.separator = data['separator'] ? data["separator"] : null;
     }
 
