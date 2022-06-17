@@ -222,6 +222,7 @@ export class DimensionsStepComponent implements OnInit {
                     mapping: this._formBuilder.array([]),
                     lower_bound: dimension.scale['lower_bound'] ? dimension.scale['lower_bound'] : ''
                 }
+                if (!!dimension.scale['instructions']) {
                     scaleConfig['instructions'] = this._formBuilder.group({
                         caption: dimension.scale.instructions['caption'],
                         label: dimension.scale.instructions['label'],
@@ -231,7 +232,7 @@ export class DimensionsStepComponent implements OnInit {
                     scaleConfig['instructions'] = this._formBuilder.group({
                         caption: '',
                         label: '',
-                        text: ['', [Validators.required]]
+                        text: ''
                     })
                 }
                 scale = this._formBuilder.group(scaleConfig)
@@ -562,7 +563,6 @@ export class DimensionsStepComponent implements OnInit {
                         dimension.style.type = 'list'
                         dimension.style.orientation = 'vertical'
                     }
-                    if (dimension.scale.type == 'categorical' && dimension.style.type == 'matrix') dimension.style.orientation = false
 
                     dimension.style.separator = !!dimension.style.separator;
                 } else {
