@@ -6,7 +6,7 @@ docker==5.0.3
 python-dotenv==0.20.0
 rich==10.16.2
 tqdm==4.64.0
-numpy==1.21.5
+numpy==1.22.0
 pandas==1.4.2
 toloka-kit==0.1.25
 python-on-whales==0.43.0
