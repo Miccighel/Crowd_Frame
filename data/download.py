@@ -1740,7 +1740,6 @@ if not os.path.exists(df_data_path):
         dataframe["time_spent_check"] = dataframe["gold_checks"].astype(bool)
         dataframe["time_check_amount"] = dataframe["gold_checks"].astype(bool)
         dataframe["gold_checks"] = dataframe["gold_checks"].astype(bool)
-        dataframe.rename(columns={'paid': 'worker_paid'}, inplace=True)
         dataframe.drop_duplicates(inplace=True)
         dataframe.to_csv(df_data_path, index=False)
         console.print(f"Dataframe shape: {dataframe.shape}")
@@ -1762,7 +1761,7 @@ if os.path.exists(df_data_path):
 
 dataframe = pd.DataFrame(columns=[
     "worker_id",
-    "worker_paid",
+    "paid",
     "task_id",
     "batch_name",
     "unit_id",
@@ -1807,7 +1806,7 @@ def parse_dimensions_selected(df, worker_id, worker_paid, task, info, documents,
 
             row = {
                 'worker_id': worker_id,
-                'worker_paid': worker_paid,
+                'paid': worker_paid,
                 'task_id': task['task_id'],
                 'batch_name': task['batch_name'],
                 'unit_id': task['unit_id'],
@@ -1893,7 +1892,7 @@ if os.path.exists(df_data_path):
 
 dataframe = pd.DataFrame(columns=[
     "worker_id",
-    "worker_paid",
+    "paid",
     "try_last",
     "try_current",
     "document_index",
@@ -1920,7 +1919,7 @@ def parse_responses(df, worker_id, worker_paid, task, info, queries, responses_r
 
             row = {
                 "worker_id": worker_id,
-                "worker_paid": worker_paid,
+                "paid": worker_paid,
                 "try_last": task['try_last'],
                 "try_current": info['try'],
                 "document_index": response_retrieved['document'],
@@ -2241,23 +2240,3 @@ if enable_crawling:
 
 else:
     console.print(f"Worker URLs crawling [yellow]not enabled[/yellow], skipping")
-
-# console.rule("12 - Checking missing HITs")
-
-# hits_missing = []
-# hits = load_json(f"{task_config_folder}{batch_name}/hits.json")
-# if os.path.exists(df_data_path):
-#     df = pd.read_csv(df_data_path)
-#     df = df.loc[df['worker_paid'] == True]
-#     for hit in hits:
-#         unit_data = df.loc[df['unit_id'] == hit['unit_id']]
-#         if len(unit_data) <= 0:
-#             hits_missing.append(hit)
-#     if len(hits_missing) > 0:
-#         console.print(f"Missing HITs: {len(hits_missing)}")
-#         path_missing = f"{task_config_folder}{batch_name}/hits_missing.json"
-#         with open(path_missing, 'w', encoding='utf-8') as f:
-#             json.dump(hits_missing, f, ensure_ascii=False, indent=4)
-#         console.print(f"Serialized at path: [cyan on white]{path_missing}")
-#     else:
-#         console.print(f"There aren't missing HITS for task [cyan on white]{task_name}")
