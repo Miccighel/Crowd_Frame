@@ -2,7 +2,7 @@
 # Manual changes might be lost - proceed with caution!
 
 __metadata:
-  version: 5
+  version: 6
   cacheKey: 8
 
 "@ampproject/remapping@npm:2.2.0":
@@ -2750,10 +2750,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:~16.11.40":
-  version: 16.11.40
-  resolution: "@types/node@npm:16.11.40"
-  checksum: d586c2e263d490d9a24eabadcf3f8320ab203d5586f0ce41c55f8bb950b18964b277bbb99cc7f9de28f2bb1dd5a4ea5fb56eb3d35a65065c16cd1c5285a90495
+"@types/node@npm:~16.11.42":
+  version: 16.11.42
+  resolution: "@types/node@npm:16.11.42"
+  checksum: a1746910cf27c9e8597805556c943bde5e630c5c4e03bdd2513ccd7fe5fce1ed912f51f5d0ce5dcda0583e5539177f76ad35a19caa9525307d7a722aa9962631
   languageName: node
   linkType: hard
 
@@ -3317,9 +3317,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"aws-sdk@npm:^2.1154.0":
-  version: 2.1154.0
-  resolution: "aws-sdk@npm:2.1154.0"
+"aws-sdk@npm:^2.1166.0":
+  version: 2.1166.0
+  resolution: "aws-sdk@npm:2.1166.0"
   dependencies:
     buffer: 4.9.2
     events: 1.1.1
@@ -3330,7 +3330,7 @@ __metadata:
     url: 0.10.3
     uuid: 8.0.0
     xml2js: 0.4.19
-  checksum: 94cc3e6ef143c73e3fa1ebb0aeca2e4b13debc1f0315bebb486a462001faa35ad5074d1c241f4d70f2deeb9a19297078e5ea3968304bb3065de980e572ae3fea
+  checksum: 3d3a5df113fbfb1386d1c1350c11b1c6a9cc1f497e011388298fe013cc7fa3fba1eb5ce23ba76e6d26798993644721e924a3cfda03be56509d952d4cf8d34d0f
   languageName: node
   linkType: hard
 
@@ -4134,8 +4134,8 @@ __metadata:
     "@angular/router": ^14.0.4
     "@funktechno/texthighlighter": ^2.1.2
     "@kolkov/angular-editor": ^2.1.0
-    "@types/node": ~16.11.40
-    aws-sdk: ^2.1154.0
+    "@types/node": ~16.11.42
+    aws-sdk: ^2.1166.0
     crypto-es: ^1.2.7
     flat-angular: ^1.6.0
     ngx-color-picker: ^12.0.1
@@ -4146,9 +4146,9 @@ __metadata:
     rxjs: ^7.5.5
     titleize: ^3.0.0
     tree-model: ^1.0.7
-    typescript: 4.7.3
+    typescript: 4.7.4
     util: ^0.12.4
-    zone.js: ~0.11.5
+    zone.js: ~0.11.6
   languageName: unknown
   linkType: soft
 
@@ -9298,23 +9298,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:4.7.3":
-  version: 4.7.3
-  resolution: "typescript@npm:4.7.3"
+"typescript@npm:4.7.4":
+  version: 4.7.4
+  resolution: "typescript@npm:4.7.4"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: fd13a1ce53790a36bb8350e1f5e5e384b5f6cb9b0635114a6d01d49cb99916abdcfbc13c7521cdae2f2d3f6d8bc4a8ae7625edf645a04ee940588cd5e7597b2f
+  checksum: 5750181b1cd7e6482c4195825547e70f944114fb47e58e4aa7553e62f11b3f3173766aef9c281783edfd881f7b8299cf35e3ca8caebe73d8464528c907a164df
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@4.7.3#~builtin<compat/typescript>":
-  version: 4.7.3
-  resolution: "typescript@patch:typescript@npm%3A4.7.3#~builtin<compat/typescript>::version=4.7.3&hash=493e53"
+"typescript@patch:typescript@4.7.4#~builtin<compat/typescript>":
+  version: 4.7.4
+  resolution: "typescript@patch:typescript@npm%3A4.7.4#~builtin<compat/typescript>::version=4.7.4&hash=7ad353"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 8257ce7ecbbf9416da60045a76a99d473698ca9e973fa0ddab7137cacb1587255431176cbbcc801a650938c4dc8109ab88355774829a714fabe56a53a2fe4524
+  checksum: 9096d8f6c16cb80ef3bf96fcbbd055bf1c4a43bd14f3b7be45a9fbe7ada46ec977f604d5feed3263b4f2aa7d4c7477ce5f9cd87de0d6feedec69a983f3a4f93e
   languageName: node
   linkType: hard
 
@@ -9852,11 +9852,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zone.js@npm:~0.11.5":
-  version: 0.11.5
-  resolution: "zone.js@npm:0.11.5"
+"zone.js@npm:~0.11.6":
+  version: 0.11.6
+  resolution: "zone.js@npm:0.11.6"
   dependencies:
     tslib: ^2.3.0
-  checksum: 7dba3af83cc68e881e8a5cc549e4a7bab5f32c5289838f14eb251871816210a39ed8bcd89030593b56d469b4aa8271d644e71ad408fcadd4ccd61b8c7203f2ef
+  checksum: 59ec5450a9059b9b549125cfb9c5b7d6dd0b5116503e198610cfc52d93e2da586b6c84f4506ef9260261a24714fe9d9a14be27e902e78b88085f7b42ffcd0aad
   languageName: node
   linkType: hard
