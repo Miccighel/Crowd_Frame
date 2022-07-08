@@ -55,9 +55,12 @@ data/build/environments/*
 
 # Yarn
 .yarn/*
-!.yarn/releases
+!.yarn/cache
+!.yarn/patches
 !.yarn/plugins
-.pnp.*
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
 
 # Environment variables file
 data/.env

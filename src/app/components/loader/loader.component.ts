@@ -129,17 +129,14 @@ export class LoaderComponent implements OnInit {
             "password": this.password
         });
 
+        this.adminAccess = url.searchParams.get("admin") == 'true'
+        if (this.adminAccess)
+            this.ngxService.startLoader('main')
+
     }
 
     public async ngOnInit() {
-
-        this.ngxService.startLoader('skeleton')
-
-        let url = new URL(window.location.href);
-        this.adminAccess = url.searchParams.get("admin") == 'true'
-
-        this.ngxService.stopLoader('skeleton')
-
+        this.ngxService.stopLoader('main')
     }
 
     /*
@@ -148,6 +145,7 @@ export class LoaderComponent implements OnInit {
     public async loadAction(actionChosen: string) {
         this.actionChosen = actionChosen
         this.selectionPerformed = true
+
     }
 
     /*
@@ -155,7 +153,6 @@ export class LoaderComponent implements OnInit {
      * an administrator is trying to unlock the generator
      */
     public async performAdminCheck() {
-        this.ngxService.startLoader('generator');
         if (this.loginForm.valid) {
             let admins = await this.S3Service.downloadAdministrators(this.configService.environment)
             for (let admin of admins) {
@@ -174,7 +171,7 @@ export class LoaderComponent implements OnInit {
             }
             this.changeDetector.detectChanges()
         }
-        this.ngxService.stopLoader('generator');
+        this.ngxService.stopLoader('main');
     }
 
     /* |--------- OTHER AMENITIES ---------| */

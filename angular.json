@@ -53,9 +53,7 @@
 						"polyfills": "src/polyfills.ts",
 						"tsConfig": "tsconfig.app.json",
 						"styles": [
-							"./node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
-							"src/styles.scss",
-							"src/theme.scss"
+							"src/styles.scss"
 						],
 						"scripts": [],
 						"vendorChunk": true,
@@ -96,7 +94,7 @@
 				}
 			}
 		}
-  },
+	},
 	"cli": {
 		"analytics": "cd7f909b-9efe-4371-bb20-b49ab5fe8710",
 		"cache": {
