@@ -16,10 +16,11 @@ issues](https://badgen.net/github/issues/Miccighel/Crowd_Frame/)](https://GitHub
 <ul>
     <li><a href="#prerequisites">Prerequisites</a></li>
     <li><a href="#getting-started">Getting Started</a></li>
+     <li><a href="#environment-variables">Environment Variables</a></li>
     <li><a href="#task-configuration">Task Configuration</a></li>
     <li><a href="#hits-format">HITs Format</a></li>
     <li><a href="#task-performing">Task Performing</a></li>
-    <li><a href="#environment-variables">Environment Variables</a></li>
+     <li><a href="#results-download">Results Download</a></li>
     <li><a href="#local-development">Local Development</li>
     <li><a href="#troubleshooting">Troubleshooting</li>
     <li><a href="#references">References</li>
@@ -79,29 +80,17 @@ issues](https://badgen.net/github/issues/Miccighel/Crowd_Frame/)](https://GitHub
    cd ~/path/to/project
    ````
 
-9. Switch to Yarn the newest version
-
-   ````
-   yarn set version stable
-   ````
-
-10. Install the dependencies:
-
-    ````
-    yarn install
-    ````
-
-11. Move to data folder:
+9. Move to data folder:
 
     ```
     cd data
     ```
 
-12. Create environment file `.env`:
+10. Create environment file `.env`:
 
     Path: `your_repo_folder/data/.env`
 
-13. Provide environment variables values:
+11. Provide the mandatory subset of environment variables:
 
      ````
      mail_contact=your_email_address
@@ -117,34 +106,73 @@ issues](https://badgen.net/github/issues/Miccighel/Crowd_Frame/)](https://GitHub
      deploy_config=true
      ````
 
-14. Install python packages with `pip install -r your_repo_folder/requirements.txt`:
+12. Install python packages with `pip install -r your_repo_folder/requirements.txt`:
 
-  ````
-  boto3==1.18.21
-  dotenv-python==0.0.1
-  mako==1.1.5
-  pandas==1.3.3
-  python-dotenv==0.19.0
-  rich==10.12.0
-  ````
+	  ````
+	boto3==1.21.32  
+	ipapi==1.0.4  
+	ipinfo==4.2.1  
+	mako==1.1.4  
+	docker==5.0.3  
+	python-dotenv==0.20.0  
+	rich==10.16.2  
+	tqdm==4.64.0  
+	numpy==1.23.0  
+	pandas==1.4.2  
+	toloka-kit==0.1.25  
+	python-on-whales==0.43.0  
+	beautifulsoup4==4.11.1  
+	aiohttp==3.8.1
+	  ````
 
-15. Run python script `init.py`
+13. Run python script `init.py`
 
     Path: `your_repo_folder/data/init.py`
 
     The script will:
-
     	- read your env. variables;
     	- setup the AWS infrastructure;
     	- generate an empty task configuration;
     	- deploy the task on the public bucket.
 
-16. Open your task:
+14. Open your task:
 
     `https://your_deploy_bucket.s3.your_aws_region.amazonaws.com/your_task_name/your_batch_name/index.html`
 
 Crowd_Frame interacts with diverse Amazon Web Services (AWS) to deploy crowdsourcing tasks, store the data produced and so on. Each service used falls within the [AWS Free Tier](https://aws.amazon.com/free/) program. The budget limit that
 will block the usage of such services if/when surpassed.
+
+## Environment Variables
+
+The following table describes each environment variables that can be set in `your_repo_folder/data/.env`
+
+|          Variable          |                                                                                                                    Description                                                                                                                     |     Mandatory      | Value                          |
+|:--------------------------:|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:------------------:|--------------------------------|
+|       `profile_name`       |                                                                    Name of the IAM profile created during Step #2. If unspecified, the variable will use the value: `default`.                                                                     |        :x:         | `your_iam_user`                |
+|       `mail_contact`       |                                                                                            Contact mail to receive AWS budgeting related comunications                                                                                             | :heavy_check_mark: | Valid email address            |
+|         `platform`         |                                                                                                  Platform on which deploy the crowdsourcing task.                                                                                                  | :heavy_check_mark: | `mturk` or `prolific` or `toloka`          |
+|       `budget_limit`       |                                                                                        Maximum monthly money amount allowed to operate in USD; e.g., `5.0`                                                                                         | :heavy_check_mark: | Positive float number          |
+|        `task_name`         |                                                                                                        Identifier of the crowdsourcing task                                                                                                        | :heavy_check_mark: | Any string                     |
+|        `batch_name`        |                                                                                                        Identifier of a single task's batch                                                                                                         | :heavy_check_mark: | Any string                     |
+|        `task_title`        |                                                                                                      Custom title for the crowdsourcing task                                                                                                       |        :x:         | Any string                     |
+|       `batch_prefix`       |                                                                     Prefix of the identifiers of one or more task's batches. Use this variable to filter the final result set.                                                                     |        :x:         | Any string                     |
+|        `admin_user`        |                                                                                                             Username of the admin user                                                                                                             | :heavy_check_mark: | Any string                     |
+|      `admin_password`      |                                                                                                             Password of the admin user                                                                                                             | :heavy_check_mark: | Any string                     |
+|        `aws_region`        |                                                                                                   Region of your AWS account; e.g., `us-east-1`                                                                                                    | :heavy_check_mark: | Valid AWS region identifier    |
+|    `aws_private_bucket`    |                                                                                    Name of the private S3 bucket in which to store task configuration and data                                                                                     | :heavy_check_mark: | String unique across AWS       |
+|    `aws_deploy_bucket`     |                                                                                          Name of the public S3 bucket in which to deploy task source code                                                                                          | :heavy_check_mark: | String unique across AWS       |
+|      `server_config`       | Used to specify where the worker behavior logging interface is. Set it to `aws` to deploy the AWS-based infrastructure. Set it to `custom` if you want to provide a custom logging endpoint. Set it to `none` if you will not log worker behavior. | :heavy_check_mark: | `aws` or `custom` or `none`    |
+|      `deploy_config`       |                                        Allows uploading the task configuration available in the local machine. Set it to `false` if you already edited the configuration remotely to avoid overwriting it.                                         | :heavy_check_mark: | `true` or `false`              |
+|      `enable_solver`       |                                       Allows to deploy the HITs solver locally. Allows to provide a set of documents which will be automatically allocated into a set of HITs. Requires the usage of Docker.                                       |        :x:         | `true` or `false`              |
+|      `enable_crawling`       |  Enables the crawling of the results retrieved by the search engine. |        :x:         | `true` or `false`              |
+| `prolific_completion_code` |                                                  Prolific study completion code. Provide here the code if you recruit crowd workers via Prolific. Required if the platform chosen is `prolific`.                                                   |        :x:         | Valid Prolific completion code |
+| `toloka_oauth_token` |  Token to access Toloka's API. Required if the platform chosen is `toloka`.                                                   |        :x:         | Valid Toloka OAuth token |
+|      `ip_info_token`       |                                                                                               API Key to use `ipinfo.com` tracking functionalities.                                                                                                |        :x:         | Valid IP Info key              |
+|  `ip_geolocation_api_key`  |                                                                                            API Key to use `ipgeolocation.io` tracking functionalities.                                                                                             |        :x:         | Valid IP Geolocation key       |
+|      `ipapi_api_key`       |                                                                                                API Key to use `ipapi.com` tracking functionalities.                                                                                                |        :x:         | Valid IP Api key               |
+|     `user_stack_token`     |                                                                                        API Key to use `userstack.com` user agent detection functionalities.                                                                                        |        :x:         |  Valid Userstack key      |
+|       `bing_api_key`       |                                                                                                  API Key to use `BingWebSearch` search provider.                                                                                                   |        :x:         | Valid  Bing API Web Search Key |
+|     `fake_json_token`      |                                                                     API Key to use `FakerWebSearch` search provider. Returns dummy responses useful to test the search engine.                                                                     |        :x:         | Valid  fakeJSON.com API Key    |
 
 ## Task Configuration
 
@@ -231,7 +259,15 @@ Useful tips:
 1. Initially the deploy script creates an empty configuration
 2. You can upload the HITs during configuration step 6
 
+### Automatic HITs creation
+
+TODO
+
 ## Task Performing
+
+How a crowdsourcing task is launched depends on how the workers are recruited. You can recruit each worker manually, or on one of the crowdsourcing platforms supported.
+
+### Manual Recruitment
 
 1. Assign to each worker a `workerID`:
 
@@ -240,41 +276,47 @@ Useful tips:
 
 2. Append the id as a GET parameter `?workerID=worker_id_chosen`
 
-3. Provide the input token to the worker;
-
-4. Provide the full URL to the worker:
+3. Provide the full URL to the worker:
 
    `https://your_deploy_bucket.s3.your_aws_region.amazonaws.com/your_task_name/your_batch_name/index.html?workerID=worker_id_chosen`
 
-## Environment Variables
+### Amazon Mechanical Turk
 
-The following table describes each environment variables that can be set in `your_repo_folder/data/.env`
+TODO
 
-|          Variable          |                                                                                                                    Description                                                                                                                     |     Mandatory      | Value                          |
-|:--------------------------:|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:------------------:|--------------------------------|
-|       `profile_name`       |                                                                    Name of the IAM profile created during Step #2. If unspecified, the variable will use the value: `default`.                                                                     |        :x:         | `your_iam_user`                |
-|       `mail_contact`       |                                                                                            Contact mail to receive AWS budgeting related comunications                                                                                             | :heavy_check_mark: | Valid email address            |
-|         `platform`         |                                                                                                  Platform on which deploy the crowdsourcing task.                                                                                                  | :heavy_check_mark: | `mturk` or `prolific`          |
-|       `budget_limit`       |                                                                                        Maximum monthly money amount allowed to operate in USD; e.g., `5.0`                                                                                         | :heavy_check_mark: | Positive float number          |
-|        `task_name`         |                                                                                                        Identifier of the crowdsourcing task                                                                                                        | :heavy_check_mark: | Any string                     |
-|        `batch_name`        |                                                                                                        Identifier of a single task's batch                                                                                                         | :heavy_check_mark: | Any string                     |
-|        `task_title`        |                                                                                                      Custom title for the crowdsourcing task                                                                                                       |        :x:         | Any string                     |
-|       `batch_prefix`       |                                                                     Prefix of the identifiers of one or more task's batches. Use this variable to filter the final result set.                                                                     |        :x:         | Any string                     |
-|        `admin_user`        |                                                                                                             Username of the admin user                                                                                                             | :heavy_check_mark: | Any string                     |
-|      `admin_password`      |                                                                                                             Password of the admin user                                                                                                             | :heavy_check_mark: | Any string                     |
-|        `aws_region`        |                                                                                                   Region of your AWS account; e.g., `us-east-1`                                                                                                    | :heavy_check_mark: | Valid AWS region identifier    |
-|    `aws_private_bucket`    |                                                                                    Name of the private S3 bucket in which to store task configuration and data                                                                                     | :heavy_check_mark: | String unique across AWS       |
-|    `aws_deploy_bucket`     |                                                                                          Name of the public S3 bucket in which to deploy task source code                                                                                          | :heavy_check_mark: | String unique across AWS       |
-|      `server_config`       | Used to specify where the worker behavior logging interface is. Set it to `aws` to deploy the AWS-based infrastructure. Set it to `custom` if you want to provide a custom logging endpoint. Set it to `none` if you will not log worker behavior. | :heavy_check_mark: | `aws` or `custom` or `none`    |
-|      `deploy_config`       |                                        Allows uploading the task configuration available in the local machine. Set it to `false` if you already edited the configuration remotely to avoid overwriting it.                                         | :heavy_check_mark: | `true` or `false`              |
-|      `enable_solver`       |                                       Allows to deploy the HITs solver locally. Allows to provide a set of documents which will be automatically allocated into a set of HITs. Requires the usage of Docker.                                       |        :x:         | `true` or `false`              |
-| `prolific_completion_code` |                                                  Prolific study completion code. Provide here the code if you recruit crowd workers via Prolific. Required if the platform chosen is `prolific`.                                                   |        :x:         | Valid Prolific completion code |
-|      `ip_info_token`       |                                                                                               API Key to use `ipinfo.com` tracking functionalities.                                                                                                |        :x:         | Valid IP Info key              |
-|  `ip_geolocation_api_key`  |                                                                                            API Key to use `ipgeolocation.io` tracking functionalities.                                                                                             |        :x:         | Valid IP Geolocation key       |
-|      `ipapi_api_key`       |                                                                                                API Key to use `ipapi.com` tracking functionalities.                                                                                                |        :x:         | Valid IP Api key               |
-|     `user_stack_token`     |                                                                                        API Key to use `userstack.com` user agent detection functionalities.                                                                                        |        :x:         | `true` or `false`              |
-|       `bing_api_key`       |                                                                                                  API Key to use `BingWebSearch` search provider.                                                                                                   |        :x:         | Valid  Bing API Web Search Key |
-|     `fake_json_token`      |                                                                     API Key to use `FakerWebSearch` search provider. Returns dummy responses useful to test the search engine.                                                                     |        :x:         | Valid  fakeJSON.com API Key    |
+### Prolific
+
+TODO
+
+### Toloka
+
+TODO
+
+## Results Download
+
+1. Move to project `data` folder:
+
+   ````
+   cd ~/path/to/project/data/
+   ````
+   
+2. Run python script `download.py`
+
+3. Move to the results folder:
+
+   ````
+   cd result
+   ````
+   
+4.  Move to the current task folder `your_task_name`:
+
+	   ````
+	   cd your_task_name
+	   ````
+	   
+5.  Results structure:
+
+	TODO
 
 ## Local Development
 
@@ -298,24 +340,24 @@ You may want to edit and test the task configuration locally. To enable local de
 
     ````js
     export const environment = {
-    	production: false,
-    	configuration_local: true,
+        production: false,
+        configuration_local: true,
         platform: 'mturk',
-    	taskName: "your_task_name",
-    	batchName: "your_batch_name",
-    	region: "your_aws_region",
-    	bucket: "your_private_bucket",
-    	aws_id_key: "your_aws_key_id",
-    	aws_secret_key: "your_aws_key_secret",
-        prolifi_completion_code: false,
-    	bing_api_key: "your_bing_api_key",
+        taskName: "your_task_name",
+        batchName: "your_batch_name",
+        region: "your_aws_region",
+        bucket: "your_private_bucket",
+        aws_id_key: "your_aws_key_id",
+        aws_secret_key: "your_aws_key_secret",
+        prolific_completion_code: false,
+        bing_api_key: "your_bing_api_key",
         fake_json_key: "your_fake_json_key",
-    	log_on_console: true,
+        log_on_console: false,
         log_server_config: "none",
         table_acl_name: "Crowd_Frame-your_task_name_your_batch_name_ACL",
         table_data_name: "Crowd_Frame-your_task_name_your_batch_name_Data",
         table_log_name: "Crowd_Frame-your_task_name_your_batch_name_Logger",
-        hit_solver_endpoint: "http://localhost",
+        hit_solver_endpoint: "None",
     };
     ````
 
@@ -360,99 +402,5 @@ This software has been presented during The 15th ACM International WSDM Conferen
     keywords = {framework, crowdsourcing, user behavior},
     location = {Virtual Event, AZ, USA},
     series = {WSDM '22}
-}
-````
-
-## References
-
-This software has been already used in the past to launch several crowdsourcing tasks that lead to results published.
-
-----
-
-Michael Soprano, Kevin Roitero, David La Barbera, Davide Ceolin, Damiano Spina, Stefano Mizzaro, & Gianluca Demartini (2021). The Many Dimensions of Truthfulness: Crowdsourcing Misinformation Assessments on a Multidimensional Scale*.
-Information Processing & Management, \*58\*(6), 102710.
-
-````tex
-@article{journal-paper-ipm-2021,
-  title = {{The Many Dimensions of Truthfulness: Crowdsourcing Misinformation Assessments on a Multidimensional Scale}},
-  journal = {Information Processing & Management},
-  volume = {58},
-  number = {6},
-  pages = {102710},
-  year = {2021},
-  issn = {0306-4573},
-  doi = {https://doi.org/10.1016/j.ipm.2021.102710},
-  url = {https://www.sciencedirect.com/science/article/pii/S0306457321001941},
-  author = {Michael Soprano and Kevin Roitero and David {La Barbera} and Davide Ceolin and Damiano Spina and Stefano Mizzaro and Gianluca Demartini},
-  keywords = {Truthfulness, Crowdsourcing, Misinformation, Explainability}
-}
-````
-
----
-
-Roitero, K., Soprano, M., Portelli, B., De Luise, M., Spina, D., Mea, V., Serra, G., Mizzaro, S., & Demartini, G. (2021). Can The Crowd Judge Truthfulness? A Longitudinal Study on Recent Misinformation About COVID-19. Personal and
-Ubiquitous Computing.
-
-````tex
-@Article{journal-paper-puc-2021,
-   author={Roitero, Kevin and Soprano, Michael and Portelli, Beatrice and De Luise, Massimiliano and Spina, Damiano and Mea, Vincenzo Della and Serra, Giuseppe and Mizzaro, Stefano and Demartini, Gianluca},
-   title={{Can The Crowd Judge Truthfulness? A Longitudinal Study on Recent Misinformation About COVID-19}},
-   journal={Personal and Ubiquitous Computing},
-   year={2021},
-   month={Sep},
-   day={16},
-   issn={1617-4917},
-   doi={10.1007/s00779-021-01604-6},
-   url={https://doi.org/10.1007/s00779-021-01604-6}
-}
-````
-
----
-
-Roitero, K., Soprano, M., Portelli, B., Spina, D., Della Mea, V., Serra, G., Mizzaro, S., & Demartini, G. (2020). The COVID-19 Infodemic: Can the Crowd Judge Recent Misinformation Objectively?. In Proceedings of the 29th ACM International
-Conference on Information and Knowledge Management (CIKM2020). Galway, Ireland (Online). October 19-23, 2020. Conference Rank: GGS A+, Core A (pp. 1305–1314). Association for Computing Machinery.
-
-````tex
-@inproceedings{conference-paper-cikm2020,
-  address = {{New York, NY, USA}},
-  author = {Roitero, Kevin and Soprano, Michael and Portelli, Beatrice and Spina, Damiano and Della Mea, Vincenzo and Serra, Giuseppe and Mizzaro, Stefano and Demartini, Gianluca},
-  booktitle = {{Proceedings of the 29th ACM International Conference on Information and Knowledge Management (CIKM2020). Galway, Ireland (Online). October 19-23, 2020. Conference Rank: GGS A+, Core A}},
-  doi = {{10.1145/3340531.3412048}},
-  isbn = {{9781450368599}},
-  keywords = {{ordinal classification, infodemic, information behavior, covid-19, crowdsourcing}},
-  location = {{Virtual Event, Ireland}},
-  numpages = {{10}},
-  pages = {{1305–1314}},
-  publisher = {{Association for Computing Machinery}},
-  series = {{CIKM '20}},
-  title = {{The COVID-19 Infodemic: Can the Crowd Judge Recent Misinformation Objectively?}},
-  url = {{https://doi.org/10.1145/3340531.3412048}},
-  month = {10},
-  year = {2020}
-}
-````
-
----
-
-Roitero, K., Soprano, M., Fan, S., Spina, D., Mizzaro, S., & Demartini, G. (2020). Can The Crowd Identify Misinformation Objectively? The Effects of Judgment Scale and Assessor's Background. In *Proceedings of the 43st International ACM
-SIGIR Conference on Research and Development in Information Retrieval (SIGIR 2020). Xi’an, China (Online). July 25-30, 2020. Conference Rank: GGS A++, Core A** (pp. 439–448). Association for Computing Machinery.
-
-````tex
-@inproceedings{conference-paper-sigir2020,
-  address = {{New York, NY, USA}},
-  author = {Roitero, Kevin and Soprano, Michael and Fan, Shaoyang and Spina, Damiano and Mizzaro, Stefano and Demartini, Gianluca},
-  booktitle = {{Proceedings of the 43st International ACM SIGIR Conference on Research and Development in Information Retrieval (SIGIR 2020). Xi’an, China (Online). July 25-30, 2020. Conference Rank: GGS A++, Core A*}},
-  doi = {{10.1145/3397271.3401112}},
-  isbn = {{9781450380164}},
-  keywords = {{classification, crowdsourcing, information credibility}},
-  location = {{Virtual Event, China}},
-  numpages = {10},
-  month = {7},
-  pages = {{439–448}},
-  publisher = {{Association for Computing Machinery}},
-  series = {{SIGIR '20}},
-  title = {{Can The Crowd Identify Misinformation Objectively? The Effects of Judgment Scale and Assessor's Background}},
-  url = {{https://doi.org/10.1145/3397271.3401112}},
-  year = {2020}
 }
 ````
