@@ -2446,15 +2446,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@kolkov/angular-editor@npm:^2.1.0":
-  version: 2.1.0
-  resolution: "@kolkov/angular-editor@npm:2.1.0"
+"@kolkov/angular-editor@npm:^2.2.0-beta.0":
+  version: 2.2.0-beta.0
+  resolution: "@kolkov/angular-editor@npm:2.2.0-beta.0"
   dependencies:
     tslib: ^2.3.0
   peerDependencies:
     "@angular/common": ">=14"
     "@angular/core": ">=14"
-  checksum: f93220e1d3c84622422ece3d18fda9cda2393bdc115d039f6b3c09684728d0bd34a3f52bfb2eb5046522ce9e8bea45c9084038efd22825504ec69f6d79d479ac
+  checksum: 736e8c49946beb32e48f3d344328ea400e64df9b6570a3bcb9dc348e331b65bbafbaafbb4ea9a9e2c56d91df120e46518a872896805a0b9e7dad73313c59e92d
   languageName: node
   linkType: hard
 
@@ -2750,10 +2750,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:~16.11.42":
-  version: 16.11.42
-  resolution: "@types/node@npm:16.11.42"
-  checksum: a1746910cf27c9e8597805556c943bde5e630c5c4e03bdd2513ccd7fe5fce1ed912f51f5d0ce5dcda0583e5539177f76ad35a19caa9525307d7a722aa9962631
+"@types/node@npm:~16.11.43":
+  version: 16.11.43
+  resolution: "@types/node@npm:16.11.43"
+  checksum: 96d09e68347c49ebf84fe1443360edc3f98336f0794256abc8e4f29ef3070546357cae17083d6fd9767b631239367c4f245fe64accff4af057d17bd6694f0b2b
   languageName: node
   linkType: hard
 
@@ -3317,9 +3317,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"aws-sdk@npm:^2.1166.0":
-  version: 2.1166.0
-  resolution: "aws-sdk@npm:2.1166.0"
+"aws-sdk@npm:^2.1170.0":
+  version: 2.1170.0
+  resolution: "aws-sdk@npm:2.1170.0"
   dependencies:
     buffer: 4.9.2
     events: 1.1.1
@@ -3330,7 +3330,7 @@ __metadata:
     url: 0.10.3
     uuid: 8.0.0
     xml2js: 0.4.19
-  checksum: 3d3a5df113fbfb1386d1c1350c11b1c6a9cc1f497e011388298fe013cc7fa3fba1eb5ce23ba76e6d26798993644721e924a3cfda03be56509d952d4cf8d34d0f
+  checksum: fa88bb2bcf5cf23698cd6c47f77c30608bf0d5b57aed117304d00e1c78ba62724008603520fe1c1f4c08c0643a2b2619027be2b6bc5a949db5f4a21772430af5
   languageName: node
   linkType: hard
 
@@ -4133,14 +4133,14 @@ __metadata:
     "@angular/platform-browser-dynamic": ^14.0.5
     "@angular/router": ^14.0.5
     "@funktechno/texthighlighter": ^2.1.2
-    "@kolkov/angular-editor": ^2.1.0
-    "@types/node": ~16.11.42
-    aws-sdk: ^2.1166.0
+    "@kolkov/angular-editor": ^2.2.0-beta.0
+    "@types/node": ~16.11.43
+    aws-sdk: ^2.1170.0
     crypto-es: ^1.2.7
     flat-angular: ^1.6.0
     ngx-color-picker: ^12.0.1
-    ngx-countdown: ^13.0.0
-    ngx-device-detector: ^3.0.0
+    ngx-countdown: ^14.0.0
+    ngx-device-detector: ^4.0.0
     ngx-file-helpers: ^7.0.0
     ngx-ui-loader: ^13.0.0
     rxjs: ^7.5.5
@@ -6822,24 +6822,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ngx-countdown@npm:^13.0.0":
-  version: 13.0.0
-  resolution: "ngx-countdown@npm:13.0.0"
+"ngx-countdown@npm:^14.0.0":
+  version: 14.0.0
+  resolution: "ngx-countdown@npm:14.0.0"
   dependencies:
     tslib: ^2.3.0
-  checksum: 5884a36a64b5051ee7e81b006a300e4b8cb54cf77f5e699688d1def5b0f9a4c1ed81194e4b90b81c0d20a5c09433de42b348f36381be22d74f05cc196098f7f7
+  checksum: 9b4db3a622f62083170731b28e832be92a251ebce752fbe69f9ab1db3f52f09ca9cf3802481693cd7dafcb01309877d51df7c590a5d72ecfb502011af4184d98
   languageName: node
   linkType: hard
 
-"ngx-device-detector@npm:^3.0.0":
-  version: 3.0.0
-  resolution: "ngx-device-detector@npm:3.0.0"
+"ngx-device-detector@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "ngx-device-detector@npm:4.0.0"
   dependencies:
     tslib: ^2.0.0
   peerDependencies:
-    "@angular/common": ">=7.0.0 <=13.0.0 || ^13.0.0"
-    "@angular/core": ">=7.0.0 <=13.0.0 || ^13.0.0"
-  checksum: 5ce62e88d404b9ebb64a220eb5db6e2437b6fdb63faf7dd72df3242a770bc3b88088fec0c4022d1cc0c2376633a733667bbf9b51d4bca88e404a236da2f8861a
+    "@angular/common": ^14.0.0
+    "@angular/core": ^14.0.0
+  checksum: 8d6cfc5e5d23da895c7372c54e186954125cc73335dde341f4261234896b83d2ccc9a22b43a2a8e583d8072e1380163b9d79094dc5450fb14f01f1e583f3b935
   languageName: node
   linkType: hard
 
