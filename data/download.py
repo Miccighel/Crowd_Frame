@@ -70,7 +70,6 @@ ip_geolocation_api_key = os.getenv('ip_geolocation_api_key')
 ip_api_api_key = os.getenv('ip_api_api_key')
 user_stack_token = os.getenv('user_stack_token')
 fake_json_token = os.getenv('fake_json_token')
-debug_mode = os.getenv('debug_mode')
 
 folder_result_path = f"result/{task_name}/"
 models_path = f"result/{task_name}/Dataframe/"

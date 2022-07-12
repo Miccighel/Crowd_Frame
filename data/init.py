@@ -112,7 +112,6 @@ ip_geolocation_api_key = os.getenv('ip_geolocation_api_key')
 ip_api_api_key = os.getenv('ip_api_api_key')
 user_stack_token = os.getenv('user_stack_token')
 fake_json_token = os.getenv('fake_json_token')
-debug_mode = os.getenv('debug_mode')
 table_logging_name = f"Crowd_Frame-{task_name}_{batch_name}_Logger"
 table_data_name = f"Crowd_Frame-{task_name}_{batch_name}_Data"
 table_acl_name = f"Crowd_Frame-{task_name}_{batch_name}_ACL"
@@ -123,7 +122,10 @@ if profile_name is None:
 
 iam_client = boto3.Session(profile_name=profile_name).client('iam', region_name=aws_region)
 
-console.rule("0 - Initialization")
+step_index = 1
+
+console.rule(f"{step_index} - Initialization")
+step_index = step_index + 1
 
 console.print("[bold]Init.py[/bold] script launched")
 console.print(f"Working directory: [bold]{os.getcwd()}[/bold]")
@@ -134,7 +136,8 @@ if batch_prefix is None:
 if platform is None:
     platform = 'mturk'
 
-console.rule("1 - Configuration policy")
+console.rule(f"{step_index} - Configuration policy")
+step_index = step_index + 1
 
 with console.status("Generating configuration policy", spinner="aesthetic") as status:
     configuration_policies = {
@@ -205,7 +208,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 break
     serialize_json(folder_aws_generated_path, f"policy_{policy['PolicyName']}.json", policy)
 
-    console.rule(f"2 - [yellow]{config_user_name}[/yellow] creation")
+    console.rule(f"{step_index} - [yellow]{config_user_name}[/yellow] creation")
+    step_index = step_index + 1
 
     status.start()
     status.update(f"Generating user [yellow]{config_user_name}[/yellow] and attaching configuration policy")
@@ -218,7 +222,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     iam_client.attach_user_policy(UserName=config_user_name, PolicyArn=policy['Arn'])
     serialize_json(folder_aws_generated_path, f"user_{user['User']['UserName']}.json", user)
 
-    console.rule(f"3 - Amazon Mechanical Turk policy")
+    console.rule(f"{step_index} - Amazon Mechanical Turk policy")
+    step_index = step_index + 1
 
     status.start()
     status.update(f"Generating Amazon Mechanical Turk read-only access policy")
@@ -260,7 +265,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 break
     serialize_json(folder_aws_generated_path, f"policy_{policy['PolicyName']}.json", policy)
 
-    console.rule(f"4 - [yellow]{mturk_user_name}[/yellow] creation")
+    console.rule(f"{step_index} - [yellow]{mturk_user_name}[/yellow] creation")
+    step_index = step_index + 1
 
     status.start()
     status.update(f"Generating user [yellow]{mturk_user_name}[/yellow] and attaching read-only Amazon MTurk access policy")
@@ -273,7 +279,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     iam_client.attach_user_policy(UserName=mturk_user_name, PolicyArn=policy['Arn'])
     serialize_json(folder_aws_generated_path, f"user_{user['User']['UserName']}.json", user)
 
-    console.rule("5 - Local Configuration File")
+    console.rule(f"{step_index} - Local Configuration File")
+    step_index = step_index + 1
 
     status.start()
     status.update("Adding users to local configuration file")
@@ -361,7 +368,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         else:
             console.print('[bold red]Before using this tool you MUST install AWS CLI, run `aws configure` command and insert the credentials of a valid IAM user with admin access')
 
-    console.rule(f"6 - [yellow]{config_user_name}[/yellow] authentication")
+    console.rule(f"{step_index} - [yellow]{config_user_name}[/yellow] authentication")
+    step_index = step_index + 1
 
     status.start()
     status.update("Checking local configuration file")
@@ -388,7 +396,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     lambda_client = boto_session.client('lambda', region_name=aws_region)
     budget_client = boto3.Session(profile_name=profile_name).client('budgets', region_name=aws_region)
 
-    console.rule(f"7 - [yellow]{root_user.user_name}[/yellow] policies check")
+    console.rule(f"{step_index} - [yellow]{root_user.user_name}[/yellow] policies check")
+    step_index = step_index + 1
 
     status.start()
     status.update(f"Checking if the required policies are correctly set up")
@@ -478,7 +487,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         console.print("[bold red]\nYou must grant access to the SimulatePrincipalPolicy operation!\n")
         stop_sequence()
 
-    console.rule(f"8 - Crowd workers interaction policy")
+    console.rule(f"{step_index} - Crowd workers interaction policy")
+    step_index = step_index + 1
 
     status.start()
     status.update(f"Creating policy to allow crowd workers interaction")
@@ -533,7 +543,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     console.print(f"Policy ARN: [cyan underline]{policy['Policy']['Arn']}[/cyan underline]")
 
-    console.rule(f"9 - [cyan underline]crowd-worker[/cyan underline] user creation")
+    console.rule(f"{step_index} - [cyan underline]crowd-worker[/cyan underline] user creation")
+    step_index = step_index + 1
 
     status.start()
     status.update(f"Creating user")
@@ -580,7 +591,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     aws_worker_access_id = key_data['AccessKey']['AccessKeyId']
     aws_worker_access_secret = key_data['AccessKey']['SecretAccessKey']
 
-    console.rule(f"10 - Private bucket [cyan underline]{aws_private_bucket}[/cyan underline] creation")
+    console.rule(f"{step_index} - Private bucket [cyan underline]{aws_private_bucket}[/cyan underline] creation")
+    step_index = step_index + 1
 
     status.start()
     status.update(f"Creating bucket")
@@ -673,7 +685,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     cors_configuration = s3_client.get_bucket_cors(Bucket=aws_private_bucket)
     serialize_json(folder_aws_generated_path, f"bucket_{aws_private_bucket}_cors.json", cors_configuration)
 
-    console.rule(f"11 - Deploy bucket [cyan underline]{aws_deploy_bucket}[/cyan underline] creation")
+    console.rule(f"{step_index} - Deploy bucket [cyan underline]{aws_deploy_bucket}[/cyan underline] creation")
+    step_index = step_index + 1
 
     status.start()
     status.update(f"Creating bucket")
@@ -738,7 +751,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         policy['Policy'] = json.loads(policy['Policy'])
     serialize_json(folder_aws_generated_path, f"bucket_{aws_deploy_bucket}_policy.json", policy)
 
-    console.rule(f"12 - Table [cyan underline]{table_data_name}[/cyan underline] setup")
+    console.rule(f"{step_index} - Table [cyan underline]{table_data_name}[/cyan underline] setup")
+    step_index = step_index + 1
 
     try:
         table_name = table_data_name
@@ -755,7 +769,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         status.stop()
         console.print(f"Table [cyan underline]{table_data_name}[/cyan underline] already created")
 
-    console.rule(f"13 - Table [cyan underline]{table_acl_name}[/cyan underline] setup")
+    console.rule(f"{step_index} - Table [cyan underline]{table_acl_name}[/cyan underline] setup")
+    step_index = step_index + 1
 
     try:
         table_name = table_acl_name
@@ -809,7 +824,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     except dynamodb_client.exceptions.ResourceInUseException:
         console.print(f"Table [cyan underline]{table_acl_name}[/cyan underline] already created")
 
-    console.rule(f"14 - Logging infrastructure setup")
+    console.rule(f"{step_index} - Logging infrastructure setup")
+    step_index = step_index + 1
 
     status.start()
     status.update(f"Setting up policies")
@@ -1010,7 +1026,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     else:
         raise Exception("Your [italic]server_config[/italic] environment variable must be set to [white on black]aws[/white on black], [white on black]custom[/white on black] or [white on black]none[/white on black]")
 
-    console.rule(f"15 - HITs Solver setup")
+    console.rule(f"{step_index} - HITs Solver setup")
+    step_index = step_index + 1
 
     console.print(f"Environment variable [blue]enable_solver[/blue] value: [cyan]{enable_solver}")
 
@@ -1057,7 +1074,9 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         console.print("HITs solver not deployed")
         hit_solver_endpoint = None
 
-    console.rule(f"16 - Budgeting setting")
+    console.rule(f"{step_index} - Budgeting setting")
+    step_index = step_index + 1
+
     status.start()
     status.update(f"Creating role")
 
@@ -1240,7 +1259,9 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         )
     serialize_json(folder_aws_generated_path, f"budget_{budget_name}_action_{response['ActionId']}.json", response)
 
-    console.rule(f"17 - Environment: [cyan underline]PRODUCTION[/cyan underline] creation")
+    console.rule(f"{step_index} - Environment: [cyan underline]PRODUCTION[/cyan underline] creation")
+    step_index = step_index + 1
+
     status.start()
     status.update(f"Creating environment")
 
@@ -1287,7 +1308,9 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.print("File [cyan underline]environment.prod.ts[/cyan underline] generated")
     console.print(f"Path: [italic]{environment_production}[/italic]")
 
-    console.rule(f"18 - Environment: [cyan underline]DEVELOPMENT[/cyan underline] creation")
+    console.rule(f"{step_index} - Environment: [cyan underline]DEVELOPMENT[/cyan underline] creation")
+    step_index = step_index + 1
+
     status.start()
     status.update(f"Creating environment")
 
@@ -1329,7 +1352,9 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.print("File [cyan underline]environment.ts[/cyan underline] generated")
     console.print(f"Path: [italic]{environment_development}[/italic]")
 
-    console.rule(f"19 - Admin Credentials Creation")
+    console.rule(f"{step_index} - Admin Credentials Creation")
+    step_index = step_index + 1
+
     status.start()
     status.update(f"Creating file [cyan underline]admin.json")
 
@@ -1350,7 +1375,9 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     console.print(f"Path: [italic]{admin_file}")
 
-    console.rule(f"19 - Sample task configuration")
+    console.rule(f"{step_index} - Sample task configuration")
+    step_index = step_index + 1
+
     status.start()
     status.update(f"Generating a sample configuration if needed")
 
@@ -1384,8 +1411,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         console.print(
             f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
     else:
-        console.print(
-            f"Config. file [italic white on yellow]{filename}[/italic white on yellow] not detected, generating a sample")
+        console.print(f"Config. file [italic white on yellow]{filename}[/italic white on yellow] not detected, generating a sample")
         with open(f"{folder_build_task_path}{filename}", 'w') as file:
             sample_questionnaires = [
                 {
@@ -1616,7 +1642,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     console.print(f"Path: [italic white on black]{folder_build_task_path}[/italic white on black]")
 
-    console.rule(f"20 - Interface [cyan underline]document.ts")
+    console.rule(f"{step_index} - Interface [cyan underline]document.ts")
+    step_index = step_index + 1
 
     hits_file = f"{folder_build_task_path}hits.json"
     document_interface = f"{folder_build_skeleton_path}document.ts"
@@ -1715,7 +1742,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.print("Interface built")
     console.print(f"Path: [italic]{document_interface}[/italic]")
 
-    console.rule(f"21 - Class [cyan underline]goldChecker.ts")
+    console.rule(f"{step_index} - Class [cyan underline]goldChecker.ts")
+    step_index = step_index + 1
 
     # This class provides a stub to implement the gold elements check. If there are no gold elements, the check is considered true automatically.
     # The following codes provides answers, notes and attributes for each gold element. Those three corresponding data structures should be used
@@ -1725,8 +1753,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     if os.path.exists(f"{folder_build_skeleton_path}{filename}"):
         console.print(f"Gold checker [italic white on green]{filename}[/italic white on green] detected, skipping generation")
     else:
-        console.print(
-            f"Gold checker [italic white on yellow]{filename}[/italic white on yellow] not detected, generating a sample")
+        console.print(f"Gold checker [italic white on yellow]{filename}[/italic white on yellow] not detected, generating a sample")
         with open(f"{folder_build_skeleton_path}{filename}", 'w') as file:
             print("export class GoldChecker {", file=file)
             print("", file=file)
@@ -1782,7 +1809,9 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     if platform == 'mturk':
 
-        console.rule(f"22 - Amazon Mechanical Turk Landing Page")
+        console.rule(f"{step_index} - Amazon Mechanical Turk Landing Page")
+        step_index = step_index + 1
+
         status.start()
         status.update(f"Istantiating Mako model")
 
@@ -1822,7 +1851,9 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         console.print(f"Path: [italic]{mturk_tokens_file}")
 
     if platform == 'toloka':
-        console.rule(f"22 - Toloka HTML Interface")
+        console.rule(f"{step_index} - Toloka HTML Interface")
+        step_index = step_index + 1
+
         status.start()
         status.update(f"Istantiating Mako model")
 
@@ -1857,7 +1888,9 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         console.print(f"Token for the current batch chosen")
         console.print(f"Path: [italic]{toloka_tokens_file}")
 
-    console.rule(f"23 - Task [cyan underline]{task_name}[/cyan underline]/[yellow underline]{batch_name}[/yellow underline] build")
+    console.rule(f"{step_index} - Task [cyan underline]{task_name}[/cyan underline]/[yellow underline]{batch_name}[/yellow underline] build")
+    step_index = step_index + 1
+
     status.update(f"Executing build command, please wait")
 
     folder_build_result = f"../dist/"
@@ -1929,7 +1962,9 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.print("Model istantiated")
     console.print(f"Path: [italic underline]{index_page_file}")
 
-    console.rule(f"24 - Packaging Task [cyan underline]tasks/{task_name}/{batch_name}")
+    console.rule(f"{step_index} - Packaging Task [cyan underline]tasks/{task_name}/{batch_name}")
+    step_index = step_index + 1
+
     status.start()
     status.update(f"Starting")
 
@@ -2099,7 +2134,9 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     destination = f"{folder_tasks_batch_config_path}admin.json"
     copy(source, destination, "Admin Credentials")
 
-    console.rule(f"25 - Task [cyan underline]tasks/{task_name}/{batch_name} Deploy")
+    console.rule(f"{step_index} - Task [cyan underline]tasks/{task_name}/{batch_name} Deploy")
+    step_index = step_index + 1
+
     status.start()
     status.update(f"Starting")
 
@@ -2182,7 +2219,9 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     key = f"{s3_deploy_path}index.html"
     upload(iam_path, aws_deploy_bucket, key, "Task Homepage", "text/html", "public-read")
 
-    console.rule(f"26 - Public Link")
+    console.rule(f"{step_index} - Public Link")
+    step_index = step_index + 1
+
     status.start()
     status.update(f"Writing")
 
