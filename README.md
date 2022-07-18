@@ -103,7 +103,6 @@ issues](https://badgen.net/github/issues/Miccighel/Crowd_Frame/)](https://GitHub
      aws_region=your_aws_region
      aws_private_bucket=your_private_bucket_name
      aws_deploy_bucket=your_deploy_bucket_name
-     deploy_config=true
      ````
 
 12. Install python packages with `pip install -r your_repo_folder/requirements.txt`:
@@ -162,7 +161,6 @@ The following table describes each environment variables that can be set in `you
 |    `aws_private_bucket`    |                                                                                    Name of the private S3 bucket in which to store task configuration and data                                                                                     | :heavy_check_mark: | String unique across AWS       |
 |    `aws_deploy_bucket`     |                                                                                          Name of the public S3 bucket in which to deploy task source code                                                                                          | :heavy_check_mark: | String unique across AWS       |
 |      `server_config`       | Used to specify where the worker behavior logging interface is. Set it to `aws` to deploy the AWS-based infrastructure. Set it to `custom` if you want to provide a custom logging endpoint. Set it to `none` if you will not log worker behavior. | :heavy_check_mark: | `aws` or `custom` or `none`    |
-|      `deploy_config`       |                                        Allows uploading the task configuration available in the local machine. Set it to `false` if you already edited the configuration remotely to avoid overwriting it.                                         | :heavy_check_mark: | `true` or `false`              |
 |      `enable_solver`       |                                       Allows to deploy the HITs solver locally. Allows to provide a set of documents which will be automatically allocated into a set of HITs. Requires the usage of Docker.                                       |        :x:         | `true` or `false`              |
 |      `enable_crawling`       |  Enables the crawling of the results retrieved by the search engine. |        :x:         | `true` or `false`              |
 | `prolific_completion_code` |                                                  Prolific study completion code. Provide here the code if you recruit crowd workers via Prolific. Required if the platform chosen is `prolific`.                                                   |        :x:         | Valid Prolific completion code |

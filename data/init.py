@@ -7,8 +7,12 @@ import docker
 from mako.template import Template
 import os
 from datetime import datetime
+import pytz
 import pandas as pd
+from dateutil import tz
+from datetime import timezone
 import subprocess
+import datefinder
 import random
 import hashlib
 import shutil
@@ -51,6 +55,15 @@ folder_build_env_path = "build/environments/"
 folder_build_deploy_path = "build/deploy/"
 folder_build_skeleton_path = "build/skeleton/"
 folder_tasks_path = "tasks/"
+
+filename_hits_config = "hits.json"
+filename_dimensions_config = "dimensions.json"
+filename_instructions_general_config = "instructions_general.json"
+filename_instructions_evaluation_config = "instructions_evaluation.json"
+filename_questionnaires_config = "questionnaires.json"
+filename_search_engine_config = "search_engine.json"
+filename_task_settings_config = "task.json"
+filename_workers_settings_config = "workers.json"
 
 
 def serialize_json(folder, filename, data):
@@ -98,7 +111,6 @@ batch_prefix = os.getenv('batch_prefix')
 admin_user = os.getenv('admin_user')
 admin_password = os.getenv('admin_password')
 server_config = os.getenv('server_config')
-deploy_config = strtobool(os.getenv('deploy_config')) if os.getenv('deploy_config') is not None else False
 enable_solver = strtobool(os.getenv('enable_solver')) if os.getenv('enable_solver') is not None else False
 aws_region = os.getenv('aws_region')
 aws_private_bucket = os.getenv('aws_private_bucket')
@@ -1375,6 +1387,94 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     console.print(f"Path: [italic]{admin_file}")
 
+    console.rule(f"{step_index} - Task configuration synchronization")
+    step_index = step_index + 1
+
+    status.start()
+    status.update(f"Checking metadata of existing configuration items")
+
+    s3 = boto_session.client('s3', region_name=aws_region)
+
+    task_batch_names = []
+    task_config_filenames = [
+        filename_hits_config,
+        filename_questionnaires_config,
+        filename_instructions_evaluation_config,
+        filename_instructions_general_config,
+        filename_dimensions_config,
+        filename_search_engine_config,
+        filename_task_settings_config,
+        filename_workers_settings_config
+    ]
+
+    task_config_items_checked = []
+    task_config_items_updated = 0
+    task_config_items_updated_local = 0
+    task_config_items_updated_names = []
+    task_config_items_updated_names_local = []
+
+    response = s3.list_objects(Bucket=aws_private_bucket, Prefix=f"{task_name}/", Delimiter='/')
+    if 'CommonPrefixes' in response:
+        for path in response['CommonPrefixes']:
+            current_batch_name = path.get('Prefix').split("/")[1]
+            if batch_name in current_batch_name:
+                task_batch_names.append(current_batch_name)
+
+        prefix = f"{task_name}/"
+        for current_batch_name in task_batch_names:
+            response_batch = s3.list_objects(Bucket=aws_private_bucket, Prefix=f"{prefix}{current_batch_name}/Task/", Delimiter='/')
+            if 'Contents' in response_batch:
+                for filename_config in task_config_filenames:
+                    file_config_local_path = f"{folder_build_task_path}{filename_config}"
+                    for batch_config_object in response_batch['Contents']:
+                        if filename_config in batch_config_object['Key']:
+                            file_config_remote_path = f"{prefix}{current_batch_name}/Task/{filename_config}"
+                            metadata = s3.head_object(Bucket=aws_private_bucket, Key=file_config_remote_path)
+                            if os.path.exists(file_config_local_path):
+                                console.print(f"Configuration item [blue]{filename_config}[/blue] status: [green]LOCAL[/green] detected, [green]REMOTE[/green] detected")
+                                date_modified_local = os.path.getmtime(file_config_local_path)
+                                date_modified_local = datetime.fromtimestamp(date_modified_local).isoformat()
+                                if 'last-modified' in metadata['ResponseMetadata']['HTTPHeaders']:
+                                    date_modified_remote_parsed = datetime.strptime(metadata['ResponseMetadata']['HTTPHeaders']['last-modified'], '%a, %d %b %Y %H:%M:%S %Z')
+                                    date_modified_local_parsed = date_modified_local
+                                    for date in datefinder.find_dates(date_modified_local):
+                                        date_modified_local_parsed = date
+                                    if date_modified_remote_parsed is not None and date_modified_local_parsed is not None:
+                                        if date_modified_remote_parsed > date_modified_local_parsed:
+                                            console.print(f"Most recent version: [blue underline]REMOTE[/blue underline], date: {date_modified_remote_parsed}")
+                                            s3.download_file(aws_private_bucket, file_config_remote_path, file_config_local_path)
+                                            task_config_items_updated +=1
+                                            task_config_items_updated_names.append(filename_config)
+                                        else:
+                                            console.print(f"Most recent version: [blue underline]LOCAL[/blue underline], date: {date_modified_local_parsed}")
+                                            task_config_items_updated_local += 1
+                                            task_config_items_updated_names_local.append(filename_config)
+                                        task_config_items_checked.append(filename_config)
+
+                            else:
+                                date_modified_remote_parsed = datetime.strptime(metadata['ResponseMetadata']['HTTPHeaders']['date'], '%a, %d %b %Y %H:%M:%S %Z')
+                                console.print(f"Configuration item [blue]{filename_config}[/blue] status: [green]LOCAL[/green] not detected, [green]REMOTE[/green] detected")
+                                console.print(f"Fetching remote version, date: {date_modified_remote_parsed}")
+                                s3.download_file(aws_private_bucket, file_config_remote_path, file_config_local_path)
+                                task_config_items_updated += 1
+                                task_config_items_checked.append(filename_config)
+                                task_config_items_updated_names.append(filename_config)
+
+                    if filename_config not in task_config_items_checked:
+                        if os.path.exists(file_config_local_path):
+                            console.print(f"Configuration item [blue]{filename_config}[/blue] status: [green]LOCAL[/green] detected, [green]REMOTE[/green] not detected")
+                            task_config_items_updated_local += 1
+                            task_config_items_updated_names_local.append(filename_config)
+                        else:
+                            console.print(f"Configuration item [blue]{filename_config}[/blue] status: [green]LOCAL[/green] not detected, [green]REMOTE[/green] not detected")
+                            console.print(f"Sample generation during next step")
+                        task_config_items_checked.append(filename_config)
+
+    console.print(f"Configuration items synchronized: {task_config_items_updated}")
+    console.print(f"Items fetched from [green]REMOTE[/green]: {task_config_items_updated}, {task_config_items_updated_names}")
+    console.print(f"Items available from [green]LOCAL[/green]: {task_config_items_updated_local}, {task_config_items_updated_names_local}")
+    console.print(f"Items to generate: {len(task_config_filenames)-(task_config_items_updated + task_config_items_updated_local)}")
+
     console.rule(f"{step_index} - Sample task configuration")
     step_index = step_index + 1
 
@@ -1384,7 +1484,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     if not os.path.exists(folder_build_task_path):
         os.makedirs(folder_build_task_path, exist_ok=True)
 
-    filename = "hits.json"
+    filename = filename_hits_config
     if os.path.exists(f"{folder_build_task_path}{filename}"):
         console.print(
             f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
@@ -1406,10 +1506,9 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             }]
             print(json.dumps(sample_units, indent=4), file=file)
 
-    filename = "questionnaires.json"
+    filename = filename_questionnaires_config
     if os.path.exists(f"{folder_build_task_path}{filename}"):
-        console.print(
-            f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
+        console.print(f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
     else:
         console.print(f"Config. file [italic white on yellow]{filename}[/italic white on yellow] not detected, generating a sample")
         with open(f"{folder_build_task_path}{filename}", 'w') as file:
@@ -1456,7 +1555,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             ]
             print(json.dumps(sample_questionnaires, indent=4), file=file)
 
-    filename = "dimensions.json"
+    filename = filename_dimensions_config
     if os.path.exists(f"{folder_build_task_path}{filename}"):
         console.print(
             f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
@@ -1473,6 +1572,11 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 "justification": False,
                 "scale": {
                     "type": "categorical",
+                    "instructions": {
+                        "label": "Label",
+                        "caption": "Caption",
+                        "text": "Instruction text"
+                    },
                     "mapping": [
                         {
                             "label": "False",
@@ -1495,7 +1599,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             }]
             print(json.dumps(sample_dimensions, indent=4), file=file)
 
-    filename = "instructions_general.json"
+    filename = filename_instructions_general_config
     if os.path.exists(f"{folder_build_task_path}{filename}"):
         console.print(f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
     else:
@@ -1510,7 +1614,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             ]
             print(json.dumps(sample_instructions, indent=4), file=file)
 
-    filename = "instructions_evaluation.json"
+    filename = filename_instructions_evaluation_config
     if os.path.exists(f"{folder_build_task_path}{filename}"):
         console.print(
             f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
@@ -1518,15 +1622,22 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         console.print(
             f"Config. file [italic white on yellow]{filename}[/italic white on yellow] not detected, generating a sample")
         with open(f"{folder_build_task_path}{filename}", 'w') as file:
-            sample_instructions = [
-                {
-                    "caption": "Evaluation Instructions",
-                    "text": "<p>Lorem ipsum <strong>dolor</strong> sit amet.</p>"
+            sample_instructions = {
+                "general": [
+                    {
+                        "caption": "Evaluation Instructions",
+                        "text": "<p>Lorem ipsum <strong>dolor</strong> sit amet.</p>"
+                    }
+                ],
+                "element": {
+                    "label": "Label",
+                    "caption": "Caption",
+                    "text": "Instruction text"
                 }
-            ]
+            }
             print(json.dumps(sample_instructions, indent=4), file=file)
 
-    filename = "search_engine.json"
+    filename = filename_search_engine_config
     if os.path.exists(f"{folder_build_task_path}{filename}"):
         console.print(f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
     else:
@@ -1539,7 +1650,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
             print(json.dumps(sample_search_engine, indent=4), file=file)
 
-    filename = "task.json"
+    filename = filename_task_settings_config
     if os.path.exists(f"{folder_build_task_path}{filename}"):
         console.print(f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
     else:
@@ -1625,7 +1736,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             }
             print(json.dumps(sample_settings, indent=4), file=file)
 
-    filename = "workers.json"
+    filename = filename_workers_settings_config
     if os.path.exists(f"{folder_build_task_path}{filename}"):
         console.print(f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
     else:
@@ -1645,7 +1756,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.rule(f"{step_index} - Interface [cyan underline]document.ts")
     step_index = step_index + 1
 
-    hits_file = f"{folder_build_task_path}hits.json"
+    hits_file = f"{folder_build_task_path}{filename_hits_config}"
     document_interface = f"{folder_build_skeleton_path}document.ts"
     if not os.path.exists(folder_build_skeleton_path):
         os.makedirs(folder_build_skeleton_path, exist_ok=True)
@@ -1662,7 +1773,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         sample_element = documents.pop()
 
         if not 'id' in sample_element.keys():
-            raise Exception("Your hits.json file does not contains an attributed called \"id\"!")
+            raise Exception(f"Your {filename_hits_config} file does not contains an attributed called \"id\"!")
 
     # This class provides a representation of a single document stored in single hit stored in the Amazon S3 bucket.
     # The attribute <document_index> is additional and should not be touched and passed in the constructor.
@@ -1831,9 +1942,9 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
         status.update(f"Generating tokens")
 
-        hits_file = f"{folder_build_task_path}hits.json"
+        hits_file = f"{folder_build_task_path}{filename_hits_config}"
         mturk_tokens_file = f"{folder_build_mturk_path}tokens.csv"
-        console.print(f"Loading [cyan underline]hits.json[/cyan underline] file")
+        console.print(f"Loading [cyan underline]{filename_hits_config}[/cyan underline] file")
         console.print(f"Path: [ital]{hits_file}")
         hits = read_json(hits_file)
         token_df = pd.DataFrame(columns=["tokens"])
@@ -1871,15 +1982,15 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         console.print(f"Model istantiated")
         console.print(f"Path: {toloka_page_file}")
 
-        hits_file = f"{folder_build_task_path}hits.json"
+        hits_file = f"{folder_build_task_path}{filename_hits_config}"
         toloka_tokens_file = f"{folder_build_toloka_path}tokens.tsv"
-        console.print(f"Loading [cyan underline]hits.json[/cyan underline] file")
+        console.print(f"Loading [cyan underline]{filename_hits_config}[/cyan underline] file")
         console.print(f"Path: [ital]{hits_file}")
         hits = read_json(hits_file)
         token_df = pd.DataFrame(columns=["INPUT:token_input"])
         for hit in hits:
             token_df = token_df.append({
-                 "INPUT:token_input": hit['token_input']
+                "INPUT:token_input": hit['token_input']
             }, ignore_index=True)
             token_df = token_df.append({
                 "INPUT:token_input": None
@@ -1977,8 +2088,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     folder_tasks_batch_config_path = f"{folder_tasks_batch_path}config/"
     folder_tasks_batch_skeleton_path = f"{folder_tasks_batch_path}skeleton/"
 
-    console.print(f"[italic purple]deploy-config[/italic purple] variable: {bool(deploy_config)}")
-
     if not os.path.exists(folder_tasks_batch_deploy_path):
         console.print("[green]Deploy folder created")
         os.makedirs(folder_tasks_batch_deploy_path, exist_ok=True)
@@ -2003,19 +2112,19 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     else:
         console.print("[yellow]Environments folder already present")
     console.print(f"Path: [italic]{folder_tasks_batch_env_path}")
-    if not os.path.exists(folder_tasks_batch_task_path) and deploy_config:
+    if not os.path.exists(folder_tasks_batch_task_path):
         console.print("[green]Task configuration folder created")
         os.makedirs(folder_tasks_batch_task_path, exist_ok=True)
     else:
         console.print("[yellow]Task configuration folder already present")
     console.print(f"Path: [italic]{folder_tasks_batch_task_path}")
-    if not os.path.exists(folder_tasks_batch_config_path) and deploy_config:
+    if not os.path.exists(folder_tasks_batch_config_path):
         console.print("[green]Task configuration folder created")
         os.makedirs(folder_tasks_batch_config_path, exist_ok=True)
     else:
         console.print("[yellow]General configuration folder already present")
     console.print(f"Path: [italic]{folder_tasks_batch_config_path}")
-    if not os.path.exists(folder_tasks_batch_skeleton_path) and deploy_config:
+    if not os.path.exists(folder_tasks_batch_skeleton_path):
         console.print("[green]Task skeleton folder created")
         os.makedirs(folder_tasks_batch_skeleton_path, exist_ok=True)
     else:
@@ -2083,40 +2192,39 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         destination = f"{folder_tasks_batch_mturk_path}tokens.csv"
         copy(source, destination, "Hits tokens")
 
-    if bool(deploy_config):
-        console.print(f"Copying files for [blue underline on white]{folder_build_task_path}[/blue underline on white] folder")
+    console.print(f"Copying files for [blue underline on white]{folder_build_task_path}[/blue underline on white] folder")
 
-        source = f"{folder_build_task_path}hits.json"
-        destination = f"{folder_tasks_batch_task_path}hits.json"
-        copy(source, destination, "Hits")
+    source = f"{folder_build_task_path}{filename_hits_config}"
+    destination = f"{folder_tasks_batch_task_path}{filename_hits_config}"
+    copy(source, destination, "Hits")
 
-        source = f"{folder_build_task_path}dimensions.json"
-        destination = f"{folder_tasks_batch_task_path}dimensions.json"
-        copy(source, destination, "Dimensions")
+    source = f"{folder_build_task_path}{filename_dimensions_config}"
+    destination = f"{folder_tasks_batch_task_path}{filename_dimensions_config}"
+    copy(source, destination, "Dimensions")
 
-        source = f"{folder_build_task_path}instructions_evaluation.json"
-        destination = f"{folder_tasks_batch_task_path}instructions_evaluation.json"
-        copy(source, destination, "Assessment Instructions")
+    source = f"{folder_build_task_path}{filename_instructions_evaluation_config}"
+    destination = f"{folder_tasks_batch_task_path}{filename_instructions_evaluation_config}"
+    copy(source, destination, "Assessment Instructions")
 
-        source = f"{folder_build_task_path}instructions_general.json"
-        destination = f"{folder_tasks_batch_task_path}instructions_general.json"
-        copy(source, destination, "General Instructions")
+    source = f"{folder_build_task_path}{filename_instructions_general_config}"
+    destination = f"{folder_tasks_batch_task_path}{filename_instructions_general_config}"
+    copy(source, destination, "General Instructions")
 
-        source = f"{folder_build_task_path}questionnaires.json"
-        destination = f"{folder_tasks_batch_task_path}questionnaires.json"
-        copy(source, destination, "Questionnaires")
+    source = f"{folder_build_task_path}{filename_questionnaires_config}"
+    destination = f"{folder_tasks_batch_task_path}{filename_questionnaires_config}"
+    copy(source, destination, "Questionnaires")
 
-        source = f"{folder_build_task_path}search_engine.json"
-        destination = f"{folder_tasks_batch_task_path}search_engine.json"
-        copy(source, destination, "Search Engine")
+    source = f"{folder_build_task_path}{filename_search_engine_config}"
+    destination = f"{folder_tasks_batch_task_path}{filename_search_engine_config}"
+    copy(source, destination, "Search Engine")
 
-        source = f"{folder_build_task_path}task.json"
-        destination = f"{folder_tasks_batch_task_path}task.json"
-        copy(source, destination, "Task Settings")
+    source = f"{folder_build_task_path}{filename_task_settings_config}"
+    destination = f"{folder_tasks_batch_task_path}{filename_task_settings_config}"
+    copy(source, destination, "Task Settings")
 
-        source = f"{folder_build_task_path}workers.json"
-        destination = f"{folder_tasks_batch_task_path}workers.json"
-        copy(source, destination, "Workers Settings")
+    source = f"{folder_build_task_path}{filename_workers_settings_config}"
+    destination = f"{folder_tasks_batch_task_path}{filename_workers_settings_config}"
+    copy(source, destination, "Workers Settings")
 
     console.print(f"Copying files for [yellow underline on white]{folder_tasks_batch_skeleton_path}[/yellow underline on white] folder")
 
@@ -2161,49 +2269,45 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             response = s3_client.put_object(Body=open(path, 'rb'), Bucket=bucket, Key=key, ContentType=content_type)
         console.print(f"HTTP Status Code: {response['ResponseMetadata']['HTTPStatusCode']}, ETag: {response['ETag']}")
 
-
-    console.print(f"[italic purple]deploy-config[/italic purple] variable: {bool(deploy_config)}")
-
     console.print(f"[white on blue bold]Generator configuration")
 
     iam_path = f"{folder_tasks_batch_config_path}admin.json"
     key = f"{s3_private_generator_path}admin.json"
     upload(iam_path, aws_private_bucket, key, "Admin Credentials", "application/json", 'bucket-owner-full-control')
 
-    if bool(deploy_config):
-        console.print(f"[white on green bold]Task configuration")
+    console.print(f"[white on green bold]Task configuration")
 
-        iam_path = f"{folder_tasks_batch_task_path}hits.json"
-        key = f"{s3_private_task_path}hits.json"
-        upload(iam_path, aws_private_bucket, key, "Hits", "application/json", 'bucket-owner-full-control')
+    iam_path = f"{folder_tasks_batch_task_path}{filename_hits_config}"
+    key = f"{s3_private_task_path}{filename_hits_config}"
+    upload(iam_path, aws_private_bucket, key, "Hits", "application/json", 'bucket-owner-full-control')
 
-        iam_path = f"{folder_tasks_batch_task_path}instructions_evaluation.json"
-        key = f"{s3_private_task_path}instructions_evaluation.json"
-        upload(iam_path, aws_private_bucket, key, "Assessment Instructions", "application/json", 'bucket-owner-full-control')
+    iam_path = f"{folder_tasks_batch_task_path}{filename_instructions_evaluation_config}"
+    key = f"{s3_private_task_path}{filename_instructions_evaluation_config}"
+    upload(iam_path, aws_private_bucket, key, "Assessment Instructions", "application/json", 'bucket-owner-full-control')
 
-        iam_path = f"{folder_tasks_batch_task_path}instructions_general.json"
-        key = f"{s3_private_task_path}instructions_general.json"
-        upload(iam_path, aws_private_bucket, key, "General Instructions", "application/json", 'bucket-owner-full-control')
+    iam_path = f"{folder_tasks_batch_task_path}{filename_instructions_general_config}"
+    key = f"{s3_private_task_path}{filename_instructions_general_config}"
+    upload(iam_path, aws_private_bucket, key, "General Instructions", "application/json", 'bucket-owner-full-control')
 
-        iam_path = f"{folder_tasks_batch_task_path}questionnaires.json"
-        key = f"{s3_private_task_path}questionnaires.json"
-        upload(iam_path, aws_private_bucket, key, "Questionnaires", "application/json", 'bucket-owner-full-control')
+    iam_path = f"{folder_tasks_batch_task_path}{filename_questionnaires_config}"
+    key = f"{s3_private_task_path}{filename_questionnaires_config}"
+    upload(iam_path, aws_private_bucket, key, "Questionnaires", "application/json", 'bucket-owner-full-control')
 
-        iam_path = f"{folder_tasks_batch_task_path}dimensions.json"
-        key = f"{s3_private_task_path}dimensions.json"
-        upload(iam_path, aws_private_bucket, key, "Dimensions", "application/json", 'bucket-owner-full-control')
+    iam_path = f"{folder_tasks_batch_task_path}{filename_dimensions_config}"
+    key = f"{s3_private_task_path}{filename_dimensions_config}"
+    upload(iam_path, aws_private_bucket, key, "Dimensions", "application/json", 'bucket-owner-full-control')
 
-        iam_path = f"{folder_tasks_batch_task_path}search_engine.json"
-        key = f"{s3_private_task_path}search_engine.json"
-        upload(iam_path, aws_private_bucket, key, "Search Engine", "application/json", 'bucket-owner-full-control')
+    iam_path = f"{folder_tasks_batch_task_path}{filename_search_engine_config}"
+    key = f"{s3_private_task_path}{filename_search_engine_config}"
+    upload(iam_path, aws_private_bucket, key, "Search Engine", "application/json", 'bucket-owner-full-control')
 
-        iam_path = f"{folder_tasks_batch_task_path}task.json"
-        key = f"{s3_private_task_path}task.json"
-        upload(iam_path, aws_private_bucket, key, "Task Settings", "application/json", 'bucket-owner-full-control')
+    iam_path = f"{folder_tasks_batch_task_path}{filename_task_settings_config}"
+    key = f"{s3_private_task_path}{filename_task_settings_config}"
+    upload(iam_path, aws_private_bucket, key, "Task Settings", "application/json", 'bucket-owner-full-control')
 
-        iam_path = f"{folder_tasks_batch_task_path}workers.json"
-        key = f"{s3_private_task_path}workers.json"
-        upload(iam_path, aws_private_bucket, key, "Workers Settings", "application/json", 'bucket-owner-full-control')
+    iam_path = f"{folder_tasks_batch_task_path}{filename_workers_settings_config}"
+    key = f"{s3_private_task_path}{filename_workers_settings_config}"
+    upload(iam_path, aws_private_bucket, key, "Workers Settings", "application/json", 'bucket-owner-full-control')
 
     console.print(f"[white on purple bold]Angular Application")
 

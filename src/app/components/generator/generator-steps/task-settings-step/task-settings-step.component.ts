@@ -251,7 +251,7 @@ export class TaskSettingsStepComponent implements OnInit {
             messages: this._formBuilder.array([]),
             logger: !!this.dataStored.logger_enable,
             logger_option: this.dataStored.logger_options,
-            server_endpoint: [this.dataStored.logger_server_endpoint ? this.dataStored.logger_server_endpoint ? this.dataStored.logger_server_endpoint : '' : '', Validators.required]
+            server_endpoint: this.dataStored.logger_server_endpoint ? this.dataStored.logger_server_endpoint ? this.dataStored.logger_server_endpoint : '' : ''
         });
         if (this.dataStored.modality) this.emitModality(this.dataStored.modality)
         if (this.dataStored.messages) if (this.dataStored.messages.length > 0) this.dataStored.messages.forEach((message, messageIndex) => this.addMessage(message))

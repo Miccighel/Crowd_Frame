@@ -55,7 +55,6 @@ batch_prefix = os.getenv('batch_prefix')
 admin_user = os.getenv('admin_user')
 admin_password = os.getenv('admin_password')
 server_config = os.getenv('server_config')
-deploy_config = strtobool(os.getenv('deploy_config')) if os.getenv('deploy_config') is not None else False
 enable_solver = strtobool(os.getenv('enable_solver')) if os.getenv('enable_solver') is not None else False
 enable_crawling = strtobool(os.getenv('enable_crawling')) if os.getenv('enable_crawling') is not None else False
 aws_region = os.getenv('aws_region')
