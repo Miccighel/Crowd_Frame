@@ -101,6 +101,7 @@
 			"enabled": true,
 			"path": ".cache",
 			"environment": "all"
-		}
+		},
+		"packageManager": "yarn"
 	}
 }
