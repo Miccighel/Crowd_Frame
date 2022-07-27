@@ -40,7 +40,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@angular/common", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
             ["@angular/compiler", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
             ["@angular/compiler-cli", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
-            ["@angular/core", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
+            ["@angular/core", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.1.0"],\
             ["@angular/elements", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
             ["@angular/forms", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
             ["@angular/material", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.4"],\
@@ -327,7 +327,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/__virtual__/@angular-animations-virtual-6f3f350393/0/cache/@angular-animations-npm-14.0.5-d811246b7f-42db47e630.zip/node_modules/@angular/animations/",\
           "packageDependencies": [\
             ["@angular/animations", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
-            ["@angular/core", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
+            ["@angular/core", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.1.0"],\
             ["@types/angular__core", null],\
             ["tslib", "npm:2.3.1"]\
           ],\
@@ -351,7 +351,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [\
             ["@angular/cdk", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.4"],\
             ["@angular/common", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
-            ["@angular/core", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
+            ["@angular/core", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.1.0"],\
             ["@types/angular__common", null],\
             ["@types/angular__core", null],\
             ["@types/rxjs", null],\
@@ -411,7 +411,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/__virtual__/@angular-common-virtual-2d2cb05cfc/0/cache/@angular-common-npm-14.0.5-22b9c27de1-021d97471b.zip/node_modules/@angular/common/",\
           "packageDependencies": [\
             ["@angular/common", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
-            ["@angular/core", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
+            ["@angular/core", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.1.0"],\
             ["@types/angular__core", null],\
             ["@types/rxjs", null],\
             ["rxjs", "npm:7.5.5"],\
@@ -438,7 +438,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/__virtual__/@angular-compiler-virtual-46ca0a44b4/0/cache/@angular-compiler-npm-14.0.5-b718a6c38d-846a3af83f.zip/node_modules/@angular/compiler/",\
           "packageDependencies": [\
             ["@angular/compiler", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
-            ["@angular/core", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
+            ["@angular/core", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.1.0"],\
             ["@types/angular__core", null],\
             ["tslib", "npm:2.3.1"]\
           ],\
@@ -486,17 +486,17 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]\
       ]],\
       ["@angular/core", [\
-        ["npm:14.0.5", {\
-          "packageLocation": "./.yarn/cache/@angular-core-npm-14.0.5-566e3b9b44-3a82e6687d.zip/node_modules/@angular/core/",\
+        ["npm:14.1.0", {\
+          "packageLocation": "./.yarn/cache/@angular-core-npm-14.1.0-b15e0e4a9e-cdd48c1634.zip/node_modules/@angular/core/",\
           "packageDependencies": [\
-            ["@angular/core", "npm:14.0.5"]\
+            ["@angular/core", "npm:14.1.0"]\
           ],\
           "linkType": "SOFT"\
         }],\
-        ["virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5", {\
-          "packageLocation": "./.yarn/__virtual__/@angular-core-virtual-85a02f02f1/0/cache/@angular-core-npm-14.0.5-566e3b9b44-3a82e6687d.zip/node_modules/@angular/core/",\
+        ["virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.1.0", {\
+          "packageLocation": "./.yarn/__virtual__/@angular-core-virtual-b5a22d418f/0/cache/@angular-core-npm-14.1.0-b15e0e4a9e-cdd48c1634.zip/node_modules/@angular/core/",\
           "packageDependencies": [\
-            ["@angular/core", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
+            ["@angular/core", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.1.0"],\
             ["@types/rxjs", null],\
             ["@types/zone.js", null],\
             ["rxjs", "npm:7.5.5"],\
@@ -524,7 +524,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/__virtual__/@angular-elements-virtual-5d252de66c/0/cache/@angular-elements-npm-14.0.5-41a04516af-feadd68aeb.zip/node_modules/@angular/elements/",\
           "packageDependencies": [\
             ["@angular/elements", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
-            ["@angular/core", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
+            ["@angular/core", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.1.0"],\
             ["@types/angular__core", null],\
             ["@types/rxjs", null],\
             ["rxjs", "npm:7.5.5"],\
@@ -552,7 +552,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [\
             ["@angular/forms", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
             ["@angular/common", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
-            ["@angular/core", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
+            ["@angular/core", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.1.0"],\
             ["@angular/platform-browser", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
             ["@types/angular__common", null],\
             ["@types/angular__core", null],\
@@ -589,7 +589,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@angular/animations", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
             ["@angular/cdk", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.4"],\
             ["@angular/common", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
-            ["@angular/core", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
+            ["@angular/core", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.1.0"],\
             ["@angular/forms", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
             ["@angular/platform-browser", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
             ["@types/angular__animations", null],\
@@ -635,7 +635,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@angular/platform-browser", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
             ["@angular/animations", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
             ["@angular/common", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
-            ["@angular/core", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
+            ["@angular/core", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.1.0"],\
             ["@types/angular__animations", null],\
             ["@types/angular__common", null],\
             ["@types/angular__core", null],\
@@ -666,7 +666,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@angular/platform-browser-dynamic", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
             ["@angular/common", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
             ["@angular/compiler", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
-            ["@angular/core", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
+            ["@angular/core", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.1.0"],\
             ["@angular/platform-browser", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
             ["@types/angular__common", null],\
             ["@types/angular__compiler", null],\
@@ -700,7 +700,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [\
             ["@angular/router", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
             ["@angular/common", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
-            ["@angular/core", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
+            ["@angular/core", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.1.0"],\
             ["@angular/platform-browser", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
             ["@types/angular__common", null],\
             ["@types/angular__core", null],\
@@ -3916,7 +3916,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [\
             ["@kolkov/angular-editor", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:2.2.0-beta.0"],\
             ["@angular/common", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
-            ["@angular/core", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
+            ["@angular/core", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.1.0"],\
             ["@types/angular__common", null],\
             ["@types/angular__core", null],\
             ["tslib", "npm:2.3.1"]\
@@ -5907,7 +5907,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@angular/common", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
             ["@angular/compiler", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
             ["@angular/compiler-cli", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
-            ["@angular/core", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
+            ["@angular/core", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.1.0"],\
             ["@angular/elements", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
             ["@angular/forms", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
             ["@angular/material", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.4"],\
@@ -9065,7 +9065,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [\
             ["ngx-color-picker", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:12.0.1"],\
             ["@angular/common", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
-            ["@angular/core", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
+            ["@angular/core", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.1.0"],\
             ["@angular/forms", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
             ["@types/angular__common", null],\
             ["@types/angular__core", null],\
@@ -9106,7 +9106,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [\
             ["ngx-device-detector", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:4.0.0"],\
             ["@angular/common", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
-            ["@angular/core", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
+            ["@angular/core", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.1.0"],\
             ["@types/angular__common", null],\
             ["@types/angular__core", null],\
             ["tslib", "npm:2.3.1"]\
@@ -9133,7 +9133,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [\
             ["ngx-file-helpers", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:7.0.0"],\
             ["@angular/common", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
-            ["@angular/core", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
+            ["@angular/core", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.1.0"],\
             ["@types/angular__common", null],\
             ["@types/angular__core", null],\
             ["tslib", "npm:2.3.1"]\
@@ -9160,7 +9160,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [\
             ["ngx-ui-loader", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:13.0.0"],\
             ["@angular/common", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
-            ["@angular/core", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.0.5"],\
+            ["@angular/core", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.1.0"],\
             ["@types/angular__common", null],\
             ["@types/angular__core", null],\
             ["tslib", "npm:2.3.1"]\
