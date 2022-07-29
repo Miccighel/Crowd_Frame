@@ -3,14 +3,15 @@ import {Question} from "./question";
 
 export class Questionnaire {
 
-    index: number;
+    index: number
 
-    type: string;
-    description?: string;
-    allow_back?: boolean;
-    position?: string;
-    mappings: Array<Mapping>;
-    questions: Array<Question>;
+    name: string
+    type: string
+    description?: string
+    allow_back?: boolean
+    position?: string
+    mappings: Array<Mapping>
+    questions: Array<Question>
 
     treeOriginal: TreeModel.Node<JSON>
     treeCut: TreeModel.Node<JSON>
@@ -23,6 +24,7 @@ export class Questionnaire {
         data: JSON
     ) {
         this.index = index;
+        this.name = data['name'] ? data["name"] : null;
         this.description = data['description'] ? data["description"] : null;
         this.position = data['position'] ? data["position"] : null;
         this.allow_back = data['allow_back'] ? data["allow_back"] : false;

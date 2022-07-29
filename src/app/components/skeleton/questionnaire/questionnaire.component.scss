@@ -46,12 +46,7 @@ mat-form-field {
 }
 
 .questionnaire-description {
-  font-size: 1.4em;
-  font-weight: normal;
   margin-bottom: 1%;
-  h3 {
-    margin-top: 0;
-  }
 }
 
 .question-free-text-tall {
@@ -114,7 +109,6 @@ mat-form-field {
 
 .questionnaire-matrix .matrix-header {
   padding-top: 1.5%;
-  padding-bottom: 1.5%;
   border: 0;
   box-shadow: 0 0 0 0;
   border-radius: 0;
@@ -129,7 +123,6 @@ mat-form-field {
 
 .questionnaire-matrix .matrix-header-text {
   font-size: 1.2em;
-  font-weight: normal;
 }
 
 .questionnaire-matrix .matrix-header div {

@@ -13,6 +13,9 @@
 
 .dimension-content {
   flex-grow: 1;
+  p {
+    font-size: 1.2em;
+  }
 }
 
 .dimension-name {
@@ -145,8 +148,14 @@
   margin-bottom: 0;
 }
 
-.dimension h2, .instructions h2 {
-  font-weight: lighter;
+.dimension h2 {
+  font-weight: normal;
+  margin-bottom: 1%;
+  margin-top: 1%;
+}
+
+.instructions h2 {
+  font-weight: normal;
 }
 
 .dimension-matrix .dimension-separate {

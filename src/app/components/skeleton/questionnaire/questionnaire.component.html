@@ -117,7 +117,7 @@
             <!-- Standard questionnaire markup -->
             <mat-card-content *ngIf="questionnaire.type=='standard'" class="questionnaire-standard">
                 <div class="questionnaire-description" *ngIf="questionnaire.description">
-                    <h3 *ngIf="questionnaire.description">{{questionnaire.description}}</h3>
+                    <p class="question-text" *ngIf="questionnaire.description">{{questionnaire.description}}</p>
                 </div>
                 <ng-container>
                     <ng-container *ngFor="let question of this.questionnaire.treeCut.model.questions">
@@ -130,6 +130,9 @@
 
             <!-- CRT questionnaire markup -->
             <mat-card-content *ngIf="questionnaire.type=='crt'">
+                <div class="questionnaire-description" *ngIf="questionnaire.description">
+                    <p class="question-text" *ngIf="questionnaire.description">{{questionnaire.description}}</p>
+                </div>
                 <div *ngFor="let question of questionnaire.questions; let j=index" class="question-box">
                     <p class="question-text">{{question.text}}</p>
                     <mat-form-field appearance="fill" class="questionnaire-value">
@@ -144,11 +147,13 @@
 
             <!-- Likert questionnaire markup -->
             <mat-card-content *ngIf="questionnaire.type=='likert'" class="questionnaire-matrix">
-                <p *ngIf="questionnaire.description">{{questionnaire.description}}</p>
+                <div class="questionnaire-description" *ngIf="questionnaire.description">
+                    <p class="question-text" *ngIf="questionnaire.description">{{questionnaire.description}}</p>
+                </div>
                 <div class="matrix-header">
                     <div></div>
                     <div *ngFor="let mapping of questionnaire.mappings; let k=index">
-                        <span class="matrix-header-text">{{mapping.label}}</span>
+                        <strong class="matrix-header-text">{{mapping.label}}</strong>
                     </div>
                 </div>
                 <mat-radio-group aria-labelledby="radio-button-label" *ngFor="let question of questionnaire.questions; let m=index" formControlName="{{question.name}}_answer">
