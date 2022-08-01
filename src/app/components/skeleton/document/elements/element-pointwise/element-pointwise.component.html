@@ -1,6 +1,3 @@
-<div *ngIf="this.task.instructionsEvaluationElement" class="evaluation-instructions">
-    <h2>{{this.task.instructionsEvaluationElement.label}} - {{this.task.instructionsEvaluationElement.text}}</h2>
-</div>
 <div class="statement" *ngIf="(this.task.settings.modality=='pointwise')">
     <ng-container *ngFor="let attribute of this.task.settings.attributes; let k=index">
         <div *ngIf="attribute.show" class="attribute">

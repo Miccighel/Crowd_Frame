@@ -918,7 +918,7 @@ export class SkeletonComponent implements OnInit {
         if (this.task.settings.annotator) {
             if (this.task.settings.annotator.type == 'options') {
                 if (completedElementType == 'S') {
-                    this.documentComponent[completedElementIndex].annotatorOptions.handleNotes()
+                    this.documentComponent.get(completedElementIndex).annotatorOptions.first.handleNotes()
                 }
             }
         }
@@ -1000,7 +1000,7 @@ export class SkeletonComponent implements OnInit {
         survey.setAttribute("style", `width: ${questionnairePercentual}%;background-color:#d171f5; text-align: center; float:left; color: white;line-height: 2em; margin: 0 0.2em; border-radius: 2em;`);
         survey.innerText = "Questionnaires"
         statements.setAttribute("style", `width: ${elementPercentual}%;background-color:#59acf5; text-align: center; float:left; color: white;line-height: 2em; margin: 0 0.2em; border-radius: 2em;`);
-        statements.innerText = "Statements"
+        statements.innerText = "Reviews"
         submit.setAttribute("style", `width: ${submitPercentual}%;background-color:#2ca841; text-align: center; float:left; color: white;line-height: 2em; margin: 0 0.2em; border-radius: 2em;`);
         submit.innerText = "End"
         bar.setAttribute("style", `width: 98%; display:flex; margin:auto`);

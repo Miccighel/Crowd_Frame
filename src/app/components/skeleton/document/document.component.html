@@ -4,12 +4,10 @@
 
             <!-- Evaluation instructions markup -->
             <div *ngIf="this.task.instructionsEvaluationGeneralAmount>0" class="evaluation-instructions">
-                <mat-divider [inset]="true"></mat-divider>
-                <h2>Instructions</h2>
-                <mat-divider [inset]="true"></mat-divider>
+                <h2>{{this.task.instructionsEvaluationElement.label}} - {{this.task.instructionsEvaluationElement.text}}</h2>
                 <div *ngFor="let instruction of this.task.instructionsEvaluationGeneral">
                     <h2>{{instruction.caption}}</h2>
-                    <div [innerHTML]="instruction.text"></div>
+                    <div><p>{{instruction.text}}</p></div>
                 </div>
             </div>
 
