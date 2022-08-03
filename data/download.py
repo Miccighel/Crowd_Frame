@@ -34,8 +34,6 @@ from rich.console import Console
 import collections
 import warnings
 
-from yarl import URL
-
 pd.set_option('display.max_columns', None)
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -63,6 +61,7 @@ aws_private_bucket = os.getenv('aws_private_bucket')
 aws_deploy_bucket = os.getenv('aws_deploy_bucket')
 toloka_oauth_token = os.getenv('toloka_oauth_token')
 prolific_completion_code = os.getenv('prolific_completion_code')
+prolific_api_token = os.getenv('prolific_api_token')
 budget_limit = os.getenv('budget_limit')
 bing_api_key = os.getenv('bing_api_key')
 ip_info_token = os.getenv('ip_info_token')
@@ -82,6 +81,7 @@ df_log_partial_folder_path = f"{models_path}Logs-Partial/"
 task_config_folder = f"{folder_result_path}/Task/"
 df_mturk_data_path = f"{models_path}workers_mturk_data.csv"
 df_toloka_data_path = f"{models_path}workers_toloka_data.csv"
+df_prolific_data_path = f"{models_path}workers_prolific_data.csv"
 df_acl_path = f"{models_path}workers_acl.csv"
 df_info_path = f"{models_path}workers_info.csv"
 df_log_path = f"{models_path}workers_logs.csv"
@@ -797,7 +797,6 @@ if 'toloka' in platforms:
 
 console.rule(f"{step_index} - Building [cyan on white]workers_info[/cyan on white] Dataframe")
 step_index = step_index + 1
-
 
 def merge_dicts(dicts):
     d = {}
@@ -1563,14 +1562,16 @@ if not os.path.exists(df_quest_path):
         dataframe["try_current"] = dataframe["try_current"].astype(int)
         dataframe["questionnaire_allow_back"].replace({0.0: False, 1.0: True}, inplace=True)
         dataframe["questionnaire_allow_back"] = dataframe["questionnaire_allow_back"].astype(bool)
-        dataframe["question_attribute_required"].replace({0.0: False, 1.0: True}, inplace=True)
         dataframe["question_attribute_required"] = dataframe["question_attribute_required"].astype(bool)
-        dataframe["question_attribute_freeText"].replace({0.0: False, 1.0: True}, inplace=True)
-        dataframe["question_attribute_freeText"] = dataframe["question_attribute_freeText"].astype(bool)
-        dataframe["question_attribute_dropped"].replace({0.0: False, 1.0: True}, inplace=True)
-        dataframe["question_attribute_dropped"] = dataframe["question_attribute_dropped"].astype(bool)
-        dataframe["question_attribute_showDetail"].replace({0.0: False, 1.0: True}, inplace=True)
-        dataframe["question_attribute_showDetail"] = dataframe["question_attribute_showDetail"].astype(bool)
+        if 'question_attribute_freeText' in dataframe:
+            dataframe["question_attribute_freeText"].replace({0.0: False, 1.0: True}, inplace=True)
+            dataframe["question_attribute_freeText"] = dataframe["question_attribute_freeText"].astype(bool)
+        if 'question_attribute_dropped' in dataframe:
+            dataframe["question_attribute_dropped"].replace({0.0: False, 1.0: True}, inplace=True)
+            dataframe["question_attribute_dropped"] = dataframe["question_attribute_dropped"].astype(bool)
+        if 'question_attribute_showDetail' in dataframe:
+            dataframe["question_attribute_showDetail"].replace({0.0: False, 1.0: True}, inplace=True)
+            dataframe["question_attribute_showDetail"] = dataframe["question_attribute_showDetail"].astype(bool)
         dataframe.to_csv(df_quest_path, index=False)
         console.print(f"Dataframe shape: {dataframe.shape}")
         console.print(f"Workers questionnaire dataframe serialized at path: [cyan on white]{df_quest_path}")
@@ -1870,35 +1871,38 @@ if not os.path.exists(df_notes_path):
                     row['time_submit_parsed'] = find_date_string(row['time_submit'])
 
                     current_notes = document_data['serialization']['notes']
-                    for note_current in current_notes:
-                        row['document_index'] = note_current['document_index']
-                        row['attribute_index'] = note_current['attribute_index']
-                        row['note_deleted'] = note_current['deleted'] == True
-                        row['note_ignored'] = note_current['ignored'] == True
-                        row['note_option_color'] = note_current['color']
-                        row['note_option_label'] = note_current['option']
-                        row['note_container_id'] = note_current['container_id']
-                        row['note_index_start'] = int(note_current['index_start'])
-                        row['note_index_end'] = int(note_current['index_end'])
-                        row['note_timestamp_created'] = note_current['timestamp_created']
-                        date = find_date_string(note_current['timestamp_created'])
-                        row['note_timestamp_created_parsed'] = date
-                        if note_current['timestamp_deleted'] == 0:
-                            row['note_timestamp_deleted'] = np.nan
-                            row['note_timestamp_deleted_parsed'] = np.nan
-                        else:
-                            row['note_timestamp_deleted'] = note_current['timestamp_deleted']
-                            date = find_date_string(note_current['timestamp_deleted'])
-                            row['note_timestamp_deleted_parsed'] = date
-                        row['note_base_url'] = note_current['base_uri']
-                        row['note_text_current'] = note_current['current_text']
-                        row['note_text_curren'] = note_current['current_text']
-                        row['note_text_raw'] = note_current['raw_text']
-                        row['note_text_left'] = note_current['text_left']
-                        row['note_text_right'] = note_current['text_right']
 
-                    if ('time_submit') in row:
-                        dataframe = dataframe.append(row, ignore_index=True)
+                    if len(current_notes) > 0:
+
+                        for note_current in current_notes:
+                            row['document_index'] = note_current['document_index']
+                            row['attribute_index'] = note_current['attribute_index']
+                            row['note_deleted'] = note_current['deleted'] == True
+                            row['note_ignored'] = note_current['ignored'] == True
+                            row['note_option_color'] = note_current['color']
+                            row['note_option_label'] = note_current['option']
+                            row['note_container_id'] = note_current['container_id']
+                            row['note_index_start'] = int(note_current['index_start'])
+                            row['note_index_end'] = int(note_current['index_end'])
+                            row['note_timestamp_created'] = note_current['timestamp_created']
+                            date = find_date_string(note_current['timestamp_created'])
+                            row['note_timestamp_created_parsed'] = date
+                            if note_current['timestamp_deleted'] == 0:
+                                row['note_timestamp_deleted'] = np.nan
+                                row['note_timestamp_deleted_parsed'] = np.nan
+                            else:
+                                row['note_timestamp_deleted'] = note_current['timestamp_deleted']
+                                date = find_date_string(note_current['timestamp_deleted'])
+                                row['note_timestamp_deleted_parsed'] = date
+                            row['note_base_url'] = note_current['base_uri']
+                            row['note_text_current'] = note_current['current_text']
+                            row['note_text_curren'] = note_current['current_text']
+                            row['note_text_raw'] = note_current['raw_text']
+                            row['note_text_left'] = note_current['text_left']
+                            row['note_text_right'] = note_current['text_right']
+
+                        if ('time_submit') in row:
+                            dataframe = dataframe.append(row, ignore_index=True)
 
     if dataframe.shape[0] > 0:
         empty_cols = [col for col in dataframe.columns if dataframe[col].isnull().all()]
