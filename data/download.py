@@ -27,6 +27,7 @@ import uuid
 import toloka.client as toloka
 from datetime import datetime
 from bs4 import BeautifulSoup
+import datefinder
 from dotenv import load_dotenv
 import xml.etree.ElementTree as Xml
 from rich.console import Console
@@ -87,6 +88,7 @@ df_log_path = f"{models_path}workers_logs.csv"
 df_quest_path = f"{models_path}workers_questionnaire.csv"
 df_comm_path = f"{models_path}workers_comments.csv"
 df_data_path = f"{models_path}workers_answers.csv"
+df_notes_path = f"{models_path}workers_notes.csv"
 df_dim_path = f"{models_path}workers_dimensions_selection.csv"
 df_url_path = f"{models_path}workers_urls.csv"
 df_crawl_path = f"{models_path}workers_crawling.csv"
@@ -147,6 +149,23 @@ def camel_to_snake(name):
         re.sub('([A-Z][a-z]+)', r' \1',
             re.sub('([A-Z]+)', r' \1',
                 name.replace('-', ' '))).split()).lower()
+
+
+def find_date_string(date, seconds=False):
+    if type(date)==int or type(date)==float:
+        if seconds:
+            date_raw = str(datetime.fromtimestamp(date))
+        else:
+            date_raw = str(datetime.fromtimestamp(date//1000))
+    else:
+        date_raw = date
+    date_parsed = datefinder.find_dates(date_raw)
+    for date_current in date_parsed:
+        date_string = str(date_current)
+        if '+' in date_string:
+            date_parts = date_string.split("+")
+            date_string = ' '.join(date_parts)
+        return date_string
 
 
 step_index = 1
@@ -452,6 +471,12 @@ if not os.path.exists(df_acl_path):
                     for attribute, value in task.items():
                         if attribute != 'settings' and attribute != 'logger_server_endpoint' and attribute != 'messages':
                             row[attribute] = value
+                    if 'time_arrival' in row:
+                        row['time_arrival_parsed'] = find_date_string(row['time_arrival'])
+                    if 'time_completion' in row:
+                        row['time_completion_parsed'] = find_date_string(row['time_completion'])
+                    if 'time_removal' in row:
+                        row['time_removal_parsed'] = find_date_string(row['time_removal'])
 
             if acl_presence:
                 df_acl = df_acl.append(row, ignore_index=True)
@@ -820,7 +845,7 @@ def fetch_uag_data(worker_id, worker_uag):
                     url = f"https://api.ipgeolocation.io/user-agent?apiKey={ip_geolocation_api_key}"
                     response = requests.get(url, headers={'User-Agent': worker_uag})
                     if response.status_code != 200:
-                        raise ValueError(f"Request to Userstack UAG detection service (user-agent endpoint) failed with error code {response.status_code}. Remove of replace your `ip_geolocation_api_key`")
+                        raise ValueError(f"Request to IP Geolocation UAG detection service (user-agent endpoint) failed with error code {response.status_code}. Remove of replace your `ip_geolocation_api_key`")
                     else:
                         data_fetched = flatten(requests.get(url, headers={'User-Agent': worker_uag}).json())
                     ua_data.append(data_fetched)
@@ -1015,6 +1040,8 @@ column_names = [
     "type",
     "time_server",
     "time_client",
+    "time_server_parsed",
+    "time_client_parsed"
 ]
 counter = 0
 
@@ -1058,7 +1085,9 @@ if not os.path.exists(df_log_path):
                                 'task_started': task_started,
                                 'sequence': data_log['sequence'],
                                 'time_server': data_log['time_server'],
+                                'time_server_parsed': find_date_string(data_log['time_server']),
                                 'time_client': data_log['time_client'],
+                                'time_client_parsed': find_date_string(data_log['time_client']),
                                 'type': data_log['type'],
                             }
 
@@ -1210,9 +1239,11 @@ if not os.path.exists(df_log_path):
             dataframes_partial.append(partial_df)
     if len(dataframes_partial) > 0:
         dataframe = pd.concat(dataframes_partial, ignore_index=True)
+        empty_cols = [col for col in dataframe.columns if dataframe[col].isnull().all()]
+        dataframe.drop(empty_cols, axis=1, inplace=True)
         dataframe.sort_values(by=['worker_id', 'sequence'], ascending=True, inplace=True)
-        console.print(f"Log data found: [green]{len(dataframe)}")
         dataframe.to_csv(df_log_path, index=False)
+        console.print(f"Log data found: [green]{len(dataframe)}")
         console.print(f"Dataframe shape: {dataframe.shape}")
         console.print(f"Log data file serialized at path: [cyan on white]{df_log_path}")
     else:
@@ -1249,6 +1280,7 @@ def load_comment_col_names():
     columns.append("batch_name")
     columns.append("unit_id")
     columns.append("time_submit")
+    columns.append("time_submit_parsed")
     columns.append("try_current")
     columns.append("sequence_number")
     columns.append("text")
@@ -1297,12 +1329,14 @@ if not os.path.exists(df_comm_path):
                     if len(comment['serialization']['comment']) > 0:
                         row['try_current'] = comment['serialization']['info']['try']
                         row['time_submit'] = comment['time_submit']
+                        row['time_submit_parsed'] = find_date_string(row['time_submit'])
                         row['sequence_number'] = comment['serialization']['info']['sequence']
                         row['text'] = sanitize_string(comment['serialization']['comment'])
                         dataframe = dataframe.append(row, ignore_index=True)
 
     if dataframe.shape[0] > 0:
         empty_cols = [col for col in dataframe.columns if dataframe[col].isnull().all()]
+        dataframe.drop(empty_cols, axis=1, inplace=True)
         dataframe["paid"].replace({0.0: False, 1.0: True}, inplace=True)
         dataframe["paid"] = dataframe["paid"].astype(bool)
         dataframe.to_csv(df_comm_path, index=False)
@@ -1329,6 +1363,7 @@ def load_quest_col_names(questionnaires):
     columns.append("unit_id")
     columns.append("try_current")
     columns.append("time_submit")
+    columns.append("time_submit_parsed")
 
     for questionnaire in questionnaires:
         for attribute, value in questionnaire.items():
@@ -1479,6 +1514,7 @@ if not os.path.exists(df_quest_path):
                     row['batch_name'] = batch_name
                     row['unit_id'] = unit_id
                     row['time_submit'] = questionnaire_data['time_submit']
+                    row['time_submit_parsed'] = find_date_string(row['time_submit'])
 
                     questionnaire = questionnaires[questionnaire_data['serialization']['info']['index']]
                     questions = None
@@ -1521,8 +1557,10 @@ if not os.path.exists(df_quest_path):
 
     if dataframe.shape[0] > 0:
         empty_cols = [col for col in dataframe.columns if dataframe[col].isnull().all()]
+        dataframe.drop(empty_cols, axis=1, inplace=True)
         dataframe["paid"].replace({0.0: False, 1.0: True}, inplace=True)
         dataframe["paid"] = dataframe["paid"].astype(bool)
+        dataframe["try_current"] = dataframe["try_current"].astype(int)
         dataframe["questionnaire_allow_back"].replace({0.0: False, 1.0: True}, inplace=True)
         dataframe["questionnaire_allow_back"] = dataframe["questionnaire_allow_back"].astype(bool)
         dataframe["question_attribute_required"].replace({0.0: False, 1.0: True}, inplace=True)
@@ -1558,6 +1596,7 @@ def load_data_col_names(dimensions, documents):
     columns.append("try_last")
     columns.append("try_current")
     columns.append("time_submit")
+    columns.append("time_submit_parsed")
 
     for document in documents:
         currentAttributes = document.keys()
@@ -1641,6 +1680,7 @@ if not os.path.exists(df_data_path):
 
                     row['try_current'] = document_data['serialization']['info']['try']
                     row['time_submit'] = document_data['time_submit']
+                    row['time_submit_parsed'] = find_date_string(row['time_submit'])
 
                     if len(checks) > 0:
                         for check_data in checks:
@@ -1726,13 +1766,13 @@ if not os.path.exists(df_data_path):
                     if ('time_submit') in row:
                         dataframe = dataframe.append(row, ignore_index=True)
 
-    empty_cols = [col for col in dataframe.columns if dataframe[col].isnull().all()]
-    dataframe.drop(empty_cols, axis=1, inplace=True)
     if dataframe.shape[0] > 0:
         empty_cols = [col for col in dataframe.columns if dataframe[col].isnull().all()]
         dataframe.drop(empty_cols, axis=1, inplace=True)
         dataframe["paid"].replace({0.0: False, 1.0: True}, inplace=True)
         dataframe["paid"] = dataframe["paid"].astype(bool)
+        dataframe["try_last"] = dataframe["try_last"].astype(int)
+        dataframe["try_current"] = dataframe["try_current"].astype(int)
         dataframe["global_outcome"] = dataframe["gold_checks"].astype(bool)
         dataframe["global_form_validity"] = dataframe["gold_checks"].astype(bool)
         dataframe["time_spent_check"] = dataframe["gold_checks"].astype(bool)
@@ -1751,6 +1791,141 @@ else:
     console.print(f"Workers dataframe [yellow]already detected[/yellow], skipping creation")
     console.print(f"Serialized at path: [cyan on white]{df_data_path}")
 
+
+console.rule(f"{step_index} - Building [cyan on white]workers_notes[/cyan on white] dataframe")
+step_index = step_index + 1
+
+def load_notes_col_names():
+    columns = []
+
+    columns.append("worker_id")
+    columns.append("paid")
+    columns.append("task_id")
+    columns.append("batch_name")
+    columns.append("unit_id")
+    columns.append("try_last")
+    columns.append("try_current")
+    columns.append("time_submit")
+    columns.append("time_submit_parsed")
+
+    columns.append("document_index")
+    columns.append("attribute_index")
+
+    columns.append("note_deleted")
+    columns.append("note_ignored")
+    columns.append("note_option_color")
+    columns.append("note_option_label")
+    columns.append("note_container_id")
+    columns.append("note_index_start")
+    columns.append("note_index_end")
+    columns.append("note_timestamp_created")
+    columns.append("note_timestamp_created_parsed")
+    columns.append("note_timestamp_deleted")
+    columns.append("note_timestamp_deleted_parsed")
+    columns.append("note_base_url")
+    columns.append("note_text_current")
+    columns.append("note_text_raw")
+    columns.append("note_text_left")
+    columns.append("note_text_right")
+    columns.append("note_existing_notes")
+
+    return columns
+
+dataframe = pd.DataFrame()
+
+if not os.path.exists(df_notes_path):
+
+    for index, acl_record in tqdm.tqdm(df_acl.iterrows(), total=df_acl.shape[0]):
+
+        worker_id = acl_record['worker_id']
+        worker_paid = acl_record['paid']
+        snapshots = find_snapshost_for_task(acl_record)
+
+        for worker_snapshot in snapshots:
+
+            task = worker_snapshot['task']
+            documents = worker_snapshot['documents']
+            data_partial = worker_snapshot['data_partial']
+
+            column_names = load_notes_col_names()
+
+            for column in column_names:
+                if column not in dataframe:
+                    dataframe[column] = np.nan
+
+            if len(data_partial) > 0:
+
+                row = {}
+                row['worker_id'] = worker_id
+                row['paid'] = worker_paid
+
+                for attribute, value in task.items():
+                    if attribute in column_names:
+                        row[attribute] = value
+
+                for document_data in data_partial['documents_answers']:
+
+                    row['try_current'] = document_data['serialization']['info']['try']
+                    row['time_submit'] = document_data['time_submit']
+                    row['time_submit_parsed'] = find_date_string(row['time_submit'])
+
+                    current_notes = document_data['serialization']['notes']
+                    for note_current in current_notes:
+                        row['document_index'] = note_current['document_index']
+                        row['attribute_index'] = note_current['attribute_index']
+                        row['note_deleted'] = note_current['deleted'] == True
+                        row['note_ignored'] = note_current['ignored'] == True
+                        row['note_option_color'] = note_current['color']
+                        row['note_option_label'] = note_current['option']
+                        row['note_container_id'] = note_current['container_id']
+                        row['note_index_start'] = int(note_current['index_start'])
+                        row['note_index_end'] = int(note_current['index_end'])
+                        row['note_timestamp_created'] = note_current['timestamp_created']
+                        date = find_date_string(note_current['timestamp_created'])
+                        row['note_timestamp_created_parsed'] = date
+                        if note_current['timestamp_deleted'] == 0:
+                            row['note_timestamp_deleted'] = np.nan
+                            row['note_timestamp_deleted_parsed'] = np.nan
+                        else:
+                            row['note_timestamp_deleted'] = note_current['timestamp_deleted']
+                            date = find_date_string(note_current['timestamp_deleted'])
+                            row['note_timestamp_deleted_parsed'] = date
+                        row['note_base_url'] = note_current['base_uri']
+                        row['note_text_current'] = note_current['current_text']
+                        row['note_text_curren'] = note_current['current_text']
+                        row['note_text_raw'] = note_current['raw_text']
+                        row['note_text_left'] = note_current['text_left']
+                        row['note_text_right'] = note_current['text_right']
+
+                    if ('time_submit') in row:
+                        dataframe = dataframe.append(row, ignore_index=True)
+
+    if dataframe.shape[0] > 0:
+        empty_cols = [col for col in dataframe.columns if dataframe[col].isnull().all()]
+        dataframe.drop(empty_cols, axis=1, inplace=True)
+        dataframe["paid"].replace({0.0: False, 1.0: True}, inplace=True)
+        dataframe["paid"] = dataframe["paid"].astype(bool)
+        dataframe["try_last"] = dataframe["try_last"].astype(int)
+        dataframe["try_current"] = dataframe["try_current"].astype(int)
+        dataframe["attribute_index"] = dataframe["attribute_index"].astype(int)
+        dataframe["document_index"] = dataframe["document_index"].astype(int)
+        dataframe["note_deleted"] = dataframe["document_index"].astype(bool)
+        dataframe["note_ignored"] = dataframe["document_index"].astype(bool)
+        dataframe["note_index_start"] = dataframe["note_index_start"].astype(int)
+        dataframe["note_index_end"] = dataframe["note_index_end"].astype(int)
+        dataframe.drop_duplicates(inplace=True)
+        dataframe.to_csv(df_notes_path, index=False)
+        console.print(f"Dataframe shape: {dataframe.shape}")
+        console.print(f"Workers data dataframe serialized at path: [cyan on white]{df_notes_path}")
+    else:
+        console.print(f"Dataframe shape: {dataframe.shape}")
+        console.print(f"Workers data dataframe [yellow]empty[/yellow], dataframe not serialized.")
+
+else:
+
+    console.print(f"Workers dataframe [yellow]already detected[/yellow], skipping creation")
+    console.print(f"Serialized at path: [cyan on white]{df_notes_path}")
+
 console.rule(f"{step_index} - Building [cyan on white]workers_dimensions_selection[/cyan on white] dataframe")
 step_index = step_index + 1
 
@@ -1768,17 +1943,20 @@ dataframe = pd.DataFrame(columns=[
     'dimension_index',
     'dimension_name',
     'timestamp_start',
+    'timestamp_start_parsed',
     'selection_index',
     'selection_value',
     'selection_label',
     'selection_timestamp',
+    'selection_timestamp_parsed',
     'selection_time_elapsed',
     'timestamp_end',
+    'timestamp_end_parsed',
     'document_index',
     'document_id'
 ])
-dataframe['try_last'] = dataframe['try_last'].astype(float)
-dataframe['try_current'] = dataframe['try_current'].astype(float)
+dataframe['try_last'] = dataframe['try_last'].astype(int)
+dataframe['try_current'] = dataframe['try_current'].astype(int)
 
 
 def parse_dimensions_selected(df, worker_id, worker_paid, task, info, documents, dimensions, dimensions_selected_data, timestamp_start, timestamp_end):
@@ -1815,12 +1993,15 @@ def parse_dimensions_selected(df, worker_id, worker_paid, task, info, documents,
                 'dimension_index': dimension_current['dimension'],
                 'dimension_name': dimension_data['name'],
                 'timestamp_start': timestamp_start,
+                'timestamp_start_parsed': find_date_string(timestamp_start, seconds=True),
                 'selection_index': dimension_current['index'],
                 'selection_value': dimension_current['value'],
                 'selection_label': label,
                 'selection_timestamp': dimension_current['timestamp'],
+                'selection_timestamp_parsed': find_date_string(dimension_current['timestamp'], seconds=True),
                 'selection_time_elapsed': time_elapsed,
-                'timestamp_end': timestamp_end
+                'timestamp_end': timestamp_end,
+                'timestamp_end_parsed': find_date_string(timestamp_end, seconds=True)
             }
             df = df.append(row, ignore_index=True)
 
@@ -1870,6 +2051,13 @@ if not os.path.exists(df_dim_path) and os.path.exists(df_data_path):
     dataframe.drop_duplicates(inplace=True)
 
     if dataframe.shape[0] > 0:
+        empty_cols = [col for col in dataframe.columns if dataframe[col].isnull().all()]
+        dataframe.drop(empty_cols, axis=1, inplace=True)
+        dataframe["paid"].replace({0.0: False, 1.0: True}, inplace=True)
+        dataframe["paid"] = dataframe["paid"].astype(bool)
+        dataframe["try_last"] = dataframe["try_last"].astype(int)
+        dataframe["try_current"] = dataframe["try_current"].astype(int)
+        dataframe.drop_duplicates(inplace=True)
         dataframe.to_csv(df_dim_path, index=False)
         console.print(f"Dataframe shape: {dataframe.shape}")
         console.print(f"Dimension analysis dataframe serialized at path: [cyan on white]{df_dim_path}")
@@ -1900,6 +2088,7 @@ dataframe = pd.DataFrame(columns=[
     "query_index",
     "query_text",
     "query_timestamp",
+    "query_timestamp_parsed",
     "response_index",
     "response_url",
     "response_name",
@@ -1938,6 +2127,7 @@ def parse_responses(df, worker_id, worker_paid, task, info, queries, responses_r
                         query_text = query["text"]
             row['query_text'] = query_text
             row['query_timestamp'] = response_retrieved['timestamp']
+            row['query_timestamp_parsed'] = find_date_string(response_retrieved['timestamp'])
             for response_index, response in enumerate(response_retrieved['response']):
 
                 row["response_index"] = response_index
@@ -2012,6 +2202,13 @@ if not os.path.exists(df_url_path):
         dataframe.loc[dataframe['response_url'] == url, 'response_uuid'] = uuid.uuid4()
 
     if dataframe.shape[0] > 0:
+        empty_cols = [col for col in dataframe.columns if dataframe[col].isnull().all()]
+        dataframe.drop(empty_cols, axis=1, inplace=True)
+        dataframe["paid"].replace({0.0: False, 1.0: True}, inplace=True)
+        dataframe["paid"] = dataframe["paid"].astype(bool)
+        dataframe["try_last"] = dataframe["try_last"].astype(int)
+        dataframe["try_current"] = dataframe["try_current"].astype(int)
+        dataframe.drop_duplicates(inplace=True)
         dataframe.to_csv(df_url_path, index=False)
         console.print(f"Dataframe shape: {dataframe.shape}")
         console.print(f"Worker urls dataframe serialized at path: [cyan on white]{df_dim_path}")
@@ -2045,6 +2242,7 @@ if enable_crawling:
             'response_uuid',
             'response_url',
             'response_timestamp',
+            'response_timestamp_parsed',
             "response_error_code",
             'response_source_path',
             'response_metadata_path'
@@ -2133,10 +2331,12 @@ if enable_crawling:
             result_data = result['data']
             result_body = result['body']
             result_metadata_path = f"{crawling_path_metadata}{result_uuid}_metadata.json"
+            timestamp_now = datetime.now().timestamp()
             row = {
                 'response_uuid': result_uuid,
                 'response_url': result_url,
-                'response_timestamp': datetime.now().timestamp(),
+                'response_timestamp': timestamp_now,
+                'response_timestamp_parsed': find_date_string(timestamp_now),
                 "response_error_code": None,
                 'response_source_path': None,
                 'response_metadata_path': None,
@@ -2229,6 +2429,9 @@ if enable_crawling:
         df_crawl.to_csv(df_crawl_path, index=False)
         df_crawl_correct = df_crawl[df_crawl["response_error_code"].isnull()]
         df_crawl_incorrect = df_crawl[df_crawl["response_error_code"] != np.nan]
+        empty_cols = [col for col in dataframe.columns if dataframe[col].isnull().all()]
+        dataframe.drop(empty_cols, axis=1, inplace=True)
+        dataframe.drop_duplicates(inplace=True)
         console.print(f"Pages correctly crawled: [green]{len(df_crawl_correct)}/{unique_urls_amount}[/green] [cyan]({(len(df_crawl_correct) / unique_urls_amount) * 100}%)")
         console.print(f"Dataframe shape: {df_crawl.shape}")
         console.print(f"Worker crawling dataframe serialized at path: [cyan on white]{df_crawl_path}")

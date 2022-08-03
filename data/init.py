@@ -117,6 +117,7 @@ aws_private_bucket = os.getenv('aws_private_bucket')
 aws_deploy_bucket = os.getenv('aws_deploy_bucket')
 toloka_oauth_token = os.getenv('toloka_oauth_token')
 prolific_completion_code = os.getenv('prolific_completion_code')
+prolific_api_token = os.getenv('prolific_api_token')
 budget_limit = os.getenv('budget_limit')
 bing_api_key = os.getenv('bing_api_key')
 ip_info_token = os.getenv('ip_info_token')
@@ -146,7 +147,7 @@ if batch_prefix is None:
     batch_prefix = ''
 
 if platform is None:
-    platform = 'mturk'
+    platform = 'none'
 
 console.rule(f"{step_index} - Configuration policy")
 step_index = step_index + 1
@@ -1283,7 +1284,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     environment_dict = {
         "production": 'true',
         "configuration_local": 'false',
-        "platform": platform if platform else 'mturk',
+        "platform": platform if platform else 'none',
         "taskName": task_name,
         "batchName": batch_name,
         "region": aws_region,
