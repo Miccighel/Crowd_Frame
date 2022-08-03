@@ -7,10 +7,8 @@ import docker
 from mako.template import Template
 import os
 from datetime import datetime
-import pytz
+import requests
 import pandas as pd
-from dateutil import tz
-from datetime import timezone
 import subprocess
 import datefinder
 import random
@@ -129,6 +127,7 @@ table_logging_name = f"Crowd_Frame-{task_name}_{batch_name}_Logger"
 table_data_name = f"Crowd_Frame-{task_name}_{batch_name}_Data"
 table_acl_name = f"Crowd_Frame-{task_name}_{batch_name}_ACL"
 api_gateway_name = 'Crowd_Frame-API'
+link_public = f"https://{aws_deploy_bucket}.s3.{aws_region}.amazonaws.com/{task_name}/{batch_name}/index.html"
 
 if profile_name is None:
     profile_name = 'default'
@@ -1962,6 +1961,37 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         console.print(f"Tokens for {len(hits)} hits generated")
         console.print(f"Path: [italic]{mturk_tokens_file}")
 
+    if platform == 'prolific':
+
+        console.rule(f"{step_index} - Prolific Study Creation")
+        step_index = step_index + 1
+
+        status.start()
+        status.update(f"Creating draft study")
+
+        study_data = {
+            "name": task_title if task_title else task_name,
+            "internal_name": f"{task_name}_{batch_name}",
+            "description": "<Edit the study description here>",
+            "external_study_url": f"{link_public}?workerID={{%PROLIFIC_PID%}}&studyID={{%STUDY_ID%}}$sessionID={{%SESSION_ID}}&platform=prolific",
+            "prolific_id_option": "url_parameters",
+            "completion_code": "7EF9FD0D",
+            "completion_option": "url",
+            "total_available_places": len(hits),
+            "estimated_completion_time": 30,
+            "reward": 5,
+            "device_compatibility": [
+                "desktop"
+            ],
+            "peripheral_requirements": [],
+            "eligibility_requirements": []
+        }
+
+        response = requests.post(f"https://api.prolific.co/api/v1/studies/", json=study_data, headers={'Authorization': f"Token {prolific_api_token}", 'Content-Type': 'application/json'})
+
+        print(response.json())
+        assert False
+
     if platform == 'toloka':
         console.rule(f"{step_index} - Toloka HTML Interface")
         step_index = step_index + 1
@@ -2330,4 +2360,4 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     status.start()
     status.update(f"Writing")
 
-    console.print(f"[bold white on black]https://{aws_deploy_bucket}.s3.{aws_region}.amazonaws.com/{task_name}/{batch_name}/index.html")
+    console.print(f"[bold white on black]{link_public}")
