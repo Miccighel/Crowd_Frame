@@ -5,6 +5,7 @@ import json
 import os
 import shutil
 import sys
+import pprint
 from pathlib import Path
 from glob import glob
 from json import JSONDecodeError
@@ -147,16 +148,16 @@ def flatten(d, parent_key='', sep='_'):
 def camel_to_snake(name):
     return '_'.join(
         re.sub('([A-Z][a-z]+)', r' \1',
-            re.sub('([A-Z]+)', r' \1',
-                name.replace('-', ' '))).split()).lower()
+               re.sub('([A-Z]+)', r' \1',
+                      name.replace('-', ' '))).split()).lower()
 
 
 def find_date_string(date, seconds=False):
-    if type(date)==int or type(date)==float:
+    if type(date) == int or type(date) == float:
         if seconds:
             date_raw = str(datetime.fromtimestamp(date))
         else:
-            date_raw = str(datetime.fromtimestamp(date//1000))
+            date_raw = str(datetime.fromtimestamp(date // 1000))
     else:
         date_raw = date
     date_parsed = datefinder.find_dates(date_raw)
@@ -795,8 +796,171 @@ if 'toloka' in platforms:
         console.print(f"Toloka dataframe [yellow]already detected[/yellow], skipping creation")
         console.print(f"Serialized at path: [cyan on black]{df_toloka_data_path}")
 
+if 'prolific' in platforms:
+
+    console.rule(f"{step_index} - Fetching Prolific Data")
+    step_index = step_index + 1
+
+    column_names = [
+        "workspace_id",
+        "project_id",
+        "study_id",
+        "study_date_created",
+        "study_date_created_parsed",
+        "study_date_published",
+        "study_date_published_parsed",
+        "study_name",
+        "study_name_internal",
+        "study_completion_code",
+        "study_completion_option",
+        "study_completion_option_id",
+        "study_status",
+        "study_type",
+        "study_share_id",
+        "study_participant_eligible_count",
+        "study_participant_pool_total",
+        "study_number_of_submissions",
+        "study_places_taken",
+        "study_places_total_available",
+        "study_places_total_cost",
+        "study_fees_per_submission",
+        "study_fees_percentage",
+        "study_fees_percentage_service_margin",
+        "study_fees_percentage_vat",
+        "study_fees_discount_from_coupon",
+        "study_fees_stars_remaining",
+        "study_receipt",
+        "study_currency_code",
+        "study_reward",
+        "study_reward_average_per_hour",
+        "study_reward_average_per_hour_without_adjustment",
+        "study_reward_level_below_original_estimate",
+        "study_reward_level_below_prolific_min",
+        "study_reward_has_had_adjustment",
+        "study_time_allowed_maximum",
+        "study_time_average_taken",
+        "study_time_completion_estimated",
+        "study_time_allowed_maximum",
+        "study_is_reallocated",
+        "study_is_underpaying",
+        "study_privacy_notice",
+        "study_device_compatibility",
+        "study_peripheral_requirements",
+        "study_url_external",
+    ]
+
+    if not os.path.exists(df_prolific_data_path):
+
+        df_prolific = pd.DataFrame(columns=column_names)
+
+        study_list = requests.get(f"https://api.prolific.co/api/v1/studies/", headers={'Authorization': f"Token {prolific_api_token}"}).json()['results']
+
+        study_counter = 0
+        submissions_counter = 0
+
+        for study_data in study_list:
+
+            if task_name in study_data['internal_name']:
+                study_current = None
+                if batch_prefix is not None:
+                    if batch_prefix in study_data['internal_name']:
+                        study_current = study_data
+                else:
+                    study_current = study_data
+                if study_current is not None:
+
+                    console.print(f"Processing study [cyan]{study_current['internal_name']}")
+
+                    submissions_counter+=1
+
+                    if int(study_current['number_of_submissions']) > 0:
+
+                        study_current_add = requests.get(f"https://api.prolific.co/api/v1/studies/{study_current['id']}/", headers={'Authorization': f"Token {prolific_api_token}"}).json()
+                        del study_current_add['eligibility_requirements']
+                        del study_current_add['description']
+
+                        submissions_list = requests.get(f"https://api.prolific.co/api/v1/studies/{study_current['id']}/submissions/", headers={'Authorization': f"Token {prolific_api_token}"}).json()['results']
+
+                        row = {
+                            "workspace_id": study_current_add['workspace'],
+                            "project_id": study_current_add['project'],
+                            "study_id": study_current['id'],
+                            "study_date_created": study_current['date_created'],
+                            "study_date_created_parsed": find_date_string(study_current['date_created']),
+                            "study_date_published": study_current_add['published_at'] if study_current_add['published_at'] else np.nan,
+                            "study_date_published_parsed": find_date_string(study_current_add['published_at']) if study_current_add['published_at'] else np.nan,
+                            "study_name": study_current['name'],
+                            "study_name_internal": study_current['internal_name'],
+                            "study_completion_code": study_current_add['completion_code'],
+                            "study_completion_option": study_current_add['completion_option'],
+                            "study_completion_option_id": study_current_add['prolific_id_option'],
+                            "study_status": study_current['status'],
+                            "study_type": study_current['study_type'],
+                            "study_share_id": study_current_add['share_id'],
+                            "study_participant_eligible_count": int(study_current_add['eligible_participant_count']),
+                            "study_participant_pool_total": int(study_current_add['total_participant_pool']),
+                            "study_number_of_submissions": int(study_current['number_of_submissions']),
+                            "study_places_taken": int(study_current['places_taken']),
+                            "study_places_total_available": int(study_current['total_available_places']),
+                            "study_places_total_cost": float(study_current['total_cost']),
+                            "study_fees_per_submission": float(study_current_add['fees_per_submission']),
+                            "study_fees_percentage": float(study_current_add['fees_percentage']),
+                            "study_fees_percentage_service_margin": float(study_current_add['service_margin_percentage']),
+                            "study_fees_percentage_vat": float(study_current_add['vat_percentage']),
+                            "study_fees_discount_from_coupon": float(study_current_add['discount_from_coupons']),
+                            "study_fees_stars_remaining": float(study_current_add['stars_remaining']),
+                            "study_receipt": float(study_current_add['receipt']) if study_current_add['receipt'] else np.nan,
+                            "study_currency_code": study_current_add['currency_code'],
+                            "study_reward": float(study_current['reward']),
+                            "study_reward_minimum_per_hour": float(study_current_add['minimum_reward_per_hour']),
+                            "study_reward_average_per_hour": float(study_current_add['average_reward_per_hour']),
+                            "study_reward_average_per_hour_without_adjustment": float(study_current_add['average_reward_per_hour_without_adjustment']),
+                            "study_reward_has_had_adjustment": study_current_add['has_had_adjustment'],
+                            "study_reward_level_below_original_estimate": study_current['reward_level']['below_original_estimate'],
+                            "study_reward_level_below_prolific_min": study_current['reward_level']['below_prolific_min'],
+                            "study_time_allowed_maximum": float(study_current_add['maximum_allowed_time']),
+                            "study_time_average_taken": float(study_current_add['average_time_taken']),
+                            "study_time_completion_estimated": float(study_current_add['estimated_completion_time']),
+                            "study_is_reallocated": study_current['is_reallocated'],
+                            "study_is_underpaying": study_current['is_underpaying'],
+                            "study_privacy_notice": study_current['privacy_notice'],
+                            "study_publish_at": study_current['publish_at'],
+                            "study_device_compatibility": ':::'.join(study_current_add['device_compatibility']),
+                            "study_peripheral_requirements": ':::'.join(study_current_add['peripheral_requirements']) if len(study_current_add['peripheral_requirements'])>0 else np.nan,
+                            "study_url_external": study_current_add['external_study_url']
+                        }
+
+                        for submission_current in submissions_list:
+
+                            submissions_counter+=1
+
+                            pprint(submission_current)
+
+                            assert False
+
+                            ## submission data
+
+                            df_prolific.loc[len(df_prolific)] = row
+
+        console.print(f"Study found for the current task: [green]{study_counter}[/green]")
+        console.print(f"Submissions found for the current task: [green]{submissions_counter}[/green]")
+        console.print(f"Dataframe shape: {df_prolific.shape}")
+        if df_prolific.shape[0] > 0:
+            df_prolific.to_csv(df_prolific_data_path, index=False)
+            console.print(f"Prolific dataframe serialized at path: [cyan on black]{df_prolific_data_path}")
+        else:
+            console.print(f"Dataframe shape: {df_prolific.shape}")
+            console.print(f"Prolific dataframe [yellow]empty[/yellow], dataframe not serialized.")
+
+    else:
+
+        df_prolific = pd.read_csv(df_prolific_data_path)
+        console.print(f"Prolific dataframe [yellow]already detected[/yellow], skipping creation")
+        console.print(f"Serialized at path: [cyan on black]{df_prolific_data_path}")
+
 console.rule(f"{step_index} - Building [cyan on white]workers_info[/cyan on white] Dataframe")
 step_index = step_index + 1
+
 
 def merge_dicts(dicts):
     d = {}
@@ -1792,9 +1956,9 @@ else:
     console.print(f"Workers dataframe [yellow]already detected[/yellow], skipping creation")
     console.print(f"Serialized at path: [cyan on white]{df_data_path}")
 
-
 console.rule(f"{step_index} - Building [cyan on white]workers_notes[/cyan on white] dataframe")
 step_index = step_index + 1
+
 
 def load_notes_col_names():
     columns = []
@@ -1831,6 +1995,7 @@ def load_notes_col_names():
     columns.append("note_existing_notes")
 
     return columns
+
 
 dataframe = pd.DataFrame()
 
@@ -2261,6 +2426,7 @@ if enable_crawling:
     errors = []
     results = []
 
+
     async def gather_with_concurrency(n):
         semaphore = asyncio.Semaphore(n)
         session = aiohttp.ClientSession(connector=conn)
@@ -2424,6 +2590,7 @@ if enable_crawling:
                 df_crawl.to_csv(df_crawl_path, index=False)
 
         await session.close()
+
 
     loop = asyncio.get_event_loop()
     loop.run_until_complete(gather_with_concurrency(PARALLEL_REQUESTS))

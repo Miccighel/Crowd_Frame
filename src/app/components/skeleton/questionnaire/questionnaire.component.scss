@@ -125,6 +125,11 @@ mat-form-field {
   font-size: 1.2em;
 }
 
+.questionnaire-matrix .matrix-header-text-wide {
+  font-size: 1.2em;
+  padding-left: 20%;
+}
+
 .questionnaire-matrix .matrix-header div {
   text-align: center;
   flex: 1 0;
@@ -132,6 +137,10 @@ mat-form-field {
 
 .questionnaire-matrix .matrix-header > div:first-child {
   flex-basis: 20%;
+}
+
+.questionnaire-matrix .radio-button-wide {
+  padding-left: 20%;
 }
 
 .questionnaire-matrix mat-radio-group {

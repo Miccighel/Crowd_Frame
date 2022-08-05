@@ -153,7 +153,8 @@
                 <div class="matrix-header">
                     <div></div>
                     <div *ngFor="let mapping of questionnaire.mappings; let k=index">
-                        <strong class="matrix-header-text">{{mapping.label}}</strong>
+                        <strong *ngIf="!mapping.spacing" class="matrix-header-text">{{mapping.label}}</strong>
+                        <strong *ngIf="mapping.spacing" class="matrix-header-text-wide">{{mapping.label}}</strong>
                     </div>
                 </div>
                 <mat-radio-group aria-labelledby="radio-button-label" *ngFor="let question of questionnaire.questions; let m=index" formControlName="{{question.name}}_answer">
@@ -161,7 +162,8 @@
                         <p class="question-text">{{m + 1}} - {{question.text}}</p>
                     </div>
                     <div *ngFor="let mapping of questionnaire.mappings">
-                        <mat-radio-button class="radio-button" value="{{mapping.value}}"></mat-radio-button>
+                        <mat-radio-button *ngIf="!mapping.spacing" class="radio-button" value="{{mapping.value}}"></mat-radio-button>
+                        <mat-radio-button *ngIf="mapping.spacing" class="radio-button radio-button-wide" value="{{mapping.value}}"></mat-radio-button>
                     </div>
                 </mat-radio-group>
             </mat-card-content>

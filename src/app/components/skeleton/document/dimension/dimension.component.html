@@ -134,8 +134,6 @@
                             </div>
                         </div>
 
-                        <mat-divider></mat-divider>
-
                     </ng-container>
 
                 </div>
@@ -170,25 +168,25 @@
                             </mat-radio-group>
 
                             <!-- Dimension assessment fields markup -->
-                            <div *ngIf="dimension.scale" class="{{dimension.style.separator ? 'dimension-separate' : ''}}">
-                                <mat-radio-group aria-labelledby="radio-button-label" class="matrix-value" formControlName="{{(dimension.name).concat('_value')}}">
-                                    <div class="name-pretty" *ngIf="dimension.name_pretty">
+                            <div *ngIf="dimension.scale" class="{{dimension.style.separator ? ' dimension-separate' : ''}}">
+                                <mat-radio-group aria-labelledby="radio-button-label" formControlName="{{(dimension.name).concat('_value')}}">
+                                    <div class="matrix-value name-pretty" *ngIf="dimension.name_pretty">
                                         <p><strong><span *ngIf="!this.dimension.style.separator">{{i}} - </span>{{dimension.name_pretty}}</strong></p>
+                                        <ng-container *ngIf="dimension.description">
+                                            <div class="{{dimension.example ? '' : 'description-sub'}}" *ngIf="dimension.description.length>0">
+                                                <p>{{dimension.description}}</p>
+                                            </div>
+                                        </ng-container>
+                                        <ng-container *ngIf="dimension.example">
+                                            <div *ngIf="dimension.example.length>0" class="description-sub">
+                                                <i>{{dimension.example}}</i>
+                                            </div>
+                                        </ng-container>
                                     </div>
                                     <div *ngFor="let mapping of dimension.scale.mapping; let k=index">
                                         <mat-radio-button class="radio-button" value="{{mapping.value}}" (change)="this.task.storeDimensionValue($event, documentIndex,dimension.index)"></mat-radio-button>
                                     </div>
                                 </mat-radio-group>
-                                <ng-container *ngIf="dimension.description">
-                                    <div class="{{dimension.example ? '' : 'description-sub'}}" *ngIf="dimension.description.length>0">
-                                        <p>{{dimension.description}}</p>
-                                    </div>
-                                </ng-container>
-                                <ng-container *ngIf="dimension.example">
-                                    <div *ngIf="dimension.example.length>0" class="description-sub">
-                                        <i>{{dimension.example}}</i>
-                                    </div>
-                                </ng-container>
                             </div>
                         </div>
 

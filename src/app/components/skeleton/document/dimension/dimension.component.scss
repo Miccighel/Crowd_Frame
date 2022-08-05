@@ -57,7 +57,7 @@
 }
 
 .dimension-matrix-multiple {
-  margin-bottom: 2em;
+  margin-bottom: 1em;
 }
 
 .dimension-matrix-container {
@@ -114,9 +114,6 @@
   p {
     margin-top: 0;
   }
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-  margin: 0px 0 10px 0px;
-  font-size: 1.1em;
   padding: 10px 15px 5px 0px;
 }
 
@@ -124,24 +121,14 @@
   p {
     margin-top: 0;
     text-align: left;
+  }
+  strong {
     font-size: initial;
   }
 }
 
-.dimension-matrix mat-radio-group > div p {
-  font-size: initial;
-}
-
-.dimension-matrix mat-radio-group > div i {
-  font-size: initial;
-}
-
 .dimension-matrix mat-radio-group > div {
   text-align: center;
-}
-
-.dimension-matrix .evaluation-instructions {
-  margin-bottom: 2%;
 }
 
 .dimension-matrix p {
@@ -160,6 +147,10 @@
 
 .dimension-matrix .dimension-separate {
   background-color: #F8F8F8;
+}
+
+.dimension-matrix .matrix-value {
+  display: inline-block;
 }
 
 .dimension-counter {

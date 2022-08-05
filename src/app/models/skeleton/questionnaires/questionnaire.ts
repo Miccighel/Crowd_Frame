@@ -115,6 +115,7 @@ export class Mapping {
     label: string;
     key: string;
     value: string;
+    spacing: string;
 
     constructor(
         index: number,
@@ -126,6 +127,7 @@ export class Mapping {
         this.label = data["label"];
         this.key = data["key"];
         this.value = data["value"];
+        this.spacing = data["spacing"];
     }
 
 }
