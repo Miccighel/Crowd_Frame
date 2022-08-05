@@ -10,6 +10,7 @@ from datetime import datetime
 import requests
 import pandas as pd
 import subprocess
+import string
 import datefinder
 import random
 import hashlib
@@ -76,6 +77,10 @@ def serialize_json(folder, filename, data):
 def remove_json(folder, filename):
     os.remove(f"{folder}{filename}")
 
+
+def random_string(length=11):
+    letters = string.ascii_uppercase
+    return ''.join(random.choice(letters) for i in range(length))
 
 def read_json(path):
     if os.path.exists(path):
@@ -1961,36 +1966,48 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         console.print(f"Tokens for {len(hits)} hits generated")
         console.print(f"Path: [italic]{mturk_tokens_file}")
 
-    if platform == 'prolific':
-
-        console.rule(f"{step_index} - Prolific Study Creation")
-        step_index = step_index + 1
-
-        status.start()
-        status.update(f"Creating draft study")
-
-        study_data = {
-            "name": task_title if task_title else task_name,
-            "internal_name": f"{task_name}_{batch_name}",
-            "description": "<Edit the study description here>",
-            "external_study_url": f"{link_public}?workerID={{%PROLIFIC_PID%}}&studyID={{%STUDY_ID%}}$sessionID={{%SESSION_ID}}&platform=prolific",
-            "prolific_id_option": "url_parameters",
-            "completion_code": "7EF9FD0D",
-            "completion_option": "url",
-            "total_available_places": len(hits),
-            "estimated_completion_time": 30,
-            "reward": 5,
-            "device_compatibility": [
-                "desktop"
-            ],
-            "peripheral_requirements": [],
-            "eligibility_requirements": []
-        }
-
-        response = requests.post(f"https://api.prolific.co/api/v1/studies/", json=study_data, headers={'Authorization': f"Token {prolific_api_token}", 'Content-Type': 'application/json'})
-
-        print(response.json())
-        assert False
+    # if platform == 'prolific':
+    #
+    #     console.rule(f"{step_index} - Prolific Study Creation")
+    #     step_index = step_index + 1
+    #
+    #     status.start()
+    #     status.update(f"Checking study existance")
+    #
+    #     study_list = requests.get(f"https://api.prolific.co/api/v1/studies/", headers={'Authorization': f"Token {prolific_api_token}"}).json()['results']
+    #
+    #     study_current = None
+    #     for study_data in study_list:
+    #         if study_data['internal_name'] == f"{task_name}_{batch_name}":
+    #             study_current = study_data
+    #             console.print(f"Prolific study detected. ID: [blue]{study_current['id']}[/blue], Name (Internal): [green]{study_current['internal_name']}[/green]")
+    #             # TODO: Write code to update existing study
+    #             assert False
+    #
+    #     if study_current is None:
+    #         study_data = {
+    #             "name": task_title if task_title else task_name,
+    #             "internal_name": f"{task_name}_{batch_name}",
+    #             "description": "<Edit the study description here>",
+    #             "external_study_url": f"{link_public}?workerID={{%PROLIFIC_PID%}}&studyID={{%STUDY_ID%}}$sessionID={{%SESSION_ID}}&platform=prolific",
+    #             "prolific_id_option": "url_parameters",
+    #             "completion_code": random_string(),
+    #             "completion_option": "url",
+    #             "total_available_places": len(hits),
+    #             "estimated_completion_time": 30,
+    #             "reward": 5,
+    #             "device_compatibility": [
+    #                 "desktop"
+    #             ],
+    #             "peripheral_requirements": [],
+    #             "eligibility_requirements": []
+    #         }
+    #         response = requests.post(f"https://api.prolific.co/api/v1/projects/62e3a5aec0202351838e8e0a/studies/", json=study_data, headers={'Authorization': f"Token {prolific_api_token}", 'Content-Type': 'application/json'})
+    #         # TODO: Write code to create a study
+    #         # The completion code can be randomly generated. Remember to update the environment and delete the .env variable.
+    #         # The study must be created just once. The code must remain the same-
+    #         print(response.json())
+    #     assert False
 
     if platform == 'toloka':
         console.rule(f"{step_index} - Toloka HTML Interface")
