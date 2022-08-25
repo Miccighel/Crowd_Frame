@@ -9,7 +9,7 @@ import pprint
 from pathlib import Path
 from glob import glob
 from json import JSONDecodeError
-import time
+import time as time_mod
 import asyncio
 import aiohttp
 from aiohttp import ClientSession, ClientConnectorError, ClientResponseError, ClientOSError, ServerDisconnectedError, TooManyRedirects, ClientPayloadError, ClientConnectorCertificateError
@@ -93,7 +93,14 @@ df_notes_path = f"{models_path}workers_notes.csv"
 df_dim_path = f"{models_path}workers_dimensions_selection.csv"
 df_url_path = f"{models_path}workers_urls.csv"
 df_crawl_path = f"{models_path}workers_crawling.csv"
-
+filename_hits_config = "hits.json"
+filename_dimensions_config = "dimensions.json"
+filename_instructions_general_config = "instructions_general.json"
+filename_instructions_evaluation_config = "instructions_evaluation.json"
+filename_questionnaires_config = "questionnaires.json"
+filename_search_engine_config = "search_engine.json"
+filename_task_settings_config = "task.json"
+filename_workers_settings_config = "workers.json"
 
 def serialize_json(folder, filename, data):
     if not os.path.exists(folder):
@@ -274,7 +281,7 @@ worker_counter = 0
 with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesthetic") as status:
     status.start()
 
-    for worker_id in worker_identifiers:
+    for worker_id in tqdm.tqdm(worker_identifiers):
 
         worker_snapshot = []
         worker_snapshot_path = f"result/{task_name}/Data/{worker_id}.json"
@@ -493,6 +500,20 @@ else:
     console.print(f"Workers ACL [yellow]already detected[/yellow], skipping download")
 
 platforms = np.unique(df_acl['platform'].values)
+
+console.rule(f"{step_index} - Checking Missing Units")
+step_index = step_index + 1
+
+hits = load_json(f"{task_config_folder}{batch_name}/{filename_hits_config}")
+units = []
+for hit in tqdm.tqdm(hits):
+    hit_completed = False
+    for index, acl_record in df_acl.iterrows():
+        if hit['unit_id'] == acl_record['unit_id'] and acl_record['paid']==True:
+            hit_completed = True
+    if not hit_completed:
+        units.append(hit['unit_id'])
+console.print(f"There are [cyan on white]{len(units)}/{len(hits)}[/cyan on white] units not yet evaluated")
 
 if 'mturk' in platforms:
 
@@ -847,6 +868,22 @@ if 'prolific' in platforms:
         "study_device_compatibility",
         "study_peripheral_requirements",
         "study_url_external",
+        'submission_id',
+        'submission_status',
+        'submission_study_code',
+        'submission_date_started',
+        'submission_date_started_parsed',
+        'submission_date_completed',
+        'submission_date_completed_parsed',
+        'submission_is_complete',
+        'submission_time_elapsed_seconds',
+        'submission_reward',
+        'submission_star_awarded',
+        'participant_id',
+        'participant_ip',
+        'participant_date_birth',
+        'participant_ethnicity_simplified',
+        'participant_sex'
     ]
 
     if not os.path.exists(df_prolific_data_path):
@@ -879,7 +916,19 @@ if 'prolific' in platforms:
                         del study_current_add['eligibility_requirements']
                         del study_current_add['description']
 
-                        submissions_list = requests.get(f"https://api.prolific.co/api/v1/studies/{study_current['id']}/submissions/", headers={'Authorization': f"Token {prolific_api_token}"}).json()['results']
+                        submissions_list=[]
+                        submissions_list_response = None
+                        while submissions_list_response is None or 'next' in submissions_list_response['_links']:
+                            if not submissions_list_response:
+                                submissions_list_response = requests.get(f"https://api.prolific.co/api/v1/studies/{study_current['id']}/submissions/", headers={'Authorization': f"Token {prolific_api_token}"}).json()
+                            else:
+                                submission_page_next = submissions_list_response['_links']['next']['href']
+                                if submission_page_next is None:
+                                    break
+                                else:
+                                    submissions_list_response = requests.get(submission_page_next, headers={'Authorization': f"Token {prolific_api_token}"}).json()
+                                    for submission_current in submissions_list_response['results']:
+                                        submissions_list.append(submission_current)
 
                         row = {
                             "workspace_id": study_current_add['workspace'],
@@ -934,11 +983,23 @@ if 'prolific' in platforms:
 
                             submissions_counter+=1
 
-                            pprint(submission_current)
-
-                            assert False
-
-                            ## submission data
+                            row['participant_id'] = submission_current['participant_id']
+                            row['participant_ip'] = submission_current['ip']
+                            row['participant_date_birth'] = submission_current['strata']['date of birth']
+                            row['participant_ethnicity_simplified'] = submission_current['strata']['ethnicity (simplified)']
+                            row['participant_sex'] = submission_current['strata']['sex']
+                            row['submission_id'] = submission_current['id']
+                            row['submission_status'] = submission_current['status']
+                            row['submission_study_code'] = submission_current['study_code']
+                            row['submission_date_started'] = submission_current['started_at'] if submission_current['started_at'] else np.nan
+                            row['submission_date_started_parsed'] = find_date_string(submission_current['started_at']) if submission_current['started_at'] else np.nan
+                            row['submission_date_completed'] = submission_current['completed_at'] if submission_current['completed_at'] else np.nan
+                            row['submission_date_completed_parsed'] = find_date_string(submission_current['completed_at']) if submission_current['completed_at'] else np.nan
+                            row['submission_is_complete'] = submission_current['is_complete']
+                            row['submission_time_elapsed_seconds'] = submission_current['time_taken'] if submission_current['time_taken'] else np.nan
+                            row['submission_reward'] = float(submission_current['reward'])
+                            row['submission_star_awarded'] = float(submission_current['star_awarded'])
+                            row['submission_bonus_payments'] = ':::'.join([str(i) for i in submission_current['bonus_payments']])
 
                             df_prolific.loc[len(df_prolific)] = row
 
@@ -960,7 +1021,6 @@ if 'prolific' in platforms:
 
 console.rule(f"{step_index} - Building [cyan on white]workers_info[/cyan on white] Dataframe")
 step_index = step_index + 1
-
 
 def merge_dicts(dicts):
     d = {}
@@ -1008,7 +1068,7 @@ def fetch_uag_data(worker_id, worker_uag):
                     url = f"https://api.ipgeolocation.io/user-agent?apiKey={ip_geolocation_api_key}"
                     response = requests.get(url, headers={'User-Agent': worker_uag})
                     if response.status_code != 200:
-                        raise ValueError(f"Request to IP Geolocation UAG detection service (user-agent endpoint) failed with error code {response.status_code}. Remove of replace your `ip_geolocation_api_key`")
+                        raise ValueError(f"Request to IP Geolocation UAG detection service (user-agent endpoint) failed with error code {response.status_code} and reason: `{response.text}`. Remove of replace your `ip_geolocation_api_key`")
                     else:
                         data_fetched = flatten(requests.get(url, headers={'User-Agent': worker_uag}).json())
                     ua_data.append(data_fetched)
@@ -1045,7 +1105,7 @@ def fetch_ip_data(worker_id, worker_ip):
                     data_fixed = {}
                     response = requests.get(url)
                     if response.status_code != 200:
-                        raise ValueError(f"Request to Userstack IPGeolocation service (ipgeo endpoint) failed with error code {response.status_code}. Remove of replace your `ip_geolocation_api_key`")
+                        raise ValueError(f"Request to IP Geolocation service (ipgeo endpoint) failed with error code {response.status_code} and reason: `{response.text}`. Remove of replace your `ip_geolocation_api_key`")
                     else:
                         for key, item in flatten(response.json()).items():
                             if key.startswith('geo_'):
@@ -1057,7 +1117,7 @@ def fetch_ip_data(worker_id, worker_ip):
                     data_fixed = {}
                     response = requests.get(url)
                     if response.status_code != 200:
-                        raise ValueError(f"Request to Userstack IPGeolocation service (timezone endpoint) failed with error code {response.status_code}. Remove of replace your `ip_geolocation_api_key`")
+                        raise ValueError(f"Request to IP Geolocation service (timezone endpoint) failed with error code {response.status_code} and reason: `{response.text}`. Remove of replace your `ip_geolocation_api_key`")
                     else:
                         for key, item in flatten(response.json()).items():
                             if key.startswith('timezone_') or key.startswith('geo_'):
@@ -1070,7 +1130,7 @@ def fetch_ip_data(worker_id, worker_ip):
                     data_fixed = {}
                     response = requests.get(url)
                     if response.status_code != 200:
-                        raise ValueError(f"Request to Userstack IPGeolocation service (astronomy endpoint) failed with error code {response.status_code}. Remove of replace your `ip_geolocation_api_key`")
+                        raise ValueError(f"Request to IP Geolocation service (astronomy endpoint) failed with error code {response.status_code} and reason: `{response.text}`. Remove of replace your `ip_geolocation_api_key`")
                     else:
                         for key, item in flatten(response.json()).items():
                             if key.startswith('location_'):
@@ -1525,6 +1585,7 @@ def load_quest_col_names(questionnaires):
     columns.append("batch_name")
     columns.append("unit_id")
     columns.append("try_current")
+    columns.append("action")
     columns.append("time_submit")
     columns.append("time_submit_parsed")
 
@@ -1628,14 +1689,14 @@ def parse_answers(row, questionnaire, question, answers):
                     row[f"question_answer_text"] = selected_options_text
 
     elif questionnaire['type'] == 'likert':
-        mapping = questionnaire['mappings'][int(answer_value)]
-        row[f"question_answer_mapping_index"] = mapping['index']
-        row[f"question_answer_mapping_key"] = mapping['key'] if "key" in mapping else None
-        row[f"question_answer_mapping_label"] = mapping['label']
-        row[f"question_answer_mapping_value"] = mapping['value']
+        for questionnaire_mapping in questionnaire['mappings']:
+            if questionnaire_mapping['value'] == answer_value:
+                row[f"question_answer_mapping_index"] = questionnaire_mapping['index']
+                row[f"question_answer_mapping_key"] = questionnaire_mapping['key'] if "key" in questionnaire_mapping else None
+                row[f"question_answer_mapping_label"] = questionnaire_mapping['label']
+                row[f"question_answer_mapping_value"] = int(questionnaire_mapping['value'])
 
     return row
-
 
 dataframe = pd.DataFrame()
 
@@ -1690,6 +1751,7 @@ if not os.path.exists(df_quest_path):
                     info = questionnaire_data['serialization']["info"]
                     accesses = questionnaire_data['serialization']["accesses"]
 
+                    row['action'] = info['action']
                     row['try_current'] = info['try']
 
                     data = dataframe.loc[
@@ -1760,6 +1822,7 @@ def load_data_col_names(dimensions, documents):
     columns.append("unit_id")
     columns.append("try_last")
     columns.append("try_current")
+    columns.append("action")
     columns.append("time_submit")
     columns.append("time_submit_parsed")
 
@@ -1843,6 +1906,7 @@ if not os.path.exists(df_data_path):
 
                 for document_data in data_partial['documents_answers']:
 
+                    row['action'] = document_data['serialization']['info']['action']
                     row['try_current'] = document_data['serialization']['info']['try']
                     row['time_submit'] = document_data['time_submit']
                     row['time_submit_parsed'] = find_date_string(row['time_submit'])
@@ -2417,7 +2481,7 @@ if enable_crawling:
             'response_metadata_path'
         ])
 
-    start = time.time()
+    start = time_mod.time()
 
     # Initialize connection pool
     conn = aiohttp.TCPConnector(limit_per_host=100, limit=0, ttl_dns_cache=300)
