@@ -2036,6 +2036,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         console.print(f"Path: [ital]{hits_file}")
         hits = read_json(hits_file)
         token_df = pd.DataFrame(columns=["INPUT:token_input"])
+        tokens_input = []
+        tokens_output = []
         for hit in hits:
             token_df = token_df.append({
                 "INPUT:token_input": hit['token_input']
@@ -2043,9 +2045,41 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             token_df = token_df.append({
                 "INPUT:token_input": None
             }, ignore_index=True)
+            tokens_input.append(hit['token_input'])
+            tokens_output.append(hit['token_output'])
         token_df.to_csv(toloka_tokens_file, sep="\t", index=False)
         console.print(f"Token for the current batch chosen")
         console.print(f"Path: [italic]{toloka_tokens_file}")
+
+        console.print(f"Building input specification")
+        toloka_input_spec_file = f"{folder_build_toloka_path}input_specification.json"
+        input_specification = {
+            "token_input": {
+                "type": "string",
+                "hidden": False,
+                "required": False,
+                "max_length": 11,
+                "min_length": 11,
+                "allowed_values": tokens_input
+            }
+        }
+        serialize_json(folder_build_toloka_path, 'input_specification.json', input_specification)
+        console.print(f"Path: {toloka_input_spec_file}")
+
+        console.print(f"Building output specification")
+        toloka_output_spec_file = f"{folder_build_toloka_path}output_specification.json"
+        output_specification = {
+            "token_output": {
+                "type": "string",
+                "hidden": False,
+                "required": True,
+                "max_length": 11,
+                "min_length": 11,
+                "allowed_values": tokens_output
+            }
+        }
+        serialize_json(folder_build_toloka_path, 'output_specification.json', output_specification)
+        console.print(f"Path: {toloka_output_spec_file}")
 
     console.rule(f"{step_index} - Task [cyan underline]{task_name}[/cyan underline]/[yellow underline]{batch_name}[/yellow underline] build")
     step_index = step_index + 1
@@ -2215,19 +2249,27 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
         source = f"{folder_build_toloka_path}interface.html"
         destination = f"{folder_tasks_batch_toloka_path}interface.html"
-        copy(source, destination, "Toloka Page Markup")
+        copy(source, destination, "Page Markup")
 
         source = f"{folder_build_toloka_path}interface.css"
         destination = f"{folder_tasks_batch_toloka_path}interface.css"
-        copy(source, destination, "Toloka Page Stylesheet")
+        copy(source, destination, "Page Stylesheet")
 
         source = f"{folder_build_toloka_path}interface.js"
         destination = f"{folder_tasks_batch_toloka_path}interface.js"
-        copy(source, destination, "Toloka Page Javascript")
+        copy(source, destination, "Page Javascript")
 
         source = f"{folder_build_toloka_path}tokens.tsv"
         destination = f"{folder_tasks_batch_toloka_path}tokens.tsv"
         copy(source, destination, "Hits tokens")
+
+        source = f"{folder_build_toloka_path}input_specification.json"
+        destination = f"{folder_tasks_batch_toloka_path}input_specification.json"
+        copy(source, destination, "Input Specification")
+
+        source = f"{folder_build_toloka_path}output_specification.json"
+        destination = f"{folder_tasks_batch_toloka_path}output_specification.json"
+        copy(source, destination, "Output Specification")
 
     if platform == 'mturk':
         console.print(f"Copying files for [blue underline on white]{folder_build_mturk_path}[/blue underline on white] folder")

@@ -921,6 +921,8 @@ if 'prolific' in platforms:
                         while submissions_list_response is None or 'next' in submissions_list_response['_links']:
                             if not submissions_list_response:
                                 submissions_list_response = requests.get(f"https://api.prolific.co/api/v1/studies/{study_current['id']}/submissions/", headers={'Authorization': f"Token {prolific_api_token}"}).json()
+                                for submission_current in submissions_list_response['results']:
+                                    submissions_list.append(submission_current)
                             else:
                                 submission_page_next = submissions_list_response['_links']['next']['href']
                                 if submission_page_next is None:
@@ -2644,10 +2646,13 @@ if enable_crawling:
                             headers_lower_fix[attribute_fix] = value_fix.replace('\udc94', '')
                         else:
                             headers_lower_fix[attribute_fix] = value_fix
-                    json.dump({
-                        'attributes': row,
-                        'data': headers_lower_fix
-                    }, f, ensure_ascii=False, indent=4)
+                    try:
+                        json.dump({
+                            'attributes': row,
+                            'data': headers_lower_fix
+                        }, f, ensure_ascii=False, indent=4)
+                    except UnicodeEncodeError:
+                        print(f"Unicode Encode error detected for page: {result_url}")
             row['response_metadata_path'] = result_metadata_path
             df_crawl.loc[len(df_crawl)] = row
             if len(df_crawl) % 1000 == 0:
