@@ -48,14 +48,14 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@angular/router", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.1.3"],\
             ["@funktechno/texthighlighter", "npm:2.1.2"],\
             ["@kolkov/angular-editor", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:3.0.0-beta.0"],\
-            ["@types/node", "npm:16.11.52"],\
-            ["aws-sdk", "npm:2.1199.0"],\
+            ["@types/node", "npm:16.11.58"],\
+            ["aws-sdk", "npm:2.1213.0"],\
             ["crypto-es", "npm:1.2.7"],\
             ["flat-angular", "npm:1.6.0"],\
             ["ngx-color-picker", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:12.0.1"],\
             ["ngx-countdown", "npm:14.0.0"],\
             ["ngx-device-detector", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:4.0.1"],\
-            ["ngx-file-helpers", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:8.1.0"],\
+            ["ngx-file-helpers", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:8.1.1"],\
             ["ngx-ui-loader", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:13.0.0"],\
             ["rxjs", "npm:7.5.6"],\
             ["titleize", "npm:3.0.0"],\
@@ -3624,10 +3624,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]\
       ]],\
       ["@types/node", [\
-        ["npm:16.11.52", {\
-          "packageLocation": "./.yarn/cache/@types-node-npm-16.11.52-ed429797f1-eb688bff28.zip/node_modules/@types/node/",\
+        ["npm:16.11.58", {\
+          "packageLocation": "./.yarn/cache/@types-node-npm-16.11.58-90178e4c18-efdf14c62e.zip/node_modules/@types/node/",\
           "packageDependencies": [\
-            ["@types/node", "npm:16.11.52"]\
+            ["@types/node", "npm:16.11.58"]\
           ],\
           "linkType": "HARD"\
         }],\
@@ -4266,10 +4266,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]\
       ]],\
       ["aws-sdk", [\
-        ["npm:2.1199.0", {\
-          "packageLocation": "./.yarn/cache/aws-sdk-npm-2.1199.0-536ad6465d-a101ac2073.zip/node_modules/aws-sdk/",\
+        ["npm:2.1213.0", {\
+          "packageLocation": "./.yarn/cache/aws-sdk-npm-2.1213.0-c3368385f8-134e088e23.zip/node_modules/aws-sdk/",\
           "packageDependencies": [\
-            ["aws-sdk", "npm:2.1199.0"],\
+            ["aws-sdk", "npm:2.1213.0"],\
             ["buffer", "npm:4.9.2"],\
             ["events", "npm:1.1.1"],\
             ["ieee754", "npm:1.1.13"],\
@@ -5097,14 +5097,14 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@angular/router", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.1.3"],\
             ["@funktechno/texthighlighter", "npm:2.1.2"],\
             ["@kolkov/angular-editor", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:3.0.0-beta.0"],\
-            ["@types/node", "npm:16.11.52"],\
-            ["aws-sdk", "npm:2.1199.0"],\
+            ["@types/node", "npm:16.11.58"],\
+            ["aws-sdk", "npm:2.1213.0"],\
             ["crypto-es", "npm:1.2.7"],\
             ["flat-angular", "npm:1.6.0"],\
             ["ngx-color-picker", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:12.0.1"],\
             ["ngx-countdown", "npm:14.0.0"],\
             ["ngx-device-detector", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:4.0.1"],\
-            ["ngx-file-helpers", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:8.1.0"],\
+            ["ngx-file-helpers", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:8.1.1"],\
             ["ngx-ui-loader", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:13.0.0"],\
             ["rxjs", "npm:7.5.6"],\
             ["titleize", "npm:3.0.0"],\
@@ -8075,17 +8075,17 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]\
       ]],\
       ["ngx-file-helpers", [\
-        ["npm:8.1.0", {\
-          "packageLocation": "./.yarn/cache/ngx-file-helpers-npm-8.1.0-c7f3835c40-15d6f5590c.zip/node_modules/ngx-file-helpers/",\
+        ["npm:8.1.1", {\
+          "packageLocation": "./.yarn/cache/ngx-file-helpers-npm-8.1.1-7f1187c7ad-c7870c68ae.zip/node_modules/ngx-file-helpers/",\
           "packageDependencies": [\
-            ["ngx-file-helpers", "npm:8.1.0"]\
+            ["ngx-file-helpers", "npm:8.1.1"]\
           ],\
           "linkType": "SOFT"\
         }],\
-        ["virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:8.1.0", {\
-          "packageLocation": "./.yarn/__virtual__/ngx-file-helpers-virtual-e94d330d81/0/cache/ngx-file-helpers-npm-8.1.0-c7f3835c40-15d6f5590c.zip/node_modules/ngx-file-helpers/",\
+        ["virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:8.1.1", {\
+          "packageLocation": "./.yarn/__virtual__/ngx-file-helpers-virtual-3cd5dd74e2/0/cache/ngx-file-helpers-npm-8.1.1-7f1187c7ad-c7870c68ae.zip/node_modules/ngx-file-helpers/",\
           "packageDependencies": [\
-            ["ngx-file-helpers", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:8.1.0"],\
+            ["ngx-file-helpers", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:8.1.1"],\
             ["@angular/common", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.1.3"],\
             ["@angular/core", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:14.1.3"],\
             ["@types/angular__common", null],\

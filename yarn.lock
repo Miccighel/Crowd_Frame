@@ -2183,10 +2183,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:~16.11.52":
-  version: 16.11.52
-  resolution: "@types/node@npm:16.11.52"
-  checksum: eb688bff28015f1399264b7aa347d5f40e165d438306bd5884d78993671c5e43b7849b8ddc74b91bf7c7b73e15ba54fc56ea1db2118b0e3f59f9fabd2adc7fe7
+"@types/node@npm:~16.11.58":
+  version: 16.11.58
+  resolution: "@types/node@npm:16.11.58"
+  checksum: efdf14c62e6c1a8e758416aaa3ae4b81015ffd4e1f31c05680d1242817ba23f0b4b1345886fe5aeb3c05d818bcaed1a7af4d637e7cca5723a5e4ac8b759d3ace
   languageName: node
   linkType: hard
 
@@ -2701,9 +2701,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"aws-sdk@npm:^2.1199.0":
-  version: 2.1199.0
-  resolution: "aws-sdk@npm:2.1199.0"
+"aws-sdk@npm:^2.1213.0":
+  version: 2.1213.0
+  resolution: "aws-sdk@npm:2.1213.0"
   dependencies:
     buffer: 4.9.2
     events: 1.1.1
@@ -2715,7 +2715,7 @@ __metadata:
     util: ^0.12.4
     uuid: 8.0.0
     xml2js: 0.4.19
-  checksum: a101ac207369dc9b6f96424ac6ae5b38354741dc5cd6c885a82d53dbe203b011f8aa100b34e061b218ab9a3f74c6316f12ea3a2002c42c1e11ce69db497fa8a9
+  checksum: 134e088e2397ffcef1bee3eebc6a5f86f2b8767c8bc85e7ad4c9b32c2083524cf986856134bfbcb54cbeeea516614199505a5fc5193026b66e372af233e65e09
   languageName: node
   linkType: hard
 
@@ -3392,14 +3392,14 @@ __metadata:
     "@angular/router": ^14.1.3
     "@funktechno/texthighlighter": ^2.1.2
     "@kolkov/angular-editor": ^3.0.0-beta.0
-    "@types/node": ~16.11.52
-    aws-sdk: ^2.1199.0
+    "@types/node": ~16.11.58
+    aws-sdk: ^2.1213.0
     crypto-es: ^1.2.7
     flat-angular: ^1.6.0
     ngx-color-picker: ^12.0.1
     ngx-countdown: ^14.0.0
     ngx-device-detector: ^4.0.1
-    ngx-file-helpers: ^8.1.0
+    ngx-file-helpers: ^8.1.1
     ngx-ui-loader: ^13.0.0
     rxjs: ^7.5.6
     titleize: ^3.0.0
@@ -5918,15 +5918,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ngx-file-helpers@npm:^8.1.0":
-  version: 8.1.0
-  resolution: "ngx-file-helpers@npm:8.1.0"
+"ngx-file-helpers@npm:^8.1.1":
+  version: 8.1.1
+  resolution: "ngx-file-helpers@npm:8.1.1"
   dependencies:
     tslib: ^2.4.0
   peerDependencies:
     "@angular/common": ^14.0.0
     "@angular/core": ^14.0.0
-  checksum: 15d6f5590c463729d5f057f3b188e08a6b54af518ea199431ce40cdec640f43820a52cce0b7ca401c833f0a15824f512b72a340bb9aa8bf21cdb750fe5377780
+  checksum: c7870c68aebb2f831c027a7baad22050bddd6efb69bbc334f9df002bcd60cdbe4c00fa2e8b133b7272fc2eab902863db9fb047c4868b9f6b144fafca144aa3ac
   languageName: node
   linkType: hard
 
