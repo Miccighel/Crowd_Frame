@@ -685,16 +685,16 @@ if 'toloka' in platforms:
 
         toloka_client = toloka.TolokaClient(toloka_oauth_token, 'PRODUCTION')
 
-        df_acl_filt = df_acl.loc[df_acl['platform'] == 'toloka']
+        df_acl_copy = df_acl.copy()
         tokens_input = []
         tokens_output = []
-        for batch_current in np.unique(df_acl_filt['batch_name'].values):
+        for batch_current in np.unique(df_acl_copy['batch_name'].values):
             hits = load_json(f"{task_config_folder}{batch_current}/hits.json")
             for hit in hits:
                 tokens_input.append(hit['token_input'])
                 tokens_output.append(hit['token_output'])
-        tokens_input = sorted(tokens_input)
-        tokens_output = sorted(tokens_output)
+        tokens_input = list(set(sorted(tokens_input)))
+        tokens_output = list(set(sorted(tokens_output)))
 
         tokens_input_deployed = None
         tokens_output_deployed = None
@@ -703,10 +703,10 @@ if 'toloka' in platforms:
         for project in toloka_client.get_projects():
             for input_field, data in project.task_spec.input_spec.items():
                 if input_field == 'token_input' and data.allowed_values:
-                    tokens_input_deployed = sorted(data.allowed_values)
+                    tokens_input_deployed = list(set(sorted(data.allowed_values)))
             for output_field, data in project.task_spec.output_spec.items():
                 if output_field == 'token_output' and data.allowed_values:
-                    tokens_output_deployed = sorted(data.allowed_values)
+                    tokens_output_deployed = list(set(sorted(data.allowed_values)))
             if tokens_input == tokens_input_deployed and tokens_output == tokens_output_deployed:
                 console.print(f"Toloka project with name [cyan]{project.public_name}[/cyan] and ID [cyan]{project.id}[/cyan] found")
                 project_data = project
@@ -714,16 +714,16 @@ if 'toloka' in platforms:
 
         row = {
             'project_id': project_data.id,
-            'project_name': project_data.public_name,
-            'project_description': project_data.public_description,
-            'project_comment': project_data.private_comment,
+            'project_name': project_data.public_name.strip(),
+            'project_description': project_data.public_description.strip(),
+            'project_comment': project_data.private_comment.strip(),
         }
 
         pool_counter = 0
         task_suites_counter = 0
         assignments_counter = 0
 
-        for pool in toloka_client.find_pools(project_id=project_data.id, status='CLOSED', sort=['last_started']).items:
+        for pool in toloka_client.find_pools(project_id=project_data.id, sort=['last_started']).items:
             console.print(f"Processing pool [cyan]{pool.id}")
             row['pool_id'] = pool.id
             row['pool_requester_id'] = pool.owner.id
@@ -734,11 +734,11 @@ if 'toloka' in platforms:
             row['pool_status'] = pool.status.value
             row['pool_creation_date'] = pool.created.strftime("%Y-%m-%d %H:%M:%S")
             row['pool_expiration_date'] = pool.will_expire.strftime("%Y-%m-%d %H:%M:%S")
-            row['pool_last_started'] = pool.last_started.strftime("%Y-%m-%d %H:%M:%S")
-            row['pool_last_stopped'] = pool.last_stopped.strftime("%Y-%m-%d %H:%M:%S")
-            row['pool_last_close_reason'] = pool.last_close_reason.value
-            row['pool_speed_quality_balance_type'] = pool._unexpected['speed_quality_balance']['type']
-            row['pool_speed_quality_balance_percent'] = pool._unexpected['speed_quality_balance']['percent']
+            row['pool_last_started'] = pool.last_started.strftime("%Y-%m-%d %H:%M:%S") if pool.last_started else np.nan
+            row['pool_last_stopped'] = pool.last_stopped.strftime("%Y-%m-%d %H:%M:%S") if pool.last_stopped else np.nan
+            row['pool_last_close_reason'] = pool.last_close_reason.value if pool.last_close_reason else np.nan
+            row['pool_speed_quality_balance_type'] = pool.speed_quality_balance.type
+            row['pool_speed_quality_balance_percent'] = pool.speed_quality_balance.percent
             row['pool_assignment_reward'] = pool.reward_per_assignment
             row['pool_assignment_max_duration_seconds'] = pool.assignment_max_duration_seconds
             row['pool_priority'] = pool.priority
@@ -750,7 +750,7 @@ if 'toloka' in platforms:
             task_suites = []
             for task_suite in toloka_client.find_task_suites(pool_id=pool.id, sort=['created']).items:
                 task_suites.append(task_suite)
-            for task_suite in tqdm(task_suites):
+            for task_suite in task_suites:
                 row['task_suite_id'] = task_suite.id
                 row['task_suite_creation_date'] = task_suite.created.strftime("%Y-%m-%d %H:%M:%S")
                 row['task_suite_remaining_overlap'] = task_suite.remaining_overlap
@@ -769,8 +769,20 @@ if 'toloka' in platforms:
                     row['assignment_expire_date'] = assignment.expired.strftime("%Y-%m-%d %H:%M:%S") if assignment.expired else np.nan
                     row['assignment_skip_date'] = assignment.skipped.strftime("%Y-%m-%d %H:%M:%S") if assignment.skipped else np.nan
                     row['assignment_reject_date'] = assignment.rejected.strftime("%Y-%m-%d %H:%M:%S") if assignment.rejected else np.nan
-                    row['assignment_token_input'] = assignment.tasks[0].input_values['token_input']
-                    row['assignment_token_output'] = assignment.solutions[0].output_values['token_output'] if assignment.solutions else np.nan
+                    if assignment.tasks:
+                        if assignment.tasks[0].input_values:
+                            row['assignment_token_input'] = assignment.tasks[0].input_values['token_input'] if 'token_input' in assignment.tasks[0].input_values else np.nan
+                        else:
+                            row['assignment_token_input'] = np.nan
+                    else:
+                        row['assignment_token_input'] = np.nan
+                    if assignment.solutions:
+                        if assignment.solutions[0].output_values:
+                            row['assignment_token_output'] = assignment.solutions[0].output_values['token_output'] if 'token_output' in assignment.solutions[0].output_values else np.nan
+                        else:
+                            row['assignment_token_output'] = np.nan
+                    else:
+                        row['assignment_token_output'] = np.nan
                     row['assignment_reward'] = assignment.reward
                     row['assignment_rejected'] = assignment.rejected
                     row['assignment_automerged'] = assignment.automerged
@@ -779,22 +791,23 @@ if 'toloka' in platforms:
                     row['user_id'] = assignment.user_id
                     row['user_country'] = user_metadata['country']
                     row['user_languages'] = ':::'.join(user_metadata['languages'])
-                    row['user_country_by_phone'] = user_metadata['attributes']['country_by_phone']
-                    row['user_country_by_ip'] = user_metadata['attributes']['country_by_ip']
-                    row['user_client_type'] = user_metadata['attributes']['client_type']
-                    row['user_agent_type'] = user_metadata['attributes']['user_agent_type']
-                    row['user_device_category'] = user_metadata['attributes']['device_category']
-                    row['user_os_family'] = user_metadata['attributes']['os_family']
+                    row['user_country_by_phone'] = user_metadata['attributes']['country_by_phone'] if 'country_by_phone' in user_metadata['attributes'] else np.nan
+                    row['user_country_by_ip'] = user_metadata['attributes']['country_by_ip'] if 'country_by_ip' in user_metadata['attributes'] else np.nan
+                    row['user_client_type'] = user_metadata['attributes']['client_type'] if 'client_type' in user_metadata['attributes'] else np.nan
+                    row['user_agent_type'] = user_metadata['attributes']['user_agent_type'] if 'user_agent_type' in user_metadata['attributes'] else np.nan
+                    row['user_device_category'] = user_metadata['attributes']['device_category'] if 'device_category' in user_metadata['attributes'] else np.nan
+                    row['user_os_family'] = user_metadata['attributes']['os_family']  if 'os_family' in user_metadata['attributes'] else np.nan
                     row['user_os_version'] = user_metadata['attributes']['os_version'] if 'os_version' in user_metadata['attributes'] else np.nan
                     row['user_os_version_major'] = user_metadata['attributes']['os_version_major'] if 'os_version_major' in user_metadata['attributes'] else np.nan
                     row['user_os_version_minor'] = user_metadata['attributes']['os_version_minor'] if 'os_version_minor' in user_metadata['attributes'] else np.nan
                     row['user_os_version_bugfix'] = user_metadata['attributes']['os_version_bugfix'] if 'os_version_bugfix' in user_metadata['attributes'] else np.nan
                     row['user_adult_allowed'] = user_metadata['adult_allowed']
-                    acl_rows = df_acl.loc[(df_acl['token_output'] == row['assignment_token_output']) & (df_acl['platform'] == 'toloka')]
+                    acl_rows = df_acl_copy.loc[(df_acl_copy['token_output'] == row['assignment_token_output']) & (df_acl_copy['platform'] == 'toloka')  & (df_acl_copy['generated'] == True)]
                     if len(acl_rows) > 1:
                         acl_rows = acl_rows.sort_values(by='time_arrival', ascending=False)
                         acl_rows = acl_rows.head(1)
                         row['worker_id'] = acl_rows['worker_id'].values[0]
+                        df_acl_copy.at[acl_rows.index.values[0], 'generated'] = False
                     else:
                         if len(acl_rows['worker_id'].values) > 0:
                             row['worker_id'] = acl_rows['worker_id'].values[0]
@@ -1106,39 +1119,48 @@ def fetch_ip_data(worker_id, worker_ip):
                     url = f"https://api.ipgeolocation.io/ipgeo?apiKey={ip_geolocation_api_key}&ip={worker_ip}&include=hostnameFallbackLive,security"
                     data_fixed = {}
                     response = requests.get(url)
-                    if response.status_code != 200:
-                        raise ValueError(f"Request to IP Geolocation service (ipgeo endpoint) failed with error code {response.status_code} and reason: `{response.text}`. Remove of replace your `ip_geolocation_api_key`")
+                    if response.status_code == 423:
+                        console.print(f"Bogon detected: {worker_ip}")
                     else:
-                        for key, item in flatten(response.json()).items():
-                            if key.startswith('geo_'):
-                                data_fixed[key.replace('geo_', '')] = item
-                            else:
-                                data_fixed[key] = item
+                        if response.status_code != 200:
+                            raise ValueError(f"Request to IP Geolocation service (ipgeo endpoint) failed with error code {response.status_code} and reason: `{response.text}`. Remove of replace your `ip_geolocation_api_key`")
+                        else:
+                            for key, item in flatten(response.json()).items():
+                                if key.startswith('geo_'):
+                                    data_fixed[key.replace('geo_', '')] = item
+                                else:
+                                    data_fixed[key] = item
                     ip_data.append(data_fixed)
                     url = f"https://api.ipgeolocation.io/timezone?apiKey={ip_geolocation_api_key}&ip={worker_ip}"
                     data_fixed = {}
                     response = requests.get(url)
-                    if response.status_code != 200:
-                        raise ValueError(f"Request to IP Geolocation service (timezone endpoint) failed with error code {response.status_code} and reason: `{response.text}`. Remove of replace your `ip_geolocation_api_key`")
+                    if response.status_code == 423:
+                        pass
                     else:
-                        for key, item in flatten(response.json()).items():
-                            if key.startswith('timezone_') or key.startswith('geo_'):
-                                key_fixed = key.replace('timezone_', '').replace('geo_', '')
-                                data_fixed[key_fixed] = item
-                            else:
-                                data_fixed[key] = item
+                        if response.status_code != 200:
+                            raise ValueError(f"Request to IP Geolocation service (timezone endpoint) failed with error code {response.status_code} and reason: `{response.text}`. Remove of replace your `ip_geolocation_api_key`")
+                        else:
+                            for key, item in flatten(response.json()).items():
+                                if key.startswith('timezone_') or key.startswith('geo_'):
+                                    key_fixed = key.replace('timezone_', '').replace('geo_', '')
+                                    data_fixed[key_fixed] = item
+                                else:
+                                    data_fixed[key] = item
                     ip_data.append(data_fixed)
                     url = f"https://api.ipgeolocation.io/astronomy?apiKey={ip_geolocation_api_key}&ip={worker_ip}"
                     data_fixed = {}
                     response = requests.get(url)
-                    if response.status_code != 200:
-                        raise ValueError(f"Request to IP Geolocation service (astronomy endpoint) failed with error code {response.status_code} and reason: `{response.text}`. Remove of replace your `ip_geolocation_api_key`")
+                    if response.status_code == 423:
+                        pass
                     else:
-                        for key, item in flatten(response.json()).items():
-                            if key.startswith('location_'):
-                                data_fixed[key.replace('location_', '')] = item
-                            else:
-                                data_fixed[key] = item
+                        if response.status_code != 200:
+                            raise ValueError(f"Request to IP Geolocation service (astronomy endpoint) failed with error code {response.status_code} and reason: `{response.text}`. Remove of replace your `ip_geolocation_api_key`")
+                        else:
+                            for key, item in flatten(response.json()).items():
+                                if key.startswith('location_'):
+                                    data_fixed[key.replace('location_', '')] = item
+                                else:
+                                    data_fixed[key] = item
                     ip_data.append(data_fixed)
                 if ip_api_api_key:
                     url = f"http://api.ipapi.com/{worker_ip}?access_key={ip_api_api_key}"
