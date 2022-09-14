@@ -3,6 +3,9 @@ import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {UntypedFormBuilder, UntypedFormControl, UntypedFormGroup} from "@angular/forms";
 /* Services */
 import {SectionService} from "../../../services/section.service";
+import {StatusCodes} from "../../../services/section.service";
+import {ConfigService} from "../../../services/config.service";
+import {Worker} from "../../../models/worker/worker";
 
 @Component({
     selector: 'app-outcome-section',
@@ -15,6 +18,7 @@ export class OutcomeSectionComponent implements OnInit {
     formBuilder: UntypedFormBuilder;
     /* Service to track current section */
     sectionService: SectionService
+    configService: ConfigService
 
     /* |--------- COMMENT ELEMENTS - DECLARATION ---------| */
 
@@ -23,23 +27,29 @@ export class OutcomeSectionComponent implements OnInit {
     /* Flag to check if the comment has been correctly sent to S3 */
     commentSent: boolean;
 
+    @Input() worker: Worker
     @Input() triesAllowed: number
     @Input() tryCurrent: number
     @Input() messages: Array<string>
     @Input() tokenInput: string
     @Input() tokenOutput: string
-    @Input() platform: string
-    @Input() completionCode: string
 
     @Output() performReset: EventEmitter<boolean>;
     @Output() commentEmitter: EventEmitter<string>;
 
+    statusCodes = StatusCodes
+
     constructor(
         formBuilder: UntypedFormBuilder,
-        sectionService: SectionService
+        sectionService: SectionService,
+        configService: ConfigService
     ) {
+
+        console.log("here")
+
         this.formBuilder = formBuilder
         this.sectionService = sectionService
+        this.configService = configService
 
         this.performReset = new EventEmitter<boolean>()
         this.commentEmitter = new EventEmitter<string>()
@@ -51,13 +61,15 @@ export class OutcomeSectionComponent implements OnInit {
             "comment": new UntypedFormControl(''),
         });
 
+        console.log(this.statusCodes)
+
     }
 
     ngOnInit(): void {
     }
 
     public completeTask() {
-        window.open(`https://app.prolific.co/submissions/complete?cc=${this.completionCode}`, "_blank");
+        window.open(`https://app.prolific.co/submissions/complete?cc=${this.configService.environment.prolific_completion_code}`, "_blank");
     }
 
     public performCommentSaving() {

@@ -2069,6 +2069,14 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         console.print(f"Building output specification")
         toloka_output_spec_file = f"{folder_build_toloka_path}output_specification.json"
         output_specification = {
+            "token_input": {
+                "type": "string",
+                "hidden": False,
+                "required": True,
+                "max_length": 11,
+                "min_length": 11,
+                "allowed_values": tokens_input
+            },
             "token_output": {
                 "type": "string",
                 "hidden": False,

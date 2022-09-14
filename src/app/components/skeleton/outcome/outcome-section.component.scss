@@ -2,96 +2,50 @@
 
 /* |--- General ---| */
 
-ul li {
-  font-size: 1.3em;
-}
-
-p.text-desc {
-  font-size: 1.5em;
-  margin-top: 1%;
-  margin-bottom: 1%;
-}
-
-p.text-desc-small {
-  font-size: 1.3em;
-  margin-top: 1%;
-  margin-bottom: 1%;
-}
-
 .outcome-section {
-  margin: 2% auto;
+  margin: 1%;
 }
 
 .outcome-section mat-card {
-  padding-top: 0.01%;
-  padding-bottom: 1.5%;
-  margin: auto;
+  margin: 1% auto;
 }
 
 .outcome-section mat-card-title {
+  margin: 0 !important;
+}
+
+.outcome-section .main-title {
   text-align: center;
   text-transform: uppercase;
-  margin: 1% auto 0.5%;
+  margin: 0 auto 0;
 }
 
-
-.success-title {
-  background-color: #66bb6a;
-  color: white;
+.outcome-section .sub-title {
+  padding-top: 0 !important;
+  text-transform: uppercase;
+  font-size: 1.2em;
 }
 
-.failure-title {
-  color: white;
-  background-color: #ef5350;
-}
+.outcome-section .description {
+  margin-top: 10px !important;
+  margin-bottom: 10px !important;
+  font-size: 1.1em;
 
-.retry-title {
-  background-color: #ff4081;
-  color: white;
-}
-
-.overbooking-title {
-  background-color: #ff8c00;
-  color: white;
-}
-
-.warning-title {
-  background-color: #ff8c00;
-  color: white;
-}
-
-.outcome-section h2 {
-  margin-bottom: 0;
-  text-align: center;
-}
-
-.outcome-section h3 {
-  margin-top: 0;
-  margin-bottom: 0;
-}
-
-.outcome-section h4 {
-  margin-top: 0;
-  margin-bottom: 0;
-}
-
-.outcome-section h6 {
-  margin-top: 0;
+  h1 {
+    text-align: center;
+  }
 }
 
 .outcome-section div {
   margin: auto;
   text-align: center;
+  button {
+    font-size: 1.1em;
+    padding: 10px 30px;
+  }
 }
 
-#button-completion {
-  font-size: 2em;
-  width: 50%;
-  height: 80px;
-  margin-bottom: 1.5%;
-}
-
-.comment-form {
+.outcome-section .comment-form {
   margin-top: 1.5%;
 
   mat-form-field {
@@ -99,7 +53,7 @@ p.text-desc-small {
   }
 }
 
-#comment-button {
+.outcome-section .comment-button {
   text-align: center;
 }
 
@@ -111,7 +65,17 @@ p.text-desc-small {
   color: #66bb6a;
 }
 
-.outcome-section #not-allowed-section {
-  text-align: center;
-  margin: auto;
+.yellow-title {
+  background-color: #ff8c00;
+  color: white;
+}
+
+.green-title {
+  background-color: #66bb6a;
+  color: white;
+}
+
+.red-title {
+  color: white;
+  background-color: #ef5350;
 }

@@ -1,21 +1,44 @@
 import {Injectable} from "@angular/core";
 import {Task} from "../models/skeleton/task";
 
+export enum StatusCodes {
+    IP_INFORMATION_MISSING = '100',
+    TASK_SUCCESSFUL = '200',
+    TASK_ALREADY_COMPLETED = '201',
+    TASK_HIT_ASSIGNED = '202',
+    TASK_FAILED_WITH_TRIES = '300',
+    TASK_FAILED_NO_TRIES = '301',
+    TASK_TIME_EXPIRED = '400',
+    TASK_OVERBOOKING = '401',
+    TASK_COMPLETED_BY_OTHERS = '402',
+    WORKER_RETURNING_BLOCK = '500',
+    WORKER_BLACKLIST_CURRENT = '501',
+    WORKER_BLACKLIST_PREVIOUS = '503',
+    WORKER_WHITELIST_CURRENT = '503',
+    WORKER_WHITELIST_PREVIOUS = '504',
+    CODE_UNKNOWN = '999',
+}
+
 @Injectable({
     providedIn: 'root',
 })
+
 export class SectionService {
 
     private _currentSection: string;
     private _instructionsAllowed: boolean
     /* Variables to handle the control flow of the task */
-    private _taskAllowed: boolean;
     private _taskStarted: boolean;
+
+    private _taskAllowed: boolean;
     private _taskCompleted: boolean;
     private _taskSuccessful: boolean;
     private _taskFailed: boolean;
     private _taskAlreadyCompleted: boolean;
     private _taskOverbooking: boolean;
+
+    private _errorStatusCode: number
+
     private _checkCompleted: boolean;
     private _taskInstructionsRead: boolean;
     private _stepIndex: number;
@@ -32,6 +55,9 @@ export class SectionService {
         this._taskFailed = false
         this._taskAlreadyCompleted = false
         this._taskOverbooking = false
+
+        this._errorStatusCode = 0
+
         this._stepIndex = 0
     }
 
@@ -46,6 +72,7 @@ export class SectionService {
     get instructionsAllowed(): boolean {
         return this._instructionsAllowed
     }
+
     set instructionsAllowed(value: boolean) {
         this._instructionsAllowed = value;
     }

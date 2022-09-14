@@ -159,6 +159,18 @@ export class Worker {
         return uagData
     }
 
+    prettyTimeArrival(): string {
+        return new Date(this.getParameter('time_arrival')).toLocaleString()
+    }
+
+    prettyTimeCompletion(): string {
+        return new Date(this.getParameter('time_completion')).toLocaleString()
+    }
+
+    prettyTimeRemoval(): string {
+        return new Date(this.getParameter('time_removal')).toLocaleString()
+    }
+
     convertToSnakeCase(property) {
         return property.replace(/(?:^|\.?)([A-Z])/g, function (x, y) {
             return "_" + y.toLowerCase()
