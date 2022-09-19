@@ -46,6 +46,33 @@
                 </ng-container>
             </div>
         </mat-card>
+        <mat-card>
+            <mat-card-title class="sub-title">Submission Instructions</mat-card-title>
+            <mat-divider [inset]="true"></mat-divider>
+            <mat-card-content *ngIf="this.worker.getParameter('platform')=='mturk'" class="description">
+                <p>Copy your output token (shown below) and insert it on the platform’s page to complete your work.</p>
+                <h1>{{this.worker.getParameter('token_output')}}</h1>
+            </mat-card-content>
+            <mat-card-content *ngIf="this.worker.getParameter('platform')=='toloka'" class="description">
+                <p>Copy your tokens (shown below) and insert them on the platform’s page to complete your work.</p>
+                <h1>Token Input: {{this.worker.getParameter('token_input')}}</h1>
+                <h1>Token Output: {{this.worker.getParameter('token_output')}}</h1>
+            </mat-card-content>
+            <ng-container *ngIf="this.worker.getParameter('platform')=='prolific'">
+                <mat-card-content class="description">
+                    <p>Click the completion button (shown below) to be redirected to the platform and complete your work.</p>
+                </mat-card-content>
+                <div class="completion-div">
+                    <button mat-flat-button color="primary" class="button-completion" (click)="completeTask()">Complete</button>
+                </div>
+            </ng-container>
+            <ng-container *ngIf="this.worker.getParameter('platform')=='custom'">
+                <mat-card-content class="description">
+                    <p>This task was not published on a crowdsourcing platform. We kindly suggest you to copy and store your output token (shown below).</p>
+                    <h1>{{this.worker.getParameter('token_output')}}</h1>
+                </mat-card-content>
+            </ng-container>
+        </mat-card>
     </ng-container>
 
     <ng-container *ngIf="this.worker.getParameter('status_code')==this.statusCodes.TASK_ALREADY_COMPLETED">
@@ -78,16 +105,16 @@
                     <p>Click the completion button (shown below) to be redirected to the platform and complete your work.</p>
                 </mat-card-content>
                 <div class="completion-div">
-                    <button mat-flat-button color="primary" id="button-completion" (click)="completeTask()">Complete</button>
+                    <button mat-flat-button color="primary" class="button-completion" (click)="completeTask()">Complete</button>
                 </div>
             </ng-container>
             <ng-container *ngIf="this.worker.getParameter('platform')=='custom'">
                 <mat-card-content class="description">
-                    <p>This task was not published on a crowdsourcing platform. We kindly suggest you to copy and store your output token (shown below).</p>
-                    <h1>{{this.worker.getParameter('token_output')}}</h1>
+                    <p>This task was not published on a crowdsourcing platform. We kindly suggest you to copy and store your tokens (shown below).</p>
+                    <h1>Token Input: {{this.worker.getParameter('token_input')}}</h1>
+                    <h1>Token Output: {{this.worker.getParameter('token_output')}}</h1>
                 </mat-card-content>
             </ng-container>
-
         </mat-card>
         <mat-card>
             <mat-card-title class="sub-title">Comment</mat-card-title>

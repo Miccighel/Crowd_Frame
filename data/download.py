@@ -655,6 +655,7 @@ if 'toloka' in platforms:
         "assignment_skip_date",
         "assignment_reject_date",
         "assignment_token_input",
+        "assignment_token_input_final",
         "assignment_token_output",
         "assignment_reward",
         "assignment_rejected",
@@ -724,7 +725,6 @@ if 'toloka' in platforms:
         assignments_counter = 0
 
         for pool in toloka_client.find_pools(project_id=project_data.id, sort=['last_started']).items:
-            console.print(f"Processing pool [cyan]{pool.id}")
             row['pool_id'] = pool.id
             row['pool_requester_id'] = pool.owner.id
             row['pool_requester_myself'] = pool.owner.myself
@@ -750,7 +750,7 @@ if 'toloka' in platforms:
             task_suites = []
             for task_suite in toloka_client.find_task_suites(pool_id=pool.id, sort=['created']).items:
                 task_suites.append(task_suite)
-            for task_suite in task_suites:
+            for task_suite in tqdm.tqdm(task_suites, desc=f"Processing task suites for pool {pool.id}:"):
                 row['task_suite_id'] = task_suite.id
                 row['task_suite_creation_date'] = task_suite.created.strftime("%Y-%m-%d %H:%M:%S")
                 row['task_suite_remaining_overlap'] = task_suite.remaining_overlap
@@ -776,6 +776,13 @@ if 'toloka' in platforms:
                             row['assignment_token_input'] = np.nan
                     else:
                         row['assignment_token_input'] = np.nan
+                    if assignment.solutions:
+                        if assignment.solutions[0].output_values:
+                            row['assignment_token_input_final'] = assignment.solutions[0].output_values['token_input'] if 'token_input' in assignment.solutions[0].output_values else np.nan
+                        else:
+                            row['assignment_token_input_final'] = np.nan
+                    else:
+                        row['assignment_token_output'] = np.nan
                     if assignment.solutions:
                         if assignment.solutions[0].output_values:
                             row['assignment_token_output'] = assignment.solutions[0].output_values['token_output'] if 'token_output' in assignment.solutions[0].output_values else np.nan
@@ -814,7 +821,7 @@ if 'toloka' in platforms:
                         else:
                             row['worker_id'] = np.nan
                     assignments_counter = assignments_counter + 1
-                    df_toloka = df_toloka.append(row, ignore_index=True)
+                    df_toloka.loc[len(df_toloka)] = row
 
         df_toloka.to_csv(df_toloka_data_path, index=False)
 
