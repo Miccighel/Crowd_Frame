@@ -1,4 +1,4 @@
-/* |--- GENERAL STYLES --| */
+@import "~@angular/material/prebuilt-themes/indigo-pink.css";
 
 
 html, body {
@@ -8,7 +8,8 @@ html, body {
 body {
   margin: 0;
   font-family: Roboto, "Helvetica Neue", sans-serif;
-  background-color: rgba(0, 0, 0, .10);
+  font-size: medium;
+  background-color: #00000009;
 }
 
 img {
@@ -39,21 +40,20 @@ mat-card-title {
   font-weight: initial !important;
 }
 
-mat-card mat-card-content {
-  margin-top: 1% !important;
+mat-card  {
+  margin:auto;
 }
 
-mat-card .mat-card-subtitle {
-  margin-top: 0 !important;
+mat-card-actions {
+  margin-top: 1%;
 }
 
 .mat-radio-label {
   white-space: normal !important;
 }
 
-
 .mat-card > .mat-card-actions:last-child {
-  margin-bottom: 0 !important;
+  margin-bottom: 1em !important;
 }
 
 .mat-dialog-container h2 {
@@ -66,6 +66,14 @@ mat-card .mat-card-subtitle {
   border-top: 1px solid rgba(0, 0, 0, .12);
   border-bottom: 1px solid rgba(0, 0, 0, .12);
   font-weight: lighter !important;
+}
+
+.form-note {
+  margin: 0;
+}
+
+.angular-editor {
+  margin-bottom: 10px;
 }
 
 .highlight-green {
@@ -129,6 +137,10 @@ mat-card .mat-card-subtitle {
   padding-bottom: 12px;
 }
 
+.initial {
+  font-weight: initial;
+}
+
 .lighter {
   font-weight: lighter;
 }
@@ -159,6 +171,14 @@ mat-card .mat-card-subtitle {
 
 .width-100 {
   width: 100% !important;
+}
+
+.width-75 {
+  width: 75% !important;
+}
+
+.width-20 {
+  width: 20% !important;
 }
 
 .p-0 {

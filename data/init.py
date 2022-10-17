@@ -1,35 +1,43 @@
-#!C:/Users/Simone/AppData/Local/Microsoft/WindowsApps/python3.9.exe
+#!/usr/bin/env python
 # coding: utf-8
 
-import hashlib
-import hmac
 import json
+from python_on_whales import DockerClient
+import docker
+from mako.template import Template
 import os
-import random
-import shutil
+from datetime import datetime
+import requests
+import pandas as pd
 import subprocess
+import string
+import datefinder
+import random
+import hashlib
+import shutil
+import hmac
 import textwrap
 import boto3
-import pandas as pd
+from zipfile import ZipFile
 import time
-import datetime
 from distutils.util import strtobool
 from pathlib import Path
 from shutil import copy2
 from botocore.exceptions import ClientError
-from botocore.exceptions import ProfileNotFound
+from docker.errors import ImageNotFound
 from dotenv import load_dotenv
-from mako.template import Template
 from rich.console import Console
 from rich.panel import Panel
 from rich.progress import track
+import warnings
+
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 console = Console()
 
 home = str(Path.home())
 iam_path = '/Crowd_Frame/'
-os.chdir("C:\\Users\\Simone\\Desktop\\Crowd_Frame-master\\data")
-os.chdir("../data/")
+
 config_user_name = 'config-user'
 mturk_user_name = 'mturk-user'
 
@@ -41,10 +49,21 @@ folder_build_path = "build/"
 folder_build_config_path = "build/config/"
 folder_build_task_path = "build/task/"
 folder_build_mturk_path = "build/mturk/"
+folder_build_toloka_path = "build/toloka/"
 folder_build_env_path = "build/environments/"
 folder_build_deploy_path = "build/deploy/"
 folder_build_skeleton_path = "build/skeleton/"
 folder_tasks_path = "tasks/"
+
+filename_hits_config = "hits.json"
+filename_dimensions_config = "dimensions.json"
+filename_instructions_general_config = "instructions_general.json"
+filename_instructions_evaluation_config = "instructions_evaluation.json"
+filename_questionnaires_config = "questionnaires.json"
+filename_search_engine_config = "search_engine.json"
+filename_task_settings_config = "task.json"
+filename_workers_settings_config = "workers.json"
+
 
 def serialize_json(folder, filename, data):
     if not os.path.exists(folder):
@@ -59,6 +78,10 @@ def remove_json(folder, filename):
     os.remove(f"{folder}{filename}")
 
 
+def random_string(length=11):
+    letters = string.ascii_uppercase
+    return ''.join(random.choice(letters) for i in range(length))
+
 def read_json(path):
     if os.path.exists(path):
         with open(path, "r", encoding="utf8") as file:
@@ -71,7 +94,6 @@ def read_json(path):
 def stop_sequence():
     console.print('\n\n')
     with console.status("Stopping the ship...", spinner="aesthetic"):
-        time.sleep(5)
         exit()
 
 
@@ -83,39 +105,58 @@ env_path = Path('.') / '.env'
 load_dotenv(dotenv_path=env_path)
 
 mail_contact = os.getenv('mail_contact')
+platform = os.getenv('platform')
 profile_name = os.getenv('profile_name')
 task_name = os.getenv('task_name')
 batch_name = os.getenv('batch_name')
+task_title = os.getenv('task_title')
+batch_prefix = os.getenv('batch_prefix')
 admin_user = os.getenv('admin_user')
 admin_password = os.getenv('admin_password')
-deploy_config = os.getenv('deploy_config')
 server_config = os.getenv('server_config')
-deploy_config = strtobool(deploy_config) if deploy_config is not None else False
+enable_solver = strtobool(os.getenv('enable_solver')) if os.getenv('enable_solver') is not None else False
 aws_region = os.getenv('aws_region')
 aws_private_bucket = os.getenv('aws_private_bucket')
 aws_deploy_bucket = os.getenv('aws_deploy_bucket')
+toloka_oauth_token = os.getenv('toloka_oauth_token')
+prolific_completion_code = os.getenv('prolific_completion_code')
+prolific_api_token = os.getenv('prolific_api_token')
 budget_limit = os.getenv('budget_limit')
 bing_api_key = os.getenv('bing_api_key')
 ip_info_token = os.getenv('ip_info_token')
+ip_geolocation_api_key = os.getenv('ip_geolocation_api_key')
+ip_api_api_key = os.getenv('ip_api_api_key')
 user_stack_token = os.getenv('user_stack_token')
-
+fake_json_token = os.getenv('fake_json_token')
 table_logging_name = f"Crowd_Frame-{task_name}_{batch_name}_Logger"
 table_data_name = f"Crowd_Frame-{task_name}_{batch_name}_Data"
 table_acl_name = f"Crowd_Frame-{task_name}_{batch_name}_ACL"
 api_gateway_name = 'Crowd_Frame-API'
+link_public = f"https://{aws_deploy_bucket}.s3.{aws_region}.amazonaws.com/{task_name}/{batch_name}/index.html"
 
-boto_session = boto3.Session()
-iam_client = boto_session.client('iam', region_name=aws_region)
+if profile_name is None:
+    profile_name = 'default'
 
-console.rule("0 - Initialization")
+iam_client = boto3.Session(profile_name=profile_name).client('iam', region_name=aws_region)
+
+step_index = 1
+
+console.rule(f"{step_index} - Initialization")
+step_index = step_index + 1
 
 console.print("[bold]Init.py[/bold] script launched")
 console.print(f"Working directory: [bold]{os.getcwd()}[/bold]")
 
-console.rule("1 - Configuration policy")
+if batch_prefix is None:
+    batch_prefix = ''
+
+if platform is None:
+    platform = 'none'
+
+console.rule(f"{step_index} - Configuration policy")
+step_index = step_index + 1
 
 with console.status("Generating configuration policy", spinner="aesthetic") as status:
-    time.sleep(2)
     configuration_policies = {
         "Version": "2012-10-17",
         "Statement": [
@@ -144,8 +185,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                     "s3:PutBucketCORS",
                     "s3:PutObject",
                     "s3:PutObjectAcl",
-                    "s3:HeadObject",
-                    "s3:ListObjects",
+                    "s3:GetObject",
+                    "s3:ListBucket",
                     "sqs:ListQueues",
                     "sqs:CreateQueue",
                     "sqs:GetQueueUrl",
@@ -157,7 +198,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                     "lambda:CreateEventSourceMapping",
                     "lambda:ListEventSourceMappings",
                     "lambda:UpdateEventSourceMapping",
-                    "lambda:DeleteEventSourceMapping"
+                    "lambda:DeleteEventSourceMapping",
                 ],
                 "Resource": "*"
             }
@@ -184,11 +225,11 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 break
     serialize_json(folder_aws_generated_path, f"policy_{policy['PolicyName']}.json", policy)
 
-    console.rule(f"2 - [yellow]{config_user_name}[/yellow] creation")
+    console.rule(f"{step_index} - [yellow]{config_user_name}[/yellow] creation")
+    step_index = step_index + 1
 
     status.start()
     status.update(f"Generating user [yellow]{config_user_name}[/yellow] and attaching configuration policy")
-    time.sleep(2)
     try:
         user = iam_client.create_user(UserName=config_user_name, Path=iam_path)
         console.print(f"[green]User created[/green], HTTP STATUS CODE: {user['ResponseMetadata']['HTTPStatusCode']}.")
@@ -198,11 +239,11 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     iam_client.attach_user_policy(UserName=config_user_name, PolicyArn=policy['Arn'])
     serialize_json(folder_aws_generated_path, f"user_{user['User']['UserName']}.json", user)
 
-    console.rule(f"3 - Amazon Mechanical Turk policy")
+    console.rule(f"{step_index} - Amazon Mechanical Turk policy")
+    step_index = step_index + 1
 
     status.start()
     status.update(f"Generating Amazon Mechanical Turk read-only access policy")
-    time.sleep(2)
 
     policy = {
         "Version": "2012-10-17",
@@ -241,11 +282,11 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 break
     serialize_json(folder_aws_generated_path, f"policy_{policy['PolicyName']}.json", policy)
 
-    console.rule(f"4 - [yellow]{mturk_user_name}[/yellow] creation")
+    console.rule(f"{step_index} - [yellow]{mturk_user_name}[/yellow] creation")
+    step_index = step_index + 1
 
     status.start()
     status.update(f"Generating user [yellow]{mturk_user_name}[/yellow] and attaching read-only Amazon MTurk access policy")
-    time.sleep(2)
     try:
         user = iam_client.create_user(UserName=mturk_user_name, Path=iam_path)
         console.print(f"[green]User created[/green], HTTP STATUS CODE: {user['ResponseMetadata']['HTTPStatusCode']}.")
@@ -255,11 +296,11 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     iam_client.attach_user_policy(UserName=mturk_user_name, PolicyArn=policy['Arn'])
     serialize_json(folder_aws_generated_path, f"user_{user['User']['UserName']}.json", user)
 
-    console.rule("5 - Local Configuration File")
+    console.rule(f"{step_index} - Local Configuration File")
+    step_index = step_index + 1
 
     status.start()
     status.update("Adding users to local configuration file")
-    time.sleep(2)
 
     users = [config_user_name, mturk_user_name]
 
@@ -304,8 +345,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                                 lines = f.readlines()
                                 for line in lines:
                                     if line.strip() == f'[{user}]':
-                                        print(f"Line: {line.strip()}")
-                                        print(f"User: [{user}]")
                                         line_index = line_counter
                                     line_counter += 1
                             if line_index is not None:
@@ -346,11 +385,11 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         else:
             console.print('[bold red]Before using this tool you MUST install AWS CLI, run `aws configure` command and insert the credentials of a valid IAM user with admin access')
 
-    console.rule(f"6 - [yellow]{config_user_name}[/yellow] authentication")
+    console.rule(f"{step_index} - [yellow]{config_user_name}[/yellow] authentication")
+    step_index = step_index + 1
 
     status.start()
     status.update("Checking local configuration file")
-    time.sleep(2)
 
     method = None
     status.stop()
@@ -365,21 +404,20 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.print(f"Username: [bold cyan on white]{root_user.user_name}")
     console.print(f"ARN: [bold cyan on white]{root_user.arn}")
     console.print(f"AWS Account ID: [bold cyan on white]{aws_account_id}")
-        
-    s3_client = boto_session.client('s3', region_name=aws_region)
-    s3_resource = boto_session.resource('s3')
-    budget_client = boto3.client('budgets', region_name=aws_region)
 
     api_gateway_client = boto_session.client('apigatewayv2', region_name=aws_region)
+    s3_client = boto_session.client('s3', region_name=aws_region)
+    s3_resource = boto_session.resource('s3')
     sqs_client = boto_session.client('sqs', region_name=aws_region)
     dynamodb_client = boto_session.client('dynamodb', region_name=aws_region)
     lambda_client = boto_session.client('lambda', region_name=aws_region)
+    budget_client = boto3.Session(profile_name=profile_name).client('budgets', region_name=aws_region)
 
-    console.rule(f"7 - [yellow]{root_user.user_name}[/yellow] policies check")
+    console.rule(f"{step_index} - [yellow]{root_user.user_name}[/yellow] policies check")
+    step_index = step_index + 1
 
     status.start()
     status.update(f"Checking if the required policies are correctly set up")
-    time.sleep(2)
 
     required_policies = {
         "server": [
@@ -402,8 +440,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             "s3:GetBucketCORS",
             "s3:PutBucketCORS",
             "s3:PutObject",
-            "s3:HeadObject",
-            "s3:ListObjects",
+            "s3:GetObject",
+            "s3:ListBucket",
             "sqs:ListQueues",
             "sqs:CreateQueue",
             "sqs:GetQueueAttributes",
@@ -412,7 +450,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             "apigateway:POST",
             "dynamodb:CreateTable",
             "lambda:CreateFunction",
-            "lambda:CreateEventSourceMapping"
+            "lambda:CreateEventSourceMapping",
         ],
         "no_server": [
             "iam:GetUser",
@@ -434,8 +472,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             "s3:GetBucketCORS",
             "s3:PutBucketCORS",
             "s3:PutObject",
-            "s3:HeadObject",
-            "s3:ListObjects",
+            "s3:GetObject",
+            "s3:ListBucket",
             "dynamodb:CreateTable",
         ]
     }
@@ -466,11 +504,11 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         console.print("[bold red]\nYou must grant access to the SimulatePrincipalPolicy operation!\n")
         stop_sequence()
 
-    console.rule(f"8 - Crowd workers interaction policy")
+    console.rule(f"{step_index} - Crowd workers interaction policy")
+    step_index = step_index + 1
 
     status.start()
     status.update(f"Creating policy to allow crowd workers interaction")
-    time.sleep(2)
 
     crowd_workers_policy = {
         "Version": "2012-10-17",
@@ -498,6 +536,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                     "dynamodb:PutItem",
                     "dynamodb:GetItem",
                     "dynamodb:Query",
+                    "dynamodb:Scan",
                     "dynamodb:ListTables"
                 ],
                 "Resource": "*"
@@ -521,11 +560,11 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     console.print(f"Policy ARN: [cyan underline]{policy['Policy']['Arn']}[/cyan underline]")
 
-    console.rule(f"9 - [cyan underline]crowd-worker[/cyan underline] user creation")
+    console.rule(f"{step_index} - [cyan underline]crowd-worker[/cyan underline] user creation")
+    step_index = step_index + 1
 
     status.start()
     status.update(f"Creating user")
-    time.sleep(2)
 
     user = None
     try:
@@ -569,11 +608,11 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     aws_worker_access_id = key_data['AccessKey']['AccessKeyId']
     aws_worker_access_secret = key_data['AccessKey']['SecretAccessKey']
 
-    console.rule(f"10 - Private bucket [cyan underline]{aws_private_bucket}[/cyan underline] creation")
+    console.rule(f"{step_index} - Private bucket [cyan underline]{aws_private_bucket}[/cyan underline] creation")
+    step_index = step_index + 1
 
     status.start()
     status.update(f"Creating bucket")
-    time.sleep(2)
 
     buckets = []
     for bucket in s3_resource.buckets.all():
@@ -588,13 +627,13 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 CreateBucketConfiguration={'LocationConstraint': aws_region}
             )
         serialize_json(folder_aws_generated_path, f"bucket_{aws_private_bucket}.json", private_bucket)
-        time.sleep(2)
         console.print(f"[green]Bucket creation completed[/green], HTTP STATUS CODE: {private_bucket['ResponseMetadata']['HTTPStatusCode']}.")
     except s3_client.exceptions.BucketAlreadyOwnedByYou as error:
         console.print(f"[yellow]Bucket already created[/yellow], HTTP STATUS CODE: {error.response['ResponseMetadata']['HTTPStatusCode']}.")
     except s3_client.exceptions.BucketAlreadyOwnedByYou as error:
         console.print(f"[yellow]Bucket already created[/yellow], HTTP STATUS CODE: {error.response['ResponseMetadata']['HTTPStatusCode']}.")
-
+    except s3_client.exceptions.BucketAlreadyOwnedByYou as error:
+        console.print(f"[yellow]Bucket already created[/yellow], HTTP STATUS CODE: {error.response['ResponseMetadata']['HTTPStatusCode']}.")
 
     response = s3_client.put_public_access_block(
         Bucket=aws_private_bucket,
@@ -663,18 +702,17 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     cors_configuration = s3_client.get_bucket_cors(Bucket=aws_private_bucket)
     serialize_json(folder_aws_generated_path, f"bucket_{aws_private_bucket}_cors.json", cors_configuration)
 
-    console.rule(f"11 - Deploy bucket [cyan underline]{aws_deploy_bucket}[/cyan underline] creation")
+    console.rule(f"{step_index} - Deploy bucket [cyan underline]{aws_deploy_bucket}[/cyan underline] creation")
+    step_index = step_index + 1
 
     status.start()
     status.update(f"Creating bucket")
-    time.sleep(2)
 
     try:
         if aws_region == 'us-east-1':
             deploy_bucket = s3_client.create_bucket(Bucket=aws_deploy_bucket)
         else:
             deploy_bucket = s3_client.create_bucket(Bucket=aws_deploy_bucket, CreateBucketConfiguration={'LocationConstraint': aws_region})
-        time.sleep(2)
         serialize_json(folder_aws_generated_path, f"bucket_{aws_deploy_bucket}.json", deploy_bucket)
         console.print(f"[green]Bucket creation completed[/green], HTTP STATUS CODE: {deploy_bucket['ResponseMetadata']['HTTPStatusCode']}.")
     except s3_client.exceptions.BucketAlreadyOwnedByYou as error:
@@ -730,7 +768,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         policy['Policy'] = json.loads(policy['Policy'])
     serialize_json(folder_aws_generated_path, f"bucket_{aws_deploy_bucket}_policy.json", policy)
 
-    console.rule(f"12 - Table [cyan underline]{table_data_name}[/cyan underline] setup")
+    console.rule(f"{step_index} - Table [cyan underline]{table_data_name}[/cyan underline] setup")
+    step_index = step_index + 1
 
     try:
         table_name = table_data_name
@@ -747,26 +786,66 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         status.stop()
         console.print(f"Table [cyan underline]{table_data_name}[/cyan underline] already created")
 
-    console.rule(f"13 - Table [cyan underline]{table_acl_name}[/cyan underline] setup")
+    console.rule(f"{step_index} - Table [cyan underline]{table_acl_name}[/cyan underline] setup")
+    step_index = step_index + 1
 
     try:
         table_name = table_acl_name
         table = dynamodb_client.create_table(
             TableName=table_name,
-            AttributeDefinitions=[{'AttributeName': 'identifier', 'AttributeType': 'S'}],
+            AttributeDefinitions=[
+                {'AttributeName': 'identifier', 'AttributeType': 'S'},
+                {'AttributeName': 'unit_id', 'AttributeType': 'S'},
+                {'AttributeName': 'time_arrival', 'AttributeType': 'S'},
+                {'AttributeName': 'ip_address', 'AttributeType': 'S'},
+            ],
             KeySchema=[{'AttributeName': 'identifier', 'KeyType': 'HASH'}],
+            GlobalSecondaryIndexes=[
+                {
+                    'IndexName': 'unit_id-index',
+                    'KeySchema': [
+                        {
+                            'AttributeName': 'unit_id',
+                            'KeyType': 'HASH',
+                        },
+                        {
+                            'AttributeName': 'time_arrival',
+                            'KeyType': 'RANGE'
+                        }
+                    ],
+                    "Projection": {
+                        "ProjectionType": "ALL"
+                    },
+                },
+                {
+                    'IndexName': 'ip_address-index',
+                    'KeySchema': [
+                        {
+                            'AttributeName': 'ip_address',
+                            'KeyType': 'HASH',
+                        },
+                        {
+                            'AttributeName': 'time_arrival',
+                            'KeyType': 'RANGE'
+                        }
+                    ],
+                    "Projection": {
+                        "ProjectionType": "ALL"
+                    },
+                }
+            ],
             BillingMode='PAY_PER_REQUEST'
         )
         serialize_json(folder_aws_generated_path, f"dynamodb_table_{table_name}.json", table)
-        console.print(f"Table {table_acl_name} created")
+        console.print(f"Table [green]{table_acl_name}[/green] created")
     except dynamodb_client.exceptions.ResourceInUseException:
-        console.print(f"Table {table_acl_name} already created")
+        console.print(f"Table [cyan underline]{table_acl_name}[/cyan underline] already created")
 
-    console.rule(f"14 - Logging infrastructure setup")
+    console.rule(f"{step_index} - Logging infrastructure setup")
+    step_index = step_index + 1
 
     status.start()
     status.update(f"Setting up policies")
-    time.sleep(2)
 
     console.print(f"Modality chosen: [cyan on white]{server_config}")
 
@@ -816,18 +895,40 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             console.print("[green]Policies correctly set up")
 
         status.start()
+        status.update(f"Table {table_logging_name} setup")
+
+        try:
+            table_name = table_logging_name
+            table = dynamodb_client.create_table(
+                TableName=table_name,
+                AttributeDefinitions=[{'AttributeName': 'sequence', 'AttributeType': 'S'}, {'AttributeName': 'worker', 'AttributeType': 'S'}],
+                KeySchema=[{'AttributeName': 'worker', 'KeyType': 'HASH'}, {'AttributeName': 'sequence', 'KeyType': 'RANGE'}],
+                BillingMode='PAY_PER_REQUEST'
+            )
+            serialize_json(folder_aws_generated_path, f"dynamodb_table_{table_name}.json", table)
+            status.stop()
+            console.print(f"{table_logging_name} created")
+        except dynamodb_client.exceptions.ResourceInUseException:
+            status.stop()
+            console.print(f"Table {table_logging_name} already created")
+
+        status.start()
         status.update('Queue service setup')
-        time.sleep(2)
 
         queue = {}
         queue_name = "Crowd_Frame-Queue"
+        queue_new = False
         if 'QueueUrls' not in sqs_client.list_queues(QueueNamePrefix=queue_name):
             with open(f"{folder_aws_path}policy/SQSPolicy.json") as f:
                 policy_document = json.dumps(json.load(f))
             queue = sqs_client.create_queue(
                 QueueName=queue_name,
-                Attributes={'Policy': policy_document}
+                Attributes={
+                    'Policy': policy_document,
+                    'VisibilityTimeout': '120'
+                }
             )
+            queue_new = True
             status.stop()
             console.print("Queue created")
         else:
@@ -842,8 +943,31 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         serialize_json(folder_aws_generated_path, f"queue_{queue_name}.json", queue)
 
         status.start()
+        status.update('Lambda setup')
+        function_name = 'Crowd_Frame-Logger'
+        function_new = False
+        if not os.path.exists(f"{folder_aws_path}index.zip"):
+            with ZipFile(f"{folder_aws_path}index.zip", 'w') as zipf:
+                zipf.write(f"{folder_aws_path}index.js", arcname='index.js')
+        try:
+            response = lambda_client.create_function(
+                FunctionName=function_name,
+                Runtime='nodejs14.x',
+                Handler='index.handler',
+                Role=f'arn:aws:iam::{aws_account_id}:role{iam_path}LambdaToDynamoDBAndS3',
+                Code={'ZipFile': open(f"{folder_aws_path}index.zip", 'rb').read()},
+                Timeout=20,
+                PackageType='Zip'
+            )
+            function_new = True
+            serialize_json(folder_aws_generated_path, f"lambda_{function_name}.json", response)
+            console.print('[green]Function created.')
+        except lambda_client.exceptions.ResourceConflictException as error:
+            console.print(f"[yellow]Function already created.")
+        status.stop()
+
+        status.start()
         status.update('Gateway setup')
-        time.sleep(2)
 
         if not any(api for api in api_gateway_client.get_apis()['Items'] if api['Name'] == api_gateway_name):
             response = api_gateway_client.create_api(
@@ -892,51 +1016,21 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             console.print(f'[link={api["ApiEndpoint"]}/log]API endpoint[/link] already created')
 
         status.start()
-        status.update(f"Table {table_logging_name} setup")
-        time.sleep(2)
-
-        try:
-            table_name = table_logging_name
-            table = dynamodb_client.create_table(
-                TableName=table_name,
-                AttributeDefinitions=[{'AttributeName': 'sequence', 'AttributeType': 'S'}, {'AttributeName': 'worker', 'AttributeType': 'S'}],
-                KeySchema=[{'AttributeName': 'worker', 'KeyType': 'HASH'}, {'AttributeName': 'sequence', 'KeyType': 'RANGE'}],
-                BillingMode='PAY_PER_REQUEST'
-            )
-            serialize_json(folder_aws_generated_path, f"dynamodb_table_{table_name}.json", table)
-            status.stop()
-            console.print(f"{table_logging_name} created")
-        except dynamodb_client.exceptions.ResourceInUseException:
-            status.stop()
-            console.print(f"Table {table_logging_name} already created")
-
-        status.start()
-        status.update('Lambda setup')
-        time.sleep(2)
-        function_name = 'Crowd_Frame-Logger'
-        try:
-            response = lambda_client.create_function(
-                FunctionName=function_name,
-                Runtime='nodejs14.x',
-                Handler='index.handler',
-                Role=f'arn:aws:iam::{aws_account_id}:role{iam_path}LambdaToDynamoDBAndS3',
-                Code={'ZipFile': open(f"{folder_aws_path}index.zip", 'rb').read()},
-                Timeout=10,
-                PackageType='Zip'
-            )
-            serialize_json(folder_aws_generated_path, f"lambda_{function_name}.json", response)
+        status.update('Event source mapping between queue and lambda setup')
+        source_mappings = lambda_client.list_event_source_mappings(EventSourceArn=queue['Attributes']['QueueArn'])
+        if queue_new or function_new or len(source_mappings['EventSourceMappings']) <= 0:
+            for mapping in source_mappings['EventSourceMappings']:
+                lambda_client.delete_event_source_mapping(UUID=mapping['UUID'])
+            time.sleep(61)
             response = lambda_client.create_event_source_mapping(
                 EventSourceArn=queue['Attributes']['QueueArn'],
                 FunctionName=function_name,
                 Enabled=True,
-                BatchSize=1000,
-                MaximumBatchingWindowInSeconds=30
             )
             console.print(f"Event source mapping between {queue_name} and {function_name} created.")
             serialize_json(folder_aws_generated_path, f"lambda_event_source_mapping_{response['UUID']}.json", response)
-            console.print('[green]Function created.')
-        except lambda_client.exceptions.ResourceConflictException as error:
-            console.print(f"[yellow]Function already created.")
+        else:
+            console.print(f"[yellow]Event source mapping already created.")
         status.stop()
 
     elif server_config == "custom":
@@ -949,15 +1043,135 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     else:
         raise Exception("Your [italic]server_config[/italic] environment variable must be set to [white on black]aws[/white on black], [white on black]custom[/white on black] or [white on black]none[/white on black]")
 
-    console.rule(f"15 - Budgeting setting")
+    console.rule(f"{step_index} - HITs Solver setup")
+    step_index = step_index + 1
+
+    console.print(f"Environment variable [blue]enable_solver[/blue] value: [cyan]{enable_solver}")
+
+    if enable_solver:
+
+        console.print(f"HITs solver deployment started")
+
+        docker_client = docker.from_env()
+        docker_whales = DockerClient(compose_files=["docker/docker-compose.yml"])
+
+        status.update(f"Fetching solver image")
+        image_name = 'miccighel/crowd_frame-solver'
+        image_tag = 'latest'
+
+        try:
+            image = docker_client.images.get(f"{image_name}:{image_tag}")
+            console.print(f"Solver image available locally with name [green]{image_name}[/green] and tag [blue]{image_tag}[/blue]")
+        except ImageNotFound:
+            console.print(f"Fetching solver image from Docker Hub repository [yellow]{image_name}[/yellow] with tag [blue]{image_tag}[/blue]")
+            image = docker_client.images.pull(repository=image_name, tag=image_tag)
+
+        status.update(f"Fetching reverse proxy image")
+
+        image_name = 'nginx'
+        image_tag = '1.17.10'
+        try:
+            image = docker_client.images.get(f"{image_name}:{image_tag}")
+            console.print(f"Reverse proxy image available locally with name [green]{image_name}[/green] and tag [blue]{image_tag}[/blue]")
+        except ImageNotFound:
+            console.print(f"Fetching reverse proxy image from Docker Hub repository [yellow]{image_name}[/yellow] with tag [blue]{image_tag}[/blue]")
+            image = docker_client.images.pull(repository=image_name, tag=image_tag)
+
+        status.update(f"Starting containers")
+
+        docker_whales.compose.up(detach=True)
+
+        container_list = docker_client.containers.list()
+        for container in container_list:
+            console.print(f"Container with name [green]{container.name}[/green] and {container.image} deployed")
+
+        hit_solver_endpoint = "http://localhost"
+
+    else:
+        console.print("HITs solver not deployed")
+        hit_solver_endpoint = None
+
+    console.rule(f"{step_index} - Budgeting setting")
+    step_index = step_index + 1
+
     status.start()
     status.update(f"Creating role")
-    time.sleep(2)
 
     role_name = "Budgeting"
     budget_name = "crowdsourcing-tasks"
 
-    policy_document = {
+    budget_policy_document = {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Action": [
+                    "budgets:*"
+                ],
+                "Resource": "*"
+            },
+            {
+                "Effect": "Allow",
+                "Action": [
+                    "aws-portal:ViewBilling"
+                ],
+                "Resource": "*"
+            },
+            {
+                "Effect": "Allow",
+                "Action": [
+                    "iam:PassRole"
+                ],
+                "Resource": "*",
+                "Condition": {
+                    "StringEquals": {
+                        "iam:PassedToService": "budgets.amazonaws.com"
+                    }
+                }
+            },
+            {
+                "Effect": "Allow",
+                "Action": [
+                    "aws-portal:ModifyBilling",
+                    "ec2:DescribeInstances",
+                    "iam:ListGroups",
+                    "iam:ListPolicies",
+                    "iam:ListRoles",
+                    "iam:ListUsers",
+                    "iam:AttachUserPolicy",
+                    "organizations:ListAccounts",
+                    "organizations:ListOrganizationalUnitsForParent",
+                    "organizations:ListPolicies",
+                    "organizations:ListRoots",
+                    "rds:DescribeDBInstances",
+                    "sns:ListTopics"
+                ],
+                "Resource": "*"
+            }
+        ]
+    }
+
+    try:
+        policy = iam_client.create_policy(
+            PolicyName='Budgeting',
+            Description="Provides access to the budgeting configuration required by Crowd_Frame",
+            PolicyDocument=json.dumps(budget_policy_document),
+            Path=iam_path
+        )
+        console.print(f"[green]Policy creation completed[/green], HTTP STATUS CODE: {policy['ResponseMetadata']['HTTPStatusCode']}.")
+        policy = policy['Policy']
+    except iam_client.exceptions.EntityAlreadyExistsException:
+        policies = iam_client.list_policies(
+            PathPrefix=iam_path
+        )['Policies']
+        for result in policies:
+            if result['PolicyName'] == 'Budgeting':
+                policy = result
+                console.print(f"[yellow]Policy already created")
+                break
+    serialize_json(folder_aws_generated_path, f"policy_{policy['PolicyName']}.json", policy)
+
+    role_policy_document = {
         "Version": "2012-10-17",
         "Statement": [
             {
@@ -966,7 +1180,9 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 "Principal": {
                     "Service": "budgets.amazonaws.com"
                 },
-                "Action": "sts:AssumeRole"
+                "Action": [
+                    "sts:AssumeRole",
+                ]
             }
         ]
     }
@@ -975,17 +1191,14 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         role = iam_client.create_role(
             RoleName=role_name,
             Path=iam_path,
-            AssumeRolePolicyDocument=json.dumps(policy_document),
+            AssumeRolePolicyDocument=json.dumps(role_policy_document),
             Description="Allows Budgets to create and manage AWS resources on your behalf "
         )
         console.print(f"[green]Role {role_name} created")
         serialize_json(folder_aws_generated_path, f"role_{role['Role']['RoleName']}.json", role)
-        iam_client.attach_role_policy(
-            RoleName=role_name,
-            PolicyArn=f"arn:aws:iam::aws:policy/AWSBudgetsActionsWithAWSResourceControlAccess"
-        )
     except iam_client.exceptions.EntityAlreadyExistsException:
         console.print(f"[yellow]Role {role_name} already created")
+    iam_client.attach_role_policy(RoleName=role_name, PolicyArn=policy['Arn'])
 
     try:
         response = budget_client.create_budget(
@@ -1011,11 +1224,11 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 },
                 'TimeUnit': "MONTHLY",
                 'TimePeriod': {
-                    'Start': datetime.datetime.now(),
-                    'End': datetime.datetime(2087, 6, 15)
+                    'Start': datetime.now(),
+                    'End': datetime(2087, 6, 15)
                 },
                 'BudgetType': "COST",
-                'LastUpdatedTime': datetime.datetime.now()
+                'LastUpdatedTime': datetime.now()
             }
         )
         console.print(f"[green]Budget {budget_name} created")
@@ -1063,10 +1276,11 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         )
     serialize_json(folder_aws_generated_path, f"budget_{budget_name}_action_{response['ActionId']}.json", response)
 
-    console.rule(f"16 - Environment: [cyan underline]PRODUCTION[/cyan underline] creation")
+    console.rule(f"{step_index} - Environment: [cyan underline]PRODUCTION[/cyan underline] creation")
+    step_index = step_index + 1
+
     status.start()
     status.update(f"Creating environment")
-    time.sleep(2)
 
     environment_development = f"{folder_build_env_path}environment.ts"
     environment_production = f"{folder_build_env_path}environment.prod.ts"
@@ -1074,18 +1288,22 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     environment_dict = {
         "production": 'true',
         "configuration_local": 'false',
+        "platform": platform if platform else 'none',
         "taskName": task_name,
         "batchName": batch_name,
         "region": aws_region,
         "bucket": aws_private_bucket,
         "aws_id_key": aws_worker_access_id,
         "aws_secret_key": aws_worker_access_secret,
+        "prolific_completion_code": prolific_completion_code if prolific_completion_code else 'false',
         "bing_api_key": bing_api_key,
+        "fake_json_token": fake_json_token,
         "log_on_console": 'false',
         "log_server_config": f"{server_config}",
         "table_acl_name": f"{table_acl_name}",
         "table_data_name": f"{table_data_name}",
         "table_log_name": f"{table_logging_name}",
+        "hit_solver_endpoint": f"{hit_solver_endpoint}"
     }
 
     os.makedirs(folder_build_env_path, exist_ok=True)
@@ -1095,6 +1313,11 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         for (env_var, value) in environment_dict.items():
             if env_var == 'production' or env_var == 'configuration_local' or env_var == 'log_on_console':
                 print(f"\t{env_var}: {value},", file=file)
+            elif env_var == 'prolific_completion_code':
+                if value != 'false':
+                    print(f"\t{env_var}: \"{value}\",", file=file)
+                else:
+                    print(f"\t{env_var}: {value},", file=file)
             else:
                 print(f"\t{env_var}: \"{value}\",", file=file)
         print("};", file=file)
@@ -1102,26 +1325,31 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.print("File [cyan underline]environment.prod.ts[/cyan underline] generated")
     console.print(f"Path: [italic]{environment_production}[/italic]")
 
-    console.rule(f"17 - Environment: [cyan underline]DEVELOPMENT[/cyan underline] creation")
+    console.rule(f"{step_index} - Environment: [cyan underline]DEVELOPMENT[/cyan underline] creation")
+    step_index = step_index + 1
+
     status.start()
     status.update(f"Creating environment")
-    time.sleep(2)
 
     environment_dict = {
         "production": 'false',
         "configuration_local": 'false',
+        "platform": platform if platform else 'mturk',
         "taskName": task_name,
         "batchName": batch_name,
         "region": aws_region,
         "bucket": aws_private_bucket,
         "aws_id_key": aws_worker_access_id,
         "aws_secret_key": aws_worker_access_secret,
+        "prolific_completion_code": prolific_completion_code if prolific_completion_code else 'false',
         "bing_api_key": bing_api_key,
+        "fake_json_token": fake_json_token,
         "log_on_console": 'true',
         "log_server_config": f"{server_config}",
         "table_acl_name": f"{table_acl_name}",
         "table_data_name": f"{table_data_name}",
-        "table_log_name": f"{table_logging_name}"
+        "table_log_name": f"{table_logging_name}",
+        "hit_solver_endpoint": f"{hit_solver_endpoint}"
     }
 
     with open(environment_development, 'w') as file:
@@ -1129,6 +1357,11 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         for (env_var, value) in environment_dict.items():
             if env_var == 'production' or env_var == 'configuration_local' or env_var == 'log_on_console':
                 print(f"\t{env_var}: {value},", file=file)
+            elif env_var == 'prolific_completion_code':
+                if value != 'false':
+                    print(f"\t{env_var}: \"{value}\",", file=file)
+                else:
+                    print(f"\t{env_var}: {value},", file=file)
             else:
                 print(f"\t{env_var}: \"{value}\",", file=file)
         print("};", file=file)
@@ -1136,10 +1369,11 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.print("File [cyan underline]environment.ts[/cyan underline] generated")
     console.print(f"Path: [italic]{environment_development}[/italic]")
 
-    console.rule(f"18 - Admin Credentials Creation")
+    console.rule(f"{step_index} - Admin Credentials Creation")
+    step_index = step_index + 1
+
     status.start()
     status.update(f"Creating file [cyan underline]admin.json")
-    time.sleep(2)
 
     if not os.path.exists(folder_build_config_path):
         os.makedirs(folder_build_config_path, exist_ok=True)
@@ -1158,15 +1392,104 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     console.print(f"Path: [italic]{admin_file}")
 
-    console.rule(f"19 - Sample task configuration")
+    console.rule(f"{step_index} - Task configuration synchronization")
+    step_index = step_index + 1
+
+    status.start()
+    status.update(f"Checking metadata of existing configuration items")
+
+    s3 = boto_session.client('s3', region_name=aws_region)
+
+    task_batch_names = []
+    task_config_filenames = [
+        filename_hits_config,
+        filename_questionnaires_config,
+        filename_instructions_evaluation_config,
+        filename_instructions_general_config,
+        filename_dimensions_config,
+        filename_search_engine_config,
+        filename_task_settings_config,
+        filename_workers_settings_config
+    ]
+
+    task_config_items_checked = []
+    task_config_items_updated = 0
+    task_config_items_updated_local = 0
+    task_config_items_updated_names = []
+    task_config_items_updated_names_local = []
+
+    response = s3.list_objects(Bucket=aws_private_bucket, Prefix=f"{task_name}/", Delimiter='/')
+    if 'CommonPrefixes' in response:
+        for path in response['CommonPrefixes']:
+            current_batch_name = path.get('Prefix').split("/")[1]
+            if batch_name in current_batch_name:
+                task_batch_names.append(current_batch_name)
+
+        prefix = f"{task_name}/"
+        for current_batch_name in task_batch_names:
+            response_batch = s3.list_objects(Bucket=aws_private_bucket, Prefix=f"{prefix}{current_batch_name}/Task/", Delimiter='/')
+            if 'Contents' in response_batch:
+                for filename_config in task_config_filenames:
+                    file_config_local_path = f"{folder_build_task_path}{filename_config}"
+                    for batch_config_object in response_batch['Contents']:
+                        if filename_config in batch_config_object['Key']:
+                            file_config_remote_path = f"{prefix}{current_batch_name}/Task/{filename_config}"
+                            metadata = s3.head_object(Bucket=aws_private_bucket, Key=file_config_remote_path)
+                            if os.path.exists(file_config_local_path):
+                                console.print(f"Configuration item [blue]{filename_config}[/blue] status: [green]LOCAL[/green] detected, [green]REMOTE[/green] detected")
+                                date_modified_local = os.path.getmtime(file_config_local_path)
+                                date_modified_local = datetime.fromtimestamp(date_modified_local).isoformat()
+                                if 'last-modified' in metadata['ResponseMetadata']['HTTPHeaders']:
+                                    date_modified_remote_parsed = datetime.strptime(metadata['ResponseMetadata']['HTTPHeaders']['last-modified'], '%a, %d %b %Y %H:%M:%S %Z')
+                                    date_modified_local_parsed = date_modified_local
+                                    for date in datefinder.find_dates(date_modified_local):
+                                        date_modified_local_parsed = date
+                                    if date_modified_remote_parsed is not None and date_modified_local_parsed is not None:
+                                        if date_modified_remote_parsed > date_modified_local_parsed:
+                                            console.print(f"Most recent version: [blue underline]REMOTE[/blue underline], date: {date_modified_remote_parsed}")
+                                            s3.download_file(aws_private_bucket, file_config_remote_path, file_config_local_path)
+                                            task_config_items_updated +=1
+                                            task_config_items_updated_names.append(filename_config)
+                                        else:
+                                            console.print(f"Most recent version: [blue underline]LOCAL[/blue underline], date: {date_modified_local_parsed}")
+                                            task_config_items_updated_local += 1
+                                            task_config_items_updated_names_local.append(filename_config)
+                                        task_config_items_checked.append(filename_config)
+
+                            else:
+                                date_modified_remote_parsed = datetime.strptime(metadata['ResponseMetadata']['HTTPHeaders']['date'], '%a, %d %b %Y %H:%M:%S %Z')
+                                console.print(f"Configuration item [blue]{filename_config}[/blue] status: [green]LOCAL[/green] not detected, [green]REMOTE[/green] detected")
+                                console.print(f"Fetching remote version, date: {date_modified_remote_parsed}")
+                                s3.download_file(aws_private_bucket, file_config_remote_path, file_config_local_path)
+                                task_config_items_updated += 1
+                                task_config_items_checked.append(filename_config)
+                                task_config_items_updated_names.append(filename_config)
+
+                    if filename_config not in task_config_items_checked:
+                        if os.path.exists(file_config_local_path):
+                            console.print(f"Configuration item [blue]{filename_config}[/blue] status: [green]LOCAL[/green] detected, [green]REMOTE[/green] not detected")
+                            task_config_items_updated_local += 1
+                            task_config_items_updated_names_local.append(filename_config)
+                        else:
+                            console.print(f"Configuration item [blue]{filename_config}[/blue] status: [green]LOCAL[/green] not detected, [green]REMOTE[/green] not detected")
+                            console.print(f"Sample generation during next step")
+                        task_config_items_checked.append(filename_config)
+
+    console.print(f"Configuration items synchronized: {task_config_items_updated}")
+    console.print(f"Items fetched from [green]REMOTE[/green]: {task_config_items_updated}, {task_config_items_updated_names}")
+    console.print(f"Items available from [green]LOCAL[/green]: {task_config_items_updated_local}, {task_config_items_updated_names_local}")
+    console.print(f"Items to generate: {len(task_config_filenames)-(task_config_items_updated + task_config_items_updated_local)}")
+
+    console.rule(f"{step_index} - Sample task configuration")
+    step_index = step_index + 1
+
     status.start()
     status.update(f"Generating a sample configuration if needed")
-    time.sleep(2)
 
     if not os.path.exists(folder_build_task_path):
         os.makedirs(folder_build_task_path, exist_ok=True)
 
-    filename = "hits.json"
+    filename = filename_hits_config
     if os.path.exists(f"{folder_build_task_path}{filename}"):
         console.print(
             f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
@@ -1188,22 +1511,28 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             }]
             print(json.dumps(sample_units, indent=4), file=file)
 
-    filename = "questionnaires.json"
+    filename = filename_questionnaires_config
     if os.path.exists(f"{folder_build_task_path}{filename}"):
-        console.print(
-            f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
+        console.print(f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
     else:
-        console.print(
-            f"Config. file [italic white on yellow]{filename}[/italic white on yellow] not detected, generating a sample")
+        console.print(f"Config. file [italic white on yellow]{filename}[/italic white on yellow] not detected, generating a sample")
         with open(f"{folder_build_task_path}{filename}", 'w') as file:
             sample_questionnaires = [
                 {
                     "type": "standard",
+                    "description": "This is a standard questionnaire",
                     "position": "start",
+                    "allow_back": False,
                     "questions": [
                         {
+                            "index": 0,
                             "name": "age",
                             "text": "What is your age range?",
+                            "type": "mcq",
+                            "required": True,
+                            "free_text": False,
+                            "show_detail": False,
+                            "detail": None,
                             "answers": [
                                 "0-18",
                                 "19-25",
@@ -1217,9 +1546,12 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 },
                 {
                     "type": "crt",
+                    "description": "This is a CRT questionnaire",
                     "position": "start",
+                    "allow_back": False,
                     "questions": [
                         {
+                            "index": 0,
                             "name": "farmers",
                             "text": "If three farmers can plant three trees in three hours, how long would it take nine farmers to plant nine trees?"
                         }
@@ -1228,7 +1560,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             ]
             print(json.dumps(sample_questionnaires, indent=4), file=file)
 
-    filename = "dimensions.json"
+    filename = filename_dimensions_config
     if os.path.exists(f"{folder_build_task_path}{filename}"):
         console.print(
             f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
@@ -1239,10 +1571,17 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 "name": "sample-dimension",
                 "name_pretty": "Sample Dimension",
                 "description": "Lorem ipsum dolor sit amet",
+                "gold": False,
+                "pairwise": False,
                 "url": False,
                 "justification": False,
                 "scale": {
                     "type": "categorical",
+                    "instructions": {
+                        "label": "Label",
+                        "caption": "Caption",
+                        "text": "Instruction text"
+                    },
                     "mapping": [
                         {
                             "label": "False",
@@ -1256,12 +1595,16 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                         }
                     ]
                 },
-                "gold_question_check": False,
-                "style": False
+                "style": {
+                    "type": "list",
+                    "position": "middle",
+                    "orientation": "vertical",
+                    "separator": False
+                }
             }]
             print(json.dumps(sample_dimensions, indent=4), file=file)
 
-    filename = "instructions_main.json"
+    filename = filename_instructions_general_config
     if os.path.exists(f"{folder_build_task_path}{filename}"):
         console.print(f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
     else:
@@ -1276,7 +1619,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             ]
             print(json.dumps(sample_instructions, indent=4), file=file)
 
-    filename = "instructions_dimensions.json"
+    filename = filename_instructions_evaluation_config
     if os.path.exists(f"{folder_build_task_path}{filename}"):
         console.print(
             f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
@@ -1284,15 +1627,22 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         console.print(
             f"Config. file [italic white on yellow]{filename}[/italic white on yellow] not detected, generating a sample")
         with open(f"{folder_build_task_path}{filename}", 'w') as file:
-            sample_instructions = [
-                {
-                    "caption": "Evaluation Instructions",
-                    "text": "<p>Lorem ipsum <strong>dolor</strong> sit amet.</p>"
+            sample_instructions = {
+                "general": [
+                    {
+                        "caption": "Evaluation Instructions",
+                        "text": "<p>Lorem ipsum <strong>dolor</strong> sit amet.</p>"
+                    }
+                ],
+                "element": {
+                    "label": "Label",
+                    "caption": "Caption",
+                    "text": "Instruction text"
                 }
-            ]
+            }
             print(json.dumps(sample_instructions, indent=4), file=file)
 
-    filename = "search_engine.json"
+    filename = filename_search_engine_config
     if os.path.exists(f"{folder_build_task_path}{filename}"):
         console.print(f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
     else:
@@ -1305,7 +1655,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
             print(json.dumps(sample_search_engine, indent=4), file=file)
 
-    filename = "task.json"
+    filename = filename_task_settings_config
     if os.path.exists(f"{folder_build_task_path}{filename}"):
         console.print(f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
     else:
@@ -1317,9 +1667,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         with open(f"{folder_build_task_path}{filename}", 'w') as file:
             sample_settings = {
                 "modality": f"pointwise",
-                "task_name": f"{task_name}",
-                "batch_name": f"{batch_name}",
                 "allowed_tries": 10,
+                "time_assessment": 2,
                 "time_check_amount": 3,
                 "attributes": [
                     {
@@ -1343,74 +1692,76 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 "countdown_attribute_values": [],
                 "countdown_position_values": [],
                 "logger": False,
-                "logOption": {
+                "logger_option": {
                     "button": {
-                        "general": 'false',
-                        "click": 'false'
+                        "general": False,
+                        "click": False
                     },
                     "mouse": {
-                        "general": 'false',
-                        "mouseMovements": 'false',
-                        "leftClicks": 'false',
-                        "rightClicks": 'false'
+                        "general": False,
+                        "mouseMovements": False,
+                        "leftClicks": False,
+                        "rightClicks": False
                     },
                     "keyboard": {
-                        "general": 'false',
-                        "shortcuts": 'false',
-                        "keys": 'false'
+                        "general": False,
+                        "shortcuts": False,
+                        "keys": False
                     },
                     "textInput": {
-                        "general": 'false',
-                        "paste": 'false',
-                        "delete": 'false'
+                        "general": False,
+                        "paste": False,
+                        "delete": False
                     },
                     "clipboard": {
-                        "general": 'false',
-                        "copy": 'false',
-                        "cut": 'false'
+                        "general": False,
+                        "copy": False,
+                        "cut": False
                     },
                     "radio": {
-                        "general": 'false',
-                        "change": 'false'
+                        "general": False,
+                        "change": False
                     },
                     "crowd-xplorer": {
-                        "general": 'false',
-                        "query": 'false',
-                        "result": 'false'
+                        "general": False,
+                        "query": False,
+                        "result": False
                     },
                     "various": {
-                        "general": 'false',
-                        "selection": 'false',
-                        "unload": 'false',
-                        "focus&blur": 'false',
-                        "scroll": 'false',
-                        "resize": 'false'
+                        "general": False,
+                        "selection": False,
+                        "unload": False,
+                        "focus&blur": False,
+                        "scroll": False,
+                        "resize": False
                     }
                 },
-                "serverEndpoint": logging_endpoint,
-                "blacklist_batches": [],
-                "whitelist_batches": [],
+                "server_endpoint": logging_endpoint,
                 "messages": ["You have already started this task without finishing it"]
             }
             print(json.dumps(sample_settings, indent=4), file=file)
 
-    filename = "workers.json"
+    filename = filename_workers_settings_config
     if os.path.exists(f"{folder_build_task_path}{filename}"):
         console.print(f"Config. file [italic white on green]{filename}[/italic white on green] detected, skipping generation")
     else:
         console.print(f"Config. file [italic white on yellow]{filename}[/italic white on yellow] not detected, generating a sample")
         with open(f"{folder_build_task_path}{filename}", 'w') as file:
             sample_worker_checks = {
+                "block": False,
                 "blacklist": [],
-                "whitelist": []
+                "whitelist": [],
+                "blacklist_batches": [],
+                "whitelist_batches": [],
             }
             print(json.dumps(sample_worker_checks, indent=4), file=file)
 
     console.print(f"Path: [italic white on black]{folder_build_task_path}[/italic white on black]")
 
-    console.rule(f"20 - Interface [cyan underline]document.ts")
+    console.rule(f"{step_index} - Interface [cyan underline]document.ts")
+    step_index = step_index + 1
 
-    hits_file = f"{folder_build_task_path}hits.json"
+    hits_file = f"{folder_build_task_path}{filename_hits_config}"
     document_interface = f"{folder_build_skeleton_path}document.ts"
     if not os.path.exists(folder_build_skeleton_path):
         os.makedirs(folder_build_skeleton_path, exist_ok=True)
@@ -1418,10 +1769,16 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.print(f"Reading hits file")
     console.print(f"Path: [italic]{hits_file}[/italic]")
     hits = read_json(hits_file)
-    sample_element = hits.pop()['documents'].pop()
+    documents = hits.pop()['documents']
 
-    if not 'id' in sample_element.keys():
-        raise Exception("Your hits.json file does not contains an attributed called \"id\"!")
+    sample_element = {}
+
+    if len(documents) > 0:
+
+        sample_element = documents.pop()
+
+        if not 'id' in sample_element.keys():
+            raise Exception(f"Your {filename_hits_config} file does not contains an attributed called \"id\"!")
 
     # This class provides a representation of a single document stored in single hit stored in the Amazon S3 bucket.
     # The attribute <document_index> is additional and should not be touched and passed in the constructor.
@@ -1432,7 +1789,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         print("", file=file)
         wrapper = textwrap.TextWrapper(initial_indent='\t\t', subsequent_indent='\t\t')
         print(wrapper.fill("index: number;"), file=file)
-        print(wrapper.fill("countdownExpired: boolean;"), file=file)
         for attribute, value in sample_element.items():
             try:
                 element = json.loads(value)
@@ -1451,13 +1807,15 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                     f"Attribute with name: [cyan underline]{attribute}[/cyan underline] and type: {type(element)} found")
             except (TypeError, ValueError) as e:
                 if isinstance(value, list):
-                    print(wrapper.fill(f"{attribute}: Array<String>;"), file=file)
+                    if isinstance(value[0], dict):
+                        print(wrapper.fill(f"{attribute}: Array<JSON>;"), file=file)
+                    else:
+                        print(wrapper.fill(f"{attribute}: Array<String>;"), file=file)
                 elif isinstance(value, int) or isinstance(value, float):
                     print(wrapper.fill(f"{attribute}: number;"), file=file)
                 else:
                     print(wrapper.fill(f"{attribute}: string;"), file=file)
-                console.print(
-                    f"Attribute with name: [cyan underline]{attribute}[/cyan underline] and type: {type(value)} found")
+                console.print(f"Attribute with name: [cyan underline]{attribute}[/cyan underline] and type: {type(value)} found")
         print("", file=file)
         print(wrapper.fill(f"constructor ("), file=file)
         wrapper = textwrap.TextWrapper(initial_indent='\t\t\t', subsequent_indent='\t\t\t')
@@ -1473,23 +1831,21 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 element = json.loads(value)
                 if isinstance(element, dict):
                     print(wrapper.fill(f"this.{attribute} = new Array<JSON>()"), file=file)
-                    print(wrapper.fill(
-                        f"for (let index = 0; index < data[\"{attribute}\"].length; index++) this.{attribute}.push(data[\"{attribute}\"][index])"),
-                        file=file)
+                    print(wrapper.fill(f"for (let index = 0; index < data[\"{attribute}\"].length; index++) this.{attribute}.push(data[\"{attribute}\"][index])"), file=file)
                 elif isinstance(element, list):
                     print(wrapper.fill(f"this.{attribute} = new Array<String>()"), file=file)
-                    print(wrapper.fill(
-                        f"for (let index = 0; index < data[\"{attribute}\"].length; index++) this.{attribute}.push(data[\"{attribute}\"])"),
-                        file=file)
+                    print(wrapper.fill(f"for (let index = 0; index < data[\"{attribute}\"].length; index++) this.{attribute}.push(data[\"{attribute}\"])"), file=file)
                 else:
                     wrapper = textwrap.TextWrapper(initial_indent='\t\t\t', subsequent_indent='\t\t\t')
                     print(wrapper.fill(f"this.{attribute} = data[\"{attribute}\"]"), file=file)
             except (TypeError, ValueError) as e:
                 if isinstance(value, list):
-                    print(wrapper.fill(f"this.{attribute} = new Array<String>()"), file=file)
-                    print(wrapper.fill(
-                        f"for (let index = 0; index < data[\"{attribute}\"].length; index++) this.{attribute}.push(data[\"{attribute}\"])"),
-                        file=file)
+                    if isinstance(value[0], dict):
+                        print(wrapper.fill(f"this.{attribute} = new Array<JSON>()"), file=file)
+                        print(wrapper.fill(f"for (let index = 0; index < data[\"{attribute}\"].length; index++) this.{attribute}.push(data[\"{attribute}\"][index])"), file=file)
+                    else:
+                        print(wrapper.fill(f"this.{attribute} = new Array<String>()"), file=file)
+                        print(wrapper.fill(f"for (let index = 0; index < data[\"{attribute}\"].length; index++) this.{attribute}.push(data[\"{attribute}\"])"), file=file)
                 else:
                     wrapper = textwrap.TextWrapper(initial_indent='\t\t\t', subsequent_indent='\t\t\t')
                     print(wrapper.fill(f"this.{attribute} = data[\"{attribute}\"]"), file=file)
@@ -1502,7 +1858,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.print("Interface built")
     console.print(f"Path: [italic]{document_interface}[/italic]")
 
-    console.rule(f"21 - Class [cyan underline]goldChecker.ts")
+    console.rule(f"{step_index} - Class [cyan underline]goldChecker.ts")
+    step_index = step_index + 1
 
     # This class provides a stub to implement the gold elements check. If there are no gold elements, the check is considered true automatically.
     # The following codes provides answers, notes and attributes for each gold element. Those three corresponding data structures should be used
@@ -1512,8 +1869,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     if os.path.exists(f"{folder_build_skeleton_path}{filename}"):
         console.print(f"Gold checker [italic white on green]{filename}[/italic white on green] detected, skipping generation")
     else:
-        console.print(
-            f"Gold checker [italic white on yellow]{filename}[/italic white on yellow] not detected, generating a sample")
+        console.print(f"Gold checker [italic white on yellow]{filename}[/italic white on yellow] not detected, generating a sample")
         with open(f"{folder_build_skeleton_path}{filename}", 'w') as file:
             print("export class GoldChecker {", file=file)
             print("", file=file)
@@ -1567,49 +1923,180 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         console.print("Class built")
         console.print(f"Path: [italic]{filename}[/italic]")
 
-    console.rule(f"22 - Amazon Mechanical Turk Landing Page")
-    status.start()
-    status.update(f"Istantiating Mako model")
-    time.sleep(2)
+    if platform == 'mturk':
 
-    model = Template(filename=f"{folder_build_mturk_path}model.html")
-    mturk_page = model.render(
-        aws_region=aws_region,
-        aws_deploy_bucket=aws_deploy_bucket,
-        task_name=task_name,
-        batch_name=batch_name
-    )
-    mturk_page_file = f"{folder_build_mturk_path}index.html"
-    with open(mturk_page_file, 'w') as file:
-        print(mturk_page, file=file)
+        console.rule(f"{step_index} - Amazon Mechanical Turk Landing Page")
+        step_index = step_index + 1
 
-    console.print(f"Model istantiated")
-    console.print(f"Path: {mturk_page_file}")
+        status.start()
+        status.update(f"Istantiating Mako model")
 
-    status.update(f"Generating tokens")
+        model = Template(filename=f"{folder_build_mturk_path}model.html")
+        mturk_page = model.render(
+            aws_region=aws_region,
+            aws_deploy_bucket=aws_deploy_bucket,
+            task_name=task_name,
+            batch_name=batch_name
+        )
+        mturk_page_file = f"{folder_build_mturk_path}index.html"
+        with open(mturk_page_file, 'w') as file:
+            print(mturk_page, file=file)
 
-    hits_file = f"{folder_build_task_path}hits.json"
-    mturk_tokens_file = f"{folder_build_mturk_path}tokens.csv"
-    console.print(f"Loading [cyan underline]hits.json[/cyan underline] file")
-    console.print(f"Path: [ital]{hits_file}")
-    hits = read_json(hits_file)
-    token_df = pd.DataFrame(columns=["token_input", "token_output"])
-    for hit in hits:
-        token_df = token_df.append({
-            "token_input": hit['token_input'],
-            "token_output": hit['token_output']
-        }, ignore_index=True)
-    token_df.to_csv(mturk_tokens_file, index=False)
-    console.print(f"Tokens for {len(hits)} hits generated")
-    console.print(f"Path: [italic]{mturk_tokens_file}")
+        console.print(f"Model istantiated")
+        console.print(f"Path: {mturk_page_file}")
 
-    console.rule(f"23 - Task [cyan underline]{task_name}[/cyan underline]/[yellow underline]{batch_name}[/yellow underline] build")
+        status.update(f"Generating tokens")
+
+        hits_file = f"{folder_build_task_path}{filename_hits_config}"
+        mturk_tokens_file = f"{folder_build_mturk_path}tokens.csv"
+        console.print(f"Loading [cyan underline]{filename_hits_config}[/cyan underline] file")
+        console.print(f"Path: [ital]{hits_file}")
+        hits = read_json(hits_file)
+        token_df = pd.DataFrame(columns=["tokens"])
+
+        for hit in hits:
+            tokens = ""
+            for hit in hits:
+                tokens = f"{tokens};{hit['token_output']}"
+            tokens = tokens[1:]
+            token_df = token_df.append({
+                "tokens": tokens
+            }, ignore_index=True)
+        token_df.to_csv(mturk_tokens_file, index=False)
+        console.print(f"Tokens for {len(hits)} hits generated")
+        console.print(f"Path: [italic]{mturk_tokens_file}")
+
+    # if platform == 'prolific':
+    #
+    #     console.rule(f"{step_index} - Prolific Study Creation")
+    #     step_index = step_index + 1
+    #
+    #     status.start()
+    #     status.update(f"Checking study existance")
+    #
+    #     study_list = requests.get(f"https://api.prolific.co/api/v1/studies/", headers={'Authorization': f"Token {prolific_api_token}"}).json()['results']
+    #
+    #     study_current = None
+    #     for study_data in study_list:
+    #         if study_data['internal_name'] == f"{task_name}_{batch_name}":
+    #             study_current = study_data
+    #             console.print(f"Prolific study detected. ID: [blue]{study_current['id']}[/blue], Name (Internal): [green]{study_current['internal_name']}[/green]")
+    #             # TODO: Write code to update existing study
+    #             assert False
+    #
+    #     if study_current is None:
+    #         study_data = {
+    #             "name": task_title if task_title else task_name,
+    #             "internal_name": f"{task_name}_{batch_name}",
+    #             "description": "<Edit the study description here>",
+    #             "external_study_url": f"{link_public}?workerID={{%PROLIFIC_PID%}}&studyID={{%STUDY_ID%}}$sessionID={{%SESSION_ID}}&platform=prolific",
+    #             "prolific_id_option": "url_parameters",
+    #             "completion_code": random_string(),
+    #             "completion_option": "url",
+    #             "total_available_places": len(hits),
+    #             "estimated_completion_time": 30,
+    #             "reward": 5,
+    #             "device_compatibility": [
+    #                 "desktop"
+    #             ],
+    #             "peripheral_requirements": [],
+    #             "eligibility_requirements": []
+    #         }
+    #         response = requests.post(f"https://api.prolific.co/api/v1/projects/62e3a5aec0202351838e8e0a/studies/", json=study_data, headers={'Authorization': f"Token {prolific_api_token}", 'Content-Type': 'application/json'})
+    #         # TODO: Write code to create a study
+    #         # The completion code can be randomly generated. Remember to update the environment and delete the .env variable.
+    #         # The study must be created just once. The code must remain the same-
+    #         print(response.json())
+    #     assert False
+
+    if platform == 'toloka':
+        console.rule(f"{step_index} - Toloka HTML Interface")
+        step_index = step_index + 1
+
+        status.start()
+        status.update(f"Istantiating Mako model")
+
+        model = Template(filename=f"{folder_build_toloka_path}model.html")
+        toloka_page = model.render(
+            aws_region=aws_region,
+            aws_deploy_bucket=aws_deploy_bucket,
+            task_name=task_name,
+            batch_name=batch_name
+        )
+        toloka_page_file = f"{folder_build_toloka_path}interface.html"
+        with open(toloka_page_file, 'w') as file:
+            print(toloka_page, file=file)
+
+        console.print(f"Model istantiated")
+        console.print(f"Path: {toloka_page_file}")
+
+        hits_file = f"{folder_build_task_path}{filename_hits_config}"
+        toloka_tokens_file = f"{folder_build_toloka_path}tokens.tsv"
+        console.print(f"Loading [cyan underline]{filename_hits_config}[/cyan underline] file")
+        console.print(f"Path: [ital]{hits_file}")
+        hits = read_json(hits_file)
+        token_df = pd.DataFrame(columns=["INPUT:token_input"])
+        tokens_input = []
+        tokens_output = []
+        for hit in hits:
+            token_df = token_df.append({
+                "INPUT:token_input": hit['token_input']
+            }, ignore_index=True)
+            token_df = token_df.append({
+                "INPUT:token_input": None
+            }, ignore_index=True)
+            tokens_input.append(hit['token_input'])
+            tokens_output.append(hit['token_output'])
+        token_df.to_csv(toloka_tokens_file, sep="\t", index=False)
+        console.print(f"Token for the current batch chosen")
+        console.print(f"Path: [italic]{toloka_tokens_file}")
+
+        console.print(f"Building input specification")
+        toloka_input_spec_file = f"{folder_build_toloka_path}input_specification.json"
+        input_specification = {
+            "token_input": {
+                "type": "string",
+                "hidden": False,
+                "required": False,
+                "max_length": 11,
+                "min_length": 11,
+                "allowed_values": tokens_input
+            }
+        }
+        serialize_json(folder_build_toloka_path, 'input_specification.json', input_specification)
+        console.print(f"Path: {toloka_input_spec_file}")
+
+        console.print(f"Building output specification")
+        toloka_output_spec_file = f"{folder_build_toloka_path}output_specification.json"
+        output_specification = {
+            "token_input": {
+                "type": "string",
+                "hidden": False,
+                "required": True,
+                "max_length": 11,
+                "min_length": 11,
+                "allowed_values": tokens_input
+            },
+            "token_output": {
+                "type": "string",
+                "hidden": False,
+                "required": True,
+                "max_length": 11,
+                "min_length": 11,
+                "allowed_values": tokens_output
+            }
+        }
+        serialize_json(folder_build_toloka_path, 'output_specification.json', output_specification)
+        console.print(f"Path: {toloka_output_spec_file}")
+
+    console.rule(f"{step_index} - Task [cyan underline]{task_name}[/cyan underline]/[yellow underline]{batch_name}[/yellow underline] build")
+    step_index = step_index + 1
+
     status.update(f"Executing build command, please wait")
-    time.sleep(2)
 
     folder_build_result = f"../dist/"
 
-    command = "ng build --configuration=\"production\" --output-hashing=none"
+    command = "yarn run build --configuration=\"production\" --output-hashing=none"
     console.print(f"[green on black]{command}")
     process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
     for line in process.stdout:
@@ -1657,10 +2144,18 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     shutil.rmtree(folder_build_result)
 
     model = Template(filename=f"{folder_build_deploy_path}model.html")
-    index_page = model.render(
-        task_name=task_name,
-        batch_name=batch_name
-    )
+    if task_title:
+        index_page = model.render(
+            task_title=task_title,
+            task_name=task_name,
+            batch_name=batch_name
+        )
+    else:
+        index_page = model.render(
+            task_title=None,
+            task_name=task_name,
+            batch_name=batch_name
+        )
     index_page_file = f"{folder_build_deploy_path}index.html"
     with open(index_page_file, 'w') as file:
         print(index_page, file=file)
@@ -1668,20 +2163,20 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.print("Model istantiated")
     console.print(f"Path: [italic underline]{index_page_file}")
 
-    console.rule(f"24 - Packaging Task [cyan underline]tasks/{task_name}/{batch_name}")
+    console.rule(f"{step_index} - Packaging Task [cyan underline]tasks/{task_name}/{batch_name}")
+    step_index = step_index + 1
+
     status.start()
     status.update(f"Starting")
-    time.sleep(2)
 
     folder_tasks_batch_path = f"{folder_tasks_path}{task_name}/{batch_name}/"
     folder_tasks_batch_deploy_path = f"{folder_tasks_batch_path}deploy/"
     folder_tasks_batch_env_path = f"{folder_tasks_batch_path}environments/"
     folder_tasks_batch_mturk_path = f"{folder_tasks_batch_path}mturk/"
+    folder_tasks_batch_toloka_path = f"{folder_tasks_batch_path}toloka/"
     folder_tasks_batch_task_path = f"{folder_tasks_batch_path}task/"
     folder_tasks_batch_config_path = f"{folder_tasks_batch_path}config/"
     folder_tasks_batch_skeleton_path = f"{folder_tasks_batch_path}skeleton/"
-
-    console.print(f"[italic purple]deploy-config[/italic purple] variable: {bool(deploy_config)}")
 
     if not os.path.exists(folder_tasks_batch_deploy_path):
         console.print("[green]Deploy folder created")
@@ -1689,30 +2184,37 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     else:
         console.print("[yellow]Deploy folder already present")
     console.print(f"Path: [italic]{folder_tasks_batch_deploy_path}")
-    if not os.path.exists(folder_tasks_batch_mturk_path):
-        console.print("[green]Amazon Mechanical Turk assets folder created")
-        os.makedirs(folder_tasks_batch_mturk_path, exist_ok=True)
-    else:
-        console.print("[yellow]Amazon Mechanical Turk assets folder already present")
+    if platform == 'mturk':
+        if not os.path.exists(folder_tasks_batch_mturk_path):
+            console.print("[green]Amazon Mechanical Turk assets folder created")
+            os.makedirs(folder_tasks_batch_mturk_path, exist_ok=True)
+        else:
+            console.print("[yellow]Amazon Mechanical Turk assets folder already present")
+    if platform == 'toloka':
+        if not os.path.exists(folder_tasks_batch_toloka_path):
+            console.print("[green]Toloka assets folder created")
+            os.makedirs(folder_tasks_batch_toloka_path, exist_ok=True)
+        else:
+            console.print("[yellow]Toloka assets folder already present")
     if not os.path.exists(folder_tasks_batch_env_path):
         console.print("[green]Environments folder created")
         os.makedirs(folder_tasks_batch_env_path, exist_ok=True)
     else:
         console.print("[yellow]Environments folder already present")
     console.print(f"Path: [italic]{folder_tasks_batch_env_path}")
-    if not os.path.exists(folder_tasks_batch_task_path) and deploy_config:
+    if not os.path.exists(folder_tasks_batch_task_path):
         console.print("[green]Task configuration folder created")
         os.makedirs(folder_tasks_batch_task_path, exist_ok=True)
     else:
         console.print("[yellow]Task configuration folder already present")
     console.print(f"Path: [italic]{folder_tasks_batch_task_path}")
-    if not os.path.exists(folder_tasks_batch_config_path) and deploy_config:
+    if not os.path.exists(folder_tasks_batch_config_path):
         console.print("[green]Task configuration folder created")
         os.makedirs(folder_tasks_batch_config_path, exist_ok=True)
     else:
         console.print("[yellow]General configuration folder already present")
     console.print(f"Path: [italic]{folder_tasks_batch_config_path}")
-    if not os.path.exists(folder_tasks_batch_skeleton_path) and deploy_config:
+    if not os.path.exists(folder_tasks_batch_skeleton_path):
         console.print("[green]Task skeleton folder created")
         os.makedirs(folder_tasks_batch_skeleton_path, exist_ok=True)
     else:
@@ -1750,50 +2252,77 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     destination = f"{folder_tasks_batch_env_path}environment.prod.ts"
     copy(source, destination, "Prod Environment")
 
-    console.print(f"Copying files for [blue underline on white]{folder_build_mturk_path}[/blue underline on white] folder")
+    if platform == 'toloka':
+        console.print(f"Copying files for [blue underline on white]{folder_build_toloka_path}[/blue underline on white] folder")
 
-    source = f"{folder_build_mturk_path}index.html"
-    destination = f"{folder_tasks_batch_mturk_path}index.html"
-    copy(source, destination, "Amazon Mechanical Turk landing page")
+        source = f"{folder_build_toloka_path}interface.html"
+        destination = f"{folder_tasks_batch_toloka_path}interface.html"
+        copy(source, destination, "Page Markup")
 
-    source = f"{folder_build_mturk_path}tokens.csv"
-    destination = f"{folder_tasks_batch_mturk_path}tokens.csv"
-    copy(source, destination, "Hits tokens")
+        source = f"{folder_build_toloka_path}interface.css"
+        destination = f"{folder_tasks_batch_toloka_path}interface.css"
+        copy(source, destination, "Page Stylesheet")
 
-    if bool(deploy_config):
-        console.print(f"Copying files for [blue underline on white]{folder_build_task_path}[/blue underline on white] folder")
+        source = f"{folder_build_toloka_path}interface.js"
+        destination = f"{folder_tasks_batch_toloka_path}interface.js"
+        copy(source, destination, "Page Javascript")
 
-        source = f"{folder_build_task_path}hits.json"
-        destination = f"{folder_tasks_batch_task_path}hits.json"
-        copy(source, destination, "Hits")
+        source = f"{folder_build_toloka_path}tokens.tsv"
+        destination = f"{folder_tasks_batch_toloka_path}tokens.tsv"
+        copy(source, destination, "Hits tokens")
 
-        source = f"{folder_build_task_path}dimensions.json"
-        destination = f"{folder_tasks_batch_task_path}dimensions.json"
-        copy(source, destination, "Dimensions")
+        source = f"{folder_build_toloka_path}input_specification.json"
+        destination = f"{folder_tasks_batch_toloka_path}input_specification.json"
+        copy(source, destination, "Input Specification")
 
-        source = f"{folder_build_task_path}instructions_dimensions.json"
-        destination = f"{folder_tasks_batch_task_path}instructions_dimensions.json"
-        copy(source, destination, "Assessment Instructions")
+        source = f"{folder_build_toloka_path}output_specification.json"
+        destination = f"{folder_tasks_batch_toloka_path}output_specification.json"
+        copy(source, destination, "Output Specification")
 
-        source = f"{folder_build_task_path}instructions_main.json"
-        destination = f"{folder_tasks_batch_task_path}instructions_main.json"
-        copy(source, destination, "General Instructions")
+    if platform == 'mturk':
+        console.print(f"Copying files for [blue underline on white]{folder_build_mturk_path}[/blue underline on white] folder")
 
-        source = f"{folder_build_task_path}questionnaires.json"
-        destination = f"{folder_tasks_batch_task_path}questionnaires.json"
-        copy(source, destination, "Questionnaires")
+        source = f"{folder_build_mturk_path}index.html"
+        destination = f"{folder_tasks_batch_mturk_path}index.html"
+        copy(source, destination, "Amazon Mechanical Turk landing page")
 
-        source = f"{folder_build_task_path}search_engine.json"
-        destination = f"{folder_tasks_batch_task_path}search_engine.json"
-        copy(source, destination, "Search Engine")
+        source = f"{folder_build_mturk_path}tokens.csv"
+        destination = f"{folder_tasks_batch_mturk_path}tokens.csv"
+        copy(source, destination, "Hits tokens")
 
-        source = f"{folder_build_task_path}task.json"
-        destination = f"{folder_tasks_batch_task_path}task.json"
-        copy(source, destination, "Task Settings")
+    console.print(f"Copying files for [blue underline on white]{folder_build_task_path}[/blue underline on white] folder")
 
-        source = f"{folder_build_task_path}workers.json"
-        destination = f"{folder_tasks_batch_task_path}workers.json"
-        copy(source, destination, "Workers Settings")
+    source = f"{folder_build_task_path}{filename_hits_config}"
+    destination = f"{folder_tasks_batch_task_path}{filename_hits_config}"
+    copy(source, destination, "Hits")
+
+    source = f"{folder_build_task_path}{filename_dimensions_config}"
+    destination = f"{folder_tasks_batch_task_path}{filename_dimensions_config}"
+    copy(source, destination, "Dimensions")
+
+    source = f"{folder_build_task_path}{filename_instructions_evaluation_config}"
+    destination = f"{folder_tasks_batch_task_path}{filename_instructions_evaluation_config}"
+    copy(source, destination, "Assessment Instructions")
+
+    source = f"{folder_build_task_path}{filename_instructions_general_config}"
+    destination = f"{folder_tasks_batch_task_path}{filename_instructions_general_config}"
+    copy(source, destination, "General Instructions")
+
+    source = f"{folder_build_task_path}{filename_questionnaires_config}"
+    destination = f"{folder_tasks_batch_task_path}{filename_questionnaires_config}"
+    copy(source, destination, "Questionnaires")
+
+    source = f"{folder_build_task_path}{filename_search_engine_config}"
+    destination = f"{folder_tasks_batch_task_path}{filename_search_engine_config}"
+    copy(source, destination, "Search Engine")
+
+    source = f"{folder_build_task_path}{filename_task_settings_config}"
+    destination = f"{folder_tasks_batch_task_path}{filename_task_settings_config}"
+    copy(source, destination, "Task Settings")
+
+    source = f"{folder_build_task_path}{filename_workers_settings_config}"
+    destination = f"{folder_tasks_batch_task_path}{filename_workers_settings_config}"
+    copy(source, destination, "Workers Settings")
 
     console.print(f"Copying files for [yellow underline on white]{folder_tasks_batch_skeleton_path}[/yellow underline on white] folder")
 
@@ -1811,10 +2340,11 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     destination = f"{folder_tasks_batch_config_path}admin.json"
     copy(source, destination, "Admin Credentials")
 
-    console.rule(f"25 - Task [cyan underline]tasks/{task_name}/{batch_name} Deploy")
+    console.rule(f"{step_index} - Task [cyan underline]tasks/{task_name}/{batch_name} Deploy")
+    step_index = step_index + 1
+
     status.start()
     status.update(f"Starting")
-    time.sleep(2)
 
     s3_private_generator_path = f"{task_name}/{batch_name}/Generator/"
     s3_private_task_path = f"{task_name}/{batch_name}/Task/"
@@ -1824,6 +2354,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     folder_tasks_batch_mturk_path = f"{folder_tasks_batch_path}mturk/"
     folder_tasks_batch_task_path = f"{folder_tasks_batch_path}task/"
     folder_tasks_batch_config_path = f"{folder_tasks_batch_path}config/"
+
 
     def upload(path, bucket, key, title, content_type, acl=None):
         panel = Panel(
@@ -1836,49 +2367,45 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             response = s3_client.put_object(Body=open(path, 'rb'), Bucket=bucket, Key=key, ContentType=content_type)
         console.print(f"HTTP Status Code: {response['ResponseMetadata']['HTTPStatusCode']}, ETag: {response['ETag']}")
 
-
-    console.print(f"[italic purple]deploy-config[/italic purple] variable: {bool(deploy_config)}")
-
     console.print(f"[white on blue bold]Generator configuration")
 
     iam_path = f"{folder_tasks_batch_config_path}admin.json"
     key = f"{s3_private_generator_path}admin.json"
     upload(iam_path, aws_private_bucket, key, "Admin Credentials", "application/json", 'bucket-owner-full-control')
 
-    if bool(deploy_config):
-        console.print(f"[white on green bold]Task configuration")
+    console.print(f"[white on green bold]Task configuration")
 
-        iam_path = f"{folder_tasks_batch_task_path}hits.json"
-        key = f"{s3_private_task_path}hits.json"
-        upload(iam_path, aws_private_bucket, key, "Hits", "application/json", 'bucket-owner-full-control')
+    iam_path = f"{folder_tasks_batch_task_path}{filename_hits_config}"
+    key = f"{s3_private_task_path}{filename_hits_config}"
+    upload(iam_path, aws_private_bucket, key, "Hits", "application/json", 'bucket-owner-full-control')
 
-        iam_path = f"{folder_tasks_batch_task_path}instructions_dimensions.json"
-        key = f"{s3_private_task_path}instructions_dimensions.json"
-        upload(iam_path, aws_private_bucket, key, "Assessment Instructions", "application/json", 'bucket-owner-full-control')
+    iam_path = f"{folder_tasks_batch_task_path}{filename_instructions_evaluation_config}"
+    key = f"{s3_private_task_path}{filename_instructions_evaluation_config}"
+    upload(iam_path, aws_private_bucket, key, "Assessment Instructions", "application/json", 'bucket-owner-full-control')
 
-        iam_path = f"{folder_tasks_batch_task_path}instructions_main.json"
-        key = f"{s3_private_task_path}instructions_main.json"
-        upload(iam_path, aws_private_bucket, key, "General Instructions", "application/json", 'bucket-owner-full-control')
+    iam_path = f"{folder_tasks_batch_task_path}{filename_instructions_general_config}"
+    key = f"{s3_private_task_path}{filename_instructions_general_config}"
+    upload(iam_path, aws_private_bucket, key, "General Instructions", "application/json", 'bucket-owner-full-control')
 
-        iam_path = f"{folder_tasks_batch_task_path}questionnaires.json"
-        key = f"{s3_private_task_path}questionnaires.json"
-        upload(iam_path, aws_private_bucket, key, "Questionnaires", "application/json", 'bucket-owner-full-control')
+    iam_path = f"{folder_tasks_batch_task_path}{filename_questionnaires_config}"
+    key = f"{s3_private_task_path}{filename_questionnaires_config}"
+    upload(iam_path, aws_private_bucket, key, "Questionnaires", "application/json", 'bucket-owner-full-control')
 
-        iam_path = f"{folder_tasks_batch_task_path}dimensions.json"
-        key = f"{s3_private_task_path}dimensions.json"
-        upload(iam_path, aws_private_bucket, key, "Dimensions", "application/json", 'bucket-owner-full-control')
+    iam_path = f"{folder_tasks_batch_task_path}{filename_dimensions_config}"
+    key = f"{s3_private_task_path}{filename_dimensions_config}"
+    upload(iam_path, aws_private_bucket, key, "Dimensions", "application/json", 'bucket-owner-full-control')
 
-        iam_path = f"{folder_tasks_batch_task_path}search_engine.json"
-        key = f"{s3_private_task_path}search_engine.json"
-        upload(iam_path, aws_private_bucket, key, "Search Engine", "application/json", 'bucket-owner-full-control')
+    iam_path = f"{folder_tasks_batch_task_path}{filename_search_engine_config}"
+    key = f"{s3_private_task_path}{filename_search_engine_config}"
+    upload(iam_path, aws_private_bucket, key, "Search Engine", "application/json", 'bucket-owner-full-control')
 
-        iam_path = f"{folder_tasks_batch_task_path}task.json"
-        key = f"{s3_private_task_path}task.json"
-        upload(iam_path, aws_private_bucket, key, "Task Settings", "application/json", 'bucket-owner-full-control')
+    iam_path = f"{folder_tasks_batch_task_path}{filename_task_settings_config}"
+    key = f"{s3_private_task_path}{filename_task_settings_config}"
+    upload(iam_path, aws_private_bucket, key, "Task Settings", "application/json", 'bucket-owner-full-control')
 
-        iam_path = f"{folder_tasks_batch_task_path}workers.json"
-        key = f"{s3_private_task_path}workers.json"
-        upload(iam_path, aws_private_bucket, key, "Workers Settings", "application/json", 'bucket-owner-full-control')
+    iam_path = f"{folder_tasks_batch_task_path}{filename_workers_settings_config}"
+    key = f"{s3_private_task_path}{filename_workers_settings_config}"
+    upload(iam_path, aws_private_bucket, key, "Workers Settings", "application/json", 'bucket-owner-full-control')
 
     console.print(f"[white on purple bold]Angular Application")
 
@@ -1894,9 +2421,10 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     key = f"{s3_deploy_path}index.html"
     upload(iam_path, aws_deploy_bucket, key, "Task Homepage", "text/html", "public-read")
 
-    console.rule(f"26 - Public Link")
+    console.rule(f"{step_index} - Public Link")
+    step_index = step_index + 1
+
     status.start()
     status.update(f"Writing")
-    time.sleep(2)
 
-    console.print(f"[bold white on black]https://{aws_deploy_bucket}.s3.{aws_region}.amazonaws.com/{task_name}/{batch_name}/index.html")
+    console.print(f"[bold white on black]{link_public}")

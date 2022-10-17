@@ -55,15 +55,19 @@ data/build/environments/*
 
 # Yarn
 .yarn/*
-!.yarn/releases
+!.yarn/cache
+!.yarn/patches
 !.yarn/plugins
-.pnp.*
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
 
 # Environment variables file
 data/.env
 
 # File generated when configuring AWS
 data/aws/generated/*
+data/aws/backup/*
 
 .vscode/settings.json
 
@@ -85,4 +89,9 @@ data/result/*
 
 .cache/*
 
-data/aws/*
+
+data/Logs-Partial.zip
+data/build/toloka/interface.html
+data/build/toloka/tokens.tsv
+data/build/toloka/output_specification.json
+data/build/toloka/input_specification.json
