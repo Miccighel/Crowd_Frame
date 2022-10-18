@@ -1,0 +1,68 @@
+<form [formGroup]="formStep">
+
+    <!-- Header -->
+
+    <mat-card [class.mat-elevation-z3]="true">
+        <mat-card-header>
+            <mat-card-title>Step #5: Search Engine Configuration</mat-card-title>
+            <mat-card-subtitle>Fifth, define the Search Engine Configuration here</mat-card-subtitle>
+        </mat-card-header>
+        <mat-divider></mat-divider>
+        <mat-card-content>
+
+            <!-- Source -->
+            <table class="width-100 mt-8px">
+                <tr>
+                    <td class="p-0">
+                        <mat-form-field matLine class="width-100" appearance="fill">
+                            <mat-label>Source</mat-label>
+                            <mat-select matInput formControlName="source" [value]="this.dataStored.source">
+                                <mat-option *ngFor="let sourceType of sourceTypes" [value]="sourceType.value">
+                                    {{sourceType.viewValue}}
+                                </mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                    </td>
+                </tr>
+            </table>
+
+            <mat-divider [inset]="true"></mat-divider>
+
+            <!-- Domains To Filter -->
+            <div formArrayName="domains_filter" *ngIf="formStep.get('source').value">
+                <button mat-flat-button color="primary" class="mt-16px mb-16px indent" (click)="addDomain()">
+                    Add Domain To Filter
+                </button>
+                <div *ngFor="let domain of domains().controls; let domainIndex = index" [formGroupName]="domainIndex">
+                    <table class="width-100">
+                        <tr>
+                            <td class="p-0 pr-16px">
+                                <mat-form-field matLine class="width-100" appearance="fill">
+                                    <mat-label>Domain</mat-label>
+                                    <input matInput type="text" formControlName="url">
+                                    <mat-error>
+                                        <app-error-message [formField]="domain.get('url')"></app-error-message>
+                                    </mat-error>
+                                </mat-form-field>
+                            </td>
+                            <td class="p-0 center">
+                                <button mat-flat-button color="primary" class="mb-16px" (click)="removeDomain(domainIndex)">
+                                    Remove Domain
+                                </button>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+        </mat-card-content>
+
+        <mat-divider></mat-divider>
+
+        <mat-card-actions>
+            <button mat-flat-button color="primary" matStepperPrevious>Back</button>
+            <button mat-flat-button color="primary" matStepperNext>Next</button>
+        </mat-card-actions>
+
+    </mat-card>
+</form>

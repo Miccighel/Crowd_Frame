@@ -1,0 +1,10 @@
+
+<textarea #message type="text" class="chat-input-text" style="display: none;"
+              (keydown.enter)="onSubmit()" 
+              (keyup.enter)="message.value = ''" 
+              placeholder="Type a message..."
+              style="overflow:hidden">
+</textarea>
+<button type="submit" class="chat-input-submit" (click)="onSubmit()">
+  {{buttonText}}
+</button>

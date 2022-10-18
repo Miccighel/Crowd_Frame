@@ -1,0 +1,209 @@
+.dimension {
+
+  mat-form-field {
+    width: 100%;
+  }
+
+  margin-bottom: 1%;
+}
+
+.dimension-container {
+  display: flex;
+}
+
+.dimension-content {
+  flex-grow: 1;
+  p {
+    font-size: 1.2em;
+  }
+}
+
+.dimension-name {
+  margin-bottom: 1%;
+}
+
+.dimension-description {
+  margin-bottom: 1%;
+}
+
+.dimension-description p {
+  margin-bottom: 0;
+  margin-top: 0.5%;
+}
+
+.dimension-scale {
+  margin-bottom: 1%;
+}
+
+.dimension-url {
+  margin-bottom: 1%;
+}
+
+.dimension mat-radio-group {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.dimension .magnitude_estimation {
+  font-size: 1.2em;
+}
+
+
+.dimension-matrix-single {
+  border: 2px solid lightgray;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 2em;
+}
+
+.dimension-matrix-multiple {
+  margin-bottom: 1em;
+}
+
+.dimension-matrix-container {
+  margin-bottom: 1em;
+}
+
+.dimension-matrix .matrix-header .matrix-header-value, .dimension-matrix .matrix-header .matrix-header-text {
+  position: relative;
+  right: 5px;
+  text-align: center;
+}
+
+.dimension-matrix mat-radio-group {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.dimension-matrix mat-radio-group > div {
+  text-align: center;
+  flex: 1;
+}
+
+.dimension-matrix mat-radio-group .matrix-header-body, .dimension-matrix mat-radio-group .matrix-header-body-wide {
+  font-size: initial;
+  margin-bottom: 1%;
+}
+
+.dimension-matrix mat-radio-group .matrix-header-body-wide {
+  text-align: center;
+}
+
+.dimension-matrix mat-radio-group .matrix-header-body-wide:first-child {
+  margin-left: 16%;
+}
+
+.dimension-matrix mat-radio-group .matrix-value-description {
+
+  .description-main {
+    font-size: 1.2em;
+    padding-bottom: 20px;
+  }
+
+  .description-main-with-sub {
+    border: none;
+    padding-bottom: 0;
+    font-size: 1.1em;
+  }
+
+  text-align: left;
+}
+
+.dimension-matrix .description-sub {
+  p {
+    margin-top: 0;
+  }
+  padding: 10px 15px 5px 0px;
+}
+
+.dimension-matrix .name-pretty {
+  p {
+    margin-top: 0;
+    text-align: left;
+  }
+  strong {
+    font-size: initial;
+  }
+}
+
+.dimension-matrix mat-radio-group > div {
+  text-align: center;
+}
+
+.dimension-matrix p {
+  margin-bottom: 0;
+}
+
+.dimension h2 {
+  font-weight: normal;
+  margin-bottom: 1%;
+  margin-top: 1%;
+}
+
+.instructions h2 {
+  font-weight: normal;
+}
+
+.dimension-matrix .dimension-separate {
+  background-color: #F8F8F8;
+}
+
+.dimension-matrix .matrix-value {
+  display: inline-block;
+}
+
+.dimension-counter {
+  flex-grow: 0;
+  flex-basis: 1%;
+  justify-content: center;
+  align-self: center;
+  vertical-align: top;
+  margin-right: 1%;
+}
+
+/*
+  Pairwise splitted dimension css
+  @AggiunteAbbondo
+*/
+.dimension-content-split {
+  display: table;
+  border-spacing: 2cm 0px;
+  width: 100%;
+  margin-bottom: 30px;
+}
+
+.dimension-split-inside {
+  display: table-cell;
+  margin-bottom: 30px;
+
+}
+
+.spanDocument {
+  font-size: 15px;
+  font-weight: bold;
+  text-align: center;
+  padding-bottom: 20px;
+}
+
+
+.dimension-name-center {
+  text-align: center;
+}
+
+
+.dimension-box {
+  display: table-cell;
+  background-color: #FCFCFC;
+  padding-top: 1px;
+  margin-top: -1px;
+  overflow: hidden;
+  border-radius: 5px;
+  cursor: pointer;
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+}
+
+.test {
+  opacity: 100%;
+  z-index: 110;
+}

@@ -1,0 +1,94 @@
+h3 {
+  text-align: center;
+}
+
+/* LAWS ANNOTATION STYLES */
+
+.statement-div {
+  max-width: 600px;
+  margin: auto;
+  font-size: 1.2em;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.annotation-recap {
+  padding-bottom: 3px;
+}
+
+.annotation-quote {
+  display: flex;
+  height: 0;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.inner-annotation-quote {
+  display: flex;
+  height: 0;
+  align-items: center;
+  justify-content: space-evenly;
+  width: 100%;
+}
+
+.annotation-current-text {
+  display: flex;
+  margin-left: 5px;
+  height: 0;
+  align-items: center;
+}
+
+.annotation-options {
+  display: flex;
+  margin: auto;
+  padding: 5px;
+  justify-content: center;
+  height: 0;
+  align-items: center;
+  text-align: right;
+  max-width: 650px;
+}
+
+.annotation-type {
+  text-align: center;
+  padding-top: 5px;
+}
+
+.inner-annotation-reference {
+  background-color: #F0F0F0;
+  padding: 5px;
+}
+
+.inner-annotation-checkbox-delete {
+  text-align: center;
+  padding-top: 5px;
+}
+
+.inner-annotation-delete {
+  margin-left: 5px;
+}
+
+.reference-form {
+  margin-top: 5px;
+  margin-bottom: 5px;
+  text-align: center;
+  justify-content: space-evenly;
+  border-style: dashed;
+  border-color: dimgray;
+  padding: 5px;
+}
+
+.reference-radio-group-button {
+  margin-top: 2px;
+  margin-bottom: 2px;
+}
+
+.inner-annotation-text {
+  margin-top: 5px;
+  margin-bottom: 5px;
+  justify-content: space-evenly;
+  border-style: dashed;
+  border-color: dimgray;
+  padding: 5px;
+}

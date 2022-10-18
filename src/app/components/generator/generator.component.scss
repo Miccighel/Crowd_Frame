@@ -1,0 +1,68 @@
+/* |--- GENERAL STYLES --| */
+
+
+mat-card {
+  margin-right: 1%;
+  margin-left: 1%;
+  margin-bottom: 1%;
+}
+
+mat-card-content {
+  margin: 1%;
+}
+
+mat-card-header mat-card-title {
+  margin-bottom: 1%;
+}
+
+mat-card-actions {
+  margin: 1%;
+  padding-top: 1%;
+}
+
+mat-progress-bar {
+  background-color: #76ff03;
+  color: #76ff03;
+}
+
+#cloneTask {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  z-index: 100;
+}
+
+/* |--- STEP 6: TASK SETTINGS - STYLES  --| */
+
+.hit-attributes {
+
+  mat-checkbox {
+    width: 150px;
+  }
+
+}
+
+/* |--- STEP 8: SUMMARY - STYLES  --| */
+
+mat-list-item.step-valid {
+  background-color: green;
+  color: white;
+}
+
+mat-list-item.step-invalid {
+  background-color: darkred;
+  color: white;
+}
+
+mat-list-item span {
+  color: white;
+}
+
+mat-list-item span.step-validity-check {
+  text-transform: uppercase;
+}
+
+.generator-accordion mat-expansion-panel {
+  border-radius: 0;
+}
+
