@@ -1,0 +1,27 @@
+<div *ngIf="this.task.instructionsEvaluationElement" class="evaluation-instructions">
+    <mat-divider [inset]="true"></mat-divider>
+    <h2>{{this.task.instructionsEvaluationElement.label}} - {{this.task.instructionsEvaluationElement.text}}</h2>
+    <mat-divider [inset]="true"></mat-divider>
+</div>
+<h2 class="pairwise-title">Select an element</h2>
+<form [formGroup]="this.selectionForms[documentIndex]">
+    <ng-container *ngFor="let element of this.task.documents[documentIndex]['pairwise']; let j=index">
+        <div class="pairwise-cointainer">
+            <div id="element-{{documentIndex}}-{{j}}" class="element-box" (click)="selectElement(documentIndex, j);">
+                <h2 class="element-box-title">Element {{j}}</h2>
+                <div class="element-box-values">
+                    <ng-container *ngFor="let attribute of this.task.settings.attributes; let k=index">
+                            <span class="element-value-caption" *ngIf="attribute.show==true">
+                                <label><strong>{{attribute.name_pretty}}</strong>:</label>
+                                {{this.task.documents[documentIndex]['pairwise'][j][attribute.name]}}
+                            </span>
+                    </ng-container>
+                </div>
+            </div>
+            <mat-checkbox class="element-checkbox" formControlName="element_{{j}}_selected" (change)="handleCheckbox(documentIndex, j)" disableRipple="true">
+                <span class="element-checkbox-selection-text">Select</span>
+            </mat-checkbox>
+        </div>
+    </ng-container>
+</form>
+

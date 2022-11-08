@@ -1,0 +1,134 @@
+<form [formGroup]="formStep">
+    <mat-card [class.mat-elevation-z3]="true">
+        <mat-card-header>
+            <mat-card-title>Step #4: Evaluation Instructions</mat-card-title>
+            <mat-card-subtitle>Fourth, define all the evaluation instructions here</mat-card-subtitle>
+        </mat-card-header>
+        <mat-divider></mat-divider>
+        <mat-card-content>
+
+            <div formArrayName="general">
+
+                <div *ngFor="let instruction of instructionsGeneral().controls; let instructionIndex = index" [formGroupName]="instructionIndex">
+
+                    <mat-card [class.mat-elevation-z3]="true">
+                        <mat-card-header>
+                            <mat-card-title class="lighter">Instruction {{instructionIndex + 1}}</mat-card-title>
+                        </mat-card-header>
+                        <mat-divider></mat-divider>
+                        <mat-card-content>
+
+                            <!-- Caption -->
+                            <table class="width-100 mt-8px">
+                                <tr>
+                                    <td class="p-0">
+                                        <mat-form-field matLine class="width-100" appearance="fill">
+                                            <mat-label>Caption</mat-label>
+                                            <input matInput type="text" formControlName="caption">
+                                            <mat-error>
+                                                <app-error-message [formField]="instruction.get('caption')"></app-error-message>
+                                            </mat-error>
+                                        </mat-form-field>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <div>
+                                <angular-editor id="evaluation-instruction-{{instructionIndex}}-text" formControlName="text" [config]="editorConfig"></angular-editor>
+                                <mat-error *ngIf="instruction.touched">
+                                    <app-error-message [formField]="instruction.get('text')"></app-error-message>
+                                </mat-error>
+                            </div>
+
+                        </mat-card-content>
+
+                        <mat-divider></mat-divider>
+
+                        <mat-card-actions class="right">
+                            <button mat-flat-button color="primary" (click)="removeInstructionGeneral(instructionIndex)">
+                                Remove General Instruction
+                            </button>
+                        </mat-card-actions>
+
+                    </mat-card>
+
+                </div>
+
+            </div>
+
+            <button mat-flat-button color="primary" (click)="addInstructionGeneral()">
+                Add General Instruction
+            </button>
+
+            <div>
+
+                <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="setElement" (change)="resetInstructionElement()">
+                    <h3 class="initial">Enable Element Instruction</h3>
+                </mat-slide-toggle>
+
+                <div *ngIf="formStep.get('setElement').value" formGroupName="element">
+
+                    <mat-card [class.mat-elevation-z3]="true">
+                        <mat-card-header>
+                            <mat-card-title class="lighter">Instruction Element</mat-card-title>
+                        </mat-card-header>
+                        <mat-divider></mat-divider>
+                        <mat-card-content>
+
+                            <!-- Label -->
+                            <table class="width-100 mt-8px">
+                                <tr>
+                                    <td class="p-0">
+                                        <mat-form-field matLine class="width-100" appearance="fill">
+                                            <mat-label>Label</mat-label>
+                                            <input matInput type="text" formControlName="label">
+                                        </mat-form-field>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Caption -->
+                            <table class="width-100 mt-8px">
+                                <tr>
+                                    <td class="p-0">
+                                        <mat-form-field matLine class="width-100" appearance="fill">
+                                            <mat-label>Caption</mat-label>
+                                            <input matInput type="text" formControlName="caption">
+                                        </mat-form-field>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <table class="width-100 mt-8px">
+                                <tr>
+                                    <td class="p-0">
+                                        <mat-form-field matLine class="width-100" appearance="fill">
+                                            <mat-label>Text</mat-label>
+                                            <input matInput type="text" formControlName="text">
+                                            <mat-error>
+                                                <app-error-message [formField]="this.instructionsElement().get('text')"></app-error-message>
+                                            </mat-error>
+                                        </mat-form-field>
+                                    </td>
+                                </tr>
+                            </table>
+
+                        </mat-card-content>
+
+                    </mat-card>
+
+                </div>
+
+            </div>
+
+        </mat-card-content>
+
+        <mat-divider></mat-divider>
+
+        <mat-card-actions>
+            <button mat-flat-button color="primary" matStepperPrevious>Back</button>
+            <button mat-flat-button color="primary" matStepperNext>Next</button>
+        </mat-card-actions>
+
+    </mat-card>
+</form>

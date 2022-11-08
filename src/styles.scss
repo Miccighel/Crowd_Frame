@@ -1,4 +1,5 @@
-/* |--- GENERAL STYLES --| */
+@import "~@angular/material/prebuilt-themes/indigo-pink.css";
+
 
 html, body {
   height: 100%;
@@ -7,25 +8,52 @@ html, body {
 body {
   margin: 0;
   font-family: Roboto, "Helvetica Neue", sans-serif;
-  background-color: rgba(0, 0, 0, .10);
+  font-size: medium;
+  background-color: #00000009;
 }
 
-.mat-horizontal-content-container {
-  padding-left: 0 !important;
-  padding-right: 0 !important;
-  overflow: visible !important;
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+button {
+  text-transform: uppercase;
+}
+
+button:nth-child(2) {
+  margin-left: 5px;
+}
+
+mat-horizontal-stepper {
+  background: transparent !important;
+}
+
+mat-card-content mat-form-field label {
+  font-weight: bold;
+}
+
+mat-card-title {
+  padding-top: 1% !important;
+  padding-bottom: 1% !important;
+  margin-bottom: 0.5% !important;
+  font-weight: initial !important;
+}
+
+mat-card  {
+  margin:auto;
+}
+
+mat-card-actions {
+  margin-top: 1%;
 }
 
 .mat-radio-label {
   white-space: normal !important;
 }
 
-.mat-radio-label {
-  white-space: normal !important;
-}
-
-.mat-card>.mat-card-actions:last-child {
-  margin-bottom: 0 !important;
+.mat-card > .mat-card-actions:last-child {
+  margin-bottom: 1em !important;
 }
 
 .mat-dialog-container h2 {
@@ -35,9 +63,17 @@ body {
 .mat-dialog-container h2 {
   padding-top: 1% !important;
   padding-bottom: 1% !important;
-  border-top: 1px solid rgba(0,0,0,.12);
-  border-bottom: 1px solid rgba(0,0,0,.12);
+  border-top: 1px solid rgba(0, 0, 0, .12);
+  border-bottom: 1px solid rgba(0, 0, 0, .12);
   font-weight: lighter !important;
+}
+
+.form-note {
+  margin: 0;
+}
+
+.angular-editor {
+  margin-bottom: 10px;
 }
 
 .highlight-green {
@@ -70,4 +106,121 @@ body {
 
 .insert-highlight {
   background-color: #DFF652;
+}
+
+.image-example {
+  text-align: center;
+  text-decoration: solid;
+  margin: auto;
+  max-width: 70%;
+}
+
+.radio-button-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.radio-button-group-horizontal {
+  display: inline;
+}
+
+.radio-button {
+  margin: 5px;
+}
+
+.text-lighter {
+  font-weight: lighter;
+}
+
+.checkbox {
+  padding-left: 24px;
+  padding-bottom: 12px;
+}
+
+.initial {
+  font-weight: initial;
+}
+
+.lighter {
+  font-weight: lighter;
+}
+
+.border {
+  border: 1px solid #ddd;
+}
+
+.indent {
+  margin-left: 16px;
+}
+
+.double-indent {
+  margin-left: 32px;
+}
+
+.left {
+  text-align: left;
+}
+
+.center {
+  text-align: center;
+}
+
+.right {
+  text-align: right;
+}
+
+.width-100 {
+  width: 100% !important;
+}
+
+.width-75 {
+  width: 75% !important;
+}
+
+.width-20 {
+  width: 20% !important;
+}
+
+.p-0 {
+  padding: 0 !important;
+}
+
+.p-2px {
+  padding: 2px !important;
+}
+
+.p-5px {
+  padding: 5px !important;
+}
+
+.p-16px {
+  padding: 16px !important;
+}
+
+.pr-16px {
+  padding-right: 16px !important;
+}
+
+.mt-0 {
+  margin-top: 0 !important;
+}
+
+.mt-8px {
+  margin-top: 8px !important;
+}
+
+.mt-16px {
+  margin-top: 16px !important;
+}
+
+.mb-0 {
+  margin-bottom: 0 !important;
+}
+
+.mb-8px {
+  margin-bottom: 8px !important;
+}
+
+.mb-16px {
+  margin-bottom: 16px !important;
 }

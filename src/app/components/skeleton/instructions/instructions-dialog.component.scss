@@ -1,0 +1,48 @@
+/* |--- DIALOG STYLES  --| */
+
+#task-instructions div {
+  font-size: 1.2em;
+}
+
+.mat-dialog-container {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+p {
+  line-height: 150%;
+}
+
+li {
+  line-height: 200%;
+}
+
+h1 {
+  margin-bottom: 0.5em;
+  text-align: center;
+  font-weight: normal;
+}
+
+.close-button {
+  text-align: center;
+  margin-top: 1em;
+  margin-bottom: 1.5em;
+}
+
+button {
+  text-transform: uppercase;
+  margin: auto;
+}
+
+p {
+  text-align: justify;
+}
+
+ul p {
+  margin-bottom: 0.5%;
+}
+
+li {
+  margin-top: 5px;
+  margin-bottom: 5px;
+}

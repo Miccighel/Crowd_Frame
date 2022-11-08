@@ -1,0 +1,23 @@
+version: '3'
+
+services:
+
+  reverse-proxy:
+    image: nginx:1.17.10
+    container_name: reverse_proxy
+    depends_on:
+        - ia_solver_prod
+    volumes:
+      - ./reverse_proxy/nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - 80:80
+
+  ia_solver_prod:
+    container_name: solver
+    image: miccighel/crowd_frame-solver
+    restart: always
+    ports:
+      - 18080:18080
+    healthcheck:
+      test: ["CMD-SHELL", "curl", "-H", "Authorization: Bearer 0bcb8784-e2c9-4ddc-9c2a-45b6b0ed3093", "-f", "http://localhost:18080"]
+      interval: 30m

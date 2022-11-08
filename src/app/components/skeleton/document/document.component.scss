@@ -1,0 +1,111 @@
+mat-card-content, mat-card-title {
+  width: 75% !important;
+  margin: auto !important;
+}
+
+.statement {
+  margin-bottom: 1.5%;
+  box-shadow: 0 0 0 0;
+  border-radius: 0;
+  border-left: 10px lightgray solid;
+}
+
+.statement ul {
+  padding-left: 2%;
+  list-style: none;
+}
+
+.statement ul li {
+  padding-top: 2%;
+  padding-bottom: 2%;
+  font-size: large;
+}
+
+.statement {
+  padding-top: 1%;
+  padding-bottom: 1%;
+}
+
+.attribute {
+  padding: 1% 1% 1% 2%;
+  font-size: large;
+
+  p {
+    margin: 0;
+  }
+
+}
+
+.statement mat-expansion-panel-header {
+  margin-bottom: 1.5%;
+}
+
+.statement .mat-expansion-panel-header-title {
+  display: inline;
+  width: 20%;
+  flex-grow: 0;
+}
+
+.mat-radio-group {
+  //display: flex; remove for pairwise method
+  text-align: center;
+  justify-content: space-evenly;
+}
+
+.radio-group {
+  display: flex;
+  margin: auto;
+  padding: 5px;
+  justify-content: space-evenly;
+  height: 0%;
+  align-items: center;
+  max-width: 650px;
+}
+
+.radio-group-button {
+  margin-left: 7px;
+  margin-right: 7px;
+}
+
+.radio-button-separated {
+  font-style: italic;
+  font-weight: normal;
+}
+
+/* |--- COUNTDOWN ---| */
+
+.sticky {
+  position: -webkit-sticky; /* Safari */
+  position: sticky;
+  z-index: 1000;
+  background-color: rgb(255, 255, 123);
+  padding: 8px 0 8px 40px;
+  top: 0;
+  text-align: center;
+}
+
+.m-0 {
+  margin: 0;
+}
+
+.pt-16px {
+  padding-top: 16px;
+}
+
+/* |--- INSTRUCTIONS ---| */
+
+.evaluation-instructions {
+  h2 {
+    font-weight: normal;
+    margin-top: 0;
+  }
+  margin-bottom: 1%;
+  p {
+    font-size: 1.2em;
+  }
+}
+
+.document-section mat-form-field {
+  margin-bottom: 1%;
+  max-width: 70%;
+}

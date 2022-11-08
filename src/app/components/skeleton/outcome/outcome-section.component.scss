@@ -1,0 +1,81 @@
+/* |--- OUTCOME SECTION STYLES ---| */
+
+/* |--- General ---| */
+
+.outcome-section {
+  margin: 1%;
+}
+
+.outcome-section mat-card {
+  margin: 1% auto;
+}
+
+.outcome-section mat-card-title {
+  margin: 0 !important;
+}
+
+.outcome-section .main-title {
+  text-align: center;
+  text-transform: uppercase;
+  margin: 0 auto 0;
+}
+
+.outcome-section .sub-title {
+  padding-top: 0 !important;
+  text-transform: uppercase;
+  font-size: 1.2em;
+}
+
+.outcome-section .description {
+  margin-top: 10px !important;
+  margin-bottom: 10px !important;
+  font-size: 1.1em;
+
+  h1 {
+    text-align: center;
+  }
+}
+
+.outcome-section div {
+  margin: auto;
+  text-align: center;
+  button {
+    font-size: 1.1em;
+    padding: 10px 30px;
+  }
+}
+
+.outcome-section .comment-form {
+  margin-top: 1.5%;
+
+  mat-form-field {
+    width: 100%;
+  }
+}
+
+.outcome-section .comment-button {
+  text-align: center;
+}
+
+.outcome-section .comment-sent-label {
+  text-transform: uppercase;
+  padding: 0.5%;
+  margin-left: 1%;
+  font-weight: bold;
+  color: #66bb6a;
+}
+
+.yellow-title {
+  background-color: #ff8c00;
+  color: white;
+}
+
+.green-title {
+  background-color: #66bb6a;
+  color: white;
+}
+
+.red-title {
+  color: white;
+  background-color: #ef5350;
+}
