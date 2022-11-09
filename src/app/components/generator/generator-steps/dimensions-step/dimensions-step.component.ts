@@ -156,7 +156,7 @@ export class DimensionsStepComponent implements OnInit {
         example = dimension ? dimension.example ? dimension.example : '' : '';
         gold = dimension ? dimension.gold ? dimension.gold : false : false
         pairwise = dimension ? dimension.pairwise ? dimension.pairwise : false : false
-        setJustification = dimension ? dimension.justification ? dimension.justification : false : false;
+        setJustification = dimension ? !!dimension.justification : false;
         justification = this._formBuilder.group({text: '', min_words: ''})
         if (dimension) {
             if (dimension.justification) {
@@ -166,7 +166,7 @@ export class DimensionsStepComponent implements OnInit {
                 })
             }
         }
-        setUrl = dimension ? dimension.url ? dimension.url.enable : false : false
+        setUrl = dimension ? !!dimension.url : false;
         url = this._formBuilder.group({
             enable: '',
             setInstructions: false,
@@ -176,7 +176,7 @@ export class DimensionsStepComponent implements OnInit {
                 text: '',
             }),
         })
-        setScale = dimension ? dimension.scale ? dimension.scale : false : false
+        setScale = dimension ? !!dimension.scale : false;
         scale = this._formBuilder.group({
             type: '',
             setInstructions: false,
@@ -201,7 +201,7 @@ export class DimensionsStepComponent implements OnInit {
                     urlConfig['instructions'] = this._formBuilder.group({
                         caption: dimension.url.instructions['caption'],
                         label: dimension.url.instructions['label'],
-                        text: [dimension.url.instructions['text'], [Validators.required]]
+                        text: dimension.url.instructions['text']
                     })
                 } else {
                     urlConfig['instructions'] = this._formBuilder.group({
@@ -226,7 +226,7 @@ export class DimensionsStepComponent implements OnInit {
                     scaleConfig['instructions'] = this._formBuilder.group({
                         caption: dimension.scale.instructions['caption'],
                         label: dimension.scale.instructions['label'],
-                        text: [dimension.scale.instructions['text'], [Validators.required]]
+                        text: dimension.scale.instructions['text'],
                     })
                 } else {
                     scaleConfig['instructions'] = this._formBuilder.group({
@@ -238,7 +238,7 @@ export class DimensionsStepComponent implements OnInit {
                 scale = this._formBuilder.group(scaleConfig)
             }
         }
-        setStyle = dimension ? dimension.style ? dimension.style : false : false
+        setStyle = dimension ? !!dimension.style : false
         style = this._formBuilder.group({
             styleType: '',
             position: '',
@@ -525,6 +525,10 @@ export class DimensionsStepComponent implements OnInit {
             } else {
                 if (dimension.scale.setInstructions == false) {
                     dimension.scale.instructions = false
+                } else {
+                    if (dimension.scale.instructions.caption == '') dimension.scale.instructions.caption = false
+                    if (dimension.scale.instructions.label == '') dimension.scale.instructions.label = false
+                    if (dimension.scale.instructions.text == '') dimension.scale.instructions.text = false
                 }
                 switch (dimension.scale.type) {
                     case 'categorical':

@@ -47,8 +47,9 @@ export class InstructionsEvaluationStepComponent implements OnInit {
     }
 
     public initializeControls() {
+        this.dataStored = new InstructionEvaluation()
         this.formStep = this._formBuilder.group({
-            general: this._formBuilder.array([]),
+            instructions: this._formBuilder.array([]),
             setElement: false,
             element: this._formBuilder.group({
                 caption: '',
@@ -64,19 +65,35 @@ export class InstructionsEvaluationStepComponent implements OnInit {
         let serializedInstructions = this.localStorageService.getItem("instructions-evaluation")
         if (serializedInstructions) {
             this.dataStored = new InstructionEvaluation(JSON.parse(serializedInstructions))
+            this.dataStored.instructions.sort((a, b) => (a.index > b.index) ? 1 : -1)
         } else {
             this.initializeControls()
             let rawInstructions = await this.S3Service.downloadEvaluationInstructions(this.configService.environment)
             this.dataStored = new InstructionEvaluation(rawInstructions)
+            this.localStorageService.setItem(`instructions-evaluation`, JSON.stringify(rawInstructions))
         }
-        if (this.dataStored.general.length > 0) {
-            this.dataStored.general.forEach((instruction, instructionIndex) => {
-                this.addInstructionGeneral(instructionIndex, instruction)
+        console.log(this.dataStored)
+        let elementConfig = this._formBuilder.group({
+            caption: '',
+            label: '',
+            text: ''
+        })
+        if (this.dataStored.element) {
+            elementConfig = this._formBuilder.group({
+                caption: this.dataStored.element.caption,
+                label: this.dataStored.element.label,
+                text: this.dataStored.element.text
             })
         }
-        if (this.dataStored.element) {
-            this.formStep.get('setElement').setValue(true)
-            this.resetInstructionElement(this.dataStored.element)
+        this.formStep = this._formBuilder.group({
+            setElement: this.dataStored.element ? !!this.dataStored.element : false,
+            element: elementConfig,
+            instructions: this._formBuilder.array([]),
+        })
+        if (this.dataStored.instructions.length > 0) {
+            this.dataStored.instructions.forEach((instruction, instructionIndex) => {
+                this.addInstruction(instructionIndex, instruction)
+            })
         }
         this.formStep.valueChanges.subscribe(form => {
             this.serializeConfiguration()
@@ -85,63 +102,48 @@ export class InstructionsEvaluationStepComponent implements OnInit {
         this.formEmitter.emit(this.formStep)
     }
 
-
-    /* STEP #3 - General Instructions */
-
-    instructionsGeneral(): UntypedFormArray {
-        return this.formStep.get(`general`) as UntypedFormArray;
+    element(): UntypedFormGroup {
+        return this.formStep.get('element') as UntypedFormGroup;
     }
 
-    addInstructionGeneral(instructionIndex = null, instruction = null as Instruction) {
-        let newInstruction = this._formBuilder.group({
+    resetElement() {
+        this.formStep.get('element').get('label').setValue('')
+        this.formStep.get('element').get('caption').setValue('')
+        this.formStep.get('element').get('text').setValue('')
+        this.formStep.get('element').get('text').updateValueAndValidity()
+    }
+
+    /* STEP #4 - Evaluation Instructions */
+    instructions(): UntypedFormArray {
+        return this.formStep.get(`instructions`) as UntypedFormArray;
+    }
+
+    addInstruction(instructionIndex = null, instruction = null as Instruction) {
+        this.instructions().push(this._formBuilder.group({
             caption: instruction ? instruction.caption ? instruction.caption : '' : '',
-            text:  [instruction ? instruction.text ? instruction.text : '' : '', [Validators.required]],
-        })
-        newInstruction.get('text').setValidators([Validators.required])
-        this.instructionsGeneral().push(newInstruction);
+            text: instruction ? instruction.text ? instruction.text : '' : '',
+        }));
     }
 
-    removeInstructionGeneral(generalInstructionIndex: number) {
-        this.instructionsGeneral().removeAt(generalInstructionIndex);
+    removeInstruction(generalInstructionIndex: number) {
+        this.instructions().removeAt(generalInstructionIndex);
     }
-
-    instructionsElement(): UntypedFormGroup {
-        return this.formStep.get(`element`) as UntypedFormGroup;
-    }
-
-    resetInstructionElement(instruction = null) {
-        if (this.formStep.get('setElement').value == false) {
-            this.instructionsElement().get('label').setValue('')
-            this.instructionsElement().get('caption').setValue('')
-            this.instructionsElement().get('text').setValue('')
-            this.formStep.clearValidators()
-        } else {
-            this.instructionsElement().get('label').setValue(instruction ? instruction.label : '')
-            this.instructionsElement().get('caption').setValue(instruction ? instruction.caption : '')
-            this.instructionsElement().get('text').setValue(instruction ? instruction.text : '')
-            this.instructionsElement().get('text').addValidators([Validators.required])
-            this.instructionsElement().get('text').updateValueAndValidity()
-        }
-    }
-
 
     /* JSON Output */
 
     serializeConfiguration() {
-        let instructionsJSON = JSON.parse(JSON.stringify(this.formStep.value));
-        instructionsJSON['general'].forEach((instruction, instructionIndex) => {
+        console.log("here")
+        let instructionsEvaluationJSON = JSON.parse(JSON.stringify(this.formStep.value));
+        if (!instructionsEvaluationJSON.setElement) instructionsEvaluationJSON.element = false
+        delete instructionsEvaluationJSON.setElement
+        instructionsEvaluationJSON.instructions.forEach((instruction, instructionIndex) => {
             if (instruction.caption == '') instruction.caption = false
-            if (instruction.label == '') instruction.label = false
         })
-        if (!instructionsJSON.setElement) {
-            instructionsJSON['element'] = false
-        } else {
-            instructionsJSON['element']['caption'] = instructionsJSON['element']['caption'] == '' ? false : instructionsJSON['element']['caption']
-            instructionsJSON['element']['label'] = instructionsJSON['element']['label'] == '' ? false : instructionsJSON['element']['label']
-        }
-        delete instructionsJSON.setElement
-        this.localStorageService.setItem(`instructions-evaluation`, JSON.stringify(instructionsJSON))
-        this.configurationSerialized = JSON.stringify(instructionsJSON);
+        if (instructionsEvaluationJSON.element.caption == '') instructionsEvaluationJSON.element.caption = false
+        if (instructionsEvaluationJSON.element.label == '') instructionsEvaluationJSON.element.label = false
+        if (instructionsEvaluationJSON.element.text == '') instructionsEvaluationJSON.element.text = false
+        this.localStorageService.setItem(`instructions-evaluation`, JSON.stringify(instructionsEvaluationJSON))
+        this.configurationSerialized = JSON.stringify(instructionsEvaluationJSON);
     }
 
 }

@@ -15,7 +15,8 @@
                     <ng-container *ngIf="verifyUrlSelection(position)">
 
                         <div *ngIf="this.dimension.scale.instructions" class="evaluation-instructions">
-                            <h2>{{this.dimension.scale.instructions.label}} - {{this.dimension.scale.instructions.text}}</h2>
+                            <h2>{{this.dimension.scale.instructions.label}} - {{this.dimension.scale.instructions.caption}}</h2>
+                            <div><p>{{this.dimension.scale.instructions.text}}</p></div>
                         </div>
 
                         <div class="dimension-name">
@@ -26,7 +27,7 @@
                         <div *ngIf="dimension.description" class="dimension-container dimension-description">
                             <div class="dimension-content">
                                 <p>{{dimension.description}}</p>
-                                <i *ngIf="dimension.example">
+                                <i class="dimension-example" *ngIf="dimension.example">
                                     {{dimension.example}}
                                 </i>
                             </div>
@@ -151,7 +152,8 @@
 
                             <ng-container *ngIf="dimension.scale">
                                 <div *ngIf="dimension.scale.instructions" class="dimension-matrix-instructions evaluation-instructions">
-                                    <h2>{{dimension.scale.instructions.label}} - {{dimension.scale.instructions.text}}</h2>
+                                    <h2>{{this.dimension.scale.instructions.label}} - {{this.dimension.scale.instructions.caption}}</h2>
+                                    <div><p>{{this.dimension.scale.instructions.text}}</p></div>
                                 </div>
                             </ng-container>
 
@@ -171,7 +173,7 @@
                             <div *ngIf="dimension.scale" class="{{dimension.style.separator ? ' dimension-separate' : ''}}">
                                 <mat-radio-group aria-labelledby="radio-button-label" formControlName="{{(dimension.name).concat('_value')}}">
                                     <div class="matrix-value name-pretty" *ngIf="dimension.name_pretty">
-                                        <p><strong><span *ngIf="!this.dimension.style.separator">{{i+1}} - </span>{{dimension.name_pretty}}</strong></p>
+                                        <p><strong><span *ngIf="!this.dimension.style.separator">{{i + 1}} - </span>{{dimension.name_pretty}}</strong></p>
                                         <ng-container *ngIf="dimension.description">
                                             <div class="{{dimension.example ? '' : 'description-sub'}}" *ngIf="dimension.description.length>0">
                                                 <p>{{dimension.description}}</p>

@@ -3,11 +3,15 @@
         <mat-card-content class="pt-16px">
 
             <!-- Evaluation instructions markup -->
-            <div *ngIf="this.task.instructionsEvaluationGeneralAmount>0" class="evaluation-instructions">
-                <h2>{{this.task.instructionsEvaluationElement.label}} - {{this.task.instructionsEvaluationElement.text}}</h2>
-                <div *ngFor="let instruction of this.task.instructionsEvaluationGeneral">
+
+            <ng-container *ngIf="this.task.instructionsEvaluation.element" class="evaluation-instructions">
+                <h2>{{this.task.instructionsEvaluation.element.label}} - {{this.task.instructionsEvaluation.element.caption}}</h2>
+                <div><p>{{this.task.instructionsEvaluation.element.text}}</p></div>
+            </ng-container>
+            <div *ngIf="this.task.instructionsEvaluation.instructions.length>0" class="evaluation-instructions">
+                <div *ngFor="let instruction of this.task.instructionsEvaluation.instructions">
                     <h2>{{instruction.caption}}</h2>
-                    <div><p>{{instruction.text}}</p></div>
+                    <div><p [innerHTML]="instruction.text"></p></div>
                 </div>
             </div>
 

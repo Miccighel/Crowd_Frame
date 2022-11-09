@@ -1,8 +1,15 @@
-<div *ngIf="this.task.instructionsEvaluationElement" class="evaluation-instructions">
-    <mat-divider [inset]="true"></mat-divider>
-    <h2>{{this.task.instructionsEvaluationElement.label}} - {{this.task.instructionsEvaluationElement.text}}</h2>
-    <mat-divider [inset]="true"></mat-divider>
+<!-- Evaluation instructions markup -->
+<ng-container *ngIf="this.task.instructionsEvaluation.element" class="evaluation-instructions">
+    <h2>{{this.task.instructionsEvaluation.element.label}} - {{this.task.instructionsEvaluation.element.caption}}</h2>
+    <div><p>{{this.task.instructionsEvaluation.element.text}}</p></div>
+</ng-container>
+<div *ngIf="this.task.instructionsEvaluation.instructions.length>0" class="evaluation-instructions">
+    <div *ngFor="let instruction of this.task.instructionsEvaluation.instructions">
+        <h2>{{instruction.caption}}</h2>
+        <div><p [innerHTML]="instruction.text"></p></div>
+    </div>
 </div>
+
 <h2 class="pairwise-title">Select an element</h2>
 <form [formGroup]="this.selectionForms[documentIndex]">
     <ng-container *ngFor="let element of this.task.documents[documentIndex]['pairwise']; let j=index">

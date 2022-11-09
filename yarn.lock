@@ -2855,9 +2855,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"aws-sdk@npm:^2.1239.0":
-  version: 2.1239.0
-  resolution: "aws-sdk@npm:2.1239.0"
+"aws-sdk@npm:^2.1248.0":
+  version: 2.1248.0
+  resolution: "aws-sdk@npm:2.1248.0"
   dependencies:
     buffer: 4.9.2
     events: 1.1.1
@@ -2869,7 +2869,7 @@ __metadata:
     util: ^0.12.4
     uuid: 8.0.0
     xml2js: 0.4.19
-  checksum: d3c671f0985e70ae859424a7c92f7fe8ff43188af450ddd009c20e7e736994a338d3fcaf2c6500a800f6c4fd514588fb07c5fb9b2fbc7fb2674775db99e21704
+  checksum: ea6d37f788f1db5a0c0ef8c10b65953de8eae4c261db90ffb875130e9a1a7df74514c3a7de2431b18ed88fa587445aee93c12e724668bce965b5d879af6757c8
   languageName: node
   linkType: hard
 
@@ -3580,7 +3580,7 @@ __metadata:
     "@funktechno/texthighlighter": ^2.1.2
     "@kolkov/angular-editor": ^3.0.0-beta.0
     "@types/node": ~16.11.68
-    aws-sdk: ^2.1239.0
+    aws-sdk: ^2.1248.0
     crypto-es: ^1.2.7
     flat-angular: ^1.6.0
     ngx-color-picker: ^13.0.0
@@ -3591,7 +3591,7 @@ __metadata:
     rxjs: ^7.5.7
     titleize: ^3.0.0
     tree-model: ^1.0.7
-    tslib: ^2.4.0
+    tslib: ^2.4.1
     typescript: 4.7.4
     util: ^0.12.5
     zone.js: ~0.11.8
@@ -8334,6 +8334,13 @@ __metadata:
   version: 2.3.1
   resolution: "tslib@npm:2.3.1"
   checksum: de17a98d4614481f7fcb5cd53ffc1aaf8654313be0291e1bfaee4b4bb31a20494b7d218ff2e15017883e8ea9626599b3b0e0229c18383ba9dce89da2adf15cb9
+  languageName: node
+  linkType: hard
+
+"tslib@npm:^2.4.1":
+  version: 2.4.1
+  resolution: "tslib@npm:2.4.1"
+  checksum: 19480d6e0313292bd6505d4efe096a6b31c70e21cf08b5febf4da62e95c265c8f571f7b36fcc3d1a17e068032f59c269fab3459d6cd3ed6949eafecf64315fca
   languageName: node
   linkType: hard
 
