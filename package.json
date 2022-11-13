@@ -21,7 +21,7 @@
     "@angular/router": "^14.2.10",
     "@funktechno/texthighlighter": "^2.1.2",
     "@kolkov/angular-editor": "^3.0.0-beta.0",
-    "aws-sdk": "^2.1248.0",
+    "aws-sdk": "^2.1253.0",
     "crypto-es": "^1.2.7",
     "flat-angular": "^1.6.0",
     "ngx-color-picker": "^13.0.0",
@@ -34,7 +34,7 @@
     "tree-model": "^1.0.7",
     "tslib": "^2.4.1",
     "util": "^0.12.5",
-    "zone.js": "~0.11.8"
+    "zone.js": "~0.12.0"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^14.2.9",
