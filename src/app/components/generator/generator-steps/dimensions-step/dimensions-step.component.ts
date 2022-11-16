@@ -207,7 +207,7 @@ export class DimensionsStepComponent implements OnInit {
                     urlConfig['instructions'] = this._formBuilder.group({
                         caption: '',
                         label: '',
-                        text: ['', [Validators.required]]
+                        text: '',
                     })
                 }
                 url = this._formBuilder.group(urlConfig)
@@ -307,11 +307,6 @@ export class DimensionsStepComponent implements OnInit {
         this.instructionsUrl(dimensionIndex).get('label').setValue('')
         this.instructionsUrl(dimensionIndex).get('caption').setValue('')
         this.instructionsUrl(dimensionIndex).get('text').setValue('')
-        if (dim.get('url').get('setInstructions').value == true) {
-            this.instructionsUrl(dimensionIndex).get('text').addValidators([Validators.required])
-        } else {
-            this.instructionsUrl(dimensionIndex).get('text').clearValidators()
-        }
         this.instructionsUrl(dimensionIndex).get('text').updateValueAndValidity()
     }
 
@@ -325,11 +320,6 @@ export class DimensionsStepComponent implements OnInit {
         this.instructionsUrl(dimensionIndex).get('label').setValue('')
         this.instructionsUrl(dimensionIndex).get('caption').setValue('')
         this.instructionsUrl(dimensionIndex).get('text').setValue('')
-        if (dim.get('url').get('setInstructions').value == true) {
-            this.instructionsUrl(dimensionIndex).get('text').addValidators([Validators.required])
-        } else {
-            this.instructionsUrl(dimensionIndex).get('text').clearValidators()
-        }
         this.instructionsUrl(dimensionIndex).get('text').updateValueAndValidity()
     }
 
@@ -420,8 +410,6 @@ export class DimensionsStepComponent implements OnInit {
             this.instructionsScale(dimensionIndex).get('label').setValue('')
             this.instructionsScale(dimensionIndex).get('caption').setValue('')
             this.instructionsScale(dimensionIndex).get('text').setValue('')
-            this.instructionsScale(dimensionIndex).get('text').addValidators([Validators.required])
-            this.instructionsScale(dimensionIndex).get('text').updateValueAndValidity()
         } else {
             this.instructionsScale(dimensionIndex).get('text').clearValidators()
         }

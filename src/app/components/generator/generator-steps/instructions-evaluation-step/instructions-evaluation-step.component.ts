@@ -72,7 +72,6 @@ export class InstructionsEvaluationStepComponent implements OnInit {
             this.dataStored = new InstructionEvaluation(rawInstructions)
             this.localStorageService.setItem(`instructions-evaluation`, JSON.stringify(rawInstructions))
         }
-        console.log(this.dataStored)
         let elementConfig = this._formBuilder.group({
             caption: '',
             label: '',
@@ -132,7 +131,6 @@ export class InstructionsEvaluationStepComponent implements OnInit {
     /* JSON Output */
 
     serializeConfiguration() {
-        console.log("here")
         let instructionsEvaluationJSON = JSON.parse(JSON.stringify(this.formStep.value));
         if (!instructionsEvaluationJSON.setElement) instructionsEvaluationJSON.element = false
         delete instructionsEvaluationJSON.setElement

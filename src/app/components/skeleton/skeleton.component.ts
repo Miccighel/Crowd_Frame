@@ -79,7 +79,7 @@ export class SkeletonComponent implements OnInit {
     /* |--------- CONTROL FLOW & UI ELEMENTS - DECLARATION ---------| */
 
     /* References to task stepper and token forms */
-    @ViewChild('stepper') stepper: MatStepper;
+    @ViewChild('stepper', {static: false}) stepper: MatStepper;
     @ViewChild('urlField') urlField: MatFormField;
     tokenForm: UntypedFormGroup;
     tokenInput: UntypedFormControl;
@@ -677,20 +677,6 @@ export class SkeletonComponent implements OnInit {
         this.actionLogger.logInit(this.configService.environment.bucket, workerIdentifier, taskName, batchName, http, logOnConsole);
     }
 
-    public updateQuestionnaireForm(form, questionnaireIndex) {
-        this.questionnairesForm[questionnaireIndex] = form
-    }
-
-    public auxCEN(note) {
-        return false
-    }
-
-    public referenceRadioButtonCheck(i, index) {
-    }
-
-    public checkboxChange(event, i, index) {
-    }
-
     /* |--------- QUALITY CHECKS ---------| */
 
     /*
@@ -722,9 +708,6 @@ export class SkeletonComponent implements OnInit {
         this.sectionService.taskCompleted = false;
         this.sectionService.taskStarted = true;
 
-        /* Set stepper document_index to the first tab (currentDocument.e., bring the worker to the first document after the questionnaire) */
-        this.stepper.selectedIndex = this.task.questionnaireAmountStart;
-
         /* Decrease the remaining tries amount*/
         this.task.settings.allowed_tries = this.task.settings.allowed_tries - 1;
 
@@ -745,6 +728,14 @@ export class SkeletonComponent implements OnInit {
         this.worker.setParameter('try_current', String((this.task.tryCurrent)))
 
         this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker)
+
+        /* Trigger change detection to restore stepper reference */
+        this.changeDetector.detectChanges()
+
+        /* Set stepper document_index to the first tab (currentDocument.e., bring the worker to the first document after the questionnaire) */
+        this.stepper.selectedIndex = this.task.questionnaireAmountStart;
+
+        this.colorStepper(this.task.questionnaireAmount, this.task.documentsAmount)
 
         /* The loading spinner is stopped */
         this.ngxService.stopLoader('skeleton-inner');

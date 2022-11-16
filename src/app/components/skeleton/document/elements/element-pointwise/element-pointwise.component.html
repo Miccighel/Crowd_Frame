@@ -2,7 +2,9 @@
     <ng-container *ngFor="let attribute of this.task.settings.attributes; let k=index">
         <div *ngIf="attribute.show" class="attribute">
             <p class="attribute-label">
-                <strong>{{attribute.name_pretty}}</strong>: <span [innerHTML]="(this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior == 'hide_attributes') ? '---------- text_hidden ----------' : this.task.documents[this.documentIndex][attribute.name]"></span>
+                <strong *ngIf="attribute.name_pretty">{{attribute.name_pretty}}: </strong>
+                <strong *ngIf="!attribute.name_pretty">{{attribute.name.split('_').join(' ') | titlecase}}: </strong>
+                <span [innerHTML]="(this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior == 'hide_attributes') ? '---------- text_hidden ----------' : this.task.documents[this.documentIndex][attribute.name]"></span>
             </p>
         </div>
     </ng-container>
