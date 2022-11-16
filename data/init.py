@@ -1583,6 +1583,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 "justification": False,
                 "scale": {
                     "type": "categorical",
+                    "multiple_selection": False,
                     "instructions": {
                         "label": "Label",
                         "caption": "Caption",
