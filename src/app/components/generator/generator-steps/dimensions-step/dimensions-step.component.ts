@@ -179,6 +179,7 @@ export class DimensionsStepComponent implements OnInit {
         setScale = dimension ? !!dimension.scale : false;
         scale = this._formBuilder.group({
             type: '',
+            multiple_selection: false,
             setInstructions: false,
             instructions: this._formBuilder.group({
                 caption: '',
@@ -215,6 +216,8 @@ export class DimensionsStepComponent implements OnInit {
             if (dimension.scale) {
                 let scaleConfig = {
                     type: [dimension.scale.type, [Validators.required]],
+                    setMultipleSelection: !!dimension.scale['multiple_selection'],
+                    multiple_selection: dimension.scale['multiple_selection'] ? dimension.scale['multiple_selection'] : false,
                     setInstructions: !!dimension.scale['instructions'],
                     min: dimension.scale['min'] ? [dimension.scale['min'], [Validators.required]] : '',
                     max: dimension.scale['max'] ? [dimension.scale['max'], [Validators.required]] : '',
@@ -339,6 +342,7 @@ export class DimensionsStepComponent implements OnInit {
             dim.get('scale').get('type').setValidators(Validators.required);
         }
 
+
         dim.get('scale').get('min').setValue('');
         dim.get('scale').get('min').clearValidators();
         dim.get('scale').get('min').updateValueAndValidity();
@@ -397,6 +401,16 @@ export class DimensionsStepComponent implements OnInit {
                     dim.get('setStyle').disable()
             }
         }
+    }
+
+    resetMultipleSelection(dimensionIndex) {
+        let dim = this.dimensions().at(dimensionIndex);
+        if (dim.get('scale').get('setMultipleSelection').value == true) {
+            dim.get('scale').get('multiple_selection').setValue(true);
+        } else {
+            dim.get('scale').get('multiple_selection').setValue(false);
+        }
+        console.log("here")
     }
 
     instructionsScale(dimensionIndex): UntypedFormGroup {
@@ -520,16 +534,21 @@ export class DimensionsStepComponent implements OnInit {
                 }
                 switch (dimension.scale.type) {
                     case 'categorical':
+                        delete dimension.scale.setMultipleSelection;
                         delete dimension.scale.min;
                         delete dimension.scale.max;
                         delete dimension.scale.step;
                         delete dimension.scale.lower_bound;
                         break;
                     case 'interval':
+                        delete dimension.scale.setMultipleSelection;
+                        delete dimension.scale.multiple_selection;
                         delete dimension.scale.mapping;
                         delete dimension.scale.lower_bound;
                         break;
                     case 'magnitude_estimation':
+                        delete dimension.scale.setMultipleSelection;
+                        delete dimension.scale.multiple_selection;
                         delete dimension.scale.mapping;
                         delete dimension.scale.max;
                         delete dimension.scale.step;
