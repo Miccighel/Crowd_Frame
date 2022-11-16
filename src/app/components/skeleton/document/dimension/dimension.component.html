@@ -42,17 +42,35 @@
                                     <ng-container *ngIf="dimension.scale.type=='categorical'">
                                         <div>
                                             <mat-radio-group aria-labelledby="radio-button-label" class="radio-button-group" formControlName="{{(dimension.name).concat('_value')}}">
-                                                <ng-container *ngFor="let mapping of dimension.scale.mapping let k=index">
-                                                    <mat-divider *ngIf="mapping.separator" [inset]="true"></mat-divider>
-                                                    <mat-radio-button
-                                                            value="{{mapping.value}}"
-                                                            (change)="this.task.storeDimensionValue($event, documentIndex, dimension.index)"
-                                                            [disabled]="this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior=='disable_forms'"
-                                                            [ngClass]="mapping.separator ? 'radio-button radio-button-separated' : 'radio-button'">
-                                                        <span>{{mapping.label}}</span>
-                                                        <span *ngIf="mapping.description.length>0"> ({{mapping.description}})</span>
-                                                    </mat-radio-button>
+                                                <ng-container *ngIf="!dimension.scale.multipleSelection">
+                                                    <ng-container *ngFor="let mapping of dimension.scale.mapping let k=index">
+                                                        <mat-divider *ngIf="mapping.separator" [inset]="true"></mat-divider>
+                                                        <mat-radio-button
+                                                                value="{{mapping.value}}"
+                                                                (change)="this.task.storeDimensionValue($event, documentIndex, dimension.index)"
+                                                                [disabled]="this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior=='disable_forms'"
+                                                                [ngClass]="mapping.separator ? 'radio-button radio-button-separated' : 'radio-button'">
+                                                            <span>{{mapping.label}}</span>
+                                                            <span *ngIf="mapping.description.length>0"> ({{mapping.description}})</span>
+                                                        </mat-radio-button>
+                                                    </ng-container>
                                                 </ng-container>
+
+
+                                                <div class="checkbox" *ngIf="dimension.scale.multipleSelection">
+                                                    <div  formGroupName="{{(dimension.name).concat('_list')}}">
+                                                        <div *ngFor="let mapping of dimension.scale.mapping; let k=index">
+                                                            <mat-checkbox formControlName="{{k}}" (change)="handleCheckbox($event, dimension, k);">
+                                                                {{mapping.label}}
+                                                            </mat-checkbox>
+                                                        </div>
+                                                    </div>
+                                                    <mat-form-field appearance="standard">
+                                                        <input matInput formControlName="{{(dimension.name).concat('_value')}}">
+                                                    </mat-form-field>
+                                                </div>
+
+
                                             </mat-radio-group>
                                         </div>
                                     </ng-container>
@@ -117,7 +135,7 @@
                                         <div class="dimension-text-field">
                                             <mat-form-field appearance="fill" class="width-100">
                                                 <mat-label>{{dimension.justification.text}}</mat-label>
-                                                <textarea matInput formControlName="{{dimension.name}}_justification" rows="5"></textarea>
+                                                <textarea matInput formControlName="{{dimension.name}}_justification" rows="3"></textarea>
                                                 <mat-error *ngIf="this.utilsService.hasError(assessmentForms[documentIndex],(dimension.name).concat('_justification'), 'required')">
                                                     This field is required
                                                 </mat-error>

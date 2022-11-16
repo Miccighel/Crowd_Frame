@@ -237,6 +237,9 @@ export class SkeletonComponent implements OnInit {
                 this.worker.setParameter('status_code', StatusCodes.TASK_ALREADY_COMPLETED)
                 await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker)
             } else {
+                Object.entries(aclEntry).forEach(
+                    ([key, value]) => this.worker.setParameter(key, value)
+                );
                 /* If the two flags are set to false, s/he is a worker that abandoned the task earlier;
                    furthermore, his/her it has been assigned to someone else. It's a sort of overbooking. */
                 let timeArrival = new Date(aclEntry['time_arrival']).getTime()
@@ -251,6 +254,7 @@ export class SkeletonComponent implements OnInit {
                         this.worker.setParameter('status_code', StatusCodes.TASK_TIME_EXPIRED)
                     if (((/true/i).test(aclEntry['paid']) == false && (/true/i).test(aclEntry['in_progress']) == false) && parseInt(aclEntry['try_left']) <= 1)
                         this.worker.setParameter('status_code', StatusCodes.TASK_FAILED_NO_TRIES)
+                    this.worker.setParameter('time_removal', new Date().toUTCString())
                     this.sectionService.taskFailed = true
                     await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker)
                 } else {
@@ -388,6 +392,7 @@ export class SkeletonComponent implements OnInit {
                                         /* The record for the worker that abandoned/returned the task is updated */
                                         aclEntry['time_expired'] = String(true)
                                         aclEntry['in_progress'] = String(false)
+                                        aclEntry['time_removal'] = new Date().toUTCString()
                                         await this.dynamoDBService.insertACLRecordUnitId(this.configService.environment, aclEntry, this.task.tryCurrent, false, true)
                                         /* As soon a slot for the current HIT is freed and assigned to the current worker the search can be stopped */
                                         this.worker.setParameter('token_input', aclEntry['token_input'])

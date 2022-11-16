@@ -177,7 +177,7 @@ export class SectionService {
 
     public stepIndexes() {
         let steps = []
-        for (let i = 0; i < this.task.questionnaireAmount + this.task.documentsAmount + 1; i++) steps[i] = i
+        for (let i = 0; i < this.task.questionnaireAmount + this.task.documentsAmount; i++) steps[i] = i
         return steps
     }
 
