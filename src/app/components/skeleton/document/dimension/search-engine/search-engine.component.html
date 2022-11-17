@@ -1,7 +1,8 @@
 <div *ngIf="this.dimension.url" class="search-engine">
     <ng-container *ngIf="this.dimension.url.enable">
         <div *ngIf="this.dimension.url.instructions" class="evaluation-instructions">
-            <h2>{{this.dimension.url.instructions.label}} - {{this.dimension.url.instructions.text}} </h2>
+            <h2>{{this.dimension.url.instructions.label}} - {{this.dimension.url.instructions.caption}}</h2>
+            <div><p>{{this.dimension.url.instructions.text}}</p></div>
         </div>
         <form [formGroup]="this.searchEngineForm">
             <!-- Dimension search engine interface markup -->
