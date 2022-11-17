@@ -14,10 +14,12 @@
 
                     <ng-container *ngIf="verifyUrlSelection(position)">
 
-                        <div *ngIf="this.dimension.scale.instructions" class="evaluation-instructions">
-                            <h2>{{this.dimension.scale.instructions.label}} - {{this.dimension.scale.instructions.caption}}</h2>
-                            <div><p>{{this.dimension.scale.instructions.text}}</p></div>
-                        </div>
+                        <ng-container *ngIf="this.dimension.scale">
+                            <div *ngIf="this.dimension.scale.instructions" class="evaluation-instructions">
+                                <h2>{{this.dimension.scale.instructions.label}} - {{this.dimension.scale.instructions.caption}}</h2>
+                                <div><p>{{this.dimension.scale.instructions.text}}</p></div>
+                            </div>
+                        </ng-container>
 
                         <div class="dimension-name">
                             <div *ngIf="dimension.name_pretty">
@@ -58,7 +60,7 @@
 
 
                                                 <div class="checkbox" *ngIf="dimension.scale.multipleSelection">
-                                                    <div  formGroupName="{{(dimension.name).concat('_list')}}">
+                                                    <div formGroupName="{{(dimension.name).concat('_list')}}">
                                                         <div *ngFor="let mapping of dimension.scale.mapping; let k=index">
                                                             <mat-checkbox formControlName="{{k}}" (change)="handleCheckbox($event, dimension, k);">
                                                                 {{mapping.label}}
@@ -130,26 +132,26 @@
 
                                 </ng-container>
 
-                                <div *ngIf="dimension.justification" class="dimension-container dimension-justification">
-                                    <div class="dimension-content justification">
-                                        <div class="dimension-text-field">
-                                            <mat-form-field appearance="fill" class="width-100">
-                                                <mat-label>{{dimension.justification.text}}</mat-label>
-                                                <textarea matInput formControlName="{{dimension.name}}_justification" rows="3"></textarea>
-                                                <mat-error *ngIf="this.utilsService.hasError(assessmentForms[documentIndex],(dimension.name).concat('_justification'), 'required')">
-                                                    This field is required
-                                                </mat-error>
-                                                <mat-error *ngIf="this.utilsService.hasError(assessmentForms[documentIndex],(dimension.name).concat('_justification'), 'longer')">
-                                                    This justification must have at least {{dimension.justification.min_words}} words.
-                                                </mat-error>
-                                                <mat-error *ngIf="this.utilsService.hasError(assessmentForms[documentIndex],(dimension.name).concat('_justification'), 'invalid')">
-                                                    You cannot use the selected search engine url as part of the justification.
-                                                </mat-error>
-                                            </mat-form-field>
-                                        </div>
-                                    </div>
-                                </div>
+                            </div>
+                        </div>
 
+                        <div *ngIf="dimension.justification" class="dimension-container dimension-justification">
+                            <div class="dimension-content justification">
+                                <div class="dimension-text-field">
+                                    <mat-form-field appearance="fill" class="width-100">
+                                        <mat-label>{{dimension.justification.text}}</mat-label>
+                                        <textarea matInput formControlName="{{dimension.name}}_justification" rows="3"></textarea>
+                                        <mat-error *ngIf="this.utilsService.hasError(assessmentForms[documentIndex],(dimension.name).concat('_justification'), 'required')">
+                                            This field is required
+                                        </mat-error>
+                                        <mat-error *ngIf="this.utilsService.hasError(assessmentForms[documentIndex],(dimension.name).concat('_justification'), 'longer')">
+                                            This justification must have at least {{dimension.justification.min_words}} words.
+                                        </mat-error>
+                                        <mat-error *ngIf="this.utilsService.hasError(assessmentForms[documentIndex],(dimension.name).concat('_justification'), 'invalid')">
+                                            You cannot use the selected search engine url as part of the justification.
+                                        </mat-error>
+                                    </mat-form-field>
+                                </div>
                             </div>
                         </div>
 
