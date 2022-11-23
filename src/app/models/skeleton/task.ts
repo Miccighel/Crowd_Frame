@@ -8,6 +8,7 @@ import {NoteLaws} from "./annotators/notesLaws";
 import {TaskSettings} from "./taskSettings";
 import {Hit} from "./hit";
 import {Object} from "aws-sdk/clients/customerprofiles";
+import {InstructionEvaluation} from "./instructionsEvaluation";
 
 export class Task {
 
@@ -39,10 +40,7 @@ export class Task {
     instructionsGeneral: Array<Instruction>;
 
     /* Array of evaluation instructions. Each object represents a paragraph with an optional caption made of steps */
-    instructionsEvaluationGeneral: Array<Instruction>;
-    instructionsEvaluationElement: Instruction;
-    instructionsEvaluationUrl: Instruction;
-    instructionsEvaluationScale: Instruction;
+    instructionsEvaluation: InstructionEvaluation;
 
     /* Reference to the current questionnaires */
     questionnaires: Array<Questionnaire>;
@@ -228,22 +226,8 @@ export class Task {
     }
 
     public initializeInstructionsEvaluation(rawEvaluationInstructions) {
-<<<<<<< Updated upstream
-        this.instructionsEvaluationGeneralAmount = rawEvaluationInstructions["general"].length;
-        this.instructionsEvaluationGeneral = new Array<Instruction>();
-        for (let index = 0; index < this.instructionsEvaluationGeneralAmount; index++) {
-            this.instructionsEvaluationGeneral.push(new Instruction(index, rawEvaluationInstructions["general"][index]));
-        }
-        if ('scale' in rawEvaluationInstructions)
-            this.instructionsEvaluationScale = new Instruction(0, rawEvaluationInstructions['scale'])
-        if ('url' in rawEvaluationInstructions)
-            this.instructionsEvaluationUrl = new Instruction(0, rawEvaluationInstructions['url'])
-        if ('element' in rawEvaluationInstructions)
-            this.instructionsEvaluationElement = new Instruction(0, rawEvaluationInstructions['element'])
-=======
-        this.instructionsEvaluationGeneralAmount =rawEvaluationInstructions["instructions"] ?  rawEvaluationInstructions["instructions"].length : 0;
+        this.instructionsEvaluationGeneralAmount = rawEvaluationInstructions["instructions"].length;
         this.instructionsEvaluation = new InstructionEvaluation(rawEvaluationInstructions);
->>>>>>> Stashed changes
     }
 
     public initializeDimensions(rawDimensions) {

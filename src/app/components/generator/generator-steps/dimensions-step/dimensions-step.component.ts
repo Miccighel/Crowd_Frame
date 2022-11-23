@@ -156,7 +156,7 @@ export class DimensionsStepComponent implements OnInit {
         example = dimension ? dimension.example ? dimension.example : '' : '';
         gold = dimension ? dimension.gold ? dimension.gold : false : false
         pairwise = dimension ? dimension.pairwise ? dimension.pairwise : false : false
-        setJustification = dimension ? dimension.justification ? dimension.justification : false : false;
+        setJustification = dimension ? !!dimension.justification : false;
         justification = this._formBuilder.group({text: '', min_words: ''})
         if (dimension) {
             if (dimension.justification) {
@@ -166,7 +166,7 @@ export class DimensionsStepComponent implements OnInit {
                 })
             }
         }
-        setUrl = dimension ? dimension.url ? dimension.url.enable : false : false
+        setUrl = dimension ? !!dimension.url : false;
         url = this._formBuilder.group({
             enable: '',
             setInstructions: false,
@@ -176,9 +176,10 @@ export class DimensionsStepComponent implements OnInit {
                 text: '',
             }),
         })
-        setScale = dimension ? dimension.scale ? dimension.scale : false : false
+        setScale = dimension ? !!dimension.scale : false;
         scale = this._formBuilder.group({
             type: '',
+            multiple_selection: false,
             setInstructions: false,
             instructions: this._formBuilder.group({
                 caption: '',
@@ -201,13 +202,13 @@ export class DimensionsStepComponent implements OnInit {
                     urlConfig['instructions'] = this._formBuilder.group({
                         caption: dimension.url.instructions['caption'],
                         label: dimension.url.instructions['label'],
-                        text: [dimension.url.instructions['text'], [Validators.required]]
+                        text: dimension.url.instructions['text']
                     })
                 } else {
                     urlConfig['instructions'] = this._formBuilder.group({
                         caption: '',
                         label: '',
-                        text: ['', [Validators.required]]
+                        text: '',
                     })
                 }
                 url = this._formBuilder.group(urlConfig)
@@ -215,6 +216,8 @@ export class DimensionsStepComponent implements OnInit {
             if (dimension.scale) {
                 let scaleConfig = {
                     type: [dimension.scale.type, [Validators.required]],
+                    setMultipleSelection: !!dimension.scale['multiple_selection'],
+                    multiple_selection: dimension.scale['multiple_selection'] ? dimension.scale['multiple_selection'] : false,
                     setInstructions: !!dimension.scale['instructions'],
                     min: dimension.scale['min'] ? [dimension.scale['min'], [Validators.required]] : '',
                     max: dimension.scale['max'] ? [dimension.scale['max'], [Validators.required]] : '',
@@ -226,7 +229,7 @@ export class DimensionsStepComponent implements OnInit {
                     scaleConfig['instructions'] = this._formBuilder.group({
                         caption: dimension.scale.instructions['caption'],
                         label: dimension.scale.instructions['label'],
-                        text: [dimension.scale.instructions['text'], [Validators.required]]
+                        text: dimension.scale.instructions['text'],
                     })
                 } else {
                     scaleConfig['instructions'] = this._formBuilder.group({
@@ -238,7 +241,7 @@ export class DimensionsStepComponent implements OnInit {
                 scale = this._formBuilder.group(scaleConfig)
             }
         }
-        setStyle = dimension ? dimension.style ? dimension.style : false : false
+        setStyle = dimension ? !!dimension.style : false
         style = this._formBuilder.group({
             styleType: '',
             position: '',
@@ -307,11 +310,6 @@ export class DimensionsStepComponent implements OnInit {
         this.instructionsUrl(dimensionIndex).get('label').setValue('')
         this.instructionsUrl(dimensionIndex).get('caption').setValue('')
         this.instructionsUrl(dimensionIndex).get('text').setValue('')
-        if (dim.get('url').get('setInstructions').value == true) {
-            this.instructionsUrl(dimensionIndex).get('text').addValidators([Validators.required])
-        } else {
-            this.instructionsUrl(dimensionIndex).get('text').clearValidators()
-        }
         this.instructionsUrl(dimensionIndex).get('text').updateValueAndValidity()
     }
 
@@ -325,11 +323,6 @@ export class DimensionsStepComponent implements OnInit {
         this.instructionsUrl(dimensionIndex).get('label').setValue('')
         this.instructionsUrl(dimensionIndex).get('caption').setValue('')
         this.instructionsUrl(dimensionIndex).get('text').setValue('')
-        if (dim.get('url').get('setInstructions').value == true) {
-            this.instructionsUrl(dimensionIndex).get('text').addValidators([Validators.required])
-        } else {
-            this.instructionsUrl(dimensionIndex).get('text').clearValidators()
-        }
         this.instructionsUrl(dimensionIndex).get('text').updateValueAndValidity()
     }
 
@@ -348,6 +341,7 @@ export class DimensionsStepComponent implements OnInit {
         } else {
             dim.get('scale').get('type').setValidators(Validators.required);
         }
+
 
         dim.get('scale').get('min').setValue('');
         dim.get('scale').get('min').clearValidators();
@@ -409,6 +403,16 @@ export class DimensionsStepComponent implements OnInit {
         }
     }
 
+    resetMultipleSelection(dimensionIndex) {
+        let dim = this.dimensions().at(dimensionIndex);
+        if (dim.get('scale').get('setMultipleSelection').value == true) {
+            dim.get('scale').get('multiple_selection').setValue(true);
+        } else {
+            dim.get('scale').get('multiple_selection').setValue(false);
+        }
+        console.log("here")
+    }
+
     instructionsScale(dimensionIndex): UntypedFormGroup {
         let dim = this.dimensions().at(dimensionIndex);
         return dim.get(`scale`).get('instructions') as UntypedFormGroup;
@@ -420,8 +424,6 @@ export class DimensionsStepComponent implements OnInit {
             this.instructionsScale(dimensionIndex).get('label').setValue('')
             this.instructionsScale(dimensionIndex).get('caption').setValue('')
             this.instructionsScale(dimensionIndex).get('text').setValue('')
-            this.instructionsScale(dimensionIndex).get('text').addValidators([Validators.required])
-            this.instructionsScale(dimensionIndex).get('text').updateValueAndValidity()
         } else {
             this.instructionsScale(dimensionIndex).get('text').clearValidators()
         }
@@ -525,19 +527,28 @@ export class DimensionsStepComponent implements OnInit {
             } else {
                 if (dimension.scale.setInstructions == false) {
                     dimension.scale.instructions = false
+                } else {
+                    if (dimension.scale.instructions.caption == '') dimension.scale.instructions.caption = false
+                    if (dimension.scale.instructions.label == '') dimension.scale.instructions.label = false
+                    if (dimension.scale.instructions.text == '') dimension.scale.instructions.text = false
                 }
                 switch (dimension.scale.type) {
                     case 'categorical':
+                        delete dimension.scale.setMultipleSelection;
                         delete dimension.scale.min;
                         delete dimension.scale.max;
                         delete dimension.scale.step;
                         delete dimension.scale.lower_bound;
                         break;
                     case 'interval':
+                        delete dimension.scale.setMultipleSelection;
+                        delete dimension.scale.multiple_selection;
                         delete dimension.scale.mapping;
                         delete dimension.scale.lower_bound;
                         break;
                     case 'magnitude_estimation':
+                        delete dimension.scale.setMultipleSelection;
+                        delete dimension.scale.multiple_selection;
                         delete dimension.scale.mapping;
                         delete dimension.scale.max;
                         delete dimension.scale.step;

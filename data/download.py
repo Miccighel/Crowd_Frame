@@ -1988,7 +1988,6 @@ if not os.path.exists(df_data_path):
                                         row[f"doc_{dimension['name']}_index"] = mapping['index']
                                         row[f"doc_{dimension['name']}_description"] = mapping['description']
                             else:
-                                row[f"doc_{dimension['name']}_value"] = np.nan
                                 row[f"doc_{dimension['name']}_label"] = np.nan
                                 row[f"doc_{dimension['name']}_index"] = np.nan
                                 row[f"doc_{dimension['name']}_description"] = np.nan

@@ -14,9 +14,12 @@
 
                     <ng-container *ngIf="verifyUrlSelection(position)">
 
-                        <div *ngIf="this.dimension.scale.instructions" class="evaluation-instructions">
-                            <h2>{{this.dimension.scale.instructions.label}} - {{this.dimension.scale.instructions.text}}</h2>
-                        </div>
+                        <ng-container *ngIf="this.dimension.scale">
+                            <div *ngIf="this.dimension.scale.instructions" class="evaluation-instructions">
+                                <h2>{{this.dimension.scale.instructions.label}} - {{this.dimension.scale.instructions.caption}}</h2>
+                                <div><p>{{this.dimension.scale.instructions.text}}</p></div>
+                            </div>
+                        </ng-container>
 
                         <div class="dimension-name">
                             <div *ngIf="dimension.name_pretty">
@@ -26,7 +29,7 @@
                         <div *ngIf="dimension.description" class="dimension-container dimension-description">
                             <div class="dimension-content">
                                 <p>{{dimension.description}}</p>
-                                <i *ngIf="dimension.example">
+                                <i class="dimension-example" *ngIf="dimension.example">
                                     {{dimension.example}}
                                 </i>
                             </div>
@@ -41,17 +44,35 @@
                                     <ng-container *ngIf="dimension.scale.type=='categorical'">
                                         <div>
                                             <mat-radio-group aria-labelledby="radio-button-label" class="radio-button-group" formControlName="{{(dimension.name).concat('_value')}}">
-                                                <ng-container *ngFor="let mapping of dimension.scale.mapping let k=index">
-                                                    <mat-divider *ngIf="mapping.separator" [inset]="true"></mat-divider>
-                                                    <mat-radio-button
-                                                            value="{{mapping.value}}"
-                                                            (change)="this.task.storeDimensionValue($event, documentIndex, dimension.index)"
-                                                            [disabled]="this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior=='disable_forms'"
-                                                            [ngClass]="mapping.separator ? 'radio-button radio-button-separated' : 'radio-button'">
-                                                        <span>{{mapping.label}}</span>
-                                                        <span *ngIf="mapping.description.length>0"> ({{mapping.description}})</span>
-                                                    </mat-radio-button>
+                                                <ng-container *ngIf="!dimension.scale.multipleSelection">
+                                                    <ng-container *ngFor="let mapping of dimension.scale.mapping let k=index">
+                                                        <mat-divider *ngIf="mapping.separator" [inset]="true"></mat-divider>
+                                                        <mat-radio-button
+                                                                value="{{mapping.value}}"
+                                                                (change)="this.task.storeDimensionValue($event, documentIndex, dimension.index)"
+                                                                [disabled]="this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior=='disable_forms'"
+                                                                [ngClass]="mapping.separator ? 'radio-button radio-button-separated' : 'radio-button'">
+                                                            <span>{{mapping.label}}</span>
+                                                            <span *ngIf="mapping.description.length>0"> ({{mapping.description}})</span>
+                                                        </mat-radio-button>
+                                                    </ng-container>
                                                 </ng-container>
+
+
+                                                <div class="checkbox" *ngIf="dimension.scale.multipleSelection">
+                                                    <div formGroupName="{{(dimension.name).concat('_list')}}">
+                                                        <div *ngFor="let mapping of dimension.scale.mapping; let k=index">
+                                                            <mat-checkbox formControlName="{{k}}" (change)="handleCheckbox($event, dimension, k);">
+                                                                {{mapping.label}}
+                                                            </mat-checkbox>
+                                                        </div>
+                                                    </div>
+                                                    <mat-form-field appearance="standard">
+                                                        <input matInput formControlName="{{(dimension.name).concat('_value')}}">
+                                                    </mat-form-field>
+                                                </div>
+
+
                                             </mat-radio-group>
                                         </div>
                                     </ng-container>
@@ -111,26 +132,26 @@
 
                                 </ng-container>
 
-                                <div *ngIf="dimension.justification" class="dimension-container dimension-justification">
-                                    <div class="dimension-content justification">
-                                        <div class="dimension-text-field">
-                                            <mat-form-field appearance="fill" class="width-100">
-                                                <mat-label>{{dimension.justification.text}}</mat-label>
-                                                <textarea matInput formControlName="{{dimension.name}}_justification" rows="5"></textarea>
-                                                <mat-error *ngIf="this.utilsService.hasError(assessmentForms[documentIndex],(dimension.name).concat('_justification'), 'required')">
-                                                    This field is required
-                                                </mat-error>
-                                                <mat-error *ngIf="this.utilsService.hasError(assessmentForms[documentIndex],(dimension.name).concat('_justification'), 'longer')">
-                                                    This justification must have at least {{dimension.justification.min_words}} words.
-                                                </mat-error>
-                                                <mat-error *ngIf="this.utilsService.hasError(assessmentForms[documentIndex],(dimension.name).concat('_justification'), 'invalid')">
-                                                    You cannot use the selected search engine url as part of the justification.
-                                                </mat-error>
-                                            </mat-form-field>
-                                        </div>
-                                    </div>
-                                </div>
+                            </div>
+                        </div>
 
+                        <div *ngIf="dimension.justification" class="dimension-container dimension-justification">
+                            <div class="dimension-content justification">
+                                <div class="dimension-text-field">
+                                    <mat-form-field appearance="fill" class="width-100">
+                                        <mat-label>{{dimension.justification.text}}</mat-label>
+                                        <textarea matInput formControlName="{{dimension.name}}_justification" rows="3"></textarea>
+                                        <mat-error *ngIf="this.utilsService.hasError(assessmentForms[documentIndex],(dimension.name).concat('_justification'), 'required')">
+                                            This field is required
+                                        </mat-error>
+                                        <mat-error *ngIf="this.utilsService.hasError(assessmentForms[documentIndex],(dimension.name).concat('_justification'), 'longer')">
+                                            This justification must have at least {{dimension.justification.min_words}} words.
+                                        </mat-error>
+                                        <mat-error *ngIf="this.utilsService.hasError(assessmentForms[documentIndex],(dimension.name).concat('_justification'), 'invalid')">
+                                            You cannot use the selected search engine url as part of the justification.
+                                        </mat-error>
+                                    </mat-form-field>
+                                </div>
                             </div>
                         </div>
 
@@ -151,7 +172,8 @@
 
                             <ng-container *ngIf="dimension.scale">
                                 <div *ngIf="dimension.scale.instructions" class="dimension-matrix-instructions evaluation-instructions">
-                                    <h2>{{dimension.scale.instructions.label}} - {{dimension.scale.instructions.text}}</h2>
+                                    <h2>{{this.dimension.scale.instructions.label}} - {{this.dimension.scale.instructions.caption}}</h2>
+                                    <div><p>{{this.dimension.scale.instructions.text}}</p></div>
                                 </div>
                             </ng-container>
 
@@ -171,7 +193,7 @@
                             <div *ngIf="dimension.scale" class="{{dimension.style.separator ? ' dimension-separate' : ''}}">
                                 <mat-radio-group aria-labelledby="radio-button-label" formControlName="{{(dimension.name).concat('_value')}}">
                                     <div class="matrix-value name-pretty" *ngIf="dimension.name_pretty">
-                                        <p><strong><span *ngIf="!this.dimension.style.separator">{{i+1}} - </span>{{dimension.name_pretty}}</strong></p>
+                                        <p><strong><span *ngIf="!this.dimension.style.separator">{{i + 1}} - </span>{{dimension.name_pretty}}</strong></p>
                                         <ng-container *ngIf="dimension.description">
                                             <div class="{{dimension.example ? '' : 'description-sub'}}" *ngIf="dimension.description.length>0">
                                                 <p>{{dimension.description}}</p>

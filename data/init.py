@@ -6,7 +6,7 @@ from python_on_whales import DockerClient
 import docker
 from mako.template import Template
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 import requests
 import pandas as pd
 import subprocess
@@ -29,6 +29,8 @@ from dotenv import load_dotenv
 from rich.console import Console
 from rich.panel import Panel
 from rich.progress import track
+from dateutil import tz
+import pytz
 import warnings
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -1445,6 +1447,11 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                                     for date in datefinder.find_dates(date_modified_local):
                                         date_modified_local_parsed = date
                                     if date_modified_remote_parsed is not None and date_modified_local_parsed is not None:
+                                        from_zone = tz.tzutc()
+                                        to_zone = tz.tzlocal()
+                                        date_modified_remote_parsed_utc = datetime.strptime(str(date_modified_remote_parsed), '%Y-%m-%d %H:%M:%S').replace(tzinfo=from_zone)
+                                        date_modified_remote_parsed = date_modified_remote_parsed_utc.astimezone(to_zone)
+                                        date_modified_remote_parsed = date_modified_remote_parsed.replace(tzinfo=None)
                                         if date_modified_remote_parsed > date_modified_local_parsed:
                                             console.print(f"Most recent version: [blue underline]REMOTE[/blue underline], date: {date_modified_remote_parsed}")
                                             s3.download_file(aws_private_bucket, file_config_remote_path, file_config_local_path)
@@ -1455,7 +1462,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                                             task_config_items_updated_local += 1
                                             task_config_items_updated_names_local.append(filename_config)
                                         task_config_items_checked.append(filename_config)
-
                             else:
                                 date_modified_remote_parsed = datetime.strptime(metadata['ResponseMetadata']['HTTPHeaders']['date'], '%a, %d %b %Y %H:%M:%S %Z')
                                 console.print(f"Configuration item [blue]{filename_config}[/blue] status: [green]LOCAL[/green] not detected, [green]REMOTE[/green] detected")
@@ -1577,6 +1583,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 "justification": False,
                 "scale": {
                     "type": "categorical",
+                    "multiple_selection": False,
                     "instructions": {
                         "label": "Label",
                         "caption": "Caption",
@@ -1628,7 +1635,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             f"Config. file [italic white on yellow]{filename}[/italic white on yellow] not detected, generating a sample")
         with open(f"{folder_build_task_path}{filename}", 'w') as file:
             sample_instructions = {
-                "general": [
+                "instructions": [
                     {
                         "caption": "Evaluation Instructions",
                         "text": "<p>Lorem ipsum <strong>dolor</strong> sit amet.</p>"

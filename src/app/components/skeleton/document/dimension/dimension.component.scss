@@ -13,9 +13,7 @@
 
 .dimension-content {
   flex-grow: 1;
-  p {
-    font-size: 1.2em;
-  }
+  font-size: 1.2em;
 }
 
 .dimension-name {
@@ -24,6 +22,11 @@
 
 .dimension-description {
   margin-bottom: 1%;
+}
+
+.dimension-example {
+  display: block;
+  margin-top: 1%;
 }
 
 .dimension-description p {
@@ -43,6 +46,33 @@
   margin-top: 0;
   margin-bottom: 0;
 }
+
+.dimension .checkbox {
+  margin: 0;
+  padding: 0;
+  mat-checkbox {
+    float: left;
+    margin-right: 1%;
+  }
+}
+
+
+::ng-deep .dimension .checkbox .mat-form-field-infix {
+  display: none;
+}
+
+::ng-deep .dimension .checkbox .mat-form-field-flex {
+  display: none;
+}
+
+::ng-deep .dimension .checkbox .mat-form-field-underline {
+  display: none;
+}
+
+::ng-deep .dimension .checkbox .mat-form-field-wrapper {
+  padding: 0;
+}
+
 
 .dimension .magnitude_estimation {
   font-size: 1.2em;
@@ -114,6 +144,7 @@
   p {
     margin-top: 0;
   }
+
   padding: 10px 15px 5px 0px;
 }
 
@@ -122,6 +153,7 @@
     margin-top: 0;
     text-align: left;
   }
+
   strong {
     font-size: initial;
   }

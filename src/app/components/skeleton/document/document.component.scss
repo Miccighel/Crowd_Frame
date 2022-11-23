@@ -3,6 +3,15 @@ mat-card-content, mat-card-title {
   margin: auto !important;
 }
 
+h2 {
+  font-weight: normal;
+  margin-top: 0;
+}
+
+p {
+  font-size: 1.2em;
+}
+
 .statement {
   margin-bottom: 1.5%;
   box-shadow: 0 0 0 0;
@@ -95,14 +104,7 @@ mat-card-content, mat-card-title {
 /* |--- INSTRUCTIONS ---| */
 
 .evaluation-instructions {
-  h2 {
-    font-weight: normal;
-    margin-top: 0;
-  }
   margin-bottom: 1%;
-  p {
-    font-size: 1.2em;
-  }
 }
 
 .document-section mat-form-field {

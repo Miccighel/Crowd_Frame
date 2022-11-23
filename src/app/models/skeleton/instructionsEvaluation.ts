@@ -2,17 +2,21 @@ import {Instruction} from "./instructions";
 
 export class InstructionEvaluation {
 
-    general: Array<Instruction>
+    instructions: Array<Instruction>
     element: Instruction;
 
     constructor(
-        data: JSON
+        data = null as JSON
     ) {
-        this.general = new Array<Instruction>()
-        data['general'].forEach((instruction, index) => {
-            this.general.push(new Instruction(index, instruction))
-        });
-        data['element'] ? this.element = new Instruction(0, data['element']) : this.element = null
+        this.instructions = new Array<Instruction>()
+        if (data) {
+            if ('instructions' in data) {
+                data['instructions'].forEach((instruction, index) => {
+                    this.instructions.push(new Instruction(index, instruction))
+                });
+            }
+        }
+        data ? data['element'] ? this.element = new Instruction(0, data['element']) : null : null
     }
 
 }

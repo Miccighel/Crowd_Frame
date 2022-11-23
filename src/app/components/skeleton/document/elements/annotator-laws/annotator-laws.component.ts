@@ -504,4 +504,11 @@ export class AnnotatorLawsComponent {
         }
     }
 
+    public auxCEN(note) {
+        return false
+    }
+
+    public referenceRadioButtonCheck(i, index) {
+    }
+
 }

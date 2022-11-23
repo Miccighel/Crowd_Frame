@@ -68,6 +68,23 @@ export class DimensionComponent implements OnInit {
                 let dimension = this.task.dimensions[index_dimension];
                 if (!dimension.pairwise) {
                     if (dimension.scale) {
+
+
+                        if (dimension.scale.type == "categorical") {
+                            if ((<ScaleCategorical>dimension.scale).multipleSelection) {
+                                let answers = {}
+                                let scale = (<ScaleCategorical>dimension.scale)
+                                scale.mapping.forEach((value, index) => {
+                                    answers[index] = false
+                                });
+                                controlsConfig[`${dimension.name}_list`] = this.formBuilder.group(answers)
+                                controlsConfig[`${dimension.name}_value`] = new UntypedFormControl('', [Validators.required])
+                            } else {
+                                controlsConfig[`${dimension.name}_value`] = new UntypedFormControl('', [Validators.required]);
+                            }
+                        }
+
+
                         if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value`] = new UntypedFormControl('', [Validators.required]);
                         if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value`] = new UntypedFormControl('', [Validators.min((<ScaleInterval>dimension.scale).min), Validators.required])
                         if (dimension.scale.type == "magnitude_estimation") {
@@ -159,23 +176,23 @@ export class DimensionComponent implements OnInit {
         if (position == 'top') {
             positionsToCheck.push('top')
         }
-        if(position=='middle') {
+        if (position == 'middle') {
             positionsToCheck.push('top')
             positionsToCheck.push('middle')
         }
-        if(position=='bottom') {
+        if (position == 'bottom') {
             positionsToCheck.push('top')
             positionsToCheck.push('middle')
         }
         let dimensionsToCheck = []
         for (let dimension of this.task.dimensions) {
-            if(positionsToCheck.includes(dimension.style.position)) {
+            if (positionsToCheck.includes(dimension.style.position)) {
                 dimensionsToCheck.push(dimension)
             }
         }
         let result = true
         for (let dimension of dimensionsToCheck) {
-             if (dimension.url) {
+            if (dimension.url) {
                 let dimensionForm = this.assessmentForms[dimension.index]
                 if (dimensionForm.get(dimension.name.concat("_url"))) {
                     let value = dimensionForm.get(dimension.name.concat("_url")).value
@@ -185,6 +202,24 @@ export class DimensionComponent implements OnInit {
             }
         }
         return result
+    }
+
+    public handleCheckbox(data, dimension, index) {
+        let controlValid = false
+        let formGroup = this.assessmentForms[this.documentIndex].get(dimension.name.concat('_list'))
+        let formControl = this.assessmentForms[this.documentIndex].get(dimension.name.concat('_value'))
+        formGroup.get(index.toString()).setValue(data['checked'])
+        for (const [key, value] of Object.entries(formGroup.value)) {
+            if (value)
+                controlValid = true
+        }
+        if (!controlValid) {
+            formControl.setValue('')
+        } else {
+            formControl.setValue(formGroup.value)
+        }
+        formControl.markAsTouched()
+        this.task.storeDimensionValue(Object({'value': formControl.value}), this.documentIndex, dimension.index)
     }
 
     /* |--------- PAIRWISE ---------| */
