@@ -69,9 +69,23 @@ export class InstructionsEvaluationStepComponent implements OnInit {
             let rawInstructions = await this.S3Service.downloadEvaluationInstructions(this.configService.environment)
             this.dataStored = new InstructionEvaluation(rawInstructions)
         }
+<<<<<<< Updated upstream
         if (this.dataStored.general.length > 0) {
             this.dataStored.general.forEach((instruction, instructionIndex) => {
                 this.addInstructionGeneral(instructionIndex, instruction)
+=======
+  
+        let elementConfig = this._formBuilder.group({
+            caption: '',
+            label: '',
+            text: ''
+        })
+        if (this.dataStored.element) {
+            elementConfig = this._formBuilder.group({
+                caption: this.dataStored.element.caption,
+                label: this.dataStored.element.label,
+                text: this.dataStored.element.text
+>>>>>>> Stashed changes
             })
         }
         if (this.dataStored.element) {
@@ -128,8 +142,16 @@ export class InstructionsEvaluationStepComponent implements OnInit {
     /* JSON Output */
 
     serializeConfiguration() {
+<<<<<<< Updated upstream
         let instructionsJSON = JSON.parse(JSON.stringify(this.formStep.value));
         instructionsJSON['general'].forEach((instruction, instructionIndex) => {
+=======
+     
+        let instructionsEvaluationJSON = JSON.parse(JSON.stringify(this.formStep.value));
+        if (!instructionsEvaluationJSON.setElement) instructionsEvaluationJSON.element = false
+        delete instructionsEvaluationJSON.setElement
+        instructionsEvaluationJSON.instructions.forEach((instruction, instructionIndex) => {
+>>>>>>> Stashed changes
             if (instruction.caption == '') instruction.caption = false
             if (instruction.label == '') instruction.label = false
         })

@@ -228,6 +228,7 @@ export class Task {
     }
 
     public initializeInstructionsEvaluation(rawEvaluationInstructions) {
+<<<<<<< Updated upstream
         this.instructionsEvaluationGeneralAmount = rawEvaluationInstructions["general"].length;
         this.instructionsEvaluationGeneral = new Array<Instruction>();
         for (let index = 0; index < this.instructionsEvaluationGeneralAmount; index++) {
@@ -239,6 +240,10 @@ export class Task {
             this.instructionsEvaluationUrl = new Instruction(0, rawEvaluationInstructions['url'])
         if ('element' in rawEvaluationInstructions)
             this.instructionsEvaluationElement = new Instruction(0, rawEvaluationInstructions['element'])
+=======
+        this.instructionsEvaluationGeneralAmount =rawEvaluationInstructions["instructions"] ?  rawEvaluationInstructions["instructions"].length : 0;
+        this.instructionsEvaluation = new InstructionEvaluation(rawEvaluationInstructions);
+>>>>>>> Stashed changes
     }
 
     public initializeDimensions(rawDimensions) {

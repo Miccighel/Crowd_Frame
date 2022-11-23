@@ -74,6 +74,7 @@ import { ChatWidgetComponent } from './components/chatbot/chat-widget/chat-widge
 import { ChatInputComponent } from './components/chatbot/chat-input/chat-input.component';
 import { ChatAvatarComponent } from './components/chatbot/chat-avatar/chat-avatar.component';
 import { ChatButtonsComponent } from './components/chatbot/chat-buttons/chat-buttons.component';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
     return () => from(actionLogger.downloadOpt()).pipe(tap(data => {
@@ -161,7 +162,8 @@ function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
         ColorPickerModule,
         MatProgressBarModule,
         MatChipsModule,
-        AngularEditorModule
+        AngularEditorModule,
+        NgbModule
     ],
     providers: [
         {

@@ -303,8 +303,7 @@ export class TaskSettingsStepComponent implements OnInit {
     }
 
     async loadHitsFromResponse(hits) {
-        console.log("Response hits")
-        console.log(hits)
+     
         this.localStorageService.setItem(`hits`, JSON.stringify(hits))
         this.updateHitsFile(hits)
     }

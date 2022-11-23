@@ -45,7 +45,7 @@ export class OutcomeSectionComponent implements OnInit {
         configService: ConfigService
     ) {
 
-        console.log("here")
+        
 
         this.formBuilder = formBuilder
         this.sectionService = sectionService
