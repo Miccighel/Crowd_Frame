@@ -155,12 +155,12 @@ export class ChatWidgetComponent implements OnInit {
 
         //inizializzo i vettori
         this.answers = [];
-        for (var y: number = 0; y < 11; y++) {
-            this.answers[y] = [];
-            for (var j: number = 0; j < 10; j++) {
-                this.answers[y][j] = [];
-            }
-        }
+        // for (var y: number = 0; y < 11; y++) {
+        //     this.answers[y] = [];
+        //     for (var j: number = 0; j < 10; j++) {
+        //         this.answers[y][j] = [];
+        //     }
+        // }
 
         this.questionnaireAnswers = [];
         this.accessesAmount = new Array(11).fill(0);
@@ -175,6 +175,19 @@ export class ChatWidgetComponent implements OnInit {
             numberOfElements = +el.questions.length;
         });
         return numberOfElements;
+    }
+
+    private setTaskAnswersContainer() {
+        this.answers = new Array(this.task.documents.length).fill([]);
+        this.answers.forEach(
+            (el) => (el = new Array(this.task.dimensions.length).fill([]))
+        );
+        // for (var y: number = 0; y < 11; y++) {
+        //     this.answers[y] = [];
+        //     for (var j: number = 0; j < 10; j++) {
+        //         this.answers[y][j] = [];
+        //     }
+        // }
     }
 
     public operator = {
@@ -232,6 +245,9 @@ export class ChatWidgetComponent implements OnInit {
         this.disableInput = false;
         // Stampo le istruzioni iniziali
         this.typingAnimation(this.instr[0]);
+        //Dimensionamento dei vettori relativi alle risposte
+        this.setTaskAnswersContainer();
+
         this.questionnaireAnswers = new Array(
             this.getNumberOfQuestionnaireQuestions()
         ).fill("");
@@ -413,7 +429,7 @@ export class ChatWidgetComponent implements OnInit {
                 this.task.dimensions[this.subTaskIndex].description +
                 "<br>Please type a integer number between -2 and 2.";
         }
-        if (this.answers[this.taskIndex][this.subTaskIndex] != "") {
+        if (!!this.answers[this.taskIndex][this.subTaskIndex]) {
             out +=
                 "<br>You previously answered <b>" +
                 this.answers[this.taskIndex][this.subTaskIndex] +
@@ -439,7 +455,7 @@ export class ChatWidgetComponent implements OnInit {
                         +this.answers[this.taskIndex][i] + 2
                     ].label +
                     ")<br><br>";
-            } else {
+            } else if (this.task.dimensions[i].scale) {
                 recap +=
                     i +
                     1 +
@@ -452,6 +468,15 @@ export class ChatWidgetComponent implements OnInit {
                         +this.answers[this.taskIndex][i] + 2
                     ].label +
                     ")<br><br>";
+            } else {
+                recap +=
+                    i +
+                    1 +
+                    ". <b>" +
+                    this.task.dimensions[i].name +
+                    "</b>: " +
+                    this.answers[this.taskIndex][i] +
+                    "</br>";
             }
         }
         recap +=
@@ -772,7 +797,9 @@ export class ChatWidgetComponent implements OnInit {
                 );
                 this.buttonsYN.nativeElement.style.display = "none";
                 this.buttonsVisibility = 0;
-                this.numberBtn = this.generateArrayNum(10);
+                this.numberBtn = this.generateArrayNum(
+                    this.task.documents.length
+                );
                 //this.buttonsNum.nativeElement.style.display = "inline-block"
                 this.buttonsVisibility = 3;
                 this.statementJump = true;
@@ -1075,7 +1102,8 @@ export class ChatWidgetComponent implements OnInit {
                         this.currentQuestionnaire = 0;
                         this.printQuestion();
                     } else {
-                        this.currentQuestionnaire = +message - 7;
+                        this.currentQuestionnaire =
+                            +message - this.questionnaireAnswers.length;
                         this.buttonsNum.nativeElement.style.display = "none";
                         this.buttonsVisibility = 0;
                         this.typingAnimation(
@@ -1131,7 +1159,7 @@ export class ChatWidgetComponent implements OnInit {
                 this.buttonsCM.nativeElement.style.display = "none";
                 this.buttonsVisibility = 0;
                 this.numberBtn = this.generateArrayNum(
-                    this.questionnaireAnswers.length
+                    this.task.documents.length
                 );
                 //this.buttonsNum.nativeElement.style.display = "inline-block"
                 this.buttonsVisibility = 3;
@@ -1225,7 +1253,9 @@ export class ChatWidgetComponent implements OnInit {
                 this.endTaskPhase = true;
                 this.reviewPhase = false;
                 this.reviewAnswersShown = false;
-                this.numberBtn = this.generateArrayNum(11);
+                this.numberBtn = this.generateArrayNum(
+                    this.task.documents.length
+                );
                 this.typingAnimation(
                     "OK! Would you like to jump to a specific statement?"
                 );
@@ -1299,7 +1329,9 @@ export class ChatWidgetComponent implements OnInit {
         } else if (message.trim().toLowerCase() === "modify") {
             this.buttonsCM.nativeElement.style.display = "none";
             this.buttonsVisibility = 0;
-            this.numberBtn = this.generateArrayNum(10);
+            this.numberBtn = this.generateArrayNum(
+                this.task.dimensions.length + 1
+            );
             //this.buttonsNum.nativeElement.style.display = "inline-block"
             this.buttonsVisibility = 3;
             this.typingAnimation("Which dimension would you like to change?");
