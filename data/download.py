@@ -2155,7 +2155,6 @@ if not os.path.exists(df_notes_path):
                                 row['note_timestamp_deleted_parsed'] = date
                             row['note_base_url'] = note_current['base_uri']
                             row['note_text_current'] = note_current['current_text']
-                            row['note_text_curren'] = note_current['current_text']
                             row['note_text_raw'] = note_current['raw_text']
                             row['note_text_left'] = note_current['text_left']
                             row['note_text_right'] = note_current['text_right']

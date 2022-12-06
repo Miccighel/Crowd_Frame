@@ -175,7 +175,7 @@
                                         </td>
                                     </tr>
 
-                                    <tr>
+                                    <tr *ngIf="dimension.get('scale').get('type').value=='categorical'">
                                         <td class="p-0">
                                             <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="setMultipleSelection" (change)="resetMultipleSelection(dimensionIndex)">
                                                 Multiple Selection

@@ -21,8 +21,8 @@
                             </div>
                         </ng-container>
 
-                        <div class="dimension-name">
-                            <div *ngIf="dimension.name_pretty">
+                        <div *ngIf="dimension.name_pretty" class="dimension-name">
+                            <div>
                                 <h2>{{this.utilsService.capitalize(dimension.name_pretty)}}</h2>
                             </div>
                         </div>
@@ -77,8 +77,7 @@
                                         </div>
                                     </ng-container>
                                     <ng-container *ngIf="dimension.scale.type=='interval'">
-                                        <div>
-                                            <label>Selected value: {{assessmentForms[documentIndex].controls[(dimension.name).concat('_value')].value}}</label>
+                                        <div class="scale-interval">
                                             <mat-slider
                                                     min="{{dimension.scale.min}}" max="{{dimension.scale.max}}"
                                                     step="{{dimension.scale.step}}" thumbLabel tickInterval="{{dimension.scale.step}}"
@@ -86,6 +85,12 @@
                                                     (change)="this.task.storeDimensionValue($event, documentIndex,dimension.index);"
                                                     [disabled]="this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior=='disable_forms'">
                                             </mat-slider>
+                                            <span *ngIf="assessmentForms[documentIndex].controls[(dimension.name).concat('_value')].value==''">
+                                                #
+                                            </span>
+                                            <span *ngIf="assessmentForms[documentIndex].controls[(dimension.name).concat('_value')].value!=''">
+                                                {{assessmentForms[documentIndex].controls[(dimension.name).concat('_value')].value}}
+                                            </span>
                                         </div>
                                     </ng-container>
                                     <ng-container *ngIf="dimension.scale.type=='magnitude_estimation'">

@@ -179,6 +179,7 @@ export class DimensionsStepComponent implements OnInit {
         setScale = dimension ? !!dimension.scale : false;
         scale = this._formBuilder.group({
             type: '',
+            setMultipleSelection:false,
             multiple_selection: false,
             setInstructions: false,
             instructions: this._formBuilder.group({

@@ -183,6 +183,7 @@ export class DimensionComponent implements OnInit {
         if (position == 'bottom') {
             positionsToCheck.push('top')
             positionsToCheck.push('middle')
+            positionsToCheck.push('bottom')
         }
         let dimensionsToCheck = []
         for (let dimension of this.task.dimensions) {
