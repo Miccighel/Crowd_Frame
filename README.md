@@ -504,9 +504,213 @@ The requester can download the final results of a crowdsourcing task deployed us
    6. Download and store the configuration of the task deployed.
    7. Build and store support files containing worker and user agent attributes.
 
-### Results Structure:
+The whole set of output data is stored in the results folder: `data/result/task_name`, 
+where \verb|task_name| is the value of the corresponding environment variable. The folder is 
+created by the download script if it does not exists. It contains 5 sub folders, one for each 
+type of output data. The following table describes each of these sub folders.
 
-	TODO
+|        Folder        |                            Description                             |
+|:--------------------:|:------------------------------------------------------------------:|
+|        `Data`        |            Contains snapshots of the raw data produced by each worker.             |
+|     `Dataframe`      |      Contains tabular based refined versions of the raw data.      |
+|     `Resources`      | Contains two support files for each worker with attribute about him/herself and his/her user agent. |
+|        `Task`        |           Contains a backup of the task's configuration.           |
+|      `Crawling`      |          Contains a crawl of the pages retrieved while using the search engine.          |
+
+### `result/Task`
+
+The \verb|Task| folder contains the backup of the task configuration. 
+
+### `result/Data`
+
+The \verb|Data| folder contains a snapshot of the data produced by each worker. 
+A snapshot is a JSON dictionary. The top level object is an array. The download 
+script creates an object for each batch of workers recruited within a crowdsourcing task. 
+The following fragment shows the snapshot for a worker with identifier `ABEFLAGYVQ7IN4` who 
+participates in the batch `Your_Batch` of the task `Your_Task`. This means that his/her 
+snapshot contains an array with a single object. The `source_*` attributes represent 
+the DynamoDB tables and the path on the local filesystem.
+
+````json
+[
+  {
+    "source_data": "Crowd_Frame-Your-Task_Your-Batch_Data",
+    "source_acl": "Crowd_Frame-Your-Task_Your-Batch_ACL",
+    "source_log": "Crowd_Frame-Your-Task_Your-Batch_Logger",
+    "source_path": "result/Your_Task/Data/ABEFLAGYVQ7IN4.json",
+    "task": {...},
+    "checks": [...],
+    "dimensions": {...},
+    "data_partial": {
+       "questionnaires_answers": [...],
+       "documents_answers": [...]
+    },
+    "comments": [...],
+    "documents": {...},
+    "questionnaires": {...},
+    "logs": [...]
+  }
+]
+````
+
+### `result/Resources`
+
+The `Resources` folder contains two JSON files for each worker. Let us hypothesize a 
+worker recruited using the identifier `ABEFLAGYVQ7IN4`. The two support files are named 
+`ABEFLAGYVQ7IN4_ip.json` and `ABEFLAGYVQ7IN4_uag.json`. 
+The former contains attributes obtained by performing the reverse lookup of his/her IP address. 
+The latter contains attributes obtained by analyzing his/her user agent string. 
+The following fragments show a subset of the information provided by the two support files.
+
+````json
+{
+  "ip": "...",
+  "city": "...",
+  "region": "...",
+  "country": "IT",
+  "loc": "...",
+  "org": "...",
+  "postal": "...",
+  "timezone": "Europe/Rome",
+  "country_name": "Italy",
+  "is_eu": true,
+  "latitude": "...",
+  "longitude": "...",
+  ...
+}
+````
+
+````json
+{ 
+  "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) ...",
+  "type": "browser",
+  "os_name": "Windows 10",
+  "os_code": "windows_10",
+  "os_family": "Windows",
+  "os_family_code": "windows",
+  "os_family_vendor": "Microsoft Corporation.",
+  "os_icon": "https://assets.userstack.com/icon/os/windows10.png",
+  "device_is_mobile_device": false,
+  "device_type": "desktop",
+  "browser_name": "Microsoft Edge",
+  "browser_version": "107.0.1418.35",
+  "browser_engine": "EdgeHTML/Blink",
+  "crawler_is_crawler": false,
+  ...
+}
+````
+
+### `result/Crawling`
+
+The `Crawling` folder contains a crawl of the web pages retrieved by the search engine 
+when queried by a worker. A task requester who deploys a crowdsourcing task which 
+uses the search engine within one or more evaluation dimensions can choose to 
+enable the crawling by using the `enable_crawling` environment variable. The 
+download script thus tries to crawl each web page if the variable is enabled. 
+
+Initially, the download script creates two sub folders, `Metadata/` 
+and `Source/`. Each web page is then assigned with an UUID (Universally Unique IDentifier). 
+Let us hypothesize a page assigned with the UUID `59c0f70f-c5a6-45ec-ac90-b609e2cc66d7`, 
+The script tries to download its source code. It is stored in the `Source` folder 
+if the operation succeeds, in a file named `59c0f70f-c5a6-45ec-ac90-b609e2cc66d7_source`. 
+The extension depends on the page's source code. 
+
+Then, the script stores some metadata about the crawling operation of the page in 
+the `Metadata` folder, in a JSON file named `59c0f70f-c5a6-45ec-ac90-b609e2cc66d7_metadata.json`. 
+It is possible to understand whether the operation succeeded or not and why (i.e., by acknowledging 
+the HTTP response code) and to read the value of each HTTP header. The following fragment show an 
+example of metadata produced by the download script while trying to crawl one of the pages retrieved.
+
+````json
+{
+  "attributes": {
+    "response_uuid": "59c0f70f-c5a6-45ec-ac90-b609e2cc66d7",
+    "response_url": "...",
+    "response_timestamp": "...",
+    "response_error_code": null,
+    "response_source_path": "...",
+    "response_metadata_path": "...",
+    "response_status_code": 200,
+    "response_encoding": "utf-8",
+    "response_content_length": 125965,
+    "response_content_type": "text/html; charset=utf-8"
+  },
+  "data": {
+    "date": "Wed, 08 Jun 2022 22:33:12 GMT",
+    "content_type": "text/html; charset=utf-8",
+    "content_length": "125965",
+    "..."
+  }
+}
+````
+
+### `result/Dataframe`
+
+The `Dataframe` folder contains a refined version of the data stored within each worker snapshot. 
+The download script inserts the raw data into structures called "DataFrame". A DataFrame
+is a two dimensional data structure with labeled axes that contains  heterogeneous data. 
+Such structures may thus be implemented as two dimensional arrays or tables with rows and columns. 
+
+The download script refines the raw data into up to 10 tabular dataframe serialized 
+into CSV files. The final amount of dataframes serialized in the `Dataframe` folder depends 
+on the environment variables configured by the task requester.    
+
+Each `DataFrame` has a variable number of rows and columns. 
+Part of them provide a general information, thus being composed of one row for each worker, 
+such as `workers_info` and `workers_acl`. The remaining ones have higher granularity. 
+For instance, a row of the `workers_url` dataframe contains a row for each result 
+retrieved for each query submitted to the search engine while analyzing a single 
+HIT's element during a given try by a single worker. A row of the `workers_answers` 
+dataframe contains the answers for the evaluation dimensions provided for a single HIT's 
+element during a given try by a single worker, and so on. The requester must thus be careful 
+while exploring each DataFrame and properly understand what kind of data s/he is 
+exploring and analyzing. The following fragments provide an example of the access 
+control list for a task with a single worker recruited and an example composed of the 
+answers provided by a single worker for two elements of the HIT assigned.
+
+````csv
+worker_id,in_progress,access_counter,token_input,user_agent_source,ip_address,user_agent,time_arrival,generated,task_name,ip_source,folder,time_expired,try_current,paid,status_code,platform,batch_name,try_left,token_output,unit_id,source_acl,source_data,source_log,source_path,try_last,task_id,tries_amount,questionnaire_amount,questionnaire_amount_start,questionnaire_amount_end,documents_amount,dimensions_amount,time_arrival_parsed
+ABEFLAGYVQ7IN4,True,40,DXWPMUMYXSM,cf,<anonymized>,<anonymized>,"Mon, 07 Nov 2022 09:00:00 GMT",True,Sample,cf,Task-Sample/Batch-Sample/Data/BELPCXHDVUYSSJ/,False,1,False,202,custom,Batch-Sample,10,PGHWTXVNMIP,unit_0,Crowd_Frame-Sample_Batch-Sample_ACL, Crowd_Frame-Sample_Batch-Sample_Data,Crowd_Frame-Sample_Batch-Sample_Logger,result/Sample/Data/BELPCXHDVUYSSJ.json,1,Sample,10,1,1,0,3,1,2022-11-07 09:38:16 00:00
+````
+
+````csv
+worker_id,paid,task_id,batch_name,unit_id,try_last,try_current,action,time_submit,time_submit_parsed,doc_index,doc_id,doc_fact_check_ground_truth_label,doc_fact_check_ground_truth_value,doc_fact_check_source,doc_speaker_name,doc_speaker_party,doc_statement_date,doc_statement_description,doc_statement_text,doc_truthfulness_value,doc_accesses,doc_time_elapsed,doc_time_start,doc_time_end,global_outcome,global_form_validity,gold_checks,time_spent_check,time_check_amount
+ABEFLAGYVQ7IN4,False,Task-Sample,Batch-Sample,unit_1,1,1,Next,"Wed, 09 Nov 2022 10:19:16 GMT",2022-11-09 10:19:16 00:00,0.0,conservative-activist-steve-lonegan-claims-social-,false,1,Politifact,Steve Lonegan,REP,2022-07-12,"stated on October 1, 2011 in an interview on News 12 New Jersey's Power & Politics show:","Today, the Social Security system is broke.",10,1,2.1,1667989144,1667989146.1,False,False,False,False,False
+ABEFLAGYVQ7IN4,False,Task-Sample,Batch-Sample,unit_1,1,1,Next,"Wed, 09 Nov 2022 10:19:25 GMT",2022-11-09 10:19:25 00:00,1,yes-tax-break-ron-johnson-pushed-2017-has-benefite,true,5,Politifact,Democratic Party of Wisconsin,DEM,2022-04-29,"stated on April 29, 2022 in News release:","The tax carve out (Ron) Johnson spearheaded overwhelmingly benefited the wealthiest, over small businesses.",100,1,10.27,1667989146.1,1667989156.37,False,False,False,False,False
+````
+
+Each dataframe has its own characteristics and peculiarities. However, there are several rules of thumb that a requester should remember and eventually consider while s/he performs his/her analysis:
+
+1. The attribute `paid` is present in the whole set of dataframe. It can be used to split the data among the workers who completed or not the task. The requester may want to explore the data of who failed the task.
+2. The attribute `batch_name` is present in a subset of dataframe. It can be used to split the data among the different batches of workers recruited. The requester may want to analyze separately each subset of data.
+3. The attributes `try_current` and `try_last` are present in a subset of dataframe. They can be used to split the data among each try performed by each worker. The latter attribute indicates the most recent try. The requester should not forget the possible presence of multiple tries for each worker while analyzing the data. 
+4. The attribute `action` is present in a subset of dataframe. It can be used to understand whether the worker proceeded to the previous/following HIT's element. The possible values are `Back`, `Next` and `Finish`. The `Finish` value indicates the last element evaluated before completing a given try. The requester should remember that only the rows with the latter two values describe the most recent answers for each element.
+5. The attribute `index_selected` is present in the `workers_urls` dataframe. It can be used to filter the results retrieved by the search engine. The results with a value different from `-1` for the attribute have been selected by the worker on the user interface. If its value is equal to `4`, three other results have been previously selected. If its value is equal to `7` six other results have been previously selected, and so on. The requester may want to simply analyze the results with whom the worker interacted.
+6. The attribute `type` is present in the `workers_logs` dataframe. It specifies the type of log record described by each row. The log records are generally sorted using the global timestamps. The requester can use the attribute to split the whole set of log records into subsets of the same type.
+7. The dataframe `workers_acl` contains several useful information about each worker. The requester may want to merge it with the rows of the other dataframe using the `worker_id` attribute as key.  
+8. The dataframe `workers_urls` contains the whole set of results retrieved by the search engine. The dataframe \verb|workers_crawling| contains information about the crawling of each result. The requester may want to merge the rows of the two dataframe `response_uuid` attribute as key.  
+9. The dataframe `workers_dimensions_selection` shows the temporal ordering along with the workers chose answers for the evaluation dimensions. It is ordered using the global timestamp along with each worker made a choice. This means that the rows belonging to a worker may occur in different positions of the dataframe. This may happen if multiple workers perform the task at the same time. The requester should consider this aspect while exploring the dataframe.
+10. The dataframe `worker_comments` provides the final comments of the worker. The requester should remember that providing a final comment is not mandatory for the worker, thus the dataframe may be empty.
+
+The following table provides and overview of the whole set of dataframe produced.
+
+|             Dataframe              |                                     Description                                      |
+|:----------------------------------:|:------------------------------------------------------------------------------------:|
+|         `workers_acl.csv`          |             Contains snapshots of the raw data produced by each worker.              |
+|         `workers_info.csv`         |                  Data concerning IP and User Agent of the workers.                   |
+|       `workers_answers.csv`        |              Answers provided for each evaluation dimension by workers.              |
+|    `workers_questionnaire.csv`     |                  Answers provided for each questionnaire by workers                  |
+| `workers_dimensions_selection.csv` | Temporal order along with each worker chooses a value for each evaluation dimension. |
+|        `workers_notes.csv`         |                       Textual annotations provided by workers.                       |
+|         `workers_urls.csv`         |    Queries to the search engine provided by workers along with results retrieved.    |
+|       `workers_crawling.csv`       |      Data concerning the crawling of web pages retrieved by the search engine.       |
+|         `workers_logs.csv`         |          Log data produced by the logger while the workers perform the task          |
+|       `workers_comments.csv`       |     Final comments provided by workers to the requester at the end of the task.      |
+|      `workers_mturk_data.csv`      |             Data concerning workers produced by Amazon Mechanical Turk.              |
+|    `workers_prolific_data.csv`     |                    Data concerning workers produced by Prolific.                     |
+|     `workers_toloka_data.csv`      |                     Data concerning workers produced by Toloka.                      |
+
+
 
 ## Troubleshooting
 
