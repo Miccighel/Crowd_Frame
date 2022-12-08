@@ -112,7 +112,7 @@ export class ChatWidgetComponent implements OnInit {
     questionnaireReview: boolean;
     //commentPhase: boolean
     action: string;
-    disableInput: boolean;
+    disableInput = true;
     queryIndex: number[];
     sendData = false;
 
@@ -152,10 +152,8 @@ export class ChatWidgetComponent implements OnInit {
         this.S3Service = S3Service;
         this.sectionService = sectionService;
         this.dynamoDBService = dynamoDBService;
-
         //inizializzo i vettori
         this.answers = [];
-
         this.questionnaireAnswers = [];
         this.accessesAmount = new Array(11).fill(0);
         this.indexDimSel = new Array(11).fill(0);
@@ -233,7 +231,7 @@ export class ChatWidgetComponent implements OnInit {
         this.responsesSelectedTotal = [];
         this.responsesRetrievedTotal = [];
         this.action = "Next";
-        this.disableInput = false;
+
         // Stampo le istruzioni iniziali
         this.typingAnimation(this.instr[0]);
         //Dimensionamento dei vettori relativi alle risposte
@@ -638,7 +636,7 @@ export class ChatWidgetComponent implements OnInit {
     public storeSearchEngineUserQuery(text) {
         this.placeholderInput = "";
         this.disableInput = false;
-        this.inputBox.nativeElement.style.background = "rgb(63, 81, 181)";
+
         let q = {};
         q["document"] = this.taskIndex;
         q["dimension"] = this.subTaskIndex;
@@ -940,7 +938,7 @@ export class ChatWidgetComponent implements OnInit {
                     for (let i = 0; i < 11; i++) {
                         document.getElementById(
                             i.toString()
-                        ).style.backgroundColor = "rgb(63, 81, 181)";
+                        ).style.backgroundColor = "#3f51b5";
                     }
                     this.typing.nativeElement.style.display = "none";
                     this.buttonsYN.nativeElement.style.display = "none";
@@ -1043,7 +1041,7 @@ export class ChatWidgetComponent implements OnInit {
                 this.printStatement();
                 this.waitForUrl = true;
                 this.disableInput = true;
-                this.inputBox.nativeElement.style.background = "gray";
+
                 this.typingAnimation(
                     "Please use the search bar on the right to search for information about the truthfulness of the statement. Once you find a suitable result, please type or select its url"
                 );
