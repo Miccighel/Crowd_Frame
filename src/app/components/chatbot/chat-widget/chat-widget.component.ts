@@ -118,7 +118,7 @@ export class ChatWidgetComponent implements OnInit {
 
     // Variables
     fixedMessage: string; // Messaggio sempre visibile in alto nel chatbot
-    answers: any; // Memorizzo le risposte di un singolo statement
+    answers: any[]; // Memorizzo le risposte di un singolo statement
     answersURL: string[]; // Memorizzo gli url
     numberBtn: string[]; // Utilizzato per generare i bottoni numerici
     questionnaireAnswers: any[];
@@ -155,12 +155,6 @@ export class ChatWidgetComponent implements OnInit {
 
         //inizializzo i vettori
         this.answers = [];
-        // for (var y: number = 0; y < 11; y++) {
-        //     this.answers[y] = [];
-        //     for (var j: number = 0; j < 10; j++) {
-        //         this.answers[y][j] = [];
-        //     }
-        // }
 
         this.questionnaireAnswers = [];
         this.accessesAmount = new Array(11).fill(0);
@@ -178,16 +172,13 @@ export class ChatWidgetComponent implements OnInit {
     }
 
     private setTaskAnswersContainer() {
-        this.answers = new Array(this.task.documents.length).fill([]);
-        this.answers.forEach(
-            (el) => (el = new Array(this.task.dimensions.length).fill([]))
-        );
-        // for (var y: number = 0; y < 11; y++) {
-        //     this.answers[y] = [];
-        //     for (var j: number = 0; j < 10; j++) {
-        //         this.answers[y][j] = [];
-        //     }
-        // }
+        this.answers = [];
+        for (let i = 0; i < this.task.documents.length; i++) {
+            this.answers[i] = [];
+            for (let j = 0; j < this.task.dimensions.length; j++) {
+                this.answers[i][j] = null;
+            }
+        }
     }
 
     public operator = {
@@ -378,7 +369,10 @@ export class ChatWidgetComponent implements OnInit {
         }
         this.goldHigh = nameArray.indexOf("GOLD-HIGH");
         this.goldLow = nameArray.indexOf("GOLD-LOW");
-        return this.answers[this.goldHigh][0] > this.answers[this.goldLow][0];
+        //Gestione di task che non contengono eventuali Gold questions
+        return this.goldHigh == -1 || this.goldLow == -1
+            ? true
+            : this.answers[this.goldHigh][0] > this.answers[this.goldLow][0];
     }
 
     // Stampa lo statement corrente e lo setta come messaggio fissato
@@ -496,11 +490,11 @@ export class ChatWidgetComponent implements OnInit {
                 "Statement " +
                 (i + 1) +
                 ": <b>" +
-                this.task.hit.documents[i]["speaker_text"] +
-                "</b> - " +
+                this.task.hit.documents[i]["statement_text"] +
+                "</b> <br> - " +
                 this.task.hit.documents[i]["speaker_name"] +
-                " " +
-                this.task.hit.documents[i]["speaker_date"] +
+                ", " +
+                this.task.hit.documents[i]["statement_date"] +
                 "<br><br>";
         }
         return statements;
@@ -871,22 +865,43 @@ export class ChatWidgetComponent implements OnInit {
                 let goldConfiguration = [];
                 let goldH = {};
                 let goldL = {};
-                let gh = this.task.hit.documents[this.goldHigh];
-                gh["index"] = this.goldHigh;
-                let gl = this.task.hit.documents[this.goldLow];
-                gl["index"] = this.goldLow;
-                goldH["document"] = gh;
-                goldL["document"] = gl;
-                let ah = {};
-                ah["overall-truthfulness_value"] =
-                    this.answers[this.goldHigh][0];
-                ah["overall-truthfulness_url"] = this.answersURL[this.goldHigh];
-                let al = {};
-                al["overall-truthfulness_value"] =
-                    this.answers[this.goldLow][0];
-                al["overall-truthfulness_url"] = this.answersURL[this.goldLow];
-                goldH["answers"] = ah;
-                goldL["answers"] = al;
+                //Gestione di task che non contengono eventuali Gold questions
+
+                if (this.goldHigh == -1 || this.goldLow == -1) {
+                    let gh = [];
+                    gh["index"] = this.goldHigh;
+                    let gl = [];
+                    gl["index"] = this.goldLow;
+                    goldH["document"] = gh;
+                    goldL["document"] = gl;
+                    let ah = {};
+                    ah["overall-truthfulness_value"] = null;
+                    ah["overall-truthfulness_url"] = null;
+                    let al = {};
+                    al["overall-truthfulness_value"] = null;
+                    al["overall-truthfulness_url"] = null;
+                    goldH["answers"] = ah;
+                    goldL["answers"] = al;
+                } else {
+                    let gh = this.task.hit.documents[this.goldHigh];
+                    gh["index"] = this.goldHigh;
+                    let gl = this.task.hit.documents[this.goldLow];
+                    gl["index"] = this.goldLow;
+                    goldH["document"] = gh;
+                    goldL["document"] = gl;
+                    let ah = {};
+                    ah["overall-truthfulness_value"] =
+                        this.answers[this.goldHigh][0];
+                    ah["overall-truthfulness_url"] =
+                        this.answersURL[this.goldHigh];
+                    let al = {};
+                    al["overall-truthfulness_value"] =
+                        this.answers[this.goldLow][0];
+                    al["overall-truthfulness_url"] =
+                        this.answersURL[this.goldLow];
+                    goldH["answers"] = ah;
+                    goldL["answers"] = al;
+                }
                 goldL["notes"] = [];
                 goldH["notes"] = [];
                 goldConfiguration = [goldL, goldH];
@@ -1000,10 +1015,12 @@ export class ChatWidgetComponent implements OnInit {
             this.task.dimensions.length <= this.subTaskIndex &&
             this.validMsg(message, -2, +2)
         ) {
-            this.answers[this.taskIndex][this.subTaskIndex - 1] = message;
+            const subtaskIndex = this.subTaskIndex - 1;
+            this.answers[this.taskIndex][subtaskIndex] = message;
+
             let dimSel = {};
             dimSel["document"] = this.taskIndex;
-            dimSel["dimension"] = this.subTaskIndex - 1;
+            dimSel["dimension"] = subtaskIndex;
             dimSel["index"] = this.indexDimSel[this.taskIndex];
             dimSel["timestamp"] = Date.now() / 1000;
             dimSel["value"] = message;
