@@ -322,11 +322,17 @@ Sent message style
 }
 
 .btn-secondary {
-    width: auto;
-    margin-left: 0;
-    margin-right: 1%;
-    margin-top: 3px;
     background-color: #84dccf;
+    color: #000;
+    height: 34px;
+    font-weight: 500;
+    border: none;
+    border-radius: 5px;
+    margin: 1%;
+    margin-top: 0%;
+    width: auto;
+ 
+    border: solid 2px #7ccfc2;
 }
 
 .btn-primary {
