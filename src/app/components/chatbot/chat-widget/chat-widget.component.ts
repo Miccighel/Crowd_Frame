@@ -1507,8 +1507,6 @@ export class ChatWidgetComponent implements OnInit {
     }
 
     private emitDisableSearchEngine() {
-        console.log("Evento emesso");
-
         this.disableSearchEngine.emit(true);
     }
 
