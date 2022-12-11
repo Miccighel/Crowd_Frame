@@ -1,39 +1,58 @@
 <div class="chatbot-section">
-
     <div class="chat-box">
         <div class="chat-box-header">
             <div class="operator-status">
-                {{operator.status}}
+                {{ operator.status }}
                 <span class="operator-status-online">●</span>
             </div>
             <chat-avatar [image]="operator.avatar"></chat-avatar>
             <h3 class="operator-name">
-                {{operator.name}}
+                {{ operator.name }}
             </h3>
         </div>
 
-        <div class="chat-box-header" #fixedMsg id="box-header-2" style=" display: none;">
-
-            <div class="row ">
-                <div *ngFor="let item of task.documents; let i = index" class="col-1 mb-1 
-                       ">
-                    <div class="dot" [id]="i">{{i+1}}</div>
+        <div
+            class="chat-box-header"
+            #fixedMsg
+            id="box-header-2"
+            style="display: none"
+        >
+            <div class="row">
+                <div
+                    *ngFor="let item of task.documents; let i = index"
+                    class="col-1 mb-1"
+                >
+                    <div class="dot" [id]="i">{{ i + 1 }}</div>
                 </div>
             </div>
         </div>
 
-        <div *ngIf="fixedMessage" [innerHTML]="fixedMessage" class="chat-box-header"
-            style="background-color: #3f51b5; color: white; font-size: larger; height: auto;">
-        </div>
+        <div
+            *ngIf="fixedMessage"
+            [innerHTML]="fixedMessage"
+            class="chat-box-header"
+            style="
+                background-color: #3f51b5;
+                color: white;
+                font-size: larger;
+                height: auto;
+            "
+        ></div>
 
         <div class="chat-box-main">
             <div class="chat-message-bottom" #bottom></div>
             <ng-container>
-                <div #typing class="chat-message-received" style="width:15%;">
+                <div #typing class="chat-message-received" style="width: 15%">
                     <div>
-                        <chat-avatar [image]="operator.avatar" class="chat-message-from-avatar"></chat-avatar>
+                        <chat-avatar
+                            [image]="operator.avatar"
+                            class="chat-message-from-avatar"
+                        ></chat-avatar>
                         <div class="chat-message-text">
-                            <div class="type" style="margin:3px; margin-top:0px">
+                            <div
+                                class="type"
+                                style="margin: 3px; margin-top: 0px"
+                            >
                                 <span></span>
                                 <span></span>
                                 <span></span>
@@ -46,46 +65,108 @@
             </ng-container>
 
             <ng-container *ngFor="let message of messages">
-                <div class="chat-message" [class.chat-message-received]="message.type === 'received'" [@fadeIn]
-                    [class.chat-message-sent]="message.type === 'sent'">
+                <div
+                    class="chat-message"
+                    [class.chat-message-received]="message.type === 'received'"
+                    [@fadeIn]
+                    [class.chat-message-sent]="message.type === 'sent'"
+                >
                     <div>
-                        <chat-avatar [image]="message.from.avatar" class="chat-message-from-avatar"></chat-avatar>
-                        <div class="chat-message-text" [innerHTML]="message.text">
-
-                        </div>
+                        <chat-avatar
+                            [image]="message.from.avatar"
+                            class="chat-message-from-avatar"
+                        ></chat-avatar>
+                        <div
+                            class="chat-message-text"
+                            [innerHTML]="message.text"
+                        ></div>
                     </div>
                     <div class="chat-message-date">
-                        {{message.date | date: 'short'}}
+                        {{ message.date | date : "short" }}
                     </div>
                 </div>
             </ng-container>
         </div>
 
         <div #inputBox class="chat-box-footer">
-            <div class="button-prompt" #buttonsNum style="display: none;">
-                <button type="button" class="btn btn-secondary" (click)="buttonInput('1')"
-                    style="margin-left: 7%;">1</button>
-                <button *ngFor="let num of numberBtn; let i = index" type="button" class="btn btn-secondary"
-                    (click)="buttonInput(num)">{{num}}</button>
+            <div class="button-prompt" #buttonsNum style="display: none">
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    (click)="buttonInput('1')"
+                    style="margin-left: 7%"
+                >
+                    1
+                </button>
+                <button
+                    *ngFor="let num of numberBtn; let i = index"
+                    type="button"
+                    class="btn btn-secondary"
+                    (click)="buttonInput(num)"
+                >
+                    {{ num }}
+                </button>
             </div>
 
-            <div class="button-prompt" #buttonsYN style="display: none;">
-                <button type="button" class="btn btn-primary" (click)="buttonInput('Yes')">Yes</button>
-                <button type="button" class="btn btn-primary" (click)="buttonInput('No')">No</button>
+            <div class="button-prompt" #buttonsYN style="display: none">
+                <button
+                    type="button"
+                    class="btn btn-primary"
+                    (click)="buttonInput('Yes')"
+                >
+                    Yes
+                </button>
+                <button
+                    type="button"
+                    class="btn btn-primary"
+                    (click)="buttonInput('No')"
+                >
+                    No
+                </button>
             </div>
-            <div class="button-prompt" #buttonsCM style="display: none;">
-                <button type="button" class="btn btn-primary" (click)="buttonInput('Confirm')">Confirm</button>
-                <button type="button" class="btn btn-primary" (click)="buttonInput('Modify')">Modify</button>
+            <div class="button-prompt" #buttonsCM style="display: none">
+                <button
+                    type="button"
+                    class="btn btn-primary"
+                    (click)="buttonInput('Confirm')"
+                >
+                    Confirm
+                </button>
+                <button
+                    type="button"
+                    class="btn btn-primary"
+                    (click)="buttonInput('Modify')"
+                >
+                    Modify
+                </button>
             </div>
-            <chat-input (send)="sendMessage($event)" [pholder]="placeholderInput" [disableInput]="disableInput" >
+            <chat-input
+                (send)="sendMessage($event)"
+                [pholder]="placeholderInput"
+                [disableInput]="disableInput"
+            >
             </chat-input>
         </div>
     </div>
 
-    <div style="border-radius: 5px; max-height: 100%; overflow: auto; width: 45%; height: 100%;
-background-color: white;margin-left: 5%; box-shadow: 0 5px 40px rgba(0, 0, 0, 0.16);">
-        <app-crowd-xplorer [task]="this.task" (selectedRowEmitter)="getUrl($event)"
+    <div
+        style="
+            border-radius: 5px;
+            max-height: 100%;
+            overflow: auto;
+            width: 45%;
+            height: 100%;
+            background-color: white;
+            margin-left: 5%;
+            box-shadow: 0 5px 40px rgba(0, 0, 0, 0.16);
+        "
+    >
+        <app-crowd-xplorer
+            [task]="this.task"
+            (selectedRowEmitter)="getUrl($event)"
+            [resetEvent]="resetSearchEngineStateSubject.asObservable()"
             (resultEmitter)="storeSearchEngineRetrievedResponse($event)"
-            (queryEmitter)="storeSearchEngineUserQuery($event)"></app-crowd-xplorer>
+            (queryEmitter)="storeSearchEngineUserQuery($event)"
+        ></app-crowd-xplorer>
     </div>
 </div>

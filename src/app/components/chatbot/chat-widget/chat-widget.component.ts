@@ -13,6 +13,7 @@ import { S3Service } from "../../../services/aws/s3.service";
 import { DynamoDBService } from "../../../services/aws/dynamoDB.service";
 import { SectionService } from "../../../services/section.service";
 import { ConfigService } from "../../../services/config.service";
+import { Subject } from "rxjs";
 /* Models */
 import { Task } from "../../../models/skeleton/task";
 
@@ -58,6 +59,8 @@ export class ChatWidgetComponent implements OnInit {
     @ViewChild("fixedMsg", { static: true }) fixedMsg!: ElementRef;
     @ViewChild("typing", { static: true }) typing!: ElementRef;
     @ViewChild("inputBox", { static: true }) inputBox!: ElementRef;
+
+    resetSearchEngineStateSubject: Subject<void> = new Subject<void>();
 
     @Input() private worker!: any;
     task: Task;
@@ -1063,6 +1066,7 @@ export class ChatWidgetComponent implements OnInit {
                 this.indexDimSel[this.taskIndex] += 1;
                 this.randomMessage();
             }
+            this.emitResetSearchEngineState();
             this.printDimension();
             this.subTaskIndex += 1;
         }
@@ -1473,6 +1477,10 @@ export class ChatWidgetComponent implements OnInit {
             this.questionnaireReview = true;
         }
         return isFinished;
+    }
+
+    private emitResetSearchEngineState() {
+        this.resetSearchEngineStateSubject.next();
     }
 
     private skipQuestionnairePhase() {

@@ -21,6 +21,7 @@ export class ChatInputComponent implements OnInit {
     @Output() public send = new EventEmitter();
     @Input() public pholder!: string;
     @Input() public disableInput!: boolean;
+
     @ViewChild("message", { static: true }) message!: ElementRef;
     @ViewChild("buttons") buttons!: ElementRef;
 
