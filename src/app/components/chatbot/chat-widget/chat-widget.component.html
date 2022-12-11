@@ -90,22 +90,16 @@
 
         <div #inputBox class="chat-box-footer">
             <div class="button-prompt" #buttonsNum style="display: none">
-                <button
-                    type="button"
-                    class="btn btn-secondary"
-                    (click)="buttonInput('1')"
-                    style="margin-left: 7%"
-                >
-                    1
-                </button>
-                <button
-                    *ngFor="let num of numberBtn; let i = index"
-                    type="button"
-                    class="btn btn-secondary"
-                    (click)="buttonInput(num)"
-                >
-                    {{ num }}
-                </button>
+                <div class=" row container d-flex justify-content-end pe-5">
+                    <button
+                        *ngFor="let num of numberBtn;"
+                        type="button"
+                        class="btn btn-secondary"
+                        (click)="buttonInput(num)"
+                    >
+                        {{ num }}
+                    </button>
+                </div>
             </div>
 
             <div class="button-prompt" #buttonsYN style="display: none">
@@ -149,18 +143,7 @@
         </div>
     </div>
 
-    <div
-        style="
-            border-radius: 5px;
-            max-height: 100%;
-            overflow: auto;
-            width: 45%;
-            height: 100%;
-            background-color: white;
-            margin-left: 5%;
-            box-shadow: 0 5px 40px rgba(0, 0, 0, 0.16);
-        "
-    >
+    <div class="search-engine">
         <app-crowd-xplorer
             [task]="this.task"
             (selectedRowEmitter)="getUrl($event)"

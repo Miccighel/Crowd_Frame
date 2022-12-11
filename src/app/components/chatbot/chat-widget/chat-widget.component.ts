@@ -324,7 +324,7 @@ export class ChatWidgetComponent implements OnInit {
 
     private generateArrayNum(number) {
         let foos = [];
-        for (var i = 2; i <= number; i++) {
+        for (var i = 1; i <= number; i++) {
             foos.push(i.toString());
         }
         return foos;
@@ -403,31 +403,31 @@ export class ChatWidgetComponent implements OnInit {
     }
 
     // Stampa la dimensione corrente
-    private printDimension() {
+    private printDimension(dimensionIndex) {
         let out = "";
-        if (this.task.dimensions[this.subTaskIndex].name_pretty) {
+        if (this.task.dimensions[dimensionIndex].name_pretty) {
             out =
                 "Please rate the <b>" +
-                this.task.dimensions[this.subTaskIndex].name_pretty +
+                this.task.dimensions[dimensionIndex].name_pretty +
                 "</b> of the statement.<br><b>" +
-                this.task.dimensions[this.subTaskIndex].name_pretty +
+                this.task.dimensions[dimensionIndex].name_pretty +
                 "</b>: " +
-                this.task.dimensions[this.subTaskIndex].description +
+                this.task.dimensions[dimensionIndex].description +
                 "<br>Please type a integer number between -2 and 2.";
         } else {
             out =
                 "Please rate the <b>" +
-                this.task.dimensions[this.subTaskIndex].name +
+                this.task.dimensions[dimensionIndex].name +
                 "</b> of the statement.<br><b>" +
-                this.task.dimensions[this.subTaskIndex].name +
+                this.task.dimensions[dimensionIndex].name +
                 "</b>: " +
-                this.task.dimensions[this.subTaskIndex].description +
+                this.task.dimensions[dimensionIndex].description +
                 "<br>Please type a integer number between -2 and 2.";
         }
-        if (!!this.answers[this.taskIndex][this.subTaskIndex]) {
+        if (!!this.answers[this.taskIndex][dimensionIndex]) {
             out +=
                 "<br>You previously answered <b>" +
-                this.answers[this.taskIndex][this.subTaskIndex] +
+                this.answers[this.taskIndex][dimensionIndex] +
                 "</b>.";
         }
         this.typingAnimation(out);
@@ -1055,10 +1055,11 @@ export class ChatWidgetComponent implements OnInit {
                 return;
             }
             if (!this.ignoreMsg) {
-                this.answers[this.taskIndex][this.subTaskIndex - 1] = message;
+                const subtaskIndex = this.subTaskIndex - 1;
+                this.answers[this.taskIndex][subtaskIndex] = message;
                 let dimSel = {};
                 dimSel["document"] = this.taskIndex;
-                dimSel["dimension"] = this.subTaskIndex - 1;
+                dimSel["dimension"] = subtaskIndex;
                 dimSel["index"] = this.indexDimSel[this.taskIndex];
                 dimSel["timestamp"] = Date.now() / 1000;
                 dimSel["value"] = message;
@@ -1067,7 +1068,7 @@ export class ChatWidgetComponent implements OnInit {
                 this.randomMessage();
             }
             this.emitResetSearchEngineState();
-            this.printDimension();
+            this.printDimension(this.subTaskIndex);
             this.subTaskIndex += 1;
         }
         // Non eseguo controlli sul primo msg, ma sugli altri si
@@ -1233,14 +1234,21 @@ export class ChatWidgetComponent implements OnInit {
                 }
                 this.buttonsNum.nativeElement.style.display = "none";
                 this.buttonsVisibility = 0;
-                if (message.trim() == "10") {
+                //Se la dimensione ha URL enabled & il subTaskIndex è l'ultimo della dimensione
+                if (
+                    !!this.task.dimensions[+message - 2] &&
+                    this.task.dimensions[+message - 2].url &&
+                    message.trim() ==
+                        this.getNumberOfOptions(+message - 2).toString()
+                ) {
                     this.waitForUrl = true;
                     this.typingAnimation("Sure, please enter the correct url");
                 } else {
                     // Salvo l'input e mostro la dimensione richiesta
                     this.subTaskIndex = +message - 1;
-                    this.printDimension();
+                    this.printDimension(this.subTaskIndex);
                 }
+
                 this.dimensionReviewPrinted = true;
                 return;
             }
@@ -1348,9 +1356,10 @@ export class ChatWidgetComponent implements OnInit {
         } else if (message.trim().toLowerCase() === "modify") {
             this.buttonsCM.nativeElement.style.display = "none";
             this.buttonsVisibility = 0;
-            this.numberBtn = this.generateArrayNum(
-                this.task.dimensions.length + 1
+            const numberOfOptions = this.getNumberOfOptions(
+                this.subTaskIndex - 1
             );
+            this.numberBtn = this.generateArrayNum(numberOfOptions);
             //this.buttonsNum.nativeElement.style.display = "inline-block"
             this.buttonsVisibility = 3;
             this.typingAnimation("Which dimension would you like to change?");
@@ -1360,6 +1369,13 @@ export class ChatWidgetComponent implements OnInit {
         } else {
             return;
         }
+    }
+
+    private getNumberOfOptions(dimensionIndex): number {
+        let numberOfOptions = 0;
+        if (this.task.dimensions[dimensionIndex]) numberOfOptions++;
+        if (!!this.task.dimensions[dimensionIndex].url) numberOfOptions++;
+        return numberOfOptions;
     }
 
     private questionnaireP(message) {
