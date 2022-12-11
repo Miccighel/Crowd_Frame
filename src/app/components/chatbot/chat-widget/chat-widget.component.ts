@@ -1,6 +1,7 @@
 import {
     ChangeDetectionStrategy,
     ChangeDetectorRef,
+    EventEmitter,
     Component,
     ElementRef,
     Input,
@@ -13,7 +14,7 @@ import { S3Service } from "../../../services/aws/s3.service";
 import { DynamoDBService } from "../../../services/aws/dynamoDB.service";
 import { SectionService } from "../../../services/section.service";
 import { ConfigService } from "../../../services/config.service";
-import { Subject } from "rxjs";
+
 /* Models */
 import { Task } from "../../../models/skeleton/task";
 
@@ -60,7 +61,8 @@ export class ChatWidgetComponent implements OnInit {
     @ViewChild("typing", { static: true }) typing!: ElementRef;
     @ViewChild("inputBox", { static: true }) inputBox!: ElementRef;
 
-    resetSearchEngineStateSubject: Subject<void> = new Subject<void>();
+    resetSearchEngine: EventEmitter<void> = new EventEmitter<void>();
+    disableSearchEngine: EventEmitter<boolean> = new EventEmitter<boolean>();
 
     @Input() private worker!: any;
     task: Task;
@@ -269,6 +271,8 @@ export class ChatWidgetComponent implements OnInit {
         /* The task is now started and the worker is looking at the first questionnaire, so the first start timestamp is saved */
         this.timestampsStart[this.currentQuestionnaire].push(Date.now() / 1000);
 
+        this.emitDisableSearchEngine();
+
         setTimeout(
             () =>
                 this.questionnaireAnswers.length > 0
@@ -382,7 +386,7 @@ export class ChatWidgetComponent implements OnInit {
         this.fixedMsg.nativeElement.style.display = "inline-block";
         document.getElementById(
             this.taskIndex.toString()
-        ).style.backgroundColor = "red";
+        ).style.backgroundColor = "#F2452E";
         this.typingAnimation(
             "Statement: <b>" +
                 this.task.hit.documents[this.taskIndex]["statement_text"] +
@@ -1043,6 +1047,7 @@ export class ChatWidgetComponent implements OnInit {
             if (!this.statementProvided) {
                 this.printStatement();
                 this.waitForUrl = true;
+                this.emitEnableSearchEngine();
                 this.disableInput = true;
 
                 this.typingAnimation(
@@ -1067,7 +1072,9 @@ export class ChatWidgetComponent implements OnInit {
                 this.indexDimSel[this.taskIndex] += 1;
                 this.randomMessage();
             }
+            this.emitDisableSearchEngine();
             this.emitResetSearchEngineState();
+
             this.printDimension(this.subTaskIndex);
             this.subTaskIndex += 1;
         }
@@ -1269,7 +1276,7 @@ export class ChatWidgetComponent implements OnInit {
             this.buttonsVisibility = 0;
             document.getElementById(
                 this.taskIndex.toString()
-            ).style.backgroundColor = "green";
+            ).style.backgroundColor = "#28A745";
             // Se era l'ultimo statement, passo alla fase finale this.task.hit.documents.length
             if (
                 this.task.hit.documents.length - 1 <= this.taskIndex ||
@@ -1496,7 +1503,17 @@ export class ChatWidgetComponent implements OnInit {
     }
 
     private emitResetSearchEngineState() {
-        this.resetSearchEngineStateSubject.next();
+        this.resetSearchEngine.emit();
+    }
+
+    private emitDisableSearchEngine() {
+        console.log("Evento emesso");
+
+        this.disableSearchEngine.emit(true);
+    }
+
+    private emitEnableSearchEngine() {
+        this.disableSearchEngine.next(false);
     }
 
     private skipQuestionnairePhase() {

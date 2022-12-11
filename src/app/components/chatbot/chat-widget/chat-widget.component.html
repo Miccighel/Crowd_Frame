@@ -90,11 +90,11 @@
 
         <div #inputBox class="chat-box-footer">
             <div class="button-prompt" #buttonsNum style="display: none">
-                <div class=" row container d-flex justify-content-end pe-5">
+                <div class="row container d-flex justify-content-end pe-5">
                     <button
-                        *ngFor="let num of numberBtn;"
+                        *ngFor="let num of numberBtn"
                         type="button"
-                        class="btn btn-secondary"
+                        class="btn-secondary"
                         (click)="buttonInput(num)"
                     >
                         {{ num }}
@@ -103,37 +103,43 @@
             </div>
 
             <div class="button-prompt" #buttonsYN style="display: none">
-                <button
-                    type="button"
-                    class="btn btn-primary"
-                    (click)="buttonInput('Yes')"
-                >
-                    Yes
-                </button>
-                <button
-                    type="button"
-                    class="btn btn-primary"
-                    (click)="buttonInput('No')"
-                >
-                    No
-                </button>
+                <div class="row container d-flex justify-content-end pe-2">
+                    <button
+                        type="button"
+                        class="btn-user-answer"
+                        (click)="buttonInput('Yes')"
+                    >
+                        Yes
+                    </button>
+                    <button
+                        type="button"
+                        class="btn-user-answer"
+                        (click)="buttonInput('No')"
+                    >
+                        No
+                    </button>
+                </div>
             </div>
             <div class="button-prompt" #buttonsCM style="display: none">
-                <button
-                    type="button"
-                    class="btn btn-primary"
-                    (click)="buttonInput('Confirm')"
-                >
-                    Confirm
-                </button>
-                <button
-                    type="button"
-                    class="btn btn-primary"
-                    (click)="buttonInput('Modify')"
-                >
-                    Modify
-                </button>
+                <div class="row container d-flex justify-content-end pe-2">
+                    <button
+                        type="button"
+                        class="btn-user-answer"
+                        (click)="buttonInput('Confirm')"
+                    >
+                        Confirm
+                    </button>
+                    <button
+                        type="button"
+                        class="btn-user-answer"
+                        (click)="buttonInput('Modify')"
+                    >
+                        Modify
+                    </button>
+                </div>
             </div>
+        </div>
+        <div>
             <chat-input
                 (send)="sendMessage($event)"
                 [pholder]="placeholderInput"
@@ -147,7 +153,8 @@
         <app-crowd-xplorer
             [task]="this.task"
             (selectedRowEmitter)="getUrl($event)"
-            [resetEvent]="resetSearchEngineStateSubject.asObservable()"
+            [resetEvent]="resetSearchEngine"
+            [disableEvent]="disableSearchEngine"
             (resultEmitter)="storeSearchEngineRetrievedResponse($event)"
             (queryEmitter)="storeSearchEngineUserQuery($event)"
         ></app-crowd-xplorer>

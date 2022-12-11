@@ -24,7 +24,7 @@
     margin-left: 5%;
     box-shadow: 0 5px 40px rgba(0, 0, 0, 0.16);
 }
-.chat-button {
+/* .chat-button {
     z-index: 1;
     width: 60px;
     height: 60px;
@@ -38,9 +38,9 @@
     outline: none;
     color: #fff;
     font-size: 32px;
-}
+} */
 
-.chat-button-header {
+/* .chat-button-header {
     z-index: 1;
     font-weight: bold;
     color: #fff;
@@ -48,11 +48,11 @@
 
     padding: 5px 9px;
     margin-left: 5px;
-}
-
+} */
+/* 
 .chat-button:focus {
     border: 2px solid white;
-}
+} */
 
 .chat-box {
     position: relative;
@@ -108,11 +108,11 @@
 }
 
 .operator-status-online {
-    color: lawngreen;
+    color: #1ed447;
 }
 
 .operator-status-offline {
-    color: red;
+    color: #dc3545;
 }
 
 .operator-avatar {
@@ -326,10 +326,25 @@ Sent message style
     margin-left: 0;
     margin-right: 1%;
     margin-top: 3px;
+    background-color: #84dccf;
 }
 
 .btn-primary {
     margin-top: 3px;
+}
+
+button.btn-user-answer {
+    background-color: #84dccf;
+    color: #000;
+    height: 34px;
+    font-weight: 500;
+    border: none;
+    border-radius: 5px;
+    margin: 1%;
+    margin-top: 0%;
+    width: 19%;
+    min-width: 19%;
+    border: solid 2px #7ccfc2;
 }
 
 .button-prompt {

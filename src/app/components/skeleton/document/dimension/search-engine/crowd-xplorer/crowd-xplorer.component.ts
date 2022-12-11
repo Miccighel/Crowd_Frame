@@ -35,8 +35,6 @@ import { SearchEngineSettings } from "../../../../../../models/search_engine/sea
 import { S3Service } from "../../../../../../services/aws/s3.service";
 import { Task } from "../../../../../../models/skeleton/task";
 
-import { Subscription, Observable } from "rxjs";
-
 /* Component HTML Tag definition */
 @Component({
     selector: "app-crowd-xplorer",
@@ -47,7 +45,7 @@ import { Subscription, Observable } from "rxjs";
 /*
  * This class implements a custom search engine which can be used for Crowdsourcing tasks.
  */
-export class CrowdXplorer implements OnInit, OnDestroy {
+export class CrowdXplorer implements OnInit {
     /* |--------- SEARCH ENGINE SETTINGS - DECLARATION ---------| */
 
     /* Microsoft Search API key */
@@ -122,8 +120,8 @@ export class CrowdXplorer implements OnInit, OnDestroy {
     @Input() task: Task;
     @Input() documentIndex: number;
 
-    @Input() resetEvent: Observable<void>;
-    private resetSearchEngineSubscription: Subscription;
+    @Input() resetEvent: EventEmitter<void>;
+    @Input() disableEvent: EventEmitter<boolean>;
 
     /* Search results table UI variables and controls */
     resultsAmount = 0;
@@ -187,13 +185,11 @@ export class CrowdXplorer implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
-        this.resetSearchEngineSubscription = this.resetEvent.subscribe(() =>
-            this.resetSearchEngineState()
-        );
-    }
+        this.resetEvent.subscribe(() => this.resetSearchEngineState());
 
-    ngOnDestroy() {
-        this.resetSearchEngineSubscription.unsubscribe();
+        this.disableEvent.subscribe((disable: boolean) =>
+            this.disableSearchEngine(disable)
+        );
     }
 
     /*
@@ -388,11 +384,17 @@ export class CrowdXplorer implements OnInit, OnDestroy {
         return new Promise((resolve) => setTimeout(resolve, ms));
     }
 
-    public resetSearchEngineState() {
+    private resetSearchEngineState() {
         this.searchForm.reset();
         this.resultsFound = false;
         this.dataSource = new MatTableDataSource<any>();
         this.resultPageSize = 0;
         this.resultsAmount = 0;
+    }
+
+    private disableSearchEngine(disable: boolean) {
+        this.searchInProgress = false;
+
+        disable ? this.searchForm.disable() : this.searchForm.enable();
     }
 }

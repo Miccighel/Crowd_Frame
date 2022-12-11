@@ -42,7 +42,7 @@
                 >
                     <mat-icon>search</mat-icon>
 
-                    {{ searchInProgress === true ? "SEARCHING..." : "SEARCH" }}
+                    {{ !!searchInProgress  ? "SEARCHING..." : "SEARCH" }}
                 </button>
             </div>
         </div>
