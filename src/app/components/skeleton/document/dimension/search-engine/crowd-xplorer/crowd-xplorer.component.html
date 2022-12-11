@@ -3,82 +3,102 @@
     class="xplorer-body p-1"
     [formGroup]="searchForm"
 >
-    <div class="row">
-        <h2>Search Engine</h2>
-    </div>
-    <div class="row">
-        <div class="col-9">
-            <mat-form-field
-                id="search-textarea"
-                class="w-100"
-                appearance="outline"
-            >
-                <mat-label>Insert your query</mat-label>
-                <input
-                    #searchInput
-                    matInput
-                    type="search"
-                    formControlName="query"
-                    (keyup.enter)="performWebSearch(searchInput.value)"
-                />
-            </mat-form-field>
+    <div class="col-12 container">
+        <div class="row my-2 container">
+            <div class="col-12">
+                <h2>Search Engine</h2>
+            </div>
         </div>
-        <div class="col-3 d-flex" style=" max-height: 62.5px;">
-            <button
-                mat-flat-button
-                color="primary"
-                [disabled]="
-                    !query.valid ||
-                    searchInProgress ||
-                    (this.task.countdownsExpired[documentIndex] &&
-                        this.task.settings.countdown_behavior ==
-                            'disable_forms')
-                "
-                (click)="performWebSearch(searchInput.value)"
-            >
-                {{
-                    searchInProgress === true ? "SEARCHING..." : "SEARCH"
-                }}
-            </button>
-        </div>
-    </div>
-    <mat-table [dataSource]="dataSource">
-        <mat-radio-group formControlName="urls">
-            <ng-container matColumnDef="{{ displayedColumns }}">
-                <mat-header-cell *matHeaderCellDef>
-                    {{ resultsAmount }} results found.</mat-header-cell
+        <div class="row container">
+            <div class="col-10 pe-0">
+                <mat-form-field
+                    id="search-textarea"
+                    class="w-100"
+                    appearance="outline"
                 >
-                <mat-cell *matCellDef="let row; let i = index">
-                    <p>
-                        <a target="_blank" href="{{ decodeURI(row.url) }}">{{
-                            row.name
-                        }}</a>
-                        <br />
-                        <span>{{ decodeURI(row.url) }}</span>
-                        <br />
-                        <span class="row-snippet">{{ row.snippet }}</span>
-                    </p>
-                    <mat-radio-button
-                        labelPosition="before"
-                        [disabled]="
-                            this.task.countdownsExpired[documentIndex] &&
+                    <mat-label>Insert your query</mat-label>
+                    <input
+                        #searchInput
+                        matInput
+                        type="search"
+                        formControlName="query"
+                        (keyup.enter)="performWebSearch(searchInput.value)"
+                    />
+                </mat-form-field>
+            </div>
+            <div class="col-2 pt-1" style="height: 63.5px">
+                <button
+                   class="h-100"
+                    mat-flat-button
+                    color="primary"
+                    [disabled]="
+                        !query.valid ||
+                        searchInProgress ||
+                        (this.task.countdownsExpired[documentIndex] &&
                             this.task.settings.countdown_behavior ==
-                                'disable_forms'
-                        "
-                        (change)="selectRow(row)"
-                        value="{{ row.url }}"
-                    >
-                    </mat-radio-button>
-                </mat-cell>
-            </ng-container>
-        </mat-radio-group>
-        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-        <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
-    </mat-table>
+                                'disable_forms')
+                    "
+                    (click)="performWebSearch(searchInput.value)"
+                >
+                    <mat-icon>search</mat-icon>
 
-    <mat-paginator
-        *ngIf="resultsFound"
-        [pageSize]="resultPageSize"
-        [pageSizeOptions]="resultPageSizeOptions"
-    ></mat-paginator>
+                    {{ searchInProgress === true ? "SEARCHING..." : "SEARCH" }}
+                </button>
+            </div>
+        </div>
+        <div class="row container pe-0">
+            <div class="col-12 pe-0">
+                <mat-table [dataSource]="dataSource">
+                    <mat-radio-group formControlName="urls">
+                        <ng-container matColumnDef="{{ displayedColumns }}">
+                            <mat-header-cell *matHeaderCellDef>
+                                {{ resultsAmount }} results
+                                found.</mat-header-cell
+                            >
+                            <mat-cell *matCellDef="let row; let i = index">
+                                <p>
+                                    <a
+                                        target="_blank"
+                                        href="{{ decodeURI(row.url) }}"
+                                        >{{ row.name }}</a
+                                    >
+                                    <br />
+                                    <span>{{ decodeURI(row.url) }}</span>
+                                    <br />
+                                    <span class="row-snippet">{{
+                                        row.snippet
+                                    }}</span>
+                                </p>
+                                <mat-radio-button
+                                    labelPosition="before"
+                                    [disabled]="
+                                        this.task.countdownsExpired[
+                                            documentIndex
+                                        ] &&
+                                        this.task.settings.countdown_behavior ==
+                                            'disable_forms'
+                                    "
+                                    (change)="selectRow(row)"
+                                    value="{{ row.url }}"
+                                >
+                                </mat-radio-button>
+                            </mat-cell>
+                        </ng-container>
+                    </mat-radio-group>
+                    <mat-header-row
+                        *matHeaderRowDef="displayedColumns"
+                    ></mat-header-row>
+                    <mat-row
+                        *matRowDef="let row; columns: displayedColumns"
+                    ></mat-row>
+                </mat-table>
+
+                <mat-paginator
+                    *ngIf="resultsFound"
+                    [pageSize]="resultPageSize"
+                    [pageSizeOptions]="resultPageSizeOptions"
+                ></mat-paginator>
+            </div>
+        </div>
+    </div>
 </mat-card>
