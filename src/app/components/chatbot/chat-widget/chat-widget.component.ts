@@ -14,9 +14,15 @@ import { S3Service } from "../../../services/aws/s3.service";
 import { DynamoDBService } from "../../../services/aws/dynamoDB.service";
 import { SectionService } from "../../../services/section.service";
 import { ConfigService } from "../../../services/config.service";
-
+import { ScaleCategorical } from "src/app/models/skeleton/dimension";
 /* Models */
 import { Task } from "../../../models/skeleton/task";
+import {
+    CategorialDimensionModel,
+    CategorialInfo,
+    IntervalDimensionInfo,
+    MagnitudeDimensionInfo,
+} from "src/app/models/conversational/common.model";
 
 // Messaggi random
 const randomMessagesFirstPart = [
@@ -132,6 +138,16 @@ export class ChatWidgetComponent implements OnInit {
     placeholderInput: string;
     tryNumber: number; // Numero di tentativi per completare
     accessesAmount: number[]; //Numero di accessi agli elementi
+
+    //show components flag
+    showCategorialAnswers = false;
+    showMgnitudeAnswers = false;
+    showIntervalAnswers = false;
+
+    //containers
+    categorialAnswers: CategorialInfo[] = [];
+    magnitudeAnswers: MagnitudeDimensionInfo[] = [];
+    intervalAnswers: IntervalDimensionInfo[] = [];
 
     // Messaggi per l'utente
     instr = [
@@ -332,6 +348,20 @@ export class ChatWidgetComponent implements OnInit {
             foos.push(i.toString());
         }
         return foos;
+    }
+
+    private generateCategorialAnswers(dimensionIndex: number) {
+        this.categorialAnswers = [];
+        const dimensionInfos = this.task.dimensions[dimensionIndex];
+        this.categorialAnswers = (
+            dimensionInfos.scale as ScaleCategorical
+        ).mapping.map((el: CategorialInfo) => ({
+            label: el.label,
+            description: el.description,
+            value: el.value,
+        }));
+        this.buttonsNum.nativeElement.style.display = "inline-block";
+        this.showCategorialAnswers = true;
     }
 
     // Utilizzo dei bottoni
@@ -1075,7 +1105,8 @@ export class ChatWidgetComponent implements OnInit {
             this.emitDisableSearchEngine();
             this.emitResetSearchEngineState();
 
-            this.printDimension(this.subTaskIndex);
+            this.generateCategorialAnswers(this.subTaskIndex);
+            // this.printDimension(this.subTaskIndex);
             this.subTaskIndex += 1;
         }
         // Non eseguo controlli sul primo msg, ma sugli altri si

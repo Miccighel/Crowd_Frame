@@ -376,6 +376,7 @@ export class CrowdXplorer implements OnInit {
         let array = Array.from({ length: 10 }, () =>
             Math.floor(Math.random() * (1000 - 1 + 1) + 1)
         );
+
         return array.join("");
     }
 

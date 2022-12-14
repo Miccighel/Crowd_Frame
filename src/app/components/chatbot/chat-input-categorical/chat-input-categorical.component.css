@@ -1,0 +1,13 @@
+button.btn-user-answer {
+    background-color: #84dccf;
+    color: #000;
+    height: 34px;
+    font-weight: 500;
+    border: none;
+    border-radius: 5px;
+    margin: 1%;
+    margin-top: 0%;
+    width: 19%;
+    min-width: 19%;
+    border: solid 2px #7ccfc2;
+}

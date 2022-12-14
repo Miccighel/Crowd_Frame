@@ -10,7 +10,7 @@
             </div>
         </div>
         <div class="row container">
-            <div class="col-10 pe-0">
+            <div class="col-10 col-sm-8 pe-0">
                 <mat-form-field
                     id="search-textarea"
                     class="w-100"
@@ -26,9 +26,9 @@
                     />
                 </mat-form-field>
             </div>
-            <div class="col-2 pt-1" style="height: 63.5px">
+            <!-- <div class="col-2 pt-1" style="height: 63.5px">
                 <button
-                   class="h-100"
+                    class="h-100"
                     mat-flat-button
                     color="primary"
                     [disabled]="
@@ -42,7 +42,24 @@
                 >
                     <mat-icon>search</mat-icon>
 
-                    {{ !!searchInProgress  ? "SEARCHING..." : "SEARCH" }}
+                    {{ !!searchInProgress ? "SEARCHING..." : "SEARCH" }}
+                </button>
+            </div> -->
+            <div class="col-2 pt-1" style="height: 63.5px">
+                <button
+                    class="h-100"
+                    mat-flat-button
+                    color="primary"
+                    [disabled]="
+                        !query.valid ||
+                        searchInProgress ||
+                        (this.task.countdownsExpired[documentIndex] &&
+                            this.task.settings.countdown_behavior ==
+                                'disable_forms')
+                    "
+                    (click)="performWebSearch(searchInput.value)"
+                >
+                    <mat-icon>search</mat-icon>
                 </button>
             </div>
         </div>

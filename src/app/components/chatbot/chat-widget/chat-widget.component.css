@@ -24,35 +24,6 @@
     margin-left: 5%;
     box-shadow: 0 5px 40px rgba(0, 0, 0, 0.16);
 }
-/* .chat-button {
-    z-index: 1;
-    width: 60px;
-    height: 60px;
-    position: absolute;
-    bottom: 20px;
-    right: 40px;
-    box-shadow: 0 5px 40px rgba(0, 0, 0, 0.16);
-    background: #1976d2;
-    border-radius: 50%;
-    border: none;
-    outline: none;
-    color: #fff;
-    font-size: 32px;
-} */
-
-/* .chat-button-header {
-    z-index: 1;
-    font-weight: bold;
-    color: #fff;
-    border: 1px solid #fff;
-
-    padding: 5px 9px;
-    margin-left: 5px;
-} */
-/* 
-.chat-button:focus {
-    border: 2px solid white;
-} */
 
 .chat-box {
     position: relative;
