@@ -14,12 +14,16 @@ import { S3Service } from "../../../services/aws/s3.service";
 import { DynamoDBService } from "../../../services/aws/dynamoDB.service";
 import { SectionService } from "../../../services/section.service";
 import { ConfigService } from "../../../services/config.service";
-import { ScaleCategorical } from "src/app/models/skeleton/dimension";
+import {
+    ScaleCategorical,
+    ScaleInterval,
+} from "src/app/models/skeleton/dimension";
 /* Models */
 import { Task } from "../../../models/skeleton/task";
 import {
     CategorialDimensionModel,
     CategorialInfo,
+    EnDimensionType,
     IntervalDimensionInfo,
     MagnitudeDimensionInfo,
 } from "src/app/models/conversational/common.model";
@@ -141,13 +145,13 @@ export class ChatWidgetComponent implements OnInit {
 
     //show components flag
     showCategorialAnswers = false;
-    showMgnitudeAnswers = false;
-    showIntervalAnswers = false;
+    showMagnitudeAnswer = false;
+    showIntervalAnswer = false;
 
     //containers
     categorialAnswers: CategorialInfo[] = [];
-    magnitudeAnswers: MagnitudeDimensionInfo[] = [];
-    intervalAnswers: IntervalDimensionInfo[] = [];
+    magnitudeInfo: MagnitudeDimensionInfo[] = [];
+    intervalInfo: IntervalDimensionInfo[] = [];
 
     // Messaggi per l'utente
     instr = [
@@ -360,8 +364,38 @@ export class ChatWidgetComponent implements OnInit {
             description: el.description,
             value: el.value,
         }));
-        this.buttonsNum.nativeElement.style.display = "inline-block";
+        this.buttonsNum.nativeElement.style.display = "inline";
         this.showCategorialAnswers = true;
+    }
+
+    private generateIntervalAnswer(dimensionIndex: number) {
+        // this.intervalInfo = null;
+        // const dimensionInfos : ScaleInterval = this.task.dimensions[dimensionIndex].scale;
+        // this.categorialAnswers =
+        // {
+        //         min: dimensionInfos.scale.min,
+        //         max: dimensionInfos.scale.max,
+        //         step: dimensionInfos.scale.step,
+        //         instructions: dimensionInfos.,
+        //         value: 0,
+        //     }
+        // );
+        this.buttonsNum.nativeElement.style.display = "inline";
+        this.showIntervalAnswer = true;
+    }
+
+    private generateMagnitudeAnswer(dimensionIndex: number) {
+        this.magnitudeInfo = [];
+        const dimensionInfos = this.task.dimensions[dimensionIndex];
+        // this.categorialAnswers = (
+        //     dimensionInfos.scale as ScaleCategorical
+        // ).mapping.map((el: CategorialInfo) => ({
+        //     label: el.label,
+        //     description: el.description,
+        //     value: el.value,
+        // }));
+        this.buttonsNum.nativeElement.style.display = "inline";
+        this.showMagnitudeAnswer = true;
     }
 
     // Utilizzo dei bottoni
@@ -1186,6 +1220,8 @@ export class ChatWidgetComponent implements OnInit {
             }
             if (!this.reviewAnswersShown) {
                 this.typingAnimation("Let's review your answers!");
+                this.disableInput = false;
+
                 this.typingAnimation(
                     this.createQuestionnaireRecap() +
                         "<br>Confirm your answers?"
@@ -1204,6 +1240,8 @@ export class ChatWidgetComponent implements OnInit {
                 this.instructionPhase = true;
                 this.awaitingAnswer = false;
                 this.questionnaireReview = false;
+                this.disableInput = false;
+
                 this.reviewAnswersShown = false;
                 this.buttonsNum.nativeElement.style.display = "none";
                 this.buttonsVisibility = 0;
@@ -1409,6 +1447,34 @@ export class ChatWidgetComponent implements OnInit {
         }
     }
 
+    private selectDimensionToGenerate(dimensionIndex) {
+        let scaleType = null;
+        if (!this.task.dimensions[dimensionIndex].scale) {
+            scaleType = "url";
+        } else {
+            scaleType = this.task.dimensions[dimensionIndex].scale.type;
+            switch (scaleType) {
+                case "url":
+                    //da vedere
+                    break;
+                case "categorial":
+                    this.generateCategorialAnswers(dimensionIndex);
+                    break;
+                case "magnitude":
+                    this.generateMagnitudeAnswer(dimensionIndex);
+                    break;
+                case "interval":
+                    this.generateIntervalAnswer(dimensionIndex);
+                    break;
+
+                default:
+                    console.warn("Casistica non gestita");
+
+                    break;
+            }
+        }
+    }
+
     private getNumberOfOptions(dimensionIndex): number {
         let numberOfOptions = 0;
         if (this.task.dimensions[dimensionIndex]) numberOfOptions++;
@@ -1419,6 +1485,7 @@ export class ChatWidgetComponent implements OnInit {
     private questionnaireP(message) {
         if (this.currentQuestionnaire == 0) {
             if (this.awaitingAnswer) {
+                this.disableInput = false;
                 if (
                     !this.validMsg(
                         message,
@@ -1527,6 +1594,7 @@ export class ChatWidgetComponent implements OnInit {
         if (this.currentQuestionnaire >= this.task.questionnaires.length) {
             isFinished = true;
             this.questionnairePhase = false;
+            this.disableInput = true;
             this.reviewPhase = true;
             this.questionnaireReview = true;
         }

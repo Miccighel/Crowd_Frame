@@ -20,14 +20,11 @@ export class ChatInputCategorialComponent implements OnInit {
 
     ngOnInit() {}
 
-    buttonInput() {
+    sendMessage() {
         const message = this.value;
 
-        if (!!message.trim()) {
-            return;
-        } else {
-            this.send.emit(message);
-        }
+        this.send.emit(message);
+
         // invio il messaggio
     }
 }

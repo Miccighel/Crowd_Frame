@@ -2,6 +2,7 @@ export enum EnDimensionType {
     Categorial,
     Magnitude,
     Interval,
+    URL,
     TBD,
 }
 
@@ -16,10 +17,12 @@ export interface CategorialInfo {
 }
 export interface MagnitudeDimensionInfo {
     min: number;
-    max: number;
-    step: number;
+    lowerBound: boolean;
+    value?: number;
 }
 export interface IntervalDimensionInfo {
     min: number;
-    lower_bound: boolean;
+    max: number;
+    step: number;
+    value?: number;
 }

@@ -91,13 +91,14 @@
         <div #inputBox class="chat-box-footer">
             <div class="button-prompt" #buttonsNum style="display: none">
                 <div
-                    class="row container d-flex justify-content-end pe-5"
+                    class="row container d-flex justify-content-end"
                     *ngIf="showCategorialAnswers"
                 >
                     <chat-input-categorical
                         *ngFor="let item of categorialAnswers"
                         [value]="item.value"
                         [text]="item.label"
+                        (send)="buttonInput($event)"
                     ></chat-input-categorical>
                     <!-- <button
                         *ngFor="let num of numberBtn"
@@ -107,6 +108,24 @@
                     >
                         {{ num }}
                     </button> -->
+                </div>
+                <div
+                    class="row container d-flex justify-content-end"
+                    *ngIf="showMagnitudeAnswer"
+                >
+                    <chat-input-magnitude
+                        [magnitudeInfo]="magnitudeInfo"
+                        (send)="buttonInput($event)"
+                    ></chat-input-magnitude>
+                </div>
+                <div
+                    class="row container d-flex justify-content-end"
+                    *ngIf="showIntervalAnswer"
+                >
+                    <chat-input-interval
+                        [intervalInfo]="intervalInfo"
+                        (send)="buttonInput($event)"
+                    ></chat-input-interval>
                 </div>
             </div>
 
