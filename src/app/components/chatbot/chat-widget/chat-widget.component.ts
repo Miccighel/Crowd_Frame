@@ -265,9 +265,11 @@ export class ChatWidgetComponent implements OnInit {
         this.questionnaireAnswers = new Array(
             this.getNumberOfQuestionnaireQuestions()
         ).fill("");
-        if (this.questionnaireAnswers.length > 0)
+        if (this.questionnaireAnswers.length > 0) {
             this.typingAnimation("First, a few questions about yourself!");
-        else {
+            setTimeout(() => this.questionnaireP("0"), 5000);
+        } else {
+            setTimeout(() => this.skipQuestionnairePhase()), 5000;
             this.questionnairePhase = false;
             this.taskPhase = true;
         }
@@ -292,14 +294,6 @@ export class ChatWidgetComponent implements OnInit {
         this.timestampsStart[this.currentQuestionnaire].push(Date.now() / 1000);
 
         this.emitDisableSearchEngine();
-
-        setTimeout(
-            () =>
-                this.questionnaireAnswers.length > 0
-                    ? this.questionnaireP("0")
-                    : this.skipQuestionnairePhase(),
-            5000
-        );
 
         // PRIMO INVIO DATI ALL'AVVIO
         let data = {};
@@ -629,11 +623,13 @@ export class ChatWidgetComponent implements OnInit {
     }
 
     private printQuestion() {
+        this.disableInput = true;
         let q =
             this.task.questionnaires[this.currentQuestionnaire].questions[
                 this.currentQuestion
             ].text;
         this.typingAnimation(q);
+
         return;
     }
 
@@ -1190,9 +1186,10 @@ export class ChatWidgetComponent implements OnInit {
                         return;
                     }
                     this.currentQuestion = +message - 1;
-                    if (+message - 1 < 7) {
+                    if (+message - 1 < this.questionnaireAnswers.length) {
                         this.currentQuestionnaire = 0;
                         this.printQuestion();
+                        this.disableInput = false;
                     } else {
                         this.currentQuestionnaire =
                             +message - this.questionnaireAnswers.length;
@@ -1532,6 +1529,7 @@ export class ChatWidgetComponent implements OnInit {
                 this.currentQuestionnaire += 1;
             } else {
                 this.printQuestion();
+                this.disableInput = false;
                 this.typingAnimation(this.createQuestionnaireAnswers());
                 this.numberBtn = this.generateArrayNum(
                     this.task.questionnaires[this.currentQuestionnaire]
