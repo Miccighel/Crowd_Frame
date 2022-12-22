@@ -581,7 +581,11 @@ export class ChatWidgetComponent implements OnInit {
         for (let y = 0; y < this.task.questionnaireAmount - 1; y++) {
             let ans = {};
             if (y == 0) {
-                for (let i = 0; i < 7; i++) {
+                for (
+                    let i = 0;
+                    i < this.task.questionnaires[y].questions.length;
+                    i++
+                ) {
                     ans[this.task.questionnaires[0].questions[i].name + addOn] =
                         this.questionnaireAnswers[i] - 1;
                 }
@@ -648,29 +652,33 @@ export class ChatWidgetComponent implements OnInit {
 
     private createQuestionnaireRecap() {
         let recap = "";
-        for (let i = 0; i < this.questionnaireAnswers.length; i++) {
-            if (i < 7) {
-                recap +=
-                    i +
-                    1 +
-                    ". Question: <b>" +
-                    this.task.questionnaires[0].questions[i].text +
-                    "</b><br>Answer:<b> " +
-                    this.task.questionnaires[0].questions[i].answers[
-                        this.questionnaireAnswers[i] - 1
-                    ] +
-                    "</b><br><br>";
-            } else {
-                recap +=
-                    i +
-                    1 +
-                    ". Question: <b>" +
-                    this.task.questionnaires[i - 6].questions[0].text +
-                    "</b><br>Answer:<b> " +
-                    this.questionnaireAnswers[i] +
-                    "</b><br><br>";
+        let questionIndex = 1;
+        this.task.questionnaires.forEach((questionnaire) => {
+            for (let i = 0; i < questionnaire.questions.length; i++) {
+                if (questionnaire.type == "standard") {
+                    recap +=
+                        questionIndex +
+                        ". Question: <b>" +
+                        questionnaire.questions[i].text +
+                        "</b><br>Answer:<b> " +
+                        questionnaire.questions[i].answers[
+                            this.questionnaireAnswers[i] - 1
+                        ] +
+                        "</b><br><br>";
+                } else if (questionnaire.type == "crt") {
+                    recap +=
+                        questionIndex +
+                        ". Question: <b>" +
+                        questionnaire.questions[i].text +
+                        "</b><br>Answer:<b> " +
+                        this.questionnaireAnswers[questionIndex - 1] +
+                        "</b><br><br>";
+                }
+
+                questionIndex++;
             }
-        }
+        });
+
         return recap;
     }
 
