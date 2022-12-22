@@ -1156,7 +1156,10 @@ export class ChatWidgetComponent implements OnInit {
         if (this.questionnaireReview) {
             if (this.pickReview) {
                 if (this.awaitingAnswer) {
-                    if (this.currentQuestionnaire == 0) {
+                    if (
+                        this.task.questionnaires[this.currentQuestionnaire]
+                            .type == "standard"
+                    ) {
                         if (
                             !this.validMsg(
                                 message,
@@ -1172,7 +1175,10 @@ export class ChatWidgetComponent implements OnInit {
                             return;
                         }
                     }
-                    if (this.currentQuestionnaire >= 1) {
+                    if (
+                        this.task.questionnaires[this.currentQuestionnaire]
+                            .type == "crt"
+                    ) {
                         if (!this.validMsg(message, 1, 100)) {
                             this.typingAnimation(
                                 "Please type a integer number between 1 and 100"
@@ -1195,8 +1201,21 @@ export class ChatWidgetComponent implements OnInit {
                     }
                     this.currentQuestion = +message - 1;
                     if (+message - 1 < this.questionnaireAnswers.length) {
-                        this.currentQuestionnaire = 0;
+                        this.disableInput = true;
+                        let previouseQuestionPosition = this.currentQuestion;
+
+                        // mi calcolo il questionario di appartenenza
+                        this.currentQuestionnaire =
+                            this.currentQuestion %
+                            this.questionnaireAnswers.length;
+                        // ricavo l'indice della domanda nel questionario
+                        this.currentQuestion =
+                            this.currentQuestion %
+                            this.task.questionnaires[this.currentQuestionnaire]
+                                .questions.length;
+
                         this.printQuestion();
+                        this.currentQuestion = previouseQuestionPosition;
                         this.disableInput = false;
                     } else {
                         this.currentQuestionnaire =
