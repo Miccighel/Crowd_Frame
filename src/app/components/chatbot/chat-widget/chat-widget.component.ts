@@ -445,23 +445,34 @@ export class ChatWidgetComponent implements OnInit {
         document.getElementById(
             this.taskIndex.toString()
         ).style.backgroundColor = "#F2452E";
-        this.typingAnimation(
+
+        let messageToSend =
             "Statement: <b>" +
-                this.task.hit.documents[this.taskIndex]["statement_text"] +
-                "</b> - " +
-                this.task.hit.documents[this.taskIndex]["speaker_name"] +
-                " " +
-                this.task.hit.documents[this.taskIndex]["statement_date"]
-        );
-        this.fixedMessage =
-            "<b>Statement</b>: " +
             this.task.hit.documents[this.taskIndex]["statement_text"] +
-            "<br>" +
-            "<b>Speaker</b>: " +
-            this.task.hit.documents[this.taskIndex]["speaker_name"] +
-            "<br>" +
-            "<b>Date</b>: " +
-            this.task.hit.documents[this.taskIndex]["statement_date"];
+            "</b> - ";
+        if (!!this.task.hit.documents[this.taskIndex]["speaker_name"])
+            messageToSend +=
+                this.task.hit.documents[this.taskIndex]["speaker_name"];
+        if (!!this.task.hit.documents[this.taskIndex]["statement_date"])
+            messageToSend +=
+                " " + this.task.hit.documents[this.taskIndex]["statement_date"];
+        this.typingAnimation(messageToSend);
+        //Composizione messaggio da visualizzare
+        if (!!this.task.hit.documents[this.taskIndex]["statement_text"])
+            this.fixedMessage =
+                "<b>Statement</b>: " +
+                this.task.hit.documents[this.taskIndex]["statement_text"] +
+                "<br>";
+        if (!!this.task.hit.documents[this.taskIndex]["speaker_name"])
+            this.fixedMessage +=
+                "<b>Speaker</b>: " +
+                this.task.hit.documents[this.taskIndex]["speaker_name"] +
+                "<br>";
+
+        if (!!this.task.hit.documents[this.taskIndex]["statement_date"])
+            this.fixedMessage +=
+                "<b>Date</b>: " +
+                this.task.hit.documents[this.taskIndex]["statement_date"];
     }
 
     // Stampa la dimensione corrente
