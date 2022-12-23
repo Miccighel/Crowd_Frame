@@ -13,7 +13,7 @@ import {
     encapsulation: ViewEncapsulation.None,
     styleUrls: ["./chat-input-categorical.component.css"],
 })
-export class ChatInputCategorialComponent implements OnInit {
+export class ChatInputCategoricalComponent implements OnInit {
     @Input() public text = "N.D";
     @Input() public value = "0";
     @Output() public send = new EventEmitter();

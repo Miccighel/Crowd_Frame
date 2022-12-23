@@ -1,16 +1,16 @@
 export enum EnDimensionType {
-    Categorial,
+    Categorical,
     Magnitude,
     Interval,
     URL,
     TBD,
 }
 
-export interface CategorialDimensionModel {
-    mapping: CategorialInfo[];
+export interface CategoricalDimensionModel {
+    mapping: CategoricalInfo[];
 }
 
-export interface CategorialInfo {
+export interface CategoricalInfo {
     label: string;
     description?: string;
     value: string;

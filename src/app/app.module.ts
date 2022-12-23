@@ -86,7 +86,7 @@ import { ChatButtonsComponent } from "./components/chatbot/chat-buttons/chat-but
 import { NgbModule } from "@ng-bootstrap/ng-bootstrap";
 import { ChatInputMagnitudeComponent } from "./components/chatbot/chat-input-magnitude/chat-input-magnitude.component";
 import { ChatInputIntervalComponent } from "./components/chatbot/chat-input-interval/chat-input-interval.component";
-import { ChatInputCategorialComponent } from "./components/chatbot/chat-input-categorical/chat-input-categorical.component";
+import { ChatInputCategoricalComponent } from "./components/chatbot/chat-input-categorical/chat-input-categorical.component";
 
 function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
     return () =>
@@ -136,7 +136,7 @@ function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
         ErrorMessageComponent,
         ChatInputMagnitudeComponent,
         ChatInputIntervalComponent,
-        ChatInputCategorialComponent,
+        ChatInputCategoricalComponent,
     ],
     imports: [
         BrowserModule,

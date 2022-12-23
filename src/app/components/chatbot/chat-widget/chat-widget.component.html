@@ -92,10 +92,11 @@
             <div class="button-prompt" #buttonsNum style="display: none">
                 <div
                     class="row container d-flex justify-content-end"
-                    *ngIf="showCategorialAnswers"
+                    *ngIf="showCategoricalAnswers"
                 >
                     <chat-input-categorical
-                        *ngFor="let item of categorialAnswers"
+                        class="col-12 text-end mr-2"
+                        *ngFor="let item of categoricalAnswers"
                         [value]="item.value"
                         [text]="item.label"
                         (send)="buttonInput($event)"
