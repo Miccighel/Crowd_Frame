@@ -12,6 +12,7 @@ import pandas as pd
 import subprocess
 import string
 import datefinder
+import glob
 import random
 import hashlib
 import shutil
@@ -2101,7 +2102,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     status.update(f"Executing build command, please wait")
 
-    folder_build_result = f"../dist/"
+    folder_build_result = f"{Path(os.getcwd()).parent.absolute()}/dist/"
 
     command = "yarn run build --configuration=\"production\" --output-hashing=none"
     console.print(f"[green on black]{command}")
@@ -2116,39 +2117,42 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     status.update("Merging Javascript assets")
     script_merged_file = f"{folder_build_deploy_path}scripts.js"
-    if (os.path.exists(script_merged_file)):
+    if os.path.exists(script_merged_file):
         os.remove(script_merged_file)
-    es_scripts = [
-        'polyfills.js',
-        'runtime.js',
-        'main.js',
-    ]
+    es_script_paths = glob.glob(f"{folder_build_result}/Crowd_Frame/*.js")
     with open(script_merged_file, 'a') as outfile:
-        for file in es_scripts:
-            script_current_file = f"{folder_build_result}Crowd_Frame/{file}"
-            console.print(f"Processing file: [italic purple on black]{script_current_file}")
-            with open(script_current_file) as script:
-                for line in script:
-                    outfile.write(line)
+        for script_current_file in es_script_paths:
+            if os.path.exists(script_current_file):
+                console.print(f"Processing file: [italic purple on black]{script_current_file}")
+                with open(script_current_file) as script:
+                    for line in script:
+                        outfile.write(line)
+            else:
+                console.print(f"File not detected: [italic purple on black]{script_current_file}")
     console.print(f"Path: [italic]{script_merged_file}")
 
     status.update("Merging CSS assets")
     styles_merged_file = f"{folder_build_deploy_path}styles.css"
-    if (os.path.exists(styles_merged_file)):
+    if os.path.exists(styles_merged_file):
         os.remove(styles_merged_file)
-    css_styles = ['styles.css']
+    css_styles_paths = glob.glob(f"{folder_build_result}/Crowd_Frame/*.css")
     with open(styles_merged_file, 'a') as outfile:
-        for file in css_styles:
-            style_current_file = f"{folder_build_result}Crowd_Frame/{file}"
-            console.print(f"Processing file: [italic cyan on black]{style_current_file}")
-            with open(style_current_file) as style:
-                for line in style:
-                    outfile.write(line)
+        for style_current_file in css_styles_paths:
+            if os.path.exists(style_current_file):
+                console.print(f"Processing file: [italic cyan on black]{style_current_file}")
+                with open(style_current_file) as style:
+                    for line in style:
+                        outfile.write(line)
+            else:
+                console.print(f"File not detected: [italic purple on black]{style_current_file}")
     console.print(f"Path: [italic underline]{styles_merged_file}")
 
     console.print("Deleting build folder")
-    console.print(f"Path: [italic underline]{folder_build_result}")
-    shutil.rmtree(folder_build_result)
+    if os.path.exists(folder_build_result):
+        console.print(f"Path: [italic underline]{folder_build_result}")
+        shutil.rmtree(folder_build_result)
+    else:
+        console.print(f"Build folder not detected: [italic underline]{folder_build_result}")
 
     model = Template(filename=f"{folder_build_deploy_path}model.html")
     if task_title:
@@ -2167,7 +2171,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     with open(index_page_file, 'w') as file:
         print(index_page, file=file)
 
-    console.print("Model istantiated")
+    console.print("Model instantiated")
     console.print(f"Path: [italic underline]{index_page_file}")
 
     console.rule(f"{step_index} - Packaging Task [cyan underline]tasks/{task_name}/{batch_name}")

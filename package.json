@@ -45,5 +45,5 @@
   "browser": {
     "crypto": false
   },
-  "packageManager": "yarn@3.2.3"
+  "packageManager": "yarn@3.3.1"
 }
