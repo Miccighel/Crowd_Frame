@@ -45,17 +45,17 @@ mturk_user_name = 'mturk-user'
 
 # Your working dir must be set to data/
 
-folder_aws_path = "aws/"
-folder_aws_generated_path = "aws/generated/"
-folder_build_path = "build/"
-folder_build_config_path = "build/config/"
-folder_build_task_path = "build/task/"
-folder_build_mturk_path = "build/mturk/"
-folder_build_toloka_path = "build/toloka/"
-folder_build_env_path = "build/environments/"
-folder_build_deploy_path = "build/deploy/"
-folder_build_skeleton_path = "build/skeleton/"
-folder_tasks_path = "tasks/"
+folder_aws_path = f"{os.getcwd()}/aws/"
+folder_aws_generated_path = f"{folder_aws_path}generated/"
+folder_build_path = f"{os.getcwd()}/build/"
+folder_build_config_path = f"{folder_build_path}config/"
+folder_build_task_path = f"{folder_build_path}task/"
+folder_build_mturk_path = f"{folder_build_path}mturk/"
+folder_build_toloka_path = f"{folder_build_path}toloka/"
+folder_build_env_path = f"{folder_build_path}environments/"
+folder_build_deploy_path = f"{folder_build_path}deploy/"
+folder_build_skeleton_path = f"{folder_build_path}skeleton/"
+folder_tasks_path = f"{os.getcwd()}/tasks/"
 
 filename_hits_config = "hits.json"
 filename_dimensions_config = "dimensions.json"
