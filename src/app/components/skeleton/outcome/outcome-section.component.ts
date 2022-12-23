@@ -45,8 +45,6 @@ export class OutcomeSectionComponent implements OnInit {
         configService: ConfigService
     ) {
 
-        console.log("here")
-
         this.formBuilder = formBuilder
         this.sectionService = sectionService
         this.configService = configService
@@ -60,8 +58,6 @@ export class OutcomeSectionComponent implements OnInit {
         this.commentForm = formBuilder.group({
             "comment": new UntypedFormControl(''),
         });
-
-        console.log(this.statusCodes)
 
     }
 

@@ -2119,7 +2119,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     script_merged_file = f"{folder_build_deploy_path}scripts.js"
     if os.path.exists(script_merged_file):
         os.remove(script_merged_file)
-    es_script_paths = glob.glob(f"{folder_build_result}/Crowd_Frame/*.js")
+    es_script_paths = glob.glob(f"{folder_build_result}Crowd_Frame/*.js")
     with open(script_merged_file, 'a') as outfile:
         for script_current_file in es_script_paths:
             if os.path.exists(script_current_file):
@@ -2135,7 +2135,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     styles_merged_file = f"{folder_build_deploy_path}styles.css"
     if os.path.exists(styles_merged_file):
         os.remove(styles_merged_file)
-    css_styles_paths = glob.glob(f"{folder_build_result}/Crowd_Frame/*.css")
+    css_styles_paths = glob.glob(f"{folder_build_result}Crowd_Frame/*.css")
     with open(styles_merged_file, 'a') as outfile:
         for style_current_file in css_styles_paths:
             if os.path.exists(style_current_file):

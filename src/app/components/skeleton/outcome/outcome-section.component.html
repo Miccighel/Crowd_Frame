@@ -184,7 +184,7 @@
             <mat-card-title class="sub-title">Description</mat-card-title>
             <mat-divider [inset]="true"></mat-divider>
             <mat-card-content class="description">
-                <p>The whole set of available tasks has been assigned to other workers. Someone did not finish its task, but has some time left. Please, try to come back in XX:YY minutes. </p>
+                <p>The whole set of available tasks has been assigned to other workers. Someone did not finish its task, but has some time left. Please, try to come back after the nearest expiration date: {{this.worker.getParameter('time_expiration_nearest')}} . </p>
             </mat-card-content>
         </mat-card>
     </ng-container>
