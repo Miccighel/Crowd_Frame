@@ -1064,7 +1064,7 @@ export class ChatWidgetComponent implements OnInit {
                     this.endTaskPhase = false;
                     this.taskPhase = true;
                     // Reinizializzo
-                    for (let i = 0; i < 11; i++) {
+                    for (let i = 0; i < this.task.documents.length; i++) {
                         document.getElementById(
                             i.toString()
                         ).style.backgroundColor = "#3f51b5";
@@ -1506,11 +1506,11 @@ export class ChatWidgetComponent implements OnInit {
             this.reviewAnswersShown = false;
             this.ignoreMsg = true;
             this.subTaskIndex = 0;
+            this.fixedMessage = null;
             this.taskP(message);
         } else if (message.trim().toLowerCase() === "modify") {
             this.buttonsCM.nativeElement.style.display = "none";
             this.buttonsVisibility = 0;
-
             this.typingAnimation("Which dimension would you like to change?");
             this.cleanUserInput();
             this.disableInput = false;
