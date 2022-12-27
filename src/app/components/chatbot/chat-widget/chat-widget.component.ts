@@ -396,6 +396,7 @@ export class ChatWidgetComponent implements OnInit {
         };
 
         this.minValue = dimensionInfos.min;
+        this.maxValue = null;
         this.buttonsNum.nativeElement.style.display = "inline";
         this.showMagnitudeAnswer = true;
     }
