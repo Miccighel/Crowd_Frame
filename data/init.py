@@ -2119,7 +2119,23 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     script_merged_file = f"{folder_build_deploy_path}scripts.js"
     if os.path.exists(script_merged_file):
         os.remove(script_merged_file)
-    es_script_paths = glob.glob(f"{folder_build_result}Crowd_Frame/*.js")
+    es_script_paths_temp = glob.glob(f"{folder_build_result}Crowd_Frame/*.js")
+    es_scripts_order = [
+        'polyfills.js',
+        'runtime.js',
+        'main.js',
+    ]
+    es_script_paths = [None]*3
+    for es_script_path in es_script_paths_temp:
+        if os.path.basename(es_script_path) == 'polyfills.js':
+           es_script_paths[0] = es_script_path
+        if os.path.basename(es_script_path) == 'runtime.js':
+           es_script_paths[1] = es_script_path
+        if os.path.basename(es_script_path) == 'main.js':
+           es_script_paths[2] = es_script_path
+    for es_script_path in es_script_paths_temp:
+        if os.path.basename(es_script_path) != 'polyfills.js' and os.path.basename(es_script_path) != 'runtime.js' and os.path.basename(es_script_path) != 'main.js':
+            es_script_paths.append(es_script_path)
     with open(script_merged_file, 'a') as outfile:
         for script_current_file in es_script_paths:
             if os.path.exists(script_current_file):
