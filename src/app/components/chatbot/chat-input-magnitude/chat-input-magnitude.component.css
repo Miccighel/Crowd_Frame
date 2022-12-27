@@ -1,0 +1,73 @@
+.chat-input-text {
+    resize: none;
+    overflow: auto;
+    outline: none;
+    box-shadow: none;
+    font-size: 14px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji",
+        "Segoe UI Emoji", "Segoe UI Symbol";
+}
+
+.chat-input-text input {
+    padding: 0 0 0 14px;
+    border: none;
+    width: 100%;
+}
+input:focus-visible {
+    border: none;
+    outline: none;
+}
+
+.disabledInput {
+    background-color: #dfdfdf !important;
+    color: #000;
+}
+
+.activeInput {
+    background-color: #3f51b5;
+    color: #fff;
+}
+
+.activeInput input {
+    background-color: #3f51b5;
+    color: #fff;
+}
+.disabledInput input {
+    background-color: #dfdfdf !important;
+    color: #000;
+}
+
+.activeInput input::placeholder {
+    /* Chrome, Firefox, Opera, Safari 10.1+ */
+    color: #fff;
+    opacity: 1; /* Firefox */
+}
+
+.chat-input-submit {
+    margin: 14px 12px;
+    float: right;
+    color: inherit;
+    font-size: 24px;
+    border: 0;
+    outline: none;
+}
+
+.chat-input-submit mat-icon.activeInput {
+    color: #3f51b5;
+}
+
+.chat-input-submit button mat-icon.disabledInput {
+    color: #000;
+}
+
+.button-prompt {
+    background-color: #f5f5f5;
+    position: relative;
+
+    height: auto;
+    width: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji",
+        "Segoe UI Emoji", "Segoe UI Symbol";
+}

@@ -94,86 +94,87 @@
                     *ngIf="showCategoricalAnswers"
                 >
                     <chat-input-categorical
-                        class="col-12 text-end mr-2"
+                        class="col-6 text-end mr-1"
                         *ngFor="let item of categoricalInfo"
                         [value]="item.value"
                         [text]="item.label"
                         (send)="buttonInput($event)"
                     ></chat-input-categorical>
-                    <!-- <button
-                        *ngFor="let num of numberBtn"
-                        type="button"
-                        class="btn-secondary"
-                        (click)="buttonInput(num)"
-                    >
-                        {{ num }}
-                    </button> -->
-                </div>
-                <div
-                    class="row container d-flex justify-content-end"
-                    *ngIf="showMagnitudeAnswer"
-                >
-                    <chat-input-magnitude
-                        [magnitudeInfo]="magnitudeInfo"
-                        (send)="buttonInput($event)"
-                    ></chat-input-magnitude>
-                </div>
-                <div
-                    class="row container d-flex justify-content-end"
-                    *ngIf="showIntervalAnswer"
-                >
-                    <chat-input-interval
-                        [intervalInfo]="intervalInfo"
-                        (updateSelectedValue)="updateInputValue($event)"
-                    ></chat-input-interval>
                 </div>
             </div>
 
             <div class="button-prompt" #buttonsYN style="display: none">
                 <div class="row container d-flex justify-content-end pe-2">
-                    <button
-                        type="button"
-                        class="btn-user-answer"
-                        (click)="buttonInput('Yes')"
-                    >
-                        Yes
-                    </button>
-                    <button
-                        type="button"
-                        class="btn-user-answer"
-                        (click)="buttonInput('No')"
-                    >
-                        No
-                    </button>
+                    <div class="col-6">
+                        <button
+                            type="button"
+                            class="btn-user-answer"
+                            (click)="buttonInput('Yes')"
+                        >
+                            Yes
+                        </button>
+                    </div>
+                    <div class="col-6">
+                        <button
+                            type="button"
+                            class="btn-user-answer"
+                            (click)="buttonInput('No')"
+                        >
+                            No
+                        </button>
+                    </div>
                 </div>
             </div>
             <div class="button-prompt" #buttonsCM style="display: none">
                 <div class="row container d-flex justify-content-end pe-2">
-                    <button
-                        type="button"
-                        class="btn-user-answer"
-                        (click)="buttonInput('Confirm')"
-                    >
-                        Confirm
-                    </button>
-                    <button
-                        type="button"
-                        class="btn-user-answer"
-                        (click)="buttonInput('Modify')"
-                    >
-                        Modify
-                    </button>
+                    <div class="col-6">
+                        <button
+                            type="button"
+                            class="btn-user-answer"
+                            (click)="buttonInput('Confirm')"
+                        >
+                            Confirm
+                        </button>
+                    </div>
+                    <div class="col-6">
+                        <button
+                            type="button"
+                            class="btn-user-answer"
+                            (click)="buttonInput('Modify')"
+                        >
+                            Modify
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
-        <div>
-            <chat-input
-                (send)="sendMessage($event)"
-                [pholder]="placeholderInput"
-                [disableInput]="disableInput"
-            >
-            </chat-input>
-        </div>
+
+        <chat-input-magnitude
+            class="container"
+            *ngIf="showMagnitudeAnswer"
+            [magnitudeInfo]="magnitudeInfo"
+            (send)="sendMessage($event)"
+            [disableInput]="disableInput"
+        ></chat-input-magnitude>
+        <chat-input-interval
+            class="container"
+            *ngIf="showIntervalAnswer"
+            [intervalInfo]="intervalInfo"
+            (send)="sendMessage($event)"
+            [disableInput]="disableInput"
+        ></chat-input-interval>
+        <chat-input
+            class="container"
+            *ngIf="
+                !showMagnitudeAnswer &&
+                !showIntervalAnswer &&
+                !showCategoricalAnswers
+            "
+            (send)="sendMessage($event)"
+            [pholder]="placeholderInput"
+            [disableInput]="disableInput"
+        >
+        </chat-input>
     </div>
 
     <div class="search-engine">

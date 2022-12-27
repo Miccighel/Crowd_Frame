@@ -1,12 +1,34 @@
-<mat-slider
-    (input)="onInputChange($event)"
-    class="px-2"
-    [min]="range[0]"
-    [max]="range[1]"
-    [step]="step"
-    [value]="value"
-    discrete
-    showTickMarks
-    [displayWith]="formatLabel"
-    ><input matSliderThumb
-/></mat-slider>
+<div class="row activeInput">
+    <div class="col-2 d-flex align-items-center">Min: {{ range[0] }}</div>
+    <div class="col-6 d-flex align-items-center">
+        <mat-slider
+            thumbLabel
+            (input)="onInputChange($event)"
+            [min]="range[0]"
+            [max]="range[1]"
+            [step]="step"
+            [displayWith]="formatLabel"
+            ><input matSliderThumb [value]="value"
+        /></mat-slider>
+    </div>
+    <div class="col-2 d-flex align-items-center">Max: {{ range[1] }}</div>
+    <div class="col-2">
+        <button
+            mat-mini-fab
+            type="submit"
+            class="chat-input-submit"
+            [disabled]="disableInput"
+            color="#ffffff"
+            [ngClass]="disableInput ? 'disabledInput' : 'activeInput'"
+            (click)="onSubmit()"
+        >
+            <!-- {{ buttonText }} -->
+            <mat-icon
+                aria-hidden="false"
+                aria-label="Send message"
+                fontIcon="send"
+                >send</mat-icon
+            >
+        </button>
+    </div>
+</div>

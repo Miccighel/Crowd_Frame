@@ -1,27 +1,30 @@
-<div
-    class="chat-input-text"
-    [ngClass]="disableInput ? 'disabledInput' : 'activeInput'"
->
-    <input
-        #message
-        type="text"
-        (keydown.enter)="onSubmit()"
-        (keyup.enter)="message.value = ''"
-        placeholder="Type a message..."
-    />
-
-    <button
-        mat-mini-fab
-        type="submit"
-        class="chat-input-submit"
-        [disabled]="disableInput"
-        color="#ffffff"
-        [ngClass]="disableInput ? 'disabledInput' : 'activeInput'"
-        (click)="onSubmit()"
-    >
-        <!-- {{ buttonText }} -->
-        <mat-icon aria-hidden="false" aria-label="Send message" fontIcon="send"
-            >send</mat-icon
+<div class="row" [ngClass]="disableInput ? 'disabledInput' : 'activeInput'">
+    <div class="col-10 chat-input-text d-flex align-items-center">
+        <input
+            #message
+            type="text"
+            (keydown.enter)="onSubmit()"
+            (keyup.enter)="message.value = ''"
+            placeholder="Type a message..."
+        />
+    </div>
+    <div class="col-2">
+        <button
+            mat-mini-fab
+            type="submit"
+            class="chat-input-submit"
+            [disabled]="disableInput"
+            color="#ffffff"
+            [ngClass]="disableInput ? 'disabledInput' : 'activeInput'"
+            (click)="onSubmit()"
         >
-    </button>
+            <!-- {{ buttonText }} -->
+            <mat-icon
+                aria-hidden="false"
+                aria-label="Send message"
+                fontIcon="send"
+                >send</mat-icon
+            >
+        </button>
+    </div>
 </div>

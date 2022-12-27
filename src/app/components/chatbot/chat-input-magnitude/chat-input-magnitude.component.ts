@@ -1,8 +1,10 @@
 import {
     Component,
     EventEmitter,
+    ElementRef,
     Input,
     OnInit,
+    ViewChild,
     Output,
     ViewEncapsulation,
 } from "@angular/core";
@@ -19,7 +21,10 @@ export class ChatInputMagnitudeComponent implements OnInit {
     public value = 0;
     public min = 0;
     @Input() public magnitudeInfo: MagnitudeDimensionInfo = null;
+    @ViewChild("message", { static: true }) message!: ElementRef;
+
     @Output() public send = new EventEmitter();
+    @Input() public disableInput!: boolean;
 
     ngOnInit() {
         if (!!this.magnitudeInfo) {
@@ -28,10 +33,23 @@ export class ChatInputMagnitudeComponent implements OnInit {
             this.value = this.magnitudeInfo.value ?? 0;
         }
     }
+    public getMessage() {
+        return this.message.nativeElement.value;
+    }
 
-    sendMessage() {
-        const message = this.value;
+    public clearMessage() {
+        this.message.nativeElement.value = "";
+    }
 
-        this.send.emit(message);
+    onSubmit() {
+        const message = this.getMessage();
+
+        if (message.trim() === "") {
+            return;
+        }
+        // invio il messaggio
+        this.send.emit({ message });
+        // resetto l'input field
+        this.clearMessage();
     }
 }

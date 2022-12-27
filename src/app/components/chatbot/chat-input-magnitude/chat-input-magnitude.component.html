@@ -1,8 +1,27 @@
-<input
-    class="w-100 px-2"
-    type="number"
-    name="magnitudeValue"
-    id="magnitude"
-    [min]="min"
-    [value]="value"
-/>
+<div class="row activeInput">
+    <div class="col-10 chat-input-text d-flex align-items-center">
+        <input
+            #message
+            type="number"
+            placeholder="Enter a number"
+            (keydown.enter)="onSubmit()"
+        />
+    </div>
+    <div class="col-2">
+        <button
+            mat-mini-fab
+            type="submit"
+            class="chat-input-submit activeInput"
+            color="#ffffff"
+            (click)="onSubmit()"
+        >
+            <!-- {{ buttonText }} -->
+            <mat-icon
+                aria-hidden="false"
+                aria-label="Send message"
+                fontIcon="send"
+                >send</mat-icon
+            >
+        </button>
+    </div>
+</div>

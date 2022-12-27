@@ -20,7 +20,9 @@ export class ChatInputIntervalComponent implements OnInit {
     public step = 1;
     public value = 0;
     @Input() public intervalInfo: IntervalDimensionInfo = null;
-    @Output() public updateSelectedValue = new EventEmitter();
+    @Input() public disableInput!: boolean;
+
+    @Output() public send = new EventEmitter();
 
     ngOnInit() {
         if (!!this.intervalInfo) {
@@ -36,6 +38,15 @@ export class ChatInputIntervalComponent implements OnInit {
     }
 
     onInputChange(event: MatSliderChange) {
-        this.updateSelectedValue.emit(event.value);
+        this.disableInput = false;
+        this.value = event.value;
+    }
+
+    onSubmit() {
+        // prendo il msg, se è vuoto non faccio nulla
+        const message = `${this.value}`;
+
+        // invio il messaggio
+        this.send.emit({ message });
     }
 }

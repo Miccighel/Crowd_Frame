@@ -3,10 +3,9 @@ button.btn-categorical {
     padding: 3px;
     color: #000;
     font-weight: 500;
-
+    width: 100%;
     border-radius: 5px;
     margin: 1px;
-
     min-width: 50%;
     border: solid 2px #7ccfc2;
 }
