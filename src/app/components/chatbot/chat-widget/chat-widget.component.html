@@ -25,19 +25,18 @@
                     <div class="dot" [id]="i">{{ i + 1 }}</div>
                 </div>
             </div>
+            <div
+                *ngIf="!!fixedMessage"
+                [innerHTML]="fixedMessage"
+                class="chat-box-header"
+                style="
+                    background-color: #3f51b5;
+                    color: white;
+                    font-size: larger;
+                    height: auto;
+                "
+            ></div>
         </div>
-
-        <div
-            *ngIf="fixedMessage"
-            [innerHTML]="fixedMessage"
-            class="chat-box-header"
-            style="
-                background-color: #3f51b5;
-                color: white;
-                font-size: larger;
-                height: auto;
-            "
-        ></div>
 
         <div class="chat-box-main">
             <div class="chat-message-bottom" #bottom></div>
@@ -96,7 +95,7 @@
                 >
                     <chat-input-categorical
                         class="col-12 text-end mr-2"
-                        *ngFor="let item of categoricalAnswers"
+                        *ngFor="let item of categoricalInfo"
                         [value]="item.value"
                         [text]="item.label"
                         (send)="buttonInput($event)"
@@ -125,7 +124,7 @@
                 >
                     <chat-input-interval
                         [intervalInfo]="intervalInfo"
-                        (send)="buttonInput($event)"
+                        (updateSelectedValue)="updateInputValue($event)"
                     ></chat-input-interval>
                 </div>
             </div>

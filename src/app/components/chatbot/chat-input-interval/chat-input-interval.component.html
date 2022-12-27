@@ -1,9 +1,12 @@
 <mat-slider
+    (input)="onInputChange($event)"
     class="px-2"
     [min]="range[0]"
     [max]="range[1]"
     [step]="step"
-    [displayWith]="true"
     [value]="value"
+    discrete
+    showTickMarks
+    [displayWith]="formatLabel"
     ><input matSliderThumb
 /></mat-slider>

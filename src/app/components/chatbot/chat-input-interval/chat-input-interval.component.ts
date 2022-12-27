@@ -6,6 +6,7 @@ import {
     Output,
     ViewEncapsulation,
 } from "@angular/core";
+import { MatSliderChange } from "@angular/material/slider";
 import { IntervalDimensionInfo } from "src/app/models/conversational/common.model";
 
 @Component({
@@ -19,7 +20,7 @@ export class ChatInputIntervalComponent implements OnInit {
     public step = 1;
     public value = 0;
     @Input() public intervalInfo: IntervalDimensionInfo = null;
-    @Output() public send = new EventEmitter();
+    @Output() public updateSelectedValue = new EventEmitter();
 
     ngOnInit() {
         if (!!this.intervalInfo) {
@@ -30,9 +31,11 @@ export class ChatInputIntervalComponent implements OnInit {
         }
     }
 
-    sendMessage() {
-        const message = this.value;
+    formatLabel(value: number): string {
+        return `${value}`;
+    }
 
-        this.send.emit(message);
+    onInputChange(event: MatSliderChange) {
+        this.updateSelectedValue.emit(event.value);
     }
 }

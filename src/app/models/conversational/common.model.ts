@@ -19,10 +19,12 @@ export interface MagnitudeDimensionInfo {
     min: number;
     lowerBound: boolean;
     value?: number;
+    instructions?: string;
 }
 export interface IntervalDimensionInfo {
     min: number;
     max: number;
     step: number;
     value?: number;
+    instructions?: string;
 }

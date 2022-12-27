@@ -142,6 +142,8 @@ export class ChatWidgetComponent implements OnInit {
     placeholderInput: string;
     tryNumber: number; // Numero di tentativi per completare
     accessesAmount: number[]; //Numero di accessi agli elementi
+    minValue: number = -2;
+    maxValue: number = +2;
 
     //show components flag
     showCategoricalAnswers = false;
@@ -149,9 +151,9 @@ export class ChatWidgetComponent implements OnInit {
     showIntervalAnswer = false;
 
     //containers
-    categoricalAnswers: CategoricalInfo[] = [];
-    magnitudeInfo: MagnitudeDimensionInfo[] = [];
-    intervalInfo: IntervalDimensionInfo[] = [];
+    categoricalInfo: CategoricalInfo[] = [];
+    magnitudeInfo: MagnitudeDimensionInfo = null;
+    intervalInfo: IntervalDimensionInfo = null;
 
     // Messaggi per l'utente
     instr = [
@@ -161,7 +163,6 @@ export class ChatWidgetComponent implements OnInit {
     endOfTaskMessage = [
         "Oh! That was it! Thank you for completing the task! Here's your token: ...",
     ];
-    repeat = "Please type a integer number between -2 and 2";
 
     constructor(
         changeDetector: ChangeDetectorRef,
@@ -349,45 +350,52 @@ export class ChatWidgetComponent implements OnInit {
     }
 
     private generateCategoricalAnswers(dimensionIndex: number) {
-        this.categoricalAnswers = [];
+        this.categoricalInfo = [];
         const dimensionInfos = this.task.dimensions[dimensionIndex];
-        this.categoricalAnswers = (
+        this.categoricalInfo = (
             dimensionInfos.scale as ScaleCategorical
         ).mapping.map((el: CategoricalInfo) => ({
             label: el.label,
             description: el.description,
             value: el.value,
         }));
+        this.minValue = -2;
+        this.maxValue = 2;
         this.buttonsNum.nativeElement.style.display = "inline";
         this.showCategoricalAnswers = true;
     }
 
     private generateIntervalAnswer(dimensionIndex: number) {
-        // this.intervalInfo = null;
-        // const dimensionInfos : ScaleInterval = this.task.dimensions[dimensionIndex].scale;
-        // this.categoricalAnswers =
-        // {
-        //         min: dimensionInfos.scale.min,
-        //         max: dimensionInfos.scale.max,
-        //         step: dimensionInfos.scale.step,
-        //         instructions: dimensionInfos.,
-        //         value: 0,
-        //     }
-        // );
+        this.intervalInfo = null;
+        const dimensionInfos = this.task.dimensions[dimensionIndex]
+            .scale as any;
+        this.intervalInfo = {
+            min: dimensionInfos.min,
+            max: dimensionInfos.max,
+            step: dimensionInfos.step,
+            instructions: dimensionInfos.instructions,
+            value: 0,
+        };
+
+        this.minValue = dimensionInfos.min;
+        this.maxValue = dimensionInfos.max;
+
         this.buttonsNum.nativeElement.style.display = "inline";
         this.showIntervalAnswer = true;
     }
 
     private generateMagnitudeAnswer(dimensionIndex: number) {
-        this.magnitudeInfo = [];
-        const dimensionInfos = this.task.dimensions[dimensionIndex];
-        // this.categoricalAnswers = (
-        //     dimensionInfos.scale as ScaleCategorical
-        // ).mapping.map((el: CategoricalInfo) => ({
-        //     label: el.label,
-        //     description: el.description,
-        //     value: el.value,
-        // }));
+        this.magnitudeInfo = null;
+        const dimensionInfos = this.task.dimensions[dimensionIndex]
+            .scale as any;
+        this.magnitudeInfo = {
+            min: dimensionInfos.min ?? 0,
+            lowerBound: dimensionInfos.lowerBound ?? null,
+            instructions: dimensionInfos.instructions ?? null,
+            value: dimensionInfos.value ?? 0,
+        };
+
+        this.minValue = dimensionInfos.min;
         this.buttonsNum.nativeElement.style.display = "inline";
         this.showMagnitudeAnswer = true;
     }
@@ -425,6 +433,11 @@ export class ChatWidgetComponent implements OnInit {
         this.typingAnimation(getRandomMessage());
     }
 
+    public updateInputValue(event) {
+        this.placeholderInput = event;
+        this.disableInput = false;
+    }
+
     private validateTask() {
         let nameArray = [];
         for (let i = 0; i < this.task.hit.documents.length; i++) {
@@ -458,9 +471,12 @@ export class ChatWidgetComponent implements OnInit {
                 " " + this.task.hit.documents[this.taskIndex]["statement_date"];
         this.typingAnimation(messageToSend);
         //Composizione messaggio fissato
-        setTimeout(() => {
+
+        if (!!this.fixedMessage) {
+        } else {
+            this.fixedMessage = "";
             if (!!this.task.hit.documents[this.taskIndex]["statement_text"])
-                this.fixedMessage =
+                this.fixedMessage +=
                     "<b>Statement</b>: " +
                     this.task.hit.documents[this.taskIndex]["statement_text"] +
                     "<br>";
@@ -474,7 +490,7 @@ export class ChatWidgetComponent implements OnInit {
                 this.fixedMessage +=
                     "<b>Date</b>: " +
                     this.task.hit.documents[this.taskIndex]["statement_date"];
-        }, 3000);
+        }
     }
 
     // Stampa la dimensione corrente
@@ -1123,8 +1139,13 @@ export class ChatWidgetComponent implements OnInit {
             return;
         }
         // non siamo ne all'url ne abbiamo finito se il msg non è valido ritorno, altrimenti procedo
-        if (!this.validMsg(message, -2, +2) && !this.ignoreMsg) {
-            this.typingAnimation(this.repeat);
+
+        if (
+            !this.validMsg(message, this.minValue, this.maxValue) &&
+            !this.ignoreMsg
+        ) {
+            let messageToSend = `Please type a integer number between ${this.minValue} and ${this.maxValue}`;
+            this.typingAnimation(messageToSend);
             return;
         } else {
             if (!this.ignoreMsg) {
@@ -1144,12 +1165,21 @@ export class ChatWidgetComponent implements OnInit {
             }
 
             setTimeout(() => {
+                if (
+                    this.fixedMessage == null ||
+                    this.fixedMessage == undefined ||
+                    this.fixedMessage == ""
+                )
+                    this.printStatement();
                 this.selectDimensionToGenerate(this.subTaskIndex);
                 this.subTaskIndex++;
             }, 3000);
         }
         // Non eseguo controlli sul primo msg, ma sugli altri si
         this.ignoreMsg = false;
+    }
+    private setMinValue(subTaskIndex: number) {
+        throw new Error("Method not implemented.");
     }
 
     // Fase di review
@@ -1275,6 +1305,7 @@ export class ChatWidgetComponent implements OnInit {
                 this.reviewPhase = false;
                 this.sendQuestionnaireData();
                 this.instructionP("0"); // TEST ROUND
+                this.fixedMessage == null;
                 return;
             } else if (message.trim().toLowerCase() === "modify") {
                 this.buttonsCM.nativeElement.style.display = "none";
@@ -1309,8 +1340,9 @@ export class ChatWidgetComponent implements OnInit {
                     this.reviewAnswersShown = false;
                     this.pickReview = false;
                 } else {
-                    if (!this.validMsg(message, -2, 2)) {
-                        this.typingAnimation(this.repeat);
+                    if (!this.validMsg(message, this.minValue, this.maxValue)) {
+                        let messageToSend = `Please type a integer number between ${this.minValue} and ${this.maxValue}`;
+                        this.typingAnimation(messageToSend);
                         return;
                     }
                     let dimSel = {};
@@ -1495,7 +1527,7 @@ export class ChatWidgetComponent implements OnInit {
                 this.printDimension(dimensionIndex);
                 this.generateCategoricalAnswers(dimensionIndex);
                 break;
-            case "magnitude":
+            case "magnitude_estimation":
                 this.printDimension(dimensionIndex);
                 this.generateMagnitudeAnswer(dimensionIndex);
                 break;
