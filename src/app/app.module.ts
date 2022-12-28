@@ -82,11 +82,11 @@ import { ErrorMessageComponent } from "./components/shared/error-message/error-m
 import { ChatWidgetComponent } from "./components/chatbot/chat-widget/chat-widget.component";
 import { ChatInputComponent } from "./components/chatbot/chat-input/chat-input.component";
 import { ChatAvatarComponent } from "./components/chatbot/chat-avatar/chat-avatar.component";
-import { ChatButtonsComponent } from "./components/chatbot/chat-buttons/chat-buttons.component";
 import { NgbModule } from "@ng-bootstrap/ng-bootstrap";
 import { ChatInputMagnitudeComponent } from "./components/chatbot/chat-input-magnitude/chat-input-magnitude.component";
 import { ChatInputIntervalComponent } from "./components/chatbot/chat-input-interval/chat-input-interval.component";
 import { ChatInputCategoricalComponent } from "./components/chatbot/chat-input-categorical/chat-input-categorical.component";
+import { ChatCommentModalComponent } from "./components/chatbot/chat-comment-modal/chat-comment-modalcomponent";
 
 function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
     return () =>
@@ -137,6 +137,7 @@ function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
         ChatInputMagnitudeComponent,
         ChatInputIntervalComponent,
         ChatInputCategoricalComponent,
+        ChatCommentModalComponent,
     ],
     imports: [
         BrowserModule,
@@ -183,6 +184,7 @@ function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
         AngularEditorModule,
         NgbModule,
     ],
+
     providers: [
         {
             provide: APP_INITIALIZER,

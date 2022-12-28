@@ -165,11 +165,7 @@
         ></chat-input-interval>
         <chat-input
             class="container"
-            *ngIf="
-                !showMagnitudeAnswer &&
-                !showIntervalAnswer &&
-                !showCategoricalAnswers
-            "
+            *ngIf="!showMagnitudeAnswer && !showIntervalAnswer"
             (send)="sendMessage($event)"
             [pholder]="placeholderInput"
             [disableInput]="disableInput"

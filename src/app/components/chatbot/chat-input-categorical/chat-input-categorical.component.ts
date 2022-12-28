@@ -21,7 +21,7 @@ export class ChatInputCategoricalComponent implements OnInit {
     ngOnInit() {}
 
     sendMessage() {
-        const message = this.value;
+        const message = { label: this.text, value: this.value };
 
         this.send.emit(message);
 

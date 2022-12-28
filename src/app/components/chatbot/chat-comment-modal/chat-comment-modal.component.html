@@ -1,0 +1,33 @@
+<div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Comment</h4>
+    <button
+        type="button"
+        class="btn-close"
+        aria-label="Close"
+        (click)="activeModal.close('')"
+    ></button>
+</div>
+<div class="modal-body">
+    <div class="row">
+        <div class="col-12">
+            <form [formGroup]="commentFG" #commentNgForm class="px-2">
+                <mat-form-field class="w-100">
+                    <textarea matInput formControlName="comment" rows="4">
+                    </textarea>
+                </mat-form-field>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal-footer justify-content-between">
+    <button
+        type="button"
+        class="btn btn-primary-outlined"
+        (click)="activeModal.close('')"
+    >
+        Close
+    </button>
+    <button type="button" class="btn btn-primary" (click)="addComment()">
+        Send
+    </button>
+</div>

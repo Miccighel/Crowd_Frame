@@ -14,19 +14,16 @@ import { S3Service } from "../../../services/aws/s3.service";
 import { DynamoDBService } from "../../../services/aws/dynamoDB.service";
 import { SectionService } from "../../../services/section.service";
 import { ConfigService } from "../../../services/config.service";
-import {
-    ScaleCategorical,
-    ScaleInterval,
-} from "src/app/models/skeleton/dimension";
+import { ScaleCategorical } from "src/app/models/skeleton/dimension";
 /* Models */
 import { Task } from "../../../models/skeleton/task";
 import {
-    CategoricalDimensionModel,
     CategoricalInfo,
-    EnDimensionType,
     IntervalDimensionInfo,
     MagnitudeDimensionInfo,
 } from "src/app/models/conversational/common.model";
+import { NgbModal } from "@ng-bootstrap/ng-bootstrap";
+import { ChatCommentModalComponent } from "../chat-comment-modal/chat-comment-modalcomponent";
 
 // Messaggi random
 const randomMessagesFirstPart = [
@@ -90,7 +87,6 @@ export class ChatWidgetComponent implements OnInit {
     subTaskIndex: number; // Tiene il conto della dimensione attuale
     currentQuestion: number;
     currentQuestionnaire: number;
-    commentIndex: number;
     charLimit: number;
     indexDimSel: number[];
     goldLow: number;
@@ -125,7 +121,6 @@ export class ChatWidgetComponent implements OnInit {
     awaitingAnswer: boolean;
     questionnairePhase: boolean;
     questionnaireReview: boolean;
-    //commentPhase: boolean
     action: string;
     disableInput = true;
     queryIndex: number[];
@@ -155,6 +150,8 @@ export class ChatWidgetComponent implements OnInit {
     magnitudeInfo: MagnitudeDimensionInfo = null;
     intervalInfo: IntervalDimensionInfo = null;
 
+    // Commento finale
+    userCommentOnTask = "";
     // Messaggi per l'utente
     instr = [
         "Hello! I'm Fakebot and I'll be helping you complete this task! You can find the <b>instructions</b> in the top left corner of this page, just press the button whenever you need. Nothing will break down, I promise!",
@@ -170,7 +167,8 @@ export class ChatWidgetComponent implements OnInit {
         ngxService: NgxUiLoaderService,
         S3Service: S3Service,
         sectionService: SectionService,
-        dynamoDBService: DynamoDBService
+        dynamoDBService: DynamoDBService,
+        private ngModal: NgbModal
     ) {
         this.changeDetector = changeDetector;
         this.configService = configService;
@@ -222,7 +220,6 @@ export class ChatWidgetComponent implements OnInit {
 
     async ngOnInit() {
         this.task = this.sectionService.task;
-
         this.typing.nativeElement.style.display = "none";
         this.buttonsYN.nativeElement.style.display = "none";
         // Inizializzo
@@ -244,8 +241,6 @@ export class ChatWidgetComponent implements OnInit {
         this.buttonsVisibility = 0;
         this.placeholderInput = "";
         this.tryNumber = 1;
-        //this.commentPhase = false
-        this.commentIndex = 3;
         this.charLimit = 500;
         this.dimsSelected = [];
         this.query = [];
@@ -363,6 +358,7 @@ export class ChatWidgetComponent implements OnInit {
         this.maxValue = 2;
         this.buttonsNum.nativeElement.style.display = "inline";
         this.showCategoricalAnswers = true;
+        this.disableInput = true;
     }
 
     private generateIntervalAnswer(dimensionIndex: number) {
@@ -522,10 +518,22 @@ export class ChatWidgetComponent implements OnInit {
                     this.task.dimensions[dimensionIndex].description;
         }
         if (!!this.answers[this.taskIndex][dimensionIndex]) {
-            out +=
-                "<br>You previously answered <b>" +
-                this.answers[this.taskIndex][dimensionIndex] +
-                "</b>.";
+            if (
+                this.task.dimensions[dimensionIndex].scale.type == "categorical"
+            ) {
+                out +=
+                    "<br>You previously answered <b>" +
+                    this.getCategoricalAnswerLabel(
+                        dimensionIndex,
+                        this.answers[this.taskIndex][dimensionIndex]
+                    ) +
+                    "</b>.";
+            } else {
+                out +=
+                    "<br>You previously answered <b>" +
+                    this.answers[this.taskIndex][dimensionIndex] +
+                    "</b>.";
+            }
         }
         this.typingAnimation(out);
     }
@@ -557,12 +565,11 @@ export class ChatWidgetComponent implements OnInit {
                             ". <b>" +
                             this.task.dimensions[i].name_pretty +
                             "</b>: " +
-                            this.answers[this.taskIndex][i] +
-                            " (" +
-                            this.task.dimensions[i][
-                                +this.answers[this.taskIndex][i]
-                            ].label +
-                            ")<br>";
+                            this.getCategoricalAnswerLabel(
+                                i,
+                                this.answers[this.taskIndex][i].toString()
+                            ) +
+                            "<br>";
                     }
                     break;
                 case "magnitude_estimation":
@@ -597,6 +604,12 @@ export class ChatWidgetComponent implements OnInit {
         }
 
         return recap;
+    }
+
+    private getCategoricalAnswerLabel(dimensionIndex, answerValue) {
+        return (
+            this.task.dimensions[dimensionIndex].scale as ScaleCategorical
+        ).mapping.find((el) => el.value == answerValue).label;
     }
 
     // Creo una stringa con tutti gli statement
@@ -840,36 +853,20 @@ export class ChatWidgetComponent implements OnInit {
     // Core
     public async sendMessage({ message }) {
         // Se il messaggio è vuoto, ignoro
-        if (message.trim() === "") {
+        if (!this.showCategoricalAnswers && message.trim() === "") {
             return;
         }
         // Mostro il messaggio in chat
-        this.addMessageClient(this.client, message, "sent");
+        if (this.showCategoricalAnswers) {
+            this.addMessageClient(this.client, message.label, "sent");
+        } else {
+            this.addMessageClient(this.client, message, "sent");
+        }
+
+        // Se il messaggio è da ignorare, lo ignoro
         if (this.ignoreMsg) {
             return;
-        } // Se il messaggio è da ignorare, lo ignoro
-
-        // COMMENTO FINALE
-        // if (this.commentPhase){
-        //     if (this.commentIndex==0 || this.charLimit<=0){
-        //         this.commentPhase=false
-        //         this.typingAnimation("Thank you for sharing your thoughts! See you next time!")
-        //         return
-        //     }
-        //     this.commentIndex-=1
-        //     this.charLimit-=message.length
-        //     let data = {}
-        //     let actionInfo = {
-        //         try: this.task.tryCurrent,
-        //         sequence: this.task.sequenceNumber,
-        //         element: "comment"
-        //     };
-        //     this.commentForm.value = message
-        //     data["info"] = actionInfo
-        //     data["comment"] = this.commentForm.value
-        //     //if (this.sendData) await this.dynamoDBService.insertData(this.configService.environment,this.worker.identifier,this.task.unitId, this.tryNumber,this.task.sequenceNumber,data)
-        //     this.task.sequenceNumber+=1
-        // }
+        }
 
         // END TASK PHASE
         if (this.endTaskPhase) {
@@ -887,6 +884,9 @@ export class ChatWidgetComponent implements OnInit {
             this.instructionP(message);
         }
 
+        if (this.showCategoricalAnswers) {
+            message = this.getCategoricalAnswerValue(message);
+        }
         //TASK PHASE
         if (this.taskPhase) {
             this.taskP(message);
@@ -895,6 +895,13 @@ export class ChatWidgetComponent implements OnInit {
         if (this.reviewPhase) {
             this.reviewP(message);
         }
+    }
+    private getCategoricalAnswerValue(message) {
+        const mappedValue = this.categoricalInfo.find(
+            (el) => el.label.toLowerCase() == message.label.toLowerCase()
+        );
+        if (!!mappedValue) return mappedValue.value;
+        else return null;
     }
 
     // Fase di fine task
@@ -1069,6 +1076,7 @@ export class ChatWidgetComponent implements OnInit {
                             i.toString()
                         ).style.backgroundColor = "#3f51b5";
                     }
+                    this.cleanUserInput();
                     this.typing.nativeElement.style.display = "none";
                     this.buttonsYN.nativeElement.style.display = "none";
                     this.ignoreMsg = true;
@@ -1078,19 +1086,24 @@ export class ChatWidgetComponent implements OnInit {
                     this.reviewAnswersShown = false;
                     this.pickReview = false;
                     this.statementJump = false;
-                    this.waitForUrl = false;
                     this.awaitingAnswer = false;
                     this.statementProvided = false;
                     this.buttonsVisibility = 0;
                     this.taskP("0");
                     return;
                 }
-                this.buttonsYN.nativeElement.style.display = "none";
-                this.buttonsVisibility = 0;
-                this.typingAnimation(this.endOfTaskMessage[0]);
-                this.typingAnimation("You may now close the page!");
-                this.endTaskPhase = false;
-                //this.commentPhase = true
+
+                const modalRef = this.ngModal.open(ChatCommentModalComponent, {
+                    size: "md",
+                });
+                modalRef.result.then((comment) => {
+                    this.userCommentOnTask = comment;
+                    this.buttonsYN.nativeElement.style.display = "none";
+                    this.buttonsVisibility = 0;
+                    this.typingAnimation(this.endOfTaskMessage[0]);
+                    this.typingAnimation("You may now close the page!");
+                    this.endTaskPhase = false;
+                });
             } else {
                 return;
             }
@@ -1363,7 +1376,12 @@ export class ChatWidgetComponent implements OnInit {
                     this.pickReview = false;
                 } else {
                     if (!this.validMsg(message, this.minValue, this.maxValue)) {
-                        let messageToSend = `Please type a integer number between 1 and ${this.task.dimensions.length}`;
+                        let messageToSend = "";
+                        if (!this.showMagnitudeAnswer) {
+                            messageToSend = `Please type a integer number between ${this.minValue} and ${this.maxValue}`;
+                        } else {
+                            messageToSend = `Please type a integer number higher than 0 `;
+                        }
                         this.typingAnimation(messageToSend);
                         return;
                     }
