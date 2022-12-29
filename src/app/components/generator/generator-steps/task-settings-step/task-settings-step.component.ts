@@ -939,6 +939,7 @@ export class TaskSettingsStepComponent implements OnInit {
         if (!taskSettingsJSON.setCountdownTime) {
             taskSettingsJSON.countdown_time = false
             taskSettingsJSON.additional_times = false
+            taskSettingsJSON.countdown_behavior = false
             taskSettingsJSON.countdown_modality = false
             taskSettingsJSON.countdown_attribute = false
             taskSettingsJSON.countdown_attribute_values = []

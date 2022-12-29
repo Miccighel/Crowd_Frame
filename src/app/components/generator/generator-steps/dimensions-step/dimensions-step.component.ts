@@ -503,7 +503,9 @@ export class DimensionsStepComponent implements OnInit {
 
         dimensionsJSON.forEach((dimension, dimensionIndex) => {
 
+            if (dimension.name_pretty == '') dimension.name_pretty = false
             if (dimension.description == '') dimension.description = false
+            if (dimension.example == '') dimension.example = false
 
             dimension.gold = !!dimension.gold;
 

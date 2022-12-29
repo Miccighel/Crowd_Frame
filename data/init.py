@@ -1578,6 +1578,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 "name": "sample-dimension",
                 "name_pretty": "Sample Dimension",
                 "description": "Lorem ipsum dolor sit amet",
+                "example": False,
                 "gold": False,
                 "pairwise": False,
                 "url": False,
@@ -1681,12 +1682,14 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 "attributes": [
                     {
                         "name": "id",
+                        "name_pretty": False,
                         "show": False,
                         "annotate": False,
                         "required": False
                     },
                     {
                         "name": "text",
+                        "name_pretty": False,
                         "show": True,
                         "required": False,
                         "annotate": False
@@ -1694,6 +1697,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 ],
                 "annotator": False,
                 "countdown_time": False,
+                "countdown_behavior": False,
                 "additional_times": False,
                 "countdown_modality": False,
                 "countdown_attribute": False,
