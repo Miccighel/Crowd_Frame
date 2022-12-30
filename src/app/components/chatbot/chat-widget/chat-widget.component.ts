@@ -1179,7 +1179,12 @@ export class ChatWidgetComponent implements OnInit {
             !this.validMsg(message, this.minValue, this.maxValue) &&
             !this.ignoreMsg
         ) {
-            let messageToSend = `Please type a integer number between ${this.minValue} and ${this.maxValue}`;
+            let messageToSend = "";
+            if (!this.showMagnitudeAnswer) {
+                messageToSend = `Please type a integer number between ${this.minValue} and ${this.maxValue}`;
+            } else {
+                messageToSend = `Please type a integer number higher than ${this.minValue} `;
+            }
             this.typingAnimation(messageToSend);
             return;
         } else {
@@ -1458,7 +1463,8 @@ export class ChatWidgetComponent implements OnInit {
                 this.typingAnimation(
                     "OK! Would you like to jump to a specific statement?"
                 );
-                //this.buttonsYN.nativeElement.style.display = "inline-block"
+                this.cleanUserInput();
+                this.disableInput = false;
                 this.buttonsVisibility = 1;
                 // Printa gli statement, new funzione
                 this.taskPhase = false;

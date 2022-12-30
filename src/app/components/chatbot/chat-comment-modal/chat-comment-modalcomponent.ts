@@ -24,8 +24,6 @@ export class ChatCommentModalComponent implements OnInit {
 
     public addComment() {
         this.comment = this.commentFG.controls.comment.value;
-        console.log(this.comment);
-
         this.activeModal.close(this.comment);
     }
 }
