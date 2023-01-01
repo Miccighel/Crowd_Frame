@@ -28,3 +28,8 @@ export interface IntervalDimensionInfo {
     value?: number;
     instructions?: string;
 }
+
+export interface McqInfo {
+    label: string;
+    value?: string;
+}

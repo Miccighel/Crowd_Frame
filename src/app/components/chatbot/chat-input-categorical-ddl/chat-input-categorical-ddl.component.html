@@ -1,0 +1,31 @@
+<div class="row activeInput py-1">
+    <div class="col-10 ps-1">
+        <mat-form-field appearance="none" class="categorical-ddl">
+            <mat-select [(value)]="selected" [disabled]="disableInput">
+                <mat-option *ngFor="let option of options" [value]="option">{{
+                    option.label
+                }}</mat-option>
+            </mat-select>
+        </mat-form-field>
+    </div>
+
+    <div class="col-2">
+        <button
+            mat-mini-fab
+            type="submit"
+            class="chat-input-submit"
+            [disabled]="disableInput"
+            color="#ffffff"
+            [ngClass]="disableInput ? 'disabledInput' : 'activeInput'"
+            (click)="onSubmit()"
+        >
+            <!-- {{ buttonText }} -->
+            <mat-icon
+                aria-hidden="false"
+                aria-label="Send message"
+                fontIcon="send"
+                >send</mat-icon
+            >
+        </button>
+    </div>
+</div>

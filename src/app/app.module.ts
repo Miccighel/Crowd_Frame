@@ -87,6 +87,7 @@ import { ChatInputMagnitudeComponent } from "./components/chatbot/chat-input-mag
 import { ChatInputIntervalComponent } from "./components/chatbot/chat-input-interval/chat-input-interval.component";
 import { ChatInputCategoricalComponent } from "./components/chatbot/chat-input-categorical/chat-input-categorical.component";
 import { ChatCommentModalComponent } from "./components/chatbot/chat-comment-modal/chat-comment-modalcomponent";
+import { ChatInputCategoricalDDLComponent } from "./components/chatbot/chat-input-categorical-ddl/chat-input-categorical-ddl.component";
 
 function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
     return () =>
@@ -137,6 +138,7 @@ function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
         ChatInputMagnitudeComponent,
         ChatInputIntervalComponent,
         ChatInputCategoricalComponent,
+        ChatInputCategoricalDDLComponent,
         ChatCommentModalComponent,
     ],
     imports: [
