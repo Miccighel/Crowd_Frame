@@ -228,9 +228,12 @@ export class SkeletonComponent implements OnInit {
         let workerACLRecord = await this.dynamoDBService.getACLRecordIpAddress(this.configService.environment, this.worker.getIP())
         let workerIdGenerated = String(false)
         if (workerACLRecord["Items"].length > 0) {
-            let timeExpirationNearest = await this.retrieveMostRecentExpirationDate()
-            this.worker.setParameter('time_expiration_nearest', timeExpirationNearest)
             let aclEntry = workerACLRecord["Items"][0]
+            let timeExpirationNearest = await this.retrieveMostRecentExpirationDate()
+            if (timeExpirationNearest)
+                this.worker.setParameter('time_expiration_nearest', timeExpirationNearest)
+            else
+                this.worker.setParameter('time_expiration_nearest', String(false))
             if (((/true/i).test(aclEntry['paid']) == true)) {
                 this.sectionService.taskAlreadyCompleted = true
                 Object.entries(aclEntry).forEach(
