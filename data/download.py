@@ -12,6 +12,7 @@ from json import JSONDecodeError
 import time as time_mod
 import asyncio
 import aiohttp
+import numpy
 from aiohttp import ClientSession, ClientConnectorError, ClientResponseError, ClientOSError, ServerDisconnectedError, TooManyRedirects, ClientPayloadError, ClientConnectorCertificateError
 import tqdm
 import ipinfo
@@ -160,7 +161,7 @@ def camel_to_snake(name):
 
 
 def find_date_string(date, seconds=False):
-    if type(date) == int or type(date) == float:
+    if type(date) == int or type(date) == float or type(date) == numpy.float64 or type(date) == numpy.float32:
         if seconds:
             date_raw = str(datetime.fromtimestamp(date))
         else:
