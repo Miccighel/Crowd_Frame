@@ -2138,7 +2138,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         if os.path.basename(es_script_path) == 'main.js':
            es_script_paths[2] = es_script_path
     for es_script_path in es_script_paths_temp:
-        if os.path.basename(es_script_path) != 'polyfills.js' and os.path.basename(es_script_path) != 'runtime.js' and os.path.basename(es_script_path) != 'main.js':
+        if os.path.basename(es_script_path) is not None and os.path.basename(es_script_path) != 'polyfills.js' and os.path.basename(es_script_path) != 'runtime.js' and os.path.basename(es_script_path) != 'main.js':
             es_script_paths.append(es_script_path)
     with open(script_merged_file, 'a') as outfile:
         for script_current_file in es_script_paths:
