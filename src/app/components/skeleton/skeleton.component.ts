@@ -229,10 +229,7 @@ export class SkeletonComponent implements OnInit {
         let workerIdGenerated = String(false)
         if (workerACLRecord["Items"].length > 0) {
             let timeExpirationNearest = await this.retrieveMostRecentExpirationDate()
-            if (timeExpirationNearest)
-                this.worker.setParameter('time_expiration_nearest', timeExpirationNearest)
-            else
-                this.worker.setParameter('time_expiration_nearest', String(false))
+            this.worker.setParameter('time_expiration_nearest', timeExpirationNearest)
             let aclEntry = workerACLRecord["Items"][0]
             if (((/true/i).test(aclEntry['paid']) == true)) {
                 this.sectionService.taskAlreadyCompleted = true
@@ -302,7 +299,7 @@ export class SkeletonComponent implements OnInit {
             if (timeExpirationNearest)
                 this.worker.setParameter('time_expiration_nearest', timeExpirationNearest)
             else
-                this.worker.setParameter('time_expiration_nearest', String(false))
+                this.worker.setParameter('time_expiration_nearest', timeArrival.toUTCString())
             this.worker.setParameter('time_expired', String(false))
             this.worker.setParameter('ip_address', this.worker.getIP()['ip'])
             this.worker.setParameter('ip_source', this.worker.getIP()['source'])
