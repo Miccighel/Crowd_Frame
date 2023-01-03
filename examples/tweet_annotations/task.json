@@ -36,12 +36,12 @@
 		]
 	},
 	"countdown_time": false,
-	"countdown_behavior": "",
+	"countdown_behavior": false,
+    "additional_times": false,
 	"countdown_modality": false,
 	"countdown_attribute": false,
 	"countdown_attribute_values": [],
 	"countdown_position_values": [],
-	"messages": [],
 	"logger": false,
 	"logger_option": {
 		"button": {
@@ -88,5 +88,7 @@
 		}
 	},
 	"server_endpoint": "",
-	"additional_times": false
+    "messages": [
+		"A network error may have been happened; try again to access the task after a few minutes. Otherwise, try to access the task from a different access point."
+	]
 }

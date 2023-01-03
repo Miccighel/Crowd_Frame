@@ -70,6 +70,7 @@
 	],
 	"annotator": false,
 	"countdown_time": false,
+    "countdown_behavior": false,
 	"additional_times": false,
 	"countdown_modality": false,
 	"countdown_attribute": false,
@@ -120,7 +121,7 @@
 			"resize": false
 		}
 	},
-	"server_endpoint": "https://611lvinny2.execute-api.us-east-2.amazonaws.com/log",
+	"server_endpoint": "",
 	"messages": [
 		"A network error may have been happened; try again to access the task after a few minutes. Otherwise, try to access the task from a different access point."
 	]
