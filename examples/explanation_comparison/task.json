@@ -1,7 +1,7 @@
 {
 	"modality": "pointwise",
 	"allowed_tries": 10,
-	"time_assessment": 10000,
+	"time_assessment": 2,
 	"time_check_amount": 2,
 	"attributes": [
 		{

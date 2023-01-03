@@ -56,6 +56,22 @@
 
             <mat-divider [inset]="true"></mat-divider>
 
+            <table class="width-100 mt-8px">
+                <tr>
+                    <td class="p-0">
+                        <mat-form-field matLine class="width-100" appearance="fill">
+                            <mat-label>Time Assessment</mat-label>
+                            <input matInput type="number" min="0" formControlName="time_assessment">
+                            <mat-error>
+                                <app-error-message [formField]="formStep.get('time_assessment')"></app-error-message>
+                            </mat-error>
+                        </mat-form-field>
+                    </td>
+                </tr>
+            </table>
+
+            <mat-divider [inset]="true"></mat-divider>
+
             <!-- Logging -->
             <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="logger" (change)="updateLogger()">
                 Logger

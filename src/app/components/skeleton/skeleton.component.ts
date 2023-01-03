@@ -295,14 +295,15 @@ export class SkeletonComponent implements OnInit {
             this.worker.setParameter('try_current', String(this.task.tryCurrent))
             this.worker.setParameter('try_left', String(this.task.settings.allowed_tries))
             let timeArrival = new Date()
+            let timeExpiration = new Date(timeArrival.getTime());
+            timeExpiration.setTime(timeExpiration.getTime() + (this.task.settings.time_assessment * 60 * 60 * 1000));
             this.worker.setParameter('time_arrival', timeArrival.toUTCString())
-            timeArrival.setTime(timeArrival.getTime() + (this.task.settings.time_assessment * 60 * 60 * 1000));
-            this.worker.setParameter('time_expiration', timeArrival.toUTCString())
+            this.worker.setParameter('time_expiration', timeExpiration.toUTCString())
             let timeExpirationNearest = await this.retrieveMostRecentExpirationDate()
             if (timeExpirationNearest)
                 this.worker.setParameter('time_expiration_nearest', timeExpirationNearest)
             else
-                this.worker.setParameter('time_expiration_nearest', timeArrival.toUTCString())
+                this.worker.setParameter('time_expiration_nearest', timeExpiration.toUTCString())
             this.worker.setParameter('time_expired', String(false))
             this.worker.setParameter('ip_address', this.worker.getIP()['ip'])
             this.worker.setParameter('ip_source', this.worker.getIP()['source'])
@@ -1024,6 +1025,7 @@ export class SkeletonComponent implements OnInit {
             }
             /* Lastly, we update the ACL */
             if (!(this.worker.identifier == null)) {
+                console.log(this.worker)
                 this.worker.setParameter('time_completion', new Date().toUTCString())
                 if (this.sectionService.taskSuccessful) {
                     this.worker.setParameter('in_progress', String(false))
