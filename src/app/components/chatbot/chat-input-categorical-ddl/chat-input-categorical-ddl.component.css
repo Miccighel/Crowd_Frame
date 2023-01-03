@@ -43,6 +43,10 @@
     margin: 2px;
 }
 
+.chat-input-submit {
+    float: right;
+}
+
 .chat-input-submit mat-icon.activeInput {
     color: #3f51b5;
 }

@@ -44,7 +44,7 @@ input:focus-visible {
     opacity: 1; /* Firefox */
 }
 
-.chat-input-submit {
+.chat-input-button {
     margin: 14px 12px;
     float: right;
     color: inherit;
@@ -53,11 +53,11 @@ input:focus-visible {
     outline: none;
 }
 
-.chat-input-submit mat-icon.activeInput {
+.chat-input-button mat-icon.activeInput {
     color: #3f51b5;
 }
 
-.chat-input-submit button mat-icon.disabledInput {
+.chat-input-button button mat-icon.disabledInput {
     color: #000;
 }
 

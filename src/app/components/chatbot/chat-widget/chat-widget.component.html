@@ -149,7 +149,7 @@
             </div>
         </div>
 
-        <!-- <chat-input-magnitude
+        <chat-input-magnitude
             class="container"
             *ngIf="showMagnitudeAnswer"
             [magnitudeInfo]="magnitudeInfo"
@@ -162,24 +162,25 @@
             [intervalInfo]="intervalInfo"
             (send)="sendMessage($event)"
             [disableInput]="disableInput"
-        ></chat-input-interval> -->
-        <!-- <chat-input
-            class="container"
-            *ngIf="!showMagnitudeAnswer && !showIntervalAnswer"
-            (send)="sendMessage($event)"
-            [pholder]="placeholderInput"
-            [disableInput]="disableInput"
-        >
-        </chat-input> -->
+        ></chat-input-interval>
 
         <chat-input-categorical-ddl
-            *ngIf="showInputDDL"
             class="container"
+            *ngIf="showInputDDL"
             [options]="mcqAnswersInfo"
             [disableInput]="disableInput"
             (send)="buttonInput($event)"
         >
         </chat-input-categorical-ddl>
+
+        <chat-input
+            class="container"
+            *ngIf="!showMagnitudeAnswer && !showIntervalAnswer && !showInputDDL"
+            (send)="sendMessage($event)"
+            [pholder]="placeholderInput"
+            [disableInput]="disableInput"
+        >
+        </chat-input>
     </div>
 
     <div class="search-engine">

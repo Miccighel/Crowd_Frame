@@ -62,7 +62,7 @@ const getRandomMessage = () =>
 })
 export class ChatWidgetComponent implements OnInit {
     @ViewChild("bottom") bottom!: ElementRef;
-    @ViewChild("buttonsNum", { static: true }) buttonsNum!: ElementRef;
+
     @ViewChild("fixedMsg", { static: true }) fixedMsg!: ElementRef;
     @ViewChild("typing", { static: true }) typing!: ElementRef;
     @ViewChild("inputBox", { static: true }) inputBox!: ElementRef;
@@ -128,7 +128,7 @@ export class ChatWidgetComponent implements OnInit {
     fixedMessage: string; // Messaggio sempre visibile in alto nel chatbot
     answers: any[]; // Memorizzo le risposte di un singolo statement
     answersURL: string[]; // Memorizzo gli url
-    numberBtn: string[]; // Utilizzato per generare i bottoni numerici
+
     questionnaireAnswers: any[];
     queue: number;
     buttonsVisibility: number; //0: nulla, 1: YS, 2: CM, 3: Num
@@ -617,6 +617,12 @@ export class ChatWidgetComponent implements OnInit {
         ).mapping.find((el) => el.value == answerValue).label;
     }
 
+    // private getStandardQuestionnaireAnswersLabel(questionnaireIndex, questionIndex) {
+    //     return (
+    //         this.task.questionnaires[questionnaireIndex]
+    //     ).mapping.find((el) => el.value == answerValue).label;
+    // }
+
     // Creo una stringa con tutti gli statement
     private createStatementString() {
         let statements = "";
@@ -736,9 +742,9 @@ export class ChatWidgetComponent implements OnInit {
                         ". Question: <b>" +
                         questionnaire.questions[i].text +
                         "</b><br>Answer:<b> " +
-                        questionnaire.questions[i].answers[
-                            this.questionnaireAnswers[i] - 1
-                        ] +
+                        this.questionnaireAnswers[i].label +
+                        // questionnaire.questions[i].answers[
+                        //     this.questionnaireAnswers[i] - 1]
                         "</b><br><br>";
                 } else if (questionnaire.type == "crt") {
                     recap +=
@@ -931,12 +937,7 @@ export class ChatWidgetComponent implements OnInit {
                         "Which statement would you like to jump to?"
                 );
                 this.showYNbuttons = false;
-
-                this.numberBtn = this.generateArrayNum(
-                    this.task.documents.length
-                );
-
-                this.buttonsVisibility = 3;
+                this.buttonsVisibility = null;
                 this.statementJump = true;
             } else if (message.trim().toLowerCase() === "no") {
                 this.action = "Next";
@@ -1131,7 +1132,7 @@ export class ChatWidgetComponent implements OnInit {
         } else { return }
         this.typingAnimation(startMsg)
         this.buttonsYN.nativeElement.style.display = "none" // Non mostro più i messaggi y/n
-        this.buttonsVisibility=0*/
+       */
         this.taskPhase = true; // Passiamo alla task phase
         this.instructionPhase = false; // Finita la instruction phase
         this.ignoreMsg = true;
@@ -1237,24 +1238,13 @@ export class ChatWidgetComponent implements OnInit {
                         this.task.questionnaires[this.currentQuestionnaire]
                             .type == "standard"
                     ) {
-                        if (
-                            !this.validMsg(
-                                message,
-                                1,
-                                this.task.questionnaires[
-                                    this.currentQuestionnaire
-                                ].questions[this.currentQuestion].answers.length
-                            )
-                        ) {
-                            this.typingAnimation(
-                                "Please type a valid integer number"
-                            );
-                            return;
-                        }
-                    }
-                    if (
+                        this.questionnaireAnswers[this.currentQuestion] =
+                            message;
+                    } else if (
                         this.task.questionnaires[this.currentQuestionnaire]
-                            .type == "crt"
+                            .type == "crt" ||
+                        this.task.questionnaires[this.currentQuestionnaire]
+                            .type == "likert"
                     ) {
                         if (!this.validMsg(message, 1, 100)) {
                             this.typingAnimation(
@@ -1269,50 +1259,55 @@ export class ChatWidgetComponent implements OnInit {
                     this.pickReview = false;
                     this.awaitingAnswer = false;
                 } else {
-                    if (!this.validMsg(message, 1, 10)) {
-                        this.typingAnimation(
-                            "Please type a valid integer number"
-                        );
-                        return;
-                    }
-                    this.currentQuestion = +message - 1;
-                    if (+message - 1 < this.questionnaireAnswers.length) {
-                        this.disableInput = true;
-                        let previouseQuestionPosition = this.currentQuestion;
+                    this.currentQuestion = +message;
+                    this.disableInput = true;
 
-                        // mi calcolo il questionario di appartenenza
-                        this.currentQuestionnaire =
-                            this.currentQuestion %
-                            this.questionnaireAnswers.length;
-                        // ricavo l'indice della domanda nel questionario
+                    let previousQuestionIndex = this.currentQuestion - 1;
+                    // mi calcolo il questionario di appartenenza e l'indice della domanda di riferimento
+                    let questionnaireToCheck = 0;
+                    while (
+                        this.currentQuestion >
+                        this.task.questionnaires[questionnaireToCheck].questions
+                            .length
+                    ) {
                         this.currentQuestion =
-                            this.currentQuestion %
-                            this.task.questionnaires[this.currentQuestionnaire]
+                            this.currentQuestion -
+                            this.task.questionnaires[questionnaireToCheck]
                                 .questions.length;
-
-                        this.printQuestion();
-                        this.currentQuestion = previouseQuestionPosition;
-                        this.disableInput = false;
-                    } else {
-                        this.currentQuestionnaire =
-                            +message - this.questionnaireAnswers.length;
-
-                        this.typingAnimation(
-                            this.task.questionnaires[this.currentQuestionnaire]
-                                .questions[0].text
-                        );
+                        if (this.currentQuestion > 0) questionnaireToCheck++;
                     }
+
+                    this.currentQuestionnaire = questionnaireToCheck;
+                    this.currentQuestion--;
+
+                    this.printQuestion();
                     if (
                         this.task.questionnaires[this.currentQuestionnaire]
                             .type == "standard"
                     ) {
-                        this.showInputDDL = true;
                         this.typingAnimation(this.createQuestionnaireAnswers());
                         this.generateQuestionnaireAnswers();
+                        this.currentQuestion = previousQuestionIndex;
+                        this.disableInput = false;
+                        this.showInputDDL = true;
+                        this.buttonsVisibility = null;
+                        this.awaitingAnswer = true;
+                        return;
+                    } else if (
+                        this.task.questionnaires[this.currentQuestionnaire]
+                            .type == "crt" ||
+                        this.task.questionnaires[this.currentQuestionnaire]
+                            .type == "likert"
+                    ) {
+                        this.currentQuestion = previousQuestionIndex;
+                        this.showMagnitudeAnswer = true;
+                        this.showInputDDL = false;
+                        this.awaitingAnswer = true;
+                        return;
                     }
+
                     this.awaitingAnswer = true;
                     this.showCMbuttons = false;
-
                     return;
                 }
             }
@@ -1331,20 +1326,19 @@ export class ChatWidgetComponent implements OnInit {
                 return;
             }
             if (message.trim().toLowerCase() === "confirm") {
+                this.showInputDDL = false;
+                this.showCategoricalAnswers = false;
                 this.showCMbuttons = false;
 
                 // Passo al prossimo phase, resetto
                 this.typingAnimation("Good, let's begin the real task!");
-                // TEST ROUND this.typingAnimation(this.instr[1])
+
                 this.instructionPhase = true;
                 this.awaitingAnswer = false;
                 this.questionnaireReview = false;
                 this.disableInput = false;
-
                 this.reviewAnswersShown = false;
-                this.buttonsNum.nativeElement.style.display = "none";
 
-                // TEST ROUND this.buttonsVisibility=1
                 this.pickReview = false;
                 this.reviewPhase = false;
                 this.sendQuestionnaireData();
@@ -1354,11 +1348,7 @@ export class ChatWidgetComponent implements OnInit {
             } else if (message.trim().toLowerCase() === "modify") {
                 this.showCMbuttons = false;
 
-                this.numberBtn = this.generateArrayNum(
-                    this.task.documents.length
-                );
-
-                this.buttonsVisibility = 3;
+                this.buttonsVisibility = null;
                 this.typingAnimation("Which one would you like to modify?");
                 this.pickReview = true;
                 return;
@@ -1414,23 +1404,22 @@ export class ChatWidgetComponent implements OnInit {
 
                     return;
                 }
-                this.buttonsNum.nativeElement.style.display = "none";
 
                 //Se la dimensione ha URL enabled & il subTaskIndex è l'ultimo della dimensione
-                if (
-                    !!this.task.dimensions[+message - 2] &&
-                    this.task.dimensions[+message - 2].url &&
-                    message.trim() ==
-                        this.getNumberOfOptions(+message - 2).toString()
-                ) {
-                    this.waitForUrl = true;
-                    this.typingAnimation("Sure, please enter the correct url");
-                } else {
-                    // Salvo l'input e mostro la dimensione richiesta
-                    this.subTaskIndex = +message - 1;
-                    this.printDimension(this.subTaskIndex);
-                    this.selectDimensionToGenerate(this.subTaskIndex);
-                }
+                // if (
+                //     // !!this.task.dimensions[+message - 2] &&
+                //     // this.task.dimensions[+message - 2].url &&
+                //     // message.trim() ==
+                //     //     this.getNumberOfOptions(+message - 2).toString()
+                //     this.
+                // ) {
+                //     this.waitForUrl = true;
+                //     this.typingAnimation("Sure, please enter the correct url");
+                // } else {
+                // Salvo l'input e mostro la dimensione richiesta
+                this.subTaskIndex = +message - 1;
+                this.printDimension(this.subTaskIndex);
+                this.selectDimensionToGenerate(this.subTaskIndex);
                 this.dimensionReviewPrinted = true;
                 return;
             }
@@ -1447,6 +1436,8 @@ export class ChatWidgetComponent implements OnInit {
             return;
         }
         if (message.trim().toLowerCase() === "confirm") {
+            this.showInputDDL = false;
+            this.showCategoricalAnswers = false;
             this.showCMbuttons = false;
             document.getElementById(
                 this.taskIndex.toString()
@@ -1461,9 +1452,7 @@ export class ChatWidgetComponent implements OnInit {
                 this.endTaskPhase = true;
                 this.reviewPhase = false;
                 this.reviewAnswersShown = false;
-                this.numberBtn = this.generateArrayNum(
-                    this.task.documents.length
-                );
+
                 this.typingAnimation(
                     "OK! Would you like to jump to a specific statement?"
                 );
@@ -1596,22 +1585,15 @@ export class ChatWidgetComponent implements OnInit {
         this.statementProvided = true;
     }
 
-    private getNumberOfOptions(dimensionIndex): number {
-        let numberOfOptions = 0;
-        if (this.task.dimensions[dimensionIndex]) numberOfOptions++;
-        if (!!this.task.dimensions[dimensionIndex].url) numberOfOptions++;
-        return numberOfOptions;
-    }
-
     private questionnaireP(message) {
         if (
             this.task.questionnaires[this.currentQuestionnaire].type ==
             "standard"
         ) {
+            this.showMagnitudeAnswer = false;
+
             if (this.awaitingAnswer) {
                 this.disableInput = false;
-                //TODO: Ripulire la dll
-
                 this.questionnaireAnswers[this.currentQuestion] = message;
                 this.randomMessage();
                 this.currentQuestion += 1;
@@ -1641,13 +1623,12 @@ export class ChatWidgetComponent implements OnInit {
                 this.currentQuestionnaire += 1;
             } else {
                 this.printQuestion();
-                this.disableInput = false;
 
                 this.typingAnimation(this.createQuestionnaireAnswers());
                 this.generateQuestionnaireAnswers();
+                this.disableInput = false;
                 this.showInputDDL = true;
-
-                this.buttonsVisibility = 3;
+                this.buttonsVisibility = null;
                 this.awaitingAnswer = true;
                 return;
             }
@@ -1657,6 +1638,8 @@ export class ChatWidgetComponent implements OnInit {
             this.task.questionnaires[this.currentQuestionnaire].type == "crt" ||
             this.task.questionnaires[this.currentQuestionnaire].type == "likert"
         ) {
+            this.showMagnitudeAnswer = true;
+            this.showInputDDL = false;
             if (this.awaitingAnswer) {
                 if (!this.validMsg(message, 1, 100)) {
                     this.typingAnimation(
@@ -1664,7 +1647,6 @@ export class ChatWidgetComponent implements OnInit {
                     );
                     return;
                 }
-                this.buttonsNum.nativeElement.style.display = "none";
 
                 this.questionnaireAnswers[this.currentQuestion] = message;
                 this.currentQuestion += 1;
@@ -1691,8 +1673,11 @@ export class ChatWidgetComponent implements OnInit {
                 if (this.checkIfQuestionnaireIsFinished()) return;
             }
             this.typingAnimation(
-                this.task.questionnaires[this.currentQuestionnaire].questions[0]
-                    .text
+                this.task.questionnaires[this.currentQuestionnaire].questions[
+                    this.currentQuestion %
+                        this.task.questionnaires[this.currentQuestionnaire]
+                            .questions.length
+                ].text
             );
             this.timestampsStart[this.currentQuestionnaire].push(
                 Date.now() / 1000
