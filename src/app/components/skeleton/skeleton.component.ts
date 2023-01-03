@@ -1025,7 +1025,6 @@ export class SkeletonComponent implements OnInit {
             }
             /* Lastly, we update the ACL */
             if (!(this.worker.identifier == null)) {
-                console.log(this.worker)
                 this.worker.setParameter('time_completion', new Date().toUTCString())
                 if (this.sectionService.taskSuccessful) {
                     this.worker.setParameter('in_progress', String(false))
