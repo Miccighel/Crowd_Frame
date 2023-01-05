@@ -181,7 +181,7 @@
                             *ngIf="
                             ((this.questionnaire.index < this.task.questionnaireAmountStart - 1) && this.task.documentsAmount==0) ||
                             ((this.questionnaire.index <= this.task.questionnaireAmountStart - 1) && this.task.documentsAmount>0) ||
-                            (this.questionnaire.index>=this.task.questionnaireAmountStart-1 + this.task.documentsAmount && this.questionnaire.index < this.task.getElementsNumber() && this.task.questionnaireAmountEnd>0)"
+                            (this.questionnaire.index>=this.task.questionnaireAmountStart-1 && this.questionnaire.index < this.task.questionnaireAmount-1 && this.task.questionnaireAmountEnd>0)"
                             [disabled]="!questionnaireForm.valid || this.sectionService.taskCompleted"
                             (click)="handleQuestionnaireCompletion('Next')">
                         Next
@@ -189,7 +189,7 @@
                     <button mat-flat-button color="primary" matStepperNext
                             *ngIf="
                             ((this.questionnaire.index >= this.task.questionnaireAmountStart-1) && this.task.documentsAmount==0) ||
-                            (this.questionnaire.index>=this.task.getElementsNumber() && this.task.questionnaireAmountEnd>0)"
+                            (this.questionnaire.index>=this.task.questionnaireAmount-1 && this.task.questionnaireAmountEnd>0)"
                             [disabled]="!questionnaireForm.valid || this.sectionService.taskCompleted"
                             (click)="handleQuestionnaireCompletion('Finish')">
                         Finish
