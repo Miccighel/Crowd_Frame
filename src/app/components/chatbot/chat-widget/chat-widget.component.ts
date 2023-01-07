@@ -360,11 +360,23 @@ export class ChatWidgetComponent implements OnInit {
             description: el.description,
             value: el.value,
         }));
-        this.minValue = -2;
-        this.maxValue = 2;
+        this.minValue = this.getCategoricalMinInfo(this.categoricalInfo);
+        this.maxValue = this.getCategoricalMaxInfo(this.categoricalInfo);
 
         this.showCategoricalAnswers = true;
         this.disableInput = true;
+    }
+
+    getCategoricalMinInfo(objects: CategoricalInfo[]): number {
+        return +objects.reduce(function (prev, curr) {
+            return +prev.value < +curr.value ? prev : curr;
+        }).value;
+    }
+
+    getCategoricalMaxInfo(objects: CategoricalInfo[]): number {
+        return +objects.reduce(function (prev, curr) {
+            return +prev.value > +curr.value ? prev : curr;
+        }).value;
     }
 
     private generateIntervalAnswer(dimensionIndex: number) {
@@ -837,12 +849,6 @@ export class ChatWidgetComponent implements OnInit {
         if (this.queue == 0) {
             this.typing.nativeElement.style.display = "none"; // Tolgo l'animazione di scrittura
             this.ignoreMsg = false;
-            if (this.buttonsVisibility == 1) {
-                this.showYNbuttons = true;
-            }
-            if (this.buttonsVisibility == 2) {
-                this.showCMbuttons = true;
-            }
         }
         this.changeDetector.detectChanges();
         this.scrollToBottom();
@@ -899,9 +905,6 @@ export class ChatWidgetComponent implements OnInit {
             this.instructionP(message);
         }
 
-        if (this.showCategoricalAnswers) {
-            message = this.getCategoricalAnswerValue(message);
-        }
         //TASK PHASE
         if (this.taskPhase) {
             this.taskP(message);
@@ -1120,19 +1123,6 @@ export class ChatWidgetComponent implements OnInit {
 
     // Fase di istruzioni
     private instructionP(message: string) {
-        /*
-        let startMsg: string
-        if (message.trim().toLowerCase() === "yes") {
-            startMsg = "OK! Let's start!"
-        }
-        else if (message.trim().toLowerCase() === "no") {
-            startMsg = "OK! Let's get to the real thing!"
-            // Salta la prima subtask TODO
-            //this.taskIndex += 1
-        } else { return }
-        this.typingAnimation(startMsg)
-        this.buttonsYN.nativeElement.style.display = "none" // Non mostro più i messaggi y/n
-       */
         this.taskPhase = true; // Passiamo alla task phase
         this.instructionPhase = false; // Finita la instruction phase
         this.ignoreMsg = true;
@@ -1183,6 +1173,9 @@ export class ChatWidgetComponent implements OnInit {
         }
         // non siamo ne all'url ne abbiamo finito se il msg non è valido ritorno, altrimenti procedo
 
+        if (this.showCategoricalAnswers) {
+            message = this.getCategoricalAnswerValue(message);
+        }
         if (
             !this.validMsg(message, this.minValue, this.maxValue) &&
             !this.ignoreMsg
@@ -1458,7 +1451,7 @@ export class ChatWidgetComponent implements OnInit {
                 );
                 this.cleanUserInput();
                 this.disableInput = false;
-                this.buttonsVisibility = 1;
+                this.showYNbuttons = true;
                 // Printa gli statement, new funzione
                 this.taskPhase = false;
                 this.endTaskPhase = true;
@@ -1593,6 +1586,7 @@ export class ChatWidgetComponent implements OnInit {
             this.showMagnitudeAnswer = false;
 
             if (this.awaitingAnswer) {
+                this.showInputDDL = false;
                 this.disableInput = false;
                 this.questionnaireAnswers[this.currentQuestion] = message;
                 this.randomMessage();
@@ -1623,11 +1617,13 @@ export class ChatWidgetComponent implements OnInit {
                 this.currentQuestionnaire += 1;
             } else {
                 this.printQuestion();
-
                 this.typingAnimation(this.createQuestionnaireAnswers());
-                this.generateQuestionnaireAnswers();
+                setTimeout(() => {
+                    this.generateQuestionnaireAnswers();
+                    this.showInputDDL = true;
+                }, 850);
+
                 this.disableInput = false;
-                this.showInputDDL = true;
                 this.buttonsVisibility = null;
                 this.awaitingAnswer = true;
                 return;
