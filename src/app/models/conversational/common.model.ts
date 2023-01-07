@@ -33,3 +33,12 @@ export interface McqInfo {
     label: string;
     value?: string;
 }
+
+export enum EnConversationaTaskStatus {
+    InstructionPhase,
+    QuestionnairePhase,
+    QuestionnaireReviewPhase,
+    TaskPhase,
+    ReviewPhase,
+    EndPhase,
+}
