@@ -55,6 +55,11 @@
     color: #000;
 }
 
+#ddl-component {
+    min-height: 68px;
+    align-items: center;
+}
+
 .button-prompt {
     background-color: #f5f5f5;
     position: relative;

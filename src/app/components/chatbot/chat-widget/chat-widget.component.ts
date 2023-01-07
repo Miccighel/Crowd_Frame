@@ -181,7 +181,7 @@ export class ChatWidgetComponent implements OnInit {
         this.accessesAmount = new Array(this.task.documents.length).fill(0);
         this.indexDimSel = new Array(this.task.documents.length).fill(0);
         this.queryIndex = new Array(this.task.documents.length).fill(0);
-        this.answersURL = new Array(this.task.documents.length).fill("");
+        this.answersURL = new Array(this.task.dimensions.length).fill("");
     }
 
     private getNumberOfQuestionnaireQuestions(): number {
@@ -196,7 +196,7 @@ export class ChatWidgetComponent implements OnInit {
         this.answers = [];
         for (let i = 0; i < this.task.documents.length; i++) {
             this.answers[i] = [];
-            for (let j = 0; j < this.task.dimensions.length; j++) {
+            for (let j = 0; j < this.task.dimensionsAmount; j++) {
                 this.answers[i][j] = null;
             }
         }
@@ -542,7 +542,7 @@ export class ChatWidgetComponent implements OnInit {
     // Creo la stringa con le risposte date allo statement attuale
     private createAnswerString() {
         let recap = "";
-        for (let i = 0; i < this.task.dimensions.length; i++) {
+        for (let i = 0; i < this.task.dimensionsAmount; i++) {
             let scaleType = null;
             if (!this.task.dimensions[i].scale) {
                 scaleType = "url";
@@ -552,11 +552,7 @@ export class ChatWidgetComponent implements OnInit {
             switch (scaleType) {
                 case "url":
                     recap +=
-                        this.task.dimensions.length +
-                        1 +
-                        ".<b> URL</b>: " +
-                        this.answersURL[this.taskIndex] +
-                        "<br>";
+                        i + 1 + ".<b> URL</b>: " + this.answersURL[i] + "<br>";
                     break;
                 case "categorical":
                     if (this.task.dimensions[i].name_pretty) {
@@ -633,9 +629,9 @@ export class ChatWidgetComponent implements OnInit {
     private createAnswersPretty() {
         let ans = {};
         let addOn = "_value";
-        ans["overall-truthfulness" + addOn] = this.answers[this.taskIndex][0];
-        ans["overall-truthfulness_url"] = this.answersURL[this.taskIndex];
-        for (let i = 1; i < this.task.dimensions.length; i++) {
+        ans["overall-truthfulness" + addOn] = this.answers[this.taskIndex];
+        // ans["overall-truthfulness_url"] = this.answersURL[this.taskIndex];
+        for (let i = 0; i < this.task.dimensionsAmount; i++) {
             ans[this.task.dimensions[i].name + addOn] =
                 this.answers[this.taskIndex][i];
         }
@@ -1004,13 +1000,13 @@ export class ChatWidgetComponent implements OnInit {
                     let ah = {};
                     ah["overall-truthfulness_value"] =
                         this.answers[this.goldHigh][0];
-                    ah["overall-truthfulness_url"] =
-                        this.answersURL[this.goldHigh];
+                    // ah["overall-truthfulness_url"] =
+                    //     this.answersURL[this.goldHigh];
                     let al = {};
                     al["overall-truthfulness_value"] =
                         this.answers[this.goldLow][0];
-                    al["overall-truthfulness_url"] =
-                        this.answersURL[this.goldLow];
+                    // al["overall-truthfulness_url"] =
+                    //     this.answersURL[this.goldLow];
                     goldH["answers"] = ah;
                     goldL["answers"] = al;
                 }
@@ -1093,24 +1089,10 @@ export class ChatWidgetComponent implements OnInit {
 
     // Fase di task
     private async taskP(message: string) {
-        if (this.waitForUrl) {
-            // Se sto chiedendo l'url
-            if (!this.urlValid(message)) {
-                this.typingAnimation(
-                    "Please type or select a valid url, try using the search bar on the right!"
-                );
-                return;
-            }
-            this.waitForUrl = false;
-            this.disableInput = false;
-            this.answersURL[this.taskIndex] = message;
-            this.placeholderInput = "";
-            this.ignoreMsg = true;
-        }
-        // dimensioni finite
         if (
-            this.task.dimensions.length <= this.subTaskIndex &&
-            this.validMsg(message, this.minValue, this.maxValue)
+            this.subTaskIndex >= this.task.dimensionsAmount &&
+            (this.validMsg(message, this.minValue, this.maxValue) ||
+                this.urlValid(message))
         ) {
             const subtaskIndex = this.subTaskIndex - 1;
             this.answers[this.taskIndex][subtaskIndex] = message;
@@ -1128,6 +1110,24 @@ export class ChatWidgetComponent implements OnInit {
             this.reviewP(message);
             return;
         }
+
+        if (this.waitForUrl) {
+            // Se sto chiedendo l'url
+            if (!this.urlValid(message)) {
+                this.typingAnimation(
+                    "Please type or select a valid url, try using the search bar on the right!"
+                );
+                return;
+            }
+            this.answersURL[this.taskIndex] = message;
+            //this.answers[this.taskIndex][this.subTaskIndex] = message;
+            this.disableInput = false;
+            this.cleanUserInput();
+            this.placeholderInput = "";
+            this.ignoreMsg = true;
+        }
+        // dimensioni finite
+
         // non siamo ne all'url ne abbiamo finito se il msg non è valido ritorno, altrimenti procedo
 
         if (this.showCategoricalAnswers) {
@@ -1309,6 +1309,7 @@ export class ChatWidgetComponent implements OnInit {
                     this.waitForUrl = false;
                     this.placeholderInput = "";
                     this.answersURL[this.taskIndex] = message;
+                    //this.answers[this.taskIndex][this.subTaskIndex] = message;
                     // Resetto
                     this.reviewAnswersShown = false;
                     this.pickReview = false;
@@ -1337,8 +1338,8 @@ export class ChatWidgetComponent implements OnInit {
                     this.pickReview = false;
                 }
             } else {
-                if (!this.validMsg(message, 1, this.task.dimensions.length)) {
-                    let messageToSend = `Please type a integer number between 1 and ${this.task.dimensions.length}`;
+                if (!this.validMsg(message, 1, this.task.dimensionsAmount)) {
+                    let messageToSend = `Please type a integer number between 1 and ${this.task.dimensionsAmount}`;
                     this.typingAnimation(messageToSend);
                     return;
                 }
