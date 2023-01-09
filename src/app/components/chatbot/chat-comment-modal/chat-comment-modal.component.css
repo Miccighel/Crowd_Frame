@@ -8,4 +8,6 @@ textarea {
 
 #outToken {
     text-align: center;
+    background: #66bb6a;
+    border-radius: 5px;
 }

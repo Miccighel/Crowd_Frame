@@ -8,17 +8,17 @@
     ></button>
 </div>
 <div class="modal-body">
-    <div class="row">
-        <div class="col-12">{{ message }}</div>
+    <div class="row container m-0">
+        <div class="col-12 ps-0">{{ message }}</div>
         <div class="col-12 my-3" id="outToken">
             <h2>{{ outputToken }}</h2>
         </div>
-        <div class="col-12" class="comment">
-            <p>Feel free to leave any comment to help us improve our task.</p>
+        <div class="col-12 ps-0">
+            Feel free to leave any comment to help us improve our task.
         </div>
 
-        <div class="col-12">
-            <form [formGroup]="commentFG" #commentNgForm class="px-2">
+        <div class="col-12 ps-0">
+            <form [formGroup]="commentFG" #commentNgForm>
                 <mat-form-field class="w-100">
                     <textarea matInput formControlName="comment" rows="4">
                     </textarea>
