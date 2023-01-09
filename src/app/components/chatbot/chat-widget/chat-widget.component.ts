@@ -147,6 +147,7 @@ export class ChatWidgetComponent implements OnInit {
     mcqAnswersInfo: McqInfo[] = [];
 
     // Commento finale
+    modalUserCommentText = "Thanks for finishing the task, this is your token:";
     userCommentOnTask = "";
     // Messaggi per l'utente
     instr = [
@@ -1065,6 +1066,9 @@ export class ChatWidgetComponent implements OnInit {
                 const modalRef = this.ngModal.open(ChatCommentModalComponent, {
                     size: "md",
                 });
+                modalRef.componentInstance.outputToken = this.task.tokenOutput;
+                modalRef.componentInstance.message = this.modalUserCommentText;
+
                 modalRef.result.then((comment) => {
                     this.userCommentOnTask = comment;
                     this.showYNbuttons = false;
@@ -1089,6 +1093,9 @@ export class ChatWidgetComponent implements OnInit {
 
     // Fase di task
     private async taskP(message: string) {
+        if (this.showCategoricalAnswers) {
+            message = this.getCategoricalAnswerValue(message);
+        }
         if (
             this.subTaskIndex >= this.task.dimensionsAmount &&
             (this.validMsg(message, this.minValue, this.maxValue) ||
@@ -1130,9 +1137,6 @@ export class ChatWidgetComponent implements OnInit {
 
         // non siamo ne all'url ne abbiamo finito se il msg non è valido ritorno, altrimenti procedo
 
-        if (this.showCategoricalAnswers) {
-            message = this.getCategoricalAnswerValue(message);
-        }
         if (
             !this.validMsg(message, this.minValue, this.maxValue) &&
             !this.ignoreMsg

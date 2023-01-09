@@ -2,3 +2,10 @@ textarea {
     border: none;
     outline: none;
 }
+
+.comment {
+}
+
+#outToken {
+    text-align: center;
+}

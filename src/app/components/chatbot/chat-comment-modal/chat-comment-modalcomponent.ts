@@ -8,6 +8,8 @@ import { NgbActiveModal } from "@ng-bootstrap/ng-bootstrap";
     styleUrls: ["./chat-comment-modal.component.css"],
 })
 export class ChatCommentModalComponent implements OnInit {
+    public message: string;
+    public outputToken: String;
     public comment: string = "";
     public commentFG: FormGroup;
     @ViewChild("commentNgForm") commentNgForm: NgForm;

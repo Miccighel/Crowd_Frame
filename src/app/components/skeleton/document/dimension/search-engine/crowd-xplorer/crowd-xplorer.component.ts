@@ -8,6 +8,7 @@ import {
     ViewChild,
     OnInit,
     OnDestroy,
+    HostListener,
 } from "@angular/core";
 /* Loading screen module */
 import { NgxUiLoaderService } from "ngx-ui-loader";
@@ -134,6 +135,9 @@ export class CrowdXplorer implements OnInit {
 
     /* Random digits to generate unique CSS ids when multiple instances of the search engine are used */
     digits: string;
+
+    //Screen dimension flag
+    isSmallScreen = false;
 
     /* |--------- CONSTRUCTOR IMPLEMENTATION ---------| */
 
@@ -397,5 +401,13 @@ export class CrowdXplorer implements OnInit {
         this.searchInProgress = false;
 
         disable ? this.searchForm.disable() : this.searchForm.enable();
+    }
+    @HostListener("window:resize")
+    onResize() {
+        if (window.innerWidth < 768) {
+            this.isSmallScreen = true;
+        } else {
+            this.isSmallScreen = false;
+        }
     }
 }

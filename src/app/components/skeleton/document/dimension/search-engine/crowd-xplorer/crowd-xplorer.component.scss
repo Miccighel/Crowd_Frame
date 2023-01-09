@@ -1,14 +1,14 @@
 /* |--- LOADING SCREEN SPINNER --| */
 
 mat-spinner {
-  margin: auto;
+    margin: auto;
 }
 
 /* |--- MAIN BODY ---| */
 
 mat-card.xplorer-body {
-  box-shadow: 0 0 0 0;
-  padding: 0;
+    box-shadow: 0 0 0 0;
+    padding: 0;
 }
 
 /* |--- USER QUERY ---| */
@@ -36,21 +36,25 @@ mat-card.xplorer-body {
 /* |--- RESULT TABLE --| */
 
 mat-table {
-  border: 2px solid lightgrey;
-  border-radius: 8px;
-  padding: 5px 5px;
+    border: 2px solid lightgrey;
+    border-radius: 8px;
+    padding: 5px 5px;
 }
 
 mat-header-cell {
-  font-size: medium;
+    font-size: medium;
 }
 
 mat-cell {
-  font-size: medium;
-  padding: 5px;
+    font-size: medium;
+    padding: 5px;
 
-  p {
-    width: 99%;
-    padding-right: 1%;
-  }
+    p {
+        width: 99%;
+        padding-right: 1%;
+    }
+}
+
+.searching {
+    font-size: small;
 }

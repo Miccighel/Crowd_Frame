@@ -10,7 +10,7 @@
             </div>
         </div>
         <div class="row container">
-            <div class="col-10 col-sm-8 pe-0">
+            <div class="col-8 col-lg-9 pe-0">
                 <mat-form-field
                     id="search-textarea"
                     class="w-100"
@@ -26,9 +26,11 @@
                     />
                 </mat-form-field>
             </div>
-            <!-- <div class="col-2 pt-1" style="height: 63.5px">
+            <div class="col-lg-2 col-md-4 col-sm-4 mt-1" style="height: 60px">
                 <button
+                    *ngIf="!isSmallScreen"
                     class="h-100"
+                    [ngClass]="!!searchInProgress ? 'searching' : ''"
                     mat-flat-button
                     color="primary"
                     [disabled]="
@@ -40,13 +42,12 @@
                     "
                     (click)="performWebSearch(searchInput.value)"
                 >
-                    <mat-icon>search</mat-icon>
+                    <mat-icon *ngIf="!searchInProgress">search</mat-icon>
 
                     {{ !!searchInProgress ? "SEARCHING..." : "SEARCH" }}
                 </button>
-            </div> -->
-            <div class="col-2 pt-1" style="height: 63.5px">
                 <button
+                    *ngIf="isSmallScreen"
                     class="h-100"
                     mat-flat-button
                     color="primary"

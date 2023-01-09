@@ -9,6 +9,14 @@
 </div>
 <div class="modal-body">
     <div class="row">
+        <div class="col-12">{{ message }}</div>
+        <div class="col-12 my-3" id="outToken">
+            <h2>{{ outputToken }}</h2>
+        </div>
+        <div class="col-12" class="comment">
+            <p>Feel free to leave any comment to help us improve our task.</p>
+        </div>
+
         <div class="col-12">
             <form [formGroup]="commentFG" #commentNgForm class="px-2">
                 <mat-form-field class="w-100">
