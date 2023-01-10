@@ -27,6 +27,15 @@ import {
 import { NgbModal } from "@ng-bootstrap/ng-bootstrap";
 import { ChatCommentModalComponent } from "../chat-comment-modal/chat-comment-modalcomponent";
 
+//TODO:
+/*
+1. Risposte categoriali: Se > 6 far comparire la dropdown
+3. Selezionare dimensione di revisione tramite dropdown FATTO, ESTENDERE AI QUESTIONARI 
+4. Adeguare il payload alla funzione buildTaskDocumentPayload (task.ts)
+6. Se una dimensione ha anche l'URL gestire il doppio INPUT
+7. Provare ad implementare il countdown
+*/
+
 // Messaggi random
 const randomMessagesFirstPart = [
     "OK!",
@@ -889,6 +898,14 @@ export class ChatWidgetComponent implements OnInit {
         else return null;
     }
 
+    private getDimensionAnswerValue(message) {
+        const mappedValue = this.mcqAnswersInfo.find(
+            (el) => el.label.toLowerCase() == message.label.toLowerCase()
+        );
+        if (!!mappedValue) return mappedValue.value;
+        else return null;
+    }
+
     // Fase di fine task
     private async endP(message) {
         if (this.statementJump) {
@@ -1185,6 +1202,10 @@ export class ChatWidgetComponent implements OnInit {
 
     // Fase di review
     private async reviewP(message: string) {
+        if (this.showInputDDL) {
+            message = this.getDimensionAnswerValue(message);
+            this.showInputDDL = false;
+        }
         if (this.questionnaireReview) {
             if (this.pickReview) {
                 if (this.awaitingAnswer) {
@@ -1293,6 +1314,7 @@ export class ChatWidgetComponent implements OnInit {
                 this.showCMbuttons = false;
                 this.buttonsVisibility = null;
                 this.typingAnimation("Which one would you like to modify?");
+
                 this.pickReview = true;
                 return;
             } else {
@@ -1318,6 +1340,10 @@ export class ChatWidgetComponent implements OnInit {
                     this.reviewAnswersShown = false;
                     this.pickReview = false;
                 } else {
+                    if (this.showCategoricalAnswers) {
+                        message = this.getCategoricalAnswerValue(message);
+                    }
+
                     if (!this.validMsg(message, this.minValue, this.maxValue)) {
                         let messageToSend = "";
                         if (!this.showMagnitudeAnswer) {
@@ -1454,6 +1480,7 @@ export class ChatWidgetComponent implements OnInit {
             this.showCMbuttons = false;
             this.typingAnimation("Which dimension would you like to change?");
             this.cleanUserInput();
+            this.generateDimensionReviewData();
             this.disableInput = false;
             this.pickReview = true; // Passo alla fase di modifica
             this.dimensionReviewPrinted = false; // Reset
@@ -1472,6 +1499,15 @@ export class ChatWidgetComponent implements OnInit {
         }));
     }
 
+    private generateDimensionReviewData() {
+        this.mcqAnswersInfo = this.task.dimensions.map((dimension, index) => {
+            return {
+                label: dimension.name_pretty,
+                value: (index + 1).toString(),
+            };
+        });
+        this.showInputDDL = true;
+    }
     private selectDimensionToGenerate(dimensionIndex) {
         let scaleType = null;
         if (!this.task.dimensions[dimensionIndex].scale) {
