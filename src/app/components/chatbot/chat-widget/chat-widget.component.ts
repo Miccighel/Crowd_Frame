@@ -1314,7 +1314,7 @@ export class ChatWidgetComponent implements OnInit {
                 this.showCMbuttons = false;
                 this.buttonsVisibility = null;
                 this.typingAnimation("Which one would you like to modify?");
-
+                this.generateRevisionData();
                 this.pickReview = true;
                 return;
             } else {
@@ -1480,7 +1480,7 @@ export class ChatWidgetComponent implements OnInit {
             this.showCMbuttons = false;
             this.typingAnimation("Which dimension would you like to change?");
             this.cleanUserInput();
-            this.generateDimensionReviewData();
+            this.generateRevisionData();
             this.disableInput = false;
             this.pickReview = true; // Passo alla fase di modifica
             this.dimensionReviewPrinted = false; // Reset
@@ -1499,13 +1499,32 @@ export class ChatWidgetComponent implements OnInit {
         }));
     }
 
-    private generateDimensionReviewData() {
-        this.mcqAnswersInfo = this.task.dimensions.map((dimension, index) => {
-            return {
-                label: dimension.name_pretty,
-                value: (index + 1).toString(),
-            };
-        });
+    private generateRevisionData() {
+        this.mcqAnswersInfo = [];
+        //Revisione domande dei questionari
+        if (this.questionnaireReview) {
+            for (let i = 0; i < this.task.questionnaires.length; i++) {
+                this.task.questionnaires[i].questions.forEach(
+                    (question, index) => {
+                        this.mcqAnswersInfo.push({
+                            label: question.name,
+                            value: (index + 1).toString(),
+                        });
+                    }
+                );
+            }
+        } else {
+            //Revisione dimensioni per ogni statement
+            this.mcqAnswersInfo = this.task.dimensions.map(
+                (dimension, index) => {
+                    return {
+                        label: dimension.name_pretty,
+                        value: (index + 1).toString(),
+                    };
+                }
+            );
+        }
+
         this.showInputDDL = true;
     }
     private selectDimensionToGenerate(dimensionIndex) {
