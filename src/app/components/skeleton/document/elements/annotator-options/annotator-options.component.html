@@ -1,17 +1,31 @@
 <div class="statement">
     <ng-container *ngFor="let attribute of this.task.settings.attributes; let k=index">
         <div class="attribute" *ngIf="attribute.show">
+
             <p class="attribute-label" *ngIf="!attribute.annotate">
-                <strong>{{attribute.name_pretty}}</strong>:
-                {{(this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior == "hide_attributes") ? "---------- text_hidden ----------" : this.task.documents[this.documentIndex][attribute.name]}}
+                <strong *ngIf="attribute.name_pretty">{{attribute.name_pretty}}: </strong>
+                <strong *ngIf="!attribute.name_pretty">{{attribute.name.split('_').join(' ') | titlecase}}: </strong>
+                <ng-container *ngIf="this.task.countdownsExpired[documentIndex]">
+                    <span *ngIf="this.task.settings.countdown_behavior == 'hide_attributes'">'---------- text_hidden ----------'</span>
+                </ng-container>
+                <span
+                    *ngIf="!this.task.countdownsExpired[documentIndex]">{{this.task.documents[this.documentIndex][attribute.name]}}</span>
             </p>
+
             <p class="attribute-label" *ngIf="attribute.annotate">
-                <strong>{{attribute.name_pretty}}</strong>:
-                <span id="document-{{documentIndex}}-attribute-{{k}}"
-                      (mouseup)="performAnnotation(documentIndex, k, this.task.notes, this.changeDetector)"
-                      (touchend)="performAnnotation(documentIndex, k, this.task.notes, this.changeDetector)">
-            {{(this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior == "hide_attributes") ? "---------- text_hidden ----------" : this.task.documents[this.documentIndex][attribute.name]}}
-        </span>
+                <strong *ngIf="attribute.name_pretty">{{attribute.name_pretty}}: </strong>
+                <strong *ngIf="!attribute.name_pretty">{{attribute.name.split('_').join(' ') | titlecase}}: </strong>
+                <ng-container *ngIf="this.task.countdownsExpired[documentIndex]">
+                    <span *ngIf="this.task.settings.countdown_behavior == 'hide_attributes'">'---------- text_hidden ----------'</span>
+                </ng-container>
+                <span *ngIf="!this.task.countdownsExpired[documentIndex]">
+                    <span id="document-{{documentIndex}}-attribute-{{k}}"
+                          (mouseup)="performAnnotation(documentIndex, k, this.task.notes, this.changeDetector)"
+                          (touchend)="performAnnotation(documentIndex, k, this.task.notes, this.changeDetector)">
+                    {{this.task.documents[this.documentIndex][attribute.name]}}
+                    </span>
+                </span>
+
             </p>
         </div>
     </ng-container>
@@ -21,15 +35,18 @@
     <!-- Annotation buttons markup -->
     <div id="annotation-buttons-{{documentIndex}}" class="annotation-buttons">
         <button
-                [style.background-color]="value.color"
-                [style.opacity]="!this.task.annotationsDisabled[documentIndex] ? 1 : 0.3" class="ann-button-{{documentIndex}}"
-                *ngFor="let value of this.task.settings.annotator.values" [disabled]="this.task.annotationsDisabled[documentIndex]" mat-flat-button
-                (click)="handleAnnotationOption(value,documentIndex)">{{value.label}}
+            [style.background-color]="value.color"
+            [style.opacity]="!this.task.annotationsDisabled[documentIndex] ? 1 : 0.3"
+            class="ann-button-{{documentIndex}}"
+            *ngFor="let value of this.task.settings.annotator.values"
+            [disabled]="this.task.annotationsDisabled[documentIndex]" mat-flat-button
+            (click)="handleAnnotationOption(value,documentIndex)">{{value.label}}
         </button>
     </div>
     <br/>
     <!-- Finalized notes table markup -->
-    <div *ngIf="this.task.settings.annotator && this.task.checkUndeletedNotesPresence(this.task.notes[documentIndex])" class="annotations">
+    <div *ngIf="this.task.settings.annotator && this.task.checkUndeletedNotesPresence(this.task.notes[documentIndex])"
+         class="annotations">
         <table class="mat-table">
             <tr class="mat-header-row">
                 <th class="mat-header-cell">Text</th>
@@ -41,7 +58,8 @@
                     <td class="mat-cell"><span [style.background-color]="note.color">{{note.current_text}}</span></td>
                     <td class="mat-cell"><code>{{capitalize(note.option)}}</code></td>
                     <td class="mat-cell">
-                        <button (click)="removeAnnotation(documentIndex, noteIndex, this.changeDetector)" mat-flat-button color="warn">
+                        <button (click)="removeAnnotation(documentIndex, noteIndex, this.changeDetector)"
+                                mat-flat-button color="warn">
                             Delete
                         </button>
                     </td>

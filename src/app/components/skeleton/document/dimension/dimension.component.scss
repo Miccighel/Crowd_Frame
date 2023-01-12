@@ -50,6 +50,7 @@
 .dimension .checkbox {
   margin: 0;
   padding: 0;
+
   mat-checkbox {
     float: left;
     margin-right: 1%;
@@ -192,6 +193,13 @@
   align-self: center;
   vertical-align: top;
   margin-right: 1%;
+}
+
+.scale-interval {
+  margin-top: 1%;
+  span {
+    font-size: 1.1em;
+  }
 }
 
 /*

@@ -171,6 +171,7 @@ export class TaskSettingsStepComponent implements OnInit {
             modality: '',
             allowed_tries: '',
             time_check_amount: '',
+            time_assessment: '',
             documents: this._formBuilder.group({
                 min_docs_repetitions: 1,
                 doc_categories: this._formBuilder.array([]),
@@ -229,6 +230,7 @@ export class TaskSettingsStepComponent implements OnInit {
             modality: [this.dataStored ? this.dataStored.modality ? this.dataStored.modality : '' : '', [Validators.required]],
             allowed_tries: [this.dataStored ? this.dataStored.allowed_tries ? this.dataStored.allowed_tries : '' : '', [Validators.required]],
             time_check_amount: [this.dataStored ? this.dataStored.time_check_amount ? this.dataStored.time_check_amount : '' : '', [Validators.required]],
+            time_assessment: [this.dataStored ? this.dataStored.time_assessment ? this.dataStored.time_assessment : '' : '', [Validators.required]],
             documents: this._formBuilder.group({
                 min_docs_repetitions: 1,
                 doc_categories: this._formBuilder.array([]),
@@ -926,6 +928,10 @@ export class TaskSettingsStepComponent implements OnInit {
 
         let taskSettingsJSON = JSON.parse(JSON.stringify(this.formStep.value));
 
+        if (!taskSettingsJSON.time_assessment) {
+           taskSettingsJSON.time_assessment = 2
+        }
+
         if (!taskSettingsJSON.setAnnotator) taskSettingsJSON.annotator = false
         delete taskSettingsJSON.setAnnotator
 
@@ -938,6 +944,7 @@ export class TaskSettingsStepComponent implements OnInit {
         if (!taskSettingsJSON.setCountdownTime) {
             taskSettingsJSON.countdown_time = false
             taskSettingsJSON.additional_times = false
+            taskSettingsJSON.countdown_behavior = false
             taskSettingsJSON.countdown_modality = false
             taskSettingsJSON.countdown_attribute = false
             taskSettingsJSON.countdown_attribute_values = []

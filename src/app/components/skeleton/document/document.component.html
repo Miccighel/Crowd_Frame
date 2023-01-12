@@ -16,12 +16,14 @@
             </div>
 
             <!--- Countdown markup --->
-            <div class="countdown sticky" *ngIf="this.task.settings.countdown_time>=0">
-                <h1 class="text-lighter m-0">
-                    Time left:
-                    <countdown #countdownElement [config]="{ demand: true, leftTime: this.task.documentsCountdownTime[documentIndex], format: 'mm:ss' }" (event)="handleCountdown($event, documentIndex)"></countdown>
-                </h1>
-            </div>
+            <ng-container *ngIf="this.task.settings.countdown_time">
+                <div class="countdown sticky" *ngIf="this.task.settings.countdown_time>=0">
+                    <h1 class="text-lighter m-0">
+                        Time left:
+                        <countdown #countdownElement [config]="{ demand: true, leftTime: this.task.documentsCountdownTime[documentIndex], format: 'mm:ss' }" (event)="handleCountdown($event, documentIndex)"></countdown>
+                    </h1>
+                </div>
+            </ng-container>
 
             <ng-container *ngIf="(this.task.settings.modality=='pointwise')">
                 <ng-container *ngIf="!(this.task.settings.annotator)">
@@ -62,9 +64,7 @@
                 </button>
             </mat-card-actions>
 
-
         </mat-card-content>
-
 
     </mat-card>
 </div>

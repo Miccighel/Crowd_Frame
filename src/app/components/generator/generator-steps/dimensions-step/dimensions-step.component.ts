@@ -220,7 +220,8 @@ export class DimensionsStepComponent implements OnInit {
         });
         setScale = dimension ? !!dimension.scale : false;
         scale = this._formBuilder.group({
-            type: "",
+            type: '',
+            setMultipleSelection:false,
             multiple_selection: false,
             setInstructions: false,
             instructions: this._formBuilder.group({
@@ -603,7 +604,10 @@ export class DimensionsStepComponent implements OnInit {
         );
 
         dimensionsJSON.forEach((dimension, dimensionIndex) => {
-            if (dimension.description == "") dimension.description = false;
+
+            if (dimension.name_pretty == '') dimension.name_pretty = false
+            if (dimension.description == '') dimension.description = false
+            if (dimension.example == '') dimension.example = false
 
             dimension.gold = !!dimension.gold;
 

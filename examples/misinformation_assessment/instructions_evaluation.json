@@ -1,0 +1,24 @@
+{
+	"instructions": [
+		{
+			"label": false,
+			"caption": false,
+			"text": "Use the search engine below to retrieve some evidence about the truthfulness of the statement and select one of the retrieved URLs to justify the truthfulness value."
+		},
+		{
+			"label": false,
+			"caption": false,
+			"text": "Input as truthfulness value one of the six labels."
+		},
+		{
+			"label": false,
+			"caption": false,
+			"text": "Write a text justification. You can use your own words or, even better, copy/paste from the selected URL. You cannot use the selected search engine url as part of the justification."
+		}
+	],
+	"element": {
+		"label": "A",
+		"caption": "Read the statement carefully and:",
+		"text": false
+	}
+}

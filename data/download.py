@@ -12,6 +12,7 @@ from json import JSONDecodeError
 import time as time_mod
 import asyncio
 import aiohttp
+import numpy
 from aiohttp import ClientSession, ClientConnectorError, ClientResponseError, ClientOSError, ServerDisconnectedError, TooManyRedirects, ClientPayloadError, ClientConnectorCertificateError
 import tqdm
 import ipinfo
@@ -160,7 +161,7 @@ def camel_to_snake(name):
 
 
 def find_date_string(date, seconds=False):
-    if type(date) == int or type(date) == float:
+    if type(date) == int or type(date) == float or type(date) == numpy.float64 or type(date) == numpy.float32:
         if seconds:
             date_raw = str(datetime.fromtimestamp(date))
         else:
@@ -1778,6 +1779,8 @@ if not os.path.exists(df_quest_path):
                     else:
                         questions = questionnaire['questions']
                     current_answers = questionnaire_data['serialization']['answers']
+                    timestamps_start = questionnaire_data['serialization']["timestamps_start"]
+                    timestamps_end = questionnaire_data['serialization']["timestamps_end"]
                     timestamps_elapsed = questionnaire_data['serialization']["timestamps_elapsed"]
                     info = questionnaire_data['serialization']["info"]
                     accesses = questionnaire_data['serialization']["accesses"]
@@ -1799,7 +1802,11 @@ if not os.path.exists(df_quest_path):
                         for attribute, value in questionnaire.items():
                             if type(value) != list:
                                 row[f"questionnaire_{attribute}"] = value
-                        row[f"questionnaire_time_elapsed"] = round(timestamps_elapsed, 2)
+                        try:
+                            row[f"questionnaire_time_elapsed"] = round(timestamps_elapsed, 2)
+                        except TypeError:
+                            delta = (datetime.fromtimestamp(timestamps_end[-1])) - (datetime.fromtimestamp(timestamps_start[0]))
+                            row[f"questionnaire_time_elapsed"] = round(delta.total_seconds(), 2)
                         row[f"questionnaire_accesses"] = accesses
 
                         for index_sub, question in enumerate(questions):
@@ -2155,7 +2162,6 @@ if not os.path.exists(df_notes_path):
                                 row['note_timestamp_deleted_parsed'] = date
                             row['note_base_url'] = note_current['base_uri']
                             row['note_text_current'] = note_current['current_text']
-                            row['note_text_curren'] = note_current['current_text']
                             row['note_text_raw'] = note_current['raw_text']
                             row['note_text_left'] = note_current['text_left']
                             row['note_text_right'] = note_current['text_right']

@@ -32,7 +32,11 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
 "@angular-devkit/build-angular@npm:^14.2.9":
+=======
+"@angular-devkit/build-angular@npm:^14.2.10":
+>>>>>>> master
   version: 14.2.10
   resolution: "@angular-devkit/build-angular@npm:14.2.10"
   dependencies:
@@ -172,7 +176,11 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
 "@angular/animations@npm:^14.2.8":
+=======
+"@angular/animations@npm:^14.2.12":
+>>>>>>> master
   version: 14.2.12
   resolution: "@angular/animations@npm:14.2.12"
   dependencies:
@@ -200,7 +208,11 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
 "@angular/cli@npm:^14.2.8":
+=======
+"@angular/cli@npm:^14.2.10":
+>>>>>>> master
   version: 14.2.10
   resolution: "@angular/cli@npm:14.2.10"
   dependencies:
@@ -230,7 +242,11 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
 "@angular/common@npm:^14.2.8":
+=======
+"@angular/common@npm:^14.2.12":
+>>>>>>> master
   version: 14.2.12
   resolution: "@angular/common@npm:14.2.12"
   dependencies:
@@ -242,7 +258,11 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
 "@angular/compiler-cli@npm:^14.2.10":
+=======
+"@angular/compiler-cli@npm:^14.2.12":
+>>>>>>> master
   version: 14.2.12
   resolution: "@angular/compiler-cli@npm:14.2.12"
   dependencies:
@@ -267,7 +287,11 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
 "@angular/compiler@npm:^14.2.8":
+=======
+"@angular/compiler@npm:^14.2.12":
+>>>>>>> master
   version: 14.2.12
   resolution: "@angular/compiler@npm:14.2.12"
   dependencies:
@@ -281,7 +305,11 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
 "@angular/core@npm:^14.2.8":
+=======
+"@angular/core@npm:^14.2.12":
+>>>>>>> master
   version: 14.2.12
   resolution: "@angular/core@npm:14.2.12"
   dependencies:
@@ -293,7 +321,11 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
 "@angular/forms@npm:^14.2.8":
+=======
+"@angular/forms@npm:^14.2.12":
+>>>>>>> master
   version: 14.2.12
   resolution: "@angular/forms@npm:14.2.12"
   dependencies:
@@ -342,7 +374,11 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
 "@angular/platform-browser-dynamic@npm:^14.2.8":
+=======
+"@angular/platform-browser-dynamic@npm:^14.2.12":
+>>>>>>> master
   version: 14.2.12
   resolution: "@angular/platform-browser-dynamic@npm:14.2.12"
   dependencies:
@@ -356,7 +392,11 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
 "@angular/platform-browser@npm:^14.2.8":
+=======
+"@angular/platform-browser@npm:^14.2.12":
+>>>>>>> master
   version: 14.2.12
   resolution: "@angular/platform-browser@npm:14.2.12"
   dependencies:
@@ -372,7 +412,11 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
 "@angular/router@npm:^14.2.8":
+=======
+"@angular/router@npm:^14.2.12":
+>>>>>>> master
   version: 14.2.12
   resolution: "@angular/router@npm:14.2.12"
   dependencies:
@@ -2021,6 +2065,7 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
 "@ng-bootstrap/ng-bootstrap@npm:^13.1.0":
   version: 13.1.1
   resolution: "@ng-bootstrap/ng-bootstrap@npm:13.1.1"
@@ -2037,6 +2082,8 @@ __metadata:
   languageName: node
   linkType: hard
 
+=======
+>>>>>>> master
 "@ngtools/webpack@npm:14.2.10":
   version: 14.2.10
   resolution: "@ngtools/webpack@npm:14.2.10"
@@ -2153,6 +2200,7 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
 "@popperjs/core@npm:^2.10.2":
   version: 2.11.6
   resolution: "@popperjs/core@npm:2.11.6"
@@ -2160,6 +2208,8 @@ __metadata:
   languageName: node
   linkType: hard
 
+=======
+>>>>>>> master
 "@schematics/angular@npm:14.2.10":
   version: 14.2.10
   resolution: "@schematics/angular@npm:14.2.10"
@@ -2824,9 +2874,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
 "aws-sdk@npm:^2.1253.0":
   version: 2.1261.0
   resolution: "aws-sdk@npm:2.1261.0"
+=======
+"aws-sdk@npm:^2.1281.0":
+  version: 2.1281.0
+  resolution: "aws-sdk@npm:2.1281.0"
+>>>>>>> master
   dependencies:
     buffer: 4.9.2
     events: 1.1.1
@@ -2838,7 +2894,11 @@ __metadata:
     util: ^0.12.4
     uuid: 8.0.0
     xml2js: 0.4.19
+<<<<<<< HEAD
   checksum: e2b8f3cf17e4e4f94375d6df4a5125d0201464c363ddd08788714428efa2d77dc148bed09627a576ee0215f95f98d8504b012f33640fe642c2b781ffda5f62cc
+=======
+  checksum: 189fffeee378155e45096e54b858ca506bdafb3a6a2614933403c55301337e5523a59e827481aad7f006f43908a6cedc7a87ab340c1540a979de04cfea10e881
+>>>>>>> master
   languageName: node
   linkType: hard
 
@@ -3534,6 +3594,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "crowd-frame@workspace:."
   dependencies:
+<<<<<<< HEAD
     "@angular-devkit/build-angular": ^14.2.9
     "@angular/animations": ^14.2.8
     "@angular/cdk": ^14.2.6
@@ -3548,13 +3609,32 @@ __metadata:
     "@angular/platform-browser": ^14.2.8
     "@angular/platform-browser-dynamic": ^14.2.8
     "@angular/router": ^14.2.8
+=======
+    "@angular-devkit/build-angular": ^14.2.10
+    "@angular/animations": ^14.2.12
+    "@angular/cdk": ^14.2.7
+    "@angular/cli": ^14.2.10
+    "@angular/common": ^14.2.12
+    "@angular/compiler": ^14.2.12
+    "@angular/compiler-cli": ^14.2.12
+    "@angular/core": ^14.2.12
+    "@angular/forms": ^14.2.12
+    "@angular/material": ^14.2.7
+    "@angular/platform-browser": ^14.2.12
+    "@angular/platform-browser-dynamic": ^14.2.12
+    "@angular/router": ^14.2.12
+>>>>>>> master
     "@funktechno/texthighlighter": ^2.1.2
     "@kolkov/angular-editor": ^3.0.0-beta.0
     "@ng-bootstrap/ng-bootstrap": ^13.1.0
     "@popperjs/core": ^2.10.2
     "@types/node": ~16.11.68
+<<<<<<< HEAD
     aws-sdk: ^2.1253.0
     bootstrap: ^5.2.0
+=======
+    aws-sdk: ^2.1281.0
+>>>>>>> master
     crypto-es: ^1.2.7
     flat-angular: ^1.6.0
     ngx-color-picker: ^13.0.0
@@ -4516,7 +4596,7 @@ __metadata:
 
 "fsevents@patch:fsevents@~2.3.2#~builtin<compat/fsevents>":
   version: 2.3.2
-  resolution: "fsevents@patch:fsevents@npm%3A2.3.2#~builtin<compat/fsevents>::version=2.3.2&hash=18f3a7"
+  resolution: "fsevents@patch:fsevents@npm%3A2.3.2#~builtin<compat/fsevents>::version=2.3.2&hash=df0bf1"
   dependencies:
     node-gyp: latest
   conditions: os=darwin
@@ -7326,7 +7406,7 @@ __metadata:
 
 "resolve@patch:resolve@1.22.1#~builtin<compat/resolve>, resolve@patch:resolve@^1.1.7#~builtin<compat/resolve>, resolve@patch:resolve@^1.14.2#~builtin<compat/resolve>":
   version: 1.22.1
-  resolution: "resolve@patch:resolve@npm%3A1.22.1#~builtin<compat/resolve>::version=1.22.1&hash=07638b"
+  resolution: "resolve@patch:resolve@npm%3A1.22.1#~builtin<compat/resolve>::version=1.22.1&hash=c3c19d"
   dependencies:
     is-core-module: ^2.9.0
     path-parse: ^1.0.7
@@ -8218,7 +8298,7 @@ __metadata:
 
 "typescript@patch:typescript@4.7.4#~builtin<compat/typescript>":
   version: 4.7.4
-  resolution: "typescript@patch:typescript@npm%3A4.7.4#~builtin<compat/typescript>::version=4.7.4&hash=a1c5e5"
+  resolution: "typescript@patch:typescript@npm%3A4.7.4#~builtin<compat/typescript>::version=4.7.4&hash=65a307"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver

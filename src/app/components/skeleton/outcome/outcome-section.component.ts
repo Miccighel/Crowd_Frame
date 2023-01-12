@@ -61,8 +61,6 @@ export class OutcomeSectionComponent implements OnInit {
             "comment": new UntypedFormControl(''),
         });
 
-        console.log(this.statusCodes)
-
     }
 
     ngOnInit(): void {

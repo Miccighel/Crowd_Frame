@@ -1,0 +1,67 @@
+[
+	{
+		"name": "truthfulness",
+		"name_pretty": false,
+		"description": false,
+		"gold": true,
+		"justification": {
+			"text": "Your justification here (You can use your own words or, even better, copy/paste from the selected URL; you cannot use the selected search engine url as part of the justification).",
+			"min_words": 15
+		},
+		"url": {
+			"enable": true,
+			"instructions": {
+				"label": "B",
+				"caption": "Use the search engine below to search for evidence for the statement. Then, select the most relevant result.",
+				"text": false
+			}
+		},
+		"scale": {
+			"instructions": {
+				"label": "C",
+				"caption": "Evaluate the overall truthfulness of the statement considering the evidence found.",
+				"text": false
+			},
+			"type": "categorical",
+			"multiple_selection": false,
+			"mapping": [
+				{
+					"label": "Lie",
+					"description": "The statement is not accurate and makes a ridicolous claim",
+					"value": "1"
+				},
+				{
+					"label": "False",
+					"description": "The statement is not accurate",
+					"value": "2"
+				},
+				{
+					"label": "Mostly False",
+					"description": "The statement contains an element of truth but ignores critical facts that would give a different impression",
+					"value": "3"
+				},
+				{
+					"label": "Half True",
+					"description": "The statement is accurate but needs clarification or additional information",
+					"value": "4"
+				},
+				{
+					"label": "Mostly True",
+					"description": "The statement contains an element of truth but ignores critical facts that would give a different impression",
+					"value": "5"
+				},
+				{
+					"label": "True",
+					"description": "The statement is accurate and there is nothing significant missing",
+					"value": "6"
+				}
+			]
+		},
+		"style": {
+			"type": "list",
+			"position": "middle",
+			"orientation": "vertical",
+			"separator": false
+		}
+	}
+]
