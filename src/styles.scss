@@ -1,236 +1,237 @@
 @import "~@angular/material/prebuilt-themes/indigo-pink.css";
 
-
-html, body {
-  height: 100%;
+html,
+body {
+    height: 100%;
 }
 
 body {
-  margin: 0;
-  font-family: Roboto, "Helvetica Neue", sans-serif;
-  font-size: medium;
-  background-color: #00000009;
+    margin: 0;
+    font-family: Roboto, "Helvetica Neue", sans-serif;
+    font-size: medium;
+    background-color: #00000009;
 }
 
 img {
-  max-width: 100%;
-  height: auto;
+    max-width: 100%;
+    height: auto;
 }
 
 button {
-  text-transform: uppercase;
+    text-transform: uppercase;
 }
 
 button:nth-child(2) {
-  margin-left: 5px;
+    margin-left: 5px;
 }
 
 mat-horizontal-stepper {
-  background: transparent !important;
+    background: transparent !important;
 }
 
 mat-card-content mat-form-field label {
-  font-weight: bold;
+    font-weight: bold;
 }
 
 mat-card-title {
-  padding-top: 1% !important;
-  padding-bottom: 1% !important;
-  margin-bottom: 0.5% !important;
-  font-weight: initial !important;
+    padding-top: 1% !important;
+    padding-bottom: 1% !important;
+    margin-bottom: 0.5% !important;
+    font-weight: initial !important;
 }
 
-mat-card  {
-  margin:auto;
+mat-card {
+    margin: auto;
 }
 
 mat-card-actions {
-  margin-top: 1%;
+    margin-top: 1%;
 }
 
 .mat-radio-label {
-  white-space: normal !important;
+    white-space: normal !important;
 }
 
 .mat-card > .mat-card-actions:last-child {
-  margin-bottom: 1em !important;
+    margin-bottom: 1em !important;
 }
 
 .mat-dialog-container h2 {
-  font-weight: lighter;
+    font-weight: lighter;
 }
 
 .mat-dialog-container h2 {
-  padding-top: 1% !important;
-  padding-bottom: 1% !important;
-  border-top: 1px solid rgba(0, 0, 0, .12);
-  border-bottom: 1px solid rgba(0, 0, 0, .12);
-  font-weight: lighter !important;
+    padding-top: 1% !important;
+    padding-bottom: 1% !important;
+    border-top: 1px solid rgba(0, 0, 0, 0.12);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+    font-weight: lighter !important;
 }
 
 .form-note {
-  margin: 0;
+    margin: 0;
 }
 
 .angular-editor {
-  margin-bottom: 10px;
+    margin-bottom: 10px;
 }
 
 .highlight-green {
-  background-color: rgb(158, 255, 123);
+    background-color: rgb(158, 255, 123);
 }
 
 .highlight-orange {
-  background-color: rgb(255, 127, 80);
+    background-color: rgb(255, 127, 80);
 }
 
 .instruction-example {
-  margin-left: 2%;
+    margin-left: 2%;
 }
 
 .gray-background {
-  background-color: #F0F0F0;
+    background-color: #f0f0f0;
 }
 
 .highlight-yellow {
-  background-color: #FFFF7B;
+    background-color: #ffff7b;
 }
 
 .remove-highlight {
-  background-color: #F36060;
+    background-color: #f36060;
 }
 
 .replace-highlight {
-  background-color: #FFA500;
+    background-color: #ffa500;
 }
 
 .insert-highlight {
-  background-color: #DFF652;
+    background-color: #dff652;
 }
 
 .highlighted-green {
-  background-color: rgb(158, 255, 123);
+    background-color: rgb(158, 255, 123);
 }
 
 .highlighted-orange {
-  background-color: rgb(255, 127, 80);
+    background-color: rgb(255, 127, 80);
 }
 
 .image-example {
-  text-align: center;
-  text-decoration: solid;
-  margin: auto;
-  max-width: 70%;
+    text-align: center;
+    text-decoration: solid;
+    margin: auto;
+    max-width: 70%;
 }
 
 .radio-button-group {
-  display: flex;
-  flex-direction: column;
+    display: flex;
+    flex-direction: column;
 }
 
 .radio-button-group-horizontal {
-  display: inline;
+    display: inline;
 }
 
 .radio-button {
-  margin: 5px;
+    margin: 5px;
 }
 
 .text-lighter {
-  font-weight: lighter;
+    font-weight: lighter;
 }
 
 .checkbox {
-  padding-left: 24px;
-  padding-bottom: 12px;
+    padding-left: 24px;
+    padding-bottom: 12px;
 }
 
 .initial {
-  font-weight: initial;
+    font-weight: initial;
 }
 
 .lighter {
-  font-weight: lighter;
+    font-weight: lighter;
 }
 
 .border {
-  border: 1px solid #ddd;
+    border: 1px solid #ddd;
 }
 
 .indent {
-  margin-left: 16px;
+    margin-left: 16px;
 }
 
 .double-indent {
-  margin-left: 32px;
+    margin-left: 32px;
 }
 
 .left {
-  text-align: left;
+    text-align: left;
 }
 
 .center {
-  text-align: center;
+    text-align: center;
 }
 
 .right {
-  text-align: right;
+    text-align: right;
 }
 
 .width-100 {
-  width: 100% !important;
+    width: 100% !important;
 }
 
 .width-75 {
-  width: 75% !important;
+    width: 75% !important;
 }
 
 .width-20 {
-  width: 20% !important;
+    width: 20% !important;
 }
 
 .p-0 {
-  padding: 0 !important;
+    padding: 0 !important;
 }
 
 .p-2px {
-  padding: 2px !important;
+    padding: 2px !important;
 }
 
 .p-5px {
-  padding: 5px !important;
+    padding: 5px !important;
 }
 
 .p-16px {
-  padding: 16px !important;
+    padding: 16px !important;
 }
 
 .pr-16px {
-  padding-right: 16px !important;
+    padding-right: 16px !important;
 }
 
 .mt-0 {
-  margin-top: 0 !important;
+    margin-top: 0 !important;
 }
 
 .mt-8px {
-  margin-top: 8px !important;
+    margin-top: 8px !important;
 }
 
 .mt-16px {
-  margin-top: 16px !important;
+    margin-top: 16px !important;
 }
 
 .mb-0 {
-  margin-bottom: 0 !important;
+    margin-bottom: 0 !important;
 }
 
 .mb-8px {
-  margin-bottom: 8px !important;
+    margin-bottom: 8px !important;
 }
 
 .mb-16px {
-  margin-bottom: 16px !important;
+    margin-bottom: 16px !important;
 }
+
 /* Importing Bootstrap SCSS file. */
-@import '~bootstrap/scss/bootstrap';
+@import "bootstrap/scss/bootstrap";

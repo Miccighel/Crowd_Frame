@@ -8,25 +8,6 @@
   },
   "private": true,
   "dependencies": {
-<<<<<<< HEAD
-    "@angular/animations": "^14.2.8",
-    "@angular/cdk": "^14.2.6",
-    "@angular/cli": "^14.2.8",
-    "@angular/common": "^14.2.8",
-    "@angular/compiler": "^14.2.8",
-    "@angular/core": "^14.2.8",
-    "@angular/forms": "^14.2.8",
-    "@angular/material": "^14.2.6",
-    "@angular/platform-browser": "^14.2.8",
-    "@angular/platform-browser-dynamic": "^14.2.8",
-    "@angular/router": "^14.2.8",
-    "@funktechno/texthighlighter": "^2.1.2",
-    "@kolkov/angular-editor": "^3.0.0-beta.0",
-    "@ng-bootstrap/ng-bootstrap": "^13.1.0",
-    "@popperjs/core": "^2.10.2",
-    "aws-sdk": "^2.1253.0",
-    "bootstrap": "^5.2.0",
-=======
     "@angular/animations": "^14.2.12",
     "@angular/cdk": "^14.2.7",
     "@angular/cli": "^14.2.10",
@@ -34,14 +15,17 @@
     "@angular/compiler": "^14.2.12",
     "@angular/core": "^14.2.12",
     "@angular/forms": "^14.2.12",
+    "@angular/localize": "^14.2.12",
     "@angular/material": "^14.2.7",
     "@angular/platform-browser": "^14.2.12",
     "@angular/platform-browser-dynamic": "^14.2.12",
     "@angular/router": "^14.2.12",
     "@funktechno/texthighlighter": "^2.1.2",
     "@kolkov/angular-editor": "^3.0.0-beta.0",
+    "@ng-bootstrap/ng-bootstrap": "13.0.0",
+    "@popperjs/core": "^2.11.6",
     "aws-sdk": "^2.1281.0",
->>>>>>> master
+    "bootstrap": "^5.2.3",
     "crypto-es": "^1.2.7",
     "flat-angular": "^1.6.0",
     "ngx-color-picker": "^13.0.0",
@@ -57,14 +41,9 @@
     "zone.js": "~0.11.8"
   },
   "devDependencies": {
-<<<<<<< HEAD
-    "@angular-devkit/build-angular": "^14.2.9",
-    "@angular/compiler-cli": "^14.2.10",
-    "@angular/localize": "^14.2.10",
-=======
     "@angular-devkit/build-angular": "^14.2.10",
     "@angular/compiler-cli": "^14.2.12",
->>>>>>> master
+    "@angular/localize": "^14.2.10",
     "@types/node": "~16.11.68",
     "typescript": "4.7.4"
   },

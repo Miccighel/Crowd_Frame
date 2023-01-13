@@ -14,18 +14,20 @@ import { S3Service } from "../../../services/aws/s3.service";
 import { DynamoDBService } from "../../../services/aws/dynamoDB.service";
 import { SectionService } from "../../../services/section.service";
 import { ConfigService } from "../../../services/config.service";
-import { ScaleCategorical } from "src/app/models/skeleton/dimension";
+
 /* Models */
 import { Task } from "../../../models/skeleton/task";
+import { ChatCommentModalComponent } from "../chat-comment-modal/chat-comment-modalcomponent";
 import {
     CategoricalInfo,
     EnConversationaTaskStatus,
     IntervalDimensionInfo,
     MagnitudeDimensionInfo,
     McqInfo,
-} from "src/app/models/conversational/common.model";
+} from "../../../models/conversational/common.model";
+
+import { ScaleCategorical } from "../../../models/skeleton/dimension";
 import { NgbModal } from "@ng-bootstrap/ng-bootstrap";
-import { ChatCommentModalComponent } from "../chat-comment-modal/chat-comment-modalcomponent";
 
 //TODO:
 /*
@@ -72,7 +74,6 @@ const getRandomMessage = () =>
 })
 export class ChatWidgetComponent implements OnInit {
     @ViewChild("bottom") bottom!: ElementRef;
-
     @ViewChild("fixedMsg", { static: true }) fixedMsg!: ElementRef;
     @ViewChild("typing", { static: true }) typing!: ElementRef;
     @ViewChild("inputBox", { static: true }) inputBox!: ElementRef;

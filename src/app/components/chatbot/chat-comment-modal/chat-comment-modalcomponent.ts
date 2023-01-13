@@ -1,6 +1,7 @@
 import { Component, OnInit, ViewChild } from "@angular/core";
 import { FormBuilder, FormGroup, NgForm } from "@angular/forms";
 import { NgbActiveModal } from "@ng-bootstrap/ng-bootstrap";
+
 @Component({
     selector: "chat-comment-modal",
     templateUrl: "chat-comment-modal.component.html",

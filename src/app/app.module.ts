@@ -79,15 +79,16 @@ import { SearchEngineComponent } from "./components/skeleton/document/dimension/
 import { ElementPairwiseComponent } from "./components/skeleton/document/elements/element-pairwise/element-pairwise.component";
 import { DocumentComponent } from "./components/skeleton/document/document.component";
 import { ErrorMessageComponent } from "./components/shared/error-message/error-message.component";
-import { ChatWidgetComponent } from "./components/chatbot/chat-widget/chat-widget.component";
 import { ChatInputComponent } from "./components/chatbot/chat-input/chat-input.component";
 import { ChatAvatarComponent } from "./components/chatbot/chat-avatar/chat-avatar.component";
-import { NgbModule } from "@ng-bootstrap/ng-bootstrap";
 import { ChatInputMagnitudeComponent } from "./components/chatbot/chat-input-magnitude/chat-input-magnitude.component";
 import { ChatInputIntervalComponent } from "./components/chatbot/chat-input-interval/chat-input-interval.component";
 import { ChatInputCategoricalComponent } from "./components/chatbot/chat-input-categorical/chat-input-categorical.component";
-import { ChatCommentModalComponent } from "./components/chatbot/chat-comment-modal/chat-comment-modalcomponent";
+
 import { ChatInputCategoricalDDLComponent } from "./components/chatbot/chat-input-categorical-ddl/chat-input-categorical-ddl.component";
+import { ChatWidgetComponent } from "./components/chatbot/chat-widget/chat-widget.component";
+import { ChatCommentModalComponent } from "./components/chatbot/chat-comment-modal/chat-comment-modalcomponent";
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
     return () =>
