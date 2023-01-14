@@ -736,7 +736,7 @@ export class ChatWidgetComponent implements OnInit {
                         ". Question: <b>" +
                         questionnaire.questions[i].text +
                         "</b><br>Answer:<b> " +
-                        this.questionnaireAnswers[i].label +
+                        this.questionnaireAnswers[i] +
                         // questionnaire.questions[i].answers[
                         //     this.questionnaireAnswers[i] - 1]
                         "</b><br><br>";
@@ -1503,16 +1503,17 @@ export class ChatWidgetComponent implements OnInit {
     private generateRevisionData() {
         this.mcqAnswersInfo = [];
         //Revisione domande dei questionari
+
         if (this.questionnaireReview) {
+            let index = 1;
             for (let i = 0; i < this.task.questionnaires.length; i++) {
-                this.task.questionnaires[i].questions.forEach(
-                    (question, index) => {
-                        this.mcqAnswersInfo.push({
-                            label: question.name,
-                            value: (index + 1).toString(),
-                        });
-                    }
-                );
+                this.task.questionnaires[i].questions.forEach((question) => {
+                    this.mcqAnswersInfo.push({
+                        label: question.text,
+                        value: index.toString(),
+                    });
+                    index++;
+                });
             }
         } else {
             //Revisione dimensioni per ogni statement
@@ -1575,7 +1576,7 @@ export class ChatWidgetComponent implements OnInit {
             if (this.awaitingAnswer) {
                 this.showInputDDL = false;
                 this.disableInput = false;
-                this.questionnaireAnswers[this.currentQuestion] = message;
+                this.questionnaireAnswers[this.currentQuestion] = message.value;
                 this.randomMessage();
                 this.currentQuestion += 1;
                 this.awaitingAnswer = false;
