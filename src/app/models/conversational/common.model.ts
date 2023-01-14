@@ -29,7 +29,7 @@ export interface IntervalDimensionInfo {
     instructions?: string;
 }
 
-export interface McqInfo {
+export interface DropdownSelectItem {
     label: string;
     value?: string;
 }

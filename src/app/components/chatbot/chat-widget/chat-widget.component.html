@@ -167,7 +167,7 @@
         <chat-input-categorical-ddl
             class="container"
             *ngIf="showInputDDL"
-            [options]="mcqAnswersInfo"
+            [options]="dropdownListOptions"
             [disableInput]="disableInput"
             (send)="buttonInput($event)"
         >
@@ -186,9 +186,9 @@
     <div class="search-engine">
         <app-crowd-xplorer
             [task]="this.task"
-            (selectedRowEmitter)="getUrl($event)"
             [resetEvent]="resetSearchEngine"
             [disableEvent]="disableSearchEngine"
+            (selectedRowEmitter)="getUrl($event)"
             (resultEmitter)="storeSearchEngineRetrievedResponse($event)"
             (queryEmitter)="storeSearchEngineUserQuery($event)"
         ></app-crowd-xplorer>
