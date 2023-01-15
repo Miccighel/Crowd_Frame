@@ -30,6 +30,7 @@ import { ScaleCategorical } from "../../../models/skeleton/dimension";
 import { NgbModal } from "@ng-bootstrap/ng-bootstrap";
 import { GoldChecker } from "data/build/skeleton/goldChecker";
 import ChatHelper from "./chat-helpers";
+import { BehaviorSubject, Observable, Subject } from "rxjs";
 
 //TODO:
 /*
@@ -77,6 +78,7 @@ export class ChatWidgetComponent implements OnInit {
     @ViewChild("fixedMsg", { static: true }) fixedMsg!: ElementRef;
     @ViewChild("typing", { static: true }) typing!: ElementRef;
     @ViewChild("inputBox", { static: true }) inputBox!: ElementRef;
+    @ViewChild("progressBar", { static: true }) progressBar!: ElementRef;
 
     //Search engine events
     resetSearchEngine: EventEmitter<void> = new EventEmitter<void>();
@@ -141,6 +143,12 @@ export class ChatWidgetComponent implements OnInit {
     accessesAmount: number[]; //Numero di accessi agli elementi
     minValue: number = -2;
     maxValue: number = +2;
+    countdownValue: Observable<number>;
+    private countdownValueSubject = new BehaviorSubject<number>(0);
+
+    progress: number = 0;
+    timerIsOver: Observable<boolean>;
+    private timerIsOverSubject = new BehaviorSubject<boolean>(false);
 
     //show components flag
     showCategoricalAnswers = false;
@@ -260,6 +268,14 @@ export class ChatWidgetComponent implements OnInit {
         this.responsesRetrievedTotal = [];
         this.action = "Next";
 
+        //Countdown
+        this.task.settings.countdown_time = 5;
+
+        this.countdownValue = this.countdownValueSubject.asObservable();
+        this.timerIsOver = this.timerIsOverSubject.asObservable();
+
+        this.progress = 0;
+
         // Stampo le istruzioni iniziali
         this.typingAnimation(this.instr[0]);
         //Dimensionamento dei vettori relativi alle risposte
@@ -333,6 +349,34 @@ export class ChatWidgetComponent implements OnInit {
         /* General info about worker */
         data["worker"] = this.worker;
         this.task.sequenceNumber += 1;
+    }
+
+    public setCountdown() {
+        this.countdownValueSubject.next(this.task.settings.countdown_time);
+        this.progressBar.nativeElement.display = "none";
+        this.progress = this.task.settings.countdown_time / 100;
+        this.progressBar.nativeElement.style.width =
+            this.progress.toString() + "%";
+
+        let intervalId = setInterval(() => {
+            let timerValue = this.countdownValueSubject.value - 1;
+            this.countdownValueSubject.next(timerValue);
+            if (timerValue == 0) {
+                this.progressBar.nativeElement.style.width = "100%";
+                this.timerIsOverSubject.next(true);
+                return clearInterval(intervalId);
+            } else {
+                this.progressBar.nativeElement.display = "inherit";
+
+                this.progress =
+                    100 -
+                    (timerValue * 100) / this.task.settings.countdown_time;
+                if (this.progress > 0 && this.progress < 100) {
+                    this.progressBar.nativeElement.style.width =
+                        this.progress.toString() + "%";
+                }
+            }
+        }, 1000);
     }
 
     // Core
@@ -579,6 +623,7 @@ export class ChatWidgetComponent implements OnInit {
                 this.fixedMessage == ""
             ) {
                 this.printStatement();
+                this.setCountdown();
             }
             //Visualizzazione della dimensione
             if (!!this.fixedMessage) {
@@ -1558,13 +1603,14 @@ export class ChatWidgetComponent implements OnInit {
     private buildQuestionnaireAnswersData() {
         let questionnaireData = [];
         let addOn = "_answer";
-        this.task.questionnaires.forEach((questionnaire, index) => {
+        let globalIndex = 0;
+        this.task.questionnaires.forEach((questionnaire) => {
             let answers = {};
-            for (let i = 0; i < questionnaire.questions.length; i++) {
-                answers[
-                    this.task.questionnaires[index].questions[i].name + addOn
-                ] = this.questionnaireAnswers[i];
-            }
+            questionnaire.questions.forEach((question) => {
+                answers[question.name + addOn] =
+                    this.questionnaireAnswers[globalIndex];
+                globalIndex++;
+            });
             questionnaireData.push(answers);
         });
 
@@ -1582,8 +1628,8 @@ export class ChatWidgetComponent implements OnInit {
         };
         /* Worker's answers to the current questionnaire */
         let questionsFull = [];
-        this.task.questionnaires.forEach((questionnaire, index) => {
-            for (let question of questionnaire[index].questions) {
+        this.task.questionnaires.forEach((questionnaire) => {
+            for (let question of questionnaire.questions) {
                 if (!question.dropped) questionsFull.push(question);
             }
         });

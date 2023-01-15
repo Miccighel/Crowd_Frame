@@ -339,3 +339,15 @@ button.btn-user-answer {
 }
 
 /* INPUT SECTIONS */
+
+/* COUNTDOWN */
+
+.timer-in-progress {
+    color: #3f51b5;
+    font-weight: 700;
+}
+.timer-is-over {
+    background-color: #dc3545 !important;
+    color: white;
+    font-weight: 700;
+}

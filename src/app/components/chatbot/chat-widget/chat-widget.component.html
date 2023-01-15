@@ -36,6 +36,28 @@
                     height: auto;
                 "
             ></div>
+            <div class="progress">
+                <div
+                    #progressBar
+                    [ngClass]="
+                        (timerIsOver | async)
+                            ? 'timer-is-over'
+                            : 'timer-in-progress'
+                    "
+                    class="progress-bar progress-bar-striped bg-info progress-bar-animated"
+                    role="progressbar"
+                    aria-valuemin="0"
+                    aria-valuemax="100"
+                >
+                    <span *ngIf="timerIsOver | async; else timerInProgress">
+                        Time is over
+                    </span>
+
+                    <ng-template #timerInProgress>
+                        <span> {{ countdownValue | async }}s </span>
+                    </ng-template>
+                </div>
+            </div>
         </div>
 
         <div class="chat-box-main">
