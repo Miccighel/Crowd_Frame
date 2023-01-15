@@ -12,7 +12,7 @@ import { fadeIn } from "../animations";
 import { NgxUiLoaderService } from "ngx-ui-loader";
 import { S3Service } from "../../../services/aws/s3.service";
 import { DynamoDBService } from "../../../services/aws/dynamoDB.service";
-import { SectionService } from "../../../services/section.service";
+import { SectionService, StatusCodes } from "../../../services/section.service";
 import { ConfigService } from "../../../services/config.service";
 
 /* Models */
@@ -36,7 +36,6 @@ import { BehaviorSubject, Observable, Subject } from "rxjs";
 /*
 5. RIVEDERE UPLOAD TASK & QUALITY CON MICHAEL
 6. Se una dimensione ha anche l'URL gestire il doppio INPUT
-7. Provare ad implementare il countdown
 */
 
 // Messaggi random
@@ -141,14 +140,15 @@ export class ChatWidgetComponent implements OnInit {
     placeholderInput: string;
     tryNumber: number; // Numero di tentativi per completare
     accessesAmount: number[]; //Numero di accessi agli elementi
-    minValue: number = -2;
-    maxValue: number = +2;
-    countdownValue: Observable<number>;
-    private countdownValueSubject = new BehaviorSubject<number>(0);
 
-    progress: number = 0;
-    timerIsOver: Observable<boolean>;
+    private minValue: number = -2; //Valore validazione estremo inferiore
+    private maxValue: number = +2; //Valore validazione estremo superirore
+    countdownValue: Observable<number>; //Valore del countdown in secondi
+    private countdownValueSubject = new BehaviorSubject<number>(0); // Valore del countdown in secondi
+    private progress: number; // Percentuale di completamento della barra del timer
+    timerIsOver: Observable<boolean>; //Flag per la visualizzazione del countdown scaduto
     private timerIsOverSubject = new BehaviorSubject<boolean>(false);
+    private activeInterval: any; //Interval per la gestione del countdown
 
     //show components flag
     showCategoricalAnswers = false;
@@ -157,6 +157,7 @@ export class ChatWidgetComponent implements OnInit {
     showYNbuttons = false;
     showCMbuttons = false;
     showInputDDL = false;
+    hasDoubleInput = false;
 
     //containers
     categoricalInfo: CategoricalInfo[] = [];
@@ -269,11 +270,9 @@ export class ChatWidgetComponent implements OnInit {
         this.action = "Next";
 
         //Countdown
-        this.task.settings.countdown_time = 5;
-
+        this.task.settings.countdown_time = 25;
         this.countdownValue = this.countdownValueSubject.asObservable();
         this.timerIsOver = this.timerIsOverSubject.asObservable();
-
         this.progress = 0;
 
         // Stampo le istruzioni iniziali
@@ -351,26 +350,28 @@ export class ChatWidgetComponent implements OnInit {
         this.task.sequenceNumber += 1;
     }
 
+    //Creazione del countdown
     public setCountdown() {
-        this.countdownValueSubject.next(this.task.settings.countdown_time);
         this.progressBar.nativeElement.display = "none";
+        this.countdownValueSubject.next(this.task.settings.countdown_time);
+        this.timerIsOverSubject.next(false);
         this.progress = this.task.settings.countdown_time / 100;
         this.progressBar.nativeElement.style.width =
             this.progress.toString() + "%";
 
-        let intervalId = setInterval(() => {
-            let timerValue = this.countdownValueSubject.value - 1;
-            this.countdownValueSubject.next(timerValue);
-            if (timerValue == 0) {
+        this.activeInterval = setInterval(() => {
+            let countdownValue = this.countdownValueSubject.value - 1;
+            this.countdownValueSubject.next(countdownValue);
+            if (countdownValue == 0) {
                 this.progressBar.nativeElement.style.width = "100%";
                 this.timerIsOverSubject.next(true);
-                return clearInterval(intervalId);
+                this.storeCountdownData();
+                return clearInterval(this.activeInterval);
             } else {
                 this.progressBar.nativeElement.display = "inherit";
-
                 this.progress =
                     100 -
-                    (timerValue * 100) / this.task.settings.countdown_time;
+                    (countdownValue * 100) / this.task.settings.countdown_time;
                 if (this.progress > 0 && this.progress < 100) {
                     this.progressBar.nativeElement.style.width =
                         this.progress.toString() + "%";
@@ -553,6 +554,12 @@ export class ChatWidgetComponent implements OnInit {
             (ChatHelper.validMsg(message, this.minValue, this.maxValue) ||
                 ChatHelper.urlValid(message))
         ) {
+            //Stop del interval
+            if (this.task.settings.countdown_time) {
+                this.progressBar.nativeElement.display = "none";
+                clearInterval(this.activeInterval);
+            }
+
             const subtaskIndex = this.subTaskIndex - 1;
             this.answers[this.taskIndex][subtaskIndex] = message;
             let dimSel = {};
@@ -623,7 +630,12 @@ export class ChatWidgetComponent implements OnInit {
                 this.fixedMessage == ""
             ) {
                 this.printStatement();
-                this.setCountdown();
+                if (
+                    !!this.task.settings.countdown_time &&
+                    this.taskStatus == EnConversationaTaskStatus.TaskPhase
+                ) {
+                    this.setCountdown();
+                }
             }
             //Visualizzazione della dimensione
             if (!!this.fixedMessage) {
@@ -1401,6 +1413,12 @@ export class ChatWidgetComponent implements OnInit {
     //Generazione della dimensione in base alla scale type
     private selectDimensionToGenerate(dimensionIndex) {
         let scaleType = null;
+        // if (
+        //     this.task.dimensions[dimensionIndex].url &&
+        //     !!this.task.dimensions[dimensionIndex].scale
+        // ){
+        //     this.hasDoubleInput= true;
+        // }
         if (!this.task.dimensions[dimensionIndex].scale) {
             scaleType = "url";
         } else {
@@ -1583,6 +1601,11 @@ export class ChatWidgetComponent implements OnInit {
     }
 
     /* -- MODELLAZIONE E INVIO DATI AL SERVIZIO DI STORAGE -- */
+    //Salvataggio informazione relativa alla scadenza del countdown
+    private storeCountdownData() {
+        if (this.taskStatus == EnConversationaTaskStatus.TaskPhase)
+            this.task.countdownsExpired[this.taskIndex] = true;
+    }
     //Invio dei dati relativi al questionario
     private async uploadQuestionnaireData() {
         let answers = this.buildQuestionnaireAnswersData();
