@@ -170,6 +170,13 @@
                 </div>
             </div>
         </div>
+        <chat-url-input
+            class="container"
+            *ngIf="hasDoubleInput"
+            [urlValueSubject]="urlValueSubject"
+            [readonly]="disableInput"
+        >
+        </chat-url-input>
 
         <chat-input-magnitude
             class="container"

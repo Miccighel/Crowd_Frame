@@ -50,7 +50,7 @@ export class ChatInputComponent implements OnInit {
             return;
         }
         // invio il messaggio
-        this.send.emit({ message });
+        this.send.emit({ value: message });
         // resetto l'input field
         this.clearMessage();
         this.focusMessage();

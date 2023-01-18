@@ -42,3 +42,8 @@ export enum EnConversationaTaskStatus {
     ReviewPhase,
     EndPhase,
 }
+
+export interface ConversationaMessageModel {
+    value: any;
+    url?: string;
+}

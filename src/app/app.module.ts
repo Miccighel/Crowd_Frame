@@ -1,10 +1,12 @@
 /* Core imports */
 import { BrowserModule } from "@angular/platform-browser";
+
 import { APP_INITIALIZER, NgModule } from "@angular/core";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { HttpClientModule } from "@angular/common/http";
 /* Reactive forms imports */
-import { ReactiveFormsModule } from "@angular/forms";
+import { ReactiveFormsModule, FormsModule } from "@angular/forms";
+
 /* Angular Material imports */
 import { MatRadioModule } from "@angular/material/radio";
 import { MatCardModule } from "@angular/material/card";
@@ -88,7 +90,8 @@ import { ChatInputCategoricalComponent } from "./components/chatbot/chat-input-c
 import { ChatInputCategoricalDDLComponent } from "./components/chatbot/chat-input-categorical-ddl/chat-input-categorical-ddl.component";
 import { ChatWidgetComponent } from "./components/chatbot/chat-widget/chat-widget.component";
 import { ChatCommentModalComponent } from "./components/chatbot/chat-comment-modal/chat-comment-modalcomponent";
-import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModule } from "@ng-bootstrap/ng-bootstrap";
+import { ChatUrlInputComponent } from "./components/chatbot/chat-url-input/chat-url-input.component";
 
 function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
     return () =>
@@ -141,6 +144,7 @@ function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
         ChatInputCategoricalComponent,
         ChatInputCategoricalDDLComponent,
         ChatCommentModalComponent,
+        ChatUrlInputComponent,
     ],
     imports: [
         BrowserModule,
@@ -158,6 +162,7 @@ function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
         MatListModule,
         MatToolbarModule,
         ReactiveFormsModule,
+        FormsModule,
         NgxUiLoaderModule,
         HttpClientModule,
         BrowserModule,
