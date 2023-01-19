@@ -84,8 +84,6 @@ export class ChatWidgetComponent implements OnInit {
     disableSearchEngine: EventEmitter<boolean> = new EventEmitter<boolean>();
     readUrlValue: EventEmitter<void> = new EventEmitter<void>();
 
-    urlValueSubject: BehaviorSubject<string> = new BehaviorSubject<string>("");
-
     @Input() private worker!: any;
     task: Task;
     changeDetector: ChangeDetectorRef;
@@ -129,7 +127,7 @@ export class ChatWidgetComponent implements OnInit {
     awaitingAnswer: boolean;
     questionnaireReview: boolean;
     action: string;
-    disableInput = true;
+    readOnly = true;
     queryIndex: number[];
     sendData = false;
     taskStatus: EnConversationaTaskStatus;
@@ -391,7 +389,6 @@ export class ChatWidgetComponent implements OnInit {
     public async sendMessage({ message }) {
         if (this.hasDoubleInput) {
             this.emitGetUrlValue();
-            this.urlInputValue = this.urlValueSubject.getValue();
         }
         // Se il messaggio è vuoto, ignoro
         if (
@@ -425,9 +422,6 @@ export class ChatWidgetComponent implements OnInit {
             } else {
                 this.addMessageClient(this.client, message, "sent");
             }
-        }
-        if (this.hasDoubleInput) {
-            this.urlInputValue = this.urlValueSubject.getValue();
         }
 
         // Se il messaggio è da ignorare, lo ignoro
@@ -469,7 +463,7 @@ export class ChatWidgetComponent implements OnInit {
 
             if (this.awaitingAnswer) {
                 this.showInputDDL = false;
-                this.disableInput = false;
+                this.readOnly = false;
 
                 this.questionnaireAnswers[this.currentQuestion] = message;
                 this.randomMessage();
@@ -506,7 +500,7 @@ export class ChatWidgetComponent implements OnInit {
                     this.showInputDDL = true;
                 }, 850);
 
-                this.disableInput = false;
+                this.readOnly = false;
                 this.buttonsVisibility = null;
                 this.awaitingAnswer = true;
                 return;
@@ -606,6 +600,10 @@ export class ChatWidgetComponent implements OnInit {
             } else {
                 this.answers[this.taskIndex][subtaskIndex] = message;
             }
+            this.hasDoubleInput = false;
+            this.statementProvided = false;
+            this.reviewAnswersShown = false;
+            this.taskStatus = EnConversationaTaskStatus.ReviewPhase;
 
             let dimSel = {};
             dimSel["document"] = this.taskIndex;
@@ -618,9 +616,6 @@ export class ChatWidgetComponent implements OnInit {
             this.dimsSelected.push(dimSel);
             this.uploadStatementData();
             this.indexDimSel[this.taskIndex] += 1;
-            this.statementProvided = false;
-            this.taskStatus = EnConversationaTaskStatus.ReviewPhase;
-            this.reviewAnswersShown = false;
             this.reviewP(message);
             return;
         }
@@ -633,8 +628,12 @@ export class ChatWidgetComponent implements OnInit {
                 );
                 return;
             }
+            if (this.task.settings.countdown_time) {
+                this.progressBar.nativeElement.display = "none";
+                clearInterval(this.activeInterval);
+            }
             this.answersURL[this.taskIndex] = this.urlInputValue;
-            this.disableInput = false;
+            this.readOnly = false;
             this.cleanUserInput();
 
             this.ignoreMsg = true;
@@ -642,19 +641,25 @@ export class ChatWidgetComponent implements OnInit {
         //Gestione doppio INPUT
         if (this.hasDoubleInput) {
             if (
-                !ChatHelper.urlValid(this.urlInputValue) ||
-                !ChatHelper.validMsg(message, this.minValue, this.maxValue)
+                !this.getAnswerValidity(
+                    this.subTaskIndex - 1,
+                    message,
+                    this.urlInputValue
+                )
             ) {
                 this.typingAnimation(
                     "Check your answers, please type or select a valid url,you can use the search bar on the right!"
                 );
                 return;
             }
+            if (this.task.settings.countdown_time) {
+                this.progressBar.nativeElement.display = "none";
+                clearInterval(this.activeInterval);
+            }
+            this.hasDoubleInput = false;
             this.answersURL[this.taskIndex] = this.urlInputValue;
-            const subtaskIndex = this.subTaskIndex - 1;
-            this.answers[this.taskIndex][subtaskIndex] = message;
-            //this.answers[this.taskIndex][this.subTaskIndex] = message;
-            this.disableInput = false;
+            this.answers[this.taskIndex][this.subTaskIndex - 1] = message;
+            this.readOnly = false;
             this.cleanUserInput();
 
             this.ignoreMsg = true;
@@ -675,6 +680,10 @@ export class ChatWidgetComponent implements OnInit {
             return;
         } else {
             if (!this.ignoreMsg) {
+                if (this.task.settings.countdown_time) {
+                    this.progressBar.nativeElement.display = "none";
+                    clearInterval(this.activeInterval);
+                }
                 this.cleanUserInput();
                 const subtaskIndex = this.subTaskIndex - 1;
                 this.answers[this.taskIndex][subtaskIndex] = message;
@@ -710,7 +719,7 @@ export class ChatWidgetComponent implements OnInit {
                 this.subTaskIndex++;
             }
         }
-        // Non eseguo controlli sul primo msg, ma sugli altri si
+
         this.ignoreMsg = false;
     }
 
@@ -750,7 +759,7 @@ export class ChatWidgetComponent implements OnInit {
                 } else {
                     //Si sta selezionando la domanda da revisionare
                     this.currentQuestion = +message;
-                    this.disableInput = true;
+                    this.readOnly = true;
                     let previousQuestionIndex = this.currentQuestion - 1;
                     // Viene calcolato il questionario di appartenenza della domanda e il suo relativo indice
                     let questionnaireToCheck = 0;
@@ -775,7 +784,7 @@ export class ChatWidgetComponent implements OnInit {
                         this.typingAnimation(this.createQuestionnaireAnswers());
                         this.generateQuestionnaireAnswers();
                         this.currentQuestion = previousQuestionIndex;
-                        this.disableInput = false;
+                        this.readOnly = false;
                         this.showInputDDL = true;
                         this.buttonsVisibility = null;
                         this.awaitingAnswer = true;
@@ -799,7 +808,7 @@ export class ChatWidgetComponent implements OnInit {
             }
             if (!this.reviewAnswersShown) {
                 this.cleanUserInput();
-                this.disableInput = false;
+                this.readOnly = false;
                 this.typingAnimation("Let's review your answers!");
                 this.typingAnimation(
                     this.createQuestionnaireRecap() +
@@ -821,7 +830,7 @@ export class ChatWidgetComponent implements OnInit {
                 this.typingAnimation("Good, let's begin the real task!");
                 this.taskStatus = EnConversationaTaskStatus.InstructionPhase;
                 this.awaitingAnswer = false;
-                this.disableInput = false;
+                this.readOnly = false;
                 this.reviewAnswersShown = false;
                 this.pickReview = false;
                 this.instructionP();
@@ -845,21 +854,22 @@ export class ChatWidgetComponent implements OnInit {
             if (this.dimensionReviewPrinted) {
                 if (this.hasDoubleInput) {
                     if (
-                        !ChatHelper.urlValid(this.urlInputValue) ||
-                        !ChatHelper.validMsg(
+                        !this.getAnswerValidity(
+                            this.subTaskIndex,
                             message,
-                            this.minValue,
-                            this.maxValue
+                            this.urlInputValue
                         )
                     ) {
                         this.typingAnimation(
                             "Please check your answers, and check if you typed a valid url, try using the search bar on the right!"
                         );
+                        this.showInputDDL;
                         return;
                     }
-                    this.waitForUrl = false;
+                    this.hasDoubleInput = false;
                     this.placeholderInput = "";
-                    this.urlPlaceHolder = "";
+                    this.answers[this.taskIndex][this.subTaskIndex - 1] =
+                        message;
                     this.answersURL[this.taskIndex] = this.urlInputValue;
                     // Resetto
                     this.reviewAnswersShown = false;
@@ -874,8 +884,6 @@ export class ChatWidgetComponent implements OnInit {
                     }
                     this.waitForUrl = false;
                     this.placeholderInput = "";
-                    this.urlPlaceHolder = "";
-
                     this.answersURL[this.taskIndex] = this.urlInputValue;
                     if (this.showCategoricalAnswers) {
                         message = this.getCategoricalAnswerValue(message);
@@ -968,7 +976,7 @@ export class ChatWidgetComponent implements OnInit {
                     "OK! Would you like to jump to a specific statement?"
                 );
                 this.cleanUserInput();
-                this.disableInput = false;
+                this.readOnly = false;
                 this.showYNbuttons = true;
                 this.taskStatus = EnConversationaTaskStatus.EndPhase;
                 // INVIO DATI ALLA FINE DI OGNI CONFERMA DI UNO STATEMENT
@@ -1038,7 +1046,7 @@ export class ChatWidgetComponent implements OnInit {
             this.typingAnimation("Which dimension would you like to change?");
             this.cleanUserInput();
             this.generateRevisionData();
-            this.disableInput = false;
+            this.readOnly = false;
             this.pickReview = true; // Passo alla fase di modifica
             this.dimensionReviewPrinted = false; // Reset
             return;
@@ -1152,7 +1160,7 @@ export class ChatWidgetComponent implements OnInit {
         let isFinished = false;
         if (this.currentQuestionnaire >= this.task.questionnaires.length) {
             isFinished = true;
-            this.disableInput = true;
+            this.readOnly = true;
             this.taskStatus = EnConversationaTaskStatus.ReviewPhase;
             this.questionnaireReview = true;
         }
@@ -1161,6 +1169,10 @@ export class ChatWidgetComponent implements OnInit {
 
     private emitGetUrlValue() {
         this.readUrlValue.emit();
+    }
+
+    public updateUrlValue($event) {
+        this.urlInputValue = $event;
     }
 
     //Metodi di supporto per il Search Engine
@@ -1185,7 +1197,8 @@ export class ChatWidgetComponent implements OnInit {
     //Salvataggio delle row selezionate
     public getUrl(row) {
         if (this.hasDoubleInput) {
-            this.urlValueSubject.next(row.url);
+            this.urlPlaceHolder = row.url;
+            this.emitGetUrlValue();
         } else {
             this.placeholderInput = row.url;
         }
@@ -1213,7 +1226,7 @@ export class ChatWidgetComponent implements OnInit {
 
     public storeSearchEngineUserQuery(text) {
         this.placeholderInput = "";
-        this.disableInput = false;
+        this.readOnly = false;
         let q = {};
         q["document"] = this.taskIndex;
         q["dimension"] = this.subTaskIndex;
@@ -1235,12 +1248,12 @@ export class ChatWidgetComponent implements OnInit {
     ) {
         if (hasDoubleInput) {
             text =
-                "Url: <b>" +
+                "<b>Url:</b> " +
                 text.url +
-                "</b><br>" +
-                "Answer: <b>" +
+                "<br>" +
+                "<b>Answer:</b> " +
                 text.value +
-                "</b><br>";
+                "<br>";
         }
         // unshift aggiunge elementi all'inizio del vettore
         this.messages.unshift({
@@ -1304,7 +1317,7 @@ export class ChatWidgetComponent implements OnInit {
 
     //Stampa della domanda nella chat
     private printQuestion() {
-        this.disableInput = true;
+        this.readOnly = true;
         let q =
             this.task.questionnaires[this.currentQuestionnaire].questions[
                 this.currentQuestion
@@ -1359,9 +1372,10 @@ export class ChatWidgetComponent implements OnInit {
             out =
                 "Please rate the <b>" +
                 this.task.dimensions[dimensionIndex].name_pretty +
-                "</b> of the statement.<br><b>";
+                "</b> of the statement.<br>";
             if (!!this.task.dimensions[dimensionIndex].description)
                 out +=
+                    "<b>" +
                     this.task.dimensions[dimensionIndex].name_pretty +
                     "</b>: " +
                     this.task.dimensions[dimensionIndex].description;
@@ -1369,15 +1383,30 @@ export class ChatWidgetComponent implements OnInit {
             out =
                 "Please rate the <b>" +
                 this.task.dimensions[dimensionIndex].name +
-                "</b> of the statement.<br><b>";
+                "</b> of the statement.<br>";
             if (!!this.task.dimensions[dimensionIndex].description)
                 out +=
+                    "<b>" +
                     this.task.dimensions[dimensionIndex].name_pretty +
                     "</b>: " +
                     this.task.dimensions[dimensionIndex].description;
         }
         if (!!this.answers[this.taskIndex][dimensionIndex]) {
             if (
+                !!this.task.dimensions[dimensionIndex].scale.type &&
+                !!this.task.dimensions[dimensionIndex].url
+            ) {
+                out +=
+                    "<br>You previously answered<br>" +
+                    "Url: <b>" +
+                    this.answersURL[this.taskIndex] +
+                    "</b><br> <b>" +
+                    this.getCategoricalAnswerLabel(
+                        dimensionIndex,
+                        this.answers[this.taskIndex][dimensionIndex]
+                    ) +
+                    "</b>.";
+            } else if (
                 this.task.dimensions[dimensionIndex].scale.type == "categorical"
             ) {
                 out +=
@@ -1413,7 +1442,7 @@ export class ChatWidgetComponent implements OnInit {
                     case "categorical":
                         if (this.task.dimensions[i].name_pretty) {
                             recap +=
-                                "Answer: <b>" +
+                                "<b>" +
                                 this.task.dimensions[i].name_pretty +
                                 "</b>: " +
                                 this.getCategoricalAnswerLabel(
@@ -1599,7 +1628,7 @@ export class ChatWidgetComponent implements OnInit {
             case "url":
                 this.waitForUrl = true;
                 this.emitEnableSearchEngine();
-                this.disableInput = true;
+                this.readOnly = true;
                 this.typingAnimation(
                     "Please use the search bar on the right to search for information about the truthfulness of the statement. Once you find a suitable result, please type or select its url"
                 );
@@ -1704,7 +1733,7 @@ export class ChatWidgetComponent implements OnInit {
                 value: el.value,
             }));
             this.showCategoricalAnswers = true;
-            this.disableInput = true;
+            this.readOnly = true;
         }
         //Va a fissare il valore massimo e minimo per la validazione della risposta che verrà fornita
         this.minValue = this.getCategoricalMinInfo(this.categoricalInfo);

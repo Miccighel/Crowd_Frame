@@ -174,8 +174,9 @@
             class="container"
             *ngIf="hasDoubleInput"
             [readValue]="readUrlValue"
-            [urlValueSubject]="urlValueSubject"
-            [readonly]="disableInput"
+            (updateValue)="updateUrlValue($event)"
+            [urlPlaceholder]="urlPlaceHolder"
+            [readonly]="readOnly"
         >
         </chat-url-input>
 
@@ -184,21 +185,21 @@
             *ngIf="showMagnitudeAnswer"
             [magnitudeInfo]="magnitudeInfo"
             (send)="sendMessage($event)"
-            [disableInput]="disableInput"
+            [disableInput]="readOnly"
         ></chat-input-magnitude>
         <chat-input-interval
             class="container"
             *ngIf="showIntervalAnswer"
             [intervalInfo]="intervalInfo"
             (send)="sendMessage($event)"
-            [disableInput]="disableInput"
+            [disableInput]="readOnly"
         ></chat-input-interval>
 
         <chat-input-categorical-ddl
             class="container"
             *ngIf="showInputDDL"
             [options]="dropdownListOptions"
-            [disableInput]="disableInput"
+            [disableInput]="readOnly"
             (send)="buttonInput($event)"
         >
         </chat-input-categorical-ddl>
@@ -208,7 +209,7 @@
             *ngIf="!showMagnitudeAnswer && !showIntervalAnswer && !showInputDDL"
             (send)="sendMessage($event)"
             [pholder]="placeholderInput"
-            [disableInput]="disableInput"
+            [disableInput]="readOnly"
         >
         </chat-input>
     </div>
