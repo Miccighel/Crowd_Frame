@@ -173,6 +173,7 @@
         <chat-url-input
             class="container"
             *ngIf="hasDoubleInput"
+            [readValue]="readUrlValue"
             [urlValueSubject]="urlValueSubject"
             [readonly]="disableInput"
         >

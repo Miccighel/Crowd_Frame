@@ -82,6 +82,8 @@ export class ChatWidgetComponent implements OnInit {
     //Search engine events
     resetSearchEngine: EventEmitter<void> = new EventEmitter<void>();
     disableSearchEngine: EventEmitter<boolean> = new EventEmitter<boolean>();
+    readUrlValue: EventEmitter<void> = new EventEmitter<void>();
+
     urlValueSubject: BehaviorSubject<string> = new BehaviorSubject<string>("");
 
     @Input() private worker!: any;
@@ -388,6 +390,7 @@ export class ChatWidgetComponent implements OnInit {
     // Core
     public async sendMessage({ message }) {
         if (this.hasDoubleInput) {
+            this.emitGetUrlValue();
             this.urlInputValue = this.urlValueSubject.getValue();
         }
         // Se il messaggio è vuoto, ignoro
@@ -400,15 +403,16 @@ export class ChatWidgetComponent implements OnInit {
         }
         // Mostro il messaggio in chat
         if (this.showCategoricalAnswers || this.showInputDDL) {
+            message = message.label;
             if (this.hasDoubleInput) {
                 this.addMessageClient(
                     this.client,
-                    { url: this.urlInputValue, value: message.label },
+                    { url: this.urlInputValue, value: message },
                     "sent",
                     true
                 );
             } else {
-                this.addMessageClient(this.client, message.label, "sent");
+                this.addMessageClient(this.client, message, "sent");
             }
         } else {
             if (this.hasDoubleInput) {
@@ -466,6 +470,7 @@ export class ChatWidgetComponent implements OnInit {
             if (this.awaitingAnswer) {
                 this.showInputDDL = false;
                 this.disableInput = false;
+
                 this.questionnaireAnswers[this.currentQuestion] = message;
                 this.randomMessage();
                 this.currentQuestion += 1;
@@ -578,10 +583,14 @@ export class ChatWidgetComponent implements OnInit {
             message = this.getCategoricalAnswerValue(message);
             this.showInputDDL = false;
         }
+
         if (
             this.subTaskIndex >= this.task.dimensionsAmount &&
-            (ChatHelper.validMsg(message, this.minValue, this.maxValue) ||
-                ChatHelper.urlValid(message))
+            this.getAnswerValidity(
+                this.subTaskIndex - 1,
+                message,
+                this.urlInputValue
+            )
         ) {
             //Stop del interval
             if (this.task.settings.countdown_time) {
@@ -590,13 +599,22 @@ export class ChatWidgetComponent implements OnInit {
             }
 
             const subtaskIndex = this.subTaskIndex - 1;
-            this.answers[this.taskIndex][subtaskIndex] = message;
+            if (this.hasDoubleInput)
+                this.answersURL[subtaskIndex] = this.urlInputValue;
+            if (this.waitForUrl) {
+                this.answersURL[subtaskIndex] = message;
+            } else {
+                this.answers[this.taskIndex][subtaskIndex] = message;
+            }
+
             let dimSel = {};
             dimSel["document"] = this.taskIndex;
             dimSel["dimension"] = subtaskIndex;
             dimSel["index"] = this.indexDimSel[this.taskIndex];
             dimSel["timestamp"] = Date.now() / 1000;
-            dimSel["value"] = message;
+            dimSel["value"] = this.answers[this.taskIndex][subtaskIndex];
+            dimSel["url"] = this.answersURL[subtaskIndex];
+
             this.dimsSelected.push(dimSel);
             this.uploadStatementData();
             this.indexDimSel[this.taskIndex] += 1;
@@ -607,7 +625,7 @@ export class ChatWidgetComponent implements OnInit {
             return;
         }
 
-        if (this.waitForUrl && !this.hasDoubleInput) {
+        if (this.waitForUrl) {
             // Se sto chiedendo l'url
             if (!ChatHelper.urlValid(message)) {
                 this.typingAnimation(
@@ -618,14 +636,11 @@ export class ChatWidgetComponent implements OnInit {
             this.answersURL[this.taskIndex] = this.urlInputValue;
             this.disableInput = false;
             this.cleanUserInput();
-            if (this.hasDoubleInput) {
-                this.urlPlaceHolder;
-            }
 
             this.ignoreMsg = true;
         }
         //Gestione doppio INPUT
-        if (this.waitForUrl && this.hasDoubleInput) {
+        if (this.hasDoubleInput) {
             if (
                 !ChatHelper.urlValid(this.urlInputValue) ||
                 !ChatHelper.validMsg(message, this.minValue, this.maxValue)
@@ -641,9 +656,6 @@ export class ChatWidgetComponent implements OnInit {
             //this.answers[this.taskIndex][this.subTaskIndex] = message;
             this.disableInput = false;
             this.cleanUserInput();
-            if (this.hasDoubleInput) {
-                this.urlPlaceHolder;
-            }
 
             this.ignoreMsg = true;
         }
@@ -831,10 +843,17 @@ export class ChatWidgetComponent implements OnInit {
         if (this.pickReview) {
             // La dimensione è visualizzata
             if (this.dimensionReviewPrinted) {
-                if (this.waitForUrl && !this.hasDoubleInput) {
-                    if (!ChatHelper.urlValid(message)) {
+                if (this.hasDoubleInput) {
+                    if (
+                        !ChatHelper.urlValid(this.urlInputValue) ||
+                        !ChatHelper.validMsg(
+                            message,
+                            this.minValue,
+                            this.maxValue
+                        )
+                    ) {
                         this.typingAnimation(
-                            "Please type a valid url, try using the search bar on the right!"
+                            "Please check your answers, and check if you typed a valid url, try using the search bar on the right!"
                         );
                         return;
                     }
@@ -846,7 +865,7 @@ export class ChatWidgetComponent implements OnInit {
                     this.reviewAnswersShown = false;
                     this.pickReview = false;
                 }
-                if (this.waitForUrl && this.hasDoubleInput) {
+                if (this.waitForUrl) {
                     if (!ChatHelper.urlValid(message)) {
                         this.typingAnimation(
                             "Please type a valid url, try using the search bar on the right!"
@@ -1125,7 +1144,7 @@ export class ChatWidgetComponent implements OnInit {
     private skipQuestionnairePhase() {
         this.typingAnimation("Let's start, with the activity!");
         this.taskStatus = EnConversationaTaskStatus.TaskPhase;
-        setTimeout(() => this.taskP({ value: "0" }), 3000);
+        setTimeout(() => this.taskP("0"), 3000);
     }
 
     //Controlla se il questionario è finito e avvia la fase di revisione del questionario
@@ -1138,6 +1157,10 @@ export class ChatWidgetComponent implements OnInit {
             this.questionnaireReview = true;
         }
         return isFinished;
+    }
+
+    private emitGetUrlValue() {
+        this.readUrlValue.emit();
     }
 
     //Metodi di supporto per il Search Engine
@@ -1161,7 +1184,7 @@ export class ChatWidgetComponent implements OnInit {
 
     //Salvataggio delle row selezionate
     public getUrl(row) {
-        if (this.waitForUrl && this.hasDoubleInput) {
+        if (this.hasDoubleInput) {
             this.urlValueSubject.next(row.url);
         } else {
             this.placeholderInput = row.url;
@@ -1212,7 +1235,12 @@ export class ChatWidgetComponent implements OnInit {
     ) {
         if (hasDoubleInput) {
             text =
-                "Url: " + text.url + "<br>" + "Answer: " + text.value + "<br>";
+                "Url: <b>" +
+                text.url +
+                "</b><br>" +
+                "Answer: <b>" +
+                text.value +
+                "</b><br>";
         }
         // unshift aggiunge elementi all'inizio del vettore
         this.messages.unshift({
@@ -1374,58 +1402,111 @@ export class ChatWidgetComponent implements OnInit {
         let recap = "";
         for (let i = 0; i < this.task.dimensionsAmount; i++) {
             let scaleType = null;
-            if (!this.task.dimensions[i].scale) {
-                scaleType = "url";
-            } else {
+            //Dimensioni con doppio input
+            if (
+                this.task.dimensions[i].scale &&
+                !!this.task.dimensions[i].url
+            ) {
                 scaleType = this.task.dimensions[i].scale.type;
+                recap += i + 1 + ".<b> URL</b>: " + this.answersURL[i] + "<br>";
+                switch (scaleType) {
+                    case "categorical":
+                        if (this.task.dimensions[i].name_pretty) {
+                            recap +=
+                                "Answer: <b>" +
+                                this.task.dimensions[i].name_pretty +
+                                "</b>: " +
+                                this.getCategoricalAnswerLabel(
+                                    i,
+                                    this.answers[this.taskIndex][i].toString()
+                                ) +
+                                "<br>";
+                        }
+                        break;
+                    case "magnitude_estimation":
+                        if (this.task.dimensions[i].name_pretty) {
+                            recap +=
+                                "Answer: <b>" +
+                                this.task.dimensions[i].name_pretty +
+                                "</b>: " +
+                                this.answers[this.taskIndex][i] +
+                                "<br>";
+                        }
+                        break;
+                    case "interval":
+                        if (this.task.dimensions[i].name_pretty) {
+                            recap +=
+                                "Answer: <b>" +
+                                this.task.dimensions[i].name_pretty +
+                                "</b>: " +
+                                this.answers[this.taskIndex][i] +
+                                " <br>";
+                        }
+                        break;
+                    default:
+                        console.warn("Casistica non gestita");
+                        break;
+                }
             }
-            switch (scaleType) {
-                case "url":
-                    recap +=
-                        i + 1 + ".<b> URL</b>: " + this.answersURL[i] + "<br>";
-                    break;
-                case "categorical":
-                    if (this.task.dimensions[i].name_pretty) {
+            // Dimensioni con singolo input
+            else {
+                if (!this.task.dimensions[i].scale) {
+                    scaleType = "url";
+                } else {
+                    scaleType = this.task.dimensions[i].scale.type;
+                }
+                switch (scaleType) {
+                    case "url":
                         recap +=
                             i +
                             1 +
-                            ". <b>" +
-                            this.task.dimensions[i].name_pretty +
-                            "</b>: " +
-                            this.getCategoricalAnswerLabel(
-                                i,
-                                this.answers[this.taskIndex][i].toString()
-                            ) +
+                            ".<b> URL</b>: " +
+                            this.answersURL[i] +
                             "<br>";
-                    }
-                    break;
-                case "magnitude_estimation":
-                    if (this.task.dimensions[i].name_pretty) {
-                        recap +=
-                            i +
-                            1 +
-                            ". <b>" +
-                            this.task.dimensions[i].name_pretty +
-                            "</b>: " +
-                            this.answers[this.taskIndex][i] +
-                            "<br>";
-                    }
-                    break;
-                case "interval":
-                    if (this.task.dimensions[i].name_pretty) {
-                        recap +=
-                            i +
-                            1 +
-                            ". <b>" +
-                            this.task.dimensions[i].name_pretty +
-                            "</b>: " +
-                            this.answers[this.taskIndex][i] +
-                            " <br>";
-                    }
-                    break;
-                default:
-                    console.warn("Casistica non gestita");
-                    break;
+                        break;
+                    case "categorical":
+                        if (this.task.dimensions[i].name_pretty) {
+                            recap +=
+                                i +
+                                1 +
+                                ". <b>" +
+                                this.task.dimensions[i].name_pretty +
+                                "</b>: " +
+                                this.getCategoricalAnswerLabel(
+                                    i,
+                                    this.answers[this.taskIndex][i].toString()
+                                ) +
+                                "<br>";
+                        }
+                        break;
+                    case "magnitude_estimation":
+                        if (this.task.dimensions[i].name_pretty) {
+                            recap +=
+                                i +
+                                1 +
+                                ". <b>" +
+                                this.task.dimensions[i].name_pretty +
+                                "</b>: " +
+                                this.answers[this.taskIndex][i] +
+                                "<br>";
+                        }
+                        break;
+                    case "interval":
+                        if (this.task.dimensions[i].name_pretty) {
+                            recap +=
+                                i +
+                                1 +
+                                ". <b>" +
+                                this.task.dimensions[i].name_pretty +
+                                "</b>: " +
+                                this.answers[this.taskIndex][i] +
+                                " <br>";
+                        }
+                        break;
+                    default:
+                        console.warn("Casistica non gestita");
+                        break;
+                }
             }
         }
         return recap;
@@ -1501,11 +1582,11 @@ export class ChatWidgetComponent implements OnInit {
         ) {
             this.hasDoubleInput = true;
             this.emitEnableSearchEngine();
-            this.waitForUrl = true;
+
             this.typingAnimation(
                 "Please use the search bar on the right to search for information about the truthfulness of the statement. Once you find a suitable result, please type or select its url"
             );
-            this;
+            scaleType = this.task.dimensions[dimensionIndex].scale.type;
         } else {
             if (!this.task.dimensions[dimensionIndex].scale) {
                 scaleType = "url";
@@ -1591,8 +1672,11 @@ export class ChatWidgetComponent implements OnInit {
     private generateCategoricalAnswers(dimensionIndex: number) {
         this.categoricalInfo = [];
         const dimensionInfos = this.task.dimensions[dimensionIndex];
-        //Se una dimensione ha più di 5 valori mappati appare la DDL
-        if ((dimensionInfos.scale as ScaleCategorical).mapping.length > 5) {
+        //Se una dimensione ha più di 5 valori mappati oppure si prevede un doppio input appare la DDL
+        if (
+            (dimensionInfos.scale as ScaleCategorical).mapping.length > 5 ||
+            this.hasDoubleInput
+        ) {
             this.dropdownListOptions = (
                 dimensionInfos.scale as ScaleCategorical
             ).mapping.map((dimension, index) => {
@@ -1675,7 +1759,7 @@ export class ChatWidgetComponent implements OnInit {
     //Restituisce il valore mappato della risposta categoriale
     private getCategoricalAnswerValue(message) {
         const mappedValue = this.categoricalInfo.find(
-            (el) => el.label.toLowerCase() == message.label.toLowerCase()
+            (el) => el.label.toLowerCase() == message.toLowerCase()
         );
         if (!!mappedValue) return mappedValue.value;
         else return null;
@@ -1684,12 +1768,36 @@ export class ChatWidgetComponent implements OnInit {
     //Restituisce il valore mappato della Dropdown visualizzata
     private getDimensionAnswerValue(message) {
         const mappedValue = this.dropdownListOptions.find(
-            (el) => el.label.toLowerCase() == message.label.toLowerCase()
+            (el) => el.label.toLowerCase() == message.toLowerCase()
         );
         if (!!mappedValue) return mappedValue.value;
         else return null;
     }
 
+    private getAnswerValidity(
+        dimensionIndex: number,
+        message: string,
+        url: string
+    ): boolean {
+        let isValid = false;
+        if (
+            !!this.task.dimensions[dimensionIndex].scale &&
+            !!this.task.dimensions[dimensionIndex].url
+        ) {
+            isValid =
+                ChatHelper.validMsg(message, this.minValue, this.maxValue) &&
+                ChatHelper.urlValid(url);
+        } else if (this.waitForUrl) {
+            isValid = ChatHelper.urlValid(url);
+        } else
+            isValid = ChatHelper.validMsg(
+                message,
+                this.minValue,
+                this.maxValue
+            );
+
+        return isValid;
+    }
     /* -- MODELLAZIONE E INVIO DATI AL SERVIZIO DI STORAGE -- */
     //Salvataggio informazione relativa alla scadenza del countdown
     private storeCountdownData() {

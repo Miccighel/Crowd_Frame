@@ -6,7 +6,6 @@ import {
     OnChanges,
     OnDestroy,
     OnInit,
-    Output,
     ViewChild,
     ViewEncapsulation,
 } from "@angular/core";
@@ -20,7 +19,7 @@ import { BehaviorSubject, Observable, Subject, takeUntil } from "rxjs";
 })
 export class ChatUrlInputComponent implements OnInit, OnChanges, OnDestroy {
     @Input() public urlValueSubject: BehaviorSubject<string>;
-    @Input() public urlPlaceHolder: string;
+    @Input() public readValue = new EventEmitter();
     @Input() public readonly!: boolean;
     public urlValue: string;
     public urlValue$: Observable<string>;
@@ -35,6 +34,10 @@ export class ChatUrlInputComponent implements OnInit, OnChanges, OnDestroy {
             .subscribe((value) => {
                 this.urlValue = value;
             });
+
+        this.readValue.subscribe(() =>
+            this.urlValueSubject.next(this.urlValue)
+        );
     }
 
     ngOnChanges() {
