@@ -137,7 +137,6 @@ export class ChatWidgetComponent implements OnInit {
     answersURL: string[]; // Memorizzo gli url
     questionnaireAnswers: any[] = [];
     queue: number;
-    buttonsVisibility: number; //0: nulla, 1: YS, 2: CM, 3: Num
     placeholderInput: string;
     urlPlaceHolder: string;
     tryNumber: number; // Numero di tentativi per completare
@@ -151,6 +150,7 @@ export class ChatWidgetComponent implements OnInit {
     timerIsOver: Observable<boolean>; //Flag per la visualizzazione del countdown scaduto
     private timerIsOverSubject = new BehaviorSubject<boolean>(false);
     private activeInterval: any; //Interval per la gestione del countdown
+    public showCountdown = true; //Interval per la gestione del countdown
 
     //show components flag
     showCategoricalAnswers = false;
@@ -357,7 +357,7 @@ export class ChatWidgetComponent implements OnInit {
 
     //Creazione del countdown
     public setCountdown() {
-        this.progressBar.nativeElement.display = "none";
+        this.showCountdown = true;
         this.countdownValueSubject.next(this.task.settings.countdown_time);
         this.timerIsOverSubject.next(false);
         this.progress = this.task.settings.countdown_time / 100;
@@ -373,7 +373,7 @@ export class ChatWidgetComponent implements OnInit {
                 this.storeCountdownData();
                 return clearInterval(this.activeInterval);
             } else {
-                this.progressBar.nativeElement.display = "inherit";
+                this.progressBar.nativeElement.display = "block";
                 this.progress =
                     100 -
                     (countdownValue * 100) / this.task.settings.countdown_time;
@@ -501,7 +501,7 @@ export class ChatWidgetComponent implements OnInit {
                 }, 850);
 
                 this.readOnly = false;
-                this.buttonsVisibility = null;
+
                 this.awaitingAnswer = true;
                 return;
             }
@@ -588,8 +588,7 @@ export class ChatWidgetComponent implements OnInit {
         ) {
             //Stop del interval
             if (this.task.settings.countdown_time) {
-                this.progressBar.nativeElement.display = "none";
-                clearInterval(this.activeInterval);
+                this.resetCountdown();
             }
 
             const subtaskIndex = this.subTaskIndex - 1;
@@ -629,10 +628,9 @@ export class ChatWidgetComponent implements OnInit {
                 return;
             }
             if (this.task.settings.countdown_time) {
-                this.progressBar.nativeElement.display = "none";
-                clearInterval(this.activeInterval);
+                this.resetCountdown();
             }
-            this.answersURL[this.taskIndex] = this.urlInputValue;
+            this.answersURL[this.subTaskIndex - 1] = this.urlInputValue;
             this.readOnly = false;
             this.cleanUserInput();
 
@@ -653,11 +651,10 @@ export class ChatWidgetComponent implements OnInit {
                 return;
             }
             if (this.task.settings.countdown_time) {
-                this.progressBar.nativeElement.display = "none";
-                clearInterval(this.activeInterval);
+                this.resetCountdown();
             }
             this.hasDoubleInput = false;
-            this.answersURL[this.taskIndex] = this.urlInputValue;
+            this.answersURL[this.subTaskIndex - 1] = this.urlInputValue;
             this.answers[this.taskIndex][this.subTaskIndex - 1] = message;
             this.readOnly = false;
             this.cleanUserInput();
@@ -681,7 +678,7 @@ export class ChatWidgetComponent implements OnInit {
         } else {
             if (!this.ignoreMsg) {
                 if (this.task.settings.countdown_time) {
-                    this.progressBar.nativeElement.display = "none";
+                    this.showCountdown = false;
                     clearInterval(this.activeInterval);
                 }
                 this.cleanUserInput();
@@ -714,7 +711,7 @@ export class ChatWidgetComponent implements OnInit {
             }
             //Visualizzazione della dimensione
             if (!!this.fixedMessage) {
-                this.printDimension(this.subTaskIndex);
+                this.printDimension(this.taskIndex, this.subTaskIndex);
                 this.selectDimensionToGenerate(this.subTaskIndex);
                 this.subTaskIndex++;
             }
@@ -786,7 +783,7 @@ export class ChatWidgetComponent implements OnInit {
                         this.currentQuestion = previousQuestionIndex;
                         this.readOnly = false;
                         this.showInputDDL = true;
-                        this.buttonsVisibility = null;
+
                         this.awaitingAnswer = true;
                         return;
                     } else if (
@@ -838,7 +835,7 @@ export class ChatWidgetComponent implements OnInit {
                 return;
             } else if (message.trim().toLowerCase() === "modify") {
                 this.showCMbuttons = false;
-                this.buttonsVisibility = null;
+
                 this.typingAnimation("Which one would you like to modify?");
                 this.generateRevisionData();
                 this.pickReview = true;
@@ -872,7 +869,7 @@ export class ChatWidgetComponent implements OnInit {
 
                     this.answers[this.taskIndex][this.subTaskIndex - 1] =
                         message;
-                    this.answersURL[this.taskIndex] = this.urlInputValue;
+                    this.answersURL[this.subTaskIndex - 1] = this.urlInputValue;
                     // Resetto
                     this.reviewAnswersShown = false;
                     this.pickReview = false;
@@ -886,7 +883,7 @@ export class ChatWidgetComponent implements OnInit {
                     }
                     this.waitForUrl = false;
 
-                    this.answersURL[this.taskIndex] = this.urlInputValue;
+                    this.answersURL[this.subTaskIndex - 1] = this.urlInputValue;
                     this.placeholderInput = "";
                     this.urlPlaceHolder = "";
                     if (this.showCategoricalAnswers) {
@@ -944,7 +941,7 @@ export class ChatWidgetComponent implements OnInit {
                 }
                 this.subTaskIndex = +message - 1;
                 //Visualizzazione della dimensione richiesta e relativi dati
-                this.printDimension(this.subTaskIndex);
+                this.printDimension(this.taskIndex, this.subTaskIndex);
                 this.selectDimensionToGenerate(this.subTaskIndex);
                 this.dimensionReviewPrinted = true;
                 return;
@@ -1039,7 +1036,7 @@ export class ChatWidgetComponent implements OnInit {
             // Passo al prossimo statement, resetto
             this.randomMessage();
             this.taskStatus = EnConversationaTaskStatus.TaskPhase;
-            this.taskIndex += 1;
+            this.taskIndex++;
             this.reviewAnswersShown = false;
             this.ignoreMsg = true;
             this.subTaskIndex = 0;
@@ -1065,6 +1062,9 @@ export class ChatWidgetComponent implements OnInit {
             this.taskIndex = +message - 1;
             this.printStatement();
             this.taskStatus = EnConversationaTaskStatus.ReviewPhase;
+            if (this.task.settings.countdown_time) {
+                this.resetCountdown();
+            }
             this.reviewAnswersShown = false;
             this.reviewP(message);
             // print answers e avvia come la review
@@ -1076,7 +1076,8 @@ export class ChatWidgetComponent implements OnInit {
                         "Which statement would you like to jump to?"
                 );
                 this.showYNbuttons = false;
-                this.buttonsVisibility = null;
+                this.showInputDDL = true;
+                this.loadfinalReviewData();
                 this.statementJump = true;
             } else if (message.trim().toLowerCase() === "no") {
                 this.action = "Finish";
@@ -1371,7 +1372,7 @@ export class ChatWidgetComponent implements OnInit {
     }
 
     // Stampa la dimensione corrente
-    private printDimension(dimensionIndex) {
+    private printDimension(taskIndex: number, dimensionIndex: number) {
         let out = "";
         if (this.task.dimensions[dimensionIndex].name_pretty) {
             out =
@@ -1396,7 +1397,7 @@ export class ChatWidgetComponent implements OnInit {
                     "</b>: " +
                     this.task.dimensions[dimensionIndex].description;
         }
-        if (!!this.answers[this.taskIndex][dimensionIndex]) {
+        if (!!this.answers[taskIndex][dimensionIndex]) {
             if (
                 !!this.task.dimensions[dimensionIndex].scale.type &&
                 !!this.task.dimensions[dimensionIndex].url
@@ -1404,11 +1405,11 @@ export class ChatWidgetComponent implements OnInit {
                 out +=
                     "<br>You previously answered<br>" +
                     "Url: <b>" +
-                    this.answersURL[this.taskIndex] +
+                    this.answersURL[dimensionIndex] +
                     "</b><br> <b>" +
                     this.getCategoricalAnswerLabel(
                         dimensionIndex,
-                        this.answers[this.taskIndex][dimensionIndex]
+                        this.answers[taskIndex][dimensionIndex]
                     ) +
                     "</b>.";
             } else if (
@@ -1418,13 +1419,13 @@ export class ChatWidgetComponent implements OnInit {
                     "<br>You previously answered <b>" +
                     this.getCategoricalAnswerLabel(
                         dimensionIndex,
-                        this.answers[this.taskIndex][dimensionIndex]
+                        this.answers[taskIndex][dimensionIndex]
                     ) +
                     "</b>.";
             } else {
                 out +=
                     "<br>You previously answered <b>" +
-                    this.answers[this.taskIndex][dimensionIndex] +
+                    this.answers[taskIndex][dimensionIndex] +
                     "</b>.";
             }
         }
@@ -1557,9 +1558,10 @@ export class ChatWidgetComponent implements OnInit {
                 this.task.hit.documents[i]["statement_text"] +
                 "</b> <br> - " +
                 this.task.hit.documents[i]["speaker_name"] +
-                ", " +
-                this.task.hit.documents[i]["statement_date"] +
-                "<br><br>";
+                ", ";
+            if (!!this.task.hit.documents[i]["statement_date"])
+                statements +=
+                    this.task.hit.documents[i]["statement_date"] + "<br><br>";
         }
         return statements;
     }
@@ -1702,6 +1704,20 @@ export class ChatWidgetComponent implements OnInit {
         }));
     }
 
+    private loadfinalReviewData() {
+        this.dropdownListOptions = [];
+
+        this.task.hit.documents.forEach((document, index) => {
+            this.dropdownListOptions.push({
+                label:
+                    (index + 1).toString() +
+                    document["statement_text"].substring(0, 30) +
+                    "...",
+                value: (index + 1).toString(),
+            });
+        });
+    }
+
     // GENERAZIONE DATI RELATIVI ALLE DIMENSIONI
     private generateCategoricalAnswers(dimensionIndex: number) {
         this.categoricalInfo = [];
@@ -1831,6 +1847,11 @@ export class ChatWidgetComponent implements OnInit {
             );
 
         return isValid;
+    }
+
+    private resetCountdown() {
+        this.showCountdown = false;
+        clearInterval(this.activeInterval);
     }
     /* -- MODELLAZIONE E INVIO DATI AL SERVIZIO DI STORAGE -- */
     //Salvataggio informazione relativa alla scadenza del countdown

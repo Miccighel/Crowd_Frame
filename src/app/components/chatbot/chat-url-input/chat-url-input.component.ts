@@ -10,7 +10,7 @@ import {
     ViewChild,
     ViewEncapsulation,
 } from "@angular/core";
-import { BehaviorSubject, Observable, Subject, takeUntil } from "rxjs";
+import { Subject } from "rxjs";
 
 @Component({
     selector: "chat-url-input",

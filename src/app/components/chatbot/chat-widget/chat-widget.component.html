@@ -36,7 +36,7 @@
                     height: auto;
                 "
             ></div>
-            <div class="progress">
+            <div class="progress" [ngClass]="{ hidden: !showCountdown }">
                 <div
                     #progressBar
                     [ngClass]="

@@ -351,3 +351,7 @@ button.btn-user-answer {
     color: white;
     font-weight: 700;
 }
+
+.hidden {
+    display: none !important;
+}
