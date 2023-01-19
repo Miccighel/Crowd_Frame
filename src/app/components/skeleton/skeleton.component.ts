@@ -1,7 +1,7 @@
 /* Core */
 import {AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, QueryList, ViewChild, ViewChildren, ViewEncapsulation} from "@angular/core";
 import {UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators} from '@angular/forms';
-import {MatFormField} from "@angular/material/form-field";
+import {MatLegacyFormField as MatFormField} from "@angular/material/legacy-form-field";
 import {MatStepper} from "@angular/material/stepper";
 import {HttpClient, HttpHeaders} from "@angular/common/http";
 /* Services */
@@ -18,7 +18,7 @@ import {GoldChecker} from "../../../../data/build/skeleton/goldChecker";
 import {WorkerSettings} from "../../models/worker/workerSettings";
 import {Hit} from "../../models/skeleton/hit";
 /* Material Design */
-import {MatSnackBar} from "@angular/material/snack-bar";
+import {MatLegacySnackBar as MatSnackBar} from "@angular/material/legacy-snack-bar";
 /* Services */
 import {SectionService} from "../../services/section.service";
 import {StatusCodes} from "../../services/section.service";
