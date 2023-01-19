@@ -40,7 +40,6 @@ export class ChatUrlInputComponent implements OnInit, OnChanges, OnDestroy {
 
         this.readValue.subscribe(() => {
             this.updateValue.emit(this.urlValue);
-            this.urlValue = "";
         });
     }
 

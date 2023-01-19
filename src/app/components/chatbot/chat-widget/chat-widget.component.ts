@@ -868,6 +868,8 @@ export class ChatWidgetComponent implements OnInit {
                     }
                     this.hasDoubleInput = false;
                     this.placeholderInput = "";
+                    this.urlPlaceHolder = "";
+
                     this.answers[this.taskIndex][this.subTaskIndex - 1] =
                         message;
                     this.answersURL[this.taskIndex] = this.urlInputValue;
@@ -883,8 +885,10 @@ export class ChatWidgetComponent implements OnInit {
                         return;
                     }
                     this.waitForUrl = false;
-                    this.placeholderInput = "";
+
                     this.answersURL[this.taskIndex] = this.urlInputValue;
+                    this.placeholderInput = "";
+                    this.urlPlaceHolder = "";
                     if (this.showCategoricalAnswers) {
                         message = this.getCategoricalAnswerValue(message);
                     }
@@ -1186,6 +1190,7 @@ export class ChatWidgetComponent implements OnInit {
         this.disableSearchEngine.emit(false);
     }
     private cleanUserInput() {
+        this.urlPlaceHolder = "";
         this.showCategoricalAnswers = false;
         this.showIntervalAnswer = false;
         this.showMagnitudeAnswer = false;
