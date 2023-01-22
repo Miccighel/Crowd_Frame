@@ -19,6 +19,7 @@ import { ConfigService } from "../../../services/config.service";
 import { Task } from "../../../models/skeleton/task";
 import { ChatCommentModalComponent } from "../chat-comment-modal/chat-comment-modalcomponent";
 import {
+    AnswerModel,
     CategoricalInfo,
     DropdownSelectItem,
     EnConversationaTaskStatus,
@@ -133,8 +134,8 @@ export class ChatWidgetComponent implements OnInit {
     taskStatus: EnConversationaTaskStatus;
     // Variables
     fixedMessage: string; // Messaggio sempre visibile in alto nel chatbot
-    answers: any[] = []; // Memorizzo le risposte di un singolo statement
-    answersURL: string[]; // Memorizzo gli url
+    answers: [AnswerModel[]] = [[]]; //
+
     questionnaireAnswers: any[] = [];
     queue: number;
     placeholderInput: string;
@@ -216,7 +217,7 @@ export class ChatWidgetComponent implements OnInit {
         this.accessesAmount = new Array(this.task.documents.length).fill(0);
         this.indexDimSel = new Array(this.task.documents.length).fill(0);
         this.queryIndex = new Array(this.task.documents.length).fill(0);
-        this.answersURL = new Array(this.task.dimensions.length).fill("");
+        // this.answersURL = new Array(this.task.dimensions.length).fill("");
         this.questionnaireAnswers = new Array(
             this.getNumberOfQuestionnaireQuestions()
         ).fill("");
@@ -231,11 +232,11 @@ export class ChatWidgetComponent implements OnInit {
     }
 
     private setTaskAnswersContainer() {
-        this.answers = [];
+        this.answers = [[]];
         for (let i = 0; i < this.task.documents.length; i++) {
             this.answers[i] = [];
             for (let j = 0; j < this.task.dimensionsAmount; j++) {
-                this.answers[i][j] = null;
+                this.answers[i].push({ dimensionValue: null });
             }
         }
     }
@@ -592,14 +593,20 @@ export class ChatWidgetComponent implements OnInit {
             }
 
             const subtaskIndex = this.subTaskIndex - 1;
-            if (this.hasDoubleInput)
-                this.answersURL[subtaskIndex] = this.urlInputValue;
-            if (this.waitForUrl) {
-                this.answersURL[subtaskIndex] = message;
+            if (this.hasDoubleInput) {
+                this.answers[this.taskIndex][subtaskIndex] = {
+                    dimensionValue: message,
+                    urlValue: this.urlInputValue,
+                };
+                this.hasDoubleInput = false;
+            } else if (this.waitForUrl) {
+                this.answers[this.taskIndex][subtaskIndex].dimensionValue =
+                    message;
             } else {
-                this.answers[this.taskIndex][subtaskIndex] = message;
+                this.answers[this.taskIndex][subtaskIndex].dimensionValue =
+                    message;
             }
-            this.hasDoubleInput = false;
+
             this.statementProvided = false;
             this.reviewAnswersShown = false;
             this.taskStatus = EnConversationaTaskStatus.ReviewPhase;
@@ -609,17 +616,16 @@ export class ChatWidgetComponent implements OnInit {
             dimSel["dimension"] = subtaskIndex;
             dimSel["index"] = this.indexDimSel[this.taskIndex];
             dimSel["timestamp"] = Date.now() / 1000;
-            dimSel["value"] = this.answers[this.taskIndex][subtaskIndex];
-            dimSel["url"] = this.answersURL[subtaskIndex];
+            dimSel["value"] =
+                this.answers[this.taskIndex][subtaskIndex].dimensionValue;
+            dimSel["url"] = this.answers[this.taskIndex][subtaskIndex].urlValue;
 
             this.dimsSelected.push(dimSel);
             this.uploadStatementData();
             this.indexDimSel[this.taskIndex] += 1;
             this.reviewP(message);
             return;
-        }
-
-        if (this.waitForUrl) {
+        } else if (this.waitForUrl) {
             // Se sto chiedendo l'url
             if (!ChatHelper.urlValid(message)) {
                 this.typingAnimation(
@@ -630,14 +636,15 @@ export class ChatWidgetComponent implements OnInit {
             if (this.task.settings.countdown_time) {
                 this.resetCountdown();
             }
-            this.answersURL[this.subTaskIndex - 1] = this.urlInputValue;
+            this.answers[this.taskIndex][this.subTaskIndex - 1].urlValue =
+                this.urlInputValue;
             this.readOnly = false;
             this.cleanUserInput();
 
             this.ignoreMsg = true;
         }
         //Gestione doppio INPUT
-        if (this.hasDoubleInput) {
+        else if (this.hasDoubleInput) {
             if (
                 !this.getAnswerValidity(
                     this.subTaskIndex - 1,
@@ -654,16 +661,16 @@ export class ChatWidgetComponent implements OnInit {
                 this.resetCountdown();
             }
             this.hasDoubleInput = false;
-            this.answersURL[this.subTaskIndex - 1] = this.urlInputValue;
-            this.answers[this.taskIndex][this.subTaskIndex - 1] = message;
+            this.answers[this.taskIndex][this.subTaskIndex - 1].urlValue =
+                this.urlInputValue;
+            this.answers[this.taskIndex][this.subTaskIndex - 1].dimensionValue =
+                message;
             this.readOnly = false;
             this.cleanUserInput();
 
             this.ignoreMsg = true;
-        }
-
-        //Validazione dell'ultima dimensione dello statement
-        if (
+        } else if (
+            message != "startTask" &&
             !ChatHelper.validMsg(message, this.minValue, this.maxValue) &&
             !this.ignoreMsg
         ) {
@@ -676,14 +683,15 @@ export class ChatWidgetComponent implements OnInit {
             this.typingAnimation(messageToSend);
             return;
         } else {
-            if (!this.ignoreMsg) {
+            if (!this.ignoreMsg && message != "startTask") {
                 if (this.task.settings.countdown_time) {
                     this.showCountdown = false;
                     clearInterval(this.activeInterval);
                 }
                 this.cleanUserInput();
                 const subtaskIndex = this.subTaskIndex - 1;
-                this.answers[this.taskIndex][subtaskIndex] = message;
+                this.answers[this.taskIndex][subtaskIndex].dimensionValue =
+                    message;
                 let dimSel = {};
                 dimSel["document"] = this.taskIndex;
                 dimSel["dimension"] = subtaskIndex;
@@ -692,6 +700,8 @@ export class ChatWidgetComponent implements OnInit {
                 dimSel["value"] = message;
                 this.dimsSelected.push(dimSel);
                 this.indexDimSel[this.taskIndex] += 1;
+                this.randomMessage();
+            } else if (message == "startTask") {
                 this.randomMessage();
             }
             await new Promise((resolve) => setTimeout(resolve, 3000));
@@ -713,6 +723,7 @@ export class ChatWidgetComponent implements OnInit {
             if (!!this.fixedMessage) {
                 this.printDimension(this.taskIndex, this.subTaskIndex);
                 this.selectDimensionToGenerate(this.subTaskIndex);
+
                 this.subTaskIndex++;
             }
         }
@@ -864,17 +875,12 @@ export class ChatWidgetComponent implements OnInit {
                         return;
                     }
                     this.hasDoubleInput = false;
-                    this.placeholderInput = "";
-                    this.urlPlaceHolder = "";
-
-                    this.answers[this.taskIndex][this.subTaskIndex - 1] =
-                        message;
-                    this.answersURL[this.subTaskIndex - 1] = this.urlInputValue;
+                    this.answers[this.taskIndex][this.subTaskIndex] = {
+                        dimensionValue: message,
+                        urlValue: this.urlInputValue,
+                    };
                     // Resetto
-                    this.reviewAnswersShown = false;
-                    this.pickReview = false;
-                }
-                if (this.waitForUrl) {
+                } else if (this.waitForUrl) {
                     if (!ChatHelper.urlValid(message)) {
                         this.typingAnimation(
                             "Please type a valid url, try using the search bar on the right!"
@@ -883,17 +889,8 @@ export class ChatWidgetComponent implements OnInit {
                     }
                     this.waitForUrl = false;
 
-                    this.answersURL[this.subTaskIndex - 1] = this.urlInputValue;
-                    this.placeholderInput = "";
-                    this.urlPlaceHolder = "";
-                    if (this.showCategoricalAnswers) {
-                        message = this.getCategoricalAnswerValue(message);
-                    }
-                    this.answers[this.taskIndex] = message;
-
-                    // Resetto
-                    this.reviewAnswersShown = false;
-                    this.pickReview = false;
+                    this.answers[this.taskIndex][this.subTaskIndex].urlValue =
+                        this.urlInputValue;
                 } else {
                     if (this.showCategoricalAnswers) {
                         message = this.getCategoricalAnswerValue(message);
@@ -914,21 +911,26 @@ export class ChatWidgetComponent implements OnInit {
                         }
                         this.typingAnimation(messageToSend);
                         return;
+                    } else {
+                        this.answers[this.taskIndex][
+                            this.subTaskIndex
+                        ].dimensionValue = message;
                     }
-                    let dimSel = {};
-                    dimSel["document"] = this.taskIndex;
-                    dimSel["dimension"] = this.subTaskIndex - 1;
-                    dimSel["index"] = this.indexDimSel[this.taskIndex];
-                    dimSel["timestamp"] = Date.now() / 1000;
-                    dimSel["value"] = message;
-                    this.dimsSelected.push(dimSel);
-                    this.indexDimSel[this.taskIndex] += 1;
-                    // Salvo i nuovi dati
-                    this.answers[this.taskIndex][this.subTaskIndex] = message;
-                    // Reset della fase di revisione
-                    this.reviewAnswersShown = false;
-                    this.pickReview = false;
                 }
+                this.cleanUserInput();
+                let dimSel = {};
+                dimSel["document"] = this.taskIndex;
+                dimSel["dimension"] = this.subTaskIndex;
+                dimSel["index"] = this.indexDimSel[this.taskIndex];
+                dimSel["timestamp"] = Date.now() / 1000;
+                dimSel["value"] =
+                    this.answers[this.taskIndex][this.subTaskIndex];
+                this.dimsSelected.push(dimSel);
+                this.indexDimSel[this.taskIndex] += 1;
+
+                // Reset della fase di revisione
+                this.reviewAnswersShown = false;
+                this.pickReview = false;
             }
             //Faccio scegliere quale dimensione visualizzare
             else {
@@ -939,7 +941,8 @@ export class ChatWidgetComponent implements OnInit {
                     this.typingAnimation(messageToSend);
                     return;
                 }
-                this.subTaskIndex = +message - 1;
+                if (this.subTaskIndex > 0) this.subTaskIndex--;
+
                 //Visualizzazione della dimensione richiesta e relativi dati
                 this.printDimension(this.taskIndex, this.subTaskIndex);
                 this.selectDimensionToGenerate(this.subTaskIndex);
@@ -952,7 +955,8 @@ export class ChatWidgetComponent implements OnInit {
             this.cleanUserInput();
             this.typingAnimation("Let's review your answers!");
             this.typingAnimation(
-                this.createAnswerString() + "<br>Confirm your answers?"
+                this.createAnswerString(this.taskIndex) +
+                    "<br>Confirm your answers?"
             );
             this.showCMbuttons = true;
             this.reviewAnswersShown = true;
@@ -1057,9 +1061,11 @@ export class ChatWidgetComponent implements OnInit {
     }
 
     // Fase di fine task
-    private async endP(message: string) {
+    private async endP(message) {
         if (this.statementJump) {
-            this.taskIndex = +message - 1;
+            this.getDimensionAnswerValue(message);
+            this.taskIndex = this.getFinalRevisionAnswerValue(message);
+            this.subTaskIndex = 0;
             this.printStatement();
             this.taskStatus = EnConversationaTaskStatus.ReviewPhase;
             if (this.task.settings.countdown_time) {
@@ -1077,7 +1083,7 @@ export class ChatWidgetComponent implements OnInit {
                 );
                 this.showYNbuttons = false;
                 this.showInputDDL = true;
-                this.loadfinalReviewData();
+                this.generateFinalStatementRecapData();
                 this.statementJump = true;
             } else if (message.trim().toLowerCase() === "no") {
                 this.action = "Finish";
@@ -1133,7 +1139,7 @@ export class ChatWidgetComponent implements OnInit {
                     this.statementJump = false;
                     this.awaitingAnswer = false;
                     this.statementProvided = false;
-                    this.taskP({ value: "0" });
+                    this.taskP({ value: "startTask" });
                     return;
                 }
                 const modalRef = this.ngModal.open(ChatCommentModalComponent, {
@@ -1157,7 +1163,7 @@ export class ChatWidgetComponent implements OnInit {
     private skipQuestionnairePhase() {
         this.typingAnimation("Let's start, with the activity!");
         this.taskStatus = EnConversationaTaskStatus.TaskPhase;
-        setTimeout(() => this.taskP("0"), 3000);
+        setTimeout(() => this.taskP("startTask"), 3000);
     }
 
     //Controlla se il questionario è finito e avvia la fase di revisione del questionario
@@ -1192,6 +1198,7 @@ export class ChatWidgetComponent implements OnInit {
     }
     private cleanUserInput() {
         this.urlPlaceHolder = "";
+        this.placeholderInput = "";
         this.showCategoricalAnswers = false;
         this.showIntervalAnswer = false;
         this.showMagnitudeAnswer = false;
@@ -1374,6 +1381,7 @@ export class ChatWidgetComponent implements OnInit {
     // Stampa la dimensione corrente
     private printDimension(taskIndex: number, dimensionIndex: number) {
         let out = "";
+
         if (this.task.dimensions[dimensionIndex].name_pretty) {
             out =
                 "Please rate the <b>" +
@@ -1397,7 +1405,7 @@ export class ChatWidgetComponent implements OnInit {
                     "</b>: " +
                     this.task.dimensions[dimensionIndex].description;
         }
-        if (!!this.answers[taskIndex][dimensionIndex]) {
+        if (!!this.answers[taskIndex][dimensionIndex].dimensionValue) {
             if (
                 !!this.task.dimensions[dimensionIndex].scale.type &&
                 !!this.task.dimensions[dimensionIndex].url
@@ -1405,11 +1413,11 @@ export class ChatWidgetComponent implements OnInit {
                 out +=
                     "<br>You previously answered<br>" +
                     "Url: <b>" +
-                    this.answersURL[dimensionIndex] +
+                    this.answers[taskIndex][dimensionIndex].urlValue +
                     "</b><br> <b>" +
                     this.getCategoricalAnswerLabel(
                         dimensionIndex,
-                        this.answers[taskIndex][dimensionIndex]
+                        this.answers[taskIndex][dimensionIndex].dimensionValue
                     ) +
                     "</b>.";
             } else if (
@@ -1419,13 +1427,13 @@ export class ChatWidgetComponent implements OnInit {
                     "<br>You previously answered <b>" +
                     this.getCategoricalAnswerLabel(
                         dimensionIndex,
-                        this.answers[taskIndex][dimensionIndex]
+                        this.answers[taskIndex][dimensionIndex].dimensionValue
                     ) +
                     "</b>.";
             } else {
                 out +=
                     "<br>You previously answered <b>" +
-                    this.answers[taskIndex][dimensionIndex] +
+                    this.answers[taskIndex][dimensionIndex].dimensionValue +
                     "</b>.";
             }
         }
@@ -1433,7 +1441,7 @@ export class ChatWidgetComponent implements OnInit {
     }
 
     // Creazione del testo relativo alle risposte fornite riguardo allo statement attuale
-    private createAnswerString() {
+    private createAnswerString(taskIndex) {
         let recap = "";
         for (let i = 0; i < this.task.dimensionsAmount; i++) {
             let scaleType = null;
@@ -1443,7 +1451,12 @@ export class ChatWidgetComponent implements OnInit {
                 !!this.task.dimensions[i].url
             ) {
                 scaleType = this.task.dimensions[i].scale.type;
-                recap += i + 1 + ".<b> URL</b>: " + this.answersURL[i] + "<br>";
+                recap +=
+                    i +
+                    1 +
+                    ".<b> URL</b>: " +
+                    this.answers[taskIndex][i].urlValue +
+                    "<br>";
                 switch (scaleType) {
                     case "categorical":
                         if (this.task.dimensions[i].name_pretty) {
@@ -1453,7 +1466,9 @@ export class ChatWidgetComponent implements OnInit {
                                 "</b>: " +
                                 this.getCategoricalAnswerLabel(
                                     i,
-                                    this.answers[this.taskIndex][i].toString()
+                                    this.answers[taskIndex][
+                                        i
+                                    ].dimensionValue.toString()
                                 ) +
                                 "<br>";
                         }
@@ -1464,7 +1479,7 @@ export class ChatWidgetComponent implements OnInit {
                                 "Answer: <b>" +
                                 this.task.dimensions[i].name_pretty +
                                 "</b>: " +
-                                this.answers[this.taskIndex][i] +
+                                this.answers[taskIndex][i].dimensionValue +
                                 "<br>";
                         }
                         break;
@@ -1474,7 +1489,7 @@ export class ChatWidgetComponent implements OnInit {
                                 "Answer: <b>" +
                                 this.task.dimensions[i].name_pretty +
                                 "</b>: " +
-                                this.answers[this.taskIndex][i] +
+                                this.answers[taskIndex][i].dimensionValue +
                                 " <br>";
                         }
                         break;
@@ -1496,7 +1511,7 @@ export class ChatWidgetComponent implements OnInit {
                             i +
                             1 +
                             ".<b> URL</b>: " +
-                            this.answersURL[i] +
+                            this.answers[taskIndex][i].urlValue +
                             "<br>";
                         break;
                     case "categorical":
@@ -1509,7 +1524,7 @@ export class ChatWidgetComponent implements OnInit {
                                 "</b>: " +
                                 this.getCategoricalAnswerLabel(
                                     i,
-                                    this.answers[this.taskIndex][i].toString()
+                                    this.answers[taskIndex][i].toString()
                                 ) +
                                 "<br>";
                         }
@@ -1522,7 +1537,7 @@ export class ChatWidgetComponent implements OnInit {
                                 ". <b>" +
                                 this.task.dimensions[i].name_pretty +
                                 "</b>: " +
-                                this.answers[this.taskIndex][i] +
+                                this.answers[taskIndex][i].dimensionValue +
                                 "<br>";
                         }
                         break;
@@ -1534,7 +1549,7 @@ export class ChatWidgetComponent implements OnInit {
                                 ". <b>" +
                                 this.task.dimensions[i].name_pretty +
                                 "</b>: " +
-                                this.answers[this.taskIndex][i] +
+                                this.answers[taskIndex][i].dimensionValue +
                                 " <br>";
                         }
                         break;
@@ -1704,15 +1719,12 @@ export class ChatWidgetComponent implements OnInit {
         }));
     }
 
-    private loadfinalReviewData() {
+    private generateFinalStatementRecapData() {
         this.dropdownListOptions = [];
 
         this.task.hit.documents.forEach((document, index) => {
             this.dropdownListOptions.push({
-                label:
-                    (index + 1).toString() +
-                    document["statement_text"].substring(0, 30) +
-                    "...",
+                label: "Statement " + (index + 1).toString(),
                 value: (index + 1).toString(),
             });
         });
@@ -1822,6 +1834,10 @@ export class ChatWidgetComponent implements OnInit {
         );
         if (!!mappedValue) return mappedValue.value;
         else return null;
+    }
+
+    private getFinalRevisionAnswerValue(message: string) {
+        return +message.split(" ")[1] - 1;
     }
 
     private getAnswerValidity(
@@ -1949,11 +1965,11 @@ export class ChatWidgetComponent implements OnInit {
         for (let i = 0; i < this.task.dimensions.length; i++) {
             if (!!this.task.dimensions[i].scale) {
                 answers[this.task.dimensions[i].name + addOn] =
-                    this.answers[this.taskIndex][i];
+                    this.answers[this.taskIndex][i].dimensionValue;
             }
             if (!!this.task.dimensions[i].url) {
                 answers[this.task.dimensions[i].name + "_url"] =
-                    this.answersURL[i];
+                    this.answers[this.taskIndex][i].urlValue;
             }
         }
         return answers;

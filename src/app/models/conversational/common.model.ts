@@ -34,6 +34,11 @@ export interface DropdownSelectItem {
     value?: string;
 }
 
+export interface AnswerModel {
+    dimensionValue: string;
+    urlValue?: string;
+}
+
 export enum EnConversationaTaskStatus {
     InstructionPhase,
     QuestionnairePhase,

@@ -31,13 +31,6 @@ export class ChatUrlInputComponent implements OnInit, OnChanges, OnDestroy {
     @ViewChild("urlValueInput", { static: true }) urlValueInput!: ElementRef;
 
     ngOnInit() {
-        // this.urlValue$ = this.urlValueSubject.asObservable();
-        // this.urlValue$
-        //     .pipe(takeUntil(this.unsubscribeAll))
-        //     .subscribe((value) => {
-        //         this.urlValue = value;
-        //     });
-
         this.readValue.subscribe(() => {
             this.updateValue.emit(this.urlValue);
         });
