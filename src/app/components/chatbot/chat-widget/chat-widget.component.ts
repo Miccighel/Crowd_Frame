@@ -633,9 +633,7 @@ export class ChatWidgetComponent implements OnInit {
                 );
                 return;
             }
-            if (this.task.settings.countdown_time) {
-                this.resetCountdown();
-            }
+
             this.answers[this.taskIndex][this.subTaskIndex - 1].urlValue =
                 this.urlInputValue;
             this.readOnly = false;
@@ -657,9 +655,7 @@ export class ChatWidgetComponent implements OnInit {
                 );
                 return;
             }
-            if (this.task.settings.countdown_time) {
-                this.resetCountdown();
-            }
+
             this.hasDoubleInput = false;
             this.answers[this.taskIndex][this.subTaskIndex - 1].urlValue =
                 this.urlInputValue;
@@ -682,50 +678,44 @@ export class ChatWidgetComponent implements OnInit {
             }
             this.typingAnimation(messageToSend);
             return;
-        } else {
-            if (!this.ignoreMsg && message != "startTask") {
-                if (this.task.settings.countdown_time) {
-                    this.showCountdown = false;
-                    clearInterval(this.activeInterval);
-                }
-                this.cleanUserInput();
-                const subtaskIndex = this.subTaskIndex - 1;
-                this.answers[this.taskIndex][subtaskIndex].dimensionValue =
-                    message;
-                let dimSel = {};
-                dimSel["document"] = this.taskIndex;
-                dimSel["dimension"] = subtaskIndex;
-                dimSel["index"] = this.indexDimSel[this.taskIndex];
-                dimSel["timestamp"] = Date.now() / 1000;
-                dimSel["value"] = message;
-                this.dimsSelected.push(dimSel);
-                this.indexDimSel[this.taskIndex] += 1;
-                this.randomMessage();
-            } else if (message == "startTask") {
-                this.randomMessage();
-            }
-            await new Promise((resolve) => setTimeout(resolve, 3000));
-            //Visualizzazione dello statement
+        }
+        if (!this.ignoreMsg && message != "startTask") {
+            this.cleanUserInput();
+            const subtaskIndex = this.subTaskIndex - 1;
+            this.answers[this.taskIndex][subtaskIndex].dimensionValue = message;
+            let dimSel = {};
+            dimSel["document"] = this.taskIndex;
+            dimSel["dimension"] = subtaskIndex;
+            dimSel["index"] = this.indexDimSel[this.taskIndex];
+            dimSel["timestamp"] = Date.now() / 1000;
+            dimSel["value"] = message;
+            this.dimsSelected.push(dimSel);
+            this.indexDimSel[this.taskIndex] += 1;
+            this.randomMessage();
+        } else if (message == "startTask") {
+            this.randomMessage();
+        }
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+        //Visualizzazione dello statement
+        if (
+            this.fixedMessage == null ||
+            this.fixedMessage == undefined ||
+            this.fixedMessage == ""
+        ) {
+            this.printStatement();
             if (
-                this.fixedMessage == null ||
-                this.fixedMessage == undefined ||
-                this.fixedMessage == ""
+                !!this.task.settings.countdown_time &&
+                this.taskStatus == EnConversationaTaskStatus.TaskPhase
             ) {
-                this.printStatement();
-                if (
-                    !!this.task.settings.countdown_time &&
-                    this.taskStatus == EnConversationaTaskStatus.TaskPhase
-                ) {
-                    this.setCountdown();
-                }
+                this.setCountdown();
             }
-            //Visualizzazione della dimensione
-            if (!!this.fixedMessage) {
-                this.printDimension(this.taskIndex, this.subTaskIndex);
-                this.selectDimensionToGenerate(this.subTaskIndex);
+        }
+        //Visualizzazione della dimensione
+        if (!!this.fixedMessage) {
+            this.printDimension(this.taskIndex, this.subTaskIndex);
+            this.selectDimensionToGenerate(this.subTaskIndex);
 
-                this.subTaskIndex++;
-            }
+            this.subTaskIndex++;
         }
 
         this.ignoreMsg = false;
@@ -941,6 +931,7 @@ export class ChatWidgetComponent implements OnInit {
                     this.typingAnimation(messageToSend);
                     return;
                 }
+                this.subTaskIndex = +message;
                 if (this.subTaskIndex > 0) this.subTaskIndex--;
 
                 //Visualizzazione della dimensione richiesta e relativi dati
@@ -1405,26 +1396,22 @@ export class ChatWidgetComponent implements OnInit {
                     "</b>: " +
                     this.task.dimensions[dimensionIndex].description;
         }
-        if (!!this.answers[taskIndex][dimensionIndex].dimensionValue) {
-            if (
-                !!this.task.dimensions[dimensionIndex].scale.type &&
-                !!this.task.dimensions[dimensionIndex].url
-            ) {
+        if (
+            !!this.answers[taskIndex][dimensionIndex].dimensionValue ||
+            !!this.task.dimensions[dimensionIndex].url
+        ) {
+            out += "<br>You previously answered<br>";
+            if (!!this.task.dimensions[dimensionIndex].url) {
                 out +=
-                    "<br>You previously answered<br>" +
                     "Url: <b>" +
                     this.answers[taskIndex][dimensionIndex].urlValue +
-                    "</b><br> <b>" +
-                    this.getCategoricalAnswerLabel(
-                        dimensionIndex,
-                        this.answers[taskIndex][dimensionIndex].dimensionValue
-                    ) +
-                    "</b>.";
-            } else if (
+                    "</b><br>";
+            }
+            if (
                 this.task.dimensions[dimensionIndex].scale.type == "categorical"
             ) {
                 out +=
-                    "<br>You previously answered <b>" +
+                    "<br>Dimension value: <b>" +
                     this.getCategoricalAnswerLabel(
                         dimensionIndex,
                         this.answers[taskIndex][dimensionIndex].dimensionValue
@@ -1432,7 +1419,7 @@ export class ChatWidgetComponent implements OnInit {
                     "</b>.";
             } else {
                 out +=
-                    "<br>You previously answered <b>" +
+                    "<br>Dimension value: <b>" +
                     this.answers[taskIndex][dimensionIndex].dimensionValue +
                     "</b>.";
             }
@@ -1476,7 +1463,7 @@ export class ChatWidgetComponent implements OnInit {
                     case "magnitude_estimation":
                         if (this.task.dimensions[i].name_pretty) {
                             recap +=
-                                "Answer: <b>" +
+                                "<b>" +
                                 this.task.dimensions[i].name_pretty +
                                 "</b>: " +
                                 this.answers[taskIndex][i].dimensionValue +
@@ -1486,7 +1473,7 @@ export class ChatWidgetComponent implements OnInit {
                     case "interval":
                         if (this.task.dimensions[i].name_pretty) {
                             recap +=
-                                "Answer: <b>" +
+                                "<b>" +
                                 this.task.dimensions[i].name_pretty +
                                 "</b>: " +
                                 this.answers[taskIndex][i].dimensionValue +
@@ -1627,6 +1614,8 @@ export class ChatWidgetComponent implements OnInit {
     //Generazione della dimensione in base alla scale type
     private selectDimensionToGenerate(dimensionIndex) {
         let scaleType = null;
+        this.hasDoubleInput = false;
+
         if (
             this.task.dimensions[dimensionIndex].url &&
             !!this.task.dimensions[dimensionIndex].scale
