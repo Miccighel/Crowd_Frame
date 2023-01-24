@@ -1396,10 +1396,7 @@ export class ChatWidgetComponent implements OnInit {
                     "</b>: " +
                     this.task.dimensions[dimensionIndex].description;
         }
-        if (
-            !!this.answers[taskIndex][dimensionIndex].dimensionValue ||
-            !!this.task.dimensions[dimensionIndex].url
-        ) {
+        if (!!this.answers[taskIndex][dimensionIndex].dimensionValue) {
             out += "<br>You previously answered<br>";
             if (!!this.task.dimensions[dimensionIndex].url) {
                 out +=
