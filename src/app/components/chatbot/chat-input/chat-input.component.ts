@@ -17,7 +17,6 @@ import {
 })
 export class ChatInputComponent implements OnInit {
     @Input() public buttonText = "↩︎";
-    @Input() public focus = new EventEmitter();
     @Output() public send = new EventEmitter();
     @Input() public pholder!: string;
     @Input() public disableInput!: boolean;
@@ -25,14 +24,7 @@ export class ChatInputComponent implements OnInit {
     @ViewChild("message", { static: true }) message!: ElementRef;
     @ViewChild("buttons") buttons!: ElementRef;
 
-    ngOnInit() {
-        this.focus.subscribe(() => this.focusMessage());
-    }
-
-    // focus permette di selezionare automaticamente un'area del html
-    public focusMessage() {
-        this.message.nativeElement.focus();
-    }
+    ngOnInit() {}
 
     public getMessage() {
         return this.message.nativeElement.value;
@@ -50,10 +42,9 @@ export class ChatInputComponent implements OnInit {
             return;
         }
         // invio il messaggio
-        this.send.emit({ value: message });
+        this.send.emit({ message });
         // resetto l'input field
         this.clearMessage();
-        this.focusMessage();
     }
 
     ngOnChanges() {

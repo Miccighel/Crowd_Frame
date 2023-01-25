@@ -635,7 +635,7 @@ export class ChatWidgetComponent implements OnInit {
             }
 
             this.answers[this.taskIndex][this.subTaskIndex - 1].urlValue =
-                this.urlInputValue;
+                message;
             this.readOnly = false;
             this.cleanUserInput();
 
@@ -880,7 +880,7 @@ export class ChatWidgetComponent implements OnInit {
                     this.waitForUrl = false;
 
                     this.answers[this.taskIndex][this.subTaskIndex].urlValue =
-                        this.urlInputValue;
+                        message;
                 } else {
                     if (this.showCategoricalAnswers) {
                         message = this.getCategoricalAnswerValue(message);
