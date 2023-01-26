@@ -486,6 +486,10 @@ if not os.path.exists(df_acl_path):
                         row['time_completion_parsed'] = find_date_string(row['time_completion'])
                     if 'time_removal' in row:
                         row['time_removal_parsed'] = find_date_string(row['time_removal'])
+                    if 'time_expiration' in row:
+                        row['time_expiration_parsed'] = find_date_string(row['time_expiration'])
+                    if 'time_expiration_nearest' in row:
+                        row['time_expiration_nearest_parsed'] = find_date_string(row['time_expiration_nearest'])
 
             if acl_presence:
                 df_acl = df_acl.append(row, ignore_index=True)

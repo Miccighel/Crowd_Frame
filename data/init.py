@@ -1799,7 +1799,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     with open(document_interface, 'w') as file:
         print("export class Document {", file=file)
         print("", file=file)
-        wrapper = textwrap.TextWrapper(initial_indent='\t\t', subsequent_indent='\t\t')
+        wrapper = textwrap.TextWrapper(initial_indent='\t\t', subsequent_indent='\t\t', width=500, break_long_words=False)
         print(wrapper.fill("index: number;"), file=file)
         for attribute, value in sample_element.items():
             try:
@@ -1830,13 +1830,13 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 console.print(f"Attribute with name: [cyan underline]{attribute}[/cyan underline] and type: {type(value)} found")
         print("", file=file)
         print(wrapper.fill(f"constructor ("), file=file)
-        wrapper = textwrap.TextWrapper(initial_indent='\t\t\t', subsequent_indent='\t\t\t')
+        wrapper = textwrap.TextWrapper(initial_indent='\t\t\t', subsequent_indent='\t\t\t', width=500, break_long_words=False)
         print(wrapper.fill("index: number,"), file=file)
         print(wrapper.fill("data: JSON"), file=file)
-        wrapper = textwrap.TextWrapper(initial_indent='\t\t', subsequent_indent='\t\t')
+        wrapper = textwrap.TextWrapper(initial_indent='\t\t', subsequent_indent='\t\t', width=500, break_long_words=False)
         print(wrapper.fill(") {"), file=file)
         print("", file=file)
-        wrapper = textwrap.TextWrapper(initial_indent='\t\t\t', subsequent_indent='\t\t\t')
+        wrapper = textwrap.TextWrapper(initial_indent='\t\t\t', width=500, break_long_words=False)
         print(wrapper.fill("this.index = index"), file=file)
         for attribute, value in sample_element.items():
             try:
@@ -1848,7 +1848,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                     print(wrapper.fill(f"this.{attribute} = new Array<String>()"), file=file)
                     print(wrapper.fill(f"for (let index = 0; index < data[\"{attribute}\"].length; index++) this.{attribute}.push(data[\"{attribute}\"])"), file=file)
                 else:
-                    wrapper = textwrap.TextWrapper(initial_indent='\t\t\t', subsequent_indent='\t\t\t')
+                    wrapper = textwrap.TextWrapper(initial_indent='\t\t\t', width=500, break_long_words=False)
                     print(wrapper.fill(f"this.{attribute} = data[\"{attribute}\"]"), file=file)
             except (TypeError, ValueError) as e:
                 if isinstance(value, list):
@@ -1859,9 +1859,9 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                         print(wrapper.fill(f"this.{attribute} = new Array<String>()"), file=file)
                         print(wrapper.fill(f"for (let index = 0; index < data[\"{attribute}\"].length; index++) this.{attribute}.push(data[\"{attribute}\"])"), file=file)
                 else:
-                    wrapper = textwrap.TextWrapper(initial_indent='\t\t\t', subsequent_indent='\t\t\t')
+                    wrapper = textwrap.TextWrapper(initial_indent='\t\t\t', width=500, break_long_words=False)
                     print(wrapper.fill(f"this.{attribute} = data[\"{attribute}\"]"), file=file)
-        wrapper = textwrap.TextWrapper(initial_indent='\t\t', subsequent_indent='\t\t')
+        wrapper = textwrap.TextWrapper(initial_indent='\t\t', subsequent_indent='\t\t', width=500, break_long_words=False)
         print("", file=file)
         print(wrapper.fill("}"), file=file)
         print("", file=file)
