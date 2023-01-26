@@ -4,6 +4,14 @@
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
         "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji",
         "Segoe UI Emoji", "Segoe UI Symbol";
+    --primary: #084887;
+    --secondary: #60acbf;
+    --tertiary: #b7deeb;
+    --light: #ffffff;
+    --dark: #000000;
+    --green: #1ed447;
+    --red: #dc3545;
+    --grey: #d9d9d9;
 }
 
 .wrapper {
@@ -20,7 +28,7 @@
     overflow: auto;
     width: 45%;
     height: 100%;
-    background-color: white;
+    background-color: var(--light);
     margin-left: 5%;
     box-shadow: 0 5px 40px rgba(0, 0, 0, 0.16);
 }
@@ -44,21 +52,45 @@
 
 .chat-box-header {
     padding: 10px;
-    color: #fff;
-    background: #3f51b5;
+    background-color: var(--primary);
+    color: var(--light);
+    font-size: larger;
+    height: auto;
 }
 
+.chat-fixed-message {
+    padding: 10px;
+    background-color: var(--light);
+    color: var(--dark);
+    font-size: medium;
+    height: auto;
+}
+
+#statement-title {
+    background-color: var(--primary);
+    color: var(--light);
+    font-weight: 600;
+    font-size: large;
+    text-align: center;
+}
+#statement-text {
+    padding: 10px;
+}
+#statement-additional-info {
+    background-color: var(--primary);
+    color: var(--light);
+}
 .chat-box-main {
     flex: 1;
     width: 100%;
-    background: #f5f5f5;
+    background: var(--light);
     display: flex;
     flex-direction: column-reverse;
     overflow: auto;
 }
 
 .chat-box-footer {
-    background-color: #f5f5f5;
+    background-color: var(--light);
     height: auto;
     margin-top: -1px;
     border-bottom-left-radius: 5px;
@@ -80,11 +112,11 @@
 }
 
 .operator-status-online {
-    color: #1ed447;
+    color: var(--green);
 }
 
 .operator-status-offline {
-    color: #dc3545;
+    color: var(--red);
 }
 
 .operator-avatar {
@@ -107,7 +139,7 @@
 
 .chat-message-date {
     font-size: 11px;
-    color: #8d898d;
+    color: var(--grey);
     padding: 5px;
 }
 
@@ -131,7 +163,7 @@ Received message style
 }
 
 .chat-message-received .chat-message-text {
-    background: #b9d6f2;
+    background: var(--secondary);
     margin-left: 50px;
     border-bottom-left-radius: 0;
 }
@@ -141,7 +173,7 @@ Received message style
     content: " ";
     left: -10px;
     bottom: 0;
-    border-right: solid 10px #b9d6f2;
+    border-right: solid 10px var(--secondary);
     border-top: solid 10px transparent;
     z-index: 0;
 }
@@ -168,7 +200,7 @@ Sent message style
 }
 
 .chat-message-sent .chat-message-text {
-    background: #84dccf;
+    background: var(--tertiary);
     margin-right: 50px;
     border-bottom-right-radius: 0;
 }
@@ -178,7 +210,7 @@ Sent message style
     content: " ";
     right: -10px;
     bottom: 0;
-    border-left: solid 10px #84dccf;
+    border-left: solid 10px var(--tertiary);
     border-top: solid 10px transparent;
     z-index: 0;
 }
@@ -227,7 +259,7 @@ Sent message style
 .type span {
     width: 10px;
     height: 10px;
-    background-color: #1976d2;
+    background-color: var(--secondary);
     display: inline-block;
     margin: 1px;
     border-radius: 50%;
@@ -259,26 +291,51 @@ Sent message style
     }
 }
 
-.dot {
-    border-radius: 50%;
+.dot-to-complete {
+    box-sizing: border-box;
+    background: var(--grey);
+    border: 2px solid var(--light);
     width: 28px;
     height: 28px;
-    padding-top: 1px;
-    color: #fff;
+    color: var(--primary);
     text-align: center;
-    background: #3f51b5;
+    border-radius: 20px;
+}
+.dot-in-progress {
+    box-sizing: border-box;
+    background: var(--light);
+    border: 2px solid var(--primary);
+    width: 28px;
+    height: 28px;
+    color: var(--primary);
+    text-align: center;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+.dot-completed {
+    box-sizing: border-box;
+    background: var(--primary);
+    border: 2px solid var(--light);
+    width: 28px;
+    height: 28px;
+    color: var(--light);
+    text-align: center;
+    border-radius: 20px;
+    font-weight: 600;
 }
 
 #box-header-2 {
-    background-color: rgb(245, 245, 245);
-    color: white;
+    background-color: var(--light);
+    color: var(--light);
     display: inline-block;
     padding: 0.15rem;
+    font-weight: 600;
 }
 
 .circle {
     position: relative;
-    background-color: #09f;
+    background-color: var(--primary);
     margin: 20px auto;
     width: 10%;
     height: 10%;
@@ -290,12 +347,12 @@ Sent message style
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    color: #fff;
+    color: var(--light);
 }
 
 .btn-secondary {
-    background-color: #84dccf;
-    color: #000;
+    background-color: var(--tertiary);
+    color: var(--dark);
     height: 34px;
     font-weight: 500;
     border: none;
@@ -303,7 +360,7 @@ Sent message style
     margin: 1%;
     margin-top: 0%;
     width: auto;
-    border: solid 2px #7ccfc2;
+    border: solid 2px var(--tertiary);
 }
 
 .btn-primary {
@@ -311,8 +368,8 @@ Sent message style
 }
 
 button.btn-user-answer {
-    background-color: #84dccf;
-    color: #000;
+    background-color: var(--tertiary);
+    color: var(--dark);
     height: 34px;
     font-weight: 500;
     border: none;
@@ -320,7 +377,7 @@ button.btn-user-answer {
     margin: 1%;
     margin-top: 0%;
     width: 100%;
-    border: solid 2px #7ccfc2;
+    border: solid 2px var(--tertiary);
 }
 
 .button-prompt {
@@ -343,12 +400,12 @@ button.btn-user-answer {
 /* COUNTDOWN */
 
 .timer-in-progress {
-    color: #3f51b5;
+    color: var(--primary);
     font-weight: 700;
 }
 .timer-is-over {
-    background-color: #dc3545 !important;
-    color: white;
+    background-color: var(--red) !important;
+    color: var(--light);
     font-weight: 700;
 }
 
@@ -359,12 +416,12 @@ button.btn-user-answer {
 /*INPUT CONTAINER*/
 
 #input-box.input-row-active {
-    border: solid 3px #3f51b5;
-    background-color: #ffffff;
+    border: solid 3px var(--primary);
+    background-color: var(--light);
     border-radius: 10px;
 }
 #input-box.input-row-inactive {
-    border: solid 3px #ffffff;
-    background-color: #6c757d38;
+    border: solid 3px var(--light);
+    background-color: var(--primary);
     border-radius: 10px;
 }

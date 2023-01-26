@@ -11,52 +11,46 @@
             </h3>
         </div>
 
-        <div
-            class="chat-box-header"
-            #fixedMsg
-            id="box-header-2"
-            style="display: none"
-        >
-            <div class="row">
-                <div
-                    *ngFor="let item of task.documents; let i = index"
-                    class="col-1 mb-1"
-                >
-                    <div class="dot" [id]="i">{{ i + 1 }}</div>
+        <div class="row container p-1 m-0">
+            <div
+                *ngFor="let item of task.documents; let i = index"
+                class="col-1"
+            >
+                <div class="dot-to-complete" [id]="i">{{ i + 1 }}</div>
+            </div>
+        </div>
+        <div *ngIf="!!fixedMessage" class="chat-fixed-message row p-0 m-0">
+            <div class="col-12" id="statement-title">Statement</div>
+            <div id="statement-text">{{ fixedMessage }}</div>
+            <div id="statement-additional-info" class="row p-0 m-0">
+                <div class="col-6" *ngIf="!!statementDate">
+                    <strong>Date: </strong>{{ statementDate }}
+                </div>
+                <div class="col-6" *ngIf="!!statementAuthor">
+                    <strong>Speaker: </strong> {{ statementAuthor }}
                 </div>
             </div>
+        </div>
+        <div class="progress" [ngClass]="{ hidden: !showCountdown }">
             <div
-                *ngIf="!!fixedMessage"
-                [innerHTML]="fixedMessage"
-                class="chat-box-header"
-                style="
-                    background-color: #3f51b5;
-                    color: white;
-                    font-size: larger;
-                    height: auto;
+                #progressBar
+                [ngClass]="
+                    (timerIsOver | async)
+                        ? 'timer-is-over'
+                        : 'timer-in-progress'
                 "
-            ></div>
-            <div class="progress" [ngClass]="{ hidden: !showCountdown }">
-                <div
-                    #progressBar
-                    [ngClass]="
-                        (timerIsOver | async)
-                            ? 'timer-is-over'
-                            : 'timer-in-progress'
-                    "
-                    class="progress-bar progress-bar-striped bg-info progress-bar-animated"
-                    role="progressbar"
-                    aria-valuemin="0"
-                    aria-valuemax="100"
-                >
-                    <span *ngIf="timerIsOver | async; else timerInProgress">
-                        Time is over
-                    </span>
+                class="progress-bar progress-bar-striped bg-info progress-bar-animated"
+                role="progressbar"
+                aria-valuemin="0"
+                aria-valuemax="100"
+            >
+                <span *ngIf="timerIsOver | async; else timerInProgress">
+                    Time is over
+                </span>
 
-                    <ng-template #timerInProgress>
-                        <span> {{ countdownValue | async }}s </span>
-                    </ng-template>
-                </div>
+                <ng-template #timerInProgress>
+                    <span> {{ countdownValue | async }}s </span>
+                </ng-template>
             </div>
         </div>
 

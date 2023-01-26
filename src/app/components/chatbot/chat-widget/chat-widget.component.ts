@@ -75,7 +75,7 @@ const getRandomMessage = () =>
 })
 export class ChatWidgetComponent implements OnInit {
     @ViewChild("bottom") bottom!: ElementRef;
-    @ViewChild("fixedMsg", { static: true }) fixedMsg!: ElementRef;
+
     @ViewChild("typing", { static: true }) typing!: ElementRef;
     @ViewChild("inputBox", { static: true }) inputBox!: ElementRef;
     @ViewChild("progressBar", { static: true }) progressBar!: ElementRef;
@@ -134,6 +134,9 @@ export class ChatWidgetComponent implements OnInit {
     taskStatus: EnConversationaTaskStatus;
     // Variables
     fixedMessage: string; // Messaggio sempre visibile in alto nel chatbot
+    statementAuthor: string;
+    statementDate: string;
+
     answers: [AnswerModel[]] = [[]]; //
 
     questionnaireAnswers: any[] = [];
@@ -151,7 +154,7 @@ export class ChatWidgetComponent implements OnInit {
     timerIsOver: Observable<boolean>; //Flag per la visualizzazione del countdown scaduto
     private timerIsOverSubject = new BehaviorSubject<boolean>(false);
     private activeInterval: any; //Interval per la gestione del countdown
-    public showCountdown = true; //Interval per la gestione del countdown
+    public showCountdown = false; //Interval per la gestione del countdown
 
     //show components flag
     showCategoricalAnswers = false;
@@ -957,9 +960,8 @@ export class ChatWidgetComponent implements OnInit {
             this.showInputDDL = false;
             this.showCategoricalAnswers = false;
             this.showCMbuttons = false;
-            document.getElementById(
-                this.taskIndex.toString()
-            ).style.backgroundColor = "#28A745";
+            document.getElementById(this.taskIndex.toString()).className =
+                "dot-completed";
             // Se era l'ultimo statement, passo alla fase finale
             if (
                 this.task.hit.documents.length - 1 <= this.taskIndex ||
@@ -1113,9 +1115,8 @@ export class ChatWidgetComponent implements OnInit {
                     this.taskStatus = EnConversationaTaskStatus.TaskPhase;
                     // Reinizializzo
                     for (let i = 0; i < this.task.documents.length; i++) {
-                        document.getElementById(
-                            i.toString()
-                        ).style.backgroundColor = "#3f51b5";
+                        document.getElementById(i.toString()).className =
+                            "dot-to-complete";
                     }
                     this.cleanUserInput();
                     this.typing.nativeElement.style.display = "none";
@@ -1341,10 +1342,9 @@ export class ChatWidgetComponent implements OnInit {
     // Stampa lo statement corrente e lo fissa nella chat
     private printStatement() {
         this.accessesAmount[this.taskIndex] += 1;
-        this.fixedMsg.nativeElement.style.display = "inline-block";
-        document.getElementById(
-            this.taskIndex.toString()
-        ).style.backgroundColor = "#F2452E";
+
+        document.getElementById(this.taskIndex.toString()).className =
+            "dot-in-progress";
         let messageToSend =
             "Statement: <b>" +
             this.task.hit.documents[this.taskIndex]["statement_text"] +
@@ -1359,20 +1359,16 @@ export class ChatWidgetComponent implements OnInit {
         //Composizione messaggio fissato
         if (!!this.fixedMessage) {
         } else {
-            this.fixedMessage = "";
             if (!!this.task.hit.documents[this.taskIndex]["statement_text"])
-                this.fixedMessage +=
-                    "<b>Statement</b>: " +
-                    this.task.hit.documents[this.taskIndex]["statement_text"] +
-                    "<br>";
+                this.fixedMessage =
+                    this.task.hit.documents[this.taskIndex]["statement_text"];
+
             if (!!this.task.hit.documents[this.taskIndex]["speaker_name"])
-                this.fixedMessage +=
-                    "<b>Speaker</b>: " +
-                    this.task.hit.documents[this.taskIndex]["speaker_name"] +
-                    "<br>";
+                this.statementAuthor =
+                    this.task.hit.documents[this.taskIndex]["speaker_name"];
+
             if (!!this.task.hit.documents[this.taskIndex]["statement_date"])
-                this.fixedMessage +=
-                    "<b>Date</b>: " +
+                this.statementDate =
                     this.task.hit.documents[this.taskIndex]["statement_date"];
         }
     }
