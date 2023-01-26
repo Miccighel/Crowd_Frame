@@ -24,7 +24,7 @@ export class ChatInputMagnitudeComponent implements OnInit {
     @ViewChild("message", { static: true }) message!: ElementRef;
 
     @Output() public send = new EventEmitter();
-    @Input() public disableInput!: boolean;
+    @Input() public readOnly!: boolean;
 
     ngOnInit() {
         if (!!this.magnitudeInfo) {

@@ -355,3 +355,16 @@ button.btn-user-answer {
 .hidden {
     display: none !important;
 }
+
+/*INPUT CONTAINER*/
+
+#input-box.input-row-active {
+    border: solid 3px #3f51b5;
+    background-color: #ffffff;
+    border-radius: 10px;
+}
+#input-box.input-row-inactive {
+    border: solid 3px #ffffff;
+    background-color: #6c757d38;
+    border-radius: 10px;
+}

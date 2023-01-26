@@ -19,7 +19,7 @@ export class ChatInputComponent implements OnInit {
     @Input() public buttonText = "↩︎";
     @Output() public send = new EventEmitter();
     @Input() public pholder!: string;
-    @Input() public disableInput!: boolean;
+    @Input() public readOnly!: boolean;
 
     @ViewChild("message", { static: true }) message!: ElementRef;
     @ViewChild("buttons") buttons!: ElementRef;
@@ -49,6 +49,6 @@ export class ChatInputComponent implements OnInit {
 
     ngOnChanges() {
         this.message.nativeElement.value = this.pholder;
-        this.message.nativeElement.disabled = this.disableInput;
+        this.message.nativeElement.disabled = this.readOnly;
     }
 }

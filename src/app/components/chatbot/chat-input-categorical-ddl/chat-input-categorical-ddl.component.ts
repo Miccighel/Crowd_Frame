@@ -24,7 +24,7 @@ export class ChatInputCategoricalDDLComponent implements OnInit {
         value: null,
     };
 
-    @Input() public disableInput!: boolean;
+    @Input() public readOnly!: boolean;
 
     ngOnInit() {}
 

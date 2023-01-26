@@ -20,7 +20,7 @@ export class ChatInputIntervalComponent implements OnInit {
     public step = 1;
     public value = 0;
     @Input() public intervalInfo: IntervalDimensionInfo = null;
-    @Input() public disableInput!: boolean;
+    @Input() public readOnly!: boolean;
 
     @Output() public send = new EventEmitter();
 
@@ -38,7 +38,7 @@ export class ChatInputIntervalComponent implements OnInit {
     }
 
     onInputChange(event: MatSliderChange) {
-        this.disableInput = false;
+        this.readOnly = false;
         this.value = event.value;
     }
 

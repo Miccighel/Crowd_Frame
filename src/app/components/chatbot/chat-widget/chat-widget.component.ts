@@ -1133,18 +1133,27 @@ export class ChatWidgetComponent implements OnInit {
                     this.taskP({ value: "startTask" });
                     return;
                 }
-                const modalRef = this.ngModal.open(ChatCommentModalComponent, {
-                    size: "md",
-                });
-                modalRef.componentInstance.outputToken = this.task.tokenOutput;
-                modalRef.componentInstance.message = this.modalCommentContent;
+                //Messaggio finale
+                this.typingAnimation(this.endOfTaskMessage[0]);
+                setTimeout(() => {
+                    //Richiesta commento
+                    const modalRef = this.ngModal.open(
+                        ChatCommentModalComponent,
+                        {
+                            size: "md",
+                        }
+                    );
+                    modalRef.componentInstance.outputToken =
+                        this.task.tokenOutput;
+                    modalRef.componentInstance.message =
+                        this.modalCommentContent;
 
-                modalRef.result.then((comment) => {
-                    this.buildCommentPayload(comment);
-                    this.showYNbuttons = false;
-                    this.typingAnimation(this.endOfTaskMessage[0]);
-                    this.typingAnimation("You may now close the page!");
-                });
+                    modalRef.result.then((comment) => {
+                        this.buildCommentPayload(comment);
+                        this.showYNbuttons = false;
+                        this.typingAnimation("You may now close the page!");
+                    });
+                }, 3000);
             } else {
                 return;
             }
@@ -1559,9 +1568,9 @@ export class ChatWidgetComponent implements OnInit {
                 this.task.hit.documents[i]["speaker_name"] +
                 ", ";
             if (!!this.task.hit.documents[i]["statement_date"])
-                statements +=
-                    this.task.hit.documents[i]["statement_date"] + "<br><br>";
+                statements += this.task.hit.documents[i]["statement_date"];
         }
+        statements += "<br><br>";
         return statements;
     }
 

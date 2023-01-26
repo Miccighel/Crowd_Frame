@@ -4,55 +4,51 @@ mat-slider {
 .chat-input-button {
     margin: 14px 12px;
     float: right;
-    color: inherit;
     font-size: 24px;
     border: 0;
+}
+.chat-input-text input {
+    padding: 0 0 0 14px;
+    border: none;
+    width: 100%;
+}
+input:focus-visible {
+    border: none;
     outline: none;
 }
-
-.chat-input-button mat-icon.activeInput {
-    color: #3f51b5;
+input {
+    background: none !important;
 }
 
-.chat-input-button button mat-icon.disabledInput {
-    color: #000;
+button.active {
+    background: #3f51b5 !important;
+    color: #ffffff !important;
+}
+button.inactive {
+    background: #e0e0e0 !important;
+    color: #a6b9cc !important;
 }
 
-.disabledInput {
-    background-color: #dfdfdf !important;
-    color: #000;
-}
-
-.activeInput {
-    background-color: #3f51b5;
-    color: #fff;
-}
-
-.activeInput input {
-    background-color: #3f51b5;
-    color: #fff;
-}
-.disabledInput input {
-    background-color: #dfdfdf !important;
-    color: #000;
+button.chat-input-button span.mat-button-wrapper {
+    padding: 0 0 8px 0;
 }
 
 .mat-accent .mat-slider-track-fill {
-    background-color: #fff !important;
+    background-color: #3f51b5 !important;
 }
 
 .mat-slider-thumb-label {
-    background-color: #fff !important;
-    color: #3f51b5 !important;
-    border: #3f51b5 solid 2px !important;
+    background-color: #3f51b5 !important;
+    color: #fff !important;
+    border: #fff solid 2px !important;
 }
 
 .mat-slider-thumb {
-    background-color: #fff !important;
-    color: #3f51b5 !important;
+    background-color: #3f51b5 !important;
+    color: #ffffff !important;
 }
 
 .mat-slider-thumb-label-text {
     opacity: 1 !important;
-    color: #3f51b5 !important;
+    color: #fff !important;
 }

@@ -1,4 +1,7 @@
-<div class="row activeInput">
+<div
+    class="row"
+    [ngClass]="readOnly ? 'input-row-inactive' : 'input-row-active'"
+>
     <div class="col-10 chat-input-text d-flex align-items-center">
         <input
             #message
@@ -12,8 +15,9 @@
         <button
             mat-mini-fab
             type="submit"
-            class="chat-input-button activeInput"
-            color="#ffffff"
+            class="chat-input-button"
+            [disabled]="readOnly"
+            [ngClass]="readOnly ? 'inactive' : 'active'"
             (click)="onSubmit()"
         >
             <!-- {{ buttonText }} -->

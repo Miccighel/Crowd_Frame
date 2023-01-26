@@ -1,11 +1,14 @@
-<div class="row py-2" [ngClass]="readonly ? 'disabledInput' : 'activeInput'">
+<div class="row" [ngClass]="readonly ? '' : ''">
     <div class="col-10 chat-input-text d-flex align-items-center">
-        <input
-            #urlValueInput
-            type="text"
-            placeholder="Insert the URL.."
-            [(ngModel)]="urlValue"
-        />
+        <mat-form-field appearance="filled" class="w-100">
+            <mat-label class="floating-label">Url</mat-label>
+            <input
+                matInput
+                #urlValueInput
+                type="text"
+                placeholder="Ex. www.uniud.com"
+                [(ngModel)]="urlValue"
+            />
+        </mat-form-field>
     </div>
-    <div class="col-2"></div>
 </div>

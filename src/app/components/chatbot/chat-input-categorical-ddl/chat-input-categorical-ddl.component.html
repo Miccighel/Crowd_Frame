@@ -1,7 +1,11 @@
-<div class="row activeInput py-1" id="ddl-component">
+<div
+    class="row py-1"
+    id="ddl-component"
+    [ngClass]="readOnly ? 'input-row-inactive' : 'input-row-active'"
+>
     <div class="col-10 ps-1">
         <mat-form-field appearance="none" class="categorical-ddl">
-            <mat-select [(value)]="selected" [disabled]="disableInput">
+            <mat-select [(value)]="selected" [disabled]="readOnly">
                 <mat-option *ngFor="let option of options" [value]="option">{{
                     option.label
                 }}</mat-option>
@@ -13,10 +17,9 @@
         <button
             mat-mini-fab
             type="submit"
-            class="chat-input-submit"
-            [disabled]="disableInput"
-            color="#ffffff"
-            [ngClass]="disableInput ? 'disabledInput' : 'activeInput'"
+            class="chat-input-button"
+            [disabled]="readOnly"
+            [ngClass]="readOnly ? 'inactive' : 'active'"
             (click)="onSubmit()"
         >
             <!-- {{ buttonText }} -->

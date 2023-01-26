@@ -170,48 +170,56 @@
                 </div>
             </div>
         </div>
-        <chat-url-input
-            class="container"
-            *ngIf="hasDoubleInput"
-            [readValue]="readUrlValue"
-            (updateValue)="updateUrlValue($event)"
-            [urlPlaceholder]="urlPlaceHolder"
-            [readonly]="readOnly"
+        <div
+            id="input-box"
+            class="container d-flex row p-0 m-0"
+            [ngClass]="readOnly ? 'input-row-inactive' : 'input-row-active'"
         >
-        </chat-url-input>
+            <chat-url-input
+                class="container"
+                *ngIf="hasDoubleInput"
+                [readValue]="readUrlValue"
+                (updateValue)="updateUrlValue($event)"
+                [urlPlaceholder]="urlPlaceHolder"
+                [readonly]="readOnly"
+            >
+            </chat-url-input>
 
-        <chat-input-magnitude
-            class="container"
-            *ngIf="showMagnitudeAnswer"
-            [magnitudeInfo]="magnitudeInfo"
-            (send)="sendMessage($event)"
-            [disableInput]="readOnly"
-        ></chat-input-magnitude>
-        <chat-input-interval
-            class="container"
-            *ngIf="showIntervalAnswer"
-            [intervalInfo]="intervalInfo"
-            (send)="sendMessage($event)"
-            [disableInput]="readOnly"
-        ></chat-input-interval>
+            <chat-input-magnitude
+                class="container"
+                *ngIf="showMagnitudeAnswer"
+                [magnitudeInfo]="magnitudeInfo"
+                (send)="sendMessage($event)"
+                [readOnly]="readOnly"
+            ></chat-input-magnitude>
+            <chat-input-interval
+                class="container"
+                *ngIf="showIntervalAnswer"
+                [intervalInfo]="intervalInfo"
+                (send)="sendMessage($event)"
+                [readOnly]="readOnly"
+            ></chat-input-interval>
 
-        <chat-input-categorical-ddl
-            class="container"
-            *ngIf="showInputDDL"
-            [options]="dropdownListOptions"
-            [disableInput]="readOnly"
-            (send)="buttonInput($event)"
-        >
-        </chat-input-categorical-ddl>
+            <chat-input-categorical-ddl
+                class="container"
+                *ngIf="showInputDDL"
+                [options]="dropdownListOptions"
+                [readOnly]="readOnly"
+                (send)="buttonInput($event)"
+            >
+            </chat-input-categorical-ddl>
 
-        <chat-input
-            class="container"
-            *ngIf="!showMagnitudeAnswer && !showIntervalAnswer && !showInputDDL"
-            (send)="sendMessage($event)"
-            [pholder]="placeholderInput"
-            [disableInput]="readOnly"
-        >
-        </chat-input>
+            <chat-input
+                class="container"
+                *ngIf="
+                    !showMagnitudeAnswer && !showIntervalAnswer && !showInputDDL
+                "
+                (send)="sendMessage($event)"
+                [pholder]="placeholderInput"
+                [readOnly]="readOnly"
+            >
+            </chat-input>
+        </div>
     </div>
 
     <div class="search-engine">
