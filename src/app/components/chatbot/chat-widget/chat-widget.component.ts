@@ -1078,7 +1078,6 @@ export class ChatWidgetComponent implements OnInit {
                 this.statementJump = true;
             } else if (message.trim().toLowerCase() === "no") {
                 this.action = "Finish";
-                this.uploadTaskData(this.action);
                 this.task.sequenceNumber += 1;
                 // INVIO DATI COL CONTROLLO QUALITA
                 let validTry = this.validateTask();
@@ -2040,63 +2039,6 @@ export class ChatWidgetComponent implements OnInit {
         return data;
     }
 
-    private async uploadTaskData(action: string) {
-        // INVIO DATI ALLA FINE DEL TASK
-        let data = {};
-
-        /* All data about documents are uploaded, only once */
-        let actionInfo = {
-            action: action,
-            try: this.task.tryCurrent,
-            sequence: this.task.sequenceNumber,
-            element: "document",
-        };
-        let taskData = {
-            task_id: this.configService.environment.taskName,
-            batch_name: this.configService.environment.batchName,
-            worker_id: this.worker.identifier,
-            unit_id: this.task.unitId,
-            token_input: this.task.tokenInput,
-            token_output: this.task.tokenOutput,
-            tries_amount: this.task.settings.allowed_tries,
-            questionnaire_amount: this.task.questionnaireAmount,
-            questionnaire_amount_start: this.task.questionnaireAmountStart,
-            questionnaire_amount_end: this.task.questionnaireAmountEnd,
-            documents_amount: this.task.documentsAmount,
-            dimensions_amount: this.task.dimensionsAmount,
-        };
-
-        data["info"] = actionInfo;
-        data["task"] = taskData;
-        data["questionnaires"] = this.task.questionnaires;
-        data["documents"] = this.task.documents;
-        data["dimensions"] = this.task.dimensions;
-        data["worker"] = this.worker;
-        data["questionnaires_answers"] = this.buildQuestionnaireAnswersData();
-        data["documents_answers"] = this.answersPretty;
-        data["notes"] = [];
-        /* Worker's dimensions selected values for the current document */
-        data["dimensions_selected"] = this.dimensionSelected;
-        /* Start, end and elapsed timestamps for each document */
-        data["timestamps_start"] = this.timestampsStart;
-        data["timestamps_end"] = this.timestampsEnd;
-        data["timestamps_elapsed"] = this.timestampsElapsed;
-        /* Countdown time and corresponding flag for each document */
-        let countdownTimes = [];
-        let countdownTimesStart = [];
-        let countdownExpired = [];
-        data["countdowns_times_start"] = countdownTimesStart;
-        data["countdowns_times_left"] = countdownTimes;
-        data["countdowns_expired"] = countdownExpired;
-        /* Number of accesses to each document (currentDocument.e., how many times the worker reached the document with a "Back" or "Next" action */
-        data["accesses"] = this.accessesAmount;
-        /* Worker's search engine queries for each document */
-        data["queries"] = this.queryTotal;
-        /* Responses retrieved by search engine for each worker's query for each document */
-        data["responses_retrieved"] = this.responsesRetrievedTotal;
-        /* Responses by search engine ordered by worker's click for the current document */
-        data["responses_selected"] = this.responsesSelectedTotal;
-    }
     private taskQualityCheck() {
         let globalValidityCheck: boolean;
         let timeSpentCheck: boolean;
