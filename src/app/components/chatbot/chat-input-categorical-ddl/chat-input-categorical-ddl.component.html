@@ -3,7 +3,7 @@
     id="ddl-component"
     [ngClass]="readOnly ? 'input-row-inactive' : 'input-row-active'"
 >
-    <div class="col-10 ps-1">
+    <div class="col-10">
         <mat-form-field appearance="none" class="categorical-ddl">
             <mat-select [(value)]="selected" [disabled]="readOnly">
                 <mat-option *ngFor="let option of options" [value]="option">{{

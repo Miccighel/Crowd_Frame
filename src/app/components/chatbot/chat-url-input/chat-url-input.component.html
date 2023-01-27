@@ -1,4 +1,7 @@
-<div class="row" [ngClass]="readonly ? '' : ''">
+<div
+    class="row"
+    [ngClass]="readOnly ? 'input-row-inactive' : 'input-row-active'"
+>
     <div class="col-10 chat-input-text d-flex align-items-center">
         <mat-form-field appearance="filled" class="w-100">
             <mat-label class="floating-label">Url</mat-label>

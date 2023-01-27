@@ -235,3 +235,15 @@ mat-card-actions {
 
 /* Importing Bootstrap SCSS file. */
 @import "bootstrap/scss/bootstrap";
+
+* {
+    --primary: #084887;
+    --secondary: #60acbf;
+    --tertiary: #b7deeb;
+    --light: #ffffff;
+    --dark: #000000;
+    --green: #1ed447;
+    --red: #dc3545;
+    --grey: #d9d9d9;
+    --transparentLight: #ffffff9e;
+}

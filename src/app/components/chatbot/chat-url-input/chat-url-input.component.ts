@@ -24,7 +24,7 @@ export class ChatUrlInputComponent implements OnInit, OnChanges, OnDestroy {
     @Output() public updateValue = new EventEmitter<string>();
     @Input() public urlPlaceholder!: string;
     public urlValue: string;
-    @Input() public readonly!: boolean;
+    @Input() public readOnly!: boolean;
 
     private readonly unsubscribeAll: Subject<void> = new Subject<void>();
 
@@ -38,7 +38,7 @@ export class ChatUrlInputComponent implements OnInit, OnChanges, OnDestroy {
 
     ngOnChanges() {
         this.urlValue = this.urlPlaceholder;
-        this.urlValueInput.nativeElement.disabled = this.readonly;
+        this.urlValueInput.nativeElement.disabled = this.readOnly;
     }
 
     ngOnDestroy(): void {

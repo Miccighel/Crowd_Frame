@@ -4,14 +4,6 @@
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
         "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji",
         "Segoe UI Emoji", "Segoe UI Symbol";
-    --primary: #084887;
-    --secondary: #60acbf;
-    --tertiary: #b7deeb;
-    --light: #ffffff;
-    --dark: #000000;
-    --green: #1ed447;
-    --red: #dc3545;
-    --grey: #d9d9d9;
 }
 
 .wrapper {
@@ -66,6 +58,12 @@
     height: auto;
 }
 
+#divider {
+    width: 100%;
+    height: 27px;
+    background-color: var(--primary);
+}
+
 #statement-title {
     background-color: var(--primary);
     color: var(--light);
@@ -79,6 +77,10 @@
 #statement-additional-info {
     background-color: var(--primary);
     color: var(--light);
+}
+#statement-additional-info .add-info {
+    flex-wrap: inherit;
+    display: inline-flex;
 }
 .chat-box-main {
     flex: 1;
@@ -416,12 +418,12 @@ button.btn-user-answer {
 /*INPUT CONTAINER*/
 
 #input-box.input-row-active {
-    border: solid 3px var(--primary);
-    background-color: var(--light);
+    border: solid 3px var(--light);
+    background-color: var(--primary);
     border-radius: 10px;
 }
 #input-box.input-row-inactive {
     border: solid 3px var(--light);
-    background-color: var(--primary);
+    background-color: var(--grey);
     border-radius: 10px;
 }

@@ -2,8 +2,8 @@
     class="row"
     [ngClass]="readOnly ? 'input-row-inactive' : 'input-row-active'"
 >
-    <div class="col-2 d-flex align-items-center">
-        <strong>Min: </strong> {{ range[0] }}
+    <div class="col-2 d-flex align-items-center" id="min-max">
+        Min:&nbsp; {{ range[0] }}
     </div>
     <div class="col-6 d-flex align-items-center">
         <mat-slider
@@ -16,8 +16,8 @@
             ><input matSliderThumb [value]="value"
         /></mat-slider>
     </div>
-    <div class="col-2 d-flex align-items-center">
-        <strong>Max: </strong> {{ range[1] }}
+    <div class="col-2 d-flex align-items-center" id="min-max">
+        Max:&nbsp; {{ range[1] }}
     </div>
     <div class="col-2">
         <button

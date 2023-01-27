@@ -23,6 +23,10 @@
     align-items: center;
 }
 
+#ddl-component .mat-select-value-text {
+    font-weight: 500;
+}
+
 /* .mat-select-panel-wrap div:first-child {
     min-width: none;
 } */
@@ -49,15 +53,21 @@ input:focus-visible {
 }
 input {
     background: none !important;
+    color: var(--light);
 }
-
+.input-row-active .chat-input-text input::placeholder {
+    color: var(--transparentLight);
+}
+.input-row-active .floating-label {
+    color: var(--transparentLight);
+}
 button.active {
-    background: #3f51b5 !important;
-    color: #ffffff !important;
+    background: var(--light) !important;
+    color: var(--primary) !important;
 }
 button.inactive {
-    background: #e0e0e0 !important;
-    color: #a6b9cc !important;
+    background: var(--light) !important;
+    color: var(--grey) !important;
 }
 
 button.chat-input-button span.mat-button-wrapper {

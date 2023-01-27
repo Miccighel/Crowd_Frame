@@ -203,7 +203,7 @@ export class ChatWidgetComponent implements OnInit {
 
     public operator = {
         name: "Fake News Bot",
-        status: "online",
+        status: "Online",
         avatar: "https://randomuser.me/api/portraits/lego/0.jpg",
     };
 

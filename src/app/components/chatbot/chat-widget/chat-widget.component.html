@@ -19,15 +19,19 @@
                 <div class="dot-to-complete" [id]="i">{{ i + 1 }}</div>
             </div>
         </div>
+        <div *ngIf="!fixedMessage" id="divider"></div>
         <div *ngIf="!!fixedMessage" class="chat-fixed-message row p-0 m-0">
-            <div class="col-12" id="statement-title">Statement</div>
+            <div class="col-12 py-1" id="statement-title">Statement</div>
             <div id="statement-text">{{ fixedMessage }}</div>
-            <div id="statement-additional-info" class="row p-0 m-0">
-                <div class="col-6" *ngIf="!!statementDate">
-                    <strong>Date: </strong>{{ statementDate }}
+            <div id="statement-additional-info" class="row py-1 m-0">
+                <div class="col-6 ps-0 d-flex add-info" *ngIf="!!statementDate">
+                    <strong>Date:&nbsp;</strong> {{ statementDate }}
                 </div>
-                <div class="col-6" *ngIf="!!statementAuthor">
-                    <strong>Speaker: </strong> {{ statementAuthor }}
+                <div
+                    class="col-6 ps-0 d-flex add-info"
+                    *ngIf="!!statementAuthor"
+                >
+                    <strong>Speaker:&nbsp;</strong> {{ statementAuthor }}
                 </div>
             </div>
         </div>
@@ -175,7 +179,7 @@
                 [readValue]="readUrlValue"
                 (updateValue)="updateUrlValue($event)"
                 [urlPlaceholder]="urlPlaceHolder"
-                [readonly]="readOnly"
+                [readOnly]="readOnly"
             >
             </chat-url-input>
 

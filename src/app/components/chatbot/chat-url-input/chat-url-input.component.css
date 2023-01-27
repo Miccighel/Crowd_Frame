@@ -7,3 +7,22 @@
 .chat-input-text .mat-form-field-infix {
     width: 100%;
 }
+
+.chat-input-text input {
+    background: none !important;
+    color: var(--light);
+}
+.input-row-active .chat-input-text input::placeholder {
+    color: var(--transparentLight);
+}
+.input-row-active .floating-label {
+    color: var(--transparentLight);
+}
+button.active {
+    background: var(--light) !important;
+    color: var(--primary) !important;
+}
+button.inactive {
+    background: var(--light) !important;
+    color: var(--grey) !important;
+}

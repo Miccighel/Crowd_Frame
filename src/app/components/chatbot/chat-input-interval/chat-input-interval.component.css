@@ -7,26 +7,14 @@ mat-slider {
     font-size: 24px;
     border: 0;
 }
-.chat-input-text input {
-    padding: 0 0 0 14px;
-    border: none;
-    width: 100%;
-}
-input:focus-visible {
-    border: none;
-    outline: none;
-}
-input {
-    background: none !important;
-}
 
 button.active {
-    background: #3f51b5 !important;
-    color: #ffffff !important;
+    background: var(--light) !important;
+    color: var(--primary) !important;
 }
 button.inactive {
-    background: #e0e0e0 !important;
-    color: #a6b9cc !important;
+    background: var(--light) !important;
+    color: var(--grey) !important;
 }
 
 button.chat-input-button span.mat-button-wrapper {
@@ -34,21 +22,24 @@ button.chat-input-button span.mat-button-wrapper {
 }
 
 .mat-accent .mat-slider-track-fill {
-    background-color: #3f51b5 !important;
+    background-color: var(--light) !important;
 }
 
 .mat-slider-thumb-label {
-    background-color: #3f51b5 !important;
-    color: #fff !important;
-    border: #fff solid 2px !important;
+    background-color: var(--light) !important;
+    color: var(--primary) !important;
+    border: var(--primary) solid 2px !important;
 }
 
 .mat-slider-thumb {
-    background-color: #3f51b5 !important;
-    color: #ffffff !important;
+    background-color: var(--light) !important;
+    color: var(--primary) !important;
 }
 
 .mat-slider-thumb-label-text {
     opacity: 1 !important;
-    color: #fff !important;
+    color: var(--primary) !important;
+}
+#min-max {
+    color: var(--light);
 }
