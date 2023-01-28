@@ -1,0 +1,13 @@
+{
+    "general": [
+        {
+            "caption": "Evaluation Instructions",
+            "text": "<p>Lorem ipsum <strong>dolor</strong> sit amet.</p>"
+        },
+        {
+            "caption": "Evaluation Instructions",
+            "text": "<p>Lorem ipsum <strong>dolor</strong> sit amet.</p>"
+        }
+    ],
+    "element":false
+}

@@ -1,0 +1,109 @@
+[
+    {
+        "name": "only_url_dimension",
+        "name_pretty": "URL Dimension",
+        "description": "This is an URL dimension",
+        "example": "",
+        "gold": false,
+        "pairwise": false,
+        "justification": false,
+        "url": true,
+        "scale": false,
+        "style": false
+    },
+    {
+        "name": "url_dimension",
+        "name_pretty": "Hybrid Dimension",
+        "description": "This is an hybrid dimension",
+        "example": "",
+        "gold": false,
+        "pairwise": false,
+        "justification": false,
+        "url": true,
+        "scale": {
+            "instructions": {
+                "label": "C",
+                "caption": false,
+                "text": "Evaluate seven quality dimensions of the statement considering the evidence found."
+            },
+            "type": "categorical",
+            "mapping": [
+                {
+                    "label": "Completely Disagree",
+                    "description": "",
+                    "value": "-2"
+                },
+                {
+                    "label": "Partially Disagree",
+                    "description": "",
+                    "value": "-1"
+                },
+                {
+                    "label": "Neutral",
+                    "description": "",
+                    "value": "0"
+                },
+                {
+                    "label": "Partially Agree",
+                    "description": "",
+                    "value": "1"
+                },
+                {
+                    "label": "Completely Agree",
+                    "description": "",
+                    "value": "2"
+                }
+            ]
+        },
+        "style": false
+    },
+    {
+        "name": "interval1",
+        "name_pretty": "Interval 1",
+        "description": "This is an interval description",
+        "gold": false,
+        "justification": false,
+        "url": false,
+        "scale": {
+            "type": "interval",
+            "instructions": false,
+            "min": 10,
+            "max": 100,
+            "step": 5
+        },
+        "style": false
+    },
+    {
+        "name": "magnitude",
+        "name_pretty": "Magnitude Estimation",
+        "description": false,
+        "example": "",
+        "gold": false,
+        "pairwise": false,
+        "justification": false,
+        "url": true,
+        "scale": {
+            "type": "magnitude_estimation",
+            "min": 10,
+            "lower_bound": true,
+            "instructions": false
+        },
+        "style": false
+    },
+    {
+        "name": "interval2",
+        "name_pretty": "Interval with URL",
+        "description": "This is an interval description",
+        "gold": false,
+        "justification": false,
+        "url": true,
+        "scale": {
+            "type": "interval",
+            "instructions": false,
+            "min": 10,
+            "max": 100,
+            "step": 5
+        },
+        "style": false
+    }
+]

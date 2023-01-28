@@ -22,6 +22,7 @@ import {
     AnswerModel,
     CategoricalInfo,
     DropdownSelectItem,
+    EnConversationalInputType,
     EnConversationaTaskStatus,
     IntervalDimensionInfo,
     MagnitudeDimensionInfo,
@@ -157,12 +158,11 @@ export class ChatWidgetComponent implements OnInit {
     public showCountdown = false; //Interval per la gestione del countdown
 
     //show components flag
-    showCategoricalAnswers = false;
-    showMagnitudeAnswer = false;
-    showIntervalAnswer = false;
+    EnInputType = EnConversationalInputType;
+    inputComponentToShow: EnConversationalInputType =
+        EnConversationalInputType.Text;
     showYNbuttons = false;
     showCMbuttons = false;
-    showInputDDL = false;
     hasDoubleInput = false;
     urlInputValue = "";
 
@@ -396,14 +396,14 @@ export class ChatWidgetComponent implements OnInit {
         }
         // Se il messaggio è vuoto, ignoro
         if (
-            !this.showCategoricalAnswers &&
-            !this.showInputDDL &&
+            this.inputComponentToShow != EnConversationalInputType.Button &&
+            this.inputComponentToShow != EnConversationalInputType.Dropdown &&
             message.trim() === ""
         ) {
             return;
         }
         // Mostro il messaggio in chat
-        if (this.showCategoricalAnswers || this.showInputDDL) {
+        if (this.inputComponentToShow == EnConversationalInputType.Dropdown) {
             message = message.label;
             if (this.hasDoubleInput) {
                 this.addMessageClient(
@@ -461,12 +461,10 @@ export class ChatWidgetComponent implements OnInit {
             this.task.questionnaires[this.currentQuestionnaire].type ==
             "standard"
         ) {
-            this.showCategoricalAnswers = false;
-            this.showIntervalAnswer = false;
-            this.showMagnitudeAnswer = false;
+            this.inputComponentToShow = EnConversationalInputType.Text;
 
             if (this.awaitingAnswer) {
-                this.showInputDDL = false;
+                this.inputComponentToShow;
                 this.readOnly = false;
 
                 this.questionnaireAnswers[this.currentQuestion] = message;
@@ -501,7 +499,8 @@ export class ChatWidgetComponent implements OnInit {
                 this.typingAnimation(this.createQuestionnaireAnswers());
                 setTimeout(() => {
                     this.generateQuestionnaireAnswers();
-                    this.showInputDDL = true;
+                    this.inputComponentToShow ==
+                        EnConversationalInputType.Dropdown;
                 }, 850);
 
                 this.readOnly = false;
@@ -515,8 +514,8 @@ export class ChatWidgetComponent implements OnInit {
             this.task.questionnaires[this.currentQuestionnaire].type == "crt" ||
             this.task.questionnaires[this.currentQuestionnaire].type == "likert"
         ) {
-            this.showMagnitudeAnswer = true;
-            this.showInputDDL = false;
+            this.inputComponentToShow = EnConversationalInputType.Number;
+            this.inputComponentToShow;
             if (this.awaitingAnswer) {
                 if (!ChatHelper.validMsg(message, 1, 100)) {
                     this.typingAnimation(
@@ -575,11 +574,9 @@ export class ChatWidgetComponent implements OnInit {
 
     // Fase di task
     private async taskP(message) {
-        if (this.showCategoricalAnswers) {
+        if (this.inputComponentToShow == EnConversationalInputType.Dropdown) {
             message = this.getCategoricalAnswerValue(message);
-        } else if (this.showInputDDL) {
-            message = this.getCategoricalAnswerValue(message);
-            this.showInputDDL = false;
+            this.inputComponentToShow = EnConversationalInputType.Text;
         }
 
         if (
@@ -674,7 +671,7 @@ export class ChatWidgetComponent implements OnInit {
             !this.ignoreMsg
         ) {
             let messageToSend = "";
-            if (!this.showMagnitudeAnswer) {
+            if (!this.inputComponentToShow) {
                 messageToSend = `Please type a integer number between ${this.minValue} and ${this.maxValue}`;
             } else {
                 messageToSend = `Please type a integer number higher than ${this.minValue} `;
@@ -726,9 +723,9 @@ export class ChatWidgetComponent implements OnInit {
 
     // Fase di review
     private async reviewP(message: string) {
-        if (this.showInputDDL) {
+        if (this.inputComponentToShow == EnConversationalInputType.Dropdown) {
             message = this.getDimensionAnswerValue(message);
-            this.showInputDDL = false;
+            this.inputComponentToShow;
         }
         if (this.questionnaireReview) {
             if (this.pickReview) {
@@ -786,7 +783,8 @@ export class ChatWidgetComponent implements OnInit {
                         this.generateQuestionnaireAnswers();
                         this.currentQuestion = previousQuestionIndex;
                         this.readOnly = false;
-                        this.showInputDDL = true;
+                        this.inputComponentToShow ==
+                            EnConversationalInputType.Dropdown;
 
                         this.awaitingAnswer = true;
                         return;
@@ -797,8 +795,9 @@ export class ChatWidgetComponent implements OnInit {
                             .type == "likert"
                     ) {
                         this.currentQuestion = previousQuestionIndex;
-                        this.showMagnitudeAnswer = true;
-                        this.showInputDDL = false;
+                        this.inputComponentToShow =
+                            EnConversationalInputType.Number;
+                        this.inputComponentToShow;
                         this.awaitingAnswer = true;
                         return;
                     }
@@ -821,8 +820,8 @@ export class ChatWidgetComponent implements OnInit {
             }
             //Confermo le risposte del questionario
             if (message.trim().toLowerCase() === "confirm") {
-                this.showInputDDL = false;
-                this.showCategoricalAnswers = false;
+                this.inputComponentToShow;
+                this.inputComponentToShow = EnConversationalInputType.Text;
                 this.showCMbuttons = false;
                 this.questionnaireReview = false;
                 this.uploadQuestionnaireData();
@@ -864,7 +863,8 @@ export class ChatWidgetComponent implements OnInit {
                         this.typingAnimation(
                             "Please check your answers, and check if you typed a valid url, try using the search bar on the right!"
                         );
-                        this.showInputDDL;
+                        this.inputComponentToShow ==
+                            EnConversationalInputType.Dropdown;
                         return;
                     }
                     this.hasDoubleInput = false;
@@ -885,7 +885,10 @@ export class ChatWidgetComponent implements OnInit {
                     this.answers[this.taskIndex][this.subTaskIndex].urlValue =
                         message;
                 } else {
-                    if (this.showCategoricalAnswers) {
+                    if (
+                        this.inputComponentToShow ==
+                        EnConversationalInputType.Dropdown
+                    ) {
                         message = this.getCategoricalAnswerValue(message);
                     }
 
@@ -897,7 +900,7 @@ export class ChatWidgetComponent implements OnInit {
                         )
                     ) {
                         let messageToSend = "";
-                        if (!this.showMagnitudeAnswer) {
+                        if (!this.inputComponentToShow) {
                             messageToSend = `Please type a integer number between ${this.minValue} and ${this.maxValue}`;
                         } else {
                             messageToSend = `Please type a integer number higher than 0 `;
@@ -957,8 +960,7 @@ export class ChatWidgetComponent implements OnInit {
             return;
         } //Conferma le risposte dell'assignment
         if (message.trim().toLowerCase() === "confirm") {
-            this.showInputDDL = false;
-            this.showCategoricalAnswers = false;
+            this.inputComponentToShow = EnConversationalInputType.Text;
             this.showCMbuttons = false;
             document.getElementById(this.taskIndex.toString()).className =
                 "dot-completed";
@@ -1075,7 +1077,7 @@ export class ChatWidgetComponent implements OnInit {
                         "Which statement would you like to jump to?"
                 );
                 this.showYNbuttons = false;
-                this.showInputDDL = true;
+                this.inputComponentToShow = EnConversationalInputType.Dropdown;
                 this.generateFinalStatementRecapData();
                 this.statementJump = true;
             } else if (message.trim().toLowerCase() === "no") {
@@ -1199,9 +1201,7 @@ export class ChatWidgetComponent implements OnInit {
     private cleanUserInput() {
         this.urlPlaceHolder = "";
         this.placeholderInput = "";
-        this.showCategoricalAnswers = false;
-        this.showIntervalAnswer = false;
-        this.showMagnitudeAnswer = false;
+        this.inputComponentToShow = EnConversationalInputType.Text;
         this.waitForUrl = false;
         this.emitDisableSearchEngine();
         this.emitResetSearchEngineState();
@@ -1631,6 +1631,11 @@ export class ChatWidgetComponent implements OnInit {
         } else {
             if (!this.task.dimensions[dimensionIndex].scale) {
                 scaleType = "url";
+            } else if (
+                !this.task.dimensions[dimensionIndex].scale &&
+                !this.task.dimensions[dimensionIndex].url
+            ) {
+                scaleType = "textual";
             } else {
                 scaleType = this.task.dimensions[dimensionIndex].scale.type;
             }
@@ -1656,6 +1661,9 @@ export class ChatWidgetComponent implements OnInit {
                 break;
             case "interval":
                 this.generateIntervalAnswer(dimensionIndex);
+                break;
+            case "textual":
+                this.generateTextualAnswer(dimensionIndex);
                 break;
             default:
                 console.warn("Casistica non gestita");
@@ -1697,7 +1705,7 @@ export class ChatWidgetComponent implements OnInit {
                 }
             );
         }
-        this.showInputDDL = true;
+        this.inputComponentToShow = EnConversationalInputType.Dropdown;
     }
     //Generazione risposte del questionario
     private generateQuestionnaireAnswers() {
@@ -1744,7 +1752,7 @@ export class ChatWidgetComponent implements OnInit {
                 description: el.description,
                 value: el.value,
             }));
-            this.showInputDDL = true;
+            this.inputComponentToShow = EnConversationalInputType.Dropdown;
         }
         //Altrimenti appaiono i pulsanti
         else {
@@ -1755,7 +1763,7 @@ export class ChatWidgetComponent implements OnInit {
                 description: el.description,
                 value: el.value,
             }));
-            this.showCategoricalAnswers = true;
+            this.inputComponentToShow = EnConversationalInputType.Dropdown;
             this.readOnly = true;
         }
         //Va a fissare il valore massimo e minimo per la validazione della risposta che verrà fornita
@@ -1777,7 +1785,11 @@ export class ChatWidgetComponent implements OnInit {
         };
         this.minValue = dimensionInfos.min;
         this.maxValue = dimensionInfos.max;
-        this.showIntervalAnswer = true;
+        this.inputComponentToShow = EnConversationalInputType.Slider;
+    }
+    private generateTextualAnswer(dimensionIndex: number) {
+        this.placeholderInput = null;
+        this.inputComponentToShow = EnConversationalInputType.Text;
     }
     //Generazione delle risposte magnitude
     private generateMagnitudeAnswer(dimensionIndex: number) {
@@ -1793,7 +1805,7 @@ export class ChatWidgetComponent implements OnInit {
 
         this.minValue = dimensionInfos.min;
         this.maxValue = null;
-        this.showMagnitudeAnswer = true;
+        this.inputComponentToShow = EnConversationalInputType.Number;
     }
 
     //Resistuiscono il valore minimo e massimo all'interno dell'array di oggetti passato
@@ -2036,13 +2048,6 @@ export class ChatWidgetComponent implements OnInit {
     }
 
     private taskQualityCheck() {
-        let globalValidityCheck: boolean;
-        let timeSpentCheck: boolean;
-        let timeCheckAmount = this.task.settings.time_check_amount;
-
-        /* 1) GLOBAL VALIDITY CHECK performed here */
-        globalValidityCheck = this.performGlobalValidityCheck();
-
         /* 2) GOLD ELEMENTS CHECK performed here */
 
         let goldConfiguration = [];
@@ -2053,7 +2058,7 @@ export class ChatWidgetComponent implements OnInit {
             let answers = {};
             for (let goldDimension of this.task.goldDimensions) {
                 for (let [attribute, value] of Object.entries(
-                    this.task.documents[goldDocument.index].id
+                    this.task.documents[goldDocument.index]
                 )) {
                     let dimensionName = attribute.split("_")[0];
                     if (dimensionName == goldDimension.name) {
@@ -2070,31 +2075,7 @@ export class ChatWidgetComponent implements OnInit {
 
         /* The gold configuration is evaluated using the static method implemented within the GoldChecker class */
         let goldChecks = GoldChecker.performGoldCheck(goldConfiguration);
-
-        /* 3) TIME SPENT CHECK performed here */
-        timeSpentCheck = true;
-        this.task.timestampsElapsed.forEach((item) => {
-            if (item < timeCheckAmount) timeSpentCheck = false;
-        });
-
-        let qualityCheckData = {
-            globalOutcome: null,
-            globalFormValidity: globalValidityCheck,
-            timeSpentCheck: timeSpentCheck,
-            timeCheckAmount: timeCheckAmount,
-            goldChecks: goldChecks,
-            goldConfiguration: goldConfiguration,
-        };
-
-        let checksOutcome = [];
-        let checker = (array) => array.every(Boolean);
-
-        checksOutcome.push(qualityCheckData["globalFormValidity"]);
-        checksOutcome.push(qualityCheckData["timeSpentCheck"]);
-        checksOutcome.push(checker(qualityCheckData["goldChecks"]));
-
-        qualityCheckData["globalOutcome"] = checker(checksOutcome);
-        this.task.buildQualityChecksPayload(qualityCheckData);
+        this.task.buildQualityChecksPayload(goldChecks);
     }
 
     public performGlobalValidityCheck() {

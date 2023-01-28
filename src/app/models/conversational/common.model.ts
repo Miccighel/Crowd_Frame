@@ -47,3 +47,10 @@ export enum EnConversationaTaskStatus {
     ReviewPhase,
     EndPhase,
 }
+export enum EnConversationalInputType {
+    Text,
+    Number,
+    Dropdown,
+    Button,
+    Slider,
+}
