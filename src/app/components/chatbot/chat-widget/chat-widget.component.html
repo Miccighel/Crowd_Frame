@@ -11,10 +11,10 @@
             </h3>
         </div>
 
-        <div class="row container p-1 m-0">
+        <div class="row container p-0 m-0 my-1">
             <div
                 *ngFor="let item of task.documents; let i = index"
-                class="col-1"
+                class="col-1 ps-0"
             >
                 <div class="dot-to-complete" [id]="i">{{ i + 1 }}</div>
             </div>

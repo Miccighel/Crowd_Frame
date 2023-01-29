@@ -153,6 +153,7 @@ export class ChatWidgetComponent implements OnInit {
     private timerIsOverSubject = new BehaviorSubject<boolean>(false);
     private activeInterval: any; //Interval per la gestione del countdown
     public showCountdown = false; //Interval per la gestione del countdown
+    private countdownLeftTime = []; //Interval per la gestione del countdown
 
     //show components flag
     EnInputType = EnConversationalInputType;
@@ -214,6 +215,9 @@ export class ChatWidgetComponent implements OnInit {
     public messages: any[] = [];
 
     private initializeContainers() {
+        this.countdownLeftTime = !!this.task.settings.countdown_time
+            ? new Array(this.task.documents.length).fill(0)
+            : [];
         this.accessesAmount = new Array(this.task.documents.length).fill(0);
         this.queryIndex = new Array(this.task.documents.length).fill(0);
         this.questionnaireAnswers = new Array(
@@ -550,7 +554,7 @@ export class ChatWidgetComponent implements OnInit {
         ) {
             //Stop del interval
             if (this.task.settings.countdown_time) {
-                this.task.documents[this.taskIndex];
+                this.countdownLeftTime[this.taskIndex] = this.countdownValue;
                 this.resetCountdown();
             }
             //Salvo il tempo di fine
@@ -585,7 +589,7 @@ export class ChatWidgetComponent implements OnInit {
             dimSel["url"] = this.answers[this.taskIndex][subtaskIndex].urlValue;
 
             this.dimsSelected.push(dimSel);
-            this.uploadStatementData();
+            this.uploadDocumentData();
 
             this.reviewP(message);
             return;
@@ -597,12 +601,9 @@ export class ChatWidgetComponent implements OnInit {
                 );
                 return;
             }
-
             this.answers[this.taskIndex][this.subTaskIndex - 1].urlValue =
                 message;
-
             this.cleanUserInput();
-
             this.ignoreMsg = true;
         }
         //E' una dimensione con doppio input
@@ -625,26 +626,30 @@ export class ChatWidgetComponent implements OnInit {
                 this.urlInputValue;
             this.answers[this.taskIndex][this.subTaskIndex - 1].dimensionValue =
                 message;
-
             this.cleanUserInput();
-
             this.ignoreMsg = true;
         } else if (
             message != "startTask" &&
             !ChatHelper.validMsg(message, this.minValue, this.maxValue) &&
-            !this.ignoreMsg
+            !this.ignoreMsg &&
+            this.inputComponentToShow != EnConversationalInputType.Text
         ) {
             let messageToSend = "";
-            if (!this.inputComponentToShow) {
-                messageToSend = `Please type a integer number between ${this.minValue} and ${this.maxValue}`;
-            } else {
+            if (this.inputComponentToShow == EnConversationalInputType.Number) {
                 messageToSend = `Please type a integer number higher than ${this.minValue} `;
+            } else {
+                messageToSend = `Please type a integer number between ${this.minValue} and ${this.maxValue}`;
             }
             this.typingAnimation(messageToSend);
+
             return;
         }
         //E' una dimensione testuale libera
-        else if (!this.ignoreMsg && message != "startTask") {
+        else if (
+            !this.ignoreMsg &&
+            message != "startTask" &&
+            this.inputComponentToShow == EnConversationalInputType.Text
+        ) {
             if (!!message.trim()) {
                 this.answers[this.taskIndex][
                     this.subTaskIndex - 1
@@ -655,7 +660,9 @@ export class ChatWidgetComponent implements OnInit {
             }
         }
         if (!this.ignoreMsg && message != "startTask") {
+            this.ignoreMsg = true;
             this.cleanUserInput();
+
             const subtaskIndex = this.subTaskIndex - 1;
             this.answers[this.taskIndex][subtaskIndex].dimensionValue = message;
             let dimSel = {};
@@ -936,7 +943,7 @@ export class ChatWidgetComponent implements OnInit {
             // Reset della fase di revisione
             this.reviewAnswersShown = false;
             this.pickReview = false;
-            this.uploadStatementData();
+            this.uploadDocumentData();
         }
 
         // Ripeto questa fase finchè non ricevo un Confirm
@@ -944,7 +951,7 @@ export class ChatWidgetComponent implements OnInit {
             this.cleanUserInput();
             this.typingAnimation("Let's review your answers!");
             this.typingAnimation(
-                this.createAnswerString(this.taskIndex) +
+                this.createDocumentRecap(this.taskIndex) +
                     "<br>Confirm your answers?"
             );
             this.showCMbuttons = true;
@@ -992,6 +999,15 @@ export class ChatWidgetComponent implements OnInit {
                     ];
 
                 return;
+            } else {
+                this.randomMessage();
+                this.taskStatus = EnConversationaTaskStatus.TaskPhase;
+                this.taskIndex++;
+                this.reviewAnswersShown = false;
+                this.ignoreMsg = true;
+                this.subTaskIndex = 0;
+                this.fixedMessage = null;
+                this.taskP(message);
             }
         } else if (message.trim().toLowerCase() === "modify") {
             this.showCMbuttons = false;
@@ -1038,22 +1054,15 @@ export class ChatWidgetComponent implements OnInit {
                 // INVIO DATI COL CONTROLLO QUALITA
                 let validTry = this.validateTask();
                 this.taskQualityCheck();
-                let goldConfiguration = null;
+
                 let data = {};
                 let actionInfoCheck = {
                     try: this.task.tryCurrent,
                     sequence: this.task.sequenceNumber,
                     element: "checks",
                 };
-                let qualityCheckData = {
-                    globalFormValidity: validTry,
-                    timeSpentCheck: "",
-                    timeCheckAmount: "",
-                    goldChecks: [validTry],
-                    goldConfiguration: goldConfiguration,
-                };
+
                 data["info"] = actionInfoCheck;
-                data["checks"] = qualityCheckData;
 
                 this.task.sequenceNumber += 1;
                 if (!validTry) {
@@ -1380,7 +1389,7 @@ export class ChatWidgetComponent implements OnInit {
     }
 
     // Creazione del testo relativo alle risposte fornite riguardo allo statement attuale
-    private createAnswerString(taskIndex) {
+    private createDocumentRecap(taskIndex) {
         let recap = "";
         for (let i = 0; i < this.task.dimensionsAmount; i++) {
             let scaleType = null;
@@ -1402,35 +1411,36 @@ export class ChatWidgetComponent implements OnInit {
                             recap +=
                                 "<b>" +
                                 this.task.dimensions[i].name_pretty +
-                                "</b>: " +
-                                this.getCategoricalAnswerLabel(
-                                    i,
-                                    this.answers[taskIndex][
-                                        i
-                                    ].dimensionValue.toString()
-                                ) +
-                                "<br>";
+                                "</b>: ";
                         }
+                        recap +=
+                            this.getCategoricalAnswerLabel(
+                                i,
+                                this.answers[taskIndex][
+                                    i
+                                ].dimensionValue.toString()
+                            ) + "<br>";
+
                         break;
                     case "magnitude_estimation":
                         if (this.task.dimensions[i].name_pretty) {
                             recap +=
                                 "<b>" +
                                 this.task.dimensions[i].name_pretty +
-                                "</b>: " +
-                                this.answers[taskIndex][i].dimensionValue +
-                                "<br>";
+                                "</b>: ";
                         }
+                        recap +=
+                            this.answers[taskIndex][i].dimensionValue + "<br>";
                         break;
                     case "interval":
                         if (this.task.dimensions[i].name_pretty) {
                             recap +=
                                 "<b>" +
                                 this.task.dimensions[i].name_pretty +
-                                "</b>: " +
-                                this.answers[taskIndex][i].dimensionValue +
-                                " <br>";
+                                "</b>: ";
                         }
+                        recap +=
+                            this.answers[taskIndex][i].dimensionValue + " <br>";
                         break;
                     default:
                         console.warn("Casistica non gestita");
@@ -1439,8 +1449,16 @@ export class ChatWidgetComponent implements OnInit {
             }
             // Dimensioni con singolo input
             else {
-                if (!this.task.dimensions[i].scale) {
+                if (
+                    !this.task.dimensions[i].scale &&
+                    !!this.task.dimensions[i].url
+                ) {
                     scaleType = "url";
+                } else if (
+                    !this.task.dimensions[i].scale &&
+                    !this.task.dimensions[i].url
+                ) {
+                    scaleType = "textual";
                 } else {
                     scaleType = this.task.dimensions[i].scale.type;
                 }
@@ -1491,6 +1509,16 @@ export class ChatWidgetComponent implements OnInit {
                                 this.answers[taskIndex][i].dimensionValue +
                                 " <br>";
                         }
+                        break;
+                    case "textual":
+                        recap +=
+                            i +
+                            1 +
+                            ".<b>" +
+                            this.task.dimensions[i].name_pretty +
+                            " </b>: " +
+                            this.answers[taskIndex][i].dimensionValue +
+                            "<br>";
                         break;
                     default:
                         console.warn("Casistica non gestita");
@@ -1580,7 +1608,10 @@ export class ChatWidgetComponent implements OnInit {
             );
             scaleType = this.task.dimensions[dimensionIndex].scale.type;
         } else {
-            if (!this.task.dimensions[dimensionIndex].scale) {
+            if (
+                !this.task.dimensions[dimensionIndex].scale &&
+                this.task.dimensions[dimensionIndex].url
+            ) {
                 scaleType = "url";
             } else if (
                 !this.task.dimensions[dimensionIndex].scale &&
@@ -1871,7 +1902,7 @@ export class ChatWidgetComponent implements OnInit {
         let data = {};
         data["info"] = {
             action: action,
-            access: 1,
+            access: this.accessesAmount[questionnaireIndex],
             try: this.task.tryCurrent,
             index: questionnaireIndex,
             sequence: this.task.sequenceNumber,
@@ -1892,10 +1923,10 @@ export class ChatWidgetComponent implements OnInit {
         data["timestamps_end"] = this.timestampsEnd[questionnaireIndex];
         data["timestamps_elapsed"] = this.timestampsElapsed[questionnaireIndex];
         /* Number of accesses to the current questionnaire (which must be always 1, since the worker cannot go back */
-        data["accesses"] = this.task.elementsAccesses[questionnaireIndex];
+        data["accesses"] = this.accessesAmount[questionnaireIndex];
         return data;
     }
-    private async uploadStatementData() {
+    private async uploadDocumentData() {
         let answers = this.buildAnswerDataFormat();
 
         let documentPayload = this.buildTaskDocumentPayload(
@@ -1905,12 +1936,12 @@ export class ChatWidgetComponent implements OnInit {
             this.action
         );
 
-        await this.dynamoDBService.insertDataRecord(
-            this.configService.environment,
-            this.worker,
-            this.task,
-            documentPayload
-        );
+        // await this.dynamoDBService.insertDataRecord(
+        //     this.configService.environment,
+        //     this.worker,
+        //     this.task,
+        //     documentPayload
+        // );
 
         this.task.sequenceNumber += 1;
         this.dimsSelected = [];
@@ -1939,7 +1970,9 @@ export class ChatWidgetComponent implements OnInit {
         /* Info about the performed action  */
         data["info"] = {
             action: action,
-            access: this.task.elementsAccesses[documentIndex],
+            access: this.accessesAmount[
+                this.currentQuestionnaire + documentIndex
+            ],
             try: this.task.tryCurrent,
             index: documentIndex,
             sequence: this.task.sequenceNumber,
@@ -1947,49 +1980,53 @@ export class ChatWidgetComponent implements OnInit {
         };
         /* Worker's answers for the current document */
         data["answers"] = answers;
-        data["notes"] = this.task.settings.annotator
-            ? this.task.notes[documentIndex]
-            : [];
+        data["notes"] = [];
         /* Worker's dimensions selected values for the current document */
-        data["dimensions_selected"] = this.dimensionSelected[documentIndex];
+        data["dimensions_selected"] = [];
         /* Worker's search engine queries for the current document */
-        data["queries"] = this.task.searchEngineQueries[documentIndex];
+        data["queries"] = this.query[documentIndex];
         /* Start, end and elapsed timestamps for the current document */
-        data["timestamps_start"] = this.timestampsStart[documentIndex];
-        data["timestamps_end"] = this.timestampsEnd[documentIndex];
-        data["timestamps_elapsed"] = this.timestampsElapsed[documentIndex];
+        data["timestamps_start"] =
+            this.timestampsStart[this.currentQuestionnaire + documentIndex];
+        data["timestamps_end"] =
+            this.timestampsEnd[this.currentQuestionnaire + documentIndex];
+        data["timestamps_elapsed"] =
+            this.timestampsElapsed[this.currentQuestionnaire + documentIndex];
         /* Countdown time and corresponding flag */
-        data["countdowns_times_start"] =
-            this.task.settings.countdown_time >= 0
-                ? this.task.documentsCountdownTime[documentIndex]
-                : [];
-        data["countdowns_times_left"] =
-            this.task.settings.countdown_time >= 0 ? countdown : [];
+        data["countdowns_times_start"] = [];
+        data["countdowns_times_left"] = this.countdownLeftTime[this.taskIndex];
         data["countdowns_expired"] =
-            this.task.settings.countdown_time >= 0
-                ? this.task.countdownsExpired[documentIndex]
-                : [];
+            this.task.countdownsExpired[this.taskIndex];
         /* Number of accesses to the current document (currentDocument.e., how many times the worker reached the document with a "Back" or "Next" action */
-        data["accesses"] = this.task.elementsAccesses[documentIndex];
+        data["accesses"] =
+            this.accessesAmount[this.currentQuestionnaire + documentIndex];
         /* Responses retrieved by search engine for each worker's query for the current document */
-        data["responses_retrieved"] =
-            this.task.searchEngineRetrievedResponses[documentIndex];
+        data["responses_retrieved"] = this.queryRetrieved[documentIndex];
         /* Responses by search engine ordered by worker's click for the current document */
-        data["responses_selected"] =
-            this.task.searchEngineSelectedResponses[documentIndex];
+        data["responses_selected"] = this.querySelectedUrls[documentIndex];
         return data;
     }
-    private validateTask() {
-        let nameArray = [];
-        for (let i = 0; i < this.task.hit.documents.length; i++) {
-            nameArray[i] = this.task.hit.documents[i]["id"];
+    private validateTask(): boolean {
+        /* 2) GOLD ELEMENTS CHECK performed here */
+
+        let goldConfiguration = [];
+        /* For each gold document its attribute, answers and notes are retrieved to build a gold configuration */
+        for (let goldDocument of this.task.goldDocuments) {
+            let currentConfiguration = {};
+            currentConfiguration["document"] = goldDocument;
+            let answers = {};
+            //Si estrae il nome della gold dimension e il relativo valore salvato nelle answers
+            for (let goldDimension of this.task.goldDimensions) {
+                answers[goldDimension.name] = this.answers[goldDocument.index];
+            }
+            currentConfiguration["answers"] = answers;
+            currentConfiguration["notes"] = [];
+            goldConfiguration.push(currentConfiguration);
         }
-        this.goldHigh = nameArray.indexOf("GOLD-HIGH");
-        this.goldLow = nameArray.indexOf("GOLD-LOW");
-        //Gestione di task che non contengono eventuali Gold questions
-        return this.goldHigh == -1 || this.goldLow == -1
-            ? true
-            : this.answers[this.goldHigh][0] > this.answers[this.goldLow][0];
+
+        /* The gold configuration is evaluated using the static method implemented within the GoldChecker class */
+        let goldChecks = GoldChecker.performGoldCheck(goldConfiguration);
+        return goldChecks.every((el) => !!el);
     }
 
     public buildCommentPayload(comment) {
