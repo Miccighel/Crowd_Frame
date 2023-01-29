@@ -2011,13 +2011,18 @@ export class ChatWidgetComponent implements OnInit {
 
         let goldConfiguration = [];
         /* For each gold document its attribute, answers and notes are retrieved to build a gold configuration */
+
         for (let goldDocument of this.task.goldDocuments) {
             let currentConfiguration = {};
             currentConfiguration["document"] = goldDocument;
             let answers = {};
             //Si estrae il nome della gold dimension e il relativo valore salvato nelle answers
             for (let goldDimension of this.task.goldDimensions) {
-                answers[goldDimension.name] = this.answers[goldDocument.index];
+                // Per ogni gold dimension si estrae il valore tra le risposte
+                answers[goldDimension.name] =
+                    this.answers[goldDocument.index][
+                        goldDimension.index
+                    ].dimensionValue;
             }
             currentConfiguration["answers"] = answers;
             currentConfiguration["notes"] = [];
