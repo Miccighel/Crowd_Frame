@@ -460,9 +460,6 @@ export class ChatWidgetComponent implements OnInit {
             this.inputComponentToShow = EnConversationalInputType.Text;
 
             if (this.awaitingAnswer) {
-                this.inputComponentToShow;
-                this.readOnly = false;
-
                 this.questionnaireAnswers[this.currentQuestion] = message;
                 this.randomMessage();
                 this.currentQuestion += 1;
@@ -500,7 +497,6 @@ export class ChatWidgetComponent implements OnInit {
                 }, 850);
 
                 this.readOnly = false;
-
                 this.awaitingAnswer = true;
                 return;
             }
@@ -635,7 +631,7 @@ export class ChatWidgetComponent implements OnInit {
 
             this.answers[this.taskIndex][this.subTaskIndex - 1].urlValue =
                 message;
-            this.readOnly = false;
+
             this.cleanUserInput();
 
             this.ignoreMsg = true;
@@ -660,7 +656,7 @@ export class ChatWidgetComponent implements OnInit {
                 this.urlInputValue;
             this.answers[this.taskIndex][this.subTaskIndex - 1].dimensionValue =
                 message;
-            this.readOnly = false;
+
             this.cleanUserInput();
 
             this.ignoreMsg = true;
@@ -718,13 +714,13 @@ export class ChatWidgetComponent implements OnInit {
         if (!!this.fixedMessage) {
             if (
                 !!this.task.settings.countdown_time &&
-                this.taskStatus == EnConversationaTaskStatus.TaskPhase
+                this.taskStatus == EnConversationaTaskStatus.TaskPhase &&
+                this.subTaskIndex == 0
             ) {
                 this.setCountdown();
             }
             this.printDimension(this.taskIndex, this.subTaskIndex);
             this.selectDimensionToGenerate(this.subTaskIndex);
-
             this.subTaskIndex++;
         }
 
@@ -767,7 +763,7 @@ export class ChatWidgetComponent implements OnInit {
                 } else {
                     //Si sta selezionando la domanda da revisionare
                     this.currentQuestion = +message;
-                    this.readOnly = true;
+
                     let previousQuestionIndex = this.currentQuestion - 1;
                     // Viene calcolato il questionario di appartenenza della domanda e il suo relativo indice
                     let questionnaireToCheck = 0;
@@ -818,12 +814,13 @@ export class ChatWidgetComponent implements OnInit {
             }
             if (!this.reviewAnswersShown) {
                 this.cleanUserInput();
-                this.readOnly = false;
+
                 this.typingAnimation("Let's review your answers!");
                 this.typingAnimation(
                     this.createQuestionnaireRecap() +
                         "<br>Confirm your answers?"
                 );
+                this.readOnly = false;
                 this.reviewAnswersShown = true;
                 this.showCMbuttons = true;
                 return;
@@ -840,7 +837,7 @@ export class ChatWidgetComponent implements OnInit {
                 this.typingAnimation("Good, let's begin the real task!");
                 this.taskStatus = EnConversationaTaskStatus.InstructionPhase;
                 this.awaitingAnswer = false;
-                this.readOnly = false;
+
                 this.reviewAnswersShown = false;
                 this.pickReview = false;
                 this.instructionP();
@@ -991,7 +988,6 @@ export class ChatWidgetComponent implements OnInit {
                 this.cleanUserInput();
                 this.readOnly = false;
                 this.showYNbuttons = true;
-
                 this.timestampsEnd[
                     this.currentQuestionnaire + this.taskIndex
                 ].push(Date.now() / 1000);
@@ -1342,7 +1338,6 @@ export class ChatWidgetComponent implements OnInit {
 
     //Stampa della domanda nella chat
     private printQuestion() {
-        this.readOnly = true;
         let q =
             this.task.questionnaires[this.currentQuestionnaire].questions[
                 this.currentQuestion
@@ -1626,6 +1621,7 @@ export class ChatWidgetComponent implements OnInit {
 
     //Generazione della dimensione in base alla scale type
     private selectDimensionToGenerate(dimensionIndex) {
+        this.readOnly = true;
         let scaleType = null;
 
         if (
@@ -1656,7 +1652,6 @@ export class ChatWidgetComponent implements OnInit {
             case "url":
                 this.waitForUrl = true;
                 this.emitEnableSearchEngine();
-                this.readOnly = true;
                 this.typingAnimation(
                     "Please use the search bar on the right to search for information about the truthfulness of the statement. Once you find a suitable result, please type or select its url"
                 );
@@ -1664,19 +1659,26 @@ export class ChatWidgetComponent implements OnInit {
                 break;
             case "categorical":
                 this.generateCategoricalAnswers(dimensionIndex);
+
                 break;
             case "magnitude_estimation":
                 this.generateMagnitudeAnswer(dimensionIndex);
+
                 break;
             case "interval":
                 this.generateIntervalAnswer(dimensionIndex);
+
                 break;
             case "textual":
                 this.generateTextualAnswer(dimensionIndex);
+
                 break;
             default:
                 console.warn("Casistica non gestita");
                 break;
+        }
+        if (scaleType != "url") {
+            this.readOnly = false;
         }
         this.statementProvided = true;
         this.timestampsStart[this.currentQuestionnaire + this.taskIndex].push(
@@ -1776,7 +1778,6 @@ export class ChatWidgetComponent implements OnInit {
                 value: el.value,
             }));
             this.inputComponentToShow = EnConversationalInputType.Dropdown;
-            this.readOnly = true;
         }
         //Va a fissare il valore massimo e minimo per la validazione della risposta che verrà fornita
         this.minValue = this.getCategoricalMinInfo(this.categoricalInfo);
