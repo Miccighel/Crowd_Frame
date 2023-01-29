@@ -86,12 +86,11 @@ import { ChatAvatarComponent } from "./components/chatbot/chat-avatar/chat-avata
 import { ChatInputMagnitudeComponent } from "./components/chatbot/chat-input-magnitude/chat-input-magnitude.component";
 import { ChatInputIntervalComponent } from "./components/chatbot/chat-input-interval/chat-input-interval.component";
 import { ChatInputCategoricalComponent } from "./components/chatbot/chat-input-categorical/chat-input-categorical.component";
-
-import { ChatInputCategoricalDDLComponent } from "./components/chatbot/chat-input-categorical-ddl/chat-input-categorical-ddl.component";
 import { ChatWidgetComponent } from "./components/chatbot/chat-widget/chat-widget.component";
 import { ChatCommentModalComponent } from "./components/chatbot/chat-comment-modal/chat-comment-modalcomponent";
 import { NgbModule } from "@ng-bootstrap/ng-bootstrap";
 import { ChatUrlInputComponent } from "./components/chatbot/chat-url-input/chat-url-input.component";
+import { ChatInputDropdownComponent } from "./components/chatbot/chat-input-ddl/chat-input-ddl.component";
 
 function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
     return () =>
@@ -142,7 +141,7 @@ function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
         ChatInputMagnitudeComponent,
         ChatInputIntervalComponent,
         ChatInputCategoricalComponent,
-        ChatInputCategoricalDDLComponent,
+        ChatInputDropdownComponent,
         ChatCommentModalComponent,
         ChatUrlInputComponent,
     ],

@@ -8,12 +8,12 @@ import {
 } from "@angular/core";
 
 @Component({
-    selector: "chat-input-categorical-ddl",
-    templateUrl: "chat-input-categorical-ddl.component.html",
+    selector: "chat-input-ddl",
+    templateUrl: "chat-input-ddl.component.html",
     encapsulation: ViewEncapsulation.None,
-    styleUrls: ["./chat-input-categorical-ddl.component.css"],
+    styleUrls: ["./chat-input-ddl.component.css"],
 })
-export class ChatInputCategoricalDDLComponent implements OnInit {
+export class ChatInputDropdownComponent implements OnInit {
     @Input() public options: { label: string; value: any }[];
     @Input() public value = "0";
 

@@ -100,7 +100,6 @@ export class ChatWidgetComponent implements OnInit {
     subTaskIndex: number; // Tiene il conto della dimensione attuale
     currentQuestion: number;
     currentQuestionnaire: number;
-    indexDimSel: number[];
     goldLow: number;
     goldHigh: number;
 
@@ -218,9 +217,7 @@ export class ChatWidgetComponent implements OnInit {
 
     private initializeContainers() {
         this.accessesAmount = new Array(this.task.documents.length).fill(0);
-        this.indexDimSel = new Array(this.task.documents.length).fill(0);
         this.queryIndex = new Array(this.task.documents.length).fill(0);
-        // this.answersURL = new Array(this.task.dimensions.length).fill("");
         this.questionnaireAnswers = new Array(
             this.getNumberOfQuestionnaireQuestions()
         ).fill("");
@@ -265,7 +262,6 @@ export class ChatWidgetComponent implements OnInit {
         this.queue = 0;
         this.placeholderInput = "";
         this.urlPlaceHolder = "";
-
         this.tryNumber = 1;
         this.dimsSelected = [];
         this.query = [];
@@ -578,7 +574,7 @@ export class ChatWidgetComponent implements OnInit {
             message = this.getCategoricalAnswerValue(message);
             this.inputComponentToShow = EnConversationalInputType.Text;
         }
-
+        //E' l'ultima dimensione dello statement?
         if (
             this.subTaskIndex >= this.task.dimensionsAmount &&
             this.getAnswerValidity(
@@ -589,8 +585,11 @@ export class ChatWidgetComponent implements OnInit {
         ) {
             //Stop del interval
             if (this.task.settings.countdown_time) {
+                this.task.documents[this.taskIndex];
                 this.resetCountdown();
             }
+            //Salvo il tempo di fine
+            this.timestampsEnd[this.taskIndex].push(Date.now() / 1000);
 
             const subtaskIndex = this.subTaskIndex - 1;
             if (this.hasDoubleInput) {
@@ -614,7 +613,7 @@ export class ChatWidgetComponent implements OnInit {
             let dimSel = {};
             dimSel["document"] = this.taskIndex;
             dimSel["dimension"] = subtaskIndex;
-            dimSel["index"] = this.indexDimSel[this.taskIndex];
+            dimSel["index"] = this.taskIndex;
             dimSel["timestamp"] = Date.now() / 1000;
             dimSel["value"] =
                 this.answers[this.taskIndex][subtaskIndex].dimensionValue;
@@ -622,11 +621,11 @@ export class ChatWidgetComponent implements OnInit {
 
             this.dimsSelected.push(dimSel);
             this.uploadStatementData();
-            this.indexDimSel[this.taskIndex] += 1;
+
             this.reviewP(message);
             return;
-        } else if (this.waitForUrl) {
-            // Se sto chiedendo l'url
+        } // E' una dimensione che richiede solo un URL
+        else if (this.waitForUrl) {
             if (!ChatHelper.urlValid(message)) {
                 this.typingAnimation(
                     "Please type or select a valid url, try using the search bar on the right!"
@@ -641,7 +640,7 @@ export class ChatWidgetComponent implements OnInit {
 
             this.ignoreMsg = true;
         }
-        //Gestione doppio INPUT
+        //E' una dimensione con doppio input
         else if (this.hasDoubleInput) {
             if (
                 !this.getAnswerValidity(
@@ -679,6 +678,17 @@ export class ChatWidgetComponent implements OnInit {
             this.typingAnimation(messageToSend);
             return;
         }
+        //E' una dimensione testuale libera
+        else if (!this.ignoreMsg && message != "startTask") {
+            if (!!message.trim()) {
+                this.answers[this.taskIndex][
+                    this.subTaskIndex - 1
+                ].dimensionValue = message;
+            } else {
+                this.typingAnimation("Please insert a text...");
+                return;
+            }
+        }
         if (!this.ignoreMsg && message != "startTask") {
             this.cleanUserInput();
             const subtaskIndex = this.subTaskIndex - 1;
@@ -686,16 +696,16 @@ export class ChatWidgetComponent implements OnInit {
             let dimSel = {};
             dimSel["document"] = this.taskIndex;
             dimSel["dimension"] = subtaskIndex;
-            dimSel["index"] = this.indexDimSel[this.taskIndex];
+            dimSel["index"] = this.taskIndex;
             dimSel["timestamp"] = Date.now() / 1000;
             dimSel["value"] = message;
             this.dimsSelected.push(dimSel);
-            this.indexDimSel[this.taskIndex] += 1;
+
             this.randomMessage();
         } else if (message == "startTask") {
             this.randomMessage();
         }
-        await new Promise((resolve) => setTimeout(resolve, 3000));
+
         //Visualizzazione dello statement
         if (
             this.fixedMessage == null ||
@@ -703,15 +713,15 @@ export class ChatWidgetComponent implements OnInit {
             this.fixedMessage == ""
         ) {
             this.printStatement();
+        }
+        //Visualizzazione della dimensione
+        if (!!this.fixedMessage) {
             if (
                 !!this.task.settings.countdown_time &&
                 this.taskStatus == EnConversationaTaskStatus.TaskPhase
             ) {
                 this.setCountdown();
             }
-        }
-        //Visualizzazione della dimensione
-        if (!!this.fixedMessage) {
             this.printDimension(this.taskIndex, this.subTaskIndex);
             this.selectDimensionToGenerate(this.subTaskIndex);
 
@@ -838,7 +848,6 @@ export class ChatWidgetComponent implements OnInit {
                 return;
             } else if (message.trim().toLowerCase() === "modify") {
                 this.showCMbuttons = false;
-
                 this.typingAnimation("Which one would you like to modify?");
                 this.generateRevisionData();
                 this.pickReview = true;
@@ -863,16 +872,15 @@ export class ChatWidgetComponent implements OnInit {
                         this.typingAnimation(
                             "Please check your answers, and check if you typed a valid url, try using the search bar on the right!"
                         );
-                        this.inputComponentToShow ==
-                            EnConversationalInputType.Dropdown;
+
                         return;
                     }
+                    this.inputComponentToShow == EnConversationalInputType.Text;
                     this.hasDoubleInput = false;
                     this.answers[this.taskIndex][this.subTaskIndex] = {
                         dimensionValue: message,
                         urlValue: this.urlInputValue,
                     };
-                    // Resetto
                 } else if (this.waitForUrl) {
                     if (!ChatHelper.urlValid(message)) {
                         this.typingAnimation(
@@ -881,55 +889,46 @@ export class ChatWidgetComponent implements OnInit {
                         return;
                     }
                     this.waitForUrl = false;
-
                     this.answers[this.taskIndex][this.subTaskIndex].urlValue =
                         message;
-                } else {
-                    if (
-                        this.inputComponentToShow ==
-                        EnConversationalInputType.Dropdown
-                    ) {
-                        message = this.getCategoricalAnswerValue(message);
-                    }
+                } else if (
+                    this.inputComponentToShow ==
+                    EnConversationalInputType.Dropdown
+                ) {
+                    message = this.getCategoricalAnswerValue(message);
+                    this.answers[this.taskIndex][
+                        this.subTaskIndex
+                    ].dimensionValue = message;
+                } //Testo libero
+                else {
+                    this.answers[this.taskIndex][
+                        this.subTaskIndex
+                    ].dimensionValue = message;
+                }
 
-                    if (
-                        !ChatHelper.validMsg(
-                            message,
-                            this.minValue,
-                            this.maxValue
-                        )
-                    ) {
-                        let messageToSend = "";
-                        if (!this.inputComponentToShow) {
-                            messageToSend = `Please type a integer number between ${this.minValue} and ${this.maxValue}`;
-                        } else {
-                            messageToSend = `Please type a integer number higher than 0 `;
-                        }
-                        this.typingAnimation(messageToSend);
-                        return;
+                if (
+                    !ChatHelper.validMsg(message, this.minValue, this.maxValue)
+                ) {
+                    let messageToSend = "";
+                    if (!this.inputComponentToShow) {
+                        messageToSend = `Please type a integer number between ${this.minValue} and ${this.maxValue}`;
                     } else {
+                        messageToSend = `Please type a integer number higher than 0 `;
+                    }
+                    this.typingAnimation(messageToSend);
+                    return;
+                } else {
+                    if (!!message.trim()) {
                         this.answers[this.taskIndex][
                             this.subTaskIndex
                         ].dimensionValue = message;
+                    } else {
+                        this.typingAnimation("Please insert a text...");
+                        return;
                     }
                 }
-                this.cleanUserInput();
-                let dimSel = {};
-                dimSel["document"] = this.taskIndex;
-                dimSel["dimension"] = this.subTaskIndex;
-                dimSel["index"] = this.indexDimSel[this.taskIndex];
-                dimSel["timestamp"] = Date.now() / 1000;
-                dimSel["value"] =
-                    this.answers[this.taskIndex][this.subTaskIndex];
-                this.dimsSelected.push(dimSel);
-                this.indexDimSel[this.taskIndex] += 1;
-
-                // Reset della fase di revisione
-                this.reviewAnswersShown = false;
-                this.pickReview = false;
-            }
-            //Faccio scegliere quale dimensione visualizzare
-            else {
+            } else {
+                //Faccio scegliere quale dimensione visualizzare
                 if (
                     !ChatHelper.validMsg(message, 1, this.task.dimensionsAmount)
                 ) {
@@ -946,7 +945,21 @@ export class ChatWidgetComponent implements OnInit {
                 this.dimensionReviewPrinted = true;
                 return;
             }
+            this.cleanUserInput();
+            let dimSel = {};
+            dimSel["document"] = this.taskIndex;
+            dimSel["dimension"] = this.subTaskIndex;
+            dimSel["index"] = this.taskIndex;
+            dimSel["timestamp"] = Date.now() / 1000;
+            dimSel["value"] = this.answers[this.taskIndex][this.subTaskIndex];
+            this.dimsSelected.push(dimSel);
+
+            // Reset della fase di revisione
+            this.reviewAnswersShown = false;
+            this.pickReview = false;
+            this.uploadStatementData();
         }
+
         // Ripeto questa fase finchè non ricevo un Confirm
         if (!this.reviewAnswersShown) {
             this.cleanUserInput();
@@ -978,8 +991,7 @@ export class ChatWidgetComponent implements OnInit {
                 this.cleanUserInput();
                 this.readOnly = false;
                 this.showYNbuttons = true;
-                this.taskStatus = EnConversationaTaskStatus.EndPhase;
-                // INVIO DATI ALLA FINE DI OGNI CONFERMA DI UNO STATEMENT
+
                 this.timestampsEnd[
                     this.currentQuestionnaire + this.taskIndex
                 ].push(Date.now() / 1000);
@@ -1004,34 +1016,34 @@ export class ChatWidgetComponent implements OnInit {
                             ].length - 1
                         ]
                     );
-                this.uploadStatementData();
+
                 return;
             }
-            this.timestampsEnd[this.currentQuestionnaire + this.taskIndex].push(
-                Date.now() / 1000
-            );
-            this.timestampsElapsed[
-                this.currentQuestionnaire + this.taskIndex
-            ] +=
-                Number(
-                    this.timestampsEnd[
-                        this.currentQuestionnaire + this.taskIndex
-                    ][
-                        this.timestampsEnd[
-                            this.currentQuestionnaire + this.taskIndex
-                        ].length - 1
-                    ]
-                ) -
-                Number(
-                    this.timestampsStart[
-                        this.currentQuestionnaire + this.taskIndex
-                    ][
-                        this.timestampsEnd[
-                            this.currentQuestionnaire + this.taskIndex
-                        ].length - 1
-                    ]
-                );
-            this.uploadStatementData();
+            // this.timestampsEnd[this.currentQuestionnaire + this.taskIndex].push(
+            //     Date.now() / 1000
+            // );
+            // this.timestampsElapsed[
+            //     this.currentQuestionnaire + this.taskIndex
+            // ] +=
+            //     Number(
+            //         this.timestampsEnd[
+            //             this.currentQuestionnaire + this.taskIndex
+            //         ][
+            //             this.timestampsEnd[
+            //                 this.currentQuestionnaire + this.taskIndex
+            //             ].length - 1
+            //         ]
+            //     ) -
+            //     Number(
+            //         this.timestampsStart[
+            //             this.currentQuestionnaire + this.taskIndex
+            //         ][
+            //             this.timestampsEnd[
+            //                 this.currentQuestionnaire + this.taskIndex
+            //             ].length - 1
+            //         ]
+            //     );
+            this.uploadQuestionnaireData();
             // Passo al prossimo statement, resetto
             this.randomMessage();
             this.taskStatus = EnConversationaTaskStatus.TaskPhase;
@@ -1615,7 +1627,6 @@ export class ChatWidgetComponent implements OnInit {
     //Generazione della dimensione in base alla scale type
     private selectDimensionToGenerate(dimensionIndex) {
         let scaleType = null;
-        this.hasDoubleInput = false;
 
         if (
             this.task.dimensions[dimensionIndex].url &&
@@ -1649,9 +1660,7 @@ export class ChatWidgetComponent implements OnInit {
                 this.typingAnimation(
                     "Please use the search bar on the right to search for information about the truthfulness of the statement. Once you find a suitable result, please type or select its url"
                 );
-                // this.timestampsStart[
-                //     this.currentQuestionnaire + this.taskIndex
-                // ].push(Date.now() / 1000);
+
                 break;
             case "categorical":
                 this.generateCategoricalAnswers(dimensionIndex);
@@ -1670,6 +1679,9 @@ export class ChatWidgetComponent implements OnInit {
                 break;
         }
         this.statementProvided = true;
+        this.timestampsStart[this.currentQuestionnaire + this.taskIndex].push(
+            Date.now() / 1000
+        );
     }
 
     //Restituisce l'etichetta del valore della relativa dimensione
@@ -1947,12 +1959,12 @@ export class ChatWidgetComponent implements OnInit {
             this.action
         );
 
-        // await this.dynamoDBService.insertDataRecord(
-        //     this.configService.environment,
-        //     this.worker,
-        //     this.task,
-        //     documentPayload
-        // );
+        await this.dynamoDBService.insertDataRecord(
+            this.configService.environment,
+            this.worker,
+            this.task,
+            documentPayload
+        );
 
         this.task.sequenceNumber += 1;
         this.dimsSelected = [];

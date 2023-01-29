@@ -362,7 +362,7 @@ Sent message style
     margin: 1%;
     margin-top: 0%;
     width: auto;
-    border: solid 2px var(--tertiary);
+    border: solid 2px var(--secondary);
 }
 
 .btn-primary {
@@ -379,7 +379,7 @@ button.btn-user-answer {
     margin: 1%;
     margin-top: 0%;
     width: 100%;
-    border: solid 2px var(--tertiary);
+    border: solid 2px var(--secondary);
 }
 
 .button-prompt {

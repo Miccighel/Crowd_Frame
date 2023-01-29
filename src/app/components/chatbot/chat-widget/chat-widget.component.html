@@ -198,14 +198,14 @@
                 [readOnly]="readOnly"
             ></chat-input-interval>
 
-            <chat-input-categorical-ddl
+            <chat-input-ddl
                 class="container"
                 *ngIf="inputComponentToShow == EnInputType.Dropdown"
                 [options]="dropdownListOptions"
                 [readOnly]="readOnly"
                 (send)="buttonInput($event)"
             >
-            </chat-input-categorical-ddl>
+            </chat-input-ddl>
 
             <chat-input
                 class="container"
