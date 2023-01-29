@@ -141,7 +141,7 @@
 
 .chat-message-date {
     font-size: 11px;
-    color: var(--grey);
+    color: var(--dark);
     padding: 5px;
 }
 
@@ -167,6 +167,7 @@ Received message style
 .chat-message-received .chat-message-text {
     background: var(--secondary);
     margin-left: 50px;
+    min-width: 60px;
     border-bottom-left-radius: 0;
 }
 
@@ -182,6 +183,10 @@ Received message style
 
 .chat-message-received .chat-message-date {
     margin-left: 50px;
+}
+#typying-dot {
+    text-align: center;
+    font-size: small;
 }
 
 .chat-message-received .chat-message-from-avatar {
@@ -259,12 +264,12 @@ Sent message style
 }
 
 .type span {
-    width: 10px;
-    height: 10px;
-    background-color: var(--secondary);
+    width: 8px;
+    height: 8px;
+    background-color: var(--primary);
     display: inline-block;
     margin: 1px;
-    border-radius: 50%;
+    border-radius: 20px;
 }
 
 .type span:nth-child(1) {
