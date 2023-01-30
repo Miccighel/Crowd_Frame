@@ -155,6 +155,10 @@ export class ChatWidgetComponent implements OnInit {
     public showCountdown = false; //Interval per la gestione del countdown
     private countdownLeftTime = []; //Interval per la gestione del countdown
 
+    //Quality check
+    private goldConfiguration = [];
+    private goldChecks = [];
+
     //show components flag
     EnInputType = EnConversationalInputType;
     inputComponentToShow: EnConversationalInputType =
@@ -177,9 +181,6 @@ export class ChatWidgetComponent implements OnInit {
     instr = [
         "Hello! I'm Fakebot and I'll be helping you complete this task! You can find the <b>instructions</b> in the top left corner of this page, just press the button whenever you need. Nothing will break down, I promise!",
         "Would you like to play a test round?",
-    ];
-    endOfTaskMessage = [
-        "Oh! That was it! Thank you for completing the task! Here's your token: ...",
     ];
 
     constructor(
@@ -1024,7 +1025,7 @@ export class ChatWidgetComponent implements OnInit {
     }
 
     // Fase di fine task
-    private endP(message) {
+    private async endP(message) {
         if (this.statementJump) {
             this.getDimensionAnswerValue(message);
             this.taskIndex = this.getFinalRevisionAnswerValue(message);
@@ -1052,17 +1053,34 @@ export class ChatWidgetComponent implements OnInit {
                 this.action = "Finish";
                 this.task.sequenceNumber += 1;
                 // INVIO DATI COL CONTROLLO QUALITA
-                let validTry = this.validateTask();
                 this.taskQualityCheck();
+                let validTry = this.goldChecks.every((el) => !!el);
+                let timeSpentCheck = this.taskTimeCheck();
+                let globalValidityCheck = this.performGlobalValidityCheck();
 
-                let data = {};
-                let actionInfoCheck = {
-                    try: this.task.tryCurrent,
-                    sequence: this.task.sequenceNumber,
-                    element: "checks",
+                let qualityCheckData = {
+                    globalOutcome: null,
+                    globalFormValidity: globalValidityCheck,
+                    timeSpentCheck: timeSpentCheck,
+                    timeCheckAmount: this.task.settings.time_check_amount,
+                    goldChecks: this.goldChecks,
+                    goldConfiguration: this.goldConfiguration,
                 };
+                let checksOutcome = [];
+                let checker = (array) => array.every(Boolean);
+                checksOutcome.push(qualityCheckData["globalFormValidity"]);
+                checksOutcome.push(qualityCheckData["timeSpentCheck"]);
+                checksOutcome.push(checker(qualityCheckData["goldChecks"]));
 
-                data["info"] = actionInfoCheck;
+                qualityCheckData["globalOutcome"] = checker(checksOutcome);
+                let qualityChecksPayload =
+                    this.buildQualityChecksPayload(qualityCheckData);
+                await this.dynamoDBService.insertDataRecord(
+                    this.configService.environment,
+                    this.worker,
+                    this.task,
+                    qualityChecksPayload
+                );
 
                 this.task.sequenceNumber += 1;
                 if (!validTry) {
@@ -1097,7 +1115,10 @@ export class ChatWidgetComponent implements OnInit {
                     return;
                 }
                 //Messaggio finale
-                this.typingAnimation(this.endOfTaskMessage[0]);
+                this.typingAnimation(
+                    "Oh! That was it! Thank you for completing the task! Here's your token: " +
+                        this.task.tokenOutput
+                );
                 setTimeout(() => {
                     //Richiesta commento
                     const modalRef = this.ngModal.open(
@@ -2006,32 +2027,29 @@ export class ChatWidgetComponent implements OnInit {
         data["responses_selected"] = this.querySelectedUrls[documentIndex];
         return data;
     }
-    private validateTask(): boolean {
-        /* 2) GOLD ELEMENTS CHECK performed here */
-
-        let goldConfiguration = [];
-        /* For each gold document its attribute, answers and notes are retrieved to build a gold configuration */
-
+    private taskQualityCheck(): boolean {
         for (let goldDocument of this.task.goldDocuments) {
             let currentConfiguration = {};
             currentConfiguration["document"] = goldDocument;
             let answers = {};
             //Si estrae il nome della gold dimension e il relativo valore salvato nelle answers
             for (let goldDimension of this.task.goldDimensions) {
+                answers[goldDimension.name] = [];
                 // Per ogni gold dimension si estrae il valore tra le risposte
-                answers[goldDimension.name] =
-                    this.answers[goldDocument.index][
-                        goldDimension.index
-                    ].dimensionValue;
+                this.answers.forEach((element) => {
+                    answers[goldDimension.name].push(
+                        element[goldDimension.index]
+                    );
+                });
             }
             currentConfiguration["answers"] = answers;
             currentConfiguration["notes"] = [];
-            goldConfiguration.push(currentConfiguration);
+            this.goldConfiguration.push(currentConfiguration);
         }
 
         /* The gold configuration is evaluated using the static method implemented within the GoldChecker class */
-        let goldChecks = GoldChecker.performGoldCheck(goldConfiguration);
-        return goldChecks.every((el) => !!el);
+        this.goldChecks = GoldChecker.performGoldCheck(this.goldConfiguration);
+        return;
     }
 
     public buildCommentPayload(comment) {
@@ -2047,48 +2065,30 @@ export class ChatWidgetComponent implements OnInit {
         return data;
     }
 
-    private taskQualityCheck() {
-        /* 2) GOLD ELEMENTS CHECK performed here */
-
-        let goldConfiguration = [];
-        /* For each gold document its attribute, answers and notes are retrieved to build a gold configuration */
-        for (let goldDocument of this.task.goldDocuments) {
-            let currentConfiguration = {};
-            currentConfiguration["document"] = goldDocument;
-            let answers = {};
-            for (let goldDimension of this.task.goldDimensions) {
-                for (let [attribute, value] of Object.entries(
-                    this.task.documents[goldDocument.index]
-                )) {
-                    let dimensionName = attribute.split("_")[0];
-                    if (dimensionName == goldDimension.name) {
-                        answers[attribute] = value;
-                    }
-                }
-            }
-            currentConfiguration["answers"] = answers;
-            currentConfiguration["notes"] = this.task.notes
-                ? this.task.notes[goldDocument.index]
-                : [];
-            goldConfiguration.push(currentConfiguration);
-        }
-
-        /* The gold configuration is evaluated using the static method implemented within the GoldChecker class */
-        let goldChecks = GoldChecker.performGoldCheck(goldConfiguration);
-        this.task.buildQualityChecksPayload(goldChecks);
+    public taskTimeCheck(): boolean {
+        let timeSpentCheck = true;
+        let timeCheckAmount = this.task.settings.time_check_amount;
+        this.timestampsElapsed.forEach((item) => {
+            if (item < timeCheckAmount) timeSpentCheck = false;
+        });
+        return timeSpentCheck;
     }
 
-    public performGlobalValidityCheck() {
-        /* The "valid" flag of each questionnaire or document form must be true to pass this check. */
-        let questionnaireFormValidity = true;
-        let documentsFormValidity = true;
-        // for (let index = 0; index < this.question.length; index++)
-        //     if (this.questionnairesForm[index].valid == false)
-        //         questionnaireFormValidity = false;
-        // for (let index = 0; index < this.documentsForm.length; index++)
-        //     if (this.documentsForm[index].valid == false)
-        //         documentsFormValidity = false;
-        return questionnaireFormValidity && documentsFormValidity;
+    public performGlobalValidityCheck(): boolean {
+        //Tutti i dati sono inseriti presenti, condizione garantito dall'algoritmo che gestisce il flow
+
+        return true;
+    }
+
+    public buildQualityChecksPayload(qualityChecks) {
+        let checks = {};
+        checks["info"] = {
+            try: this.tryNumber,
+            sequence: this.task.sequenceNumber,
+            element: "checks",
+        };
+        checks["checks"] = qualityChecks;
+        return checks;
     }
 
     public loadTimestamps() {
