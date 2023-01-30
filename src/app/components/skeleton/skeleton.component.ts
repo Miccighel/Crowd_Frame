@@ -1,6 +1,5 @@
 /* Core */
 import {
-    AfterViewInit,
     ChangeDetectionStrategy,
     ChangeDetectorRef,
     Component,

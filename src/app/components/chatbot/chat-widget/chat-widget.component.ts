@@ -134,9 +134,7 @@ export class ChatWidgetComponent implements OnInit {
     fixedMessage: string; // Messaggio sempre visibile in alto nel chatbot
     statementAuthor: string;
     statementDate: string;
-
     answers: [AnswerModel[]] = [[]]; //
-
     questionnaireAnswers: any[] = [];
     queue: number;
     placeholderInput: string;
@@ -203,7 +201,7 @@ export class ChatWidgetComponent implements OnInit {
     public operator = {
         name: "Fake News Bot",
         status: "Online",
-        avatar: "https://randomuser.me/api/portraits/lego/0.jpg",
+        avatar: "",
     };
 
     public client = {
@@ -245,6 +243,10 @@ export class ChatWidgetComponent implements OnInit {
     }
 
     ngOnInit() {
+        let random = Math.floor(Math.random() * 9);
+
+        this.operator.avatar =
+            "https://randomuser.me/api/portraits/lego/" + random + ".jpg";
         this.task = this.sectionService.task;
         this.typing.nativeElement.style.display = "none";
         // Inizializzo
@@ -392,7 +394,10 @@ export class ChatWidgetComponent implements OnInit {
             return;
         }
         // Mostro il messaggio in chat
-        if (this.inputComponentToShow == EnConversationalInputType.Dropdown) {
+        if (
+            this.inputComponentToShow == EnConversationalInputType.Dropdown ||
+            this.inputComponentToShow == EnConversationalInputType.Button
+        ) {
             message = message.label;
             if (this.hasDoubleInput) {
                 this.addMessageClient(
@@ -539,8 +544,11 @@ export class ChatWidgetComponent implements OnInit {
     }
 
     // Fase di task
-    private taskP(message) {
-        if (this.inputComponentToShow == EnConversationalInputType.Dropdown) {
+    private async taskP(message) {
+        if (
+            this.inputComponentToShow == EnConversationalInputType.Dropdown ||
+            this.inputComponentToShow == EnConversationalInputType.Button
+        ) {
             message = this.getCategoricalAnswerValue(message);
             this.inputComponentToShow = EnConversationalInputType.Text;
         }
@@ -697,6 +705,9 @@ export class ChatWidgetComponent implements OnInit {
                 this.setCountdown();
             }
             this.printDimension(this.taskIndex, this.subTaskIndex);
+            await new Promise((resolve) =>
+                setTimeout(resolve, this.queue * 1200)
+            );
             this.selectDimensionToGenerate(this.subTaskIndex);
             this.subTaskIndex++;
         }
@@ -1437,9 +1448,7 @@ export class ChatWidgetComponent implements OnInit {
                         recap +=
                             this.getCategoricalAnswerLabel(
                                 i,
-                                this.answers[taskIndex][
-                                    i
-                                ].dimensionValue.toString()
+                                this.answers[taskIndex][i].dimensionValue
                             ) + "<br>";
 
                         break;
@@ -1502,22 +1511,20 @@ export class ChatWidgetComponent implements OnInit {
                                 "</b>: " +
                                 this.getCategoricalAnswerLabel(
                                     i,
-                                    this.answers[taskIndex][i].toString()
+                                    this.answers[taskIndex][i].dimensionValue
                                 ) +
                                 "<br>";
                         }
                         break;
                     case "magnitude_estimation":
-                        if (this.task.dimensions[i].name_pretty) {
+                        recap += i + 1 + ".";
+                        if (this.task.dimensions[i].name_pretty)
                             recap +=
-                                i +
-                                1 +
-                                ". <b>" +
+                                " <b>" +
                                 this.task.dimensions[i].name_pretty +
-                                "</b>: " +
-                                this.answers[taskIndex][i].dimensionValue +
-                                "<br>";
-                        }
+                                "</b>: ";
+                        recap +=
+                            this.answers[taskIndex][i].dimensionValue + "<br>";
                         break;
                     case "interval":
                         if (this.task.dimensions[i].name_pretty) {
@@ -1773,7 +1780,7 @@ export class ChatWidgetComponent implements OnInit {
                 description: el.description,
                 value: el.value,
             }));
-            this.inputComponentToShow = EnConversationalInputType.Dropdown;
+            this.inputComponentToShow = EnConversationalInputType.Button;
         }
         //Va a fissare il valore massimo e minimo per la validazione della risposta che verrà fornita
         this.minValue = this.getCategoricalMinInfo(this.categoricalInfo);
