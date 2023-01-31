@@ -310,7 +310,7 @@ export class ChatWidgetComponent implements OnInit {
                 this.questionnaireP("0");
             }, 5000);
         } else {
-            setTimeout(() => this.skipQuestionnairePhase());
+            this.skipQuestionnairePhase();
         }
 
         // PRIMO INVIO DATI ALL'AVVIO
@@ -544,13 +544,12 @@ export class ChatWidgetComponent implements OnInit {
     }
 
     // Fase di task
-    private async taskP(message) {
+    private taskP(message) {
         if (
             this.inputComponentToShow == EnConversationalInputType.Dropdown ||
             this.inputComponentToShow == EnConversationalInputType.Button
         ) {
             message = this.getCategoricalAnswerValue(message);
-            this.inputComponentToShow = EnConversationalInputType.Text;
         }
         //E' l'ultima dimensione dello statement?
         if (
@@ -588,103 +587,27 @@ export class ChatWidgetComponent implements OnInit {
             this.reviewAnswersShown = false;
             this.taskStatus = EnConversationaTaskStatus.ReviewPhase;
 
-            let dimSel = {};
-            dimSel["document"] = this.taskIndex;
-            dimSel["dimension"] = subtaskIndex;
-            dimSel["index"] = this.taskIndex;
-            dimSel["timestamp"] = Date.now() / 1000;
-            dimSel["value"] =
-                this.answers[this.taskIndex][subtaskIndex].dimensionValue;
-            dimSel["url"] = this.answers[this.taskIndex][subtaskIndex].urlValue;
+            // let dimSel = {};
+            // dimSel["document"] = this.taskIndex;
+            // dimSel["dimension"] = subtaskIndex;
+            // dimSel["index"] = this.taskIndex;
+            // dimSel["timestamp"] = Date.now() / 1000;
+            // dimSel["value"] =
+            //     this.answers[this.taskIndex][subtaskIndex].dimensionValue;
+            // dimSel["url"] = this.answers[this.taskIndex][subtaskIndex].urlValue;
 
-            this.dimsSelected.push(dimSel);
+            // this.dimsSelected.push(dimSel);
             this.uploadDocumentData();
 
             this.reviewP(message);
             return;
-        } // E' una dimensione che richiede solo un URL
-        else if (this.waitForUrl) {
-            if (!ChatHelper.urlValid(message)) {
-                this.typingAnimation(
-                    "Please type or select a valid url, try using the search bar on the right!"
-                );
-                return;
-            }
-            this.answers[this.taskIndex][this.subTaskIndex - 1].urlValue =
-                message;
-            this.cleanUserInput();
-            this.ignoreMsg = true;
-        }
-        //E' una dimensione con doppio input
-        else if (this.hasDoubleInput) {
-            if (
-                !this.getAnswerValidity(
-                    this.subTaskIndex - 1,
-                    message,
-                    this.urlInputValue
-                )
-            ) {
-                this.typingAnimation(
-                    "Check your answers, please type or select a valid url,you can use the search bar on the right!"
-                );
-                return;
-            }
-
-            this.hasDoubleInput = false;
-            this.answers[this.taskIndex][this.subTaskIndex - 1].urlValue =
-                this.urlInputValue;
-            this.answers[this.taskIndex][this.subTaskIndex - 1].dimensionValue =
-                message;
-            this.cleanUserInput();
-            this.ignoreMsg = true;
-        } else if (
-            message != "startTask" &&
-            !ChatHelper.validMsg(message, this.minValue, this.maxValue) &&
-            !this.ignoreMsg &&
-            this.inputComponentToShow != EnConversationalInputType.Text
-        ) {
-            let messageToSend = "";
-            if (this.inputComponentToShow == EnConversationalInputType.Number) {
-                messageToSend = `Please type a integer number higher than ${this.minValue} `;
-            } else {
-                messageToSend = `Please type a integer number between ${this.minValue} and ${this.maxValue}`;
-            }
-            this.typingAnimation(messageToSend);
-
-            return;
-        }
-        //E' una dimensione testuale libera
-        else if (
-            !this.ignoreMsg &&
-            message != "startTask" &&
-            this.inputComponentToShow == EnConversationalInputType.Text
-        ) {
-            if (!!message.trim()) {
-                this.answers[this.taskIndex][
-                    this.subTaskIndex - 1
-                ].dimensionValue = message;
-            } else {
-                this.typingAnimation("Please insert a text...");
-                return;
-            }
-        }
-        if (!this.ignoreMsg && message != "startTask") {
-            this.ignoreMsg = true;
-            this.cleanUserInput();
-
-            const subtaskIndex = this.subTaskIndex - 1;
-            this.answers[this.taskIndex][subtaskIndex].dimensionValue = message;
-            let dimSel = {};
-            dimSel["document"] = this.taskIndex;
-            dimSel["dimension"] = subtaskIndex;
-            dimSel["index"] = this.taskIndex;
-            dimSel["timestamp"] = Date.now() / 1000;
-            dimSel["value"] = message;
-            this.dimsSelected.push(dimSel);
-
-            this.randomMessage();
-        } else if (message == "startTask") {
-            this.randomMessage();
+        } else {
+            this.checkInputAnswer(
+                message,
+                this.taskIndex,
+                this.subTaskIndex - 1
+            );
+            this.inputComponentToShow = EnConversationalInputType.Text;
         }
 
         //Visualizzazione dello statement
@@ -705,19 +628,21 @@ export class ChatWidgetComponent implements OnInit {
                 this.setCountdown();
             }
             this.printDimension(this.taskIndex, this.subTaskIndex);
-            await new Promise((resolve) =>
-                setTimeout(resolve, this.queue * 1200)
-            );
+
             this.selectDimensionToGenerate(this.subTaskIndex);
             this.subTaskIndex++;
+            this.ignoreMsg = false;
+        } else {
+            this.ignoreMsg = false;
         }
-
-        this.ignoreMsg = false;
     }
 
     // Fase di review
-    private reviewP(message: string) {
-        if (this.inputComponentToShow == EnConversationalInputType.Dropdown) {
+    private reviewP(message) {
+        if (
+            !this.dimensionReviewPrinted &&
+            this.inputComponentToShow == EnConversationalInputType.Dropdown
+        ) {
             message = this.getDimensionAnswerValue(message);
         }
         if (this.questionnaireReview) {
@@ -859,73 +784,24 @@ export class ChatWidgetComponent implements OnInit {
         if (this.pickReview) {
             // La dimensione è visualizzata
             if (this.dimensionReviewPrinted) {
-                if (this.hasDoubleInput) {
-                    if (
-                        !this.getAnswerValidity(
-                            this.subTaskIndex,
-                            message,
-                            this.urlInputValue
-                        )
-                    ) {
-                        this.typingAnimation(
-                            "Please check your answers, and check if you typed a valid url, try using the search bar on the right!"
-                        );
-
-                        return;
-                    }
-                    this.inputComponentToShow == EnConversationalInputType.Text;
-                    this.hasDoubleInput = false;
-                    this.answers[this.taskIndex][this.subTaskIndex] = {
-                        dimensionValue: message,
-                        urlValue: this.urlInputValue,
-                    };
-                } else if (this.waitForUrl) {
-                    if (!ChatHelper.urlValid(message)) {
-                        this.typingAnimation(
-                            "Please type a valid url, try using the search bar on the right!"
-                        );
-                        return;
-                    }
-                    this.waitForUrl = false;
-                    this.answers[this.taskIndex][this.subTaskIndex].urlValue =
-                        message;
-                } else if (
+                //Check risposta con doppio input
+                if (
                     this.inputComponentToShow ==
-                    EnConversationalInputType.Dropdown
+                        EnConversationalInputType.Dropdown ||
+                    this.inputComponentToShow ==
+                        EnConversationalInputType.Button
                 ) {
                     message = this.getCategoricalAnswerValue(message);
-                    this.answers[this.taskIndex][
-                        this.subTaskIndex
-                    ].dimensionValue = message;
-                } //Testo libero
-                else {
-                    this.answers[this.taskIndex][
-                        this.subTaskIndex
-                    ].dimensionValue = message;
                 }
-
-                if (
-                    !ChatHelper.validMsg(message, this.minValue, this.maxValue)
-                ) {
-                    let messageToSend = "";
-                    if (!this.inputComponentToShow) {
-                        messageToSend = `Please type a integer number between ${this.minValue} and ${this.maxValue}`;
-                    } else {
-                        messageToSend = `Please type a integer number higher than 0 `;
-                    }
-                    this.typingAnimation(messageToSend);
-                    return;
-                } else {
-                    if (!!message.trim()) {
-                        this.answers[this.taskIndex][
-                            this.subTaskIndex
-                        ].dimensionValue = message;
-                    } else {
-                        this.typingAnimation("Please insert a text...");
-                        return;
-                    }
-                }
+                this.checkInputAnswer(
+                    message,
+                    this.taskIndex,
+                    this.subTaskIndex
+                );
+                this.inputComponentToShow = EnConversationalInputType.Text;
             } else {
+                this.cleanUserInput();
+
                 //Faccio scegliere quale dimensione visualizzare
                 if (
                     !ChatHelper.validMsg(message, 1, this.task.dimensionsAmount)
@@ -939,18 +815,20 @@ export class ChatWidgetComponent implements OnInit {
 
                 //Visualizzazione della dimensione richiesta e relativi dati
                 this.printDimension(this.taskIndex, this.subTaskIndex);
-                this.selectDimensionToGenerate(this.subTaskIndex);
                 this.dimensionReviewPrinted = true;
+
+                this.selectDimensionToGenerate(this.subTaskIndex);
+
                 return;
             }
             this.cleanUserInput();
-            let dimSel = {};
-            dimSel["document"] = this.taskIndex;
-            dimSel["dimension"] = this.subTaskIndex;
-            dimSel["index"] = this.taskIndex;
-            dimSel["timestamp"] = Date.now() / 1000;
-            dimSel["value"] = this.answers[this.taskIndex][this.subTaskIndex];
-            this.dimsSelected.push(dimSel);
+            // let dimSel = {};
+            // dimSel["document"] = this.taskIndex;
+            // dimSel["dimension"] = this.subTaskIndex;
+            // dimSel["index"] = this.taskIndex;
+            // dimSel["timestamp"] = Date.now() / 1000;
+            // dimSel["value"] = this.answers[this.taskIndex][this.subTaskIndex];
+            // this.dimsSelected.push(dimSel);
 
             // Reset della fase di revisione
             this.reviewAnswersShown = false;
@@ -1027,8 +905,8 @@ export class ChatWidgetComponent implements OnInit {
             this.cleanUserInput();
             this.generateRevisionData();
             this.readOnly = false;
-            this.pickReview = true; // Passo alla fase di modifica
-            this.dimensionReviewPrinted = false; // Reset
+            this.pickReview = true;
+            this.dimensionReviewPrinted = false;
             return;
         } else {
             return;
@@ -1171,6 +1049,86 @@ export class ChatWidgetComponent implements OnInit {
             this.questionnaireReview = true;
         }
         return isFinished;
+    }
+
+    private checkInputAnswer(message, taskIndex, subTaskIndex) {
+        if (this.waitForUrl) {
+            if (!ChatHelper.urlValid(message)) {
+                this.typingAnimation(
+                    "Please type or select a valid url, try using the search bar on the right!"
+                );
+                return;
+            }
+            this.answers[taskIndex][subTaskIndex].urlValue = message;
+            this.cleanUserInput();
+            this.ignoreMsg = true;
+        }
+        //E' una dimensione con doppio input
+        else if (this.hasDoubleInput) {
+            if (
+                !this.getAnswerValidity(
+                    subTaskIndex,
+                    message,
+                    this.urlInputValue
+                )
+            ) {
+                this.typingAnimation(
+                    "Check your answers, please type or select a valid url,you can use the search bar on the right!"
+                );
+                return;
+            }
+
+            this.hasDoubleInput = false;
+            this.answers[taskIndex][subTaskIndex].urlValue = this.urlInputValue;
+            this.answers[taskIndex][subTaskIndex].dimensionValue = message;
+            this.cleanUserInput();
+            this.ignoreMsg = true;
+        } else if (
+            message != "startTask" &&
+            !ChatHelper.validMsg(message, this.minValue, this.maxValue) &&
+            !this.ignoreMsg &&
+            this.inputComponentToShow != EnConversationalInputType.Text
+        ) {
+            let messageToSend = "";
+            if (this.inputComponentToShow == EnConversationalInputType.Number) {
+                messageToSend = `Please type a integer number higher than ${this.minValue} `;
+            } else {
+                messageToSend = `Please type a integer number between ${this.minValue} and ${this.maxValue}`;
+            }
+            this.typingAnimation(messageToSend);
+
+            return;
+        }
+        //E' una dimensione testuale libera
+        else if (
+            !this.ignoreMsg &&
+            message != "startTask" &&
+            this.inputComponentToShow == EnConversationalInputType.Text
+        ) {
+            if (!!message.trim()) {
+                this.answers[taskIndex][subTaskIndex].dimensionValue = message;
+            } else {
+                this.typingAnimation("Please insert a text...");
+                return;
+            }
+        }
+        if (!this.ignoreMsg && message != "startTask") {
+            this.answers[this.taskIndex][subTaskIndex].dimensionValue = message;
+            this.ignoreMsg = true;
+            this.cleanUserInput();
+
+            // let dimSel = {};
+            // dimSel["document"] = this.taskIndex;
+            // dimSel["dimension"] = subtaskIndex;
+            // dimSel["index"] = this.taskIndex;
+            // dimSel["timestamp"] = Date.now() / 1000;
+            // dimSel["value"] = message;
+            // this.dimsSelected.push(dimSel);
+
+            this.randomMessage();
+        } else if (message == "startTask") {
+            this.randomMessage();
+        }
     }
 
     private emitGetUrlValue() {
@@ -1368,32 +1326,18 @@ export class ChatWidgetComponent implements OnInit {
     // Stampa la dimensione corrente
     private printDimension(taskIndex: number, dimensionIndex: number) {
         let out = "";
-
-        if (this.task.dimensions[dimensionIndex].name_pretty) {
-            out =
-                "Please rate the <b>" +
-                this.task.dimensions[dimensionIndex].name_pretty +
-                "</b> of the statement.<br>";
-            if (!!this.task.dimensions[dimensionIndex].description)
-                out +=
-                    "<b>" +
-                    this.task.dimensions[dimensionIndex].name_pretty +
-                    "</b>: " +
-                    this.task.dimensions[dimensionIndex].description;
+        out += "Please rate the <b>";
+        if (!!this.task.dimensions[dimensionIndex].name_pretty) {
+            out += this.task.dimensions[dimensionIndex].name_pretty;
         } else {
-            out =
-                "Please rate the <b>" +
-                this.task.dimensions[dimensionIndex].name +
-                "</b> of the statement.<br>";
-            if (!!this.task.dimensions[dimensionIndex].description)
-                out +=
-                    "<b>" +
-                    this.task.dimensions[dimensionIndex].name_pretty +
-                    "</b>: " +
-                    this.task.dimensions[dimensionIndex].description;
+            out += this.task.dimensions[dimensionIndex].name;
+        }
+        out += "</b> of the statement.<br>";
+        if (!!this.task.dimensions[dimensionIndex].description) {
+            out += this.task.dimensions[dimensionIndex].description;
         }
         if (!!this.answers[taskIndex][dimensionIndex].dimensionValue) {
-            out += "<br>You previously answered<br>";
+            out += "You previously answered<br>";
             if (!!this.task.dimensions[dimensionIndex].url) {
                 out +=
                     "Url: <b>" +
@@ -1404,7 +1348,7 @@ export class ChatWidgetComponent implements OnInit {
                 this.task.dimensions[dimensionIndex].scale.type == "categorical"
             ) {
                 out +=
-                    "<br>Dimension value: <b>" +
+                    "Dimension value: <b>" +
                     this.getCategoricalAnswerLabel(
                         dimensionIndex,
                         this.answers[taskIndex][dimensionIndex].dimensionValue
@@ -1425,6 +1369,8 @@ export class ChatWidgetComponent implements OnInit {
         let recap = "";
         for (let i = 0; i < this.task.dimensionsAmount; i++) {
             let scaleType = null;
+            recap += i + 1 + ". ";
+
             //Dimensioni con doppio input
             if (
                 this.task.dimensions[i].scale &&
@@ -1437,14 +1383,12 @@ export class ChatWidgetComponent implements OnInit {
                     ".<b> URL</b>: " +
                     this.answers[taskIndex][i].urlValue +
                     "<br>";
+                if (this.task.dimensions[i].name_pretty) {
+                    recap +=
+                        "<b>" + this.task.dimensions[i].name_pretty + "</b>: ";
+                }
                 switch (scaleType) {
                     case "categorical":
-                        if (this.task.dimensions[i].name_pretty) {
-                            recap +=
-                                "<b>" +
-                                this.task.dimensions[i].name_pretty +
-                                "</b>: ";
-                        }
                         recap +=
                             this.getCategoricalAnswerLabel(
                                 i,
@@ -1453,24 +1397,16 @@ export class ChatWidgetComponent implements OnInit {
 
                         break;
                     case "magnitude_estimation":
-                        if (this.task.dimensions[i].name_pretty) {
-                            recap +=
-                                "<b>" +
-                                this.task.dimensions[i].name_pretty +
-                                "</b>: ";
-                        }
                         recap +=
                             this.answers[taskIndex][i].dimensionValue + "<br>";
                         break;
                     case "interval":
-                        if (this.task.dimensions[i].name_pretty) {
-                            recap +=
-                                "<b>" +
-                                this.task.dimensions[i].name_pretty +
-                                "</b>: ";
-                        }
                         recap +=
-                            this.answers[taskIndex][i].dimensionValue + " <br>";
+                            this.answers[taskIndex][i].dimensionValue + "<br>";
+                        break;
+                    case "textual":
+                        recap +=
+                            this.answers[taskIndex][i].dimensionValue + "<br>";
                         break;
                     default:
                         console.warn("Casistica non gestita");
@@ -1492,61 +1428,41 @@ export class ChatWidgetComponent implements OnInit {
                 } else {
                     scaleType = this.task.dimensions[i].scale.type;
                 }
+                //Costruzione del prefisso alla risposta
+                if (scaleType == "url") {
+                    recap += "<b> URL</b>: ";
+                } else {
+                    if (this.task.dimensions[i].name_pretty) {
+                        recap +=
+                            "<b>" +
+                            this.task.dimensions[i].name_pretty +
+                            "</b>: ";
+                    } else {
+                        recap += "<b>Dimension</b>: ";
+                    }
+                }
                 switch (scaleType) {
                     case "url":
-                        recap +=
-                            i +
-                            1 +
-                            ".<b> URL</b>: " +
-                            this.answers[taskIndex][i].urlValue +
-                            "<br>";
+                        recap += this.answers[taskIndex][i].urlValue + "<br>";
                         break;
                     case "categorical":
-                        if (this.task.dimensions[i].name_pretty) {
-                            recap +=
-                                i +
-                                1 +
-                                ". <b>" +
-                                this.task.dimensions[i].name_pretty +
-                                "</b>: " +
-                                this.getCategoricalAnswerLabel(
-                                    i,
-                                    this.answers[taskIndex][i].dimensionValue
-                                ) +
-                                "<br>";
-                        }
+                        recap +=
+                            this.getCategoricalAnswerLabel(
+                                i,
+                                this.answers[taskIndex][i].dimensionValue
+                            ) + "<br>";
                         break;
                     case "magnitude_estimation":
-                        recap += i + 1 + ".";
-                        if (this.task.dimensions[i].name_pretty)
-                            recap +=
-                                " <b>" +
-                                this.task.dimensions[i].name_pretty +
-                                "</b>: ";
                         recap +=
                             this.answers[taskIndex][i].dimensionValue + "<br>";
                         break;
                     case "interval":
-                        if (this.task.dimensions[i].name_pretty) {
-                            recap +=
-                                i +
-                                1 +
-                                ". <b>" +
-                                this.task.dimensions[i].name_pretty +
-                                "</b>: " +
-                                this.answers[taskIndex][i].dimensionValue +
-                                " <br>";
-                        }
+                        recap +=
+                            this.answers[taskIndex][i].dimensionValue + "<br>";
                         break;
                     case "textual":
                         recap +=
-                            i +
-                            1 +
-                            ".<b>" +
-                            this.task.dimensions[i].name_pretty +
-                            " </b>: " +
-                            this.answers[taskIndex][i].dimensionValue +
-                            "<br>";
+                            this.answers[taskIndex][i].dimensionValue + "<br>";
                         break;
                     default:
                         console.warn("Casistica non gestita");
@@ -1716,7 +1632,11 @@ export class ChatWidgetComponent implements OnInit {
             this.dropdownListOptions = this.task.dimensions.map(
                 (dimension, index) => {
                     return {
-                        label: dimension.name_pretty,
+                        label:
+                            (index + 1).toString() +
+                            ". " +
+                            (dimension.name_pretty ?? "Dimension"),
+
                         value: (index + 1).toString(),
                     };
                 }
