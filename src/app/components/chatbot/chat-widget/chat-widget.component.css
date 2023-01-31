@@ -76,6 +76,7 @@
     padding: 10px;
 }
 #statement-additional-info {
+    font-weight: 400;
     background-color: var(--primary);
     color: var(--light);
 }
