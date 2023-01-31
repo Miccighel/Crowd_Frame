@@ -208,7 +208,7 @@ export class ChatWidgetComponent implements OnInit {
         name: "Worker",
         user: "test_user",
         status: "online",
-        avatar: `https://storage.proboards.com/6172192/images/gKhXFw_5W0SD4nwuMev1.png`,
+        avatar: `/assets/images/conversational/user-icon.png`,
     };
 
     public messages: any[] = [];

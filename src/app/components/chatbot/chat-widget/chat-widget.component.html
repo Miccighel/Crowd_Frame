@@ -24,14 +24,14 @@
             <div class="col-12 py-1" id="statement-title">Statement</div>
             <div id="statement-text">{{ fixedMessage }}</div>
             <div id="statement-additional-info" class="row py-1 m-0">
-                <div class="col-6 ps-0 d-flex add-info" *ngIf="!!statementDate">
-                    <strong>Date:&nbsp;</strong> {{ statementDate }}
-                </div>
                 <div
                     class="col-6 ps-0 d-flex add-info"
                     *ngIf="!!statementAuthor"
                 >
                     <strong>Speaker:&nbsp;</strong> {{ statementAuthor }}
+                </div>
+                <div class="col-6 ps-0 d-flex add-info" *ngIf="!!statementDate">
+                    <strong>Date:&nbsp;</strong> {{ statementDate }}
                 </div>
             </div>
         </div>
@@ -110,11 +110,11 @@
         <div #inputBox class="chat-box-footer">
             <div class="button-prompt">
                 <div
-                    class="row container d-flex justify-content-end"
+                    class="row container d-flex m-1"
                     *ngIf="inputComponentToShow == EnInputType.Button"
                 >
                     <chat-input-categorical
-                        class="col-6 text-end mr-1"
+                        class="col-12 text-center"
                         *ngFor="let item of categoricalInfo"
                         [value]="item.value"
                         [text]="item.label"
@@ -168,53 +168,55 @@
                 </div>
             </div>
         </div>
-        <div
-            id="input-box"
-            class="container d-flex row p-0 m-0"
-            [ngClass]="readOnly ? 'input-row-inactive' : 'input-row-active'"
-        >
-            <chat-url-input
-                class="container"
-                *ngIf="hasDoubleInput"
-                [readValue]="readUrlValue"
-                (updateValue)="updateUrlValue($event)"
-                [urlPlaceholder]="urlPlaceHolder"
-                [readOnly]="readOnly"
+        <div class="container d-flex row p-0 m-0" id="input-background">
+            <div
+                id="input-box"
+                class="container d-flex row p-0 m-0"
+                [ngClass]="readOnly ? 'input-row-inactive' : 'input-row-active'"
             >
-            </chat-url-input>
+                <chat-url-input
+                    class="container"
+                    *ngIf="hasDoubleInput"
+                    [readValue]="readUrlValue"
+                    (updateValue)="updateUrlValue($event)"
+                    [urlPlaceholder]="urlPlaceHolder"
+                    [readOnly]="readOnly"
+                >
+                </chat-url-input>
 
-            <chat-input-magnitude
-                class="container"
-                *ngIf="inputComponentToShow == EnInputType.Number"
-                [magnitudeInfo]="magnitudeInfo"
-                (send)="sendMessage($event)"
-                [readOnly]="readOnly"
-            ></chat-input-magnitude>
-            <chat-input-interval
-                class="container"
-                *ngIf="inputComponentToShow == EnInputType.Slider"
-                [intervalInfo]="intervalInfo"
-                (send)="sendMessage($event)"
-                [readOnly]="readOnly"
-            ></chat-input-interval>
+                <chat-input-magnitude
+                    class="container"
+                    *ngIf="inputComponentToShow == EnInputType.Number"
+                    [magnitudeInfo]="magnitudeInfo"
+                    (send)="sendMessage($event)"
+                    [readOnly]="readOnly"
+                ></chat-input-magnitude>
+                <chat-input-interval
+                    class="container"
+                    *ngIf="inputComponentToShow == EnInputType.Slider"
+                    [intervalInfo]="intervalInfo"
+                    (send)="sendMessage($event)"
+                    [readOnly]="readOnly"
+                ></chat-input-interval>
 
-            <chat-input-ddl
-                class="container"
-                *ngIf="inputComponentToShow == EnInputType.Dropdown"
-                [options]="dropdownListOptions"
-                [readOnly]="readOnly"
-                (send)="buttonInput($event)"
-            >
-            </chat-input-ddl>
+                <chat-input-ddl
+                    class="container"
+                    *ngIf="inputComponentToShow == EnInputType.Dropdown"
+                    [options]="dropdownListOptions"
+                    [readOnly]="readOnly"
+                    (send)="buttonInput($event)"
+                >
+                </chat-input-ddl>
 
-            <chat-input
-                class="container"
-                *ngIf="inputComponentToShow == EnInputType.Text"
-                (send)="sendMessage($event)"
-                [pholder]="placeholderInput"
-                [readOnly]="readOnly"
-            >
-            </chat-input>
+                <chat-input
+                    class="container"
+                    *ngIf="inputComponentToShow == EnInputType.Text"
+                    (send)="sendMessage($event)"
+                    [pholder]="placeholderInput"
+                    [readOnly]="readOnly"
+                >
+                </chat-input>
+            </div>
         </div>
     </div>
 

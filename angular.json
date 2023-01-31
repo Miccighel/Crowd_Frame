@@ -59,6 +59,7 @@
                         "scripts": [
                             "node_modules/bootstrap/dist/js/bootstrap.min.js"
                         ],
+                        "assets": ["src/assets"],
                         "vendorChunk": true,
                         "extractLicenses": false,
                         "buildOptimizer": false,

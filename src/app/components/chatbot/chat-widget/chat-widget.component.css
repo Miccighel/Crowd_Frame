@@ -52,6 +52,7 @@
 
 .chat-fixed-message {
     padding: 10px;
+    font-weight: 500;
     background-color: var(--light);
     color: var(--dark);
     font-size: medium;
@@ -85,14 +86,14 @@
 .chat-box-main {
     flex: 1;
     width: 100%;
-    background: var(--light);
+    background: var(--background-light);
     display: flex;
     flex-direction: column-reverse;
     overflow: auto;
 }
 
 .chat-box-footer {
-    background-color: var(--light);
+    background-color: var(--background-light);
     height: auto;
     margin-top: -1px;
     border-bottom-left-radius: 5px;
@@ -421,6 +422,10 @@ button.btn-user-answer {
 }
 
 /*INPUT CONTAINER*/
+
+#input-background {
+    background-color: var(--background-light);
+}
 
 #input-box.input-row-active {
     border: solid 3px var(--light);
