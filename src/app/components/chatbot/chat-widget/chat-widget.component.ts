@@ -110,7 +110,6 @@ export class ChatWidgetComponent implements OnInit {
     queryTotal: {}[];
     responsesRetrievedTotal: {}[];
     responsesSelectedTotal: {}[];
-    dimsSelected: {}[];
     query: {}[];
     queryRetrieved: {}[];
     querySelectedUrls: {}[];
@@ -268,7 +267,6 @@ export class ChatWidgetComponent implements OnInit {
         this.placeholderInput = "";
         this.urlPlaceHolder = "";
         this.tryNumber = 1;
-        this.dimsSelected = [];
         this.query = [];
         this.queryRetrieved = [];
         this.querySelectedUrls = [];
@@ -451,75 +449,71 @@ export class ChatWidgetComponent implements OnInit {
 
     // Fase dei questionari
     private questionnaireP(message) {
+        //E' in attesa di una risposta?
+        if (this.awaitingAnswer) {
+            if (
+                this.inputComponentToShow == EnConversationalInputType.Number &&
+                !ChatHelper.validMsg(message, 1, 100)
+            ) {
+                this.typingAnimation(
+                    "Please type a integer number between 1 and 100"
+                );
+                return;
+            } else {
+                this.questionnaireAnswers[this.currentQuestion] = message;
+                this.inputComponentToShow = EnConversationalInputType.Text;
+                this.randomMessage();
+                this.currentQuestion++;
+                this.awaitingAnswer = false;
+                if (
+                    this.currentQuestion >=
+                    this.task.questionnaires[this.currentQuestionnaire]
+                        .questions.length
+                ) {
+                    this.timestampsEnd[this.currentQuestionnaire].push(
+                        Date.now() / 1000
+                    );
+                    //Calcolo tempo trascorso tra il completamento di due questionari
+
+                    this.timestampsElapsed[this.currentQuestionnaire] =
+                        this.timestampsEnd[this.currentQuestionnaire][0] -
+                        this.timestampsStart[this.currentQuestionnaire][0];
+
+                    this.uploadQuestionnaireData(this.currentQuestionnaire);
+                    this.currentQuestionnaire++;
+
+                    if (
+                        this.currentQuestionnaire >=
+                        this.task.questionnaires.length
+                    ) {
+                        this.readOnly = true;
+                        this.taskStatus = EnConversationaTaskStatus.ReviewPhase;
+                        this.questionnaireReview = true;
+                        return;
+                    }
+                    this.timestampsStart[this.currentQuestionnaire].push(
+                        Date.now() / 1000
+                    );
+                }
+            }
+            if (this.checkIfQuestionnaireIsFinished()) return;
+        }
+
+        //Non è in attesa, quindi genera la domanda successiva
         if (
             this.task.questionnaires[this.currentQuestionnaire].type ==
             "standard"
         ) {
-            if (this.awaitingAnswer) {
-                this.questionnaireAnswers[this.currentQuestion] = message;
-                this.randomMessage();
-                this.currentQuestion += 1;
-                this.awaitingAnswer = false;
-            }
-            if (
-                this.currentQuestion >=
-                this.task.questionnaires[this.currentQuestionnaire].questions
-                    .length
-            ) {
-                this.timestampsEnd[this.currentQuestionnaire].push(
-                    Date.now() / 1000
-                );
-                //Calcolo tempo trascorso tra il completamento di due questionari
-
-                this.timestampsElapsed[this.currentQuestionnaire] =
-                    this.timestampsEnd[this.currentQuestionnaire][0] -
-                    this.timestampsStart[this.currentQuestionnaire][0];
-
-                this.uploadQuestionnaireData(this.currentQuestionnaire);
-                this.currentQuestionnaire += 1;
-                this.timestampsStart[this.currentQuestionnaire].push(
-                    Date.now() / 1000
-                );
-            } else {
-                this.readOnly = true;
-                this.printQuestion();
-                this.typingAnimation(this.createQuestionnaireAnswers());
-
-                setTimeout(() => {
-                    this.generateQuestionnaireAnswers();
-                    this.readOnly = false;
-                    this.inputComponentToShow =
-                        EnConversationalInputType.Dropdown;
-                }, 850);
-
-                this.awaitingAnswer = true;
-                return;
-            }
-            if (this.checkIfQuestionnaireIsFinished()) return;
-        }
-        if (
+            this.readOnly = true;
+            this.printQuestion();
+            this.typingAnimation(this.createQuestionnaireAnswers());
+            this.generateQuestionnaireAnswers();
+            this.readOnly = false;
+            this.inputComponentToShow = EnConversationalInputType.Dropdown;
+        } else if (
             this.task.questionnaires[this.currentQuestionnaire].type == "crt" ||
             this.task.questionnaires[this.currentQuestionnaire].type == "likert"
         ) {
-            this.inputComponentToShow = EnConversationalInputType.Number;
-            this.inputComponentToShow;
-            if (this.awaitingAnswer) {
-                if (!ChatHelper.validMsg(message, 1, 100)) {
-                    this.typingAnimation(
-                        "Please type a integer number between 1 and 100"
-                    );
-                    return;
-                }
-
-                this.questionnaireAnswers[this.currentQuestion] = message;
-                this.currentQuestion += 1;
-                this.randomMessage();
-
-                this.currentQuestionnaire += 1;
-                this.awaitingAnswer = false;
-
-                if (this.checkIfQuestionnaireIsFinished()) return;
-            }
             this.typingAnimation(
                 this.task.questionnaires[this.currentQuestionnaire].questions[
                     this.currentQuestion %
@@ -527,9 +521,11 @@ export class ChatWidgetComponent implements OnInit {
                             .questions.length
                 ].text
             );
-
-            this.awaitingAnswer = true;
+            this.inputComponentToShow = EnConversationalInputType.Number;
         }
+
+        this.awaitingAnswer = true;
+        return;
     }
 
     // Fase di istruzioni
@@ -587,16 +583,6 @@ export class ChatWidgetComponent implements OnInit {
             this.reviewAnswersShown = false;
             this.taskStatus = EnConversationaTaskStatus.ReviewPhase;
 
-            // let dimSel = {};
-            // dimSel["document"] = this.taskIndex;
-            // dimSel["dimension"] = subtaskIndex;
-            // dimSel["index"] = this.taskIndex;
-            // dimSel["timestamp"] = Date.now() / 1000;
-            // dimSel["value"] =
-            //     this.answers[this.taskIndex][subtaskIndex].dimensionValue;
-            // dimSel["url"] = this.answers[this.taskIndex][subtaskIndex].urlValue;
-
-            // this.dimsSelected.push(dimSel);
             this.uploadDocumentData();
 
             this.reviewP(message);
@@ -822,13 +808,6 @@ export class ChatWidgetComponent implements OnInit {
                 return;
             }
             this.cleanUserInput();
-            // let dimSel = {};
-            // dimSel["document"] = this.taskIndex;
-            // dimSel["dimension"] = this.subTaskIndex;
-            // dimSel["index"] = this.taskIndex;
-            // dimSel["timestamp"] = Date.now() / 1000;
-            // dimSel["value"] = this.answers[this.taskIndex][this.subTaskIndex];
-            // this.dimsSelected.push(dimSel);
 
             // Reset della fase di revisione
             this.reviewAnswersShown = false;
@@ -939,6 +918,7 @@ export class ChatWidgetComponent implements OnInit {
                 this.generateFinalStatementRecapData();
                 this.statementJump = true;
             } else if (message.trim().toLowerCase() === "no") {
+                this.inputComponentToShow = EnConversationalInputType.Text;
                 this.action = "Finish";
                 this.task.sequenceNumber += 1;
                 // INVIO DATI COL CONTROLLO QUALITA
@@ -1044,9 +1024,6 @@ export class ChatWidgetComponent implements OnInit {
         let isFinished = false;
         if (this.currentQuestionnaire >= this.task.questionnaires.length) {
             isFinished = true;
-            this.readOnly = true;
-            this.taskStatus = EnConversationaTaskStatus.ReviewPhase;
-            this.questionnaireReview = true;
         }
         return isFinished;
     }
@@ -1116,14 +1093,6 @@ export class ChatWidgetComponent implements OnInit {
             this.answers[this.taskIndex][subTaskIndex].dimensionValue = message;
             this.ignoreMsg = true;
             this.cleanUserInput();
-
-            // let dimSel = {};
-            // dimSel["document"] = this.taskIndex;
-            // dimSel["dimension"] = subtaskIndex;
-            // dimSel["index"] = this.taskIndex;
-            // dimSel["timestamp"] = Date.now() / 1000;
-            // dimSel["value"] = message;
-            // this.dimsSelected.push(dimSel);
 
             this.randomMessage();
         } else if (message == "startTask") {
@@ -1814,19 +1783,19 @@ export class ChatWidgetComponent implements OnInit {
             this.task.countdownsExpired[this.taskIndex] = true;
     }
     //Invio dei dati relativi al questionario
-    private uploadQuestionnaireData(questionnaireIndex: number) {
+    private async uploadQuestionnaireData(questionnaireIndex: number) {
         let answers = this.buildQuestionnaireAnswersData(questionnaireIndex);
         let questionnairePayload = this.buildTaskQuestionnairePayload(
             questionnaireIndex,
             answers,
             this.action
         );
-        // this.dynamoDBService.insertDataRecord(
-        //     this.configService.environment,
-        //     this.worker,
-        //     this.task,
-        //     questionnairePayload
-        // );
+        await this.dynamoDBService.insertDataRecord(
+            this.configService.environment,
+            this.worker,
+            this.task,
+            questionnairePayload
+        );
         this.task.sequenceNumber += 1;
     }
     //Modellazione delle risposte del questionario
@@ -1884,15 +1853,15 @@ export class ChatWidgetComponent implements OnInit {
             this.action
         );
 
-        // await this.dynamoDBService.insertDataRecord(
-        //     this.configService.environment,
-        //     this.worker,
-        //     this.task,
-        //     documentPayload
-        // );
+        await this.dynamoDBService.insertDataRecord(
+            this.configService.environment,
+            this.worker,
+            this.task,
+            documentPayload
+        );
 
         this.task.sequenceNumber += 1;
-        this.dimsSelected = [];
+
         this.query = [];
         this.queryRetrieved = [];
         this.querySelectedUrls = [];
