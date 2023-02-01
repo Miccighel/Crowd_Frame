@@ -1218,11 +1218,14 @@ def find_snapshost_for_task(acl_record):
     snapshots_found = []
     if acl_record['source_path'] is not np.nan:
         snapshots = load_json(acl_record['source_path'])
-        for snapshot in snapshots:
-            if 'task' in snapshot:
-                if snapshot['task']['worker_id'] == acl_record['worker_id'] and \
-                    snapshot['task']['task_id'] == acl_record['task_name']:
-                    snapshots_found.append(snapshot)
+        if type(snapshots) == dict:
+            snapshots_found.append(snapshots)
+        elif type(snapshots) == list:
+            for snapshot in snapshots:
+                if 'task' in snapshot:
+                    if snapshot['task']['worker_id'] == acl_record['worker_id'] and \
+                        snapshot['task']['task_id'] == acl_record['task_name']:
+                        snapshots_found.append(snapshot)
         return snapshots_found
     return []
 
