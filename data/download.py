@@ -692,6 +692,7 @@ if 'toloka' in platforms:
         toloka_client = toloka.TolokaClient(toloka_oauth_token, 'PRODUCTION')
 
         df_acl_copy = df_acl.copy()
+        df_acl_copy = df_acl_copy.loc[df_acl_copy['platform']=='toloka']
         tokens_input = []
         tokens_output = []
         for batch_current in np.unique(df_acl_copy['batch_name'].values):
@@ -722,7 +723,7 @@ if 'toloka' in platforms:
             'project_id': project_data.id,
             'project_name': project_data.public_name.strip(),
             'project_description': project_data.public_description.strip(),
-            'project_comment': project_data.private_comment.strip(),
+            'project_comment': project_data.private_comment.strip() if project_data.private_comment is not None else np.nan,
         }
 
         pool_counter = 0
