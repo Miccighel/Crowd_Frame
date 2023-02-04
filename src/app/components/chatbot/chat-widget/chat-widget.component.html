@@ -111,7 +111,10 @@
             <div class="button-prompt">
                 <div
                     class="row container d-flex m-1"
-                    *ngIf="inputComponentToShow == EnInputType.Button"
+                    *ngIf="
+                        inputComponentToShow == EnInputType.Button &&
+                        !showMessageInput
+                    "
                 >
                     <chat-input-categorical
                         class="col-12 text-center"
@@ -176,7 +179,7 @@
             >
                 <chat-url-input
                     class="container"
-                    *ngIf="hasDoubleInput"
+                    *ngIf="hasDoubleInput && !showMessageInput"
                     [readValue]="readUrlValue"
                     (updateValue)="updateUrlValue($event)"
                     [urlPlaceholder]="urlPlaceHolder"
@@ -186,14 +189,20 @@
 
                 <chat-input-magnitude
                     class="container"
-                    *ngIf="inputComponentToShow == EnInputType.Number"
+                    *ngIf="
+                        inputComponentToShow == EnInputType.Number &&
+                        !showMessageInput
+                    "
                     [magnitudeInfo]="magnitudeInfo"
                     (send)="sendMessage($event)"
                     [readOnly]="readOnly"
                 ></chat-input-magnitude>
                 <chat-input-interval
                     class="container"
-                    *ngIf="inputComponentToShow == EnInputType.Slider"
+                    *ngIf="
+                        inputComponentToShow == EnInputType.Slider &&
+                        !showMessageInput
+                    "
                     [intervalInfo]="intervalInfo"
                     (send)="sendMessage($event)"
                     [readOnly]="readOnly"
@@ -201,7 +210,10 @@
 
                 <chat-input-ddl
                     class="container"
-                    *ngIf="inputComponentToShow == EnInputType.Dropdown"
+                    *ngIf="
+                        inputComponentToShow == EnInputType.Dropdown &&
+                        !showMessageInput
+                    "
                     [options]="dropdownListOptions"
                     [readOnly]="readOnly"
                     (send)="buttonInput($event)"
@@ -210,7 +222,10 @@
 
                 <chat-input
                     class="container"
-                    *ngIf="inputComponentToShow == EnInputType.Text"
+                    *ngIf="
+                        inputComponentToShow == EnInputType.Text ||
+                        showMessageInput
+                    "
                     (send)="sendMessage($event)"
                     [pholder]="placeholderInput"
                     [readOnly]="readOnly"

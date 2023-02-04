@@ -151,10 +151,12 @@ export class ChatWidgetComponent implements OnInit {
     private activeInterval: any; //Interval per la gestione del countdown
     public showCountdown = false; //Interval per la gestione del countdown
     private countdownLeftTime = []; //Interval per la gestione del countdown
+    private countdownTimeStart = []; //Interval per la gestione del countdown
 
     //Quality check
     private goldConfiguration = [];
     private goldChecks = [];
+    public showMessageInput = true;
 
     //show components flag
     EnInputType = EnConversationalInputType;
@@ -207,13 +209,16 @@ export class ChatWidgetComponent implements OnInit {
         name: "Worker",
         user: "test_user",
         status: "online",
-        avatar: `/assets/images/conversational/user-icon.png`,
+        avatar: `https://www.linkpicture.com/q/user-icon.png`,
     };
 
     public messages: any[] = [];
 
     private initializeContainers() {
         this.countdownLeftTime = !!this.task.settings.countdown_time
+            ? new Array(this.task.documents.length).fill(0)
+            : [];
+        this.countdownTimeStart = !!this.task.settings.countdown_time
             ? new Array(this.task.documents.length).fill(0)
             : [];
         this.accessesAmount = new Array(
@@ -357,7 +362,7 @@ export class ChatWidgetComponent implements OnInit {
         this.progress = this.task.settings.countdown_time / 100;
         this.progressBar.nativeElement.style.width =
             this.progress.toString() + "%";
-
+        this.countdownTimeStart.push(Date.now() / 1000);
         this.activeInterval = setInterval(() => {
             let countdownValue = this.countdownValueSubject.value - 1;
             this.countdownValueSubject.next(countdownValue);
@@ -506,9 +511,14 @@ export class ChatWidgetComponent implements OnInit {
             "standard"
         ) {
             this.readOnly = true;
+            this.showMessageInput = true;
             this.printQuestion();
             this.typingAnimation(this.createQuestionnaireAnswers());
             this.generateQuestionnaireAnswers();
+            setTimeout(() => {
+                this.showMessageInput = false;
+            }, 1000);
+
             this.readOnly = false;
             this.inputComponentToShow = EnConversationalInputType.Dropdown;
         } else if (
@@ -522,7 +532,11 @@ export class ChatWidgetComponent implements OnInit {
                             .questions.length
                 ].text
             );
+            this.showMessageInput = true;
             this.inputComponentToShow = EnConversationalInputType.Number;
+            setTimeout(() => {
+                this.showMessageInput = false;
+            }, 1000);
         }
 
         this.awaitingAnswer = true;
@@ -559,7 +573,8 @@ export class ChatWidgetComponent implements OnInit {
         ) {
             //Stop del interval
             if (this.task.settings.countdown_time) {
-                this.countdownLeftTime[this.taskIndex] = this.countdownValue;
+                this.countdownLeftTime[this.taskIndex] =
+                    this.countdownValueSubject.value;
                 this.resetCountdown();
             }
             //Salvo il tempo di fine
@@ -587,11 +602,14 @@ export class ChatWidgetComponent implements OnInit {
             let dimSel = {};
             dimSel["document"] = this.taskIndex;
             dimSel["dimension"] = subTaskIndex;
-            dimSel["index"] = this.taskIndex;
+            dimSel["index"] = this.dimensionSelected.length;
             dimSel["timestamp"] = Date.now() / 1000;
             dimSel["value"] =
-                this.answers[this.taskIndex][subTaskIndex].dimensionValue;
-            dimSel["url"] = this.answers[this.taskIndex][subTaskIndex].urlValue;
+                this.answers[this.taskIndex][subTaskIndex].dimensionValue ??
+                null;
+
+            dimSel["url"] =
+                this.answers[this.taskIndex][subTaskIndex].urlValue ?? null;
             this.dimensionSelected[this.taskIndex] = dimSel;
 
             this.reviewP(message);
@@ -623,6 +641,9 @@ export class ChatWidgetComponent implements OnInit {
                 this.setCountdown();
             }
             this.printDimension(this.taskIndex, this.subTaskIndex);
+            setTimeout(() => {
+                this.showMessageInput = false;
+            }, 1500);
 
             this.selectDimensionToGenerate(this.subTaskIndex);
             this.subTaskIndex++;
@@ -815,6 +836,7 @@ export class ChatWidgetComponent implements OnInit {
                 this.dimensionReviewPrinted = true;
 
                 this.selectDimensionToGenerate(this.subTaskIndex);
+                this.showMessageInput = false;
 
                 return;
             }
@@ -826,12 +848,15 @@ export class ChatWidgetComponent implements OnInit {
             let dimSel = {};
             dimSel["document"] = this.taskIndex;
             dimSel["dimension"] = this.subTaskIndex;
-            dimSel["index"] = this.taskIndex;
+            dimSel["index"] = this.dimensionSelected.length;
             dimSel["timestamp"] = Date.now() / 1000;
             dimSel["value"] =
-                this.answers[this.taskIndex][this.subTaskIndex].dimensionValue;
+                this.answers[this.taskIndex][this.subTaskIndex]
+                    .dimensionValue ?? null;
             dimSel["url"] =
-                this.answers[this.taskIndex][this.subTaskIndex].urlValue;
+                this.answers[this.taskIndex][this.subTaskIndex].urlValue ??
+                null;
+
             this.dimensionSelected[this.taskIndex] = dimSel;
         }
 
@@ -1001,10 +1026,15 @@ export class ChatWidgetComponent implements OnInit {
                     this.taskP({ value: "startTask" });
                     return;
                 }
+                this.inputComponentToShow = EnConversationalInputType.Text;
+
                 //Messaggio finale
                 this.typingAnimation(
                     "Oh! That was it! Thank you for completing the task! Here's your token: " +
                         this.task.tokenOutput
+                );
+                this.typingAnimation(
+                    "You may now close the page or leave a comment!"
                 );
                 setTimeout(() => {
                     //Richiesta commento
@@ -1019,12 +1049,19 @@ export class ChatWidgetComponent implements OnInit {
                     modalRef.componentInstance.message =
                         this.modalCommentContent;
 
-                    modalRef.result.then((comment) => {
-                        this.buildCommentPayload(comment);
-                        this.showYNbuttons = false;
-                        this.typingAnimation("You may now close the page!");
+                    modalRef.result.then(async (result) => {
+                        if (result) {
+                            let comment = this.buildCommentPayload(result);
+
+                            await this.dynamoDBService.insertDataRecord(
+                                this.configService.environment,
+                                this.worker,
+                                this.task,
+                                comment
+                            );
+                        }
                     });
-                }, 3000);
+                }, 2000);
             } else {
                 return;
             }
@@ -1475,6 +1512,7 @@ export class ChatWidgetComponent implements OnInit {
                 ", ";
             if (!!this.task.hit.documents[i]["statement_date"])
                 statements += this.task.hit.documents[i]["statement_date"];
+            statements += "br";
         }
         statements += "<br><br>";
         return statements;
@@ -1525,6 +1563,7 @@ export class ChatWidgetComponent implements OnInit {
 
     //Generazione della dimensione in base alla scale type
     private selectDimensionToGenerate(dimensionIndex) {
+        this.showMessageInput = true;
         this.readOnly = true;
         let scaleType = null;
 
@@ -1818,16 +1857,13 @@ export class ChatWidgetComponent implements OnInit {
     }
     //Modellazione delle risposte del questionario
     private buildQuestionnaireAnswersData(questionnaireIndex: number) {
-        let questionnaireData = [];
         let addOn = "_answer";
 
-        let answers = {};
+        let questionnaireData = {};
         this.task.questionnaires[questionnaireIndex].questions.forEach(
             (question, index) => {
-                questionnaireData.push(
-                    (answers[question.name + addOn] =
-                        this.questionnaireAnswers[index])
-                );
+                questionnaireData[question.name + addOn] =
+                    this.questionnaireAnswers[index];
             }
         );
 
@@ -1912,27 +1948,42 @@ export class ChatWidgetComponent implements OnInit {
             element: "document",
         };
         /* Worker's answers for the current document */
-        data["answers"] = answers;
+        data["answers"] = answers ?? [];
         data["notes"] = [];
         /* Worker's dimensions selected values for the current document */
-        data["dimensions_selected"] = this.dimensionSelected[documentIndex];
+        data["dimensions_selected"] = {
+            amount: 1,
+            data: this.dimensionSelected[documentIndex] ?? [],
+        };
+
         /* Worker's search engine queries for the current document */
-        data["queries"] = this.query[documentIndex];
+        data["queries"] = this.query[documentIndex] ?? [];
         /* Start, end and elapsed timestamps for the current document */
-        data["timestamps_start"] = this.timestampsStart[currentElementIndex];
-        data["timestamps_end"] = this.timestampsEnd[currentElementIndex];
+        data["timestamps_start"] =
+            this.timestampsStart[currentElementIndex] ?? [];
+        data["timestamps_end"] = this.timestampsEnd[currentElementIndex] ?? [];
         data["timestamps_elapsed"] =
-            this.timestampsElapsed[currentElementIndex];
+            this.timestampsElapsed[currentElementIndex] ?? [];
         /* Countdown time and corresponding flag */
-        data["countdowns_times_start"] = [];
-        data["countdowns_times_left"] = this.countdownLeftTime[documentIndex];
-        data["countdowns_expired"] = this.task.countdownsExpired[documentIndex];
+        data["countdowns_times_start"] = !!this.countdownTimeStart[
+            documentIndex
+        ]
+            ? [this.countdownTimeStart[documentIndex]]
+            : [];
+        data["countdowns_times_left"] = !!this.countdownLeftTime[documentIndex]
+            ? [this.countdownLeftTime[documentIndex]]
+            : [];
+        data["countdowns_expired"] = !!this.task.countdownsExpired[
+            documentIndex
+        ]
+            ? [this.task.countdownsExpired[documentIndex]]
+            : [];
         /* Number of accesses to the current document (currentDocument.e., how many times the worker reached the document with a "Back" or "Next" action */
-        data["accesses"] = this.accessesAmount[currentElementIndex];
+        data["accesses"] = this.accessesAmount[currentElementIndex] ?? [];
         /* Responses retrieved by search engine for each worker's query for the current document */
-        data["responses_retrieved"] = this.queryRetrieved[documentIndex];
+        data["responses_retrieved"] = this.queryRetrieved ?? [];
         /* Responses by search engine ordered by worker's click for the current document */
-        data["responses_selected"] = this.querySelectedUrls[documentIndex];
+        data["responses_selected"] = this.querySelectedUrls ?? [];
         return data;
     }
     private taskQualityCheck(): boolean {
