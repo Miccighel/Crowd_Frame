@@ -233,7 +233,7 @@ export class ChatWidgetComponent implements OnInit {
     private getNumberOfQuestionnaireQuestions(): number {
         let numberOfElements = 0;
         this.task.questionnaires.forEach((el) => {
-            numberOfElements = +el.questions.length;
+            numberOfElements += +el.questions.length;
         });
         return numberOfElements;
     }
@@ -354,36 +354,6 @@ export class ChatWidgetComponent implements OnInit {
         this.task.sequenceNumber += 1;
     }
 
-    //Creazione del countdown
-    private setCountdown() {
-        this.showCountdown = true;
-        this.countdownValueSubject.next(this.task.settings.countdown_time);
-        this.timerIsOverSubject.next(false);
-        this.progress = this.task.settings.countdown_time / 100;
-        this.progressBar.nativeElement.style.width =
-            this.progress.toString() + "%";
-        this.countdownTimeStart.push(Date.now() / 1000);
-        this.activeInterval = setInterval(() => {
-            let countdownValue = this.countdownValueSubject.value - 1;
-            this.countdownValueSubject.next(countdownValue);
-            if (countdownValue == 0) {
-                this.progressBar.nativeElement.style.width = "100%";
-                this.timerIsOverSubject.next(true);
-                this.storeCountdownData();
-                return clearInterval(this.activeInterval);
-            } else {
-                this.progressBar.nativeElement.display = "block";
-                this.progress =
-                    100 -
-                    (countdownValue * 100) / this.task.settings.countdown_time;
-                if (this.progress > 0 && this.progress < 100) {
-                    this.progressBar.nativeElement.style.width =
-                        this.progress.toString() + "%";
-                }
-            }
-        }, 1000);
-    }
-
     // Core
     public sendMessage({ message }) {
         if (this.hasDoubleInput) {
@@ -466,7 +436,8 @@ export class ChatWidgetComponent implements OnInit {
                 );
                 return;
             } else {
-                this.questionnaireAnswers[this.currentQuestion] = message;
+                this.questionnaireAnswers[this.getGlobalQuestionIndex()] =
+                    message;
                 this.inputComponentToShow = EnConversationalInputType.Text;
                 this.randomMessage();
                 this.currentQuestion++;
@@ -486,6 +457,7 @@ export class ChatWidgetComponent implements OnInit {
                         this.timestampsStart[this.currentQuestionnaire][0];
 
                     this.uploadQuestionnaireData(this.currentQuestionnaire);
+                    this.currentQuestion = 0;
                     this.currentQuestionnaire++;
 
                     if (
@@ -522,14 +494,29 @@ export class ChatWidgetComponent implements OnInit {
             this.readOnly = false;
             this.inputComponentToShow = EnConversationalInputType.Dropdown;
         } else if (
-            this.task.questionnaires[this.currentQuestionnaire].type == "crt" ||
             this.task.questionnaires[this.currentQuestionnaire].type == "likert"
+        ) {
+            this.readOnly = true;
+            this.showMessageInput = true;
+            this.typingAnimation(
+                this.task.questionnaires[this.currentQuestionnaire].questions[
+                    this.currentQuestion
+                ].text
+            );
+            this.typingAnimation(this.createLikertQuestionnaireAnswers());
+            this.generateLikertQuestionnaireAnswers();
+
+            setTimeout(() => {
+                this.showMessageInput = false;
+            }, 1000);
+            this.readOnly = false;
+            this.inputComponentToShow = EnConversationalInputType.Dropdown;
+        } else if (
+            this.task.questionnaires[this.currentQuestionnaire].type == "crt"
         ) {
             this.typingAnimation(
                 this.task.questionnaires[this.currentQuestionnaire].questions[
-                    this.currentQuestion %
-                        this.task.questionnaires[this.currentQuestionnaire]
-                            .questions.length
+                    this.currentQuestion
                 ].text
             );
             this.showMessageInput = true;
@@ -659,23 +646,16 @@ export class ChatWidgetComponent implements OnInit {
             !this.dimensionReviewPrinted &&
             this.inputComponentToShow == EnConversationalInputType.Dropdown
         ) {
-            message = this.getDimensionAnswerValue(message);
+            message = this.getDropdownAnswerValue(message);
         }
+        //Modifica di un questionario
         if (this.questionnaireReview) {
             if (this.pickReview) {
                 //E' in attesa della risposta da parte dell'utente
                 if (this.awaitingAnswer) {
                     if (
                         this.task.questionnaires[this.currentQuestionnaire]
-                            .type == "standard"
-                    ) {
-                        this.questionnaireAnswers[this.currentQuestion] =
-                            message;
-                    } else if (
-                        this.task.questionnaires[this.currentQuestionnaire]
-                            .type == "crt" ||
-                        this.task.questionnaires[this.currentQuestionnaire]
-                            .type == "likert"
+                            .type == "crt"
                     ) {
                         if (!ChatHelper.validMsg(message, 1, 100)) {
                             this.typingAnimation(
@@ -684,65 +664,87 @@ export class ChatWidgetComponent implements OnInit {
                             return;
                         }
                     }
-                    this.questionnaireAnswers[this.currentQuestion] = message;
+                    if (
+                        this.task.questionnaires[this.currentQuestionnaire]
+                            .type == "likert"
+                    ) {
+                        message = this.task.questionnaires[
+                            this.currentQuestionnaire
+                        ].mappings.find((el) => el.value == message).label;
+                    }
+
+                    this.questionnaireAnswers[this.getGlobalQuestionIndex()] =
+                        message;
                     this.reviewAnswersShown = false;
                     this.pickReview = false;
                     this.awaitingAnswer = false;
+                    this.timestampsEnd[this.currentQuestionnaire][0] =
+                        Date.now() / 1000;
+                    this.timestampsElapsed[this.currentQuestionnaire] =
+                        this.timestampsEnd[this.currentQuestionnaire][0] -
+                        this.timestampsStart[this.currentQuestionnaire][0];
+                    this.uploadQuestionnaireData(this.currentQuestionnaire);
                 } else {
-                    //Si sta selezionando la domanda da revisionare
-                    this.currentQuestion = +message;
+                    //Revisione della domanda
+                    let globalQuestionIndex = +message;
+                    // Viene calcolato il questionario di appartenenza della domanda e l'indice relativo alla domanda
+                    this.currentQuestionnaire =
+                        this.getQuestionnaireIndexByQuestionGlobalIndex(
+                            globalQuestionIndex
+                        );
+                    this.currentQuestion =
+                        this.getLocalQuestionIndex(globalQuestionIndex);
 
-                    let previousQuestionIndex = this.currentQuestion - 1;
-                    // Viene calcolato il questionario di appartenenza della domanda e il suo relativo indice
-                    let questionnaireToCheck = 0;
-                    while (
-                        this.currentQuestion >
-                        this.task.questionnaires[questionnaireToCheck].questions
-                            .length
-                    ) {
-                        this.currentQuestion =
-                            this.currentQuestion -
-                            this.task.questionnaires[questionnaireToCheck]
-                                .questions.length;
-                        if (this.currentQuestion > 0) questionnaireToCheck++;
-                    }
-                    this.currentQuestionnaire = questionnaireToCheck;
-                    this.currentQuestion--;
                     this.printQuestion();
+                    this.awaitingAnswer = true;
+
                     if (
                         this.task.questionnaires[this.currentQuestionnaire]
                             .type == "standard"
                     ) {
                         this.typingAnimation(this.createQuestionnaireAnswers());
                         this.generateQuestionnaireAnswers();
-                        this.currentQuestion = previousQuestionIndex;
+
                         this.readOnly = false;
                         this.inputComponentToShow ==
                             EnConversationalInputType.Dropdown;
 
-                        this.awaitingAnswer = true;
                         return;
                     } else if (
                         this.task.questionnaires[this.currentQuestionnaire]
-                            .type == "crt" ||
-                        this.task.questionnaires[this.currentQuestionnaire]
                             .type == "likert"
                     ) {
-                        this.currentQuestion = previousQuestionIndex;
+                        this.readOnly = true;
+                        this.showMessageInput = true;
+
+                        this.typingAnimation(
+                            this.createLikertQuestionnaireAnswers()
+                        );
+                        this.generateLikertQuestionnaireAnswers();
+
+                        setTimeout(() => {
+                            this.showMessageInput = false;
+                        }, 1000);
+                        this.readOnly = false;
+                        this.inputComponentToShow =
+                            EnConversationalInputType.Dropdown;
+
+                        return;
+                    } else if (
+                        this.task.questionnaires[this.currentQuestionnaire]
+                            .type == "crt"
+                    ) {
                         this.inputComponentToShow =
                             EnConversationalInputType.Number;
-                        this.inputComponentToShow;
-                        this.awaitingAnswer = true;
+
                         return;
                     }
-                    this.awaitingAnswer = true;
                     this.showCMbuttons = false;
                     return;
                 }
             }
             if (!this.reviewAnswersShown) {
                 this.cleanUserInput();
-
                 this.typingAnimation("Let's review your answers!");
                 this.typingAnimation(
                     this.createQuestionnaireRecap() +
@@ -755,16 +757,6 @@ export class ChatWidgetComponent implements OnInit {
             }
             //Confermo le risposte del questionario
             if (message.trim().toLowerCase() === "confirm") {
-                if (this.pickReview) {
-                    this.timestampsEnd[this.currentQuestionnaire][0] =
-                        Date.now() / 1000;
-                    //Fine revisione questionario
-                    this.timestampsElapsed[this.currentQuestionnaire] =
-                        this.timestampsEnd[this.currentQuestionnaire][0] -
-                        this.timestampsStart[this.currentQuestionnaire][0];
-                    this.uploadQuestionnaireData(this.currentQuestionnaire);
-                }
-
                 this.inputComponentToShow = EnConversationalInputType.Text;
                 this.showCMbuttons = false;
                 this.questionnaireReview = false;
@@ -798,7 +790,7 @@ export class ChatWidgetComponent implements OnInit {
                 return;
             }
         }
-        // Sto modificando una dimensione
+        // Modifica di una dimensione
         if (this.pickReview) {
             // La dimensione è visualizzata
             if (this.dimensionReviewPrinted) {
@@ -834,7 +826,6 @@ export class ChatWidgetComponent implements OnInit {
                 //Visualizzazione della dimensione richiesta e relativi dati
                 this.printDimension(this.taskIndex, this.subTaskIndex);
                 this.dimensionReviewPrinted = true;
-
                 this.selectDimensionToGenerate(this.subTaskIndex);
                 this.showMessageInput = false;
 
@@ -938,7 +929,7 @@ export class ChatWidgetComponent implements OnInit {
     // Fase di fine task
     private async endP(message) {
         if (this.statementJump) {
-            this.getDimensionAnswerValue(message);
+            this.getDropdownAnswerValue(message);
             this.taskIndex = this.getFinalRevisionAnswerValue(message);
             this.subTaskIndex = 0;
             this.printStatement();
@@ -1153,6 +1144,36 @@ export class ChatWidgetComponent implements OnInit {
         } else if (message == "startTask") {
             this.randomMessage();
         }
+    }
+
+    //Creazione del countdown
+    private setCountdown() {
+        this.showCountdown = true;
+        this.countdownValueSubject.next(this.task.settings.countdown_time);
+        this.timerIsOverSubject.next(false);
+        this.progress = this.task.settings.countdown_time / 100;
+        this.progressBar.nativeElement.style.width =
+            this.progress.toString() + "%";
+        this.countdownTimeStart.push(Date.now() / 1000);
+        this.activeInterval = setInterval(() => {
+            let countdownValue = this.countdownValueSubject.value - 1;
+            this.countdownValueSubject.next(countdownValue);
+            if (countdownValue == 0) {
+                this.progressBar.nativeElement.style.width = "100%";
+                this.timerIsOverSubject.next(true);
+                this.storeCountdownData();
+                return clearInterval(this.activeInterval);
+            } else {
+                this.progressBar.nativeElement.display = "block";
+                this.progress =
+                    100 -
+                    (countdownValue * 100) / this.task.settings.countdown_time;
+                if (this.progress > 0 && this.progress < 100) {
+                    this.progressBar.nativeElement.style.width =
+                        this.progress.toString() + "%";
+                }
+            }
+        }, 1000);
     }
 
     private emitGetUrlValue() {
@@ -1532,6 +1553,16 @@ export class ChatWidgetComponent implements OnInit {
         return recap;
     }
 
+    private createLikertQuestionnaireAnswers() {
+        let l = this.task.questionnaires[this.currentQuestionnaire].mappings;
+        let recap = "";
+        for (let i = 0; i < l.length; i++) {
+            recap += i + 1 + ". <b>" + l[i].label + "</b><br><br>";
+        }
+        recap += "Please select an answer";
+        return recap;
+    }
+
     //Creazione testo di riepilogo del questionario
     private createQuestionnaireRecap() {
         let recap = "";
@@ -1546,7 +1577,10 @@ export class ChatWidgetComponent implements OnInit {
                         "</b><br>Answer:<b> " +
                         this.questionnaireAnswers[i] +
                         "</b><br><br>";
-                } else if (questionnaire.type == "crt") {
+                } else if (
+                    questionnaire.type == "crt" ||
+                    questionnaire.type == "likert"
+                ) {
                     recap +=
                         questionIndex +
                         ". Question: <b>" +
@@ -1680,6 +1714,15 @@ export class ChatWidgetComponent implements OnInit {
         }));
     }
 
+    private generateLikertQuestionnaireAnswers() {
+        this.dropdownListOptions = this.task.questionnaires[
+            this.currentQuestionnaire
+        ].mappings.map((el) => ({
+            label: el.label,
+            value: el.value,
+        }));
+    }
+
     private generateFinalStatementRecapData() {
         this.dropdownListOptions = [];
 
@@ -1792,7 +1835,7 @@ export class ChatWidgetComponent implements OnInit {
     }
 
     //Restituisce il valore mappato della Dropdown visualizzata
-    private getDimensionAnswerValue(message) {
+    private getDropdownAnswerValue(message) {
         const mappedValue = this.dropdownListOptions.find(
             (el) => el.label.toLowerCase() == message.toLowerCase()
         );
@@ -1829,6 +1872,46 @@ export class ChatWidgetComponent implements OnInit {
         return isValid;
     }
 
+    private getGlobalQuestionIndex(): number {
+        let globalQuestionIndex = 0;
+        this.task.questionnaires.forEach((questionnaire, index) => {
+            if (index < this.currentQuestionnaire)
+                globalQuestionIndex += questionnaire.questions.length;
+        });
+        globalQuestionIndex = globalQuestionIndex + this.currentQuestion;
+
+        return globalQuestionIndex;
+    }
+
+    private getLocalQuestionIndex(globalIndex): number {
+        var index = 0;
+        while (globalIndex > this.task.questionnaires[index].questions.length) {
+            globalIndex -= this.task.questionnaires[index].questions.length;
+
+            if (globalIndex > 0) index++;
+        }
+        if (globalIndex > 0) {
+            globalIndex--;
+        }
+
+        return globalIndex;
+    }
+
+    private getQuestionnaireIndexByQuestionGlobalIndex(
+        globalQuestionIndex
+    ): number {
+        let index = 0;
+        while (
+            globalQuestionIndex >
+            this.task.questionnaires[index].questions.length
+        ) {
+            globalQuestionIndex -=
+                this.task.questionnaires[index].questions.length;
+            if (globalQuestionIndex > 0) index++;
+        }
+        return index;
+    }
+
     private resetCountdown() {
         this.showCountdown = false;
         clearInterval(this.activeInterval);
@@ -1860,10 +1943,14 @@ export class ChatWidgetComponent implements OnInit {
         let addOn = "_answer";
 
         let questionnaireData = {};
+        let startIndex =
+            this.getGlobalQuestionIndex() -
+            this.task.questionnaires[questionnaireIndex].questions.length;
         this.task.questionnaires[questionnaireIndex].questions.forEach(
-            (question, index) => {
+            (question) => {
                 questionnaireData[question.name + addOn] =
-                    this.questionnaireAnswers[index];
+                    this.questionnaireAnswers[startIndex];
+                startIndex++;
             }
         );
 
