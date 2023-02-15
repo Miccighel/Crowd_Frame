@@ -565,8 +565,9 @@ export class ChatWidgetComponent implements OnInit {
                 this.resetCountdown();
             }
             //Salvo il tempo di fine
-            this.timestampsEnd[this.currentQuestionnaire + this.taskIndex][0] =
-                Date.now() / 1000;
+            this.timestampsEnd[
+                this.task.questionnaires.length + this.taskIndex
+            ][0] = Date.now() / 1000;
 
             const subTaskIndex = this.subTaskIndex - 1;
             if (this.hasDoubleInput) {
@@ -887,7 +888,7 @@ export class ChatWidgetComponent implements OnInit {
                 this.showYNbuttons = true;
                 if (this.pickReview) {
                     let currentElementIndex =
-                        this.currentQuestionnaire + this.taskIndex;
+                        this.task.questionnaires.length + this.taskIndex;
                     this.timestampsEnd[currentElementIndex][0] =
                         Date.now() / 1000;
 
@@ -899,7 +900,7 @@ export class ChatWidgetComponent implements OnInit {
                 return;
             } else {
                 let currentElementIndex =
-                    this.currentQuestionnaire + this.taskIndex;
+                    this.task.questionnaires.length + this.taskIndex;
                 this.timestampsEnd[currentElementIndex][0] = Date.now() / 1000;
                 this.timestampsElapsed[currentElementIndex] =
                     this.timestampsEnd[currentElementIndex][0] -
@@ -1340,7 +1341,9 @@ export class ChatWidgetComponent implements OnInit {
 
     // Stampa lo statement corrente e lo fissa nella chat
     private printStatement() {
-        this.accessesAmount[this.currentQuestion + this.taskIndex] += 1;
+        this.accessesAmount[
+            this.task.questionnaires.length + this.taskIndex
+        ] += 1;
 
         document.getElementById(this.taskIndex.toString()).className =
             "dot-in-progress";
@@ -1664,8 +1667,9 @@ export class ChatWidgetComponent implements OnInit {
             this.readOnly = false;
         }
         this.statementProvided = true;
-        this.timestampsStart[this.currentQuestionnaire + this.taskIndex][0] =
-            Date.now() / 1000;
+        this.timestampsStart[
+            this.task.questionnaires.length + this.taskIndex
+        ][0] = Date.now() / 1000;
     }
 
     //Restituisce l'etichetta del valore della relativa dimensione
@@ -2032,7 +2036,8 @@ export class ChatWidgetComponent implements OnInit {
     }
     public buildTaskDocumentPayload(documentIndex, answers, countdown, action) {
         let data = {};
-        let currentElementIndex = this.currentQuestionnaire + documentIndex;
+        let currentElementIndex =
+            this.task.questionnaires.length + documentIndex;
         /* Info about the performed action  */
         data["info"] = {
             action: action,
