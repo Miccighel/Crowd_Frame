@@ -672,17 +672,18 @@ export class ChatWidgetComponent implements OnInit {
                             this.currentQuestionnaire
                         ].mappings.find((el) => el.value == message).label;
                     }
-
-                    this.questionnaireAnswers[this.getGlobalQuestionIndex()] =
-                        message;
+                    let globalIndex = this.getGlobalQuestionIndex();
+                    this.questionnaireAnswers[globalIndex] = message;
                     this.reviewAnswersShown = false;
                     this.pickReview = false;
                     this.awaitingAnswer = false;
+
                     this.timestampsEnd[this.currentQuestionnaire][0] =
                         Date.now() / 1000;
                     this.timestampsElapsed[this.currentQuestionnaire] =
                         this.timestampsEnd[this.currentQuestionnaire][0] -
                         this.timestampsStart[this.currentQuestionnaire][0];
+
                     this.uploadQuestionnaireData(this.currentQuestionnaire);
                 } else {
                     //Revisione della domanda
@@ -693,7 +694,9 @@ export class ChatWidgetComponent implements OnInit {
                             globalQuestionIndex
                         );
                     this.currentQuestion =
-                        this.getLocalQuestionIndex(globalQuestionIndex);
+                        this.getLocalQuestionIndexByGlobalIndex(
+                            globalQuestionIndex
+                        );
 
                     this.printQuestion();
                     this.awaitingAnswer = true;
@@ -1883,11 +1886,10 @@ export class ChatWidgetComponent implements OnInit {
         return globalQuestionIndex;
     }
 
-    private getLocalQuestionIndex(globalIndex): number {
+    private getLocalQuestionIndexByGlobalIndex(globalIndex): number {
         var index = 0;
         while (globalIndex > this.task.questionnaires[index].questions.length) {
             globalIndex -= this.task.questionnaires[index].questions.length;
-
             if (globalIndex > 0) index++;
         }
         if (globalIndex > 0) {
@@ -1897,17 +1899,11 @@ export class ChatWidgetComponent implements OnInit {
         return globalIndex;
     }
 
-    private getQuestionnaireIndexByQuestionGlobalIndex(
-        globalQuestionIndex
-    ): number {
+    private getQuestionnaireIndexByQuestionGlobalIndex(globalIndex): number {
         let index = 0;
-        while (
-            globalQuestionIndex >
-            this.task.questionnaires[index].questions.length
-        ) {
-            globalQuestionIndex -=
-                this.task.questionnaires[index].questions.length;
-            if (globalQuestionIndex > 0) index++;
+        while (globalIndex > this.task.questionnaires[index].questions.length) {
+            globalIndex -= this.task.questionnaires[index].questions.length;
+            if (globalIndex > 0) index++;
         }
         return index;
     }
@@ -1943,9 +1939,9 @@ export class ChatWidgetComponent implements OnInit {
         let addOn = "_answer";
 
         let questionnaireData = {};
-        let startIndex =
-            this.getGlobalQuestionIndex() -
-            this.task.questionnaires[questionnaireIndex].questions.length;
+        let startIndex = this.getQuestionnaireStartIndex(questionnaireIndex);
+        this.task.questionnaires[questionnaireIndex].questions.length - 1;
+
         this.task.questionnaires[questionnaireIndex].questions.forEach(
             (question) => {
                 questionnaireData[question.name + addOn] =
@@ -1955,6 +1951,18 @@ export class ChatWidgetComponent implements OnInit {
         );
 
         return questionnaireData;
+    }
+
+    private getQuestionnaireStartIndex(questionnaireIndex): number {
+        let startIndex = 0;
+        if (questionnaireIndex == 0) {
+        } else {
+            for (let index = 0; index < questionnaireIndex; index++) {
+                startIndex += this.task.questionnaires[index].questions.length;
+            }
+        }
+
+        return startIndex;
     }
     private buildTaskQuestionnairePayload(questionnaireIndex, answers, action) {
         let data = {};
