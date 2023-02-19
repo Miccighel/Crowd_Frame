@@ -250,7 +250,6 @@ export class ChatWidgetComponent implements OnInit {
 
     ngOnInit() {
         let random = Math.floor(Math.random() * 9);
-
         this.operator.avatar =
             "https://randomuser.me/api/portraits/lego/" + random + ".jpg";
         this.task = this.sectionService.task;
@@ -295,14 +294,11 @@ export class ChatWidgetComponent implements OnInit {
         this.setTaskAnswersContainer();
         //Dimensionamento dei vettori relativi ai documenti e le dimensioni
         this.initializeContainers();
-
         //Disabilito il motore di ricerca
         this.emitDisableSearchEngine();
-
         /* Arrays of start, end and elapsed timestamps are initialized to track how much time the worker spends
          * on each document, including each questionnaire */
         this.loadTimestamps();
-
         //Check della presenza di questionari nel task
         if (this.questionnaireAnswers.length > 0) {
             this.typingAnimation("First, a few questions about yourself!");
@@ -957,6 +953,8 @@ export class ChatWidgetComponent implements OnInit {
                 this.statementJump = true;
             } else if (message.trim().toLowerCase() === "no") {
                 this.inputComponentToShow = EnConversationalInputType.Text;
+                this.showYNbuttons = false;
+
                 this.action = "Finish";
                 this.task.sequenceNumber += 1;
                 // INVIO DATI COL CONTROLLO QUALITA
@@ -1021,8 +1019,6 @@ export class ChatWidgetComponent implements OnInit {
                     this.taskP({ value: "startTask" });
                     return;
                 }
-                this.inputComponentToShow = EnConversationalInputType.Text;
-
                 //Messaggio finale
                 this.typingAnimation(
                     "Oh! That was it! Thank you for completing the task! Here's your token: " +
