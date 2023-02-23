@@ -565,20 +565,11 @@ export class ChatWidgetComponent implements OnInit {
                 this.task.questionnaires.length + this.taskIndex
             ][0] = Date.now() / 1000;
 
-            const subTaskIndex = this.subTaskIndex - 1;
-            if (this.hasDoubleInput) {
-                this.answers[this.taskIndex][subTaskIndex] = {
-                    dimensionValue: message,
-                    urlValue: this.urlInputValue,
-                };
-                this.hasDoubleInput = false;
-            } else if (this.waitForUrl) {
-                this.answers[this.taskIndex][subTaskIndex].dimensionValue =
-                    message;
-            } else {
-                this.answers[this.taskIndex][subTaskIndex].dimensionValue =
-                    message;
-            }
+            this.checkInputAnswer(
+                message,
+                this.taskIndex,
+                this.subTaskIndex - 1
+            );
 
             this.statementProvided = false;
             this.reviewAnswersShown = false;
