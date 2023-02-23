@@ -1967,12 +1967,10 @@ if not os.path.exists(df_data_path):
                         row["gold_checks"] = False
                         row["time_check_amount"] = np.nan
                         row["time_spent_check"] = False
-
                     row["doc_accesses"] = document_data['serialization']['accesses']
-
                     row["doc_countdown_time_start"] = document_data['serialization']['countdowns_times_start'][0] if len(document_data['serialization']['countdowns_times_start']) > 0 else np.nan
-                    row["doc_countdown_time_value"] = document_data['serialization']['countdowns_times_left']['value'] if len(document_data['serialization']['countdowns_times_left']) > 0 else np.nan
-                    row["doc_countdown_time_text"] = document_data['serialization']['countdowns_times_left']['text'] if len(document_data['serialization']['countdowns_times_left']) > 0 else np.nan
+                    row["doc_countdown_time_value"] = document_data['serialization']['countdowns_times_left'][0] if len(document_data['serialization']['countdowns_times_left']) > 0 else np.nan
+                    # row["doc_countdown_time_text"] = document_data['serialization']['countdowns_times_left']['text'] if len(document_data['serialization']['countdowns_times_left']) > 0 else np.nan
                     row["doc_countdown_time_expired"] = document_data['serialization']["countdowns_expired"][document_data['serialization']['info']['index']] if len(
                         document_data['serialization']["countdowns_expired"]) > 0 else np.nan
 
