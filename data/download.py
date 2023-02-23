@@ -2234,14 +2234,13 @@ def parse_dimensions_selected(df, worker_id, worker_paid, task, info, documents,
     for index_current, dimensions_selected in enumerate(dimensions_selected_data):
 
         for dimension_current in dimensions_selected['data']:
-
             dimension_data = dimensions[dimension_current['dimension']]
-
             label = np.nan
-            if dimension_data['scale']['type'] == 'categorical':
-                for mapping in dimension_data['scale']['mapping']:
-                    if mapping['value'] == dimension_current['value']:
-                        label = mapping['label']
+            if dimension_data['scale']:
+                if dimension_data['scale']['type'] == 'categorical':
+                    for mapping in dimension_data['scale']['mapping']:
+                        if mapping['value'] == dimension_current['value']:
+                            label = mapping['label']
 
             timestamp_selection = float(dimension_current['timestamp'])
             timestamp_selection_parsed = datetime.fromtimestamp(timestamp_selection)
