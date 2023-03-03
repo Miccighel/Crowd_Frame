@@ -143,10 +143,10 @@ export class ChatWidgetComponent implements OnInit {
 
     private minValue: number = -2; //Valore validazione estremo inferiore
     private maxValue: number = +2; //Valore validazione estremo superirore
-    countdownValue: Observable<number>; //Valore del countdown in secondi
+    public countdownValue: Observable<number>; //Valore del countdown in secondi
     private countdownValueSubject = new BehaviorSubject<number>(0); // Valore del countdown in secondi
     private progress: number; // Percentuale di completamento della barra del timer
-    timerIsOver: Observable<boolean>; //Flag per la visualizzazione del countdown scaduto
+    public timerIsOver: Observable<boolean>; //Flag per la visualizzazione del countdown scaduto
     private timerIsOverSubject = new BehaviorSubject<boolean>(false);
     private activeInterval: any; //Interval per la gestione del countdown
     public showCountdown = false; //Interval per la gestione del countdown
@@ -159,27 +159,29 @@ export class ChatWidgetComponent implements OnInit {
     public showMessageInput = true;
 
     //show components flag
-    EnInputType = EnConversationalInputType;
-    inputComponentToShow: EnConversationalInputType =
+    public EnInputType = EnConversationalInputType;
+    public inputComponentToShow: EnConversationalInputType =
         EnConversationalInputType.Text;
-    showYNbuttons = false;
-    showCMbuttons = false;
-    hasDoubleInput = false;
-    urlInputValue = "";
+    public showYNbuttons = false;
+    public showCMbuttons = false;
+    public hasDoubleInput = false;
+    public conversationInitialized = false;
+    public urlInputValue = "";
 
     //containers
-    categoricalInfo: CategoricalInfo[] = [];
-    magnitudeInfo: MagnitudeDimensionInfo = null;
-    intervalInfo: IntervalDimensionInfo = null;
-    dropdownListOptions: DropdownSelectItem[] = [];
-
-    // Commento finale
-    modalCommentContent = "Thanks for finishing the task, this is your token:";
+    public categoricalInfo: CategoricalInfo[] = [];
+    public magnitudeInfo: MagnitudeDimensionInfo = null;
+    public intervalInfo: IntervalDimensionInfo = null;
+    public dropdownListOptions: DropdownSelectItem[] = [];
 
     // Messaggi per l'utente
-    instr = [
+    public messagesForUser = [
         "Hello! I'm Fakebot and I'll be helping you complete this task! You can find the <b>instructions</b> in the top left corner of this page, just press the button whenever you need. Nothing will break down, I promise!",
+        "Are you ready?",
+        "Nice, let's start!",
+        "Okay, when you are ready click on <b>Yes</b> and so we can start this task together.",
         "Would you like to play a test round?",
+        "Thanks for finishing the task, this is your token:",
     ];
 
     constructor(
@@ -288,8 +290,6 @@ export class ChatWidgetComponent implements OnInit {
         this.timerIsOver = this.timerIsOverSubject.asObservable();
         this.progress = 0;
 
-        // Stampo le istruzioni iniziali
-        this.typingAnimation(this.instr[0]);
         //Dimensionamento dei vettori relativi alle risposte
         this.setTaskAnswersContainer();
         //Dimensionamento dei vettori relativi ai documenti e le dimensioni
@@ -299,19 +299,8 @@ export class ChatWidgetComponent implements OnInit {
         /* Arrays of start, end and elapsed timestamps are initialized to track how much time the worker spends
          * on each document, including each questionnaire */
         this.loadTimestamps();
-        //Check della presenza di questionari nel task
-        if (this.questionnaireAnswers.length > 0) {
-            this.typingAnimation("First, a few questions about yourself!");
-            setTimeout(() => {
-                /* The task is now started and the worker is looking at the first questionnaire, so the first start timestamp is saved */
-                this.timestampsStart[this.currentQuestionnaire].push(
-                    Date.now() / 1000
-                );
-                this.questionnaireP("0");
-            }, 5000);
-        } else {
-            this.skipQuestionnairePhase();
-        }
+
+        this.initializeConversation();
 
         // PRIMO INVIO DATI ALL'AVVIO
         let data = {};
@@ -352,70 +341,88 @@ export class ChatWidgetComponent implements OnInit {
 
     // Core
     public sendMessage({ message }) {
-        if (this.hasDoubleInput) {
-            this.emitGetUrlValue();
-        }
-        // Se il messaggio è vuoto, ignoro
-        if (
-            this.inputComponentToShow != EnConversationalInputType.Button &&
-            this.inputComponentToShow != EnConversationalInputType.Dropdown &&
-            message.trim() === ""
-        ) {
-            return;
-        }
-        // Mostro il messaggio in chat
-        if (
-            this.inputComponentToShow == EnConversationalInputType.Dropdown ||
-            this.inputComponentToShow == EnConversationalInputType.Button
-        ) {
-            message = message.label;
+        if (this.conversationInitialized) {
             if (this.hasDoubleInput) {
-                this.addMessageClient(
-                    this.client,
-                    { url: this.urlInputValue, value: message },
-                    "sent",
-                    true
-                );
+                this.emitGetUrlValue();
+            }
+            // Se il messaggio è vuoto, ignoro
+            if (
+                this.inputComponentToShow != EnConversationalInputType.Button &&
+                this.inputComponentToShow !=
+                    EnConversationalInputType.Dropdown &&
+                message.trim() === ""
+            ) {
+                return;
+            }
+            // Mostro il messaggio in chat
+            if (
+                this.inputComponentToShow ==
+                    EnConversationalInputType.Dropdown ||
+                this.inputComponentToShow == EnConversationalInputType.Button
+            ) {
+                message = message.label;
+                if (this.hasDoubleInput) {
+                    this.addMessageClient(
+                        this.client,
+                        { url: this.urlInputValue, value: message },
+                        "sent",
+                        true
+                    );
+                } else {
+                    this.addMessageClient(this.client, message, "sent");
+                }
             } else {
-                this.addMessageClient(this.client, message, "sent");
+                if (this.hasDoubleInput) {
+                    this.addMessageClient(
+                        this.client,
+                        { url: this.urlInputValue, value: message },
+                        "sent",
+                        true
+                    );
+                } else {
+                    this.addMessageClient(this.client, message, "sent");
+                }
+            }
+
+            // Se il messaggio è da ignorare, lo ignoro
+            if (this.ignoreMsg) {
+                return;
+            }
+            // END TASK PHASE
+            if (this.taskStatus === EnConversationaTaskStatus.EndPhase) {
+                this.endP(message);
+                return;
+            }
+            //QUESTIONNAIRE PHASE
+            if (
+                this.taskStatus === EnConversationaTaskStatus.QuestionnairePhase
+            ) {
+                this.questionnaireP(message);
+            }
+            //INSTRUCTION PHASE
+            if (
+                this.taskStatus === EnConversationaTaskStatus.InstructionPhase
+            ) {
+                this.instructionP();
+            }
+            //TASK PHASE
+            if (this.taskStatus === EnConversationaTaskStatus.TaskPhase) {
+                this.taskP(message);
+            }
+            //REVIEW PHASE
+            if (this.taskStatus === EnConversationaTaskStatus.ReviewPhase) {
+                this.reviewP(message);
             }
         } else {
-            if (this.hasDoubleInput) {
-                this.addMessageClient(
-                    this.client,
-                    { url: this.urlInputValue, value: message },
-                    "sent",
-                    true
-                );
+            this.addMessageClient(this.client, message, "sent");
+            if (message == "Yes") {
+                this.conversationInitialized = true;
+                this.initializeConversation();
             } else {
-                this.addMessageClient(this.client, message, "sent");
-            }
-        }
+                this.typingAnimation(this.messagesForUser[3]);
 
-        // Se il messaggio è da ignorare, lo ignoro
-        if (this.ignoreMsg) {
-            return;
-        }
-        // END TASK PHASE
-        if (this.taskStatus === EnConversationaTaskStatus.EndPhase) {
-            this.endP(message);
-            return;
-        }
-        //QUESTIONNAIRE PHASE
-        if (this.taskStatus === EnConversationaTaskStatus.QuestionnairePhase) {
-            this.questionnaireP(message);
-        }
-        //INSTRUCTION PHASE
-        if (this.taskStatus === EnConversationaTaskStatus.InstructionPhase) {
-            this.instructionP();
-        }
-        //TASK PHASE
-        if (this.taskStatus === EnConversationaTaskStatus.TaskPhase) {
-            this.taskP(message);
-        }
-        //REVIEW PHASE
-        if (this.taskStatus === EnConversationaTaskStatus.ReviewPhase) {
-            this.reviewP(message);
+                return;
+            }
         }
     }
 
@@ -485,7 +492,8 @@ export class ChatWidgetComponent implements OnInit {
             this.generateQuestionnaireAnswers();
             setTimeout(() => {
                 this.showMessageInput = false;
-            }, 1000);
+                this.changeDetector.detectChanges();
+            }, 1600);
 
             this.readOnly = false;
             this.inputComponentToShow = EnConversationalInputType.Dropdown;
@@ -504,7 +512,7 @@ export class ChatWidgetComponent implements OnInit {
 
             setTimeout(() => {
                 this.showMessageInput = false;
-            }, 1000);
+            }, 1600);
             this.readOnly = false;
             this.inputComponentToShow = EnConversationalInputType.Dropdown;
         } else if (
@@ -519,7 +527,8 @@ export class ChatWidgetComponent implements OnInit {
             this.inputComponentToShow = EnConversationalInputType.Number;
             setTimeout(() => {
                 this.showMessageInput = false;
-            }, 1000);
+                this.changeDetector.detectChanges();
+            }, 1600);
         }
 
         this.awaitingAnswer = true;
@@ -605,7 +614,8 @@ export class ChatWidgetComponent implements OnInit {
             this.printDimension(this.taskIndex, this.subTaskIndex);
             setTimeout(() => {
                 this.showMessageInput = false;
-            }, 1500);
+                this.changeDetector.detectChanges();
+            }, 1600);
 
             this.selectDimensionToGenerate(this.subTaskIndex);
             this.subTaskIndex++;
@@ -702,7 +712,8 @@ export class ChatWidgetComponent implements OnInit {
 
                         setTimeout(() => {
                             this.showMessageInput = false;
-                        }, 1000);
+                            this.changeDetector.detectChanges();
+                        }, 1600);
                         this.readOnly = false;
                         this.inputComponentToShow =
                             EnConversationalInputType.Dropdown;
@@ -730,7 +741,11 @@ export class ChatWidgetComponent implements OnInit {
                 );
                 this.readOnly = false;
                 this.reviewAnswersShown = true;
-                this.showCMbuttons = true;
+                setTimeout(() => {
+                    this.showCMbuttons = true;
+                    this.changeDetector.detectChanges();
+                }, 2400);
+
                 return;
             }
             //Confermo le risposte del questionario
@@ -748,7 +763,6 @@ export class ChatWidgetComponent implements OnInit {
                 this.ignoreMsg = true;
                 this.taskStatus = EnConversationaTaskStatus.InstructionPhase;
                 this.awaitingAnswer = false;
-
                 this.pickReview = false;
                 this.instructionP();
 
@@ -756,7 +770,6 @@ export class ChatWidgetComponent implements OnInit {
             } else if (message.trim().toLowerCase() === "modify") {
                 this.showCMbuttons = false;
                 this.action = "Back";
-
                 this.typingAnimation("Which one would you like to modify?");
                 this.generateRevisionData();
                 this.pickReview = true;
@@ -822,7 +835,10 @@ export class ChatWidgetComponent implements OnInit {
                 this.createDocumentRecap(this.taskIndex) +
                     "<br>Confirm your answers?"
             );
-            this.showCMbuttons = true;
+            setTimeout(() => {
+                this.showCMbuttons = true;
+                this.changeDetector.detectChanges();
+            }, 2400);
             this.reviewAnswersShown = true;
             return;
         } //Conferma le risposte dell'assignment
@@ -853,8 +869,12 @@ export class ChatWidgetComponent implements OnInit {
                     "OK! Would you like to jump to a specific statement?"
                 );
                 this.cleanUserInput();
-                this.readOnly = false;
-                this.showYNbuttons = true;
+
+                setTimeout(() => {
+                    this.showYNbuttons = true;
+                    this.readOnly = false;
+                    this.changeDetector.detectChanges();
+                }, 2400);
 
                 return;
             } else {
@@ -873,8 +893,12 @@ export class ChatWidgetComponent implements OnInit {
             this.showCMbuttons = false;
             this.typingAnimation("Which dimension would you like to change?");
             this.cleanUserInput();
-            this.generateRevisionData();
-            this.readOnly = false;
+            setTimeout(() => {
+                this.generateRevisionData();
+                this.readOnly = false;
+                this.changeDetector.detectChanges();
+            }, 2400);
+
             this.pickReview = true;
             this.dimensionReviewPrinted = false;
             return;
@@ -996,7 +1020,7 @@ export class ChatWidgetComponent implements OnInit {
                     modalRef.componentInstance.outputToken =
                         this.task.tokenOutput;
                     modalRef.componentInstance.message =
-                        this.modalCommentContent;
+                        this.messagesForUser[this.messagesForUser.length - 1];
 
                     modalRef.result.then(async (result) => {
                         if (result) {
@@ -1014,6 +1038,34 @@ export class ChatWidgetComponent implements OnInit {
             } else {
                 return;
             }
+        }
+    }
+
+    private initializeConversation() {
+        if (this.conversationInitialized) {
+            this.showYNbuttons = false;
+
+            //Check della presenza di questionari nel task
+            if (this.questionnaireAnswers.length > 0) {
+                this.typingAnimation("First, a few questions about yourself!");
+                setTimeout(() => {
+                    /* The task is now started and the worker is looking at the first questionnaire, so the first start timestamp is saved */
+                    this.timestampsStart[this.currentQuestionnaire].push(
+                        Date.now() / 1000
+                    );
+
+                    this.questionnaireP("0");
+                }, 5000);
+            } else {
+                this.skipQuestionnairePhase();
+            }
+        } else {
+            this.typingAnimation(this.messagesForUser[0]);
+            this.typingAnimation(this.messagesForUser[1]);
+            setTimeout(() => {
+                this.showYNbuttons = true;
+                this.changeDetector.detectChanges();
+            }, 2400);
         }
     }
 
