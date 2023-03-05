@@ -614,7 +614,7 @@ export class ChatWidgetComponent implements OnInit {
             if (
                 !this.finishedExampleActivity &&
                 !this.fixedMessage &&
-                message == "Yes"
+                message.toLowerCase() == "yes"
             ) {
                 this.printExampleStatement();
                 this.generateExampleDimension();
@@ -622,19 +622,18 @@ export class ChatWidgetComponent implements OnInit {
             } else if (
                 !this.finishedExampleActivity &&
                 !this.fixedMessage &&
-                message == "No"
+                message.toLowerCase() == "no"
             ) {
                 this.showYNbuttons = false;
                 this.typingAnimation(this.messagesForUser[8]);
                 this.inputComponentToShow = EnConversationalInputType.Text;
                 setTimeout(() => {
                     this.taskStatus = EnConversationaTaskStatus.TaskPhase;
-
                     this.taskP("startTask");
                 }, 1600);
                 return;
             } else if (!this.finishedExampleActivity && this.fixedMessage) {
-                if (message === "True") {
+                if (message.toLowerCase() === "true") {
                     //Far scrivere messagio al bot
                     this.typingAnimation(this.messagesForUser[7]);
                     this.finishedExampleActivity = true;
@@ -858,7 +857,6 @@ export class ChatWidgetComponent implements OnInit {
                 this.inputComponentToShow = EnConversationalInputType.Text;
                 this.showCMbuttons = false;
                 this.questionnaireReview = false;
-
                 // Passo al prossimo statement, resetto
                 this.randomMessage();
 
@@ -1042,7 +1040,6 @@ export class ChatWidgetComponent implements OnInit {
             } else if (message.trim().toLowerCase() === "no") {
                 this.inputComponentToShow = EnConversationalInputType.Text;
                 this.showYNbuttons = false;
-
                 this.action = "Finish";
                 this.task.sequenceNumber += 1;
                 // INVIO DATI COL CONTROLLO QUALITA
@@ -1160,7 +1157,6 @@ export class ChatWidgetComponent implements OnInit {
                     this.timestampsStart[this.currentQuestionnaire].push(
                         Date.now() / 1000
                     );
-
                     this.questionnaireP("0");
                 }, 5000);
             } else {
@@ -1177,9 +1173,11 @@ export class ChatWidgetComponent implements OnInit {
     }
 
     private skipQuestionnairePhase() {
-        this.typingAnimation("Let's start, with the activity!");
-        this.taskStatus = EnConversationaTaskStatus.TaskPhase;
-        setTimeout(() => this.taskP("startTask"), 3000);
+        this.inputComponentToShow = EnConversationalInputType.Text;
+        this.taskStatus = EnConversationaTaskStatus.InstructionPhase;
+        setTimeout(() => {
+            this.instructionP();
+        }, 2000);
     }
 
     //Controlla se il questionario è finito e avvia la fase di revisione del questionario
@@ -1598,13 +1596,7 @@ export class ChatWidgetComponent implements OnInit {
 
                         break;
                     case "magnitude_estimation":
-                        recap +=
-                            this.answers[taskIndex][i].dimensionValue + "<br>";
-                        break;
                     case "interval":
-                        recap +=
-                            this.answers[taskIndex][i].dimensionValue + "<br>";
-                        break;
                     case "textual":
                         recap +=
                             this.answers[taskIndex][i].dimensionValue + "<br>";
@@ -1651,13 +1643,7 @@ export class ChatWidgetComponent implements OnInit {
                             ) + "<br>";
                         break;
                     case "magnitude_estimation":
-                        recap +=
-                            this.answers[taskIndex][i].dimensionValue + "<br>";
-                        break;
                     case "interval":
-                        recap +=
-                            this.answers[taskIndex][i].dimensionValue + "<br>";
-                        break;
                     case "textual":
                         recap +=
                             this.answers[taskIndex][i].dimensionValue + "<br>";
