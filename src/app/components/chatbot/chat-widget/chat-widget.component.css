@@ -381,10 +381,8 @@ button.btn-user-answer {
     color: var(--dark);
     height: 34px;
     font-weight: 500;
-    border: none;
     border-radius: 5px;
     margin: 1%;
-    margin-top: 0%;
     width: 100%;
     border: solid 2px var(--secondary);
 }
