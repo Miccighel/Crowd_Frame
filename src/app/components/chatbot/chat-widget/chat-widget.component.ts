@@ -1892,6 +1892,9 @@ export class ChatWidgetComponent implements OnInit {
             description: el.description,
             value: el.value,
         }));
+
+        this.showMessageInput = false;
+        this.readOnly = false;
         this.inputComponentToShow = EnConversationalInputType.Dropdown;
     }
 
