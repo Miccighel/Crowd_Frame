@@ -1,3 +1,5 @@
+import { CategoricalInfo } from "src/app/models/conversational/common.model";
+
 export default class ChatHelper {
     // Controllo che un messaggio abbia valori compresi tra min e max e che sia un numero
     static validMsg(msg, min, max = null): boolean {
@@ -21,5 +23,17 @@ export default class ChatHelper {
             "i"
         ); // fragment locator
         return !!pattern.test(msg);
+    }
+
+    //Resistuiscono il valore minimo e massimo all'interno dell'array di oggetti passato
+    static getCategoricalMinInfo(objects: CategoricalInfo[]): number {
+        return +objects.reduce(function (prev, curr) {
+            return +prev.value < +curr.value ? prev : curr;
+        }).value;
+    }
+    static getCategoricalMaxInfo(objects: CategoricalInfo[]): number {
+        return +objects.reduce(function (prev, curr) {
+            return +prev.value > +curr.value ? prev : curr;
+        }).value;
     }
 }

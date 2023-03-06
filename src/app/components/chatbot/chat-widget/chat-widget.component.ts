@@ -1031,7 +1031,7 @@ export class ChatWidgetComponent implements OnInit {
             if (message.trim().toLowerCase() === "yes") {
                 this.action = "Back";
                 this.typingAnimation(
-                    this.createStatementString() +
+                    this.createStatementsRecap() +
                         "Which statement would you like to jump to?"
                 );
                 this.showYNbuttons = false;
@@ -1476,8 +1476,10 @@ export class ChatWidgetComponent implements OnInit {
     private printExampleStatement() {
         //Composizione messaggio dell'agente conversazionale
         let messageToSend =
-            "Statement: <b>" + this.exampleStatement.statement_text + "</b> - ";
-        messageToSend += this.exampleStatement.speaker_name;
+            "Statement: <b>" +
+            this.exampleStatement.statement_text +
+            "</b> <br>";
+        messageToSend += "- " + this.exampleStatement.speaker_name;
         messageToSend += " " + this.exampleStatement.statement_date;
         this.typingAnimation(messageToSend);
         //Composizione messaggio fissato
@@ -1497,10 +1499,10 @@ export class ChatWidgetComponent implements OnInit {
         let messageToSend =
             "Statement: <b>" +
             this.task.hit.documents[this.taskIndex]["statement_text"] +
-            "</b> - ";
+            "</b> ";
         if (!!this.task.hit.documents[this.taskIndex]["speaker_name"])
             messageToSend +=
-                this.task.hit.documents[this.taskIndex]["speaker_name"];
+                "- " + this.task.hit.documents[this.taskIndex]["speaker_name"];
         if (!!this.task.hit.documents[this.taskIndex]["statement_date"])
             messageToSend +=
                 " " + this.task.hit.documents[this.taskIndex]["statement_date"];
@@ -1657,15 +1659,15 @@ export class ChatWidgetComponent implements OnInit {
     }
 
     // Creo una stringa con tutti gli statement
-    private createStatementString() {
+    private createStatementsRecap() {
         let statements = "";
         for (let i = 0; i < this.task.hit.documents.length; i++) {
             statements +=
-                "Statement " +
+                "<b> Statement " +
                 (i + 1) +
-                ": <b>" +
+                "</b>: " +
                 this.task.hit.documents[i]["statement_text"] +
-                "</b> <br> - " +
+                " <br> - " +
                 this.task.hit.documents[i]["speaker_name"] +
                 ", ";
             if (!!this.task.hit.documents[i]["statement_date"])
@@ -1935,8 +1937,8 @@ export class ChatWidgetComponent implements OnInit {
             this.inputComponentToShow = EnConversationalInputType.Button;
         }
         //Va a fissare il valore massimo e minimo per la validazione della risposta che verrà fornita
-        this.minValue = this.getCategoricalMinInfo(this.categoricalInfo);
-        this.maxValue = this.getCategoricalMaxInfo(this.categoricalInfo);
+        this.minValue = ChatHelper.getCategoricalMinInfo(this.categoricalInfo);
+        this.maxValue = ChatHelper.getCategoricalMaxInfo(this.categoricalInfo);
     }
 
     //Generazione delle risposte intervallari
@@ -1974,18 +1976,6 @@ export class ChatWidgetComponent implements OnInit {
         this.minValue = dimensionInfos.min;
         this.maxValue = null;
         this.inputComponentToShow = EnConversationalInputType.Number;
-    }
-
-    //Resistuiscono il valore minimo e massimo all'interno dell'array di oggetti passato
-    getCategoricalMinInfo(objects: CategoricalInfo[]): number {
-        return +objects.reduce(function (prev, curr) {
-            return +prev.value < +curr.value ? prev : curr;
-        }).value;
-    }
-    getCategoricalMaxInfo(objects: CategoricalInfo[]): number {
-        return +objects.reduce(function (prev, curr) {
-            return +prev.value > +curr.value ? prev : curr;
-        }).value;
     }
 
     //Restituisce il valore mappato della risposta categoriale
