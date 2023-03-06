@@ -475,6 +475,7 @@ export class ChatWidgetComponent implements OnInit {
             this.addMessageClient(this.client, message, "sent");
             if (message == "Yes") {
                 this.conversationInitialized = true;
+                this.showYNbuttons = false;
                 this.initializeConversation();
             } else {
                 this.typingAnimation(this.messagesForUser[3]);
@@ -991,7 +992,7 @@ export class ChatWidgetComponent implements OnInit {
                 this.ignoreMsg = true;
                 this.subTaskIndex = 0;
                 this.fixedMessage = null;
-                this.taskP(message);
+                this.taskP("startTask");
             }
         } else if (message.trim().toLowerCase() === "modify") {
             this.action = "Back";
@@ -1147,8 +1148,6 @@ export class ChatWidgetComponent implements OnInit {
 
     private initializeConversation() {
         if (this.conversationInitialized) {
-            this.showYNbuttons = false;
-
             //Check della presenza di questionari nel task
             if (this.questionnaireAnswers.length > 0) {
                 this.typingAnimation("First, a few questions about yourself!");
@@ -1579,7 +1578,7 @@ export class ChatWidgetComponent implements OnInit {
             ) {
                 scaleType = this.task.dimensions[i].scale.type;
                 recap +=
-                    ".<b> URL</b>: " +
+                    "<b> URL</b>: " +
                     this.answers[taskIndex][i].urlValue +
                     "<br>";
                 if (this.task.dimensions[i].name_pretty) {
