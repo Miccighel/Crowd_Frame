@@ -69,7 +69,7 @@ const getRandomMessage = () =>
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ChatWidgetComponent implements OnInit {
-    @ViewChild("bottom") bottom!: ElementRef;
+    @ViewChild("chatbody") chatbody!: ElementRef;
 
     @ViewChild("typing", { static: true }) typing!: ElementRef;
     @ViewChild("inputBox", { static: true }) inputBox!: ElementRef;
@@ -473,9 +473,11 @@ export class ChatWidgetComponent implements OnInit {
             }
         } else {
             this.addMessageClient(this.client, message, "sent");
-            if (message == "Yes") {
-                this.conversationInitialized = true;
+            if (message.toLowerCase() == "yes") {
                 this.showYNbuttons = false;
+                this.changeDetector.detectChanges();
+                this.conversationInitialized = true;
+
                 this.initializeConversation();
             } else {
                 this.typingAnimation(this.messagesForUser[3]);
@@ -617,9 +619,9 @@ export class ChatWidgetComponent implements OnInit {
                 !this.fixedMessage &&
                 message.toLowerCase() == "yes"
             ) {
+                this.showYNbuttons = false;
                 this.printExampleStatement();
                 this.generateExampleDimension();
-                this.showYNbuttons = false;
             } else if (
                 !this.finishedExampleActivity &&
                 !this.fixedMessage &&
@@ -1447,8 +1449,13 @@ export class ChatWidgetComponent implements OnInit {
     }
     //Fa scrollare la chat infondo
     public scrollToBottom() {
-        if (this.bottom !== undefined) {
-            this.bottom.nativeElement.scrollIntoView();
+        if (this.chatbody !== undefined) {
+            if (
+                this.chatbody.nativeElement.scrollHeight >
+                this.chatbody.nativeElement.clientHeight
+            ) {
+                this.chatbody.nativeElement.scrollIntoView();
+            }
         }
     }
 

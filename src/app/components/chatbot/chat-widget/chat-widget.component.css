@@ -43,7 +43,7 @@
 }
 
 .chat-box-header {
-    padding: 10px;
+    padding: 4px;
     background-color: var(--primary);
     color: var(--light);
     font-size: larger;
@@ -51,7 +51,7 @@
 }
 
 .chat-fixed-message {
-    padding: 10px;
+    padding: 4px;
     font-weight: 500;
     background-color: var(--light);
     color: var(--dark);
@@ -73,7 +73,7 @@
     text-align: center;
 }
 #statement-text {
-    padding: 10px;
+    padding: 4px;
 }
 #statement-additional-info {
     font-weight: 400;
@@ -334,14 +334,6 @@ Sent message style
     font-weight: 600;
 }
 
-#box-header-2 {
-    background-color: var(--light);
-    color: var(--light);
-    display: inline-block;
-    padding: 0.15rem;
-    font-weight: 600;
-}
-
 .circle {
     position: relative;
     background-color: var(--primary);
@@ -394,11 +386,11 @@ button.btn-user-answer {
 /* |--- CHATBOT SECTIONS ---| */
 
 .chatbot-section {
-    max-width: 92%;
-    width: 92%;
-    margin-left: 4%;
-    margin-right: 4%;
-    height: 92%;
+    max-width: 90%;
+    width: 90%;
+    margin-left: 2%;
+    padding: 5px;
+    height: 100%;
     display: flex;
 }
 
