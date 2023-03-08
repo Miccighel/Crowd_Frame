@@ -91,6 +91,7 @@ import { ChatCommentModalComponent } from "./components/chatbot/chat-comment-mod
 import { NgbModule } from "@ng-bootstrap/ng-bootstrap";
 import { ChatUrlInputComponent } from "./components/chatbot/chat-url-input/chat-url-input.component";
 import { ChatInputDropdownComponent } from "./components/chatbot/chat-input-ddl/chat-input-ddl.component";
+import { ChatInstructionModalComponent } from "./components/chatbot/chat-instruction-modal/chat-instruction-modal.component";
 
 function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
     return () =>
@@ -143,6 +144,7 @@ function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
         ChatInputCategoricalComponent,
         ChatInputDropdownComponent,
         ChatCommentModalComponent,
+        ChatInstructionModalComponent,
         ChatUrlInputComponent,
     ],
     imports: [

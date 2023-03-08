@@ -1,0 +1,25 @@
+<div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">
+        {{ instruction.caption }}
+    </h4>
+    <button
+        type="button"
+        class="btn-close"
+        aria-label="Close"
+        (click)="activeModal.close('')"
+    ></button>
+</div>
+<div class="modal-body">
+    <div class="row container m-0">
+        <div class="col-12 ps-0">{{ instruction.text }}</div>
+    </div>
+</div>
+<div class="modal-footer justify-content-center">
+    <button
+        type="button"
+        class="btn btn-primary"
+        (click)="activeModal.close('')"
+    >
+        Close
+    </button>
+</div>

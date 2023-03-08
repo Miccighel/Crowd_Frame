@@ -43,11 +43,21 @@
 }
 
 .chat-box-header {
-    padding: 4px;
+    padding: 2px;
     background-color: var(--primary);
     color: var(--light);
-    font-size: larger;
-    height: auto;
+}
+
+button.instruction-button.mat-icon-button {
+    height: 24px;
+    width: 24px;
+    margin-left: 10px;
+}
+button.instruction-button span {
+    display: block;
+}
+button.instruction-button .mat-icon {
+    vertical-align: text-bottom;
 }
 
 .chat-fixed-message {
@@ -102,12 +112,13 @@
 }
 
 .operator-name {
-    margin: 0;
-    padding: 1px;
+    font-size: larger;
+    font-weight: 600;
 }
 
 .operator-status {
     float: right;
+    font-size: larger;
     padding: 4px;
 }
 

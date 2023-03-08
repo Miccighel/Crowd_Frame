@@ -6,17 +6,14 @@ import {
     OnInit,
     Output,
     ViewChild,
-    ViewEncapsulation,
 } from "@angular/core";
 
 @Component({
     selector: "chat-input",
     templateUrl: "chat-input.component.html",
-    encapsulation: ViewEncapsulation.None,
     styleUrls: ["./chat-input.component.css"],
 })
 export class ChatInputComponent implements OnInit {
-    @Input() public buttonText = "↩︎";
     @Output() public send = new EventEmitter();
     @Input() public pholder!: string;
     @Input() public readOnly!: boolean;

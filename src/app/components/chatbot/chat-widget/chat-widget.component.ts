@@ -7,6 +7,7 @@ import {
     Input,
     OnInit,
     ViewChild,
+    ViewEncapsulation,
 } from "@angular/core";
 import { fadeIn } from "../animations";
 import { NgxUiLoaderService } from "ngx-ui-loader";
@@ -33,6 +34,7 @@ import { NgbModal } from "@ng-bootstrap/ng-bootstrap";
 import { GoldChecker } from "data/build/skeleton/goldChecker";
 import ChatHelper from "./chat-helpers";
 import { BehaviorSubject, Observable, Subject } from "rxjs";
+import { ChatInstructionModalComponent } from "../chat-instruction-modal/chat-instruction-modal.component";
 
 // Messaggi random
 const randomMessagesFirstPart = [
@@ -66,6 +68,7 @@ const getRandomMessage = () =>
     templateUrl: "./chat-widget.component.html",
     styleUrls: ["./chat-widget.component.css"],
     animations: [fadeIn],
+    encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ChatWidgetComponent implements OnInit {
@@ -1467,6 +1470,14 @@ export class ChatWidgetComponent implements OnInit {
     // Invio un messaggio random
     public randomMessage() {
         this.typingAnimation(getRandomMessage());
+    }
+
+    public showInstructions() {
+        const modalRef = this.ngModal.open(ChatInstructionModalComponent, {
+            size: "lg",
+        });
+        modalRef.componentInstance.instruction =
+            this.task.instructionsGeneral[0];
     }
 
     //Stampa della domanda nella chat

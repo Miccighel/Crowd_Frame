@@ -1,14 +1,27 @@
 <div class="chatbot-section">
     <div class="chat-box">
-        <div class="chat-box-header">
-            <div class="operator-status">
-                {{ operator.status }}
-                <span class="operator-status-online">●</span>
+        <div class="chat-box-header row flex p-0 m-0">
+            <div class="col-8 p-1">
+                <chat-avatar [image]="operator.avatar"></chat-avatar>
+                <div class="operator-name">
+                    {{ operator.name }}
+                    <button
+                        mat-icon-button
+                        matTooltip="Show instructions"
+                        class="instruction-button"
+                        (click)="showInstructions()"
+                    >
+                        <mat-icon fontIcon="help"></mat-icon>
+                    </button>
+                </div>
             </div>
-            <chat-avatar [image]="operator.avatar"></chat-avatar>
-            <h3 class="operator-name">
-                {{ operator.name }}
-            </h3>
+
+            <div class="col-4">
+                <div class="operator-status">
+                    {{ operator.status }}
+                    <span class="operator-status-online">●</span>
+                </div>
+            </div>
         </div>
 
         <div class="row container p-0 m-0 my-1">
