@@ -5,7 +5,12 @@
 >
     <div class="col-10">
         <mat-form-field appearance="none" class="categorical-ddl">
-            <mat-select [(value)]="selected" [disabled]="readOnly">
+            <mat-select
+                [(value)]="selected"
+                [disabled]="readOnly"
+                disableOptionCentering
+                panelClass="myPanelClass"
+            >
                 <mat-option *ngFor="let option of options" [value]="option">{{
                     option.label
                 }}</mat-option>

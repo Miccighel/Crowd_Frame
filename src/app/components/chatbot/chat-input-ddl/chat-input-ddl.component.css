@@ -18,6 +18,10 @@
     margin: 2px;
 }
 
+.myPanelClass {
+    margin-top: 30px !important;
+}
+
 #ddl-component {
     min-height: 68px;
     align-items: center;
