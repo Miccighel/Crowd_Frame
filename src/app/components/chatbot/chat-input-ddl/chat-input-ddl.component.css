@@ -19,7 +19,13 @@
 }
 
 .myPanelClass {
-    margin-top: 30px !important;
+    margin-left: 33vw;
+}
+.myPanelClass mat-option.mat-option {
+    height: 2.5em !important;
+}
+.myPanelClass.mat-select-panel {
+    min-width: calc(25% + 32px) !important;
 }
 
 #ddl-component {
@@ -29,13 +35,6 @@
 
 #ddl-component .mat-select-value-text {
     font-weight: 500;
-}
-
-/* .mat-select-panel-wrap div:first-child {
-    min-width: none;
-} */
-#cdk-overlay-1 {
-    transform: translateX(0px) !important;
 }
 
 /* INPUT COMPONENTS*/

@@ -123,13 +123,10 @@
             <div class="button-prompt">
                 <div
                     class="row container d-flex m-1"
-                    *ngIf="
-                        inputComponentToShow == EnInputType.Button &&
-                        !showMessageInput
-                    "
+                    *ngIf="inputComponentToShow == EnInputType.Button"
                 >
                     <chat-input-categorical
-                        class="col-12 text-center"
+                        class="col-6 text-center"
                         *ngFor="let item of categoricalInfo"
                         [value]="item.value"
                         [text]="item.label"

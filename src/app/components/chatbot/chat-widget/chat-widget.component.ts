@@ -723,7 +723,12 @@ export class ChatWidgetComponent implements OnInit {
             if (validAnswer || message == "startTask") {
                 this.printDimension(this.taskIndex, this.subTaskIndex);
                 setTimeout(() => {
-                    this.showMessageInput = false;
+                    if (
+                        this.inputComponentToShow !=
+                        EnConversationalInputType.Button
+                    )
+                        this.showMessageInput = false;
+
                     this.changeDetector.detectChanges();
                 }, 1600);
                 this.selectDimensionToGenerate(this.subTaskIndex);
@@ -1811,7 +1816,10 @@ export class ChatWidgetComponent implements OnInit {
                 console.warn("Casistica non gestita");
                 break;
         }
-        if (scaleType != "url") {
+        if (
+            scaleType != "url" &&
+            this.inputComponentToShow != EnConversationalInputType.Button
+        ) {
             this.readOnly = false;
         }
         this.statementProvided = true;
@@ -1923,7 +1931,7 @@ export class ChatWidgetComponent implements OnInit {
         const dimensionInfos = this.task.dimensions[dimensionIndex];
         //Se una dimensione ha più di 5 valori mappati oppure si prevede un doppio input appare la DDL
         if (
-            (dimensionInfos.scale as ScaleCategorical).mapping.length > 5 ||
+            (dimensionInfos.scale as ScaleCategorical).mapping.length > 2 ||
             this.hasDoubleInput
         ) {
             this.dropdownListOptions = (
@@ -1952,6 +1960,7 @@ export class ChatWidgetComponent implements OnInit {
                 description: el.description,
                 value: el.value,
             }));
+
             this.inputComponentToShow = EnConversationalInputType.Button;
         }
         //Va a fissare il valore massimo e minimo per la validazione della risposta che verrà fornita
