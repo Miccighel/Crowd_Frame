@@ -602,9 +602,12 @@ export class Task {
          * The partial data about the completed questionnaire are uploaded */
         let data = {}
         let questionnaire = this.questionnaires[questionnaireIndex]
+        let questionnaireIndexExtended = questionnaireIndex
+        if (questionnaireIndex>=this.questionnaireAmountStart-1 && questionnaireIndex < this.questionnaireAmount && this.questionnaireAmountEnd>0)
+            questionnaireIndexExtended = questionnaireIndexExtended + this.documentsAmount
         let actionInfo = {
             action: action,
-            access: this.elementsAccesses[questionnaireIndex],
+            access: this.elementsAccesses[questionnaireIndexExtended],
             try: this.tryCurrent,
             index: questionnaireIndex,
             sequence: this.sequenceNumber,
@@ -621,14 +624,15 @@ export class Task {
         data["questions"] = questionsFull
         data["answers"] = answers
         /* Start, end and elapsed timestamps for the current questionnaire */
-        let timestampsStart = this.timestampsStart[questionnaireIndex];
+        let timestampsStart = this.timestampsStart[questionnaireIndexExtended];
         data["timestamps_start"] = timestampsStart
-        let timestampsEnd = this.timestampsEnd[questionnaireIndex];
+        let timestampsEnd = this.timestampsEnd[questionnaireIndexExtended];
         data["timestamps_end"] = timestampsEnd
-        let timestampsElapsed = this.timestampsElapsed[questionnaireIndex];
+        let timestampsElapsed = this.timestampsElapsed[questionnaireIndexExtended];
         data["timestamps_elapsed"] = timestampsElapsed
         /* Number of accesses to the current questionnaire (which must be always 1, since the worker cannot go back */
-        data["accesses"] = this.elementsAccesses[questionnaireIndex]
+        data["accesses"] = this.elementsAccesses[questionnaireIndexExtended]
+
         return data
     }
 
@@ -636,10 +640,12 @@ export class Task {
         /* If the worker has completed the first questionnaire
          * The partial data about the completed questionnaire are uploaded */
         let data = {}
-
+        let documentIndexExtendend = documentIndex
+        if (this.questionnaireAmountStart > 0)
+            documentIndexExtendend = documentIndexExtendend + this.questionnaireAmountStart
         let actionInfo = {
             action: action,
-            access: this.elementsAccesses[documentIndex],
+            access: this.elementsAccesses[documentIndexExtendend],
             try: this.tryCurrent,
             index: documentIndex,
             sequence: this.sequenceNumber,
@@ -658,11 +664,11 @@ export class Task {
         let searchEngineQueries = this.searchEngineQueries[documentIndex];
         data["queries"] = searchEngineQueries
         /* Start, end and elapsed timestamps for the current document */
-        let timestampsStart = this.timestampsStart[documentIndex];
+        let timestampsStart = this.timestampsStart[documentIndexExtendend];
         data["timestamps_start"] = timestampsStart
-        let timestampsEnd = this.timestampsEnd[documentIndex];
+        let timestampsEnd = this.timestampsEnd[documentIndexExtendend];
         data["timestamps_end"] = timestampsEnd
-        let timestampsElapsed = this.timestampsElapsed[documentIndex];
+        let timestampsElapsed = this.timestampsElapsed[documentIndexExtendend];
         data["timestamps_elapsed"] = timestampsElapsed
         /* Countdown time and corresponding flag */
         let countdownTimeStart = (this.settings.countdown_time >= 0) ? this.documentsCountdownTime[documentIndex] : []
@@ -672,13 +678,14 @@ export class Task {
         let countdown_expired = (this.settings.countdown_time >= 0) ? this.countdownsExpired[documentIndex] : []
         data["countdowns_expired"] = countdown_expired
         /* Number of accesses to the current document (currentDocument.e., how many times the worker reached the document with a "Back" or "Next" action */
-        data["accesses"] = this.elementsAccesses[documentIndex];
+        data["accesses"] = this.elementsAccesses[documentIndexExtendend];
         /* Responses retrieved by search engine for each worker's query for the current document */
         let responsesRetrieved = this.searchEngineRetrievedResponses[documentIndex];
         data["responses_retrieved"] = responsesRetrieved
         /* Responses by search engine ordered by worker's click for the current document */
         let responsesSelected = this.searchEngineSelectedResponses[documentIndex];
         data["responses_selected"] = responsesSelected
+
         return data
     }
 

@@ -504,7 +504,7 @@ else:
     df_acl = pd.read_csv(df_acl_path)
     console.print(f"Workers ACL [yellow]already detected[/yellow], skipping download")
 
-platforms = np.unique(df_acl['platform'].values)
+platforms = np.unique(df_acl['platform'].astype(str).values)
 
 console.rule(f"{step_index} - Checking Missing Units")
 step_index = step_index + 1
@@ -1013,9 +1013,9 @@ if 'prolific' in platforms:
 
                             row['participant_id'] = submission_current['participant_id']
                             row['participant_ip'] = submission_current['ip']
-                            row['participant_date_birth'] = submission_current['strata']['date of birth']
-                            row['participant_ethnicity_simplified'] = submission_current['strata']['ethnicity (simplified)']
-                            row['participant_sex'] = submission_current['strata']['sex']
+                            row['participant_date_birth'] = submission_current['strata']['date of birth'] if 'date of birth' in submission_current['strata'] else np.nan
+                            row['participant_ethnicity_simplified'] = submission_current['strata']['ethnicity (simplified)'] if 'ethnicity (simplified)' in submission_current['strata'] else np.nan
+                            row['participant_sex'] = submission_current['strata']['sex'] if 'sex' in submission_current['strata'] else np.nan
                             row['submission_id'] = submission_current['id']
                             row['submission_status'] = submission_current['status']
                             row['submission_study_code'] = submission_current['study_code']
@@ -1026,7 +1026,7 @@ if 'prolific' in platforms:
                             row['submission_is_complete'] = submission_current['is_complete']
                             row['submission_time_elapsed_seconds'] = submission_current['time_taken'] if submission_current['time_taken'] else np.nan
                             row['submission_reward'] = float(submission_current['reward'])
-                            row['submission_star_awarded'] = float(submission_current['star_awarded'])
+                            row['submission_star_awarded'] = float(submission_current['star_awarded']) if 'star_awarded' in submission_current else np.nan
                             row['submission_bonus_payments'] = ':::'.join([str(i) for i in submission_current['bonus_payments']])
 
                             df_prolific.loc[len(df_prolific)] = row
@@ -1226,6 +1226,8 @@ def find_snapshost_for_task(acl_record):
                     if snapshot['task']['worker_id'] == acl_record['worker_id'] and \
                         snapshot['task']['task_id'] == acl_record['task_name']:
                         snapshots_found.append(snapshot)
+        else:
+            assert False
         return snapshots_found
     return []
 
@@ -1701,11 +1703,12 @@ def parse_answers(row, questionnaire, question, answers):
             row['question_answers_labels'] = ':::'.join(labels)
         if type(value) != list:
             row[f"question_attribute_{attribute}"] = value
-    if question['type'] != 'mcq' and question['type'] != 'list':
-        row['question_answers_values'] = None
-        row['question_answers_labels'] = None
-    row[f"question_answer_value"] = answer_value
-    row[f"question_answer_free_text"] = answer_free_text
+    if questionnaire['type'] != 'crt':
+        if question['type'] != 'mcq' and question['type'] != 'list':
+            row['question_answers_values'] = None
+            row['question_answers_labels'] = None
+        row[f"question_answer_value"] = answer_value
+        row[f"question_answer_free_text"] = answer_free_text
 
     if questionnaire['type'] == 'standard':
         if question['type'] == 'mcq':
@@ -2244,10 +2247,11 @@ def parse_dimensions_selected(df, worker_id, worker_paid, task, info, documents,
             dimension_data = dimensions[dimension_current['dimension']]
 
             label = np.nan
-            if dimension_data['scale']['type'] == 'categorical':
-                for mapping in dimension_data['scale']['mapping']:
-                    if mapping['value'] == dimension_current['value']:
-                        label = mapping['label']
+            if dimension_data['scale']:
+                if dimension_data['scale']['type'] == 'categorical':
+                    for mapping in dimension_data['scale']['mapping']:
+                        if mapping['value'] == dimension_current['value']:
+                            label = mapping['label']
 
             timestamp_selection = float(dimension_current['timestamp'])
             timestamp_selection_parsed = datetime.fromtimestamp(timestamp_selection)

@@ -1109,20 +1109,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             {
                 "Effect": "Allow",
                 "Action": [
-                    "budgets:*"
-                ],
-                "Resource": "*"
-            },
-            {
-                "Effect": "Allow",
-                "Action": [
-                    "aws-portal:ViewBilling"
-                ],
-                "Resource": "*"
-            },
-            {
-                "Effect": "Allow",
-                "Action": [
                     "iam:PassRole"
                 ],
                 "Resource": "*",
@@ -1135,7 +1121,9 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             {
                 "Effect": "Allow",
                 "Action": [
-                    "aws-portal:ModifyBilling",
+                    "budgets:*",
+                    "billing:GetBillingDetails",
+                    "billing:UpdateBillingPreferences",
                     "ec2:DescribeInstances",
                     "iam:ListGroups",
                     "iam:ListPolicies",
@@ -1485,7 +1473,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.print(f"Configuration items synchronized: {task_config_items_updated}")
     console.print(f"Items fetched from [green]REMOTE[/green]: {task_config_items_updated}, {task_config_items_updated_names}")
     console.print(f"Items available from [green]LOCAL[/green]: {task_config_items_updated_local}, {task_config_items_updated_names_local}")
-    console.print(f"Items to generate: {len(task_config_filenames)-(task_config_items_updated + task_config_items_updated_local)}")
+    console.print(f"Items to generate: {len(task_config_filenames) - (task_config_items_updated + task_config_items_updated_local)}")
 
     console.rule(f"{step_index} - Sample task configuration")
     step_index = step_index + 1
@@ -2129,14 +2117,15 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         'runtime.js',
         'main.js',
     ]
-    es_script_paths = [None]*3
+    es_script_paths = [None] * 3
     for es_script_path in es_script_paths_temp:
         if os.path.basename(es_script_path) == 'polyfills.js':
            es_script_paths[0] = es_script_path
+            es_script_paths[0] = es_script_path
         if os.path.basename(es_script_path) == 'runtime.js':
-           es_script_paths[1] = es_script_path
+            es_script_paths[1] = es_script_path
         if os.path.basename(es_script_path) == 'main.js':
-           es_script_paths[2] = es_script_path
+            es_script_paths[2] = es_script_path
     for es_script_path in es_script_paths_temp:
         if os.path.basename(es_script_path) is not None and os.path.basename(es_script_path) != 'polyfills.js' and os.path.basename(es_script_path) != 'runtime.js' and os.path.basename(es_script_path) != 'main.js':
             es_script_paths.append(es_script_path)
