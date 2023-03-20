@@ -16,7 +16,6 @@ import numpy
 from aiohttp import ClientSession, ClientConnectorError, ClientResponseError, ClientOSError, ServerDisconnectedError, TooManyRedirects, ClientPayloadError, ClientConnectorCertificateError
 import tqdm
 import ipinfo
-import re
 import numpy as np
 import requests
 from distutils.util import strtobool
@@ -35,6 +34,9 @@ import xml.etree.ElementTree as Xml
 from rich.console import Console
 import collections
 import warnings
+from botocore.exceptions import ClientError
+from shared import handle_aws_error
+from shared import serialize_json
 
 pd.set_option('display.max_columns', None)
 
@@ -102,14 +104,6 @@ filename_questionnaires_config = "questionnaires.json"
 filename_search_engine_config = "search_engine.json"
 filename_task_settings_config = "task.json"
 filename_workers_settings_config = "workers.json"
-
-def serialize_json(folder, filename, data):
-    if not os.path.exists(folder):
-        os.makedirs(folder, exist_ok=True)
-    with open(f"{folder}{filename}", 'w', encoding='utf-8') as f:
-        json.dump(data, f, ensure_ascii=False, default=str, separators=(',', ':'))
-        f.close()
-
 
 def load_json(p):
     if os.path.exists(p):
@@ -525,94 +519,100 @@ if 'mturk' in platforms:
     console.rule(f"{step_index} - Fetching MTurk Data")
     step_index = step_index + 1
 
-    with console.status(f"Downloading HITs, Token: {next_token}, Total: {token_counter}", spinner="aesthetic") as status:
+    try:
 
-        if not os.path.exists(df_mturk_data_path):
+        with console.status(f"Downloading HITs, Token: {next_token}, Total: {token_counter}", spinner="aesthetic") as status:
 
-            console.print(f"[yellow]HITs data[/yellow] file not detected, creating it.")
-            hit_df = pd.DataFrame(columns=[
-                "HITId", "HITTypeId", "Title", "Description", "Keywords", "Reward", "CreationTime", "MaxAssignments",
-                "RequesterAnnotation", "AssignmentDurationInSeconds", "AutoApprovalDelayInSeconds", "Expiration",
-                "NumberOfSimilarHITs", "LifetimeInSeconds", "AssignmentId", "WorkerId", "AssignmentStatus", "AcceptTime",
-                "SubmitTime", "AutoApprovalTime", "ApprovalTime", "RejectionTime", "RequesterFeedback", "WorkTimeInSeconds",
-                "LifetimeApprovalRate", "Last30DaysApprovalRate", "Last7DaysApprovalRate"
-            ])
+            if not os.path.exists(df_mturk_data_path):
 
-            while next_token != '' or next_token is not None:
+                console.print(f"[yellow]HITs data[/yellow] file not detected, creating it.")
+                hit_df = pd.DataFrame(columns=[
+                    "HITId", "HITTypeId", "Title", "Description", "Keywords", "Reward", "CreationTime", "MaxAssignments",
+                    "RequesterAnnotation", "AssignmentDurationInSeconds", "AutoApprovalDelayInSeconds", "Expiration",
+                    "NumberOfSimilarHITs", "LifetimeInSeconds", "AssignmentId", "WorkerId", "AssignmentStatus", "AcceptTime",
+                    "SubmitTime", "AutoApprovalTime", "ApprovalTime", "RejectionTime", "RequesterFeedback", "WorkTimeInSeconds",
+                    "LifetimeApprovalRate", "Last30DaysApprovalRate", "Last7DaysApprovalRate"
+                ])
 
-                if next_token == '':
-                    response = mturk.list_hits()
-                else:
-                    response = mturk.list_hits(NextToken=next_token)
+                while next_token != '' or next_token is not None:
 
-                try:
+                    if next_token == '':
+                        response = mturk.list_hits()
+                    else:
+                        response = mturk.list_hits(NextToken=next_token)
 
-                    next_token = response['NextToken']
-                    num_results = response['NumResults']
-                    hits = response['HITs']
+                    try:
 
-                    status.update(f"Downloading HITs, Token: {next_token}, Total: {token_counter}")
+                        next_token = response['NextToken']
+                        num_results = response['NumResults']
+                        hits = response['HITs']
 
-                    for item in hits:
+                        status.update(f"Downloading HITs, Token: {next_token}, Total: {token_counter}")
 
-                        row = {}
-                        hit_id = item['HITId']
-                        available_records = hit_df.loc[hit_df['HITId'] == hit_id]
+                        for item in hits:
 
-                        status.update(f"HIT Id: {hit_id}, Available Records: {len(available_records)}, Total: {hit_counter}")
+                            row = {}
+                            hit_id = item['HITId']
+                            available_records = hit_df.loc[hit_df['HITId'] == hit_id]
 
-                        if len(available_records) <= 0:
+                            status.update(f"HIT Id: {hit_id}, Available Records: {len(available_records)}, Total: {hit_counter}")
 
-                            hit_status = mturk.get_hit(HITId=hit_id)['HIT']
-                            token_input = None
-                            token_output = None
-                            question_parsed = Xml.fromstring(hit_status['Question'])
-                            for child in question_parsed:
-                                for string_splitted in child.text.split("\n"):
-                                    string_sanitized = sanitize_string(string_splitted)
-                                    if len(string_sanitized) > 0:
-                                        if 'tokenInputtext' in string_sanitized:
-                                            token_input = string_sanitized.replace('tokenInputtext', '')
-                                        if 'tokenOutputonchangeiftokenOutputval' in string_sanitized:
-                                            token_output = string_sanitized.replace('tokenOutputonchangeiftokenOutputval', '').split(" ")[0]
-                            hit_status[f"Input.token_input"] = token_input
-                            hit_status[f"Input.token_output"] = token_output
-                            hit_status.pop('Question')
-                            hit_status.pop('QualificationRequirements')
+                            if len(available_records) <= 0:
 
-                            for hit_status_attribute, hit_status_value in hit_status.items():
-                                row[hit_status_attribute] = hit_status_value
+                                hit_status = mturk.get_hit(HITId=hit_id)['HIT']
+                                token_input = None
+                                token_output = None
+                                question_parsed = Xml.fromstring(hit_status['Question'])
+                                for child in question_parsed:
+                                    for string_splitted in child.text.split("\n"):
+                                        string_sanitized = sanitize_string(string_splitted)
+                                        if len(string_sanitized) > 0:
+                                            if 'tokenInputtext' in string_sanitized:
+                                                token_input = string_sanitized.replace('tokenInputtext', '')
+                                            if 'tokenOutputonchangeiftokenOutputval' in string_sanitized:
+                                                token_output = string_sanitized.replace('tokenOutputonchangeiftokenOutputval', '').split(" ")[0]
+                                hit_status[f"Input.token_input"] = token_input
+                                hit_status[f"Input.token_output"] = token_output
+                                hit_status.pop('Question')
+                                hit_status.pop('QualificationRequirements')
 
-                            hit_assignments = mturk.list_assignments_for_hit(HITId=hit_id, AssignmentStatuses=['Approved'])
-                            for hit_assignment in hit_assignments['Assignments']:
+                                for hit_status_attribute, hit_status_value in hit_status.items():
+                                    row[hit_status_attribute] = hit_status_value
 
-                                answer_parsed = Xml.fromstring(hit_assignment['Answer'])[0]
-                                tag_title = None
-                                tag_value = None
-                                for child in answer_parsed:
-                                    if 'QuestionIdentifier' in child.tag:
-                                        tag_title = child.text
-                                    if 'FreeText' in child.tag:
-                                        tag_value = child.text
-                                hit_assignment[f"Answer.{tag_title}"] = tag_value
-                                hit_assignment.pop('Answer')
+                                hit_assignments = mturk.list_assignments_for_hit(HITId=hit_id, AssignmentStatuses=['Approved'])
+                                for hit_assignment in hit_assignments['Assignments']:
 
-                                for hit_assignment_attribute, hit_assignment_value in hit_assignment.items():
-                                    row[hit_assignment_attribute] = hit_assignment_value
+                                    answer_parsed = Xml.fromstring(hit_assignment['Answer'])[0]
+                                    tag_title = None
+                                    tag_value = None
+                                    for child in answer_parsed:
+                                        if 'QuestionIdentifier' in child.tag:
+                                            tag_title = child.text
+                                        if 'FreeText' in child.tag:
+                                            tag_value = child.text
+                                    hit_assignment[f"Answer.{tag_title}"] = tag_value
+                                    hit_assignment.pop('Answer')
 
-                                hit_df = hit_df.append(row, ignore_index=True)
+                                    for hit_assignment_attribute, hit_assignment_value in hit_assignment.items():
+                                        row[hit_assignment_attribute] = hit_assignment_value
 
-                        hit_counter = hit_counter + 1
+                                    hit_df = hit_df.append(row, ignore_index=True)
 
-                    token_counter += 1
-                    hit_df.to_csv(df_mturk_data_path, index=False)
-                except KeyError:
-                    console.print(f"Found tokens: {token_counter}, HITs: {hit_counter}")
-                    break
-        else:
-            hit_df = pd.read_csv(df_mturk_data_path)
+                            hit_counter = hit_counter + 1
 
-    console.print(f"MTurk HITs data available at path: [cyan on white]{df_mturk_data_path}")
+                        token_counter += 1
+                        hit_df.to_csv(df_mturk_data_path, index=False)
+                    except KeyError:
+                        console.print(f"Found tokens: {token_counter}, HITs: {hit_counter}")
+                        break
+            else:
+                hit_df = pd.read_csv(df_mturk_data_path)
+
+        console.print(f"MTurk HITs data available at path: [cyan on white]{df_mturk_data_path}")
+
+    except ClientError as error:
+        console.print(f"MTurk HITs data not available.")
+        handle_aws_error(error.response)
 
 if 'toloka' in platforms:
 

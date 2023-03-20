@@ -31,8 +31,9 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.progress import track
 from dateutil import tz
-import pytz
 import warnings
+from shared import handle_aws_error
+from shared import serialize_json
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
@@ -503,9 +504,9 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             stop_sequence()
         else:
             console.print(f"[green]Each permission is correctly set up!")
-    except ClientError:
+    except ClientError as error:
         status.stop()
-        console.print("[bold red]\nYou must grant access to the SimulatePrincipalPolicy operation!\n")
+        handle_aws_error(error.response)
         stop_sequence()
 
     console.rule(f"{step_index} - Crowd workers interaction policy")
