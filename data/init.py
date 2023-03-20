@@ -85,6 +85,7 @@ def random_string(length=11):
     letters = string.ascii_uppercase
     return ''.join(random.choice(letters) for i in range(length))
 
+
 def read_json(path):
     if os.path.exists(path):
         with open(path, "r", encoding="utf8") as file:
@@ -1444,7 +1445,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                                         if date_modified_remote_parsed > date_modified_local_parsed:
                                             console.print(f"Most recent version: [blue underline]REMOTE[/blue underline], date: {date_modified_remote_parsed}")
                                             s3.download_file(aws_private_bucket, file_config_remote_path, file_config_local_path)
-                                            task_config_items_updated +=1
+                                            task_config_items_updated += 1
                                             task_config_items_updated_names.append(filename_config)
                                         else:
                                             console.print(f"Most recent version: [blue underline]LOCAL[/blue underline], date: {date_modified_local_parsed}")
@@ -2120,7 +2121,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     es_script_paths = [None] * 3
     for es_script_path in es_script_paths_temp:
         if os.path.basename(es_script_path) == 'polyfills.js':
-           es_script_paths[0] = es_script_path
             es_script_paths[0] = es_script_path
         if os.path.basename(es_script_path) == 'runtime.js':
             es_script_paths[1] = es_script_path
@@ -2386,6 +2386,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         else:
             response = s3_client.put_object(Body=open(path, 'rb'), Bucket=bucket, Key=key, ContentType=content_type)
         console.print(f"HTTP Status Code: {response['ResponseMetadata']['HTTPStatusCode']}, ETag: {response['ETag']}")
+
 
     console.print(f"[white on blue bold]Generator configuration")
 
