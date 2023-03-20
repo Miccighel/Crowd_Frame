@@ -171,6 +171,10 @@ export class Worker {
         return new Date(this.getParameter('time_removal')).toLocaleString()
     }
 
+    prettyTimeExpiration(): string {
+        return new Date(this.getParameter('time_expiration')).toLocaleString()
+    }
+
     convertToSnakeCase(property) {
         return property.replace(/(?:^|\.?)([A-Z])/g, function (x, y) {
             return "_" + y.toLowerCase()
