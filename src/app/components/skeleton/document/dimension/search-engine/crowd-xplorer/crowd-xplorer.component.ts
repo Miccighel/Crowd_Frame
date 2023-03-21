@@ -190,6 +190,7 @@ export class CrowdXplorer implements OnInit {
 
     ngOnInit() {
         this.resetEvent.subscribe(() => this.resetSearchEngineState());
+        this.disableSearchEngine(true);
 
         this.disableEvent.subscribe((disable: boolean) =>
             this.disableSearchEngine(disable)
