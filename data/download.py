@@ -16,7 +16,6 @@ import numpy
 from aiohttp import ClientSession, ClientConnectorError, ClientResponseError, ClientOSError, ServerDisconnectedError, TooManyRedirects, ClientPayloadError, ClientConnectorCertificateError
 import tqdm
 import ipinfo
-import re
 import numpy as np
 import requests
 from distutils.util import strtobool
@@ -35,6 +34,9 @@ import xml.etree.ElementTree as Xml
 from rich.console import Console
 import collections
 import warnings
+from botocore.exceptions import ClientError
+from shared import handle_aws_error
+from shared import serialize_json
 
 pd.set_option('display.max_columns', None)
 
@@ -102,14 +104,6 @@ filename_questionnaires_config = "questionnaires.json"
 filename_search_engine_config = "search_engine.json"
 filename_task_settings_config = "task.json"
 filename_workers_settings_config = "workers.json"
-
-def serialize_json(folder, filename, data):
-    if not os.path.exists(folder):
-        os.makedirs(folder, exist_ok=True)
-    with open(f"{folder}{filename}", 'w', encoding='utf-8') as f:
-        json.dump(data, f, ensure_ascii=False, default=str, separators=(',', ':'))
-        f.close()
-
 
 def load_json(p):
     if os.path.exists(p):
@@ -486,6 +480,10 @@ if not os.path.exists(df_acl_path):
                         row['time_completion_parsed'] = find_date_string(row['time_completion'])
                     if 'time_removal' in row:
                         row['time_removal_parsed'] = find_date_string(row['time_removal'])
+                    if 'time_expiration' in row:
+                        row['time_expiration_parsed'] = find_date_string(row['time_expiration'])
+                    if 'time_expiration_nearest' in row:
+                        row['time_expiration_nearest_parsed'] = find_date_string(row['time_expiration_nearest'])
 
             if acl_presence:
                 df_acl = df_acl.append(row, ignore_index=True)
@@ -500,7 +498,7 @@ else:
     df_acl = pd.read_csv(df_acl_path)
     console.print(f"Workers ACL [yellow]already detected[/yellow], skipping download")
 
-platforms = np.unique(df_acl['platform'].values)
+platforms = np.unique(df_acl['platform'].astype(str).values)
 
 console.rule(f"{step_index} - Checking Missing Units")
 step_index = step_index + 1
@@ -521,94 +519,100 @@ if 'mturk' in platforms:
     console.rule(f"{step_index} - Fetching MTurk Data")
     step_index = step_index + 1
 
-    with console.status(f"Downloading HITs, Token: {next_token}, Total: {token_counter}", spinner="aesthetic") as status:
+    try:
 
-        if not os.path.exists(df_mturk_data_path):
+        with console.status(f"Downloading HITs, Token: {next_token}, Total: {token_counter}", spinner="aesthetic") as status:
 
-            console.print(f"[yellow]HITs data[/yellow] file not detected, creating it.")
-            hit_df = pd.DataFrame(columns=[
-                "HITId", "HITTypeId", "Title", "Description", "Keywords", "Reward", "CreationTime", "MaxAssignments",
-                "RequesterAnnotation", "AssignmentDurationInSeconds", "AutoApprovalDelayInSeconds", "Expiration",
-                "NumberOfSimilarHITs", "LifetimeInSeconds", "AssignmentId", "WorkerId", "AssignmentStatus", "AcceptTime",
-                "SubmitTime", "AutoApprovalTime", "ApprovalTime", "RejectionTime", "RequesterFeedback", "WorkTimeInSeconds",
-                "LifetimeApprovalRate", "Last30DaysApprovalRate", "Last7DaysApprovalRate"
-            ])
+            if not os.path.exists(df_mturk_data_path):
 
-            while next_token != '' or next_token is not None:
+                console.print(f"[yellow]HITs data[/yellow] file not detected, creating it.")
+                hit_df = pd.DataFrame(columns=[
+                    "HITId", "HITTypeId", "Title", "Description", "Keywords", "Reward", "CreationTime", "MaxAssignments",
+                    "RequesterAnnotation", "AssignmentDurationInSeconds", "AutoApprovalDelayInSeconds", "Expiration",
+                    "NumberOfSimilarHITs", "LifetimeInSeconds", "AssignmentId", "WorkerId", "AssignmentStatus", "AcceptTime",
+                    "SubmitTime", "AutoApprovalTime", "ApprovalTime", "RejectionTime", "RequesterFeedback", "WorkTimeInSeconds",
+                    "LifetimeApprovalRate", "Last30DaysApprovalRate", "Last7DaysApprovalRate"
+                ])
 
-                if next_token == '':
-                    response = mturk.list_hits()
-                else:
-                    response = mturk.list_hits(NextToken=next_token)
+                while next_token != '' or next_token is not None:
 
-                try:
+                    if next_token == '':
+                        response = mturk.list_hits()
+                    else:
+                        response = mturk.list_hits(NextToken=next_token)
 
-                    next_token = response['NextToken']
-                    num_results = response['NumResults']
-                    hits = response['HITs']
+                    try:
 
-                    status.update(f"Downloading HITs, Token: {next_token}, Total: {token_counter}")
+                        next_token = response['NextToken']
+                        num_results = response['NumResults']
+                        hits = response['HITs']
 
-                    for item in hits:
+                        status.update(f"Downloading HITs, Token: {next_token}, Total: {token_counter}")
 
-                        row = {}
-                        hit_id = item['HITId']
-                        available_records = hit_df.loc[hit_df['HITId'] == hit_id]
+                        for item in hits:
 
-                        status.update(f"HIT Id: {hit_id}, Available Records: {len(available_records)}, Total: {hit_counter}")
+                            row = {}
+                            hit_id = item['HITId']
+                            available_records = hit_df.loc[hit_df['HITId'] == hit_id]
 
-                        if len(available_records) <= 0:
+                            status.update(f"HIT Id: {hit_id}, Available Records: {len(available_records)}, Total: {hit_counter}")
 
-                            hit_status = mturk.get_hit(HITId=hit_id)['HIT']
-                            token_input = None
-                            token_output = None
-                            question_parsed = Xml.fromstring(hit_status['Question'])
-                            for child in question_parsed:
-                                for string_splitted in child.text.split("\n"):
-                                    string_sanitized = sanitize_string(string_splitted)
-                                    if len(string_sanitized) > 0:
-                                        if 'tokenInputtext' in string_sanitized:
-                                            token_input = string_sanitized.replace('tokenInputtext', '')
-                                        if 'tokenOutputonchangeiftokenOutputval' in string_sanitized:
-                                            token_output = string_sanitized.replace('tokenOutputonchangeiftokenOutputval', '').split(" ")[0]
-                            hit_status[f"Input.token_input"] = token_input
-                            hit_status[f"Input.token_output"] = token_output
-                            hit_status.pop('Question')
-                            hit_status.pop('QualificationRequirements')
+                            if len(available_records) <= 0:
 
-                            for hit_status_attribute, hit_status_value in hit_status.items():
-                                row[hit_status_attribute] = hit_status_value
+                                hit_status = mturk.get_hit(HITId=hit_id)['HIT']
+                                token_input = None
+                                token_output = None
+                                question_parsed = Xml.fromstring(hit_status['Question'])
+                                for child in question_parsed:
+                                    for string_splitted in child.text.split("\n"):
+                                        string_sanitized = sanitize_string(string_splitted)
+                                        if len(string_sanitized) > 0:
+                                            if 'tokenInputtext' in string_sanitized:
+                                                token_input = string_sanitized.replace('tokenInputtext', '')
+                                            if 'tokenOutputonchangeiftokenOutputval' in string_sanitized:
+                                                token_output = string_sanitized.replace('tokenOutputonchangeiftokenOutputval', '').split(" ")[0]
+                                hit_status[f"Input.token_input"] = token_input
+                                hit_status[f"Input.token_output"] = token_output
+                                hit_status.pop('Question')
+                                hit_status.pop('QualificationRequirements')
 
-                            hit_assignments = mturk.list_assignments_for_hit(HITId=hit_id, AssignmentStatuses=['Approved'])
-                            for hit_assignment in hit_assignments['Assignments']:
+                                for hit_status_attribute, hit_status_value in hit_status.items():
+                                    row[hit_status_attribute] = hit_status_value
 
-                                answer_parsed = Xml.fromstring(hit_assignment['Answer'])[0]
-                                tag_title = None
-                                tag_value = None
-                                for child in answer_parsed:
-                                    if 'QuestionIdentifier' in child.tag:
-                                        tag_title = child.text
-                                    if 'FreeText' in child.tag:
-                                        tag_value = child.text
-                                hit_assignment[f"Answer.{tag_title}"] = tag_value
-                                hit_assignment.pop('Answer')
+                                hit_assignments = mturk.list_assignments_for_hit(HITId=hit_id, AssignmentStatuses=['Approved'])
+                                for hit_assignment in hit_assignments['Assignments']:
 
-                                for hit_assignment_attribute, hit_assignment_value in hit_assignment.items():
-                                    row[hit_assignment_attribute] = hit_assignment_value
+                                    answer_parsed = Xml.fromstring(hit_assignment['Answer'])[0]
+                                    tag_title = None
+                                    tag_value = None
+                                    for child in answer_parsed:
+                                        if 'QuestionIdentifier' in child.tag:
+                                            tag_title = child.text
+                                        if 'FreeText' in child.tag:
+                                            tag_value = child.text
+                                    hit_assignment[f"Answer.{tag_title}"] = tag_value
+                                    hit_assignment.pop('Answer')
 
-                                hit_df = hit_df.append(row, ignore_index=True)
+                                    for hit_assignment_attribute, hit_assignment_value in hit_assignment.items():
+                                        row[hit_assignment_attribute] = hit_assignment_value
 
-                        hit_counter = hit_counter + 1
+                                    hit_df = hit_df.append(row, ignore_index=True)
 
-                    token_counter += 1
-                    hit_df.to_csv(df_mturk_data_path, index=False)
-                except KeyError:
-                    console.print(f"Found tokens: {token_counter}, HITs: {hit_counter}")
-                    break
-        else:
-            hit_df = pd.read_csv(df_mturk_data_path)
+                            hit_counter = hit_counter + 1
 
-    console.print(f"MTurk HITs data available at path: [cyan on white]{df_mturk_data_path}")
+                        token_counter += 1
+                        hit_df.to_csv(df_mturk_data_path, index=False)
+                    except KeyError:
+                        console.print(f"Found tokens: {token_counter}, HITs: {hit_counter}")
+                        break
+            else:
+                hit_df = pd.read_csv(df_mturk_data_path)
+
+        console.print(f"MTurk HITs data available at path: [cyan on white]{df_mturk_data_path}")
+
+    except ClientError as error:
+        console.print(f"MTurk HITs data not available.")
+        handle_aws_error(error.response)
 
 if 'toloka' in platforms:
 
@@ -688,6 +692,7 @@ if 'toloka' in platforms:
         toloka_client = toloka.TolokaClient(toloka_oauth_token, 'PRODUCTION')
 
         df_acl_copy = df_acl.copy()
+        df_acl_copy = df_acl_copy.loc[df_acl_copy['platform']=='toloka']
         tokens_input = []
         tokens_output = []
         for batch_current in np.unique(df_acl_copy['batch_name'].values):
@@ -718,7 +723,7 @@ if 'toloka' in platforms:
             'project_id': project_data.id,
             'project_name': project_data.public_name.strip(),
             'project_description': project_data.public_description.strip(),
-            'project_comment': project_data.private_comment.strip(),
+            'project_comment': project_data.private_comment.strip() if project_data.private_comment is not None else np.nan,
         }
 
         pool_counter = 0
@@ -1008,9 +1013,9 @@ if 'prolific' in platforms:
 
                             row['participant_id'] = submission_current['participant_id']
                             row['participant_ip'] = submission_current['ip']
-                            row['participant_date_birth'] = submission_current['strata']['date of birth']
-                            row['participant_ethnicity_simplified'] = submission_current['strata']['ethnicity (simplified)']
-                            row['participant_sex'] = submission_current['strata']['sex']
+                            row['participant_date_birth'] = submission_current['strata']['date of birth'] if 'date of birth' in submission_current['strata'] else np.nan
+                            row['participant_ethnicity_simplified'] = submission_current['strata']['ethnicity (simplified)'] if 'ethnicity (simplified)' in submission_current['strata'] else np.nan
+                            row['participant_sex'] = submission_current['strata']['sex'] if 'sex' in submission_current['strata'] else np.nan
                             row['submission_id'] = submission_current['id']
                             row['submission_status'] = submission_current['status']
                             row['submission_study_code'] = submission_current['study_code']
@@ -1021,7 +1026,7 @@ if 'prolific' in platforms:
                             row['submission_is_complete'] = submission_current['is_complete']
                             row['submission_time_elapsed_seconds'] = submission_current['time_taken'] if submission_current['time_taken'] else np.nan
                             row['submission_reward'] = float(submission_current['reward'])
-                            row['submission_star_awarded'] = float(submission_current['star_awarded'])
+                            row['submission_star_awarded'] = float(submission_current['star_awarded']) if 'star_awarded' in submission_current else np.nan
                             row['submission_bonus_payments'] = ':::'.join([str(i) for i in submission_current['bonus_payments']])
 
                             df_prolific.loc[len(df_prolific)] = row
@@ -1213,11 +1218,16 @@ def find_snapshost_for_task(acl_record):
     snapshots_found = []
     if acl_record['source_path'] is not np.nan:
         snapshots = load_json(acl_record['source_path'])
-        for snapshot in snapshots:
-            if 'task' in snapshot:
-                if snapshot['task']['worker_id'] == acl_record['worker_id'] and \
-                    snapshot['task']['task_id'] == acl_record['task_name']:
-                    snapshots_found.append(snapshot)
+        if type(snapshots) == dict:
+            snapshots_found.append(snapshots)
+        elif type(snapshots) == list:
+            for snapshot in snapshots:
+                if 'task' in snapshot:
+                    if snapshot['task']['worker_id'] == acl_record['worker_id'] and \
+                        snapshot['task']['task_id'] == acl_record['task_name']:
+                        snapshots_found.append(snapshot)
+        else:
+            assert False
         return snapshots_found
     return []
 
@@ -1693,11 +1703,12 @@ def parse_answers(row, questionnaire, question, answers):
             row['question_answers_labels'] = ':::'.join(labels)
         if type(value) != list:
             row[f"question_attribute_{attribute}"] = value
-    if question['type'] != 'mcq' and question['type'] != 'list':
-        row['question_answers_values'] = None
-        row['question_answers_labels'] = None
-    row[f"question_answer_value"] = answer_value
-    row[f"question_answer_free_text"] = answer_free_text
+    if questionnaire['type'] != 'crt':
+        if question['type'] != 'mcq' and question['type'] != 'list':
+            row['question_answers_values'] = None
+            row['question_answers_labels'] = None
+        row[f"question_answer_value"] = answer_value
+        row[f"question_answer_free_text"] = answer_free_text
 
     if questionnaire['type'] == 'standard':
         if question['type'] == 'mcq':
@@ -2236,10 +2247,11 @@ def parse_dimensions_selected(df, worker_id, worker_paid, task, info, documents,
             dimension_data = dimensions[dimension_current['dimension']]
 
             label = np.nan
-            if dimension_data['scale']['type'] == 'categorical':
-                for mapping in dimension_data['scale']['mapping']:
-                    if mapping['value'] == dimension_current['value']:
-                        label = mapping['label']
+            if dimension_data['scale']:
+                if dimension_data['scale']['type'] == 'categorical':
+                    for mapping in dimension_data['scale']['mapping']:
+                        if mapping['value'] == dimension_current['value']:
+                            label = mapping['label']
 
             timestamp_selection = float(dimension_current['timestamp'])
             timestamp_selection_parsed = datetime.fromtimestamp(timestamp_selection)
