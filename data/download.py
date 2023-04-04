@@ -3,45 +3,49 @@
 
 import json
 import os
+import chardet
+import pycountry
 import shutil
 import sys
-import pprint
-from pathlib import Path
-from glob import glob
-from json import JSONDecodeError
+import warnings
 import time as time_mod
 import asyncio
 import aiohttp
-import numpy
-from aiohttp import ClientSession, ClientConnectorError, ClientResponseError, ClientOSError, ServerDisconnectedError, TooManyRedirects, ClientPayloadError, ClientConnectorCertificateError
+import xml.etree.ElementTree as Xml
 import tqdm
+from pytz import timezone
 import ipinfo
+import csv
 import numpy as np
 import requests
-from distutils.util import strtobool
-from pathlib import Path
 import boto3
 import re
 import pandas as pd
 import pprint
 import uuid
 import toloka.client as toloka
-from datetime import datetime
-from bs4 import BeautifulSoup
-import datefinder
+from distutils.util import strtobool
+from pathlib import Path
 from dotenv import load_dotenv
-import xml.etree.ElementTree as Xml
 from rich.console import Console
-import collections
-import warnings
+from datetime import datetime
+from glob import glob
 from botocore.exceptions import ClientError
+from aiohttp import ClientConnectorError, ClientResponseError, ClientOSError, ServerDisconnectedError, TooManyRedirects, ClientPayloadError
 from shared import handle_aws_error
-from shared import serialize_json
+from shared import rename_dict_key
+from shared import move_dict_key
+from shared import flatten
+from shared import read_json
+from shared import merge_dicts
+from shared import find_date_string
+from shared import camel_to_snake
+from shared import sanitize_string
 
 pd.set_option('display.max_columns', None)
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
-pd.options.mode.chained_assignment = None  # default='warn'
+pd.options.mode.chained_assignment = None
 warnings.simplefilter(action='ignore', category=pd.errors.PerformanceWarning)
 
 console = Console()
@@ -70,7 +74,7 @@ budget_limit = os.getenv('budget_limit')
 bing_api_key = os.getenv('bing_api_key')
 ip_info_token = os.getenv('ip_info_token')
 ip_geolocation_api_key = os.getenv('ip_geolocation_api_key')
-ip_api_api_key = os.getenv('ip_api_api_key')
+ip_api_api_key = os.getenv('ipapi_api_key')
 user_stack_token = os.getenv('user_stack_token')
 fake_json_token = os.getenv('fake_json_token')
 
@@ -85,9 +89,11 @@ df_log_partial_folder_path = f"{models_path}Logs-Partial/"
 task_config_folder = f"{folder_result_path}/Task/"
 df_mturk_data_path = f"{models_path}workers_mturk_data.csv"
 df_toloka_data_path = f"{models_path}workers_toloka_data.csv"
-df_prolific_data_path = f"{models_path}workers_prolific_data.csv"
+df_prolific_study_data_path = f"{models_path}workers_prolific_study_data.csv"
+df_prolific_demographic_data_path = f"{models_path}workers_prolific_demographic_data.csv"
 df_acl_path = f"{models_path}workers_acl.csv"
-df_info_path = f"{models_path}workers_info.csv"
+df_ip_path = f"{models_path}workers_ip_addresses.csv"
+df_uag_path = f"{models_path}workers_user_agents.csv"
 df_log_path = f"{models_path}workers_logs.csv"
 df_quest_path = f"{models_path}workers_questionnaire.csv"
 df_comm_path = f"{models_path}workers_comments.csv"
@@ -104,72 +110,6 @@ filename_questionnaires_config = "questionnaires.json"
 filename_search_engine_config = "search_engine.json"
 filename_task_settings_config = "task.json"
 filename_workers_settings_config = "workers.json"
-
-def load_json(p):
-    if os.path.exists(p):
-        with open(p, "r", encoding="latin1") as f:
-            d = json.load(f)
-        return d
-    else:
-        return {}
-
-
-def load_file_names(p):
-    files = []
-    for r, d, f in os.walk(p):
-        for caf in f:
-            files.append(caf)
-    return files
-
-
-def sanitize_string(x):
-    try:
-        x = x.replace("'", "")
-        x = x.replace('"', '')
-        x = x.replace('\n', '')
-        x = x.rstrip()
-        x = re.sub(r'[^\w\s]', '', x)
-        x = re.sub(' [^0-9a-zA-Z]+', '', x)
-        x = re.sub(' +', ' ', x)
-        return x
-    except TypeError:
-        return np.nan
-
-
-def flatten(d, parent_key='', sep='_'):
-    items = []
-    for k, v in d.items():
-        new_key = parent_key + sep + k if parent_key else k
-        if isinstance(v, collections.abc.MutableMapping):
-            items.extend(flatten(v, new_key, sep=sep).items())
-        else:
-            items.append((new_key, v))
-    return dict(items)
-
-
-def camel_to_snake(name):
-    return '_'.join(
-        re.sub('([A-Z][a-z]+)', r' \1',
-               re.sub('([A-Z]+)', r' \1',
-                      name.replace('-', ' '))).split()).lower()
-
-
-def find_date_string(date, seconds=False):
-    if type(date) == int or type(date) == float or type(date) == numpy.float64 or type(date) == numpy.float32:
-        if seconds:
-            date_raw = str(datetime.fromtimestamp(date))
-        else:
-            date_raw = str(datetime.fromtimestamp(date // 1000))
-    else:
-        date_raw = date
-    date_parsed = datefinder.find_dates(date_raw)
-    for date_current in date_parsed:
-        date_string = str(date_current)
-        if '+' in date_string:
-            date_parts = date_string.split("+")
-            date_string = ' '.join(date_parts)
-        return date_string
-
 
 step_index = 1
 
@@ -235,8 +175,9 @@ for path in response['CommonPrefixes']:
 
 console.print(f"Batch names: [cyan]{', '.join(task_batch_names)}")
 console.print(f"Tables data: [cyan]{', '.join(task_data_tables)}")
-console.print(f"Tables log: [cyan]{', '.join(task_log_tables)}")
 console.print(f"Tables ACL: [cyan]{', '.join(task_acl_tables)}")
+if len(task_log_tables) > 0:
+    console.print(f"Tables log: [cyan]{', '.join(task_log_tables)}")
 
 console.rule(f"{step_index} - Fetching [green]{task_name}[/green] Configuration")
 step_index = step_index + 1
@@ -258,21 +199,360 @@ for current_batch_name in task_batch_names:
     else:
         console.print(f"Task configuration for batch [green]{current_batch_name}[/green] [yellow]already detected[/yellow], skipping download")
 
+
+def fetch_uag_data(worker_id, worker_uag, properties_fetched=None):
+    data = {}
+    properties_moved = []
+    uag_file = f"{resources_path}{worker_id}_uag.json"
+    if os.path.exists(uag_file):
+        data = read_json(uag_file)
+    if worker_uag is not None:
+        if worker_uag not in data:
+            try:
+                ua_data = []
+                if user_stack_token:
+                    url = f"http://api.userstack.com/detect?access_key={user_stack_token}&ua={worker_uag}"
+                    response = requests.get(url)
+                    data_fetched = flatten(response.json())
+                    if 'success' in data_fetched.keys():
+                        if not data_fetched['success']:
+                            raise ValueError(f"Request to Userstack UAG detection service failed with error code {data_fetched['error_code']}. Remove of replace your `user_stack_token`")
+                    rename_dict_key(data_fetched, 'ua_type', 'type')
+                    rename_dict_key(data_fetched, 'ua_url', 'url')
+                    rename_dict_key(data_fetched, 'device_is_crawler', 'crawler_is_crawler')
+                    data_fetched.pop('brand')
+                    data_fetched.pop('name')
+                    ua_data.append(data_fetched)
+                if ip_geolocation_api_key:
+                    url = f"https://api.ipgeolocation.io/user-agent?apiKey={ip_geolocation_api_key}"
+                    response = requests.get(url, headers={'User-Agent': worker_uag})
+                    if response.status_code != 200:
+                        raise ValueError(
+                            f"Request to IP Geolocation UAG detection service (user-agent endpoint) failed with error code {response.status_code} and reason: `{response.text}`. Remove of replace your `ip_geolocation_api_key`")
+                    else:
+                        data_fetched = flatten(requests.get(url, headers={'User-Agent': worker_uag}).json())
+                    ua_data.append(data_fetched)
+                if properties_fetched is not None:
+                    ua_cf_data = {}
+                    ua_nav_data = {}
+                    ua_ngx_data = {}
+                    properties_moved.append(move_dict_key(properties_fetched, ua_cf_data, 'cf_uag', 'ua'))
+                    ua_data.append(ua_cf_data)
+                    # Reference: https://koderlabs.github.io/ngx-device-detector/index.html
+                    properties_moved.append(move_dict_key(properties_fetched, ua_ngx_data, 'ngx_os', 'os_name'))
+                    properties_moved.append(move_dict_key(properties_fetched, ua_ngx_data, 'ngx_device_type', 'device_type'))
+                    properties_moved.append(move_dict_key(properties_fetched, ua_ngx_data, 'ngx_orientation', 'device_orientation'))
+                    properties_moved.append(move_dict_key(properties_fetched, ua_ngx_data, 'ngx_os_version', 'os_version'))
+                    properties_moved.append(move_dict_key(properties_fetched, ua_ngx_data, 'ngx_os_name', 'os_name'))
+                    properties_moved.append(move_dict_key(properties_fetched, ua_ngx_data, 'ngx_user_agent', 'ua'))
+                    properties_moved.append(move_dict_key(properties_fetched, ua_ngx_data, 'ngx_browser', 'browser_name'))
+                    properties_moved.append(move_dict_key(properties_fetched, ua_ngx_data, 'ngx_browser_version', 'browser_version'))
+                    properties_moved.append(move_dict_key(properties_fetched, ua_ngx_data, 'ngx_device', 'device_name'))
+                    properties_moved.append(move_dict_key(properties_fetched, ua_ngx_data, 'ngx_user_agent', 'ua'))
+                    ua_data.append(ua_ngx_data)
+                    # Reference: https://developer.mozilla.org/en-US/docs/Web/API/Navigator/onLine
+                    properties_moved.append(move_dict_key(properties_fetched, ua_nav_data, 'nav_connection_downlink', 'connection_downlink'))
+                    properties_moved.append(move_dict_key(properties_fetched, ua_nav_data, 'nav_connection_downlink_max', 'connection_downlink_max'))
+                    properties_moved.append(move_dict_key(properties_fetched, ua_nav_data, 'nav_connection_effective_type', 'connection_effective_type'))
+                    properties_moved.append(move_dict_key(properties_fetched, ua_nav_data, 'nav_connection_onchange', 'connection_on_change'))
+                    properties_moved.append(move_dict_key(properties_fetched, ua_nav_data, 'nav_connection_ontypechange', 'connection_on_type_change'))
+                    properties_moved.append(move_dict_key(properties_fetched, ua_nav_data, 'nav_connection_rtt', 'connection_rtt'))
+                    properties_moved.append(move_dict_key(properties_fetched, ua_nav_data, 'nav_connection_save_data', 'connection_save_data'))
+                    properties_moved.append(move_dict_key(properties_fetched, ua_nav_data, 'nav_connection_type', 'connection_type'))
+                    properties_moved.append(move_dict_key(properties_fetched, ua_nav_data, 'nav_device_memory', 'device_memory'))
+                    properties_moved.append(move_dict_key(properties_fetched, ua_nav_data, 'nav_max_touch_points', 'device_max_touch_points'))
+                    properties_moved.append(move_dict_key(properties_fetched, ua_nav_data, 'nav_hardware_concurrency', 'device_hardware_concurrency'))
+                    properties_moved.append(move_dict_key(properties_fetched, ua_nav_data, 'nav_window_controls_overlay_visible', 'os_window_controls_overlay_visible'))
+                    properties_moved.append(move_dict_key(properties_fetched, ua_nav_data, 'nav_window_controls_overlay_ongeometrychange', 'os_window_controls_on_geometry_change'))
+                    properties_moved.append(move_dict_key(properties_fetched, ua_nav_data, 'nav_pdf_viewer_enabled', 'browser_pdf_viewer_enabled'))
+                    properties_moved.append(move_dict_key(properties_fetched, ua_nav_data, 'nav_pdf_viewer_enabled', 'browser_pdf_viewer_enabled'))
+                    properties_moved.append(move_dict_key(properties_fetched, ua_nav_data, 'nav_product', 'browser_product'))
+                    properties_moved.append(move_dict_key(properties_fetched, ua_nav_data, 'nav_product_sub', 'browser_product_sub'))
+                    properties_moved.append(move_dict_key(properties_fetched, ua_nav_data, 'nav_vendor', 'browser_vendor'))
+                    properties_moved.append(move_dict_key(properties_fetched, ua_nav_data, 'nav_vendor_sub', 'browser_vendor_sub'))
+                    properties_moved.append(move_dict_key(properties_fetched, ua_nav_data, 'nav_oscpu', 'os_name_alternative'))
+                    properties_moved.append(move_dict_key(properties_fetched, ua_nav_data, 'nav_build_i_d', 'browser_build_identifier'))
+                    properties_moved.append(move_dict_key(properties_fetched, ua_nav_data, 'nav_do_not_track', 'browser_do_not_track'))
+                    properties_moved.append(move_dict_key(properties_fetched, ua_nav_data, 'nav_webdriver', 'ua_webdriver'))
+                    properties_moved.append(move_dict_key(properties_fetched, ua_nav_data, 'nav_app_code_name', 'browser_app_code_name'))
+                    properties_moved.append(move_dict_key(properties_fetched, ua_nav_data, 'nav_app_name', 'browser_app_name'))
+                    properties_moved.append(move_dict_key(properties_fetched, ua_nav_data, 'nav_app_version', 'browser_app_version'))
+                    properties_moved.append(move_dict_key(properties_fetched, ua_nav_data, 'nav_language', 'device_language_code'))
+                    properties_moved.append(move_dict_key(properties_fetched, ua_nav_data, 'nav_platform', 'browser_platform'))
+                    properties_moved.append(move_dict_key(properties_fetched, ua_nav_data, 'nav_cookie_enabled', 'browser_cookie_enabled'))
+                    properties_moved.append(move_dict_key(properties_fetched, ua_nav_data, 'nav_on_line', 'browser_on_line'))
+                    properties_moved.append(move_dict_key(properties_fetched, ua_nav_data, 'nav_user_agent', 'ua'))
+                    ua_data.append(ua_nav_data)
+                ua_data = merge_dicts(ua_data)
+                ua_data = {camel_to_snake(key): ua_data[key] for key in ua_data}
+                data[worker_uag] = {}
+                for attribute, value in ua_data.items():
+                    if type(value) == dict:
+                        for attribute_sub, value_sub in value.items():
+                            data[worker_uag][f"{attribute}_{attribute_sub}"] = value_sub
+                    else:
+                        data[worker_uag][attribute] = value
+                data[worker_uag] = dict(sorted(data[worker_uag].items()))
+                with open(uag_file, 'w', encoding='utf-8') as f:
+                    json.dump(data, f, ensure_ascii=False, indent=4)
+            except ValueError as error:
+                console.print(f"[red]{error}")
+                sys.exit(1)
+    return data, properties_moved
+
+
+def fetch_ip_data(worker_id, worker_ip, properties_fetched=None):
+    data = {}
+    properties_moved = []
+    ip_file = f"{resources_path}{worker_id}_ip.json"
+    if os.path.exists(ip_file):
+        data = read_json(ip_file)
+    if worker_ip is not None:
+        if worker_ip not in data:
+            try:
+                ip_data = []
+                if ip_info_token:
+                    ip_info_handler = ipinfo.getHandler(ip_info_token)
+                    data_fetched = flatten(ip_info_handler.getDetails(worker_ip).all)
+                    rename_dict_key(data_fetched, 'location_name', 'city')
+                    rename_dict_key(data_fetched, 'country_currency_code_iso3', 'country_currency_code')
+                    rename_dict_key(data_fetched, 'country_code_iso2', 'country')
+                    rename_dict_key(data_fetched, 'country_flag_emoji_unicode', 'country_flag_unicode')
+                    rename_dict_key(data_fetched, 'country_is_eu', 'isEU')
+                    rename_dict_key(data_fetched, 'location_coordinates', 'loc')
+                    rename_dict_key(data_fetched, 'location_postal_code', 'postal')
+                    rename_dict_key(data_fetched, 'provider_name', 'org')
+                    rename_dict_key(data_fetched, 'region_name', 'region')
+                    rename_dict_key(data_fetched, 'provider_name', 'org')
+                    rename_dict_key(data_fetched, 'timezone_name', 'timezone')
+                    ip_data.append(data_fetched)
+                if ip_geolocation_api_key:
+                    url = f"https://api.ipgeolocation.io/ipgeo?apiKey={ip_geolocation_api_key}&ip={worker_ip}&include=hostnameFallbackLive,security"
+                    data_fixed = {}
+                    response = requests.get(url)
+                    if response.status_code == 423:
+                        console.print(f"Bogon detected: {worker_ip}")
+                    else:
+                        if response.status_code != 200:
+                            raise ValueError(f"Request to IP Geolocation service (ipgeo endpoint) failed with error code {response.status_code} and reason: `{response.text}`. Remove of replace your `ip_geolocation_api_key`")
+                        else:
+                            for key, item in flatten(response.json()).items():
+                                if key.startswith('geo_'):
+                                    data_fixed[key.replace('geo_', '')] = item
+                                else:
+                                    data_fixed[key] = item
+                    ip_data.append(data_fixed)
+                    url = f"https://api.ipgeolocation.io/timezone?apiKey={ip_geolocation_api_key}&ip={worker_ip}"
+                    data_fixed = {}
+                    response = requests.get(url)
+                    if response.status_code == 423:
+                        pass
+                    else:
+                        if response.status_code != 200:
+                            raise ValueError(f"Request to IP Geolocation service (timezone endpoint) failed with error code {response.status_code} and reason: `{response.text}`. Remove of replace your `ip_geolocation_api_key`")
+                        else:
+                            for key, item in flatten(response.json()).items():
+                                if key.startswith('timezone_') or key.startswith('geo_'):
+                                    key_fixed = key.replace('timezone_', '').replace('geo_', '')
+                                    data_fixed[key_fixed] = item
+                                else:
+                                    data_fixed[key] = item
+                    ip_data.append(data_fixed)
+                    url = f"https://api.ipgeolocation.io/astronomy?apiKey={ip_geolocation_api_key}&ip={worker_ip}"
+                    data_fixed = {}
+                    response = requests.get(url)
+                    if response.status_code == 423:
+                        pass
+                    else:
+                        if response.status_code != 200:
+                            raise ValueError(f"Request to IP Geolocation service (astronomy endpoint) failed with error code {response.status_code} and reason: `{response.text}`. Remove of replace your `ip_geolocation_api_key`")
+                        else:
+                            for key, item in flatten(response.json()).items():
+                                if key.startswith('location_'):
+                                    data_fixed[key.replace('location_', '')] = item
+                                else:
+                                    data_fixed[key] = item
+                    ip_data.append(data_fixed)
+                if ip_api_api_key:
+                    url = f"http://api.ipapi.com/{worker_ip}?access_key={ip_api_api_key}"
+                    response = requests.get(url)
+                    data_fetched = flatten(response.json())
+                    if 'success' in data_fetched.keys():
+                        if not data_fetched['success']:
+                            raise ValueError(f"Request to IPApi IP detection service failed with error code {data_fetched['error_code']}. Remove of replace your `ipapi_api_key`")
+                    data_fetched = flatten(requests.get(url).json())
+                    rename_dict_key(data_fetched, 'country_code_iso2', 'country_code')
+                    rename_dict_key(data_fetched, 'country_capital', 'location_capital')
+                    rename_dict_key(data_fetched, 'ip_address_type', 'type')
+                    rename_dict_key(data_fetched, 'location_name', 'city')
+                    rename_dict_key(data_fetched, 'location_postal_code', 'zip')
+                    rename_dict_key(data_fetched, 'country_flag', 'location_country_flag')
+                    rename_dict_key(data_fetched, 'country_flag_url', 'country_flag')
+                    rename_dict_key(data_fetched, 'country_flag_emoji', 'location_country_flag_emoji')
+                    rename_dict_key(data_fetched, 'country_flag_emoji_unicode', 'location_country_flag_emoji_unicode')
+                    if 'location_languages' in data_fetched:
+                        location_languages = data_fetched.pop('location_languages')
+                        data_fetched['location_languages'] = []
+                        for index_lang, lang_data in enumerate(location_languages):
+                            location_language = {}
+                            location_language["location_language_index"] = index_lang
+                            location_language["location_language_code_iso2"] = lang_data['code']
+                            language_data = pycountry.languages.get(alpha_2=location_language["location_language_code_iso2"])
+                            location_language[f"location_language_code_iso3"] = language_data.alpha_3
+                            location_language[f"location_language_scope"] = language_data.scope
+                            location_language[f"location_language_type"] = language_data.type
+                            data_fetched['location_languages'].append(location_language)
+                    ip_data.append(data_fetched)
+                country_code = None
+                for ip_data_partial in ip_data:
+                    if 'country_code_iso2' in ip_data_partial:
+                        country_code = ip_data_partial['country_code_iso2']
+                if country_code is not None:
+                    country_data = pycountry.countries.get(alpha_2=country_code)
+                    data_fetched = {
+                        'country_code_iso2': country_data.alpha_2,
+                        'country_code_iso3': country_data.alpha_3,
+                        'country_name': country_data.name,
+                        'country_numeric': country_data.numeric,
+                    }
+                    try:
+                        data_fetched['country_name_official'] = country_data.official_name
+                    except AttributeError:
+                        data_fetched['country_name_official'] = np.nan
+                    ip_data.append(data_fetched)
+                currency_code = None
+                for ip_data_partial in ip_data:
+                    if 'country_currency_code_iso3' in ip_data_partial:
+                        currency_code = ip_data_partial['country_currency_code_iso3']
+                if currency_code is not None:
+                    currency_data = pycountry.currencies.get(alpha_3=currency_code)
+                    if currency_data is not None:
+                        data_fetched = {
+                            'country_currency_name': currency_data.name,
+                            'country_currency_numeric': currency_data.numeric,
+                        }
+                        ip_data.append(data_fetched)
+                region_code = None
+                for ip_data_partial in ip_data:
+                    if 'region_code' in ip_data_partial:
+                        region_code = ip_data_partial['region_code']
+                if region_code is not None and country_code is not None:
+                    region_data = pycountry.subdivisions.get(code=f"{country_code}-{region_code}")
+                    if region_data is not None:
+                        data_fetched = {
+                            'region_code_full': region_data.code,
+                            'region_code_parent': region_data.parent_code,
+                            'region_type': region_data.type,
+                            'region_name': region_data.name,
+                        }
+                        ip_data.append(data_fetched)
+                if properties_fetched is not None:
+                    ip_cf_data = {}
+                    # Reference:
+                    # fl = Cloudflare WebServer Instance
+                    # h = WebServer Hostname
+                    # ip = IP Address of client
+                    # ts = Epoch Time in seconds.millis(Similar to `date + % s. % 3 N` in bash)
+                    # visit_scheme = https or http
+                    # uag = User Agent
+                    # colo = IATA location identifier (https://en.wikipedia.org/wiki/IATA_airport_code)
+                    # sliver = Whether the request is split
+                    # http = HTTP Version
+                    # loc = Country Code
+                    # tls = TLS or SSL Version
+                    # sni = Whether SNI encrypted or plaintext (https://en.wikipedia.org/wiki/Server_Name_Indication)
+                    # warp = Whether client over Cloudflares Wireguard VPN
+                    # gateway = Whether client over Cloudflare Gateway (https://www.cloudflare.com/products/zero-trust/gateway/)
+                    # rbi = Whether client over Cloudflares Remote Browser Isolation (https://www.cloudflare.com/learning/access-management/what-is-browser-isolation/)
+                    # kex = Key exchange method for TLS (https://en.wikipedia.org/wiki/Key_exchange)
+                    properties_moved.append(move_dict_key(properties_fetched, ip_cf_data, 'cf_ip', 'ip'))
+                    properties_moved.append(move_dict_key(properties_fetched, ip_cf_data, 'cf_fl', 'cloudflare_webserver_instance'))
+                    properties_moved.append(move_dict_key(properties_fetched, ip_cf_data, 'cf_ts', 'visit_timestamp_epoch'))
+                    properties_moved.append(move_dict_key(properties_fetched, ip_cf_data, 'cf_kex', 'tls_key_exchange_method'))
+                    properties_moved.append(move_dict_key(properties_fetched, ip_cf_data, 'cf_visit_scheme', 'visit_scheme'))
+                    properties_moved.append(move_dict_key(properties_fetched, ip_cf_data, 'cf_tls', 'tls_version'))
+                    properties_moved.append(move_dict_key(properties_fetched, ip_cf_data, 'cf_sni', 'tls_server_name_indication'))
+                    properties_moved.append(move_dict_key(properties_fetched, ip_cf_data, 'cf_http', 'http_version'))
+                    properties_moved.append(move_dict_key(properties_fetched, ip_cf_data, 'cf_loc', 'country_code_iso2'))
+                    properties_moved.append(move_dict_key(properties_fetched, ip_cf_data, 'cf_colo', 'location_identifier'))
+                    properties_moved.append(move_dict_key(properties_fetched, ip_cf_data, 'cf_h', 'cloudflare_webserver_hostname'))
+                    properties_moved.append(move_dict_key(properties_fetched, ip_cf_data, 'cf_sliver', 'client_request_split'))
+                    properties_moved.append(move_dict_key(properties_fetched, ip_cf_data, 'cf_gateway', 'client_over_cloudflare_gateway'))
+                    properties_moved.append(move_dict_key(properties_fetched, ip_cf_data, 'cf_warp', 'client_over_cloudflare_wireguard_vpn'))
+                    properties_moved.append(move_dict_key(properties_fetched, ip_cf_data, 'cf_rbi', 'client_over_cloudflare_remote_browser_isolation'))
+
+                    if 'visit_timestamp_epoch' in ip_cf_data:
+                        ip_cf_data['visit_timestamp_parsed'] = find_date_string(datetime.fromtimestamp(float(ip_cf_data['visit_timestamp_epoch']), timezone('GMT')).strftime('%c'))
+                    else:
+                        ip_cf_data['visit_timestamp_parsed'] = None
+                    ip_data.append(ip_cf_data)
+                ip_data = merge_dicts(ip_data)
+                ip_data = {camel_to_snake(key): ip_data[key] for key in ip_data}
+                data[worker_ip] = {}
+                for attribute, value in ip_data.items():
+                    data[worker_ip][attribute] = value
+                data[worker_ip] = dict(sorted(data[worker_ip].items()))
+                with open(ip_file, 'w', encoding='utf-8') as f:
+                    json.dump(data, f, ensure_ascii=False, indent=4)
+            except ValueError as error:
+                console.print(f"[red]{error}")
+                sys.exit(1)
+    return data, properties_moved
+
+
 console.rule(f"{step_index}  - Fetching Workers Snapshots")
 step_index = step_index + 1
 
 worker_identifiers = []
+worker_ip_addresses = {}
+worker_ip_batches = {}
+worker_user_agents = {}
+worker_user_agents_batches = {}
 paginator = dynamo_db.get_paginator('scan')
 for table_acl in task_acl_tables:
     for page in paginator.paginate(TableName=table_acl, Select='ALL_ATTRIBUTES'):
         for item in page['Items']:
             worker_id = item['identifier']['S']
+            ip_address = item['ip_address']['S']
+            batch_name = item['batch_name']['S']
+            user_agent = item['user_agent']['S']
+            time_arrival = item['time_arrival']['S']
             if worker_id not in worker_identifiers:
                 worker_identifiers.append(worker_id)
+            if worker_id not in worker_ip_addresses:
+                worker_ip_addresses[worker_id] = {}
+            if worker_id not in worker_ip_batches:
+                worker_ip_batches[worker_id] = {}
+            if ip_address not in worker_ip_addresses[worker_id]:
+                worker_ip_addresses[worker_id][ip_address] = {
+                    'fetched': False,
+                    'batches': {
+                        batch_name: {
+                            'time_submit': time_arrival,
+                            'time_submit_parsed': find_date_string(time_arrival)
+                        }
+                    }
+                }
+                worker_ip_batches[worker_id][ip_address] = [batch_name]
+            if worker_id not in worker_user_agents:
+                worker_user_agents[worker_id] = {}
+            if worker_id not in worker_user_agents_batches:
+                worker_user_agents_batches[worker_id] = {}
+            if user_agent not in worker_user_agents[worker_id]:
+                worker_user_agents[worker_id][user_agent] = {
+                    'fetched': False,
+                    'batches': {
+                        batch_name: {
+                            'time_submit': time_arrival,
+                            'time_submit_parsed': find_date_string(time_arrival)
+                        }
+                    }
+                }
+                worker_user_agents_batches[worker_id][user_agent] = [batch_name]
 console.print(f"Unique worker identifiers found: [green]{len(worker_identifiers)}")
 
 worker_counter = 0
-
+worker_properties_unhandled = []
 with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesthetic") as status:
     status.start()
 
@@ -317,24 +597,31 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
                         log_data_source = table_name
 
                 snapshot = {
+                    "source_path": worker_snapshot_path,
                     "source_data": data_source,
                     "source_acl": acl_data_source,
                     "source_log": log_data_source,
-                    "source_path": worker_snapshot_path,
                     "task": {
                         "worker_id": worker_id,
                         "try_last": 0,
                     },
-                    "checks": [],
-                    "dimensions": {},
-                    "data_partial": {
-                        "questionnaires_answers": [],
-                        "documents_answers": []
+                    "worker": {},
+                    "ip": {
+                        "info": {},
+                        "serialization": {}
                     },
+                    "uag": {
+                        "info": {},
+                        "serialization": {}
+                    },
+                    "checks": [],
+                    "questionnaires_answers": [],
+                    "documents_answers": [],
                     "comments": [],
-                    "documents": {},
-                    "questionnaires": {},
                     "logs": [],
+                    "questionnaires": {},
+                    "documents": {},
+                    "dimensions": {}
                 }
 
                 for element in worker_session:
@@ -346,6 +633,7 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
                     worker_id = sequence[0]
                     unit_id = sequence[1]
                     current_try = sequence[2]
+
                     snapshot['task']['try_last'] = max(int(snapshot['task']['try_last']), int(current_try))
 
                     if data:
@@ -353,17 +641,28 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
                         if data['info']['element'] == 'data':
                             for attribute, value in data['task'].items():
                                 snapshot['task'][attribute] = value
-                            snapshot['dimensions'] = data.pop('dimensions')
-                            snapshot['documents'] = data.pop('documents')
-                            snapshot['questionnaires'] = data.pop('questionnaires')
+                            snapshot['task']['time_submit'] = time
+                            snapshot['task']['time_submit_parsed'] = find_date_string(time)
+                            snapshot['task']['info'] = data['info']
+                            if 'settings' in snapshot['task']:
+                                settings = snapshot['task'].pop('settings')
+                                snapshot['task']['settings'] = data['info']
                             snapshot['worker'] = data.pop('worker')
+                            snapshot['questionnaires'] = data.pop('questionnaires')
+                            snapshot['documents'] = data.pop('documents')
+                            snapshot['dimensions'] = data.pop('dimensions')
+                            if 'propertiesFetched' in snapshot['worker'].keys():
+                                snapshot['worker']['properties_fetched'] = snapshot['worker'].pop('propertiesFetched')
+                            if 'paramsFetched' in snapshot['worker'].keys():
+                                snapshot['worker']['params_fetched'] = snapshot['worker'].pop('paramsFetched')
+                            snapshot['worker'] = dict(sorted(snapshot['worker'].items()))
                         elif data['info']['element'] == 'document':
-                            snapshot['data_partial']['documents_answers'].append({
+                            snapshot['documents_answers'].append({
                                 "time_submit": time,
                                 "serialization": data
                             })
                         elif data['info']['element'] == 'questionnaire':
-                            snapshot['data_partial']['questionnaires_answers'].append({
+                            snapshot['questionnaires_answers'].append({
                                 "time_submit": time,
                                 "serialization": data
                             })
@@ -401,20 +700,161 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
                             }
                             snapshot['logs'].append(data)
 
-                if len(snapshot['data_partial']['documents_answers']) > 0 or len(snapshot['data_partial']['questionnaires_answers']) > 0:
+                if len(snapshot['worker'].keys()) > 0:
+                    properties_fetched = snapshot['worker']['properties_fetched']
+                    properties_fetched_copy = snapshot['worker']['properties_fetched'].copy()
+                    ip_address = None
+                    user_agent = None
+                    if 'cf_ip' in properties_fetched:
+                        ip_address = properties_fetched['cf_ip']
+                    elif 'ipify_ip' in properties_fetched:
+                        ip_address = properties_fetched['ipify_ip']
+                    if 'cf_uag' in properties_fetched:
+                        user_agent = properties_fetched['cf_uag']
+                    elif 'ngx_user_agent' in properties_fetched:
+                        user_agent = properties_fetched['ngx_user_agent']
+                    else:
+                        user_agent = properties_fetched['nav_user_agent']
+                    if ip_address is not None:
+                        if ip_address not in worker_ip_addresses[worker_id]:
+                            worker_ip_addresses[worker_id][ip_address] = {}
+                            worker_ip_addresses[worker_id][ip_address]['fetched'] = False
+                            worker_ip_addresses[worker_id][ip_address]['batches'] = {snapshot['task']['batch_name']: {}}
+                            worker_ip_addresses[worker_id][ip_address]['batches'][snapshot['task']['batch_name']]['time_submit'] = snapshot['task']['time_submit']
+                            worker_ip_addresses[worker_id][ip_address]['batches'][snapshot['task']['batch_name']]['time_submit_parsed'] = snapshot['task']['time_submit_parsed']
+                        if ip_address in worker_ip_batches[worker_id]:
+                            worker_ip_batches[worker_id][ip_address].append(snapshot['task']['batch_name'])
+                        else:
+                            worker_ip_batches[worker_id][ip_address] = [snapshot['task']['batch_name']]
+                    for ip_address_current in worker_ip_addresses[worker_id]:
+                        if not worker_ip_addresses[worker_id][ip_address_current]['fetched']:
+                            fetch_ip_data(worker_id, ip_address_current)
+                            worker_ip_addresses[worker_id][ip_address_current]['fetched'] = True
+                    if user_agent is not None:
+                        if user_agent not in worker_user_agents[worker_id]:
+                            worker_user_agents[worker_id][user_agent] = {}
+                            worker_user_agents[worker_id][user_agent]['fetched'] = False
+                            worker_user_agents[worker_id][user_agent]['batches'] = {snapshot['task']['batch_name']: {}}
+                            worker_user_agents[worker_id][user_agent]['batches'][snapshot['task']['batch_name']]['time_submit'] = snapshot['task']['time_submit']
+                            worker_user_agents[worker_id][user_agent]['batches'][snapshot['task']['batch_name']]['time_submit_parsed'] = snapshot['task']['time_submit_parsed']
+                        if user_agent in worker_user_agents_batches[worker_id]:
+                            worker_user_agents_batches[worker_id][user_agent].append(snapshot['task']['batch_name'])
+                        else:
+                            worker_user_agents_batches[worker_id][user_agent] = [snapshot['task']['batch_name']]
+                    for user_agent_current in worker_user_agents[worker_id]:
+                        if not worker_user_agents[worker_id][user_agent_current]['fetched']:
+                            fetch_uag_data(worker_id, user_agent_current)
+                            worker_user_agents[worker_id][user_agent_current]['fetched'] = True
+
+                    ip_data, properties_moved_ip = fetch_ip_data(worker_id, ip_address, properties_fetched)
+                    uag_data, properties_moved_uag = fetch_uag_data(worker_id, user_agent, properties_fetched)
+                    worker_ip_addresses[worker_id][ip_address]['fetched'] = True
+                    worker_user_agents[worker_id][user_agent]['fetched'] = True
+                    properties_unhandled = set(properties_fetched.keys()) - set(properties_moved_ip + properties_moved_uag)
+                    if len(properties_unhandled) > 0:
+                        for property_key in properties_unhandled:
+                            if property_key not in properties_unhandled:
+                                worker_properties_unhandled.append(property_key)
+                                console.print(f"Worker {worker_id} property unhandled: [orange]{property_key}")
+                    snapshot['worker']['properties_fetched'] = properties_fetched_copy
+
+                    for ip_current, ip_data_current in worker_ip_addresses[worker_id].items():
+                        if snapshot['task']['batch_name'] in worker_ip_batches[worker_id][ip_current]:
+                            snapshot['ip']['info'][ip_current] = worker_ip_addresses[worker_id][ip_current]
+                            snapshot['ip']['serialization'][ip_current] = ip_data[ip_current]
+                    for ua_current, ua_data_current in worker_user_agents[worker_id].items():
+                        if snapshot['task']['batch_name'] in worker_user_agents_batches[worker_id][ua_current]:
+                            snapshot['uag']['info'][ua_current] = worker_user_agents[worker_id][ua_current]
+                            snapshot['uag']['serialization'][ua_current] = uag_data[ua_current]
+
+                if len(snapshot['documents']) > 0 or len(snapshot['questionnaires']) > 0:
                     worker_snapshot.append(snapshot)
 
             with open(worker_snapshot_path, 'w', encoding='utf-8') as f:
-                json.dump(worker_snapshot, f, ensure_ascii=False, separators=(',', ':'))
+                json.dump(worker_snapshot, f, ensure_ascii=False, indent=4, separators=(',', ':'))
 
         worker_counter += 1
 
     if worker_counter > 0:
         console.print(f"Data fetching for {worker_counter} workers [green]completed")
 
+if len(worker_properties_unhandled) > 0:
+    console.print(f"Worker properties not handled: {len(properties_unhandled)}")
+    for property_key in properties_unhandled:
+        console.print(f"Property name: [orange]{property_key}")
+
 workers_snapshot_paths = glob(f"{data_path}/*")
 
 console.print(f"Workers Snapshots serialized at path: [cyan on white]{data_path}")
+
+
+def find_snapshot_for_record(acl_record):
+    if acl_record['source_path'] is not np.nan:
+        snapshots = read_json(acl_record['source_path'])
+        for snapshot in snapshots:
+            if 'task' in snapshot:
+                task = snapshot['task']
+                if 'task_name' in task:
+                    if snapshot['task']['worker_id'] == acl_record['worker_id'] and \
+                        snapshot['task']['task_id'] == acl_record['task_name'] and \
+                        snapshot['task']['batch_name'] == acl_record['batch_name'] and \
+                        snapshot['task']['unit_id'] == acl_record['unit_id']:
+                        return snapshot
+                elif 'task_id' in task:
+                    if snapshot['task']['worker_id'] == acl_record['worker_id'] and \
+                        snapshot['task']['task_id'] == acl_record['task_name'] and \
+                        snapshot['task']['batch_name'] == acl_record['batch_name'] and \
+                        snapshot['task']['unit_id'] == acl_record['unit_id']:
+                        return snapshot
+    return {}
+
+
+def find_snapshost_for_task(acl_record):
+    snapshots_found = []
+    if acl_record['source_path'] is not np.nan:
+        snapshots = read_json(acl_record['source_path'])
+        if type(snapshots) == dict:
+            snapshots_found.append(snapshots)
+        elif type(snapshots) == list:
+            for snapshot in snapshots:
+                if 'task' in snapshot:
+                    task = snapshot['task']
+                    if 'task_id' in task:
+                        if snapshot['task']['worker_id'] == acl_record['worker_id'] and snapshot['task']['task_id'] == acl_record['task_name']:
+                                snapshots_found.append(snapshot)
+                    elif 'task_name' in task:
+                        if snapshot['task']['worker_id'] == acl_record['worker_id'] and snapshot['task']['task_name'] == acl_record['task_name']:
+                                snapshots_found.append(snapshot)
+        else:
+            assert False
+        return snapshots_found
+    return []
+
+
+def update_local_snapshot(acl_record, snapshot):
+    if acl_record['source_path'] is not np.nan:
+        snapshots = read_json(acl_record['source_path'])
+        position = None
+        for index, snapshot_candidate in enumerate(snapshots):
+            if snapshot['task']['worker_id'] == snapshot_candidate['task']['worker_id'] and \
+                snapshot['task']['task_id'] == snapshot_candidate['task']['task_id'] and \
+                snapshot['task']['batch_name'] == snapshot_candidate['task']['batch_name'] and \
+                snapshot['task']['unit_id'] == snapshot_candidate['task']['unit_id']:
+                position = index
+        if position:
+            snapshots[position] = snapshot
+            with open(snapshot['source_path'], 'w', encoding='utf-8') as f:
+                json.dump(snapshot, f, ensure_ascii=False)
+
+
+def check_worker_paid(snapshot):
+    paid = False
+    checks = snapshot['checks']
+    if len(checks) > 0:
+        check = checks[-1:][0]['serialization']['checks']
+        paid = check['timeSpentCheck'] and check['globalFormValidity'] and any(check['goldChecks'])
+    return paid
+
 
 console.rule(f"{step_index} - Fetching Workers ACL")
 step_index = step_index + 1
@@ -456,17 +896,17 @@ if not os.path.exists(df_acl_path):
                                 row[attribute] = value
 
             if acl_presence and worker_snapshot_path:
-                worker_snapshots = load_json(worker_snapshot_path)
+                worker_snapshots = read_json(worker_snapshot_path)
                 for worker_snapshot in worker_snapshots:
-                    paid = False
-                    if len(worker_snapshot['checks']) > 0:
-                        check = worker_snapshot['checks'][-1:][0]['serialization']['checks']
-                        paid = check['timeSpentCheck'] and check['globalFormValidity'] and any(check['goldChecks'])
+                    worker_paid = check_worker_paid(worker_snapshot)
                     task = worker_snapshot['task']
-                    row['task_name'] = task['task_id']
+                    if 'task_id' in task:
+                        row['task_name'] = task['task_id']
+                    else:
+                        row['task_name'] = task['task_name']
                     row['batch_name'] = task['batch_name']
                     row['unit_id'] = task['unit_id']
-                    row['paid'] = paid
+                    row['paid'] = worker_paid
                     row['source_acl'] = worker_snapshot['source_acl']
                     row['source_data'] = worker_snapshot['source_data']
                     row['source_log'] = worker_snapshot['source_log']
@@ -503,12 +943,12 @@ platforms = np.unique(df_acl['platform'].astype(str).values)
 console.rule(f"{step_index} - Checking Missing Units")
 step_index = step_index + 1
 
-hits = load_json(f"{task_config_folder}{batch_name}/{filename_hits_config}")
+hits = read_json(f"{task_config_folder}{batch_name}/{filename_hits_config}")
 units = []
 for hit in tqdm.tqdm(hits):
     hit_completed = False
     for index, acl_record in df_acl.iterrows():
-        if hit['unit_id'] == acl_record['unit_id'] and acl_record['paid']==True:
+        if hit['unit_id'] == acl_record['unit_id'] and acl_record['paid'] == True:
             hit_completed = True
     if not hit_completed:
         units.append(hit['unit_id'])
@@ -692,11 +1132,11 @@ if 'toloka' in platforms:
         toloka_client = toloka.TolokaClient(toloka_oauth_token, 'PRODUCTION')
 
         df_acl_copy = df_acl.copy()
-        df_acl_copy = df_acl_copy.loc[df_acl_copy['platform']=='toloka']
+        df_acl_copy = df_acl_copy.loc[df_acl_copy['platform'] == 'toloka']
         tokens_input = []
         tokens_output = []
         for batch_current in np.unique(df_acl_copy['batch_name'].values):
-            hits = load_json(f"{task_config_folder}{batch_current}/hits.json")
+            hits = read_json(f"{task_config_folder}{batch_current}/hits.json")
             for hit in hits:
                 tokens_input.append(hit['token_input'])
                 tokens_output.append(hit['token_output'])
@@ -809,13 +1249,15 @@ if 'toloka' in platforms:
                     row['user_client_type'] = user_metadata['attributes']['client_type'] if 'client_type' in user_metadata['attributes'] else np.nan
                     row['user_agent_type'] = user_metadata['attributes']['user_agent_type'] if 'user_agent_type' in user_metadata['attributes'] else np.nan
                     row['user_device_category'] = user_metadata['attributes']['device_category'] if 'device_category' in user_metadata['attributes'] else np.nan
-                    row['user_os_family'] = user_metadata['attributes']['os_family']  if 'os_family' in user_metadata['attributes'] else np.nan
+                    row['user_os_family'] = user_metadata['attributes']['os_family'] if 'os_family' in user_metadata['attributes'] else np.nan
                     row['user_os_version'] = user_metadata['attributes']['os_version'] if 'os_version' in user_metadata['attributes'] else np.nan
                     row['user_os_version_major'] = user_metadata['attributes']['os_version_major'] if 'os_version_major' in user_metadata['attributes'] else np.nan
                     row['user_os_version_minor'] = user_metadata['attributes']['os_version_minor'] if 'os_version_minor' in user_metadata['attributes'] else np.nan
                     row['user_os_version_bugfix'] = user_metadata['attributes']['os_version_bugfix'] if 'os_version_bugfix' in user_metadata['attributes'] else np.nan
                     row['user_adult_allowed'] = user_metadata['adult_allowed']
-                    acl_rows = df_acl_copy.loc[(df_acl_copy['token_output'] == row['assignment_token_output']) & (df_acl_copy['platform'] == 'toloka')  & (df_acl_copy['generated'] == True)]
+                    acl_rows = df_acl_copy.loc[(df_acl_copy['token_output'] == row['assignment_token_output']) & (df_acl_copy['platform'] == 'toloka') & (df_acl_copy['generated'] is True)]
+                    if 'assignment_token_input_final' in acl_rows:
+                        acl_rows = acl_rows.loc[acl_rows['assignment_token_input_final']==row['assignment_token_input_final']]
                     if len(acl_rows) > 1:
                         acl_rows = acl_rows.sort_values(by='time_arrival', ascending=False)
                         acl_rows = acl_rows.head(1)
@@ -845,10 +1287,12 @@ if 'toloka' in platforms:
 
 if 'prolific' in platforms:
 
-    console.rule(f"{step_index} - Fetching Prolific Data")
+    console.rule(f"{step_index} - Fetching Prolific Study Data")
     step_index = step_index + 1
 
     column_names = [
+        'worker_id',
+        'worker_ip',
         "workspace_id",
         "project_id",
         "study_id",
@@ -896,6 +1340,7 @@ if 'prolific' in platforms:
         "study_url_external",
         'submission_id',
         'submission_status',
+        'submission_return_requested',
         'submission_study_code',
         'submission_date_started',
         'submission_date_started_parsed',
@@ -904,17 +1349,12 @@ if 'prolific' in platforms:
         'submission_is_complete',
         'submission_time_elapsed_seconds',
         'submission_reward',
-        'submission_star_awarded',
-        'participant_id',
-        'participant_ip',
-        'participant_date_birth',
-        'participant_ethnicity_simplified',
-        'participant_sex'
+        'submission_star_awarded'
     ]
 
-    if not os.path.exists(df_prolific_data_path):
+    if not os.path.exists(df_prolific_study_data_path):
 
-        df_prolific = pd.DataFrame(columns=column_names)
+        df_prolific_study_data = pd.DataFrame(columns=column_names)
 
         study_list = requests.get(f"https://api.prolific.co/api/v1/studies/", headers={'Authorization': f"Token {prolific_api_token}"}).json()['results']
 
@@ -934,7 +1374,7 @@ if 'prolific' in platforms:
 
                     console.print(f"Processing study [cyan]{study_current['internal_name']}")
 
-                    submissions_counter+=1
+                    submissions_counter += 1
 
                     if int(study_current['number_of_submissions']) > 0:
 
@@ -942,7 +1382,7 @@ if 'prolific' in platforms:
                         del study_current_add['eligibility_requirements']
                         del study_current_add['description']
 
-                        submissions_list=[]
+                        submissions_list = []
                         submissions_list_response = None
                         while submissions_list_response is None or 'next' in submissions_list_response['_links']:
                             if not submissions_list_response:
@@ -1003,294 +1443,260 @@ if 'prolific' in platforms:
                             "study_privacy_notice": study_current['privacy_notice'],
                             "study_publish_at": study_current['publish_at'],
                             "study_device_compatibility": ':::'.join(study_current_add['device_compatibility']),
-                            "study_peripheral_requirements": ':::'.join(study_current_add['peripheral_requirements']) if len(study_current_add['peripheral_requirements'])>0 else np.nan,
+                            "study_peripheral_requirements": ':::'.join(study_current_add['peripheral_requirements']) if len(study_current_add['peripheral_requirements']) > 0 else np.nan,
                             "study_url_external": study_current_add['external_study_url']
                         }
 
                         for submission_current in submissions_list:
+                            submissions_counter += 1
 
-                            submissions_counter+=1
-
-                            row['participant_id'] = submission_current['participant_id']
-                            row['participant_ip'] = submission_current['ip']
-                            row['participant_date_birth'] = submission_current['strata']['date of birth'] if 'date of birth' in submission_current['strata'] else np.nan
-                            row['participant_ethnicity_simplified'] = submission_current['strata']['ethnicity (simplified)'] if 'ethnicity (simplified)' in submission_current['strata'] else np.nan
-                            row['participant_sex'] = submission_current['strata']['sex'] if 'sex' in submission_current['strata'] else np.nan
+                            row['worker_id'] = submission_current['participant_id']
+                            row['worker_ip'] = submission_current['ip']
                             row['submission_id'] = submission_current['id']
                             row['submission_status'] = submission_current['status']
+                            row['submission_return_requested'] = submission_current['return_requested'] if 'return_requested' in submission_current else np.nan
                             row['submission_study_code'] = submission_current['study_code']
-                            row['submission_date_started'] = submission_current['started_at'] if submission_current['started_at'] else np.nan
+                            row['submission_date_started'] = submission_current['started_at'] if 'started_at' in submission_current else np.nan
                             row['submission_date_started_parsed'] = find_date_string(submission_current['started_at']) if submission_current['started_at'] else np.nan
                             row['submission_date_completed'] = submission_current['completed_at'] if submission_current['completed_at'] else np.nan
                             row['submission_date_completed_parsed'] = find_date_string(submission_current['completed_at']) if submission_current['completed_at'] else np.nan
                             row['submission_is_complete'] = submission_current['is_complete']
-                            row['submission_time_elapsed_seconds'] = submission_current['time_taken'] if submission_current['time_taken'] else np.nan
-                            row['submission_reward'] = float(submission_current['reward'])
+                            row['submission_time_elapsed_seconds'] = int(submission_current['time_taken']) if submission_current['time_taken'] else np.nan
+                            row['submission_reward'] = float(submission_current['reward']) if 'reward' in submission_current else np.nan
                             row['submission_star_awarded'] = float(submission_current['star_awarded']) if 'star_awarded' in submission_current else np.nan
                             row['submission_bonus_payments'] = ':::'.join([str(i) for i in submission_current['bonus_payments']])
 
-                            df_prolific.loc[len(df_prolific)] = row
+                            df_prolific_study_data.loc[len(df_prolific_study_data)] = row
 
         console.print(f"Study found for the current task: [green]{study_counter}[/green]")
         console.print(f"Submissions found for the current task: [green]{submissions_counter}[/green]")
-        console.print(f"Dataframe shape: {df_prolific.shape}")
-        if df_prolific.shape[0] > 0:
-            df_prolific.to_csv(df_prolific_data_path, index=False)
-            console.print(f"Prolific dataframe serialized at path: [cyan on black]{df_prolific_data_path}")
+        console.print(f"Dataframe shape: {df_prolific_study_data.shape}")
+        if df_prolific_study_data.shape[0] > 0:
+            df_prolific_study_data.to_csv(df_prolific_study_data_path, index=False)
+            console.print(f"Prolific study dataframe serialized at path: [cyan on black]{df_prolific_study_data_path}")
         else:
-            console.print(f"Dataframe shape: {df_prolific.shape}")
+            console.print(f"Dataframe study shape: {df_prolific_study_data.shape}")
             console.print(f"Prolific dataframe [yellow]empty[/yellow], dataframe not serialized.")
 
     else:
 
-        df_prolific = pd.read_csv(df_prolific_data_path)
+        df_prolific_study_data = pd.read_csv(df_prolific_study_data_path)
         console.print(f"Prolific dataframe [yellow]already detected[/yellow], skipping creation")
-        console.print(f"Serialized at path: [cyan on black]{df_prolific_data_path}")
+        console.print(f"Serialized at path: [cyan on black]{df_prolific_study_data_path}")
 
-console.rule(f"{step_index} - Building [cyan on white]workers_info[/cyan on white] Dataframe")
+    if not os.path.exists(df_prolific_demographic_data_path):
+
+        console.rule(f"{step_index} - Fetching Prolific Demographic Data")
+        step_index = step_index + 1
+
+        column_names = [
+            "worker_id",
+            "workspace_id",
+            "project_id",
+            "study_id",
+            "submission_id",
+            'submission_date_started',
+            'submission_date_started_parsed',
+            'submission_date_completed',
+            'submission_date_completed_parsed',
+            'submission_date_reviewed',
+            'submission_date_reviewed_parsed',
+            'submission_date_archived',
+            'submission_date_archived_parsed',
+            'submission_time_elapsed_seconds',
+            'worker_sex',
+            'worker_age',
+            'worker_ethnicity_simplified',
+            'worker_country_birth',
+            'worker_country_residence',
+            'worker_nationality',
+            'worker_language',
+            'worker_languages_fluent',
+            'worker_student_status',
+            'worker_employment_status',
+        ]
+
+        df_prolific_demo_data = pd.DataFrame(columns=column_names)
+
+        study_list = requests.get(f"https://api.prolific.co/api/v1/studies/", headers={'Authorization': f"Token {prolific_api_token}"}).json()['results']
+
+        study_counter = 0
+        submissions_counter = 0
+
+        for study_data in study_list:
+
+            if task_name in study_data['internal_name']:
+                study_current = None
+                if batch_prefix is not None:
+                    if batch_prefix in study_data['internal_name']:
+                        study_current = study_data
+                else:
+                    study_current = study_data
+                if study_current is not None:
+                    study_current_add = requests.get(f"https://api.prolific.co/api/v1/studies/{study_current['id']}/", headers={'Authorization': f"Token {prolific_api_token}"}).json()
+                    del study_current_add['eligibility_requirements']
+                    del study_current_add['description']
+                    console.print(f"Processing study [cyan]{study_current['internal_name']}")
+                    with requests.Session() as session:
+                        endpoint_data = session.get(f"https://api.prolific.co/api/v1/studies/{study_current['id']}/export/", headers={'Authorization': f"Token {prolific_api_token}"})
+                        decoded_content = endpoint_data.content.decode('utf-8')
+                        demographic_data = csv.reader(decoded_content.splitlines(), delimiter=',')
+                        demo_list = list(demographic_data)
+                        if len(demo_list) > 0:
+                            df_demo_raw = pd.DataFrame(columns=demo_list[0])
+                            for row in demo_list[1:]:
+                                df_demo_raw.loc[len(df_demo_raw)] = row
+                            for index, row_raw in df_demo_raw.iterrows():
+                                fluent_languages = row_raw['Fluent languages'].split(",")
+                                row = {
+                                    "worker_id": row_raw['Participant id'],
+                                    "workspace_id": study_current_add['workspace'],
+                                    "project_id": study_current_add['project'],
+                                    "study_id": study_current['id'],
+                                    "submission_id": row_raw['Submission id'],
+                                    'submission_date_started': row_raw['Started at'],
+                                    'submission_date_started_parsed': find_date_string(row_raw['Started at'], seconds=True),
+                                    'submission_date_completed': row_raw['Completed at'],
+                                    'submission_date_completed_parsed':  find_date_string(row_raw['Completed at'], seconds=True),
+                                    'submission_date_reviewed': row_raw['Reviewed at'],
+                                    'submission_date_reviewed_parsed': find_date_string(row_raw['Reviewed at'], seconds=True),
+                                    'submission_date_archived': row_raw['Archived at'],
+                                    'submission_date_archived_parsed': find_date_string(row_raw['Archived at'], seconds=True),
+                                    'submission_time_elapsed_seconds': int(row_raw['Time taken']),
+                                    'worker_sex': row_raw['Sex'],
+                                    'worker_languages_fluent': ":::".join(row_raw['Fluent languages'].split(", ")),
+                                    'worker_age': row_raw['Age'],
+                                    'worker_ethnicity_simplified': row_raw['Ethnicity simplified'],
+                                    'worker_country_birth': row_raw['Country of birth'],
+                                    'worker_country_residence': row_raw['Country of residence'],
+                                    'worker_nationality': row_raw['Nationality'],
+                                    'worker_language': row_raw['Language'],
+                                    'worker_student_status': row_raw['Student status'],
+                                    'worker_employment_status': row_raw['Employment status'],
+                                }
+                                df_prolific_demo_data = df_prolific_demo_data.append(row, ignore_index=True)
+
+        if df_prolific_demo_data.shape[0] > 0:
+            df_prolific_demo_data.to_csv(df_prolific_demographic_data_path, index=False)
+            console.print(f"Prolific demographic dataframe serialized at path: [cyan on black]{df_prolific_demographic_data_path}")
+        else:
+            console.print(f"Dataframe shape: {df_prolific_demo_data.shape}")
+            console.print(f"Prolific demographic dataframe [yellow]empty[/yellow], dataframe not serialized.")
+    else:
+
+        df_prolific_demo_data = pd.read_csv(df_prolific_demographic_data_path)
+        console.print(f"Prolific demographic dataframe [yellow]already detected[/yellow], skipping creation")
+        console.print(f"Serialized at path: [cyan on black]{df_prolific_demographic_data_path}")
+
+
+console.rule(f"{step_index} - Building [cyan on white]workers_ip_addresses[/cyan on white] Dataframe")
 step_index = step_index + 1
 
-def merge_dicts(dicts):
-    d = {}
-    for dict_current in dicts:
-        for key in dict_current.keys():
-            try:
-                d[key].append(dict_current[key])
-            except KeyError:
-                d[key] = [dict_current[key]]
-    keys_filter = []
-    for item in d:
-        if len(d[item]) > 1:
-            seen = set()
-            lst = np.unique(list(filter(None, d[item])))
-            lst = [x for x in lst if x.lower() not in seen and not seen.add(x.lower())]
-            d[item] = ":::".join(lst)
-        else:
-            if d[item][0] is not None:
-                d[item] = d[item].pop()
-            else:
-                keys_filter.append(item)
-    for item in keys_filter:
-        d.pop(item)
-    return d
+if not os.path.exists(df_ip_path):
 
-
-def fetch_uag_data(worker_id, worker_uag):
-    data = {}
-    if worker_uag:
-        uag_file = f"{resources_path}{worker_id}_uag.json"
-        if os.path.exists(uag_file):
-            ua_data = load_json(uag_file)
-        else:
-            try:
-                ua_data = []
-                if user_stack_token:
-                    url = f"http://api.userstack.com/detect?access_key={user_stack_token}&ua={worker_uag}"
-                    response = requests.get(url)
-                    data_fetched = flatten(response.json())
-                    if 'success' in data_fetched.keys():
-                        if not data_fetched['success']:
-                            raise ValueError(f"Request to Userstack UAG detection service failed with error code {data_fetched['error_code']}. Remove of replace your `user_stack_token`")
-                    ua_data.append(data_fetched)
-                if ip_geolocation_api_key:
-                    url = f"https://api.ipgeolocation.io/user-agent?apiKey={ip_geolocation_api_key}"
-                    response = requests.get(url, headers={'User-Agent': worker_uag})
-                    if response.status_code != 200:
-                        raise ValueError(f"Request to IP Geolocation UAG detection service (user-agent endpoint) failed with error code {response.status_code} and reason: `{response.text}`. Remove of replace your `ip_geolocation_api_key`")
-                    else:
-                        data_fetched = flatten(requests.get(url, headers={'User-Agent': worker_uag}).json())
-                    ua_data.append(data_fetched)
-                ua_data = merge_dicts(ua_data)
-                ua_data = {camel_to_snake(key): ua_data[key] for key in ua_data}
-                with open(uag_file, 'w', encoding='utf-8') as f:
-                    json.dump(ua_data, f, ensure_ascii=False, indent=4)
-            except ValueError as error:
-                console.print(f"[red]{error}")
-                sys.exit(1)
-        for attribute, value in ua_data.items():
-            if type(value) == dict:
-                for attribute_sub, value_sub in value.items():
-                    data[f"{attribute}_{attribute_sub}"] = value_sub
-            else:
-                data[attribute] = value
-    return data
-
-
-def fetch_ip_data(worker_id, worker_ip):
-    data = {}
-    if worker_ip:
-        ip_file = f"{resources_path}{worker_id}_ip.json"
-        if os.path.exists(ip_file):
-            ip_data = load_json(ip_file)
-        else:
-            try:
-                ip_data = []
-                if ip_info_token:
-                    ip_info_handler = ipinfo.getHandler(ip_info_token)
-                    ip_data.append(flatten(ip_info_handler.getDetails(worker_ip).all))
-                if ip_geolocation_api_key:
-                    url = f"https://api.ipgeolocation.io/ipgeo?apiKey={ip_geolocation_api_key}&ip={worker_ip}&include=hostnameFallbackLive,security"
-                    data_fixed = {}
-                    response = requests.get(url)
-                    if response.status_code == 423:
-                        console.print(f"Bogon detected: {worker_ip}")
-                    else:
-                        if response.status_code != 200:
-                            raise ValueError(f"Request to IP Geolocation service (ipgeo endpoint) failed with error code {response.status_code} and reason: `{response.text}`. Remove of replace your `ip_geolocation_api_key`")
-                        else:
-                            for key, item in flatten(response.json()).items():
-                                if key.startswith('geo_'):
-                                    data_fixed[key.replace('geo_', '')] = item
-                                else:
-                                    data_fixed[key] = item
-                    ip_data.append(data_fixed)
-                    url = f"https://api.ipgeolocation.io/timezone?apiKey={ip_geolocation_api_key}&ip={worker_ip}"
-                    data_fixed = {}
-                    response = requests.get(url)
-                    if response.status_code == 423:
-                        pass
-                    else:
-                        if response.status_code != 200:
-                            raise ValueError(f"Request to IP Geolocation service (timezone endpoint) failed with error code {response.status_code} and reason: `{response.text}`. Remove of replace your `ip_geolocation_api_key`")
-                        else:
-                            for key, item in flatten(response.json()).items():
-                                if key.startswith('timezone_') or key.startswith('geo_'):
-                                    key_fixed = key.replace('timezone_', '').replace('geo_', '')
-                                    data_fixed[key_fixed] = item
-                                else:
-                                    data_fixed[key] = item
-                    ip_data.append(data_fixed)
-                    url = f"https://api.ipgeolocation.io/astronomy?apiKey={ip_geolocation_api_key}&ip={worker_ip}"
-                    data_fixed = {}
-                    response = requests.get(url)
-                    if response.status_code == 423:
-                        pass
-                    else:
-                        if response.status_code != 200:
-                            raise ValueError(f"Request to IP Geolocation service (astronomy endpoint) failed with error code {response.status_code} and reason: `{response.text}`. Remove of replace your `ip_geolocation_api_key`")
-                        else:
-                            for key, item in flatten(response.json()).items():
-                                if key.startswith('location_'):
-                                    data_fixed[key.replace('location_', '')] = item
-                                else:
-                                    data_fixed[key] = item
-                    ip_data.append(data_fixed)
-                if ip_api_api_key:
-                    url = f"http://api.ipapi.com/{worker_ip}?access_key={ip_api_api_key}"
-                    response = requests.get(url)
-                    data_fetched = flatten(response.json())
-                    if 'success' in data_fetched.keys():
-                        if not data_fetched['success']:
-                            raise ValueError(f"Request to IPApi IP detection service failed with error code {data_fetched['error_code']}. Remove of replace your `ipapi_api_key`")
-                    data_fetched = flatten(requests.get(url).json())
-                    if 'location_languages' in data_fetched:
-                        location_languages = data_fetched.pop('location_languages')
-                        for index, lang_data in enumerate(location_languages):
-                            for key, value in lang_data.items():
-                                data_fetched[f"location_language_{index}_{key}"] = value
-                    ip_data.append(data_fetched)
-                ip_data = merge_dicts(ip_data)
-                ip_data = {camel_to_snake(key): ip_data[key] for key in ip_data}
-                with open(ip_file, 'w', encoding='utf-8') as f:
-                    json.dump(ip_data, f, ensure_ascii=False, indent=4)
-            except ValueError as error:
-                console.print(f"[red]{error}")
-                sys.exit(1)
-        for attribute, value in ip_data.items():
-            data[attribute] = value
-    return data
-
-
-def find_snapshot_for_record(acl_record):
-    if acl_record['source_path'] is not np.nan:
-        snapshots = load_json(acl_record['source_path'])
-        for snapshot in snapshots:
-            if 'task' in snapshot:
-                if snapshot['task']['worker_id'] == acl_record['worker_id'] and \
-                    snapshot['task']['task_id'] == acl_record['task_name'] and \
-                    snapshot['task']['batch_name'] == acl_record['batch_name'] and \
-                    snapshot['task']['unit_id'] == acl_record['unit_id']:
-                    return snapshot
-    return {}
-
-
-def find_snapshost_for_task(acl_record):
-    snapshots_found = []
-    if acl_record['source_path'] is not np.nan:
-        snapshots = load_json(acl_record['source_path'])
-        if type(snapshots) == dict:
-            snapshots_found.append(snapshots)
-        elif type(snapshots) == list:
-            for snapshot in snapshots:
-                if 'task' in snapshot:
-                    if snapshot['task']['worker_id'] == acl_record['worker_id'] and \
-                        snapshot['task']['task_id'] == acl_record['task_name']:
-                        snapshots_found.append(snapshot)
-        else:
-            assert False
-        return snapshots_found
-    return []
-
-
-def update_local_snapshot(acl_record, snapshot):
-    if acl_record['source_path'] is not np.nan:
-        snapshots = load_json(acl_record['source_path'])
-        position = None
-        for index, snapshot_candidate in enumerate(snapshots):
-            if snapshot['task']['worker_id'] == snapshot_candidate['task']['worker_id'] and \
-                snapshot['task']['task_id'] == snapshot_candidate['task']['task_id'] and \
-                snapshot['task']['batch_name'] == snapshot_candidate['task']['batch_name'] and \
-                snapshot['task']['unit_id'] == snapshot_candidate['task']['unit_id']:
-                position = index
-        if position:
-            snapshots[position] = snapshot
-            with open(snapshot['source_path'], 'w', encoding='utf-8') as f:
-                json.dump(snapshot, f, ensure_ascii=False)
-
-
-if not os.path.exists(df_info_path):
-
-    df_info = pd.DataFrame()
+    df_ip = pd.DataFrame()
 
     for index, acl_record in tqdm.tqdm(df_acl.iterrows(), total=df_acl.shape[0]):
 
         worker_id = acl_record['worker_id']
-        snapshot = find_snapshot_for_record(acl_record)
+        snapshots = find_snapshost_for_task(acl_record)
 
-        snapshot['uag'] = {}
-        snapshot['ip'] = {}
+        for worker_snapshot in snapshots:
 
-        snapshot['uag'].update(fetch_uag_data(worker_id, acl_record['user_agent']))
-        snapshot['ip'].update(fetch_ip_data(worker_id, acl_record['ip_address']))
+            worker_paid = check_worker_paid(worker_snapshot)
+            task = worker_snapshot['task']
+            checks = worker_snapshot['checks']
+            ip_data = worker_snapshot['ip']
 
-        update_local_snapshot(acl_record, snapshot)
+            ip_info = ip_data['info']
+            ip_serialization = ip_data['serialization']
 
-        row = {
-            'worker_id': worker_id,
-            'paid': acl_record['paid'],
-            'task_name': acl_record['task_name'],
-            'batch_name': acl_record['batch_name'],
-            'unit_id': acl_record['unit_id'],
-        }
+            for ip_address, ip_info_details in ip_info.items():
 
-        if 'worker' in snapshot:
-            for attribute, value in snapshot['worker']['propertiesFetched'].items():
-                row[attribute] = value
-        for attribute, value in snapshot['ip'].items():
-            row[f"ip_{attribute}"] = value
-        for attribute, value in snapshot['uag'].items():
-            row[f"uag_{attribute}"] = value
+                for ip_batch, batch_data in ip_info_details['batches'].items():
 
-        df_info = df_info.append(row, ignore_index=True)
+                    row = {
+                        'worker_id': worker_id,
+                        'paid': worker_paid,
+                        'task_name': task['task_name'] if 'task_name' in task else task['task_id'],
+                        'batch_name': ip_batch,
+                        'unit_id': task['unit_id'],
+                        'ip_address': ip_address,
+                        'time_submit': batch_data['time_submit'],
+                        'time_submit_parsed': batch_data['time_submit_parsed'],
+                    }
 
-    if len(df_info) > 0:
-        df_info.to_csv(df_info_path, index=False)
-        console.print(f"Dataframe shape: {df_info.shape}")
-        console.print(f"Workers info dataframe serialized at path: [cyan on white]{df_info_path}")
+                    ip_properties = ip_serialization[ip_address]
+                    for property, value in ip_properties.items():
+                        if property == 'location_languages':
+                            for index_lang, location_language_data in enumerate(value):
+                                for lang_property, lang_value in location_language_data.items():
+                                    row[f"{lang_property}_{index_lang}"] = lang_value
+                        else:
+                            row[property] = value
+                    df_ip = df_ip.append(row, ignore_index=True)
+
+    if len(df_ip) > 0:
+        df_ip.sort_values(by=['worker_id', 'batch_name', 'time_submit_parsed'], inplace=True)
+        df_ip.to_csv(df_ip_path, index=False)
+        console.print(f"Dataframe shape: {df_ip.shape}")
+        console.print(f"Workers IP addresses dataframe serialized at path: [cyan on white]{df_ip_path}")
 else:
-    df_info = pd.read_csv(df_info_path)
-    console.print(f"Workers info dataframe [yellow]already detected[/yellow], skipping creation")
-    console.print(f"Serialized at path: [cyan on white]{df_info_path}")
+    df_ip = pd.read_csv(df_ip_path)
+    console.print(f"Workers IP addresses dataframe [yellow]already detected[/yellow], skipping creation")
+    console.print(f"Serialized at path: [cyan on white]{df_ip_path}")
+
+console.rule(f"{step_index} - Building [cyan on white]workers_user_agents[/cyan on white] Dataframe")
+step_index = step_index + 1
+
+if not os.path.exists(df_uag_path):
+
+    df_ua = pd.DataFrame()
+
+    for index, acl_record in tqdm.tqdm(df_acl.iterrows(), total=df_acl.shape[0]):
+
+        worker_id = acl_record['worker_id']
+        snapshots = find_snapshost_for_task(acl_record)
+
+        for worker_snapshot in snapshots:
+
+            worker_paid = check_worker_paid(worker_snapshot)
+            task = worker_snapshot['task']
+            checks = worker_snapshot['checks']
+            ua_data = worker_snapshot['uag']
+
+            ua_info = ua_data['info']
+            ua_serialization = ua_data['serialization']
+
+            for user_agent, user_agent_details in ua_info.items():
+
+                for ua_batch, batch_data in user_agent_details['batches'].items():
+
+                    row = {
+                        'worker_id': worker_id,
+                        'paid': worker_paid,
+                        'task_name': task['task_name'] if 'task_name' in task else task['task_id'],
+                        'batch_name': ua_batch,
+                        'unit_id': task['unit_id'],
+                        'user_agent': user_agent,
+                        'time_submit': batch_data['time_submit'],
+                        'time_submit_parsed': batch_data['time_submit_parsed'],
+                    }
+
+                    ua_properties = ua_serialization[user_agent]
+                    for property, value in ua_properties.items():
+                        row[property] = value
+                    df_ua = df_ua.append(row, ignore_index=True)
+
+    if len(df_ua) > 0:
+        df_ua.sort_values(by=['worker_id', 'batch_name', 'time_submit_parsed'], inplace=True)
+        df_ua.to_csv(df_uag_path, index=False)
+        console.print(f"Dataframe shape: {df_ua.shape}")
+        console.print(f"Workers user agents dataframe serialized at path: [cyan on white]{df_uag_path}")
+else:
+    df_ua = pd.read_csv(df_uag_path)
+    console.print(f"Workers user agents dataframe [yellow]already detected[/yellow], skipping creation")
+    console.print(f"Serialized at path: [cyan on white]{df_ip_path}")
 
 console.rule(f"{step_index} - Building [cyan on white]workers_logs[/cyan on white] Dataframe")
 step_index = step_index + 1
@@ -1336,7 +1742,7 @@ if not os.path.exists(df_log_path):
                         task = snapshot['task']
                         task_started = False
 
-                        if len(snapshot['data_partial']['documents_answers']) or len(snapshot['data_partial']['questionnaires_answers']) > 0:
+                        if len(snapshot['documents_answers']) or len(snapshot['questionnaires_answers']) > 0:
                             task_started = True
 
                         for data_log in logs:
@@ -1559,18 +1965,18 @@ if not os.path.exists(df_comm_path):
 
     for index, acl_record in tqdm.tqdm(df_acl.iterrows(), total=df_acl.shape[0]):
 
-        worker_id = acl_record['worker_id']
         snapshots = find_snapshost_for_task(acl_record)
 
         for worker_snapshot in snapshots:
 
-            worker_id = acl_record['worker_id']
-            worker_paid = acl_record['paid']
-            task_name = acl_record['task_name']
-            batch_name = acl_record['batch_name']
-            unit_id = acl_record['unit_id']
+            checks = worker_snapshot['checks']
+            task = worker_snapshot['task']
 
-            data_partial = worker_snapshot['data_partial']
+            worker_id = acl_record['worker_id']
+            worker_paid = check_worker_paid(worker_snapshot)
+            task_name = task['task_name'] if 'task_name' in task else task['task_id']
+            batch_name = task['batch_name']
+            unit_id = task['unit_id']
 
             column_names = load_comment_col_names()
 
@@ -1578,12 +1984,13 @@ if not os.path.exists(df_comm_path):
                 if column not in dataframe:
                     dataframe[column] = np.nan
 
-            row = {}
-            row['worker_id'] = worker_id
-            row['paid'] = worker_paid
-            row['task_name'] = task_name
-            row['batch_name'] = batch_name
-            row['unit_id'] = unit_id
+            row = {
+                'worker_id': worker_id,
+                'paid': worker_paid,
+                'task_name': task_name,
+                'batch_name': batch_name,
+                'unit_id': unit_id
+            }
 
             if 'comments' in worker_snapshot:
 
@@ -1595,7 +2002,7 @@ if not os.path.exists(df_comm_path):
                         row['try_current'] = comment['serialization']['info']['try']
                         row['time_submit'] = comment['time_submit']
                         row['time_submit_parsed'] = find_date_string(row['time_submit'])
-                        row['sequence_number'] = comment['serialization']['info']['sequence']
+                        row['sequence_number'] = int(comment['serialization']['info']['sequence'])
                         row['text'] = sanitize_string(comment['serialization']['comment'])
                         dataframe = dataframe.append(row, ignore_index=True)
 
@@ -1613,6 +2020,7 @@ if not os.path.exists(df_comm_path):
 else:
     console.print(f"Workers comments dataframe [yellow]already detected[/yellow], skipping creation")
     console.print(f"Serialized at path: [cyan on white]{df_comm_path}")
+
 
 console.rule(f"{step_index} - Building [cyan on white]workers_questionnaire[/cyan on white] dataframe")
 step_index = step_index + 1
@@ -1741,6 +2149,7 @@ def parse_answers(row, questionnaire, question, answers):
 
     return row
 
+
 dataframe = pd.DataFrame()
 
 if not os.path.exists(df_quest_path):
@@ -1754,15 +2163,16 @@ if not os.path.exists(df_quest_path):
 
             source_data = worker_snapshot['source_data']
 
-            worker_id = acl_record['worker_id']
-            worker_paid = acl_record['paid']
-            task_name = acl_record['task_name']
-            batch_name = acl_record['batch_name']
-            unit_id = acl_record['unit_id']
-
             task = worker_snapshot['task']
+            checks = worker_snapshot['checks']
             questionnaires = worker_snapshot['questionnaires']
-            data_partial = worker_snapshot['data_partial']
+            questionnaires_answers = worker_snapshot['questionnaires_answers']
+            documents_answers = worker_snapshot['questionnaires_answers']
+
+            worker_paid = check_worker_paid(worker_snapshot)
+            task_name = task['task_name'] if 'task_name' in task else task['task_id']
+            batch_name = task['batch_name']
+            unit_id = task['unit_id']
 
             column_names = load_quest_col_names(questionnaires)
 
@@ -1770,9 +2180,9 @@ if not os.path.exists(df_quest_path):
                 if column not in dataframe:
                     dataframe[column] = np.nan
 
-            if len(data_partial) > 0:
+            if len(questionnaires_answers) > 0:
 
-                for questionnaire_data in data_partial['questionnaires_answers']:
+                for questionnaire_data in questionnaires_answers:
 
                     row = {}
                     row['worker_id'] = worker_id
@@ -1857,7 +2267,7 @@ else:
     console.print(f"Workers questionnaire dataframe [yellow]already detected[/yellow], skipping creation")
     console.print(f"Serialized at path: [cyan on white]{df_quest_path}")
 
-console.rule(f"{step_index} - Building [cyan on white]workers_data[/cyan on white] dataframe")
+console.rule(f"{step_index} - Building [cyan on white]workers_answers[/cyan on white] dataframe")
 step_index = step_index + 1
 
 
@@ -1922,10 +2332,11 @@ if not os.path.exists(df_data_path):
     for index, acl_record in tqdm.tqdm(df_acl.iterrows(), total=df_acl.shape[0]):
 
         worker_id = acl_record['worker_id']
-        worker_paid = acl_record['paid']
         snapshots = find_snapshost_for_task(acl_record)
 
         for worker_snapshot in snapshots:
+
+            worker_paid = check_worker_paid(worker_snapshot)
 
             task = worker_snapshot['task']
             dimensions = worker_snapshot['dimensions']
@@ -1935,7 +2346,8 @@ if not os.path.exists(df_data_path):
             comments = worker_snapshot['comments']
             checks = worker_snapshot['checks']
             worker = worker_snapshot['worker']
-            data_partial = worker_snapshot['data_partial']
+            questionnaires_answers = worker_snapshot['questionnaires_answers']
+            documents_answers = worker_snapshot['documents_answers']
 
             column_names = load_data_col_names(dimensions, documents)
 
@@ -1943,7 +2355,7 @@ if not os.path.exists(df_data_path):
                 if column not in dataframe:
                     dataframe[column] = np.nan
 
-            if len(data_partial) > 0:
+            if len(documents_answers) > 0:
 
                 row = {}
                 row['worker_id'] = worker_id
@@ -1953,7 +2365,7 @@ if not os.path.exists(df_data_path):
                     if attribute in column_names:
                         row[attribute] = value
 
-                for document_data in data_partial['documents_answers']:
+                for document_data in documents_answers:
 
                     row['action'] = document_data['serialization']['info']['action']
                     row['try_current'] = document_data['serialization']['info']['try']
@@ -2116,14 +2528,17 @@ if not os.path.exists(df_notes_path):
     for index, acl_record in tqdm.tqdm(df_acl.iterrows(), total=df_acl.shape[0]):
 
         worker_id = acl_record['worker_id']
-        worker_paid = acl_record['paid']
+
         snapshots = find_snapshost_for_task(acl_record)
 
         for worker_snapshot in snapshots:
 
+            worker_paid = check_worker_paid(worker_snapshot)
+
             task = worker_snapshot['task']
             documents = worker_snapshot['documents']
-            data_partial = worker_snapshot['data_partial']
+            questionnaires_answers = worker_snapshot['questionnaires_answers']
+            documents_answers = worker_snapshot['documents_answers']
 
             column_names = load_notes_col_names()
 
@@ -2131,7 +2546,7 @@ if not os.path.exists(df_notes_path):
                 if column not in dataframe:
                     dataframe[column] = np.nan
 
-            if len(data_partial) > 0:
+            if len(documents_answers) > 0:
 
                 row = {}
                 row['worker_id'] = worker_id
@@ -2141,7 +2556,7 @@ if not os.path.exists(df_notes_path):
                     if attribute in column_names:
                         row[attribute] = value
 
-                for document_data in data_partial['documents_answers']:
+                for document_data in documents_answers:
 
                     row['try_current'] = document_data['serialization']['info']['try']
                     row['time_submit'] = document_data['time_submit']
@@ -2177,7 +2592,7 @@ if not os.path.exists(df_notes_path):
                             row['note_text_left'] = note_current['text_left']
                             row['note_text_right'] = note_current['text_right']
 
-                        if ('time_submit') in row:
+                        if 'time_submit' in row:
                             dataframe = dataframe.append(row, ignore_index=True)
 
     if dataframe.shape[0] > 0:
@@ -2294,29 +2709,31 @@ if not os.path.exists(df_dim_path) and os.path.exists(df_data_path):
     for index, acl_record in tqdm.tqdm(df_acl.iterrows(), total=df_acl.shape[0]):
 
         worker_id = acl_record['worker_id']
-        worker_paid = acl_record['paid']
         snapshots = find_snapshost_for_task(acl_record)
 
         for worker_snapshot in snapshots:
+
+            worker_paid = check_worker_paid(worker_snapshot)
 
             task = worker_snapshot['task']
             dimensions = worker_snapshot['dimensions']
             documents = worker_snapshot['documents']
             questionnaires = worker_snapshot['questionnaires']
-            data_partial = worker_snapshot['data_partial']
+            questionnaires_answers = worker_snapshot['questionnaires_answers']
+            documents_answers = worker_snapshot['documents_answers']
 
             worker_data = df_data.loc[df_data['worker_id'] == worker_id]
             timestamp_start = worker_data['doc_time_start'].min()
             timestamp_end = worker_data['doc_time_start'].max()
 
-            if len(data_partial) > 0:
+            if len(documents_answers) > 0:
 
                 timestamps_found = []
 
-                for document_data in data_partial['documents_answers']:
+                for document_data in documents_answers:
                     timestamps_elapsed = document_data['serialization']["timestamps_elapsed"]
-                    timestampsStart = document_data['serialization']["timestamps_start"]
-                    timestampsEnd = document_data['serialization']["timestamps_end"]
+                    timestamps_start = document_data['serialization']["timestamps_start"]
+                    timestamps_end = document_data['serialization']["timestamps_end"]
                     info = document_data['serialization']["info"]
 
                     timestamp_first = timestamp_start
@@ -2453,22 +2870,21 @@ if not os.path.exists(df_url_path):
     for index, acl_record in tqdm.tqdm(df_acl.iterrows(), total=df_acl.shape[0]):
 
         worker_id = acl_record['worker_id']
-        worker_paid = acl_record['paid']
         snapshots = find_snapshost_for_task(acl_record)
 
         for worker_snapshot in snapshots:
 
-            worker_id = worker_snapshot['task']['worker_id']
-            worker_paid = bool(strtobool(worker_snapshot['worker']['paramsFetched']['paid']))
+            worker_paid = check_worker_paid(worker_snapshot)
 
             task = worker_snapshot['task']
             dimensions = worker_snapshot['dimensions']
             documents = worker_snapshot['documents']
-            data_partial = worker_snapshot['data_partial']
+            questionnaires_answers = worker_snapshot['questionnaires_answers']
+            documents_answers = worker_snapshot['documents_answers']
 
-            if len(data_partial) > 0:
+            if len(documents_answers) > 0:
 
-                for document_data in data_partial['documents_answers']:
+                for document_data in documents_answers:
                     info = document_data['serialization']['info']
                     queries = document_data['serialization']['queries']
                     responses_retrieved = [document_data['serialization']['responses_retrieved']]
