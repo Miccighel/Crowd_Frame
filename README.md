@@ -109,23 +109,25 @@ issues](https://badgen.net/github/issues/Miccighel/Crowd_Frame/)](https://GitHub
 12. Install python packages with `pip install -r your_repo_folder/requirements.txt`:
 
 	  ````
-	boto3==1.26.36
+	boto3==1.26.37
     ipapi==1.0.4
     ipinfo==4.4.2
     mako==1.2.4
+    chardet==5.1.0
     docker==6.0.1
     python-dotenv==0.21.0
     rich==12.6.0
     tqdm==4.64.1
     scipy==1.9.3
-    numpy==1.24.0
+    pycountry==22.3.5
+    numpy==1.24.1
     pandas==1.5.2
     toloka-kit==1.0.2
     python-on-whales==0.55.0
     beautifulsoup4==4.11.1
     aiohttp==3.8.3
     datefinder==0.7.3
-	  ````
+	````
 
 13. Run python script `init.py`
 
@@ -536,21 +538,22 @@ the DynamoDB tables and the path on the local filesystem.
 ````json
 [
   {
+    "source_path": "result/Your_Task/Data/ABEFLAGYVQ7IN4.json",
     "source_data": "Crowd_Frame-Your-Task_Your-Batch_Data",
     "source_acl": "Crowd_Frame-Your-Task_Your-Batch_ACL",
     "source_log": "Crowd_Frame-Your-Task_Your-Batch_Logger",
-    "source_path": "result/Your_Task/Data/ABEFLAGYVQ7IN4.json",
     "task": {...},
+    "worker": {...},
+    "ip": {...},
+    "uag": {...}, 
     "checks": [...],
-    "dimensions": {...},
-    "data_partial": {
-       "questionnaires_answers": [...],
-       "documents_answers": [...]
-    },
+    "questionnaires_answers": [...],
+    "documents_answers": [...],
     "comments": [...],
-    "documents": {...},
+    "logs": [...],
     "questionnaires": {...},
-    "logs": [...]
+    "documents": {...},
+    "dimensions": {...}
   }
 ]
 ````
@@ -560,45 +563,127 @@ the DynamoDB tables and the path on the local filesystem.
 The `Resources` folder contains two JSON files for each worker. Let us hypothesize a 
 worker recruited using the identifier `ABEFLAGYVQ7IN4`. The two support files are named 
 `ABEFLAGYVQ7IN4_ip.json` and `ABEFLAGYVQ7IN4_uag.json`. 
-The former contains attributes obtained by performing the reverse lookup of his/her IP address. 
-The latter contains attributes obtained by analyzing his/her user agent string. 
+The former contains attributes obtained by performing the reverse lookup of his/her IP addresses. 
+The latter contains attributes obtained by analyzing his/her user agent strings. 
 The following fragments show a subset of the information provided by the two support files.
 
 ````json
 {
-  "ip": "...",
-  "city": "...",
-  "region": "...",
-  "country": "IT",
-  "loc": "...",
-  "org": "...",
-  "postal": "...",
-  "timezone": "Europe/Rome",
-  "country_name": "Italy",
-  "is_eu": true,
-  "latitude": "...",
-  "longitude": "...",
-  ...
+    "<IP-Address-1>": {
+        "client_over_cloudflare_gateway": "...",
+        "client_over_cloudflare_wireguard_vpn": "...",
+        "cloudflare_webserver_hostname": "...",
+        "cloudflare_webserver_instance": "...",
+        "continent_code": "...",
+        "continent_name": "Africa",
+        "country_capital": "...",
+        "country_code_iso2": "...",
+        "country_code_iso3": "...",
+        "country_currency_code_iso3": "...",
+        "country_currency_name": "...",
+        "country_currency_numeric": "...",
+        "country_currency_symbol": "...",
+        "country_flag_emoji": "...",
+        "country_flag_emoji_unicode": "...",
+        "country_flag_url": "...",
+        "country_is_eu": false,
+        "country_name": "Kenya",
+        "country_name_official": "Republic of Kenya",
+        "country_numeric": "...",
+        "http_version": "...",
+        "ip": "...",
+        "ip_address_type": "...",
+        "latitude": "...",
+        "location_calling_code": "...",
+        "location_coordinates": "...",
+        "location_geoname_id": "...",
+        "location_identifier": "...",
+        "location_is_eu": false,
+        "location_languages": [
+            {
+                "location_language_index": 0,
+                "location_language_code_iso2": "en",
+                "location_language_code_iso3": "eng",
+                "location_language_scope": "I",
+                "location_language_type": "L"
+            },
+            {
+                "location_language_index": 1,
+                "location_language_code_iso2": "sw",
+                "location_language_code_iso3": "swa",
+                "location_language_scope": "M",
+                "location_language_type": "L"
+            }
+        ],
+        "location_name": "...",
+        "location_postal_code": "...",
+        "longitude": "...",
+        "provider_name": "...",
+        "region_code": "...",
+        "region_code_full": "...",
+        "region_name": "...",
+        "region_type": "County",
+        "timezone_name": "Africa/Nairobi",
+        "tls_server_name_indication": "...",
+        "tls_version": "...",
+        "visit_scheme": "...",
+        "visit_timestamp_epoch": "...",
+        "visit_timestamp_parsed": "..."
+    },
+    ...
 }
 ````
 
 ````json
-{ 
-  "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) ...",
-  "type": "browser",
-  "os_name": "Windows 10",
-  "os_code": "windows_10",
-  "os_family": "Windows",
-  "os_family_code": "windows",
-  "os_family_vendor": "Microsoft Corporation.",
-  "os_icon": "https://assets.userstack.com/icon/os/windows10.png",
-  "device_is_mobile_device": false,
-  "device_type": "desktop",
-  "browser_name": "Microsoft Edge",
-  "browser_version": "107.0.1418.35",
-  "browser_engine": "EdgeHTML/Blink",
-  "crawler_is_crawler": false,
-  ...
+{
+    "<User-Agent-String-1>": {
+        "browser_app_code_name": "Mozilla",
+        "browser_app_name": "...",
+        "browser_app_version": "...",
+        "browser_cookie_enabled": "...",
+        "browser_engine": "...",
+        "browser_name": "...",
+        "browser_on_line": "...",
+        "browser_pdf_viewer_enabled": "...",
+        "browser_platform": "...",
+        "browser_product": "...",
+        "browser_product_sub": "...",
+        "browser_vendor": "Google Inc.",
+        "browser_vendor_sub": "",
+        "browser_version": "...",
+        "browser_version_major": "...",
+        "connection_downlink": "...",
+        "connection_downlink_max": "...",
+        "connection_effective_type": "...",
+        "connection_rtt": "...",
+        "connection_save_data": "...",
+        "connection_type": "cellular",
+        "device_brand": "Samsung",
+        "device_brand_code": "samsung",
+        "device_brand_url": "http://www.samsung.com/",
+        "device_hardware_concurrency": "...",
+        "device_is_crawler": "...",
+        "device_is_mobile_device": "...",
+        "device_language_code": "...",
+        "device_max_touch_points": 5,
+        "device_memory": 2,
+        "device_name": "...",
+        "device_orientation": "...",
+        "device_type": "...",
+        "os_code": "android_11",
+        "os_family": "Android",
+        "os_family_code": "android",
+        "os_family_vendor": "Google Inc.",
+        "os_icon": "...",
+        "os_icon_large": "...",
+        "os_name": "Android",
+        "os_url": "...",
+        "os_version": "...",
+        "ua": "...",
+        "ua_type": "mobile-browser",
+        "ua_url": "...",
+        "ua_webdriver": "..."
+    }
 }
 ````
 
@@ -657,9 +742,8 @@ The download script refines the raw data into up to 10 tabular dataframe seriali
 into CSV files. The final amount of dataframes serialized in the `Dataframe` folder depends 
 on the environment variables configured by the task requester.    
 
-Each `DataFrame` has a variable number of rows and columns. 
-Part of them provide a general information, thus being composed of one row for each worker, 
-such as `workers_info` and `workers_acl`. The remaining ones have higher granularity. 
+Each `DataFrame` has a variable number of rows and columns. Their granularity 
+depend on the type of data reported. 
 For instance, a row of the `workers_url` dataframe contains a row for each result 
 retrieved for each query submitted to the search engine while analyzing a single 
 HIT's element during a given try by a single worker. A row of the `workers_answers` 
@@ -696,21 +780,23 @@ Each dataframe has its own characteristics and peculiarities. However, there are
 
 The following table provides and overview of the whole set of dataframe produced.
 
-|             Dataframe              |                                     Description                                      |
-|:----------------------------------:|:------------------------------------------------------------------------------------:|
-|         `workers_acl.csv`          |             Contains snapshots of the raw data produced by each worker.              |
-|         `workers_info.csv`         |                  Data concerning IP and User Agent of the workers.                   |
-|       `workers_answers.csv`        |              Answers provided for each evaluation dimension by workers.              |
-|    `workers_questionnaire.csv`     |                  Answers provided for each questionnaire by workers                  |
-| `workers_dimensions_selection.csv` | Temporal order along with each worker chooses a value for each evaluation dimension. |
-|        `workers_notes.csv`         |                       Textual annotations provided by workers.                       |
-|         `workers_urls.csv`         |    Queries to the search engine provided by workers along with results retrieved.    |
-|       `workers_crawling.csv`       |      Data concerning the crawling of web pages retrieved by the search engine.       |
-|         `workers_logs.csv`         |          Log data produced by the logger while the workers perform the task          |
-|       `workers_comments.csv`       |     Final comments provided by workers to the requester at the end of the task.      |
-|      `workers_mturk_data.csv`      |             Data concerning workers produced by Amazon Mechanical Turk.              |
-|    `workers_prolific_data.csv`     |                    Data concerning workers produced by Prolific.                     |
-|     `workers_toloka_data.csv`      |                     Data concerning workers produced by Toloka.                      |
+|                Dataframe                |                                            Description                                            |
+|:---------------------------------------:|:-------------------------------------------------------------------------------------------------:|
+|            `workers_acl.csv`            |                    Contains snapshots of the raw data produced by each worker.                    |
+|       `workers_ip_addresses.csv`        |                         Data concerning the IP addresses of the workers.                          |
+|        `workers_user_agents.csv`        |                      Data concerning the User Agent strings of the workers.                       |
+|          `workers_answers.csv`          |                    Answers provided for each evaluation dimension by workers.                     |
+|       `workers_questionnaire.csv`       |                        Answers provided for each questionnaire by workers                         |
+|   `workers_dimensions_selection.csv`    |       Temporal order along with each worker chooses a value for each evaluation dimension.        |
+|           `workers_notes.csv`           |                             Textual annotations provided by workers.                              |
+|           `workers_urls.csv`            |          Queries to the search engine provided by workers along with results retrieved.           |
+|         `workers_crawling.csv`          |             Data concerning the crawling of web pages retrieved by the search engine.             |
+|           `workers_logs.csv`            |                Log data produced by the logger while the workers perform the task                 |
+|         `workers_comments.csv`          |            Final comments provided by workers to the requester at the end of the task.            |
+|        `workers_mturk_data.csv`         |                    Data concerning workers produced by Amazon Mechanical Turk.                    |
+|    `workers_prolific_study_data.csv`    |                Data concerning the study deployed on Prolific and its submissions.                |
+| `workers_prolific_demographic_data.csv` | Data concerning the demographics of the workers who participate in a study published on Prolific. |
+|        `workers_toloka_data.csv`        |                Data concerning the project deployed on Toloka and its submissions.                |
 
 
 

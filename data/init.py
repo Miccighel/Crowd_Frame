@@ -2,15 +2,10 @@
 # coding: utf-8
 
 import json
-from python_on_whales import DockerClient
 import docker
-from mako.template import Template
 import os
-from datetime import datetime, timedelta
-import requests
 import pandas as pd
 import subprocess
-import string
 import datefinder
 import glob
 import random
@@ -19,8 +14,12 @@ import shutil
 import hmac
 import textwrap
 import boto3
-from zipfile import ZipFile
 import time
+import warnings
+from mako.template import Template
+from python_on_whales import DockerClient
+from datetime import datetime
+from zipfile import ZipFile
 from distutils.util import strtobool
 from pathlib import Path
 from shutil import copy2
@@ -31,9 +30,10 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.progress import track
 from dateutil import tz
-import warnings
 from shared import handle_aws_error
 from shared import serialize_json
+from shared import read_json
+from shared import remove_json
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
@@ -67,34 +67,6 @@ filename_questionnaires_config = "questionnaires.json"
 filename_search_engine_config = "search_engine.json"
 filename_task_settings_config = "task.json"
 filename_workers_settings_config = "workers.json"
-
-
-def serialize_json(folder, filename, data):
-    if not os.path.exists(folder):
-        os.makedirs(folder, exist_ok=True)
-    console.print(f"Serialized at path: [cyan]{folder}{filename}[/cyan]")
-    with open(f"{folder}{filename}", 'w', encoding='utf-8') as f:
-        json.dump(data, f, ensure_ascii=False, indent=4, default=str)
-        f.close()
-
-
-def remove_json(folder, filename):
-    os.remove(f"{folder}{filename}")
-
-
-def random_string(length=11):
-    letters = string.ascii_uppercase
-    return ''.join(random.choice(letters) for i in range(length))
-
-
-def read_json(path):
-    if os.path.exists(path):
-        with open(path, "r", encoding="utf8") as file:
-            data = json.load(file)
-        return data
-    else:
-        return {}
-
 
 def stop_sequence():
     console.print('\n\n')
