@@ -125,9 +125,10 @@ os.makedirs(folder_result_path, exist_ok=True)
 os.makedirs(models_path, exist_ok=True)
 os.makedirs(resources_path, exist_ok=True)
 os.makedirs(data_path, exist_ok=True)
-os.makedirs(crawling_path, exist_ok=True)
-os.makedirs(crawling_path_source, exist_ok=True)
-os.makedirs(crawling_path_metadata, exist_ok=True)
+if enable_crawling:
+    os.makedirs(crawling_path, exist_ok=True)
+    os.makedirs(crawling_path_source, exist_ok=True)
+    os.makedirs(crawling_path_metadata, exist_ok=True)
 
 if profile_name is None:
     profile_name = 'default'
@@ -2285,6 +2286,7 @@ def parse_answers(row, questionnaire, question, answers):
 if not os.path.exists(df_quest_path):
 
     df_quest = pd.DataFrame()
+    questionnaires_backup = None
 
     for index, acl_record in tqdm.tqdm(df_acl.iterrows(), total=df_acl.shape[0]):
 
@@ -2297,6 +2299,8 @@ if not os.path.exists(df_quest_path):
             task = worker_snapshot['task']
             checks = worker_snapshot['checks']
             questionnaires = worker_snapshot['questionnaires']
+            if len(questionnaires) > 0:
+                questionnaires_backup = questionnaires
             questionnaires_answers = worker_snapshot['questionnaires_answers']
 
             task_name = task['task_name']
@@ -2322,19 +2326,13 @@ if not os.path.exists(df_quest_path):
                     row['time_submit'] = questionnaire_data['time_submit']
                     row['time_submit_parsed'] = find_date_string(row['time_submit'])
 
-                    questionnaire = None
                     try:
                         questionnaire = questionnaires[questionnaire_data['serialization']['info']['index']]
                     except KeyError:
-                        questionnaires = read_json(f"{task_config_folder}{batch_name}/{filename_questionnaires_config}")
-                        for questionnaire_candidate in questionnaires:
-                            if int(questionnaire_candidate['index']) == int(questionnaire_data['serialization']['info']['index']):
-                                questionnaire = questionnaire_candidate
-                    questions = None
-                    if 'questions' in questionnaire_data['serialization']:
-                        questions = questionnaire_data['serialization']['questions']
-                    else:
-                        questions = questionnaires[questionnaire_data['serialization']['info']['index']]['questions']
+                        # Branch triggered when the original 'data' payload has been lost
+                        questionnaire = questionnaires_backup[questionnaire_data['serialization']['info']['index']]
+                        questionnaire['questions'] = questionnaire_data['serialization']['questions']
+                    questions = questionnaire_data['serialization']['questions']
                     current_answers = questionnaire_data['serialization']['answers']
                     timestamps_start = questionnaire_data['serialization']["timestamps_start"]
                     timestamps_end = questionnaire_data['serialization']["timestamps_end"]
@@ -2352,7 +2350,7 @@ if not os.path.exists(df_quest_path):
                         (df_quest['unit_id'] == row['unit_id']) &
                         (df_quest['try_current'] == row['try_current']) &
                         (df_quest['questionnaire_index'] == questionnaire_data['serialization']['info']['index'])
-                        ]
+                    ]
 
                     if data.shape[0] <= 0:
 
