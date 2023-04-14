@@ -535,6 +535,11 @@ for table_acl in task_acl_tables:
                     }
                 }
                 worker_ip_batches[worker_id][ip_address] = [batch_name]
+            else:
+                worker_ip_addresses[worker_id][ip_address]['batches'][batch_name] = {}
+                worker_ip_addresses[worker_id][ip_address]['batches'][batch_name]['time_submit'] = time_arrival
+                worker_ip_addresses[worker_id][ip_address]['batches'][batch_name]['time_submit_parsed'] = find_date_string(time_arrival)
+                worker_ip_batches[worker_id][ip_address].append(batch_name)
             if worker_id not in worker_user_agents:
                 worker_user_agents[worker_id] = {}
             if worker_id not in worker_user_agents_batches:
@@ -550,6 +555,11 @@ for table_acl in task_acl_tables:
                     }
                 }
                 worker_user_agents_batches[worker_id][user_agent] = [batch_name]
+            else:
+                worker_user_agents[worker_id][user_agent]['batches'][batch_name] = {}
+                worker_user_agents[worker_id][user_agent]['batches'][batch_name]['time_submit'] = time_arrival
+                worker_user_agents[worker_id][user_agent]['batches'][batch_name]['time_submit_parsed'] = find_date_string(time_arrival)
+                worker_user_agents_batches[worker_id][user_agent].append(batch_name)
 console.print(f"Unique worker identifiers found: [green]{len(worker_identifiers)}")
 
 worker_counter = 0
@@ -727,6 +737,11 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
                                     worker_ip_addresses[worker_id][ip_address]['batches'] = {batch_name: {}}
                                     worker_ip_addresses[worker_id][ip_address]['batches'][batch_name]['time_submit'] = time_arrival
                                     worker_ip_addresses[worker_id][ip_address]['batches'][batch_name]['time_submit_parsed'] = time_arrival_parsed
+                                else:
+                                    worker_ip_addresses[worker_id][ip_address]['batches'][batch_name] = {}
+                                    worker_ip_addresses[worker_id][ip_address]['batches'][batch_name]['time_submit'] = time_arrival
+                                    worker_ip_addresses[worker_id][ip_address]['batches'][batch_name]['time_submit_parsed'] =  time_arrival_parsed
+
                                 if ip_address in worker_ip_batches[worker_id]:
                                     worker_ip_batches[worker_id][ip_address].append(batch_name)
                                 else:
@@ -735,14 +750,16 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
                                 if batch_name in worker_ip_batches[worker_id][ip_address_current]:
                                     ip_data, properties_moved_ip = fetch_ip_data(worker_id, ip_address_current)
                                     worker_ip_addresses[worker_id][ip_address_current]['fetched'] = True
-                                    snapshot['ip']['info'][ip_address_current] = worker_ip_addresses[worker_id][ip_address_current]
-                                    snapshot['ip']['serialization'][ip_address_current] = ip_data[ip_address_current]
 
                             if user_agent is not None:
                                 if user_agent not in worker_user_agents[worker_id]:
                                     worker_user_agents[worker_id][user_agent] = {}
                                     worker_user_agents[worker_id][user_agent]['fetched'] = False
                                     worker_user_agents[worker_id][user_agent]['batches'] = {batch_name: {}}
+                                    worker_user_agents[worker_id][user_agent]['batches'][batch_name]['time_submit'] = time_arrival
+                                    worker_user_agents[worker_id][user_agent]['batches'][batch_name]['time_submit_parsed'] = time_arrival_parsed
+                                else:
+                                    worker_user_agents[worker_id][user_agent]['batches'][batch_name] = {}
                                     worker_user_agents[worker_id][user_agent]['batches'][batch_name]['time_submit'] = time_arrival
                                     worker_user_agents[worker_id][user_agent]['batches'][batch_name]['time_submit_parsed'] = time_arrival_parsed
                                 if user_agent in worker_user_agents_batches[worker_id]:
@@ -753,9 +770,6 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
                                 if batch_name in worker_user_agents_batches[worker_id][user_agent_current]:
                                     ua_data, properties_moved_ua = fetch_uag_data(worker_id, user_agent_current)
                                     worker_user_agents[worker_id][user_agent_current]['fetched'] = True
-                                    snapshot['uag']['info'][user_agent_current] = worker_user_agents[worker_id][user_agent_current]
-                                    snapshot['uag']['serialization'][user_agent_current] = ua_data[user_agent_current]
-
                 if 'params_fetched' in snapshot['worker'].keys():
                     properties_fetched = snapshot['worker']['properties_fetched']
                     properties_fetched_copy = snapshot['worker']['properties_fetched'].copy()
@@ -778,6 +792,10 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
                             worker_ip_addresses[worker_id][ip_address]['batches'] = {snapshot['task']['batch_name']: {}}
                             worker_ip_addresses[worker_id][ip_address]['batches'][snapshot['task']['batch_name']]['time_submit'] = snapshot['task']['time_submit']
                             worker_ip_addresses[worker_id][ip_address]['batches'][snapshot['task']['batch_name']]['time_submit_parsed'] = snapshot['task']['time_submit_parsed']
+                        else:
+                            worker_ip_addresses[worker_id][ip_address]['batches'][snapshot['task']['batch_name']] = {}
+                            worker_ip_addresses[worker_id][ip_address]['batches'][snapshot['task']['batch_name']]['time_submit'] = snapshot['task']['time_submit']
+                            worker_ip_addresses[worker_id][ip_address]['batches'][snapshot['task']['batch_name']]['time_submit_parsed'] = snapshot['task']['time_submit_parsed']
                         if ip_address in worker_ip_batches[worker_id]:
                             worker_ip_batches[worker_id][ip_address].append(snapshot['task']['batch_name'])
                         else:
@@ -793,6 +811,11 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
                             worker_user_agents[worker_id][user_agent]['batches'] = {snapshot['task']['batch_name']: {}}
                             worker_user_agents[worker_id][user_agent]['batches'][snapshot['task']['batch_name']]['time_submit'] = snapshot['task']['time_submit']
                             worker_user_agents[worker_id][user_agent]['batches'][snapshot['task']['batch_name']]['time_submit_parsed'] = snapshot['task']['time_submit_parsed']
+                        else:
+                            worker_user_agents[worker_id][user_agent]['batches'][snapshot['task']['batch_name']] = {}
+                            worker_user_agents[worker_id][user_agent]['batches'][snapshot['task']['batch_name']]['time_submit'] = snapshot['task']['time_submit']
+                            worker_user_agents[worker_id][user_agent]['batches'][snapshot['task']['batch_name']]['time_submit_parsed'] = snapshot['task']['time_submit_parsed']
+
                         if user_agent in worker_user_agents_batches[worker_id]:
                             worker_user_agents_batches[worker_id][user_agent].append(snapshot['task']['batch_name'])
                         else:
@@ -816,11 +839,13 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
 
                     for ip_current, ip_data_current in worker_ip_addresses[worker_id].items():
                         if snapshot['task']['batch_name'] in worker_ip_batches[worker_id][ip_current]:
-                            snapshot['ip']['info'][ip_current] = worker_ip_addresses[worker_id][ip_current]
+                            snapshot['ip']['info'][ip_current] = {}
+                            snapshot['ip']['info'][ip_current][snapshot['task']['batch_name']] = worker_ip_addresses[worker_id][ip_current]['batches'][snapshot['task']['batch_name']]
                             snapshot['ip']['serialization'][ip_current] = ip_data[ip_current]
                     for ua_current, ua_data_current in worker_user_agents[worker_id].items():
                         if snapshot['task']['batch_name'] in worker_user_agents_batches[worker_id][ua_current]:
-                            snapshot['uag']['info'][ua_current] = worker_user_agents[worker_id][ua_current]
+                            snapshot['uag']['info'][ua_current] = {}
+                            snapshot['uag']['info'][ua_current][snapshot['task']['batch_name']] = worker_user_agents[worker_id][ua_current]['batches'][snapshot['task']['batch_name']]
                             snapshot['uag']['serialization'][ua_current] = uag_data[ua_current]
 
                 if log_data_source:
@@ -1752,7 +1777,7 @@ if not os.path.exists(df_ip_path):
 
             for ip_address, ip_info_details in ip_info.items():
 
-                for ip_batch, batch_data in ip_info_details['batches'].items():
+                for ip_batch, batch_data in ip_info_details.items():
 
                     row = {
                         'worker_id': worker_id,
@@ -1810,7 +1835,7 @@ if not os.path.exists(df_uag_path):
 
             for user_agent, user_agent_details in ua_info.items():
 
-                for ua_batch, batch_data in user_agent_details['batches'].items():
+                for ua_batch, batch_data in user_agent_details.items():
 
                     row = {
                         'worker_id': worker_id,
