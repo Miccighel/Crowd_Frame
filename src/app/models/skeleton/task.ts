@@ -630,7 +630,7 @@ export class Task {
         data["timestamps_end"] = timestampsEnd
         let timestampsElapsed = this.timestampsElapsed[questionnaireIndexExtended];
         data["timestamps_elapsed"] = timestampsElapsed
-        /* Number of accesses to the current questionnaire (which must be always 1, since the worker cannot go back */
+        /* Number of accesses to the current questionnaire */
         data["accesses"] = this.elementsAccesses[questionnaireIndexExtended]
 
         return data

@@ -3,13 +3,22 @@
     <form [formGroup]="questionnaireForm">
         <mat-card>
 
+            <mat-card-title>
+                <span *ngIf="questionnaire.name_pretty">
+                    {{questionnaire.name_pretty}}
+                </span>
+                <span *ngIf="!questionnaire.name_pretty">
+                    Questionnaire {{this.questionnaire.index + 1}}
+                </span>
+            </mat-card-title>
+
             <ng-template #questionTemplate let-question>
 
                 <div *ngIf="!question.dropped" class="indent">
 
                     <ng-container class="questionnaire-body" *ngIf="!question.dropped && handleQuestionDependency(question)">
 
-                        <p class="question-text">{{question.indexFull}} - {{question.text}}<span *ngIf="question.required"> (*)</span></p>
+                        <p class="question-text">{{question.indexFull}} - {{question.text}}</p>
 
                         <div *ngIf="question.type=='mcq'" class="question-box question-mcq">
                             <mat-radio-group class="radio-button-group question" formControlName="{{question.nameFull}}_answer">
@@ -186,7 +195,7 @@
                             (click)="handleQuestionnaireCompletion('Next')">
                         Next
                     </button>
-                    <button mat-flat-button color="primary" matStepperNext
+                    <button mat-stroked-button color="accent" matStepperNext
                             *ngIf="
                             ((this.questionnaire.index >= this.task.questionnaireAmountStart-1) && this.task.documentsAmount==0) ||
                             (this.questionnaire.index>=this.task.questionnaireAmount-1 && this.task.questionnaireAmountEnd>0)"
@@ -194,7 +203,6 @@
                             (click)="handleQuestionnaireCompletion('Finish')">
                         Finish
                     </button>
-                    (*) Answer required to proceed
                 </p>
             </mat-card-actions>
         </mat-card>

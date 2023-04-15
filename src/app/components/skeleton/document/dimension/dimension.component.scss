@@ -1,205 +1,206 @@
 .dimension {
 
-  mat-form-field {
-    width: 100%;
-  }
+    mat-form-field {
+        width: 100%;
+    }
 
-  margin-bottom: 1%;
+    margin-bottom: 1%;
 }
 
 .dimension-container {
-  display: flex;
+    display: flex;
 }
 
 .dimension-content {
-  flex-grow: 1;
-  font-size: 1.2em;
+    flex-grow: 1;
+    font-size: 1.1em;
 }
 
 .dimension-name {
-  margin-bottom: 1%;
+    margin-bottom: 1%;
 }
 
 .dimension-description {
-  margin-bottom: 1%;
+    margin-bottom: 1%;
 }
 
 .dimension-example {
-  display: block;
-  margin-top: 1%;
+    display: block;
+    margin-top: 1%;
 }
 
 .dimension-description p {
-  margin-bottom: 0;
-  margin-top: 0.5%;
+    margin-bottom: 0;
+    margin-top: 0.5%;
 }
 
 .dimension-scale {
-  margin-bottom: 1%;
+    margin-bottom: 1%;
 }
 
 .dimension-url {
-  margin-bottom: 1%;
+    margin-bottom: 1%;
 }
 
 .dimension mat-radio-group {
-  margin-top: 0;
-  margin-bottom: 0;
+    margin-top: 0;
+    margin-bottom: 0;
 }
 
 .dimension .checkbox {
-  margin: 0;
-  padding: 0;
+    margin: 0;
+    padding: 0;
 
-  mat-checkbox {
-    float: left;
-    margin-right: 1%;
-  }
+    mat-checkbox {
+        float: left;
+        margin-right: 1%;
+    }
 }
 
 
 ::ng-deep .dimension .checkbox .mat-form-field-infix {
-  display: none;
+    display: none;
 }
 
 ::ng-deep .dimension .checkbox .mat-form-field-flex {
-  display: none;
+    display: none;
 }
 
 ::ng-deep .dimension .checkbox .mat-form-field-underline {
-  display: none;
+    display: none;
 }
 
 ::ng-deep .dimension .checkbox .mat-form-field-wrapper {
-  padding: 0;
+    padding: 0;
 }
 
 
 .dimension .magnitude_estimation {
-  font-size: 1.2em;
+    font-size: 1.1em;
 }
 
 
 .dimension-matrix-single {
-  border: 2px solid lightgray;
-  border-radius: 8px;
-  padding: 10px;
-  margin-bottom: 2em;
+    border: 2px solid lightgray;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 2em;
 }
 
 .dimension-matrix-multiple {
-  margin-bottom: 1em;
+    margin-bottom: 1em;
 }
 
 .dimension-matrix-container {
-  margin-bottom: 1em;
+    margin-bottom: 1em;
 }
 
 .dimension-matrix .matrix-header .matrix-header-value, .dimension-matrix .matrix-header .matrix-header-text {
-  position: relative;
-  right: 5px;
-  text-align: center;
+    position: relative;
+    right: 5px;
+    text-align: center;
 }
 
 .dimension-matrix mat-radio-group {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
+    display: flex !important;
+    justify-content: flex-start;
 }
 
 .dimension-matrix mat-radio-group > div {
-  text-align: center;
-  flex: 1;
+    display: flex !important;
+    flex-basis: 0;
+    flex-grow: 1;
+    word-break: break-all;
+    align-items: center;
+    flex-wrap: wrap;
 }
 
 .dimension-matrix mat-radio-group .matrix-header-body, .dimension-matrix mat-radio-group .matrix-header-body-wide {
-  font-size: initial;
-  margin-bottom: 1%;
+    font-size: medium;
+    margin-bottom: 1%;
+    justify-content: center;
 }
 
-.dimension-matrix mat-radio-group .matrix-header-body-wide {
-  text-align: center;
+.dimension-matrix .matrix-header-body-wide:first-child, .dimension-matrix .matrix-header-body:first-child {
+    width: 15%;
 }
 
-.dimension-matrix mat-radio-group .matrix-header-body-wide:first-child {
-  margin-left: 16%;
+.dimension-matrix .matrix-value div {
+    width: 100%;
+}
+
+.dimension-matrix .matrix-value-control {
+     justify-content: center;
 }
 
 .dimension-matrix mat-radio-group .matrix-value-description {
 
-  .description-main {
-    font-size: 1.2em;
-    padding-bottom: 20px;
-  }
+    .description-main {
+        font-size: 1.1em;
+        padding-bottom: 20px;
+    }
 
-  .description-main-with-sub {
-    border: none;
-    padding-bottom: 0;
-    font-size: 1.1em;
-  }
+    .description-main-with-sub {
+        border: none;
+        padding-bottom: 0;
+        font-size: 1.1em;
+    }
 
-  text-align: left;
+    text-align: left;
 }
 
 .dimension-matrix .description-sub {
-  p {
-    margin-top: 0;
-  }
+    p {
+        margin-top: 0;
+    }
 
-  padding: 10px 15px 5px 0px;
+    padding: 10px 15px 5px 0px;
 }
 
 .dimension-matrix .name-pretty {
-  p {
-    margin-top: 0;
-    text-align: left;
-  }
+    p {
+        margin-top: 0;
+        text-align: left;
+    }
 
-  strong {
-    font-size: initial;
-  }
-}
-
-.dimension-matrix mat-radio-group > div {
-  text-align: center;
+    strong {
+        font-size: medium;
+    }
 }
 
 .dimension-matrix p {
-  margin-bottom: 0;
+    margin-bottom: 0;
 }
 
 .dimension h2 {
-  font-weight: normal;
-  margin-bottom: 1%;
-  margin-top: 1%;
+    font-weight: normal;
+    margin-bottom: 1%;
+    margin-top: 1%;
 }
 
 .instructions h2 {
-  font-weight: normal;
+    font-weight: normal;
 }
 
 .dimension-matrix .dimension-separate {
-  background-color: #F8F8F8;
-}
-
-.dimension-matrix .matrix-value {
-  display: inline-block;
+    background-color: #F8F8F8;
 }
 
 .dimension-counter {
-  flex-grow: 0;
-  flex-basis: 1%;
-  justify-content: center;
-  align-self: center;
-  vertical-align: top;
-  margin-right: 1%;
+    flex-grow: 0;
+    flex-basis: 1%;
+    justify-content: center;
+    align-self: center;
+    vertical-align: top;
+    margin-right: 1%;
 }
 
 .scale-interval {
-  margin-top: 1%;
-  span {
-    font-size: 1.1em;
-  }
+    margin-top: 1%;
+
+    span {
+        font-size: 1.1em;
+    }
 }
 
 /*
@@ -207,43 +208,43 @@
   @AggiunteAbbondo
 */
 .dimension-content-split {
-  display: table;
-  border-spacing: 2cm 0px;
-  width: 100%;
-  margin-bottom: 30px;
+    display: table;
+    border-spacing: 2cm 0px;
+    width: 100%;
+    margin-bottom: 30px;
 }
 
 .dimension-split-inside {
-  display: table-cell;
-  margin-bottom: 30px;
+    display: table-cell;
+    margin-bottom: 30px;
 
 }
 
 .spanDocument {
-  font-size: 15px;
-  font-weight: bold;
-  text-align: center;
-  padding-bottom: 20px;
+    font-size: 15px;
+    font-weight: bold;
+    text-align: center;
+    padding-bottom: 20px;
 }
 
 
 .dimension-name-center {
-  text-align: center;
+    text-align: center;
 }
 
 
 .dimension-box {
-  display: table-cell;
-  background-color: #FCFCFC;
-  padding-top: 1px;
-  margin-top: -1px;
-  overflow: hidden;
-  border-radius: 5px;
-  cursor: pointer;
-  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+    display: table-cell;
+    background-color: #FCFCFC;
+    padding-top: 1px;
+    margin-top: -1px;
+    overflow: hidden;
+    border-radius: 5px;
+    cursor: pointer;
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
 }
 
 .test {
-  opacity: 100%;
-  z-index: 110;
+    opacity: 100%;
+    z-index: 110;
 }

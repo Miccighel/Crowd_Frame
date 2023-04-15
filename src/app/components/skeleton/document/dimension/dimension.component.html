@@ -184,9 +184,10 @@
 
                             <!-- Dimension assessment matrix header markup -->
                             <mat-radio-group class="matrix-header" *ngIf="dimension.scale && this.task.getFirstDimension(position).index == dimension.index ">
+                                <div class="{{dimension.description ? 'matrix-header-body-wide' : 'matrix-header-body'}}"></div>
                                 <div class="{{dimension.description ? 'matrix-header-body-wide' : 'matrix-header-body'}}" *ngFor="let mapping of dimension.scale.mapping; let k=index">
                                     <div *ngIf="mapping.label">
-                                        <strong [innerHTML]="mapping.labelSplitted()"></strong>
+                                        <strong [innerHTML]="mapping.label"></strong>
                                     </div>
                                     <div *ngIf="mapping.description">
                                         <span> ({{mapping.description}})</span>
@@ -198,7 +199,7 @@
                             <div *ngIf="dimension.scale" class="{{dimension.style.separator ? ' dimension-separate' : ''}}">
                                 <mat-radio-group aria-labelledby="radio-button-label" formControlName="{{(dimension.name).concat('_value')}}">
                                     <div class="matrix-value name-pretty" *ngIf="dimension.name_pretty">
-                                        <p><strong><span *ngIf="!this.dimension.style.separator">{{i + 1}} - </span>{{dimension.name_pretty}}</strong></p>
+                                        <p><strong><span *ngIf="!this.dimension.style.separator">{{i}} - </span>{{dimension.name_pretty}}</strong></p>
                                         <ng-container *ngIf="dimension.description">
                                             <div class="{{dimension.example ? '' : 'description-sub'}}" *ngIf="dimension.description.length>0">
                                                 <p>{{dimension.description}}</p>
@@ -210,7 +211,7 @@
                                             </div>
                                         </ng-container>
                                     </div>
-                                    <div *ngFor="let mapping of dimension.scale.mapping; let k=index">
+                                    <div class="matrix-value-control" *ngFor="let mapping of dimension.scale.mapping; let k=index">
                                         <mat-radio-button class="radio-button" value="{{mapping.value}}" (change)="this.task.storeDimensionValue($event, documentIndex,dimension.index)"></mat-radio-button>
                                     </div>
                                 </mat-radio-group>

@@ -430,6 +430,7 @@ export class SkeletonComponent implements OnInit {
                                 this.worker.setParameter('status_code', StatusCodes.TASK_COMPLETED_BY_OTHERS)
                         }
                     }
+                    await this.performTaskSetup()
                     this.unlockTask(hitAssigned)
 
                 } else {
@@ -618,6 +619,7 @@ export class SkeletonComponent implements OnInit {
      */
     public enableTask() {
         this.sectionService.taskInstructionsRead = true
+        // TODO: Set here the updated selectedIndex, if applicable
         this.showSnackbar("If you have a very slow internet connection please wait a few seconds", "Dismiss", 10000)
     }
 
@@ -703,7 +705,7 @@ export class SkeletonComponent implements OnInit {
                 await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, taskInitialPayload)
             }
 
-            this.colorStepper(this.task.questionnaireAmount, this.task.documentsAmount)
+            //this.colorStepper(this.task.questionnaireAmount, this.task.documentsAmount)
 
         }
 
