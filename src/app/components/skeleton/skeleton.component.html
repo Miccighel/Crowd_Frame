@@ -13,15 +13,15 @@
 
 
 <app-outcome-section
-        *ngIf="!this.sectionService.taskAllowed"
-        [worker]="this.worker"
-        [triesAllowed]="this.task.settings.allowed_tries"
-        [tryCurrent]="this.task.tryCurrent"
-        [messages]="this.task.settings.messages"
-        [tokenInput]="this.task.tokenInput"
-        [tokenOutput]="this.task.tokenOutput"
-        (commentEmitter)="performCommentSaving($event)"
-        (performReset)="this.performReset()"
+    *ngIf="!this.sectionService.taskAllowed"
+    [worker]="this.worker"
+    [triesAllowed]="this.task.settings.allowed_tries"
+    [tryCurrent]="this.task.tryCurrent"
+    [messages]="this.task.settings.messages"
+    [tokenInput]="this.task.tokenInput"
+    [tokenOutput]="this.task.tokenOutput"
+    (commentEmitter)="performCommentSaving($event)"
+    (performReset)="this.performReset()"
 ></app-outcome-section>
 
 
@@ -86,15 +86,15 @@
 
         <mat-step *ngFor="let stepIndex of this.sectionService.stepIndexes()">
             <app-questionnaire
-                    *ngIf="this.task.getElementIndex(stepIndex)['elementType']=='Q'"
-                    [questionnaireIndex]="this.task.getElementIndex(stepIndex)['elementIndex']"
-                    (formEmitter)="this.storeQuestionnaireForm($event, this.task.getElementIndex(stepIndex)['elementIndex'])"
+                *ngIf="this.task.getElementIndex(stepIndex)['elementType']=='Q'"
+                [questionnaireIndex]="this.task.getElementIndex(stepIndex)['elementIndex']"
+                (formEmitter)="this.storeQuestionnaireForm($event, this.task.getElementIndex(stepIndex)['elementIndex'])"
             >
             </app-questionnaire>
             <app-document
-                    *ngIf="this.task.getElementIndex(stepIndex)['elementType']=='S'"
-                    [documentIndex]="this.task.getElementIndex(stepIndex)['elementIndex']"
-                    (formEmitter)="this.storeDocumentForm($event, this.task.getElementIndex(stepIndex)['elementIndex'])"
+                *ngIf="this.task.getElementIndex(stepIndex)['elementType']=='S'"
+                [documentIndex]="this.task.getElementIndex(stepIndex)['elementIndex']"
+                (formEmitter)="this.storeDocumentForm($event, this.task.getElementIndex(stepIndex)['elementIndex'])"
             ></app-document>
 
         </mat-step>

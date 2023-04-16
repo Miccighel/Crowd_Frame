@@ -1,118 +1,118 @@
 ::ng-deep .mat-horizontal-stepper-header {
-  pointer-events: none !important;
+    pointer-events: none !important;
 }
 
 .mat-step-label {
-  display: none !important;
+    display: none !important;
 }
 
 mat-horizontal-stepper mat-card-content, mat-horizontal-stepper mat-card-title {
-  width: 85% !important;
-  margin: 1em auto !important;
+    width: 85% !important;
+    margin: 1em auto !important;
 }
 
 mat-horizontal-stepper mat-card-actions {
-  margin: 1% auto 1em auto;
+    margin: 1% auto 1em auto;
 }
 
 mat-horizontal-stepper mat-step-header {
-  font-size: large;
+    font-size: large;
 }
 
 .header-bar {
-  text-transform: uppercase;
-  font-weight: 500;
+    text-transform: uppercase;
+    font-weight: 500;
 }
 
 /* |--- TOKEN INPUT SECTION --| */
 
 #token-section {
-  margin-bottom: 2%;
+    margin-bottom: 2%;
 
-  mat-form-field {
-    width: 100%;
-    text-align: center;
-  }
+    mat-form-field {
+        width: 100%;
+        text-align: center;
+    }
 
-  mat-card-content {
-    margin-bottom: 1%;
-  }
+    mat-card-content {
+        margin-bottom: 1%;
+    }
 
 }
 
 #token-section form {
-  width: 96%;
-  margin: auto;
+    width: 96%;
+    margin: auto;
 }
 
 #token-section input {
-  font-size: 2em;
-  text-transform: uppercase;
+    font-size: 2em;
+    text-transform: uppercase;
 }
 
 #token-section form mat-card-content {
-  margin: auto;
-  max-width: 60%;
+    margin: auto;
+    max-width: 60%;
 }
 
 #token-section mat-card-actions {
-  text-align: center;
+    text-align: center;
 }
 
 
 /* NOT ALLOWED SECTION */
 
 #already-started-section {
-  margin: auto;
-  width: 96%;
+    margin: auto;
+    width: 96%;
 }
 
 .instructions-section div {
-  line-height: 150%;
-  font-size: 1.1em;
+    line-height: 150%;
+    font-size: 1.1em;
 
-  li {
-    line-height: 200%;
-    margin-top: 5px;
-    margin-bottom: 5px;
-  }
+    li {
+        line-height: 200%;
+        margin-top: 5px;
+        margin-bottom: 5px;
+    }
 
-  p {
-  line-height: 150%;
-}
+    p {
+        line-height: 150%;
+    }
 
 }
 
 .instructions-section {
-  max-width: 80%;
-  height: 100vh;
-  display: flex;
-  margin-left: auto;
-  margin-right: auto;
+    max-width: 80%;
+    height: 100vh;
+    display: flex;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .instructions-section mat-card {
-  margin: auto;
+    margin: auto;
 }
 
 .instructions-section mat-card-actions {
-  text-align: center;
+    text-align: center;
 }
 
 .instructions-section mat-card-actions button {
-  text-transform: uppercase;
+    text-transform: uppercase;
 }
 
 .instructions-section h1 {
-  text-align: center;
-  font-weight: normal;
+    text-align: center;
+    font-weight: normal;
 }
 
 .instructions-quote {
-  margin-top: 0;
-  margin-bottom: 0;
-  box-shadow: 0 0 0 0;
-  border-radius: 0;
-  border-left: 10px lightgray solid;
-  padding-left: 1em;
+    margin-top: 0;
+    margin-bottom: 0;
+    box-shadow: 0 0 0 0;
+    border-radius: 0;
+    border-left: 10px lightgray solid;
+    padding-left: 1em;
 }

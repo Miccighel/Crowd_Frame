@@ -109,7 +109,6 @@ mat-form-field {
 }
 
 .questionnaire-matrix .matrix-header {
-    padding-top: 1.5%;
     border: 0;
     box-shadow: 0 0 0 0;
     border-radius: 0;
@@ -135,7 +134,7 @@ mat-form-field {
     justify-content:center;
     flex-basis: 0;
     flex-grow: 1;
-    word-break: break-all;
+    overflow-wrap: break-word;
     align-items: center;
     flex-wrap: wrap;
 }
@@ -161,7 +160,7 @@ mat-form-field {
     flex-basis: 0;
     flex-grow: 1;
     display: flex !important;
-    word-break: break-all;
+    overflow-wrap: break-word;
     justify-content: center;
     align-items: center;
 }

@@ -110,10 +110,11 @@
     display: flex !important;
     flex-basis: 0;
     flex-grow: 1;
-    word-break: break-all;
+    overflow-wrap: break-word;
     align-items: center;
     flex-wrap: wrap;
 }
+
 
 .dimension-matrix mat-radio-group .matrix-header-body, .dimension-matrix mat-radio-group .matrix-header-body-wide {
     font-size: medium;
@@ -154,7 +155,7 @@
         margin-top: 0;
     }
 
-    padding: 10px 15px 5px 0px;
+    padding: 5px 10px 3px 0;
 }
 
 .dimension-matrix .name-pretty {
@@ -174,8 +175,6 @@
 
 .dimension h2 {
     font-weight: normal;
-    margin-bottom: 1%;
-    margin-top: 1%;
 }
 
 .instructions h2 {
