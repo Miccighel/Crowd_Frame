@@ -36,4 +36,18 @@ export default class ChatHelper {
             return +prev.value > +curr.value ? prev : curr;
         }).value;
     }
+
+    static rand(max: number) {
+        return Math.floor(Math.random() * max);
+    }
+    static getRandomMessage(
+        randomMessagesFirstPart: string[],
+        randomMessagesSecondPart: string[]
+    ) {
+        return (
+            randomMessagesFirstPart[this.rand(randomMessagesFirstPart.length)] +
+            " " +
+            randomMessagesSecondPart[this.rand(randomMessagesSecondPart.length)]
+        );
+    }
 }

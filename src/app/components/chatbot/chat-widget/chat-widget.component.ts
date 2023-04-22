@@ -36,32 +36,6 @@ import ChatHelper from "./chat-helpers";
 import { BehaviorSubject, Observable, Subject } from "rxjs";
 import { ChatInstructionModalComponent } from "../chat-instruction-modal/chat-instruction-modal.component";
 
-// Messaggi random
-const randomMessagesFirstPart = [
-    "OK!",
-    "Gotcha!",
-    "Makes sense!",
-    "Sure!",
-    "I see!",
-    "Thanks!",
-    "Thank you!",
-];
-
-const randomMessagesSecondPart = [
-    "Let's proceed...",
-    "Let me write that down...",
-    "The next question is...",
-    "On to the next question...",
-    "The following question is...",
-    "Here's the next question...",
-];
-
-const rand = (max: number) => Math.floor(Math.random() * max);
-const getRandomMessage = () =>
-    randomMessagesFirstPart[rand(randomMessagesFirstPart.length)] +
-    " " +
-    randomMessagesSecondPart[rand(randomMessagesSecondPart.length)];
-
 // Main
 @Component({
     selector: "chat-widget",
@@ -73,7 +47,6 @@ const getRandomMessage = () =>
 })
 export class ChatWidgetComponent implements OnInit {
     @ViewChild("chatbody") chatbody!: ElementRef;
-
     @ViewChild("typing", { static: true }) typing!: ElementRef;
     @ViewChild("inputBox", { static: true }) inputBox!: ElementRef;
     @ViewChild("progressBar", { static: true }) progressBar!: ElementRef;
@@ -183,17 +156,61 @@ export class ChatWidgetComponent implements OnInit {
 
     // Messaggi per l'utente
     public messagesForUser = [
-        "Hello! I'm Fakebot and I'll be helping you complete this task! You can find the <b>instructions</b> in the top left corner of this page, just press the button whenever you need. Nothing will break down, I promise!",
-        "Are you ready?",
-        "Nice, let's start!",
-        "Okay, when you are ready click on <b>Yes</b> and so we can start this task together.",
-        "Would you like to play a test round?",
+        "Hello &#x1F60A<br>My name is Fakebot and I'll be helping you complete this task! You can find the <b>instructions</b> near my name, at the top of this chat, you can find a question mark, just press it whenever you need. Nothing will break down, I promise! &#x1F609;",
+        "What's your name? If you don't want to tell me your name just write <b>no</b> in the chat and press send",
+        "Hi {name}, it's a pleasure chatting with you. Are you ready?",
+        "No problem, so are you ready?",
+        "Nice, let's start! &#x1F60E;",
+        "Okay, when you are ready click on <b>Yes</b> and so we can start this task together. &#x1F601;",
+        "Would you like to play a test round? &#x1F60A;",
         "I'll now show you some statements and for each one I'll ask you some questions. Please use the search bar on the right to search for info about those statement and answer my questions",
-        "Are you sure about that answer? Check it please",
+        "Are you sure about that answer? Check it please &#128064;",
         "Nice! Now we can start with the real task.",
         "Okay, that is great, so we can start immediatly with the real task.",
         "Thanks for finishing the task, this is your token:",
     ];
+
+    // Messaggi random
+    public randomMessagesFirstPart = [
+        "OK!",
+        "Gotcha!",
+        "Makes sense!",
+        "Sure!",
+        "I see!",
+        "Thanks {name}!",
+        "Thank you!",
+        "Alright, I understand.",
+        "Understood, thank you {name}.",
+        "Got it, thanks!",
+        "Okay {name}, thanks for letting me know.",
+        "Great, I understand now.",
+        "Thanks for clarifying that for me {name}.",
+        "Thanks for the information, I see now.",
+        "Perfect, thanks {name}!",
+        "I appreciate your help {name}, thanks!",
+    ];
+
+    public randomMessagesSecondPart = [
+        "Let's proceed {name}...",
+        "Let me write that down {name}...",
+        "The next question is...",
+        "On to the next question...",
+        "The following question is...",
+        "Here's the next question {name}...",
+        "Moving right along, the next question is...",
+        "Let's move on to the next question {name}, which is...",
+        "Next up, we have the following question...",
+        "The next topic we'll cover is...",
+        "Our next question is...",
+        "Now let's turn to the next question {name}, which is...",
+        "The next item on our list is...",
+        "We'll now proceed to the next question, which is...",
+        "Up next, we have the following question...",
+        "Let's jump to the next question {name}, which is...",
+    ];
+
+    //Info worker
+    private userName: string;
 
     constructor(
         changeDetector: ChangeDetectorRef,
@@ -480,11 +497,21 @@ export class ChatWidgetComponent implements OnInit {
                 this.showYNbuttons = false;
                 this.changeDetector.detectChanges();
                 this.conversationInitialized = true;
-
                 this.initializeConversation();
             } else {
-                this.typingAnimation(this.messagesForUser[3]);
-
+                //Controlla se al worker è stato chiesto il nome
+                if (!this.userName) {
+                    if (message != "no") {
+                        //capitalizzazione del nome
+                        this.userName =
+                            message.charAt(0).toUpperCase() + message.slice(1);
+                    } else {
+                        this.userName = "!NONAME";
+                    }
+                    this.initializeConversation();
+                    return;
+                }
+                this.typingAnimation(this.messagesForUser[5]);
                 return;
             }
         }
@@ -604,11 +631,8 @@ export class ChatWidgetComponent implements OnInit {
         this.ignoreMsg = true;
 
         if (!this.finishedExampleActivity && !message) {
-            this.typingAnimation(
-                "I'll now show you some statements and for each one I'll ask you some questions. Please use the search bar on the right to search for info about those statement and answer my questions"
-            );
-
             this.typingAnimation(this.messagesForUser[4]);
+            this.typingAnimation(this.messagesForUser[6]);
             setTimeout(() => {
                 this.ignoreMsg = false;
                 this.showYNbuttons = true;
@@ -623,6 +647,7 @@ export class ChatWidgetComponent implements OnInit {
                 message.toLowerCase() == "yes"
             ) {
                 this.showYNbuttons = false;
+
                 this.printExampleStatement();
                 this.generateExampleDimension();
             } else if (
@@ -631,7 +656,7 @@ export class ChatWidgetComponent implements OnInit {
                 message.toLowerCase() == "no"
             ) {
                 this.showYNbuttons = false;
-                this.typingAnimation(this.messagesForUser[8]);
+                this.typingAnimation(this.messagesForUser[10]);
                 this.inputComponentToShow = EnConversationalInputType.Text;
                 setTimeout(() => {
                     this.taskStatus = EnConversationaTaskStatus.TaskPhase;
@@ -641,7 +666,7 @@ export class ChatWidgetComponent implements OnInit {
             } else if (!this.finishedExampleActivity && this.fixedMessage) {
                 if (message.toLowerCase() === "true") {
                     //Far scrivere messagio al bot
-                    this.typingAnimation(this.messagesForUser[7]);
+                    this.typingAnimation(this.messagesForUser[9]);
                     this.finishedExampleActivity = true;
                     this.fixedMessage = null;
                     this.showMessageInput = true;
@@ -655,7 +680,7 @@ export class ChatWidgetComponent implements OnInit {
                         this.taskP("startTask");
                     }, 1600);
                 } else {
-                    this.typingAnimation(this.messagesForUser[6]);
+                    this.typingAnimation(this.messagesForUser[8]);
                     //Risposta errata, si aspetta il messaggio corretto
                     return;
                 }
@@ -1118,7 +1143,7 @@ export class ChatWidgetComponent implements OnInit {
                 this.readOnly = true;
                 //Messaggio finale
 
-                let finalMessage: string = `Oh! That was it! Thank you for completing the task! Here's your token: <b> ${this.task.tokenOutput}`;
+                let finalMessage: string = `Oh! That was it! Thank you for completing the task! &#x1F609; Here's your token: <b> ${this.task.tokenOutput}`;
                 this.typingAnimation(finalMessage);
                 this.typingAnimation(
                     "You may now close the page or leave a comment!"
@@ -1157,6 +1182,14 @@ export class ChatWidgetComponent implements OnInit {
     }
 
     private initializeConversation() {
+        if (!this.conversationInitialized && !!this.userName) {
+            this.initializeChatbotExpressions();
+            if (this.userName != "!NONAME")
+                this.typingAnimation(this.messagesForUser[2]);
+            else this.typingAnimation(this.messagesForUser[3]);
+            this.showYNbuttons = true;
+            return;
+        }
         if (this.conversationInitialized) {
             //Check della presenza di questionari nel task
             if (this.questionnaireAnswers.length > 0) {
@@ -1174,10 +1207,8 @@ export class ChatWidgetComponent implements OnInit {
         } else {
             this.typingAnimation(this.messagesForUser[0]);
             this.typingAnimation(this.messagesForUser[1]);
-            setTimeout(() => {
-                this.showYNbuttons = true;
-                this.changeDetector.detectChanges();
-            }, 2400);
+            this.readOnly = false;
+            return;
         }
     }
 
@@ -1474,7 +1505,26 @@ export class ChatWidgetComponent implements OnInit {
 
     // Invio un messaggio random
     public randomMessage() {
-        this.typingAnimation(getRandomMessage());
+        this.typingAnimation(
+            ChatHelper.getRandomMessage(
+                this.randomMessagesFirstPart,
+                this.randomMessagesSecondPart
+            )
+        );
+    }
+
+    private initializeChatbotExpressions() {
+        let replaceString;
+        replaceString = this.userName == "!NONAME" ? "" : this.userName;
+        this.messagesForUser = this.messagesForUser.map((str) =>
+            str.replace("{name}", replaceString)
+        );
+        this.randomMessagesFirstPart = this.randomMessagesFirstPart.map((str) =>
+            str.replace("{name}", replaceString)
+        );
+        this.randomMessagesSecondPart = this.randomMessagesSecondPart.map(
+            (str) => str.replace("{name}", replaceString)
+        );
     }
 
     public showInstructions() {
@@ -1498,6 +1548,10 @@ export class ChatWidgetComponent implements OnInit {
 
     private printExampleStatement() {
         //Composizione messaggio dell'agente conversazionale
+
+        this.typingAnimation(
+            "I will show you a statement and ask you a question about it, please select the correct answer at the bottom of this chat."
+        );
         let messageToSend =
             "Statement: <b>" +
             this.exampleStatement.statement_text +
