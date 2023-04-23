@@ -39,15 +39,15 @@ export interface AnswerModel {
     urlValue?: string;
 }
 
-export enum EnConversationaTaskStatus {
-    InstructionPhase,
-    QuestionnairePhase,
-    QuestionnaireReviewPhase,
-    TaskPhase,
-    ReviewPhase,
-    EndPhase,
+export enum ConversationState {
+    Questionnaire,
+    QuestionnaireReview,
+    TaskInstructions,
+    Task,
+    TaskReview,
+    End,
 }
-export enum EnConversationalInputType {
+export enum InputType {
     Text,
     Number,
     Dropdown,

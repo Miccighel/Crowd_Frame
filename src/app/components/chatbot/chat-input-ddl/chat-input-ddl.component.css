@@ -18,14 +18,15 @@
     margin: 2px;
 }
 
-.myPanelClass {
+.optionsPanel {
     margin-left: 33vw;
 }
-.myPanelClass mat-option.mat-option {
+.optionsPanel mat-option.mat-option {
     height: 2.5em !important;
 }
-.myPanelClass.mat-select-panel {
+.optionsPanel.mat-select-panel {
     min-width: calc(25% + 32px) !important;
+    max-height: 40vh;
 }
 
 #ddl-component {
