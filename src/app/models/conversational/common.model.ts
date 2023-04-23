@@ -54,3 +54,9 @@ export enum InputType {
     Button,
     Slider,
 }
+
+export enum ButtonsType {
+    None,
+    YesNo,
+    Confirm,
+}

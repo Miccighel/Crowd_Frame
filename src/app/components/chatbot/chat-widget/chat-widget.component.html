@@ -135,7 +135,10 @@
                 </div>
             </div>
 
-            <div class="button-prompt" *ngIf="showYNbuttons">
+            <div
+                class="button-prompt"
+                *ngIf="buttonsToShow == enButtonType.YesNo"
+            >
                 <div class="row container d-flex justify-content-end pe-2">
                     <div class="col-6">
                         <button
@@ -157,7 +160,10 @@
                     </div>
                 </div>
             </div>
-            <div class="button-prompt" *ngIf="showCMbuttons">
+            <div
+                class="button-prompt"
+                *ngIf="buttonsToShow == enButtonType.Confirm"
+            >
                 <div class="row container d-flex justify-content-end pe-2">
                     <div class="col-6">
                         <button

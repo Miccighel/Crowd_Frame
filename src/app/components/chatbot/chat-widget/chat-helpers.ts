@@ -1,4 +1,5 @@
 import { CategoricalInfo } from "src/app/models/conversational/common.model";
+import { Questionnaire } from "src/app/models/skeleton/questionnaires/questionnaire";
 
 export default class ChatHelper {
     // Controllo che un messaggio abbia valori compresi tra min e max e che sia un numero
@@ -49,5 +50,17 @@ export default class ChatHelper {
             " " +
             randomMessagesSecondPart[this.rand(randomMessagesSecondPart.length)]
         );
+    }
+
+    static getTotalElements(parent: any[], child: string): number {
+        let numberOfElements = 0;
+        parent.forEach((el) => {
+            numberOfElements += +el[child].length;
+        });
+        return numberOfElements;
+    }
+
+    static getTimeStampInSeconds() {
+        return Date.now() / 1000;
     }
 }
