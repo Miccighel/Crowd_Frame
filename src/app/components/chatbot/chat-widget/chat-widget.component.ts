@@ -478,9 +478,9 @@ export class ChatWidgetComponent implements OnInit {
                 if (!this.userName) {
                     if (message.toLowerCase() != "no") {
                         //capitalizzazione del nome
-                        this.userName =
-                            message.trim().charAt(0).toUpperCase() +
-                            message.slice(1);
+                        this.userName = message
+                            .trim()
+                            .replace(/^\w/, (c) => c.toUpperCase());
                     } else {
                         this.userName = "!NONAME";
                     }
