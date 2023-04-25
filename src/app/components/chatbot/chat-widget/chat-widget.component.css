@@ -312,38 +312,31 @@ Sent message style
         transform: translateY(0px);
     }
 }
-
-.dot-to-complete {
+.dot {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     box-sizing: border-box;
-    background: var(--grey);
-    border: 2px solid var(--light);
     width: 28px;
     height: 28px;
-    color: var(--primary);
-    text-align: center;
     border-radius: 20px;
 }
-.dot-in-progress {
-    box-sizing: border-box;
+.dot.to-complete {
+    background: var(--grey);
+    border: 2px solid var(--light);
+    color: var(--primary);
+}
+.dot.in-progress {
     background: var(--light);
     border: 2px solid var(--primary);
-    width: 28px;
-    height: 28px;
     color: var(--primary);
-    text-align: center;
-    border-radius: 20px;
     font-weight: 600;
 }
 
-.dot-completed {
-    box-sizing: border-box;
+.dot.completed {
     background: var(--primary);
     border: 2px solid var(--light);
-    width: 28px;
-    height: 28px;
     color: var(--light);
-    text-align: center;
-    border-radius: 20px;
     font-weight: 600;
 }
 

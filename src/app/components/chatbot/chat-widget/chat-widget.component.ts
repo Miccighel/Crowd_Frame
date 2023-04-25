@@ -15,10 +15,8 @@ import { S3Service } from "../../../services/aws/s3.service";
 import { DynamoDBService } from "../../../services/aws/dynamoDB.service";
 import { SectionService } from "../../../services/section.service";
 import { ConfigService } from "../../../services/config.service";
-
 /* Models */
 import { Task } from "../../../models/skeleton/task";
-import { ChatCommentModalComponent } from "../chat-comment-modal/chat-comment-modalcomponent";
 import {
     AnswerModel,
     CategoricalInfo,
@@ -29,13 +27,13 @@ import {
     MagnitudeDimensionInfo,
     ButtonsType,
 } from "../../../models/conversational/common.model";
-
 import { ScaleCategorical } from "../../../models/skeleton/dimension";
 import { NgbModal } from "@ng-bootstrap/ng-bootstrap";
 import { GoldChecker } from "data/build/skeleton/goldChecker";
 import ChatHelper from "./chat-helpers";
 import { BehaviorSubject, Observable, Subject } from "rxjs";
-import { ChatInstructionModalComponent } from "../chat-instruction-modal/chat-instruction-modal.component";
+import { ChatCommentModalComponent } from "../chat-modals/chat-comment-modal/chat-comment-modalcomponent";
+import { ChatInstructionModalComponent } from "../chat-modals/chat-instruction-modal/chat-instruction-modal.component";
 
 // Main
 @Component({
@@ -295,7 +293,7 @@ export class ChatWidgetComponent implements OnInit {
     public messages: any[] = [];
 
     private initializeContainers() {
-        const { documents, questionnaires, settings } = this.task;
+        const { documents, questionnaires, settings, dimensions } = this.task;
         this.countdownLeftTimeContainer = !!settings.countdown_time
             ? Array(documents.length).fill(0)
             : [];
@@ -310,7 +308,7 @@ export class ChatWidgetComponent implements OnInit {
             ChatHelper.getTotalElements(questionnaires, "questions")
         ).fill("");
         this.answers = Array.from({ length: documents.length }, () =>
-            Array.from({ length: documents.length }, () => ({
+            Array.from({ length: dimensions.length }, () => ({
                 dimensionValue: null,
             }))
         );
@@ -478,7 +476,7 @@ export class ChatWidgetComponent implements OnInit {
             } else {
                 //Controlla se al worker è stato chiesto il nome
                 if (!this.userName) {
-                    if (message != "no") {
+                    if (message.toLowerCase() != "no") {
                         //capitalizzazione del nome
                         this.userName =
                             message.charAt(0).toUpperCase() + message.slice(1);
@@ -699,7 +697,6 @@ export class ChatWidgetComponent implements OnInit {
             ][0] = ChatHelper.getTimeStampInSeconds();
 
             this.checkInputAnswer(message, this.taskIndex, this.dimensionIndex);
-
             this.statementProvided = false;
             this.reviewAnswersShown = false;
             this.conversationState = ConversationState.TaskReview;
@@ -718,7 +715,7 @@ export class ChatWidgetComponent implements OnInit {
         }
 
         //Visualizzazione dello statement
-        if (!!!this.fixedMessage) {
+        if (!this.fixedMessage) {
             this.printStatement();
         }
         //Visualizzazione della dimensione
@@ -970,7 +967,7 @@ export class ChatWidgetComponent implements OnInit {
 
             //Il documento viene contrassegnato come completato
             document.getElementById(this.taskIndex.toString()).className =
-                "dot-completed";
+                "dot ";
             // Se era l'ultimo statement, passo alla fase finale
             if (
                 this.task.hit.documents.length - 1 <= this.taskIndex ||
@@ -1096,7 +1093,7 @@ export class ChatWidgetComponent implements OnInit {
                     // Reinizializzo
                     for (let i = 0; i < this.task.documents.length; i++) {
                         document.getElementById(i.toString()).className =
-                            "dot-to-complete";
+                            "dot to-complete";
                     }
                     this.cleanUserInput();
                     this.typing.nativeElement.style.display = "none";
@@ -1548,7 +1545,7 @@ export class ChatWidgetComponent implements OnInit {
         ] += 1;
 
         document.getElementById(this.taskIndex.toString()).className =
-            "dot-in-progress";
+            "dot in-progress";
         let messageToSend =
             "Statement: <b>" +
             this.task.hit.documents[this.taskIndex]["statement_text"] +

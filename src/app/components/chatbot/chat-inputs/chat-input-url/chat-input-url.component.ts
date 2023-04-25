@@ -13,10 +13,10 @@ import {
 import { Subject } from "rxjs";
 
 @Component({
-    selector: "chat-url-input",
-    templateUrl: "chat-url-input.component.html",
+    selector: "chat-input-url",
+    templateUrl: "chat-input-url.component.html",
     encapsulation: ViewEncapsulation.None,
-    styleUrls: ["./chat-url-input.component.css"],
+    styleUrls: ["./chat-input-url.component.css"],
 })
 export class ChatUrlInputComponent implements OnInit, OnChanges, OnDestroy {
     // @Input() public urlValueSubject: BehaviorSubject<string>;

@@ -81,17 +81,18 @@ import { SearchEngineComponent } from "./components/skeleton/document/dimension/
 import { ElementPairwiseComponent } from "./components/skeleton/document/elements/element-pairwise/element-pairwise.component";
 import { DocumentComponent } from "./components/skeleton/document/document.component";
 import { ErrorMessageComponent } from "./components/shared/error-message/error-message.component";
-import { ChatInputComponent } from "./components/chatbot/chat-input/chat-input.component";
-import { ChatAvatarComponent } from "./components/chatbot/chat-avatar/chat-avatar.component";
-import { ChatInputMagnitudeComponent } from "./components/chatbot/chat-input-magnitude/chat-input-magnitude.component";
-import { ChatInputIntervalComponent } from "./components/chatbot/chat-input-interval/chat-input-interval.component";
-import { ChatInputCategoricalComponent } from "./components/chatbot/chat-input-categorical/chat-input-categorical.component";
-import { ChatWidgetComponent } from "./components/chatbot/chat-widget/chat-widget.component";
-import { ChatCommentModalComponent } from "./components/chatbot/chat-comment-modal/chat-comment-modalcomponent";
 import { NgbModule } from "@ng-bootstrap/ng-bootstrap";
-import { ChatUrlInputComponent } from "./components/chatbot/chat-url-input/chat-url-input.component";
-import { ChatInputDropdownComponent } from "./components/chatbot/chat-input-ddl/chat-input-ddl.component";
-import { ChatInstructionModalComponent } from "./components/chatbot/chat-instruction-modal/chat-instruction-modal.component";
+//Chatbot components
+import { ChatAvatarComponent } from "./components/chatbot/chat-avatar/chat-avatar.component";
+import { ChatWidgetComponent } from "./components/chatbot/chat-widget/chat-widget.component";
+import { ChatCommentModalComponent } from "./components/chatbot/chat-modals/chat-comment-modal/chat-comment-modalcomponent";
+import { ChatInstructionModalComponent } from "./components/chatbot/chat-modals/chat-instruction-modal/chat-instruction-modal.component";
+import { ChatInputTextComponent } from "./components/chatbot/chat-inputs/chat-input-text/chat-input-text.component";
+import { ChatInputMagnitudeComponent } from "./components/chatbot/chat-inputs/chat-input-magnitude/chat-input-magnitude.component";
+import { ChatInputIntervalComponent } from "./components/chatbot/chat-inputs/chat-input-interval/chat-input-interval.component";
+import { ChatInputDropdownComponent } from "./components/chatbot/chat-inputs/chat-input-select/chat-input-ddl.component";
+import { ChatInputButtonComponent } from "./components/chatbot/chat-inputs/chat-input-button/chat-input-button.component";
+import { ChatUrlInputComponent } from "./components/chatbot/chat-inputs/chat-input-url/chat-input-url.component";
 
 function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
     return () =>
@@ -106,9 +107,6 @@ function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
 
 @NgModule({
     declarations: [
-        ChatAvatarComponent,
-        ChatInputComponent,
-        ChatWidgetComponent,
         SkeletonComponent,
         CrowdXplorer,
         TruncatePipe,
@@ -139,9 +137,13 @@ function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
         DocumentComponent,
         InstructionsEvaluationStepComponent,
         ErrorMessageComponent,
+        //Chatbot components
+        ChatAvatarComponent,
+        ChatInputTextComponent,
+        ChatWidgetComponent,
         ChatInputMagnitudeComponent,
         ChatInputIntervalComponent,
-        ChatInputCategoricalComponent,
+        ChatInputButtonComponent,
         ChatInputDropdownComponent,
         ChatCommentModalComponent,
         ChatInstructionModalComponent,

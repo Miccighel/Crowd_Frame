@@ -9,11 +9,11 @@ import {
 } from "@angular/core";
 
 @Component({
-    selector: "chat-input",
-    templateUrl: "chat-input.component.html",
-    styleUrls: ["./chat-input.component.css"],
+    selector: "chat-input-text",
+    templateUrl: "chat-input-text.component.html",
+    styleUrls: ["./chat-input-text.component.css"],
 })
-export class ChatInputComponent implements OnInit {
+export class ChatInputTextComponent implements OnInit {
     @Output() public send = new EventEmitter();
     @Input() public pholder!: string;
     @Input() public readOnly!: boolean;

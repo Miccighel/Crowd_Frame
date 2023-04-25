@@ -29,7 +29,7 @@
                 *ngFor="let item of task.documents; let i = index"
                 class="col-1 ps-0"
             >
-                <div class="dot-to-complete" [id]="i">{{ i + 1 }}</div>
+                <div class="dot to-complete" [id]="i">{{ i + 1 }}</div>
             </div>
         </div>
         <div *ngIf="!fixedMessage" id="divider"></div>
@@ -120,70 +120,55 @@
         </div>
 
         <div #inputBox class="chat-box-footer">
-            <div class="button-prompt">
-                <div
-                    class="row container d-flex m-1"
-                    *ngIf="inputComponentToShow == EnInputType.Button"
-                >
-                    <chat-input-categorical
-                        class="col-6 text-center"
-                        *ngFor="let item of categoricalInfo"
-                        [value]="item.value"
-                        [text]="item.label"
-                        (send)="buttonInput($event)"
-                    ></chat-input-categorical>
-                </div>
+            <div
+                class="row container d-flex m-1"
+                *ngIf="inputComponentToShow == EnInputType.Button"
+            >
+                <chat-input-button
+                    class="col-6 text-center"
+                    *ngFor="let item of categoricalInfo"
+                    [value]="item.value"
+                    [text]="item.label"
+                    (send)="buttonInput($event)"
+                ></chat-input-button>
             </div>
 
             <div
-                class="button-prompt"
                 *ngIf="buttonsToShow == enButtonType.YesNo"
+                class="row container d-flex justify-content-end pe-2"
             >
-                <div class="row container d-flex justify-content-end pe-2">
-                    <div class="col-6">
-                        <button
-                            type="button"
-                            class="btn-user-answer"
-                            (click)="buttonInput('Yes')"
-                        >
-                            Yes
-                        </button>
-                    </div>
-                    <div class="col-6">
-                        <button
-                            type="button"
-                            class="btn-user-answer"
-                            (click)="buttonInput('No')"
-                        >
-                            No
-                        </button>
-                    </div>
-                </div>
+                <chat-input-button
+                    class="col-6 text-center"
+                    value="Yes"
+                    text="Yes"
+                    (send)="buttonInput('Yes')"
+                ></chat-input-button>
+
+                <chat-input-button
+                    class="col-6 text-center"
+                    value="No"
+                    text="No"
+                    (send)="buttonInput('No')"
+                ></chat-input-button>
             </div>
+
             <div
-                class="button-prompt"
                 *ngIf="buttonsToShow == enButtonType.Confirm"
+                class="row container d-flex justify-content-end pe-2"
             >
-                <div class="row container d-flex justify-content-end pe-2">
-                    <div class="col-6">
-                        <button
-                            type="button"
-                            class="btn-user-answer"
-                            (click)="buttonInput('Confirm')"
-                        >
-                            Confirm
-                        </button>
-                    </div>
-                    <div class="col-6">
-                        <button
-                            type="button"
-                            class="btn-user-answer"
-                            (click)="buttonInput('Modify')"
-                        >
-                            Modify
-                        </button>
-                    </div>
-                </div>
+                <chat-input-button
+                    class="col-6 text-center"
+                    value="Confirm"
+                    text="Confirm"
+                    (send)="buttonInput('Confirm')"
+                ></chat-input-button>
+
+                <chat-input-button
+                    class="col-6 text-center"
+                    value="Modify"
+                    text="Modify"
+                    (send)="buttonInput('Modify')"
+                ></chat-input-button>
             </div>
         </div>
         <div class="container d-flex row p-0 m-0" id="input-background">
@@ -192,7 +177,7 @@
                 class="container d-flex row p-0 m-0"
                 [ngClass]="readOnly ? 'input-row-inactive' : 'input-row-active'"
             >
-                <chat-url-input
+                <chat-input-url
                     class="container"
                     *ngIf="hasDoubleInput && !showMessageInput"
                     [readValue]="readUrlValue"
@@ -200,7 +185,7 @@
                     [urlPlaceholder]="urlPlaceHolder"
                     [readOnly]="readOnly"
                 >
-                </chat-url-input>
+                </chat-input-url>
 
                 <chat-input-magnitude
                     class="container"
@@ -235,7 +220,7 @@
                 >
                 </chat-input-ddl>
 
-                <chat-input
+                <chat-input-text
                     class="container"
                     *ngIf="
                         inputComponentToShow == EnInputType.Text ||
@@ -245,7 +230,7 @@
                     [pholder]="placeholderInput"
                     [readOnly]="readOnly"
                 >
-                </chat-input>
+                </chat-input-text>
             </div>
         </div>
     </div>

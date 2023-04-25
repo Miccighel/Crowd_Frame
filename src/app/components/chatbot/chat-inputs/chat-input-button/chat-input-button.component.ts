@@ -8,12 +8,12 @@ import {
 } from "@angular/core";
 
 @Component({
-    selector: "chat-input-categorical",
-    templateUrl: "chat-input-categorical.component.html",
+    selector: "chat-input-button",
+    templateUrl: "chat-input-button.component.html",
     encapsulation: ViewEncapsulation.None,
-    styleUrls: ["./chat-input-categorical.component.css"],
+    styleUrls: ["./chat-input-button.component.css"],
 })
-export class ChatInputCategoricalComponent implements OnInit {
+export class ChatInputButtonComponent implements OnInit {
     @Input() public text = "N.D";
     @Input() public value = "0";
     @Output() public send = new EventEmitter();
