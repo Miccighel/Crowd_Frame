@@ -43,10 +43,7 @@ export class ChatInputIntervalComponent implements OnInit {
     }
 
     onSubmit() {
-        // prendo il msg, se è vuoto non faccio nulla
         const message = `${this.value}`;
-
-        // invio il messaggio
         this.send.emit({ message });
     }
 }

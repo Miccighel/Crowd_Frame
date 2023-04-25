@@ -479,7 +479,8 @@ export class ChatWidgetComponent implements OnInit {
                     if (message.toLowerCase() != "no") {
                         //capitalizzazione del nome
                         this.userName =
-                            message.charAt(0).toUpperCase() + message.slice(1);
+                            message.trim().charAt(0).toUpperCase() +
+                            message.slice(1);
                     } else {
                         this.userName = "!NONAME";
                     }
@@ -1452,15 +1453,18 @@ export class ChatWidgetComponent implements OnInit {
         this.typing.nativeElement.style.display = "block"; // Mostro l'animazione di scrittura
         this.queue += 1;
         this.ignoreMsg = true; // Ignoro i messaggi in arrivo mentre scrivo
-        setTimeout(
-            () => this.addMessage(this.operator, message, "received"),
-            this.queue * 800
-        ); // modifica speed
-        this.changeDetector.detectChanges();
-        this.scrollToBottom();
+        const typingTime =
+            this.simulateTypingTime(message) * this.queue < 800
+                ? 800
+                : this.simulateTypingTime(message) * this.queue;
+        setTimeout(() => {
+            this.addMessage(this.operator, message, "received");
+            this.changeDetector.detectChanges();
+            this.scrollToBottom();
+        }, this.queue * typingTime); // modifica speed
     }
     //Fa scrollare la chat infondo
-    public scrollToBottom() {
+    private scrollToBottom() {
         if (this.chatbody !== undefined) {
             if (
                 this.chatbody.nativeElement.scrollHeight >
@@ -1469,6 +1473,16 @@ export class ChatWidgetComponent implements OnInit {
                 this.chatbody.nativeElement.scrollIntoView();
             }
         }
+    }
+    private simulateTypingTime(input: string): number {
+        // Calcola il tempo di base per ogni carattere digitato (in millisecondi)
+        const baseTypingTime = 50;
+
+        // Calcola il tempo aggiuntivo in base alla lunghezza della stringa
+        const extraTypingTime = input.length * 10;
+
+        // Restituisci il tempo totale di digitazione (in millisecondi)
+        return (baseTypingTime * input.length + extraTypingTime) / 1000;
     }
 
     // Intercetta i messaggi dei pulsanti

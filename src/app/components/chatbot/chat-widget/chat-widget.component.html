@@ -139,14 +139,14 @@
             >
                 <chat-input-button
                     class="col-6 text-center"
-                    value="Yes"
                     text="Yes"
+                    emitCustomEvent="false"
                     (send)="buttonInput('Yes')"
                 ></chat-input-button>
 
                 <chat-input-button
                     class="col-6 text-center"
-                    value="No"
+                    emitCustomEvent="false"
                     text="No"
                     (send)="buttonInput('No')"
                 ></chat-input-button>
@@ -158,14 +158,14 @@
             >
                 <chat-input-button
                     class="col-6 text-center"
-                    value="Confirm"
+                    emitCustomEvent="false"
                     text="Confirm"
                     (send)="buttonInput('Confirm')"
                 ></chat-input-button>
 
                 <chat-input-button
                     class="col-6 text-center"
-                    value="Modify"
+                    emitCustomEvent="false"
                     text="Modify"
                     (send)="buttonInput('Modify')"
                 ></chat-input-button>

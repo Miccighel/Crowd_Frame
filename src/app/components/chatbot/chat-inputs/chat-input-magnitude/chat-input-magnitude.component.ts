@@ -22,7 +22,6 @@ export class ChatInputMagnitudeComponent implements OnInit {
     public min = 0;
     @Input() public magnitudeInfo: MagnitudeDimensionInfo = null;
     @ViewChild("message", { static: true }) message!: ElementRef;
-
     @Output() public send = new EventEmitter();
     @Input() public readOnly!: boolean;
 
@@ -43,13 +42,10 @@ export class ChatInputMagnitudeComponent implements OnInit {
 
     onSubmit() {
         const message = this.getMessage();
-
         if (message.trim() === "") {
             return;
         }
-        // invio il messaggio
         this.send.emit({ message });
-        // resetto l'input field
         this.clearMessage();
     }
 }

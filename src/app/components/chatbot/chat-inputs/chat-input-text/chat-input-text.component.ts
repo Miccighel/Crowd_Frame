@@ -3,7 +3,6 @@ import {
     ElementRef,
     EventEmitter,
     Input,
-    OnInit,
     Output,
     ViewChild,
 } from "@angular/core";
@@ -13,15 +12,13 @@ import {
     templateUrl: "chat-input-text.component.html",
     styleUrls: ["./chat-input-text.component.css"],
 })
-export class ChatInputTextComponent implements OnInit {
+export class ChatInputTextComponent {
     @Output() public send = new EventEmitter();
     @Input() public pholder!: string;
     @Input() public readOnly!: boolean;
 
     @ViewChild("message", { static: true }) message!: ElementRef;
     @ViewChild("buttons") buttons!: ElementRef;
-
-    ngOnInit() {}
 
     public getMessage() {
         return this.message.nativeElement.value;

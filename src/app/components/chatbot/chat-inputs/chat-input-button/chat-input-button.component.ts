@@ -2,7 +2,6 @@ import {
     Component,
     EventEmitter,
     Input,
-    OnInit,
     Output,
     ViewEncapsulation,
 } from "@angular/core";
@@ -13,18 +12,17 @@ import {
     encapsulation: ViewEncapsulation.None,
     styleUrls: ["./chat-input-button.component.css"],
 })
-export class ChatInputButtonComponent implements OnInit {
+export class ChatInputButtonComponent {
     @Input() public text = "N.D";
     @Input() public value = "0";
+    @Input() public emitCustomEvent = true;
+
     @Output() public send = new EventEmitter();
 
-    ngOnInit() {}
-
     sendMessage() {
-        const message = { label: this.text, value: this.value };
-
-        this.send.emit(message);
-
-        // invio il messaggio
+        if (this.emitCustomEvent) {
+            const message = { label: this.text, value: this.value };
+            this.send.emit(message);
+        }
     }
 }
