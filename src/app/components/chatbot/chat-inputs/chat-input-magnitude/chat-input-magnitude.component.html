@@ -1,7 +1,4 @@
-<div
-    class="row"
-    [ngClass]="readOnly ? 'input-row-inactive' : 'input-row-active'"
->
+<div class="row" [ngClass]="readOnly ? 'input-inactive' : 'input-active'">
     <div class="col-10 chat-input-text d-flex align-items-center">
         <input
             #message

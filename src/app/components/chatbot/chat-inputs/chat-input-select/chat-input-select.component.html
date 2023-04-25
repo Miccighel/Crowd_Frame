@@ -1,23 +1,22 @@
 <div
     class="row py-1"
-    id="ddl-component"
-    [ngClass]="readOnly ? 'input-row-inactive' : 'input-row-active'"
+    id="select-component"
+    [ngClass]="readOnly ? 'input-inactive' : 'input-active'"
 >
     <div class="col-10">
-        <mat-form-field appearance="none" class="categorical-ddl">
+        <mat-form-field appearance="none" class="select">
             <mat-select
                 [(value)]="selected"
                 [disabled]="readOnly"
                 disableOptionCentering
                 panelClass="optionsPanel"
             >
-                <mat-option *ngFor="let option of options" [value]="option">{{
-                    option.label
-                }}</mat-option>
+                <mat-option *ngFor="let option of options" [value]="option">
+                    {{ option.label }}</mat-option
+                >
             </mat-select>
         </mat-form-field>
     </div>
-
     <div class="col-2">
         <button
             mat-mini-fab
@@ -27,7 +26,6 @@
             [ngClass]="readOnly ? 'inactive' : 'active'"
             (click)="onSubmit()"
         >
-            <!-- {{ buttonText }} -->
             <mat-icon
                 aria-hidden="false"
                 aria-label="Send message"

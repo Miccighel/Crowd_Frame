@@ -16,7 +16,6 @@ export class ChatInputTextComponent {
     @Output() public send = new EventEmitter();
     @Input() public pholder!: string;
     @Input() public readOnly!: boolean;
-
     @ViewChild("message", { static: true }) message!: ElementRef;
     @ViewChild("buttons") buttons!: ElementRef;
 
@@ -29,15 +28,11 @@ export class ChatInputTextComponent {
     }
 
     onSubmit() {
-        // prendo il msg, se è vuoto non faccio nulla
         const message = this.getMessage();
-
         if (message.trim() === "") {
             return;
         }
-        // invio il messaggio
         this.send.emit({ message });
-        // resetto l'input field
         this.clearMessage();
     }
 

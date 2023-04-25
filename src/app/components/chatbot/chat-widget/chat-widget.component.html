@@ -129,7 +129,7 @@
                     *ngFor="let item of categoricalInfo"
                     [value]="item.value"
                     [text]="item.label"
-                    (send)="buttonInput($event)"
+                    (send)="sendMessage($event)"
                 ></chat-input-button>
             </div>
 
@@ -139,16 +139,16 @@
             >
                 <chat-input-button
                     class="col-6 text-center"
+                    value="yes"
                     text="Yes"
-                    emitCustomEvent="false"
-                    (send)="buttonInput('Yes')"
+                    (send)="sendMessage($event)"
                 ></chat-input-button>
 
                 <chat-input-button
                     class="col-6 text-center"
-                    emitCustomEvent="false"
+                    value="No"
                     text="No"
-                    (send)="buttonInput('No')"
+                    (send)="sendMessage($event)"
                 ></chat-input-button>
             </div>
 
@@ -158,16 +158,16 @@
             >
                 <chat-input-button
                     class="col-6 text-center"
-                    emitCustomEvent="false"
+                    value="Confirm"
                     text="Confirm"
-                    (send)="buttonInput('Confirm')"
+                    (send)="sendMessage($event)"
                 ></chat-input-button>
 
                 <chat-input-button
                     class="col-6 text-center"
-                    emitCustomEvent="false"
+                    value="Modify"
                     text="Modify"
-                    (send)="buttonInput('Modify')"
+                    (send)="sendMessage($event)"
                 ></chat-input-button>
             </div>
         </div>
@@ -175,14 +175,14 @@
             <div
                 id="input-box"
                 class="container d-flex row p-0 m-0"
-                [ngClass]="readOnly ? 'input-row-inactive' : 'input-row-active'"
+                [ngClass]="readOnly ? 'input-inactive' : 'input-active'"
             >
                 <chat-input-url
-                    class="container"
                     *ngIf="hasDoubleInput && !showMessageInput"
+                    class="container"
                     [readValue]="readUrlValue"
                     (updateValue)="updateUrlValue($event)"
-                    [urlPlaceholder]="urlPlaceHolder"
+                    [urlToRead]="urlInputValue"
                     [readOnly]="readOnly"
                 >
                 </chat-input-url>
@@ -208,7 +208,7 @@
                     [readOnly]="readOnly"
                 ></chat-input-interval>
 
-                <chat-input-ddl
+                <chat-input-select
                     class="container"
                     *ngIf="
                         inputComponentToShow == EnInputType.Dropdown &&
@@ -216,9 +216,9 @@
                     "
                     [options]="dropdownListOptions"
                     [readOnly]="readOnly"
-                    (send)="buttonInput($event)"
+                    (send)="sendMessage($event)"
                 >
-                </chat-input-ddl>
+                </chat-input-select>
 
                 <chat-input-text
                     class="container"
@@ -227,7 +227,7 @@
                         showMessageInput
                     "
                     (send)="sendMessage($event)"
-                    [pholder]="placeholderInput"
+                    [pholder]="textInputPlaceHolder"
                     [readOnly]="readOnly"
                 >
                 </chat-input-text>

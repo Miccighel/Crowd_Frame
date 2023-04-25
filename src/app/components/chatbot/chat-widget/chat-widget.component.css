@@ -424,12 +424,12 @@ button.btn-user-answer {
     background-color: var(--background-light);
 }
 
-#input-box.input-row-active {
+#input-box.input-active {
     border: solid 3px var(--light);
     background-color: var(--primary);
     border-radius: 10px;
 }
-#input-box.input-row-inactive {
+#input-box.input-inactive {
     border: solid 3px var(--light);
     background-color: var(--grey);
     border-radius: 10px;

@@ -21,7 +21,6 @@ export class ChatInputIntervalComponent implements OnInit {
     public value = 0;
     @Input() public intervalInfo: IntervalDimensionInfo = null;
     @Input() public readOnly!: boolean;
-
     @Output() public send = new EventEmitter();
 
     ngOnInit() {
@@ -38,7 +37,6 @@ export class ChatInputIntervalComponent implements OnInit {
     }
 
     onInputChange(event: MatSliderChange) {
-        this.readOnly = false;
         this.value = event.value;
     }
 

@@ -90,7 +90,7 @@ import { ChatInstructionModalComponent } from "./components/chatbot/chat-modals/
 import { ChatInputTextComponent } from "./components/chatbot/chat-inputs/chat-input-text/chat-input-text.component";
 import { ChatInputMagnitudeComponent } from "./components/chatbot/chat-inputs/chat-input-magnitude/chat-input-magnitude.component";
 import { ChatInputIntervalComponent } from "./components/chatbot/chat-inputs/chat-input-interval/chat-input-interval.component";
-import { ChatInputDropdownComponent } from "./components/chatbot/chat-inputs/chat-input-select/chat-input-ddl.component";
+import { ChatInputSelectComponent } from "./components/chatbot/chat-inputs/chat-input-select/chat-input-select.component";
 import { ChatInputButtonComponent } from "./components/chatbot/chat-inputs/chat-input-button/chat-input-button.component";
 import { ChatUrlInputComponent } from "./components/chatbot/chat-inputs/chat-input-url/chat-input-url.component";
 
@@ -144,7 +144,7 @@ function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
         ChatInputMagnitudeComponent,
         ChatInputIntervalComponent,
         ChatInputButtonComponent,
-        ChatInputDropdownComponent,
+        ChatInputSelectComponent,
         ChatCommentModalComponent,
         ChatInstructionModalComponent,
         ChatUrlInputComponent,

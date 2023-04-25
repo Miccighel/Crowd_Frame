@@ -9,13 +9,15 @@
 }
 
 .chat-input-text input {
+    display: flex;
+    align-items: center;
     background: none !important;
     color: var(--light);
 }
-.input-row-active .chat-input-text input::placeholder {
+.input-active .chat-input-text input::placeholder {
     color: var(--transparentLight);
 }
-.input-row-active .floating-label {
+.input-active .floating-label {
     color: var(--transparentLight);
 }
 button.active {

@@ -15,14 +15,10 @@ import {
 export class ChatInputButtonComponent {
     @Input() public text = "N.D";
     @Input() public value = "0";
-    @Input() public emitCustomEvent = true;
-
     @Output() public send = new EventEmitter();
 
     sendMessage() {
-        if (this.emitCustomEvent) {
-            const message = { label: this.text, value: this.value };
-            this.send.emit(message);
-        }
+        const message = { label: this.text, value: this.value };
+        this.send.emit({ message });
     }
 }

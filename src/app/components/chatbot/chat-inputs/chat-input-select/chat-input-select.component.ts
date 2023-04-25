@@ -7,25 +7,23 @@ import {
 } from "@angular/core";
 
 @Component({
-    selector: "chat-input-ddl",
-    templateUrl: "chat-input-ddl.component.html",
+    selector: "chat-input-select",
+    templateUrl: "chat-input-select.component.html",
     encapsulation: ViewEncapsulation.None,
-    styleUrls: ["./chat-input-ddl.component.css"],
+    styleUrls: ["./chat-input-select.component.css"],
 })
-export class ChatInputDropdownComponent {
+export class ChatInputSelectComponent {
     @Input() public options: { label: string; value: any }[];
-    @Input() public value = "0";
     @Input() public readOnly!: boolean;
-    @Input() public message = null;
     @Output() public send = new EventEmitter();
     public selected: { label: string; value: any } = {
-        label: "test",
+        label: null,
         value: null,
     };
 
     onSubmit() {
-        this.message = this.selected;
-        this.send.emit(this.message);
+        const message = this.selected;
+        this.send.emit({ message });
     }
 
     ngOnChanges() {

@@ -114,13 +114,13 @@ export class ChatWidgetComponent implements OnInit {
     answers: AnswerModel[][] = []; //
     questionnaireAnswers: any[] = [];
     queue: number;
-    placeholderInput: string;
-    urlPlaceHolder: string;
+    textInputPlaceHolder: string;
+    urlInputValue: string;
     tryNumber: number; // Numero di tentativi per completare
     accessesAmount: number[]; //Numero di accessi agli elementi
     public conversationInitialized = false;
     public finishedExampleActivity = false;
-    public urlInputValue = "";
+    public urlValue = "";
 
     private minValue: number = -2; //Valore validazione estremo inferiore
     private maxValue: number = +2; //Valore validazione estremo superirore
@@ -335,8 +335,8 @@ export class ChatWidgetComponent implements OnInit {
         this.conversationState = ConversationState.Questionnaire;
         this.statementProvided = false;
         this.queue = 0;
-        this.placeholderInput = "";
-        this.urlPlaceHolder = "";
+        this.textInputPlaceHolder = "";
+        this.urlInputValue = "";
         this.tryNumber = 1;
         this.query = [];
         this.queryRetrieved = [];
@@ -406,24 +406,27 @@ export class ChatWidgetComponent implements OnInit {
             if (this.hasDoubleInput) {
                 this.emitGetUrlValue();
             }
-            // Se il messaggio è vuoto, ignoro
+            // Se il messaggio è vuoto oppure deve essere ignorato non viene considerato
             if (
-                this.inputComponentToShow != InputType.Button &&
-                this.inputComponentToShow != InputType.Dropdown &&
-                message.trim() === ""
+                (this.inputComponentToShow != InputType.Button &&
+                    this.inputComponentToShow != InputType.Dropdown &&
+                    this.buttonsToShow == ButtonsType.None &&
+                    message.trim() === "") ||
+                this.ignoreMsg
             ) {
                 return;
             }
             // Mostro il messaggio in chat
             if (
                 this.inputComponentToShow == InputType.Dropdown ||
-                this.inputComponentToShow == InputType.Button
+                this.inputComponentToShow == InputType.Button ||
+                this.buttonsToShow != ButtonsType.None
             ) {
                 message = message.label;
                 if (this.hasDoubleInput) {
                     this.addMessageClient(
                         this.client,
-                        { url: this.urlInputValue, value: message },
+                        { url: this.urlValue, value: message },
                         "sent",
                         true
                     );
@@ -434,18 +437,13 @@ export class ChatWidgetComponent implements OnInit {
                 if (this.hasDoubleInput) {
                     this.addMessageClient(
                         this.client,
-                        { url: this.urlInputValue, value: message },
+                        { url: this.urlValue, value: message },
                         "sent",
                         true
                     );
                 } else {
                     this.addMessageClient(this.client, message, "sent");
                 }
-            }
-
-            // Se il messaggio è da ignorare, lo ignoro
-            if (this.ignoreMsg) {
-                return;
             }
 
             switch (this.conversationState) {
@@ -467,6 +465,9 @@ export class ChatWidgetComponent implements OnInit {
                     break;
             }
         } else {
+            if (this.buttonsToShow != ButtonsType.None) {
+                message = message.label;
+            }
             this.addMessageClient(this.client, message, "sent");
             if (message.toLowerCase() == "yes") {
                 this.buttonsToShow = ButtonsType.None;
@@ -680,11 +681,7 @@ export class ChatWidgetComponent implements OnInit {
         //E' l'ultima dimensione dello statement?
         if (
             this.dimensionIndex == this.task.dimensionsAmount - 1 &&
-            this.getAnswerValidity(
-                this.dimensionIndex,
-                message,
-                this.urlInputValue
-            )
+            this.getAnswerValidity(this.dimensionIndex, message, this.urlValue)
         ) {
             //Stop del interval
             if (this.task.settings.countdown_time) {
@@ -968,7 +965,7 @@ export class ChatWidgetComponent implements OnInit {
 
             //Il documento viene contrassegnato come completato
             document.getElementById(this.taskIndex.toString()).className =
-                "dot ";
+                "dot completed ";
             // Se era l'ultimo statement, passo alla fase finale
             if (
                 this.task.hit.documents.length - 1 <= this.taskIndex ||
@@ -1220,11 +1217,7 @@ export class ChatWidgetComponent implements OnInit {
         //E' una dimensione con doppio input
         else if (this.hasDoubleInput) {
             if (
-                !this.getAnswerValidity(
-                    dimensionIndex,
-                    message,
-                    this.urlInputValue
-                )
+                !this.getAnswerValidity(dimensionIndex, message, this.urlValue)
             ) {
                 this.typingAnimation(
                     "Check your answers, please type or select a valid url, you can use the search bar on the right!"
@@ -1234,14 +1227,13 @@ export class ChatWidgetComponent implements OnInit {
             }
 
             this.hasDoubleInput = false;
-            this.answers[taskIndex][dimensionIndex].urlValue =
-                this.urlInputValue;
+            this.answers[taskIndex][dimensionIndex].urlValue = this.urlValue;
             this.answers[taskIndex][dimensionIndex].dimensionValue = message;
             this.storeDimensionSelected(
                 taskIndex,
                 dimensionIndex,
                 message,
-                this.urlInputValue
+                this.urlValue
             );
 
             this.cleanUserInput();
@@ -1333,7 +1325,7 @@ export class ChatWidgetComponent implements OnInit {
     }
 
     public updateUrlValue($event) {
-        this.urlInputValue = $event;
+        this.urlValue = $event;
     }
 
     //Metodi di supporto per il Search Engine
@@ -1347,8 +1339,8 @@ export class ChatWidgetComponent implements OnInit {
         this.disableSearchEngine.emit(false);
     }
     private cleanUserInput() {
-        this.urlPlaceHolder = "";
-        this.placeholderInput = "";
+        this.urlInputValue = "";
+        this.textInputPlaceHolder = "";
         this.inputComponentToShow = InputType.Text;
         this.waitForUrl = false;
         this.emitDisableSearchEngine();
@@ -1358,10 +1350,10 @@ export class ChatWidgetComponent implements OnInit {
     //Salvataggio delle row selezionate
     public getUrl(row) {
         if (this.hasDoubleInput) {
-            this.urlPlaceHolder = row.url;
+            this.urlInputValue = row.url;
             this.emitGetUrlValue();
         } else {
-            this.placeholderInput = row.url;
+            this.textInputPlaceHolder = row.url;
         }
         let q = {};
         q["document"] = this.taskIndex;
@@ -1387,7 +1379,7 @@ export class ChatWidgetComponent implements OnInit {
     }
 
     public storeSearchEngineUserQuery(text) {
-        this.placeholderInput = "";
+        this.textInputPlaceHolder = "";
         this.readOnly = false;
         let q = {};
         q["document"] = this.taskIndex;
@@ -1483,11 +1475,6 @@ export class ChatWidgetComponent implements OnInit {
 
         // Restituisci il tempo totale di digitazione (in millisecondi)
         return (baseTypingTime * input.length + extraTypingTime) / 1000;
-    }
-
-    // Intercetta i messaggi dei pulsanti
-    public buttonInput(message: string) {
-        this.sendMessage({ message });
     }
 
     // Invio un messaggio random
@@ -2026,7 +2013,7 @@ export class ChatWidgetComponent implements OnInit {
         this.inputComponentToShow = InputType.Slider;
     }
     private generateTextualAnswer(dimensionIndex: number) {
-        this.placeholderInput = null;
+        this.textInputPlaceHolder = null;
         this.inputComponentToShow = InputType.Text;
     }
     //Generazione delle risposte magnitude
