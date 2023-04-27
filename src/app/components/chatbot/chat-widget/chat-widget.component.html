@@ -64,7 +64,6 @@
                 <span *ngIf="timerIsOver | async; else timerInProgress">
                     Time is over
                 </span>
-
                 <ng-template #timerInProgress>
                     <span> {{ countdownValue | async }}s </span>
                 </ng-template>

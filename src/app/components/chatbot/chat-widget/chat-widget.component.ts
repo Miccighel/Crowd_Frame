@@ -1289,10 +1289,11 @@ export class ChatWidgetComponent implements OnInit {
 
     //Creazione del countdown
     private setCountdown() {
+        const { settings } = this.task;
         this.showCountdown = true;
-        this.countdownValueSubject.next(this.task.settings.countdown_time);
+        this.countdownValueSubject.next(settings.countdown_time);
         this.timerIsOverSubject.next(false);
-        this.progress = this.task.settings.countdown_time / 100;
+        this.progress = settings.countdown_time / 100;
         this.progressBar.nativeElement.style.width =
             this.progress.toString() + "%";
         this.countdownTimeStartContainer.push(
@@ -1309,8 +1310,7 @@ export class ChatWidgetComponent implements OnInit {
             } else {
                 this.progressBar.nativeElement.display = "block";
                 this.progress =
-                    100 -
-                    (countdownValue * 100) / this.task.settings.countdown_time;
+                    100 - (countdownValue * 100) / settings.countdown_time;
                 if (this.progress > 0 && this.progress < 100) {
                     this.progressBar.nativeElement.style.width =
                         this.progress.toString() + "%";
