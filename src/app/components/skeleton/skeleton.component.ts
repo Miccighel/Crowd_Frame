@@ -268,100 +268,7 @@ export class SkeletonComponent implements OnInit {
             this.worker.getIP()
         );
         let workerIdGenerated = String(false);
-        if (workerACLRecord["Items"].length > 0) {
-            let aclEntry = workerACLRecord["Items"][0];
-            let timeExpirationNearest =
-                await this.retrieveMostRecentExpirationDate();
-            if (timeExpirationNearest)
-                this.worker.setParameter(
-                    "time_expiration_nearest",
-                    timeExpirationNearest
-                );
-            else
-                this.worker.setParameter(
-                    "time_expiration_nearest",
-                    String(false)
-                );
-            if (/true/i.test(aclEntry["paid"]) == true) {
-                this.sectionService.taskAlreadyCompleted = true;
-                Object.entries(aclEntry).forEach(([key, value]) =>
-                    this.worker.setParameter(key, value)
-                );
-            } else {
-                Object.entries(aclEntry).forEach(([key, value]) =>
-                    this.worker.setParameter(key, value)
-                );
-                /* If the two flags are set to false, s/he is a worker that abandoned the task earlier;
-                   furthermore, his/her it has been assigned to someone else. It's a sort of overbooking. */
-                let timeArrival = new Date(aclEntry["time_arrival"]).getTime();
-                let timeActual = new Date().getTime();
-                let hoursElapsed = Math.abs(timeActual - timeArrival) / 36e5;
-                if (
-                    (/true/i.test(aclEntry["paid"]) == false &&
-                        /true/i.test(aclEntry["in_progress"]) == true &&
-                        hoursElapsed > this.task.settings.time_assessment) ||
-                    (/true/i.test(aclEntry["paid"]) == false &&
-                        /true/i.test(aclEntry["in_progress"]) == false &&
-                        parseInt(aclEntry["try_left"]) <= 1) ||
-                    (/true/i.test(aclEntry["paid"]) == false &&
-                        /true/i.test(aclEntry["in_progress"]) == false)
-                ) {
-                    // TODO: Implementare controlli per gli status codes nel caso di task overbooking
-                    /* As of today, such a worker is not allowed to perform the task */
-                    if (
-                        /true/i.test(aclEntry["paid"]) == false &&
-                        /true/i.test(aclEntry["in_progress"]) == true &&
-                        hoursElapsed > this.task.settings.time_assessment
-                    )
-                        this.worker.setParameter(
-                            "status_code",
-                            StatusCodes.TASK_TIME_EXPIRED
-                        );
-                    if (
-                        /true/i.test(aclEntry["paid"]) == false &&
-                        /true/i.test(aclEntry["in_progress"]) == false &&
-                        parseInt(aclEntry["try_left"]) <= 1
-                    )
-                        this.worker.setParameter(
-                            "status_code",
-                            StatusCodes.TASK_FAILED_NO_TRIES
-                        );
-                    this.worker.setParameter(
-                        "time_removal",
-                        new Date().toUTCString()
-                    );
-                    this.sectionService.taskFailed = true;
-                    await this.dynamoDBService.insertACLRecordWorkerID(
-                        this.configService.environment,
-                        this.worker
-                    );
-                } else {
-                    Object.entries(aclEntry).forEach(([key, value]) =>
-                        this.worker.setParameter(key, value)
-                    );
-                    this.tokenInput.setValue(aclEntry["token_input"]);
-                    this.worker.identifier =
-                        this.worker.getParameter("identifier");
-                    this.worker.setParameter(
-                        "access_counter",
-                        (
-                            parseInt(
-                                this.worker.getParameter("access_counter")
-                            ) + 1
-                        ).toString()
-                    );
-                    hitAssigned = true;
-                    this.worker.setParameter(
-                        "status_code",
-                        StatusCodes.TASK_HIT_ASSIGNED
-                    );
-                    await this.dynamoDBService.insertACLRecordWorkerID(
-                        this.configService.environment,
-                        this.worker
-                    );
-                }
-            }
-        } else {
+        if (workerACLRecord["Items"].length <= 0) {
             if (this.worker.identifier == null) {
                 let identifierGenerated = this.utilsService
                     .randomIdentifier(14)
@@ -437,6 +344,108 @@ export class SkeletonComponent implements OnInit {
                 "user_agent_source",
                 this.worker.getUAG()["source"]
             );
+        } else {
+            let aclEntry = workerACLRecord["Items"][0];
+            let timeExpirationNearest =
+                await this.retrieveMostRecentExpirationDate();
+            if (timeExpirationNearest)
+                this.worker.setParameter(
+                    "time_expiration_nearest",
+                    timeExpirationNearest
+                );
+            else
+                this.worker.setParameter(
+                    "time_expiration_nearest",
+                    String(false)
+                );
+            if (/true/i.test(aclEntry["paid"]) == true) {
+                this.sectionService.taskAlreadyCompleted = true;
+                Object.entries(aclEntry).forEach(([key, value]) =>
+                    this.worker.setParameter(key, value)
+                );
+                this.worker.setParameter(
+                    "status_code",
+                    StatusCodes.TASK_ALREADY_COMPLETED
+                );
+                await this.dynamoDBService.insertACLRecordWorkerID(
+                    this.configService.environment,
+                    this.worker
+                );
+            } else {
+                Object.entries(aclEntry).forEach(([key, value]) =>
+                    this.worker.setParameter(key, value)
+                );
+                /* If the two flags are set to false, s/he is a worker that abandoned the task earlier;
+                   furthermore, his/her it has been assigned to someone else. It's a sort of overbooking. */
+                let timeArrival = new Date(aclEntry["time_arrival"]).getTime();
+                let timeActual = new Date().getTime();
+                let hoursElapsed = Math.abs(timeActual - timeArrival) / 36e5;
+                if (
+                    (/true/i.test(aclEntry["paid"]) == false &&
+                        /true/i.test(aclEntry["in_progress"]) == true &&
+                        hoursElapsed > this.task.settings.time_assessment) ||
+                    (/true/i.test(aclEntry["paid"]) == false &&
+                        /true/i.test(aclEntry["in_progress"]) == true &&
+                        parseInt(aclEntry["try_left"]) <= 1) ||
+                    (/true/i.test(aclEntry["paid"]) == false &&
+                        /true/i.test(aclEntry["in_progress"]) == false)
+                ) {
+                    // TODO: Implementare controlli per gli status codes nel caso di task overbooking
+                    /* As of today, such a worker is not allowed to perform the task */
+                    if (
+                        /true/i.test(aclEntry["paid"]) == false &&
+                        /true/i.test(aclEntry["in_progress"]) == true &&
+                        hoursElapsed > this.task.settings.time_assessment
+                    )
+                        this.worker.setParameter(
+                            "status_code",
+                            StatusCodes.TASK_TIME_EXPIRED
+                        );
+                    if (
+                        /true/i.test(aclEntry["paid"]) == false &&
+                        /true/i.test(aclEntry["in_progress"]) == false &&
+                        parseInt(aclEntry["try_left"]) <= 1
+                    )
+                        this.worker.setParameter(
+                            "status_code",
+                            StatusCodes.TASK_FAILED_NO_TRIES
+                        );
+                    this.worker.setParameter("in_progress", String(false));
+                    this.worker.setParameter(
+                        "time_removal",
+                        new Date().toUTCString()
+                    );
+                    this.sectionService.taskFailed = true;
+                    await this.dynamoDBService.insertACLRecordWorkerID(
+                        this.configService.environment,
+                        this.worker
+                    );
+                } else {
+                    Object.entries(aclEntry).forEach(([key, value]) =>
+                        this.worker.setParameter(key, value)
+                    );
+                    this.tokenInput.setValue(aclEntry["token_input"]);
+                    this.worker.identifier =
+                        this.worker.getParameter("identifier");
+                    this.worker.setParameter(
+                        "access_counter",
+                        (
+                            parseInt(
+                                this.worker.getParameter("access_counter")
+                            ) + 1
+                        ).toString()
+                    );
+                    hitAssigned = true;
+                    this.worker.setParameter(
+                        "status_code",
+                        StatusCodes.TASK_HIT_ASSIGNED
+                    );
+                    await this.dynamoDBService.insertACLRecordWorkerID(
+                        this.configService.environment,
+                        this.worker
+                    );
+                }
+            }
         }
 
         if (
@@ -647,6 +656,7 @@ export class SkeletonComponent implements OnInit {
                                 );
                         }
                     }
+                    await this.performTaskSetup();
                     this.unlockTask(hitAssigned);
                 } else {
                     /* If a check during the execution of performWorkerStatusCheck has not been satisfied */
@@ -688,8 +698,14 @@ export class SkeletonComponent implements OnInit {
         wholeEntries.sort((a, b) =>
             a.time_expiration > b.time_expiration ? 1 : -1
         );
-        if (wholeEntries.length > 0) {
-            return wholeEntries.pop()["time_expiration"];
+        let entriesActive = [];
+        for (let entryActive of entriesActive) {
+            if (entryActive.in_progress && entryActive.paid == false) {
+                entriesActive.push(entryActive);
+            }
+        }
+        if (entriesActive.length > 0) {
+            return entriesActive.pop()["time_expiration"];
         } else {
             return null;
         }
@@ -889,6 +905,7 @@ export class SkeletonComponent implements OnInit {
      */
     public enableTask() {
         this.sectionService.taskInstructionsRead = true;
+        // TODO: Set here the updated selectedIndex, if applicable
         this.showSnackbar(
             "If you have a very slow internet connection please wait a few seconds",
             "Dismiss",
@@ -998,10 +1015,7 @@ export class SkeletonComponent implements OnInit {
                 );
             }
 
-            this.colorStepper(
-                this.task.questionnaireAmount,
-                this.task.documentsAmount
-            );
+            //this.colorStepper(this.task.questionnaireAmount, this.task.documentsAmount)
         }
 
         this.changeDetector.detectChanges();

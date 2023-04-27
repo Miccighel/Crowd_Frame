@@ -6,6 +6,7 @@ export class Questionnaire {
     index: number
 
     name: string
+    name_pretty: string
     type: string
     description?: string
     allow_back?: boolean
@@ -25,6 +26,7 @@ export class Questionnaire {
     ) {
         this.index = index;
         this.name = data['name'] ? data["name"] : null;
+        this.name_pretty = data['name_pretty'] ? data["name_pretty"] : null;
         this.description = data['description'] ? data["description"] : null;
         this.position = data['position'] ? data["position"] : null;
         this.allow_back = data['allow_back'] ? data["allow_back"] : false;

@@ -2,15 +2,10 @@
 # coding: utf-8
 
 import json
-from python_on_whales import DockerClient
 import docker
-from mako.template import Template
 import os
-from datetime import datetime, timedelta
-import requests
 import pandas as pd
 import subprocess
-import string
 import datefinder
 import glob
 import random
@@ -19,8 +14,12 @@ import shutil
 import hmac
 import textwrap
 import boto3
-from zipfile import ZipFile
 import time
+import warnings
+from mako.template import Template
+from python_on_whales import DockerClient
+from datetime import datetime
+from zipfile import ZipFile
 from distutils.util import strtobool
 from pathlib import Path
 from shutil import copy2
@@ -31,8 +30,10 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.progress import track
 from dateutil import tz
-import pytz
-import warnings
+from shared import handle_aws_error
+from shared import serialize_json
+from shared import read_json
+from shared import remove_json
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
@@ -66,33 +67,6 @@ filename_questionnaires_config = "questionnaires.json"
 filename_search_engine_config = "search_engine.json"
 filename_task_settings_config = "task.json"
 filename_workers_settings_config = "workers.json"
-
-
-def serialize_json(folder, filename, data):
-    if not os.path.exists(folder):
-        os.makedirs(folder, exist_ok=True)
-    console.print(f"Serialized at path: [cyan]{folder}{filename}[/cyan]")
-    with open(f"{folder}{filename}", 'w', encoding='utf-8') as f:
-        json.dump(data, f, ensure_ascii=False, indent=4, default=str)
-        f.close()
-
-
-def remove_json(folder, filename):
-    os.remove(f"{folder}{filename}")
-
-
-def random_string(length=11):
-    letters = string.ascii_uppercase
-    return ''.join(random.choice(letters) for i in range(length))
-
-def read_json(path):
-    if os.path.exists(path):
-        with open(path, "r", encoding="utf8") as file:
-            data = json.load(file)
-        return data
-    else:
-        return {}
-
 
 def stop_sequence():
     console.print('\n\n')
@@ -502,9 +476,9 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             stop_sequence()
         else:
             console.print(f"[green]Each permission is correctly set up!")
-    except ClientError:
+    except ClientError as error:
         status.stop()
-        console.print("[bold red]\nYou must grant access to the SimulatePrincipalPolicy operation!\n")
+        handle_aws_error(error.response)
         stop_sequence()
 
     console.rule(f"{step_index} - Crowd workers interaction policy")
@@ -1109,20 +1083,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             {
                 "Effect": "Allow",
                 "Action": [
-                    "budgets:*"
-                ],
-                "Resource": "*"
-            },
-            {
-                "Effect": "Allow",
-                "Action": [
-                    "aws-portal:ViewBilling"
-                ],
-                "Resource": "*"
-            },
-            {
-                "Effect": "Allow",
-                "Action": [
                     "iam:PassRole"
                 ],
                 "Resource": "*",
@@ -1135,7 +1095,9 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             {
                 "Effect": "Allow",
                 "Action": [
-                    "aws-portal:ModifyBilling",
+                    "budgets:*",
+                    "billing:GetBillingDetails",
+                    "billing:UpdateBillingPreferences",
                     "ec2:DescribeInstances",
                     "iam:ListGroups",
                     "iam:ListPolicies",
@@ -1456,7 +1418,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                                         if date_modified_remote_parsed > date_modified_local_parsed:
                                             console.print(f"Most recent version: [blue underline]REMOTE[/blue underline], date: {date_modified_remote_parsed}")
                                             s3.download_file(aws_private_bucket, file_config_remote_path, file_config_local_path)
-                                            task_config_items_updated +=1
+                                            task_config_items_updated += 1
                                             task_config_items_updated_names.append(filename_config)
                                         else:
                                             console.print(f"Most recent version: [blue underline]LOCAL[/blue underline], date: {date_modified_local_parsed}")
@@ -1485,7 +1447,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.print(f"Configuration items synchronized: {task_config_items_updated}")
     console.print(f"Items fetched from [green]REMOTE[/green]: {task_config_items_updated}, {task_config_items_updated_names}")
     console.print(f"Items available from [green]LOCAL[/green]: {task_config_items_updated_local}, {task_config_items_updated_names_local}")
-    console.print(f"Items to generate: {len(task_config_filenames)-(task_config_items_updated + task_config_items_updated_local)}")
+    console.print(f"Items to generate: {len(task_config_filenames) - (task_config_items_updated + task_config_items_updated_local)}")
 
     console.rule(f"{step_index} - Sample task configuration")
     step_index = step_index + 1
@@ -2129,14 +2091,14 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         'runtime.js',
         'main.js',
     ]
-    es_script_paths = [None]*3
+    es_script_paths = [None] * 3
     for es_script_path in es_script_paths_temp:
         if os.path.basename(es_script_path) == 'polyfills.js':
-           es_script_paths[0] = es_script_path
+            es_script_paths[0] = es_script_path
         if os.path.basename(es_script_path) == 'runtime.js':
-           es_script_paths[1] = es_script_path
+            es_script_paths[1] = es_script_path
         if os.path.basename(es_script_path) == 'main.js':
-           es_script_paths[2] = es_script_path
+            es_script_paths[2] = es_script_path
     for es_script_path in es_script_paths_temp:
         if os.path.basename(es_script_path) is not None and os.path.basename(es_script_path) != 'polyfills.js' and os.path.basename(es_script_path) != 'runtime.js' and os.path.basename(es_script_path) != 'main.js':
             es_script_paths.append(es_script_path)
@@ -2397,6 +2359,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         else:
             response = s3_client.put_object(Body=open(path, 'rb'), Bucket=bucket, Key=key, ContentType=content_type)
         console.print(f"HTTP Status Code: {response['ResponseMetadata']['HTTPStatusCode']}, ETag: {response['ETag']}")
+
 
     console.print(f"[white on blue bold]Generator configuration")
 

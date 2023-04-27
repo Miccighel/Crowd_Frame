@@ -64,7 +64,7 @@
             <button
                 mat-flat-button
                 color="primary"
-                (click)="enableTask(); this.performTaskSetup()"
+                (click)="enableTask()"
                 [disabled]="
                     !this.sectionService.checkCompleted ||
                     !this.task.instructionsGeneral
@@ -112,7 +112,6 @@
                         (paste)="this.tokenForm.updateValueAndValidity()"
                         (keyup)="this.tokenForm.updateValueAndValidity()"
                         (keydown)="this.tokenForm.updateValueAndValidity()"
-                        (keyup.enter)="performTaskSetup()"
                     />
                     <mat-error>
                         <app-error-message
@@ -122,11 +121,7 @@
                 </mat-form-field>
             </mat-card-content>
             <mat-card-actions>
-                <button
-                    mat-flat-button
-                    color="primary"
-                    (click)="performTaskSetup()"
-                >
+                <button mat-flat-button color="primary" (click)="enableTask()">
                     Start
                 </button>
             </mat-card-actions>
@@ -147,7 +142,7 @@
     </chat-widget>
 </ng-container>
 
-<ng-container *ngIf="this.sectionService.taskStarted">
+<ng-container *ngIf="this.sectionService.taskInstructionsRead">
     <!-- Task body section -->
     <mat-horizontal-stepper
         [linear]="true"

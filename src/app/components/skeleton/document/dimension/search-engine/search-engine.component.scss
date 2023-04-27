@@ -1,18 +1,20 @@
 .search-engine {
-  margin-top: 2em;
-  margin-bottom: 2em;
+    margin-top: 2em;
+    margin-bottom: 2em;
 }
 
 .evaluation-instructions {
-  h2 {
-    font-weight: normal;
-  }
-  margin-bottom: 1%;
+    h2 {
+        font-size: 1.3em;
+        font-weight: normal;
+    }
+
+    margin-bottom: 1%;
 }
 
 .url-field {
-  display: none;
-  padding-top: 0;
-  margin-top: 0;
-  margin-bottom: 1%;
+    display: none;
+    padding-top: 0;
+    margin-top: 0;
+    margin-bottom: 1%;
 }

@@ -23,7 +23,7 @@
             <mat-card-title class="sub-title">Description</mat-card-title>
             <mat-divider [inset]="true"></mat-divider>
             <mat-card-content class="description">
-                <p>You have completed successfully the task assigned. Please follow the instructions to complete your submission.</p>
+                <p>You have completed successfully the task assigned.</p>
             </mat-card-content>
         </mat-card>
         <mat-card>
@@ -65,12 +65,6 @@
                 <div class="completion-div">
                     <button mat-flat-button color="primary" class="button-completion" (click)="completeTask()">Complete</button>
                 </div>
-            </ng-container>
-            <ng-container *ngIf="this.worker.getParameter('platform')=='custom'">
-                <mat-card-content class="description">
-                    <p>This task was not published on a crowdsourcing platform. We kindly suggest you to copy and store your output token (shown below).</p>
-                    <h1>{{this.worker.getParameter('token_output')}}</h1>
-                </mat-card-content>
             </ng-container>
         </mat-card>
     </ng-container>
@@ -197,7 +191,7 @@
             <mat-card-title class="sub-title">Description</mat-card-title>
             <mat-divider [inset]="true"></mat-divider>
             <mat-card-content class="description">
-                <p>The task assigned to you has been given to another worker because the time available for performing it is expired on <strong>{{this.worker.prettyTimeRemoval()}}</strong>. We kindly ask you to return the assignment on the
+                <p>The task assigned to you has been given to another worker because the time available for performing it is expired on <strong>{{this.worker.prettyTimeExpiration()}}</strong>. We kindly ask you to return the assignment on the
                     platform of provenance.</p>
             </mat-card-content>
         </mat-card>
