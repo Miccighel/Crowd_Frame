@@ -105,7 +105,6 @@ export class ChatWidgetComponent implements OnInit {
     conversationState: ConversationState;
     public buttonsToShow = ButtonsType.None;
     public enButtonType = ButtonsType;
-
     public hasDoubleInput = false;
     // Variables
     fixedMessage: string; // Messaggio sempre visibile in alto nel chatbot
@@ -129,7 +128,7 @@ export class ChatWidgetComponent implements OnInit {
     public countdownValue: Observable<number>; //Valore in secondi
     private countdownValueSubject = new BehaviorSubject<number>(0);
     private progress: number; // Percentuale di completamento della barra del timer
-    public timerIsOver: Observable<boolean>; //Flag per la visualizzazione del countdown scaduto
+    public timerIsOver: Observable<boolean>; //Flag countdown scaduto
     private timerIsOverSubject = new BehaviorSubject<boolean>(false);
     //Interval per la gestione del countdown
     private activeInterval: any;
