@@ -1853,6 +1853,7 @@ export class ChatWidgetComponent implements OnInit {
         this.timestampsStart[
             this.task.questionnaires.length + this.taskIndex
         ][0] = ChatHelper.getTimeStampInSeconds();
+        this.changeDetector.detectChanges();
     }
 
     //Restituisce l'etichetta del valore della relativa dimensione

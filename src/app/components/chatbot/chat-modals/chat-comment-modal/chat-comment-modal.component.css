@@ -10,4 +10,6 @@ textarea {
     text-align: center;
     background: #66bb6a;
     border-radius: 5px;
+    padding: 5px;
+    font-size: 2rem;
 }

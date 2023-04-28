@@ -54,11 +54,9 @@
                         "tsConfig": "tsconfig.app.json",
                         "styles": [
                             "src/styles.scss",
-                            "./node_modules/bootstrap/dist/css/bootstrap.css"
+                            "node_modules/bootstrap/dist/css/bootstrap.min.css"
                         ],
-                        "scripts": [
-                            "node_modules/bootstrap/dist/js/bootstrap.min.js"
-                        ],
+                        "scripts": [],
                         "assets": ["src/assets"],
                         "vendorChunk": true,
                         "extractLicenses": false,
