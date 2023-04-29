@@ -45,6 +45,9 @@
 }
 
 .chat-box-header {
+    display: flex;
+    margin: 0;
+    align-items: center;
     padding: 2px;
     background-color: var(--primary);
     color: var(--light);

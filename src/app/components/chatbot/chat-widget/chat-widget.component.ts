@@ -405,44 +405,17 @@ export class ChatWidgetComponent implements OnInit {
             if (this.hasDoubleInput) {
                 this.emitGetUrlValue();
             }
-            // Se il messaggio è vuoto oppure deve essere ignorato non viene considerato
-            if (
-                (this.inputComponentToShow != InputType.Button &&
-                    this.inputComponentToShow != InputType.Dropdown &&
-                    this.buttonsToShow == ButtonsType.None &&
-                    message.trim() === "") ||
-                this.ignoreMsg
-            ) {
-                return;
-            }
-            // Mostro il messaggio in chat
-            if (
-                this.inputComponentToShow == InputType.Dropdown ||
-                this.inputComponentToShow == InputType.Button ||
-                this.buttonsToShow != ButtonsType.None
-            ) {
-                message = message.label;
-                if (this.hasDoubleInput) {
-                    this.addMessageClient(
-                        this.client,
-                        { url: this.urlValue, value: message },
-                        "sent",
-                        true
-                    );
-                } else {
-                    this.addMessageClient(this.client, message, "sent");
-                }
+            if (this.ignoreMsg) return;
+            message = !!message.label ? message.label : message;
+            if (this.hasDoubleInput) {
+                this.addMessageClient(
+                    this.client,
+                    { url: this.urlValue, value: message },
+                    "sent",
+                    true
+                );
             } else {
-                if (this.hasDoubleInput) {
-                    this.addMessageClient(
-                        this.client,
-                        { url: this.urlValue, value: message },
-                        "sent",
-                        true
-                    );
-                } else {
-                    this.addMessageClient(this.client, message, "sent");
-                }
+                this.addMessageClient(this.client, message, "sent");
             }
 
             switch (this.conversationState) {
@@ -465,7 +438,7 @@ export class ChatWidgetComponent implements OnInit {
             }
         } else {
             if (this.buttonsToShow != ButtonsType.None) {
-                message = message.label;
+                message = message.label ?? message;
             }
             this.addMessageClient(this.client, message, "sent");
             if (message.toLowerCase() == "yes") {
