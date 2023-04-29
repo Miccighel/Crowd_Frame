@@ -120,7 +120,6 @@ export class ChatWidgetComponent implements OnInit {
     public conversationInitialized = false;
     public finishedExampleActivity = false;
     public urlValue = "";
-
     private minValue: number = -2; //Valore validazione estremo inferiore
     private maxValue: number = +2; //Valore validazione estremo superirore
 
@@ -395,17 +394,16 @@ export class ChatWidgetComponent implements OnInit {
         /* General info about worker */
         data["worker"] = this.worker;
         this.task.sequenceNumber += 1;
-
         this.initializeConversation();
     }
 
     // Core
     public sendMessage({ message }) {
         if (this.conversationInitialized) {
+            if (this.ignoreMsg) return;
             if (this.hasDoubleInput) {
                 this.emitGetUrlValue();
             }
-            if (this.ignoreMsg) return;
             message = !!message.label ? message.label : message;
             if (this.hasDoubleInput) {
                 this.addMessageClient(
@@ -417,7 +415,6 @@ export class ChatWidgetComponent implements OnInit {
             } else {
                 this.addMessageClient(this.client, message, "sent");
             }
-
             switch (this.conversationState) {
                 case ConversationState.End:
                     this.endP(message);
@@ -468,6 +465,7 @@ export class ChatWidgetComponent implements OnInit {
 
     // Fase dei questionari
     private questionnaireP(message) {
+        const { questionnaires } = this.task;
         //E' in attesa di una risposta?
         if (this.awaitingAnswer) {
             if (
@@ -491,26 +489,20 @@ export class ChatWidgetComponent implements OnInit {
                 this.awaitingAnswer = false;
                 if (
                     this.currentQuestion >=
-                    this.task.questionnaires[this.currentQuestionnaire]
-                        .questions.length
+                    questionnaires[this.currentQuestionnaire].questions.length
                 ) {
                     this.timestampsEnd[this.currentQuestionnaire].push(
                         ChatHelper.getTimeStampInSeconds()
                     );
                     //Calcolo tempo trascorso tra il completamento di due questionari
-
                     this.timestampsElapsed[this.currentQuestionnaire] =
                         this.timestampsEnd[this.currentQuestionnaire][0] -
                         this.timestampsStart[this.currentQuestionnaire][0];
-
                     this.uploadQuestionnaireData(this.currentQuestionnaire);
                     this.currentQuestion = 0;
                     this.currentQuestionnaire++;
 
-                    if (
-                        this.currentQuestionnaire >=
-                        this.task.questionnaires.length
-                    ) {
+                    if (this.currentQuestionnaire >= questionnaires.length) {
                         this.readOnly = true;
                         this.conversationState =
                             ConversationState.QuestionnaireReview;
@@ -524,12 +516,8 @@ export class ChatWidgetComponent implements OnInit {
             }
             if (this.checkIfQuestionnaireIsFinished()) return;
         }
-
         //Non è in attesa, quindi genera la domanda successiva
-        if (
-            this.task.questionnaires[this.currentQuestionnaire].type ==
-            "standard"
-        ) {
+        if (questionnaires[this.currentQuestionnaire].type == "standard") {
             this.readOnly = true;
             this.showMessageInput = true;
             this.printQuestion();
@@ -539,32 +527,26 @@ export class ChatWidgetComponent implements OnInit {
                 this.showMessageInput = false;
                 this.changeDetector.detectChanges();
             }, 1600);
-
             this.readOnly = false;
             this.inputComponentToShow = InputType.Dropdown;
-        } else if (
-            this.task.questionnaires[this.currentQuestionnaire].type == "likert"
-        ) {
+        } else if (questionnaires[this.currentQuestionnaire].type == "likert") {
             this.readOnly = true;
             this.showMessageInput = true;
             this.typingAnimation(
-                this.task.questionnaires[this.currentQuestionnaire].questions[
+                questionnaires[this.currentQuestionnaire].questions[
                     this.currentQuestion
                 ].text
             );
             this.typingAnimation(this.createLikertQuestionnaireAnswers());
             this.generateLikertQuestionnaireAnswers();
-
             setTimeout(() => {
                 this.showMessageInput = false;
             }, 1600);
             this.readOnly = false;
             this.inputComponentToShow = InputType.Dropdown;
-        } else if (
-            this.task.questionnaires[this.currentQuestionnaire].type == "crt"
-        ) {
+        } else if (questionnaires[this.currentQuestionnaire].type == "crt") {
             this.typingAnimation(
-                this.task.questionnaires[this.currentQuestionnaire].questions[
+                questionnaires[this.currentQuestionnaire].questions[
                     this.currentQuestion
                 ].text
             );
@@ -583,7 +565,6 @@ export class ChatWidgetComponent implements OnInit {
     // Fase di istruzioni
     private instructionP(message?: any) {
         this.ignoreMsg = true;
-
         if (!this.finishedExampleActivity && !message) {
             this.typingAnimation(this.messagesForUser[4]);
             this.typingAnimation(this.messagesForUser[6]);
@@ -633,8 +614,8 @@ export class ChatWidgetComponent implements OnInit {
                         this.taskP("startTask");
                     }, 1600);
                 } else {
-                    this.typingAnimation(this.messagesForUser[8]);
                     //Risposta errata, si aspetta il messaggio corretto
+                    this.typingAnimation(this.messagesForUser[8]);
                     return;
                 }
             }
@@ -715,6 +696,7 @@ export class ChatWidgetComponent implements OnInit {
 
     // Fase di review
     private reviewP(message) {
+        const { questionnaires } = this.task;
         if (
             !this.dimensionReviewPrinted &&
             this.inputComponentToShow == InputType.Dropdown
@@ -727,8 +709,7 @@ export class ChatWidgetComponent implements OnInit {
                 //E' in attesa della risposta da parte dell'utente
                 if (this.awaitingAnswer) {
                     if (
-                        this.task.questionnaires[this.currentQuestionnaire]
-                            .type == "crt"
+                        questionnaires[this.currentQuestionnaire].type == "crt"
                     ) {
                         if (!ChatHelper.validMsg(message, 1, 100)) {
                             this.typingAnimation(
@@ -738,10 +719,10 @@ export class ChatWidgetComponent implements OnInit {
                         }
                     }
                     if (
-                        this.task.questionnaires[this.currentQuestionnaire]
-                            .type == "likert"
+                        questionnaires[this.currentQuestionnaire].type ==
+                        "likert"
                     ) {
-                        message = this.task.questionnaires[
+                        message = questionnaires[
                             this.currentQuestionnaire
                         ].mappings.find((el) => el.value == message).label;
                     }
@@ -778,8 +759,8 @@ export class ChatWidgetComponent implements OnInit {
                     this.awaitingAnswer = true;
 
                     if (
-                        this.task.questionnaires[this.currentQuestionnaire]
-                            .type == "standard"
+                        questionnaires[this.currentQuestionnaire].type ==
+                        "standard"
                     ) {
                         this.typingAnimation(this.createQuestionnaireAnswers());
                         this.generateQuestionnaireAnswers();
@@ -787,8 +768,8 @@ export class ChatWidgetComponent implements OnInit {
                         this.inputComponentToShow == InputType.Dropdown;
                         return;
                     } else if (
-                        this.task.questionnaires[this.currentQuestionnaire]
-                            .type == "likert"
+                        questionnaires[this.currentQuestionnaire].type ==
+                        "likert"
                     ) {
                         this.readOnly = true;
                         this.showMessageInput = true;
@@ -804,8 +785,7 @@ export class ChatWidgetComponent implements OnInit {
                         this.inputComponentToShow = InputType.Dropdown;
                         return;
                     } else if (
-                        this.task.questionnaires[this.currentQuestionnaire]
-                            .type == "crt"
+                        questionnaires[this.currentQuestionnaire].type == "crt"
                     ) {
                         this.inputComponentToShow = InputType.Number;
 
@@ -1513,6 +1493,7 @@ export class ChatWidgetComponent implements OnInit {
 
     // Stampa lo statement corrente e lo fissa nella chat
     private printStatement() {
+        const { hit } = this.task;
         this.accessesAmount[
             this.task.questionnaires.length + this.taskIndex
         ] += 1;
@@ -1521,56 +1502,57 @@ export class ChatWidgetComponent implements OnInit {
             "dot in-progress";
         let messageToSend =
             "Statement: <b>" +
-            this.task.hit.documents[this.taskIndex]["statement_text"] +
+            hit.documents[this.taskIndex]["statement_text"] +
             "</b> ";
-        if (!!this.task.hit.documents[this.taskIndex]["speaker_name"])
+        if (!!hit.documents[this.taskIndex]["speaker_name"])
             messageToSend +=
-                "- " + this.task.hit.documents[this.taskIndex]["speaker_name"];
-        if (!!this.task.hit.documents[this.taskIndex]["statement_date"])
+                "- " + hit.documents[this.taskIndex]["speaker_name"];
+        if (!!hit.documents[this.taskIndex]["statement_date"])
             messageToSend +=
-                " " + this.task.hit.documents[this.taskIndex]["statement_date"];
+                " " + hit.documents[this.taskIndex]["statement_date"];
         this.typingAnimation(messageToSend);
         //Composizione messaggio fissato
         if (!!this.fixedMessage) {
         } else {
-            if (!!this.task.hit.documents[this.taskIndex]["statement_text"])
+            if (!!hit.documents[this.taskIndex]["statement_text"])
                 this.fixedMessage =
-                    this.task.hit.documents[this.taskIndex]["statement_text"];
+                    hit.documents[this.taskIndex]["statement_text"];
 
-            if (!!this.task.hit.documents[this.taskIndex]["speaker_name"])
+            if (!!hit.documents[this.taskIndex]["speaker_name"])
                 this.statementAuthor =
-                    this.task.hit.documents[this.taskIndex]["speaker_name"];
+                    hit.documents[this.taskIndex]["speaker_name"];
 
-            if (!!this.task.hit.documents[this.taskIndex]["statement_date"])
+            if (!!hit.documents[this.taskIndex]["statement_date"])
                 this.statementDate =
-                    this.task.hit.documents[this.taskIndex]["statement_date"];
+                    hit.documents[this.taskIndex]["statement_date"];
         }
     }
 
     // Stampa la dimensione corrente
     private printDimension(taskIndex: number, dimensionIndex: number) {
+        const { dimensions } = this.task;
         let out = "";
         out += "Please rate the <b>";
-        if (!!this.task.dimensions[dimensionIndex].name_pretty) {
-            out += this.task.dimensions[dimensionIndex].name_pretty;
+        if (!!dimensions[dimensionIndex].name_pretty) {
+            out += dimensions[dimensionIndex].name_pretty;
         } else {
-            out += this.task.dimensions[dimensionIndex].name;
+            out += dimensions[dimensionIndex].name;
         }
         out += "</b> of the statement.<br>";
-        if (!!this.task.dimensions[dimensionIndex].description) {
-            out += this.task.dimensions[dimensionIndex].description;
+        if (!!dimensions[dimensionIndex].description) {
+            out += dimensions[dimensionIndex].description;
         }
         if (!!this.answers[taskIndex][dimensionIndex].dimensionValue) {
             out += "You previously answered<br>";
-            if (!!this.task.dimensions[dimensionIndex].url) {
+            if (!!dimensions[dimensionIndex].url) {
                 out +=
                     "Url: <b>" +
                     this.answers[taskIndex][dimensionIndex].urlValue +
                     "</b><br>";
             }
             if (
-                !!this.task.dimensions[dimensionIndex].scale &&
-                this.task.dimensions[dimensionIndex].scale.type == "categorical"
+                !!dimensions[dimensionIndex].scale &&
+                dimensions[dimensionIndex].scale.type == "categorical"
             ) {
                 out +=
                     "Dimension value: <b>" +
@@ -1591,24 +1573,21 @@ export class ChatWidgetComponent implements OnInit {
 
     // Creazione del testo relativo alle risposte fornite riguardo allo statement attuale
     private createDocumentRecap(taskIndex) {
+        const { dimensions } = this.task;
         let recap = "";
         for (let i = 0; i < this.task.dimensionsAmount; i++) {
             let scaleType = null;
             recap += i + 1 + ". ";
 
             //Dimensioni con doppio input
-            if (
-                this.task.dimensions[i].scale &&
-                !!this.task.dimensions[i].url
-            ) {
-                scaleType = this.task.dimensions[i].scale.type;
+            if (dimensions[i].scale && !!dimensions[i].url) {
+                scaleType = dimensions[i].scale.type;
                 recap +=
                     "<b> URL</b>: " +
                     this.answers[taskIndex][i].urlValue +
                     "<br>";
-                if (this.task.dimensions[i].name_pretty) {
-                    recap +=
-                        "<b>" + this.task.dimensions[i].name_pretty + "</b>: ";
+                if (dimensions[i].name_pretty) {
+                    recap += "<b>" + dimensions[i].name_pretty + "</b>: ";
                 }
                 switch (scaleType) {
                     case "categorical":
@@ -1632,25 +1611,19 @@ export class ChatWidgetComponent implements OnInit {
             }
             // Dimensioni con singolo input
             else {
-                if (
-                    !this.task.dimensions[i].scale &&
-                    !!this.task.dimensions[i].url
-                ) {
+                if (!dimensions[i].scale && !!dimensions[i].url) {
                     scaleType = "url";
-                } else if (this.task.dimensions[i].justification) {
+                } else if (dimensions[i].justification) {
                     scaleType = "textual";
                 } else {
-                    scaleType = this.task.dimensions[i].scale.type;
+                    scaleType = dimensions[i].scale.type;
                 }
                 //Costruzione del prefisso alla risposta
                 if (scaleType == "url") {
                     recap += "<b> URL</b>: ";
                 } else {
-                    if (this.task.dimensions[i].name_pretty) {
-                        recap +=
-                            "<b>" +
-                            this.task.dimensions[i].name_pretty +
-                            "</b>: ";
+                    if (dimensions[i].name_pretty) {
+                        recap += "<b>" + dimensions[i].name_pretty + "</b>: ";
                     } else {
                         recap += "<b>Dimension</b>: ";
                     }
@@ -1683,18 +1656,19 @@ export class ChatWidgetComponent implements OnInit {
 
     // Creo una stringa con tutti gli statement
     private createStatementsRecap() {
+        const { hit } = this.task;
         let statements = "";
-        for (let i = 0; i < this.task.hit.documents.length; i++) {
+        for (let i = 0; i < hit.documents.length; i++) {
             statements +=
                 "<b> Statement " +
                 (i + 1) +
                 "</b>: " +
-                this.task.hit.documents[i]["statement_text"] +
+                hit.documents[i]["statement_text"] +
                 " <br> - " +
-                this.task.hit.documents[i]["speaker_name"] +
+                hit.documents[i]["speaker_name"] +
                 ", ";
-            if (!!this.task.hit.documents[i]["statement_date"])
-                statements += this.task.hit.documents[i]["statement_date"];
+            if (!!hit.documents[i]["statement_date"])
+                statements += hit.documents[i]["statement_date"];
             statements += "<br>";
         }
         statements += "<br><br>";
@@ -1758,33 +1732,28 @@ export class ChatWidgetComponent implements OnInit {
     }
 
     //Generazione della dimensione in base alla scale type
-    private selectDimensionToGenerate(dimensionIndex) {
+    private selectDimensionToGenerate(index) {
+        const { dimensions } = this.task;
         this.showMessageInput = true;
         this.readOnly = true;
         let scaleType = null;
 
-        if (
-            this.task.dimensions[dimensionIndex].url &&
-            !!this.task.dimensions[dimensionIndex].scale
-        ) {
+        if (dimensions[index].url && !!dimensions[index].scale) {
             this.hasDoubleInput = true;
             this.emitEnableSearchEngine();
 
             this.typingAnimation(
                 "Please use the search bar on the right to search for information about the truthfulness of the statement. Once you find a suitable result, please type or select its url"
             );
-            if (!!this.task.dimensions[dimensionIndex].scale)
-                scaleType = this.task.dimensions[dimensionIndex].scale.type;
+            if (!!dimensions[index].scale)
+                scaleType = dimensions[index].scale.type;
         } else {
-            if (
-                !this.task.dimensions[dimensionIndex].scale &&
-                this.task.dimensions[dimensionIndex].url
-            ) {
+            if (!dimensions[index].scale && dimensions[index].url) {
                 scaleType = "url";
-            } else if (this.task.dimensions[dimensionIndex].justification) {
+            } else if (dimensions[index].justification) {
                 scaleType = "textual";
             } else {
-                scaleType = this.task.dimensions[dimensionIndex].scale.type;
+                scaleType = dimensions[index].scale.type;
             }
         }
 
@@ -1795,22 +1764,21 @@ export class ChatWidgetComponent implements OnInit {
                 this.typingAnimation(
                     "Please use the search bar on the right to search for information about the truthfulness of the statement. Once you find a suitable result, please type or select its url"
                 );
-
                 break;
             case "categorical":
-                this.generateCategoricalAnswers(dimensionIndex);
+                this.generateCategoricalAnswers(index);
 
                 break;
             case "magnitude_estimation":
-                this.generateMagnitudeAnswer(dimensionIndex);
+                this.generateMagnitudeAnswer(index);
 
                 break;
             case "interval":
-                this.generateIntervalAnswer(dimensionIndex);
+                this.generateIntervalAnswer(index);
 
                 break;
             case "textual":
-                this.generateTextualAnswer(dimensionIndex);
+                this.generateTextualAnswer(index);
                 break;
             default:
                 console.warn("Casistica non gestita");
@@ -1889,7 +1857,6 @@ export class ChatWidgetComponent implements OnInit {
 
     private generateFinalStatementRecapData() {
         this.dropdownListOptions = [];
-
         this.task.hit.documents.forEach((document, index) => {
             this.dropdownListOptions.push({
                 label: "Statement " + (index + 1).toString(),
@@ -2033,17 +2000,18 @@ export class ChatWidgetComponent implements OnInit {
         message: string,
         url: string
     ): boolean {
+        const { dimensions } = this.task;
         let isValid = false;
         if (
-            !!this.task.dimensions[dimensionIndex].scale &&
-            !!this.task.dimensions[dimensionIndex].url
+            !!dimensions[dimensionIndex].scale &&
+            !!dimensions[dimensionIndex].url
         ) {
             isValid =
                 ChatHelper.validMsg(message, this.minValue, this.maxValue) &&
                 ChatHelper.urlValid(url);
         } else if (this.waitForUrl) {
             isValid = ChatHelper.urlValid(url);
-        } else if (this.task.dimensions[dimensionIndex].justification) {
+        } else if (dimensions[dimensionIndex].justification) {
             isValid = true;
         } else
             isValid = ChatHelper.validMsg(
@@ -2137,11 +2105,9 @@ export class ChatWidgetComponent implements OnInit {
     //Modellazione delle risposte del questionario
     private buildQuestionnaireAnswersData(questionnaireIndex: number) {
         let addOn = "_answer";
-
         let questionnaireData = {};
         let startIndex = this.getQuestionnaireStartIndex(questionnaireIndex);
         this.task.questionnaires[questionnaireIndex].questions.length - 1;
-
         this.task.questionnaires[questionnaireIndex].questions.forEach(
             (question) => {
                 questionnaireData[question.name + addOn] =
@@ -2176,12 +2142,10 @@ export class ChatWidgetComponent implements OnInit {
         };
         /* Worker's answers to the current questionnaire */
         let questionsFull = [];
-
         for (let question of this.task.questionnaires[questionnaireIndex]
             .questions) {
             if (!question.dropped) questionsFull.push(question);
         }
-
         data["questions"] = questionsFull;
         data["answers"] = answers;
         /* Start, end and elapsed timestamps for the current questionnaire */
@@ -2194,14 +2158,12 @@ export class ChatWidgetComponent implements OnInit {
     }
     private async uploadDocumentData() {
         let answers = this.buildAnswerDataFormat();
-
         let documentPayload = this.buildTaskDocumentPayload(
             this.taskIndex,
             answers,
             null,
             this.action
         );
-
         await this.dynamoDBService.insertDataRecord(
             this.configService.environment,
             this.worker,
@@ -2216,15 +2178,16 @@ export class ChatWidgetComponent implements OnInit {
     }
     //Modellazione delle risposte da salvare
     private buildAnswerDataFormat() {
+        const { dimensions } = this.task;
         let answers = {};
         let addOn = "_value";
-        for (let i = 0; i < this.task.dimensions.length; i++) {
-            if (!!this.task.dimensions[i].scale) {
-                answers[this.task.dimensions[i].name + addOn] =
+        for (let i = 0; i < dimensions.length; i++) {
+            if (!!dimensions[i].scale) {
+                answers[dimensions[i].name + addOn] =
                     this.answers[this.taskIndex][i].dimensionValue;
             }
-            if (!!this.task.dimensions[i].url) {
-                answers[this.task.dimensions[i].name + "_url"] =
+            if (!!dimensions[i].url) {
+                answers[dimensions[i].name + "_url"] =
                     this.answers[this.taskIndex][i].urlValue;
             }
         }
@@ -2358,7 +2321,6 @@ export class ChatWidgetComponent implements OnInit {
 
     public performGlobalValidityCheck(): boolean {
         //Tutti i dati sono inseriti presenti, condizione garantito dall'algoritmo che gestisce il flow
-
         return true;
     }
 
