@@ -740,7 +740,6 @@ export class ChatWidgetComponent implements OnInit {
                     this.timestampsElapsed[this.currentQuestionnaire] =
                         this.timestampsEnd[this.currentQuestionnaire][0] -
                         this.timestampsStart[this.currentQuestionnaire][0];
-
                     this.uploadQuestionnaireData(this.currentQuestionnaire);
                 } else {
                     //Revisione della domanda
@@ -913,7 +912,7 @@ export class ChatWidgetComponent implements OnInit {
             this.timestampsElapsed[currentElementIndex] =
                 this.timestampsEnd[currentElementIndex][0] -
                 this.timestampsStart[currentElementIndex][0];
-            this.uploadDocumentData();
+            this.uploadDocumentData(this.taskIndex);
 
             //Il documento viene contrassegnato come completato
             document.getElementById(this.taskIndex.toString()).className =
@@ -1012,12 +1011,12 @@ export class ChatWidgetComponent implements OnInit {
                     goldChecks: this.goldChecks,
                     goldConfiguration: this.goldConfiguration,
                 };
+
                 let checksOutcome = [];
                 let checker = (array) => array.every(Boolean);
                 checksOutcome.push(qualityCheckData["globalFormValidity"]);
                 checksOutcome.push(qualityCheckData["timeSpentCheck"]);
                 checksOutcome.push(checker(qualityCheckData["goldChecks"]));
-
                 qualityCheckData["globalOutcome"] = checker(checksOutcome);
                 let qualityChecksPayload =
                     this.buildQualityChecksPayload(qualityCheckData);
@@ -2087,10 +2086,10 @@ export class ChatWidgetComponent implements OnInit {
             this.task.countdownsExpired[this.taskIndex] = true;
     }
     //Invio dei dati relativi al questionario
-    private async uploadQuestionnaireData(questionnaireIndex: number) {
-        let answers = this.buildQuestionnaireAnswersData(questionnaireIndex);
+    private async uploadQuestionnaireData(questionnaireIdx: number) {
+        let answers = this.buildQuestionnaireAnswersData(questionnaireIdx);
         let questionnairePayload = this.buildTaskQuestionnairePayload(
-            questionnaireIndex,
+            questionnaireIdx,
             answers,
             this.action
         );
@@ -2156,10 +2155,10 @@ export class ChatWidgetComponent implements OnInit {
         data["accesses"] = this.accessesAmount[questionnaireIndex];
         return data;
     }
-    private async uploadDocumentData() {
-        let answers = this.buildAnswerDataFormat();
+    private async uploadDocumentData(docIndex) {
+        let answers = this.buildAnswerDataFormat(docIndex);
         let documentPayload = this.buildTaskDocumentPayload(
-            this.taskIndex,
+            docIndex,
             answers,
             null,
             this.action
@@ -2177,18 +2176,18 @@ export class ChatWidgetComponent implements OnInit {
         this.querySelectedUrls = [];
     }
     //Modellazione delle risposte da salvare
-    private buildAnswerDataFormat() {
+    private buildAnswerDataFormat(docIndex) {
         const { dimensions } = this.task;
         let answers = {};
         let addOn = "_value";
         for (let i = 0; i < dimensions.length; i++) {
             if (!!dimensions[i].scale) {
                 answers[dimensions[i].name + addOn] =
-                    this.answers[this.taskIndex][i].dimensionValue;
+                    this.answers[docIndex][i].dimensionValue;
             }
             if (!!dimensions[i].url) {
                 answers[dimensions[i].name + "_url"] =
-                    this.answers[this.taskIndex][i].urlValue;
+                    this.answers[docIndex][i].urlValue;
             }
         }
         return answers;
