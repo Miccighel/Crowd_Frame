@@ -1,21 +1,18 @@
 # See http://help.github.com/ignore-files/ for more about ignoring files.
 
-# compiled output
+# Compiled output
 /dist
 /tmp
 /out-tsc
-# Only exists if Bazel was run
 /bazel-out
 
-# dependencies
+# Node
 /node_modules
-
-# profiling files
-chrome-profiler-events*.json
-speed-measure-plugin*.json
+npm-debug.log
+yarn-error.log
 
 # IDEs and editors
-/.idea
+.idea/
 .project
 .classpath
 .c9/
@@ -23,7 +20,7 @@ speed-measure-plugin*.json
 .settings/
 *.sublime-workspace
 
-# IDE - VSCode
+# Visual Studio Code
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
@@ -31,67 +28,15 @@ speed-measure-plugin*.json
 !.vscode/extensions.json
 .history/*
 
-# misc
+# Miscellaneous
 /.angular/cache
-/.sass-cache
+.sass-cache/
 /connect.lock
 /coverage
 /libpeerconnection.log
-npm-debug.log
-yarn-error.log
 testem.log
 /typings
 
-# System Files
+# System files
 .DS_Store
 Thumbs.db
-
-# Environments
-src/environments/*
-data/build/environments/*
-
-# Visual Studio Code folder
-.vscode/
-
-# Yarn
-.yarn/*
-!.yarn/cache
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/sdks
-!.yarn/versions
-
-# Environment variables file
-data/.env
-
-# File generated when configuring AWS
-data/aws/generated/*
-data/aws/backup/*
-
-.vscode/settings.json
-
-# Outputs of build phase
-data/tasks/*
-data/build/deploy/*
-data/build/mturk/*
-data/build/task/*
-data/build/skeleton/document.ts
-data/build/config/admin.json
-
-# Random things
-local/log.md
-local/*
-
-data/build/skeleton/goldChecker.ts
-
-data/result/*
-
-.cache/*
-
-
-data/Logs-Partial.zip
-data/build/toloka/interface.html
-data/build/toloka/tokens.tsv
-data/build/toloka/output_specification.json
-data/build/toloka/input_specification.json
