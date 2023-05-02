@@ -1239,33 +1239,35 @@ export class ChatWidgetComponent implements OnInit {
         return true;
     }
 
-    //Creazione del countdown
+    //Configurazione del countdown
     private setCountdown() {
         const { settings } = this.task;
-        this.showCountdown = true;
-        this.countdownValueSubject.next(settings.countdown_time);
+        // salvare il valore corrente dell'observable
+        let countdownValue = settings.countdown_time;
+        this.countdownValueSubject.next(countdownValue);
         this.timerIsOverSubject.next(false);
-        this.progress = settings.countdown_time / 100;
-        this.progressBar.nativeElement.style.width =
-            this.progress.toString() + "%";
+
+        this.progress = countdownValue / 100;
+        this.showCountdown = true;
+        const progressBarEl = this.progressBar.nativeElement;
+        progressBarEl.style.width = this.progress.toString() + "%";
         this.countdownTimeStartContainer.push(
             ChatHelper.getTimeStampInSeconds()
         );
         this.activeInterval = setInterval(() => {
-            let countdownValue = this.countdownValueSubject.value - 1;
+            countdownValue--;
             this.countdownValueSubject.next(countdownValue);
             if (countdownValue == 0) {
-                this.progressBar.nativeElement.style.width = "100%";
+                progressBarEl.style.width = "100%";
                 this.timerIsOverSubject.next(true);
                 this.storeCountdownData();
-                return clearInterval(this.activeInterval);
+                clearInterval(this.activeInterval);
             } else {
-                this.progressBar.nativeElement.display = "block";
+                progressBarEl.display = "block";
                 this.progress =
                     100 - (countdownValue * 100) / settings.countdown_time;
                 if (this.progress > 0 && this.progress < 100) {
-                    this.progressBar.nativeElement.style.width =
-                        this.progress.toString() + "%";
+                    progressBarEl.style.width = this.progress.toString() + "%";
                 }
             }
         }, 1000);

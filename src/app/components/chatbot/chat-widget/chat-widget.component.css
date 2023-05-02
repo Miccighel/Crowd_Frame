@@ -52,6 +52,11 @@
     background-color: var(--primary);
     color: var(--light);
 }
+.stepper-container {
+    padding: 0 4px;
+    margin: 0;
+    margin: 0.25rem 0;
+}
 
 button.instruction-button.mat-icon-button {
     height: 24px;
