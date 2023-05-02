@@ -4,7 +4,8 @@
   "scripts": {
     "update": "ng update",
     "serve": "ng serve",
-    "build": "ng build"
+    "build": "ng build", 
+    "i18n:extract":"ng xi18n"
   },
   "private": true,
   "dependencies": {
