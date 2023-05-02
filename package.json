@@ -7,7 +7,7 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "i18:extract":"ng xi18n"
+    "i18n:extract": "ng xi18n"
   },
   "private": true,
   "dependencies": {
@@ -27,6 +27,7 @@
     "@angular-devkit/build-angular": "^15.2.7",
     "@angular/cli": "~15.2.7",
     "@angular/compiler-cli": "^15.2.0",
+    "@angular/localize": "^15.2.8",
     "@types/jasmine": "~4.3.0",
     "jasmine-core": "~4.5.0",
     "karma": "~6.4.0",
