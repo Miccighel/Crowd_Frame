@@ -8,4 +8,5 @@ button.chat-button {
     margin: 1px;
     min-width: 50%;
     border: solid 2px var(--secondary);
+    height: 100%;
 }

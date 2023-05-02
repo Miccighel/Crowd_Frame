@@ -156,10 +156,11 @@ export class ChatWidgetComponent implements OnInit {
         "What's your name? If you don't want to tell me your name just write <b>no</b> in the chat and press send",
         "Hi {name}, it's a pleasure chatting with you. Are you ready?",
         "No problem, so are you ready?",
-        "Nice, let's start! &#x1F60E;",
-        "Okay, when you are ready click on <b>Yes</b> and so we can start this task together. &#x1F601;",
-        "Would you like to play a test round?",
+        "Nice, let's start with the task! &#x1F60E;",
+        "Great, thanks for providing me with this information. Now let's start with the main activity",
         "I'll now show you some statements and for each one I'll ask you some questions. Please use the search bar on the right to search for info about those statement and answer my questions",
+        "Would you like to play a test round?",
+        "When you are ready click on <b>Yes</b> and so we can start this task together. &#x1F601;",
         "Are you sure about that answer? Check it please &#128064;",
         "Nice! Now we can start with the real task. &#x1F60A;",
         "Okay, that is great, so we can start immediatly with the real task. &#x1F60A;",
@@ -420,7 +421,8 @@ export class ChatWidgetComponent implements OnInit {
                     this.endP(message);
                     return;
                 case ConversationState.Questionnaire:
-                    this.questionnaireP(message);
+                    let isFinished = this.questionnaireP(message);
+                    if (isFinished) this.reviewP(message);
                     break;
                 case ConversationState.TaskInstructions:
                     this.instructionP(message);
@@ -457,14 +459,14 @@ export class ChatWidgetComponent implements OnInit {
                     this.initializeConversation();
                     return;
                 }
-                this.typingAnimation(this.messagesForUser[5]);
+                this.typingAnimation(this.messagesForUser[8]);
                 return;
             }
         }
     }
 
     // Fase dei questionari
-    private questionnaireP(message) {
+    private questionnaireP(message): boolean {
         const { questionnaires } = this.task;
         //E' in attesa di una risposta?
         if (this.awaitingAnswer) {
@@ -484,7 +486,7 @@ export class ChatWidgetComponent implements OnInit {
                     )
                 ] = message;
                 this.inputComponentToShow = InputType.Text;
-                this.randomMessage();
+
                 this.currentQuestion++;
                 this.awaitingAnswer = false;
                 if (
@@ -506,15 +508,17 @@ export class ChatWidgetComponent implements OnInit {
                         this.readOnly = true;
                         this.conversationState =
                             ConversationState.QuestionnaireReview;
-
-                        return;
+                    } else {
+                        this.randomMessage();
+                        this.timestampsStart[this.currentQuestionnaire].push(
+                            ChatHelper.getTimeStampInSeconds()
+                        );
                     }
-                    this.timestampsStart[this.currentQuestionnaire].push(
-                        ChatHelper.getTimeStampInSeconds()
-                    );
+                } else {
+                    this.randomMessage();
                 }
             }
-            if (this.checkIfQuestionnaireIsFinished()) return;
+            if (this.checkIfQuestionnaireIsFinished()) return true;
         }
         //Non è in attesa, quindi genera la domanda successiva
         if (questionnaires[this.currentQuestionnaire].type == "standard") {
@@ -566,8 +570,13 @@ export class ChatWidgetComponent implements OnInit {
     private instructionP(message?: any) {
         this.ignoreMsg = true;
         if (!this.finishedExampleActivity && !message) {
-            this.typingAnimation(this.messagesForUser[4]);
-            this.typingAnimation(this.messagesForUser[6]);
+            this.typingAnimation(this.messagesForUser[5]);
+            if (
+                !!this.task.instructionsGeneral &&
+                this.task.instructionsGeneral[0].text
+            )
+                this.typingAnimation(this.task.instructionsGeneral[0].text);
+            this.typingAnimation(this.messagesForUser[7]);
             setTimeout(() => {
                 this.ignoreMsg = false;
                 this.buttonsToShow = ButtonsType.YesNo;
@@ -576,31 +585,25 @@ export class ChatWidgetComponent implements OnInit {
             return;
         } else {
             //Se non ho generato il messaggio di prova
-            if (
-                !this.finishedExampleActivity &&
-                !this.fixedMessage &&
-                message.toLowerCase() == "yes"
-            ) {
-                this.buttonsToShow = ButtonsType.None;
-                this.printExampleStatement();
-                this.generateExampleDimension();
-            } else if (
-                !this.finishedExampleActivity &&
-                !this.fixedMessage &&
-                message.toLowerCase() == "no"
-            ) {
-                this.buttonsToShow = ButtonsType.None;
-                this.typingAnimation(this.messagesForUser[10]);
-                this.inputComponentToShow = InputType.Text;
-                setTimeout(() => {
-                    this.conversationState = ConversationState.Task;
-                    this.taskP("startTask");
-                }, 1600);
-                return;
+            if (!this.finishedExampleActivity && !this.fixedMessage) {
+                if (message.toLowerCase() == "yes") {
+                    this.buttonsToShow = ButtonsType.None;
+                    this.printExampleStatement();
+                    this.generateExampleDimension();
+                } else if (message.toLowerCase() == "no") {
+                    this.buttonsToShow = ButtonsType.None;
+                    this.typingAnimation(this.messagesForUser[11]);
+                    this.inputComponentToShow = InputType.Text;
+                    setTimeout(() => {
+                        this.conversationState = ConversationState.Task;
+                        this.taskP("startTask");
+                    }, 1600);
+                    return;
+                }
             } else if (!this.finishedExampleActivity && this.fixedMessage) {
                 if (message.toLowerCase() === "true") {
                     //Far scrivere messagio al bot
-                    this.typingAnimation(this.messagesForUser[9]);
+                    this.typingAnimation(this.messagesForUser[10]);
                     this.finishedExampleActivity = true;
                     this.fixedMessage = null;
                     this.showMessageInput = true;
@@ -615,7 +618,7 @@ export class ChatWidgetComponent implements OnInit {
                     }, 1600);
                 } else {
                     //Risposta errata, si aspetta il messaggio corretto
-                    this.typingAnimation(this.messagesForUser[8]);
+                    this.typingAnimation(this.messagesForUser[9]);
                     return;
                 }
             }
@@ -814,9 +817,8 @@ export class ChatWidgetComponent implements OnInit {
             if (message.trim().toLowerCase() === "confirm") {
                 this.inputComponentToShow = InputType.Text;
                 this.buttonsToShow = ButtonsType.None;
-                // Passo al prossimo statement, resetto
-                this.randomMessage();
 
+                // Preparazione fase delle istruzioni
                 this.taskIndex = 0;
                 this.dimensionIndex = 0;
                 this.reviewAnswersShown = false;
@@ -1105,7 +1107,9 @@ export class ChatWidgetComponent implements OnInit {
             this.initializeChatbotExpressions();
             if (this.userName != "!NONAME")
                 this.typingAnimation(this.messagesForUser[2]);
-            else this.typingAnimation(this.messagesForUser[3]);
+            else {
+                this.typingAnimation(this.messagesForUser[3]);
+            }
             this.buttonsToShow = ButtonsType.YesNo;
             return;
         }
