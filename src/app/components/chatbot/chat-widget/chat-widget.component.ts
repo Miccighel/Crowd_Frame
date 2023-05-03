@@ -2257,11 +2257,11 @@ export class ChatWidgetComponent implements OnInit {
         ]
             ? [this.countdownLeftTimeContainer[documentIndex]]
             : [];
-        data["countdowns_expired"] = !!this.task.countdownsExpired[
-            documentIndex
-        ]
-            ? [this.task.countdownsExpired[documentIndex]]
-            : [];
+        data["countdowns_expired"] =
+            this.task.countdownsExpired.length > 0
+                ? this.task.countdownsExpired[documentIndex]
+                : [];
+
         /* Number of accesses to the current document (currentDocument.e., how many times the worker reached the document with a "Back" or "Next" action */
         data["accesses"] = this.accessesAmount[currentElementIndex] ?? 0;
 

@@ -5,7 +5,6 @@ import { NgbActiveModal } from "@ng-bootstrap/ng-bootstrap";
 @Component({
     selector: "chat-comment-modal",
     templateUrl: "chat-comment-modal.component.html",
-
     styleUrls: ["./chat-comment-modal.component.css"],
 })
 export class ChatCommentModalComponent implements OnInit {

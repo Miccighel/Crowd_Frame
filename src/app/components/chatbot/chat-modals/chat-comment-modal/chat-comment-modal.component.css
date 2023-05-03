@@ -3,13 +3,19 @@ textarea {
     outline: none;
 }
 
-.comment {
-}
-
 #outToken {
     text-align: center;
     background: #66bb6a;
     border-radius: 5px;
     padding: 5px;
     font-size: 2rem;
+}
+
+.modal-footer .btn-primary {
+    background-color: var(--primary);
+    color: var(--light);
+}
+
+.modal-footer .btn-primary:focus {
+    box-shadow: none;
 }
