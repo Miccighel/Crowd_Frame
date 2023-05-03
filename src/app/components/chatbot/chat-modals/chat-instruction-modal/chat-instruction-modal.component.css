@@ -1,3 +1,37 @@
-.modal-footer {
+#modal-instructions {
+    padding: 1.5rem;
+    max-height: 70vh;
+    overflow: auto;
+}
+
+::-webkit-scrollbar {
+    width: 20px;
+}
+
+::-webkit-scrollbar-track {
+    background-color: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #d6dee1;
+    border-radius: 20px;
+    border: 6px solid transparent;
+    background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: #a8bbbf;
+}
+
+#modal-instructions.modal-footer {
     text-transform: capitalize;
+}
+
+.btn-primary {
+    background-color: var(--primary);
+    color: var(--light);
+}
+
+.btn-primary:focus {
+    box-shadow: none;
 }

@@ -248,3 +248,7 @@ mat-card-actions {
     --transparentLight: #ffffff9e;
     --background-light: #ebebeb;
 }
+
+.modal-dialog.modal-lg {
+    min-width: 80vw;
+}

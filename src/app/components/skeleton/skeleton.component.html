@@ -130,7 +130,7 @@
 </div>
 
 <!-- Chatbot -->
-<ng-container *ngIf="this.sectionService.taskStarted">
+<ng-container *ngIf="this.sectionService.taskInstructionsRead">
     <chat-widget
         *ngIf="
             this.task.dimensions &&

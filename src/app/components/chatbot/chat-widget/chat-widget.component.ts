@@ -571,11 +571,9 @@ export class ChatWidgetComponent implements OnInit {
         this.ignoreMsg = true;
         if (!this.finishedExampleActivity && !message) {
             this.typingAnimation(this.messagesForUser[5]);
-            if (
-                !!this.task.instructionsGeneral &&
-                this.task.instructionsGeneral[0].text
-            )
-                this.typingAnimation(this.task.instructionsGeneral[0].text);
+            let instruction = this.getInstructions();
+            this.typingAnimation(instruction);
+
             this.typingAnimation(this.messagesForUser[7]);
             setTimeout(() => {
                 this.ignoreMsg = false;
@@ -1123,7 +1121,7 @@ export class ChatWidgetComponent implements OnInit {
                         ChatHelper.getTimeStampInSeconds()
                     );
                     this.questionnaireP("0");
-                }, 5000);
+                }, 3000);
             } else {
                 this.skipQuestionnairePhase();
             }
@@ -1462,8 +1460,9 @@ export class ChatWidgetComponent implements OnInit {
         const modalRef = this.ngModal.open(ChatInstructionModalComponent, {
             size: "lg",
         });
-        modalRef.componentInstance.instruction =
-            this.task.instructionsGeneral[0];
+        modalRef.componentInstance.instructions = this.task.instructionsGeneral;
+        modalRef.componentInstance.instructionsEvaluation =
+            this.task.instructionsEvaluation;
     }
 
     //Stampa della domanda nella chat
@@ -1998,6 +1997,20 @@ export class ChatWidgetComponent implements OnInit {
 
     private getFinalRevisionAnswerValue(message: string) {
         return +message.split(" ")[1] - 1;
+    }
+    private getInstructions(): string {
+        let instructions = "";
+        if (this.task.instructionsGeneral.length > 0) {
+            this.task.instructionsGeneral.forEach((item) => {
+                instructions +=
+                    (item.caption
+                        ? "<strong>" + item.caption + "</strong> </br>"
+                        : "") +
+                    item.text +
+                    "</br>";
+            });
+        }
+        return instructions;
     }
 
     private getAnswerValidity(

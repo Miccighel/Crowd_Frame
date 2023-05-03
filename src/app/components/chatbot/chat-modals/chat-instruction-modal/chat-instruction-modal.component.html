@@ -1,21 +1,26 @@
-<div class="modal-header">
-    <h4 class="modal-title" id="modal-basic-title">
-        {{ instruction.caption }}
-    </h4>
-    <button
-        type="button"
-        class="btn-close"
-        aria-label="Close"
-        (click)="activeModal.close('')"
-    ></button>
-</div>
-<div class="modal-body">
-    <div class="row container m-0">
-        <div class="col-12 ps-0">{{ instruction.text }}</div>
+<div class="modal-body" id="modal-instructions">
+    <ng-container
+        *ngIf="instructionsEvaluation.element"
+        class="evaluation-instructionsEvaluation"
+    >
+        <h2>
+            {{ instructionsEvaluation.element.label }} -
+            {{ instructionsEvaluation.element.caption }}
+        </h2>
+        <div>
+            <p>{{ instructionsEvaluation.element.text }}</p>
+        </div>
+    </ng-container>
+    <div *ngIf="instructions.length > 0">
+        <div *ngFor="let instruction of instructions">
+            <h2>{{ instruction.caption }}</h2>
+            <div><p [innerHTML]="instruction.text"></p></div>
+        </div>
     </div>
 </div>
-<div class="modal-footer justify-content-center">
+<div class="modal-footer">
     <button
+        style="width: 100%"
         type="button"
         class="btn btn-primary"
         (click)="activeModal.close('')"
