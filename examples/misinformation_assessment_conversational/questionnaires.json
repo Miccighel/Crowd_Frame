@@ -1,0 +1,49 @@
+[
+    {
+        "type": "crt",
+        "position": "start",
+        "questions": [
+            {
+                "index": 0,
+                "name": "farmers",
+                "type": "number",
+                "required": true,
+                "text": "If three farmers can plant three trees in three hours, how long (i.e., how many hours) would it take nine farmers to plant nine trees?",
+                "answers": []
+            }
+        ]
+    },
+    {
+        "type": "likert",
+        "description": "Test",
+        "position": "start",
+        "allow_back": false,
+        "questions": [
+            {
+                "index": 0,
+                "name": "Prima domanda",
+                "text": "E' la prima domanda",
+                "type": "mcq",
+                "required": true,
+                "free_text": false,
+                "detail": null,
+                "show_detail": false
+            },
+            {
+                "index": null,
+                "name": "Seconda domanda",
+                "text": "E' la seconda domanda",
+                "type": "mcq",
+                "required": true,
+                "free_text": false,
+                "detail": null,
+                "show_detail": false
+            }
+        ],
+        "mapping": [
+            { "label": "Si", "value": "2" },
+            { "label": "No", "value": "0" },
+            { "label": "Forse", "value": "1" }
+        ]
+    }
+]

@@ -1,8 +1,8 @@
 {
     "modality": "conversational",
-    "allowed_tries": 300,
-    "time_assessment": 3000,
-    "time_check_amount": 100,
+    "allowed_tries": 10,
+    "time_assessment": 200,
+    "time_check_amount": 1,
     "attributes": [
         {
             "name": "id",
@@ -69,7 +69,7 @@
         }
     ],
     "annotator": false,
-    "countdown_time": false,
+    "countdown_time": 70,
     "additional_times": false,
     "countdown_modality": false,
     "countdown_attribute": false,

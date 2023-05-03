@@ -1,0 +1,84 @@
+[
+    {
+        "unit_id": "unit_0",
+        "token_input": "DXWPMUMYXSM",
+        "token_output": "PGHWTXVNMIP",
+        "documents_number": 1,
+        "documents": [
+            {
+                "id": "fact-checking-claim-most-planned-parenthood-clinic",
+                "fact_check_ground_truth_label": "barely-true",
+                "fact_check_ground_truth_value": 2,
+                "fact_check_source": "Politifact",
+                "speaker_name": "Candace Owens",
+                "speaker_party": "DEM",
+                "statement_date": "2022-05-03",
+                "statement_description": "stated on May 3, 2022 in a tweet:",
+                "statement_text": "\u201c79% of Planned Parenthood clinics are in minority neighborhoods. This is not by accident. That is by its founder, Margaret Sanger's, eugenicist design.\""
+            },
+            {
+                "id": "pennsylvania-us-senate-candidate-kathy-barnette-wa",
+                "fact_check_ground_truth_label": "mostly-true",
+                "fact_check_ground_truth_value": 4,
+                "fact_check_source": "Politifact",
+                "speaker_name": "USA Freedom Fund",
+                "speaker_party": "REP",
+                "statement_date": "2022-05-11",
+                "statement_description": "stated on May 11, 2022 in an attack ad:",
+                "statement_text": "\u201cKathy Barnette wants to build a statue of Barack Obama right next to the one of Abraham Lincoln on Capitol Hill.\""
+            },
+            {
+                "id": "do-republicans-want-throw-doctors-who-break-aborti",
+                "fact_check_ground_truth_label": "pants-on-fire",
+                "fact_check_ground_truth_value": 0,
+                "fact_check_source": "Politifact",
+                "speaker_name": "National Republican Senatorial Committee",
+                "speaker_party": "REP",
+                "statement_date": "2022-05-03",
+                "statement_description": "stated on May 3, 2022 in a memo to Republican senate candidates and lawmakers:",
+                "statement_text": "\u201cRepublicans DO NOT want to throw doctors\u201d in jail."
+            }
+        ]
+    },
+    {
+        "unit_id": "unit_1",
+        "token_input": "ABCPMUMYXSM",
+        "token_output": "ABCBTXVNMIP",
+        "documents_number": 3,
+        "documents": [
+            {
+                "id": "fact-checking-claim-most-planned-parenthood-clinic",
+                "fact_check_ground_truth_label": "barely-true",
+                "fact_check_ground_truth_value": 2,
+                "fact_check_source": "Politifact",
+                "speaker_name": "Candace Owens",
+                "speaker_party": "DEM",
+                "statement_date": "2022-05-03",
+                "statement_description": "stated on May 3, 2022 in a tweet:",
+                "statement_text": "\u201c79% of Planned Parenthood clinics are in minority neighborhoods. This is not by accident. That is by its founder, Margaret Sanger's, eugenicist design.\""
+            },
+            {
+                "id": "pennsylvania-us-senate-candidate-kathy-barnette-wa",
+                "fact_check_ground_truth_label": "mostly-true",
+                "fact_check_ground_truth_value": 4,
+                "fact_check_source": "Politifact",
+                "speaker_name": "USA Freedom Fund",
+                "speaker_party": "REP",
+                "statement_date": "2022-05-11",
+                "statement_description": "stated on May 11, 2022 in an attack ad:",
+                "statement_text": "\u201cKathy Barnette wants to build a statue of Barack Obama right next to the one of Abraham Lincoln on Capitol Hill.\""
+            },
+            {
+                "id": "do-republicans-want-throw-doctors-who-break-aborti",
+                "fact_check_ground_truth_label": "pants-on-fire",
+                "fact_check_ground_truth_value": 0,
+                "fact_check_source": "Politifact",
+                "speaker_name": "National Republican Senatorial Committee",
+                "speaker_party": "REP",
+                "statement_date": "2022-05-03",
+                "statement_description": "stated on May 3, 2022 in a memo to Republican senate candidates and lawmakers:",
+                "statement_text": "\u201cRepublicans DO NOT want to throw doctors\u201d in jail."
+            }
+        ]
+    }
+]
