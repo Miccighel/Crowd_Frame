@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file source-language="en-US" datatype="plaintext" original="ng2.template">
+    <body>
+      <trans-unit id="fdc6a9a401c8a2f9dad7ca0489d98069fbf482cc" datatype="html">
+        <source>Show Instructions</source>
+        <target>Mostra Istruzioni</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/instructions/instructions.component.html</context>
+          <context context-type="linenumber">3</context>
+        </context-group>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

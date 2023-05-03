@@ -4,7 +4,10 @@
   "scripts": {
     "update": "ng update",
     "serve": "ng serve",
-    "build": "ng build"
+    "serve:it": "ng serve --configuration=development-it",
+    "build": "ng build",
+    "build:it": "ng build --configuration=development-it",
+    "translate": "ng extract-i18n --output-path src/locale"
   },
   "private": true,
   "dependencies": {
@@ -15,6 +18,7 @@
     "@angular/compiler": "^14.2.12",
     "@angular/core": "^14.2.12",
     "@angular/forms": "^14.2.12",
+    "@angular/localize": "^16.0.0",
     "@angular/material": "^14.2.7",
     "@angular/platform-browser": "^14.2.12",
     "@angular/platform-browser-dynamic": "^14.2.12",
@@ -45,5 +49,5 @@
   "browser": {
     "crypto": false
   },
-  "packageManager": "yarn@3.5.0"
+  "packageManager": "yarn@3.5.1"
 }
