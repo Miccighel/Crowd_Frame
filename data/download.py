@@ -2624,7 +2624,7 @@ if not os.path.exists(df_data_path):
         df_answ.sort_values(by=['worker_id', 'time_submit_parsed'], inplace=True)
         df_answ.drop_duplicates(inplace=True)
         df_answ.to_csv(df_data_path, index=False)
-        console.print(f"Dataframe shape: {dataframe.shape}")
+        console.print(f"Dataframe shape: {df_answ.shape}")
         console.print(f"Workers data dataframe serialized at path: [cyan on white]{df_data_path}")
     else:
         console.print(f"Dataframe shape: {df_answ.shape}")
@@ -2830,7 +2830,7 @@ def parse_dimensions_selected(df, worker_id, worker_paid, task, info, documents,
             row = {
                 'worker_id': worker_id,
                 'paid': worker_paid,
-                'task_id': task['task_id'],
+                'task_id': task['task_name'],
                 'batch_name': task['batch_name'],
                 'unit_id': task['unit_id'],
                 'try_last': task['try_last'],
