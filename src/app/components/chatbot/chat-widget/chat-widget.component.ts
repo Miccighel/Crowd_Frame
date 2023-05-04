@@ -293,12 +293,13 @@ export class ChatWidgetComponent implements OnInit {
 
     private initializeContainers() {
         const { documents, questionnaires, settings, dimensions } = this.task;
+        this.countdownTimeStartContainer = !!settings.countdown_time
+            ? Array(documents.length).fill(settings.countdown_time)
+            : [];
         this.countdownLeftTimeContainer = !!settings.countdown_time
             ? Array(documents.length).fill(0)
             : [];
-        this.countdownTimeStartContainer = !!settings.countdown_time
-            ? Array(documents.length).fill(0)
-            : [];
+
         this.accessesAmount = Array(
             questionnaires.length + documents.length
         ).fill(0);
@@ -860,10 +861,11 @@ export class ChatWidgetComponent implements OnInit {
                 if (isValid) {
                     this.inputComponentToShow = InputType.Text;
                     //Misuro comunque il tempo di revisione, anche se il countdown non è visualizzato
-                    this.countdownLeftTimeContainer.push(
-                        this.countdownTimeStartContainer[this.taskIndex] -
-                            ChatHelper.getTimeStampInSeconds()
-                    );
+                    if (!!this.task.settings.countdown_time) {
+                        this.countdownLeftTimeContainer[this.taskIndex] =
+                            this.countdownTimeStartContainer[this.taskIndex] -
+                            ChatHelper.getTimeStampInSeconds();
+                    }
                 } else return;
             } else {
                 this.cleanUserInput();
@@ -883,9 +885,12 @@ export class ChatWidgetComponent implements OnInit {
                 this.printDimension(this.taskIndex, this.dimensionIndex);
                 this.dimensionReviewPrinted = true;
                 this.selectDimensionToGenerate(this.dimensionIndex);
-                this.countdownTimeStartContainer.push(
-                    ChatHelper.getTimeStampInSeconds()
-                );
+                if (!!this.task.settings.countdown_time) {
+                    this.task.countdownsExpired[this.taskIndex] = true;
+                    this.countdownTimeStartContainer[this.taskIndex] =
+                        ChatHelper.getTimeStampInSeconds();
+                }
+
                 this.showMessageInput = false;
                 return;
             }
@@ -1262,9 +1267,7 @@ export class ChatWidgetComponent implements OnInit {
         this.showCountdown = true;
         const progressBarEl = this.progressBar.nativeElement;
         progressBarEl.style.width = this.progress.toString() + "%";
-        this.countdownTimeStartContainer.push(
-            ChatHelper.getTimeStampInSeconds()
-        );
+
         this.activeInterval = setInterval(() => {
             countdownValue--;
             this.countdownValueSubject.next(countdownValue);
