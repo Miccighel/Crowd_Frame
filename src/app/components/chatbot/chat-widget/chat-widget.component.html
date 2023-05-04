@@ -74,12 +74,12 @@
             </div>
 
             <div class="button-prompt" #buttonsYN style="display: none;">
-                <button type="button" class="btn btn-primary" (click)="buttonInput('Yes')">Yes</button>
-                <button type="button" class="btn btn-primary" (click)="buttonInput('No')">No</button>
+                <button type="button" class="btn btn-primary" (click)="buttonInput('Yes')"> <span i18n>Yes</span> </button>
+                <button type="button" class="btn btn-primary" (click)="buttonInput('No')"> <span i18n>No</span></button>
             </div>
             <div class="button-prompt" #buttonsCM style="display: none;">
-                <button type="button" class="btn btn-primary" (click)="buttonInput('Confirm')">Confirm</button>
-                <button type="button" class="btn btn-primary" (click)="buttonInput('Modify')">Modify</button>
+                <button type="button" class="btn btn-primary" (click)="buttonInput('Confirm')"> <span i18n>Confirm </span> </button>
+                <button type="button" class="btn btn-primary" (click)="buttonInput('Modify')"> <span i18n>Modify</span> </button>
             </div>
             <chat-input (send)="sendMessage($event)" [pholder]="placeholderInput" [disableInput]="disableInput"></chat-input>
         </div>

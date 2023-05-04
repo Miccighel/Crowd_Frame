@@ -1,7 +1,7 @@
 <mat-card id="crowd-xplorer-{{digits}}" class="xplorer-body" [formGroup]="searchForm">
     <div class="search-bar">
         <mat-form-field id="search-textarea" appearance="outline">
-            <mat-label>Insert your query</mat-label>
+            <mat-label><span i18n>Insert your query</span></mat-label>
             <input #searchInput matInput type="search" formControlName="query" (keyup.enter)="performWebSearch(searchInput.value)">
         </mat-form-field>
         <button mat-flat-button color="primary" class="search-button"
@@ -12,7 +12,7 @@
     <mat-table [dataSource]="dataSource">
         <mat-radio-group formControlName="urls">
             <ng-container matColumnDef="{{displayedColumns}}">
-                <mat-header-cell *matHeaderCellDef> {{resultsAmount}} results found.</mat-header-cell>
+                <mat-header-cell *matHeaderCellDef> {{resultsAmount}}<span i18n>results found.</span></mat-header-cell>
                 <mat-cell *matCellDef="let row; let i=index;">
                     <p>
                         <a target="_blank" href="{{decodeURI(row.url)}}">{{row.name}}</a>

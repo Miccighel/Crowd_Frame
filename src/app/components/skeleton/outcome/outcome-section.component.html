@@ -4,33 +4,33 @@
 
     <ng-container *ngIf="this.worker.getParameter('status_code')==this.statusCodes.IP_INFORMATION_MISSING">
         <mat-card>
-            <mat-card-title class="red-title main-title"><span>Connection Issues</span></mat-card-title>
+            <mat-card-title class="red-title main-title"><span i18n>Connection Issues</span></mat-card-title>
         </mat-card>
         <mat-card>
-            <mat-card-title class="sub-title">Description</mat-card-title>
+            <mat-card-title class="sub-title"><span i18n>Description</span></mat-card-title>
             <mat-divider [inset]="true"></mat-divider>
             <mat-card-content class="description">
-                <p>There are some connection issues between the server and your device. Please, report this attaching the status code shown below and wait for an answer.</p>
+                <p><span i18n>There are some connection issues between the server and your device. Please, report this attaching the status code shown below and wait for an answer.</span></p>   <!-- SI traducono anche i paragrafi ?-->
             </mat-card-content>
         </mat-card>
     </ng-container>
 
     <ng-container *ngIf="this.worker.getParameter('status_code')==this.statusCodes.TASK_SUCCESSFUL">
         <mat-card>
-            <mat-card-title class="green-title main-title"><span>Submission Successful</span></mat-card-title>
+            <mat-card-title class="green-title main-title"><span i18n>Submission Successful</span></mat-card-title>
         </mat-card>
         <mat-card>
-            <mat-card-title class="sub-title">Description</mat-card-title>
+            <mat-card-title class="sub-title"><span i18n>Description</span></mat-card-title>
             <mat-divider [inset]="true"></mat-divider>
             <mat-card-content class="description">
-                <p>You have completed successfully the task assigned.</p>
+                <p><span i18n>You have completed successfully the task assigned.</span></p>
             </mat-card-content>
         </mat-card>
         <mat-card>
-            <mat-card-title class="sub-title">Comment</mat-card-title>
+            <mat-card-title class="sub-title"><span i18n>Comment</span></mat-card-title>
             <mat-divider [inset]="true"></mat-divider>
             <mat-card-content class="description">
-                <p>Feel free to leave any comment to help us improve our task.</p>
+                <p><span i18n>Feel free to leave any comment to help us improve our task.</span></p>
             </mat-card-content>
             <div class="comment-box">
                 <form [formGroup]="commentForm" class="comment-form">
@@ -40,30 +40,30 @@
                 </form>
                 <ng-container *ngIf="commentForm.get('comment')">
                     <button class="comment-button" mat-flat-button color="primary" [disabled]="commentSent || !commentForm.valid || commentForm.get('comment').value.length<=0"
-                            (click)="performCommentSaving()"> Send
+                            (click)="performCommentSaving()"> <span i18n>Send</span>
                     </button>
-                    <span class="comment-sent-label" *ngIf="commentSent">Thank you!</span>
+                    <span class="comment-sent-label" *ngIf="commentSent"><span i18n>Thank you!</span></span>
                 </ng-container>
             </div>
         </mat-card>
         <mat-card>
-            <mat-card-title class="sub-title">Submission Instructions</mat-card-title>
+            <mat-card-title class="sub-title"><span i18n>Submission Instructions</span></mat-card-title>
             <mat-divider [inset]="true"></mat-divider>
             <mat-card-content *ngIf="this.worker.getParameter('platform')=='mturk'" class="description">
-                <p>Copy your output token (shown below) and insert it on the platform’s page to complete your work.</p>
+                <p><span i18n>Copy your output token (shown below) and insert it on the platform’s page to complete your work.</span></p>
                 <h1>{{this.worker.getParameter('token_output')}}</h1>
             </mat-card-content>
             <mat-card-content *ngIf="this.worker.getParameter('platform')=='toloka'" class="description">
-                <p>Copy your tokens (shown below) and insert them on the platform’s page to complete your work.</p>
-                <h1>Token Input: {{this.worker.getParameter('token_input')}}</h1>
-                <h1>Token Output: {{this.worker.getParameter('token_output')}}</h1>
+                <p><span i18n>Copy your tokens (shown below) and insert them on the platform’s page to complete your work.</span></p>
+                <h1><span i18n>Token Input: </span>{{this.worker.getParameter('token_input')}}</h1>
+                <h1><span i18n>Token Output: </span>{{this.worker.getParameter('token_output')}}</h1>
             </mat-card-content>
             <ng-container *ngIf="this.worker.getParameter('platform')=='prolific'">
                 <mat-card-content class="description">
-                    <p>Click the completion button (shown below) to be redirected to the platform and complete your work.</p>
+                    <p><span i18n>Click the completion button (shown below) to be redirected to the platform and complete your work.</span></p>
                 </mat-card-content>
                 <div class="completion-div">
-                    <button mat-flat-button color="primary" class="button-completion" (click)="completeTask()">Complete</button>
+                    <button mat-flat-button color="primary" class="button-completion" (click)="completeTask()"><span i18n>Complete</span></button>
                 </div>
             </ng-container>
         </mat-card>
@@ -71,50 +71,50 @@
 
     <ng-container *ngIf="this.worker.getParameter('status_code')==this.statusCodes.TASK_ALREADY_COMPLETED">
         <mat-card>
-            <mat-card-title class="green-title main-title"><span>Submission Already Completed</span></mat-card-title>
+            <mat-card-title class="green-title main-title"><span i18n>Submission Already Completed</span></mat-card-title>
         </mat-card>
         <mat-card>
-            <mat-card-title class="sub-title">Description</mat-card-title>
+            <mat-card-title class="sub-title"><span i18n>Description</span></mat-card-title>
             <mat-divider [inset]="true"></mat-divider>
             <mat-card-content class="description">
-                <p>The task started on <strong>{{this.worker.prettyTimeArrival()}}</strong> has been successfully completed by yourself on <strong>{{this.worker.prettyTimeCompletion()}}</strong>. We allow only one submission per worker.
+                <p><span i18n>The task started on <strong>{{this.worker.prettyTimeArrival()}}</strong> has been successfully completed by yourself on <strong>{{this.worker.prettyTimeCompletion()}}</strong>. We allow only one submission per worker.
                     Thank you for your effort. You will receive your payment soon. You can still complete your submission if you forgot
-                    doing that.</p>
+                    doing that.</span></p>
             </mat-card-content>
         </mat-card>
         <mat-card>
-            <mat-card-title class="sub-title">Submission Instructions</mat-card-title>
+            <mat-card-title class="sub-title"><span i18n>Submission Instructions</span></mat-card-title>
             <mat-divider [inset]="true"></mat-divider>
             <mat-card-content *ngIf="this.worker.getParameter('platform')=='mturk'" class="description">
-                <p>Copy your output token (shown below) and insert it on the platform’s page to complete your work.</p>
+                <p><span i18n>Copy your output token (shown below) and insert it on the platform’s page to complete your work.</span></p>
                 <h1>{{this.worker.getParameter('token_output')}}</h1>
             </mat-card-content>
             <mat-card-content *ngIf="this.worker.getParameter('platform')=='toloka'" class="description">
-                <p>Copy your tokens (shown below) and insert them on the platform’s page to complete your work.</p>
-                <h1>Token Input: {{this.worker.getParameter('token_input')}}</h1>
+                <p><span i18n>Copy your tokens (shown below) and insert them on the platform’s page to complete your work.</span></p>
+                <h1>Token Input: {{this.worker.getParameter('token_input')}}</h1>       <!-- Traduzione necessaria ?-->
                 <h1>Token Output: {{this.worker.getParameter('token_output')}}</h1>
             </mat-card-content>
             <ng-container *ngIf="this.worker.getParameter('platform')=='prolific'">
                 <mat-card-content class="description">
-                    <p>Click the completion button (shown below) to be redirected to the platform and complete your work.</p>
+                    <p><span i18n>Click the completion button (shown below) to be redirected to the platform and complete your work.</span></p>
                 </mat-card-content>
                 <div class="completion-div">
-                    <button mat-flat-button color="primary" class="button-completion" (click)="completeTask()">Complete</button>
+                    <button mat-flat-button color="primary" class="button-completion" (click)="completeTask()"><span i18n>Complete</span></button>
                 </div>
             </ng-container>
             <ng-container *ngIf="this.worker.getParameter('platform')=='custom'">
                 <mat-card-content class="description">
-                    <p>This task was not published on a crowdsourcing platform. We kindly suggest you to copy and store your tokens (shown below).</p>
+                    <p><span i18n>This task was not published on a crowdsourcing platform. We kindly suggest you to copy and store your tokens (shown below).</span></p>
                     <h1>Token Input: {{this.worker.getParameter('token_input')}}</h1>
                     <h1>Token Output: {{this.worker.getParameter('token_output')}}</h1>
                 </mat-card-content>
             </ng-container>
         </mat-card>
         <mat-card>
-            <mat-card-title class="sub-title">Comment</mat-card-title>
+            <mat-card-title class="sub-title"><span i18n>Comment</span></mat-card-title>
             <mat-divider [inset]="true"></mat-divider>
             <mat-card-content class="description">
-                <p>Feel free to leave any comment to help us improve our task.</p>
+                <p><span i18n>Feel free to leave any comment to help us improve our task.</span></p>
             </mat-card-content>
             <div class="comment-box">
                 <form [formGroup]="commentForm" class="comment-form">
@@ -126,7 +126,7 @@
                     <button class="comment-button" mat-flat-button color="primary" [disabled]="commentSent || !commentForm.valid || commentForm.get('comment').value.length<=0"
                             (click)="performCommentSaving()"> Send
                     </button>
-                    <span class="comment-sent-label" *ngIf="commentSent">Thank you!</span>
+                    <span class="comment-sent-label" *ngIf="commentSent"><span i18n>Thank you!</span></span>
                 </ng-container>
             </div>
         </mat-card>
@@ -134,20 +134,20 @@
 
     <ng-container *ngIf="this.worker.getParameter('status_code')==this.statusCodes.TASK_FAILED_WITH_TRIES">
         <mat-card>
-            <mat-card-title class="red-title main-title"><span>Submission Failed</span></mat-card-title>
+            <mat-card-title class="red-title main-title"><span i18n>Submission Failed</span></mat-card-title>
         </mat-card>
         <mat-card>
             <mat-card-title class="sub-title">Description</mat-card-title>
             <mat-divider [inset]="true"></mat-divider>
             <mat-card-content class="description">
-                <p>Your work does not satisfy one or more quality checks, but you have <strong>{{this.worker.getParameter('try_left')}}</strong> tries left. We kindly encourage you to reset the task and proceed with a new try.</p>
+                <p><span i18n>Your work does not satisfy one or more quality checks, but you have <strong>{{this.worker.getParameter('try_left')}}</strong> tries left. We kindly encourage you to reset the task and proceed with a new try.</span></p>
             </mat-card-content>
         </mat-card>
         <mat-card>
-            <mat-card-title class="sub-title">Task Reset</mat-card-title>
+            <mat-card-title class="sub-title"><span i18n>Task Reset</span></mat-card-title>
             <mat-divider [inset]="true"></mat-divider>
             <mat-card-content class="description">
-                <p>Click the button to reset your current submission. You will not lose any input provided during the failed try.</p>
+                <p><span i18n>Click the button to reset your current submission. You will not lose any input provided during the failed try.</span></p>
             </mat-card-content>
             <div>
                 <button mat-raised-button color="primary" (click)="this.performReset.emit(true)">Reset</button>
@@ -157,13 +157,13 @@
 
     <ng-container *ngIf="this.worker.getParameter('status_code')==this.statusCodes.TASK_FAILED_NO_TRIES">
         <mat-card>
-            <mat-card-title class="red-title main-title"><span>Submission Failed</span></mat-card-title>
+            <mat-card-title class="red-title main-title"><span i18n>Submission Failed</span></mat-card-title>
         </mat-card>
         <mat-card>
-            <mat-card-title class="sub-title">Description</mat-card-title>
+            <mat-card-title class="sub-title"><span i18n>Description</span></mat-card-title>
             <mat-divider [inset]="true"></mat-divider>
             <mat-card-content class="description">
-                <p>The task has been assigned to yourself, but your work was not of quality. Please, return this assignment. We apologize for the inconvenience and we encourage you to participate in our future tasks.</p>
+                <p><span i18n>The task has been assigned to yourself, but your work was not of quality. Please, return this assignment. We apologize for the inconvenience and we encourage you to participate in our future tasks.</span></p>
             </mat-card-content>
         </mat-card>
 
@@ -172,54 +172,54 @@
 
     <ng-container *ngIf="this.worker.getParameter('status_code')==this.statusCodes.TASK_OVERBOOKING">
         <mat-card>
-            <mat-card-title class="yellow-title main-title"><span>Task Overbooking</span></mat-card-title>
+            <mat-card-title class="yellow-title main-title"><span i18n>Task Overbooking</span></mat-card-title>
         </mat-card>
         <mat-card>
-            <mat-card-title class="sub-title">Description</mat-card-title>
+            <mat-card-title class="sub-title"><span i18n>Description</span></mat-card-title>
             <mat-divider [inset]="true"></mat-divider>
             <mat-card-content class="description">
-                <p>The whole set of available tasks has been assigned to other workers. Someone did not finish its task, but has some time left. Please, try to come back after the nearest expiration date: {{this.worker.getParameter('time_expiration_nearest')}} . </p>
+                <p><span i18n>The whole set of available tasks has been assigned to other workers. Someone did not finish its task, but has some time left. Please, try to come back after the nearest expiration date: {{this.worker.getParameter('time_expiration_nearest')}} . </span></p>
             </mat-card-content>
         </mat-card>
     </ng-container>
 
     <ng-container *ngIf="this.worker.getParameter('status_code')==this.statusCodes.TASK_TIME_EXPIRED">
         <mat-card>
-            <mat-card-title class="red-title main-title"><span>Time Expired</span></mat-card-title>
+            <mat-card-title class="red-title main-title"><span i18n>Time Expired</span></mat-card-title>
         </mat-card>
         <mat-card>
             <mat-card-title class="sub-title">Description</mat-card-title>
             <mat-divider [inset]="true"></mat-divider>
             <mat-card-content class="description">
-                <p>The task assigned to you has been given to another worker because the time available for performing it is expired on <strong>{{this.worker.prettyTimeExpiration()}}</strong>. We kindly ask you to return the assignment on the
-                    platform of provenance.</p>
+                <p><span i18n>The task assigned to you has been given to another worker because the time available for performing it is expired on <strong>{{this.worker.prettyTimeExpiration()}}</strong>. We kindly ask you to return the assignment on the
+                    platform of provenance.</span></p>
             </mat-card-content>
         </mat-card>
     </ng-container>
 
     <ng-container *ngIf="this.worker.getParameter('status_code')==this.statusCodes.TASK_COMPLETED_BY_OTHERS">
         <mat-card>
-            <mat-card-title class="yellow-title main-title"><span>Task Completed</span></mat-card-title>
+            <mat-card-title class="yellow-title main-title"><span i18n>Task Completed</span></mat-card-title>
         </mat-card>
         <mat-card>
-            <mat-card-title class="sub-title">Description</mat-card-title>
+            <mat-card-title class="sub-title"><span i18n>Description</span></mat-card-title>
             <mat-divider [inset]="true"></mat-divider>
             <mat-card-content class="description">
-                <p>The whole set of available tasks has been completed by other workers. The crowdsourcing platform over-recruited you. We apologize for the inconvenience and we kindly ask you to return the task on the platform of
-                    provenance.</p>
+                <p><span i18n>The whole set of available tasks has been completed by other workers. The crowdsourcing platform over-recruited you. We apologize for the inconvenience and we kindly ask you to return the task on the platform of
+                    provenance.</span></p>
             </mat-card-content>
         </mat-card>
     </ng-container>
 
     <ng-container *ngIf="this.worker.getParameter('status_code')==this.statusCodes.CODE_UNKNOWN">
         <mat-card>
-            <mat-card-title class="red-title main-title"><span>Unknown Issue</span></mat-card-title>
+            <mat-card-title class="red-title main-title"><span i18n>Unknown Issue</span></mat-card-title>
         </mat-card>
         <mat-card>
-            <mat-card-title class="sub-title">Description</mat-card-title>
+            <mat-card-title class="sub-title"><span i18n>Description</span></mat-card-title>
             <mat-divider [inset]="true"></mat-divider>
             <mat-card-content class="description">
-                <p>An unknown issue took place within the current task. Please, report this attaching the status code shown below and wait for an answer.</p>
+                <p><span i18n>An unknown issue took place within the current task. Please, report this attaching the status code shown below and wait for an answer.</span></p>
             </mat-card-content>
         </mat-card>
     </ng-container>
@@ -229,39 +229,39 @@
             <mat-card-title class="red-title main-title"><span>Block</span></mat-card-title>
         </mat-card>
         <mat-card>
-            <mat-card-title class="sub-title">Description</mat-card-title>
+            <mat-card-title class="sub-title"><span i18n>Description</span></mat-card-title>
             <mat-divider [inset]="true"></mat-divider>
             <mat-card-content class="description">
-                <p>This task allows executing it only once. It is not possible to open it a second time, even if you close your browser’s tab by mistake. We kindly ask you to return the assignment on the platform of provenance and we
-                    apologize for any inconvenience caused.</p>
+                <p><span i18n>This task allows executing it only once. It is not possible to open it a second time, even if you close your browser’s tab by mistake. We kindly ask you to return the assignment on the platform of provenance and we
+                    apologize for any inconvenience caused.</span></p>
             </mat-card-content>
         </mat-card>
     </ng-container>
 
     <ng-container *ngIf="this.worker.getParameter('status_code')==this.statusCodes.WORKER_BLACKLIST_CURRENT">
         <mat-card>
-            <mat-card-title class="red-title main-title"><span>Block</span></mat-card-title>
+            <mat-card-title class="red-title main-title"><span i18n>Block</span></mat-card-title>
         </mat-card>
         <mat-card>
-            <mat-card-title class="sub-title">Description</mat-card-title>
+            <mat-card-title class="sub-title"><span i18n>Description</span></mat-card-title>
             <mat-divider [inset]="true"></mat-divider>
             <mat-card-content class="description">
-                <p>You are prevented from participating again in the current task. This can be due to several reasons. We kindly ask you to return the assignment on the platform of provenance and we apologize for any inconvenience
-                    caused.</p>
+                <p><span i18n>You are prevented from participating again in the current task. This can be due to several reasons. We kindly ask you to return the assignment on the platform of provenance and we apologize for any inconvenience
+                    caused.</span></p>
             </mat-card-content>
         </mat-card>
     </ng-container>
 
     <ng-container *ngIf="this.worker.getParameter('status_code')==this.statusCodes.WORKER_BLACKLIST_PREVIOUS">
         <mat-card>
-            <mat-card-title class="red-title main-title"><span>Block</span></mat-card-title>
+            <mat-card-title class="red-title main-title"><span i18n>Block</span></mat-card-title>
         </mat-card>
         <mat-card>
-            <mat-card-title class="sub-title">Description</mat-card-title>
+            <mat-card-title class="sub-title"><span i18n>Description</span></mat-card-title>
             <mat-divider [inset]="true"></mat-divider>
             <mat-card-content class="description">
-                <p>You are prevented from participating again in the current task because you already participated in the past. We need to recruit only novice workers. We kindly ask you to return the assignment on the platform of provenance
-                    and we apologize for any inconvenience caused.</p>
+                <p><span i18n>You are prevented from participating again in the current task because you already participated in the past. We need to recruit only novice workers. We kindly ask you to return the assignment on the platform of provenance
+                    and we apologize for any inconvenience caused.</span></p>
             </mat-card-content>
         </mat-card>
     </ng-container>
@@ -269,7 +269,7 @@
 
     <ng-container *ngIf="this.messages.length>0">
         <mat-card>
-            <mat-card-title class="sub-title">Additional Messages</mat-card-title>
+            <mat-card-title class="sub-title"><span i18n>Additional Messages</span></mat-card-title>
             <mat-divider [inset]="true"></mat-divider>
             <mat-card-content class="description">
                 <p *ngFor="let message of this.messages">{{message}}</p>
@@ -278,10 +278,10 @@
     </ng-container>
 
     <mat-card>
-        <mat-card-title class="sub-title">Status Code</mat-card-title>
+        <mat-card-title class="sub-title"><span i18n>Status Code</span></mat-card-title>
         <mat-divider [inset]="true"></mat-divider>
         <mat-card-content class="description">
-            <p>We kindly ask you to attach your status code if you have any further question: <strong>{{this.worker.getParameter('status_code')}}</strong></p>
+            <p><span i18n>We kindly ask you to attach your status code if you have any further question: </span><strong>{{this.worker.getParameter('status_code')}}</strong></p>
         </mat-card-content>
     </mat-card>
 

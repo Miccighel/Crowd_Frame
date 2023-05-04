@@ -39,7 +39,7 @@
         </mat-card-content>
         <mat-card-actions>
             <button mat-flat-button color="primary" (click)="enableTask()" [disabled]="!this.sectionService.checkCompleted || !this.task.instructionsGeneral">
-                Start
+                <span i18n>Start</span>
             </button>
         </mat-card-actions>
     </mat-card>
@@ -55,7 +55,7 @@
             <mat-card-content>
                 <mat-form-field appearance="fill">
                     <mat-label>
-                        Insert your input token
+                        <span i18n>Insert your input token</span>
                     </mat-label>
                     <input matInput type="text" placeholder="your_token" formControlName="tokenInput" maxlength="11" class="input-token"
                            (focus)="this.tokenForm.updateValueAndValidity()" (paste)="this.tokenForm.updateValueAndValidity()"
