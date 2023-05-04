@@ -857,8 +857,14 @@ export class ChatWidgetComponent implements OnInit {
                     this.taskIndex,
                     this.dimensionIndex
                 );
-                if (isValid) this.inputComponentToShow = InputType.Text;
-                else return;
+                if (isValid) {
+                    this.inputComponentToShow = InputType.Text;
+                    //Misuro comunque il tempo di revisione, anche se il countdown non è visualizzato
+                    this.countdownLeftTimeContainer.push(
+                        this.countdownTimeStartContainer[this.taskIndex] -
+                            ChatHelper.getTimeStampInSeconds()
+                    );
+                } else return;
             } else {
                 this.cleanUserInput();
 
@@ -877,6 +883,9 @@ export class ChatWidgetComponent implements OnInit {
                 this.printDimension(this.taskIndex, this.dimensionIndex);
                 this.dimensionReviewPrinted = true;
                 this.selectDimensionToGenerate(this.dimensionIndex);
+                this.countdownTimeStartContainer.push(
+                    ChatHelper.getTimeStampInSeconds()
+                );
                 this.showMessageInput = false;
                 return;
             }
@@ -2246,21 +2255,20 @@ export class ChatWidgetComponent implements OnInit {
         data["timestamps_end"] = this.timestampsEnd[currentElementIndex] ?? [];
         data["timestamps_elapsed"] =
             this.timestampsElapsed[currentElementIndex] ?? 0;
+
         /* Countdown time and corresponding flag */
-        data["countdowns_times_start"] = !!this.countdownTimeStartContainer[
-            documentIndex
-        ]
-            ? [this.countdownTimeStartContainer[documentIndex]]
-            : [];
-        data["countdowns_times_left"] = !!this.countdownLeftTimeContainer[
-            documentIndex
-        ]
-            ? [this.countdownLeftTimeContainer[documentIndex]]
-            : [];
-        data["countdowns_expired"] =
-            this.task.countdownsExpired.length > 0
-                ? this.task.countdownsExpired[documentIndex]
-                : [];
+        if (this.task.settings.countdown_time) {
+            data["countdowns_times_start"] =
+                this.countdownTimeStartContainer[documentIndex] ?? null;
+            data["countdowns_times_left"] =
+                this.countdownLeftTimeContainer[documentIndex] ?? null;
+            data["countdowns_expired"] =
+                this.task.countdownsExpired[documentIndex] ?? null;
+        } else {
+            data["countdowns_times_start"] = null;
+            data["countdowns_times_left"] = null;
+            data["countdowns_expired"] = null;
+        }
 
         /* Number of accesses to the current document (currentDocument.e., how many times the worker reached the document with a "Back" or "Next" action */
         data["accesses"] = this.accessesAmount[currentElementIndex] ?? 0;
