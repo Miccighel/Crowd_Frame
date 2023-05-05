@@ -85,7 +85,9 @@
               "namedChunks": false,
               "extractLicenses": true,
               "vendorChunk": false,
-              "buildOptimizer": true
+              "buildOptimizer": true,
+              "localize": ["en-US"],
+              "i18nMissingTranslation": "error"
             },
             "production-it": {
               "fileReplacements": [
@@ -118,6 +120,12 @@
           "configurations": {
             "production": {
               "browserTarget": "Crowd_Frame:build:production"
+            },
+            "production-it": {
+              "browserTarget": "Crowd_Frame:build:production-it"
+            },
+            "development": {
+              "browserTarget": "Crowd_Frame:build:development"
             },
             "development-it": {
               "browserTarget": "Crowd_Frame:build:development-it"

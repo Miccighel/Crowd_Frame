@@ -1361,7 +1361,7 @@
         <source>SPACE</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/generator/generator-steps/worker-checks-step/worker-checks-step.component.html</context>
-          <context context-type="linenumber">16,18</context>
+          <context context-type="linenumber">16,20</context>
         </context-group>
       </trans-unit>
       <trans-unit id="4520733cf1071809bf59fa6025c40c4982245a4b" datatype="html">
@@ -1974,8 +1974,15 @@
           <context context-type="linenumber">160</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="7b90fbc5da91ddd134aeb8aeef67c7109d29e78a" datatype="html">
-        <source>Your work does not satisfy one or more quality checks, but you have <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{this.worker.getParameter(&apos;try_left&apos;)}}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> tries left. We kindly encourage you to reset the task and proceed with a new try.</source>
+      <trans-unit id="e5a14241bd7ef7cf0e15ec96581ce06563e86498" datatype="html">
+        <source>Your work does not satisfy one or more quality checks, but you have</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">143</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="2174bc65e442ca9e065d853b33de3602f99d3070" datatype="html">
+        <source>tries left. We kindly encourage you to reset the task and proceed with a new try.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
           <context context-type="linenumber">143</context>
