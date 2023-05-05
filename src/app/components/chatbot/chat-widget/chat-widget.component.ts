@@ -595,13 +595,13 @@ export class ChatWidgetComponent implements OnInit {
                     this.inputComponentToShow = InputType.Text;
                     setTimeout(() => {
                         this.conversationState = ConversationState.Task;
+                        this.action = "Next";
                         this.taskP("startTask");
                     }, 1600);
                     return;
                 }
             } else if (!this.finishedExampleActivity && this.fixedMessage) {
                 if (message.toLowerCase() === "true") {
-                    //Far scrivere messagio al bot
                     this.typingAnimation(this.messagesForUser[10]);
                     this.finishedExampleActivity = true;
                     this.fixedMessage = null;
@@ -613,6 +613,8 @@ export class ChatWidgetComponent implements OnInit {
                     this.inputComponentToShow = InputType.Text;
                     setTimeout(() => {
                         this.conversationState = ConversationState.Task;
+                        this.action = "Next";
+
                         this.taskP("startTask");
                     }, 1600);
                 } else {
@@ -639,10 +641,13 @@ export class ChatWidgetComponent implements OnInit {
             this.getAnswerValidity(this.dimensionIndex, message, this.urlValue)
         ) {
             //Stop del interval
-            if (this.task.settings.countdown_time) {
-                this.countdownLeftTimeContainer[this.taskIndex] =
-                    this.countdownValueSubject.value;
-                this.resetCountdown();
+            if (!!this.task.settings.countdown_time) {
+                this.storeCountdownData(
+                    this.taskIndex,
+                    this.task.settings.countdown_time,
+                    this.countdownValueSubject.value
+                );
+                this.showCountdown = false;
             }
             //Salvo il tempo di fine
             this.timestampsEnd[
@@ -666,7 +671,6 @@ export class ChatWidgetComponent implements OnInit {
                 this.inputComponentToShow = InputType.Text;
             }
         }
-
         //Visualizzazione dello statement
         if (!this.fixedMessage) {
             this.printStatement();
@@ -677,7 +681,7 @@ export class ChatWidgetComponent implements OnInit {
                 !!this.task.settings.countdown_time &&
                 this.dimensionIndex == 0
             ) {
-                this.setCountdown();
+                this.setCountdown(this.task.settings.countdown_time);
             }
             if (validAnswer || message == "startTask") {
                 this.printDimension(this.taskIndex, this.dimensionIndex);
@@ -689,7 +693,6 @@ export class ChatWidgetComponent implements OnInit {
                 }, 1600);
                 this.selectDimensionToGenerate(this.dimensionIndex);
             }
-
             this.ignoreMsg = false;
         } else {
             this.ignoreMsg = false;
@@ -860,16 +863,24 @@ export class ChatWidgetComponent implements OnInit {
                 );
                 if (isValid) {
                     this.inputComponentToShow = InputType.Text;
-                    //Misuro comunque il tempo di revisione, anche se il countdown non è visualizzato
                     if (!!this.task.settings.countdown_time) {
-                        this.countdownLeftTimeContainer[this.taskIndex] =
-                            this.countdownTimeStartContainer[this.taskIndex] -
-                            ChatHelper.getTimeStampInSeconds();
+                        //Se mi ritrovo nella fase di revisione dopo la fine del task recupero il valore
+                        const startTime =
+                            this.action == "Back"
+                                ? this.countdownLeftTimeContainer[
+                                      this.taskIndex
+                                  ]
+                                : this.task.settings.countdown_time;
+                        this.storeCountdownData(
+                            this.taskIndex,
+                            startTime,
+                            this.countdownValueSubject.value
+                        );
+                        this.showCountdown = false;
                     }
                 } else return;
             } else {
                 this.cleanUserInput();
-
                 //Faccio scegliere quale dimensione visualizzare
                 if (
                     !ChatHelper.validMsg(message, 1, this.task.dimensionsAmount)
@@ -886,11 +897,10 @@ export class ChatWidgetComponent implements OnInit {
                 this.dimensionReviewPrinted = true;
                 this.selectDimensionToGenerate(this.dimensionIndex);
                 if (!!this.task.settings.countdown_time) {
-                    this.task.countdownsExpired[this.taskIndex] = true;
-                    this.countdownTimeStartContainer[this.taskIndex] =
-                        ChatHelper.getTimeStampInSeconds();
+                    this.setCountdown(
+                        this.countdownLeftTimeContainer[this.taskIndex]
+                    );
                 }
-
                 this.showMessageInput = false;
                 return;
             }
@@ -963,10 +973,11 @@ export class ChatWidgetComponent implements OnInit {
                 this.taskP("startTask");
             }
         } else if (message.trim().toLowerCase() === "modify") {
-            this.action = "Back";
+            // this.action = "Back";
             this.buttonsToShow = ButtonsType.None;
             this.typingAnimation("Which dimension would you like to change?");
             this.cleanUserInput();
+
             setTimeout(() => {
                 this.generateRevisionData();
                 this.readOnly = false;
@@ -994,7 +1005,6 @@ export class ChatWidgetComponent implements OnInit {
             }
             this.reviewAnswersShown = false;
             this.reviewP(message);
-            // print answers e avvia come la review
         } else {
             if (message.trim().toLowerCase() === "yes") {
                 this.action = "Back";
@@ -1075,7 +1085,6 @@ export class ChatWidgetComponent implements OnInit {
                 }
                 this.readOnly = true;
                 //Messaggio finale
-
                 let finalMessage: string = `Oh! That was it! Thank you for completing the task! &#x1F609; Here's your token: <b> ${this.task.tokenOutput}`;
                 this.typingAnimation(finalMessage);
                 this.typingAnimation(
@@ -1256,30 +1265,30 @@ export class ChatWidgetComponent implements OnInit {
     }
 
     //Configurazione del countdown
-    private setCountdown() {
+    private setCountdown(countdownTime: number) {
         const { settings } = this.task;
         // salvare il valore corrente dell'observable
-        let countdownValue = settings.countdown_time;
-        this.countdownValueSubject.next(countdownValue);
+        this.countdownValueSubject.next(countdownTime);
         this.timerIsOverSubject.next(false);
 
-        this.progress = countdownValue / 100;
+        this.progress = countdownTime / 100;
         this.showCountdown = true;
         const progressBarEl = this.progressBar.nativeElement;
         progressBarEl.style.width = this.progress.toString() + "%";
 
         this.activeInterval = setInterval(() => {
-            countdownValue--;
-            this.countdownValueSubject.next(countdownValue);
-            if (countdownValue == 0) {
+            countdownTime--;
+            this.countdownValueSubject.next(countdownTime);
+
+            if (countdownTime <= 0) {
                 progressBarEl.style.width = "100%";
                 this.timerIsOverSubject.next(true);
-                this.storeCountdownData();
+                this.storeCountdownData(this.taskIndex, 0, 0);
                 clearInterval(this.activeInterval);
             } else {
                 progressBarEl.display = "block";
                 this.progress =
-                    100 - (countdownValue * 100) / settings.countdown_time;
+                    100 - (countdownTime * 100) / settings.countdown_time;
                 if (this.progress > 0 && this.progress < 100) {
                     progressBarEl.style.width = this.progress.toString() + "%";
                 }
@@ -2109,13 +2118,21 @@ export class ChatWidgetComponent implements OnInit {
         this.showCountdown = false;
         clearInterval(this.activeInterval);
     }
+    private storeCountdownData(
+        documentIndex: number,
+        startTime: number,
+        leftTime: number
+    ) {
+        this.countdownTimeStartContainer[documentIndex] = startTime;
+        this.countdownLeftTimeContainer[documentIndex] =
+            leftTime <= 0 ? 0 : leftTime;
+        this.task.countdownsExpired[documentIndex] = leftTime <= 0;
+        clearInterval(this.activeInterval);
+    }
 
     /* -- MODELLAZIONE E INVIO DATI AL SERVIZIO DI STORAGE -- */
     //Salvataggio informazione relativa alla scadenza del countdown
-    private storeCountdownData() {
-        if (this.conversationState == ConversationState.Task)
-            this.task.countdownsExpired[this.taskIndex] = true;
-    }
+
     //Invio dei dati relativi al questionario
     private async uploadQuestionnaireData(questionnaireIdx: number) {
         let answers = this.buildQuestionnaireAnswersData(questionnaireIdx);
