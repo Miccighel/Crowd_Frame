@@ -250,13 +250,17 @@
                             <span i18n>Select Hits File</span>
                         </button>
                         <ng-container *ngIf="!this.hitsFileName">
-                            <code>your_file.json</code>             <!-- Come viene tradotto ".json"-->
+                            <code i18n>your_file.json</code>
                         </ng-container>
                         <ng-container *ngIf="this.hitsDetected <= 0">
                             <code><span i18n>invalid file</span></code>
                         </ng-container>
                         <ng-container *ngIf="this.hitsDetected > 0">
-                            <code><span i18n>Filename: </span>{{ this.hitsFileName }}<span i18n>, Hits detected: </span>{{this.hitsDetected}}<span i18n>, Filesize: <span i18n>{{this.hitsSize}} Kb</code>
+                            <code>
+                                <span i18n>Filename: </span>{{ this.hitsFileName }},
+                                <span i18n>Hits detected: </span>{{this.hitsDetected}},
+                                <span i18n>Filesize: </span>{{this.hitsSize}} Kbz
+                            </code>
                         </ng-container>
                     </td>
                 </tr>
