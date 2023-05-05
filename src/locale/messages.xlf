@@ -456,6 +456,10 @@
           <context context-type="sourcefile">src/app/components/skeleton/document/document.component.html</context>
           <context context-type="linenumber">5</context>
         </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/elements/element-pairwise/element-pairwise.component.html</context>
+          <context context-type="linenumber">18</context>
+        </context-group>
       </trans-unit>
       <trans-unit id="0638786268e38d2ef625fda65e2590375db1e109" datatype="html">
         <source>Element Instructions</source>
@@ -594,6 +598,10 @@
           <context context-type="sourcefile">src/app/components/generator/generator-steps/questionnaire-step/questionnaire-step.component.html</context>
           <context context-type="linenumber">20,21</context>
         </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/questionnaire/questionnaire.component.html</context>
+          <context context-type="linenumber">11</context>
+        </context-group>
       </trans-unit>
       <trans-unit id="c22e1b3b2ea0300526e11beaec6fb2d69c5fe28d" datatype="html">
         <source>Allow Back</source>
@@ -715,74 +723,12 @@
           <context context-type="linenumber">4,6</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="7db52591258e1ded8f3a0ca60e69c42b18923310" datatype="html">
-        <source>Step #1 - Questionnaires:</source>
+      <trans-unit id="761c9da27a90b7c55209d6fd4bef3ed11c04a770" datatype="html">
+        <source>Step #1 - Questionnaires</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
           <context context-type="linenumber">9,10</context>
         </context-group>
-      </trans-unit>
-      <trans-unit id="8d076b33a0430d222e47da890d7e50b3682fead9" datatype="html">
-        <source>Step #2 - <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Dimensions<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>:</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
-          <context context-type="linenumber">14,15</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="625590f28c9e06b711cb69375a5ac4418e4a4893" datatype="html">
-        <source>Step #3 - <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>General Instructions<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>:</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
-          <context context-type="linenumber">19,20</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="df317d787c9481eacbff0d7336ebf5fb8e33f04b" datatype="html">
-        <source>Step #4 - <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Evaluation Instructions<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>:</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
-          <context context-type="linenumber">24,25</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="c103a05005199ddae7adf89ea07c510e7d630dc4" datatype="html">
-        <source>Step #5 - <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Search Engine<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>:</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
-          <context context-type="linenumber">29,30</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="2a7dc2f987ef489e7916208f49cc812dc678a448" datatype="html">
-        <source>Step #6 - <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Task Settings<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>:</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
-          <context context-type="linenumber">34,35</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="1cab6cfc06d9ae8b475ea77534b53dcbf925bff1" datatype="html">
-        <source>Step #7 - <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Worker Checks<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>:</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
-          <context context-type="linenumber">39,40</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="41d83f0fdb5b0c1f82d0cfc5ab5810251d1cbddf" datatype="html">
-        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="Hits Overview&lt;/strong&gt;:&lt;/span&gt;&lt;/h4&gt;
-        &lt;p&gt;&lt;code&gt;{{ this.taskS"/>Hits Overview<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>:</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
-          <context context-type="linenumber">43,44</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="fb9a11334f93ae2d9667b1f5b97f39e53231501d" datatype="html">
-        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="Validity Check&lt;/strong&gt;:&lt;/span&gt;&lt;/h4&gt;
-
-        &lt;mat-list&gt;"/>Validity Check<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>:</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
-          <context context-type="linenumber">47,49</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="57cb43d730038efbfc885cb95f1d7d58fdfe12ac" datatype="html">
-        <source>Step #1 - Questionnaires: </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
           <context context-type="linenumber">50</context>
@@ -790,6 +736,138 @@
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
           <context context-type="linenumber">51</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">82</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="21b764c199e1580535159579cfaaf4e10b5d19ce" datatype="html">
+        <source>Step #2 - Dimensions</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">14,15</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">52</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">53</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">84</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="d233f70e6ad6b5ee858d02a0b8f27d4544d2748d" datatype="html">
+        <source>Step #3 - General Instructions</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">19,20</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">54</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">55</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">86</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="6a59d868500c482a7bcb48e847f7e3a6dabd77c1" datatype="html">
+        <source>Step #4 - Evaluation Instructions</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">24,25</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">56</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">57</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">88</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="a25296b6be98ef4be1531d4606d3dc519fc283fb" datatype="html">
+        <source>Step #5 - Search Engine</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">29,30</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">58</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">59</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">91</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="98e225b83de858329f328e38b5779650c70c7190" datatype="html">
+        <source>Step #6 - Task Settings</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">34,35</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">62</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">65</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">93</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ee7833dc1f959c8991d056ca9291e26a24592925" datatype="html">
+        <source>Step #7 - Worker Checks</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">39,40</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">67</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">68</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">95</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="1555987c3a3a3d9493d93b947d12560fc54c85b3" datatype="html">
+        <source>Hits Overview</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">43,44</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="74ba81f7c90aa0ea5d23da1d4c3d4dc2fa74306e" datatype="html">
+        <source>Validity Check</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">47,50</context>
         </context-group>
       </trans-unit>
       <trans-unit id="601990ea4cdfd373a74ba624b3d3230b9eebc8a2" datatype="html">
@@ -839,6 +917,10 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">57,58</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
           <context context-type="linenumber">59,61</context>
         </context-group>
         <context-group purpose="location">
@@ -850,126 +932,46 @@
           <context context-type="linenumber">68,71</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="ebe6b17a705571848b65279e44f5caeb29cf7762" datatype="html">
-        <source>Step #2 - Dimensions: </source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
-          <context context-type="linenumber">52</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
-          <context context-type="linenumber">53</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="d4708d074ea4613d5702450b0117045261d95cf6" datatype="html">
-        <source>Step #3 - General Instructions: </source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
-          <context context-type="linenumber">54</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
-          <context context-type="linenumber">55</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="8a841e8e8db846cac888800c0261377922c0c290" datatype="html">
-        <source>Step #4 - Evaluation Instructions: </source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
-          <context context-type="linenumber">56</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="0fc8304be3d4ac3a7c61709b5a4aeed85c1c2fc3" datatype="html">
-        <source>Step #5 - Search Engine: </source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
-          <context context-type="linenumber">58</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
-          <context context-type="linenumber">59</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="d395562594f44f27d88b89422b7da5c3554fb4c3" datatype="html">
-        <source>Step #6 - Task Settings: </source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
-          <context context-type="linenumber">62</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
-          <context context-type="linenumber">65</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="eb20e0eb036bac571e9c607cd80c272b97c7e30f" datatype="html">
-        <source>Step #7 - Worker Checks: </source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
-          <context context-type="linenumber">67</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
-          <context context-type="linenumber">68</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="5b2a6594ae2899787f992f94040cf1ab97c76aaa" datatype="html">
-        <source>Upload Path:</source>
+      <trans-unit id="efd5caa73999cc9e14c8f87f7403a7cceda466e0" datatype="html">
+        <source>Upload Path</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
           <context context-type="linenumber">72,75</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="a9e1a328aa2c233cfb531a9d10b46a58b22215a0" datatype="html">
-        <source>Upload result:</source>
+      <trans-unit id="45c589d24f1ddefb3f5c646258d9f58d968e536b" datatype="html">
+        <source>Upload Result</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
           <context context-type="linenumber">79,81</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="7cb07d3d4c8d3cab2ebb697f278446f55edc1ef2" datatype="html">
-        <source>Step #1 - Questionnaire configuration uploaded at path: </source>
+      <trans-unit id="72924213041bcce9b08690b4ef1061097d912432" datatype="html">
+        <source>configuration uploaded at path:</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
           <context context-type="linenumber">82,83</context>
         </context-group>
-      </trans-unit>
-      <trans-unit id="fd73d095924c4bfff3a66eae49bd2c0615ddf5c1" datatype="html">
-        <source>Step #2 - Dimensions configuration uploaded at path: </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
           <context context-type="linenumber">84,85</context>
         </context-group>
-      </trans-unit>
-      <trans-unit id="69a8cfb490a83215639c34a63f1fd7e3828bc76d" datatype="html">
-        <source>Step #3 - General instructions configuration uploaded at path: </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
-          <context context-type="linenumber">86,87</context>
+          <context context-type="linenumber">86</context>
         </context-group>
-      </trans-unit>
-      <trans-unit id="d5e2f55fe78c437467b5932ca0ff3bb27d152eac" datatype="html">
-        <source>Step #4 - Evaluation instructions configuration uploaded at path: </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
           <context context-type="linenumber">88,89</context>
         </context-group>
-      </trans-unit>
-      <trans-unit id="017031d33468171a80a66e0e52276414ca6116c8" datatype="html">
-        <source>Step #5 - Search engine configuration uploaded at path: </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
           <context context-type="linenumber">91</context>
         </context-group>
-      </trans-unit>
-      <trans-unit id="88735fc720b221e8ede22cbb9486524294f1e1a2" datatype="html">
-        <source>Step #6 - Task settings configuration uploaded at path: </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
           <context context-type="linenumber">93,94</context>
         </context-group>
-      </trans-unit>
-      <trans-unit id="223e34b27d4bdbff26cdbfdd96c3a0e7da3350b0" datatype="html">
-        <source>Step #7 - Worker checks configuration uploaded at path: </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
           <context context-type="linenumber">95,96</context>
@@ -1348,11 +1350,18 @@
           <context context-type="linenumber">11,14</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="e29b5188b41e54855054617f64c342a4daec34b5" datatype="html">
-        <source>Select the IDs to consider by pressing <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i&gt;"/>SPACE<x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/></source>
+      <trans-unit id="106bc753e4e9d9921eec92589b50e5b62870c37a" datatype="html">
+        <source>Select the IDs to consider by pressing</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/generator/generator-steps/worker-checks-step/worker-checks-step.component.html</context>
-          <context context-type="linenumber">16</context>
+          <context context-type="linenumber">16,18</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="62f90c0db8c32d599eb94cbd8de9a609c4074eb4" datatype="html">
+        <source>SPACE</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/worker-checks-step/worker-checks-step.component.html</context>
+          <context context-type="linenumber">16,18</context>
         </context-group>
       </trans-unit>
       <trans-unit id="4520733cf1071809bf59fa6025c40c4982245a4b" datatype="html">
@@ -1580,8 +1589,23 @@
           <context context-type="linenumber">110</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="6258cebbaed789257609e9669b94f29c94bd8e9c" datatype="html">
-        <source>This justification must have at least <x id="INTERPOLATION" equiv-text="{{dimension.justification.min_words}}"/> words.</source>
+      <trans-unit id="ca875b5767a92f618bde57d20be0e0886c9b4a7d" datatype="html">
+        <source>This justification must have at least</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
+          <context context-type="linenumber">153</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
+          <context context-type="linenumber">231</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
+          <context context-type="linenumber">364</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="de7c896e341678db38b06140c7e490a925292b02" datatype="html">
+        <source>words</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
           <context context-type="linenumber">153</context>
@@ -1616,12 +1640,13 @@
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
           <context context-type="linenumber">284</context>
         </context-group>
-      </trans-unit>
-      <trans-unit id="572bbaef7af88938f0593646c5d35bba3a2d389f" datatype="html">
-        <source> Answer for Element </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
           <context context-type="linenumber">300</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
+          <context context-type="linenumber">314</context>
         </context-group>
       </trans-unit>
       <trans-unit id="e306be473ab320e5827eb58cac76918051022af0" datatype="html">
@@ -1631,29 +1656,34 @@
           <context context-type="linenumber">301</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="b4f48bf622c719109de71d28eba20f68a75d5178" datatype="html">
-        <source>Answer for Element <x id="INTERPOLATION" equiv-text="{{k}}"/></source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">314</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="60ff79e54ea2f979131e6014ca0e481309213d16" datatype="html">
-        <source>Min value allowed: <x id="INTERPOLATION" equiv-text="{{dimension.scale.min}}"/></source>
+      <trans-unit id="cc90157aabebd7bf8da6041d5bb198a95d4933d4" datatype="html">
+        <source>Min value allowed</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
           <context context-type="linenumber">329</context>
         </context-group>
-      </trans-unit>
-      <trans-unit id="64cceaa035ced014bc2d001ec464b2f5fb108f5d" datatype="html">
-        <source>Min value allowed: <x id="INTERPOLATION" equiv-text="{{dimension.scale.min + 1}}"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
           <context context-type="linenumber">330</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="b42bfcf693a5706939e9914678ce873f12bab93e" datatype="html">
-        <source>Justification for Element <x id="INTERPOLATION" equiv-text="{{k}}"/></source>
+      <trans-unit id="87c984fcd18d94db550b95be57ead0f489a0185f" datatype="html">
+        <source>TO BE IMPLEMENTED</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
+          <context context-type="linenumber">340</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
+          <context context-type="linenumber">343</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
+          <context context-type="linenumber">346</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ba359bf9e071d1ddcafad117c5afd32cd568dc52" datatype="html">
+        <source>Justification for Element</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
           <context context-type="linenumber">355</context>
@@ -1724,13 +1754,6 @@
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/elements/element-pairwise/element-pairwise.component.html</context>
           <context context-type="linenumber">13</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="c9a1c729cfb2d03fae1bd2d94b813fbbdd241a4e" datatype="html">
-        <source>Element <x id="INTERPOLATION" equiv-text="{{j}}"/></source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/document/elements/element-pairwise/element-pairwise.component.html</context>
-          <context context-type="linenumber">18</context>
         </context-group>
       </trans-unit>
       <trans-unit id="9ca82952a6bc860b5391d5975322d8af8ceddfa4" datatype="html">
@@ -1912,8 +1935,22 @@
           <context context-type="linenumber">74</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="a8e44dd5993000436843aba99e101e064f7adcb0" datatype="html">
-        <source>The task started on <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{this.worker.prettyTimeArrival()}}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> has been successfully completed by yourself on <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION_1" equiv-text="{{this.worker.prettyTimeCompletion()}}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>. We allow only one submission per worker. Thank you for your effort. You will receive your payment soon. You can still complete your submission if you forgot doing that.</source>
+      <trans-unit id="2be4905a85d53b9d29ca0d95ac2d0b180f1b9f98" datatype="html">
+        <source>The task started on</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">80</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cad55973d341492a749846088afeb76a065aa256" datatype="html">
+        <source>has been successfully completed by yourself on</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">80</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="c03d724751a65de78577dd1d0502a5f36483f2c9" datatype="html">
+        <source>We allow only one submission per worker. Thank you for your effort. You will receive your payment soon. You can still complete your submission if you forgot doing that.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
           <context context-type="linenumber">80,82</context>
@@ -1972,8 +2009,8 @@
           <context context-type="linenumber">175</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="757c4231412f0add2256874e4b6cf4cd66a008d1" datatype="html">
-        <source>The whole set of available tasks has been assigned to other workers. Someone did not finish its task, but has some time left. Please, try to come back after the nearest expiration date: <x id="INTERPOLATION" equiv-text="{{this.worker.getParameter(&apos;time_expiration_nearest&apos;)}}"/> . </source>
+      <trans-unit id="e36df79e5ef9f3ec0d2366174aea5016f67f7960" datatype="html">
+        <source>The whole set of available tasks has been assigned to other workers. Someone did not finish its task, but has some time left. Please, try to come back after the nearest expiration date</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
           <context context-type="linenumber">181</context>
@@ -1986,8 +2023,15 @@
           <context context-type="linenumber">188</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="b6fe815caaf6e07b5a275e5310f531f023c35837" datatype="html">
-        <source>The task assigned to you has been given to another worker because the time available for performing it is expired on <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{this.worker.prettyTimeExpiration()}}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>. We kindly ask you to return the assignment on the platform of provenance.</source>
+      <trans-unit id="8921744915f0ee0e86d462acc66f8e96a85437bd" datatype="html">
+        <source>The task assigned to you has been given to another worker because the time available for performing it is expired on</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">194</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="a6bc26bb4e2f0f196fca2705e125222f16fdc41f" datatype="html">
+        <source>We kindly ask you to return the assignment on the platform of provenance.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
           <context context-type="linenumber">194,195</context>
@@ -2072,13 +2116,6 @@
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
           <context context-type="linenumber">284</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="8f22c3084a5b6dda06eb94d0f9feb6d5831ac3bc" datatype="html">
-        <source>Questionnaire </source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/questionnaire/questionnaire.component.html</context>
-          <context context-type="linenumber">11</context>
         </context-group>
       </trans-unit>
       <trans-unit id="c2a9de3714f5767b174d0424bc8abe2dc37acc41" datatype="html">

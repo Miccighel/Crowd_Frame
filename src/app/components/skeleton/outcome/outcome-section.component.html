@@ -77,7 +77,7 @@
             <mat-card-title class="sub-title"><span i18n>Description</span></mat-card-title>
             <mat-divider [inset]="true"></mat-divider>
             <mat-card-content class="description">
-                <p><span i18n>The task started on <strong>{{this.worker.prettyTimeArrival()}}</strong> has been successfully completed by yourself on <strong>{{this.worker.prettyTimeCompletion()}}</strong>. We allow only one submission per worker.
+                <p><span i18n>The task started on</span> <strong>{{this.worker.prettyTimeArrival()}}</strong> <span i18n>has been successfully completed by yourself on</span> <strong>{{this.worker.prettyTimeCompletion()}}</strong>. <span i18n>We allow only one submission per worker.
                     Thank you for your effort. You will receive your payment soon. You can still complete your submission if you forgot
                     doing that.</span></p>
             </mat-card-content>
@@ -178,7 +178,7 @@
             <mat-card-title class="sub-title"><span i18n>Description</span></mat-card-title>
             <mat-divider [inset]="true"></mat-divider>
             <mat-card-content class="description">
-                <p><span i18n>The whole set of available tasks has been assigned to other workers. Someone did not finish its task, but has some time left. Please, try to come back after the nearest expiration date: {{this.worker.getParameter('time_expiration_nearest')}} . </span></p>
+                <p><span i18n>The whole set of available tasks has been assigned to other workers. Someone did not finish its task, but has some time left. Please, try to come back after the nearest expiration date</span>: {{this.worker.getParameter('time_expiration_nearest')}}.</p>
             </mat-card-content>
         </mat-card>
     </ng-container>
@@ -191,7 +191,7 @@
             <mat-card-title class="sub-title">Description</mat-card-title>
             <mat-divider [inset]="true"></mat-divider>
             <mat-card-content class="description">
-                <p><span i18n>The task assigned to you has been given to another worker because the time available for performing it is expired on <strong>{{this.worker.prettyTimeExpiration()}}</strong>. We kindly ask you to return the assignment on the
+                <p><span i18n>The task assigned to you has been given to another worker because the time available for performing it is expired on</span> <strong>{{this.worker.prettyTimeExpiration()}}</strong>. <span i18n>We kindly ask you to return the assignment on the
                     platform of provenance.</span></p>
             </mat-card-content>
         </mat-card>
