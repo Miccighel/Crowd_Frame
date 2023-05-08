@@ -1,40 +1,37 @@
 <ngx-ui-loader
-    [loaderId]="'skeleton-inner'"
-    [bgsColor]="'#3f51b5'"
-    [fgsColor]="'#3f51b5'"
-    [pbColor]="'#3f51b5'"
-    [fgsSize]="150"
-    [bgsPosition]="'bottom-right'"
-    [bgsSize]="80"
-    [bgsType]="'ball-spin-clockwise'"
-    [text]="'Loading task...'"
-    [textColor]="'#FFFFFF'"
-    [textPosition]="'bottom-center'"
+        [loaderId]="'skeleton-inner'"
+        [bgsColor]="'#3f51b5'"
+        [fgsColor]="'#3f51b5'"
+        [pbColor]="'#3f51b5'"
+        [fgsSize]="150"
+        [bgsPosition]="'bottom-right'"
+        [bgsSize]="80"
+        [bgsType]="'ball-spin-clockwise'"
+        [text]="'Loading task...'"
+        [textColor]="'#FFFFFF'"
+        [textPosition]="'bottom-center'"
 ></ngx-ui-loader>
 
 <app-outcome-section
-    *ngIf="!this.sectionService.taskAllowed"
-    [worker]="this.worker"
-    [triesAllowed]="this.task.settings.allowed_tries"
-    [tryCurrent]="this.task.tryCurrent"
-    [messages]="this.task.settings.messages"
-    [tokenInput]="this.task.tokenInput"
-    [tokenOutput]="this.task.tokenOutput"
-    (commentEmitter)="performCommentSaving($event)"
-    (performReset)="this.performReset()"
+        *ngIf="!this.sectionService.taskAllowed"
+        [worker]="this.worker"
+        [triesAllowed]="this.task.settings.allowed_tries"
+        [tryCurrent]="this.task.tryCurrent"
+        [messages]="this.task.settings.messages"
+        [tokenInput]="this.task.tokenInput"
+        [tokenOutput]="this.task.tokenOutput"
+        (commentEmitter)="performCommentSaving($event)"
+        (performReset)="this.performReset()"
 ></app-outcome-section>
 
 <!-- First instruction page shown when the worker starts the skeleton -->
-<div
-    class="instructions-section"
-    *ngIf="this.sectionService.currentSection == 'instructions-section' && this.sectionService.checkCompleted && !this.sectionService.taskCompleted">
+<div class="instructions-section" *ngIf="this.sectionService.currentSection == 'instructions-section' && this.sectionService.checkCompleted && !this.sectionService.taskCompleted">
     <mat-card>
-        <mat-card-content
-            *ngIf="!this.sectionService.checkCompleted || !this.task.instructionsGeneral">
+        <mat-card-content *ngIf="!this.sectionService.checkCompleted || !this.task.instructionsGeneral">
             <mat-progress-bar mode="indeterminate"></mat-progress-bar>
         </mat-card-content>
         <mat-card-content
-            *ngIf="this.sectionService.checkCompleted &&this.task.instructionsGeneral">
+                *ngIf="this.sectionService.checkCompleted &&this.task.instructionsGeneral">
             <div *ngFor="let instruction of this.task.instructionsGeneral;let i = index">
                 <h1 *ngIf="instruction['caption']">
                     {{ instruction["caption"] }}
@@ -52,9 +49,9 @@
 
 <!-- Instructions modal shown on the top  -->
 <app-instructions
-    [task]="this.task"
-    [worker]="this.worker"
-    *ngIf="this.sectionService.instructionsAllowed && !this.sectionService.taskCompleted &&this.task.settings.modality != 'conversational'"
+        [task]="this.task"
+        [worker]="this.worker"
+        *ngIf="this.sectionService.instructionsAllowed && !this.sectionService.taskCompleted &&this.task.settings.modality != 'conversational'"
 ></app-instructions>
 
 <!-- Token input section -->
@@ -71,7 +68,7 @@
                            (keyup)="this.tokenForm.updateValueAndValidity()" (keydown)="this.tokenForm.updateValueAndValidity()">
                     <mat-error>
                         <app-error-message
-                            [formField]="this.tokenForm.get('tokenInput')"
+                                [formField]="this.tokenForm.get('tokenInput')"
                         ></app-error-message>
                     </mat-error>
                 </mat-form-field>
@@ -85,38 +82,35 @@
     </form>
 </div>
 
-<!-- Chatbot -->
 <ng-container *ngIf="this.sectionService.taskInstructionsRead">
-    <chat-widget *ngIf="this.task.settings.modality == 'conversational' && this.task.dimensions && this.sectionService.taskStarted" [worker]="worker"></chat-widget>
-</ng-container>
-
-<ng-container *ngIf="this.sectionService.taskInstructionsRead">
+    <!-- Chatbot -->
+    <chat-widget *ngIf="this.task.settings.modality == 'conversational' && this.task.dimensions && !this.sectionService.taskCompleted" [worker]="worker"></chat-widget>
     <!-- Task body section -->
     <mat-horizontal-stepper *ngIf="this.task.settings.modality != 'conversational' && !this.sectionService.taskCompleted" [linear]="true" labelPosition="bottom" id="stepper" #stepper>
         <mat-step *ngFor="let stepIndex of this.sectionService.stepIndexes()">
             <app-questionnaire
-                *ngIf="this.task.getElementIndex(stepIndex)['elementType'] == 'Q'"
-                [questionnaireIndex]="this.task.getElementIndex(stepIndex)['elementIndex']"
-                (formEmitter)="this.storeQuestionnaireForm($event,this.task.getElementIndex(stepIndex)['elementIndex'])"
+                    *ngIf="this.task.getElementIndex(stepIndex)['elementType'] == 'Q'"
+                    [questionnaireIndex]="this.task.getElementIndex(stepIndex)['elementIndex']"
+                    (formEmitter)="this.storeQuestionnaireForm($event,this.task.getElementIndex(stepIndex)['elementIndex'])"
             >
             </app-questionnaire>
             <app-document
-                *ngIf="this.task.getElementIndex(stepIndex)['elementType'] == 'S'"
-                [documentIndex]="this.task.getElementIndex(stepIndex)['elementIndex']"
-                (formEmitter)="this.storeDocumentForm($event, this.task.getElementIndex(stepIndex)['elementIndex'])"
+                    *ngIf="this.task.getElementIndex(stepIndex)['elementType'] == 'S'"
+                    [documentIndex]="this.task.getElementIndex(stepIndex)['elementIndex']"
+                    (formEmitter)="this.storeDocumentForm($event, this.task.getElementIndex(stepIndex)['elementIndex'])"
             ></app-document>
         </mat-step>
     </mat-horizontal-stepper>
 </ng-container>
 
 <app-outcome-section
-    *ngIf="this.sectionService.taskCompleted"
-    [worker]="this.worker"
-    [triesAllowed]="this.task.settings.allowed_tries"
-    [tryCurrent]="this.task.tryCurrent"
-    [messages]="this.task.settings.messages"
-    [tokenInput]="this.task.tokenInput"
-    [tokenOutput]="this.task.tokenOutput"
-    (commentEmitter)="performCommentSaving($event)"
-    (performReset)="this.performReset()"
+        *ngIf="this.sectionService.taskCompleted"
+        [worker]="this.worker"
+        [triesAllowed]="this.task.settings.allowed_tries"
+        [tryCurrent]="this.task.tryCurrent"
+        [messages]="this.task.settings.messages"
+        [tokenInput]="this.task.tokenInput"
+        [tokenOutput]="this.task.tokenOutput"
+        (commentEmitter)="performCommentSaving($event)"
+        (performReset)="this.performReset()"
 ></app-outcome-section>

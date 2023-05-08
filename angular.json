@@ -64,6 +64,7 @@
               "src/styles.scss"
             ],
             "scripts": [],
+            "assets": ["src/assets"],
             "vendorChunk": true,
             "extractLicenses": false,
             "buildOptimizer": false,

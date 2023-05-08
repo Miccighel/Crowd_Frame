@@ -33,6 +33,7 @@ import { MatSliderModule } from "@angular/material/slider";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { MatToolbarModule } from "@angular/material/toolbar";
 import { MatSlideToggleModule } from "@angular/material/slide-toggle";
+import { NgbModule } from "@ng-bootstrap/ng-bootstrap";
 /* Components imports */
 import { SkeletonComponent } from "./components/skeleton/skeleton.component";
 import { CrowdXplorer } from "./components/skeleton/document/dimension/search-engine/crowd-xplorer/crowd-xplorer.component";
@@ -81,8 +82,6 @@ import { SearchEngineComponent } from "./components/skeleton/document/dimension/
 import { ElementPairwiseComponent } from "./components/skeleton/document/elements/element-pairwise/element-pairwise.component";
 import { DocumentComponent } from "./components/skeleton/document/document.component";
 import { ErrorMessageComponent } from "./components/shared/error-message/error-message.component";
-import { NgbModule } from "@ng-bootstrap/ng-bootstrap";
-//Chatbot components
 import { ChatAvatarComponent } from "./components/chatbot/chat-avatar/chat-avatar.component";
 import { ChatWidgetComponent } from "./components/chatbot/chat-widget/chat-widget.component";
 import { ChatCommentModalComponent } from "./components/chatbot/chat-modals/chat-comment-modal/chat-comment-modalcomponent";
@@ -137,7 +136,6 @@ function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
         DocumentComponent,
         InstructionsEvaluationStepComponent,
         ErrorMessageComponent,
-        //Chatbot components
         ChatAvatarComponent,
         ChatInputTextComponent,
         ChatWidgetComponent,
