@@ -93,6 +93,7 @@ admin_password = os.getenv('admin_password')
 server_config = os.getenv('server_config')
 enable_solver = strtobool(os.getenv('enable_solver')) if os.getenv('enable_solver') is not None else False
 aws_region = os.getenv('aws_region')
+language_code = os.getenv('language_code')
 aws_private_bucket = os.getenv('aws_private_bucket')
 aws_deploy_bucket = os.getenv('aws_deploy_bucket')
 toloka_oauth_token = os.getenv('toloka_oauth_token')
@@ -124,11 +125,15 @@ step_index = step_index + 1
 console.print("[bold]Init.py[/bold] script launched")
 console.print(f"Working directory: [bold]{os.getcwd()}[/bold]")
 
+
 if batch_prefix is None:
     batch_prefix = ''
 
 if platform is None:
     platform = 'none'
+
+if language_code is None:
+    language_code = 'en-US'
 
 console.rule(f"{step_index} - Configuration policy")
 step_index = step_index + 1
@@ -2066,12 +2071,29 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.rule(f"{step_index} - Task [cyan underline]{task_name}[/cyan underline]/[yellow underline]{batch_name}[/yellow underline] build")
     step_index = step_index + 1
 
+    console.print(f"Deployment language code: [cyan underline]{language_code}")
+    folder_build_result = f"{Path(os.getcwd()).parent.absolute()}/dist/Crowd_Frame/{language_code}/"
+    console.print(f"Build output folder: [cyan underline]{folder_build_result}")
+
+    status.update(f"Extracting i18n translations, please wait")
+    command = "yarn run translate"
+    console.print(f"Command: [green on black]{command}")
+    process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
+    for line in process.stdout:
+        line_clean = line.decode().strip()
+        if "Initial Total" in line_clean:
+            line_clean = line_clean[2:]
+        if line_clean != "":
+            console.print(line_clean)
+    process.wait()
+
     status.update(f"Executing build command, please wait")
-
-    folder_build_result = f"{Path(os.getcwd()).parent.absolute()}/dist/"
-
-    command = "yarn run build --configuration=\"production\" --output-hashing=none"
-    console.print(f"[green on black]{command}")
+    command = None
+    if language_code == 'en-US':
+        command = "yarn run build --configuration=\"production\" --output-hashing=none"
+    else:
+        command = f"yarn run build --configuration=\"production-{language_code}\" --output-hashing=none"
+    console.print(f"Command: [green on black]{command}")
     process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
     for line in process.stdout:
         line_clean = line.decode().strip()
@@ -2085,7 +2107,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     script_merged_file = f"{folder_build_deploy_path}scripts.js"
     if os.path.exists(script_merged_file):
         os.remove(script_merged_file)
-    es_script_paths_temp = glob.glob(f"{folder_build_result}Crowd_Frame/*.js")
+    es_script_paths_temp = glob.glob(f"{folder_build_result}*.js")
     es_scripts_order = [
         'polyfills.js',
         'runtime.js',
@@ -2117,7 +2139,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     styles_merged_file = f"{folder_build_deploy_path}styles.css"
     if os.path.exists(styles_merged_file):
         os.remove(styles_merged_file)
-    css_styles_paths = glob.glob(f"{folder_build_result}Crowd_Frame/*.css")
+    css_styles_paths = glob.glob(f"{folder_build_result}*.css")
     with open(styles_merged_file, 'a') as outfile:
         for style_current_file in css_styles_paths:
             if os.path.exists(style_current_file):

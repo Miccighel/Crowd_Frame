@@ -1,0 +1,2151 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file source-language="en-US" datatype="plaintext" original="ng2.template">
+    <body>
+      <trans-unit id="4f20f2d5a6882190892e58b85f6ccbedfa737952" datatype="html">
+        <source>Yes</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/chatbot/chat-widget/chat-widget.component.html</context>
+          <context context-type="linenumber">77,78</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="3d3ae7deebc5949b0c1c78b9847886a94321d9fd" datatype="html">
+        <source>No</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/chatbot/chat-widget/chat-widget.component.html</context>
+          <context context-type="linenumber">78,80</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="68e710782ccb5398b3acb8844caf0b199da2c3da" datatype="html">
+        <source>Confirm</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/chatbot/chat-widget/chat-widget.component.html</context>
+          <context context-type="linenumber">81,82</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="b2623aee44b70c9a4ba1fce16c8a593b0a4c7974" datatype="html">
+        <source>Modify</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/chatbot/chat-widget/chat-widget.component.html</context>
+          <context context-type="linenumber">82,84</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="7cb0725095099732fe78edf64e268d94a934f98a" datatype="html">
+        <source>Step #2: Dimensions</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/dimensions-step/dimensions-step.component.html</context>
+          <context context-type="linenumber">6,7</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="fa6b8d31dde7ee68944df748e7251b9894f8333e" datatype="html">
+        <source>Second, define all Dimensions here</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/dimensions-step/dimensions-step.component.html</context>
+          <context context-type="linenumber">7,9</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="587647cbef51d1fbcb5346668963454df8cc4318" datatype="html">
+        <source>Dimension</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/dimensions-step/dimensions-step.component.html</context>
+          <context context-type="linenumber">18,19</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cff1428d10d59d14e45edec3c735a27b5482db59" datatype="html">
+        <source>Name</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/dimensions-step/dimensions-step.component.html</context>
+          <context context-type="linenumber">28,29</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/questionnaire-step/questionnaire-step.component.html</context>
+          <context context-type="linenumber">99,100</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="d538324118e39783987781137d7e86890b7716f7" datatype="html">
+        <source>Name Pretty</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/dimensions-step/dimensions-step.component.html</context>
+          <context context-type="linenumber">37,38</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="eec715de352a6b114713b30b640d319fa78207a0" datatype="html">
+        <source>Description</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/dimensions-step/dimensions-step.component.html</context>
+          <context context-type="linenumber">47,48</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/dimensions-step/dimensions-step.component.html</context>
+          <context context-type="linenumber">238,239</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/questionnaire-step/questionnaire-step.component.html</context>
+          <context context-type="linenumber">51,52</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">10</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">23</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">77</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">163</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">178</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">205</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">219</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">232</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">246</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">260</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="6db909a826f1878ad78bf853a62b6cc5cbda3d3f" datatype="html">
+        <source>Example</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/dimensions-step/dimensions-step.component.html</context>
+          <context context-type="linenumber">51,52</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="58b12976b1285f27bebd88e747bf93392c6939f3" datatype="html">
+        <source>Gold Dimension</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/dimensions-step/dimensions-step.component.html</context>
+          <context context-type="linenumber">59,62</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="2d3af9acb4cc0b6998d5d65cbd2f6753f1433937" datatype="html">
+        <source>Pairwise</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/dimensions-step/dimensions-step.component.html</context>
+          <context context-type="linenumber">66,69</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="05e961e18ee86f6749782ba837b81b5f0a94b103" datatype="html">
+        <source>Justification</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/dimensions-step/dimensions-step.component.html</context>
+          <context context-type="linenumber">73,76</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="8ba143716c2da6e4120c0c1a804f0bdd9a7e5f5b" datatype="html">
+        <source>Text</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/dimensions-step/dimensions-step.component.html</context>
+          <context context-type="linenumber">81,82</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/dimensions-step/dimensions-step.component.html</context>
+          <context context-type="linenumber">141,142</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/dimensions-step/dimensions-step.component.html</context>
+          <context context-type="linenumber">314,315</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/instructions-evaluation-step/instructions-evaluation-step.component.html</context>
+          <context context-type="linenumber">42,43</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/questionnaire-step/questionnaire-step.component.html</context>
+          <context context-type="linenumber">108,109</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/elements/annotator-options/annotator-options.component.html</context>
+          <context context-type="linenumber">52</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="6330f9f241ded5d5c30cedeb2c64440c55c6726b" datatype="html">
+        <source>Minimum Words</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/dimensions-step/dimensions-step.component.html</context>
+          <context context-type="linenumber">90,91</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="484d369ab6d7e37d808403e2141c38c01f6f9911" datatype="html">
+        <source>Url</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/dimensions-step/dimensions-step.component.html</context>
+          <context context-type="linenumber">105,108</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="f50a33d3c339f8f4a465141f8caa5d2d8c005251" datatype="html">
+        <source>Enabled</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/dimensions-step/dimensions-step.component.html</context>
+          <context context-type="linenumber">110,112</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="07b71dc70c5b1c8f568d7cd7a088a84d05fe48af" datatype="html">
+        <source>Add Instruction</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/dimensions-step/dimensions-step.component.html</context>
+          <context context-type="linenumber">113,116</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/dimensions-step/dimensions-step.component.html</context>
+          <context context-type="linenumber">286,289</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/instructions-evaluation-step/instructions-evaluation-step.component.html</context>
+          <context context-type="linenumber">101,106</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/instructions-general-step/instructions-general-step.component.html</context>
+          <context context-type="linenumber">57,62</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="863226cffd5b66a6fee9810a9282a5006d6ef576" datatype="html">
+        <source>Label</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/dimensions-step/dimensions-step.component.html</context>
+          <context context-type="linenumber">121,122</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/dimensions-step/dimensions-step.component.html</context>
+          <context context-type="linenumber">229,230</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/dimensions-step/dimensions-step.component.html</context>
+          <context context-type="linenumber">294,295</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/instructions-evaluation-step/instructions-evaluation-step.component.html</context>
+          <context context-type="linenumber">22,23</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/questionnaire-step/questionnaire-step.component.html</context>
+          <context context-type="linenumber">166,167</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/task-settings-step/task-settings-step.component.html</context>
+          <context context-type="linenumber">335,336</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="3c593788d43568a2f0fe7b3949ff6c31470f6c50" datatype="html">
+        <source>Caption</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/dimensions-step/dimensions-step.component.html</context>
+          <context context-type="linenumber">131,132</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/dimensions-step/dimensions-step.component.html</context>
+          <context context-type="linenumber">304,305</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/instructions-evaluation-step/instructions-evaluation-step.component.html</context>
+          <context context-type="linenumber">32,33</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/instructions-evaluation-step/instructions-evaluation-step.component.html</context>
+          <context context-type="linenumber">70,71</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/instructions-general-step/instructions-general-step.component.html</context>
+          <context context-type="linenumber">26,27</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="a062b45312698e8669cb644bff887f93778d334f" datatype="html">
+        <source>Scale</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/dimensions-step/dimensions-step.component.html</context>
+          <context context-type="linenumber">157,160</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="f61c6867295f3b53d23557021f2f4e0aa1d0b8fc" datatype="html">
+        <source>Type</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/dimensions-step/dimensions-step.component.html</context>
+          <context context-type="linenumber">165,166</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/dimensions-step/dimensions-step.component.html</context>
+          <context context-type="linenumber">338,339</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/questionnaire-step/questionnaire-step.component.html</context>
+          <context context-type="linenumber">30,31</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/task-settings-step/task-settings-step.component.html</context>
+          <context context-type="linenumber">310,311</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="b05108b8772f9bcc3c707714ca0642c21577e96a" datatype="html">
+        <source>Multiple Selection</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/dimensions-step/dimensions-step.component.html</context>
+          <context context-type="linenumber">181,182</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ae2103388225c9b2fef99eebf5eca88f8e13e549" datatype="html">
+        <source>Minimum</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/dimensions-step/dimensions-step.component.html</context>
+          <context context-type="linenumber">191,192</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/dimensions-step/dimensions-step.component.html</context>
+          <context context-type="linenumber">270,271</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="49d536ee7c5fb216b2f9d5d8da07e3e1825cb54f" datatype="html">
+        <source>Maximum</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/dimensions-step/dimensions-step.component.html</context>
+          <context context-type="linenumber">200,201</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="041620337eaebda87971d345d05697639dfe78e4" datatype="html">
+        <source>Step</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/dimensions-step/dimensions-step.component.html</context>
+          <context context-type="linenumber">209,210</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="81197d870748aeb19c7642a1734153e6b14ef2da" datatype="html">
+        <source>Add Mapping</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/dimensions-step/dimensions-step.component.html</context>
+          <context context-type="linenumber">221,223</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/questionnaire-step/questionnaire-step.component.html</context>
+          <context context-type="linenumber">159,161</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="5049e204c14c648691ac775a64fb504467aeb549" datatype="html">
+        <source>Value</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/dimensions-step/dimensions-step.component.html</context>
+          <context context-type="linenumber">247,248</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/questionnaire-step/questionnaire-step.component.html</context>
+          <context context-type="linenumber">175,176</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
+          <context context-type="linenumber">98</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
+          <context context-type="linenumber">316</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/questionnaire/questionnaire.component.html</context>
+          <context context-type="linenumber">61</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="8c860caaf24d2eed1ae8f4f89bdba7d6ec1ae28c" datatype="html">
+        <source>Remove Mapping</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/dimensions-step/dimensions-step.component.html</context>
+          <context context-type="linenumber">258,260</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/questionnaire-step/questionnaire-step.component.html</context>
+          <context context-type="linenumber">186,188</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="067b48bff1e929ff3c77d1d283df9aa6807ca576" datatype="html">
+        <source>Include Lower Bound</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/dimensions-step/dimensions-step.component.html</context>
+          <context context-type="linenumber">279,281</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="f4d044a9aec4b07f3b1bf3964886c37c497335cc" datatype="html">
+        <source>Style</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/dimensions-step/dimensions-step.component.html</context>
+          <context context-type="linenumber">330,333</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="1ba7568bba29f8d8e352f93e67002d0b548eb838" datatype="html">
+        <source>Position</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/dimensions-step/dimensions-step.component.html</context>
+          <context context-type="linenumber">351,352</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/questionnaire-step/questionnaire-step.component.html</context>
+          <context context-type="linenumber">65,66</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="430e3cff1e6cf0d0c36f1b8dadf5946e89fb7804" datatype="html">
+        <source>Orientation</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/dimensions-step/dimensions-step.component.html</context>
+          <context context-type="linenumber">364,365</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="2c98c859f5cb6363228cc8066efdb2af5d3f4717" datatype="html">
+        <source>Separator</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/dimensions-step/dimensions-step.component.html</context>
+          <context context-type="linenumber">377,378</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="1bd2b61891b8a9306e05f22aec1e08c744eed3bb" datatype="html">
+        <source>True</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/dimensions-step/dimensions-step.component.html</context>
+          <context context-type="linenumber">380,381</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="50f035acd42dac7630f136d5d93ee2509f069718" datatype="html">
+        <source>False</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/dimensions-step/dimensions-step.component.html</context>
+          <context context-type="linenumber">383,384</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="564516cec11563ea5182185952330d32c612b086" datatype="html">
+        <source>Add Dimension</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/dimensions-step/dimensions-step.component.html</context>
+          <context context-type="linenumber">408,413</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="3cd4500ebaa5e11fa8439d1fea26743a68544982" datatype="html">
+        <source>Step #4: Evaluation Instructions</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/instructions-evaluation-step/instructions-evaluation-step.component.html</context>
+          <context context-type="linenumber">4,5</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="2da7b45276f5f745b04929f35cd29df89f5f7451" datatype="html">
+        <source>Fourth, define all the evaluation instructions here</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/instructions-evaluation-step/instructions-evaluation-step.component.html</context>
+          <context context-type="linenumber">5,7</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cb6bf24b883bda0619bd359ce1a884d30a0f3795" datatype="html">
+        <source>Element</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/instructions-evaluation-step/instructions-evaluation-step.component.html</context>
+          <context context-type="linenumber">12,15</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/document.component.html</context>
+          <context context-type="linenumber">5</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/elements/element-pairwise/element-pairwise.component.html</context>
+          <context context-type="linenumber">18</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="0638786268e38d2ef625fda65e2590375db1e109" datatype="html">
+        <source>Element Instructions</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/instructions-evaluation-step/instructions-evaluation-step.component.html</context>
+          <context context-type="linenumber">16,19</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="64a58a2fb2f7bd6a86b966efdf7c661d0fbc1628" datatype="html">
+        <source>Instruction</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/instructions-evaluation-step/instructions-evaluation-step.component.html</context>
+          <context context-type="linenumber">60,61</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/instructions-general-step/instructions-general-step.component.html</context>
+          <context context-type="linenumber">16,17</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="905f20f7e8b6d34f32bde5c0bd80b39dc7be6531" datatype="html">
+        <source>Remove Instruction</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/instructions-evaluation-step/instructions-evaluation-step.component.html</context>
+          <context context-type="linenumber">90,92</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/instructions-general-step/instructions-general-step.component.html</context>
+          <context context-type="linenumber">46,48</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cda31dbd724cf5f4fa7a4274d9120651490c8a8c" datatype="html">
+        <source>Back</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/instructions-evaluation-step/instructions-evaluation-step.component.html</context>
+          <context context-type="linenumber">109,110</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/instructions-general-step/instructions-general-step.component.html</context>
+          <context context-type="linenumber">65,66</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/search-engine-step/search-engine-step.component.html</context>
+          <context context-type="linenumber">63,64</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">104,105</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/task-settings-step/task-settings-step.component.html</context>
+          <context context-type="linenumber">475,476</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/worker-checks-step/worker-checks-step.component.html</context>
+          <context context-type="linenumber">76,77</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/document.component.html</context>
+          <context context-type="linenumber">52</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/questionnaire/questionnaire.component.html</context>
+          <context context-type="linenumber">187</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="f732c304c7433e5a83ffcd862c3dce709a0f4982" datatype="html">
+        <source>Next</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/instructions-evaluation-step/instructions-evaluation-step.component.html</context>
+          <context context-type="linenumber">110,114</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/instructions-general-step/instructions-general-step.component.html</context>
+          <context context-type="linenumber">66,70</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/questionnaire-step/questionnaire-step.component.html</context>
+          <context context-type="linenumber">213,217</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/search-engine-step/search-engine-step.component.html</context>
+          <context context-type="linenumber">64,68</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/task-settings-step/task-settings-step.component.html</context>
+          <context context-type="linenumber">476,480</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/worker-checks-step/worker-checks-step.component.html</context>
+          <context context-type="linenumber">77,81</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/document.component.html</context>
+          <context context-type="linenumber">57</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/document.component.html</context>
+          <context context-type="linenumber">68</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/questionnaire/questionnaire.component.html</context>
+          <context context-type="linenumber">196</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="eb1c93e7ac94e724e8fe55b7c64065b13554d89c" datatype="html">
+        <source>Step #3: General Instructions</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/instructions-general-step/instructions-general-step.component.html</context>
+          <context context-type="linenumber">4,5</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="8f2e500e890df4ac93dca78bba68766c821da57a" datatype="html">
+        <source>Third, define all the general instructions here</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/instructions-general-step/instructions-general-step.component.html</context>
+          <context context-type="linenumber">5,7</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="2aa187060dd9cf1f1897013427413e43a08b45f2" datatype="html">
+        <source>Step #1: Questionnaires</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/questionnaire-step/questionnaire-step.component.html</context>
+          <context context-type="linenumber">6,7</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="627625316fd1f15621116c2f7a1d772c84811f0f" datatype="html">
+        <source>First, define all Questionnaires here</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/questionnaire-step/questionnaire-step.component.html</context>
+          <context context-type="linenumber">7,10</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="a3610afa5244d3e0c2ae5c88648d637f5080d0d5" datatype="html">
+        <source>Questionnaire</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/questionnaire-step/questionnaire-step.component.html</context>
+          <context context-type="linenumber">20,21</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/questionnaire/questionnaire.component.html</context>
+          <context context-type="linenumber">11</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="c22e1b3b2ea0300526e11beaec6fb2d69c5fe28d" datatype="html">
+        <source>Allow Back</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/questionnaire-step/questionnaire-step.component.html</context>
+          <context context-type="linenumber">83,86</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="4188ef67a196ca21d68f20405b99fb6b2f6476c7" datatype="html">
+        <source>Add Question</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/questionnaire-step/questionnaire-step.component.html</context>
+          <context context-type="linenumber">92,94</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="d308f53c0173cf0e60fa73524024cef0b5220d06" datatype="html">
+        <source>Remove Question</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/questionnaire-step/questionnaire-step.component.html</context>
+          <context context-type="linenumber">119,121</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="39e2f6830dc13614ba02ee49b60d4f008f597a13" datatype="html">
+        <source>Add Answer</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/questionnaire-step/questionnaire-step.component.html</context>
+          <context context-type="linenumber">126,128</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cb404ce7946580ac95258bece0ad46caa0b99f37" datatype="html">
+        <source>Answer</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/questionnaire-step/questionnaire-step.component.html</context>
+          <context context-type="linenumber">134,135</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/questionnaire/questionnaire.component.html</context>
+          <context context-type="linenumber">75</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/questionnaire/questionnaire.component.html</context>
+          <context context-type="linenumber">148</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="67ae3dff2dc3f59aa0875c2fece20679350d79f0" datatype="html">
+        <source>Remove Answer</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/questionnaire-step/questionnaire-step.component.html</context>
+          <context context-type="linenumber">145,146</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="675ddf7e325110f80cfa05b45c254c6ce7b2b58c" datatype="html">
+        <source>Remove Questionnaire</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/questionnaire-step/questionnaire-step.component.html</context>
+          <context context-type="linenumber">198,200</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="a1ed2578981326ebe2b6681a0aec7ce0a538bcbb" datatype="html">
+        <source>Add Questionnaire</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/questionnaire-step/questionnaire-step.component.html</context>
+          <context context-type="linenumber">206,210</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="2e0f351c228bdc2aefb3ae973c195d8cb99d8651" datatype="html">
+        <source>Step #5: Search Engine Configuration</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/search-engine-step/search-engine-step.component.html</context>
+          <context context-type="linenumber">7,8</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="7347028e9245ed113dd235bc0cac7a8463189812" datatype="html">
+        <source>Fifth, define the Search Engine Configuration here</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/search-engine-step/search-engine-step.component.html</context>
+          <context context-type="linenumber">8,10</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="6834fa6b43d1ecbdf147c48dd9c4d72f1484571d" datatype="html">
+        <source>Source</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/search-engine-step/search-engine-step.component.html</context>
+          <context context-type="linenumber">18,19</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="2678aab1457120d3e0cec1947784c9ab12ebc2ed" datatype="html">
+        <source>Add Domain To Filter</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/search-engine-step/search-engine-step.component.html</context>
+          <context context-type="linenumber">34,36</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="aefb77454378965c4da1a1d66000404ae9b95c3e" datatype="html">
+        <source>Domain</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/search-engine-step/search-engine-step.component.html</context>
+          <context context-type="linenumber">41,42</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="02c13350b25fc395057c7d57aba0dc2c3134e263" datatype="html">
+        <source>Remove Domain</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/search-engine-step/search-engine-step.component.html</context>
+          <context context-type="linenumber">50,52</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="156935efc8efe4c8eb1623a675ad435ac27ea7db" datatype="html">
+        <source>Step #8: Summary</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">3,4</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="e0cb5f92059c52ede155062583d168fd15ba88d5" datatype="html">
+        <source>Finally, check your results here</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">4,6</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="761c9da27a90b7c55209d6fd4bef3ed11c04a770" datatype="html">
+        <source>Step #1 - Questionnaires</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">9,10</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">50</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">51</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">82</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="21b764c199e1580535159579cfaaf4e10b5d19ce" datatype="html">
+        <source>Step #2 - Dimensions</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">14,15</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">52</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">53</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">84</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="d233f70e6ad6b5ee858d02a0b8f27d4544d2748d" datatype="html">
+        <source>Step #3 - General Instructions</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">19,20</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">54</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">55</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">86</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="6a59d868500c482a7bcb48e847f7e3a6dabd77c1" datatype="html">
+        <source>Step #4 - Evaluation Instructions</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">24,25</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">56</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">57</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">88</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="a25296b6be98ef4be1531d4606d3dc519fc283fb" datatype="html">
+        <source>Step #5 - Search Engine</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">29,30</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">58</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">59</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">91</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="98e225b83de858329f328e38b5779650c70c7190" datatype="html">
+        <source>Step #6 - Task Settings</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">34,35</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">62</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">65</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">93</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ee7833dc1f959c8991d056ca9291e26a24592925" datatype="html">
+        <source>Step #7 - Worker Checks</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">39,40</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">67</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">68</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">95</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="1555987c3a3a3d9493d93b947d12560fc54c85b3" datatype="html">
+        <source>Hits Overview</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">43,44</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="74ba81f7c90aa0ea5d23da1d4c3d4dc2fa74306e" datatype="html">
+        <source>Validity Check</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">47,50</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="601990ea4cdfd373a74ba624b3d3230b9eebc8a2" datatype="html">
+        <source>valid</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">50,51</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">52,53</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">54,55</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">56,57</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">58,59</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">62,64</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">67,68</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="4f10b60d6a8a1090ff0518e298e78ede7d10d54a" datatype="html">
+        <source>invalid</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">51,52</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">53,54</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">55,56</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">57,58</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">59,61</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">65,67</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">68,71</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="efd5caa73999cc9e14c8f87f7403a7cceda466e0" datatype="html">
+        <source>Upload Path</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">72,75</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="45c589d24f1ddefb3f5c646258d9f58d968e536b" datatype="html">
+        <source>Upload Result</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">79,81</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="72924213041bcce9b08690b4ef1061097d912432" datatype="html">
+        <source>configuration uploaded at path:</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">82,83</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">84,85</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">86</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">88,89</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">91</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">93,94</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">95,96</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="4b3972c3e9485218508a95f7a4ce7758e3f09ced" datatype="html">
+        <source>Upload</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">108,110</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="4208e3cacb6f5d5df6f46ceabf1a23c5d217c714" datatype="html">
+        <source>Start Over</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/summary-step/summary-step.component.html</context>
+          <context context-type="linenumber">111,115</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="d2a9e9a032d547f6fbd7766266a39f12d470b6f5" datatype="html">
+        <source>Step #6: Task Settings</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/task-settings-step/task-settings-step.component.html</context>
+          <context context-type="linenumber">6,7</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="69f483acf56cfc3481fedf3a938a6bef23bc297c" datatype="html">
+        <source>Sixth, define all Task Settings here</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/task-settings-step/task-settings-step.component.html</context>
+          <context context-type="linenumber">7,9</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="233c0a394b5308bf4ad0b438ebed723f7e068d14" datatype="html">
+        <source>Modality</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/task-settings-step/task-settings-step.component.html</context>
+          <context context-type="linenumber">17,18</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/task-settings-step/task-settings-step.component.html</context>
+          <context context-type="linenumber">394,395</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="7b5c713a7ca54cd307cc595b199f73727879a273" datatype="html">
+        <source>Allowed Tries</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/task-settings-step/task-settings-step.component.html</context>
+          <context context-type="linenumber">38,39</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="dccd325c892bed7cab675204b5ac02336dfed91d" datatype="html">
+        <source>Time Check Amount</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/task-settings-step/task-settings-step.component.html</context>
+          <context context-type="linenumber">47,48</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="b11b074701e9c22141abcfb35ddd85510fb299da" datatype="html">
+        <source>Time Assessment</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/task-settings-step/task-settings-step.component.html</context>
+          <context context-type="linenumber">63,64</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="da82eb16485fefa8b1fac22b0349eac0bab41513" datatype="html">
+        <source>Logger</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/task-settings-step/task-settings-step.component.html</context>
+          <context context-type="linenumber">77,80</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="2d53ccd64199a1f18fe934faaa9eb14837599a48" datatype="html">
+        <source>Logging server URL</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/task-settings-step/task-settings-step.component.html</context>
+          <context context-type="linenumber">81,82</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="37f4f6b50dd8d291b8559507bcb0890a7551c22f" datatype="html">
+        <source>events</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/task-settings-step/task-settings-step.component.html</context>
+          <context context-type="linenumber">93,95</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="9d51b3c90afda70700229d1b8a55371c13cb3bce" datatype="html">
+        <source>Documents</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/task-settings-step/task-settings-step.component.html</context>
+          <context context-type="linenumber">112,114</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="72c9924ed4a68df016ac91485471f33d66b666a0" datatype="html">
+        <source>Select documents file</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/task-settings-step/task-settings-step.component.html</context>
+          <context context-type="linenumber">117,119</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="0bac97ce70287bce8942d1fa97bc97b8e5896868" datatype="html">
+        <source>your_file.json</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/task-settings-step/task-settings-step.component.html</context>
+          <context context-type="linenumber">120,122</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/task-settings-step/task-settings-step.component.html</context>
+          <context context-type="linenumber">253,255</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="a645fe989102c2be62bfd9d637d46c4ee708de0a" datatype="html">
+        <source>invalid file</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/task-settings-step/task-settings-step.component.html</context>
+          <context context-type="linenumber">123,125</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/task-settings-step/task-settings-step.component.html</context>
+          <context context-type="linenumber">256,258</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="5956f8d0f549ef3a5a24491b4b4eda584708c3b3" datatype="html">
+        <source>Filename: </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/task-settings-step/task-settings-step.component.html</context>
+          <context context-type="linenumber">126</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/task-settings-step/task-settings-step.component.html</context>
+          <context context-type="linenumber">260,261</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ce8c94f89fec6831811710beb62f84b42d4738bd" datatype="html">
+        <source>, Documents detected: </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/task-settings-step/task-settings-step.component.html</context>
+          <context context-type="linenumber">126</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="608840ac6fabc2610fb195f1e8dc8820c58497f9" datatype="html">
+        <source>, Filesize: </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/task-settings-step/task-settings-step.component.html</context>
+          <context context-type="linenumber">126,127</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="875086e397bb0d801a09de99f54862464f219a47" datatype="html">
+        <source>Minimum documents repetitions in hits</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/task-settings-step/task-settings-step.component.html</context>
+          <context context-type="linenumber">144,145</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="22ea12bdc27fd7b08f586ecad3bbce9446acb044" datatype="html">
+        <source>Number of values: </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/task-settings-step/task-settings-step.component.html</context>
+          <context context-type="linenumber">160</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="7bc55d2f17e7966cb1eb9fc53d9df293269775c7" datatype="html">
+        <source>Use as category</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/task-settings-step/task-settings-step.component.html</context>
+          <context context-type="linenumber">169,171</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="e4bce3ab2962fb8e0f0229ae557e358c1b5b6a01" datatype="html">
+        <source>Unbalanced attribute</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/task-settings-step/task-settings-step.component.html</context>
+          <context context-type="linenumber">172,174</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="f970599cc4542afa294bd1a7bff52bf9f31fb4f6" datatype="html">
+        <source>Worker assignments</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/task-settings-step/task-settings-step.component.html</context>
+          <context context-type="linenumber">177,178</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="a528b0a5455195dc5150c2872b5f08adc1f8bd54" datatype="html">
+        <source>Check selection</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/task-settings-step/task-settings-step.component.html</context>
+          <context context-type="linenumber">190,192</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="e8878e6b17aad9f85a1bfe4d7c3d43c876a147d6" datatype="html">
+        <source>Reset selection</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/task-settings-step/task-settings-step.component.html</context>
+          <context context-type="linenumber">195,197</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="1b562646f8d36c4a4a4a0f86687de783a5074e11" datatype="html">
+        <source>Error in the worker assignment typed values. Please, review your selection.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/task-settings-step/task-settings-step.component.html</context>
+          <context context-type="linenumber">202,204</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="487b0188d62db5f4f52e57608c8a72f579294ab6" datatype="html">
+        <source>Workers number</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/task-settings-step/task-settings-step.component.html</context>
+          <context context-type="linenumber">214,215</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ad18bfbb6e2a3e7af0995ce2b1c944c0885a8cb8" datatype="html">
+        <source>Send request to the solver</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/task-settings-step/task-settings-step.component.html</context>
+          <context context-type="linenumber">226,228</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="0ca33adb926751fb000635367fcb9fc37c3f431e" datatype="html">
+        <source>Solver is offline</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/task-settings-step/task-settings-step.component.html</context>
+          <context context-type="linenumber">230,232</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="38bc4b3ccc3328b042ad7a4791455fa1f000b113" datatype="html">
+        <source>Hits &amp; Attributes</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/task-settings-step/task-settings-step.component.html</context>
+          <context context-type="linenumber">245,247</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="a2c3a2f272a4b01f35da7b5fb4563fdc8e9fb7d6" datatype="html">
+        <source>Select Hits File</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/task-settings-step/task-settings-step.component.html</context>
+          <context context-type="linenumber">250,252</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cd6df47b511cc6dc9ee4ad282a90a05de992e3a1" datatype="html">
+        <source>Hits detected: </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/task-settings-step/task-settings-step.component.html</context>
+          <context context-type="linenumber">261,262</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="d057c9e47970a0234e56a6e4b712e989a738459b" datatype="html">
+        <source>Filesize: </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/task-settings-step/task-settings-step.component.html</context>
+          <context context-type="linenumber">262,264</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ce7ae04e03e335e31d5ea3f3fd2515020fcd841e" datatype="html">
+        <source>This JSON file does not contain any valid hit. Please, review your selection.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/task-settings-step/task-settings-step.component.html</context>
+          <context context-type="linenumber">270,273</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="2aba1e87039819aca3b70faa9aa848c12bf139ca" datatype="html">
+        <source>Show</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/task-settings-step/task-settings-step.component.html</context>
+          <context context-type="linenumber">285,287</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="a8fa95511dfa667695e2ee7cc239efc13066af66" datatype="html">
+        <source>Enable Annotations</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/task-settings-step/task-settings-step.component.html</context>
+          <context context-type="linenumber">288,290</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="e5f24fc7a2bf50bd61d109dd9cad3fbff6ec7add" datatype="html">
+        <source>Required</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/task-settings-step/task-settings-step.component.html</context>
+          <context context-type="linenumber">291,293</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="d2c58200fd82c0e7b9ff85694044242b7775cb5c" datatype="html">
+        <source>Annotator</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/task-settings-step/task-settings-step.component.html</context>
+          <context context-type="linenumber">302,305</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="6186a27f1d8d9854f8790c7db85aa63aced506ca" datatype="html">
+        <source>Add Option</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/task-settings-step/task-settings-step.component.html</context>
+          <context context-type="linenumber">328,330</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="3d1062293ccff6d7575ad9edd3e049dff598967e" datatype="html">
+        <source>Remove Option</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/task-settings-step/task-settings-step.component.html</context>
+          <context context-type="linenumber">353,355</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="50e41e067d98f0f519e518db8dd72b67d7213ce8" datatype="html">
+        <source>Countdown</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/task-settings-step/task-settings-step.component.html</context>
+          <context context-type="linenumber">365,368</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="b24f1cd32cbc1ec9537af28c4fe1b8204097714b" datatype="html">
+        <source>Time</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/task-settings-step/task-settings-step.component.html</context>
+          <context context-type="linenumber">369,370</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="76f7061a1794e8a1f139296a29fbceab221e1ff6" datatype="html">
+        <source>Behavior</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/task-settings-step/task-settings-step.component.html</context>
+          <context context-type="linenumber">377,378</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="33d34032823066ab9b4059488df25852cd00af1b" datatype="html">
+        <source>Additional Times</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/task-settings-step/task-settings-step.component.html</context>
+          <context context-type="linenumber">390,393</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="5c924eb5982c7393439ca3dd0afbdd1a5ee5c0c4" datatype="html">
+        <source>Attribute</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/task-settings-step/task-settings-step.component.html</context>
+          <context context-type="linenumber">407,408</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="c0793487c6b0f0da18e7fa661c7fe76eacefca48" datatype="html">
+        <source>Add Message</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/task-settings-step/task-settings-step.component.html</context>
+          <context context-type="linenumber">446,448</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ccac601bf473fa28c9ac46794f1cd40542f74347" datatype="html">
+        <source>Message</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/task-settings-step/task-settings-step.component.html</context>
+          <context context-type="linenumber">453,454</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="7493c47574c279fa7d153a20936ee62ae460fb92" datatype="html">
+        <source>Remove Message</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/task-settings-step/task-settings-step.component.html</context>
+          <context context-type="linenumber">462,464</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="dfde9ffcf3fd2dcca4b72b1101951a7d600c4ef8" datatype="html">
+        <source>Step #7: Worker Checks</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/worker-checks-step/worker-checks-step.component.html</context>
+          <context context-type="linenumber">4,5</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="106c61b82f73a531f95068d8ca946b87509246dd" datatype="html">
+        <source>Seventh, define all Worker Checks here</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/worker-checks-step/worker-checks-step.component.html</context>
+          <context context-type="linenumber">5,7</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="6968c2b504884a9e9c64baccef1331718b69c3f2" datatype="html">
+        <source>Enable Worker Blacklist</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/worker-checks-step/worker-checks-step.component.html</context>
+          <context context-type="linenumber">11,14</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="106bc753e4e9d9921eec92589b50e5b62870c37a" datatype="html">
+        <source>Select the IDs to consider by pressing</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/worker-checks-step/worker-checks-step.component.html</context>
+          <context context-type="linenumber">16,18</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="62f90c0db8c32d599eb94cbd8de9a609c4074eb4" datatype="html">
+        <source>SPACE</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/worker-checks-step/worker-checks-step.component.html</context>
+          <context context-type="linenumber">16,20</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="4520733cf1071809bf59fa6025c40c4982245a4b" datatype="html">
+        <source>Worker IDs Blacklisted</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/worker-checks-step/worker-checks-step.component.html</context>
+          <context context-type="linenumber">21,22</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="c7d761ff7a5f7e7a8f6d3899d4a7fe62e73afab3" datatype="html">
+        <source>cancel</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/worker-checks-step/worker-checks-step.component.html</context>
+          <context context-type="linenumber">24,26</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/worker-checks-step/worker-checks-step.component.html</context>
+          <context context-type="linenumber">37,39</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="075fd7558c7bcbe190f694be37c5933fe017e8e7" datatype="html">
+        <source>Worker IDs Whitelisted</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/worker-checks-step/worker-checks-step.component.html</context>
+          <context context-type="linenumber">34,35</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="8624dc9cb17c2b3dff7822f05de72b1d1446993a" datatype="html">
+        <source>Batches</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator-steps/worker-checks-step/worker-checks-step.component.html</context>
+          <context context-type="linenumber">45,47</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="75d1a2804ed0c0565be709cd769357c8d448928c" datatype="html">
+        <source>Questionnaires</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator.component.html</context>
+          <context context-type="linenumber">20,21</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="86a222de4a12047bfad6c3e0c0b146502a30f7d5" datatype="html">
+        <source>Dimensions</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator.component.html</context>
+          <context context-type="linenumber">27,28</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="862b5273069d872cdf0a4171b35a71cb314ac3ed" datatype="html">
+        <source>General Instructions</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator.component.html</context>
+          <context context-type="linenumber">34,35</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="64c0e4c378d14af1ad2f6e408dfce7219d0c4dae" datatype="html">
+        <source>Evaluation Instructions</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator.component.html</context>
+          <context context-type="linenumber">41,42</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="3278b7b5239d235e4af3f2c4e7f5fe5e354d865b" datatype="html">
+        <source>Search Engine</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator.component.html</context>
+          <context context-type="linenumber">48,49</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="a950a1bc70687bcf5d6420b6b53abf5d72679012" datatype="html">
+        <source>Task Settings</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator.component.html</context>
+          <context context-type="linenumber">54,55</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="0b228d5beef2fa4911018f196d8b495f4c818f2c" datatype="html">
+        <source>Worker Checks</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator.component.html</context>
+          <context context-type="linenumber">60,61</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="a8233de047500bf0f0d9f9f1712ddb071501a283" datatype="html">
+        <source>Summary</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator.component.html</context>
+          <context context-type="linenumber">67,69</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="9b6c61038e20334ee83f9888d018c49980cd142a" datatype="html">
+        <source>Initialization</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator.component.html</context>
+          <context context-type="linenumber">86,89</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="1c1eac3ed7a2730e2b980098049de50ed3216e99" datatype="html">
+        <source>in progress...</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator.component.html</context>
+          <context context-type="linenumber">89,90</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="54a4a3132b693575728a45a5f3154ad4c9af404b" datatype="html">
+        <source>Clone</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator.component.html</context>
+          <context context-type="linenumber">94,97</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="03a68aeab817c674f792ac55da24a75024de3cb1" datatype="html">
+        <source>a deployed batch</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator.component.html</context>
+          <context context-type="linenumber">97,99</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="15de1f3804ea7db98cc1867d60dcbd4bcc54b1b6" datatype="html">
+        <source>Select configuration</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator.component.html</context>
+          <context context-type="linenumber">102,103</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="9d1be478d561643ca1a9b1dcc041bdae06b2de49" datatype="html">
+        <source>No other batches detected</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator.component.html</context>
+          <context context-type="linenumber">111,112</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="99ee4faa69cd2ea8e3678c1f557c0ff1f05aae46" datatype="html">
+        <source>Clear</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/generator/generator.component.html</context>
+          <context context-type="linenumber">113,115</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="1b258b258b4cc475ceb2871305b61756b0134f4a" datatype="html">
+        <source>Generate</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/loader/loader.component.html</context>
+          <context context-type="linenumber">16,19</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="570ca7e6f973a95216f9874f0b8629b8381191bb" datatype="html">
+        <source>Perform</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/loader/loader.component.html</context>
+          <context context-type="linenumber">19,22</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="1e81154b8cd358f3bfc70a4fb663a080eca0d0d5" datatype="html">
+        <source>Insert your username</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/loader/loader.component.html</context>
+          <context context-type="linenumber">28,30</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="5e6548eb9cbb0467c307b4079bc989cd21f44355" datatype="html">
+        <source>This field is required</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/loader/loader.component.html</context>
+          <context context-type="linenumber">32,35</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/loader/loader.component.html</context>
+          <context context-type="linenumber">41,44</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
+          <context context-type="linenumber">106</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
+          <context context-type="linenumber">150</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
+          <context context-type="linenumber">228</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
+          <context context-type="linenumber">326</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
+          <context context-type="linenumber">361</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/dimension/search-engine/search-engine.component.html</context>
+          <context context-type="linenumber">27</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="070cdb24f7871623902f37ba29cd52da10cc23b5" datatype="html">
+        <source>Insert your password</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/loader/loader.component.html</context>
+          <context context-type="linenumber">37,39</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="9df692bb7af21b5569dbd1382d0cc0301122d0c1" datatype="html">
+        <source>Invalid credentials</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/loader/loader.component.html</context>
+          <context context-type="linenumber">45,48</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="6765b4c916060f6bc42d9bb69e80377dbcb5e4e9" datatype="html">
+        <source>Login</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/loader/loader.component.html</context>
+          <context context-type="linenumber">49,53</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="a6b9aa774138433738bff3e7cd611b4ff2b4c6fd" datatype="html">
+        <source>Min value allowed: </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
+          <context context-type="linenumber">109</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
+          <context context-type="linenumber">110</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ca875b5767a92f618bde57d20be0e0886c9b4a7d" datatype="html">
+        <source>This justification must have at least</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
+          <context context-type="linenumber">153</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
+          <context context-type="linenumber">231</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
+          <context context-type="linenumber">364</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="de7c896e341678db38b06140c7e490a925292b02" datatype="html">
+        <source>words</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
+          <context context-type="linenumber">153</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
+          <context context-type="linenumber">231</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
+          <context context-type="linenumber">364</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="584fa2cdd395f560b05e658e34c303cd0d688276" datatype="html">
+        <source>You cannot use the selected search engine url as part of the justification.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
+          <context context-type="linenumber">156</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
+          <context context-type="linenumber">234</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
+          <context context-type="linenumber">367</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="086437bf565043695b294fd10c8b39bbb4f6150b" datatype="html">
+        <source>Answer for Element</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
+          <context context-type="linenumber">284</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
+          <context context-type="linenumber">300</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
+          <context context-type="linenumber">314</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="e306be473ab320e5827eb58cac76918051022af0" datatype="html">
+        <source> Selected value: </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
+          <context context-type="linenumber">301</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cc90157aabebd7bf8da6041d5bb198a95d4933d4" datatype="html">
+        <source>Min value allowed</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
+          <context context-type="linenumber">329</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
+          <context context-type="linenumber">330</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="87c984fcd18d94db550b95be57ead0f489a0185f" datatype="html">
+        <source>TO BE IMPLEMENTED</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
+          <context context-type="linenumber">340</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
+          <context context-type="linenumber">343</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
+          <context context-type="linenumber">346</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ba359bf9e071d1ddcafad117c5afd32cd568dc52" datatype="html">
+        <source>Justification for Element</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
+          <context context-type="linenumber">355</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="36cbcf1f0f19bf4570d225661945b5a044904cd7" datatype="html">
+        <source>Insert your query</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/dimension/search-engine/crowd-xplorer/crowd-xplorer.component.html</context>
+          <context context-type="linenumber">4,5</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="24df50e434605e6940401017f3e50cf4b6cb8491" datatype="html">
+        <source>results found.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/dimension/search-engine/crowd-xplorer/crowd-xplorer.component.html</context>
+          <context context-type="linenumber">15,16</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="5f6d7b2ca44ed114925fef64c4de75be5da8ca3b" datatype="html">
+        <source>Please select (or copy &amp; paste) one of the URLs shown above.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/dimension/search-engine/search-engine.component.html</context>
+          <context context-type="linenumber">30</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="d6076e464de0fb97d049a0df21451698d50d1923" datatype="html">
+        <source>Time left:</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/document.component.html</context>
+          <context context-type="linenumber">27</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="3ea51cf415feffef55e82c7b60e9486055837661" datatype="html">
+        <source>Finish</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/document.component.html</context>
+          <context context-type="linenumber">63</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/questionnaire/questionnaire.component.html</context>
+          <context context-type="linenumber">204</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="39ed8f3f975dbec1135313c8ebb261527d83430c" datatype="html">
+        <source>Annotation</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/elements/annotator-options/annotator-options.component.html</context>
+          <context context-type="linenumber">53</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="030b4423b92167200e39519599f9b863b4f7c62c" datatype="html">
+        <source>Actions</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/elements/annotator-options/annotator-options.component.html</context>
+          <context context-type="linenumber">54</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="826b25211922a1b46436589233cb6f1a163d89b7" datatype="html">
+        <source>Delete</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/elements/annotator-options/annotator-options.component.html</context>
+          <context context-type="linenumber">63</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="141835ae8d11c204eb900df9f5bce9a23ba398c1" datatype="html">
+        <source>Select an element</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/elements/element-pairwise/element-pairwise.component.html</context>
+          <context context-type="linenumber">13</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="9ca82952a6bc860b5391d5975322d8af8ceddfa4" datatype="html">
+        <source>Select</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/elements/element-pairwise/element-pairwise.component.html</context>
+          <context context-type="linenumber">29</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="27259eaf9b1f8db503fc397637cfa03d082ccaa3" datatype="html">
+        <source>&apos;---------- text_hidden ----------&apos;</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/elements/element-pointwise/element-pointwise.component.html</context>
+          <context context-type="linenumber">8</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="f4e529ae5ffd73001d1ff4bbdeeb0a72e342e5c8" datatype="html">
+        <source>Close</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/instructions/instructions-dialog.component.html</context>
+          <context context-type="linenumber">8</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="fdc6a9a401c8a2f9dad7ca0489d98069fbf482cc" datatype="html">
+        <source>Show Instructions</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/instructions/instructions.component.html</context>
+          <context context-type="linenumber">3</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="a7337ba4bfe58dd06b1919d7c7de0b80d5c290c2" datatype="html">
+        <source>NO RETAKES</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/instructions/instructions.component.html</context>
+          <context context-type="linenumber">5</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="6c5adfc71c52f62b0ebe35c0c27d2cdeeb687ca7" datatype="html">
+        <source>Connection Issues</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">7</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ef37d655134ccdea6c9fa786287f97ea889dde5c" datatype="html">
+        <source>There are some connection issues between the server and your device. Please, report this attaching the status code shown below and wait for an answer.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">13</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="583cd4975e8704dc3f037633a964debd2a4c14e0" datatype="html">
+        <source>Submission Successful</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">20</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="3ef558d1d95005e364439af2b69cc60f59353f80" datatype="html">
+        <source>You have completed successfully the task assigned.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">26</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="5a5d7ee2acbfa9c91ab7f41d26bda9ff0cafe42f" datatype="html">
+        <source>Comment</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">30</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">114</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="52c3748c66464925c1599a7155b1f589a3c16a98" datatype="html">
+        <source>Feel free to leave any comment to help us improve our task.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">33</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">117</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="2c5ff8fa9c9aaec93f97e37c9a0edcd797194573" datatype="html">
+        <source>Send</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">43</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="768fa94396eb6bb2834ec52fc1b5fad92273027d" datatype="html">
+        <source>Thank you!</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">45</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">129</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="a8b70c106447e8350267f4dcc07f24d13bbff8df" datatype="html">
+        <source>Submission Instructions</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">50</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">86</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="194fd53aae0baf8c045a6e4c5ca151f417997800" datatype="html">
+        <source>Copy your output token (shown below) and insert it on the platform’s page to complete your work.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">53</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">89</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="0340927bc3e8471e45a4d285aaf2aca0f63c7708" datatype="html">
+        <source>Copy your tokens (shown below) and insert them on the platform’s page to complete your work.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">57</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">93</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="1d4279157b6938a1737f627bee148672abf94f33" datatype="html">
+        <source>Token Input: </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">58</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="03a7e1e5ece897f85e2b6adf3d1df272cd3614f9" datatype="html">
+        <source>Token Output: </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">59</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="593a91f5ded3e8cecdc3c21361f7406906b4425a" datatype="html">
+        <source>Click the completion button (shown below) to be redirected to the platform and complete your work.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">63</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">99</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="bf612b44e3ba6c05c219aceac6a6ed6c37df1dc4" datatype="html">
+        <source>Complete</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">66</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">102</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="65fc3874311ed83b5bae3d17c946a55426aa6ca9" datatype="html">
+        <source>Submission Already Completed</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">74</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="2be4905a85d53b9d29ca0d95ac2d0b180f1b9f98" datatype="html">
+        <source>The task started on</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">80</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cad55973d341492a749846088afeb76a065aa256" datatype="html">
+        <source>has been successfully completed by yourself on</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">80</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="c03d724751a65de78577dd1d0502a5f36483f2c9" datatype="html">
+        <source>We allow only one submission per worker. Thank you for your effort. You will receive your payment soon. You can still complete your submission if you forgot doing that.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">80,82</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="7f4cf88d2fe553f182af3bad1885c47de9ee6f62" datatype="html">
+        <source>This task was not published on a crowdsourcing platform. We kindly suggest you to copy and store your tokens (shown below).</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">107</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="1257e29df9c8b0378e8ff0d79bde523a8562200e" datatype="html">
+        <source>Submission Failed</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">137</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">160</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="e5a14241bd7ef7cf0e15ec96581ce06563e86498" datatype="html">
+        <source>Your work does not satisfy one or more quality checks, but you have</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">143</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="2174bc65e442ca9e065d853b33de3602f99d3070" datatype="html">
+        <source>tries left. We kindly encourage you to reset the task and proceed with a new try.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">143</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="2ab29f3fd85b486d596247e7bda6833976dd30eb" datatype="html">
+        <source>Task Reset</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">147</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="a934c0c2bf12ad2df0fae4c9d40c20aff5ded1e1" datatype="html">
+        <source>Click the button to reset your current submission. You will not lose any input provided during the failed try.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">150</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="1829e5446556db8a24cfc161d37f7300d83de2cc" datatype="html">
+        <source>The task has been assigned to yourself, but your work was not of quality. Please, return this assignment. We apologize for the inconvenience and we encourage you to participate in our future tasks.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">166</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="e434dadb6faaa9aece10d41b21352f766f4356d7" datatype="html">
+        <source>Task Overbooking</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">175</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="e36df79e5ef9f3ec0d2366174aea5016f67f7960" datatype="html">
+        <source>The whole set of available tasks has been assigned to other workers. Someone did not finish its task, but has some time left. Please, try to come back after the nearest expiration date</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">181</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="5a6d52342a43557d035cb482dc17be09872d01bd" datatype="html">
+        <source>Time Expired</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">188</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="8921744915f0ee0e86d462acc66f8e96a85437bd" datatype="html">
+        <source>The task assigned to you has been given to another worker because the time available for performing it is expired on</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">194</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="a6bc26bb4e2f0f196fca2705e125222f16fdc41f" datatype="html">
+        <source>We kindly ask you to return the assignment on the platform of provenance.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">194,195</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="2a7315f18f0098eabc21b40095558cc7fae94bce" datatype="html">
+        <source>Task Completed</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">202</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="5ecb19175186c66cf8f337bb7ca726dff41c28d4" datatype="html">
+        <source>The whole set of available tasks has been completed by other workers. The crowdsourcing platform over-recruited you. We apologize for the inconvenience and we kindly ask you to return the task on the platform of provenance.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">208,209</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="7abb1824604a51ca3cd3a78db58cd5c74c3e02af" datatype="html">
+        <source>Unknown Issue</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">216</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="f1235162313cb1ead25942a7a6eafdd94c3b9a35" datatype="html">
+        <source>An unknown issue took place within the current task. Please, report this attaching the status code shown below and wait for an answer.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">222</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="3a34fae9614fa5bc40d23dac08f8f3ca408a5d4d" datatype="html">
+        <source>This task allows executing it only once. It is not possible to open it a second time, even if you close your browser’s tab by mistake. We kindly ask you to return the assignment on the platform of provenance and we apologize for any inconvenience caused.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">235,236</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="7f5d0c10614e8a34f0e2dad33a0568277c50cf69" datatype="html">
+        <source>Block</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">243</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">257</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="8934a0716b2c631d797d72b0146d227ce81416a6" datatype="html">
+        <source>You are prevented from participating again in the current task. This can be due to several reasons. We kindly ask you to return the assignment on the platform of provenance and we apologize for any inconvenience caused.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">249,250</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="95aa58e09346ba86d523ebc0b7d4b2f17902a807" datatype="html">
+        <source>You are prevented from participating again in the current task because you already participated in the past. We need to recruit only novice workers. We kindly ask you to return the assignment on the platform of provenance and we apologize for any inconvenience caused.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">263,264</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="76223b25763091bf6ad1119e4442c90a79d1c48e" datatype="html">
+        <source>Additional Messages</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">272</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="e2c21f6b0046369ff29185485663712b739fe38c" datatype="html">
+        <source>Status Code</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">281</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="b6b7a76b70e5c66f25bb8acd2c59880898d8f1d1" datatype="html">
+        <source>We kindly ask you to attach your status code if you have any further question: </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">284</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="c2a9de3714f5767b174d0424bc8abe2dc37acc41" datatype="html">
+        <source>Other</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/questionnaire/questionnaire.component.html</context>
+          <context context-type="linenumber">85</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="8434d4a28744d7df82cd39ef8da4266fcbc40064" datatype="html">
+        <source>Start</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/skeleton.component.html</context>
+          <context context-type="linenumber">42,45</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="e1d9b88d3210f44cfb97965216535546c3892eae" datatype="html">
+        <source>Insert your input token</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/skeleton.component.html</context>
+          <context context-type="linenumber">58,60</context>
+        </context-group>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

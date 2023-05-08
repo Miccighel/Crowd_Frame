@@ -3,8 +3,8 @@
     <!-- Header -->
     <mat-card [class.mat-elevation-z3]="true">
         <mat-card-header>
-            <mat-card-title>Step #2: Dimensions</mat-card-title>
-            <mat-card-subtitle>Second, define all Dimensions here</mat-card-subtitle>
+            <mat-card-title><span i18n>Step #2: Dimensions</span></mat-card-title>
+            <mat-card-subtitle><span i18n>Second, define all Dimensions here</span></mat-card-subtitle>
         </mat-card-header>
         <mat-divider></mat-divider>
         <mat-card-content>
@@ -15,7 +15,7 @@
 
                     <mat-card [class.mat-elevation-z3]="true">
                         <mat-card-header>
-                            <mat-card-title class="lighter">Dimension {{dimensionIndex + 1}}</mat-card-title>
+                            <mat-card-title class="lighter"><span i18n>Dimension</span>{{dimensionIndex + 1}}</mat-card-title>
                         </mat-card-header>
                         <mat-divider></mat-divider>
                         <mat-card-content>
@@ -25,7 +25,7 @@
                                 <tr>
                                     <td class="p-0 pr-16px">
                                         <mat-form-field matLine class="width-100" appearance="fill">
-                                            <mat-label>Name</mat-label>
+                                            <mat-label><span i18n>Name</span></mat-label>
                                             <input matInput type="text" formControlName="name">
                                             <mat-error>
                                                 <app-error-message [formField]="dimension.get('name')"></app-error-message>
@@ -34,7 +34,7 @@
                                     </td>
                                     <td class="p-0">
                                         <mat-form-field matLine class="width-100" appearance="fill">
-                                            <mat-label>Name Pretty</mat-label>
+                                            <mat-label><span i18n>Name Pretty</span></mat-label>
                                             <input matInput type="text" formControlName="name_pretty">
                                             <mat-error>
                                                 <app-error-message [formField]="dimension.get('name_pretty')"></app-error-message>
@@ -44,11 +44,11 @@
                                 </tr>
                             </table>
                             <mat-form-field class="width-100" appearance="fill">
-                                <mat-label>Description</mat-label>
+                                <mat-label><span i18n>Description</span></mat-label>
                                 <textarea matInput formControlName="description"></textarea>
                             </mat-form-field>
                             <mat-form-field class="width-100" appearance="fill">
-                                <mat-label>Example</mat-label>
+                                <mat-label><span i18n>Example</span></mat-label>
                                 <textarea matInput formControlName="example"></textarea>
                             </mat-form-field>
 
@@ -56,21 +56,21 @@
 
                             <!-- Gold -->
                             <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="gold">
-                                Gold Dimension
+                                <span i18n>Gold Dimension</span>
                             </mat-slide-toggle>
 
                             <mat-divider [inset]="true"></mat-divider>
 
                             <!-- Pairwise -->
                             <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="pairwise" [disabled]="this.taskModality != 'pairwise'">
-                                Pairwise
+                                <span i18n>Pairwise</span>
                             </mat-slide-toggle>
 
                             <mat-divider [inset]="true"></mat-divider>
 
                             <!-- Justification: Text, Min_Words -->
                             <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="setJustification" (change)="resetJustification(dimensionIndex)">
-                                Justification
+                                <span i18n>Justification</span>
                             </mat-slide-toggle>
 
                             <div *ngIf="dimension.get('setJustification').value" formGroupName="justification">
@@ -78,7 +78,7 @@
                                     <tr>
                                         <td class="p-0 pr-16px">
                                             <mat-form-field matLine class="width-100" appearance="fill">
-                                                <mat-label>Text</mat-label>
+                                                <mat-label><span i18n>Text</span></mat-label>
                                                 <input matInput type="text" formControlName="text">
                                                 <mat-error>
                                                     <app-error-message [formField]="dimension.get('justification').get('text')"></app-error-message>
@@ -87,7 +87,7 @@
                                         </td>
                                         <td class="p-0">
                                             <mat-form-field matLine class="width-100" appearance="fill">
-                                                <mat-label>Minimum Words</mat-label>
+                                                <mat-label><span i18n>Minimum Words</span></mat-label>
                                                 <input matInput type="number" min="0" formControlName="min_words">
                                                 <mat-error>
                                                     <app-error-message [formField]="dimension.get('justification').get('min_words')"></app-error-message>
@@ -102,15 +102,15 @@
 
                             <!-- Url -->
                             <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="setUrl" (change)="resetUrl(dimensionIndex)">
-                                Url
+                                <span i18n>Url</span>
                             </mat-slide-toggle>
 
                             <div *ngIf="dimension.get('setUrl').value" formGroupName="url">
 
-                                <h2 class="initial">Enabled</h2>
+                                <h2 class="initial"><span i18n>Enabled</span></h2>
 
                                 <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="setInstructions" (change)="resetInstructionUrl(dimensionIndex)">
-                                    <h3 class="initial">Add Instruction</h3>
+                                    <h3 class="initial"><span i18n>Add Instruction</span></h3>
                                 </mat-slide-toggle>
 
                                 <div *ngIf="dimension.get('url').get('setInstructions').value" formGroupName="instructions">
@@ -118,7 +118,7 @@
                                         <tr>
                                             <td class="p-0">
                                                 <mat-form-field matLine class="width-100" appearance="fill">
-                                                    <mat-label>Label</mat-label>
+                                                    <mat-label><span i18n>Label</span></mat-label>
                                                     <input matInput type="text" formControlName="label">
                                                 </mat-form-field>
                                             </td>
@@ -128,7 +128,7 @@
                                         <tr>
                                             <td class="p-0">
                                                 <mat-form-field matLine class="width-100" appearance="fill">
-                                                    <mat-label>Caption</mat-label>
+                                                    <mat-label i18n>Caption</mat-label>
                                                     <input matInput type="text" formControlName="caption">
                                                 </mat-form-field>
                                             </td>
@@ -138,7 +138,7 @@
                                         <tr>
                                             <td class="p-0">
                                                 <mat-form-field matLine class="width-100" appearance="fill">
-                                                    <mat-label>Text</mat-label>
+                                                    <mat-label><span i18n>Text</span></mat-label>
                                                     <input matInput type="text" formControlName="text">
                                                     <mat-error>
                                                         <app-error-message [formField]="this.instructionsScale(dimensionIndex).get('text')"></app-error-message>
@@ -154,7 +154,7 @@
 
                             <!-- Scale: Type, {Min, Max, Step} or [Mapping] or {Min, Max, IncludeLowerBound, IncludeUpperBound} -->
                             <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="setScale" (change)="resetScale(dimensionIndex)">
-                                Scale
+                                <span i18n>Scale</span>
                             </mat-slide-toggle>
 
                             <div *ngIf="dimension.get('setScale').value" formGroupName="scale">
@@ -162,7 +162,7 @@
                                     <tr>
                                         <td class="p-0">
                                             <mat-form-field matLine class="width-100" appearance="fill">
-                                                <mat-label>Type</mat-label>
+                                                <mat-label><span i18n>Type</span></mat-label>
                                                 <mat-select matInput formControlName="type" (selectionChange)="updateScale(dimensionIndex)">
                                                     <mat-option *ngFor="let scaleType of scaleTypes" [value]="scaleType.value">
                                                         {{scaleType.viewValue}}
@@ -178,7 +178,7 @@
                                     <tr *ngIf="dimension.get('scale').get('type').value=='categorical'">
                                         <td class="p-0">
                                             <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="setMultipleSelection" (change)="resetMultipleSelection(dimensionIndex)">
-                                                Multiple Selection
+                                                <span i18n>Multiple Selection</span>
                                             </mat-slide-toggle>
                                         </td>
                                     </tr>
@@ -188,7 +188,7 @@
                                     <tr>
                                         <td class="p-0 pr-16px">
                                             <mat-form-field matLine class="width-100" appearance="fill">
-                                                <mat-label>Minimum</mat-label>
+                                                <mat-label><span i18n>Minimum</span></mat-label>
                                                 <input matInput type="number" formControlName="min">
                                                 <mat-error>
                                                     <app-error-message [formField]="dimension.get('scale').get('min')"></app-error-message>
@@ -197,7 +197,7 @@
                                         </td>
                                         <td class="p-0 pr-16px">
                                             <mat-form-field matLine class="width-100" appearance="fill">
-                                                <mat-label>Maximum</mat-label>
+                                                <mat-label><span i18n>Maximum</span></mat-label>
                                                 <input matInput type="number" formControlName="max">
                                                 <mat-error>
                                                     <app-error-message [formField]="dimension.get('scale').get('max')"></app-error-message>
@@ -206,7 +206,7 @@
                                         </td>
                                         <td class="p-0">
                                             <mat-form-field matLine class="width-100" appearance="fill">
-                                                <mat-label>Step</mat-label>
+                                                <mat-label><span i18n>Step</span></mat-label>
                                                 <input matInput type="number" formControlName="step">
                                                 <mat-error>
                                                     <app-error-message [formField]="dimension.get('scale').get('step')"></app-error-message>
@@ -218,7 +218,7 @@
 
                                 <div *ngIf="dimension.get('scale').get('type').value == 'categorical'" formArrayName="mapping">
                                     <button mat-flat-button color="primary" class="mb-16px indent" (click)="addDimensionMapping(dimensionIndex)">
-                                        Add Mapping
+                                        <span i18n>Add Mapping</span>
                                     </button>
                                     <div *ngFor="let dimensionMap of dimensionMapping(dimensionIndex).controls; let dimensionMappingIndex = index"
                                          [formGroupName]="dimensionMappingIndex">
@@ -226,7 +226,7 @@
                                             <tr>
                                                 <td class="p-0 pr-16px">
                                                     <mat-form-field matLine class="width-100" appearance="fill">
-                                                        <mat-label>Label</mat-label>
+                                                        <mat-label><span i18n>Label</span></mat-label>
                                                         <input matInput type="text" formControlName="label">
                                                         <mat-error>
                                                             <app-error-message [formField]="dimensionMap.get('label')"></app-error-message>
@@ -235,7 +235,7 @@
                                                 </td>
                                                 <td class="p-0 pr-16px">
                                                     <mat-form-field matLine class="width-100" appearance="fill">
-                                                        <mat-label>Description</mat-label>
+                                                        <mat-label><span i18n>Description</span></mat-label>
                                                         <input matInput type="text" formControlName="description">
                                                         <mat-error>
                                                             <app-error-message [formField]="dimensionMap.get('description')"></app-error-message>
@@ -244,7 +244,7 @@
                                                 </td>
                                                 <td class="p-0 pr-16px">
                                                     <mat-form-field matLine class="width-100" appearance="fill">
-                                                        <mat-label>Value</mat-label>
+                                                        <mat-label><span i18n>Value</span></mat-label>
                                                         <input matInput type="text" formControlName="value">
                                                         <mat-error>
                                                             <app-error-message [formField]="dimensionMap.get('value')"></app-error-message>
@@ -255,7 +255,7 @@
                                                     <button mat-flat-button color="primary" class="mb-16px"
                                                             [disabled]="dimensionMappingIndex == '0' && dimensionMapping(dimensionIndex).length == 1"
                                                             (click)="removeDimensionMapping(dimensionIndex, dimensionMappingIndex)">
-                                                        Remove Mapping
+                                                            <span i18n>Remove Mapping</span>
                                                     </button>
                                                 </td>
                                             </tr>
@@ -267,7 +267,7 @@
                                     <tr>
                                         <td class="p-0 pr-16px">
                                             <mat-form-field matLine class="width-100" appearance="fill">
-                                                <mat-label>Minimum</mat-label>
+                                                <mat-label><span i18n>Minimum</span></mat-label>
                                                 <input matInput type="number" formControlName="min">
                                                 <mat-error>
                                                     <app-error-message [formField]="dimension.get('scale').get('min')"></app-error-message>
@@ -276,14 +276,14 @@
                                         </td>
                                         <td class="pr-16px checkbox">
                                             <mat-checkbox formControlName="lower_bound" color="primary">
-                                                Include Lower Bound
+                                                <span i18n>Include Lower Bound</span>
                                             </mat-checkbox>
                                         </td>
                                     </tr>
                                 </table>
 
                                 <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="setInstructions" (change)="resetInstructionScale(dimensionIndex)">
-                                    <h3 class="initial">Add Instruction</h3>
+                                    <h3 class="initial"><span i18n>Add Instruction</span></h3>
                                 </mat-slide-toggle>
 
                                 <div *ngIf="dimension.get('scale').get('setInstructions').value" formGroupName="instructions">
@@ -291,7 +291,7 @@
                                         <tr>
                                             <td class="p-0">
                                                 <mat-form-field matLine class="width-100" appearance="fill">
-                                                    <mat-label>Label</mat-label>
+                                                    <mat-label><span i18n>Label</span></mat-label>
                                                     <input matInput type="text" formControlName="label">
                                                 </mat-form-field>
                                             </td>
@@ -301,7 +301,7 @@
                                         <tr>
                                             <td class="p-0">
                                                 <mat-form-field matLine class="width-100" appearance="fill">
-                                                    <mat-label>Caption</mat-label>
+                                                    <mat-label><span i18n>Caption</span></mat-label>
                                                     <input matInput type="text" formControlName="caption">
                                                 </mat-form-field>
                                             </td>
@@ -311,7 +311,7 @@
                                         <tr>
                                             <td class="p-0">
                                                 <mat-form-field matLine class="width-100" appearance="fill">
-                                                    <mat-label>Text</mat-label>
+                                                    <mat-label><span i18n>Text</span></mat-label>
                                                     <input matInput type="text" formControlName="text">
                                                     <mat-error>
                                                         <app-error-message [formField]="this.instructionsScale(dimensionIndex).get('text')"></app-error-message>
@@ -327,7 +327,7 @@
 
                             <!-- Style: Type, Position, Orientation, Separator -->
                             <mat-slide-toggle color="primary" *ngIf="dimension.get('setScale').value" class="mt-16px mb-16px" formControlName="setStyle" (change)="resetStyle(dimensionIndex)">
-                                Style
+                                <span i18n>Style</span>
                             </mat-slide-toggle>
 
                             <div formGroupName="style" *ngIf="dimension.get('setStyle').value && dimension.get('setScale').value">
@@ -335,7 +335,7 @@
                                     <tr>
                                         <td class="p-0 pr-16px">
                                             <mat-form-field matLine class="width-100" appearance="fill" required>
-                                                <mat-label>Type</mat-label>
+                                                <mat-label><span i18n>Type</span></mat-label>
                                                 <mat-select matInput formControlName="styleType" (selectionChange)="updateStyleType(dimensionIndex)">
                                                     <mat-option *ngFor="let styleType of styleTypes" [value]="styleType.value">
                                                         {{styleType.viewValue}}
@@ -348,7 +348,7 @@
                                         </td>
                                         <td class="p-0 pr-16px">
                                             <mat-form-field matLine class="width-100" appearance="fill" required>
-                                                <mat-label>Position</mat-label>
+                                                <mat-label><span i18n>Position</span></mat-label>
                                                 <mat-select matInput formControlName="position">
                                                     <mat-option *ngFor="let positionType of positionTypes" [value]="positionType.value">
                                                         {{positionType.viewValue}}
@@ -361,7 +361,7 @@
                                         </td>
                                         <td class="p-0 pr-16px">
                                             <mat-form-field matLine class="width-100" appearance="fill">
-                                                <mat-label>Orientation</mat-label>
+                                                <mat-label><span i18n>Orientation</span></mat-label>
                                                 <mat-select matInput formControlName="orientation" required>
                                                     <mat-option *ngFor="let orientationType of orientationTypes" [value]="orientationType.value">
                                                         {{orientationType.viewValue}}
@@ -374,13 +374,13 @@
                                         </td>
                                         <td class="p-0">
                                             <mat-form-field matLine class="width-100" appearance="fill">
-                                                <mat-label>Separator</mat-label>
+                                                <mat-label><span i18n>Separator</span></mat-label>
                                                 <mat-select matInput formControlName="separator">
                                                     <mat-option value="true">
-                                                        True
+                                                        <span i18n>True</span>
                                                     </mat-option>
                                                     <mat-option value="false">
-                                                        False
+                                                        <span i18n>False</span>
                                                     </mat-option>
                                                 </mat-select>
                                             </mat-form-field>
@@ -405,7 +405,7 @@
             </div>
 
             <button mat-flat-button color="primary" (click)="addDimension()">
-                Add Dimension
+                <span i18n>Add Dimension</span>
             </button>
 
         </mat-card-content>

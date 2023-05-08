@@ -13,10 +13,10 @@
 
 <mat-grid-list *ngIf="(this.adminAccess && this.actionChosen == null)" cols="1" rowHeight="fit" id="selection-grid">
   <mat-grid-tile class="green-theme">
-    <button id="generate-button" mat-raised-button color="primary" (click)="loadAction('generate')">Generate</button>
+    <button id="generate-button" mat-raised-button color="primary" (click)="loadAction('generate')"><span i18n>Generate</span></button>
   </mat-grid-tile>
   <mat-grid-tile>
-    <button id="perform-button" mat-raised-button color="primary" (click)="loadAction('perform')">Perform</button>
+    <button id="perform-button" mat-raised-button color="primary" (click)="loadAction('perform')"><span i18n>Perform</span></button>
   </mat-grid-tile>
 </mat-grid-list>
 <div class="login-section green-theme" *ngIf="(this.adminAccess && this.actionChosen=='generate' && !this.loginSuccessful)">
@@ -25,28 +25,28 @@
       <mat-card-content>
         <mat-form-field>
           <mat-label>
-            Insert your username
+            <span i18n>Insert your username</span>
           </mat-label>
           <input matInput type="text" placeholder="your_username" formControlName="username">
           <mat-error *ngIf="checkFormControl(loginForm,'username', 'required')">
-            This field is required
+            <span i18n>This field is required</span>
           </mat-error>
         </mat-form-field>
         <mat-form-field>
           <mat-label>
-            Insert your password
+            <span i18n>Insert your password</span>
           </mat-label>
           <input matInput type="password" placeholder="your_password" formControlName="password">
           <mat-error *ngIf="checkFormControl(loginForm,'password', 'required')">
-            This field is required
+            <span i18n>This field is required</span>
           </mat-error>
         </mat-form-field>
         <mat-error *ngIf="this.loginPerformed && !loginSuccessful">
-          Invalid credentials
+          <span i18n>Invalid credentials</span>
         </mat-error>
       </mat-card-content>
       <mat-card-actions>
-        <button id="start-button" mat-flat-button color="primary" (click)="performAdminCheck()">Login</button>
+        <button id="start-button" mat-flat-button color="primary" (click)="performAdminCheck()"><span i18n>Login</span></button>
       </mat-card-actions>
     </mat-card>
   </form>
