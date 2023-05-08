@@ -440,7 +440,7 @@ export class ChatWidgetComponent implements OnInit {
                 message = message.label ?? message;
             }
             this.addMessageClient(this.client, message, "sent");
-            if (message.toLowerCase() == "yes") {
+            if (message.toLowerCase() == "yes" && this.userName != undefined) {
                 this.buttonsToShow = ButtonsType.None;
                 this.changeDetector.detectChanges();
                 this.conversationInitialized = true;

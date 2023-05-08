@@ -14,6 +14,12 @@
     --background-light: #ebebeb;
     box-sizing: border-box;
     position: relative;
+
+    .chat-input-button .mat-button-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 }
 
 .modal-dialog.modal-lg {
@@ -68,12 +74,12 @@
     padding: 0 4px;
     margin: 0;
     margin: 0.25rem 0;
+    background: var(--light);
 }
 
 button.instruction-button.mat-icon-button {
     height: 24px;
     width: 24px;
-    margin-left: 10px;
 }
 
 button.instruction-button span {
@@ -81,7 +87,7 @@ button.instruction-button span {
 }
 
 button.instruction-button .mat-icon {
-    vertical-align: text-bottom;
+    vertical-align: top;
 }
 
 .chat-fixed-message {
@@ -131,23 +137,25 @@ button.instruction-button .mat-icon {
     overflow: auto;
 }
 
-.chat-box-footer {
+.chat-box-footer::ng-deep {
     background-color: var(--background-light);
     height: auto;
-
     border-bottom-left-radius: 5px;
     border-bottom-right-radius: 5px;
 }
 
-.operator-name {
+.operator-info {
     font-size: larger;
     font-weight: 600;
+    display: flex;
+    align-items: center;
 }
 
 .operator-status {
-    float: right;
+    display: flex;
+    justify-content: end;
+    align-items: center;
     font-size: larger;
-    padding: 4px;
 }
 
 .operator-status span {
@@ -423,6 +431,7 @@ button.btn-user-answer {
     height: 100%;
     display: flex;
     justify-content: space-between;
+    background-color: #f8f9fb;
 }
 
 /* INPUT SECTIONS */
