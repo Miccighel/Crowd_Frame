@@ -1285,9 +1285,9 @@ export class ChatWidgetComponent implements OnInit {
         this.timerIsOverSubject.next(false);
 
         this.progress = countdownTime / 100;
-        this.showCountdown = true;
         const progressBarEl = this.progressBar.nativeElement;
         progressBarEl.style.width = this.progress.toString() + "%";
+        this.showCountdown = true;
 
         this.activeInterval = setInterval(() => {
             countdownTime--;
@@ -2380,7 +2380,7 @@ export class ChatWidgetComponent implements OnInit {
     }
 
     public performGlobalValidityCheck(): boolean {
-        //Tutti i dati sono inseriti presenti, condizione garantito dall'algoritmo che gestisce il flow
+        //Tutti i dati necessari sono presenti, condizione garantita dall'algoritmo che gestisce l'excecution flow
         return true;
     }
 
