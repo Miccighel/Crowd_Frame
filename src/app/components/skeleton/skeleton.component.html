@@ -27,15 +27,33 @@
 <!-- First instruction page shown when the worker starts the skeleton -->
 <div
     class="instructions-section"
-    *ngIf="this.sectionService.currentSection == 'instructions-section' && this.sectionService.checkCompleted && !this.sectionService.taskCompleted">
+    *ngIf="
+        this.sectionService.currentSection == 'instructions-section' &&
+        this.sectionService.checkCompleted &&
+        !this.sectionService.taskCompleted
+    "
+>
     <mat-card>
         <mat-card-content
-            *ngIf="!this.sectionService.checkCompleted || !this.task.instructionsGeneral">
+            *ngIf="
+                !this.sectionService.checkCompleted ||
+                !this.task.instructionsGeneral
+            "
+        >
             <mat-progress-bar mode="indeterminate"></mat-progress-bar>
         </mat-card-content>
         <mat-card-content
-            *ngIf="this.sectionService.checkCompleted &&this.task.instructionsGeneral">
-            <div *ngFor="let instruction of this.task.instructionsGeneral;let i = index">
+            *ngIf="
+                this.sectionService.checkCompleted &&
+                this.task.instructionsGeneral
+            "
+        >
+            <div
+                *ngFor="
+                    let instruction of this.task.instructionsGeneral;
+                    let i = index
+                "
+            >
                 <h1 *ngIf="instruction['caption']">
                     {{ instruction["caption"] }}
                 </h1>
@@ -43,8 +61,16 @@
             </div>
         </mat-card-content>
         <mat-card-actions>
-            <button mat-flat-button color="primary" (click)="enableTask()" [disabled]="!this.sectionService.checkCompleted || !this.task.instructionsGeneral">
-                <span i18n>Start</span>
+            <button
+                mat-flat-button
+                color="primary"
+                (click)="enableTask()"
+                [disabled]="
+                    !this.sectionService.checkCompleted ||
+                    !this.task.instructionsGeneral
+                "
+            >
+                Start
             </button>
         </mat-card-actions>
     </mat-card>
@@ -54,21 +80,39 @@
 <app-instructions
     [task]="this.task"
     [worker]="this.worker"
-    *ngIf="this.sectionService.instructionsAllowed && !this.sectionService.taskCompleted &&this.task.settings.modality != 'conversational'"
+    *ngIf="
+        this.sectionService.instructionsAllowed &&
+        !this.sectionService.taskCompleted &&
+        this.task.settings.modality != 'conversational'
+    "
 ></app-instructions>
 
 <!-- Token input section -->
-<div id="token-section" class="container" *ngIf="this.sectionService.currentSection == 'token-section' &&!this.sectionService.taskCompleted">
+<div
+    id="token-section"
+    class="container"
+    *ngIf="
+        this.sectionService.currentSection == 'token-section' &&
+        !this.sectionService.taskCompleted
+    "
+>
     <form [formGroup]="tokenForm">
         <mat-card>
             <mat-card-content>
                 <mat-form-field appearance="fill">
-                    <mat-label>
-                        <span i18n>Insert your input token</span>
-                    </mat-label>
-                    <input matInput type="text" placeholder="your_token" formControlName="tokenInput" maxlength="11" class="input-token"
-                           (focus)="this.tokenForm.updateValueAndValidity()" (paste)="this.tokenForm.updateValueAndValidity()"
-                           (keyup)="this.tokenForm.updateValueAndValidity()" (keydown)="this.tokenForm.updateValueAndValidity()">
+                    <mat-label> Insert your input token </mat-label>
+                    <input
+                        matInput
+                        type="text"
+                        placeholder="your_token"
+                        formControlName="tokenInput"
+                        maxlength="11"
+                        class="input-token"
+                        (focus)="this.tokenForm.updateValueAndValidity()"
+                        (paste)="this.tokenForm.updateValueAndValidity()"
+                        (keyup)="this.tokenForm.updateValueAndValidity()"
+                        (keydown)="this.tokenForm.updateValueAndValidity()"
+                    />
                     <mat-error>
                         <app-error-message
                             [formField]="this.tokenForm.get('tokenInput')"
@@ -87,23 +131,58 @@
 
 <!-- Chatbot -->
 <ng-container *ngIf="this.sectionService.taskInstructionsRead">
-    <chat-widget *ngIf="this.task.settings.modality == 'conversational' && this.task.dimensions && this.sectionService.taskStarted" [worker]="worker"></chat-widget>
+    <chat-widget
+        *ngIf="
+            this.task.dimensions &&
+            this.sectionService.taskStarted &&
+            this.task.settings.modality == 'conversational'
+        "
+        [worker]="worker"
+    >
+    </chat-widget>
 </ng-container>
 
 <ng-container *ngIf="this.sectionService.taskInstructionsRead">
     <!-- Task body section -->
-    <mat-horizontal-stepper *ngIf="this.task.settings.modality != 'conversational' && !this.sectionService.taskCompleted" [linear]="true" labelPosition="bottom" id="stepper" #stepper>
+    <mat-horizontal-stepper
+        [linear]="true"
+        labelPosition="bottom"
+        id="stepper"
+        #stepper
+        *ngIf="
+            !this.sectionService.taskCompleted &&
+            this.task.settings.modality != 'conversational'
+        "
+    >
         <mat-step *ngFor="let stepIndex of this.sectionService.stepIndexes()">
             <app-questionnaire
-                *ngIf="this.task.getElementIndex(stepIndex)['elementType'] == 'Q'"
-                [questionnaireIndex]="this.task.getElementIndex(stepIndex)['elementIndex']"
-                (formEmitter)="this.storeQuestionnaireForm($event,this.task.getElementIndex(stepIndex)['elementIndex'])"
+                *ngIf="
+                    this.task.getElementIndex(stepIndex)['elementType'] == 'Q'
+                "
+                [questionnaireIndex]="
+                    this.task.getElementIndex(stepIndex)['elementIndex']
+                "
+                (formEmitter)="
+                    this.storeQuestionnaireForm(
+                        $event,
+                        this.task.getElementIndex(stepIndex)['elementIndex']
+                    )
+                "
             >
             </app-questionnaire>
             <app-document
-                *ngIf="this.task.getElementIndex(stepIndex)['elementType'] == 'S'"
-                [documentIndex]="this.task.getElementIndex(stepIndex)['elementIndex']"
-                (formEmitter)="this.storeDocumentForm($event, this.task.getElementIndex(stepIndex)['elementIndex'])"
+                *ngIf="
+                    this.task.getElementIndex(stepIndex)['elementType'] == 'S'
+                "
+                [documentIndex]="
+                    this.task.getElementIndex(stepIndex)['elementIndex']
+                "
+                (formEmitter)="
+                    this.storeDocumentForm(
+                        $event,
+                        this.task.getElementIndex(stepIndex)['elementIndex']
+                    )
+                "
             ></app-document>
         </mat-step>
     </mat-horizontal-stepper>

@@ -17,54 +17,54 @@
     <!-- Step #1 - Questionnaires -->
 
     <mat-step [stepControl]="questionnaireStepForm">
-        <ng-template matStepLabel><span i18n>Questionnaires</span></ng-template>
+        <ng-template matStepLabel>Questionnaires</ng-template>
         <app-questionnaire-step (formEmitter)="storeQuestionnaireForm($event)"></app-questionnaire-step>
     </mat-step>
 
     <!-- Step #2 - Dimensions -->
 
     <mat-step [stepControl]="dimensionsStepForm" *ngIf="this.taskSettingsStep">
-        <ng-template matStepLabel><span i18n>Dimensions</span></ng-template>
+        <ng-template matStepLabel>Dimensions</ng-template>
         <app-dimensions-step (formEmitter)="storeDimensionsForm($event)" [modality]="this.taskModality"></app-dimensions-step>
     </mat-step>
 
     <!-- Step #3 - General Instructions -->
 
     <mat-step [stepControl]="generalInstructionsStepForm">
-        <ng-template matStepLabel><span i18n>General Instructions</span></ng-template>
+        <ng-template matStepLabel>General Instructions</ng-template>
         <app-instructions-step #generalInstructions [editorConfig]="this.editorConfig" (formEmitter)="storeGeneralInstructionsForm($event)"></app-instructions-step>
     </mat-step>
 
     <!-- Step #4 - Evaluation Instructions -->
 
     <mat-step [stepControl]="evaluationInstructionsStepForm">
-        <ng-template matStepLabel><span i18n>Evaluation Instructions</span></ng-template>
+        <ng-template matStepLabel>Evaluation Instructions</ng-template>
         <app-instructions-evaluation-step #evaluationInstructions [editorConfig]="this.editorConfig" (formEmitter)="storeEvaluationlInstructionsForm($event)"></app-instructions-evaluation-step>
     </mat-step>
 
     <!-- Step #5 - Search Engine -->
 
     <mat-step [stepControl]="searchEngineStepForm">
-        <ng-template matStepLabel><span i18n>Search Engine</span></ng-template>
+        <ng-template matStepLabel>Search Engine</ng-template>
         <app-search-engine-step (formEmitter)="storeSearchEngineStepForm($event)"></app-search-engine-step>
     </mat-step>
 
     <!-- Step #6 - Task Settings -->
     <mat-step [stepControl]="taskSettingsStepForm">
-        <ng-template matStepLabel><span i18n>Task Settings</span></ng-template>
+        <ng-template matStepLabel>Task Settings</ng-template>
         <app-task-settings-step (formEmitter)="storeTaskSettingsForm($event)" (modalityEmitter)="storeTaskModality($event)"></app-task-settings-step>
     </mat-step>
 
     <!-- Step #7 - Worker Checks -->
     <mat-step [stepControl]="workerChecksStepForm" *ngIf="batchesTreeInitialization">
-        <ng-template matStepLabel><span i18n>Worker Checks</span></ng-template>
+        <ng-template matStepLabel>Worker Checks</ng-template>
         <app-worker-checks [batchesTree]="batchesTree" (formEmitter)="storeWorkerChecksForm($event)"></app-worker-checks>
     </mat-step>
 
     <!-- Step #8 - Summary -->
     <ng-container *ngIf="questionnaireStep && dimensionsStep && generalInstructionsStep && evaluationInstructionsStep && searchEngineStep && taskSettingsStep && workerChecksStep">
         <mat-step>
-            <ng-template matStepLabel><span i18n>Summary</span></ng-template>
+            <ng-template matStepLabel>Summary</ng-template>
             <app-summary-step
                     [questionnaireStep]="questionnaireStep"
                     [dimensionsStep]="dimensionsStep"
@@ -83,23 +83,23 @@
 <mat-expansion-panel id="cloneTask" [expanded]="true" class="green-theme">
     <mat-expansion-panel-header *ngIf="!this.batchesTreeInitialization">
         <mat-panel-title>
-            <span i18n>Initialization</span>
+            Initialization
         </mat-panel-title>
         <mat-panel-description>
-            <span i18n>in progress...</span>            <!-- Come traduce la punteggiatura ?-->
+            in progress...
         </mat-panel-description>
     </mat-expansion-panel-header>
     <mat-expansion-panel-header *ngIf="this.batchesTreeInitialization">
         <mat-panel-title>
-            <span i18n>Clone</span>
+            Clone
         </mat-panel-title>
         <mat-panel-description>
-            <span i18n>a deployed batch</span>
+            a deployed batch
         </mat-panel-description>
     </mat-expansion-panel-header>
     <mat-progress-bar mode="indeterminate" *ngIf="!this.batchesTreeInitialization"></mat-progress-bar>
     <mat-form-field appearance="fill" class="width-100" *ngIf="this.batchesTreeInitialization && this.batchesTree.length > 0">
-        <mat-label><span i18n>Select configuration</span></mat-label>
+        <mat-label>Select configuration</mat-label>
         <mat-select [formControl]="batchCloned" (selectionChange)="clonePreviousBatch($event)">
             <mat-optgroup *ngFor="let taskNode of this.batchesTree" [label]="taskNode['task']">
                 <mat-option *ngFor="let batchNode of taskNode['batches']" [value]="batchNode['batch']">
@@ -108,8 +108,8 @@
             </mat-optgroup>
         </mat-select>
     </mat-form-field>
-    <p *ngIf="this.batchesTreeInitialization && this.batchesTree.length <= 0"><span i18n>No other batches detected</span></p>
+    <p *ngIf="this.batchesTreeInitialization && this.batchesTree.length <= 0">No other batches detected</p>
     <button mat-flat-button color="primary" class="width-100" *ngIf="this.taskCloned && this.batchesTreeInitialization" (click)="restoreGenerator()">
-        <span i18n>Clear</span>
+        Clear
     </button>
 </mat-expansion-panel>

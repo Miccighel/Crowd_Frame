@@ -2,7 +2,7 @@
     <mat-card>
 
         <mat-card-title>
-            <span i18n>Element</span> {{documentIndex+1}}
+            Element {{documentIndex+1}}
         </mat-card-title>
 
         <mat-card-content class="pt-16px">
@@ -24,7 +24,7 @@
             <ng-container *ngIf="this.task.settings.countdown_time">
                 <div class="countdown sticky" *ngIf="this.task.settings.countdown_time>=0">
                     <h1 class="text-lighter m-0">
-                        <span i18n>Time left:</span>
+                        Time left:
                         <countdown #countdownElement [config]="{ demand: true, leftTime: this.task.documentsCountdownTime[documentIndex], format: 'mm:ss' }" (event)="handleCountdown($event, documentIndex)"></countdown>
                     </h1>
                 </div>
@@ -49,23 +49,23 @@
                 <button mat-flat-button color="primary" matStepperPrevious *ngIf="documentIndex>0"
                         [disabled]="this.sectionService.taskCompleted"
                         (click)="handleDocumentCompletion('Back')">
-                    <span i18n>Back</span>
+                    Back
                 </button>
                 <button mat-flat-button color="primary" matStepperNext *ngIf="documentIndex+1<this.task.documentsAmount || (documentIndex+1>=this.task.documentsAmount && this.task.questionnaireAmountEnd > 0)"
                         [disabled]="((!assessmentForm.valid || assessmentForm.status == 'DISABLED' ) || !this.task.searchEngineRetrievedResponses[documentIndex] || this.sectionService.taskCompleted || !this.task.checkAnnotationConsistency(documentIndex))"
                         (click)="handleDocumentCompletion('Next')">
-                    <span i18n>Next</span>
+                    Next
                 </button>
                 <button mat-stroked-button color="accent" matStepperNext
                         *ngIf="documentIndex+1>=this.task.documentsAmount && this.task.questionnaireAmountEnd == 0"
                         [disabled]="(!assessmentForm.valid || assessmentForm.status == 'DISABLED'  || !this.task.searchEngineRetrievedResponses[documentIndex] || this.sectionService.taskCompleted || !this.task.checkAnnotationConsistency(documentIndex))"
                         (click)="handleDocumentCompletion('Finish')">
-                    <span i18n>Finish</span>
+                    Finish
                 </button>
             </mat-card-actions>
             <mat-card-actions *ngIf="!this.assessmentForm">
                 <button mat-flat-button color="primary" matStepperNext *ngIf="documentIndex+1<this.task.documentsAmount || (documentIndex+1>=this.task.documentsAmount && this.task.questionnaireAmountEnd > 0)" [disabled]="true">
-                    <span i18n>Next</span>
+                    Next
                 </button>
             </mat-card-actions>
 

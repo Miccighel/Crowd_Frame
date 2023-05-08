@@ -4,8 +4,8 @@
 
     <mat-card [class.mat-elevation-z3]="true">
         <mat-card-header>
-            <mat-card-title><span i18n>Step #5: Search Engine Configuration</span></mat-card-title>
-            <mat-card-subtitle><span i18n>Fifth, define the Search Engine Configuration here</span></mat-card-subtitle>
+            <mat-card-title>Step #5: Search Engine Configuration</mat-card-title>
+            <mat-card-subtitle>Fifth, define the Search Engine Configuration here</mat-card-subtitle>
         </mat-card-header>
         <mat-divider></mat-divider>
         <mat-card-content>
@@ -15,7 +15,7 @@
                 <tr>
                     <td class="p-0">
                         <mat-form-field matLine class="width-100" appearance="fill">
-                            <mat-label><span i18n>Source</span></mat-label>
+                            <mat-label>Source</mat-label>
                             <mat-select matInput formControlName="source" [value]="this.dataStored.source">
                                 <mat-option *ngFor="let sourceType of sourceTypes" [value]="sourceType.value">
                                     {{sourceType.viewValue}}
@@ -31,14 +31,14 @@
             <!-- Domains To Filter -->
             <div formArrayName="domains_filter" *ngIf="formStep.get('source').value">
                 <button mat-flat-button color="primary" class="mt-16px mb-16px indent" (click)="addDomain()">
-                    <span i18n>Add Domain To Filter</span>
+                    Add Domain To Filter
                 </button>
                 <div *ngFor="let domain of domains().controls; let domainIndex = index" [formGroupName]="domainIndex">
                     <table class="width-100">
                         <tr>
                             <td class="p-0 pr-16px">
                                 <mat-form-field matLine class="width-100" appearance="fill">
-                                    <mat-label><span i18n>Domain</span></mat-label>
+                                    <mat-label>Domain</mat-label>
                                     <input matInput type="text" formControlName="url">
                                     <mat-error>
                                         <app-error-message [formField]="domain.get('url')"></app-error-message>
@@ -47,7 +47,7 @@
                             </td>
                             <td class="p-0 center">
                                 <button mat-flat-button color="primary" class="mb-16px" (click)="removeDomain(domainIndex)">
-                                    <span i18n>Remove Domain</span>
+                                    Remove Domain
                                 </button>
                             </td>
                         </tr>
@@ -60,8 +60,8 @@
         <mat-divider></mat-divider>
 
         <mat-card-actions>
-            <button mat-flat-button color="primary" matStepperPrevious><span i18n>Back</span></button>
-            <button mat-flat-button color="primary" matStepperNext><span i18n>Next</span></button>
+            <button mat-flat-button color="primary" matStepperPrevious>Back</button>
+            <button mat-flat-button color="primary" matStepperNext>Next</button>
         </mat-card-actions>
 
     </mat-card>

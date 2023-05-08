@@ -1,98 +1,98 @@
 <mat-card [class.mat-elevation-z3]="true">
     <mat-card-header>
-        <mat-card-title><span i18n>Step #8: Summary</span></mat-card-title>
-        <mat-card-subtitle><span i18n>Finally, check your results here</span></mat-card-subtitle>
+        <mat-card-title>Step #8: Summary</mat-card-title>
+        <mat-card-subtitle>Finally, check your results here</mat-card-subtitle>
     </mat-card-header>
     <mat-divider></mat-divider>
     <mat-card-content>
 
-        <h4 class="mb-0"><span i18n>Step #1 - Questionnaires</span>:</h4>
+        <h4 class="mb-0">Step #1 - Questionnaires:</h4>
         <p><code>{{ this.questionnaireStep.configurationSerialized }}</code></p>
 
         <mat-divider [inset]="true"></mat-divider>
 
-        <h4 class="mb-0"><span i18n>Step #2 - Dimensions</span>:</h4>
+        <h4 class="mb-0">Step #2 - <strong>Dimensions</strong>:</h4>
         <p><code>{{ this.dimensionsStep.configurationSerialized }}</code></p>
 
         <mat-divider [inset]="true"></mat-divider>
 
-        <h4 class="mb-0"><span i18n>Step #3 - General Instructions</span>:</h4>
+        <h4 class="mb-0">Step #3 - <strong>General Instructions</strong>:</h4>
         <p><code>{{ this.generalInstructionsStep.configurationSerialized }}</code></p>
 
         <mat-divider [inset]="true"></mat-divider>
 
-        <h4 class="mb-0"><span i18n>Step #4 - Evaluation Instructions</span>:</h4>
+        <h4 class="mb-0">Step #4 - <strong>Evaluation Instructions</strong>:</h4>
         <p><code>{{ this.evaluationInstructionsStep.configurationSerialized }}</code></p>
 
         <mat-divider [inset]="true"></mat-divider>
 
-        <h4 class="mb-0"><span i18n>Step #5 - Search Engine</span>:</h4>
+        <h4 class="mb-0">Step #5 - <strong>Search Engine</strong>:</h4>
         <p><code>{{ this.searchEngineStep.configurationSerialized }}</code></p>
 
         <mat-divider [inset]="true"></mat-divider>
 
-        <h4 class="mb-0"><span i18n>Step #6 - Task Settings</span>:</h4>
+        <h4 class="mb-0">Step #6 - <strong>Task Settings</strong>:</h4>
         <p><code>{{ this.taskSettingsStep.configurationSerialized }}</code></p>
 
         <mat-divider [inset]="true"></mat-divider>
 
-        <h4 class="mb-0"><span i18n>Step #7 - Worker Checks</span>:</h4>
+        <h4 class="mb-0">Step #7 - <strong>Worker Checks</strong>:</h4>
         <p><code>{{ this.workerChecksStep.configurationSerialized }}</code></p>
 
         <mat-divider [inset]="true"></mat-divider>
-        <h4 class="mb-0"><span i18n>Hits Overview</span>:</h4>
+        <h4 class="mb-0"><strong>Hits Overview</strong>:</h4>
         <p><code>{{ this.taskSettingsStep.hitsParsedString }}</code></p>
 
         <mat-divider [inset]="true"></mat-divider>
-        <h4 class="mb-0"><span i18n>Validity Check</span>:</h4>
+        <h4 class="mb-0"><strong>Validity Check</strong>:</h4>
 
         <mat-list>
-            <mat-list-item *ngIf="this.questionnaireStep.formStep.valid" class="step-valid"><span><span i18n>Step #1 - Questionnaires</span>: <span class="step-validity-check"><span i18n>valid</span></span></span></mat-list-item>
-            <mat-list-item *ngIf="!this.questionnaireStep.formStep.valid" class="step-invalid"><span><span i18n>Step #1 - Questionnaires</span>: <span class="step-validity-check"><span i18n>invalid</span></span></span></mat-list-item>
-            <mat-list-item *ngIf="this.dimensionsStep.formStep.valid" class="step-valid"><span><span i18n>Step #2 - Dimensions</span>: <span class="step-validity-check"><span i18n>valid</span></span></span></mat-list-item>
-            <mat-list-item *ngIf="!this.dimensionsStep.formStep.valid" class="step-invalid"><span><span i18n>Step #2 - Dimensions</span>: <span class="step-validity-check"><span i18n>invalid</span></span></span></mat-list-item>
-            <mat-list-item *ngIf="this.generalInstructionsStep.formStep.valid" class="step-valid"><span><span i18n>Step #3 - General Instructions</span>: <span class="step-validity-check"><span i18n>valid</span></span></span></mat-list-item>
-            <mat-list-item *ngIf="!this.generalInstructionsStep.formStep.valid" class="step-invalid"><span><span i18n>Step #3 - General Instructions</span>: <span class="step-validity-check"><span i18n>invalid</span></span></span></mat-list-item>
-            <mat-list-item *ngIf="this.evaluationInstructionsStep.formStep.valid" class="step-valid"><span><span i18n>Step #4 - Evaluation Instructions</span>: <span class="step-validity-check"><span i18n>valid</span></span></span></mat-list-item>
-            <mat-list-item *ngIf="!this.evaluationInstructionsStep.formStep.valid" class="step-invalid"><span><span i18n>Step #4 - Evaluation Instructions</span>: <span class="step-validity-check"><span i18n>invalid</span></span></span></mat-list-item>
-            <mat-list-item *ngIf="this.searchEngineStep.formStep.valid" class="step-valid"><span><span i18n>Step #5 - Search Engine</span>: <span class="step-validity-check"><span i18n>valid</span></span></span></mat-list-item>
-            <mat-list-item *ngIf="!this.searchEngineStep.formStep.valid" class="step-invalid"><span><span i18n>Step #5 - Search Engine</span>: <span class="step-validity-check"><span i18n>invalid</span></span></span>
+            <mat-list-item *ngIf="this.questionnaireStep.formStep.valid" class="step-valid"><span>Step #1 - Questionnaires: <span class="step-validity-check">valid</span></span></mat-list-item>
+            <mat-list-item *ngIf="!this.questionnaireStep.formStep.valid" class="step-invalid"><span>Step #1 - Questionnaires: <span class="step-validity-check">invalid</span></span></mat-list-item>
+            <mat-list-item *ngIf="this.dimensionsStep.formStep.valid" class="step-valid"><span>Step #2 - Dimensions: <span class="step-validity-check">valid</span></span></mat-list-item>
+            <mat-list-item *ngIf="!this.dimensionsStep.formStep.valid" class="step-invalid"><span>Step #2 - Dimensions: <span class="step-validity-check">invalid</span></span></mat-list-item>
+            <mat-list-item *ngIf="this.generalInstructionsStep.formStep.valid" class="step-valid"><span>Step #3 - General Instructions: <span class="step-validity-check">valid</span></span></mat-list-item>
+            <mat-list-item *ngIf="!this.generalInstructionsStep.formStep.valid" class="step-invalid"><span>Step #3 - General Instructions: <span class="step-validity-check">invalid</span></span></mat-list-item>
+            <mat-list-item *ngIf="this.evaluationInstructionsStep.formStep.valid" class="step-valid"><span>Step #4 - Evaluation Instructions: <span class="step-validity-check">valid</span></span></mat-list-item>
+            <mat-list-item *ngIf="!this.evaluationInstructionsStep.formStep.valid" class="step-invalid"><span>Step #4 - Evaluation Instructions: <span class="step-validity-check">invalid</span></span></mat-list-item>
+            <mat-list-item *ngIf="this.searchEngineStep.formStep.valid" class="step-valid"><span>Step #5 - Search Engine: <span class="step-validity-check">valid</span></span></mat-list-item>
+            <mat-list-item *ngIf="!this.searchEngineStep.formStep.valid" class="step-invalid"><span>Step #5 - Search Engine: <span class="step-validity-check">invalid</span></span>
             </mat-list-item>
             <div *ngIf="this.taskSettingsStep.formStep.valid && this.taskSettingsStep.hitsDetected>0; else invalidTaskSettings">
-                <mat-list-item class="step-valid"><span><span i18n>Step #6 - Task Settings</span>: <span class="step-validity-check"><span i18n>valid</span></span></span></mat-list-item>
+                <mat-list-item class="step-valid"><span>Step #6 - Task Settings: <span class="step-validity-check">valid</span></span></mat-list-item>
             </div>
             <ng-template #invalidTaskSettings>
-                <mat-list-item class="step-invalid"><span><span i18n>Step #6 - Task Settings</span>: <span class="step-validity-check"><span i18n>invalid</span></span></span></mat-list-item>
+                <mat-list-item class="step-invalid"><span>Step #6 - Task Settings: <span class="step-validity-check">invalid</span></span></mat-list-item>
             </ng-template>
-            <mat-list-item *ngIf="this.workerChecksStep.formStep.valid" class="step-valid"><span><span i18n>Step #7 - Worker Checks</span>: <span class="step-validity-check"><span i18n>valid</span></span></span></mat-list-item>
-            <mat-list-item *ngIf="!this.workerChecksStep.formStep.valid" class="step-invalid"><span><span i18n>Step #7 - Worker Checks</span>: <span class="step-validity-check"><span i18n>invalid</span></span></span>
+            <mat-list-item *ngIf="this.workerChecksStep.formStep.valid" class="step-valid"><span>Step #7 - Worker Checks: <span class="step-validity-check">valid</span></span></mat-list-item>
+            <mat-list-item *ngIf="!this.workerChecksStep.formStep.valid" class="step-invalid"><span>Step #7 - Worker Checks: <span class="step-validity-check">invalid</span></span>
             </mat-list-item>
         </mat-list>
 
-        <h4 class="mb-0"><span i18n>Upload Path</span>:</h4>
+        <h4 class="mb-0">Upload Path:</h4>
         <p><code [innerHTML]="fullS3Path"></code></p>
 
         <mat-progress-bar *ngIf="this.uploadStarted && !this.uploadCompleted" mode="indeterminate"></mat-progress-bar>
 
         <ng-container *ngIf="this.uploadCompleted">
             <mat-divider [inset]="true"></mat-divider>
-            <h4 class="mb-0"><span i18n>Upload Result</span>:</h4>
+            <h4 class="mb-0">Upload result:</h4>
             <mat-list>
                 <mat-list-item *ngIf="this.questionnairesPath" class="step-valid">
-                    <span><span i18n>Step #1 - Questionnaires</span>: <span i18n>configuration uploaded at path:</span> <code>{{this.questionnairesPath}}</code></span></mat-list-item>
+                    <span>Step #1 - Questionnaire configuration uploaded at path: <code>{{this.questionnairesPath}}</code></span></mat-list-item>
                 <mat-list-item *ngIf="this.dimensionsPath" class="step-valid">
-                    <span><span i18n>Step #2 - Dimensions</span>: <span i18n>configuration uploaded at path:</span> <code>{{this.dimensionsPath}}</code></span></mat-list-item>
+                    <span>Step #2 - Dimensions configuration uploaded at path: <code>{{this.dimensionsPath}}</code></span></mat-list-item>
                 <mat-list-item *ngIf="this.taskInstructionsPath" class="step-valid">
-                    <span><span i18n>Step #3 - General Instructions</span>: <span i18n>configuration uploaded at path:</span> <code>{{this.taskInstructionsPath}}</code></span></mat-list-item>
+                    <span>Step #3 - General instructions configuration uploaded at path: <code>{{this.taskInstructionsPath}}</code></span></mat-list-item>
                 <mat-list-item *ngIf="this.dimensionsInstructionsPath" class="step-valid">
-                    <span><span i18n>Step #4 - Evaluation Instructions</span>: <span i18n>configuration uploaded at path:</span> <code>{{this.dimensionsInstructionsPath}}</code></span>
+                    <span>Step #4 - Evaluation instructions configuration uploaded at path: <code>{{this.dimensionsInstructionsPath}}</code></span>
                 </mat-list-item>
                 <mat-list-item *ngIf="this.searchEngineSettingsPath" class="step-valid">
-                    <span><span i18n>Step #5 - Search Engine</span>: <span i18n>configuration uploaded at path:</span> <code>{{this.searchEngineSettingsPath}}</code></span></mat-list-item>
+                    <span>Step #5 - Search engine configuration uploaded at path: <code>{{this.searchEngineSettingsPath}}</code></span></mat-list-item>
                 <mat-list-item *ngIf="this.taskSettingsPath" class="step-valid">
-                    <span><span i18n>Step #6 - Task Settings</span>: <span i18n>configuration uploaded at path:</span> <code>{{this.taskSettingsPath}}</code></span></mat-list-item>
+                    <span>Step #6 - Task settings configuration uploaded at path: <code>{{this.taskSettingsPath}}</code></span></mat-list-item>
                 <mat-list-item *ngIf="this.workerChecksPath" class="step-valid">
-                    <span><span i18n>Step #7 - Worker Checks</span>: <span i18n>configuration uploaded at path:</span> <code>{{this.workerChecksPath}}</code></span></mat-list-item>
+                    <span>Step #7 - Worker checks configuration uploaded at path: <code>{{this.workerChecksPath}}</code></span></mat-list-item>
             </mat-list>
         </ng-container>
 
@@ -101,14 +101,14 @@
     <mat-divider></mat-divider>
 
     <mat-card-actions>
-        <button mat-flat-button color="primary" matStepperPrevious><span i18n>Back</span></button>
+        <button mat-flat-button color="primary" matStepperPrevious>Back</button>
         <button mat-flat-button color="accent" *ngIf="!this.uploadCompleted" [disabled]="
                 !(this.questionnaireStep.formStep.valid && this.dimensionsStep.formStep.valid && this.generalInstructionsStep.formStep.valid && this.evaluationInstructionsStep.formStep.valid &&
                 this.searchEngineStep.formStep.valid && (this.taskSettingsStep.formStep.valid && this.taskSettingsStep.hitsDetected>0) && this.workerChecksStep.formStep.valid)" (click)="uploadConfiguration()">
-                <span i18n>Upload</span>
+            Upload
         </button>
         <button mat-flat-button color="warn" *ngIf="this.uploadCompleted" (click)="resetConfiguration()">
-            <span i18n>Start Over</span>
+            Start Over
         </button>
     </mat-card-actions>
 

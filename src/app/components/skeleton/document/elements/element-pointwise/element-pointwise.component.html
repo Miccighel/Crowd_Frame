@@ -5,7 +5,7 @@
                 <strong *ngIf="attribute.name_pretty">{{attribute.name_pretty}}: </strong>
                 <strong *ngIf="!attribute.name_pretty">{{attribute.name.split('_').join(' ') | titlecase}}: </strong>
                 <ng-container *ngIf="this.task.countdownsExpired[documentIndex]">
-                    <span *ngIf="this.task.settings.countdown_behavior == 'hide_attributes'"><span i18n>'---------- text_hidden ----------'</span></span>
+                    <span *ngIf="this.task.settings.countdown_behavior == 'hide_attributes'">'---------- text_hidden ----------'</span>
                 </ng-container>
                 <span *ngIf="!this.task.countdownsExpired[documentIndex]">{{this.task.documents[this.documentIndex][attribute.name]}}</span>
             </p>
