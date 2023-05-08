@@ -33,24 +33,20 @@
     border-radius: 5px;
     max-height: 100%;
     overflow: auto;
-    width: 45%;
+    width: 48%;
     height: 100%;
     background-color: var(--light);
-    margin-left: 5%;
-    box-shadow: 0 5px 40px rgba(0, 0, 0, 0.16);
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .chat-box {
     position: relative;
-    left: 0%;
     border-radius: 5px;
     height: 100%;
-    width: 45%;
-    margin-right: 3%;
-    margin-bottom: 0%;
+    width: 48%;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 5px 40px rgba(0, 0, 0, 0.16);
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .chat-box-hidden {
@@ -59,6 +55,8 @@
 
 .chat-box-header {
     display: flex;
+    border-top-right-radius: 5px;
+    border-top-left-radius: 5px;
     margin: 0;
     align-items: center;
     padding: 2px;
@@ -136,7 +134,7 @@ button.instruction-button .mat-icon {
 .chat-box-footer {
     background-color: var(--background-light);
     height: auto;
-    margin-top: -1px;
+
     border-bottom-left-radius: 5px;
     border-bottom-right-radius: 5px;
 }
@@ -417,19 +415,14 @@ button.btn-user-answer {
     border: solid 2px var(--secondary);
 }
 
-.button-prompt {
-    margin-top: -1px;
-}
-
 /* |--- CHATBOT SECTIONS ---| */
 
 .chatbot-section {
-    max-width: 90%;
-    width: 90%;
-    margin-left: 2%;
-    padding: 5px;
+    padding: 0.25rem;
+    width: 100%;
     height: 100%;
     display: flex;
+    justify-content: space-between;
 }
 
 /* INPUT SECTIONS */

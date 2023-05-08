@@ -26,8 +26,8 @@
 
         <div class="row stepper-container">
             <div
-                *ngFor="let item of task.documents; let i = index"
-                class="col-1 ps-0"
+                *ngFor="let item of elementsAccesses; let i = index"
+                class="col justify-content-center d-flex"
             >
                 <div class="dot to-complete" [id]="i">{{ i + 1 }}</div>
             </div>
@@ -120,11 +120,11 @@
 
         <div #inputBox class="chat-box-footer">
             <div
-                class="row container d-flex m-1"
+                class="d-flex m-1"
                 *ngIf="inputComponentToShow == EnInputType.Button"
             >
                 <chat-input-button
-                    class="col-6 text-center"
+                    class="w-50 px-1"
                     *ngFor="let item of categoricalInfo"
                     [value]="item.value"
                     [text]="item.label"
@@ -134,17 +134,17 @@
 
             <div
                 *ngIf="buttonsToShow == enButtonType.YesNo"
-                class="row container d-flex justify-content-end pe-2"
+                class="d-flex justify-content-end"
             >
                 <chat-input-button
-                    class="col-6 text-center"
+                    class="w-50 px-1"
                     value="yes"
                     text="Yes"
                     (send)="sendMessage($event)"
                 ></chat-input-button>
 
                 <chat-input-button
-                    class="col-6 text-center"
+                    class="w-50 px-1"
                     value="No"
                     text="No"
                     (send)="sendMessage($event)"

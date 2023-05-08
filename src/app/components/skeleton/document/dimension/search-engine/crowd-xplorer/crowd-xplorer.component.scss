@@ -14,23 +14,23 @@ mat-card.xplorer-body {
 /* |--- USER QUERY ---| */
 
 .search-bar {
-  display: flex;
+    display: flex;
 }
 
 #search-textarea {
-  width: 75%;
+    width: 75%;
 
-  .mat-form-field {
-    border-radius: 0 !important;
-  }
+    .mat-form-field {
+        border-radius: 0 !important;
+    }
 }
 
 .search-button {
-  width: 25%;
-  height: 50px;
-  margin-top: 5px;
-  margin-left: 5px;
-  border-radius: 4px;
+    width: 25%;
+    height: 50px;
+    margin-top: 5px;
+    margin-left: 5px;
+    border-radius: 4px;
 }
 
 /* |--- RESULT TABLE --| */
@@ -57,4 +57,8 @@ mat-cell {
 
 .searching {
     font-size: small;
+}
+.title {
+    font-size: larger;
+    font-weight: 500;
 }
