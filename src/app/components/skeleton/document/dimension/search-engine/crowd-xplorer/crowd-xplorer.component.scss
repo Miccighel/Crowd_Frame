@@ -13,25 +13,25 @@ mat-card.xplorer-body {
 
 /* |--- USER QUERY ---| */
 
-// .search-bar {
-//   display: flex;
-// }
+.search-bar {
+  display: flex;
+}
 
-// #search-textarea {
-//   width: 75%;
+#search-textarea {
+  width: 75%;
 
-//   .mat-form-field {
-//     border-radius: 0 !important;
-//   }
-// }
+  .mat-form-field {
+    border-radius: 0 !important;
+  }
+}
 
-// .search-button {
-//   width: 25%;
-//   height: 50px;
-//   margin-top: 5px;
-//   margin-left: 5px;
-//   border-radius: 4px;
-// }
+.search-button {
+  width: 25%;
+  height: 50px;
+  margin-top: 5px;
+  margin-left: 5px;
+  border-radius: 4px;
+}
 
 /* |--- RESULT TABLE --| */
 
