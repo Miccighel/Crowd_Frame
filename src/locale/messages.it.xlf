@@ -1865,6 +1865,10 @@
                     <context context-type="sourcefile">src/app/components/skeleton/document/dimension/search-engine/crowd-xplorer/crowd-xplorer.component.html</context>
                     <context context-type="linenumber">4,5</context>
                 </context-group>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/app/components/skeleton/document/dimension/search-engine/crowd-xplorer/crowd-xplorer.component.html</context>
+                    <context context-type="linenumber">12</context>
+                </context-group>
             </trans-unit>
             <trans-unit id="24df50e434605e6940401017f3e50cf4b6cb8491" datatype="html">
                 <source>results found.</source>
@@ -1872,6 +1876,10 @@
                 <context-group purpose="location">
                     <context context-type="sourcefile">src/app/components/skeleton/document/dimension/search-engine/crowd-xplorer/crowd-xplorer.component.html</context>
                     <context context-type="linenumber">15,16</context>
+                </context-group>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/app/components/skeleton/document/dimension/search-engine/crowd-xplorer/crowd-xplorer.component.html</context>
+                    <context context-type="linenumber">35</context>
                 </context-group>
             </trans-unit>
             <trans-unit id="5f6d7b2ca44ed114925fef64c4de75be5da8ca3b" datatype="html">
