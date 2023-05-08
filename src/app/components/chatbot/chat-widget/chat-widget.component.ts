@@ -39,7 +39,7 @@ import { ChatInstructionModalComponent } from "../chat-modals/chat-instruction-m
 @Component({
     selector: "chat-widget",
     templateUrl: "./chat-widget.component.html",
-    styleUrls: ["./chat-widget.component.css"],
+    styleUrls: ["./chat-widget.component.scss"],
     animations: [fadeIn],
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,

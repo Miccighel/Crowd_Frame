@@ -1,6 +1,5 @@
 @import "~@angular/material/prebuilt-themes/indigo-pink.css";
 
-
 html, body {
   height: 100%;
 }
@@ -232,23 +231,4 @@ mat-card-actions {
 
 .mb-16px {
   margin-bottom: 16px !important;
-}
-
-/* Importing Bootstrap SCSS file. */
-@import "bootstrap/scss/bootstrap";
-* {
-  --primary: #084887;
-  --secondary: #9fc8d3;
-  --tertiary: #b7deeb;
-  --light: #ffffff;
-  --dark: #000000;
-  --green: #1ed447;
-  --red: #dc3545;
-  --grey: #d9d9d9;
-  --transparentLight: #ffffff9e;
-  --background-light: #ebebeb;
-}
-
-.modal-dialog.modal-lg {
-  min-width: 80vw;
 }
