@@ -1,27 +1,27 @@
 <form [formGroup]="this.formStep">
     <mat-card [class.mat-elevation-z3]="true">
         <mat-card-header>
-            <mat-card-title>Step #7: Worker Checks</mat-card-title>
-            <mat-card-subtitle>Seventh, define all Worker Checks here</mat-card-subtitle>
+            <mat-card-title><span i18n>Step #7: Worker Checks</span></mat-card-title>
+            <mat-card-subtitle><span i18n>Seventh, define all Worker Checks here</span></mat-card-subtitle>
         </mat-card-header>
         <mat-divider></mat-divider>
         <mat-card-content>
 
             <mat-slide-toggle color="primary" class="mb-16px" formControlName="block">
-                Enable Worker Blacklist
+                <span i18n>Enable Worker Blacklist</span>
             </mat-slide-toggle>
 
             <mat-divider [inset]="true"></mat-divider>
 
-            <p>Select the IDs to consider by pressing <i>SPACE</i></p>
+            <p><span i18n>Select the IDs to consider by pressing</span> <i><span i18n>SPACE</span></i></p>
 
             <!-- Blacklist -->
 
             <mat-form-field class="width-100" appearance="fill">
-                <mat-label>Worker IDs Blacklisted</mat-label>
+                <mat-label><span i18n>Worker IDs Blacklisted</span></mat-label>
                 <mat-chip-list #blacklistChips formControlName="blacklist" multiple>
                     <mat-chip *ngFor="let workerId of this.blacklistedWorkerId" [selectable]="true" [removable]="true" (removed)="removeBlacklistedId(workerId)">{{workerId}}
-                        <mat-icon matChipRemove>cancel</mat-icon>
+                        <mat-icon matChipRemove><span i18n>cancel</span></mat-icon>
                     </mat-chip>
                     <input placeholder="New worker ID ..." [matChipInputFor]="blacklistChips" [matChipInputSeparatorKeyCodes]="separatorKeysCodes" (matChipInputTokenEnd)="addBlacklistedId($event)">
                 </mat-chip-list>
@@ -31,10 +31,10 @@
 
             <!-- Whitelist -->
             <mat-form-field class="width-100" appearance="fill">
-                <mat-label>Worker IDs Whitelisted</mat-label>
+                <mat-label><span i18n>Worker IDs Whitelisted</span></mat-label>
                 <mat-chip-list #whitelistChips formControlName="whitelist" multiple>
                     <mat-chip *ngFor="let workerId of this.whitelistedWorkerId" [selectable]="true" [removable]="true" (removed)="removeWhitelistedId(workerId)">{{workerId}}
-                        <mat-icon matChipRemove>cancel</mat-icon>
+                        <mat-icon matChipRemove><span i18n>cancel</span></mat-icon>
                     </mat-chip>
                     <input placeholder="New worker ID ..." [matChipInputFor]="whitelistChips" [matChipInputSeparatorKeyCodes]="separatorKeysCodes" (matChipInputTokenEnd)="addBlacklistedId($event)">
                 </mat-chip-list>
@@ -42,7 +42,7 @@
 
             <mat-divider [inset]="true"></mat-divider>
 
-            <h3 class="lighter">Batches</h3>
+            <h3 class="lighter"><span i18n>Batches</span></h3>
 
             <div formArrayName="batches" class="mt-16px">
                 <mat-progress-bar *ngIf="this.batches().controls.length<=0 " mode="indeterminate"></mat-progress-bar>
@@ -73,8 +73,8 @@
         <mat-divider></mat-divider>
 
         <mat-card-actions>
-            <button mat-flat-button color="primary" matStepperPrevious>Back</button>
-            <button mat-flat-button color="primary" matStepperNext>Next</button>
+            <button mat-flat-button color="primary" matStepperPrevious><span i18n>Back</span></button>
+            <button mat-flat-button color="primary" matStepperNext><span i18n>Next</span></button>
         </mat-card-actions>
 
     </mat-card>

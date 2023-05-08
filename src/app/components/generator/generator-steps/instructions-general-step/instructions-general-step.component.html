@@ -1,8 +1,8 @@
 <form [formGroup]="formStep">
     <mat-card [class.mat-elevation-z3]="true">
         <mat-card-header>
-            <mat-card-title>Step #3: General Instructions</mat-card-title>
-            <mat-card-subtitle>Third, define all the general instructions here</mat-card-subtitle>
+            <mat-card-title><span i18n>Step #3: General Instructions</span></mat-card-title>
+            <mat-card-subtitle><span i18n>Third, define all the general instructions here</span></mat-card-subtitle>
         </mat-card-header>
         <mat-divider></mat-divider>
         <mat-card-content>
@@ -13,7 +13,7 @@
 
                     <mat-card [class.mat-elevation-z3]="true">
                         <mat-card-header>
-                            <mat-card-title class="lighter">Instruction {{instructionIndex + 1}}</mat-card-title>
+                            <mat-card-title class="lighter"><span i18n>Instruction</span> {{instructionIndex + 1}}</mat-card-title>
                         </mat-card-header>
                         <mat-divider></mat-divider>
                         <mat-card-content>
@@ -23,7 +23,7 @@
                                 <tr>
                                     <td class="p-0">
                                         <mat-form-field matLine class="width-100" appearance="fill">
-                                            <mat-label>Caption</mat-label>
+                                            <mat-label><span i18n>Caption</span></mat-label>
                                             <input matInput type="text" formControlName="caption">
                                         </mat-form-field>
                                     </td>
@@ -43,7 +43,7 @@
 
                         <mat-card-actions class="right">
                             <button mat-flat-button color="primary" (click)="removeInstruction(instructionIndex)">
-                                Remove Instruction
+                                <span i18n>Remove Instruction</span>
                             </button>
                         </mat-card-actions>
 
@@ -54,7 +54,7 @@
             </div>
 
             <button mat-flat-button color="primary" (click)="addInstruction()">
-                Add Instruction
+                <span i18n>Add Instruction</span>
             </button>
 
         </mat-card-content>
@@ -62,8 +62,8 @@
         <mat-divider></mat-divider>
 
         <mat-card-actions>
-            <button mat-flat-button color="primary" matStepperPrevious>Back</button>
-            <button mat-flat-button color="primary" matStepperNext>Next</button>
+            <button mat-flat-button color="primary" matStepperPrevious><span i18n>Back</span></button>
+            <button mat-flat-button color="primary" matStepperNext><span i18n>Next</span></button>
         </mat-card-actions>
 
     </mat-card>

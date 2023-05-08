@@ -95,7 +95,7 @@
                                     </ng-container>
                                     <ng-container *ngIf="dimension.scale.type=='magnitude_estimation'">
                                         <mat-form-field appearance="fill">
-                                            <mat-label>Value</mat-label>
+                                            <mat-label><span i18n>Value</span></mat-label>
                                             <input *ngIf="dimension.scale.lower_bound" matInput type="number" placeholder="" formControlName="{{(dimension.name).concat('_value')}}" min="{{dimension.scale.min}}"
                                                    (change)="this.task.storeDimensionValue($event, documentIndex, dimension.index)"
                                                    [disabled]="this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior=='disable_forms'" class="magnitude_estimation">
@@ -103,11 +103,11 @@
                                                    (change)="this.task.storeDimensionValue($event, documentIndex, dimension.index)" class="magnitude_estimation"
                                                    [disabled]="this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior=='disable_forms'">
                                             <mat-error *ngIf="this.utilsService.hasError(assessmentForms[documentIndex], (dimension.name).concat('_value'), 'required')">
-                                                This field is required
+                                                <span i18n>This field is required</span>
                                             </mat-error>
                                             <mat-error *ngIf="this.utilsService.hasError(assessmentForms[documentIndex], (dimension.name).concat('_value'), 'min')">
-                                                <span *ngIf="dimension.scale.lower_bound">Min value allowed: {{dimension.scale.min}}</span>
-                                                <span *ngIf="!dimension.scale.lower_bound">Min value allowed: {{dimension.scale.min + 1}}</span>
+                                                <span *ngIf="dimension.scale.lower_bound"><span i18n>Min value allowed: </span>{{dimension.scale.min}}</span>
+                                                <span *ngIf="!dimension.scale.lower_bound"><span i18n>Min value allowed: </span>{{dimension.scale.min + 1}}</span>
                                             </mat-error>
 
                                         </mat-form-field>
@@ -147,13 +147,13 @@
                                         <mat-label>{{dimension.justification.text}}</mat-label>
                                         <textarea matInput formControlName="{{dimension.name}}_justification" rows="3"></textarea>
                                         <mat-error *ngIf="this.utilsService.hasError(assessmentForms[documentIndex],(dimension.name).concat('_justification'), 'required')">
-                                            This field is required
+                                            <span i18n>This field is required</span>
                                         </mat-error>
                                         <mat-error *ngIf="this.utilsService.hasError(assessmentForms[documentIndex],(dimension.name).concat('_justification'), 'longer')">
-                                            This justification must have at least {{dimension.justification.min_words}} words.
+                                            <span i18n>This justification must have at least</span> {{dimension.justification.min_words}} <span i18n>words</span>.
                                         </mat-error>
                                         <mat-error *ngIf="this.utilsService.hasError(assessmentForms[documentIndex],(dimension.name).concat('_justification'), 'invalid')">
-                                            You cannot use the selected search engine url as part of the justification.
+                                            <span i18n>You cannot use the selected search engine url as part of the justification.</span>
                                         </mat-error>
                                     </mat-form-field>
                                 </div>
@@ -225,13 +225,13 @@
                                         <mat-label>{{dimension.justification.text}}</mat-label>
                                         <textarea matInput formControlName="{{dimension.name}}_justification" rows="5"></textarea>
                                         <mat-error *ngIf="this.utilsService.hasError(assessmentForms[documentIndex],(dimension.name).concat('_justification'), 'required')">
-                                            This field is required
+                                            <span i18n>This field is required</span>
                                         </mat-error>
                                         <mat-error *ngIf="this.utilsService.hasError(assessmentForms[documentIndex],(dimension.name).concat('_justification'), 'longer')">
-                                            This justification must have at least {{dimension.justification.min_words}} words.
+                                            <span i18n>This justification must have at least</span> {{dimension.justification.min_words}} <span i18n>words</span>.
                                         </mat-error>
                                         <mat-error *ngIf="this.utilsService.hasError(assessmentForms[documentIndex],(dimension.name).concat('_justification'), 'invalid')">
-                                            You cannot use the selected search engine url as part of the justification.
+                                            <span i18n>You cannot use the selected search engine url as part of the justification.</span>
                                         </mat-error>
                                     </mat-form-field>
                                 </div>
@@ -281,7 +281,7 @@
 
                                     <ng-container *ngIf="dimension.scale.type=='categorical'">
                                         <div class="dimension-split-inside dimension-box" *ngFor="let pairwiseElement of this.task.documents[documentIndex]['pairwise']; let k=index">
-                                            <p class="spanDocument"> Answer for Element {{k}}</p>
+                                            <p class="spanDocument"> <span i18n>Answer for Element</span> {{k}}</p>
                                             <mat-radio-group style="margin-left: 10px;" aria-labelledby="radio-button-label" class="radio-button-group" formControlName="{{(dimension.name).concat('_value_element_').concat(k)}}">
                                                 <mat-radio-button *ngFor="let mapping of dimension.scale.mapping" class="radio-button" value="{{mapping.value}}"
                                                                   (change)="this.task.storeDimensionValue($event, documentIndex, dimension.index); updateDimensionValueSelection(documentIndex,dimension.index,k)"
@@ -297,8 +297,8 @@
 
                                     <ng-container *ngIf="dimension.scale.type=='interval'">
                                         <div class="dimension-split-inside dimension-box" *ngFor="let pairwiseElement of this.task.documents[documentIndex]['pairwise']; let k=index">
-                                            <p class="spanDocument"> Answer for Element {{k}}</p>
-                                            <label style="margin-left:10px;"> Selected value: {{assessmentForms[documentIndex].controls[(dimension.name).concat('_value_element_').concat(k)].value}}</label>
+                                            <p class="spanDocument"><span i18n>Answer for Element</span> {{k}}</p>
+                                            <label style="margin-left:10px;"><span i18n> Selected value: </span>{{assessmentForms[documentIndex].controls[(dimension.name).concat('_value_element_').concat(k)].value}}</label>
                                             <mat-slider
                                                     min="{{dimension.scale.min}}" max="{{dimension.scale.max}}"
                                                     step="{{dimension.scale.step}}" thumbLabel tickInterval="{{dimension.scale.step}}"
@@ -311,9 +311,9 @@
 
                                     <ng-container *ngIf="dimension.scale.type=='magnitude_estimation'">
                                         <div class="dimension-split-inside dimension-box" *ngFor="let pairwiseElement of this.task.documents[documentIndex]['pairwise']; let k=index">
-                                            <p class="spanDocument"> Answer for Element {{k}}</p>
+                                            <p class="spanDocument"><span i18n>Answer for Element</span> {{k}}</p>
                                             <mat-form-field appearance="fill" style="margin-left: 10px;">
-                                                <mat-label>Value</mat-label>
+                                                <mat-label><span i18n>Value</span></mat-label>
                                                 <input *ngIf="dimension.scale.lower_bound" matInput type="number" placeholder="" formControlName="{{(dimension.name).concat('_value_element_').concat(k)}}"
                                                        min="{{dimension.scale.min}}"
                                                        (change)="this.task.storeDimensionValue($event, documentIndex, dimension.index) ; updateDimensionValueSelection(documentIndex,dimension.index,k)"
@@ -323,11 +323,11 @@
                                                        (change)="this.task.storeDimensionValue($event, documentIndex, dimension.index); updateDimensionValueSelection(documentIndex,dimension.index,k)" class="magnitude_estimation"
                                                        [disabled]="this.task.countdownsExpired[documentIndex]">
                                                 <mat-error *ngIf="this.utilsService.hasError(assessmentForms[documentIndex], (dimension.name).concat('_value_element_').concat(k), 'required')">
-                                                    This field is required
+                                                    <span i18n>This field is required</span>
                                                 </mat-error>
                                                 <mat-error *ngIf="this.utilsService.hasError(assessmentForms[documentIndex], (dimension.name).concat('_value_element_').concat(k), 'min')">
-                                                    <span *ngIf="dimension.scale.lower_bound">Min value allowed: {{dimension.scale.min}}</span>
-                                                    <span *ngIf="!dimension.scale.lower_bound">Min value allowed: {{dimension.scale.min + 1}}</span>
+                                                    <span *ngIf="dimension.scale.lower_bound"><span i18n>Min value allowed</span>: {{dimension.scale.min}}</span>
+                                                    <span *ngIf="!dimension.scale.lower_bound"><span i18n>Min value allowed</span>: {{dimension.scale.min + 1}}</span>
                                                 </mat-error>
                                             </mat-form-field>
                                         </div>
@@ -337,13 +337,13 @@
 
                                 <ng-container *ngIf="dimension.style.orientation=='horizontal'">
                                     <ng-container *ngIf="dimension.scale.type=='categorical'">
-                                        <p>TO BE IMPLEMENTED</p>
+                                        <p i18n>TO BE IMPLEMENTED</p>
                                     </ng-container>
                                     <ng-container *ngIf="dimension.scale.type=='interval'">
-                                        <p>TO BE IMPLEMENTED</p>
+                                        <p i18n>TO BE IMPLEMENTED</p>
                                     </ng-container>
                                     <ng-container *ngIf="dimension.scale.type=='magnitude_estimation'">
-                                        <p>TO BE IMPLEMENTED</p>
+                                        <p i18n>TO BE IMPLEMENTED</p>
                                     </ng-container>
                                 </ng-container>
 
@@ -352,19 +352,19 @@
 
                         <div *ngIf="dimension.justification" class="dimension-content-split">
                             <div *ngFor="let pairwiseElement of this.task.documents[documentIndex]['pairwise']; let k=index" class="dimension-box">
-                                <p class="spanDocument"> Justification for Element {{k}}</p>
+                                <p class="spanDocument"> <span i18n>Justification for Element</span> {{k}}</p>
                                 <div class="dimension-text-field" style="margin-left: 10px;">
                                     <mat-form-field appearance="fill">
                                         <mat-label>{{dimension.justification.text}}</mat-label>
                                         <textarea matInput formControlName="{{dimension.name}}_justification_element_{{k}}" rows="3"></textarea>
                                         <mat-error *ngIf="this.utilsService.hasError(assessmentForms[documentIndex],(dimension.name).concat('_justification_element_').concat(k), 'required')">
-                                            This field is required
+                                            <span i18n>This field is required</span>
                                         </mat-error>
                                         <mat-error *ngIf="this.utilsService.hasError(assessmentForms[documentIndex],(dimension.name).concat('_justification_element_').concat(k), 'longer')">
-                                            This justification must have at least {{dimension.justification.min_words}} words.
+                                            <span i18n>This justification must have at least</span> {{dimension.justification.min_words}} <span i18n>words</span>.
                                         </mat-error>
                                         <mat-error *ngIf="this.utilsService.hasError(assessmentForms[documentIndex],(dimension.name).concat('_justification_element_').concat(k), 'invalid')">
-                                            You cannot use the selected search engine url as part of the justification.
+                                            <span i18n>You cannot use the selected search engine url as part of the justification.</span>
                                         </mat-error>
                                     </mat-form-field>
                                 </div>

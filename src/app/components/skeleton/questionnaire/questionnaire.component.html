@@ -8,7 +8,7 @@
                     {{questionnaire.name_pretty}}
                 </span>
                 <span *ngIf="!questionnaire.name_pretty">
-                    Questionnaire {{this.questionnaire.index + 1}}
+                    <span i18n>Questionnaire</span> {{this.questionnaire.index + 1}}
                 </span>
             </mat-card-title>
 
@@ -58,7 +58,7 @@
 
                         <div *ngIf="question.type=='dropdown'" class="question-box">
                             <mat-form-field appearance="fill" class="questionnaire-value">
-                                <mat-label>Value</mat-label>
+                                <mat-label><span i18n>Value</span></mat-label>
                                 <mat-select formControlName="{{question.nameFull}}_answer">
                                     <mat-option *ngFor="let answer of question.answers" [value]="answer">
                                         {{answer}}
@@ -72,7 +72,7 @@
 
                         <div *ngIf="question.type=='text'|| question.type=='email'" class="question-box">
                             <mat-form-field appearance="fill" class="questionnaire-value width-100">
-                                <mat-label>Answer</mat-label>
+                                <mat-label><span i18n>Answer</span></mat-label>
                                 <textarea matInput placeholder="Write your answer here" formControlName="{{question.nameFull}}_answer" rows="2"></textarea>
                                 <mat-error>
                                     <app-error-message [formField]="this.questionnaireForm.get(question.nameFull.concat('_answer'))"></app-error-message>
@@ -82,7 +82,7 @@
 
                         <div *ngIf="question.free_text" class="{{question.required ? 'question-free-text-tall' : 'question-free-text'}}">
                             <mat-form-field appearance="fill" class="questionnaire-value width-100">
-                                <mat-label>Other</mat-label>
+                                <mat-label><span i18n>Other</span></mat-label>
                                 <textarea matInput placeholder="Write any additional detail here" formControlName="{{question.nameFull}}_free_text" rows="2"></textarea>
                                 <mat-error>
                                     <app-error-message [formField]="this.questionnaireForm.get(question.nameFull.concat('_free_text'))"></app-error-message>
@@ -145,7 +145,7 @@
                 <div *ngFor="let question of questionnaire.questions; let j=index" class="question-box">
                     <p class="question-text">{{question.text}}</p>
                     <mat-form-field appearance="fill" class="questionnaire-value">
-                        <mat-label>Answer</mat-label>
+                        <mat-label><span i18n>Answer</span></mat-label>
                         <input matInput type="number" placeholder="0" min="0" max="100" formControlName="{{question.name}}_answer">
                         <mat-error>
                             <app-error-message [formField]="this.questionnaireForm.get(question.nameFull.concat('_answer'))"></app-error-message>
@@ -184,7 +184,7 @@
                             *ngIf="this.questionnaire.index>0 && this.questionnaire.allow_back"
                             [disabled]="this.sectionService.taskCompleted"
                             (click)="handleQuestionnaireCompletion('Back')">
-                        Back
+                        <span i18n>Back</span>
                     </button>
                     <button mat-flat-button color="primary" matStepperNext
                             *ngIf="
@@ -193,7 +193,7 @@
                             (this.questionnaire.index>=this.task.questionnaireAmountStart-1 && this.questionnaire.index < this.task.questionnaireAmount-1 && this.task.questionnaireAmountEnd>0)"
                             [disabled]="!questionnaireForm.valid || this.sectionService.taskCompleted"
                             (click)="handleQuestionnaireCompletion('Next')">
-                        Next
+                        <span i18n>Next</span>
                     </button>
                     <button mat-stroked-button color="accent" matStepperNext
                             *ngIf="
@@ -201,7 +201,7 @@
                             (this.questionnaire.index>=this.task.questionnaireAmount-1 && this.task.questionnaireAmountEnd>0)"
                             [disabled]="!questionnaireForm.valid || this.sectionService.taskCompleted"
                             (click)="handleQuestionnaireCompletion('Finish')">
-                        Finish
+                        <span i18n>Finish</span>
                     </button>
                 </p>
             </mat-card-actions>

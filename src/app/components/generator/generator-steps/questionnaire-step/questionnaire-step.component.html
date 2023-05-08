@@ -3,8 +3,8 @@
     <!-- Header -->
     <mat-card [class.mat-elevation-z3]="true">
         <mat-card-header>
-            <mat-card-title>Step #1: Questionnaires</mat-card-title>
-            <mat-card-subtitle>First, define all Questionnaires here</mat-card-subtitle>
+            <mat-card-title><span i18n>Step #1: Questionnaires</span></mat-card-title>
+            <mat-card-subtitle><span i18n>First, define all Questionnaires here</span></mat-card-subtitle>
         </mat-card-header>
 
         <mat-divider [inset]="true"></mat-divider>
@@ -17,7 +17,7 @@
 
                     <mat-card [class.mat-elevation-z3]="true">
                         <mat-card-header>
-                            <mat-card-title class="lighter">Questionnaire {{questionnaireIndex + 1}}</mat-card-title>
+                            <mat-card-title class="lighter"><span i18n>Questionnaire</span> {{questionnaireIndex + 1}}</mat-card-title>
                         </mat-card-header>
                         <mat-divider></mat-divider>
                         <mat-card-content>
@@ -27,7 +27,7 @@
                                 <tr>
                                     <td class="p-0">
                                         <mat-form-field matLine class="width-100" appearance="fill">
-                                            <mat-label>Type</mat-label>
+                                            <mat-label><span i18n>Type</span></mat-label>
                                             <mat-select matInput formControlName="type" (selectionChange)="updateQuestionnaire(questionnaireIndex)">
                                                 <mat-option *ngFor="let questionnaireType of questionnaireTypes" [value]="questionnaireType.value">
                                                     {{questionnaireType.viewValue}}
@@ -48,7 +48,7 @@
                                     <tr>
                                         <td class="p-0">
                                             <mat-form-field class="width-100" appearance="fill">
-                                                <mat-label>Description</mat-label>
+                                                <mat-label><span i18n>Description</span></mat-label>
                                                 <textarea matInput formControlName="description"></textarea>
                                             </mat-form-field>
                                         </td>
@@ -62,7 +62,7 @@
                                 <tr>
                                     <td class="p-0">
                                         <mat-form-field class="width-100" appearance="fill">
-                                            <mat-label>Position</mat-label>
+                                            <mat-label><span i18n>Position</span></mat-label>
                                             <mat-select matInput formControlName="position">
                                                 <mat-option *ngFor="let questionnairePosition of questionnairePosition" [value]="questionnairePosition.value">
                                                     {{questionnairePosition.viewValue}}
@@ -80,7 +80,7 @@
 
                             <!-- Allow Back -->
                             <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="allow_back">
-                                Allow Back
+                                <span i18n>Allow Back</span>
                             </mat-slide-toggle>
 
                             <mat-divider [inset]="true"></mat-divider>
@@ -89,14 +89,14 @@
                             <div *ngIf="questionnaire.get('type').value != ''" formArrayName="questions">
                                 <mat-divider [inset]="true"></mat-divider>
                                 <button mat-flat-button color="primary" class="mt-16px mb-16px indent" (click)="addQuestion(questionnaireIndex)">
-                                    Add Question
+                                    <span i18n>Add Question</span>
                                 </button>
                                 <div *ngFor="let question of questions(questionnaireIndex).controls; let questionIndex = index" [formGroupName]="questionIndex">
                                     <table class="width-100">
                                         <tr>
                                             <td class="p-0 pr-16px">
                                                 <mat-form-field matLine class="width-100" appearance="fill">
-                                                    <mat-label>Name</mat-label>
+                                                    <mat-label><span i18n>Name</span></mat-label>
                                                     <input matInput type="text" formControlName="name">
                                                     <mat-error>
                                                         <app-error-message [formField]="question.get('name')"></app-error-message>
@@ -105,7 +105,7 @@
                                             </td>
                                             <td class="p-0 pr-16px">
                                                 <mat-form-field matLine class="width-100" appearance="fill">
-                                                    <mat-label>Text</mat-label>
+                                                    <mat-label><span i18n>Text</span></mat-label>
                                                     <input matInput type="text" formControlName="text">
                                                     <mat-error>
                                                         <app-error-message [formField]="question.get('text')"></app-error-message>
@@ -116,14 +116,14 @@
                                                 <button mat-flat-button color="primary" class="mb-16px"
                                                         [disabled]="questionIndex == '0' && questions(questionnaireIndex).length == 1"
                                                         (click)="removeQuestion(questionnaireIndex, questionIndex)">
-                                                    Remove Question
+                                                    <span i18n>Remove Question</span>
                                                 </button>
                                             </td>
                                         </tr>
                                     </table>
                                     <div *ngIf="questionnaire.get('type').value == 'standard'" class="mb-16px" formArrayName="answers">
                                         <button mat-flat-button color="primary" class="mb-16px double-indent" (click)="addAnswer(questionnaireIndex, questionIndex)">
-                                            Add Answer
+                                            <span i18n>Add Answer</span>
                                         </button>
                                         <div *ngFor="let answer of answers(questionnaireIndex, questionIndex).controls; let answerIndex = index"
                                              [formGroupName]="answerIndex">
@@ -131,7 +131,7 @@
                                                 <tr>
                                                     <td class="p-0 pr-16px">
                                                         <mat-form-field matLine class="width-100" appearance="fill">
-                                                            <mat-label>Answer</mat-label>
+                                                            <mat-label><span i18n>Answer</span></mat-label>
                                                             <input matInput type="text" formControlName="answer">
                                                             <mat-error>
                                                                 <app-error-message [formField]="answer.get('answer')"></app-error-message>
@@ -142,7 +142,7 @@
                                                         <button mat-flat-button color="primary" class="mb-16px"
                                                                 [disabled]="answerIndex == '0' && answers(questionnaireIndex, questionIndex).length == 1"
                                                                 (click)="removeAnswer(questionnaireIndex, questionIndex, answerIndex)">
-                                                            Remove Answer
+                                                                <span i18n>Remove Answer</span>
                                                         </button>
                                                     </td>
                                                 </tr>
@@ -156,14 +156,14 @@
                             <div *ngIf="questionnaire.get('type').value == 'likert'" formArrayName="mapping">
                                 <mat-divider [inset]="true"></mat-divider>
                                 <button mat-flat-button color="primary" class="mt-16px mb-16px indent" (click)="addMapping(questionnaireIndex)">
-                                    Add Mapping
+                                    <span i18n>Add Mapping</span>
                                 </button>
                                 <div *ngFor="let map of mapping(questionnaireIndex).controls; let mappingIndex = index" [formGroupName]="mappingIndex">
                                     <table class="width-100">
                                         <tr>
                                             <td class="p-0 pr-16px">
                                                 <mat-form-field matLine class="width-100" appearance="fill">
-                                                    <mat-label>Label</mat-label>
+                                                    <mat-label><span i18n>Label</span></mat-label>
                                                     <input matInput type="text" formControlName="label">
                                                     <mat-error>
                                                         <app-error-message [formField]="map.get('label')"></app-error-message>
@@ -172,7 +172,7 @@
                                             </td>
                                             <td class="p-0 pr-16px">
                                                 <mat-form-field matLine class="width-100" appearance="fill">
-                                                    <mat-label>Value</mat-label>
+                                                    <mat-label><span i18n>Value</span></mat-label>
                                                     <input matInput type="text" formControlName="value">
                                                     <mat-error>
                                                         <app-error-message [formField]="map.get('value')"></app-error-message>
@@ -183,7 +183,7 @@
                                                 <button mat-flat-button color="primary" class="mb-16px"
                                                         [disabled]="mappingIndex == '0' && mapping(questionnaireIndex).length == 1"
                                                         (click)="removeMapping(questionnaireIndex, mappingIndex)">
-                                                    Remove Mapping
+                                                        <span i18n>Remove Mapping</span>
                                                 </button>
                                             </td>
                                         </tr>
@@ -195,7 +195,7 @@
                         <mat-divider></mat-divider>
                         <mat-card-actions class="right">
                             <button mat-flat-button color="primary" (click)="removeQuestionnaire(questionnaireIndex)">
-                                Remove Questionnaire
+                                <span i18n>Remove Questionnaire</span>
                             </button>
                         </mat-card-actions>
                     </mat-card>
@@ -203,14 +203,14 @@
 
             </div>
 
-            <button mat-flat-button color="primary" (click)="addQuestionnaire()">Add Questionnaire</button>
+            <button mat-flat-button color="primary" (click)="addQuestionnaire()"><span i18n>Add Questionnaire</span></button>
 
         </mat-card-content>
 
         <mat-divider></mat-divider>
 
         <mat-card-actions>
-            <button mat-flat-button color="primary" matStepperNext (click)="serializeConfiguration()">Next</button>
+            <button mat-flat-button color="primary" matStepperNext (click)="serializeConfiguration()"><span i18n>Next</span></button>
         </mat-card-actions>
 
     </mat-card>
