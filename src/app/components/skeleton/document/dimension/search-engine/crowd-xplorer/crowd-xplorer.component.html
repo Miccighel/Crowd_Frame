@@ -1,5 +1,5 @@
 <mat-card id="crowd-xplorer-{{digits}}"
-          [ngClass]="task.settings.modality=='conversational' ? 'xplorer-body' : 'xplorer-body p-2'"
+          [ngClass]="task.settings.modality=='conversational' ? 'xplorer-body p-2' : 'xplorer-body'"
           [formGroup]="searchForm">
     <ng-container *ngIf="this.task.settings.modality=='conversational'">
         <ng-container *ngTemplateOutlet="searchEngineTitle"></ng-container>
