@@ -80,7 +80,6 @@ export class ChatWidgetComponent implements OnInit {
     /* Array of accesses counters, one for each element (questionnaire + documents) */
     elementsAccesses: Array<number>;
 
-    answersPretty: {}[];
     dimensionSelected: {}[];
     queryTotal: {}[];
     responsesRetrievedTotal: {}[];
@@ -227,7 +226,7 @@ export class ChatWidgetComponent implements OnInit {
     }
 
     public operator = {
-        name: "Fake News Bot",
+        name: "Crowd Bot",
         status: "Online",
         avatar: "",
     };
@@ -312,6 +311,7 @@ export class ChatWidgetComponent implements OnInit {
                 dimensionValue: null,
             }))
         );
+        this.loadAccessCounter();
     }
 
     ngOnInit() {
@@ -341,7 +341,6 @@ export class ChatWidgetComponent implements OnInit {
         this.query = [];
         this.queryRetrieved = [];
         this.querySelectedUrls = [];
-        this.answersPretty = [];
         this.dimensionSelected = [];
         this.queryTotal = [];
         this.responsesSelectedTotal = [];
@@ -441,7 +440,7 @@ export class ChatWidgetComponent implements OnInit {
                 message = message.label ?? message;
             }
             this.addMessageClient(this.client, message, "sent");
-            if (message.toLowerCase() == "yes") {
+            if (message.toLowerCase() == "yes" && this.userName != undefined) {
                 this.buttonsToShow = ButtonsType.None;
                 this.changeDetector.detectChanges();
                 this.conversationInitialized = true;
@@ -503,6 +502,9 @@ export class ChatWidgetComponent implements OnInit {
                         this.timestampsStart[this.currentQuestionnaire][0];
                     this.uploadQuestionnaireData(this.currentQuestionnaire);
                     this.currentQuestion = 0;
+                    document.getElementById(
+                        this.currentQuestionnaire.toString()
+                    ).className = "dot completed";
                     this.currentQuestionnaire++;
 
                     if (this.currentQuestionnaire >= questionnaires.length) {
@@ -521,6 +523,9 @@ export class ChatWidgetComponent implements OnInit {
             }
             if (this.checkIfQuestionnaireIsFinished()) return true;
         }
+        document.getElementById(
+            this.currentQuestionnaire.toString()
+        ).className = "dot in-progress";
         //Non è in attesa, quindi genera la domanda successiva
         if (questionnaires[this.currentQuestionnaire].type == "standard") {
             this.readOnly = true;
@@ -736,6 +741,9 @@ export class ChatWidgetComponent implements OnInit {
                         this.currentQuestion
                     );
                     this.questionnaireAnswers[globalIndex] = message;
+                    document.getElementById(
+                        this.currentQuestionnaire.toString()
+                    ).className = "dot completed";
                     this.reviewAnswersShown = false;
                     this.pickReview = false;
                     this.awaitingAnswer = false;
@@ -760,6 +768,9 @@ export class ChatWidgetComponent implements OnInit {
                         );
 
                     this.printQuestion();
+                    document.getElementById(
+                        this.currentQuestionnaire.toString()
+                    ).className = "dot in-progress";
                     this.awaitingAnswer = true;
 
                     if (
@@ -939,8 +950,9 @@ export class ChatWidgetComponent implements OnInit {
             this.uploadDocumentData(this.taskIndex);
 
             //Il documento viene contrassegnato come completato
-            document.getElementById(this.taskIndex.toString()).className =
-                "dot completed ";
+            document.getElementById(
+                (this.task.questionnaires.length + this.taskIndex).toString()
+            ).className = "dot completed";
             // Se era l'ultimo statement, passo alla fase finale
             if (
                 this.task.hit.documents.length - 1 <= this.taskIndex ||
@@ -1065,8 +1077,9 @@ export class ChatWidgetComponent implements OnInit {
                     this.conversationState = ConversationState.Task;
                     // Reinizializzo
                     for (let i = 0; i < this.task.documents.length; i++) {
-                        document.getElementById(i.toString()).className =
-                            "dot to-complete";
+                        document.getElementById(
+                            (this.task.questionnaires.length + i).toString()
+                        ).className = "dot to-complete";
                     }
                     this.cleanUserInput();
                     this.typing.nativeElement.style.display = "none";
@@ -1272,9 +1285,9 @@ export class ChatWidgetComponent implements OnInit {
         this.timerIsOverSubject.next(false);
 
         this.progress = countdownTime / 100;
-        this.showCountdown = true;
         const progressBarEl = this.progressBar.nativeElement;
         progressBarEl.style.width = this.progress.toString() + "%";
+        this.showCountdown = true;
 
         this.activeInterval = setInterval(() => {
             countdownTime--;
@@ -1523,8 +1536,9 @@ export class ChatWidgetComponent implements OnInit {
             this.task.questionnaires.length + this.taskIndex
         ] += 1;
 
-        document.getElementById(this.taskIndex.toString()).className =
-            "dot in-progress";
+        document.getElementById(
+            (this.task.questionnaires.length + this.taskIndex).toString()
+        ).className = "dot in-progress";
         let messageToSend =
             "Statement: <b>" +
             hit.documents[this.taskIndex]["statement_text"] +
@@ -2366,7 +2380,7 @@ export class ChatWidgetComponent implements OnInit {
     }
 
     public performGlobalValidityCheck(): boolean {
-        //Tutti i dati sono inseriti presenti, condizione garantito dall'algoritmo che gestisce il flow
+        //Tutti i dati necessari sono presenti, condizione garantita dall'algoritmo che gestisce l'excecution flow
         return true;
     }
 
@@ -2396,7 +2410,6 @@ export class ChatWidgetComponent implements OnInit {
     }
 
     public loadAccessCounter() {
-        /* The array of accesses counter is initialized */
         let elementsAmount = this.getElementsNumber();
         this.elementsAccesses = new Array<number>(elementsAmount);
         for (let index = 0; index < this.elementsAccesses.length; index++)
