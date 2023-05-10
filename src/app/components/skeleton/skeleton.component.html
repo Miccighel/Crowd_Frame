@@ -67,9 +67,7 @@
                            (focus)="this.tokenForm.updateValueAndValidity()" (paste)="this.tokenForm.updateValueAndValidity()"
                            (keyup)="this.tokenForm.updateValueAndValidity()" (keydown)="this.tokenForm.updateValueAndValidity()">
                     <mat-error>
-                        <app-error-message
-                                [formField]="this.tokenForm.get('tokenInput')"
-                        ></app-error-message>
+                        <app-error-message [formField]="this.tokenForm.get('tokenInput')"></app-error-message>
                     </mat-error>
                 </mat-form-field>
             </mat-card-content>

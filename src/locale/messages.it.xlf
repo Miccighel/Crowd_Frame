@@ -2011,7 +2011,7 @@
                 <target>Esperimento Completato</target>
                 <context-group purpose="location">
                     <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-                    <context context-type="linenumber">20</context>
+                    <context context-type="linenumber">21</context>
                 </context-group>
             </trans-unit>
             <trans-unit id="3ef558d1d95005e364439af2b69cc60f59353f80" datatype="html">
@@ -2019,7 +2019,7 @@
                 <target>Hai completato l'esperimento con successo.</target>
                 <context-group purpose="location">
                     <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-                    <context context-type="linenumber">26</context>
+                    <context context-type="linenumber">27</context>
                 </context-group>
             </trans-unit>
             <trans-unit id="5a5d7ee2acbfa9c91ab7f41d26bda9ff0cafe42f" datatype="html">
@@ -2027,11 +2027,11 @@
                 <target>Commento</target>
                 <context-group purpose="location">
                     <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-                    <context context-type="linenumber">30</context>
+                    <context context-type="linenumber">31</context>
                 </context-group>
                 <context-group purpose="location">
                     <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-                    <context context-type="linenumber">114</context>
+                    <context context-type="linenumber">119</context>
                 </context-group>
             </trans-unit>
             <trans-unit id="52c3748c66464925c1599a7155b1f589a3c16a98" datatype="html">
@@ -2039,11 +2039,41 @@
                 <target>Sentiti libero di scrivere eventuali commenti per migliorare l'esperimento.</target>
                 <context-group purpose="location">
                     <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-                    <context context-type="linenumber">33</context>
+                    <context context-type="linenumber">34</context>
                 </context-group>
                 <context-group purpose="location">
                     <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-                    <context context-type="linenumber">117</context>
+                    <context context-type="linenumber">122</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="e212dd90a40759f4204dc48ec420874775ed167d" datatype="html">
+                <source>You are allowed to send a single comment.</source>
+                <target>Puoi inviare un solo commento.</target>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+                    <context context-type="linenumber">35</context>
+                </context-group>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+                    <context context-type="linenumber">123</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="81e5c0b21f2026caad11a7f1ecd1a6c5fb5b00e1" datatype="html">
+                <source>Please, write at least
+                    <x id="INTERPOLATION" equiv-text="{{this.wordsRequired}}"/>
+                    words to send your comment.
+                </source>
+                <target>Per favore, scrivi almeno
+                    <x id="INTERPOLATION" equiv-text="{{this.wordsRequired}}"/>
+                    parole per inviare il tuo commento.
+                </target>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+                    <context context-type="linenumber">42</context>
+                </context-group>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+                    <context context-type="linenumber">130</context>
                 </context-group>
             </trans-unit>
             <trans-unit id="2c5ff8fa9c9aaec93f97e37c9a0edcd797194573" datatype="html">
@@ -2051,7 +2081,7 @@
                 <target>Invia</target>
                 <context-group purpose="location">
                     <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-                    <context context-type="linenumber">43</context>
+                    <context context-type="linenumber">47</context>
                 </context-group>
             </trans-unit>
             <trans-unit id="768fa94396eb6bb2834ec52fc1b5fad92273027d" datatype="html">
@@ -2059,11 +2089,11 @@
                 <target>Grazie!</target>
                 <context-group purpose="location">
                     <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-                    <context context-type="linenumber">45</context>
+                    <context context-type="linenumber">49</context>
                 </context-group>
                 <context-group purpose="location">
                     <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-                    <context context-type="linenumber">129</context>
+                    <context context-type="linenumber">137</context>
                 </context-group>
             </trans-unit>
             <trans-unit id="a8b70c106447e8350267f4dcc07f24d13bbff8df" datatype="html">
@@ -2071,11 +2101,11 @@
                 <target>Istruzioni</target>
                 <context-group purpose="location">
                     <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-                    <context context-type="linenumber">50</context>
+                    <context context-type="linenumber">54</context>
                 </context-group>
                 <context-group purpose="location">
                     <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-                    <context context-type="linenumber">86</context>
+                    <context context-type="linenumber">91</context>
                 </context-group>
             </trans-unit>
             <trans-unit id="194fd53aae0baf8c045a6e4c5ca151f417997800" datatype="html">
@@ -2083,11 +2113,11 @@
                 <target>Copia il tuo token di output (mostrato sotto) e inseriscilo nella pagina della piattaforma per completare il tuo lavoro.</target>
                 <context-group purpose="location">
                     <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-                    <context context-type="linenumber">53</context>
+                    <context context-type="linenumber">57</context>
                 </context-group>
                 <context-group purpose="location">
                     <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-                    <context context-type="linenumber">89</context>
+                    <context context-type="linenumber">94</context>
                 </context-group>
             </trans-unit>
             <trans-unit id="0340927bc3e8471e45a4d285aaf2aca0f63c7708" datatype="html">
@@ -2095,11 +2125,11 @@
                 <target>Copia i tui tokens (mostrati sotto) ed inseriscili nella pagina della piattaforma per completare il tuo lavoro.</target>
                 <context-group purpose="location">
                     <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-                    <context context-type="linenumber">57</context>
+                    <context context-type="linenumber">61</context>
                 </context-group>
                 <context-group purpose="location">
                     <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-                    <context context-type="linenumber">93</context>
+                    <context context-type="linenumber">68</context>
                 </context-group>
             </trans-unit>
             <trans-unit id="1d4279157b6938a1737f627bee148672abf94f33" datatype="html">
@@ -2107,7 +2137,7 @@
                 <target>Token Input:</target>
                 <context-group purpose="location">
                     <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-                    <context context-type="linenumber">58</context>
+                    <context context-type="linenumber">62</context>
                 </context-group>
             </trans-unit>
             <trans-unit id="03a7e1e5ece897f85e2b6adf3d1df272cd3614f9" datatype="html">
@@ -2115,7 +2145,7 @@
                 <target>Token Output:</target>
                 <context-group purpose="location">
                     <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-                    <context context-type="linenumber">59</context>
+                    <context context-type="linenumber">63</context>
                 </context-group>
             </trans-unit>
             <trans-unit id="593a91f5ded3e8cecdc3c21361f7406906b4425a" datatype="html">
@@ -2123,11 +2153,11 @@
                 <target>Clicca il pulsante di completamento (mostrato sotto) per essere ridirezionato alla piattaforma e completare il tuo lavoro.</target>
                 <context-group purpose="location">
                     <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-                    <context context-type="linenumber">63</context>
+                    <context context-type="linenumber">67</context>
                 </context-group>
                 <context-group purpose="location">
                     <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-                    <context context-type="linenumber">99</context>
+                    <context context-type="linenumber">103</context>
                 </context-group>
             </trans-unit>
             <trans-unit id="bf612b44e3ba6c05c219aceac6a6ed6c37df1dc4" datatype="html">
@@ -2135,11 +2165,11 @@
                 <target>Completa</target>
                 <context-group purpose="location">
                     <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-                    <context context-type="linenumber">66</context>
+                    <context context-type="linenumber">70</context>
                 </context-group>
                 <context-group purpose="location">
                     <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-                    <context context-type="linenumber">102</context>
+                    <context context-type="linenumber">106</context>
                 </context-group>
             </trans-unit>
             <trans-unit id="65fc3874311ed83b5bae3d17c946a55426aa6ca9" datatype="html">
@@ -2147,21 +2177,21 @@
                 <target>Lavoro già completato</target>
                 <context-group purpose="location">
                     <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-                    <context context-type="linenumber">74</context>
+                    <context context-type="linenumber">78</context>
                 </context-group>
             </trans-unit>
             <trans-unit id="2be4905a85d53b9d29ca0d95ac2d0b180f1b9f98" datatype="html">
                 <source>Hai iniziato l'esperimento il</source>
                 <context-group purpose="location">
                     <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-                    <context context-type="linenumber">80</context>
+                    <context context-type="linenumber">84</context>
                 </context-group>
             </trans-unit>
             <trans-unit id="cad55973d341492a749846088afeb76a065aa256" datatype="html">
                 <source>completandolo con successo il</source>
                 <context-group purpose="location">
                     <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-                    <context context-type="linenumber">80</context>
+                    <context context-type="linenumber">84</context>
                 </context-group>
             </trans-unit>
             <trans-unit id="c03d724751a65de78577dd1d0502a5f36483f2c9" datatype="html">
@@ -2170,7 +2200,7 @@
                 <target>Consentiamo solamente una sottomissione per utente. Grazie per il tuo impegno!</target>
                 <context-group purpose="location">
                     <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-                    <context context-type="linenumber">80,82</context>
+                    <context context-type="linenumber">85,87</context>
                 </context-group>
             </trans-unit>
             <trans-unit id="7f4cf88d2fe553f182af3bad1885c47de9ee6f62" datatype="html">
@@ -2178,7 +2208,7 @@
                 <target>Questo esperimento non è stato pubblicato su una piattaforma di crowdsourcing. Ti suggeriamo di copiare ed archiviare i tuoi token (mostrati sotto).</target>
                 <context-group purpose="location">
                     <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-                    <context context-type="linenumber">107</context>
+                    <context context-type="linenumber">112</context>
                 </context-group>
             </trans-unit>
             <trans-unit id="1257e29df9c8b0378e8ff0d79bde523a8562200e" datatype="html">
@@ -2186,11 +2216,11 @@
                 <target>Invio fallito</target>
                 <context-group purpose="location">
                     <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-                    <context context-type="linenumber">137</context>
+                    <context context-type="linenumber">145</context>
                 </context-group>
                 <context-group purpose="location">
                     <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-                    <context context-type="linenumber">160</context>
+                    <context context-type="linenumber">169</context>
                 </context-group>
             </trans-unit>
             <trans-unit id="e5a14241bd7ef7cf0e15ec96581ce06563e86498" datatype="html">
@@ -2198,7 +2228,7 @@
                 <target>Il tuo lavoro non soddisfa uno o più controlli di qualità, ma hai ancora</target>
                 <context-group purpose="location">
                     <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-                    <context context-type="linenumber">143</context>
+                    <context context-type="linenumber">151</context>
                 </context-group>
             </trans-unit>
             <trans-unit id="2174bc65e442ca9e065d853b33de3602f99d3070" datatype="html">
@@ -2206,7 +2236,7 @@
                 <target>tentativi. Ti suggeriamo di provare nuovamente.</target>
                 <context-group purpose="location">
                     <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-                    <context context-type="linenumber">143</context>
+                    <context context-type="linenumber">151</context>
                 </context-group>
             </trans-unit>
             <trans-unit id="2ab29f3fd85b486d596247e7bda6833976dd30eb" datatype="html">
@@ -2214,7 +2244,7 @@
                 <target>Reimposta</target>
                 <context-group purpose="location">
                     <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-                    <context context-type="linenumber">147</context>
+                    <context context-type="linenumber">156</context>
                 </context-group>
             </trans-unit>
             <trans-unit id="a934c0c2bf12ad2df0fae4c9d40c20aff5ded1e1" datatype="html">
@@ -2222,7 +2252,7 @@
                 <target>>Clicca il pulsante reset per cominciare da capo. Non perderai alcuna selezione fatta durante il tentativo corrente.</target>
                 <context-group purpose="location">
                     <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-                    <context context-type="linenumber">150</context>
+                    <context context-type="linenumber">159</context>
                 </context-group>
             </trans-unit>
             <trans-unit id="1829e5446556db8a24cfc161d37f7300d83de2cc" datatype="html">
@@ -2234,7 +2264,7 @@
                 </target>
                 <context-group purpose="location">
                     <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-                    <context context-type="linenumber">166</context>
+                    <context context-type="linenumber">175</context>
                 </context-group>
             </trans-unit>
             <trans-unit id="e434dadb6faaa9aece10d41b21352f766f4356d7" datatype="html">
@@ -2242,7 +2272,7 @@
                 <target>Overbooking dell'esperimento</target>
                 <context-group purpose="location">
                     <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-                    <context context-type="linenumber">175</context>
+                    <context context-type="linenumber">185</context>
                 </context-group>
             </trans-unit>
             <trans-unit id="e36df79e5ef9f3ec0d2366174aea5016f67f7960" datatype="html">
@@ -2251,7 +2281,7 @@
                 </source>
                 <context-group purpose="location">
                     <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-                    <context context-type="linenumber">181</context>
+                    <context context-type="linenumber">191</context>
                 </context-group>
             </trans-unit>
             <trans-unit id="5a6d52342a43557d035cb482dc17be09872d01bd" datatype="html">
@@ -2259,7 +2289,7 @@
                 <target>Tempo Scaduto</target>
                 <context-group purpose="location">
                     <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-                    <context context-type="linenumber">188</context>
+                    <context context-type="linenumber">199</context>
                 </context-group>
             </trans-unit>
             <trans-unit id="8921744915f0ee0e86d462acc66f8e96a85437bd" datatype="html">
@@ -2267,7 +2297,7 @@
                 <target>L'unità di lavoro è stata a qualcun altro perché hai finito il tempo a tua disposizione il</target>
                 <context-group purpose="location">
                     <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-                    <context context-type="linenumber">194</context>
+                    <context context-type="linenumber">206</context>
                 </context-group>
             </trans-unit>
             <trans-unit id="a6bc26bb4e2f0f196fca2705e125222f16fdc41f" datatype="html">
@@ -2275,7 +2305,7 @@
                 <target>Ti chiediamo gentilmente di restituirla sulla piattaforma di provenienza.</target>
                 <context-group purpose="location">
                     <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-                    <context context-type="linenumber">194,195</context>
+                    <context context-type="linenumber">207,208</context>
                 </context-group>
             </trans-unit>
             <trans-unit id="2a7315f18f0098eabc21b40095558cc7fae94bce" datatype="html">
@@ -2283,7 +2313,7 @@
                 <target>Esperimento completato</target>
                 <context-group purpose="location">
                     <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-                    <context context-type="linenumber">202</context>
+                    <context context-type="linenumber">215</context>
                 </context-group>
             </trans-unit>
             <trans-unit id="5ecb19175186c66cf8f337bb7ca726dff41c28d4" datatype="html">
@@ -2295,7 +2325,7 @@
                 </target>
                 <context-group purpose="location">
                     <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-                    <context context-type="linenumber">208,209</context>
+                    <context context-type="linenumber">221,222</context>
                 </context-group>
             </trans-unit>
             <trans-unit id="7abb1824604a51ca3cd3a78db58cd5c74c3e02af" datatype="html">
@@ -2303,7 +2333,7 @@
                 <target>Problema sconosciuto</target>
                 <context-group purpose="location">
                     <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-                    <context context-type="linenumber">216</context>
+                    <context context-type="linenumber">229</context>
                 </context-group>
             </trans-unit>
             <trans-unit id="f1235162313cb1ead25942a7a6eafdd94c3b9a35" datatype="html">
@@ -2311,7 +2341,7 @@
                 <target>Un problema sconosciuto si è verificato durante l'esperimento corrente. Per favore, faccelo sapere allegato il codice di stato mostrato sotto ed attendi una risposta.</target>
                 <context-group purpose="location">
                     <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-                    <context context-type="linenumber">222</context>
+                    <context context-type="linenumber">235</context>
                 </context-group>
             </trans-unit>
             <trans-unit id="3a34fae9614fa5bc40d23dac08f8f3ca408a5d4d" datatype="html">
@@ -2323,7 +2353,7 @@
                 </target>
                 <context-group purpose="location">
                     <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-                    <context context-type="linenumber">235,236</context>
+                    <context context-type="linenumber">248,249</context>
                 </context-group>
             </trans-unit>
             <trans-unit id="7f5d0c10614e8a34f0e2dad33a0568277c50cf69" datatype="html">
@@ -2331,11 +2361,11 @@
                 <target>Blocca</target>
                 <context-group purpose="location">
                     <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-                    <context context-type="linenumber">243</context>
+                    <context context-type="linenumber">256</context>
                 </context-group>
                 <context-group purpose="location">
                     <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-                    <context context-type="linenumber">257</context>
+                    <context context-type="linenumber">270</context>
                 </context-group>
             </trans-unit>
             <trans-unit id="8934a0716b2c631d797d72b0146d227ce81416a6" datatype="html">
@@ -2345,7 +2375,7 @@
                 <target>Non ti viene permesso partecipare nuovamente nell'esperimento corrente. Questo può essere dovuto a varie ragioni.</target>
                 <context-group purpose="location">
                     <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-                    <context context-type="linenumber">249,250</context>
+                    <context context-type="linenumber">262,263</context>
                 </context-group>
             </trans-unit>
             <trans-unit id="95aa58e09346ba86d523ebc0b7d4b2f17902a807" datatype="html">
@@ -2355,7 +2385,7 @@
                 </source>
                 <context-group purpose="location">
                     <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-                    <context context-type="linenumber">263,264</context>
+                    <context context-type="linenumber">276,277</context>
                 </context-group>
             </trans-unit>
             <trans-unit id="76223b25763091bf6ad1119e4442c90a79d1c48e" datatype="html">
@@ -2363,7 +2393,7 @@
                 <target>Messaggi aggiuntivi</target>
                 <context-group purpose="location">
                     <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-                    <context context-type="linenumber">272</context>
+                    <context context-type="linenumber">285</context>
                 </context-group>
             </trans-unit>
             <trans-unit id="e2c21f6b0046369ff29185485663712b739fe38c" datatype="html">
@@ -2371,7 +2401,7 @@
                 <target>Codice di stato</target>
                 <context-group purpose="location">
                     <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-                    <context context-type="linenumber">281</context>
+                    <context context-type="linenumber">294</context>
                 </context-group>
             </trans-unit>
             <trans-unit id="b6b7a76b70e5c66f25bb8acd2c59880898d8f1d1" datatype="html">
@@ -2379,14 +2409,7 @@
                 <target>Ti chiediamo gentilmente di allegare il codice di stato se hai altre domande:</target>
                 <context-group purpose="location">
                     <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-                    <context context-type="linenumber">284</context>
-                </context-group>
-            </trans-unit>
-            <trans-unit id="8f22c3084a5b6dda06eb94d0f9feb6d5831ac3bc" datatype="html">
-                <source>Questionnaire</source>
-                <context-group purpose="location">
-                    <context context-type="sourcefile">src/app/components/skeleton/questionnaire/questionnaire.component.html</context>
-                    <context context-type="linenumber">11</context>
+                    <context context-type="linenumber">297</context>
                 </context-group>
             </trans-unit>
             <trans-unit id="c2a9de3714f5767b174d0424bc8abe2dc37acc41" datatype="html">

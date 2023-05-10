@@ -1,11 +1,12 @@
 /* Core */
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {UntypedFormBuilder, UntypedFormControl, UntypedFormGroup} from "@angular/forms";
+import {UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators} from "@angular/forms";
 /* Services */
 import {SectionService} from "../../../services/section.service";
 import {StatusCodes} from "../../../services/section.service";
 import {ConfigService} from "../../../services/config.service";
 import {Worker} from "../../../models/worker/worker";
+import {UtilsService} from "../../../services/utils.service";
 
 @Component({
     selector: 'app-outcome-section',
@@ -18,6 +19,7 @@ export class OutcomeSectionComponent implements OnInit {
     formBuilder: UntypedFormBuilder;
     /* Service to track current section */
     sectionService: SectionService
+    utilsService: UtilsService
     configService: ConfigService
 
     /* |--------- COMMENT ELEMENTS - DECLARATION ---------| */
@@ -38,29 +40,27 @@ export class OutcomeSectionComponent implements OnInit {
     @Output() commentEmitter: EventEmitter<string>;
 
     statusCodes = StatusCodes
+    wordsRequired = 5
 
     constructor(
         formBuilder: UntypedFormBuilder,
         sectionService: SectionService,
+        utilsService: UtilsService,
         configService: ConfigService
     ) {
-
-        
-
         this.formBuilder = formBuilder
         this.sectionService = sectionService
+        this.utilsService = utilsService
         this.configService = configService
 
         this.performReset = new EventEmitter<boolean>()
         this.commentEmitter = new EventEmitter<string>()
 
         /* |--------- COMMENT ELEMENTS - INITIALIZATION ---------| */
-
         this.commentSent = false
         this.commentForm = formBuilder.group({
-            "comment": new UntypedFormControl(''),
+            "comment": new UntypedFormControl('', [this.validateComment.bind(this)]),
         });
-
     }
 
     ngOnInit(): void {
@@ -71,7 +71,27 @@ export class OutcomeSectionComponent implements OnInit {
     }
 
     public performCommentSaving() {
-        this.commentEmitter.emit(this.commentForm.get('comment').value)
+        if (this.commentForm.get('comment').valid) {
+            this.commentEmitter.emit(this.commentForm.get('comment').value)
+        }
+        this.commentForm.get('comment').markAsTouched()
+    }
+
+    public validateComment(control: UntypedFormControl) {
+        let commentText = control.value
+        let words = control.value.split(' ')
+        let cleanedWords = new Array<string>()
+        for (let word of words) {
+            let trimmedWord = word.trim()
+            if (trimmedWord.length > 0) {
+                cleanedWords.push(trimmedWord)
+            }
+        }
+        if (cleanedWords.length < this.wordsRequired) {
+            return {"required": true};
+        } else {
+            return null
+        }
     }
 
 }

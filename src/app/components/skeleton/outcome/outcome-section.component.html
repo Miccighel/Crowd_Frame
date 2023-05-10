@@ -10,7 +10,8 @@
             <mat-card-title class="sub-title"><span i18n>Description</span></mat-card-title>
             <mat-divider [inset]="true"></mat-divider>
             <mat-card-content class="description">
-                <p><span i18n>There are some connection issues between the server and your device. Please, report this attaching the status code shown below and wait for an answer.</span></p>   <!-- SI traducono anche i paragrafi ?-->
+                <p><span i18n>There are some connection issues between the server and your device. Please, report this attaching the status code shown below and wait for an answer.</span></p>
+                <!-- SI traducono anche i paragrafi ?-->
             </mat-card-content>
         </mat-card>
     </ng-container>
@@ -31,16 +32,19 @@
             <mat-divider [inset]="true"></mat-divider>
             <mat-card-content class="description">
                 <p><span i18n>Feel free to leave any comment to help us improve our task.</span></p>
+                <p><span i18n>You are allowed to send a single comment.</span></p>
             </mat-card-content>
             <div class="comment-box">
                 <form [formGroup]="commentForm" class="comment-form">
                     <mat-form-field appearance="fill">
                         <textarea matInput [disabled]="commentSent" placeholder="Your comment here" formControlName="comment" rows="5"></textarea>
+                        <mat-error *ngIf="this.utilsService.hasError(commentForm,'comment', 'required')">
+                            <span i18n>Please, write at least {{this.wordsRequired}} words to send your comment.</span>
+                        </mat-error>
                     </mat-form-field>
                 </form>
                 <ng-container *ngIf="commentForm.get('comment')">
-                    <button class="comment-button" mat-flat-button color="primary" [disabled]="commentSent || !commentForm.valid || commentForm.get('comment').value.length<=0"
-                            (click)="performCommentSaving()"> <span i18n>Send</span>
+                    <button class="comment-button" mat-flat-button color="primary" [disabled]="commentSent" (click)="performCommentSaving()"><span i18n>Send</span>
                     </button>
                     <span class="comment-sent-label" *ngIf="commentSent"><span i18n>Thank you!</span></span>
                 </ng-container>
@@ -77,7 +81,8 @@
             <mat-card-title class="sub-title"><span i18n>Description</span></mat-card-title>
             <mat-divider [inset]="true"></mat-divider>
             <mat-card-content class="description">
-                <p><span i18n>The task started on</span> <strong>{{this.worker.prettyTimeArrival()}}</strong> <span i18n>has been successfully completed by yourself on</span> <strong>{{this.worker.prettyTimeCompletion()}}</strong>. <span i18n>We allow only one submission per worker.
+                <p><span i18n>The task started on</span><strong> {{this.worker.prettyTimeArrival()}} </strong><span i18n>has been successfully completed by yourself on</span>
+                    <strong> {{this.worker.prettyTimeCompletion()}}</strong>. <span i18n>We allow only one submission per worker.
                     Thank you for your effort. You will receive your payment soon. You can still complete your submission if you forgot
                     doing that.</span></p>
             </mat-card-content>
@@ -91,7 +96,7 @@
             </mat-card-content>
             <mat-card-content *ngIf="this.worker.getParameter('platform')=='toloka'" class="description">
                 <p><span i18n>Copy your tokens (shown below) and insert them on the platform’s page to complete your work.</span></p>
-                <h1>Token Input: {{this.worker.getParameter('token_input')}}</h1>       <!-- Traduzione necessaria ?-->
+                <h1>Token Input: {{this.worker.getParameter('token_input')}}</h1>
                 <h1>Token Output: {{this.worker.getParameter('token_output')}}</h1>
             </mat-card-content>
             <ng-container *ngIf="this.worker.getParameter('platform')=='prolific'">
@@ -115,16 +120,19 @@
             <mat-divider [inset]="true"></mat-divider>
             <mat-card-content class="description">
                 <p><span i18n>Feel free to leave any comment to help us improve our task.</span></p>
+                <p><span i18n>You are allowed to send a single comment.</span></p>
             </mat-card-content>
             <div class="comment-box">
                 <form [formGroup]="commentForm" class="comment-form">
                     <mat-form-field appearance="fill">
                         <textarea matInput [disabled]="commentSent" placeholder="Your comment here" formControlName="comment" rows="5"></textarea>
+                        <mat-error *ngIf="this.utilsService.hasError(commentForm,'comment', 'required')">
+                            <span i18n>Please, write at least {{this.wordsRequired}} words to send your comment.</span>
+                        </mat-error>
                     </mat-form-field>
                 </form>
                 <ng-container *ngIf="commentForm.get('comment')">
-                    <button class="comment-button" mat-flat-button color="primary" [disabled]="commentSent || !commentForm.valid || commentForm.get('comment').value.length<=0"
-                            (click)="performCommentSaving()"> Send
+                    <button class="comment-button" mat-flat-button color="primary" [disabled]="commentSent" (click)="performCommentSaving()"> Send
                     </button>
                     <span class="comment-sent-label" *ngIf="commentSent"><span i18n>Thank you!</span></span>
                 </ng-container>
@@ -140,7 +148,8 @@
             <mat-card-title class="sub-title">Description</mat-card-title>
             <mat-divider [inset]="true"></mat-divider>
             <mat-card-content class="description">
-                <p><span i18n>Your work does not satisfy one or more quality checks, but you have</span> <strong>{{this.worker.getParameter('try_left')}}</strong> <span i18n>tries left. We kindly encourage you to reset the task and proceed with a new try.</span></p>
+                <p><span i18n>Your work does not satisfy one or more quality checks, but you have</span> <strong>{{this.worker.getParameter('try_left')}}</strong> <span i18n>tries left. We kindly encourage you to reset the task and proceed with a new try.</span>
+                </p>
             </mat-card-content>
         </mat-card>
         <mat-card>
@@ -163,7 +172,8 @@
             <mat-card-title class="sub-title"><span i18n>Description</span></mat-card-title>
             <mat-divider [inset]="true"></mat-divider>
             <mat-card-content class="description">
-                <p><span i18n>The task has been assigned to yourself, but your work was not of quality. Please, return this assignment. We apologize for the inconvenience and we encourage you to participate in our future tasks.</span></p>
+                <p><span i18n>The task has been assigned to yourself, but your work was not of quality. Please, return this assignment. We apologize for the inconvenience and we encourage you to participate in our future tasks.</span>
+                </p>
             </mat-card-content>
         </mat-card>
 
@@ -178,7 +188,8 @@
             <mat-card-title class="sub-title"><span i18n>Description</span></mat-card-title>
             <mat-divider [inset]="true"></mat-divider>
             <mat-card-content class="description">
-                <p><span i18n>The whole set of available tasks has been assigned to other workers. Someone did not finish its task, but has some time left. Please, try to come back after the nearest expiration date</span>: {{this.worker.getParameter('time_expiration_nearest')}}.</p>
+                <p><span i18n>The whole set of available tasks has been assigned to other workers. Someone did not finish its task, but has some time left. Please, try to come back after the nearest expiration date</span>: {{this.worker.getParameter('time_expiration_nearest')}}
+                    .</p>
             </mat-card-content>
         </mat-card>
     </ng-container>
@@ -191,7 +202,9 @@
             <mat-card-title class="sub-title">Description</mat-card-title>
             <mat-divider [inset]="true"></mat-divider>
             <mat-card-content class="description">
-                <p><span i18n>The task assigned to you has been given to another worker because the time available for performing it is expired on</span> <strong>{{this.worker.prettyTimeExpiration()}}</strong>. <span i18n>We kindly ask you to return the assignment on the
+                <p><span
+                        i18n>The task assigned to you has been given to another worker because the time available for performing it is expired on</span><strong> {{this.worker.prettyTimeExpiration()}}</strong>.
+                    <span i18n>We kindly ask you to return the assignment on the
                     platform of provenance.</span></p>
             </mat-card-content>
         </mat-card>
@@ -281,7 +294,7 @@
         <mat-card-title class="sub-title"><span i18n>Status Code</span></mat-card-title>
         <mat-divider [inset]="true"></mat-divider>
         <mat-card-content class="description">
-            <p><span i18n>We kindly ask you to attach your status code if you have any further question: </span><strong>{{this.worker.getParameter('status_code')}}</strong></p>
+            <p><span i18n>We kindly ask you to attach your status code if you have any further question:</span><strong> {{this.worker.getParameter('status_code')}}</strong></p>
         </mat-card-content>
     </mat-card>
 
