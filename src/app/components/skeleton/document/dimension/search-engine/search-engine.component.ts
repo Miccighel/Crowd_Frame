@@ -13,6 +13,7 @@ import {Dimension} from "../../../../../models/skeleton/dimension";
 import {Document} from "../../../../../../../data/build/skeleton/document";
 /* Components */
 import {CrowdXplorer} from "./crowd-xplorer/crowd-xplorer.component";
+import {ConfigService} from "../../../../../services/config.service";
 
 @Component({
     selector: 'app-search-engine',
@@ -26,6 +27,8 @@ export class SearchEngineComponent implements OnInit {
 
     /* Service to detect user's device */
     sectionService: SectionService;
+    /* Service to provide an environment-based configuration */
+    configService: ConfigService;
     utilsService: UtilsService
     /* Angular Reactive Form builder (see https://angular.io/guide/reactive-forms) */
     formBuilder: UntypedFormBuilder;
@@ -50,11 +53,13 @@ export class SearchEngineComponent implements OnInit {
         deviceDetectorService: DeviceDetectorService,
         sectionService: SectionService,
         utilsService: UtilsService,
+        configService: ConfigService,
         formBuilder: UntypedFormBuilder,
     ) {
         this.changeDetector = changeDetector
         this.sectionService = sectionService
         this.utilsService = utilsService
+        this.configService = configService
         this.formBuilder = formBuilder
         this.urlSelectedEmitter = new EventEmitter<boolean>();
         this.formEmitter = new EventEmitter<UntypedFormGroup>();
@@ -119,19 +124,6 @@ export class SearchEngineComponent implements OnInit {
     public handleSearchEngineRetrievedResponse(retrievedResponseData, documentCurrent: Document, dimension: Dimension) {
         this.task.storeSearchEngineRetrievedResponse(retrievedResponseData, documentCurrent, dimension)
         this.searchEngineForm.get(dimension.name.concat("_url")).enable();
-        let labelsSelect = document.getElementsByClassName('label-select')
-        if (Array.from(labelsSelect).length <= 0) {
-            let headerRow = document.getElementsByClassName('mat-header-row')
-            for (let header of Array.from(headerRow)) {
-                let sel = document.createElement('div')
-                sel.setAttribute("style", `color:#0000008a;font-size:medium;font-weight:500;padding-right:0.75em;`);
-                sel.setAttribute("class", `label-select`);
-                sel.innerText = "Select"
-                header.append(sel)
-            }
-        }
-
-        //$('.cdk-table').css({'border': '2px solid lightgrey', 'border-radius' : '8px', 'padding' :' 5px  5px '})
     }
 
     public handleSearchEngineSelectedResponse(selectedResponseData, document: Document, dimension: Dimension) {

@@ -11,10 +11,10 @@ import {
     HostListener,
 } from "@angular/core";
 /* Loading screen module */
-import { NgxUiLoaderService } from "ngx-ui-loader";
+import {NgxUiLoaderService} from "ngx-ui-loader";
 /* Material design modules */
-import { MatTableDataSource } from "@angular/material/table";
-import { MatPaginator } from "@angular/material/paginator";
+import {MatTableDataSource} from "@angular/material/table";
+import {MatPaginator} from "@angular/material/paginator";
 /* Reactive forms modules */
 import {
     UntypedFormBuilder,
@@ -23,18 +23,18 @@ import {
     Validators,
 } from "@angular/forms";
 /* Services */
-import { BingService } from "../../../../../../services/search_engine/bing.service";
-import { BingWebSearchResponse } from "../../../../../../models/search_engine/bingWebSearchResponse";
-import { FakerService } from "../../../../../../services/search_engine/faker.service";
-import { FakerSearchResponse } from "../../../../../../models/search_engine/fakerSearchResponse";
-import { PubmedService } from "../../../../../../services/search_engine/pudmed.service";
-import { PubmedSearchResponse } from "../../../../../../models/search_engine/pubmedSearchResponse";
-import { PubmedSummaryResponse } from "../../../../../../models/search_engine/pubmedSummaryResponse";
-import { ConfigService } from "../../../../../../services/config.service";
-import { SearchEngineSettings } from "../../../../../../models/search_engine/searchEngineSettings";
+import {BingService} from "../../../../../../services/search_engine/bing.service";
+import {BingWebSearchResponse} from "../../../../../../models/search_engine/bingWebSearchResponse";
+import {FakerService} from "../../../../../../services/search_engine/faker.service";
+import {FakerSearchResponse} from "../../../../../../models/search_engine/fakerSearchResponse";
+import {PubmedService} from "../../../../../../services/search_engine/pudmed.service";
+import {PubmedSearchResponse} from "../../../../../../models/search_engine/pubmedSearchResponse";
+import {PubmedSummaryResponse} from "../../../../../../models/search_engine/pubmedSummaryResponse";
+import {ConfigService} from "../../../../../../services/config.service";
+import {SearchEngineSettings} from "../../../../../../models/search_engine/searchEngineSettings";
 /* Debug config import */
-import { S3Service } from "../../../../../../services/aws/s3.service";
-import { Task } from "../../../../../../models/skeleton/task";
+import {S3Service} from "../../../../../../services/aws/s3.service";
+import {Task} from "../../../../../../models/skeleton/task";
 
 /* Component HTML Tag definition */
 @Component({
@@ -110,7 +110,9 @@ export class CrowdXplorer implements OnInit {
     /* Boolean flag */
     searchPerformed: boolean;
 
-    /* Event emitters to integrate Binger in other components */
+    queryValue: string
+
+    /* Event emitters to integrate in other components */
     /* EMITTER: Query inserted by user */
     @Output() queryEmitter = new EventEmitter<string>();
     /* EMITTER: Responses retrieved by search engine */
@@ -189,12 +191,12 @@ export class CrowdXplorer implements OnInit {
     }
 
     ngOnInit() {
-        this.resetEvent.subscribe(() => this.resetSearchEngineState());
-        this.disableSearchEngine(true);
-
-        this.disableEvent.subscribe((disable: boolean) =>
-            this.disableSearchEngine(disable)
-        );
+        console.log("here")
+        if (this.task.settings.modality == 'conversational') {
+            this.resetEvent.subscribe(() => this.resetSearchEngineState());
+            this.disableSearchEngine(true);
+            this.disableEvent.subscribe((disable: boolean) => this.disableSearchEngine(disable));
+        }
     }
 
     /*
@@ -211,26 +213,31 @@ export class CrowdXplorer implements OnInit {
 
     /* |--------- WEB SEARCH ---------| */
 
+    public saveQueryText(query: string) {
+        this.queryValue = query
+    }
+
     /*
      * This function uses the text received as a parameter to perform a request using the chosen service.
      */
-    public performWebSearch(query: string) {
-        if (query.length > 0) {
+    public performWebSearch() {
+        console.log(this.queryValue)
+        if (this.queryValue.length > 0) {
             /* The loading screen is shown */
             this.ngxService.startBackground();
 
             /* A search has been started */
             this.searchInProgress = true;
 
-            /* EMITTER: The user query is emitted to provide it to an eventual parent component */
-            this.queryEmitter.emit(query);
+            /* EMITTER: The user query is emitted to provide it to an eventual parent component, only when the websearch is triggered */
+            this.queryEmitter.emit(this.queryValue);
 
             switch (this.source) {
                 /* The search operation for Bing Web Search is performed */
                 /* This is done by subscribing to an Observable of <BingWebSearchResponse> items */
                 case "BingWebSearch": {
                     this.bingService
-                        .performWebSearch(this.bingApiKey, query)
+                        .performWebSearch(this.bingApiKey, this.queryValue)
                         .subscribe((searchResponse) => {
                             /* We are interested in parsing the webPages property of a <BingWebSearchResponse> */
                             if (searchResponse.hasOwnProperty("webPages")) {
@@ -267,7 +274,7 @@ export class CrowdXplorer implements OnInit {
                 }
                 case "FakerWebSearch": {
                     this.fakerService
-                        .performWebSearch(this.fakeJSONToken, query)
+                        .performWebSearch(this.fakeJSONToken, this.queryValue)
                         .subscribe((searchResponse) => {
                             /* We are interested in parsing the webPages property of a BingWebSearchResponse */
                             if (searchResponse.length > 0) {
@@ -301,7 +308,7 @@ export class CrowdXplorer implements OnInit {
                 }
                 case "PubmedSearch": {
                     this.pubmedService
-                        .performWebSearch(query)
+                        .performWebSearch(this.queryValue)
                         .subscribe(async (searchResponse) => {
                             /* We are interested in parsing the webPages property of a BingWebSearchResponse */
                             if (
@@ -378,10 +385,9 @@ export class CrowdXplorer implements OnInit {
 
     /* Random digits generation */
     public randomDigits(): string {
-        let array = Array.from({ length: 10 }, () =>
+        let array = Array.from({length: 10}, () =>
             Math.floor(Math.random() * (1000 - 1 + 1) + 1)
         );
-
         return array.join("");
     }
 
@@ -400,15 +406,6 @@ export class CrowdXplorer implements OnInit {
 
     private disableSearchEngine(disable: boolean) {
         this.searchInProgress = false;
-
         disable ? this.searchForm.disable() : this.searchForm.enable();
-    }
-    @HostListener("window:resize")
-    onResize() {
-        if (window.innerWidth < 768) {
-            this.isSmallScreen = true;
-        } else {
-            this.isSmallScreen = false;
-        }
     }
 }

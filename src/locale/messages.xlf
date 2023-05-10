@@ -1906,22 +1906,21 @@
         <source>Insert your query</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/search-engine/crowd-xplorer/crowd-xplorer.component.html</context>
-          <context context-type="linenumber">12</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/document/dimension/search-engine/crowd-xplorer/crowd-xplorer.component.html</context>
-          <context context-type="linenumber">65</context>
+          <context context-type="linenumber">22</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="24df50e434605e6940401017f3e50cf4b6cb8491" datatype="html">
-        <source>results found.</source>
+      <trans-unit id="6f167e9096bf97bf42f869b610aa46e1447d5da0" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="results found.&lt;/mat-header-cell&gt;"/> results found.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/search-engine/crowd-xplorer/crowd-xplorer.component.html</context>
-          <context context-type="linenumber">35</context>
+          <context context-type="linenumber">31</context>
         </context-group>
+      </trans-unit>
+      <trans-unit id="7e892ba15f2c6c17e83510e273b3e10fc32ea016" datatype="html">
+        <source>Search</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/search-engine/crowd-xplorer/crowd-xplorer.component.html</context>
-          <context context-type="linenumber">76</context>
+          <context context-type="linenumber">63</context>
         </context-group>
       </trans-unit>
       <trans-unit id="5f6d7b2ca44ed114925fef64c4de75be5da8ca3b" datatype="html">

@@ -1,96 +1,68 @@
-<mat-card *ngIf="this.task.settings.modality=='conversational'" id="crowd-xplorer-{{ digits }}" class="xplorer-body p-1" [formGroup]="searchForm">
-
-    <div class="col-12 container">
-        <div class="row my-2 container">
-            <div class="col-12">
-                <h2>Search Engine</h2>
-            </div>
-        </div>
-        <div class="row container">
-            <div class="col-8 col-lg-9 pe-0">
-                <mat-form-field id="search-textarea" class="w-100" appearance="outline">
-                    <mat-label><span i18n>Insert your query</span></mat-label>
-                    <input #searchInput matInput type="search" formControlName="query" (keyup.enter)="performWebSearch(searchInput.value)"/>
-                </mat-form-field>
-            </div>
-            <div class="col-lg-2 col-md-4 col-sm-4 mt-1" style="height: 60px">
-                <button *ngIf="!isSmallScreen" class="h-100" [ngClass]="!!searchInProgress ? 'searching' : ''" mat-flat-button color="primary"
-                        [disabled]="!query.valid || searchInProgress || (this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior =='disable_forms')"
-                        (click)="performWebSearch(searchInput.value)">
-                    <mat-icon *ngIf="!searchInProgress">search</mat-icon>
-                    {{ !!searchInProgress ? "SEARCHING..." : "SEARCH" }}
-                </button>
-                <button *ngIf="isSmallScreen" class="h-100" mat-flat-button color="primary"
-                        [disabled]=" !query.valid || searchInProgress || (this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior == 'disable_forms')"
-                        (click)="performWebSearch(searchInput.value)">
-                    <mat-icon>search</mat-icon>
-                </button>
-            </div>
-        </div>
-        <div class="row container pe-0">
-            <div class="col-12 pe-0">
-                <mat-table [dataSource]="dataSource">
-                    <mat-radio-group formControlName="urls">
-                        <ng-container matColumnDef="{{ displayedColumns }}">
-                            <mat-header-cell *matHeaderCellDef>{{ resultsAmount }} <span i18n>results found.</span></mat-header-cell>
-                            <mat-cell *matCellDef="let row; let i = index">
-                                <p>
-                                    <a target="_blank" href="{{ decodeURI(row.url) }}">{{ row.name }}</a>
-                                    <br/>
-                                    <span>{{ decodeURI(row.url) }}</span>
-                                    <br/>
-                                    <span class="row-snippet">{{row.snippet}}</span>
-                                </p>
-                                <mat-radio-button labelPosition="before"
-                                                  [disabled]="this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior =='disable_forms'"
-                                                  (change)="selectRow(row)"
-                                                  value="{{ row.url }}">
-                                </mat-radio-button>
-                            </mat-cell>
-                        </ng-container>
-                    </mat-radio-group>
-                    <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-                    <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
-                </mat-table>
-                <mat-paginator *ngIf="resultsFound" [pageSize]="resultPageSize" [pageSizeOptions]="resultPageSizeOptions"></mat-paginator>
-            </div>
-        </div>
+<mat-card id="crowd-xplorer-{{digits}}"
+          [ngClass]="task.settings.modality=='conversational' ? 'xplorer-body p-2' : 'xplorer-body'"
+          [formGroup]="searchForm">
+    <ng-container *ngIf="this.task.settings.modality=='conversational'">
+        <ng-container *ngTemplateOutlet="searchEngineTitle"></ng-container>
+    </ng-container>
+    <div class="search-bar">
+        <ng-container *ngTemplateOutlet="searchEngineTextArea"></ng-container>
+        <ng-container *ngTemplateOutlet="searchEngineButton"></ng-container>
     </div>
+    <ng-container *ngTemplateOutlet="searchEngineDataSource"></ng-container>
 </mat-card>
 
-
-<mat-card *ngIf="this.task.settings.modality!='conversational'" id="crowd-xplorer-{{digits}}" class="xplorer-body" [formGroup]="searchForm">
-    <div class="search-bar">
-        <mat-form-field id="search-textarea" appearance="outline">
-            <mat-label><span i18n>Insert your query</span></mat-label>
-            <input #searchInput matInput type="search" formControlName="query" (keyup.enter)="performWebSearch(searchInput.value)">
-        </mat-form-field>
-        <button mat-flat-button color="primary" class="search-button"
-                [disabled]="!query.valid || searchInProgress || (this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior=='disable_forms')"
-                (click)="performWebSearch(searchInput.value)">{{searchInProgress === true ? 'SEARCHING...' : 'SEARCH'}}
-        </button>
+<ng-template #searchEngineTitle>
+    <div>
+        <h3>Search Engine</h3>
     </div>
-    <mat-table [dataSource]="dataSource">
+</ng-template>
+
+<ng-template #searchEngineTextArea [formGroup]="searchForm">
+    <mat-form-field id="search-textarea" appearance="outline">
+        <mat-label><span i18n>Insert your query</span></mat-label>
+        <input #searchInput matInput type="search" formControlName="query" (change)="this.saveQueryText(searchInput.value)" (keyup.enter)="this.performWebSearch()"/>
+    </mat-form-field>
+</ng-template>
+
+<ng-template #searchEngineDataSource [formGroup]="searchForm">
+    <mat-table [dataSource]="dataSource" class="search-data-source">
         <mat-radio-group formControlName="urls">
-            <ng-container matColumnDef="{{displayedColumns}}">
-                <mat-header-cell *matHeaderCellDef> {{resultsAmount}} <span i18n>results found.</span></mat-header-cell>
-                <mat-cell *matCellDef="let row; let i=index;">
+            <ng-container matColumnDef="{{ displayedColumns }}">
+                <mat-header-cell *matHeaderCellDef i18n>{{ resultsAmount }} results found.</mat-header-cell>
+                <mat-cell *matCellDef="let row; let i = index">
                     <p>
-                        <a target="_blank" href="{{decodeURI(row.url)}}">{{row.name}}</a>
+                        <a target="_blank" href="{{ decodeURI(row.url) }}">{{ row.name }}</a>
                         <br/>
-                        <span>{{decodeURI(row.url)}}</span>
+                        <span>{{ decodeURI(row.url) }}</span>
                         <br/>
                         <span class="row-snippet">{{row.snippet}}</span>
                     </p>
-                    <mat-radio-button labelPosition="before" [disabled]="this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior=='disable_forms'" (change)="selectRow(row)" value="{{row.url}}">
+                    <mat-radio-button labelPosition="before"
+                                      [disabled]="this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior =='disable_forms'"
+                                      (change)="selectRow(row)"
+                                      value="{{ row.url }}">
                     </mat-radio-button>
                 </mat-cell>
             </ng-container>
         </mat-radio-group>
         <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-        <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+        <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
     </mat-table>
-
     <mat-paginator *ngIf="resultsFound" [pageSize]="resultPageSize" [pageSizeOptions]="resultPageSizeOptions"></mat-paginator>
+</ng-template>
 
-</mat-card>
+<ng-template #searchEngineButton>
+    <button mat-flat-button color="primary"
+            [ngClass]="task.settings.modality=='conversational' ? 'search-button-conversational' : 'search-button'"
+            [disabled]="!query.valid || searchInProgress || (this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior =='disable_forms')"
+            (click)="this.performWebSearch()">
+        <ng-container *ngIf="searchInProgress; else searchNotInProgress">
+            <mat-icon fontIcon="hourglass_top"></mat-icon>
+        </ng-container>
+        <ng-template #searchNotInProgress>
+            <span i18n>Search</span>
+        </ng-template>
+    </button>
+</ng-template>
+
+
