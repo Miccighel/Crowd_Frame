@@ -63,4 +63,8 @@ export default class ChatHelper {
     static getTimeStampInSeconds() {
         return Date.now() / 1000;
     }
+
+    static getUid() {
+        return Date.now().toString(36) + Math.random().toString(36).substr(2);
+    }
 }

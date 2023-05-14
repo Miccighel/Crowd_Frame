@@ -10,6 +10,8 @@
                 [disabled]="readOnly"
                 disableOptionCentering
                 panelClass="optionsPanel"
+                placeholder="Select an option"
+                floatlLabel="never"
             >
                 <mat-option *ngFor="let option of options" [value]="option">
                     {{ option.label }}</mat-option
@@ -22,8 +24,8 @@
             mat-mini-fab
             type="submit"
             class="chat-input-button"
-            [disabled]="readOnly"
-            [ngClass]="readOnly ? 'inactive' : 'active'"
+            [disabled]="readOnly || !selected"
+            [ngClass]="readOnly || !selected ? 'inactive' : 'active'"
             (click)="onSubmit()"
         >
             <mat-icon

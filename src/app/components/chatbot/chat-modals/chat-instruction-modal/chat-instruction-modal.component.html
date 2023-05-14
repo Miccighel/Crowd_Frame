@@ -1,16 +1,4 @@
 <div class="modal-body" id="modal-instructions">
-    <ng-container
-        *ngIf="instructionsEvaluation.element"
-        class="evaluation-instructionsEvaluation"
-    >
-        <h2>
-            {{ instructionsEvaluation.element.label }} -
-            {{ instructionsEvaluation.element.caption }}
-        </h2>
-        <div>
-            <p>{{ instructionsEvaluation.element.text }}</p>
-        </div>
-    </ng-container>
     <div *ngIf="instructions.length > 0">
         <div *ngFor="let instruction of instructions">
             <h2>{{ instruction.caption }}</h2>

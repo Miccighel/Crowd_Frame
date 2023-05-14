@@ -16,17 +16,10 @@ export class ChatInputSelectComponent {
     @Input() public options: { label: string; value: any }[];
     @Input() public readOnly!: boolean;
     @Output() public send = new EventEmitter();
-    public selected: { label: string; value: any } = {
-        label: null,
-        value: null,
-    };
+    public selected: { label: string; value: any } | undefined;
 
     onSubmit() {
         const message = this.selected;
         this.send.emit({ message });
-    }
-
-    ngOnChanges() {
-        this.selected = this.options[0];
     }
 }
