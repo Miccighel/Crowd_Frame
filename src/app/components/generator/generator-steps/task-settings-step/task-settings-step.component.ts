@@ -386,7 +386,7 @@ export class TaskSettingsStepComponent implements OnInit {
                 hits = await this.S3Service.downloadHits(
                     this.configService.environment
                 );
-            } catch (exception) {}
+            } catch (exception) { }
             this.localStorageService.setItem(`hits`, JSON.stringify(hits));
             this.updateHitsFile(hits);
         }
@@ -446,9 +446,9 @@ export class TaskSettingsStepComponent implements OnInit {
         if (this.hitsParsed.length > 0) {
             this.hitsDetected =
                 "documents" in this.hitsParsed[0] &&
-                "token_input" in this.hitsParsed[0] &&
-                "token_output" in this.hitsParsed[0] &&
-                "unit_id" in this.hitsParsed[0]
+                    "token_input" in this.hitsParsed[0] &&
+                    "token_output" in this.hitsParsed[0] &&
+                    "unit_id" in this.hitsParsed[0]
                     ? this.hitsParsed.length
                     : 0;
         } else {
@@ -921,7 +921,7 @@ export class TaskSettingsStepComponent implements OnInit {
             workers_number
         );
 
-        console.log(JSON.stringify(req));
+
 
         this.ngxService.startBackground();
         this.HitsSolverService.submitRequest(req).subscribe(

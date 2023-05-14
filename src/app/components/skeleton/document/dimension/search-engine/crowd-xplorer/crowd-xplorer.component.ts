@@ -222,7 +222,7 @@ export class CrowdXplorer implements OnInit {
      * This function uses the text received as a parameter to perform a request using the chosen service.
      */
     public performWebSearch() {
-        console.log(this.queryValue);
+
         if (this.queryValue.length > 0) {
             /* The loading screen is shown */
             this.ngxService.startBackground();
