@@ -55,6 +55,12 @@ export enum InputType {
     Slider,
 }
 
+export enum QuestionType {
+    Standard,
+    CRT,
+    Likert,
+    None = 99
+}
 export enum ButtonsType {
     None,
     YesNo,

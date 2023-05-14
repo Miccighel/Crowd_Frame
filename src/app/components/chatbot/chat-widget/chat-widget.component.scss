@@ -45,6 +45,16 @@
     box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+.radio-option {
+    display: flex;
+    align-items: center;
+
+    span {
+        font-weight: 600;
+        margin-left: 0.5rem;
+    }
+}
+
 .chat-box {
     position: relative;
     border-radius: 5px;
@@ -469,4 +479,5 @@ button.btn-user-answer {
     border: solid 3px var(--light);
     background-color: var(--grey);
     border-radius: 10px;
+    color: var(--dark);
 }

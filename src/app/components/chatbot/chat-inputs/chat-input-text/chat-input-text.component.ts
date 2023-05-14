@@ -10,12 +10,14 @@ import {
 @Component({
     selector: "chat-input-text",
     templateUrl: "chat-input-text.component.html",
-    styleUrls: ["./chat-input-text.component.css"],
+    styleUrls: ["./chat-input-text.component.scss"],
 })
 export class ChatInputTextComponent {
     @Output() public send = new EventEmitter();
     @Input() public pholder!: string;
     @Input() public readOnly!: boolean;
+    @Input() public canSend: boolean = true;
+
     @ViewChild("message", { static: true }) message!: ElementRef;
     @ViewChild("buttons") buttons!: ElementRef;
 

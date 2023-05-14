@@ -1,5 +1,21 @@
 [
     {
+        "name": "Demographic_1",
+        "index": 0,
+        "type": "standard",
+        "position": "start",
+        "questions": [
+            {
+                "index": 0,
+                "name": "age",
+                "text": "What is your age range?",
+                "type": "mcq",
+                "required": true,
+                "answers": ["0-18", "19-25", "26-35", "36-50", "51-80", "81+"]
+            }
+        ]
+    },
+    {
         "type": "crt",
         "position": "start",
         "questions": [

@@ -97,9 +97,11 @@
             <ng-container *ngFor="let message of messages">
                 <div
                     class="chat-message"
-                    [class.chat-message-received]="message.type === 'received'"
                     [@fadeIn]
-                    [class.chat-message-sent]="message.type === 'sent'"
+                    [ngClass]="{
+                        'chat-message-sent': message.type === 'sent',
+                        'chat-message-received': message.type === 'received'
+                    }"
                 >
                     <div>
                         <chat-avatar
@@ -107,9 +109,32 @@
                             class="chat-message-from-avatar"
                         ></chat-avatar>
                         <div
+                            *ngIf="message.isOnlyText; else optionsBody"
                             class="chat-message-text"
                             [innerHTML]="message.text"
                         ></div>
+                        <ng-template #optionsBody>
+                            <div
+                                class="chat-message-text"
+                                *ngIf="!message.isOnlyText"
+                            >
+                                <div
+                                    *ngFor="let item of radioButtonOptions"
+                                    class="radio-option mb-1"
+                                >
+                                    <input
+                                        [name]="guid"
+                                        type="radio"
+                                        value="item.label"
+                                        id="item.value"
+                                        (click)="
+                                            onRadioButtonSelect(item)
+                                        "
+                                    />
+                                    <span class="">{{ item.label }}</span>
+                                </div>
+                            </div>
+                        </ng-template>
                     </div>
                     <div class="chat-message-date">
                         {{ message.date | date : "short" }}
@@ -173,8 +198,7 @@
         <div class="container d-flex row p-0 m-0" id="input-background">
             <div
                 id="input-box"
-                class="container d-flex row p-0 m-0"
-                [ngClass]="readOnly ? 'input-inactive' : 'input-active'"
+                class="container d-flex row p-0 m-0 input-active"
             >
                 <chat-input-url
                     *ngIf="hasDoubleInput && !showMessageInput"
@@ -228,6 +252,7 @@
                     (send)="sendMessage($event)"
                     [pholder]="textInputPlaceHolder"
                     [readOnly]="readOnly"
+                    [canSend]="canSend"
                 >
                 </chat-input-text>
             </div>

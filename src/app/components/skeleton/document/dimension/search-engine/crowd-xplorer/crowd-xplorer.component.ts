@@ -11,10 +11,10 @@ import {
     HostListener,
 } from "@angular/core";
 /* Loading screen module */
-import {NgxUiLoaderService} from "ngx-ui-loader";
+import { NgxUiLoaderService } from "ngx-ui-loader";
 /* Material design modules */
-import {MatTableDataSource} from "@angular/material/table";
-import {MatPaginator} from "@angular/material/paginator";
+import { MatTableDataSource } from "@angular/material/table";
+import { MatPaginator } from "@angular/material/paginator";
 /* Reactive forms modules */
 import {
     UntypedFormBuilder,
@@ -23,18 +23,18 @@ import {
     Validators,
 } from "@angular/forms";
 /* Services */
-import {BingService} from "../../../../../../services/search_engine/bing.service";
-import {BingWebSearchResponse} from "../../../../../../models/search_engine/bingWebSearchResponse";
-import {FakerService} from "../../../../../../services/search_engine/faker.service";
-import {FakerSearchResponse} from "../../../../../../models/search_engine/fakerSearchResponse";
-import {PubmedService} from "../../../../../../services/search_engine/pudmed.service";
-import {PubmedSearchResponse} from "../../../../../../models/search_engine/pubmedSearchResponse";
-import {PubmedSummaryResponse} from "../../../../../../models/search_engine/pubmedSummaryResponse";
-import {ConfigService} from "../../../../../../services/config.service";
-import {SearchEngineSettings} from "../../../../../../models/search_engine/searchEngineSettings";
+import { BingService } from "../../../../../../services/search_engine/bing.service";
+import { BingWebSearchResponse } from "../../../../../../models/search_engine/bingWebSearchResponse";
+import { FakerService } from "../../../../../../services/search_engine/faker.service";
+import { FakerSearchResponse } from "../../../../../../models/search_engine/fakerSearchResponse";
+import { PubmedService } from "../../../../../../services/search_engine/pudmed.service";
+import { PubmedSearchResponse } from "../../../../../../models/search_engine/pubmedSearchResponse";
+import { PubmedSummaryResponse } from "../../../../../../models/search_engine/pubmedSummaryResponse";
+import { ConfigService } from "../../../../../../services/config.service";
+import { SearchEngineSettings } from "../../../../../../models/search_engine/searchEngineSettings";
 /* Debug config import */
-import {S3Service} from "../../../../../../services/aws/s3.service";
-import {Task} from "../../../../../../models/skeleton/task";
+import { S3Service } from "../../../../../../services/aws/s3.service";
+import { Task } from "../../../../../../models/skeleton/task";
 
 /* Component HTML Tag definition */
 @Component({
@@ -110,7 +110,7 @@ export class CrowdXplorer implements OnInit {
     /* Boolean flag */
     searchPerformed: boolean;
 
-    queryValue: string
+    queryValue: string;
 
     /* Event emitters to integrate in other components */
     /* EMITTER: Query inserted by user */
@@ -191,11 +191,12 @@ export class CrowdXplorer implements OnInit {
     }
 
     ngOnInit() {
-        console.log("here")
-        if (this.task.settings.modality == 'conversational') {
+        if (this.task.settings.modality == "conversational") {
             this.resetEvent.subscribe(() => this.resetSearchEngineState());
             this.disableSearchEngine(true);
-            this.disableEvent.subscribe((disable: boolean) => this.disableSearchEngine(disable));
+            this.disableEvent.subscribe((disable: boolean) =>
+                this.disableSearchEngine(disable)
+            );
         }
     }
 
@@ -214,14 +215,14 @@ export class CrowdXplorer implements OnInit {
     /* |--------- WEB SEARCH ---------| */
 
     public saveQueryText(query: string) {
-        this.queryValue = query
+        this.queryValue = query;
     }
 
     /*
      * This function uses the text received as a parameter to perform a request using the chosen service.
      */
     public performWebSearch() {
-        console.log(this.queryValue)
+        console.log(this.queryValue);
         if (this.queryValue.length > 0) {
             /* The loading screen is shown */
             this.ngxService.startBackground();
@@ -385,7 +386,7 @@ export class CrowdXplorer implements OnInit {
 
     /* Random digits generation */
     public randomDigits(): string {
-        let array = Array.from({length: 10}, () =>
+        let array = Array.from({ length: 10 }, () =>
             Math.floor(Math.random() * (1000 - 1 + 1) + 1)
         );
         return array.join("");

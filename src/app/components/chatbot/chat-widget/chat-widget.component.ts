@@ -26,6 +26,7 @@ import {
     IntervalDimensionInfo,
     MagnitudeDimensionInfo,
     ButtonsType,
+    QuestionType,
 } from "../../../models/conversational/common.model";
 import { ScaleCategorical } from "../../../models/skeleton/dimension";
 import { NgbModal } from "@ng-bootstrap/ng-bootstrap";
@@ -102,9 +103,7 @@ export class ChatWidgetComponent implements OnInit {
     queryIndex: number[];
     sendData = false;
     conversationState: ConversationState;
-    public buttonsToShow = ButtonsType.None;
-    public enButtonType = ButtonsType;
-    public hasDoubleInput = false;
+
     // Variables
     fixedMessage: string; // Messaggio sempre visibile in alto nel chatbot
     statementAuthor: string;
@@ -142,17 +141,25 @@ export class ChatWidgetComponent implements OnInit {
     //Show components flag
     public EnInputType = InputType;
     public inputComponentToShow: InputType = InputType.Text;
+    public canSend: boolean = false;
+    public buttonsToShow = ButtonsType.None;
+    public enButtonType = ButtonsType;
+    public hasDoubleInput = false;
+    public questionType: QuestionType = QuestionType.None;
 
     //Containers
     public categoricalInfo: CategoricalInfo[] = [];
     public magnitudeInfo: MagnitudeDimensionInfo = null;
     public intervalInfo: IntervalDimensionInfo = null;
     public dropdownListOptions: DropdownSelectItem[] = [];
+    public radioButtonOptions: DropdownSelectItem[] = [];
+    public guid: string = null;
+    public toReplace = null;
 
     // Messaggi per l'utente
     public messagesForUser = [
-        "Hello &#x1F60A<br>My name is Fakebot and I'll be helping you complete this task! You can find the <b>instructions</b> near my name, at the top of this chat, you can find a question mark, just press it whenever you need. Nothing will break down, I promise! &#x1F609;",
-        "What's your name? If you don't want to tell me your name just write <b>no</b> in the chat and press send",
+        "Hello &#x1F60A<br>My name is Crowdbot and I'll be helping you complete this task! You can find the <b>instructions</b> near my name, at the top of this chat: just click the question mark whenever you need. Nothing will break down, I promise! &#x1F609;",
+        "What's your name? If you don't want to tell me your name just write <b>no</b> in the chat and click send",
         "Hi {name}, it's a pleasure chatting with you. Are you ready?",
         "No problem, so are you ready?",
         "Nice, let's start with the task! &#x1F60E;",
@@ -335,7 +342,7 @@ export class ChatWidgetComponent implements OnInit {
         this.conversationState = ConversationState.Questionnaire;
         this.statementProvided = false;
         this.queue = 0;
-        this.textInputPlaceHolder = "";
+        this.textInputPlaceHolder = null;
         this.urlInputValue = "";
         this.tryNumber = 1;
         this.query = [];
@@ -479,6 +486,24 @@ export class ChatWidgetComponent implements OnInit {
                 );
                 return;
             } else {
+                this.textInputPlaceHolder = null;
+                const questionType = this.getQuestionnaireType(this.currentQuestionnaire);
+                let replacement = null;
+                switch (questionType) {
+                    case QuestionType.Likert:
+                        message = this.getLikertMapping(this.currentQuestionnaire, message, 'value')
+                        replacement = this.generateQuestionnaireOptions(true);
+                        this.replaceMessage(replacement);
+                        break;
+                    case QuestionType.Standard:
+                        replacement = this.generateQuestionnaireOptions(false);
+                        this.replaceMessage(replacement);
+                        break;
+                    default:
+                        // Nessuna operazione
+                        break;
+                }
+
                 this.questionnaireAnswers[
                     this.getGlobalQuestionIndex(
                         this.currentQuestionnaire,
@@ -496,6 +521,7 @@ export class ChatWidgetComponent implements OnInit {
                     this.timestampsEnd[this.currentQuestionnaire].push(
                         ChatHelper.getTimeStampInSeconds()
                     );
+
                     //Calcolo tempo trascorso tra il completamento di due questionari
                     this.timestampsElapsed[this.currentQuestionnaire] =
                         this.timestampsEnd[this.currentQuestionnaire][0] -
@@ -527,47 +553,32 @@ export class ChatWidgetComponent implements OnInit {
             this.currentQuestionnaire.toString()
         ).className = "dot in-progress";
         //Non è in attesa, quindi genera la domanda successiva
+        this.showMessageInput = true;
         if (questionnaires[this.currentQuestionnaire].type == "standard") {
-            this.readOnly = true;
-            this.showMessageInput = true;
             this.printQuestion();
-            this.typingAnimation(this.createQuestionnaireAnswers());
-            this.generateQuestionnaireAnswers();
-            setTimeout(() => {
-                this.showMessageInput = false;
-                this.changeDetector.detectChanges();
-            }, 1600);
-            this.readOnly = false;
-            this.inputComponentToShow = InputType.Dropdown;
+            this.typingAnimation(this.createQuestionnaireAnswers(), false);
+            this.typingAnimation("Please select an answer");
         } else if (questionnaires[this.currentQuestionnaire].type == "likert") {
-            this.readOnly = true;
-            this.showMessageInput = true;
             this.typingAnimation(
                 questionnaires[this.currentQuestionnaire].questions[
                     this.currentQuestion
                 ].text
             );
-            this.typingAnimation(this.createLikertQuestionnaireAnswers());
-            this.generateLikertQuestionnaireAnswers();
-            setTimeout(() => {
-                this.showMessageInput = false;
-            }, 1600);
-            this.readOnly = false;
-            this.inputComponentToShow = InputType.Dropdown;
+            this.typingAnimation(this.createQuestionnaireAnswers(true), false);
+            this.typingAnimation("Please select an answer");
         } else if (questionnaires[this.currentQuestionnaire].type == "crt") {
+            this.readOnly = false;
             this.typingAnimation(
                 questionnaires[this.currentQuestionnaire].questions[
                     this.currentQuestion
                 ].text
             );
-            this.showMessageInput = true;
             this.inputComponentToShow = InputType.Number;
             setTimeout(() => {
                 this.showMessageInput = false;
                 this.changeDetector.detectChanges();
             }, 1600);
         }
-
         this.awaitingAnswer = true;
         return;
     }
@@ -633,6 +644,7 @@ export class ChatWidgetComponent implements OnInit {
 
     // Fase di task
     private taskP(message) {
+        const { settings, dimensions, questionnaires } = this.task;
         let validAnswer = true;
         if (
             this.inputComponentToShow == InputType.Dropdown ||
@@ -646,18 +658,17 @@ export class ChatWidgetComponent implements OnInit {
             this.getAnswerValidity(this.dimensionIndex, message, this.urlValue)
         ) {
             //Stop del interval
-            if (!!this.task.settings.countdown_time) {
+            if (!!settings.countdown_time) {
                 this.storeCountdownData(
                     this.taskIndex,
-                    this.task.settings.countdown_time,
+                    settings.countdown_time,
                     this.countdownValueSubject.value
                 );
                 this.showCountdown = false;
             }
             //Salvo il tempo di fine
-            this.timestampsEnd[
-                this.task.questionnaires.length + this.taskIndex
-            ][0] = ChatHelper.getTimeStampInSeconds();
+            this.timestampsEnd[questionnaires.length + this.taskIndex][0] =
+                ChatHelper.getTimeStampInSeconds();
 
             this.checkInputAnswer(message, this.taskIndex, this.dimensionIndex);
             this.statementProvided = false;
@@ -682,14 +693,19 @@ export class ChatWidgetComponent implements OnInit {
         }
         //Visualizzazione della dimensione
         if (!!this.fixedMessage) {
-            if (
-                !!this.task.settings.countdown_time &&
-                this.dimensionIndex == 0
-            ) {
-                this.setCountdown(this.task.settings.countdown_time);
+            if (!!settings.countdown_time && this.dimensionIndex == 0) {
+                this.setCountdown(settings.countdown_time);
             }
             if (validAnswer || message == "startTask") {
-                this.printDimension(this.taskIndex, this.dimensionIndex);
+                if (
+                    dimensions[this.dimensionIndex].url &&
+                    !dimensions[this.dimensionIndex].scale
+                ) {
+                    //TODO: Da stabilire
+                } else {
+                    this.printDimension(this.taskIndex, this.dimensionIndex);
+                }
+
                 setTimeout(() => {
                     if (this.inputComponentToShow != InputType.Button)
                         this.showMessageInput = false;
@@ -718,8 +734,10 @@ export class ChatWidgetComponent implements OnInit {
             if (this.pickReview) {
                 //E' in attesa della risposta da parte dell'utente
                 if (this.awaitingAnswer) {
+                    const questionType = this.getQuestionnaireType(this.currentQuestionnaire);
+                    this.textInputPlaceHolder = null;
                     if (
-                        questionnaires[this.currentQuestionnaire].type == "crt"
+                        questionType == QuestionType.CRT
                     ) {
                         if (!ChatHelper.validMsg(message, 1, 100)) {
                             this.typingAnimation(
@@ -728,19 +746,34 @@ export class ChatWidgetComponent implements OnInit {
                             return;
                         }
                     }
-                    if (
-                        questionnaires[this.currentQuestionnaire].type ==
-                        "likert"
-                    ) {
-                        message = questionnaires[
-                            this.currentQuestionnaire
-                        ].mappings.find((el) => el.value == message).label;
-                    }
                     let globalIndex = this.getGlobalQuestionIndex(
                         this.currentQuestionnaire,
                         this.currentQuestion
                     );
-                    this.questionnaireAnswers[globalIndex] = message;
+
+                    let replacement = null;
+                    switch (questionType) {
+                        case QuestionType.Likert:
+                            replacement = this.generateQuestionnaireOptions(true);
+                            this.replaceMessage(replacement);
+                            break;
+                        case QuestionType.Standard:
+                            replacement = this.generateQuestionnaireOptions(false);
+                            this.replaceMessage(replacement);
+                            break;
+                        default:
+                            // Nessuna operazione
+                            break;
+                    }
+                    if (questionType == QuestionType.Likert) {
+                        this.questionnaireAnswers[globalIndex] = questionnaires[
+                            this.currentQuestionnaire
+                        ].mappings.find((el) => el.label == message).value;
+                    }
+                    else {
+                        this.questionnaireAnswers[globalIndex] = message;
+                    }
+
                     document.getElementById(
                         this.currentQuestionnaire.toString()
                     ).className = "dot completed";
@@ -766,57 +799,45 @@ export class ChatWidgetComponent implements OnInit {
                         this.getLocalQuestionIndexByGlobalIndex(
                             globalQuestionIndex
                         );
-
                     this.printQuestion();
                     document.getElementById(
                         this.currentQuestionnaire.toString()
                     ).className = "dot in-progress";
                     this.awaitingAnswer = true;
+                    this.inputComponentToShow = InputType.Text;
+                    const questionType = this.getQuestionnaireType(this.currentQuestionnaire);
+                    switch (questionType) {
+                        case QuestionType.Likert:
+                            this.readOnly = true;
+                            this.showMessageInput = true;
+                            this.typingAnimation(
+                                this.createQuestionnaireAnswers(true),
+                                false
+                            );
+                            this.typingAnimation("Please select an answer");
+                            return;
+                        case QuestionType.Standard:
+                            this.typingAnimation(
+                                this.createQuestionnaireAnswers(),
+                                false
+                            );
+                            this.typingAnimation("Please select an answer");
+                            return;
+                        case QuestionType.CRT:
+                            this.inputComponentToShow = InputType.Number;
+                            return;
+                        default:
+                            this.buttonsToShow = ButtonsType.None;
+                            return;
 
-                    if (
-                        questionnaires[this.currentQuestionnaire].type ==
-                        "standard"
-                    ) {
-                        this.typingAnimation(this.createQuestionnaireAnswers());
-                        this.generateQuestionnaireAnswers();
-                        this.readOnly = false;
-                        this.inputComponentToShow == InputType.Dropdown;
-                        return;
-                    } else if (
-                        questionnaires[this.currentQuestionnaire].type ==
-                        "likert"
-                    ) {
-                        this.readOnly = true;
-                        this.showMessageInput = true;
-                        this.typingAnimation(
-                            this.createLikertQuestionnaireAnswers()
-                        );
-                        this.generateLikertQuestionnaireAnswers();
-                        setTimeout(() => {
-                            this.showMessageInput = false;
-                            this.changeDetector.detectChanges();
-                        }, 1600);
-                        this.readOnly = false;
-                        this.inputComponentToShow = InputType.Dropdown;
-                        return;
-                    } else if (
-                        questionnaires[this.currentQuestionnaire].type == "crt"
-                    ) {
-                        this.inputComponentToShow = InputType.Number;
-
-                        return;
                     }
-                    this.buttonsToShow = ButtonsType.None;
-                    return;
                 }
             }
             if (!this.reviewAnswersShown) {
                 this.cleanUserInput();
                 this.typingAnimation("Let's review your answers!");
-                this.typingAnimation(
-                    this.createQuestionnaireRecap() +
-                        "<br>Confirm your answers?"
-                );
+                this.typingAnimation(this.createQuestionnaireRecap());
+                this.typingAnimation("Do you confirm your answers?");
                 this.readOnly = false;
                 this.reviewAnswersShown = true;
                 setTimeout(() => {
@@ -879,8 +900,8 @@ export class ChatWidgetComponent implements OnInit {
                         const startTime =
                             this.action == "Back"
                                 ? this.countdownLeftTimeContainer[
-                                      this.taskIndex
-                                  ]
+                                this.taskIndex
+                                ]
                                 : this.task.settings.countdown_time;
                         this.storeCountdownData(
                             this.taskIndex,
@@ -925,10 +946,9 @@ export class ChatWidgetComponent implements OnInit {
         if (!this.reviewAnswersShown) {
             this.cleanUserInput();
             this.typingAnimation("Let's review your answers!");
-            this.typingAnimation(
-                this.createDocumentRecap(this.taskIndex) +
-                    "<br>Confirm your answers?"
-            );
+            this.typingAnimation(this.createDocumentRecap(this.taskIndex));
+            this.typingAnimation("Do you confirm your answers?");
+
             setTimeout(() => {
                 this.buttonsToShow = ButtonsType.Confirm;
                 this.changeDetector.detectChanges();
@@ -989,7 +1009,6 @@ export class ChatWidgetComponent implements OnInit {
             this.buttonsToShow = ButtonsType.None;
             this.typingAnimation("Which dimension would you like to change?");
             this.cleanUserInput();
-
             setTimeout(() => {
                 this.generateRevisionData();
                 this.readOnly = false;
@@ -1022,7 +1041,7 @@ export class ChatWidgetComponent implements OnInit {
                 this.action = "Back";
                 this.typingAnimation(
                     this.createStatementsRecap() +
-                        "Which statement would you like to jump to?"
+                    "Which statement would you like to jump to?"
                 );
                 this.buttonsToShow = ButtonsType.None;
                 this.inputComponentToShow = InputType.Dropdown;
@@ -1164,6 +1183,7 @@ export class ChatWidgetComponent implements OnInit {
         } else {
             this.typingAnimation(this.messagesForUser[0]);
             this.typingAnimation(this.messagesForUser[1]);
+            this.canSend = true;
             this.readOnly = false;
             return;
         }
@@ -1309,6 +1329,58 @@ export class ChatWidgetComponent implements OnInit {
         }, 1000);
     }
 
+    public onRadioButtonSelect(item: any) {
+        this.textInputPlaceHolder = item.label;
+        this.canSend = true;
+    }
+
+    private getQuestionnaireType(questionnaireIndex) {
+        const { questionnaires } = this.task;
+        let questionType;
+        switch (questionnaires[questionnaireIndex].type) {
+            case "crt":
+                questionType = QuestionType.CRT
+                break;
+            case "likert":
+                questionType = QuestionType.Likert
+                break;
+            case "standard":
+                questionType = QuestionType.Standard
+                break;
+            default:
+                questionType = QuestionType.None;
+                break;
+
+        }
+        return questionType
+    }
+
+    private getLikertMapping(index, input, returnValue: 'label' | 'value') {
+        if (returnValue == 'label') {
+            return this.task.questionnaires[index].mappings.find((el) => el.value == input).label
+        }
+        else {
+            return this.task.questionnaires[index].mappings.find((el) => el.label == input).value
+        }
+
+    }
+
+    private replaceMessage(contentForReplacement: string) {
+        let index = this.messages.findIndex((el) => el.date == this.toReplace);
+        const message = {
+            from: {
+                avatar: "https://randomuser.me/api/portraits/lego/5.jpg",
+                name: "Crowd Bot",
+                status: "Online",
+            },
+            text: contentForReplacement,
+            type: "received",
+            date: this.toReplace,
+            isOnlyText: true,
+        };
+        this.messages[index] = message;
+    }
+
     private emitGetUrlValue() {
         this.readUrlValue.emit();
     }
@@ -1329,7 +1401,7 @@ export class ChatWidgetComponent implements OnInit {
     }
     private cleanUserInput() {
         this.urlInputValue = "";
-        this.textInputPlaceHolder = "";
+        this.textInputPlaceHolder = null;
         this.inputComponentToShow = InputType.Text;
         this.waitForUrl = false;
         this.emitDisableSearchEngine();
@@ -1368,7 +1440,7 @@ export class ChatWidgetComponent implements OnInit {
     }
 
     public storeSearchEngineUserQuery(text) {
-        this.textInputPlaceHolder = "";
+        this.textInputPlaceHolder = null;
         this.readOnly = false;
         let q = {};
         q["document"] = this.taskIndex;
@@ -1404,6 +1476,7 @@ export class ChatWidgetComponent implements OnInit {
             text,
             type,
             date: new Date().getTime(),
+            isOnlyText: true,
         });
         this.changeDetector.detectChanges();
         this.scrollToBottom();
@@ -1412,15 +1485,22 @@ export class ChatWidgetComponent implements OnInit {
     public addMessage(
         from: { name: string; status: string; avatar: string; user?: string },
         text: any,
-        type: "received" | "sent"
+        type: "received" | "sent",
+        isOnlyText: boolean = true
     ) {
         // unshift aggiunge elementi all'inizio del vettore
-        this.messages.unshift({
+        const timeStamp = new Date().getTime();
+        const message = {
             from,
             text,
             type,
-            date: new Date().getTime(),
-        });
+            date: timeStamp,
+            isOnlyText,
+        };
+        this.messages.unshift(message);
+        if (!isOnlyText) {
+            this.toReplace = timeStamp;
+        }
         this.queue -= 1;
         if (this.queue == 0) {
             this.typing.nativeElement.style.display = "none"; // Tolgo l'animazione di scrittura
@@ -1430,7 +1510,7 @@ export class ChatWidgetComponent implements OnInit {
         this.scrollToBottom();
     }
     // Stampa il messaggio inviato dal bot dopo un delay
-    public typingAnimation(message: string) {
+    public typingAnimation(message: string, isOnlyText: boolean = true) {
         this.typing.nativeElement.style.display = "block"; // Mostro l'animazione di scrittura
         this.queue += 1;
         this.ignoreMsg = true; // Ignoro i messaggi in arrivo mentre scrivo
@@ -1439,7 +1519,7 @@ export class ChatWidgetComponent implements OnInit {
                 ? 800
                 : this.simulateTypingTime(message) * this.queue;
         setTimeout(() => {
-            this.addMessage(this.operator, message, "received");
+            this.addMessage(this.operator, message, "received", isOnlyText);
             this.changeDetector.detectChanges();
             this.scrollToBottom();
         }, this.queue * typingTime); // modifica speed
@@ -1715,58 +1795,84 @@ export class ChatWidgetComponent implements OnInit {
     }
 
     //Creazione del testo della domanda e delle risposte possibili
-    private createQuestionnaireAnswers() {
-        let l =
-            this.task.questionnaires[this.currentQuestionnaire].questions[
-                this.currentQuestion
-            ].answers;
-        let recap = "";
-        for (let i = 0; i < l.length; i++) {
-            recap += i + 1 + ". <b>" + l[i] + "</b><br><br>";
+    private createQuestionnaireAnswers(isLikert: boolean = false) {
+        this.canSend = false;
+        this.guid = ChatHelper.getUid();
+
+        if (isLikert) {
+            let options =
+                this.task.questionnaires[this.currentQuestionnaire].mappings;
+            this.radioButtonOptions = options.map((answer) => ({
+                label: answer.label,
+                value: answer.value,
+            }));
+        } else {
+            this.radioButtonOptions = this.task.questionnaires[
+                this.currentQuestionnaire
+            ].questions[this.currentQuestion].answers.map((answer) => ({
+                label: answer,
+                value: answer,
+            }));
         }
-        recap += "Please select the correct answer";
-        return recap;
+        this.readOnly = true;
+        return "";
     }
 
-    private createLikertQuestionnaireAnswers() {
-        let l = this.task.questionnaires[this.currentQuestionnaire].mappings;
+    private generateQuestionnaireOptions(isLikert: boolean = false): string {
         let recap = "";
-        for (let i = 0; i < l.length; i++) {
-            recap += i + 1 + ". <b>" + l[i].label + "</b><br><br>";
+        if (isLikert) {
+            let options =
+                this.task.questionnaires[this.currentQuestionnaire].mappings;
+
+            for (let i = 0; i < options.length; i++) {
+                recap += i + 1 + ". <b>" + options[i].label + "</b><br><br>";
+            }
+        } else {
+            let option =
+                this.task.questionnaires[this.currentQuestionnaire].questions[
+                    this.currentQuestion
+                ].answers;
+
+            for (let i = 0; i < option.length; i++) {
+                recap += i + 1 + ". <b>" + option[i] + "</b><br><br>";
+            }
         }
-        recap += "Please select an answer";
         return recap;
     }
 
     //Creazione testo di riepilogo del questionario
     private createQuestionnaireRecap() {
         let recap = "";
-        let questionIndex = 1;
-        this.task.questionnaires.forEach((questionnaire) => {
-            for (let i = 0; i < questionnaire.questions.length; i++) {
-                if (questionnaire.type == "standard") {
-                    recap +=
-                        questionIndex +
-                        ". Question: <b>" +
-                        questionnaire.questions[i].text +
-                        "</b><br>Answer:<b> " +
-                        this.questionnaireAnswers[i] +
-                        "</b><br><br>";
-                } else if (
-                    questionnaire.type == "crt" ||
-                    questionnaire.type == "likert"
-                ) {
-                    recap +=
-                        questionIndex +
-                        ". Question: <b>" +
-                        questionnaire.questions[i].text +
-                        "</b><br>Answer:<b> " +
-                        this.questionnaireAnswers[questionIndex - 1] +
-                        "</b><br><br>";
+        let globalQuestionIndex = 1;
+        this.task.questionnaires.forEach((item) => {
+            for (let i = 0; i < item.questions.length; i++) {
+                const questionType = this.getQuestionnaireType(item.index);
+                recap +=
+                    globalQuestionIndex +
+                    ". Question: <b>" +
+                    item.questions[i].text +
+                    "</b><br>Answer:<b> "
+                switch (questionType) {
+                    case QuestionType.Standard:
+                        recap += this.questionnaireAnswers[i] +
+                            "</b><br><br>";
+                        break;
+                    case QuestionType.CRT:
+                        recap += this.questionnaireAnswers[globalQuestionIndex - 1] +
+                            "</b><br><br>";
+                        break
+                    case QuestionType.Likert:
+                        recap += this.getLikertMapping(item.index, this.questionnaireAnswers[globalQuestionIndex - 1], 'label') +
+                            "</b><br><br>";
+                        break;
+                    default:
+                        // Nessuna operazione
+                        break;
                 }
-                questionIndex++;
+                globalQuestionIndex++;
             }
         });
+
         return recap;
     }
 
@@ -1874,25 +1980,26 @@ export class ChatWidgetComponent implements OnInit {
             );
         }
         this.inputComponentToShow = InputType.Dropdown;
+        this.showMessageInput = false;
     }
     //Generazione risposte del questionario
-    private generateQuestionnaireAnswers() {
-        this.dropdownListOptions = this.task.questionnaires[
-            this.currentQuestionnaire
-        ].questions[this.currentQuestion].answers.map((el) => ({
-            label: el,
-            value: el,
-        }));
-    }
+    // private generateQuestionnaireAnswers() {
+    //     this.dropdownListOptions = this.task.questionnaires[
+    //         this.currentQuestionnaire
+    //     ].questions[this.currentQuestion].answers.map((el, index) => ({
+    //         label: `${index}. ${el}`,
+    //         value: el,
+    //     }));
+    // }
 
-    private generateLikertQuestionnaireAnswers() {
-        this.dropdownListOptions = this.task.questionnaires[
-            this.currentQuestionnaire
-        ].mappings.map((el) => ({
-            label: el.label,
-            value: el.value,
-        }));
-    }
+    // private generateLikertQuestionnaireAnswers() {
+    //     this.dropdownListOptions = this.task.questionnaires[
+    //         this.currentQuestionnaire
+    //     ].mappings.map((el) => ({
+    //         label: el.label,
+    //         value: el.value,
+    //     }));
+    // }
 
     private generateFinalStatementRecapData() {
         this.dropdownListOptions = [];
@@ -1907,9 +2014,7 @@ export class ChatWidgetComponent implements OnInit {
     // GENERAZIONE DATI RELATIVI ALLE DIMENSIONI
     private generateExampleDimension() {
         let out = `Please rate the <b> ${this.exampleStatement.dimensionInfo.name} </b> of the statement.`;
-
         this.typingAnimation(out);
-
         this.categoricalInfo = [];
         const dimensionInfos = this.exampleStatement.dimensionInfo;
         this.dropdownListOptions = (
@@ -1927,7 +2032,6 @@ export class ChatWidgetComponent implements OnInit {
             description: el.description,
             value: el.value,
         }));
-
         this.showMessageInput = false;
         this.readOnly = false;
         this.inputComponentToShow = InputType.Dropdown;
@@ -1936,7 +2040,7 @@ export class ChatWidgetComponent implements OnInit {
     private generateCategoricalAnswers(dimensionIndex: number) {
         this.categoricalInfo = [];
         const dimensionInfos = this.task.dimensions[dimensionIndex];
-        //Se una dimensione ha più di 5 valori mappati oppure si prevede un doppio input appare la DDL
+        //Se una dimensione ha più di 2 valori mappati oppure si prevede un doppio input appare la DDL
         if (
             (dimensionInfos.scale as ScaleCategorical).mapping.length > 2 ||
             this.hasDoubleInput
