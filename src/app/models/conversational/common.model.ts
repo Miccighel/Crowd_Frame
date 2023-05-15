@@ -1,10 +1,3 @@
-export enum EnDimensionType {
-    Categorical,
-    Magnitude,
-    Interval,
-    URL,
-    TBD,
-}
 
 export interface CategoricalDimensionModel {
     mapping: CategoricalInfo[];
@@ -61,6 +54,8 @@ export enum QuestionType {
     Likert,
     None = 99
 }
+
+
 export enum ButtonsType {
     None,
     YesNo,

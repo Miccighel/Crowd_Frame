@@ -32,7 +32,7 @@ import { ScaleCategorical } from "../../../models/skeleton/dimension";
 import { NgbModal } from "@ng-bootstrap/ng-bootstrap";
 import { GoldChecker } from "data/build/skeleton/goldChecker";
 import ChatHelper from "./chat-helpers";
-import { BehaviorSubject, Observable, Subject } from "rxjs";
+import { BehaviorSubject, Observable } from "rxjs";
 import { ChatCommentModalComponent } from "../chat-modals/chat-comment-modal/chat-comment-modalcomponent";
 import { ChatInstructionModalComponent } from "../chat-modals/chat-instruction-modal/chat-instruction-modal.component";
 
@@ -141,7 +141,7 @@ export class ChatWidgetComponent implements OnInit {
     //Show components flag
     public EnInputType = InputType;
     public inputComponentToShow: InputType = InputType.Text;
-    public canSend: boolean = false;
+
     public buttonsToShow = ButtonsType.None;
     public enButtonType = ButtonsType;
     public hasDoubleInput = false;
@@ -152,7 +152,7 @@ export class ChatWidgetComponent implements OnInit {
     public magnitudeInfo: MagnitudeDimensionInfo = null;
     public intervalInfo: IntervalDimensionInfo = null;
     public dropdownListOptions: DropdownSelectItem[] = [];
-    public radioButtonOptions: DropdownSelectItem[] = [];
+    public buttonOptions: DropdownSelectItem[] = [];
     public guid: string = null;
     public toReplace = null;
 
@@ -555,8 +555,8 @@ export class ChatWidgetComponent implements OnInit {
         //Non è in attesa, quindi genera la domanda successiva
         this.showMessageInput = true;
         if (questionnaires[this.currentQuestionnaire].type == "standard") {
-            this.printQuestion();
-            this.typingAnimation(this.createQuestionnaireAnswers(), false);
+
+            this.createQuestionnaireAnswers(this.printQuestion());
             this.typingAnimation("Please select an answer");
         } else if (questionnaires[this.currentQuestionnaire].type == "likert") {
             this.typingAnimation(
@@ -564,7 +564,7 @@ export class ChatWidgetComponent implements OnInit {
                     this.currentQuestion
                 ].text
             );
-            this.typingAnimation(this.createQuestionnaireAnswers(true), false);
+            this.createQuestionnaireAnswers(this.printQuestion(), true);
             this.typingAnimation("Please select an answer");
         } else if (questionnaires[this.currentQuestionnaire].type == "crt") {
             this.readOnly = false;
@@ -587,10 +587,8 @@ export class ChatWidgetComponent implements OnInit {
     private instructionP(message?: any) {
         this.ignoreMsg = true;
         if (!this.finishedExampleActivity && !message) {
-            this.typingAnimation(this.messagesForUser[5]);
             let instruction = this.getInstructions();
             this.typingAnimation(instruction);
-
             this.typingAnimation(this.messagesForUser[7]);
             setTimeout(() => {
                 this.ignoreMsg = false;
@@ -617,27 +615,33 @@ export class ChatWidgetComponent implements OnInit {
                     return;
                 }
             } else if (!this.finishedExampleActivity && this.fixedMessage) {
-                if (message.toLowerCase() === "true") {
-                    this.typingAnimation(this.messagesForUser[10]);
-                    this.finishedExampleActivity = true;
-                    this.fixedMessage = null;
-                    this.showMessageInput = true;
-                    this.statementDate = null;
-                    this.statementAuthor = null;
-                    this.categoricalInfo = [];
-                    this.dropdownListOptions = [];
-                    this.inputComponentToShow = InputType.Text;
-                    setTimeout(() => {
-                        this.conversationState = ConversationState.Task;
-                        this.action = "Next";
-
-                        this.taskP("startTask");
-                    }, 1600);
-                } else {
-                    //Risposta errata, si aspetta il messaggio corretto
-                    this.typingAnimation(this.messagesForUser[9]);
-                    return;
+                this.textInputPlaceHolder = null
+                if (message.toLowerCase() === "true")
+                    this.typingAnimation("You answered " + message + ", that's exactly the right answer, great!");
+                else
+                    this.typingAnimation("You answered " + message + ", i understand, but i thought it was true .. maybe I'm wrong");
+                this.typingAnimation(this.messagesForUser[10]);
+                let replacement = `Please rate the <b> ${this.exampleStatement.dimensionInfo.name} </b> of the statement.<br>`;
+                let option =
+                    this.exampleStatement.dimensionInfo.scale.mapping
+                for (let i = 0; i < option.length; i++) {
+                    replacement += i + 1 + ". <b>" + option[i].label + "</b><br><br>";
                 }
+                this.replaceMessage(replacement)
+                this.finishedExampleActivity = true;
+                this.fixedMessage = null;
+                this.showMessageInput = true;
+                this.statementDate = null;
+                this.statementAuthor = null;
+                this.categoricalInfo = [];
+                this.dropdownListOptions = [];
+                this.inputComponentToShow = InputType.Text;
+                setTimeout(() => {
+                    this.conversationState = ConversationState.Task;
+                    this.action = "Next";
+                    this.taskP("startTask");
+                }, 3000);
+
             }
         }
     }
@@ -650,7 +654,7 @@ export class ChatWidgetComponent implements OnInit {
             this.inputComponentToShow == InputType.Dropdown ||
             this.inputComponentToShow == InputType.Button
         ) {
-            message = this.getCategoricalAnswerValue(message);
+            message = this.getCategoricalMapping(message, this.dimensionIndex, 'value');
         }
         //E' l'ultima dimensione dello statement?
         if (
@@ -697,23 +701,23 @@ export class ChatWidgetComponent implements OnInit {
                 this.setCountdown(settings.countdown_time);
             }
             if (validAnswer || message == "startTask") {
-                if (
-                    dimensions[this.dimensionIndex].url &&
-                    !dimensions[this.dimensionIndex].scale
-                ) {
+                if (dimensions[this.dimensionIndex].url && !dimensions[this.dimensionIndex].scale) {
                     //TODO: Da stabilire
+                } else if (!dimensions[this.dimensionIndex].url && dimensions[this.dimensionIndex].scale?.type === 'categorical') {
+                    //Non stampo la dimensione, perché verrà collegata ai pulsanti
                 } else {
                     this.printDimension(this.taskIndex, this.dimensionIndex);
                 }
-
                 setTimeout(() => {
-                    if (this.inputComponentToShow != InputType.Button)
+                    if (this.inputComponentToShow !== InputType.Button) {
                         this.showMessageInput = false;
-
+                    }
                     this.changeDetector.detectChanges();
                 }, 1600);
+
                 this.selectDimensionToGenerate(this.dimensionIndex);
             }
+
             this.ignoreMsg = false;
         } else {
             this.ignoreMsg = false;
@@ -722,7 +726,7 @@ export class ChatWidgetComponent implements OnInit {
 
     // Fase di review
     private reviewP(message) {
-        const { questionnaires } = this.task;
+        const { questionnaires, dimensions } = this.task;
         if (
             !this.dimensionReviewPrinted &&
             this.inputComponentToShow == InputType.Dropdown
@@ -799,7 +803,7 @@ export class ChatWidgetComponent implements OnInit {
                         this.getLocalQuestionIndexByGlobalIndex(
                             globalQuestionIndex
                         );
-                    this.printQuestion();
+
                     document.getElementById(
                         this.currentQuestionnaire.toString()
                     ).className = "dot in-progress";
@@ -810,20 +814,17 @@ export class ChatWidgetComponent implements OnInit {
                         case QuestionType.Likert:
                             this.readOnly = true;
                             this.showMessageInput = true;
-                            this.typingAnimation(
-                                this.createQuestionnaireAnswers(true),
-                                false
-                            );
+                            this.createQuestionnaireAnswers(this.printQuestion(), true)
                             this.typingAnimation("Please select an answer");
+                            this.textInputPlaceHolder = "Select an option"
                             return;
                         case QuestionType.Standard:
-                            this.typingAnimation(
-                                this.createQuestionnaireAnswers(),
-                                false
-                            );
+                            this.createQuestionnaireAnswers(this.printQuestion())
                             this.typingAnimation("Please select an answer");
+                            this.textInputPlaceHolder = "Select an option"
                             return;
                         case QuestionType.CRT:
+                            this.printQuestion();
                             this.inputComponentToShow = InputType.Number;
                             return;
                         default:
@@ -860,6 +861,7 @@ export class ChatWidgetComponent implements OnInit {
                 this.conversationState = ConversationState.TaskInstructions;
                 this.awaitingAnswer = false;
                 this.pickReview = false;
+                this.typingAnimation(this.messagesForUser[5]);
                 this.instructionP();
 
                 return;
@@ -886,7 +888,7 @@ export class ChatWidgetComponent implements OnInit {
                     this.inputComponentToShow == InputType.Dropdown ||
                     this.inputComponentToShow == InputType.Button
                 ) {
-                    message = this.getCategoricalAnswerValue(message);
+                    message = this.getCategoricalMapping(message, this.dimensionIndex, 'value');
                 }
                 let isValid = this.checkInputAnswer(
                     message,
@@ -924,8 +926,17 @@ export class ChatWidgetComponent implements OnInit {
                 this.dimensionIndex = +message;
                 if (this.dimensionIndex > 0) this.dimensionIndex--;
 
-                //Visualizzazione della dimensione richiesta e relativi dati
-                this.printDimension(this.taskIndex, this.dimensionIndex);
+                if (
+                    dimensions[this.dimensionIndex].url &&
+                    !dimensions[this.dimensionIndex].scale
+                ) {
+                    //TODO: Da stabilire
+                } else if (!!dimensions[this.dimensionIndex].scale && !!dimensions[this.dimensionIndex].scale.type && dimensions[this.dimensionIndex].scale.type == 'categorical') {
+                    //Non stampo la dimensione, perchè verrà collegata ai pulsanti
+                    this.showMessageInput = true
+                } else {
+                    this.printDimension(this.taskIndex, this.dimensionIndex);
+                }
                 this.dimensionReviewPrinted = true;
                 this.selectDimensionToGenerate(this.dimensionIndex);
                 if (!!this.task.settings.countdown_time) {
@@ -933,7 +944,9 @@ export class ChatWidgetComponent implements OnInit {
                         this.countdownLeftTimeContainer[this.taskIndex]
                     );
                 }
-                this.showMessageInput = false;
+                if (this.inputComponentToShow != InputType.Button)
+                    this.showMessageInput = false;
+
                 return;
             }
             this.cleanUserInput();
@@ -1183,13 +1196,13 @@ export class ChatWidgetComponent implements OnInit {
         } else {
             this.typingAnimation(this.messagesForUser[0]);
             this.typingAnimation(this.messagesForUser[1]);
-            this.canSend = true;
             this.readOnly = false;
             return;
         }
     }
 
     private skipQuestionnairePhase() {
+        this.typingAnimation(this.messagesForUser[4]);
         this.inputComponentToShow = InputType.Text;
         this.conversationState = ConversationState.TaskInstructions;
         setTimeout(() => {
@@ -1327,11 +1340,6 @@ export class ChatWidgetComponent implements OnInit {
                 }
             }
         }, 1000);
-    }
-
-    public onRadioButtonSelect(item: any) {
-        this.textInputPlaceHolder = item.label;
-        this.canSend = true;
     }
 
     private getQuestionnaireType(questionnaireIndex) {
@@ -1586,15 +1594,13 @@ export class ChatWidgetComponent implements OnInit {
             this.task.questionnaires[this.currentQuestionnaire].questions[
                 this.currentQuestion
             ].text;
-        this.typingAnimation(q);
-        return;
+        return q;
     }
 
     private printExampleStatement() {
         //Composizione messaggio dell'agente conversazionale
-
         this.typingAnimation(
-            "I will show you a statement and ask you a question about it, please select the correct answer at the bottom of this chat."
+            "I will show you a statement and ask you a question about it, please select the correct answer."
         );
         let messageToSend =
             "Statement: <b>" +
@@ -1650,41 +1656,21 @@ export class ChatWidgetComponent implements OnInit {
     // Stampa la dimensione corrente
     private printDimension(taskIndex: number, dimensionIndex: number) {
         const { dimensions } = this.task;
-        let out = "";
-        out += "Please rate the <b>";
-        if (!!dimensions[dimensionIndex].name_pretty) {
-            out += dimensions[dimensionIndex].name_pretty;
-        } else {
-            out += dimensions[dimensionIndex].name;
+        const dimension = dimensions[dimensionIndex];
+        let out = `Please rate the <b>${dimension.name_pretty || dimension.name}</b> of the statement.<br>`;
+        if (!!dimension.description) {
+            out += dimension.description;
         }
-        out += "</b> of the statement.<br>";
-        if (!!dimensions[dimensionIndex].description) {
-            out += dimensions[dimensionIndex].description;
-        }
-        if (!!this.answers[taskIndex][dimensionIndex].dimensionValue) {
+        const answer = this.answers[taskIndex][dimensionIndex];
+        if (!!answer.dimensionValue) {
             out += "You previously answered<br>";
-            if (!!dimensions[dimensionIndex].url) {
-                out +=
-                    "Url: <b>" +
-                    this.answers[taskIndex][dimensionIndex].urlValue +
-                    "</b><br>";
+            if (!!dimension.url) {
+                out += `Url: <b>${answer.urlValue}</b><br>`;
             }
-            if (
-                !!dimensions[dimensionIndex].scale &&
-                dimensions[dimensionIndex].scale.type == "categorical"
-            ) {
-                out +=
-                    "Dimension value: <b>" +
-                    this.getCategoricalAnswerLabel(
-                        dimensionIndex,
-                        this.answers[taskIndex][dimensionIndex].dimensionValue
-                    ) +
-                    "</b>.";
+            if (!!dimension.scale && dimension.scale.type === "categorical") {
+                out += `Dimension value: <b>${this.getCategoricalMapping(dimensionIndex, answer.dimensionValue, 'label')}</b>.`;
             } else {
-                out +=
-                    "<br>Dimension value: <b>" +
-                    this.answers[taskIndex][dimensionIndex].dimensionValue +
-                    "</b>.";
+                out += `<br>Dimension value: <b>${answer.dimensionValue}</b>.`;
             }
         }
         this.typingAnimation(out);
@@ -1695,82 +1681,55 @@ export class ChatWidgetComponent implements OnInit {
         const { dimensions } = this.task;
         let recap = "";
         for (let i = 0; i < this.task.dimensionsAmount; i++) {
+            const dimension = dimensions[i];
+            const answer = this.answers[taskIndex][i];
             let scaleType = null;
-            recap += i + 1 + ". ";
+            recap += `${i + 1}. `;
 
-            //Dimensioni con doppio input
-            if (dimensions[i].scale && !!dimensions[i].url) {
-                scaleType = dimensions[i].scale.type;
-                recap +=
-                    "<b> URL</b>: " +
-                    this.answers[taskIndex][i].urlValue +
-                    "<br>";
-                if (dimensions[i].name_pretty) {
-                    recap += "<b>" + dimensions[i].name_pretty + "</b>: ";
+            if (dimension.scale && !!dimension.url) {
+                scaleType = dimension.scale.type;
+                recap += `<b> URL</b>: ${answer.urlValue}<br>`;
+                if (dimension.name_pretty) {
+                    recap += `<b>${dimension.name_pretty}</b>: `;
                 }
-                switch (scaleType) {
-                    case "categorical":
-                        recap +=
-                            this.getCategoricalAnswerLabel(
-                                i,
-                                this.answers[taskIndex][i].dimensionValue
-                            ) + "<br>";
-
-                        break;
-                    case "magnitude_estimation":
-                    case "interval":
-                    case "textual":
-                        recap +=
-                            this.answers[taskIndex][i].dimensionValue + "<br>";
-                        break;
-                    default:
-                        console.warn("Casistica non gestita");
-                        break;
-                }
-            }
-            // Dimensioni con singolo input
-            else {
-                if (!dimensions[i].scale && !!dimensions[i].url) {
+            } else {
+                if (!dimension.scale && !!dimension.url) {
                     scaleType = "url";
-                } else if (dimensions[i].justification) {
+                } else if (dimension.justification) {
                     scaleType = "textual";
                 } else {
-                    scaleType = dimensions[i].scale.type;
+                    scaleType = dimension.scale.type;
                 }
-                //Costruzione del prefisso alla risposta
-                if (scaleType == "url") {
-                    recap += "<b> URL</b>: ";
+                if (scaleType === "url") {
+                    recap += `<b> URL</b>: `;
                 } else {
-                    if (dimensions[i].name_pretty) {
-                        recap += "<b>" + dimensions[i].name_pretty + "</b>: ";
-                    } else {
-                        recap += "<b>Dimension</b>: ";
-                    }
-                }
-                switch (scaleType) {
-                    case "url":
-                        recap += this.answers[taskIndex][i].urlValue + "<br>";
-                        break;
-                    case "categorical":
-                        recap +=
-                            this.getCategoricalAnswerLabel(
-                                i,
-                                this.answers[taskIndex][i].dimensionValue
-                            ) + "<br>";
-                        break;
-                    case "magnitude_estimation":
-                    case "interval":
-                    case "textual":
-                        recap +=
-                            this.answers[taskIndex][i].dimensionValue + "<br>";
-                        break;
-                    default:
-                        console.warn("Casistica non gestita");
-                        break;
+                    recap += dimension.name_pretty
+                        ? `<b>${dimension.name_pretty}</b>: `
+                        : "<b>Dimension</b>: ";
                 }
             }
+
+            switch (scaleType) {
+                case "url":
+                    recap += answer.urlValue;
+                    break;
+                case "categorical":
+                    recap += this.getCategoricalAnswerLabel(i, answer.dimensionValue);
+                    break;
+                case "magnitude_estimation":
+                case "interval":
+                case "textual":
+                    recap += answer.dimensionValue;
+                    break;
+                default:
+                    console.warn("Casistica non gestita");
+                    break;
+            }
+
+            recap += "<br>";
         }
         return recap;
+
     }
 
     // Creo una stringa con tutti gli statement
@@ -1795,25 +1754,26 @@ export class ChatWidgetComponent implements OnInit {
     }
 
     //Creazione del testo della domanda e delle risposte possibili
-    private createQuestionnaireAnswers(isLikert: boolean = false) {
-        this.canSend = false;
+    private createQuestionnaireAnswers(text: string | undefined, isLikert: boolean = false) {
+
         this.guid = ChatHelper.getUid();
 
         if (isLikert) {
             let options =
                 this.task.questionnaires[this.currentQuestionnaire].mappings;
-            this.radioButtonOptions = options.map((answer) => ({
+            this.buttonOptions = options.map((answer) => ({
                 label: answer.label,
                 value: answer.value,
             }));
         } else {
-            this.radioButtonOptions = this.task.questionnaires[
+            this.buttonOptions = this.task.questionnaires[
                 this.currentQuestionnaire
             ].questions[this.currentQuestion].answers.map((answer) => ({
                 label: answer,
                 value: answer,
             }));
         }
+        this.typingAnimation(text, false)
         this.readOnly = true;
         return "";
     }
@@ -1877,50 +1837,40 @@ export class ChatWidgetComponent implements OnInit {
     }
 
     //Generazione della dimensione in base alla scale type
-    private selectDimensionToGenerate(index) {
+    private selectDimensionToGenerate(index: number): void {
         const { dimensions } = this.task;
         this.showMessageInput = true;
         this.readOnly = true;
-        let scaleType = null;
 
-        if (dimensions[index].url && !!dimensions[index].scale) {
+        const selectedDimension = dimensions[index];
+        let scaleType = selectedDimension.scale?.type;
+
+        if (selectedDimension.url && scaleType) {
             this.hasDoubleInput = true;
             this.emitEnableSearchEngine();
-
-            this.typingAnimation(
-                "Please use the search bar on the right to search for information about the truthfulness of the statement. Once you find a suitable result, please type or select its url"
-            );
-            if (!!dimensions[index].scale)
-                scaleType = dimensions[index].scale.type;
-        } else {
-            if (!dimensions[index].scale && dimensions[index].url) {
-                scaleType = "url";
-            } else if (dimensions[index].justification) {
-                scaleType = "textual";
-            } else {
-                scaleType = dimensions[index].scale.type;
-            }
+            const message = "Please use the search bar on the right to search for information about the statement. Once you find a suitable result, please type or select its url";
+            this.typingAnimation(message);
+        } else if (!selectedDimension.scale && selectedDimension.url) {
+            scaleType = "url";
+        } else if (selectedDimension.justification) {
+            scaleType = "textual";
         }
 
         switch (scaleType) {
             case "url":
                 this.waitForUrl = true;
                 this.emitEnableSearchEngine();
-                this.typingAnimation(
-                    "Please use the search bar on the right to search for information about the truthfulness of the statement. Once you find a suitable result, please type or select its url"
-                );
+                const message = "Please use the search bar on the right to search for information about the statement. Once you find a suitable result, please type or select its url";
+                this.typingAnimation(message);
                 break;
             case "categorical":
                 this.generateCategoricalAnswers(index);
-
                 break;
             case "magnitude_estimation":
                 this.generateMagnitudeAnswer(index);
-
                 break;
             case "interval":
                 this.generateIntervalAnswer(index);
-
                 break;
             case "textual":
                 this.generateTextualAnswer(index);
@@ -1929,18 +1879,17 @@ export class ChatWidgetComponent implements OnInit {
                 console.warn("Casistica non gestita");
                 break;
         }
-        if (
-            scaleType != "url" &&
-            this.inputComponentToShow != InputType.Button
-        ) {
+
+        if (!["url", "categorical"].includes(scaleType) || this.hasDoubleInput) {
             this.readOnly = false;
         }
+
         this.statementProvided = true;
-        this.timestampsStart[
-            this.task.questionnaires.length + this.taskIndex
-        ][0] = ChatHelper.getTimeStampInSeconds();
+        const timestampIndex = this.task.questionnaires.length + this.taskIndex;
+        this.timestampsStart[timestampIndex][0] = ChatHelper.getTimeStampInSeconds();
         this.changeDetector.detectChanges();
     }
+
 
     //Restituisce l'etichetta del valore della relativa dimensione
     private getCategoricalAnswerLabel(dimensionIndex, answerValue) {
@@ -1982,28 +1931,11 @@ export class ChatWidgetComponent implements OnInit {
         this.inputComponentToShow = InputType.Dropdown;
         this.showMessageInput = false;
     }
-    //Generazione risposte del questionario
-    // private generateQuestionnaireAnswers() {
-    //     this.dropdownListOptions = this.task.questionnaires[
-    //         this.currentQuestionnaire
-    //     ].questions[this.currentQuestion].answers.map((el, index) => ({
-    //         label: `${index}. ${el}`,
-    //         value: el,
-    //     }));
-    // }
 
-    // private generateLikertQuestionnaireAnswers() {
-    //     this.dropdownListOptions = this.task.questionnaires[
-    //         this.currentQuestionnaire
-    //     ].mappings.map((el) => ({
-    //         label: el.label,
-    //         value: el.value,
-    //     }));
-    // }
 
     private generateFinalStatementRecapData() {
         this.dropdownListOptions = [];
-        this.task.hit.documents.forEach((document, index) => {
+        this.task.hit.documents.forEach((_, index) => {
             this.dropdownListOptions.push({
                 label: "Statement " + (index + 1).toString(),
                 value: (index + 1).toString(),
@@ -2013,70 +1945,41 @@ export class ChatWidgetComponent implements OnInit {
 
     // GENERAZIONE DATI RELATIVI ALLE DIMENSIONI
     private generateExampleDimension() {
-        let out = `Please rate the <b> ${this.exampleStatement.dimensionInfo.name} </b> of the statement.`;
-        this.typingAnimation(out);
-        this.categoricalInfo = [];
+        let text = `Please rate the <b> ${this.exampleStatement.dimensionInfo.name} </b> of the statement.`;
         const dimensionInfos = this.exampleStatement.dimensionInfo;
-        this.dropdownListOptions = (
-            dimensionInfos.scale as ScaleCategorical
-        ).mapping.map((dimension) => {
-            return {
-                label: dimension.label,
-                value: dimension.value,
-            };
-        });
-        this.categoricalInfo = (
+        this.buttonOptions = (
             dimensionInfos.scale as ScaleCategorical
         ).mapping.map((el: CategoricalInfo) => ({
             label: el.label,
-            description: el.description,
             value: el.value,
         }));
-        this.showMessageInput = false;
-        this.readOnly = false;
-        this.inputComponentToShow = InputType.Dropdown;
+        this.textInputPlaceHolder = "Select an option"
+        this.readOnly = true;
+        this.typingAnimation(text, false)
+        this.inputComponentToShow = InputType.Button;
     }
 
-    private generateCategoricalAnswers(dimensionIndex: number) {
-        this.categoricalInfo = [];
-        const dimensionInfos = this.task.dimensions[dimensionIndex];
-        //Se una dimensione ha più di 2 valori mappati oppure si prevede un doppio input appare la DDL
-        if (
-            (dimensionInfos.scale as ScaleCategorical).mapping.length > 2 ||
-            this.hasDoubleInput
-        ) {
-            this.dropdownListOptions = (
-                dimensionInfos.scale as ScaleCategorical
-            ).mapping.map((dimension, index) => {
-                return {
-                    label: dimension.label,
-                    value: dimension.value,
-                };
-            });
-            this.categoricalInfo = (
-                dimensionInfos.scale as ScaleCategorical
-            ).mapping.map((el: CategoricalInfo) => ({
-                label: el.label,
-                description: el.description,
-                value: el.value,
-            }));
-            this.inputComponentToShow = InputType.Dropdown;
-        }
-        //Altrimenti appaiono i pulsanti
-        else {
-            this.categoricalInfo = (
-                dimensionInfos.scale as ScaleCategorical
-            ).mapping.map((el: CategoricalInfo) => ({
-                label: el.label,
-                description: el.description,
-                value: el.value,
-            }));
 
+    private generateCategoricalAnswers(dimensionIndex: number) {
+        const dimensionInfos = this.task.dimensions[dimensionIndex];
+
+        this.categoricalInfo = (dimensionInfos.scale as ScaleCategorical).mapping.map(
+            ({ label, description, value }: CategoricalInfo) => ({ label, description, value })
+        );
+
+        if (this.hasDoubleInput) {
+            this.dropdownListOptions = this.categoricalInfo.map(({ label, value }) => ({ label, value }));
+            this.inputComponentToShow = InputType.Dropdown;
+        } else {
+            this.buttonOptions = this.categoricalInfo.map(({ label, value }) => ({ label, value }));
+            const text = `Rate the <b>${dimensionInfos.name_pretty}</b> of this statement`;
+            this.typingAnimation(text, false);
+            this.textInputPlaceHolder = "Select an option";
             this.inputComponentToShow = InputType.Button;
         }
-        //Va a fissare il valore massimo e minimo per la validazione della risposta che verrà fornita
-        this.minValue = ChatHelper.getCategoricalMinInfo(this.categoricalInfo);
+
         this.maxValue = ChatHelper.getCategoricalMaxInfo(this.categoricalInfo);
+        this.minValue = ChatHelper.getCategoricalMinInfo(this.categoricalInfo);
     }
 
     //Generazione delle risposte intervallari
@@ -2117,12 +2020,11 @@ export class ChatWidgetComponent implements OnInit {
     }
 
     //Restituisce il valore mappato della risposta categoriale
-    private getCategoricalAnswerValue(message) {
-        const mappedValue = this.categoricalInfo.find(
-            (el) => el.label.toLowerCase() == message.toLowerCase()
-        );
-        if (!!mappedValue) return mappedValue.value;
-        else return null;
+    private getCategoricalMapping(input, index, returnValue: 'label' | 'value') {
+        if (returnValue == 'label')
+            return (this.task.dimensions[index].scale as ScaleCategorical).mapping.find((el) => el.value == input).label
+        else
+            return +(this.task.dimensions[index].scale as ScaleCategorical).mapping.find((el) => el.label == input).value
     }
 
     //Restituisce il valore mappato della Dropdown visualizzata

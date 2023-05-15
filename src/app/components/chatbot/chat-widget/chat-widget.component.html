@@ -5,12 +5,8 @@
                 <chat-avatar [image]="operator.avatar"></chat-avatar>
                 <div class="operator-info">
                     <span style="margin-left: 6px">{{ operator.name }}</span>
-                    <button
-                        mat-icon-button
-                        matTooltip="Show instructions"
-                        class="instruction-button"
-                        (click)="showInstructions()"
-                    >
+                    <button mat-icon-button matTooltip="Show instructions" class="instruction-button"
+                        (click)="showInstructions()">
                         <mat-icon fontIcon="help"></mat-icon>
                     </button>
                 </div>
@@ -25,10 +21,7 @@
         </div>
 
         <div class="row stepper-container">
-            <div
-                *ngFor="let item of elementsAccesses; let i = index"
-                class="col justify-content-center d-flex"
-            >
+            <div *ngFor="let item of elementsAccesses; let i = index" class="col justify-content-center d-flex">
                 <div class="dot to-complete" [id]="i">{{ i + 1 }}</div>
             </div>
         </div>
@@ -37,10 +30,7 @@
             <div class="col-12 py-1" id="statement-title">Statement</div>
             <div id="statement-text">{{ fixedMessage }}</div>
             <div id="statement-additional-info" class="row py-1 m-0">
-                <div
-                    class="col-6 ps-0 d-flex add-info"
-                    *ngIf="!!statementAuthor"
-                >
+                <div class="col-6 ps-0 d-flex add-info" *ngIf="!!statementAuthor">
                     <strong>Speaker:&nbsp;</strong> {{ statementAuthor }}
                 </div>
                 <div class="col-6 ps-0 d-flex add-info" *ngIf="!!statementDate">
@@ -49,18 +39,12 @@
             </div>
         </div>
         <div class="progress" [ngClass]="{ hidden: !showCountdown }">
-            <div
-                #progressBar
-                [ngClass]="
+            <div #progressBar [ngClass]="
                     (timerIsOver | async)
                         ? 'timer-is-over'
                         : 'timer-in-progress'
-                "
-                class="progress-bar progress-bar-striped bg-info progress-bar-animated"
-                role="progressbar"
-                aria-valuemin="0"
-                aria-valuemax="100"
-            >
+                " class="progress-bar progress-bar-striped bg-info progress-bar-animated" role="progressbar"
+                aria-valuemin="0" aria-valuemax="100">
                 <span *ngIf="timerIsOver | async; else timerInProgress">
                     Time is over
                 </span>
@@ -74,15 +58,9 @@
             <ng-container>
                 <div #typing class="chat-message-received" style="width: 15%">
                     <div>
-                        <chat-avatar
-                            [image]="operator.avatar"
-                            class="chat-message-from-avatar"
-                        ></chat-avatar>
+                        <chat-avatar [image]="operator.avatar" class="chat-message-from-avatar"></chat-avatar>
                         <div class="chat-message-text">
-                            <div
-                                class="type"
-                                style="margin: 3px; margin-top: 0px"
-                            >
+                            <div class="type" style="margin: 3px; margin-top: 0px">
                                 <span id="typing-dot"></span>
                                 <span id="typing-dot"></span>
                                 <span id="typing-dot"></span>
@@ -95,43 +73,23 @@
             </ng-container>
 
             <ng-container *ngFor="let message of messages">
-                <div
-                    class="chat-message"
-                    [@fadeIn]
-                    [ngClass]="{
+                <div class="chat-message" [@fadeIn] [ngClass]="{
                         'chat-message-sent': message.type === 'sent',
                         'chat-message-received': message.type === 'received'
-                    }"
-                >
+                    }">
                     <div>
-                        <chat-avatar
-                            [image]="message.from.avatar"
-                            class="chat-message-from-avatar"
-                        ></chat-avatar>
-                        <div
-                            *ngIf="message.isOnlyText; else optionsBody"
-                            class="chat-message-text"
-                            [innerHTML]="message.text"
-                        ></div>
+                        <chat-avatar [image]="message.from.avatar" class="chat-message-from-avatar"></chat-avatar>
+                        <div *ngIf="message.isOnlyText; else optionsBody" class="chat-message-text"
+                            [innerHTML]="message.text"></div>
                         <ng-template #optionsBody>
-                            <div
-                                class="chat-message-text"
-                                *ngIf="!message.isOnlyText"
-                            >
-                                <div
-                                    *ngFor="let item of radioButtonOptions"
-                                    class="radio-option mb-1"
-                                >
-                                    <input
-                                        [name]="guid"
-                                        type="radio"
-                                        value="item.label"
-                                        id="item.value"
-                                        (click)="
-                                            onRadioButtonSelect(item)
-                                        "
-                                    />
-                                    <span class="">{{ item.label }}</span>
+                            <div class="chat-message-with-buttons" *ngIf="!message.isOnlyText">
+                                <div class="message-text" [innerHTML]="message.text"> </div>
+                                <div class="buttons-list">
+                                    <div *ngFor="let item of buttonOptions; let i = index">
+                                        <chat-input-button [value]="item.value" [text]="item.label"
+                                            [class]="(i == buttonOptions.length-1) ? 'message-button last-button': 'message-button'"
+                                            (send)=" sendMessage($event)"></chat-input-button>
+                                    </div>
                                 </div>
                             </div>
                         </ng-template>
@@ -144,129 +102,55 @@
         </div>
 
         <div #inputBox class="chat-box-footer">
-            <div
-                class="d-flex m-1"
-                *ngIf="inputComponentToShow == EnInputType.Button"
-            >
-                <chat-input-button
-                    class="w-50 px-1"
-                    *ngFor="let item of categoricalInfo"
-                    [value]="item.value"
-                    [text]="item.label"
-                    (send)="sendMessage($event)"
-                ></chat-input-button>
+            <div *ngIf="buttonsToShow == enButtonType.YesNo" class="d-flex justify-content-end">
+                <chat-input-button class="chat-button w-100 px-1" value="yes" text="Yes"
+                    (send)="sendMessage($event)"></chat-input-button>
+                <chat-input-button class="chat-button w-100 px-1" value="No" text="No"
+                    (send)="sendMessage($event)"></chat-input-button>
             </div>
 
-            <div
-                *ngIf="buttonsToShow == enButtonType.YesNo"
-                class="d-flex justify-content-end"
-            >
-                <chat-input-button
-                    class="w-50 px-1"
-                    value="yes"
-                    text="Yes"
-                    (send)="sendMessage($event)"
-                ></chat-input-button>
-
-                <chat-input-button
-                    class="w-50 px-1"
-                    value="No"
-                    text="No"
-                    (send)="sendMessage($event)"
-                ></chat-input-button>
-            </div>
-
-            <div
-                *ngIf="buttonsToShow == enButtonType.Confirm"
-                class="row container d-flex justify-content-end pe-2"
-            >
-                <chat-input-button
-                    class="col-6 text-center"
-                    value="Confirm"
-                    text="Confirm"
-                    (send)="sendMessage($event)"
-                ></chat-input-button>
-
-                <chat-input-button
-                    class="col-6 text-center"
-                    value="Modify"
-                    text="Modify"
-                    (send)="sendMessage($event)"
-                ></chat-input-button>
+            <div *ngIf="buttonsToShow == enButtonType.Confirm" class="d-flex justify-content-end">
+                <chat-input-button class="chat-button w-100 px-1" value="Confirm" text="Confirm"
+                    (send)="sendMessage($event)"></chat-input-button>
+                <chat-input-button class="chat-button w-100 px-1" value="Modify" text="Modify"
+                    (send)="sendMessage($event)"></chat-input-button>
             </div>
         </div>
         <div class="container d-flex row p-0 m-0" id="input-background">
-            <div
-                id="input-box"
-                class="container d-flex row p-0 m-0 input-active"
-            >
-                <chat-input-url
-                    *ngIf="hasDoubleInput && !showMessageInput"
-                    class="container"
-                    [readValue]="readUrlValue"
-                    (updateValue)="updateUrlValue($event)"
-                    [urlToRead]="urlInputValue"
-                    [readOnly]="readOnly"
-                >
+            <div id="input-box" class="container d-flex row p-0 m-0 input-active">
+                <chat-input-url *ngIf="hasDoubleInput && !showMessageInput" class="container" [readValue]="readUrlValue"
+                    (updateValue)="updateUrlValue($event)" [urlToRead]="urlInputValue" [readOnly]="readOnly">
                 </chat-input-url>
 
-                <chat-input-magnitude
-                    class="container"
-                    *ngIf="
+                <chat-input-magnitude class="container" *ngIf="
                         inputComponentToShow == EnInputType.Number &&
                         !showMessageInput
-                    "
-                    [magnitudeInfo]="magnitudeInfo"
-                    (send)="sendMessage($event)"
-                    [readOnly]="readOnly"
-                ></chat-input-magnitude>
-                <chat-input-interval
-                    class="container"
-                    *ngIf="
+                    " [magnitudeInfo]="magnitudeInfo" (send)="sendMessage($event)"
+                    [readOnly]="readOnly"></chat-input-magnitude>
+                <chat-input-interval class="container" *ngIf="
                         inputComponentToShow == EnInputType.Slider &&
                         !showMessageInput
-                    "
-                    [intervalInfo]="intervalInfo"
-                    (send)="sendMessage($event)"
-                    [readOnly]="readOnly"
-                ></chat-input-interval>
+                    " [intervalInfo]="intervalInfo" (send)="sendMessage($event)"
+                    [readOnly]="readOnly"></chat-input-interval>
 
-                <chat-input-select
-                    class="container"
-                    *ngIf="
+                <chat-input-select class="container" *ngIf="
                         inputComponentToShow == EnInputType.Dropdown &&
                         !showMessageInput
-                    "
-                    [options]="dropdownListOptions"
-                    [readOnly]="readOnly"
-                    (send)="sendMessage($event)"
-                >
+                    " [options]="dropdownListOptions" [readOnly]="readOnly" (send)="sendMessage($event)">
                 </chat-input-select>
 
-                <chat-input-text
-                    class="container"
-                    *ngIf="
+                <chat-input-text class="container" *ngIf="
                         inputComponentToShow == EnInputType.Text ||
                         showMessageInput
-                    "
-                    (send)="sendMessage($event)"
-                    [pholder]="textInputPlaceHolder"
-                    [readOnly]="readOnly"
-                    [canSend]="canSend"
-                >
+                    " (send)="sendMessage($event)" [pholder]="textInputPlaceHolder" [readOnly]="readOnly">
                 </chat-input-text>
             </div>
         </div>
     </div>
 
     <div class="search-engine">
-        <app-crowd-xplorer
-            [task]="this.task"
-            [resetEvent]="resetSearchEngine"
-            [disableEvent]="disableSearchEngine"
-            (selectedRowEmitter)="getUrl($event)"
-            (resultEmitter)="storeSearchEngineRetrievedResponse($event)"
-            (queryEmitter)="storeSearchEngineUserQuery($event)"
-        ></app-crowd-xplorer>
+        <app-crowd-xplorer [task]="this.task" [resetEvent]="resetSearchEngine" [disableEvent]="disableSearchEngine"
+            (selectedRowEmitter)="getUrl($event)" (resultEmitter)="storeSearchEngineRetrievedResponse($event)"
+            (queryEmitter)="storeSearchEngineUserQuery($event)"></app-crowd-xplorer>
     </div>
 </div>

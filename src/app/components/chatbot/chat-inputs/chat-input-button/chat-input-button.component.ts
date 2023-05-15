@@ -15,7 +15,9 @@ import {
 export class ChatInputButtonComponent {
     @Input() public text = "N.D";
     @Input() public value = "0";
+    @Input() public class: string = 'chat-button';
     @Output() public send = new EventEmitter();
+
 
     sendMessage() {
         const message = { label: this.text, value: this.value };

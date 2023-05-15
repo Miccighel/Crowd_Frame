@@ -189,11 +189,11 @@ button.instruction-button .mat-icon {
 }
 
 .chat-message {
-    display: block;
+    display: flex;
     width: auto;
     margin: 5px;
     align-self: flex-start;
-    flex-direction: row;
+    flex-direction: column;
     max-width: 80%;
     word-wrap: break-word;
 }
@@ -210,38 +210,64 @@ button.instruction-button .mat-icon {
     border-radius: 50%;
 }
 
-.chat-message-text {
-    margin-left: 10px;
-    padding: 10px;
-    border-radius: 5px;
+
+.chat-message-with-buttons {
+    margin-left: 50px;
+
+    .message-text {
+        margin-left: 10px;
+        padding: 10px;
+        background: var(--secondary);
+        border-top-right-radius: 5px;
+        border-top-left-radius: 5px;
+    }
+
+    .buttons-list {
+        background: var(--secondary);
+        padding-inline: 2px;
+        margin-left: 10px;
+        border-bottom-right-radius: 5px;
+        border-bottom-left-radius: 5px;
+        padding-bottom: 2px;
+    }
+
 }
 
 /**
 Received message style
  */
 .chat-message-received {
-    margin-right: 50px;
-}
+    padding: 10px;
 
-.chat-message-received .chat-message-text {
-    background: var(--secondary);
-    margin-left: 50px;
-    min-width: 60px;
-    border-bottom-left-radius: 0;
-}
+    .chat-message-text {
+        background: var(--secondary);
+        border-radius: 5px;
+        border-bottom-left-radius: 0;
+        margin-left: 50px;
+        min-width: 60px;
+        padding: 10px;
+        position: relative;
 
-.chat-message-received .chat-message-text:before {
-    position: absolute;
-    content: " ";
-    left: -10px;
-    bottom: 0;
-    border-right: solid 10px var(--secondary);
-    border-top: solid 10px transparent;
-    z-index: 0;
-}
+        &:before {
+            content: "";
+            position: absolute;
+            left: -10px;
+            bottom: 0;
+            border-right: solid 10px var(--secondary);
+            border-top: solid 10px transparent;
+            z-index: 0;
+        }
+    }
 
-.chat-message-received .chat-message-date {
-    margin-left: 50px;
+    .chat-message-date {
+        margin-left: 50px;
+    }
+
+    .chat-message-from-avatar {
+        position: absolute;
+        left: 0;
+        bottom: -15px;
+    }
 }
 
 #typying-dot {
@@ -249,48 +275,45 @@ Received message style
     font-size: small;
 }
 
-.chat-message-received .chat-message-from-avatar {
-    position: absolute;
-    left: 0;
-    bottom: -15px;
-}
-
 /**
 Sent message style
  */
 .chat-message-sent {
     align-self: flex-end;
-}
 
-.chat-message-sent .chat-message-from {
-    float: right;
-}
+    .chat-message-from {
+        float: right;
+    }
 
-.chat-message-sent .chat-message-text {
-    background: var(--tertiary);
-    margin-right: 50px;
-    border-bottom-right-radius: 0;
-}
+    .chat-message-text {
+        background: var(--tertiary);
+        margin-right: 50px;
+        border-radius: 5px;
+        border-bottom-right-radius: 0;
+        padding: 10px;
+        position: relative;
 
-.chat-message-sent .chat-message-text:after {
-    position: absolute;
-    content: " ";
-    right: -10px;
-    bottom: 0;
-    border-left: solid 10px var(--tertiary);
-    border-top: solid 10px transparent;
-    z-index: 0;
-}
+        &:after {
+            content: "";
+            position: absolute;
+            right: -10px;
+            bottom: 0;
+            border-left: solid 10px var(--tertiary);
+            border-top: solid 10px transparent;
+            z-index: 0;
+        }
+    }
 
-.chat-message-sent .chat-message-date {
-    text-align: right;
-    padding-right: 50px;
-}
+    .chat-message-date {
+        text-align: right;
+        padding-right: 50px;
+    }
 
-.chat-message-sent .chat-message-from-avatar {
-    position: absolute;
-    right: 0;
-    bottom: -15px;
+    .chat-message-from-avatar {
+        position: absolute;
+        right: 0;
+        bottom: -15px;
+    }
 }
 
 /* Small devices (landscape phones, 576px and up)*/
@@ -311,37 +334,35 @@ Sent message style
 }
 
 /* Medium devices (tablets, 768px and up)*/
-@media (min-width: 768px) {
-}
+@media (min-width: 768px) {}
 
 /* Large devices (desktops, 992px and up)*/
-@media (min-width: 992px) {
-}
+@media (min-width: 992px) {}
 
 /* typing animation */
 .type {
     margin: 32px;
-}
 
-.type span {
-    width: 8px;
-    height: 8px;
-    background-color: var(--primary);
-    display: inline-block;
-    margin: 1px;
-    border-radius: 20px;
-}
+    span {
+        width: 8px;
+        height: 8px;
+        background-color: var(--primary);
+        display: inline-block;
+        margin: 1px;
+        border-radius: 20px;
 
-.type span:nth-child(1) {
-    animation: bounce 1s infinite;
-}
+        &:nth-child(1) {
+            animation: bounce 1s infinite;
+        }
 
-.type span:nth-child(2) {
-    animation: bounce 1s infinite 0.2s;
-}
+        &:nth-child(2) {
+            animation: bounce 1s infinite 0.2s;
+        }
 
-.type span:nth-child(3) {
-    animation: bounce 1s infinite 0.4s;
+        &:nth-child(3) {
+            animation: bounce 1s infinite 0.4s;
+        }
+    }
 }
 
 @keyframes bounce {
@@ -358,34 +379,39 @@ Sent message style
     }
 }
 
+//INDICI PROGRESSO
+$dot-size: 28px;
+$dot-border-radius: 20px;
+$dot-border-width: 2px;
+
 .dot {
     display: flex;
     align-items: center;
     justify-content: center;
     box-sizing: border-box;
-    width: 28px;
-    height: 28px;
-    border-radius: 20px;
-}
+    width: $dot-size;
+    height: $dot-size;
+    border-radius: $dot-border-radius;
 
-.dot.to-complete {
-    background: var(--grey);
-    border: 2px solid var(--light);
-    color: var(--primary);
-}
+    &.to-complete {
+        background: var(--grey);
+        border: $dot-border-width solid var(--light);
+        color: var(--primary);
+    }
 
-.dot.in-progress {
-    background: var(--light);
-    border: 2px solid var(--primary);
-    color: var(--primary);
-    font-weight: 600;
-}
+    &.in-progress {
+        background: var(--light);
+        border: $dot-border-width solid var(--primary);
+        color: var(--primary);
+        font-weight: 600;
+    }
 
-.dot.completed {
-    background: var(--primary);
-    border: 2px solid var(--light);
-    color: var(--light);
-    font-weight: 600;
+    &.completed {
+        background: var(--primary);
+        border: $dot-border-width solid var(--light);
+        color: var(--light);
+        font-weight: 600;
+    }
 }
 
 .circle {
