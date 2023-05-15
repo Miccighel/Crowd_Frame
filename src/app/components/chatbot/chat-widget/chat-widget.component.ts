@@ -487,11 +487,17 @@ export class ChatWidgetComponent implements OnInit {
                 return;
             } else {
                 this.textInputPlaceHolder = null;
-                const questionType = this.getQuestionnaireType(this.currentQuestionnaire);
+                const questionType = this.getQuestionnaireType(
+                    this.currentQuestionnaire
+                );
                 let replacement = null;
                 switch (questionType) {
                     case QuestionType.Likert:
-                        message = this.getLikertMapping(this.currentQuestionnaire, message, 'value')
+                        message = this.getLikertMapping(
+                            this.currentQuestionnaire,
+                            message,
+                            "value"
+                        );
                         replacement = this.generateQuestionnaireOptions(true);
                         this.replaceMessage(replacement);
                         break;
@@ -555,7 +561,6 @@ export class ChatWidgetComponent implements OnInit {
         //Non è in attesa, quindi genera la domanda successiva
         this.showMessageInput = true;
         if (questionnaires[this.currentQuestionnaire].type == "standard") {
-
             this.createQuestionnaireAnswers(this.printQuestion());
             this.typingAnimation("Please select an answer");
         } else if (questionnaires[this.currentQuestionnaire].type == "likert") {
@@ -615,19 +620,27 @@ export class ChatWidgetComponent implements OnInit {
                     return;
                 }
             } else if (!this.finishedExampleActivity && this.fixedMessage) {
-                this.textInputPlaceHolder = null
+                this.textInputPlaceHolder = null;
                 if (message.toLowerCase() === "true")
-                    this.typingAnimation("You answered " + message + ", that's exactly the right answer, great!");
+                    this.typingAnimation(
+                        "You answered " +
+                            message +
+                            ", that's exactly the right answer, great!"
+                    );
                 else
-                    this.typingAnimation("You answered " + message + ", i understand, but i thought it was true .. maybe I'm wrong");
+                    this.typingAnimation(
+                        "You answered " +
+                            message +
+                            ", i understand, but i thought it was true .. maybe I'm wrong"
+                    );
                 this.typingAnimation(this.messagesForUser[10]);
                 let replacement = `Please rate the <b> ${this.exampleStatement.dimensionInfo.name} </b> of the statement.<br>`;
-                let option =
-                    this.exampleStatement.dimensionInfo.scale.mapping
+                let option = this.exampleStatement.dimensionInfo.scale.mapping;
                 for (let i = 0; i < option.length; i++) {
-                    replacement += i + 1 + ". <b>" + option[i].label + "</b><br><br>";
+                    replacement +=
+                        i + 1 + ". <b>" + option[i].label + "</b><br><br>";
                 }
-                this.replaceMessage(replacement)
+                this.replaceMessage(replacement);
                 this.finishedExampleActivity = true;
                 this.fixedMessage = null;
                 this.showMessageInput = true;
@@ -641,7 +654,6 @@ export class ChatWidgetComponent implements OnInit {
                     this.action = "Next";
                     this.taskP("startTask");
                 }, 3000);
-
             }
         }
     }
@@ -654,7 +666,11 @@ export class ChatWidgetComponent implements OnInit {
             this.inputComponentToShow == InputType.Dropdown ||
             this.inputComponentToShow == InputType.Button
         ) {
-            message = this.getCategoricalMapping(message, this.dimensionIndex, 'value');
+            message = this.getCategoricalMapping(
+                message,
+                this.dimensionIndex,
+                "value"
+            );
         }
         //E' l'ultima dimensione dello statement?
         if (
@@ -701,9 +717,16 @@ export class ChatWidgetComponent implements OnInit {
                 this.setCountdown(settings.countdown_time);
             }
             if (validAnswer || message == "startTask") {
-                if (dimensions[this.dimensionIndex].url && !dimensions[this.dimensionIndex].scale) {
+                if (
+                    dimensions[this.dimensionIndex].url &&
+                    !dimensions[this.dimensionIndex].scale
+                ) {
                     //TODO: Da stabilire
-                } else if (!dimensions[this.dimensionIndex].url && dimensions[this.dimensionIndex].scale?.type === 'categorical') {
+                } else if (
+                    !dimensions[this.dimensionIndex].url &&
+                    dimensions[this.dimensionIndex].scale?.type ===
+                        "categorical"
+                ) {
                     //Non stampo la dimensione, perché verrà collegata ai pulsanti
                 } else {
                     this.printDimension(this.taskIndex, this.dimensionIndex);
@@ -738,11 +761,11 @@ export class ChatWidgetComponent implements OnInit {
             if (this.pickReview) {
                 //E' in attesa della risposta da parte dell'utente
                 if (this.awaitingAnswer) {
-                    const questionType = this.getQuestionnaireType(this.currentQuestionnaire);
+                    const questionType = this.getQuestionnaireType(
+                        this.currentQuestionnaire
+                    );
                     this.textInputPlaceHolder = null;
-                    if (
-                        questionType == QuestionType.CRT
-                    ) {
+                    if (questionType == QuestionType.CRT) {
                         if (!ChatHelper.validMsg(message, 1, 100)) {
                             this.typingAnimation(
                                 "Please type a integer number between 1 and 100"
@@ -758,11 +781,13 @@ export class ChatWidgetComponent implements OnInit {
                     let replacement = null;
                     switch (questionType) {
                         case QuestionType.Likert:
-                            replacement = this.generateQuestionnaireOptions(true);
+                            replacement =
+                                this.generateQuestionnaireOptions(true);
                             this.replaceMessage(replacement);
                             break;
                         case QuestionType.Standard:
-                            replacement = this.generateQuestionnaireOptions(false);
+                            replacement =
+                                this.generateQuestionnaireOptions(false);
                             this.replaceMessage(replacement);
                             break;
                         default:
@@ -773,8 +798,7 @@ export class ChatWidgetComponent implements OnInit {
                         this.questionnaireAnswers[globalIndex] = questionnaires[
                             this.currentQuestionnaire
                         ].mappings.find((el) => el.label == message).value;
-                    }
-                    else {
+                    } else {
                         this.questionnaireAnswers[globalIndex] = message;
                     }
 
@@ -809,19 +833,26 @@ export class ChatWidgetComponent implements OnInit {
                     ).className = "dot in-progress";
                     this.awaitingAnswer = true;
                     this.inputComponentToShow = InputType.Text;
-                    const questionType = this.getQuestionnaireType(this.currentQuestionnaire);
+                    const questionType = this.getQuestionnaireType(
+                        this.currentQuestionnaire
+                    );
                     switch (questionType) {
                         case QuestionType.Likert:
                             this.readOnly = true;
                             this.showMessageInput = true;
-                            this.createQuestionnaireAnswers(this.printQuestion(), true)
+                            this.createQuestionnaireAnswers(
+                                this.printQuestion(),
+                                true
+                            );
                             this.typingAnimation("Please select an answer");
-                            this.textInputPlaceHolder = "Select an option"
+
                             return;
                         case QuestionType.Standard:
-                            this.createQuestionnaireAnswers(this.printQuestion())
+                            this.createQuestionnaireAnswers(
+                                this.printQuestion()
+                            );
                             this.typingAnimation("Please select an answer");
-                            this.textInputPlaceHolder = "Select an option"
+
                             return;
                         case QuestionType.CRT:
                             this.printQuestion();
@@ -830,7 +861,6 @@ export class ChatWidgetComponent implements OnInit {
                         default:
                             this.buttonsToShow = ButtonsType.None;
                             return;
-
                     }
                 }
             }
@@ -888,7 +918,11 @@ export class ChatWidgetComponent implements OnInit {
                     this.inputComponentToShow == InputType.Dropdown ||
                     this.inputComponentToShow == InputType.Button
                 ) {
-                    message = this.getCategoricalMapping(message, this.dimensionIndex, 'value');
+                    message = this.getCategoricalMapping(
+                        message,
+                        this.dimensionIndex,
+                        "value"
+                    );
                 }
                 let isValid = this.checkInputAnswer(
                     message,
@@ -902,8 +936,8 @@ export class ChatWidgetComponent implements OnInit {
                         const startTime =
                             this.action == "Back"
                                 ? this.countdownLeftTimeContainer[
-                                this.taskIndex
-                                ]
+                                      this.taskIndex
+                                  ]
                                 : this.task.settings.countdown_time;
                         this.storeCountdownData(
                             this.taskIndex,
@@ -931,9 +965,13 @@ export class ChatWidgetComponent implements OnInit {
                     !dimensions[this.dimensionIndex].scale
                 ) {
                     //TODO: Da stabilire
-                } else if (!!dimensions[this.dimensionIndex].scale && !!dimensions[this.dimensionIndex].scale.type && dimensions[this.dimensionIndex].scale.type == 'categorical') {
+                } else if (
+                    !!dimensions[this.dimensionIndex].scale &&
+                    !!dimensions[this.dimensionIndex].scale.type &&
+                    dimensions[this.dimensionIndex].scale.type == "categorical"
+                ) {
                     //Non stampo la dimensione, perchè verrà collegata ai pulsanti
-                    this.showMessageInput = true
+                    this.showMessageInput = true;
                 } else {
                     this.printDimension(this.taskIndex, this.dimensionIndex);
                 }
@@ -1054,7 +1092,7 @@ export class ChatWidgetComponent implements OnInit {
                 this.action = "Back";
                 this.typingAnimation(
                     this.createStatementsRecap() +
-                    "Which statement would you like to jump to?"
+                        "Which statement would you like to jump to?"
                 );
                 this.buttonsToShow = ButtonsType.None;
                 this.inputComponentToShow = InputType.Dropdown;
@@ -1347,30 +1385,31 @@ export class ChatWidgetComponent implements OnInit {
         let questionType;
         switch (questionnaires[questionnaireIndex].type) {
             case "crt":
-                questionType = QuestionType.CRT
+                questionType = QuestionType.CRT;
                 break;
             case "likert":
-                questionType = QuestionType.Likert
+                questionType = QuestionType.Likert;
                 break;
             case "standard":
-                questionType = QuestionType.Standard
+                questionType = QuestionType.Standard;
                 break;
             default:
                 questionType = QuestionType.None;
                 break;
-
         }
-        return questionType
+        return questionType;
     }
 
-    private getLikertMapping(index, input, returnValue: 'label' | 'value') {
-        if (returnValue == 'label') {
-            return this.task.questionnaires[index].mappings.find((el) => el.value == input).label
+    private getLikertMapping(index, input, returnValue: "label" | "value") {
+        if (returnValue == "label") {
+            return this.task.questionnaires[index].mappings.find(
+                (el) => el.value == input
+            ).label;
+        } else {
+            return this.task.questionnaires[index].mappings.find(
+                (el) => el.label == input
+            ).value;
         }
-        else {
-            return this.task.questionnaires[index].mappings.find((el) => el.label == input).value
-        }
-
     }
 
     private replaceMessage(contentForReplacement: string) {
@@ -1657,7 +1696,9 @@ export class ChatWidgetComponent implements OnInit {
     private printDimension(taskIndex: number, dimensionIndex: number) {
         const { dimensions } = this.task;
         const dimension = dimensions[dimensionIndex];
-        let out = `Please rate the <b>${dimension.name_pretty || dimension.name}</b> of the statement.<br>`;
+        let out = `Please rate the <b>${
+            dimension.name_pretty || dimension.name
+        }</b> of the statement.<br>`;
         if (!!dimension.description) {
             out += dimension.description;
         }
@@ -1668,7 +1709,11 @@ export class ChatWidgetComponent implements OnInit {
                 out += `Url: <b>${answer.urlValue}</b><br>`;
             }
             if (!!dimension.scale && dimension.scale.type === "categorical") {
-                out += `Dimension value: <b>${this.getCategoricalMapping(dimensionIndex, answer.dimensionValue, 'label')}</b>.`;
+                out += `Dimension value: <b>${this.getCategoricalMapping(
+                    dimensionIndex,
+                    answer.dimensionValue,
+                    "label"
+                )}</b>.`;
             } else {
                 out += `<br>Dimension value: <b>${answer.dimensionValue}</b>.`;
             }
@@ -1714,7 +1759,10 @@ export class ChatWidgetComponent implements OnInit {
                     recap += answer.urlValue;
                     break;
                 case "categorical":
-                    recap += this.getCategoricalAnswerLabel(i, answer.dimensionValue);
+                    recap += this.getCategoricalAnswerLabel(
+                        i,
+                        answer.dimensionValue
+                    );
                     break;
                 case "magnitude_estimation":
                 case "interval":
@@ -1729,7 +1777,6 @@ export class ChatWidgetComponent implements OnInit {
             recap += "<br>";
         }
         return recap;
-
     }
 
     // Creo una stringa con tutti gli statement
@@ -1754,8 +1801,10 @@ export class ChatWidgetComponent implements OnInit {
     }
 
     //Creazione del testo della domanda e delle risposte possibili
-    private createQuestionnaireAnswers(text: string | undefined, isLikert: boolean = false) {
-
+    private createQuestionnaireAnswers(
+        text: string | undefined,
+        isLikert: boolean = false
+    ) {
         this.guid = ChatHelper.getUid();
 
         if (isLikert) {
@@ -1773,8 +1822,9 @@ export class ChatWidgetComponent implements OnInit {
                 value: answer,
             }));
         }
-        this.typingAnimation(text, false)
+        this.typingAnimation(text, false);
         this.readOnly = true;
+        this.textInputPlaceHolder = "Select an option";
         return "";
     }
 
@@ -1811,19 +1861,25 @@ export class ChatWidgetComponent implements OnInit {
                     globalQuestionIndex +
                     ". Question: <b>" +
                     item.questions[i].text +
-                    "</b><br>Answer:<b> "
+                    "</b><br>Answer:<b> ";
                 switch (questionType) {
                     case QuestionType.Standard:
-                        recap += this.questionnaireAnswers[i] +
-                            "</b><br><br>";
+                        recap += this.questionnaireAnswers[i] + "</b><br><br>";
                         break;
                     case QuestionType.CRT:
-                        recap += this.questionnaireAnswers[globalQuestionIndex - 1] +
+                        recap +=
+                            this.questionnaireAnswers[globalQuestionIndex - 1] +
                             "</b><br><br>";
-                        break
+                        break;
                     case QuestionType.Likert:
-                        recap += this.getLikertMapping(item.index, this.questionnaireAnswers[globalQuestionIndex - 1], 'label') +
-                            "</b><br><br>";
+                        recap +=
+                            this.getLikertMapping(
+                                item.index,
+                                this.questionnaireAnswers[
+                                    globalQuestionIndex - 1
+                                ],
+                                "label"
+                            ) + "</b><br><br>";
                         break;
                     default:
                         // Nessuna operazione
@@ -1848,7 +1904,8 @@ export class ChatWidgetComponent implements OnInit {
         if (selectedDimension.url && scaleType) {
             this.hasDoubleInput = true;
             this.emitEnableSearchEngine();
-            const message = "Please use the search bar on the right to search for information about the statement. Once you find a suitable result, please type or select its url";
+            const message =
+                "Please use the search bar on the right to search for information about the statement. Once you find a suitable result, please type or select its url";
             this.typingAnimation(message);
         } else if (!selectedDimension.scale && selectedDimension.url) {
             scaleType = "url";
@@ -1860,7 +1917,8 @@ export class ChatWidgetComponent implements OnInit {
             case "url":
                 this.waitForUrl = true;
                 this.emitEnableSearchEngine();
-                const message = "Please use the search bar on the right to search for information about the statement. Once you find a suitable result, please type or select its url";
+                const message =
+                    "Please use the search bar on the right to search for information about the statement. Once you find a suitable result, please type or select its url";
                 this.typingAnimation(message);
                 break;
             case "categorical":
@@ -1880,16 +1938,19 @@ export class ChatWidgetComponent implements OnInit {
                 break;
         }
 
-        if (!["url", "categorical"].includes(scaleType) || this.hasDoubleInput) {
+        if (
+            !["url", "categorical"].includes(scaleType) ||
+            this.hasDoubleInput
+        ) {
             this.readOnly = false;
         }
 
         this.statementProvided = true;
         const timestampIndex = this.task.questionnaires.length + this.taskIndex;
-        this.timestampsStart[timestampIndex][0] = ChatHelper.getTimeStampInSeconds();
+        this.timestampsStart[timestampIndex][0] =
+            ChatHelper.getTimeStampInSeconds();
         this.changeDetector.detectChanges();
     }
-
 
     //Restituisce l'etichetta del valore della relativa dimensione
     private getCategoricalAnswerLabel(dimensionIndex, answerValue) {
@@ -1932,7 +1993,6 @@ export class ChatWidgetComponent implements OnInit {
         this.showMessageInput = false;
     }
 
-
     private generateFinalStatementRecapData() {
         this.dropdownListOptions = [];
         this.task.hit.documents.forEach((_, index) => {
@@ -1953,25 +2013,32 @@ export class ChatWidgetComponent implements OnInit {
             label: el.label,
             value: el.value,
         }));
-        this.textInputPlaceHolder = "Select an option"
+        this.textInputPlaceHolder = "Select an option";
         this.readOnly = true;
-        this.typingAnimation(text, false)
+        this.typingAnimation(text, false);
         this.inputComponentToShow = InputType.Button;
     }
-
 
     private generateCategoricalAnswers(dimensionIndex: number) {
         const dimensionInfos = this.task.dimensions[dimensionIndex];
 
-        this.categoricalInfo = (dimensionInfos.scale as ScaleCategorical).mapping.map(
-            ({ label, description, value }: CategoricalInfo) => ({ label, description, value })
-        );
+        this.categoricalInfo = (
+            dimensionInfos.scale as ScaleCategorical
+        ).mapping.map(({ label, description, value }: CategoricalInfo) => ({
+            label,
+            description,
+            value,
+        }));
 
         if (this.hasDoubleInput) {
-            this.dropdownListOptions = this.categoricalInfo.map(({ label, value }) => ({ label, value }));
+            this.dropdownListOptions = this.categoricalInfo.map(
+                ({ label, value }) => ({ label, value })
+            );
             this.inputComponentToShow = InputType.Dropdown;
         } else {
-            this.buttonOptions = this.categoricalInfo.map(({ label, value }) => ({ label, value }));
+            this.buttonOptions = this.categoricalInfo.map(
+                ({ label, value }) => ({ label, value })
+            );
             const text = `Rate the <b>${dimensionInfos.name_pretty}</b> of this statement`;
             this.typingAnimation(text, false);
             this.textInputPlaceHolder = "Select an option";
@@ -2020,11 +2087,19 @@ export class ChatWidgetComponent implements OnInit {
     }
 
     //Restituisce il valore mappato della risposta categoriale
-    private getCategoricalMapping(input, index, returnValue: 'label' | 'value') {
-        if (returnValue == 'label')
-            return (this.task.dimensions[index].scale as ScaleCategorical).mapping.find((el) => el.value == input).label
+    private getCategoricalMapping(
+        input,
+        index,
+        returnValue: "label" | "value"
+    ) {
+        if (returnValue == "label")
+            return (
+                this.task.dimensions[index].scale as ScaleCategorical
+            ).mapping.find((el) => el.value == input).label;
         else
-            return +(this.task.dimensions[index].scale as ScaleCategorical).mapping.find((el) => el.label == input).value
+            return +(
+                this.task.dimensions[index].scale as ScaleCategorical
+            ).mapping.find((el) => el.label == input).value;
     }
 
     //Restituisce il valore mappato della Dropdown visualizzata
