@@ -35,6 +35,7 @@ import ChatHelper from "./chat-helpers";
 import { BehaviorSubject, Observable } from "rxjs";
 import { ChatCommentModalComponent } from "../chat-modals/chat-comment-modal/chat-comment-modalcomponent";
 import { ChatInstructionModalComponent } from "../chat-modals/chat-instruction-modal/chat-instruction-modal.component";
+import { UtilsService } from "../../../services/utils.service";
 
 // Main
 @Component({
@@ -63,6 +64,7 @@ export class ChatWidgetComponent implements OnInit {
     S3Service: S3Service;
     dynamoDBService: DynamoDBService;
     configService: ConfigService;
+    utilsService: UtilsService
     sectionService: SectionService;
 
     // Indexes
@@ -618,22 +620,16 @@ export class ChatWidgetComponent implements OnInit {
                         this.taskP("startTask");
                     }, 1600);
                     return;
+                } else {
+                    this.ignoreMsg = false;
+                    return;
                 }
             } else if (!this.finishedExampleActivity && this.fixedMessage) {
                 this.textInputPlaceHolder = null;
-                if (message.toLowerCase() === "true")
-                    this.typingAnimation(
-                        "You answered " +
-                            message +
-                            ", that's exactly the right answer, great!"
-                    );
-                else
-                    this.typingAnimation(
-                        "You answered " +
-                            message +
-                            ", i understand, but i thought it was true .. maybe I'm wrong"
-                    );
+                const answerMessage = `You answered <b>${message}</b>, ${message.toLowerCase() === 'true' ? 'that\'s exactly the right answer, great!' : 'I understand, but I thought it was true... maybe I\'m wrong.'}`;
+                this.typingAnimation(answerMessage);
                 this.typingAnimation(this.messagesForUser[10]);
+
                 let replacement = `Please rate the <b> ${this.exampleStatement.dimensionInfo.name} </b> of the statement.<br>`;
                 let option = this.exampleStatement.dimensionInfo.scale.mapping;
                 for (let i = 0; i < option.length; i++) {
@@ -725,7 +721,7 @@ export class ChatWidgetComponent implements OnInit {
                 } else if (
                     !dimensions[this.dimensionIndex].url &&
                     dimensions[this.dimensionIndex].scale?.type ===
-                        "categorical"
+                    "categorical"
                 ) {
                     //Non stampo la dimensione, perché verrà collegata ai pulsanti
                 } else {
@@ -740,7 +736,6 @@ export class ChatWidgetComponent implements OnInit {
 
                 this.selectDimensionToGenerate(this.dimensionIndex);
             }
-
             this.ignoreMsg = false;
         } else {
             this.ignoreMsg = false;
@@ -893,7 +888,6 @@ export class ChatWidgetComponent implements OnInit {
                 this.pickReview = false;
                 this.typingAnimation(this.messagesForUser[5]);
                 this.instructionP();
-
                 return;
             } else if (message.trim().toLowerCase() === "modify") {
                 this.buttonsToShow = ButtonsType.None;
@@ -936,8 +930,8 @@ export class ChatWidgetComponent implements OnInit {
                         const startTime =
                             this.action == "Back"
                                 ? this.countdownLeftTimeContainer[
-                                      this.taskIndex
-                                  ]
+                                this.taskIndex
+                                ]
                                 : this.task.settings.countdown_time;
                         this.storeCountdownData(
                             this.taskIndex,
@@ -1092,7 +1086,7 @@ export class ChatWidgetComponent implements OnInit {
                 this.action = "Back";
                 this.typingAnimation(
                     this.createStatementsRecap() +
-                        "Which statement would you like to jump to?"
+                    "Which statement would you like to jump to?"
                 );
                 this.buttonsToShow = ButtonsType.None;
                 this.inputComponentToShow = InputType.Dropdown;
@@ -1656,39 +1650,36 @@ export class ChatWidgetComponent implements OnInit {
 
     // Stampa lo statement corrente e lo fissa nella chat
     private printStatement() {
-        const { hit } = this.task;
-        this.accessesAmount[
-            this.task.questionnaires.length + this.taskIndex
-        ] += 1;
+        const selectedDocument = this.task.documents[this.taskIndex];
+        const index = this.task.questionnaires.length + this.taskIndex;
+        this.accessesAmount[index] += 1;
 
-        document.getElementById(
-            (this.task.questionnaires.length + this.taskIndex).toString()
-        ).className = "dot in-progress";
-        let messageToSend =
-            "Statement: <b>" +
-            hit.documents[this.taskIndex]["statement_text"] +
-            "</b> ";
-        if (!!hit.documents[this.taskIndex]["speaker_name"])
-            messageToSend +=
-                "- " + hit.documents[this.taskIndex]["speaker_name"];
-        if (!!hit.documents[this.taskIndex]["statement_date"])
-            messageToSend +=
-                " " + hit.documents[this.taskIndex]["statement_date"];
+        const dotElement = document.getElementById(index.toString());
+        if (dotElement) {
+            dotElement.className = "dot in-progress";
+        }
+
+        const statementText = selectedDocument["statement_text"];
+        const speakerName = selectedDocument["speaker_name"];
+        const statementDate = selectedDocument["statement_date"];
+
+        let messageToSend = `Statement: <b>${statementText}</b> `;
+        if (speakerName) {
+            messageToSend += `- ${speakerName}`;
+        }
+        if (statementDate) {
+            messageToSend += ` ${statementDate}`;
+        }
         this.typingAnimation(messageToSend);
-        //Composizione messaggio fissato
-        if (!!this.fixedMessage) {
-        } else {
-            if (!!hit.documents[this.taskIndex]["statement_text"])
-                this.fixedMessage =
-                    hit.documents[this.taskIndex]["statement_text"];
 
-            if (!!hit.documents[this.taskIndex]["speaker_name"])
-                this.statementAuthor =
-                    hit.documents[this.taskIndex]["speaker_name"];
-
-            if (!!hit.documents[this.taskIndex]["statement_date"])
-                this.statementDate =
-                    hit.documents[this.taskIndex]["statement_date"];
+        if (!this.fixedMessage && statementText) {
+            if (speakerName) {
+                this.statementAuthor = speakerName;
+            }
+            if (statementDate) {
+                this.statementDate = statementDate;
+            }
+            this.fixedMessage = statementText;
         }
     }
 
@@ -1696,9 +1687,8 @@ export class ChatWidgetComponent implements OnInit {
     private printDimension(taskIndex: number, dimensionIndex: number) {
         const { dimensions } = this.task;
         const dimension = dimensions[dimensionIndex];
-        let out = `Please rate the <b>${
-            dimension.name_pretty || dimension.name
-        }</b> of the statement.<br>`;
+        let name = dimension.name_pretty ?? this.utilsService.capitalize(dimension.name)
+        let out = `Please rate the <b>${name}</b> of the statement.<br>`;
         if (!!dimension.description) {
             out += dimension.description;
         }
@@ -1748,9 +1738,8 @@ export class ChatWidgetComponent implements OnInit {
                 if (scaleType === "url") {
                     recap += `<b> URL</b>: `;
                 } else {
-                    recap += dimension.name_pretty
-                        ? `<b>${dimension.name_pretty}</b>: `
-                        : "<b>Dimension</b>: ";
+                    let name = dimension.name_pretty ?? this.utilsService.capitalize(dimension.name)
+                    recap += `<b>${name}</b>: `
                 }
             }
 
@@ -1773,7 +1762,6 @@ export class ChatWidgetComponent implements OnInit {
                     console.warn("Casistica non gestita");
                     break;
             }
-
             recap += "<br>";
         }
         return recap;
@@ -1864,27 +1852,28 @@ export class ChatWidgetComponent implements OnInit {
                     "</b><br>Answer:<b> ";
                 switch (questionType) {
                     case QuestionType.Standard:
-                        recap += this.questionnaireAnswers[i] + "</b><br><br>";
+                        recap += this.questionnaireAnswers[i] + "</b>";
                         break;
                     case QuestionType.CRT:
                         recap +=
                             this.questionnaireAnswers[globalQuestionIndex - 1] +
-                            "</b><br><br>";
+                            "</b>";
                         break;
                     case QuestionType.Likert:
                         recap +=
                             this.getLikertMapping(
                                 item.index,
                                 this.questionnaireAnswers[
-                                    globalQuestionIndex - 1
+                                globalQuestionIndex - 1
                                 ],
                                 "label"
-                            ) + "</b><br><br>";
+                            ) + "</b>";
                         break;
                     default:
                         // Nessuna operazione
                         break;
                 }
+                recap += "<br>"
                 globalQuestionIndex++;
             }
         });
@@ -1962,32 +1951,24 @@ export class ChatWidgetComponent implements OnInit {
     //Generazione dati per la revisione del questionario o delle dimensioni dello statement
     private generateRevisionData() {
         this.dropdownListOptions = [];
-        //Revisione domande dei questionari
         if (this.conversationState === ConversationState.QuestionnaireReview) {
             let index = 1;
-            for (let i = 0; i < this.task.questionnaires.length; i++) {
-                this.task.questionnaires[i].questions.forEach((question) => {
+            // Revisione domande dei questionari
+            for (const questionnaire of this.task.questionnaires) {
+                for (const question of questionnaire.questions) {
                     this.dropdownListOptions.push({
-                        label: question.text,
+                        label: `${index}. ${question.text}`,
                         value: index.toString(),
                     });
                     index++;
-                });
+                }
             }
         } else {
-            //Revisione dimensioni per ogni statement
-            this.dropdownListOptions = this.task.dimensions.map(
-                (dimension, index) => {
-                    return {
-                        label:
-                            (index + 1).toString() +
-                            ". " +
-                            (dimension.name_pretty ?? "Dimension"),
-
-                        value: (index + 1).toString(),
-                    };
-                }
-            );
+            // Revisione dimensioni per ogni statement
+            this.dropdownListOptions = this.task.dimensions.map((dimension, index) => ({
+                label: `${index + 1}. ${dimension.name_pretty || this.utilsService.capitalize(dimension.name)}`,
+                value: (index + 1).toString(),
+            }));
         }
         this.inputComponentToShow = InputType.Dropdown;
         this.showMessageInput = false;
@@ -2020,10 +2001,10 @@ export class ChatWidgetComponent implements OnInit {
     }
 
     private generateCategoricalAnswers(dimensionIndex: number) {
-        const dimensionInfos = this.task.dimensions[dimensionIndex];
+        const dimension = this.task.dimensions[dimensionIndex];
 
         this.categoricalInfo = (
-            dimensionInfos.scale as ScaleCategorical
+            dimension.scale as ScaleCategorical
         ).mapping.map(({ label, description, value }: CategoricalInfo) => ({
             label,
             description,
@@ -2039,7 +2020,8 @@ export class ChatWidgetComponent implements OnInit {
             this.buttonOptions = this.categoricalInfo.map(
                 ({ label, value }) => ({ label, value })
             );
-            const text = `Rate the <b>${dimensionInfos.name_pretty}</b> of this statement`;
+            let name = dimension.name_pretty ?? this.utilsService.capitalize(dimension.name)
+            const text = `Rate the <b>${name}</b> of this statement`;
             this.typingAnimation(text, false);
             this.textInputPlaceHolder = "Select an option";
             this.inputComponentToShow = InputType.Button;
@@ -2115,18 +2097,18 @@ export class ChatWidgetComponent implements OnInit {
         return +message.split(" ")[1] - 1;
     }
     private getInstructions(): string {
-        let instructions = "";
-        if (this.task.instructionsGeneral.length > 0) {
-            this.task.instructionsGeneral.forEach((item) => {
-                instructions +=
-                    (item.caption
-                        ? "<strong>" + item.caption + "</strong> </br>"
-                        : "") +
-                    item.text +
-                    "</br>";
-            });
+        const { instructionsGeneral } = this.task;
+        if (instructionsGeneral.length === 0) {
+            return '';
         }
-        return instructions;
+        return instructionsGeneral
+            .map((item, index) => {
+                const caption = item.caption ? `<strong>${item.caption}</strong><br>` : '';
+                const text = item.text;
+                const isLast = index === instructionsGeneral.length - 1;
+                return `${caption}${text}${isLast ? '' : '<br>'}`;
+            })
+            .join('');
     }
 
     private getAnswerValidity(
@@ -2135,25 +2117,23 @@ export class ChatWidgetComponent implements OnInit {
         url: string
     ): boolean {
         const { dimensions } = this.task;
-        let isValid = false;
-        if (
-            !!dimensions[dimensionIndex].scale &&
-            !!dimensions[dimensionIndex].url
-        ) {
-            isValid =
-                ChatHelper.validMsg(message, this.minValue, this.maxValue) &&
-                ChatHelper.urlValid(url);
-        } else if (this.waitForUrl) {
-            isValid = ChatHelper.urlValid(url);
-        } else if (dimensions[dimensionIndex].justification) {
-            isValid = true;
-        } else
-            isValid = ChatHelper.validMsg(
-                message,
-                this.minValue,
-                this.maxValue
-            );
 
+        const isScaleAndUrlValid =
+            !!dimensions[dimensionIndex].scale && !!dimensions[dimensionIndex].url;
+        const isValueValid = ChatHelper.validMsg(message, this.minValue, this.maxValue);
+        const isUrlValid = ChatHelper.urlValid(url);
+        const isOpenAnswer = dimensions[dimensionIndex].justification;
+
+        let isValid = false;
+        if (isScaleAndUrlValid) {
+            isValid = isValueValid && isUrlValid;
+        } else if (this.waitForUrl) {
+            isValid = isUrlValid;
+        } else if (isOpenAnswer) {
+            isValid = true;
+        } else {
+            isValid = isValueValid;
+        }
         return isValid;
     }
 
