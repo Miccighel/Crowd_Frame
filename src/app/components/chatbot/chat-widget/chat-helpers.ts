@@ -16,11 +16,11 @@ export default class ChatHelper {
     static urlValid(msg): boolean {
         let pattern = new RegExp(
             "^(https?:\\/\\/)?" + // protocol
-                "((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|" + // domain name
-                "((\\d{1,3}\\.){3}\\d{1,3}))" + // OR ip (v4) address
-                "(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*" + // port and path
-                "(\\?[;&a-z\\d%_.~+=-]*)?" + // query string
-                "(\\#[-a-z\\d_]*)?$",
+            "((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|" + // domain name
+            "((\\d{1,3}\\.){3}\\d{1,3}))" + // OR ip (v4) address
+            "(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*" + // port and path
+            "(\\?[;&a-z\\d%_.~+=-]*)?" + // query string
+            "(\\#[-a-z\\d_]*)?$",
             "i"
         ); // fragment locator
         return !!pattern.test(msg);
@@ -66,5 +66,13 @@ export default class ChatHelper {
 
     static getUid() {
         return Date.now().toString(36) + Math.random().toString(36).substr(2);
+    }
+
+    static capitalize(word: string) {
+        if (!word) return word;
+        let text = word.split("-")
+        let str = ""
+        for (word of text) str = str + " " + word[0].toUpperCase() + word.substr(1).toLowerCase();
+        return str.trim()
     }
 }

@@ -35,7 +35,6 @@ import ChatHelper from "./chat-helpers";
 import { BehaviorSubject, Observable } from "rxjs";
 import { ChatCommentModalComponent } from "../chat-modals/chat-comment-modal/chat-comment-modalcomponent";
 import { ChatInstructionModalComponent } from "../chat-modals/chat-instruction-modal/chat-instruction-modal.component";
-import { UtilsService } from "../../../services/utils.service";
 
 // Main
 @Component({
@@ -64,7 +63,6 @@ export class ChatWidgetComponent implements OnInit {
     S3Service: S3Service;
     dynamoDBService: DynamoDBService;
     configService: ConfigService;
-    utilsService: UtilsService
     sectionService: SectionService;
 
     // Indexes
@@ -1687,7 +1685,7 @@ export class ChatWidgetComponent implements OnInit {
     private printDimension(taskIndex: number, dimensionIndex: number) {
         const { dimensions } = this.task;
         const dimension = dimensions[dimensionIndex];
-        let name = dimension.name_pretty ?? this.utilsService.capitalize(dimension.name)
+        let name = dimension.name_pretty ?? ChatHelper.capitalize(dimension.name)
         let out = `Please rate the <b>${name}</b> of the statement.<br>`;
         if (!!dimension.description) {
             out += dimension.description;
@@ -1738,7 +1736,7 @@ export class ChatWidgetComponent implements OnInit {
                 if (scaleType === "url") {
                     recap += `<b> URL</b>: `;
                 } else {
-                    let name = dimension.name_pretty ?? this.utilsService.capitalize(dimension.name)
+                    let name = dimension.name_pretty ?? ChatHelper.capitalize(dimension.name)
                     recap += `<b>${name}</b>: `
                 }
             }
@@ -1966,7 +1964,7 @@ export class ChatWidgetComponent implements OnInit {
         } else {
             // Revisione dimensioni per ogni statement
             this.dropdownListOptions = this.task.dimensions.map((dimension, index) => ({
-                label: `${index + 1}. ${dimension.name_pretty || this.utilsService.capitalize(dimension.name)}`,
+                label: `${index + 1}. ${dimension.name_pretty || ChatHelper.capitalize(dimension.name)}`,
                 value: (index + 1).toString(),
             }));
         }
@@ -2020,7 +2018,7 @@ export class ChatWidgetComponent implements OnInit {
             this.buttonOptions = this.categoricalInfo.map(
                 ({ label, value }) => ({ label, value })
             );
-            let name = dimension.name_pretty ?? this.utilsService.capitalize(dimension.name)
+            let name = dimension.name_pretty ?? ChatHelper.capitalize(dimension.name)
             const text = `Rate the <b>${name}</b> of this statement`;
             this.typingAnimation(text, false);
             this.textInputPlaceHolder = "Select an option";
