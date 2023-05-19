@@ -257,7 +257,7 @@ export class ChatWidgetComponent implements OnInit {
                 instructions: {
                     label: "D",
 
-                    text: "Evaluate the Overall Truthfulness of the statement",
+                    text: "Evaluate the Overall Truthfulness on your evaluation of the statement",
                 },
                 mapping: [
                     {
@@ -490,7 +490,7 @@ export class ChatWidgetComponent implements OnInit {
                 const questionType = this.getQuestionnaireType(
                     this.currentQuestionnaire
                 );
-                let replacement = null;
+                let replacement = this.printQuestion(this.currentQuestion, this.currentQuestionnaire) + "<br/>";
                 switch (questionType) {
                     case QuestionType.Likert:
                         message = this.getLikertMapping(
@@ -498,18 +498,17 @@ export class ChatWidgetComponent implements OnInit {
                             message,
                             "value"
                         );
-                        replacement = this.generateQuestionnaireOptions(true);
+                        replacement += this.generateQuestionnaireOptions(true);
                         this.replaceMessage(replacement);
                         break;
                     case QuestionType.Standard:
-                        replacement = this.generateQuestionnaireOptions(false);
+                        replacement += this.generateQuestionnaireOptions(false);
                         this.replaceMessage(replacement);
                         break;
                     default:
                         // Nessuna operazione
                         break;
                 }
-
                 this.questionnaireAnswers[
                     this.getGlobalQuestionIndex(
                         this.currentQuestionnaire,
@@ -517,7 +516,6 @@ export class ChatWidgetComponent implements OnInit {
                     )
                 ] = message;
                 this.inputComponentToShow = InputType.Text;
-
                 this.currentQuestion++;
                 this.awaitingAnswer = false;
                 if (
@@ -561,7 +559,7 @@ export class ChatWidgetComponent implements OnInit {
         //Non è in attesa, quindi genera la domanda successiva
         this.showMessageInput = true;
         if (questionnaires[this.currentQuestionnaire].type == "standard") {
-            this.createQuestionnaireAnswers(this.printQuestion());
+            this.createQuestionnaireAnswers(this.printQuestion(this.currentQuestion, this.currentQuestionnaire));
             this.typingAnimation("Please select an answer");
         } else if (questionnaires[this.currentQuestionnaire].type == "likert") {
             this.typingAnimation(
@@ -569,7 +567,7 @@ export class ChatWidgetComponent implements OnInit {
                     this.currentQuestion
                 ].text
             );
-            this.createQuestionnaireAnswers(this.printQuestion(), true);
+            this.createQuestionnaireAnswers(this.printQuestion(this.currentQuestion, this.currentQuestionnaire), true);
             this.typingAnimation("Please select an answer");
         } else if (questionnaires[this.currentQuestionnaire].type == "crt") {
             this.readOnly = false;
@@ -628,11 +626,11 @@ export class ChatWidgetComponent implements OnInit {
                 this.typingAnimation(answerMessage);
                 this.typingAnimation(this.messagesForUser[10]);
 
-                let replacement = `Please rate the <b> ${this.exampleStatement.dimensionInfo.name} </b> of the statement.<br>`;
+                let replacement = `Please rate the <b> ${this.exampleStatement.dimensionInfo.name} </b> on your evaluation of the statement.<br>`;
                 let option = this.exampleStatement.dimensionInfo.scale.mapping;
                 for (let i = 0; i < option.length; i++) {
                     replacement +=
-                        i + 1 + ". <b>" + option[i].label + "</b><br><br>";
+                        i + 1 + ". <b>" + option[i].label + "</b><br>";
                 }
                 this.replaceMessage(replacement);
                 this.finishedExampleActivity = true;
@@ -655,7 +653,7 @@ export class ChatWidgetComponent implements OnInit {
     // Fase di task
     private taskP(message) {
         const { settings, dimensions, questionnaires } = this.task;
-        let validAnswer = true;
+        let isValid = true;
         if (
             this.inputComponentToShow == InputType.Dropdown ||
             this.inputComponentToShow == InputType.Button
@@ -683,20 +681,35 @@ export class ChatWidgetComponent implements OnInit {
             //Salvo il tempo di fine
             this.timestampsEnd[questionnaires.length + this.taskIndex][0] =
                 ChatHelper.getTimeStampInSeconds();
-
             this.checkInputAnswer(message, this.taskIndex, this.dimensionIndex);
+            const dimension = dimensions[this.dimensionIndex];
+            if (dimension.scale && dimension.scale.type == 'categorical') {
+                const name = dimension.name_pretty ?? ChatHelper.capitalize(dimension.name);
+                const options = (dimension.scale as ScaleCategorical).mapping.map((scale) => scale.label);
+                const replacement = `Please rate the <b>${name}</b> on your evaluation of the statement.<br>` +
+                    options.map((option, i) => `${i + 1}. <b>${option}</b><br>`).join('');
+                this.replaceMessage(replacement);
+            }
             this.statementProvided = false;
             this.reviewAnswersShown = false;
             this.conversationState = ConversationState.TaskReview;
             this.reviewP(message);
             return;
         } else {
-            validAnswer = this.checkInputAnswer(
+            isValid = this.checkInputAnswer(
                 message,
                 this.taskIndex,
                 this.dimensionIndex
             );
-            if (validAnswer) {
+            if (isValid) {
+                const dimension = dimensions[this.dimensionIndex];
+                if (dimension.scale && dimension.scale.type == 'categorical') {
+                    const name = dimension.name_pretty ?? ChatHelper.capitalize(dimension.name);
+                    const options = (dimension.scale as ScaleCategorical).mapping.map((scale) => scale.label);
+                    const replacement = `Please rate the <b>${name}</b> on your evaluation of the statement.<br>` +
+                        options.map((option, i) => `${i + 1}. <b>${option}</b><br>`).join('');
+                    this.replaceMessage(replacement);
+                }
                 this.dimensionIndex++;
                 this.inputComponentToShow = InputType.Text;
             }
@@ -710,7 +723,7 @@ export class ChatWidgetComponent implements OnInit {
             if (!!settings.countdown_time && this.dimensionIndex == 0) {
                 this.setCountdown(settings.countdown_time);
             }
-            if (validAnswer || message == "startTask") {
+            if (isValid || message == "startTask") {
                 if (
                     dimensions[this.dimensionIndex].url &&
                     !dimensions[this.dimensionIndex].scale
@@ -771,15 +784,15 @@ export class ChatWidgetComponent implements OnInit {
                         this.currentQuestion
                     );
 
-                    let replacement = null;
+                    let replacement = this.printQuestion(this.currentQuestion, this.currentQuestionnaire) + "<br/>";
                     switch (questionType) {
                         case QuestionType.Likert:
-                            replacement =
+                            replacement +=
                                 this.generateQuestionnaireOptions(true);
                             this.replaceMessage(replacement);
                             break;
                         case QuestionType.Standard:
-                            replacement =
+                            replacement +=
                                 this.generateQuestionnaireOptions(false);
                             this.replaceMessage(replacement);
                             break;
@@ -834,7 +847,7 @@ export class ChatWidgetComponent implements OnInit {
                             this.readOnly = true;
                             this.showMessageInput = true;
                             this.createQuestionnaireAnswers(
-                                this.printQuestion(),
+                                this.printQuestion(this.currentQuestion, this.currentQuestionnaire),
                                 true
                             );
                             this.typingAnimation("Please select an answer");
@@ -842,13 +855,13 @@ export class ChatWidgetComponent implements OnInit {
                             return;
                         case QuestionType.Standard:
                             this.createQuestionnaireAnswers(
-                                this.printQuestion()
+                                this.printQuestion(this.currentQuestion, this.currentQuestionnaire)
                             );
                             this.typingAnimation("Please select an answer");
 
                             return;
                         case QuestionType.CRT:
-                            this.printQuestion();
+                            this.printQuestion(this.currentQuestion, this.currentQuestionnaire);
                             this.inputComponentToShow = InputType.Number;
                             return;
                         default:
@@ -922,20 +935,20 @@ export class ChatWidgetComponent implements OnInit {
                     this.dimensionIndex
                 );
                 if (isValid) {
+                    const { dimensions } = this.task;
+                    const dimension = dimensions[this.dimensionIndex];
+                    if (dimension.scale?.type === 'categorical') {
+                        const name = dimension.name_pretty ?? ChatHelper.capitalize(dimension.name);
+                        const options = (dimension.scale as ScaleCategorical).mapping.map((scale) => scale.label);
+                        const replacement = `Please rate the <b>${name}</b> on your evaluation of the statement.<br>${options.map((option, i) => `${i + 1}. <b>${option}</b><br>`).join('')}`;
+                        this.replaceMessage(replacement);
+                    }
                     this.inputComponentToShow = InputType.Text;
-                    if (!!this.task.settings.countdown_time) {
-                        //Se mi ritrovo nella fase di revisione dopo la fine del task recupero il valore
-                        const startTime =
-                            this.action == "Back"
-                                ? this.countdownLeftTimeContainer[
-                                this.taskIndex
-                                ]
-                                : this.task.settings.countdown_time;
-                        this.storeCountdownData(
-                            this.taskIndex,
-                            startTime,
-                            this.countdownValueSubject.value
-                        );
+                    if (this.task.settings.countdown_time !== null && this.task.settings.countdown_time !== undefined) {
+                        const startTime = this.action === 'Back'
+                            ? this.countdownLeftTimeContainer[this.taskIndex]
+                            : this.task.settings.countdown_time;
+                        this.storeCountdownData(this.taskIndex, startTime, this.countdownValueSubject.value);
                         this.showCountdown = false;
                     }
                 } else return;
@@ -976,7 +989,6 @@ export class ChatWidgetComponent implements OnInit {
                 }
                 if (this.inputComponentToShow != InputType.Button)
                     this.showMessageInput = false;
-
                 return;
             }
             this.cleanUserInput();
@@ -1021,13 +1033,13 @@ export class ChatWidgetComponent implements OnInit {
                 this.task.hit.documents.length - 1 <= this.taskIndex ||
                 this.statementJump
             ) {
+                this.cleanUserInput();
                 this.statementJump = false;
-                this.conversationState = ConversationState.End;
                 this.reviewAnswersShown = false;
+                this.conversationState = ConversationState.End;
                 this.typingAnimation(
                     "OK! Would you like to jump to a specific statement?"
                 );
-                this.cleanUserInput();
 
                 setTimeout(() => {
                     this.buttonsToShow = ButtonsType.YesNo;
@@ -1082,13 +1094,14 @@ export class ChatWidgetComponent implements OnInit {
         } else {
             if (message.trim().toLowerCase() === "yes") {
                 this.action = "Back";
-                this.typingAnimation(
-                    this.createStatementsRecap() +
-                    "Which statement would you like to jump to?"
-                );
+                this.showMessageInput = false;
                 this.buttonsToShow = ButtonsType.None;
-                this.inputComponentToShow = InputType.Dropdown;
+                this.typingAnimation(
+                    this.createStatementsRecap()
+                );
+                this.typingAnimation("Which statement would you like to jump to?");
                 this.generateFinalStatementRecapData();
+                this.inputComponentToShow = InputType.Dropdown;
                 this.statementJump = true;
             } else if (message.trim().toLowerCase() === "no") {
                 this.inputComponentToShow = InputType.Text;
@@ -1182,7 +1195,6 @@ export class ChatWidgetComponent implements OnInit {
                     modalRef.result.then(async (result) => {
                         if (result) {
                             let comment = this.buildCommentPayload(result);
-
                             await this.dynamoDBService.insertDataRecord(
                                 this.configService.environment,
                                 this.worker,
@@ -1619,11 +1631,11 @@ export class ChatWidgetComponent implements OnInit {
     }
 
     //Stampa della domanda nella chat
-    private printQuestion() {
-        this.accessesAmount[this.currentQuestion] += 1;
+    private printQuestion(questionIndex: number, questionnaireIndex: number) {
+        this.accessesAmount[questionIndex] += 1;
         let q =
-            this.task.questionnaires[this.currentQuestionnaire].questions[
-                this.currentQuestion
+            this.task.questionnaires[questionnaireIndex].questions[
+                questionIndex
             ].text;
         return q;
     }
@@ -1686,7 +1698,7 @@ export class ChatWidgetComponent implements OnInit {
         const { dimensions } = this.task;
         const dimension = dimensions[dimensionIndex];
         let name = dimension.name_pretty ?? ChatHelper.capitalize(dimension.name)
-        let out = `Please rate the <b>${name}</b> of the statement.<br>`;
+        let out = `Please rate the <b>${name}</b> on your evaluation of the statement.<br>`;
         if (!!dimension.description) {
             out += dimension.description;
         }
@@ -1792,7 +1804,6 @@ export class ChatWidgetComponent implements OnInit {
         isLikert: boolean = false
     ) {
         this.guid = ChatHelper.getUid();
-
         if (isLikert) {
             let options =
                 this.task.questionnaires[this.currentQuestionnaire].mappings;
@@ -1817,21 +1828,11 @@ export class ChatWidgetComponent implements OnInit {
     private generateQuestionnaireOptions(isLikert: boolean = false): string {
         let recap = "";
         if (isLikert) {
-            let options =
-                this.task.questionnaires[this.currentQuestionnaire].mappings;
-
-            for (let i = 0; i < options.length; i++) {
-                recap += i + 1 + ". <b>" + options[i].label + "</b><br><br>";
-            }
+            const options = this.task.questionnaires[this.currentQuestionnaire].mappings;
+            recap = options.map((option, i) => `${i + 1}. <b>${option.label}</b><br>`).join('');
         } else {
-            let option =
-                this.task.questionnaires[this.currentQuestionnaire].questions[
-                    this.currentQuestion
-                ].answers;
-
-            for (let i = 0; i < option.length; i++) {
-                recap += i + 1 + ". <b>" + option[i] + "</b><br><br>";
-            }
+            const option = this.task.questionnaires[this.currentQuestionnaire].questions[this.currentQuestion].answers;
+            recap = option.map((answer, i) => `${i + 1}. <b>${answer}</b><br>`).join('');
         }
         return recap;
     }
@@ -1984,7 +1985,7 @@ export class ChatWidgetComponent implements OnInit {
 
     // GENERAZIONE DATI RELATIVI ALLE DIMENSIONI
     private generateExampleDimension() {
-        let text = `Please rate the <b> ${this.exampleStatement.dimensionInfo.name} </b> of the statement.`;
+        let text = `Please rate the <b> ${this.exampleStatement.dimensionInfo.name} </b> on your evaluation of the statement.`;
         const dimensionInfos = this.exampleStatement.dimensionInfo;
         this.buttonOptions = (
             dimensionInfos.scale as ScaleCategorical
@@ -2191,6 +2192,7 @@ export class ChatWidgetComponent implements OnInit {
         this.showCountdown = false;
         clearInterval(this.activeInterval);
     }
+    //Salvataggio informazione relativa alla scadenza del countdown
     private storeCountdownData(
         documentIndex: number,
         startTime: number,
@@ -2204,7 +2206,7 @@ export class ChatWidgetComponent implements OnInit {
     }
 
     /* -- MODELLAZIONE E INVIO DATI AL SERVIZIO DI STORAGE -- */
-    //Salvataggio informazione relativa alla scadenza del countdown
+
 
     //Invio dei dati relativi al questionario
     private async uploadQuestionnaireData(questionnaireIdx: number) {
@@ -2235,7 +2237,6 @@ export class ChatWidgetComponent implements OnInit {
                 startIndex++;
             }
         );
-
         return questionnaireData;
     }
 
@@ -2247,7 +2248,6 @@ export class ChatWidgetComponent implements OnInit {
                 startIndex += this.task.questionnaires[index].questions.length;
             }
         }
-
         return startIndex;
     }
     private buildTaskQuestionnairePayload(questionnaireIndex, answers, action) {
@@ -2281,7 +2281,6 @@ export class ChatWidgetComponent implements OnInit {
         let documentPayload = this.buildTaskDocumentPayload(
             docIndex,
             answers,
-            null,
             this.action
         );
         await this.dynamoDBService.insertDataRecord(
@@ -2290,83 +2289,30 @@ export class ChatWidgetComponent implements OnInit {
             this.task,
             documentPayload
         );
-
         this.task.sequenceNumber += 1;
         this.query = [];
         this.queryRetrieved = [];
         this.querySelectedUrls = [];
     }
     //Modellazione delle risposte da salvare
-    private buildAnswerDataFormat(docIndex) {
+    private buildAnswerDataFormat(docIndex: number) {
         const { dimensions } = this.task;
-        let answers = {};
-        let addOn = "_value";
+        const answers = {};
+        const addOn = "_value";
         for (let i = 0; i < dimensions.length; i++) {
-            if (!!dimensions[i].scale) {
-                answers[dimensions[i].name + addOn] =
-                    this.answers[docIndex][i].dimensionValue;
+            const { scale, name, url } = dimensions[i];
+            if (scale !== null) {
+                answers[name + addOn] = this.answers[docIndex][i].dimensionValue;
             }
-            if (!!dimensions[i].url) {
-                answers[dimensions[i].name + "_url"] =
-                    this.answers[docIndex][i].urlValue;
+            if (url) {
+                answers[name + "_url"] = this.answers[docIndex][i].urlValue;
             }
         }
         return answers;
     }
-    public buildTaskDocumentPayload(documentIndex, answers, countdown, action) {
-        let data = {};
-        let currentElementIndex =
-            this.task.questionnaires.length + documentIndex;
-        /* Info about the performed action  */
-        data["info"] = {
-            action: action,
-            access: this.accessesAmount[currentElementIndex],
-            try: this.task.tryCurrent,
-            index: documentIndex,
-            sequence: this.task.sequenceNumber,
-            element: "document",
-        };
-        /* Worker's answers for the current document */
-        data["answers"] = answers ?? [];
-        data["notes"] = [];
 
-        /* Worker's dimensions selected values for the current document */
-        let dimensionSelectedValues = {};
-        dimensionSelectedValues["data"] = this.dimensionSelected;
-        dimensionSelectedValues["amount"] = this.dimensionSelected.length;
-        data["dimensions_selected"] = dimensionSelectedValues;
 
-        /* Worker's search engine queries for the current document */
-        let queriesInfo = {};
-        queriesInfo["data"] = this.query;
-        queriesInfo["amount"] = this.query.length;
-        data["queries"] = queriesInfo;
-
-        /* Start, end and elapsed timestamps for the current document */
-        data["timestamps_start"] =
-            this.timestampsStart[currentElementIndex] ?? [];
-        data["timestamps_end"] = this.timestampsEnd[currentElementIndex] ?? [];
-        data["timestamps_elapsed"] =
-            this.timestampsElapsed[currentElementIndex] ?? 0;
-
-        /* Countdown time and corresponding flag */
-        if (this.task.settings.countdown_time) {
-            data["countdowns_times_start"] =
-                this.countdownTimeStartContainer[documentIndex] ?? null;
-            data["countdowns_times_left"] =
-                this.countdownLeftTimeContainer[documentIndex] ?? null;
-            data["countdowns_expired"] =
-                this.task.countdownsExpired[documentIndex] ?? null;
-        } else {
-            data["countdowns_times_start"] = null;
-            data["countdowns_times_left"] = null;
-            data["countdowns_expired"] = null;
-        }
-
-        /* Number of accesses to the current document (currentDocument.e., how many times the worker reached the document with a "Back" or "Next" action */
-        data["accesses"] = this.accessesAmount[currentElementIndex] ?? 0;
-
-        /* Responses retrieved by search engine for each worker's query for the current document */
+    public buildTaskDocumentPayload(documentIndex: number, answers: any, action: string): Record<string, any> {
         let queryRetrievedData = {};
         queryRetrievedData["data"] = this.queryRetrieved;
         let number = 0;
@@ -2375,22 +2321,46 @@ export class ChatWidgetComponent implements OnInit {
         }
         queryRetrievedData["amount"] = number;
         queryRetrievedData["groups"] = queryRetrievedData["data"].length;
-        data["responses_retrieved"] = queryRetrievedData ?? {
-            data: [],
-            amount: 0,
-        };
 
-        /* Responses by search engine ordered by worker's click for the current document */
-        let responsesSelectedData = {};
-        responsesSelectedData["data"] = this.querySelectedUrls;
-        responsesSelectedData["amount"] = responsesSelectedData["data"].length;
-        data["responses_selected"] = responsesSelectedData ?? {
-            data: [],
-            amount: 0,
-        };
+        const data: Record<string, any> = {
+            info: {
+                action,
+                access: this.accessesAmount[this.task.questionnaires.length + documentIndex],
+                try: this.task.tryCurrent,
+                index: documentIndex,
+                sequence: this.task.sequenceNumber,
+                element: "document",
+            },
+            answers: answers ?? [],
+            notes: [],
+            dimensions_selected: {
+                data: this.dimensionSelected,
+                amount: this.dimensionSelected.length,
+            },
+            queries: {
+                data: this.query,
+                amount: this.query.length,
+            },
+            timestamps_start: this.timestampsStart[this.task.questionnaires.length + documentIndex] ?? [],
+            timestamps_end: this.timestampsEnd[this.task.questionnaires.length + documentIndex] ?? [],
+            timestamps_elapsed: this.timestampsElapsed[this.task.questionnaires.length + documentIndex] ?? 0,
+            countdowns_times_start: this.task.settings.countdown_time ? this.countdownTimeStartContainer[documentIndex] ?? null : null,
+            countdowns_times_left: this.task.settings.countdown_time ? this.countdownLeftTimeContainer[documentIndex] ?? null : null,
+            countdowns_expired: this.task.settings.countdown_time ? this.task.countdownsExpired[documentIndex] ?? null : null,
+            accesses: this.accessesAmount[this.task.questionnaires.length + documentIndex] ?? 0,
 
+            responses_retrieved: queryRetrievedData ?? {
+                data: [],
+                amount: 0,
+            },
+            responses_selected: {
+                data: this.querySelectedUrls,
+                amount: this.querySelectedUrls.length,
+            },
+        };
         return data;
     }
+
     private taskQualityCheck(): boolean {
         for (let goldDocument of this.task.goldDocuments) {
             let currentConfiguration = {};
@@ -2457,11 +2427,12 @@ export class ChatWidgetComponent implements OnInit {
     public loadTimestamps() {
         /* Arrays of start, end and elapsed timestamps are initialized to track how much time the worker spends
          * on each document, including each questionnaire */
+        const totalElements = this.getElementsNumber()
         this.timestampsStart = new Array<Array<number>>(
-            this.getElementsNumber()
+            totalElements
         );
-        this.timestampsEnd = new Array<Array<number>>(this.getElementsNumber());
-        this.timestampsElapsed = new Array<number>(this.getElementsNumber());
+        this.timestampsEnd = new Array<Array<number>>(totalElements);
+        this.timestampsElapsed = new Array<number>(totalElements);
         for (let i = 0; i < this.timestampsStart.length; i++)
             this.timestampsStart[i] = [];
         for (let i = 0; i < this.timestampsEnd.length; i++)
