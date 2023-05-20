@@ -100,6 +100,7 @@ export class ChatWidgetComponent implements OnInit {
     awaitingAnswer: boolean;
     action: string;
     readOnly = true;
+    canSend = true;
     queryIndex: number[];
     sendData = false;
     conversationState: ConversationState;
@@ -516,6 +517,7 @@ export class ChatWidgetComponent implements OnInit {
                     )
                 ] = message;
                 this.inputComponentToShow = InputType.Text;
+                this.canSend = true;
                 this.currentQuestion++;
                 this.awaitingAnswer = false;
                 if (
@@ -610,6 +612,7 @@ export class ChatWidgetComponent implements OnInit {
                     this.buttonsToShow = ButtonsType.None;
                     this.typingAnimation(this.messagesForUser[11]);
                     this.inputComponentToShow = InputType.Text;
+                    this.canSend = true;
                     setTimeout(() => {
                         this.conversationState = ConversationState.Task;
                         this.action = "Next";
@@ -641,6 +644,7 @@ export class ChatWidgetComponent implements OnInit {
                 this.categoricalInfo = [];
                 this.dropdownListOptions = [];
                 this.inputComponentToShow = InputType.Text;
+                this.canSend = true;
                 setTimeout(() => {
                     this.conversationState = ConversationState.Task;
                     this.action = "Next";
@@ -712,6 +716,7 @@ export class ChatWidgetComponent implements OnInit {
                 }
                 this.dimensionIndex++;
                 this.inputComponentToShow = InputType.Text;
+                this.canSend = true;
             }
         }
         //Visualizzazione dello statement
@@ -839,6 +844,7 @@ export class ChatWidgetComponent implements OnInit {
                     ).className = "dot in-progress";
                     this.awaitingAnswer = true;
                     this.inputComponentToShow = InputType.Text;
+                    this.canSend = true;
                     const questionType = this.getQuestionnaireType(
                         this.currentQuestionnaire
                     );
@@ -887,6 +893,7 @@ export class ChatWidgetComponent implements OnInit {
             //Confermo le risposte del questionario
             if (message.trim().toLowerCase() === "confirm") {
                 this.inputComponentToShow = InputType.Text;
+                this.canSend = true;
                 this.buttonsToShow = ButtonsType.None;
 
                 // Preparazione fase delle istruzioni
@@ -944,6 +951,7 @@ export class ChatWidgetComponent implements OnInit {
                         this.replaceMessage(replacement);
                     }
                     this.inputComponentToShow = InputType.Text;
+                    this.canSend = true;
                     if (this.task.settings.countdown_time !== null && this.task.settings.countdown_time !== undefined) {
                         const startTime = this.action === 'Back'
                             ? this.countdownLeftTimeContainer[this.taskIndex]
@@ -1013,6 +1021,7 @@ export class ChatWidgetComponent implements OnInit {
         } //Conferma le risposte dell'assignment
         if (message.trim().toLowerCase() === "confirm") {
             this.inputComponentToShow = InputType.Text;
+            this.canSend = true;
             this.buttonsToShow = ButtonsType.None;
 
             let currentElementIndex =
@@ -1246,6 +1255,7 @@ export class ChatWidgetComponent implements OnInit {
     private skipQuestionnairePhase() {
         this.typingAnimation(this.messagesForUser[4]);
         this.inputComponentToShow = InputType.Text;
+        this.canSend = true;
         this.conversationState = ConversationState.TaskInstructions;
         setTimeout(() => {
             this.instructionP();
@@ -1454,6 +1464,7 @@ export class ChatWidgetComponent implements OnInit {
         this.urlInputValue = "";
         this.textInputPlaceHolder = null;
         this.inputComponentToShow = InputType.Text;
+        this.canSend = true;
         this.waitForUrl = false;
         this.emitDisableSearchEngine();
         this.emitResetSearchEngineState();
@@ -1589,10 +1600,8 @@ export class ChatWidgetComponent implements OnInit {
     private simulateTypingTime(input: string): number {
         // Calcola il tempo di base per ogni carattere digitato (in millisecondi)
         const baseTypingTime = 50;
-
         // Calcola il tempo aggiuntivo in base alla lunghezza della stringa
         const extraTypingTime = input.length * 10;
-
         // Restituisci il tempo totale di digitazione (in millisecondi)
         return (baseTypingTime * input.length + extraTypingTime) / 1000;
     }
@@ -1821,7 +1830,7 @@ export class ChatWidgetComponent implements OnInit {
         }
         this.typingAnimation(text, false);
         this.readOnly = true;
-        this.textInputPlaceHolder = "Select an option";
+        this.canSend = false;
         return "";
     }
 
@@ -1993,7 +2002,7 @@ export class ChatWidgetComponent implements OnInit {
             label: el.label,
             value: el.value,
         }));
-        this.textInputPlaceHolder = "Select an option";
+        this.canSend = false;
         this.readOnly = true;
         this.typingAnimation(text, false);
         this.inputComponentToShow = InputType.Button;
@@ -2022,7 +2031,7 @@ export class ChatWidgetComponent implements OnInit {
             let name = dimension.name_pretty ?? ChatHelper.capitalize(dimension.name)
             const text = `Rate the <b>${name}</b> of this statement`;
             this.typingAnimation(text, false);
-            this.textInputPlaceHolder = "Select an option";
+            this.canSend = false;
             this.inputComponentToShow = InputType.Button;
         }
 
@@ -2116,18 +2125,13 @@ export class ChatWidgetComponent implements OnInit {
         url: string
     ): boolean {
         const { dimensions } = this.task;
-
-        const isScaleAndUrlValid =
-            !!dimensions[dimensionIndex].scale && !!dimensions[dimensionIndex].url;
         const isValueValid = ChatHelper.validMsg(message, this.minValue, this.maxValue);
-        const isUrlValid = ChatHelper.urlValid(url);
         const isOpenAnswer = dimensions[dimensionIndex].justification;
-
         let isValid = false;
-        if (isScaleAndUrlValid) {
-            isValid = isValueValid && isUrlValid;
+        if (!!dimensions[dimensionIndex].scale && !!dimensions[dimensionIndex].url) {
+            isValid = isValueValid && ChatHelper.urlValid(url);
         } else if (this.waitForUrl) {
-            isValid = isUrlValid;
+            isValid = ChatHelper.urlValid(url);
         } else if (isOpenAnswer) {
             isValid = true;
         } else {

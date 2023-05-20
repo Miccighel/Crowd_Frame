@@ -142,7 +142,8 @@
                 <chat-input-text class="container" *ngIf="
                         inputComponentToShow == EnInputType.Text ||
                         showMessageInput
-                    " (send)="sendMessage($event)" [pholder]="textInputPlaceHolder" [readOnly]="readOnly">
+                    " (send)="sendMessage($event)" [pholder]="textInputPlaceHolder" [readOnly]="readOnly"
+                    [canSend]="canSend">
                 </chat-input-text>
             </div>
         </div>
