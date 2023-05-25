@@ -693,7 +693,7 @@ export class ChatWidgetComponent implements OnInit {
                 if (dimension.name_pretty) {
                     out = dimension.name_pretty
                 } else {
-                    `Please evaluate the <b>${ChatHelper.capitalize(dimension.name)}</b> of the statement.<br>`;
+                    out = `Please evaluate the <b>${ChatHelper.capitalize(dimension.name)}</b> of the statement.<br>`;
                 }
                 if (!!dimension.description) {
                     out += dimension.description;
@@ -719,7 +719,7 @@ export class ChatWidgetComponent implements OnInit {
                     if (dimension.name_pretty) {
                         out = dimension.name_pretty
                     } else {
-                        `Please evaluate the <b>${ChatHelper.capitalize(dimension.name)}</b> of the statement.<br>`;
+                        out = `Please evaluate the <b>${ChatHelper.capitalize(dimension.name)}</b> of the statement.<br>`;
                     }
                     if (!!dimension.description) {
                         out += dimension.description;
@@ -968,7 +968,7 @@ export class ChatWidgetComponent implements OnInit {
                         if (dimension.name_pretty) {
                             out = dimension.name_pretty
                         } else {
-                            `Please evaluate the <b>${ChatHelper.capitalize(dimension.name)}</b> of the statement.<br>`;
+                            out = `Please evaluate the <b>${ChatHelper.capitalize(dimension.name)}</b> of the statement.<br>`;
                         }
                         if (!!dimension.description) {
                             out += dimension.description;
@@ -1742,7 +1742,7 @@ export class ChatWidgetComponent implements OnInit {
         if (dimension.name_pretty) {
             out = dimension.name_pretty
         } else {
-            `Please evaluate the <b>${ChatHelper.capitalize(dimension.name)}</b> of the statement.<br>`;
+            out = `Please evaluate the <b>${ChatHelper.capitalize(dimension.name)}</b> of the statement.<br>`;
         }
 
         if (!!dimension.description) {
@@ -2067,7 +2067,7 @@ export class ChatWidgetComponent implements OnInit {
             if (dimension.name_pretty) {
                 out = dimension.name_pretty
             } else {
-                `Please evaluate the <b>${ChatHelper.capitalize(dimension.name)}</b> of the statement.<br>`;
+                out = `Please evaluate the <b>${ChatHelper.capitalize(dimension.name)}</b> of the statement.<br>`;
             }
 
             if (!!dimension.description) {
