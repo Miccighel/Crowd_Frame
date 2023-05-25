@@ -2520,7 +2520,6 @@ if not os.path.exists(df_data_path):
                 for attribute, value in task.items():
                     if attribute in column_names:
                         row[attribute] = value
-
                 for document_data in documents_answers:
 
                     row['action'] = document_data['serialization']['info']['action']
@@ -2543,11 +2542,12 @@ if not os.path.exists(df_data_path):
                         row["time_check_amount"] = np.nan
                         row["time_spent_check"] = False
                     row["doc_accesses"] = document_data['serialization']['accesses']
-                    row["doc_countdown_time_start"] = document_data['serialization']['countdowns_times_start'][0] if len(document_data['serialization']['countdowns_times_start']) > 0 else np.nan
-                    row["doc_countdown_time_value"] = document_data['serialization']['countdowns_times_left'][0] if len(document_data['serialization']['countdowns_times_left']) > 0 else np.nan
-                    # row["doc_countdown_time_text"] = document_data['serialization']['countdowns_times_left']['text'] if len(document_data['serialization']['countdowns_times_left']) > 0 else np.nan
-                    row["doc_countdown_time_expired"] = document_data['serialization']["countdowns_expired"][document_data['serialization']['info']['index']] if len(
-                        document_data['serialization']["countdowns_expired"]) > 0 else np.nan
+                    countdowns_start = document_data['serialization']['countdowns_times_start']
+                    countdowns_left = document_data['serialization']['countdowns_times_left']
+                    countdowns_expired = document_data['serialization']['countdowns_expired']
+                    row["doc_countdown_time_start"] = countdowns_start[0] if isinstance(countdowns_start, list) and countdowns_start else np.nan
+                    row["doc_countdown_time_value"] = countdowns_left[0] if isinstance(countdowns_left, list) and countdowns_left else np.nan
+                    row["doc_countdown_time_expired"] = countdowns_expired[document_data['serialization']['info']['index']] if isinstance(countdowns_expired, list) and countdowns_expired else np.nan
 
                     current_attributes = documents[document_data['serialization']['info']['index']].keys()
                     current_answers = document_data['serialization']['answers']
