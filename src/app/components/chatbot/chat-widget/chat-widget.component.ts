@@ -452,6 +452,7 @@ export class ChatWidgetComponent implements OnInit {
                 this.buttonsToShow = ButtonsType.None;
                 this.changeDetector.detectChanges();
                 this.conversationInitialized = true;
+                 this.ignoreMsg = true;
                 this.initializeConversation();
             } else {
                 //Controlla se al worker è stato chiesto il nome
@@ -564,6 +565,7 @@ export class ChatWidgetComponent implements OnInit {
         ).className = "dot in-progress";
         //Non è in attesa, quindi genera la domanda successiva
         this.showMessageInput = true;
+        this.ignoreMsg =false
         if (questionnaires[this.currentQuestionnaire].type == "standard") {
             this.createQuestionnaireAnswers(
                 this.printQuestion(
@@ -1289,12 +1291,14 @@ export class ChatWidgetComponent implements OnInit {
         if (this.conversationInitialized) {
             //Check della presenza di questionari nel task
             if (this.questionnaireAnswers.length > 0) {
+                this.ignoreMsg = true;
                 this.typingAnimation("First, a few questions about yourself!");
                 setTimeout(() => {
                     /* The task is now started and the worker is looking at the first questionnaire, so the first start timestamp is saved */
                     this.timestampsStart[this.currentQuestionnaire].push(
                         ChatHelper.getTimeStampInSeconds()
                     );
+
                     this.questionnaireP("0");
                 }, 3000);
             } else {
