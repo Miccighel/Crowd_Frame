@@ -1821,9 +1821,9 @@ export class ChatWidgetComponent implements OnInit {
 
             if (dimension.scale && !!dimension.url) {
                 scaleType = dimension.scale.type;
-                recap += `<b> URL</b>: ${answer.urlValue}<br>`;
+                recap += `URL: ${answer.urlValue}<br>`;
                 if (dimension.name_pretty) {
-                    recap += `<b>${dimension.name_pretty}</b>: `;
+                    recap += `${dimension.name_pretty}: `;
                 }
             } else {
                 if (!dimension.scale && !!dimension.url) {
@@ -1834,14 +1834,15 @@ export class ChatWidgetComponent implements OnInit {
                     scaleType = dimension.scale.type;
                 }
                 if (scaleType === "url") {
-                    recap += `<b> URL</b>: `;
+                    recap += `URL: `;
                 } else {
                     let name =
                         dimension.name_pretty ??
                         ChatHelper.capitalize(dimension.name);
-                    recap += `<b>${name}</b>: `;
+                    recap += `${name}: `;
                 }
             }
+            recap += "<b>";
 
             switch (scaleType) {
                 case "url":
@@ -1862,7 +1863,7 @@ export class ChatWidgetComponent implements OnInit {
                     console.warn("Casistica non gestita");
                     break;
             }
-            recap += "<br>";
+            recap += "</b><br>";
         }
         return recap;
     }
@@ -1944,7 +1945,7 @@ export class ChatWidgetComponent implements OnInit {
                 const questionType = this.getQuestionnaireType(item.index);
                 recap +=
                     globalQuestionIndex +
-                    "." +
+                    ".&nbsp;" +
                     item.questions[i].text +
                     "<br><b>";
                 switch (questionType) {
