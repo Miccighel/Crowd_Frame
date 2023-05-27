@@ -1,4 +1,8 @@
 {
 	"general": [],
-	"element": false
+	"element": {
+		"label": "A",
+		"caption": "Read the statement carefully:",
+		"text": false
+	}
 }

@@ -1,4 +1,6 @@
 {
     "source": "BingWebSearch",
-    "domains_filter": []
+    "domains_filter": [
+        "politifact.com"
+    ]
 }
