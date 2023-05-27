@@ -1,7 +1,8 @@
 <div class="row input-active">
     <div class="col-10 chat-input-text d-flex align-items-center">
         <input #message type="text" [disabled]="readOnly" (keydown.enter)="onSubmit()"
-            (keyup.enter)="message.value = ''" [placeholder]="!canSend ? 'Select an answer' : 'Type a message...'" />
+            (keyup.enter)="message.value = ''"
+            [placeholder]="!canSend ? 'Please check the chat above and select an answer' : 'Type a message...'" />
     </div>
     <div class="col-2 send-message">
         <button mat-mini-fab type="submit" class="chat-input-button active" [ngClass]="{ inactive: !canSend }"

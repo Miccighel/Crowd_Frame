@@ -9,7 +9,7 @@
 			"enable": true,
 			"instructions": {
 				"label": "B",
-				"caption": "Use the search engine below to search for evidence for the statement. Then, select the most relevant result.",
+				"caption": "Use the search engine on the right to search for evidence for the statement. Then, select the most relevant result.",
 				"text": false
 			}
 		},

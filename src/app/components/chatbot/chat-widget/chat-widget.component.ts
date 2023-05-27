@@ -165,7 +165,7 @@ export class ChatWidgetComponent implements OnInit {
         "No problem, so are you ready?",
         "Nice, let's start with the task! &#x1F60E;",
         "Great, thanks for providing me with this information. Now let's start with the main activity",
-        "I'll now show you some statements and for each one I'll ask you some questions. Please use the search bar below to search for info about those statement and answer my questions",
+        "I'll now show you some statements and for each one I'll ask you some questions. Please use the search bar on the right to search for info about those statement and answer my questions",
         "Would you like to play a test round?",
         "When you are ready click on <b>Yes</b> and so we can start this task together. &#x1F601;",
         "Are you sure about that answer? Check it please &#128064;",
@@ -452,7 +452,7 @@ export class ChatWidgetComponent implements OnInit {
                 this.buttonsToShow = ButtonsType.None;
                 this.changeDetector.detectChanges();
                 this.conversationInitialized = true;
-                 this.ignoreMsg = true;
+                this.ignoreMsg = true;
                 this.initializeConversation();
             } else {
                 //Controlla se al worker è stato chiesto il nome
@@ -565,7 +565,7 @@ export class ChatWidgetComponent implements OnInit {
         ).className = "dot in-progress";
         //Non è in attesa, quindi genera la domanda successiva
         this.showMessageInput = true;
-        this.ignoreMsg =false
+        this.ignoreMsg = false
         if (questionnaires[this.currentQuestionnaire].type == "standard") {
             this.createQuestionnaireAnswers(
                 this.printQuestion(
@@ -573,7 +573,7 @@ export class ChatWidgetComponent implements OnInit {
                     this.currentQuestionnaire
                 )
             );
-            this.typingAnimation("Please select an answer");
+
         } else if (questionnaires[this.currentQuestionnaire].type == "likert") {
             this.typingAnimation(
                 questionnaires[this.currentQuestionnaire].questions[
@@ -587,7 +587,7 @@ export class ChatWidgetComponent implements OnInit {
                 ),
                 true
             );
-            this.typingAnimation("Please select an answer");
+
         } else if (questionnaires[this.currentQuestionnaire].type == "crt") {
             this.readOnly = false;
             this.typingAnimation(
@@ -897,7 +897,7 @@ export class ChatWidgetComponent implements OnInit {
                                 ),
                                 true
                             );
-                            this.typingAnimation("Please select an answer");
+
 
                             return;
                         case QuestionType.Standard:
@@ -907,7 +907,7 @@ export class ChatWidgetComponent implements OnInit {
                                     this.currentQuestionnaire
                                 )
                             );
-                            this.typingAnimation("Please select an answer");
+
 
                             return;
                         case QuestionType.CRT:
@@ -1354,7 +1354,7 @@ export class ChatWidgetComponent implements OnInit {
                 !this.getAnswerValidity(dimensionIndex, message, this.urlValue)
             ) {
                 this.typingAnimation(
-                    "Check your answers, please type or select a valid url, you can use the search bar below!"
+                    "Check your answers, please type or select a valid url, you can use the search bar on the right!"
                 );
 
                 return false;
@@ -1774,7 +1774,7 @@ export class ChatWidgetComponent implements OnInit {
         if (dimension.url && !dimension.scale) {
             message =
                 dimension.url?.instructions?.caption ||
-                `Please use the search engine to your right to search for <b>${ChatHelper.capitalize(
+                `Please use the search engine on your right to search for <b>${ChatHelper.capitalize(
                     dimension.name
                 )}</b> of the statement.`;
         } else if (!dimension.url && dimension.scale?.type === "categorical") {
