@@ -1,29 +1,12 @@
 <div class="row input-active">
     <div class="col-10 chat-input-text d-flex align-items-center">
-        <input
-            #message
-            type="text"
-            [disabled]="readOnly"
-            (keydown.enter)="onSubmit()"
-            (keyup.enter)="message.value = ''"
-            [placeholder]="!canSend ? 'Select a value' : 'Type a message...'"
-        />
+        <input #message type="text" [disabled]="readOnly" (keydown.enter)="onSubmit()"
+            (keyup.enter)="message.value = ''" [placeholder]="!canSend ? 'Select an answer' : 'Type a message...'" />
     </div>
     <div class="col-2 send-message">
-        <button
-            mat-mini-fab
-            type="submit"
-            class="chat-input-button active"
-            [ngClass]="{ inactive: !canSend }"
-            [disabled]="!canSend"
-            (click)="onSubmit()"
-        >
-            <mat-icon
-                aria-hidden="false"
-                aria-label="Send message"
-                fontIcon="send"
-                >send</mat-icon
-            >
+        <button mat-mini-fab type="submit" class="chat-input-button active" [ngClass]="{ inactive: !canSend }"
+            [disabled]="!canSend" (click)="onSubmit()">
+            <mat-icon aria-hidden="false" aria-label="Send message" fontIcon="send">send</mat-icon>
         </button>
     </div>
 </div>
