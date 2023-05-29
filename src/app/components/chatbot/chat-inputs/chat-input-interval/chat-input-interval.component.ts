@@ -22,6 +22,7 @@ export class ChatInputIntervalComponent implements OnInit {
     @Input() public intervalInfo: IntervalDimensionInfo = null;
     @Input() public readOnly!: boolean;
     @Output() public send = new EventEmitter();
+    public inputComponent;
 
     ngOnInit() {
         if (!!this.intervalInfo) {
@@ -30,6 +31,12 @@ export class ChatInputIntervalComponent implements OnInit {
             this.step = this.intervalInfo.step;
             this.value = this.intervalInfo.value ?? 0;
         }
+        this.inputComponent = document.getElementById("inputComponent");
+        this.inputComponent.addEventListener("keydown", (event: KeyboardEvent) => {
+            if (event.key === "Enter") {
+                this.onSubmit()
+            }
+        });
     }
 
     formatLabel(value: number): string {

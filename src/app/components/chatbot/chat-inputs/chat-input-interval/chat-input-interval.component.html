@@ -1,4 +1,4 @@
-<div class="row" [ngClass]="readOnly ? 'input-inactive' : 'input-active'">
+<div class="row" [ngClass]="readOnly ? 'input-inactive' : 'input-active'"id="inputComponent">
     <div class="col-2 d-flex align-items-center" id="min-max">
         Min:&nbsp; {{ range[0] }}
     </div>
@@ -24,6 +24,7 @@
             [disabled]="readOnly"
             [ngClass]="readOnly ? 'inactive' : 'active'"
             (click)="onSubmit()"
+            
         >
             <mat-icon
                 aria-hidden="false"

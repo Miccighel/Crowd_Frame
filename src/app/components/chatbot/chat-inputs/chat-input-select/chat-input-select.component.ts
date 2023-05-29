@@ -3,7 +3,7 @@ import {
     EventEmitter,
     Input,
     Output,
-    ViewEncapsulation,
+    ViewEncapsulation, OnInit
 } from "@angular/core";
 
 @Component({
@@ -12,14 +12,24 @@ import {
     encapsulation: ViewEncapsulation.None,
     styleUrls: ["./chat-input-select.component.css"],
 })
-export class ChatInputSelectComponent {
+export class ChatInputSelectComponent implements OnInit {
     @Input() public options: { label: string; value: any }[];
     @Input() public readOnly!: boolean;
     @Output() public send = new EventEmitter();
     public selected: { label: string; value: any } | undefined;
+    public inputComponent;
 
     onSubmit() {
         const message = this.selected;
         this.send.emit({ message });
     }
+    ngOnInit() {
+        this.inputComponent = document.getElementById("select-component");
+        this.inputComponent.addEventListener("keydown", (event: KeyboardEvent) => {
+            if (event.key === "Enter") {
+                this.onSubmit()
+            }
+        });
+    }
+
 }

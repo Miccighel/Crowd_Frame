@@ -6,7 +6,6 @@ import {
     Output,
     ViewChild,
 } from "@angular/core";
-
 @Component({
     selector: "chat-input-text",
     templateUrl: "chat-input-text.component.html",
@@ -39,7 +38,11 @@ export class ChatInputTextComponent {
     }
 
     ngOnChanges() {
-        this.message.nativeElement.value = this.pholder;
+
         this.message.nativeElement.disabled = this.readOnly;
+        if (this.pholder) {
+            this.message.nativeElement.value = this.pholder;
+            this.message.nativeElement.focus();
+        }
     }
 }
