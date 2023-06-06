@@ -653,7 +653,7 @@ export class ChatWidgetComponent implements OnInit {
                 let option = this.exampleStatement.dimensionInfo.scale.mapping;
                 for (let i = 0; i < option.length; i++) {
                     replacement +=
-                        i + 1 + ". <b>" + option[i].label + "</b><br>";
+                        i + 1 + ". " + option[i].label + "<br>";
                 }
                 this.replaceMessage(replacement);
                 this.finishedExampleActivity = true;
@@ -715,7 +715,7 @@ export class ChatWidgetComponent implements OnInit {
                 } else {
                     out = `Please evaluate the <b>${ChatHelper.capitalize(
                         dimension.name
-                    )}</b> of the statement.<br>`;
+                    )}</b><br>`;
                 }
                 if (!!dimension.description) {
                     out += dimension.description + "<br>";
@@ -724,7 +724,7 @@ export class ChatWidgetComponent implements OnInit {
                     dimension.scale as ScaleCategorical
                 ).mapping.map((scale) => scale.label);
                 out += options
-                    .map((option, i) => `${i + 1}. <b>${option}</b><br>`)
+                    .map((option, i) => `${i + 1}. ${option}<br>`)
                     .join("");
                 this.replaceMessage(out);
             }
@@ -743,11 +743,11 @@ export class ChatWidgetComponent implements OnInit {
                 if (dimension.scale && dimension.scale.type == "categorical") {
                     let out = "";
                     if (dimension.name_pretty) {
-                        out = dimension.name_pretty + "<br>";
+                        out = "<b>" + dimension.name_pretty + "</b><br>";
                     } else {
                         out = `Please evaluate the <b>${ChatHelper.capitalize(
                             dimension.name
-                        )}</b> of the statement.<br>`;
+                        )}</b><br>`;
                     }
                     if (!!dimension.description) {
                         out += dimension.description + "<br>";
@@ -756,7 +756,7 @@ export class ChatWidgetComponent implements OnInit {
                         dimension.scale as ScaleCategorical
                     ).mapping.map((scale) => scale.label);
                     out += options
-                        .map((option, i) => `${i + 1}. <b>${option}</b><br>`)
+                        .map((option, i) => `${i + 1}. ${option}<br>`)
                         .join("");
                     this.replaceMessage(out);
                 }
@@ -993,11 +993,11 @@ export class ChatWidgetComponent implements OnInit {
                     if (dimension.scale?.type === "categorical") {
                         let out = "";
                         if (dimension.name_pretty) {
-                            out = dimension.name_pretty + "<br>";
+                            out = "<b>" + dimension.name_pretty + "</b><br>";
                         } else {
                             out = `Please evaluate the <b>${ChatHelper.capitalize(
                                 dimension.name
-                            )}</b> of the statement.<br>`;
+                            )}</b><br>`;
                         }
                         if (!!dimension.description) {
                             out += dimension.description + "<br>";
@@ -1007,7 +1007,7 @@ export class ChatWidgetComponent implements OnInit {
                         ).mapping.map((scale) => scale.label);
                         out += options
                             .map(
-                                (option, i) => `${i + 1}. <b>${option}</b><br>`
+                                (option, i) => `${i + 1}. ${option}<br>`
                             )
                             .join("");
                         this.replaceMessage(out);
@@ -1781,10 +1781,10 @@ export class ChatWidgetComponent implements OnInit {
             // Non stampo la dimensione, perché verrà collegata ai pulsanti
         } else {
             message = dimension.name_pretty
-                ? `${dimension.name_pretty}<br>`
+                ? `<b>${dimension.name_pretty}</b><br>`
                 : `Please evaluate the <b>${ChatHelper.capitalize(
                     dimension.name
-                )}</b> of the statement.<br>`;
+                )}</b><br>`;
 
             if (dimension.description) {
                 message += `${dimension.description}<br>`;
@@ -1804,7 +1804,7 @@ export class ChatWidgetComponent implements OnInit {
                         dimensionIndex,
                         answer.dimensionValue,
                         "label"
-                    )}</b>.`;
+                    )}</b><br>`;
                 } else {
                     message += `<br>Dimension value: <b>${answer.dimensionValue}</b>.`;
                 }
@@ -1926,7 +1926,7 @@ export class ChatWidgetComponent implements OnInit {
             const options =
                 this.task.questionnaires[this.currentQuestionnaire].mappings;
             recap = options
-                .map((option, i) => `${i + 1}. <b>${option.label}</b><br>`)
+                .map((option, i) => `${i + 1}. ${option.label}<br>`)
                 .join("");
         } else {
             const option =
@@ -1934,7 +1934,7 @@ export class ChatWidgetComponent implements OnInit {
                     this.currentQuestion
                 ].answers;
             recap = option
-                .map((answer, i) => `${i + 1}. <b>${answer}</b><br>`)
+                .map((answer, i) => `${i + 1}. ${answer}<br>`)
                 .join("");
         }
         return recap;
@@ -2123,11 +2123,11 @@ export class ChatWidgetComponent implements OnInit {
 
             let out = "";
             if (dimension.name_pretty) {
-                out = dimension.name_pretty + "<br>";
+                out = "<b>" + dimension.name_pretty + "</b><br>";
             } else {
                 out = `Please evaluate the <b>${ChatHelper.capitalize(
                     dimension.name
-                )}</b> of the statement.<br>`;
+                )}</b><br>`;
             }
 
             if (!!dimension.description) {
