@@ -5,7 +5,16 @@ textarea {
 
 #outToken {
     text-align: center;
-    background: #66bb6a;
+    background: var(--green);
+    border-radius: 5px;
+    padding: 5px;
+    font-size: 2rem;
+}
+
+#inputToken {
+    text-align: center;
+    background: var(--primary);
+    color: var(--light);
     border-radius: 5px;
     padding: 5px;
     font-size: 2rem;

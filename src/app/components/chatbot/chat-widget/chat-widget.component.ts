@@ -33,7 +33,7 @@ import { NgbModal } from "@ng-bootstrap/ng-bootstrap";
 import { GoldChecker } from "data/build/skeleton/goldChecker";
 import ChatHelper from "./chat-helpers";
 import { BehaviorSubject, Observable } from "rxjs";
-import { ChatCommentModalComponent } from "../chat-modals/chat-comment-modal/chat-comment-modalcomponent";
+import { ChatCommentModalComponent } from "../chat-modals/chat-comment-modal/chat-comment-modal.component";
 import { ChatInstructionModalComponent } from "../chat-modals/chat-instruction-modal/chat-instruction-modal.component";
 
 // Main
@@ -171,7 +171,6 @@ export class ChatWidgetComponent implements OnInit {
         "Are you sure about that answer? Check it please &#128064;",
         "Nice! Now we can start with the real task. &#x1F60A;",
         "Okay, that is great, so we can start immediatly with the real task. &#x1F60A;",
-        "Thanks for finishing the task, this is your token:",
     ];
 
     // Messaggi random
@@ -1240,7 +1239,7 @@ export class ChatWidgetComponent implements OnInit {
                 }
                 this.readOnly = true;
                 //Messaggio finale
-                let finalMessage: string = `Oh! That was it! Thank you for completing the task! &#x1F609; Here's your token: <b> ${this.task.tokenOutput}`;
+                let finalMessage: string = `Oh! That was it! Thank you for completing the task! &#x1F609;<br> Here's your input token: <b>${this.task.tokenInput}</b> and this is your output token: <b>${this.task.tokenOutput}</b>`;
                 this.typingAnimation(finalMessage);
                 this.typingAnimation(
                     "You may now close the page or leave a comment!"
@@ -1254,10 +1253,14 @@ export class ChatWidgetComponent implements OnInit {
                             size: "md",
                         }
                     );
+                    modalRef.componentInstance.inputToken =
+                        this.task.tokenInput;
                     modalRef.componentInstance.outputToken =
                         this.task.tokenOutput;
-                    modalRef.componentInstance.message =
-                        this.messagesForUser[this.messagesForUser.length - 1];
+                    modalRef.componentInstance.inMessage =
+                        "Thanks for finishing the task, this is your input token:"
+                    modalRef.componentInstance.outMessage =
+                        "and this is your output token:"
 
                     modalRef.result.then(async (result) => {
                         if (result) {

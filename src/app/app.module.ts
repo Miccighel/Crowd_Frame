@@ -84,7 +84,7 @@ import { DocumentComponent } from "./components/skeleton/document/document.compo
 import { ErrorMessageComponent } from "./components/shared/error-message/error-message.component";
 import { ChatAvatarComponent } from "./components/chatbot/chat-avatar/chat-avatar.component";
 import { ChatWidgetComponent } from "./components/chatbot/chat-widget/chat-widget.component";
-import { ChatCommentModalComponent } from "./components/chatbot/chat-modals/chat-comment-modal/chat-comment-modalcomponent";
+import { ChatCommentModalComponent } from "./components/chatbot/chat-modals/chat-comment-modal/chat-comment-modal.component";
 import { ChatInstructionModalComponent } from "./components/chatbot/chat-modals/chat-instruction-modal/chat-instruction-modal.component";
 import { ChatInputTextComponent } from "./components/chatbot/chat-inputs/chat-input-text/chat-input-text.component";
 import { ChatInputMagnitudeComponent } from "./components/chatbot/chat-inputs/chat-input-magnitude/chat-input-magnitude.component";
