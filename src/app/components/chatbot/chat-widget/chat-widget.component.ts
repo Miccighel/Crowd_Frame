@@ -1103,6 +1103,7 @@ export class ChatWidgetComponent implements OnInit {
                 this.statementJump = false;
                 this.reviewAnswersShown = false;
                 this.conversationState = ConversationState.End;
+                this.fixedMessage = null;
                 this.typingAnimation(
                     "OK! Would you like to jump to a specific statement?"
                 );
@@ -1239,8 +1240,10 @@ export class ChatWidgetComponent implements OnInit {
                 }
                 this.readOnly = true;
                 //Messaggio finale
-                let finalMessage: string = `Oh! That was it! Thank you for completing the task! &#x1F609;<br> Here's your input token: <b>${this.task.tokenInput}</b> and this is your output token: <b>${this.task.tokenOutput}</b>`;
+                let finalMessage: string = `Oh! That was it! Thank you for completing the task! &#x1F609;`;
                 this.typingAnimation(finalMessage);
+                this.typingAnimation(`Here's your input token: <b>${this.task.tokenInput}</b>`);
+                this.typingAnimation(`And this is your output token: <b>${this.task.tokenOutput} </b>`);
                 this.typingAnimation(
                     "You may now close the page or leave a comment!"
                 );
@@ -1493,7 +1496,7 @@ export class ChatWidgetComponent implements OnInit {
         let index = this.messages.findIndex((el) => el.date == this.toReplace);
         const message = {
             from: {
-                avatar: "https://randomuser.me/api/portraits/lego/5.jpg",
+                avatar: this.operator.avatar,
                 name: "Crowd Bot",
                 status: "Online",
             },
