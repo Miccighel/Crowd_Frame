@@ -394,15 +394,16 @@ def fetch_ip_data(worker_id, worker_ip, properties_fetched=None):
                     if 'location_languages' in data_fetched:
                         location_languages = data_fetched.pop('location_languages')
                         data_fetched['location_languages'] = []
-                        for index_lang, lang_data in enumerate(location_languages):
-                            location_language = {}
-                            location_language["location_language_index"] = index_lang
-                            location_language["location_language_code_iso2"] = lang_data['code']
-                            language_data = pycountry.languages.get(alpha_2=location_language["location_language_code_iso2"])
-                            location_language[f"location_language_code_iso3"] = language_data.alpha_3
-                            location_language[f"location_language_scope"] = language_data.scope
-                            location_language[f"location_language_type"] = language_data.type
-                            data_fetched['location_languages'].append(location_language)
+                        if location_languages is not None:
+                            for index_lang, lang_data in enumerate(location_languages):
+                                location_language = {}
+                                location_language["location_language_index"] = index_lang
+                                location_language["location_language_code_iso2"] = lang_data['code']
+                                language_data = pycountry.languages.get(alpha_2=location_language["location_language_code_iso2"])
+                                location_language[f"location_language_code_iso3"] = language_data.alpha_3
+                                location_language[f"location_language_scope"] = language_data.scope
+                                location_language[f"location_language_type"] = language_data.type
+                                data_fetched['location_languages'].append(location_language)
                     ip_data.append(data_fetched)
                 country_code = None
                 for ip_data_partial in ip_data:
