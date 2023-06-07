@@ -13,7 +13,7 @@ import { fadeIn } from "../animations";
 import { NgxUiLoaderService } from "ngx-ui-loader";
 import { S3Service } from "../../../services/aws/s3.service";
 import { DynamoDBService } from "../../../services/aws/dynamoDB.service";
-import { SectionService } from "../../../services/section.service";
+import { SectionService, StatusCodes } from "../../../services/section.service";
 import { ConfigService } from "../../../services/config.service";
 /* Models */
 import { Task } from "../../../models/skeleton/task";
@@ -1204,11 +1204,31 @@ export class ChatWidgetComponent implements OnInit {
                     this.task,
                     qualityChecksPayload
                 );
+                //START: Aggiornamento ACL
+                this.worker.setParameter("in_progress", String(!validTry));
+                this.worker.setParameter("paid", String(validTry));
+                this.worker.setParameter(
+                    "status_code",
+                    validTry ? StatusCodes.TASK_SUCCESSFUL : StatusCodes.TASK_FAILED_WITH_TRIES
+                );
+                if (!validTry) {
+                    this.worker.setParameter(
+                        "try_left",
+                        String(
+                            this.task.settings.allowed_tries -
+                            this.tryNumber
+                        )
+                    );
+                }
+                await this.dynamoDBService.insertACLRecordWorkerID(
+                    this.configService.environment,
+                    this.worker
+                );
+                //END: aggiornamento ACL
 
-                this.task.sequenceNumber += 1;
                 if (!validTry) {
                     this.typingAnimation("Failure! Let's try again");
-                    if (this.tryNumber >= 3) {
+                    if (this.tryNumber >= this.task.settings.allowed_tries) {
                         this.typingAnimation(
                             "Sorry, you are not eligible for completing this task. Please close this page."
                         );
@@ -1236,6 +1256,7 @@ export class ChatWidgetComponent implements OnInit {
                     this.awaitingAnswer = false;
                     this.statementProvided = false;
                     this.taskP({ value: "startTask" });
+
                     return;
                 }
                 this.readOnly = true;
@@ -1247,7 +1268,6 @@ export class ChatWidgetComponent implements OnInit {
                 this.typingAnimation(
                     "You may now close the page or leave a comment!"
                 );
-
                 setTimeout(() => {
                     //Richiesta commento
                     const modalRef = this.ngModal.open(
