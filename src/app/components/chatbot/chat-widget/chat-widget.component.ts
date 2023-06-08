@@ -1205,6 +1205,10 @@ export class ChatWidgetComponent implements OnInit {
                     qualityChecksPayload
                 );
                 //START: Aggiornamento ACL
+                this.worker.setParameter(
+                    "time_completion",
+                    new Date().toUTCString()
+                );
                 this.worker.setParameter("in_progress", String(!validTry));
                 this.worker.setParameter("paid", String(validTry));
                 this.worker.setParameter(
