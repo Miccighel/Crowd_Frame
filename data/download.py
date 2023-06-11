@@ -1301,141 +1301,150 @@ if 'toloka' in platforms:
         tokens_input = list(set(sorted(tokens_input)))
         tokens_output = list(set(sorted(tokens_output)))
 
-        tokens_input_deployed = None
-        tokens_output_deployed = None
-
-        project_data = None
         for project in toloka_client.get_projects():
+            project_data = None
+            tokens_input_deployed = []
+            tokens_output_deployed = []
             for input_field, data in project.task_spec.input_spec.items():
                 if input_field == 'token_input' and data.allowed_values:
-                    tokens_input_deployed = list(set(sorted(data.allowed_values)))
+                    tokens_input_deployed_current = list(set(sorted(data.allowed_values)))
+                    for token_input_deployed in tokens_input_deployed_current:
+                        if token_input_deployed not in tokens_input_deployed:
+                            tokens_input_deployed.append(token_input_deployed)
             for output_field, data in project.task_spec.output_spec.items():
                 if output_field == 'token_output' and data.allowed_values:
-                    tokens_output_deployed = list(set(sorted(data.allowed_values)))
+                    tokens_output_deployed_current = list(set(sorted(data.allowed_values)))
+                    for token_output_deployed in tokens_output_deployed_current:
+                        if token_output_deployed not in tokens_output_deployed:
+                            tokens_output_deployed.append(token_output_deployed)
+                if output_field == 'token_input' and data.allowed_values:
+                    tokens_input_deployed_current = list(set(sorted(data.allowed_values)))
+                    for token_input_deployed in tokens_input_deployed_current:
+                        if token_input_deployed not in tokens_input_deployed:
+                            tokens_input_deployed.append(token_input_deployed)
             if tokens_input == tokens_input_deployed and tokens_output == tokens_output_deployed:
                 console.print(f"Toloka project with name [cyan]{project.public_name}[/cyan] and ID [cyan]{project.id}[/cyan] found")
                 project_data = project
-                break
 
-        row = {
-            'project_id': project_data.id,
-            'project_name': project_data.public_name.strip(),
-            'project_description': project_data.public_description.strip(),
-            'project_comment': project_data.private_comment.strip() if project_data.private_comment is not None else np.nan,
-        }
+            if project_data:
 
-        pool_counter = 0
-        task_suites_counter = 0
-        assignments_counter = 0
+                row = {
+                    'project_id': project_data.id,
+                    'project_name': project_data.public_name.strip(),
+                    'project_description': project_data.public_description.strip(),
+                    'project_comment': project_data.private_comment.strip() if project_data.private_comment is not None else np.nan,
+                }
 
-        for pool in toloka_client.find_pools(project_id=project_data.id, sort=['last_started']).items:
-            row['pool_id'] = pool.id
-            row['pool_requester_id'] = pool.owner.id
-            row['pool_requester_myself'] = pool.owner.myself
-            row['pool_name'] = pool.private_name
-            row['pool_description'] = pool.public_description
-            row['pool_comment'] = pool.private_comment
-            row['pool_status'] = pool.status.value
-            row['pool_creation_date'] = pool.created.strftime("%Y-%m-%d %H:%M:%S")
-            row['pool_expiration_date'] = pool.will_expire.strftime("%Y-%m-%d %H:%M:%S")
-            row['pool_last_started'] = pool.last_started.strftime("%Y-%m-%d %H:%M:%S") if pool.last_started else np.nan
-            row['pool_last_stopped'] = pool.last_stopped.strftime("%Y-%m-%d %H:%M:%S") if pool.last_stopped else np.nan
-            row['pool_last_close_reason'] = pool.last_close_reason.value if pool.last_close_reason else np.nan
-            row['pool_speed_quality_balance_type'] = pool.speed_quality_balance.type
-            row['pool_speed_quality_balance_percent'] = pool.speed_quality_balance.percent
-            row['pool_assignment_reward'] = pool.reward_per_assignment
-            row['pool_assignment_max_duration_seconds'] = pool.assignment_max_duration_seconds
-            row['pool_priority'] = pool.priority
-            row['pool_auto_close_after_complete_delay_seconds'] = pool.auto_close_after_complete_delay_seconds
-            row['pool_auto_accept_solutions'] = pool.auto_accept_solutions
-            row['pool_auto_accept_period_day'] = pool.auto_accept_period_day
-            row['pool_issue_task_suite_in_creation_order'] = pool.assignments_issuing_config.issue_task_suites_in_creation_order
-            pool_counter = pool_counter + 1
-            task_suites = []
-            for task_suite in toloka_client.find_task_suites(pool_id=pool.id, sort=['created']).items:
-                task_suites.append(task_suite)
-            for task_suite in tqdm.tqdm(task_suites, desc=f"Processing task suites for pool {pool.id}:"):
-                row['task_suite_id'] = task_suite.id
-                row['task_suite_creation_date'] = task_suite.created.strftime("%Y-%m-%d %H:%M:%S")
-                row['task_suite_remaining_overlap'] = task_suite.remaining_overlap
-                row['task_suite_mixed'] = task_suite.mixed
-                row['task_suite_latitude'] = task_suite.latitude
-                row['task_suite_longitude'] = task_suite.longitude
-                task_suites_counter = task_suites_counter + 1
-                # Sort is in ascending order
-                for assignment in toloka_client.find_assignments(task_suite_id=task_suite.id, sort=['created']).items:
-                    row['assignment_id'] = assignment.id
-                    row['assignment_user_id'] = assignment.user_id
-                    row['assignment_comment'] = assignment.public_comment
-                    row['assignment_status'] = assignment.status.value
-                    row['assignment_creation_date'] = assignment.created.strftime("%Y-%m-%d %H:%M:%S")
-                    row['assignment_accept_date'] = assignment.accepted.strftime("%Y-%m-%d %H:%M:%S") if assignment.accepted else np.nan
-                    row['assignment_submit_date'] = assignment.submitted.strftime("%Y-%m-%d %H:%M:%S") if assignment.submitted else np.nan
-                    row['assignment_expire_date'] = assignment.expired.strftime("%Y-%m-%d %H:%M:%S") if assignment.expired else np.nan
-                    row['assignment_skip_date'] = assignment.skipped.strftime("%Y-%m-%d %H:%M:%S") if assignment.skipped else np.nan
-                    row['assignment_reject_date'] = assignment.rejected.strftime("%Y-%m-%d %H:%M:%S") if assignment.rejected else np.nan
-                    if assignment.tasks:
-                        if assignment.tasks[0].input_values:
-                            row['assignment_token_input'] = assignment.tasks[0].input_values['token_input'] if 'token_input' in assignment.tasks[0].input_values else np.nan
-                        else:
-                            row['assignment_token_input'] = np.nan
-                    else:
-                        row['assignment_token_input'] = np.nan
-                    if assignment.solutions:
-                        solution_length = len(assignment.solutions)
-                        tokens_input_final = []
-                        tokens_output = []
-                        for index_sol in range(0, solution_length):
-                            solution = assignment.solutions[index_sol]
-                            if 'token_input' in solution.output_values:
-                                tokens_input_final.append(solution.output_values['token_input'])
-                            if 'token_output' in solution.output_values:
-                                tokens_output.append(solution.output_values['token_output'])
-                        if len(tokens_input_final)>0:
-                            row['assignment_token_input_final'] = ':::'.join(tokens_input_final)
-                        else:
-                            row['assignment_token_input_final'] = np.nan
-                        if len(tokens_output)>1:
-                            pp.pprint(':::'.join(tokens_output))
-                            assert False
-                            row['assignment_token_output'] = ':::'.join(tokens_output)
-                        else:
-                            row['assignment_token_output'] = np.nan
-                    else:
-                        row['assignment_token_input_final'] = np.nan
-                        row['assignment_token_output'] = np.nan
-                    row['assignment_reward'] = assignment.reward
-                    row['assignment_rejected'] = assignment.rejected
-                    row['assignment_automerged'] = assignment.automerged
-                    row['assignment_mixed'] = assignment.mixed
-                    user_metadata = requests.get(f"https://toloka.yandex.com/api/v1/user-metadata/{assignment.user_id}", headers={'Authorization': f"OAuth {toloka_oauth_token}"}).json()
-                    row['user_id'] = assignment.user_id
-                    row['user_country'] = user_metadata['country']
-                    row['user_languages'] = ':::'.join(user_metadata['languages'])
-                    row['user_country_by_phone'] = user_metadata['attributes']['country_by_phone'] if 'country_by_phone' in user_metadata['attributes'] else np.nan
-                    row['user_country_by_ip'] = user_metadata['attributes']['country_by_ip'] if 'country_by_ip' in user_metadata['attributes'] else np.nan
-                    row['user_client_type'] = user_metadata['attributes']['client_type'] if 'client_type' in user_metadata['attributes'] else np.nan
-                    row['user_agent_type'] = user_metadata['attributes']['user_agent_type'] if 'user_agent_type' in user_metadata['attributes'] else np.nan
-                    row['user_device_category'] = user_metadata['attributes']['device_category'] if 'device_category' in user_metadata['attributes'] else np.nan
-                    row['user_os_family'] = user_metadata['attributes']['os_family'] if 'os_family' in user_metadata['attributes'] else np.nan
-                    row['user_os_version'] = user_metadata['attributes']['os_version'] if 'os_version' in user_metadata['attributes'] else np.nan
-                    row['user_os_version_major'] = user_metadata['attributes']['os_version_major'] if 'os_version_major' in user_metadata['attributes'] else np.nan
-                    row['user_os_version_minor'] = user_metadata['attributes']['os_version_minor'] if 'os_version_minor' in user_metadata['attributes'] else np.nan
-                    row['user_os_version_bugfix'] = user_metadata['attributes']['os_version_bugfix'] if 'os_version_bugfix' in user_metadata['attributes'] else np.nan
-                    row['user_adult_allowed'] = user_metadata['adult_allowed']
-                    acl_rows = df_acl_copy.loc[(df_acl_copy['token_output'] == row['assignment_token_output']) & (df_acl_copy['platform'] == 'toloka') & (df_acl_copy['generated'] is True)]
-                    if row['assignment_token_input_final'] is not np.nan:
-                        acl_rows = df_acl_copy.loc[df_acl_copy['token_input'] == row['assignment_token_input_final']]
-                    if len(acl_rows) >= 0:
-                         acl_rows = acl_rows.sort_values(by='time_arrival', ascending=False)
-                         for index_acl, row_acl in acl_rows.iterrows():
-                             if index_acl not in rows_assigned:
-                                row['worker_id'] = row_acl['worker_id']
-                                rows_assigned.append(index_acl)
-                                break
+                pool_counter = 0
+                task_suites_counter = 0
+                assignments_counter = 0
 
-                    assignments_counter = assignments_counter + 1
-                    df_toloka.loc[len(df_toloka)] = row
+                for pool in toloka_client.find_pools(project_id=project_data.id, sort=['last_started'], limit=50).items:
+                    row['pool_id'] = pool.id
+                    row['pool_requester_id'] = pool.owner.id
+                    row['pool_requester_myself'] = pool.owner.myself
+                    row['pool_name'] = pool.private_name
+                    row['pool_description'] = pool.public_description
+                    row['pool_comment'] = pool.private_comment
+                    row['pool_status'] = pool.status.value
+                    row['pool_creation_date'] = pool.created.strftime("%Y-%m-%d %H:%M:%S")
+                    row['pool_expiration_date'] = pool.will_expire.strftime("%Y-%m-%d %H:%M:%S")
+                    row['pool_last_started'] = pool.last_started.strftime("%Y-%m-%d %H:%M:%S") if pool.last_started else np.nan
+                    row['pool_last_stopped'] = pool.last_stopped.strftime("%Y-%m-%d %H:%M:%S") if pool.last_stopped else np.nan
+                    row['pool_last_close_reason'] = pool.last_close_reason.value if pool.last_close_reason else np.nan
+                    row['pool_speed_quality_balance_type'] = pool.speed_quality_balance.type
+                    row['pool_speed_quality_balance_percent'] = pool.speed_quality_balance.percent
+                    row['pool_assignment_reward'] = pool.reward_per_assignment
+                    row['pool_assignment_max_duration_seconds'] = pool.assignment_max_duration_seconds
+                    row['pool_priority'] = pool.priority
+                    row['pool_auto_close_after_complete_delay_seconds'] = pool.auto_close_after_complete_delay_seconds
+                    row['pool_auto_accept_solutions'] = pool.auto_accept_solutions
+                    row['pool_auto_accept_period_day'] = pool.auto_accept_period_day
+                    row['pool_issue_task_suite_in_creation_order'] = pool.assignments_issuing_config.issue_task_suites_in_creation_order
+                    pool_counter = pool_counter + 1
+                    task_suites = []
+                    for task_suite in toloka_client.find_task_suites(pool_id=pool.id, sort=['created'], limit=10000).items:
+                        task_suites.append(task_suite)
+                    for task_suite in tqdm.tqdm(task_suites, desc=f"Processing task suites for pool {pool.id}:"):
+                        row['task_suite_id'] = task_suite.id
+                        row['task_suite_creation_date'] = task_suite.created.strftime("%Y-%m-%d %H:%M:%S")
+                        row['task_suite_remaining_overlap'] = task_suite.remaining_overlap
+                        row['task_suite_mixed'] = task_suite.mixed
+                        row['task_suite_latitude'] = task_suite.latitude
+                        row['task_suite_longitude'] = task_suite.longitude
+                        task_suites_counter = task_suites_counter + 1
+                        # Sort is in ascending order
+                        for assignment in toloka_client.find_assignments(task_suite_id=task_suite.id, sort=['created'], limit=10000).items:
+                            row['assignment_id'] = assignment.id
+                            row['assignment_user_id'] = assignment.user_id
+                            row['assignment_comment'] = assignment.public_comment
+                            row['assignment_status'] = assignment.status.value
+                            row['assignment_creation_date'] = assignment.created.strftime("%Y-%m-%d %H:%M:%S")
+                            row['assignment_accept_date'] = assignment.accepted.strftime("%Y-%m-%d %H:%M:%S") if assignment.accepted else np.nan
+                            row['assignment_submit_date'] = assignment.submitted.strftime("%Y-%m-%d %H:%M:%S") if assignment.submitted else np.nan
+                            row['assignment_expire_date'] = assignment.expired.strftime("%Y-%m-%d %H:%M:%S") if assignment.expired else np.nan
+                            row['assignment_skip_date'] = assignment.skipped.strftime("%Y-%m-%d %H:%M:%S") if assignment.skipped else np.nan
+                            row['assignment_reject_date'] = assignment.rejected.strftime("%Y-%m-%d %H:%M:%S") if assignment.rejected else np.nan
+                            if assignment.tasks:
+                                if assignment.tasks[0].input_values:
+                                    row['assignment_token_input'] = assignment.tasks[0].input_values['token_input'] if 'token_input' in assignment.tasks[0].input_values else np.nan
+                                else:
+                                    row['assignment_token_input'] = np.nan
+                            else:
+                                row['assignment_token_input'] = np.nan
+                            if assignment.solutions:
+                                solution_length = len(assignment.solutions)
+                                tokens_input_solution = []
+                                tokens_output_solution = []
+                                for index_sol in range(0, solution_length):
+                                    solution = assignment.solutions[index_sol]
+                                    if 'token_input' in solution.output_values:
+                                        tokens_input_solution.append(solution.output_values['token_input'])
+                                    if 'token_output' in solution.output_values:
+                                        tokens_output_solution.append(solution.output_values['token_output'])
+                                if len(tokens_input_solution)>0:
+                                    row['assignment_token_input_final'] = ':::'.join(tokens_input_solution)
+                                else:
+                                    row['assignment_token_input_final'] = np.nan
+                                if len(tokens_output_solution)>0:
+                                    row['assignment_token_output'] = ':::'.join(tokens_output_solution)
+                                else:
+                                    row['assignment_token_output'] = np.nan
+                            else:
+                                row['assignment_token_input_final'] = np.nan
+                                row['assignment_token_output'] = np.nan
+                            row['assignment_reward'] = assignment.reward
+                            row['assignment_rejected'] = assignment.rejected
+                            row['assignment_automerged'] = assignment.automerged
+                            row['assignment_mixed'] = assignment.mixed
+                            user_metadata = requests.get(f"https://toloka.yandex.com/api/v1/user-metadata/{assignment.user_id}", headers={'Authorization': f"OAuth {toloka_oauth_token}"}).json()
+                            row['user_id'] = assignment.user_id
+                            row['user_country'] = user_metadata['country']
+                            row['user_languages'] = ':::'.join(user_metadata['languages'])
+                            row['user_country_by_phone'] = user_metadata['attributes']['country_by_phone'] if 'country_by_phone' in user_metadata['attributes'] else np.nan
+                            row['user_country_by_ip'] = user_metadata['attributes']['country_by_ip'] if 'country_by_ip' in user_metadata['attributes'] else np.nan
+                            row['user_client_type'] = user_metadata['attributes']['client_type'] if 'client_type' in user_metadata['attributes'] else np.nan
+                            row['user_agent_type'] = user_metadata['attributes']['user_agent_type'] if 'user_agent_type' in user_metadata['attributes'] else np.nan
+                            row['user_device_category'] = user_metadata['attributes']['device_category'] if 'device_category' in user_metadata['attributes'] else np.nan
+                            row['user_os_family'] = user_metadata['attributes']['os_family'] if 'os_family' in user_metadata['attributes'] else np.nan
+                            row['user_os_version'] = user_metadata['attributes']['os_version'] if 'os_version' in user_metadata['attributes'] else np.nan
+                            row['user_os_version_major'] = user_metadata['attributes']['os_version_major'] if 'os_version_major' in user_metadata['attributes'] else np.nan
+                            row['user_os_version_minor'] = user_metadata['attributes']['os_version_minor'] if 'os_version_minor' in user_metadata['attributes'] else np.nan
+                            row['user_os_version_bugfix'] = user_metadata['attributes']['os_version_bugfix'] if 'os_version_bugfix' in user_metadata['attributes'] else np.nan
+                            row['user_adult_allowed'] = user_metadata['adult_allowed']
+                            acl_rows = df_acl_copy.loc[(df_acl_copy['token_output'] == row['assignment_token_output']) & (df_acl_copy['platform'] == 'toloka') & (df_acl_copy['generated'] is True)]
+                            if row['assignment_token_input_final'] is not np.nan:
+                                acl_rows = df_acl_copy.loc[df_acl_copy['token_input'] == row['assignment_token_input_final']]
+                            if len(acl_rows) >= 0:
+                                 acl_rows = acl_rows.sort_values(by='time_arrival', ascending=False)
+                                 for index_acl, row_acl in acl_rows.iterrows():
+                                     if index_acl not in rows_assigned:
+                                        row['worker_id'] = row_acl['worker_id']
+                                        rows_assigned.append(index_acl)
+                                        break
+
+                            assignments_counter = assignments_counter + 1
+                            df_toloka.loc[len(df_toloka)] = row
 
         df_toloka.to_csv(df_toloka_data_path, index=False)
 
