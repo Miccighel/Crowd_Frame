@@ -7,11 +7,7 @@
 		"justification": false,
 		"url": {
 			"enable": true,
-			"instructions": {
-				"label": "B",
-				"caption": "Use the search engine on the right to search for evidence for the statement. Then, select the most relevant result.",
-				"text": false
-			}
+			"instructions": false
 		},
 		"scale": false,
 		"style": {
@@ -336,16 +332,14 @@
 	},
 	{
 		"name": "truthfulness",
+		"name_pretty": "Overall Truthfulness",
+		"description": "Evaluate the overall truthfulness of the statement",
 		"gold": true,
 		"justification": false,
 		"url": false,
 		"scale": {
 			"type": "categorical",
-			"instructions": {
-				"label": "D",
-				"caption": "Evaluate the Overall Truthfulness of the statement",
-				"text": false
-			},
+			"instructions": false,
 			"mapping": [
 				{
 					"label": "Lie",
@@ -388,16 +382,14 @@
 	},
 	{
 		"name": "confidence",
+		"name_pretty": "Confidence",
+		"description": "I am confident of my evaluation of Overall Truthfulness",
 		"gold": false,
 		"justification": false,
 		"url": false,
 		"scale": {
 			"type": "categorical",
-			"instructions": {
-				"label": "E",
-				"caption": "I am confident of my evaluation of Overall Truthfulness",
-				"text": false
-			},
+			"instructions": false,
 			"mapping": [
 				{
 					"label": "Completely Disagree",
