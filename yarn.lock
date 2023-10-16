@@ -3291,10 +3291,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@popperjs/core@npm:^2.11.7":
-  version: 2.11.7
-  resolution: "@popperjs/core@npm:2.11.7"
-  checksum: 5b6553747899683452a1d28898c1b39173a4efd780e74360bfcda8eb42f1c5e819602769c81a10920fc68c881d07fb40429604517d499567eac079cfa6470f19
+"@popperjs/core@npm:^2.11.8":
+  version: 2.11.8
+  resolution: "@popperjs/core@npm:2.11.8"
+  checksum: e5c69fdebf52a4012f6a1f14817ca8e9599cb1be73dd1387e1785e2ed5e5f0862ff817f420a87c7fc532add1f88a12e25aeb010ffcbdc98eace3d55ce2139cf0
   languageName: node
   linkType: hard
 
@@ -4036,9 +4036,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"aws-sdk@npm:^2.1373.0":
-  version: 2.1373.0
-  resolution: "aws-sdk@npm:2.1373.0"
+"aws-sdk@npm:^2.1473.0":
+  version: 2.1473.0
+  resolution: "aws-sdk@npm:2.1473.0"
   dependencies:
     buffer: 4.9.2
     events: 1.1.1
@@ -4050,7 +4050,7 @@ __metadata:
     util: ^0.12.4
     uuid: 8.0.0
     xml2js: 0.5.0
-  checksum: 943aac1feaa9acef50582672843c4e31e457ffd4c08df0cc7ce9979cb40fe1969f59f86b6afdfbb13b89aae6a11911f760ec9c42d3bdeb3770b4aea5f2b904f2
+  checksum: 40cad6dfbfb8a20db7ebed2eee49af94bb30af78ab03ad686bd66fd6fa851d4df81dd31257812776b6e6fd7c64dffaf783945b3876d74e141999c7aa4dad291f
   languageName: node
   linkType: hard
 
@@ -4201,12 +4201,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bootstrap@npm:^5.2.3":
-  version: 5.2.3
-  resolution: "bootstrap@npm:5.2.3"
+"bootstrap@npm:^5.3.2":
+  version: 5.3.2
+  resolution: "bootstrap@npm:5.3.2"
   peerDependencies:
-    "@popperjs/core": ^2.11.6
-  checksum: 0211805dec6a190c0911d142966df30fdb4b4139a04cc6c23dd83c6045ea3cb0a966b360ab2e701e7b3ad96ff01e05fdc0914be97b41bd876b11e457a8bdc6a3
+    "@popperjs/core": ^2.11.8
+  checksum: d5580b253d121ffc137388d41da58dce8d15f1ccd574e12f28d4a08e7649ca15e95db645b2b677cb8025bccd446bff04138fc0fe64f8cba0ccc5dc004a8644cf
   languageName: node
   linkType: hard
 
@@ -4786,25 +4786,25 @@ __metadata:
     "@funktechno/texthighlighter": ^2.1.2
     "@kolkov/angular-editor": ^3.0.0-beta.0
     "@ng-bootstrap/ng-bootstrap": 13.1.1
-    "@popperjs/core": ^2.11.7
+    "@popperjs/core": ^2.11.8
     "@types/node": ~16.11.68
-    aws-sdk: ^2.1373.0
-    bootstrap: ^5.2.3
+    aws-sdk: ^2.1473.0
+    bootstrap: ^5.3.2
     crypto-es: ^1.2.7
     flat-angular: ^1.6.0
-    material-icons: ^1.13.6
+    material-icons: ^1.13.12
     ngx-color-picker: ^13.0.0
     ngx-countdown: ^14.0.0
     ngx-device-detector: ^4.0.1
     ngx-file-helpers: ^8.1.1
     ngx-ui-loader: ^13.0.0
-    rxjs: ^7.5.7
+    rxjs: ^7.8.1
     titleize: ^3.0.0
     tree-model: ^1.0.7
-    tslib: ^2.4.1
+    tslib: ^2.6.2
     typescript: 4.9.5
     util: ^0.12.5
-    zone.js: ~0.12.0
+    zone.js: ~0.14.0
   languageName: unknown
   linkType: soft
 
@@ -6775,10 +6775,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"material-icons@npm:^1.13.6":
-  version: 1.13.6
-  resolution: "material-icons@npm:1.13.6"
-  checksum: 1c7d36e829b637bc12eb91d927a8da62c0848458f5b3c5178b36a22f33fd4884e6862d6cd21eae64815af0eec8f9794729912682a0bf5cc3c1f830d61d04ee21
+"material-icons@npm:^1.13.12":
+  version: 1.13.12
+  resolution: "material-icons@npm:1.13.12"
+  checksum: 46f0e03c4c22e8334c633915dd87c3023f0c6345c1d9376170aa8bb8c54e944a5fc40ec128888965b563e2472a8fae83a2f5b75d3f957ede8b5d8476650e4109
   languageName: node
   linkType: hard
 
@@ -8274,7 +8274,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rxjs@npm:^7.5.5, rxjs@npm:^7.5.7":
+"rxjs@npm:^7.5.5, rxjs@npm:^7.8.1":
   version: 7.8.1
   resolution: "rxjs@npm:7.8.1"
   dependencies:
@@ -9062,7 +9062,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tslib@npm:2.5.0, tslib@npm:^2.0.0, tslib@npm:^2.1.0, tslib@npm:^2.3.0, tslib@npm:^2.4.0, tslib@npm:^2.4.1":
+"tslib@npm:2.5.0, tslib@npm:^2.0.0, tslib@npm:^2.1.0, tslib@npm:^2.3.0, tslib@npm:^2.4.0":
   version: 2.5.0
   resolution: "tslib@npm:2.5.0"
   checksum: ae3ed5f9ce29932d049908ebfdf21b3a003a85653a9a140d614da6b767a93ef94f460e52c3d787f0e4f383546981713f165037dc2274df212ea9f8a4541004e1
@@ -9073,6 +9073,13 @@ __metadata:
   version: 1.14.1
   resolution: "tslib@npm:1.14.1"
   checksum: dbe628ef87f66691d5d2959b3e41b9ca0045c3ee3c7c7b906cc1e328b39f199bb1ad9e671c39025bd56122ac57dfbf7385a94843b1cc07c60a4db74795829acd
+  languageName: node
+  linkType: hard
+
+"tslib@npm:^2.6.2":
+  version: 2.6.2
+  resolution: "tslib@npm:2.6.2"
+  checksum: 329ea56123005922f39642318e3d1f0f8265d1e7fcb92c633e0809521da75eeaca28d2cf96d7248229deb40e5c19adf408259f4b9640afd20d13aecc1430f3ad
   languageName: node
   linkType: hard
 
@@ -9690,11 +9697,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zone.js@npm:~0.12.0":
-  version: 0.12.0
-  resolution: "zone.js@npm:0.12.0"
+"zone.js@npm:~0.14.0":
+  version: 0.14.0
+  resolution: "zone.js@npm:0.14.0"
   dependencies:
     tslib: ^2.3.0
-  checksum: 8efd980442dd11a79837e94de17baef45b27acb82061ac9e204b02b4290379a861c03cc332c5220a94e38f1402e89b306cb6a9e91de77dc7407e88f893abcd25
+  checksum: 8a1c055ff1f3da6e80f27bdc1b3a69cdb0098194ddfd9d9cee19414d5e00f09863f53a5746835ab711ef94bb828f44e4fe9f6c1491a0981dbcd13d3b88f5d997
   languageName: node
   linkType: hard
