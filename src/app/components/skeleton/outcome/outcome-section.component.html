@@ -3,10 +3,10 @@
 <div class="outcome-section">
 
     <ng-container *ngIf="this.worker.getParameter('status_code')==this.statusCodes.IP_INFORMATION_MISSING">
-        <mat-card>
+        <mat-card appearance="outlined">
             <mat-card-title class="red-title main-title"><span i18n>Connection Issues</span></mat-card-title>
         </mat-card>
-        <mat-card>
+        <mat-card appearance="outlined">
             <mat-card-title class="sub-title"><span i18n>Description</span></mat-card-title>
             <mat-divider [inset]="true"></mat-divider>
             <mat-card-content class="description">
@@ -17,17 +17,17 @@
     </ng-container>
 
     <ng-container *ngIf="this.worker.getParameter('status_code')==this.statusCodes.TASK_SUCCESSFUL">
-        <mat-card>
+        <mat-card appearance="outlined">
             <mat-card-title class="green-title main-title"><span i18n>Submission Successful</span></mat-card-title>
         </mat-card>
-        <mat-card>
+        <mat-card appearance="outlined">
             <mat-card-title class="sub-title"><span i18n>Description</span></mat-card-title>
             <mat-divider [inset]="true"></mat-divider>
             <mat-card-content class="description">
                 <p><span i18n>You have completed successfully the task assigned.</span></p>
             </mat-card-content>
         </mat-card>
-        <mat-card>
+        <mat-card appearance="outlined">
             <mat-card-title class="sub-title"><span i18n>Comment</span></mat-card-title>
             <mat-divider [inset]="true"></mat-divider>
             <mat-card-content class="description">
@@ -50,7 +50,7 @@
                 </ng-container>
             </div>
         </mat-card>
-        <mat-card>
+        <mat-card appearance="outlined">
             <mat-card-title class="sub-title"><span i18n>Submission Instructions</span></mat-card-title>
             <mat-divider [inset]="true"></mat-divider>
             <mat-card-content *ngIf="this.worker.getParameter('platform')=='mturk'" class="description">
@@ -74,10 +74,10 @@
     </ng-container>
 
     <ng-container *ngIf="this.worker.getParameter('status_code')==this.statusCodes.TASK_ALREADY_COMPLETED">
-        <mat-card>
+        <mat-card appearance="outlined">
             <mat-card-title class="green-title main-title"><span i18n>Submission Already Completed</span></mat-card-title>
         </mat-card>
-        <mat-card>
+        <mat-card appearance="outlined">
             <mat-card-title class="sub-title"><span i18n>Description</span></mat-card-title>
             <mat-divider [inset]="true"></mat-divider>
             <mat-card-content class="description">
@@ -87,7 +87,7 @@
                     doing that.</span></p>
             </mat-card-content>
         </mat-card>
-        <mat-card>
+        <mat-card appearance="outlined">
             <mat-card-title class="sub-title"><span i18n>Submission Instructions</span></mat-card-title>
             <mat-divider [inset]="true"></mat-divider>
             <mat-card-content *ngIf="this.worker.getParameter('platform')=='mturk'" class="description">
@@ -115,7 +115,7 @@
                 </mat-card-content>
             </ng-container>
         </mat-card>
-        <mat-card>
+        <mat-card appearance="outlined">
             <mat-card-title class="sub-title"><span i18n>Comment</span></mat-card-title>
             <mat-divider [inset]="true"></mat-divider>
             <mat-card-content class="description">
@@ -141,10 +141,10 @@
     </ng-container>
 
     <ng-container *ngIf="this.worker.getParameter('status_code')==this.statusCodes.TASK_FAILED_WITH_TRIES">
-        <mat-card>
+        <mat-card appearance="outlined">
             <mat-card-title class="red-title main-title"><span i18n>Submission Failed</span></mat-card-title>
         </mat-card>
-        <mat-card>
+        <mat-card appearance="outlined">
             <mat-card-title class="sub-title">Description</mat-card-title>
             <mat-divider [inset]="true"></mat-divider>
             <mat-card-content class="description">
@@ -152,7 +152,7 @@
                 </p>
             </mat-card-content>
         </mat-card>
-        <mat-card>
+        <mat-card appearance="outlined">
             <mat-card-title class="sub-title"><span i18n>Task Reset</span></mat-card-title>
             <mat-divider [inset]="true"></mat-divider>
             <mat-card-content class="description">
@@ -165,10 +165,10 @@
     </ng-container>
 
     <ng-container *ngIf="this.worker.getParameter('status_code')==this.statusCodes.TASK_FAILED_NO_TRIES">
-        <mat-card>
+        <mat-card appearance="outlined">
             <mat-card-title class="red-title main-title"><span i18n>Submission Failed</span></mat-card-title>
         </mat-card>
-        <mat-card>
+        <mat-card appearance="outlined">
             <mat-card-title class="sub-title"><span i18n>Description</span></mat-card-title>
             <mat-divider [inset]="true"></mat-divider>
             <mat-card-content class="description">
@@ -181,10 +181,10 @@
 
 
     <ng-container *ngIf="this.worker.getParameter('status_code')==this.statusCodes.TASK_OVERBOOKING">
-        <mat-card>
+        <mat-card appearance="outlined">
             <mat-card-title class="yellow-title main-title"><span i18n>Task Overbooking</span></mat-card-title>
         </mat-card>
-        <mat-card>
+        <mat-card appearance="outlined">
             <mat-card-title class="sub-title"><span i18n>Description</span></mat-card-title>
             <mat-divider [inset]="true"></mat-divider>
             <mat-card-content class="description">
@@ -195,10 +195,10 @@
     </ng-container>
 
     <ng-container *ngIf="this.worker.getParameter('status_code')==this.statusCodes.TASK_TIME_EXPIRED">
-        <mat-card>
+        <mat-card appearance="outlined">
             <mat-card-title class="red-title main-title"><span i18n>Time Expired</span></mat-card-title>
         </mat-card>
-        <mat-card>
+        <mat-card appearance="outlined">
             <mat-card-title class="sub-title">Description</mat-card-title>
             <mat-divider [inset]="true"></mat-divider>
             <mat-card-content class="description">
@@ -211,10 +211,10 @@
     </ng-container>
 
     <ng-container *ngIf="this.worker.getParameter('status_code')==this.statusCodes.TASK_COMPLETED_BY_OTHERS">
-        <mat-card>
+        <mat-card appearance="outlined">
             <mat-card-title class="yellow-title main-title"><span i18n>Task Completed</span></mat-card-title>
         </mat-card>
-        <mat-card>
+        <mat-card appearance="outlined">
             <mat-card-title class="sub-title"><span i18n>Description</span></mat-card-title>
             <mat-divider [inset]="true"></mat-divider>
             <mat-card-content class="description">
@@ -225,10 +225,10 @@
     </ng-container>
 
     <ng-container *ngIf="this.worker.getParameter('status_code')==this.statusCodes.CODE_UNKNOWN">
-        <mat-card>
+        <mat-card appearance="outlined">
             <mat-card-title class="red-title main-title"><span i18n>Unknown Issue</span></mat-card-title>
         </mat-card>
-        <mat-card>
+        <mat-card appearance="outlined">
             <mat-card-title class="sub-title"><span i18n>Description</span></mat-card-title>
             <mat-divider [inset]="true"></mat-divider>
             <mat-card-content class="description">
@@ -238,10 +238,10 @@
     </ng-container>
 
     <ng-container *ngIf="this.worker.getParameter('status_code')==this.statusCodes.WORKER_RETURNING_BLOCK">
-        <mat-card>
+        <mat-card appearance="outlined">
             <mat-card-title class="red-title main-title"><span>Block</span></mat-card-title>
         </mat-card>
-        <mat-card>
+        <mat-card appearance="outlined">
             <mat-card-title class="sub-title"><span i18n>Description</span></mat-card-title>
             <mat-divider [inset]="true"></mat-divider>
             <mat-card-content class="description">
@@ -252,10 +252,10 @@
     </ng-container>
 
     <ng-container *ngIf="this.worker.getParameter('status_code')==this.statusCodes.WORKER_BLACKLIST_CURRENT">
-        <mat-card>
+        <mat-card appearance="outlined">
             <mat-card-title class="red-title main-title"><span i18n>Block</span></mat-card-title>
         </mat-card>
-        <mat-card>
+        <mat-card appearance="outlined">
             <mat-card-title class="sub-title"><span i18n>Description</span></mat-card-title>
             <mat-divider [inset]="true"></mat-divider>
             <mat-card-content class="description">
@@ -266,10 +266,10 @@
     </ng-container>
 
     <ng-container *ngIf="this.worker.getParameter('status_code')==this.statusCodes.WORKER_BLACKLIST_PREVIOUS">
-        <mat-card>
+        <mat-card appearance="outlined">
             <mat-card-title class="red-title main-title"><span i18n>Block</span></mat-card-title>
         </mat-card>
-        <mat-card>
+        <mat-card appearance="outlined">
             <mat-card-title class="sub-title"><span i18n>Description</span></mat-card-title>
             <mat-divider [inset]="true"></mat-divider>
             <mat-card-content class="description">
@@ -281,7 +281,7 @@
 
 
     <ng-container *ngIf="this.messages.length>0">
-        <mat-card>
+        <mat-card appearance="outlined">
             <mat-card-title class="sub-title"><span i18n>Additional Messages</span></mat-card-title>
             <mat-divider [inset]="true"></mat-divider>
             <mat-card-content class="description">
@@ -290,7 +290,7 @@
         </mat-card>
     </ng-container>
 
-    <mat-card>
+    <mat-card appearance="outlined">
         <mat-card-title class="sub-title"><span i18n>Status Code</span></mat-card-title>
         <mat-divider [inset]="true"></mat-divider>
         <mat-card-content class="description">

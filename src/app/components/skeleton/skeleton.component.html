@@ -26,7 +26,7 @@
 
 <!-- First instruction page shown when the worker starts the skeleton -->
 <div class="instructions-section" *ngIf="this.sectionService.currentSection == 'instructions-section' && this.sectionService.checkCompleted && !this.sectionService.taskCompleted">
-    <mat-card>
+    <mat-card appearance="outlined">
         <mat-card-content *ngIf="!this.sectionService.checkCompleted || !this.task.instructionsGeneral">
             <mat-progress-bar mode="indeterminate"></mat-progress-bar>
         </mat-card-content>
@@ -57,7 +57,7 @@
 <!-- Token input section -->
 <div id="token-section" class="container" *ngIf="this.sectionService.currentSection == 'token-section' &&!this.sectionService.taskCompleted">
     <form [formGroup]="tokenForm">
-        <mat-card>
+        <mat-card appearance="outlined">
             <mat-card-content>
                 <mat-form-field appearance="fill">
                     <mat-label>

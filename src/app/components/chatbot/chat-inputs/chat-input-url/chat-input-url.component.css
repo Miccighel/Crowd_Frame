@@ -1,9 +1,12 @@
+
+/* TODO(mdc-migration): The following rule targets internal classes of form-field that may no longer apply for the MDC version. */
 .chat-input-text .mat-form-field-wrapper {
     padding: 0;
     padding-left: 0.5rem;
     margin-top: 0.5rem;
 }
 
+/* TODO(mdc-migration): The following rule targets internal classes of form-field that may no longer apply for the MDC version. */
 .chat-input-text .mat-form-field-infix {
     width: 100%;
 }

@@ -15,7 +15,7 @@ import {
     UntypedFormGroup,
     Validators,
 } from "@angular/forms";
-import { MatLegacyFormField as MatFormField } from "@angular/material/legacy-form-field";
+import { MatFormField } from "@angular/material/form-field";
 import { MatStepper } from "@angular/material/stepper";
 import { HttpClient, HttpHeaders } from "@angular/common/http";
 /* Services */
@@ -32,7 +32,7 @@ import { GoldChecker } from "../../../../data/build/skeleton/goldChecker";
 import { WorkerSettings } from "../../models/worker/workerSettings";
 import { Hit } from "../../models/skeleton/hit";
 /* Material Design */
-import { MatLegacySnackBar as MatSnackBar } from "@angular/material/legacy-snack-bar";
+import { MatSnackBar } from "@angular/material/snack-bar";
 /* Services */
 import { SectionService } from "../../services/section.service";
 import { StatusCodes } from "../../services/section.service";

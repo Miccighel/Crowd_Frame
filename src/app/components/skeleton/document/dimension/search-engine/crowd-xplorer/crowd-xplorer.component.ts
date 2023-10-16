@@ -13,8 +13,8 @@ import {
 /* Loading screen module */
 import { NgxUiLoaderService } from "ngx-ui-loader";
 /* Material design modules */
-import { MatLegacyTableDataSource as MatTableDataSource } from "@angular/material/legacy-table";
-import { MatLegacyPaginator as MatPaginator } from "@angular/material/legacy-paginator";
+import { MatTableDataSource } from "@angular/material/table";
+import { MatPaginator } from "@angular/material/paginator";
 /* Reactive forms modules */
 import {
     UntypedFormBuilder,

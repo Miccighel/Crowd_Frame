@@ -1,7 +1,7 @@
 <ng-template matStepLabel>{{this.questionnaire.index}}</ng-template>
 <div class="container" id="questionnaire-{{this.questionnaire.index}}">
     <form [formGroup]="questionnaireForm">
-        <mat-card>
+        <mat-card appearance="outlined">
 
             <mat-card-title>
                 <span *ngIf="questionnaire.name_pretty">
@@ -48,7 +48,7 @@
                                     </mat-checkbox>
                                 </div>
                             </div>
-                            <mat-form-field appearance="standard" class="questionnaire-value question-checkbox-field">
+                            <mat-form-field class="questionnaire-value question-checkbox-field">
                                 <input matInput formControlName="{{question.nameFull}}_answer">
                                 <mat-error>
                                     <app-error-message [formField]="this.questionnaireForm.get(question.nameFull.concat('_answer'))"></app-error-message>

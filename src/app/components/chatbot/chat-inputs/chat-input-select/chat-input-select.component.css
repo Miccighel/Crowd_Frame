@@ -1,9 +1,13 @@
+
+/* TODO(mdc-migration): The following rule targets internal classes of form-field that may no longer apply for the MDC version.*/
 .select .mat-form-field-infix {
     padding: 0 !important;
 }
+/* TODO(mdc-migration): The following rule targets internal classes of select that may no longer apply for the MDC version.*/
 .select .mat-select-value {
     padding-left: 1rem;
 }
+/* TODO(mdc-migration): The following rule targets internal classes of select that may no longer apply for the MDC version.*/
 .select .mat-select-arrow-wrapper {
     padding-right: 0.5rem;
 }
@@ -21,10 +25,10 @@
 .optionsPanel {
     margin-left: 33vw;
 }
-.optionsPanel mat-option.mat-option {
+.optionsPanel mat-option.mat-mdc-option {
     height: 2.5em !important;
 }
-.optionsPanel.mat-select-panel {
+.optionsPanel.mat-mdc-select-panel {
     min-width: calc(25% + 32px) !important;
     max-height: 40vh;
 }
@@ -34,6 +38,7 @@
     align-items: center;
 }
 
+/* TODO(mdc-migration): The following rule targets internal classes of select that may no longer apply for the MDC version.*/
 #select-component .mat-select-value-text {
     font-weight: 500;
 }
@@ -77,6 +82,7 @@ button.inactive {
     align-items: center;
     justify-content: center;
 }
+/* TODO(mdc-migration): The following rule targets internal classes of button that may no longer apply for the MDC version.*/
 .chat-input-button .mat-button-wrapper {
     display: flex;
     align-items: center;

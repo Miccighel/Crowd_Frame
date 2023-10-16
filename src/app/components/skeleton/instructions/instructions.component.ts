@@ -1,7 +1,7 @@
 /* Core */
 import {Component, Inject, Input, OnInit, ViewEncapsulation} from '@angular/core';
 /* Material Design */
-import {MatLegacyDialog as MatDialog, MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA} from '@angular/material/legacy-dialog';
+import {MatDialog, MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
 /* Task models*/
 import {Instruction} from "../../../models/skeleton/instructions";
 import {Task} from "../../../models/skeleton/task";

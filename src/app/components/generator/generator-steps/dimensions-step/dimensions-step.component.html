@@ -1,7 +1,7 @@
 <form [formGroup]="formStep">
 
     <!-- Header -->
-    <mat-card [class.mat-elevation-z3]="true">
+    <mat-card appearance="outlined" [class.mat-elevation-z3]="true">
         <mat-card-header>
             <mat-card-title><span i18n>Step #2: Dimensions</span></mat-card-title>
             <mat-card-subtitle><span i18n>Second, define all Dimensions here</span></mat-card-subtitle>
@@ -13,7 +13,7 @@
 
                 <div *ngFor="let dimension of dimensions().controls; let dimensionIndex = index" [formGroupName]="dimensionIndex">
 
-                    <mat-card [class.mat-elevation-z3]="true">
+                    <mat-card appearance="outlined" [class.mat-elevation-z3]="true">
                         <mat-card-header>
                             <mat-card-title class="lighter"><span i18n>Dimension</span>{{dimensionIndex + 1}}</mat-card-title>
                         </mat-card-header>

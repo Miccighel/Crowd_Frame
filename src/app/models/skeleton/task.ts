@@ -411,6 +411,7 @@ export class Task {
         document: number,
         dimension: number
     ) {
+        console.log(valueData)
         /* The current document, dimension and user query are copied from parameters */
         let currentDocument = document;
         let currentDimension = dimension;

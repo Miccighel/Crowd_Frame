@@ -12,7 +12,7 @@ import {
     UntypedFormBuilder,
     UntypedFormGroup,
 } from "@angular/forms";
-import { MatLegacyChipInputEvent as MatChipInputEvent } from "@angular/material/legacy-chips";
+import { MatChipInputEvent } from "@angular/material/chips";
 import { COMMA, ENTER } from "@angular/cdk/keycodes";
 /* Services */
 import { LocalStorageService } from "../../../../services/localStorage.service";

@@ -28,10 +28,12 @@ mat-horizontal-stepper {
   background: transparent !important;
 }
 
+/* TODO(mdc-migration): The following rule targets internal classes of card that may no longer apply for the MDC version. */
 mat-card-content mat-form-field label {
   font-weight: bold;
 }
 
+/* TODO(mdc-migration): The following rule targets internal classes of card that may no longer apply for the MDC version. */
 mat-card-title {
   padding-top: 1% !important;
   padding-bottom: 1% !important;
@@ -39,27 +41,30 @@ mat-card-title {
   font-weight: initial !important;
 }
 
+/* TODO(mdc-migration): The following rule targets internal classes of card that may no longer apply for the MDC version. */
 mat-card {
   margin: auto;
 }
 
+/* TODO(mdc-migration): The following rule targets internal classes of card that may no longer apply for the MDC version. */
 mat-card-actions {
   margin-top: 1%;
 }
 
+/* TODO(mdc-migration): The following rule targets internal classes of radio that may no longer apply for the MDC version. */
 .mat-radio-label {
   white-space: normal !important;
 }
 
-.mat-card > .mat-card-actions:last-child {
+.mat-mdc-card > .mat-mdc-card-actions:last-child {
   margin-bottom: 1em !important;
 }
 
-.mat-dialog-container h2 {
+.mat-mdc-dialog-container h2 {
   font-weight: lighter;
 }
 
-.mat-dialog-container h2 {
+.mat-mdc-dialog-container h2 {
   padding-top: 1% !important;
   padding-bottom: 1% !important;
   border-top: 1px solid rgba(0, 0, 0, .12);

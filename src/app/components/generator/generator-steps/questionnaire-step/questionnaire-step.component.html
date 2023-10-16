@@ -1,7 +1,7 @@
 <form [formGroup]="formStep">
 
     <!-- Header -->
-    <mat-card [class.mat-elevation-z3]="true">
+    <mat-card appearance="outlined" [class.mat-elevation-z3]="true">
         <mat-card-header>
             <mat-card-title><span i18n>Step #1: Questionnaires</span></mat-card-title>
             <mat-card-subtitle><span i18n>First, define all Questionnaires here</span></mat-card-subtitle>
@@ -15,7 +15,7 @@
 
                 <div *ngFor="let questionnaire of questionnaires().controls; let questionnaireIndex = index" [formGroupName]="questionnaireIndex">
 
-                    <mat-card [class.mat-elevation-z3]="true">
+                    <mat-card appearance="outlined" [class.mat-elevation-z3]="true">
                         <mat-card-header>
                             <mat-card-title class="lighter"><span i18n>Questionnaire</span> {{questionnaireIndex + 1}}</mat-card-title>
                         </mat-card-header>

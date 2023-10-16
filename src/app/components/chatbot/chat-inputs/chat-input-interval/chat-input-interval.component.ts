@@ -6,7 +6,7 @@ import {
     Output,
     ViewEncapsulation,
 } from "@angular/core";
-import { MatLegacySliderChange as MatSliderChange } from "@angular/material/legacy-slider";
+import { MatSliderChange } from "@angular/material/slider";
 import { IntervalDimensionInfo } from "src/app/models/conversational/common.model";
 
 @Component({

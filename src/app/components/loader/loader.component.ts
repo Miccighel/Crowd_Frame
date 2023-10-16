@@ -9,7 +9,7 @@ import {S3Service} from "../../services/aws/s3.service";
 import {Instruction} from "../../models/skeleton/instructions";
 import {DebugService} from "../../services/debug.service";
 /* Material Design */
-import {MatLegacySnackBar as MatSnackBar} from "@angular/material/legacy-snack-bar";
+import {MatSnackBar} from "@angular/material/snack-bar";
 /* Crypto */
 import CryptoES from 'crypto-es';
 

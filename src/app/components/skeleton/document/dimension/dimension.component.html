@@ -10,7 +10,8 @@
                 <div *ngIf="dimension.style.type=='list'" class="dimension">
 
                     <!-- Dimension search engine interface markup -->
-                    <app-search-engine [documentIndex]="documentIndex" [dimensionIndex]="dimension.index" [task]="this.task" (formEmitter)="storeSearchEngineUrl($event, dimension.index)"></app-search-engine>
+                    <app-search-engine [documentIndex]="documentIndex" [dimensionIndex]="dimension.index" [task]="this.task"
+                                       (formEmitter)="storeSearchEngineUrl($event, dimension.index)"></app-search-engine>
 
                     <ng-container *ngIf="verifyUrlSelection(position)">
 
@@ -67,7 +68,7 @@
                                                             </mat-checkbox>
                                                         </div>
                                                     </div>
-                                                    <mat-form-field appearance="standard">
+                                                    <mat-form-field>
                                                         <input matInput formControlName="{{(dimension.name).concat('_value')}}">
                                                     </mat-form-field>
                                                 </div>
@@ -80,7 +81,7 @@
                                         <div class="scale-interval">
                                             <mat-slider
                                                     min="{{dimension.scale.min}}" max="{{dimension.scale.max}}"
-                                                    step="{{dimension.scale.step}}" thumbLabel tickInterval="{{dimension.scale.step}}"
+                                                    step="{{dimension.scale.step}}"
                                                     formControlName="{{(dimension.name).concat('_value')}}"
                                                     (change)="this.task.storeDimensionValue($event, documentIndex,dimension.index);"
                                                     [disabled]="this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior=='disable_forms'">
@@ -96,10 +97,12 @@
                                     <ng-container *ngIf="dimension.scale.type=='magnitude_estimation'">
                                         <mat-form-field appearance="fill">
                                             <mat-label><span i18n>Value</span></mat-label>
-                                            <input *ngIf="dimension.scale.lower_bound" matInput type="number" placeholder="" formControlName="{{(dimension.name).concat('_value')}}" min="{{dimension.scale.min}}"
+                                            <input *ngIf="dimension.scale.lower_bound" matInput type="number" placeholder="" formControlName="{{(dimension.name).concat('_value')}}"
+                                                   min="{{dimension.scale.min}}"
                                                    (change)="this.task.storeDimensionValue($event, documentIndex, dimension.index)"
                                                    [disabled]="this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior=='disable_forms'" class="magnitude_estimation">
-                                            <input *ngIf="!dimension.scale.lower_bound" matInput type="number" placeholder="" formControlName="{{(dimension.name).concat('_value')}}" min="{{dimension.scale.min+1}}"
+                                            <input *ngIf="!dimension.scale.lower_bound" matInput type="number" placeholder="" formControlName="{{(dimension.name).concat('_value')}}"
+                                                   min="{{dimension.scale.min+1}}"
                                                    (change)="this.task.storeDimensionValue($event, documentIndex, dimension.index)" class="magnitude_estimation"
                                                    [disabled]="this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior=='disable_forms'">
                                             <mat-error *ngIf="this.utilsService.hasError(assessmentForms[documentIndex], (dimension.name).concat('_value'), 'required')">
@@ -114,7 +117,6 @@
                                     </ng-container>
 
                                 </ng-container>
-
                                 <ng-container *ngIf="dimension.style.orientation=='horizontal'">
 
                                     <ng-container *ngIf="dimension.scale.type=='categorical'">
@@ -169,7 +171,8 @@
                 <div *ngIf="dimension.style.type=='matrix'">
 
                     <!-- Dimension search engine interface markup -->
-                    <app-search-engine [documentIndex]="documentIndex" [dimensionIndex]="dimension.index" [task]="this.task" (formEmitter)="storeSearchEngineUrl($event, dimension.index)"></app-search-engine>
+                    <app-search-engine [documentIndex]="documentIndex" [dimensionIndex]="dimension.index" [task]="this.task"
+                                       (formEmitter)="storeSearchEngineUrl($event, dimension.index)"></app-search-engine>
 
                     <ng-container *ngIf="verifyUrlSelection(position)">
 
@@ -212,7 +215,8 @@
                                         </ng-container>
                                     </div>
                                     <div class="matrix-value-control" *ngFor="let mapping of dimension.scale.mapping; let k=index">
-                                        <mat-radio-button class="radio-button" value="{{mapping.value}}" (change)="this.task.storeDimensionValue($event, documentIndex,dimension.index)"></mat-radio-button>
+                                        <mat-radio-button class="radio-button" value="{{mapping.value}}"
+                                                          (change)="this.task.storeDimensionValue($event, documentIndex,dimension.index)"></mat-radio-button>
                                     </div>
                                 </mat-radio-group>
                             </div>
@@ -272,7 +276,8 @@
                             </div>
                         </div>
 
-                        <app-search-engine [documentIndex]="documentIndex" [dimensionIndex]="dimension.index" [task]="this.task" (formEmitter)="storeSearchEngineUrl($event, dimension.index)"></app-search-engine>
+                        <app-search-engine [documentIndex]="documentIndex" [dimensionIndex]="dimension.index" [task]="this.task"
+                                           (formEmitter)="storeSearchEngineUrl($event, dimension.index)"></app-search-engine>
 
                         <div *ngIf="dimension.scale" class="dimension-container dimension-scale">
                             <div class="dimension-content-split">
@@ -281,8 +286,9 @@
 
                                     <ng-container *ngIf="dimension.scale.type=='categorical'">
                                         <div class="dimension-split-inside dimension-box" *ngFor="let pairwiseElement of this.task.documents[documentIndex]['pairwise']; let k=index">
-                                            <p class="spanDocument"> <span i18n>Answer for Element</span> {{k}}</p>
-                                            <mat-radio-group style="margin-left: 10px;" aria-labelledby="radio-button-label" class="radio-button-group" formControlName="{{(dimension.name).concat('_value_element_').concat(k)}}">
+                                            <p class="spanDocument"><span i18n>Answer for Element</span> {{k}}</p>
+                                            <mat-radio-group style="margin-left: 10px;" aria-labelledby="radio-button-label" class="radio-button-group"
+                                                             formControlName="{{(dimension.name).concat('_value_element_').concat(k)}}">
                                                 <mat-radio-button *ngFor="let mapping of dimension.scale.mapping" class="radio-button" value="{{mapping.value}}"
                                                                   (change)="this.task.storeDimensionValue($event, documentIndex, dimension.index); updateDimensionValueSelection(documentIndex,dimension.index,k)"
                                                                   [disabled]="this.task.countdownsExpired[documentIndex]">
@@ -298,10 +304,11 @@
                                     <ng-container *ngIf="dimension.scale.type=='interval'">
                                         <div class="dimension-split-inside dimension-box" *ngFor="let pairwiseElement of this.task.documents[documentIndex]['pairwise']; let k=index">
                                             <p class="spanDocument"><span i18n>Answer for Element</span> {{k}}</p>
-                                            <label style="margin-left:10px;"><span i18n> Selected value: </span>{{assessmentForms[documentIndex].controls[(dimension.name).concat('_value_element_').concat(k)].value}}</label>
+                                            <label style="margin-left:10px;"><span
+                                                    i18n> Selected value: </span>{{assessmentForms[documentIndex].controls[(dimension.name).concat('_value_element_').concat(k)].value}}</label>
                                             <mat-slider
                                                     min="{{dimension.scale.min}}" max="{{dimension.scale.max}}"
-                                                    step="{{dimension.scale.step}}" thumbLabel tickInterval="{{dimension.scale.step}}"
+                                                    step="{{dimension.scale.step}}"
                                                     formControlName="{{(dimension.name).concat('_value_element_').concat(k)}}"
                                                     (change)="this.task.storeDimensionValue($event, documentIndex,dimension.index); updateDimensionValueSelection(documentIndex,dimension.index,k)"
                                                     [disabled]="this.task.countdownsExpired[documentIndex]">
@@ -314,13 +321,16 @@
                                             <p class="spanDocument"><span i18n>Answer for Element</span> {{k}}</p>
                                             <mat-form-field appearance="fill" style="margin-left: 10px;">
                                                 <mat-label><span i18n>Value</span></mat-label>
-                                                <input *ngIf="dimension.scale.lower_bound" matInput type="number" placeholder="" formControlName="{{(dimension.name).concat('_value_element_').concat(k)}}"
+                                                <input *ngIf="dimension.scale.lower_bound" matInput type="number" placeholder=""
+                                                       formControlName="{{(dimension.name).concat('_value_element_').concat(k)}}"
                                                        min="{{dimension.scale.min}}"
                                                        (change)="this.task.storeDimensionValue($event, documentIndex, dimension.index) ; updateDimensionValueSelection(documentIndex,dimension.index,k)"
                                                        [disabled]="this.task.countdownsExpired[documentIndex]" class="magnitude_estimation">
-                                                <input *ngIf="!dimension.scale.lower_bound" matInput type="number" placeholder="" formControlName="{{(dimension.name).concat('_value_element_').concat(k)}}"
+                                                <input *ngIf="!dimension.scale.lower_bound" matInput type="number" placeholder=""
+                                                       formControlName="{{(dimension.name).concat('_value_element_').concat(k)}}"
                                                        min="{{dimension.scale.min+1}}"
-                                                       (change)="this.task.storeDimensionValue($event, documentIndex, dimension.index); updateDimensionValueSelection(documentIndex,dimension.index,k)" class="magnitude_estimation"
+                                                       (change)="this.task.storeDimensionValue($event, documentIndex, dimension.index); updateDimensionValueSelection(documentIndex,dimension.index,k)"
+                                                       class="magnitude_estimation"
                                                        [disabled]="this.task.countdownsExpired[documentIndex]">
                                                 <mat-error *ngIf="this.utilsService.hasError(assessmentForms[documentIndex], (dimension.name).concat('_value_element_').concat(k), 'required')">
                                                     <span i18n>This field is required</span>
@@ -352,7 +362,7 @@
 
                         <div *ngIf="dimension.justification" class="dimension-content-split">
                             <div *ngFor="let pairwiseElement of this.task.documents[documentIndex]['pairwise']; let k=index" class="dimension-box">
-                                <p class="spanDocument"> <span i18n>Justification for Element</span> {{k}}</p>
+                                <p class="spanDocument"><span i18n>Justification for Element</span> {{k}}</p>
                                 <div class="dimension-text-field" style="margin-left: 10px;">
                                     <mat-form-field appearance="fill">
                                         <mat-label>{{dimension.justification.text}}</mat-label>

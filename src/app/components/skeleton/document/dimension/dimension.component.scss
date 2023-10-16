@@ -50,7 +50,9 @@
 .dimension .checkbox {
     margin: 0;
     padding: 0;
-
+    /*
+  TODO(mdc-migration): The following rule targets internal classes of checkbox that may no longer apply for the MDC version.
+*/
     mat-checkbox {
         float: left;
         margin-right: 1%;
@@ -58,18 +60,30 @@
 }
 
 
+/*
+  TODO(mdc-migration): The following rule targets internal classes of form-field that may no longer apply for the MDC version.
+*/
 ::ng-deep .dimension .checkbox .mat-form-field-infix {
     display: none;
 }
 
+/*
+  TODO(mdc-migration): The following rule targets internal classes of form-field that may no longer apply for the MDC version.
+*/
 ::ng-deep .dimension .checkbox .mat-form-field-flex {
     display: none;
 }
 
+/*
+  TODO(mdc-migration): The following rule targets internal classes of form-field that may no longer apply for the MDC version.
+*/
 ::ng-deep .dimension .checkbox .mat-form-field-underline {
     display: none;
 }
 
+/*
+  TODO(mdc-migration): The following rule targets internal classes of form-field that may no longer apply for the MDC version.
+*/
 ::ng-deep .dimension .checkbox .mat-form-field-wrapper {
     padding: 0;
 }

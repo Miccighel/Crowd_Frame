@@ -21,7 +21,7 @@
 </mat-grid-list>
 <div class="login-section green-theme" *ngIf="(this.adminAccess && this.actionChosen=='generate' && !this.loginSuccessful)">
   <form [formGroup]="loginForm">
-    <mat-card>
+    <mat-card appearance="outlined">
       <mat-card-content>
         <mat-form-field>
           <mat-label>
