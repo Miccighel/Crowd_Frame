@@ -14,20 +14,20 @@ import {
 } from "@angular/forms";
 /* Services */
 
-import { ConfigService } from "../../../../services/config.service";
-import { LocalStorageService } from "../../../../services/localStorage.service";
-import { NgxUiLoaderService } from "ngx-ui-loader";
-import { UtilsService } from "../../../../services/utils.service";
-import { HitsSolverService } from "../../../../services/hitsSolver.service";
-import { ReadFile, ReadMode } from "ngx-file-helpers";
+import {ConfigService} from "../../../../services/config.service";
+import {LocalStorageService} from "../../../../services/localStorage.service";
+import {NgxUiLoaderService} from "ngx-ui-loader";
+import {UtilsService} from "../../../../services/utils.service";
+import {HitsSolverService} from "../../../../services/hitsSolver.service";
+import {ReadFile, ReadMode} from "ngx-file-helpers";
 /* Models */
-import { Hit } from "../../../../models/skeleton/hit";
+import {Hit} from "../../../../models/skeleton/hit";
 import {
     Attribute,
     DocCategory,
     TaskSettings,
 } from "../../../../models/skeleton/taskSettings";
-import { S3Service } from "../../../../services/aws/s3.service";
+import {S3Service} from "../../../../services/aws/s3.service";
 
 interface AnnotatorType {
     value: string;
@@ -67,20 +67,20 @@ export class TaskSettingsStepComponent implements OnInit {
     formStep: UntypedFormGroup;
 
     annotatorTypes: AnnotatorType[] = [
-        { value: "options", viewValue: "Options" },
-        { value: "laws", viewValue: "Laws" },
+        {value: "options", viewValue: "Options"},
+        {value: "laws", viewValue: "Laws"},
     ];
     modalityTypes: ModalityType[] = [
-        { value: "pointwise", viewValue: "Pointwise" },
-        { value: "pairwise", viewValue: "Pairwise" },
+        {value: "pointwise", viewValue: "Pointwise"},
+        {value: "pairwise", viewValue: "Pairwise"},
     ];
     countdownBehavior: ModalityType[] = [
-        { value: "disable_form", viewValue: "Disable Forms" },
-        { value: "hide_attributes", viewValue: "Hide Attributes" },
+        {value: "disable_form", viewValue: "Disable Forms"},
+        {value: "hide_attributes", viewValue: "Hide Attributes"},
     ];
     additionalTimeModalities: ModalityType[] = [
-        { value: "attribute", viewValue: "Attribute" },
-        { value: "position", viewValue: "Position" },
+        {value: "attribute", viewValue: "Attribute"},
+        {value: "position", viewValue: "Position"},
     ];
 
     batchesTree: Array<JSON>;
@@ -386,7 +386,8 @@ export class TaskSettingsStepComponent implements OnInit {
                 hits = await this.S3Service.downloadHits(
                     this.configService.environment
                 );
-            } catch (exception) { }
+            } catch (exception) {
+            }
             this.localStorageService.setItem(`hits`, JSON.stringify(hits));
             this.updateHitsFile(hits);
         }
@@ -446,9 +447,9 @@ export class TaskSettingsStepComponent implements OnInit {
         if (this.hitsParsed.length > 0) {
             this.hitsDetected =
                 "documents" in this.hitsParsed[0] &&
-                    "token_input" in this.hitsParsed[0] &&
-                    "token_output" in this.hitsParsed[0] &&
-                    "unit_id" in this.hitsParsed[0]
+                "token_input" in this.hitsParsed[0] &&
+                "token_output" in this.hitsParsed[0] &&
+                "unit_id" in this.hitsParsed[0]
                     ? this.hitsParsed.length
                     : 0;
         } else {
@@ -487,7 +488,7 @@ export class TaskSettingsStepComponent implements OnInit {
                                 if (
                                     !this.hitsAttributesValues[
                                         attribute
-                                    ].includes(value)
+                                        ].includes(value)
                                 )
                                     this.hitsAttributesValues[attribute].push(
                                         value
@@ -497,21 +498,15 @@ export class TaskSettingsStepComponent implements OnInit {
                     } else {
                         Object.entries(document).forEach(
                             ([attribute, value]) => {
-                                if (
-                                    !this.hitsAttributesValues[
-                                        attribute
-                                    ].includes(value)
-                                )
-                                    this.hitsAttributesValues[attribute].push(
-                                        value
-                                    );
+                                if (!this.hitsAttributesValues[attribute].includes(value))
+                                    this.hitsAttributesValues[attribute].push(value);
                             }
                         );
                     }
                 }
             }
         }
-        this.hitAttributes().clear({ emitEvent: true });
+        this.hitAttributes().clear({emitEvent: true});
         for (let attributeIndex in this.hitsAttributes) {
             if (attributeIndex in this.dataStored.attributes) {
                 this.addHitAttribute(
@@ -553,7 +548,7 @@ export class TaskSettingsStepComponent implements OnInit {
         }
 
         this.resetCategorySelection();
-        this.docCategories().clear({ emitEvent: true });
+        this.docCategories().clear({emitEvent: true});
 
         this.docsCategories = [];
         this.docsCategoriesValues = {};
@@ -585,8 +580,8 @@ export class TaskSettingsStepComponent implements OnInit {
             this.documentsOptions()
                 .get("min_docs_repetitions")
                 .valueChanges.subscribe((data) => {
-                    if (data != null) this.updateWorkerNumber(data);
-                });
+                if (data != null) this.updateWorkerNumber(data);
+            });
 
             let VALUES_LIMIT = 6;
 
@@ -920,7 +915,6 @@ export class TaskSettingsStepComponent implements OnInit {
             selectedWorkerAssignment,
             workers_number
         );
-
 
 
         this.ngxService.startBackground();

@@ -1940,9 +1940,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             for hit in hits:
                 tokens = f"{tokens};{hit['token_output']}"
             tokens = tokens[1:]
-            token_df = token_df.append({
-                "tokens": tokens
-            }, ignore_index=True)
+            token_df = pd.concat([token_df, pd.DataFrame({"tokens": [tokens]})], ignore_index=True)
         token_df.to_csv(mturk_tokens_file, index=False)
         console.print(f"Tokens for {len(hits)} hits generated")
         console.print(f"Path: [italic]{mturk_tokens_file}")
@@ -2020,12 +2018,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         tokens_input = []
         tokens_output = []
         for hit in hits:
-            token_df = token_df.append({
-                "INPUT:token_input": hit['token_input']
-            }, ignore_index=True)
-            token_df = token_df.append({
-                "INPUT:token_input": None
-            }, ignore_index=True)
+            token_df = pd.concat([token_df, pd.DataFrame({"INPUT:token_input": [hit['token_input']]})], ignore_index=True)
+            token_df = pd.concat([token_df, pd.DataFrame({"INPUT:token_input": [None]})], ignore_index=True)
             tokens_input.append(hit['token_input'])
             tokens_output.append(hit['token_output'])
         token_df.to_csv(toloka_tokens_file, sep="\t", index=False)
