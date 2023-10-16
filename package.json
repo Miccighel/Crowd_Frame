@@ -2,6 +2,7 @@
   "name": "crowd-frame",
   "version": "1.0.0",
   "scripts": {
+    "ng": "ng",
     "update": "ng update",
     "serve": "ng serve",
     "serve:it": "ng serve --configuration=development-it",
