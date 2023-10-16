@@ -10,8 +10,8 @@ import {DeviceDetectorService} from "ngx-device-detector";
 import {SectionService} from "../../../../../services/section.service";
 import {UtilsService} from "../../../../../services/utils.service";
 /* Material Design */
-import {MatRadioChange} from "@angular/material/radio";
-import {MatCheckboxChange} from "@angular/material/checkbox";
+import {MatLegacyRadioChange as MatRadioChange} from "@angular/material/legacy-radio";
+import {MatLegacyCheckboxChange as MatCheckboxChange} from "@angular/material/legacy-checkbox";
 /* Other */
 import {doHighlight} from "@funktechno/texthighlighter/lib";
 
