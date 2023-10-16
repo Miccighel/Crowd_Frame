@@ -3503,10 +3503,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:~16.11.68":
-  version: 16.11.68
-  resolution: "@types/node@npm:16.11.68"
-  checksum: a35293b6b8867e10ab9e10b6cd5f0e4224a86256d5ef102581dcb9f79f35f255ad87443e8584ddf8dce1229ee28885c58187e41822cf8d1e82495e7897c47c3f
+"@types/node@npm:^15.2.10":
+  version: 15.14.9
+  resolution: "@types/node@npm:15.14.9"
+  checksum: 49f7f0522a3af4b8389aee660e88426490cd54b86356672a1fedb49919a8797c00d090ec2dcc4a5df34edc2099d57fc2203d796c4e7fbd382f2022ccd789eee7
   languageName: node
   linkType: hard
 
@@ -4787,7 +4787,7 @@ __metadata:
     "@kolkov/angular-editor": ^3.0.0-beta.0
     "@ng-bootstrap/ng-bootstrap": 13.1.1
     "@popperjs/core": ^2.11.8
-    "@types/node": ~16.11.68
+    "@types/node": ^15.2.10
     aws-sdk: ^2.1473.0
     bootstrap: ^5.3.2
     crypto-es: ^1.2.7
@@ -4798,13 +4798,13 @@ __metadata:
     ngx-device-detector: ^4.0.1
     ngx-file-helpers: ^8.1.1
     ngx-ui-loader: ^13.0.0
-    rxjs: ^7.8.1
+    rxjs: ^6.5.3 || ^7.4.0
     titleize: ^3.0.0
     tree-model: ^1.0.7
     tslib: ^2.6.2
-    typescript: 4.9.5
+    typescript: ">=4.8.2 <5.0.0"
     util: ^0.12.5
-    zone.js: ~0.14.0
+    zone.js: ~0.12.0
   languageName: unknown
   linkType: soft
 
@@ -8274,7 +8274,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rxjs@npm:^7.5.5, rxjs@npm:^7.8.1":
+"rxjs@npm:^6.5.3 || ^7.4.0, rxjs@npm:^7.5.5":
   version: 7.8.1
   resolution: "rxjs@npm:7.8.1"
   dependencies:
@@ -9118,7 +9118,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:4.9.5":
+"typescript@npm:>=4.8.2 <5.0.0":
   version: 4.9.5
   resolution: "typescript@npm:4.9.5"
   bin:
@@ -9128,7 +9128,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@4.9.5#~builtin<compat/typescript>":
+"typescript@patch:typescript@>=4.8.2 <5.0.0#~builtin<compat/typescript>":
   version: 4.9.5
   resolution: "typescript@patch:typescript@npm%3A4.9.5#~builtin<compat/typescript>::version=4.9.5&hash=289587"
   bin:
@@ -9697,11 +9697,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zone.js@npm:~0.14.0":
-  version: 0.14.0
-  resolution: "zone.js@npm:0.14.0"
+"zone.js@npm:~0.12.0":
+  version: 0.12.0
+  resolution: "zone.js@npm:0.12.0"
   dependencies:
     tslib: ^2.3.0
-  checksum: 8a1c055ff1f3da6e80f27bdc1b3a69cdb0098194ddfd9d9cee19414d5e00f09863f53a5746835ab711ef94bb828f44e4fe9f6c1491a0981dbcd13d3b88f5d997
+  checksum: 8efd980442dd11a79837e94de17baef45b27acb82061ac9e204b02b4290379a861c03cc332c5220a94e38f1402e89b306cb6a9e91de77dc7407e88f893abcd25
   languageName: node
   linkType: hard
