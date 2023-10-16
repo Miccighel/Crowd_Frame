@@ -3144,19 +3144,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ng-bootstrap/ng-bootstrap@npm:13.1.1":
-  version: 13.1.1
-  resolution: "@ng-bootstrap/ng-bootstrap@npm:13.1.1"
+"@ng-bootstrap/ng-bootstrap@npm:15.1.1":
+  version: 15.1.1
+  resolution: "@ng-bootstrap/ng-bootstrap@npm:15.1.1"
   dependencies:
     tslib: ^2.3.0
   peerDependencies:
-    "@angular/common": ^14.1.0
-    "@angular/core": ^14.1.0
-    "@angular/forms": ^14.1.0
-    "@angular/localize": ^14.1.0
-    "@popperjs/core": ^2.10.2
+    "@angular/common": ^16.0.0
+    "@angular/core": ^16.0.0
+    "@angular/forms": ^16.0.0
+    "@angular/localize": ^16.0.0
+    "@popperjs/core": ^2.11.6
     rxjs: ^6.5.3 || ^7.4.0
-  checksum: bfa310f09db475c36824b67c769d6aa584d34eb27f92c51da946793d931908d919b48761fc445890c71f9ab01eda21cd3840a02da364924c1ff717c878739d11
+  checksum: c9be079ce0d5cc07024d05a2cac1c58bfcb38a7af4b6aced0c87104a63213f124e1621e2869079ccb537e565472f95ad881121c489c3d9dcd1719902f76af8ba
   languageName: node
   linkType: hard
 
@@ -4785,7 +4785,7 @@ __metadata:
     "@angular/router": ^15.2.10
     "@funktechno/texthighlighter": ^2.1.2
     "@kolkov/angular-editor": ^3.0.0-beta.0
-    "@ng-bootstrap/ng-bootstrap": 13.1.1
+    "@ng-bootstrap/ng-bootstrap": 15.1.1
     "@popperjs/core": ^2.11.8
     "@types/node": ^15.2.10
     aws-sdk: ^2.1473.0
@@ -4793,16 +4793,16 @@ __metadata:
     crypto-es: ^1.2.7
     flat-angular: ^1.6.0
     material-icons: ^1.13.12
-    ngx-color-picker: ^13.0.0
-    ngx-countdown: ^14.0.0
-    ngx-device-detector: ^4.0.1
-    ngx-file-helpers: ^8.1.1
+    ngx-color-picker: ^15.0.0
+    ngx-countdown: ^16.0.0
+    ngx-device-detector: ^6.0.2
+    ngx-file-helpers: ^10.0.0
     ngx-ui-loader: ^13.0.0
-    rxjs: ^7.4.0
-    titleize: ^3.0.0
+    rxjs: ^6.5.3 || ^7.4.0
+    titleize: ^4.0.0
     tree-model: ^1.0.7
     tslib: ^2.6.2
-    typescript: ~4.8.2
+    typescript: ">=4.9.3 <5.2.0"
     util: ^0.12.5
     zone.js: ~0.12.0
   languageName: unknown
@@ -7130,49 +7130,49 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ngx-color-picker@npm:^13.0.0":
-  version: 13.0.0
-  resolution: "ngx-color-picker@npm:13.0.0"
+"ngx-color-picker@npm:^15.0.0":
+  version: 15.0.0
+  resolution: "ngx-color-picker@npm:15.0.0"
   dependencies:
     tslib: ^2.3.0
   peerDependencies:
     "@angular/common": ">=9.0.0"
     "@angular/core": ">=9.0.0"
     "@angular/forms": ">=9.0.0"
-  checksum: f3031f705e0d43d8e6698637c9388e4fdcb46f7ea6a5d8125708200860680413fdc2ba81e8a10de7b802b9da7efab69e9ce30a3b1520d0032591bbdf6cd647c8
+  checksum: cf7397fcc9f27b15a6b204806ee88004183915c63440b32bae4caf0e958fdc571b14908ef3c6ca1f584935d9a4cb3d84c6d884c0aa075720920a2e0195ef6a4f
   languageName: node
   linkType: hard
 
-"ngx-countdown@npm:^14.0.0":
-  version: 14.0.0
-  resolution: "ngx-countdown@npm:14.0.0"
+"ngx-countdown@npm:^16.0.0":
+  version: 16.0.0
+  resolution: "ngx-countdown@npm:16.0.0"
   dependencies:
     tslib: ^2.3.0
-  checksum: 9b4db3a622f62083170731b28e832be92a251ebce752fbe69f9ab1db3f52f09ca9cf3802481693cd7dafcb01309877d51df7c590a5d72ecfb502011af4184d98
+  checksum: 44fa92a591d27287aef805509707e75cbe6bbcd5bc2ca49944d3b92a4b2f8facb66888f0522156d5e1c18c7ecd6139de5f65b4bf869edcfdb33f374335f988e6
   languageName: node
   linkType: hard
 
-"ngx-device-detector@npm:^4.0.1":
-  version: 4.0.1
-  resolution: "ngx-device-detector@npm:4.0.1"
+"ngx-device-detector@npm:^6.0.2":
+  version: 6.0.2
+  resolution: "ngx-device-detector@npm:6.0.2"
   dependencies:
     tslib: ^2.0.0
   peerDependencies:
-    "@angular/common": ^14.0.0
-    "@angular/core": ^14.0.0
-  checksum: 1445b146e7ac50a2960218b9375251015cd503b7c67782c643607654416c51e4fc11087a74c306f83e19d179ade87f48ef7defe89e40ea10f0275fc5c7bdf436
+    "@angular/common": ^16.0.0
+    "@angular/core": ^16.0.0
+  checksum: 1a8fe1336f9f86f85cc2eaab90f6df000d03cc34306676fd374b79552561ecfb315e610e0e612ec116ef74658e3849ad1b1a55c787bfb287ffd477cd2beb36d0
   languageName: node
   linkType: hard
 
-"ngx-file-helpers@npm:^8.1.1":
-  version: 8.1.1
-  resolution: "ngx-file-helpers@npm:8.1.1"
+"ngx-file-helpers@npm:^10.0.0":
+  version: 10.0.0
+  resolution: "ngx-file-helpers@npm:10.0.0"
   dependencies:
-    tslib: ^2.4.0
+    tslib: ^2.5.3
   peerDependencies:
-    "@angular/common": ^14.0.0
-    "@angular/core": ^14.0.0
-  checksum: c7870c68aebb2f831c027a7baad22050bddd6efb69bbc334f9df002bcd60cdbe4c00fa2e8b133b7272fc2eab902863db9fb047c4868b9f6b144fafca144aa3ac
+    "@angular/common": ^16.0.0
+    "@angular/core": ^16.0.0
+  checksum: 149fe2ced66f490a18e894ded5f03ee6f6acf5ba30f08563221759fd450379614b429f4d7fc1e754b615564049f7cb50da1d2c6070bd9dbeda70f37ea5592aed
   languageName: node
   linkType: hard
 
@@ -8274,7 +8274,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rxjs@npm:^7.4.0, rxjs@npm:^7.5.5":
+"rxjs@npm:^6.5.3 || ^7.4.0, rxjs@npm:^7.5.5":
   version: 7.8.1
   resolution: "rxjs@npm:7.8.1"
   dependencies:
@@ -9004,10 +9004,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"titleize@npm:^3.0.0":
-  version: 3.0.0
-  resolution: "titleize@npm:3.0.0"
-  checksum: 71fbbeabbfb36ccd840559f67f21e356e1d03da2915b32d2ae1a60ddcc13a124be2739f696d2feb884983441d159a18649e8d956648d591bdad35c430a6b6d28
+"titleize@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "titleize@npm:4.0.0"
+  checksum: 4415b5422818cce13d6eb3037a53922c1aa79cbaefdfc26ecd862c8d9d526a5046a52963c5f6034fb866daae13004b2fbac546c5a1e25d5904d1452518e56959
   languageName: node
   linkType: hard
 
@@ -9062,7 +9062,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tslib@npm:2.5.0, tslib@npm:^2.0.0, tslib@npm:^2.1.0, tslib@npm:^2.3.0, tslib@npm:^2.4.0":
+"tslib@npm:2.5.0, tslib@npm:^2.0.0, tslib@npm:^2.1.0, tslib@npm:^2.3.0":
   version: 2.5.0
   resolution: "tslib@npm:2.5.0"
   checksum: ae3ed5f9ce29932d049908ebfdf21b3a003a85653a9a140d614da6b767a93ef94f460e52c3d787f0e4f383546981713f165037dc2274df212ea9f8a4541004e1
@@ -9076,7 +9076,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tslib@npm:^2.6.2":
+"tslib@npm:^2.5.3, tslib@npm:^2.6.2":
   version: 2.6.2
   resolution: "tslib@npm:2.6.2"
   checksum: 329ea56123005922f39642318e3d1f0f8265d1e7fcb92c633e0809521da75eeaca28d2cf96d7248229deb40e5c19adf408259f4b9640afd20d13aecc1430f3ad
@@ -9118,23 +9118,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:~4.8.2":
-  version: 4.8.4
-  resolution: "typescript@npm:4.8.4"
+"typescript@npm:>=4.9.3 <5.2.0":
+  version: 5.1.6
+  resolution: "typescript@npm:5.1.6"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 3e4f061658e0c8f36c820802fa809e0fd812b85687a9a2f5430bc3d0368e37d1c9605c3ce9b39df9a05af2ece67b1d844f9f6ea8ff42819f13bcb80f85629af0
+  checksum: b2f2c35096035fe1f5facd1e38922ccb8558996331405eb00a5111cc948b2e733163cc22fab5db46992aba7dd520fff637f2c1df4996ff0e134e77d3249a7350
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@~4.8.2#~builtin<compat/typescript>":
-  version: 4.8.4
-  resolution: "typescript@patch:typescript@npm%3A4.8.4#~builtin<compat/typescript>::version=4.8.4&hash=1a91c8"
+"typescript@patch:typescript@>=4.9.3 <5.2.0#~builtin<compat/typescript>":
+  version: 5.1.6
+  resolution: "typescript@patch:typescript@npm%3A5.1.6#~builtin<compat/typescript>::version=5.1.6&hash=5da071"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: c981e82b77a5acdcc4e69af9c56cdecf5b934a87a08e7b52120596701e389a878b8e3f860e73ffb287bf649cc47a8c741262ce058148f71de4cdd88bb9c75153
+  checksum: f53bfe97f7c8b2b6d23cf572750d4e7d1e0c5fff1c36d859d0ec84556a827b8785077bc27676bf7e71fae538e517c3ecc0f37e7f593be913d884805d931bc8be
   languageName: node
   linkType: hard
 
