@@ -218,7 +218,7 @@ export class TaskSettingsStepComponent implements OnInit {
         this.errorMessage = "";
         this.solutionStatus = "";
         /* Read mode during hits file upload*/
-        this.readMode = ReadMode.text;
+        this.readMode = ReadMode.Text;
         this.formEmitter = new EventEmitter<UntypedFormGroup>();
         this.modalityEmitter = new EventEmitter<string>();
     }

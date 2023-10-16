@@ -52,9 +52,9 @@ export class TaskSettings {
         }
         this.annotator = data ? data['annotator'] ? new Annotator(data["annotator"]) : null : null;
         this.countdown_time = data ? data["countdown_time"] >= 0 ? parseInt((data["countdown_time"])) : null : null;
-        this.countdown_behavior = data ? 'countdown_behavior' in data ? data['countdown_behavior'] : null : null;
-        this.countdown_modality = data ? 'countdown_modality' in data ? data['countdown_modality'] : null : null;
-        this.countdown_attribute = data ? 'countdown_attribute' in data ? data['countdown_attribute'] : null : null;
+        this.countdown_behavior = data ? 'countdown_behavior' in data ? data['countdown_behavior'] as string : null : null;
+        this.countdown_modality = data ? 'countdown_modality' in data ? data['countdown_modality'] as string : null : null;
+        this.countdown_attribute = data ? 'countdown_attribute' in data ? data['countdown_attribute'] as string : null : null;
         this.countdown_attribute_values = new Array<JSON>()
         if (data) if ('countdown_attribute_values' in data) for (let value of data["countdown_attribute_values"] as Array<JSON>) this.countdown_attribute_values.push(value)
         this.countdown_position_values = new Array<JSON>()
@@ -104,9 +104,9 @@ export class TaskSettings {
                 "resize": 'false'
             }
         } : {};
-        this.logger_server_endpoint = data ? 'server_endpoint' in data ? data['server_endpoint'] : null: null;
+        this.logger_server_endpoint = data ? 'server_endpoint' in data ? data['server_endpoint'] as string : null: null;
         this.messages = new Array<string>();
-        if (data) if ('messages' in data) for (let message of data["messages"]) this.messages.push(message)
+        if (data) if ('messages' in data) for (let message of data["messages"] as Array<string>) this.messages.push(message)
     }
 
 }
@@ -149,7 +149,11 @@ export class Attribute {
     ) {
         this.index = index
         this.name = data["name"]
-        this.name_pretty = ("name_pretty" in data) ? data["name_pretty"] : titleize(data["name"].replace("_", " "))
+        if ("name_pretty" in data) {
+            this.name_pretty = data["name_pretty"] as string
+        } else {
+            this.name_pretty = titleize(data["name"].replace("_", " "))
+        }
         this.show = data["show"];
         this.annotate = data["annotate"];
         this.required = data["required"];

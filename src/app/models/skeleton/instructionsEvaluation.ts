@@ -11,7 +11,8 @@ export class InstructionEvaluation {
         this.instructions = new Array<Instruction>()
         if (data) {
             if ('instructions' in data) {
-                data['instructions'].forEach((instruction, index) => {
+                let instructions = data['instructions'] as Array<JSON>
+                instructions.forEach((instruction, index) => {
                     this.instructions.push(new Instruction(index, instruction))
                 });
             }
