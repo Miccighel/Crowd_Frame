@@ -19,6 +19,7 @@ export class Dimension {
     scale?: ScaleCategorical | ScaleInterval | ScaleMagnitude | ScalePairwise;
     gold?: boolean;
     style: Style;
+    tasktype: Array<string>;
 
     constructor(
         index: number,
@@ -31,6 +32,7 @@ export class Dimension {
             delete data['gold_question_check']
         }
         this.name = data["name"];
+        this.tasktype = data["tasktype"] ? data["tasktype"] : null ;
         this.name_pretty = data['name_pretty'] ? data["name_pretty"] : null;
         this.description = data['description'] ? data["description"] : null;
         this.example = data['example'] ? data["example"] : null;

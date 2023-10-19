@@ -123,4 +123,13 @@ export class DocumentComponent implements OnInit {
         stepper.scrollIntoView();
     }
 
+    public getDocTypeNumber() {
+        let count=0
+        for (let index = 0; index <= this.documentIndex; index++) {
+            if (this.document.tasktype == this.task.documents[index].tasktype) 
+                count++;
+        }
+        return count;
+    }
+
 }

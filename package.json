@@ -34,6 +34,7 @@
     "crypto-es": "^1.2.7",
     "flat-angular": "^1.6.0",
     "material-icons": "^1.13.6",
+    "ng2-validation": "^3.0.0",
     "ngx-color-picker": "^13.0.0",
     "ngx-countdown": "^14.0.0",
     "ngx-device-detector": "^4.0.1",
@@ -55,5 +56,5 @@
   "browser": {
     "crypto": false
   },
-  "packageManager": "yarn@3.5.1"
+  "packageManager": "yarn@3.6.4"
 }

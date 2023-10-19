@@ -1,6 +1,7 @@
 /* Core */
 import {ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, QueryList, ViewChild, ViewChildren} from '@angular/core';
 import {UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators} from "@angular/forms";
+import { CustomValidators } from 'ng2-validation';
 /* Material Design */
 import {MatStepper} from "@angular/material/stepper";
 /* Services */
@@ -66,50 +67,52 @@ export class DimensionComponent implements OnInit {
             let controlsConfig = {};
             for (let index_dimension = 0; index_dimension < this.task.dimensions.length; index_dimension++) {
                 let dimension = this.task.dimensions[index_dimension];
-                if (!dimension.pairwise) {
-                    if (dimension.scale) {
-
-
-                        if (dimension.scale.type == "categorical") {
-                            if ((<ScaleCategorical>dimension.scale).multipleSelection) {
-                                let answers = {}
-                                let scale = (<ScaleCategorical>dimension.scale)
-                                scale.mapping.forEach((value, index) => {
-                                    answers[index] = false
-                                });
-                                controlsConfig[`${dimension.name}_list`] = this.formBuilder.group(answers)
-                                controlsConfig[`${dimension.name}_value`] = new UntypedFormControl('', [Validators.required])
-                            } else {
-                                controlsConfig[`${dimension.name}_value`] = new UntypedFormControl('', [Validators.required]);
-                            }
-                        }
-
-
-                        if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value`] = new UntypedFormControl('', [Validators.required]);
-                        if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value`] = new UntypedFormControl('', [Validators.min((<ScaleInterval>dimension.scale).min), Validators.required])
-                        if (dimension.scale.type == "magnitude_estimation") {
-                            if ((<ScaleMagnitude>dimension.scale).lower_bound) {
-                                controlsConfig[`${dimension.name}_value`] = new UntypedFormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min), Validators.required]);
-                            } else {
-                                controlsConfig[`${dimension.name}_value`] = new UntypedFormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min + 1), Validators.required]);
-                            }
-                        }
-                    }
-                    if (dimension.justification) controlsConfig[`${dimension.name}_justification`] = new UntypedFormControl('', [Validators.required, this.validateJustification.bind(this)])
-                } else {
-                    for (let j = 0; j < this.task.documents[index]['pairwise'].length; j++) {
+                if (this.utilsService.isCurrentTaskType(this.task.documents[this.documentIndex].tasktype, dimension.tasktype)){
+                    if (!dimension.pairwise) {
                         if (dimension.scale) {
-                            if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl('', [Validators.required]);
-                            if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl('', [Validators.min((<ScaleInterval>dimension.scale).min), Validators.required])
+
+
+                            if (dimension.scale.type == "categorical") {
+                                if ((<ScaleCategorical>dimension.scale).multipleSelection) {
+                                    let answers = {}
+                                    let scale = (<ScaleCategorical>dimension.scale)
+                                    scale.mapping.forEach((value, index) => {
+                                        answers[index] = false
+                                    });
+                                    controlsConfig[`${dimension.name}_list`] = this.formBuilder.group(answers)
+                                    controlsConfig[`${dimension.name}_value`] = new UntypedFormControl('', [Validators.required])
+                                } else {
+                                    controlsConfig[`${dimension.name}_value`] = new UntypedFormControl('', [Validators.required]);
+                                }
+                            }
+
+
+                            if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value`] = new UntypedFormControl('', [Validators.required]);
+                            if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value`] = new UntypedFormControl('', [Validators.min((<ScaleInterval>dimension.scale).min), Validators.required])
                             if (dimension.scale.type == "magnitude_estimation") {
                                 if ((<ScaleMagnitude>dimension.scale).lower_bound) {
-                                    controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min), Validators.required]);
+                                    controlsConfig[`${dimension.name}_value`] = new UntypedFormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min), Validators.required]);
                                 } else {
-                                    controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min + 1), Validators.required]);
+                                    controlsConfig[`${dimension.name}_value`] = new UntypedFormControl('', [CustomValidators.gt((<ScaleMagnitude>dimension.scale).min), Validators.required]);
                                 }
                             }
                         }
-                        if (dimension.justification) controlsConfig[`${dimension.name}_justification_element_${j}`] = new UntypedFormControl('', [Validators.required, this.validateJustification.bind(this)])
+                        if (dimension.justification) controlsConfig[`${dimension.name}_justification`] = new UntypedFormControl('', [Validators.required, this.validateJustification.bind(this)])
+                    } else {
+                        for (let j = 0; j < this.task.documents[index]['pairwise'].length; j++) {
+                            if (dimension.scale) {
+                                if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl('', [Validators.required]);
+                                if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl('', [Validators.min((<ScaleInterval>dimension.scale).min), Validators.required])
+                                if (dimension.scale.type == "magnitude_estimation") {
+                                    if ((<ScaleMagnitude>dimension.scale).lower_bound) {
+                                        controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min), Validators.required]);
+                                    } else {
+                                        controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl('', [CustomValidators.gt((<ScaleMagnitude>dimension.scale).min), Validators.required]);
+                                    }
+                                }
+                            }
+                            if (dimension.justification) controlsConfig[`${dimension.name}_justification_element_${j}`] = new UntypedFormControl('', [Validators.required, this.validateJustification.bind(this)])
+                        }
                     }
                 }
             }
@@ -237,5 +240,14 @@ export class DimensionComponent implements OnInit {
         if (dimensionIndex < this.task.dimensionsAmount)
             this.task.dimensionsPairwiseSelection[documentIndex][dimensionIndex][elementIndex] = true
     }
+    
 
+    public filterDimensionsCurrent(dimensions) {
+        let filteredDimensions = [];
+        for (let dimension of dimensions) {
+            if (this.utilsService.isCurrentTaskType(this.task.documents[this.documentIndex].tasktype, dimension.tasktype)) 
+                filteredDimensions.push(dimension);
+        }
+        return filteredDimensions;
+    }
 }

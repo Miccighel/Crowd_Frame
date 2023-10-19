@@ -115,6 +115,25 @@ export class UtilsService {
         }
         return result;
     }
+    
+    public isImage(attributeName: string, value: string): boolean {
+        // Check if the attribute name suggests it is an image
+        if (attributeName.toLowerCase().includes('image')) {
+          // Check if the value is a URL ending with an image extension
+          return /\.(png|jpe?g|gif|svg)$/i.test(value);
+        }
+        return false;
+    }
+
+    public isCurrentTaskType(typedoc, typeslist) {
+        if(typeslist){
+            if(typeslist==true || typeslist.includes(typedoc))
+                return true;
+        }else if(typedoc==typeslist){
+                return true;
+        }
+        return false
+    }
 
 
 }
