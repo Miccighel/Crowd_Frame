@@ -2,7 +2,12 @@
     <mat-card>
 
         <mat-card-title>
-            <span i18n>Element</span> {{documentIndex+1}}
+            <ng-container *ngIf="this.document.tasktype==undefined">
+                <span i18n>Element</span> {{this.getDocTypeNumber()}}
+            </ng-container>
+            <ng-container *ngIf="!(this.document.tasktype==undefined)">
+                {{this.document.tasktype}} <span i18n>Element</span> {{this.getDocTypeNumber()}}
+            </ng-container>
         </mat-card-title>
 
         <mat-card-content class="pt-16px">
@@ -15,8 +20,8 @@
             </ng-container>
             <div *ngIf="this.task.instructionsEvaluation.instructions.length>0" class="evaluation-instructions">
                 <div *ngFor="let instruction of this.task.instructionsEvaluation.instructions">
-                    <h2>{{instruction.caption}}</h2>
-                    <div><p [innerHTML]="instruction.text"></p></div>
+                    <h2 *ngIf="this.utilsService.isCurrentTaskType(this.document.tasktype, instruction.tasktype)">{{instruction.caption}}</h2>
+                    <div *ngIf="this.utilsService.isCurrentTaskType(this.document.tasktype, instruction.tasktype)"><p [innerHTML]="instruction.text"></p></div>
                 </div>
             </div>
 

@@ -9,6 +9,7 @@ export class Instruction {
     caption?: string;
     label?: string;
     text: string;
+    tasktype: Array<string>;
 
     constructor(
         index: number,
@@ -25,7 +26,7 @@ export class Instruction {
         } else {
             this.text = data['text'] ? data["text"] : null;
         }
-
+        this.tasktype = data['tasktype'] ? data["tasktype"] : null;
     }
 
 }

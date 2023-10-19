@@ -2497,6 +2497,15 @@ def load_data_col_names(dimensions, documents):
 
 df_answ = pd.DataFrame()
 
+def check_task_type(typedoc, typeslist):
+    t= typedoc['tasktype'] if 'tasktype' in typedoc.keys() else None
+    if typeslist:
+            if(typeslist==True or (t in typeslist)):
+                return True
+    elif(t==typeslist):
+                return True
+    return False
+
 if not os.path.exists(df_data_path):
 
     for index, acl_record in tqdm.tqdm(df_acl.iterrows(), total=df_acl.shape[0]):
@@ -2555,20 +2564,30 @@ if not os.path.exists(df_data_path):
                     countdowns_start = document_data['serialization']['countdowns_times_start']
                     countdowns_left = document_data['serialization']['countdowns_times_left']
                     countdowns_expired = document_data['serialization']['countdowns_expired']
-                    countdowns_expired_value = countdowns_expired[document_data['serialization']['info']['index']] if isinstance(countdowns_expired, list) else countdowns_expired if isinstance(countdowns_expired, bool) else np.nan
-                    row["doc_countdown_time_start"] = countdowns_start[0] if isinstance(countdowns_start, list) and countdowns_start else np.nan
-                    row["doc_countdown_time_value"] = countdowns_left[0] if isinstance(countdowns_left, list) and countdowns_left else np.nan
+                    countdowns_expired_value = countdowns_expired[document_data['serialization']['info']['index']] if isinstance(countdowns_expired, list) and len(countdowns_expired)>0  else countdowns_expired if isinstance(countdowns_expired, bool) else np.nan
+                    row["doc_countdown_time_start"] = countdowns_start[0] if isinstance(countdowns_start, list) and len(countdowns_start)>0 and countdowns_start else np.nan
+                    row["doc_countdown_time_value"] = countdowns_left[0] if isinstance(countdowns_left, list) and len(countdowns_left)>0 and countdowns_left else np.nan
                     row["doc_countdown_time_expired"] = countdowns_expired_value
 
                     current_attributes = documents[document_data['serialization']['info']['index']].keys()
                     current_answers = document_data['serialization']['answers']
+                    all_attrs=[]
+                    for document in documents:
+                        currentAttributes = document.keys()
+                        for currentAttribute in currentAttributes:
+                            if currentAttribute not in all_attrs:
+                                all_attrs += [currentAttribute]
                     for current_attribute in current_attributes:
                         current_attribute_value = documents[document_data['serialization']['info']['index']][current_attribute]
                         if type(current_attribute_value) == str:
                             current_attribute_value = re.sub('\n', '', current_attribute_value)
                         row[f"doc_{current_attribute}"] = current_attribute_value
+                        all_attrs.remove(current_attribute)
+                    for attr in all_attrs:
+                        row[f"doc_{attr}"] = np.nan
                     for dimension in dimensions:
-                        if dimension['scale'] is not None:
+                        checktt= check_task_type(documents[document_data['serialization']['info']['index']], dimension['tasktype'])
+                        if dimension['scale'] is not None and checktt:
                             value = current_answers[f"{dimension['name']}_value"]
                             if type(value) == str:
                                 value = value.strip()
@@ -2586,13 +2605,18 @@ if not os.path.exists(df_data_path):
                                 row[f"doc_{dimension['name']}_label"] = np.nan
                                 row[f"doc_{dimension['name']}_index"] = np.nan
                                 row[f"doc_{dimension['name']}_description"] = np.nan
-                        if dimension['justification']:
+                        else:
+                            row[f"doc_{dimension['name']}_value"] = np.nan
+                            row[f"doc_{dimension['name']}_label"] = np.nan
+                            row[f"doc_{dimension['name']}_index"] = np.nan
+                            row[f"doc_{dimension['name']}_description"] = np.nan
+                        if dimension['justification']  and checktt:
                             justification = current_answers[f"{dimension['name']}_justification"].strip()
                             justification = re.sub('\n', '', justification)
                             row[f"doc_{dimension['name']}_justification"] = justification
                         else:
                             row[f"doc_{dimension['name']}_justification"] = np.nan
-                        if dimension['url']:
+                        if dimension['url'] and checktt:
                             try:
                                 row[f"doc_{dimension['name']}_url"] = current_answers[f"{dimension['name']}_url"]
                             except KeyError:
@@ -2619,7 +2643,7 @@ if not os.path.exists(df_data_path):
 
                     if ('time_submit') in row:
                         df_answ = df_answ.append(row, ignore_index=True)
-
+    
     if df_answ.shape[0] > 0:
         empty_cols = [col for col in df_answ.columns if df_answ[col].isnull().all()]
         df_answ.drop(empty_cols, axis=1, inplace=True)
@@ -2837,7 +2861,9 @@ def parse_dimensions_selected(df, worker_id, worker_paid, task, info, documents,
             if time_elapsed < 0:
                 time_elapsed = (timestamp_parsed_previous - timestamp_selection_parsed).total_seconds()
             timestamps_found.append(timestamp_selection_parsed)
-
+            
+            if 'value' not in dimension_current.keys():
+                dimension_current['value'] = np.nan
             row = {
                 'worker_id': worker_id,
                 'paid': worker_paid,

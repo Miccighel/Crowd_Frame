@@ -1770,33 +1770,41 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         print("", file=file)
         wrapper = textwrap.TextWrapper(initial_indent='\t\t', subsequent_indent='\t\t', width=500, break_long_words=False)
         print(wrapper.fill("index: number;"), file=file)
-        for attribute, value in sample_element.items():
-            try:
-                element = json.loads(value)
-                if isinstance(element, dict):
-                    print(wrapper.fill(f"{attribute}: Array<JSON>;"), file=file)
-                elif isinstance(element, int) or isinstance(element, float):
-                    if attribute == "id":
-                        print(wrapper.fill(f"{attribute}: string;"), file=file)
-                    else:
-                        print(wrapper.fill(f"{attribute}: number;"), file=file)
-                elif isinstance(element, list):
-                    print(wrapper.fill(f"{attribute}: Array<String>;"), file=file)
-                else:
-                    print(wrapper.fill(f"{attribute}: string;"), file=file)
-                console.print(
-                    f"Attribute with name: [cyan underline]{attribute}[/cyan underline] and type: {type(element)} found")
-            except (TypeError, ValueError) as e:
-                if isinstance(value, list):
-                    if isinstance(value[0], dict):
-                        print(wrapper.fill(f"{attribute}: Array<JSON>;"), file=file)
-                    else:
-                        print(wrapper.fill(f"{attribute}: Array<String>;"), file=file)
-                elif isinstance(value, int) or isinstance(value, float):
-                    print(wrapper.fill(f"{attribute}: number;"), file=file)
-                else:
-                    print(wrapper.fill(f"{attribute}: string;"), file=file)
-                console.print(f"Attribute with name: [cyan underline]{attribute}[/cyan underline] and type: {type(value)} found")
+        contents=[]
+        for unit in hits:
+            if len(unit['documents']) > 0:
+                for idx_s_e, sample_element in enumerate(unit['documents']):
+                    if not 'id' in sample_element.keys():
+                        raise Exception(f"In your {filename_hits_config} file, the document number {idx_s_e+1} in HIT {unit['unit_id']} does not contain the required attribute \"id\"!")
+                    for attribute, value in sample_element.items():
+                        if attribute not in contents:
+                            contents+=[attribute]
+                            try:
+                                element = value if(value == 'false' or value == 'true') else json.loads(value)
+                                if isinstance(element, dict):
+                                    print(wrapper.fill(f"{attribute}: Array<JSON>;"), file=file)
+                                elif isinstance(element, int) or isinstance(element, float):
+                                    if attribute == "id":
+                                        print(wrapper.fill(f"{attribute}: string;"), file=file)
+                                    else:
+                                        print(wrapper.fill(f"{attribute}: number;"), file=file)
+                                elif isinstance(element, list):
+                                    print(wrapper.fill(f"{attribute}: Array<String>;"), file=file)
+                                else:
+                                    print(wrapper.fill(f"{attribute}: string;"), file=file)
+                                console.print(
+                                    f"Attribute with name: [cyan underline]{attribute}[/cyan underline] and type: {type(element)} found")
+                            except (TypeError, ValueError) as e:
+                                if isinstance(value, list):
+                                    if isinstance(value[0], dict):
+                                        print(wrapper.fill(f"{attribute}: Array<JSON>;"), file=file)
+                                    else:
+                                        print(wrapper.fill(f"{attribute}: Array<String>;"), file=file)
+                                elif isinstance(value, int) or isinstance(value, float):
+                                    print(wrapper.fill(f"{attribute}: number;"), file=file)
+                                else:
+                                    print(wrapper.fill(f"{attribute}: string;"), file=file)
+                                console.print(f"Attribute with name: [cyan underline]{attribute}[/cyan underline] and type: {type(value)} found")
         print("", file=file)
         print(wrapper.fill(f"constructor ("), file=file)
         wrapper = textwrap.TextWrapper(initial_indent='\t\t\t', subsequent_indent='\t\t\t', width=500, break_long_words=False)
@@ -1807,29 +1815,37 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         print("", file=file)
         wrapper = textwrap.TextWrapper(initial_indent='\t\t\t', width=500, break_long_words=False)
         print(wrapper.fill("this.index = index"), file=file)
-        for attribute, value in sample_element.items():
-            try:
-                element = json.loads(value)
-                if isinstance(element, dict):
-                    print(wrapper.fill(f"this.{attribute} = new Array<JSON>()"), file=file)
-                    print(wrapper.fill(f"for (let index = 0; index < data[\"{attribute}\"].length; index++) this.{attribute}.push(data[\"{attribute}\"][index])"), file=file)
-                elif isinstance(element, list):
-                    print(wrapper.fill(f"this.{attribute} = new Array<String>()"), file=file)
-                    print(wrapper.fill(f"for (let index = 0; index < data[\"{attribute}\"].length; index++) this.{attribute}.push(data[\"{attribute}\"])"), file=file)
-                else:
-                    wrapper = textwrap.TextWrapper(initial_indent='\t\t\t', width=500, break_long_words=False)
-                    print(wrapper.fill(f"this.{attribute} = data[\"{attribute}\"]"), file=file)
-            except (TypeError, ValueError) as e:
-                if isinstance(value, list):
-                    if isinstance(value[0], dict):
-                        print(wrapper.fill(f"this.{attribute} = new Array<JSON>()"), file=file)
-                        print(wrapper.fill(f"for (let index = 0; index < data[\"{attribute}\"].length; index++) this.{attribute}.push(data[\"{attribute}\"][index])"), file=file)
-                    else:
-                        print(wrapper.fill(f"this.{attribute} = new Array<String>()"), file=file)
-                        print(wrapper.fill(f"for (let index = 0; index < data[\"{attribute}\"].length; index++) this.{attribute}.push(data[\"{attribute}\"])"), file=file)
-                else:
-                    wrapper = textwrap.TextWrapper(initial_indent='\t\t\t', width=500, break_long_words=False)
-                    print(wrapper.fill(f"this.{attribute} = data[\"{attribute}\"]"), file=file)
+        contents=[]
+        for unit in hits:
+            if len(unit['documents']) > 0:
+                for idx_s_e, sample_element in enumerate(unit['documents']):
+                    if not 'id' in sample_element.keys():
+                        raise Exception(f"In your {filename_hits_config} file, the document number {idx_s_e+1} in HIT {unit['unit_id']} does not contain the required attribute \"id\"!")
+                    for attribute, value in sample_element.items():
+                        if attribute not in contents:
+                            contents+=[attribute]
+                            try:
+                                element = value if(value == 'false' or value == 'true') else json.loads(value)
+                                if isinstance(element, dict):
+                                    print(wrapper.fill(f"this.{attribute} = new Array<JSON>()"), file=file)
+                                    print(wrapper.fill(f"for (let index = 0; index < data[\"{attribute}\"].length; index++) this.{attribute}.push(data[\"{attribute}\"][index])"), file=file)
+                                elif isinstance(element, list):
+                                    print(wrapper.fill(f"this.{attribute} = new Array<String>()"), file=file)
+                                    print(wrapper.fill(f"for (let index = 0; index < data[\"{attribute}\"].length; index++) this.{attribute}.push(data[\"{attribute}\"])"), file=file)
+                                else:
+                                    wrapper = textwrap.TextWrapper(initial_indent='\t\t\t', width=500, break_long_words=False)
+                                    print(wrapper.fill(f"this.{attribute} = data[\"{attribute}\"]"), file=file)
+                            except (TypeError, ValueError) as e:
+                                if isinstance(value, list):
+                                    if isinstance(value[0], dict):
+                                        print(wrapper.fill(f"this.{attribute} = new Array<JSON>()"), file=file)
+                                        print(wrapper.fill(f"for (let index = 0; index < data[\"{attribute}\"].length; index++) this.{attribute}.push(data[\"{attribute}\"][index])"), file=file)
+                                    else:
+                                        print(wrapper.fill(f"this.{attribute} = new Array<String>()"), file=file)
+                                        print(wrapper.fill(f"for (let index = 0; index < data[\"{attribute}\"].length; index++) this.{attribute}.push(data[\"{attribute}\"])"), file=file)
+                                else:
+                                    wrapper = textwrap.TextWrapper(initial_indent='\t\t\t', width=500, break_long_words=False)
+                                    print(wrapper.fill(f"this.{attribute} = data[\"{attribute}\"]"), file=file)
         wrapper = textwrap.TextWrapper(initial_indent='\t\t', subsequent_indent='\t\t', width=500, break_long_words=False)
         print("", file=file)
         print(wrapper.fill("}"), file=file)

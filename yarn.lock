@@ -3620,6 +3620,7 @@ __metadata:
     crypto-es: ^1.2.7
     flat-angular: ^1.6.0
     material-icons: ^1.13.6
+    ng2-validation: ^3.0.0
     ngx-color-picker: ^13.0.0
     ngx-countdown: ^14.0.0
     ngx-device-detector: ^4.0.1
@@ -5991,6 +5992,13 @@ __metadata:
   version: 2.6.2
   resolution: "neo-async@npm:2.6.2"
   checksum: deac9f8d00eda7b2e5cd1b2549e26e10a0faa70adaa6fdadca701cc55f49ee9018e427f424bac0c790b7c7e2d3068db97f3093f1093975f2acb8f8818b936ed9
+  languageName: node
+  linkType: hard
+
+"ng2-validation@npm:^3.0.0":
+  version: 3.9.1
+  resolution: "ng2-validation@npm:3.9.1"
+  checksum: 2d7e3c830ca0f44840ea006b2cbdcfdb9f0e70d14eef845dd2c9d7ed6352c5d699c93b206b8ed5b4c3901b49f25700340fec8a2e20c02d4cfb4c785ed302fa0a
   languageName: node
   linkType: hard
 
