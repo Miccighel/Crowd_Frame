@@ -1243,28 +1243,7 @@ export class SkeletonComponent implements OnInit {
 
         /* 2) GOLD ELEMENTS CHECK performed here */
 
-        let goldConfiguration = [];
-        /* For each gold document its attribute, answers and notes are retrieved to build a gold configuration */
-        for (let goldDocument of this.task.goldDocuments) {
-            let currentConfiguration = {};
-            currentConfiguration["document"] = goldDocument;
-            let answers = {};
-            for (let goldDimension of this.task.goldDimensions) {
-                for (let [attribute, value] of Object.entries(
-                    this.documentsForm[goldDocument.index].value
-                )) {
-                    let dimensionName = attribute.split("_")[0];
-                    if (dimensionName == goldDimension.name) {
-                        answers[attribute] = value;
-                    }
-                }
-            }
-            currentConfiguration["answers"] = answers;
-            currentConfiguration["notes"] = this.task.notes
-                ? this.task.notes[goldDocument.index]
-                : [];
-            goldConfiguration.push(currentConfiguration);
-        }
+        let goldConfiguration = this.utilsService.generateGoldConfiguration(this.task.goldDocuments,this.task.goldDimensions, this.documentsForm, this.task.notes);
 
         /* The gold configuration is evaluated using the static method implemented within the GoldChecker class */
         let goldChecks = GoldChecker.performGoldCheck(goldConfiguration);

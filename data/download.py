@@ -2498,7 +2498,7 @@ def load_data_col_names(dimensions, documents):
 df_answ = pd.DataFrame()
 
 def check_task_type(typedoc, typeslist):
-    t= typedoc['tasktype'] if 'tasktype' in typedoc.keys() else None
+    t= typedoc['task_type'] if 'task_type' in typedoc.keys() else None
     if typeslist:
             if(typeslist==True or (t in typeslist)):
                 return True
@@ -2586,7 +2586,7 @@ if not os.path.exists(df_data_path):
                     for attr in all_attrs:
                         row[f"doc_{attr}"] = np.nan
                     for dimension in dimensions:
-                        checktt= check_task_type(documents[document_data['serialization']['info']['index']], dimension['tasktype'])
+                        checktt= check_task_type(documents[document_data['serialization']['info']['index']], dimension['task_type'])
                         if dimension['scale'] is not None and checktt:
                             value = current_answers[f"{dimension['name']}_value"]
                             if type(value) == str:
