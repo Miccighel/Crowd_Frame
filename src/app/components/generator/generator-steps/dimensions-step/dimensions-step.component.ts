@@ -233,7 +233,6 @@ export class DimensionsStepComponent implements OnInit {
             max: "",
             step: "",
             mapping: this._formBuilder.array([]),
-            lower_bound: "",
         });
         if (dimension) {
             if (dimension.url) {
@@ -275,9 +274,6 @@ export class DimensionsStepComponent implements OnInit {
                         ? [dimension.scale["step"], [Validators.required]]
                         : "",
                     mapping: this._formBuilder.array([]),
-                    lower_bound: dimension.scale["lower_bound"]
-                        ? dimension.scale["lower_bound"]
-                        : "",
                 };
                 if (!!dimension.scale["instructions"]) {
                     scaleConfig["instructions"] = this._formBuilder.group({
@@ -425,10 +421,6 @@ export class DimensionsStepComponent implements OnInit {
         dim.get("scale").get("step").setValue("");
         dim.get("scale").get("step").clearValidators();
         dim.get("scale").get("step").updateValueAndValidity();
-
-        dim.get("scale").get("lower_bound").setValue(true);
-        dim.get("scale").get("lower_bound").clearValidators();
-        dim.get("scale").get("lower_bound").updateValueAndValidity();
 
         this.dimensionMapping(dimensionIndex).clear();
 
@@ -646,13 +638,11 @@ export class DimensionsStepComponent implements OnInit {
                         delete dimension.scale.min;
                         delete dimension.scale.max;
                         delete dimension.scale.step;
-                        delete dimension.scale.lower_bound;
                         break;
                     case "interval":
                         delete dimension.scale.setMultipleSelection;
                         delete dimension.scale.multiple_selection;
                         delete dimension.scale.mapping;
-                        delete dimension.scale.lower_bound;
                         break;
                     case "magnitude_estimation":
                         delete dimension.scale.setMultipleSelection;
