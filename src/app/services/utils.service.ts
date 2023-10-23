@@ -136,4 +136,34 @@ export class UtilsService {
     }
 
 
+    public generateGoldConfiguration(goldDocuments, goldDimensions, documentsForm, notes) {
+        let goldConfiguration = [];
+
+        /* For each gold document its attribute, answers and notes are retrieved to build a gold configuration */
+        for (let goldDocument of goldDocuments) {
+            if(goldDocument.index<documentsForm.length){
+                let currentConfiguration = {};
+                currentConfiguration["document"] = goldDocument;
+                let answers = {};
+                for (let goldDimension of goldDimensions) {
+                    for (let [attribute, value] of Object.entries(
+                        documentsForm[goldDocument.index].value
+                    )) {
+                        let dimensionName = attribute.split("_")[0];
+                        if (dimensionName == goldDimension.name) {
+                            answers[attribute] = value;
+                        }
+                    }
+                }
+                currentConfiguration["answers"] = answers;
+                currentConfiguration["notes"] = notes
+                    ? notes[goldDocument.index]
+                    : [];
+                goldConfiguration.push(currentConfiguration);
+            }
+        }
+
+        return goldConfiguration;
+    }
+
 }

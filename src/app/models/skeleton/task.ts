@@ -407,16 +407,17 @@ export class Task {
      * These information are parsed and stored in the corresponding data structure.
      */
     public storeDimensionValue(
-        valueData: Object,
+        eventData: Event,
         document: number,
         dimension: number
     ) {
+        let eventTarget = eventData.target as HTMLInputElement
         /* The current document, dimension and user query are copied from parameters */
         let currentDocument = document;
         let currentDimension = dimension;
         /* A reference to the current dimension is saved */
         this.currentDimension = currentDimension;
-        let currentValue = valueData["value"];
+        let currentValue = eventTarget.value;
         let timeInSeconds = Date.now() / 1000;
         /* If some data for the current document already exists*/
         if (this.dimensionsSelectedValues[currentDocument]["amount"] > 0) {
