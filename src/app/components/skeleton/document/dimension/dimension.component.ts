@@ -87,13 +87,7 @@ export class DimensionComponent implements OnInit {
 
                         if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value`] = new UntypedFormControl('', [Validators.required]);
                         if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value`] = new UntypedFormControl('', [Validators.min((<ScaleInterval>dimension.scale).min), Validators.required])
-                        if (dimension.scale.type == "magnitude_estimation") {
-                            if ((<ScaleMagnitude>dimension.scale).lower_bound) {
-                                controlsConfig[`${dimension.name}_value`] = new UntypedFormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min), Validators.required]);
-                            } else {
-                                controlsConfig[`${dimension.name}_value`] = new UntypedFormControl('', [CustomValidators.gt((<ScaleMagnitude>dimension.scale).min), Validators.required]);
-                            }
-                        }
+                        if (dimension.scale.type == "magnitude_estimation") controlsConfig[`${dimension.name}_value`] = new UntypedFormControl('', [CustomValidators.gt((<ScaleMagnitude>dimension.scale).min), Validators.required]);
                     }
                     if (dimension.justification) controlsConfig[`${dimension.name}_justification`] = new UntypedFormControl('', [Validators.required, this.validateJustification.bind(this)])
                 } else {
@@ -101,13 +95,8 @@ export class DimensionComponent implements OnInit {
                         if (dimension.scale) {
                             if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl('', [Validators.required]);
                             if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl('', [Validators.min((<ScaleInterval>dimension.scale).min), Validators.required])
-                            if (dimension.scale.type == "magnitude_estimation") {
-                                if ((<ScaleMagnitude>dimension.scale).lower_bound) {
-                                    controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl('', [Validators.min((<ScaleMagnitude>dimension.scale).min), Validators.required]);
-                                } else {
-                                    controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl('', [CustomValidators.gt((<ScaleMagnitude>dimension.scale).min), Validators.required]);
-                                }
-                            }
+                            if (dimension.scale.type == "magnitude_estimation") controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl('', [CustomValidators.gt((<ScaleMagnitude>dimension.scale).min), Validators.required]);
+                            
                         }
                         if (dimension.justification) controlsConfig[`${dimension.name}_justification_element_${j}`] = new UntypedFormControl('', [Validators.required, this.validateJustification.bind(this)])
                     }

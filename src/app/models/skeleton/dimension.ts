@@ -186,7 +186,6 @@ export class ScaleInterval extends Scale {
 export class ScaleMagnitude extends Scale {
 
     min: number;
-    lower_bound: boolean
 
     constructor(
         data: JSON
@@ -195,7 +194,6 @@ export class ScaleMagnitude extends Scale {
         super(data)
 
         this.min = data['min']
-        this.lower_bound = data['lower_bound']
     }
 
 }
