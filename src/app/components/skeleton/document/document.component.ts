@@ -1,5 +1,5 @@
 /* Core */
-import {ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, QueryList, ViewChildren} from '@angular/core';
+import {ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, QueryList, ViewChildren, ViewChild} from '@angular/core';
 import {AbstractControl, UntypedFormBuilder, UntypedFormGroup} from "@angular/forms";
 /* Services */
 import {SectionService} from "../../../services/section.service";
@@ -8,11 +8,15 @@ import {DeviceDetectorService} from "ngx-device-detector";
 /* Models */
 import {Task} from "../../../models/skeleton/task";
 import {Document} from "../../../../../data/build/skeleton/document";
+import { GoldChecker } from "../../../../../data/build/skeleton/goldChecker";
 /* Components */
 import {AnnotatorOptionsComponent} from "./elements/annotator-options/annotator-options.component";
 import {DimensionComponent} from "./dimension/dimension.component";
 import {CountdownComponent} from "ngx-countdown";
 import {Worker} from "../../../models/worker/worker";
+/* Material Design */
+import { MatSnackBar } from "@angular/material/snack-bar";
+import { MatStepper } from "@angular/material/stepper";
 
 @Component({
     selector: 'app-document',
@@ -29,9 +33,13 @@ export class DocumentComponent implements OnInit {
     utilsService: UtilsService
     /* Angular Reactive Form builder (see https://angular.io/guide/reactive-forms) */
     formBuilder: UntypedFormBuilder;
+    /* Snackbar reference */
+    snackBar: MatSnackBar;
 
     @Input() worker: Worker
     @Input() documentIndex: number
+    @Input() documentsForm: UntypedFormGroup[]
+    @Input() stepper: MatStepper
 
     /* Reference to the outcome section component */
     @ViewChildren(AnnotatorOptionsComponent) annotatorOptions: QueryList<AnnotatorOptionsComponent>;
@@ -54,6 +62,7 @@ export class DocumentComponent implements OnInit {
         deviceDetectorService: DeviceDetectorService,
         sectionService: SectionService,
         utilsService: UtilsService,
+        snackBar: MatSnackBar,
         formBuilder: UntypedFormBuilder
     ) {
         this.changeDetector = changeDetector
@@ -62,6 +71,7 @@ export class DocumentComponent implements OnInit {
         this.formBuilder = formBuilder
         this.formEmitter = new EventEmitter<Object>();
         this.task = this.sectionService.task
+        this.snackBar = snackBar;
     }
 
     ngOnInit(): void {
@@ -74,21 +84,12 @@ export class DocumentComponent implements OnInit {
 
     /* |--------- DIMENSIONS ---------| */
 
-    public storeAssessmentForm(form) {
-        if (!this.assessmentForm) {
+
+    public storeAssessmentForm(data) {
+        let documentIndex = data['index'] as number
+        let form = data['form']
+        if (!this.assessmentForm && this.documentIndex == documentIndex) {
             this.assessmentForm = form
-        } else {
-            for (const [name, control] of Object.entries(form.controls)) {
-                if (control instanceof AbstractControl) {
-                    if (control.valid) {
-                        if(this.assessmentForm.get(name))
-                            this.assessmentForm.get(name).setValue(form.get(name).value, {emitEvent: false})
-                        else {
-                            this.assessmentForm.addControl(name, form.get(name), {emitEvent: false})
-                        }
-                    }
-                }
-            }
         }
     }
 
@@ -107,6 +108,26 @@ export class DocumentComponent implements OnInit {
     }
 
     public handleDocumentCompletion(action: string) {
+
+        if((action=="Next" || action=="Finish") && typeof this.document["check_gold_with_msg"] === 'string'){
+            let docsForms = this.documentsForm.slice()
+            docsForms.push(this.assessmentForm)
+
+            let goldConfiguration = this.utilsService.generateGoldConfiguration(this.task.goldDocuments,this.task.goldDimensions, docsForms, this.task.notes);
+            let goldChecks = GoldChecker.performGoldCheck(goldConfiguration);
+
+            if(goldChecks.every(Boolean))
+                this.stepper.next();
+            else
+                this.snackBar.open(this.document["check_gold_with_msg"], "Dismiss", {duration: 10000});
+        }
+        else{
+            if(action=="Back")
+                this.stepper.previous();
+            else
+                this.stepper.next();
+        }
+
         this.formEmitter.emit({
             "form": this.assessmentForm,
             "action": action
@@ -128,7 +149,7 @@ export class DocumentComponent implements OnInit {
     public getDocTypeNumber() {
         let count=0
         for (let index = 0; index <= this.documentIndex; index++) {
-            if (this.document.tasktype == this.task.documents[index].tasktype) 
+            if (this.document.task_type == this.task.documents[index].task_type) 
                 count++;
         }
         return count;

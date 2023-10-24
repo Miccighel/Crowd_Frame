@@ -1752,15 +1752,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     hits = read_json(hits_file)
     documents = hits.pop()['documents']
 
-    sample_element = {}
-
-    if len(documents) > 0:
-
-        sample_element = documents.pop()
-
-        if not 'id' in sample_element.keys():
-            raise Exception(f"Your {filename_hits_config} file does not contains an attributed called \"id\"!")
-
     # This class provides a representation of a single document stored in single hit stored in the Amazon S3 bucket.
     # The attribute <document_index> is additional and should not be touched and passed in the constructor.
     # Each field of such Document must be mapped to an attribute of this class and set up in the constructor as it is shown.
@@ -1781,6 +1772,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                             contents+=[attribute]
                             try:
                                 element = value if(value == 'false' or value == 'true') else json.loads(value)
+                                if isinstance(element, bool):
+                                    print(wrapper.fill(f"{attribute}: boolean;"), file=file)
                                 if isinstance(element, dict):
                                     print(wrapper.fill(f"{attribute}: Array<JSON>;"), file=file)
                                 elif isinstance(element, int) or isinstance(element, float):
@@ -1800,6 +1793,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                                         print(wrapper.fill(f"{attribute}: Array<JSON>;"), file=file)
                                     else:
                                         print(wrapper.fill(f"{attribute}: Array<String>;"), file=file)
+                                elif isinstance(value, bool):
+                                    print(wrapper.fill(f"{attribute}: boolean;"), file=file)
                                 elif isinstance(value, int) or isinstance(value, float):
                                     print(wrapper.fill(f"{attribute}: number;"), file=file)
                                 else:

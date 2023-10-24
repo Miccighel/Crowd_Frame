@@ -2,11 +2,11 @@
     <mat-card appearance="outlined">
 
         <mat-card-title>
-            <ng-container *ngIf="this.document.tasktype==undefined">
+            <ng-container *ngIf="this.document.task_type==undefined">
                 <span i18n>Element</span> {{this.getDocTypeNumber()}}
             </ng-container>
-            <ng-container *ngIf="!(this.document.tasktype==undefined)">
-                {{this.document.tasktype}} <span i18n>Element</span> {{this.getDocTypeNumber()}}
+            <ng-container *ngIf="!(this.document.task_type==undefined)">
+                {{this.document.task_type}} <span i18n>Element</span> {{this.getDocTypeNumber()}}
             </ng-container>
         </mat-card-title>
 
@@ -20,8 +20,8 @@
             </ng-container>
             <div *ngIf="this.task.instructionsEvaluation.instructions.length>0" class="evaluation-instructions">
                 <div *ngFor="let instruction of this.task.instructionsEvaluation.instructions">
-                    <h2 *ngIf="this.utilsService.isCurrentTaskType(this.document.tasktype, instruction.tasktype)">{{instruction.caption}}</h2>
-                    <div *ngIf="this.utilsService.isCurrentTaskType(this.document.tasktype, instruction.tasktype)"><p [innerHTML]="instruction.text"></p></div>
+                    <h2 *ngIf="this.utilsService.isCurrentTaskType(this.document.task_type, instruction.task_type)">{{instruction.caption}}</h2>
+                    <div *ngIf="this.utilsService.isCurrentTaskType(this.document.task_type, instruction.task_type)"><p [innerHTML]="instruction.text"></p></div>
                 </div>
             </div>
 
@@ -51,17 +51,17 @@
 
             <!-- "Back", "Next" and "Finish" actions markup -->
             <mat-card-actions *ngIf="this.assessmentForm">
-                <button mat-flat-button color="primary" matStepperPrevious *ngIf="documentIndex>0"
+                <button mat-flat-button color="primary"  *ngIf="documentIndex>0 && !(this.document.allow_back==false)"
                         [disabled]="this.sectionService.taskCompleted"
                         (click)="handleDocumentCompletion('Back')">
                     <span i18n>Back</span>
                 </button>
-                <button mat-flat-button color="primary" matStepperNext *ngIf="documentIndex+1<this.task.documentsAmount || (documentIndex+1>=this.task.documentsAmount && this.task.questionnaireAmountEnd > 0)"
+                <button mat-flat-button color="primary"  *ngIf="documentIndex+1<this.task.documentsAmount || (documentIndex+1>=this.task.documentsAmount && this.task.questionnaireAmountEnd > 0)"
                         [disabled]="((!assessmentForm.valid || assessmentForm.status == 'DISABLED' ) || !this.task.searchEngineRetrievedResponses[documentIndex] || this.sectionService.taskCompleted || !this.task.checkAnnotationConsistency(documentIndex))"
                         (click)="handleDocumentCompletion('Next')">
                     <span i18n>Next</span>
                 </button>
-                <button mat-stroked-button color="accent" matStepperNext
+                <button mat-stroked-button color="accent" 
                         *ngIf="documentIndex+1>=this.task.documentsAmount && this.task.questionnaireAmountEnd == 0"
                         [disabled]="(!assessmentForm.valid || assessmentForm.status == 'DISABLED'  || !this.task.searchEngineRetrievedResponses[documentIndex] || this.sectionService.taskCompleted || !this.task.checkAnnotationConsistency(documentIndex))"
                         (click)="handleDocumentCompletion('Finish')">

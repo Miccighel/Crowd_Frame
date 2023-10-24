@@ -96,6 +96,8 @@
                     *ngIf="this.task.getElementIndex(stepIndex)['elementType'] == 'S'"
                     [worker]="this.worker"
                     [documentIndex]="this.task.getElementIndex(stepIndex)['elementIndex']"
+                    [documentsForm]="this.documentsForm"
+                    [stepper]="this.stepper"
                     (formEmitter)="this.storeDocumentForm($event, this.task.getElementIndex(stepIndex)['elementIndex'])"
             ></app-document>
         </mat-step>

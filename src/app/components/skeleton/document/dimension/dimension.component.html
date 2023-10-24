@@ -1,6 +1,6 @@
 <ng-template #dimensionTemplate let-dimensions="dimensions" let-position="position">
 
-    <form [formGroup]="this.assessmentForms[documentIndex]">
+    <form [formGroup]="this.assessmentForm">
 
         <div *ngFor="let dimension of dimensions; let i=index" class="dimension'">
 
@@ -91,35 +91,26 @@
                                                     (change)="this.task.storeDimensionValue($event, documentIndex,dimension.index);"
                                                     [disabled]="this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior=='disable_forms'">
                                             </mat-slider>
-                                            <span *ngIf="assessmentForms[documentIndex].controls[(dimension.name).concat('_value')].value==''">
+                                            <span *ngIf="assessmentForm.controls[(dimension.name).concat('_value')].value==''">
                                                 #
                                             </span>
-                                            <span *ngIf="assessmentForms[documentIndex].controls[(dimension.name).concat('_value')].value!=''">
-                                                {{assessmentForms[documentIndex].controls[(dimension.name).concat('_value')].value}}
+                                            <span *ngIf="assessmentForm.controls[(dimension.name).concat('_value')].value!=''">
+                                                {{assessmentForm.controls[(dimension.name).concat('_value')].value}}
                                             </span>
                                         </div>
                                     </ng-container>
                                     <ng-container *ngIf="dimension.scale.type=='magnitude_estimation'">
                                         <mat-form-field appearance="fill">
                                             <mat-label><span i18n>Value</span></mat-label>
-                                            <input *ngIf="dimension.scale.lower_bound" matInput type="number" placeholder="" formControlName="{{(dimension.name).concat('_value')}}"
-                                                   min="{{dimension.scale.min}}"
-                                                   (change)="this.task.storeDimensionValue($event, documentIndex, dimension.index)"
-                                                   [disabled]="this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior=='disable_forms'" class="magnitude_estimation">
-
-                                            <input *ngIf="!dimension.scale.lower_bound" matInput type="number" placeholder="" formControlName="{{(dimension.name).concat('_value')}}" min="{{dimension.scale.min}}"
+                                            <input matInput type="number" placeholder="" formControlName="{{(dimension.name).concat('_value')}}" step=".01" min="{{dimension.scale.min}}"
                                                    (change)="this.task.storeDimensionValue($event, documentIndex, dimension.index)" class="magnitude_estimation"
                                                    [disabled]="this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior=='disable_forms'">
-                                            <mat-error *ngIf="this.utilsService.hasError(assessmentForms[documentIndex], (dimension.name).concat('_value'), 'required')">
+                                            <mat-error *ngIf="this.utilsService.hasError(assessmentForm, (dimension.name).concat('_value'), 'required')">
                                                 <span i18n>This field is required</span>
                                             </mat-error>
-                                            <mat-error *ngIf="dimension.scale.lower_bound && this.utilsService.hasError(assessmentForms[documentIndex], (dimension.name).concat('_value'), 'min')">
-                                                <span i18n>Value has to be grater than or equal to:</span> {{dimension.scale.min}}
-                                            </mat-error>
-                                            <mat-error *ngIf="!dimension.scale.lower_bound && this.utilsService.hasError(assessmentForms[documentIndex], (dimension.name).concat('_value'), 'gt')">
+                                            <mat-error *ngIf="this.utilsService.hasError(assessmentForm, (dimension.name).concat('_value'), 'gt')">
                                                 <span i18n>Value has to be grater than:</span> {{dimension.scale.min}}
                                             </mat-error>
-
                                         </mat-form-field>
                                     </ng-container>
 
@@ -155,13 +146,13 @@
                                     <mat-form-field appearance="fill" class="width-100">
                                         <mat-label>{{dimension.justification.text}}</mat-label>
                                         <textarea matInput formControlName="{{dimension.name}}_justification" rows="3"></textarea>
-                                        <mat-error *ngIf="this.utilsService.hasError(assessmentForms[documentIndex],(dimension.name).concat('_justification'), 'required')">
+                                        <mat-error *ngIf="this.utilsService.hasError(assessmentForm,(dimension.name).concat('_justification'), 'required')">
                                             <span i18n>This field is required</span>
                                         </mat-error>
-                                        <mat-error *ngIf="this.utilsService.hasError(assessmentForms[documentIndex],(dimension.name).concat('_justification'), 'longer')">
+                                        <mat-error *ngIf="this.utilsService.hasError(assessmentForm,(dimension.name).concat('_justification'), 'longer')">
                                             <span i18n>This justification must have at least</span> {{dimension.justification.min_words}} <span i18n>words</span>.
                                         </mat-error>
-                                        <mat-error *ngIf="this.utilsService.hasError(assessmentForms[documentIndex],(dimension.name).concat('_justification'), 'invalid')">
+                                        <mat-error *ngIf="this.utilsService.hasError(assessmentForm,(dimension.name).concat('_justification'), 'invalid')">
                                             <span i18n>You cannot use the selected search engine url as part of the justification.</span>
                                         </mat-error>
                                     </mat-form-field>
@@ -240,13 +231,13 @@
                                     <mat-form-field appearance="fill" class="width-100">
                                         <mat-label>{{dimension.justification.text}}</mat-label>
                                         <textarea matInput formControlName="{{dimension.name}}_justification" rows="5"></textarea>
-                                        <mat-error *ngIf="this.utilsService.hasError(assessmentForms[documentIndex],(dimension.name).concat('_justification'), 'required')">
+                                        <mat-error *ngIf="this.utilsService.hasError(assessmentForm,(dimension.name).concat('_justification'), 'required')">
                                             <span i18n>This field is required</span>
                                         </mat-error>
-                                        <mat-error *ngIf="this.utilsService.hasError(assessmentForms[documentIndex],(dimension.name).concat('_justification'), 'longer')">
+                                        <mat-error *ngIf="this.utilsService.hasError(assessmentForm,(dimension.name).concat('_justification'), 'longer')">
                                             <span i18n>This justification must have at least</span> {{dimension.justification.min_words}} <span i18n>words</span>.
                                         </mat-error>
-                                        <mat-error *ngIf="this.utilsService.hasError(assessmentForms[documentIndex],(dimension.name).concat('_justification'), 'invalid')">
+                                        <mat-error *ngIf="this.utilsService.hasError(assessmentForm,(dimension.name).concat('_justification'), 'invalid')">
                                             <span i18n>You cannot use the selected search engine url as part of the justification.</span>
                                         </mat-error>
                                     </mat-form-field>
@@ -321,8 +312,7 @@
                                     <ng-container *ngIf="dimension.scale.type=='interval'">
                                         <div class="dimension-split-inside dimension-box" *ngFor="let pairwiseElement of this.task.documents[documentIndex]['pairwise']; let k=index">
                                             <p class="spanDocument"><span i18n>Answer for Element</span> {{k}}</p>
-                                            <label style="margin-left:10px;"><span
-                                                    i18n> Selected value: </span>{{assessmentForms[documentIndex].controls[(dimension.name).concat('_value_element_').concat(k)].value}}</label>
+                                            <label style="margin-left:10px;"><span i18n> Selected value: </span>{{assessmentForm.controls[(dimension.name).concat('_value_element_').concat(k)].value}}</label>
                                             <mat-slider
                                                     min="{{dimension.scale.min}}" max="{{dimension.scale.max}}"
                                                     step="{{dimension.scale.step}}"
@@ -338,26 +328,16 @@
                                             <p class="spanDocument"><span i18n>Answer for Element</span> {{k}}</p>
                                             <mat-form-field appearance="fill" style="margin-left: 10px;">
                                                 <mat-label><span i18n>Value</span></mat-label>
-                                                <input *ngIf="dimension.scale.lower_bound" matInput type="number" placeholder=""
-                                                       formControlName="{{(dimension.name).concat('_value_element_').concat(k)}}"
-                                                       min="{{dimension.scale.min}}"
-                                                       (change)="this.task.storeDimensionValue($event, documentIndex, dimension.index) ; updateDimensionValueSelection(documentIndex,dimension.index,k)"
-                                                       [disabled]="this.task.countdownsExpired[documentIndex]" class="magnitude_estimation">
-
-                                                <input *ngIf="!dimension.scale.lower_bound" matInput type="number" placeholder="" formControlName="{{(dimension.name).concat('_value_element_').concat(k)}}"
-                                                       min="{{dimension.scale.min}}"
+                                                <input matInput type="number" placeholder="" formControlName="{{(dimension.name).concat('_value_element_').concat(k)}}"
+                                                       min="{{dimension.scale.min}}" step=".01"
                                                        (change)="this.task.storeDimensionValue($event, documentIndex, dimension.index); updateDimensionValueSelection(documentIndex,dimension.index,k)" class="magnitude_estimation"
                                                        [disabled]="this.task.countdownsExpired[documentIndex]">
-                                                <mat-error *ngIf="this.utilsService.hasError(assessmentForms[documentIndex], (dimension.name).concat('_value_element_').concat(k), 'required')">
+                                                <mat-error *ngIf="this.utilsService.hasError(assessmentForm, (dimension.name).concat('_value_element_').concat(k), 'required')">
                                                     <span i18n>This field is required</span>
                                                 </mat-error>
-                                                <mat-error *ngIf="dimension.scale.lower_bound && this.utilsService.hasError(assessmentForms[documentIndex], (dimension.name).concat('_value_element_').concat(k), 'min')">
-                                                    <span i18n>Value has to be grater than or equal to:</span> {{dimension.scale.min}}
-                                                </mat-error>
-                                                <mat-error *ngIf="!dimension.scale.lower_bound && this.utilsService.hasError(assessmentForms[documentIndex], (dimension.name).concat('_value_element_').concat(k), 'gt')">
+                                                <mat-error *ngIf="this.utilsService.hasError(assessmentForm, (dimension.name).concat('_value_element_').concat(k), 'gt')">
                                                     <span i18n>Value has to be grater than:</span> {{dimension.scale.min}}
                                                 </mat-error>
-
                                             </mat-form-field>
                                         </div>
                                     </ng-container>
@@ -386,13 +366,13 @@
                                     <mat-form-field appearance="fill">
                                         <mat-label>{{dimension.justification.text}}</mat-label>
                                         <textarea matInput formControlName="{{dimension.name}}_justification_element_{{k}}" rows="3"></textarea>
-                                        <mat-error *ngIf="this.utilsService.hasError(assessmentForms[documentIndex],(dimension.name).concat('_justification_element_').concat(k), 'required')">
+                                        <mat-error *ngIf="this.utilsService.hasError(assessmentForm,(dimension.name).concat('_justification_element_').concat(k), 'required')">
                                             <span i18n>This field is required</span>
                                         </mat-error>
-                                        <mat-error *ngIf="this.utilsService.hasError(assessmentForms[documentIndex],(dimension.name).concat('_justification_element_').concat(k), 'longer')">
+                                        <mat-error *ngIf="this.utilsService.hasError(assessmentForm,(dimension.name).concat('_justification_element_').concat(k), 'longer')">
                                             <span i18n>This justification must have at least</span> {{dimension.justification.min_words}} <span i18n>words</span>.
                                         </mat-error>
-                                        <mat-error *ngIf="this.utilsService.hasError(assessmentForms[documentIndex],(dimension.name).concat('_justification_element_').concat(k), 'invalid')">
+                                        <mat-error *ngIf="this.utilsService.hasError(assessmentForm,(dimension.name).concat('_justification_element_').concat(k), 'invalid')">
                                             <span i18n>You cannot use the selected search engine url as part of the justification.</span>
                                         </mat-error>
                                     </mat-form-field>
@@ -415,17 +395,17 @@
 
 <!-- Dimensions are then shown and filtered according to each position -->
 
-<ng-template *ngIf="this.assessmentForms &&  this.filterDimensionsCurrent(this.task.filterDimensions('list', 'top')).length>0" [ngTemplateOutlet]="dimensionTemplate"
+<ng-template *ngIf="this.assessmentForm &&  this.filterDimensionsCurrent(this.task.filterDimensions('list', 'top')).length>0" [ngTemplateOutlet]="dimensionTemplate"
              [ngTemplateOutletContext]="{dimensions:  this.filterDimensionsCurrent(this.task.filterDimensions('list', 'top')), position:'top'}"></ng-template>
-<ng-template *ngIf="this.assessmentForms &&  this.filterDimensionsCurrent(this.task.filterDimensions('matrix', 'top')).length>0" [ngTemplateOutlet]="dimensionTemplate"
+<ng-template *ngIf="this.assessmentForm &&  this.filterDimensionsCurrent(this.task.filterDimensions('matrix', 'top')).length>0" [ngTemplateOutlet]="dimensionTemplate"
              [ngTemplateOutletContext]="{dimensions:  this.filterDimensionsCurrent(this.task.filterDimensions('matrix', 'top')), position:'top'}"></ng-template>
-<ng-template *ngIf="this.assessmentForms &&  this.filterDimensionsCurrent(this.task.filterDimensions('list', 'middle')).length>0" [ngTemplateOutlet]="dimensionTemplate"
+<ng-template *ngIf="this.assessmentForm &&  this.filterDimensionsCurrent(this.task.filterDimensions('list', 'middle')).length>0" [ngTemplateOutlet]="dimensionTemplate"
              [ngTemplateOutletContext]="{dimensions:  this.filterDimensionsCurrent(this.task.filterDimensions('list', 'middle')), position:'middle'}"></ng-template>
-<ng-template *ngIf="this.assessmentForms &&  this.filterDimensionsCurrent(this.task.filterDimensions('matrix', 'middle')).length>0" [ngTemplateOutlet]="dimensionTemplate"
+<ng-template *ngIf="this.assessmentForm &&  this.filterDimensionsCurrent(this.task.filterDimensions('matrix', 'middle')).length>0" [ngTemplateOutlet]="dimensionTemplate"
              [ngTemplateOutletContext]="{dimensions:  this.filterDimensionsCurrent(this.task.filterDimensions('matrix', 'middle')), position:'middle'}"></ng-template>
-<ng-template *ngIf="this.assessmentForms &&  this.filterDimensionsCurrent(this.task.filterDimensions('list', 'bottom')).length>0" [ngTemplateOutlet]="dimensionTemplate"
+<ng-template *ngIf="this.assessmentForm &&  this.filterDimensionsCurrent(this.task.filterDimensions('list', 'bottom')).length>0" [ngTemplateOutlet]="dimensionTemplate"
              [ngTemplateOutletContext]="{dimensions:  this.filterDimensionsCurrent(this.task.filterDimensions('list', 'bottom')), position:'bottom'}"></ng-template>
-<ng-template *ngIf="this.assessmentForms &&  this.filterDimensionsCurrent(this.task.filterDimensions('matrix', 'bottom')).length>0" [ngTemplateOutlet]="dimensionTemplate"
+<ng-template *ngIf="this.assessmentForm &&  this.filterDimensionsCurrent(this.task.filterDimensions('matrix', 'bottom')).length>0" [ngTemplateOutlet]="dimensionTemplate"
              [ngTemplateOutletContext]="{dimensions:  this.filterDimensionsCurrent(this.task.filterDimensions('matrix', 'bottom')), position:'bottom'}"></ng-template>
 
 
