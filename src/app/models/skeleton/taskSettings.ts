@@ -149,7 +149,7 @@ export class Attribute {
     ) {
         this.index = index
         this.name = data["name"]
-        this.name_pretty = ("name_pretty" in data) ? data["name_pretty"] : titleize(data["name"].replace("_", " "))
+        this.name_pretty = ("name_pretty" in data) ? data["name_pretty"] as string : titleize(data["name"].replace("_", " ")) as string
         this.show = data["show"] || false;
         this.annotate = data["annotate"];
         this.required = data["required"];

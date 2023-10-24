@@ -2,78 +2,67 @@
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
   <file source-language="en-US" datatype="plaintext" original="ng2.template">
     <body>
-      <trans-unit id="ngb.datepicker.previous-month" datatype="html">
-        <source>Previous month</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-edb47d9911/0/cache/@ng-bootstrap-ng-bootstrap-npm-13.1.1-73c2ffeda2-bfa310f09d.zip/node_modules/src/datepicker/datepicker-navigation.ts</context>
-          <context context-type="linenumber">61,64</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-edb47d9911/0/cache/@ng-bootstrap-ng-bootstrap-npm-13.1.1-73c2ffeda2-bfa310f09d.zip/node_modules/src/datepicker/datepicker-navigation.ts</context>
-          <context context-type="linenumber">86</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="ngb.datepicker.next-month" datatype="html">
-        <source>Next month</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-edb47d9911/0/cache/@ng-bootstrap-ng-bootstrap-npm-13.1.1-73c2ffeda2-bfa310f09d.zip/node_modules/src/datepicker/datepicker-navigation.ts</context>
-          <context context-type="linenumber">86</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-edb47d9911/0/cache/@ng-bootstrap-ng-bootstrap-npm-13.1.1-73c2ffeda2-bfa310f09d.zip/node_modules/src/datepicker/datepicker-navigation.ts</context>
-          <context context-type="linenumber">86</context>
-        </context-group>
-      </trans-unit>
       <trans-unit id="ngb.alert.close" datatype="html">
         <source>Close</source>
         <context-group purpose="location">
-          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-edb47d9911/0/cache/@ng-bootstrap-ng-bootstrap-npm-13.1.1-73c2ffeda2-bfa310f09d.zip/node_modules/src/ngb-config.ts</context>
+          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-8380d283f6/0/cache/@ng-bootstrap-ng-bootstrap-npm-15.1.1-4ab1f6392c-e1257c9085.zip/node_modules/src/ngb-config.ts</context>
           <context context-type="linenumber">13</context>
         </context-group>
       </trans-unit>
       <trans-unit id="ngb.timepicker.HH" datatype="html">
         <source>HH</source>
         <context-group purpose="location">
-          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-edb47d9911/0/cache/@ng-bootstrap-ng-bootstrap-npm-13.1.1-73c2ffeda2-bfa310f09d.zip/node_modules/src/ngb-config.ts</context>
+          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-8380d283f6/0/cache/@ng-bootstrap-ng-bootstrap-npm-15.1.1-4ab1f6392c-e1257c9085.zip/node_modules/src/ngb-config.ts</context>
           <context context-type="linenumber">13</context>
         </context-group>
       </trans-unit>
       <trans-unit id="ngb.toast.close-aria" datatype="html">
         <source>Close</source>
         <context-group purpose="location">
-          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-edb47d9911/0/cache/@ng-bootstrap-ng-bootstrap-npm-13.1.1-73c2ffeda2-bfa310f09d.zip/node_modules/src/ngb-config.ts</context>
+          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-8380d283f6/0/cache/@ng-bootstrap-ng-bootstrap-npm-15.1.1-4ab1f6392c-e1257c9085.zip/node_modules/src/ngb-config.ts</context>
           <context context-type="linenumber">13</context>
         </context-group>
       </trans-unit>
       <trans-unit id="ngb.pagination.first" datatype="html">
         <source>««</source>
         <context-group purpose="location">
-          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-edb47d9911/0/cache/@ng-bootstrap-ng-bootstrap-npm-13.1.1-73c2ffeda2-bfa310f09d.zip/node_modules/src/ngb-config.ts</context>
+          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-8380d283f6/0/cache/@ng-bootstrap-ng-bootstrap-npm-15.1.1-4ab1f6392c-e1257c9085.zip/node_modules/src/ngb-config.ts</context>
           <context context-type="linenumber">13</context>
         </context-group>
       </trans-unit>
       <trans-unit id="ngb.datepicker.select-month" datatype="html">
         <source>Select month</source>
         <context-group purpose="location">
-          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-edb47d9911/0/cache/@ng-bootstrap-ng-bootstrap-npm-13.1.1-73c2ffeda2-bfa310f09d.zip/node_modules/src/ngb-config.ts</context>
+          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-8380d283f6/0/cache/@ng-bootstrap-ng-bootstrap-npm-15.1.1-4ab1f6392c-e1257c9085.zip/node_modules/src/ngb-config.ts</context>
           <context context-type="linenumber">13</context>
         </context-group>
         <context-group purpose="location">
-          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-edb47d9911/0/cache/@ng-bootstrap-ng-bootstrap-npm-13.1.1-73c2ffeda2-bfa310f09d.zip/node_modules/src/ngb-config.ts</context>
+          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-8380d283f6/0/cache/@ng-bootstrap-ng-bootstrap-npm-15.1.1-4ab1f6392c-e1257c9085.zip/node_modules/src/ngb-config.ts</context>
+          <context context-type="linenumber">13</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ngb.datepicker.previous-month" datatype="html">
+        <source>Previous month</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-8380d283f6/0/cache/@ng-bootstrap-ng-bootstrap-npm-15.1.1-4ab1f6392c-e1257c9085.zip/node_modules/src/ngb-config.ts</context>
+          <context context-type="linenumber">13</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-8380d283f6/0/cache/@ng-bootstrap-ng-bootstrap-npm-15.1.1-4ab1f6392c-e1257c9085.zip/node_modules/src/ngb-config.ts</context>
           <context context-type="linenumber">13</context>
         </context-group>
       </trans-unit>
       <trans-unit id="ngb.progressbar.value" datatype="html">
         <source><x id="INTERPOLATION"/></source>
         <context-group purpose="location">
-          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-edb47d9911/0/cache/@ng-bootstrap-ng-bootstrap-npm-13.1.1-73c2ffeda2-bfa310f09d.zip/node_modules/src/ngb-config.ts</context>
+          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-8380d283f6/0/cache/@ng-bootstrap-ng-bootstrap-npm-15.1.1-4ab1f6392c-e1257c9085.zip/node_modules/src/ngb-config.ts</context>
           <context context-type="linenumber">13</context>
         </context-group>
       </trans-unit>
       <trans-unit id="ngb.carousel.slide-number" datatype="html">
         <source> Slide <x id="INTERPOLATION"/> of <x id="INTERPOLATION_1"/> </source>
         <context-group purpose="location">
-          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-edb47d9911/0/cache/@ng-bootstrap-ng-bootstrap-npm-13.1.1-73c2ffeda2-bfa310f09d.zip/node_modules/src/ngb-config.ts</context>
+          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-8380d283f6/0/cache/@ng-bootstrap-ng-bootstrap-npm-15.1.1-4ab1f6392c-e1257c9085.zip/node_modules/src/ngb-config.ts</context>
           <context context-type="linenumber">13</context>
         </context-group>
         <note priority="1" from="description">Currently selected slide number read by screen reader</note>
@@ -81,165 +70,176 @@
       <trans-unit id="ngb.timepicker.hours" datatype="html">
         <source>Hours</source>
         <context-group purpose="location">
-          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-edb47d9911/0/cache/@ng-bootstrap-ng-bootstrap-npm-13.1.1-73c2ffeda2-bfa310f09d.zip/node_modules/src/ngb-config.ts</context>
+          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-8380d283f6/0/cache/@ng-bootstrap-ng-bootstrap-npm-15.1.1-4ab1f6392c-e1257c9085.zip/node_modules/src/ngb-config.ts</context>
           <context context-type="linenumber">13</context>
         </context-group>
       </trans-unit>
       <trans-unit id="ngb.pagination.previous" datatype="html">
         <source>«</source>
         <context-group purpose="location">
-          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-edb47d9911/0/cache/@ng-bootstrap-ng-bootstrap-npm-13.1.1-73c2ffeda2-bfa310f09d.zip/node_modules/src/ngb-config.ts</context>
+          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-8380d283f6/0/cache/@ng-bootstrap-ng-bootstrap-npm-15.1.1-4ab1f6392c-e1257c9085.zip/node_modules/src/ngb-config.ts</context>
           <context context-type="linenumber">13</context>
         </context-group>
       </trans-unit>
       <trans-unit id="ngb.carousel.previous" datatype="html">
         <source>Previous</source>
         <context-group purpose="location">
-          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-edb47d9911/0/cache/@ng-bootstrap-ng-bootstrap-npm-13.1.1-73c2ffeda2-bfa310f09d.zip/node_modules/src/ngb-config.ts</context>
+          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-8380d283f6/0/cache/@ng-bootstrap-ng-bootstrap-npm-15.1.1-4ab1f6392c-e1257c9085.zip/node_modules/src/ngb-config.ts</context>
           <context context-type="linenumber">13</context>
         </context-group>
       </trans-unit>
       <trans-unit id="ngb.timepicker.MM" datatype="html">
         <source>MM</source>
         <context-group purpose="location">
-          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-edb47d9911/0/cache/@ng-bootstrap-ng-bootstrap-npm-13.1.1-73c2ffeda2-bfa310f09d.zip/node_modules/src/ngb-config.ts</context>
+          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-8380d283f6/0/cache/@ng-bootstrap-ng-bootstrap-npm-15.1.1-4ab1f6392c-e1257c9085.zip/node_modules/src/ngb-config.ts</context>
           <context context-type="linenumber">13</context>
         </context-group>
       </trans-unit>
       <trans-unit id="ngb.pagination.next" datatype="html">
         <source>»</source>
         <context-group purpose="location">
-          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-edb47d9911/0/cache/@ng-bootstrap-ng-bootstrap-npm-13.1.1-73c2ffeda2-bfa310f09d.zip/node_modules/src/ngb-config.ts</context>
+          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-8380d283f6/0/cache/@ng-bootstrap-ng-bootstrap-npm-15.1.1-4ab1f6392c-e1257c9085.zip/node_modules/src/ngb-config.ts</context>
           <context context-type="linenumber">13</context>
         </context-group>
       </trans-unit>
       <trans-unit id="ngb.datepicker.select-year" datatype="html">
         <source>Select year</source>
         <context-group purpose="location">
-          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-edb47d9911/0/cache/@ng-bootstrap-ng-bootstrap-npm-13.1.1-73c2ffeda2-bfa310f09d.zip/node_modules/src/ngb-config.ts</context>
+          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-8380d283f6/0/cache/@ng-bootstrap-ng-bootstrap-npm-15.1.1-4ab1f6392c-e1257c9085.zip/node_modules/src/ngb-config.ts</context>
           <context context-type="linenumber">13</context>
         </context-group>
         <context-group purpose="location">
-          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-edb47d9911/0/cache/@ng-bootstrap-ng-bootstrap-npm-13.1.1-73c2ffeda2-bfa310f09d.zip/node_modules/src/ngb-config.ts</context>
+          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-8380d283f6/0/cache/@ng-bootstrap-ng-bootstrap-npm-15.1.1-4ab1f6392c-e1257c9085.zip/node_modules/src/ngb-config.ts</context>
+          <context context-type="linenumber">13</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ngb.datepicker.next-month" datatype="html">
+        <source>Next month</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-8380d283f6/0/cache/@ng-bootstrap-ng-bootstrap-npm-15.1.1-4ab1f6392c-e1257c9085.zip/node_modules/src/ngb-config.ts</context>
+          <context context-type="linenumber">13</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-8380d283f6/0/cache/@ng-bootstrap-ng-bootstrap-npm-15.1.1-4ab1f6392c-e1257c9085.zip/node_modules/src/ngb-config.ts</context>
           <context context-type="linenumber">13</context>
         </context-group>
       </trans-unit>
       <trans-unit id="ngb.carousel.next" datatype="html">
         <source>Next</source>
         <context-group purpose="location">
-          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-edb47d9911/0/cache/@ng-bootstrap-ng-bootstrap-npm-13.1.1-73c2ffeda2-bfa310f09d.zip/node_modules/src/ngb-config.ts</context>
+          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-8380d283f6/0/cache/@ng-bootstrap-ng-bootstrap-npm-15.1.1-4ab1f6392c-e1257c9085.zip/node_modules/src/ngb-config.ts</context>
           <context context-type="linenumber">13</context>
         </context-group>
       </trans-unit>
       <trans-unit id="ngb.timepicker.minutes" datatype="html">
         <source>Minutes</source>
         <context-group purpose="location">
-          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-edb47d9911/0/cache/@ng-bootstrap-ng-bootstrap-npm-13.1.1-73c2ffeda2-bfa310f09d.zip/node_modules/src/ngb-config.ts</context>
+          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-8380d283f6/0/cache/@ng-bootstrap-ng-bootstrap-npm-15.1.1-4ab1f6392c-e1257c9085.zip/node_modules/src/ngb-config.ts</context>
           <context context-type="linenumber">13</context>
         </context-group>
       </trans-unit>
       <trans-unit id="ngb.pagination.last" datatype="html">
         <source>»»</source>
         <context-group purpose="location">
-          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-edb47d9911/0/cache/@ng-bootstrap-ng-bootstrap-npm-13.1.1-73c2ffeda2-bfa310f09d.zip/node_modules/src/ngb-config.ts</context>
+          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-8380d283f6/0/cache/@ng-bootstrap-ng-bootstrap-npm-15.1.1-4ab1f6392c-e1257c9085.zip/node_modules/src/ngb-config.ts</context>
           <context context-type="linenumber">13</context>
         </context-group>
       </trans-unit>
       <trans-unit id="ngb.timepicker.increment-hours" datatype="html">
         <source>Increment hours</source>
         <context-group purpose="location">
-          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-edb47d9911/0/cache/@ng-bootstrap-ng-bootstrap-npm-13.1.1-73c2ffeda2-bfa310f09d.zip/node_modules/src/ngb-config.ts</context>
+          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-8380d283f6/0/cache/@ng-bootstrap-ng-bootstrap-npm-15.1.1-4ab1f6392c-e1257c9085.zip/node_modules/src/ngb-config.ts</context>
           <context context-type="linenumber">13</context>
         </context-group>
       </trans-unit>
       <trans-unit id="ngb.pagination.first-aria" datatype="html">
         <source>First</source>
         <context-group purpose="location">
-          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-edb47d9911/0/cache/@ng-bootstrap-ng-bootstrap-npm-13.1.1-73c2ffeda2-bfa310f09d.zip/node_modules/src/ngb-config.ts</context>
+          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-8380d283f6/0/cache/@ng-bootstrap-ng-bootstrap-npm-15.1.1-4ab1f6392c-e1257c9085.zip/node_modules/src/ngb-config.ts</context>
           <context context-type="linenumber">13</context>
         </context-group>
       </trans-unit>
       <trans-unit id="ngb.pagination.previous-aria" datatype="html">
         <source>Previous</source>
         <context-group purpose="location">
-          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-edb47d9911/0/cache/@ng-bootstrap-ng-bootstrap-npm-13.1.1-73c2ffeda2-bfa310f09d.zip/node_modules/src/ngb-config.ts</context>
+          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-8380d283f6/0/cache/@ng-bootstrap-ng-bootstrap-npm-15.1.1-4ab1f6392c-e1257c9085.zip/node_modules/src/ngb-config.ts</context>
           <context context-type="linenumber">13</context>
         </context-group>
       </trans-unit>
       <trans-unit id="ngb.timepicker.decrement-hours" datatype="html">
         <source>Decrement hours</source>
         <context-group purpose="location">
-          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-edb47d9911/0/cache/@ng-bootstrap-ng-bootstrap-npm-13.1.1-73c2ffeda2-bfa310f09d.zip/node_modules/src/ngb-config.ts</context>
+          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-8380d283f6/0/cache/@ng-bootstrap-ng-bootstrap-npm-15.1.1-4ab1f6392c-e1257c9085.zip/node_modules/src/ngb-config.ts</context>
           <context context-type="linenumber">13</context>
         </context-group>
       </trans-unit>
       <trans-unit id="ngb.pagination.next-aria" datatype="html">
         <source>Next</source>
         <context-group purpose="location">
-          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-edb47d9911/0/cache/@ng-bootstrap-ng-bootstrap-npm-13.1.1-73c2ffeda2-bfa310f09d.zip/node_modules/src/ngb-config.ts</context>
+          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-8380d283f6/0/cache/@ng-bootstrap-ng-bootstrap-npm-15.1.1-4ab1f6392c-e1257c9085.zip/node_modules/src/ngb-config.ts</context>
           <context context-type="linenumber">13</context>
         </context-group>
       </trans-unit>
       <trans-unit id="ngb.timepicker.increment-minutes" datatype="html">
         <source>Increment minutes</source>
         <context-group purpose="location">
-          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-edb47d9911/0/cache/@ng-bootstrap-ng-bootstrap-npm-13.1.1-73c2ffeda2-bfa310f09d.zip/node_modules/src/ngb-config.ts</context>
+          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-8380d283f6/0/cache/@ng-bootstrap-ng-bootstrap-npm-15.1.1-4ab1f6392c-e1257c9085.zip/node_modules/src/ngb-config.ts</context>
           <context context-type="linenumber">13</context>
         </context-group>
       </trans-unit>
       <trans-unit id="ngb.pagination.last-aria" datatype="html">
         <source>Last</source>
         <context-group purpose="location">
-          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-edb47d9911/0/cache/@ng-bootstrap-ng-bootstrap-npm-13.1.1-73c2ffeda2-bfa310f09d.zip/node_modules/src/ngb-config.ts</context>
+          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-8380d283f6/0/cache/@ng-bootstrap-ng-bootstrap-npm-15.1.1-4ab1f6392c-e1257c9085.zip/node_modules/src/ngb-config.ts</context>
           <context context-type="linenumber">13</context>
         </context-group>
       </trans-unit>
       <trans-unit id="ngb.timepicker.decrement-minutes" datatype="html">
         <source>Decrement minutes</source>
         <context-group purpose="location">
-          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-edb47d9911/0/cache/@ng-bootstrap-ng-bootstrap-npm-13.1.1-73c2ffeda2-bfa310f09d.zip/node_modules/src/ngb-config.ts</context>
+          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-8380d283f6/0/cache/@ng-bootstrap-ng-bootstrap-npm-15.1.1-4ab1f6392c-e1257c9085.zip/node_modules/src/ngb-config.ts</context>
           <context context-type="linenumber">13</context>
         </context-group>
       </trans-unit>
       <trans-unit id="ngb.timepicker.SS" datatype="html">
         <source>SS</source>
         <context-group purpose="location">
-          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-edb47d9911/0/cache/@ng-bootstrap-ng-bootstrap-npm-13.1.1-73c2ffeda2-bfa310f09d.zip/node_modules/src/ngb-config.ts</context>
+          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-8380d283f6/0/cache/@ng-bootstrap-ng-bootstrap-npm-15.1.1-4ab1f6392c-e1257c9085.zip/node_modules/src/ngb-config.ts</context>
           <context context-type="linenumber">13</context>
         </context-group>
       </trans-unit>
       <trans-unit id="ngb.timepicker.seconds" datatype="html">
         <source>Seconds</source>
         <context-group purpose="location">
-          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-edb47d9911/0/cache/@ng-bootstrap-ng-bootstrap-npm-13.1.1-73c2ffeda2-bfa310f09d.zip/node_modules/src/ngb-config.ts</context>
+          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-8380d283f6/0/cache/@ng-bootstrap-ng-bootstrap-npm-15.1.1-4ab1f6392c-e1257c9085.zip/node_modules/src/ngb-config.ts</context>
           <context context-type="linenumber">13</context>
         </context-group>
       </trans-unit>
       <trans-unit id="ngb.timepicker.increment-seconds" datatype="html">
         <source>Increment seconds</source>
         <context-group purpose="location">
-          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-edb47d9911/0/cache/@ng-bootstrap-ng-bootstrap-npm-13.1.1-73c2ffeda2-bfa310f09d.zip/node_modules/src/ngb-config.ts</context>
+          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-8380d283f6/0/cache/@ng-bootstrap-ng-bootstrap-npm-15.1.1-4ab1f6392c-e1257c9085.zip/node_modules/src/ngb-config.ts</context>
           <context context-type="linenumber">13</context>
         </context-group>
       </trans-unit>
       <trans-unit id="ngb.timepicker.decrement-seconds" datatype="html">
         <source>Decrement seconds</source>
         <context-group purpose="location">
-          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-edb47d9911/0/cache/@ng-bootstrap-ng-bootstrap-npm-13.1.1-73c2ffeda2-bfa310f09d.zip/node_modules/src/ngb-config.ts</context>
+          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-8380d283f6/0/cache/@ng-bootstrap-ng-bootstrap-npm-15.1.1-4ab1f6392c-e1257c9085.zip/node_modules/src/ngb-config.ts</context>
           <context context-type="linenumber">13</context>
         </context-group>
       </trans-unit>
       <trans-unit id="ngb.timepicker.PM" datatype="html">
         <source><x id="INTERPOLATION"/></source>
         <context-group purpose="location">
-          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-edb47d9911/0/cache/@ng-bootstrap-ng-bootstrap-npm-13.1.1-73c2ffeda2-bfa310f09d.zip/node_modules/src/ngb-config.ts</context>
+          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-8380d283f6/0/cache/@ng-bootstrap-ng-bootstrap-npm-15.1.1-4ab1f6392c-e1257c9085.zip/node_modules/src/ngb-config.ts</context>
           <context context-type="linenumber">13</context>
         </context-group>
       </trans-unit>
       <trans-unit id="ngb.timepicker.AM" datatype="html">
         <source><x id="INTERPOLATION"/></source>
         <context-group purpose="location">
-          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-edb47d9911/0/cache/@ng-bootstrap-ng-bootstrap-npm-13.1.1-73c2ffeda2-bfa310f09d.zip/node_modules/src/ngb-config.ts</context>
+          <context context-type="sourcefile">.yarn/__virtual__/@ng-bootstrap-ng-bootstrap-virtual-8380d283f6/0/cache/@ng-bootstrap-ng-bootstrap-npm-15.1.1-4ab1f6392c-e1257c9085.zip/node_modules/src/ngb-config.ts</context>
           <context context-type="linenumber">13</context>
         </context-group>
       </trans-unit>
@@ -563,11 +563,11 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">98</context>
+          <context context-type="linenumber">104</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">311</context>
+          <context context-type="linenumber">330</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/questionnaire/questionnaire.component.html</context>
@@ -1744,27 +1744,27 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">103</context>
+          <context context-type="linenumber">109</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">145</context>
+          <context context-type="linenumber">150</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">223</context>
+          <context context-type="linenumber">235</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">317</context>
+          <context context-type="linenumber">336</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">351</context>
+          <context context-type="linenumber">370</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/search-engine/search-engine.component.html</context>
-          <context context-type="linenumber">27</context>
+          <context context-type="linenumber">28</context>
         </context-group>
       </trans-unit>
       <trans-unit id="070cdb24f7871623902f37ba29cd52da10cc23b5" datatype="html">
@@ -1792,128 +1792,128 @@
         <source>Value has to be grater than:</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">106</context>
+          <context context-type="linenumber">112</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">320</context>
+          <context context-type="linenumber">339</context>
         </context-group>
       </trans-unit>
       <trans-unit id="ca875b5767a92f618bde57d20be0e0886c9b4a7d" datatype="html">
         <source>This justification must have at least</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">148</context>
+          <context context-type="linenumber">153</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">226</context>
+          <context context-type="linenumber">238</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">354</context>
+          <context context-type="linenumber">373</context>
         </context-group>
       </trans-unit>
       <trans-unit id="de7c896e341678db38b06140c7e490a925292b02" datatype="html">
         <source>words</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">148</context>
+          <context context-type="linenumber">153</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">226</context>
+          <context context-type="linenumber">238</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">354</context>
+          <context context-type="linenumber">373</context>
         </context-group>
       </trans-unit>
       <trans-unit id="584fa2cdd395f560b05e658e34c303cd0d688276" datatype="html">
         <source>You cannot use the selected search engine url as part of the justification.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">151</context>
+          <context context-type="linenumber">156</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">229</context>
+          <context context-type="linenumber">241</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">357</context>
+          <context context-type="linenumber">376</context>
         </context-group>
       </trans-unit>
       <trans-unit id="086437bf565043695b294fd10c8b39bbb4f6150b" datatype="html">
         <source>Answer for Element</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">279</context>
+          <context context-type="linenumber">297</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">295</context>
+          <context context-type="linenumber">314</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">309</context>
+          <context context-type="linenumber">328</context>
         </context-group>
       </trans-unit>
       <trans-unit id="e306be473ab320e5827eb58cac76918051022af0" datatype="html">
         <source> Selected value: </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">296</context>
+          <context context-type="linenumber">315</context>
         </context-group>
       </trans-unit>
       <trans-unit id="87c984fcd18d94db550b95be57ead0f489a0185f" datatype="html">
         <source>TO BE IMPLEMENTED</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">330</context>
+          <context context-type="linenumber">349</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">333</context>
+          <context context-type="linenumber">352</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">336</context>
+          <context context-type="linenumber">355</context>
         </context-group>
       </trans-unit>
       <trans-unit id="ba359bf9e071d1ddcafad117c5afd32cd568dc52" datatype="html">
         <source>Justification for Element</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">345</context>
+          <context context-type="linenumber">364</context>
         </context-group>
       </trans-unit>
       <trans-unit id="36cbcf1f0f19bf4570d225661945b5a044904cd7" datatype="html">
         <source>Insert your query</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/search-engine/crowd-xplorer/crowd-xplorer.component.html</context>
-          <context context-type="linenumber">22</context>
+          <context context-type="linenumber">24</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="6f167e9096bf97bf42f869b610aa46e1447d5da0" datatype="html">
-        <source><x id="INTERPOLATION" equiv-text="results found.&lt;/mat-header-cell&gt;"/> results found.</source>
+      <trans-unit id="83524cc7edb0a1666c32012120d91bacf0dfd081" datatype="html">
+        <source> <x id="INTERPOLATION" equiv-text="{{resultsAmount | number}}"/> estimated matches found, </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/search-engine/crowd-xplorer/crowd-xplorer.component.html</context>
-          <context context-type="linenumber">31</context>
+          <context context-type="linenumber">33,35</context>
         </context-group>
       </trans-unit>
       <trans-unit id="7e892ba15f2c6c17e83510e273b3e10fc32ea016" datatype="html">
         <source>Search</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/search-engine/crowd-xplorer/crowd-xplorer.component.html</context>
-          <context context-type="linenumber">63</context>
+          <context context-type="linenumber">67</context>
         </context-group>
       </trans-unit>
       <trans-unit id="5f6d7b2ca44ed114925fef64c4de75be5da8ca3b" datatype="html">
         <source>Please select (or copy &amp; paste) one of the URLs shown above.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/search-engine/search-engine.component.html</context>
-          <context context-type="linenumber">30</context>
+          <context context-type="linenumber">31</context>
         </context-group>
       </trans-unit>
       <trans-unit id="d6076e464de0fb97d049a0df21451698d50d1923" datatype="html">

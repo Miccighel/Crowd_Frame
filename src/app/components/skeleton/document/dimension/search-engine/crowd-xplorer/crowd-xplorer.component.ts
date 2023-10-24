@@ -243,7 +243,7 @@ export class CrowdXplorer implements OnInit {
         this.paginator.page
             .pipe(
                 tap(pageEvent => {
-                    this.bingDataSource.loadData(this.queryValue, pageEvent.pageSize, pageEvent.pageIndex * pageEvent.pageSize)
+                    this.bingDataSource.loadData(this.queryValue, pageEvent.pageSize, (pageEvent.pageIndex+1) * pageEvent.pageSize)
                 })
             )
             .subscribe();
