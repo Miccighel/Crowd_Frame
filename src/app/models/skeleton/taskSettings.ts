@@ -139,7 +139,7 @@ export class Attribute {
     index: number;
     name: string;
     name_pretty: string;
-    show: boolean;
+    show;
     annotate: boolean;
     required: boolean;
 
@@ -149,12 +149,8 @@ export class Attribute {
     ) {
         this.index = index
         this.name = data["name"]
-        if ("name_pretty" in data) {
-            this.name_pretty = data["name_pretty"] as string
-        } else {
-            this.name_pretty = titleize(data["name"].replace("_", " "))
-        }
-        this.show = data["show"];
+        this.name_pretty = ("name_pretty" in data) ? data["name_pretty"] : titleize(data["name"].replace("_", " "))
+        this.show = data["show"] || false;
         this.annotate = data["annotate"];
         this.required = data["required"];
     }

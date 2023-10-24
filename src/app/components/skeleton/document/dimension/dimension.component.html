@@ -106,16 +106,18 @@
                                                    min="{{dimension.scale.min}}"
                                                    (change)="this.task.storeDimensionValue($event, documentIndex, dimension.index)"
                                                    [disabled]="this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior=='disable_forms'" class="magnitude_estimation">
-                                            <input *ngIf="!dimension.scale.lower_bound" matInput type="number" placeholder="" formControlName="{{(dimension.name).concat('_value')}}"
-                                                   min="{{dimension.scale.min+1}}"
+
+                                            <input *ngIf="!dimension.scale.lower_bound" matInput type="number" placeholder="" formControlName="{{(dimension.name).concat('_value')}}" min="{{dimension.scale.min}}"
                                                    (change)="this.task.storeDimensionValue($event, documentIndex, dimension.index)" class="magnitude_estimation"
                                                    [disabled]="this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior=='disable_forms'">
                                             <mat-error *ngIf="this.utilsService.hasError(assessmentForms[documentIndex], (dimension.name).concat('_value'), 'required')">
                                                 <span i18n>This field is required</span>
                                             </mat-error>
-                                            <mat-error *ngIf="this.utilsService.hasError(assessmentForms[documentIndex], (dimension.name).concat('_value'), 'min')">
-                                                <span *ngIf="dimension.scale.lower_bound"><span i18n>Min value allowed: </span>{{dimension.scale.min}}</span>
-                                                <span *ngIf="!dimension.scale.lower_bound"><span i18n>Min value allowed: </span>{{dimension.scale.min + 1}}</span>
+                                            <mat-error *ngIf="dimension.scale.lower_bound && this.utilsService.hasError(assessmentForms[documentIndex], (dimension.name).concat('_value'), 'min')">
+                                                <span i18n>Value has to be grater than or equal to:</span> {{dimension.scale.min}}
+                                            </mat-error>
+                                            <mat-error *ngIf="!dimension.scale.lower_bound && this.utilsService.hasError(assessmentForms[documentIndex], (dimension.name).concat('_value'), 'gt')">
+                                                <span i18n>Value has to be grater than:</span> {{dimension.scale.min}}
                                             </mat-error>
 
                                         </mat-form-field>
@@ -341,19 +343,21 @@
                                                        min="{{dimension.scale.min}}"
                                                        (change)="this.task.storeDimensionValue($event, documentIndex, dimension.index) ; updateDimensionValueSelection(documentIndex,dimension.index,k)"
                                                        [disabled]="this.task.countdownsExpired[documentIndex]" class="magnitude_estimation">
-                                                <input *ngIf="!dimension.scale.lower_bound" matInput type="number" placeholder=""
-                                                       formControlName="{{(dimension.name).concat('_value_element_').concat(k)}}"
-                                                       min="{{dimension.scale.min+1}}"
-                                                       (change)="this.task.storeDimensionValue($event, documentIndex, dimension.index); updateDimensionValueSelection(documentIndex,dimension.index,k)"
-                                                       class="magnitude_estimation"
+
+                                                <input *ngIf="!dimension.scale.lower_bound" matInput type="number" placeholder="" formControlName="{{(dimension.name).concat('_value_element_').concat(k)}}"
+                                                       min="{{dimension.scale.min}}"
+                                                       (change)="this.task.storeDimensionValue($event, documentIndex, dimension.index); updateDimensionValueSelection(documentIndex,dimension.index,k)" class="magnitude_estimation"
                                                        [disabled]="this.task.countdownsExpired[documentIndex]">
                                                 <mat-error *ngIf="this.utilsService.hasError(assessmentForms[documentIndex], (dimension.name).concat('_value_element_').concat(k), 'required')">
                                                     <span i18n>This field is required</span>
                                                 </mat-error>
-                                                <mat-error *ngIf="this.utilsService.hasError(assessmentForms[documentIndex], (dimension.name).concat('_value_element_').concat(k), 'min')">
-                                                    <span *ngIf="dimension.scale.lower_bound"><span i18n>Min value allowed</span>: {{dimension.scale.min}}</span>
-                                                    <span *ngIf="!dimension.scale.lower_bound"><span i18n>Min value allowed</span>: {{dimension.scale.min + 1}}</span>
+                                                <mat-error *ngIf="dimension.scale.lower_bound && this.utilsService.hasError(assessmentForms[documentIndex], (dimension.name).concat('_value_element_').concat(k), 'min')">
+                                                    <span i18n>Value has to be grater than or equal to:</span> {{dimension.scale.min}}
                                                 </mat-error>
+                                                <mat-error *ngIf="!dimension.scale.lower_bound && this.utilsService.hasError(assessmentForms[documentIndex], (dimension.name).concat('_value_element_').concat(k), 'gt')">
+                                                    <span i18n>Value has to be grater than:</span> {{dimension.scale.min}}
+                                                </mat-error>
+
                                             </mat-form-field>
                                         </div>
                                     </ng-container>
@@ -411,17 +415,17 @@
 
 <!-- Dimensions are then shown and filtered according to each position -->
 
-<ng-template *ngIf="this.assessmentForms && this.task.filterDimensions('list', 'top').length>0" [ngTemplateOutlet]="dimensionTemplate"
-             [ngTemplateOutletContext]="{dimensions: this.task.filterDimensions('list', 'top'), position:'top'}"></ng-template>
-<ng-template *ngIf="this.assessmentForms && this.task.filterDimensions('matrix', 'top').length>0" [ngTemplateOutlet]="dimensionTemplate"
-             [ngTemplateOutletContext]="{dimensions: this.task.filterDimensions('matrix', 'top'), position:'top'}"></ng-template>
-<ng-template *ngIf="this.assessmentForms && this.task.filterDimensions('list', 'middle').length>0" [ngTemplateOutlet]="dimensionTemplate"
-             [ngTemplateOutletContext]="{dimensions: this.task.filterDimensions('list', 'middle'), position:'middle'}"></ng-template>
-<ng-template *ngIf="this.assessmentForms && this.task.filterDimensions('matrix', 'middle').length>0" [ngTemplateOutlet]="dimensionTemplate"
-             [ngTemplateOutletContext]="{dimensions: this.task.filterDimensions('matrix', 'middle'), position:'middle'}"></ng-template>
-<ng-template *ngIf="this.assessmentForms && this.task.filterDimensions('list', 'bottom').length>0" [ngTemplateOutlet]="dimensionTemplate"
-             [ngTemplateOutletContext]="{dimensions: this.task.filterDimensions('list', 'bottom'), position:'bottom'}"></ng-template>
-<ng-template *ngIf="this.assessmentForms && this.task.filterDimensions('matrix', 'bottom').length>0" [ngTemplateOutlet]="dimensionTemplate"
-             [ngTemplateOutletContext]="{dimensions: this.task.filterDimensions('matrix', 'bottom'), position:'bottom'}"></ng-template>
+<ng-template *ngIf="this.assessmentForms &&  this.filterDimensionsCurrent(this.task.filterDimensions('list', 'top')).length>0" [ngTemplateOutlet]="dimensionTemplate"
+             [ngTemplateOutletContext]="{dimensions:  this.filterDimensionsCurrent(this.task.filterDimensions('list', 'top')), position:'top'}"></ng-template>
+<ng-template *ngIf="this.assessmentForms &&  this.filterDimensionsCurrent(this.task.filterDimensions('matrix', 'top')).length>0" [ngTemplateOutlet]="dimensionTemplate"
+             [ngTemplateOutletContext]="{dimensions:  this.filterDimensionsCurrent(this.task.filterDimensions('matrix', 'top')), position:'top'}"></ng-template>
+<ng-template *ngIf="this.assessmentForms &&  this.filterDimensionsCurrent(this.task.filterDimensions('list', 'middle')).length>0" [ngTemplateOutlet]="dimensionTemplate"
+             [ngTemplateOutletContext]="{dimensions:  this.filterDimensionsCurrent(this.task.filterDimensions('list', 'middle')), position:'middle'}"></ng-template>
+<ng-template *ngIf="this.assessmentForms &&  this.filterDimensionsCurrent(this.task.filterDimensions('matrix', 'middle')).length>0" [ngTemplateOutlet]="dimensionTemplate"
+             [ngTemplateOutletContext]="{dimensions:  this.filterDimensionsCurrent(this.task.filterDimensions('matrix', 'middle')), position:'middle'}"></ng-template>
+<ng-template *ngIf="this.assessmentForms &&  this.filterDimensionsCurrent(this.task.filterDimensions('list', 'bottom')).length>0" [ngTemplateOutlet]="dimensionTemplate"
+             [ngTemplateOutletContext]="{dimensions:  this.filterDimensionsCurrent(this.task.filterDimensions('list', 'bottom')), position:'bottom'}"></ng-template>
+<ng-template *ngIf="this.assessmentForms &&  this.filterDimensionsCurrent(this.task.filterDimensions('matrix', 'bottom')).length>0" [ngTemplateOutlet]="dimensionTemplate"
+             [ngTemplateOutletContext]="{dimensions:  this.filterDimensionsCurrent(this.task.filterDimensions('matrix', 'bottom')), position:'bottom'}"></ng-template>
 
 

@@ -1107,10 +1107,10 @@ export class SkeletonComponent implements OnInit {
         /* Set stepper document_index to the first tab (currentDocument.e., bring the worker to the first document after the questionnaire) */
         this.stepper.selectedIndex = this.task.questionnaireAmountStart;
 
-        this.colorStepper(
-            this.task.questionnaireAmount,
-            this.task.documentsAmount
-        );
+        // this.colorStepper(
+        //     this.task.questionnaireAmount,
+        //     this.task.documentsAmount
+        // );
 
         /* The loading spinner is stopped */
         this.ngxService.stopLoader("skeleton-inner");
