@@ -4,8 +4,8 @@
   "scripts": {
     "ng": "ng",
     "update": "ng update",
-    "serve": "ng serve",
-    "serve:it": "ng serve --configuration=development-it",
+    "serve": "ng serve --proxy-config proxy.conf.json",
+    "serve:it": "ng serve --proxy-config proxy.conf.json --configuration=development-it",
     "production": "ng serve --configuration=production",
     "production:it": "ng serve --configuration=production-it",
     "build": "ng build",
