@@ -42,7 +42,7 @@
             <ng-container *ngIf="(this.task.settings.modality=='pairwise')">
                 <app-element-pairwise [documentIndex]="documentIndex" (formEmitter)="storeAssessmentForm($event)"></app-element-pairwise>
             </ng-container>
-            <app-dimension [documentIndex]="documentIndex" (formEmitter)="storeAssessmentForm($event)"></app-dimension>
+            <app-dimension [worker]="this.worker" [documentIndex]="documentIndex" (formEmitter)="storeAssessmentForm($event)"></app-dimension>
 
             <!-- "Back", "Next" and "Finish" actions markup -->
             <mat-card-actions *ngIf="this.assessmentForm">

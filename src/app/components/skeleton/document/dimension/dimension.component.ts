@@ -12,6 +12,7 @@ import {Task} from "../../../../models/skeleton/task";
 import {ScaleCategorical, ScaleInterval, ScaleMagnitude} from "../../../../models/skeleton/dimension";
 /* Components */
 import {SearchEngineComponent} from "./search-engine/search-engine.component";
+import {Worker} from "../../../../models/worker/worker";
 
 @Component({
     selector: 'app-dimension',
@@ -31,6 +32,7 @@ export class DimensionComponent implements OnInit {
 
 
     @Input() documentIndex: number
+    @Input() worker: Worker
 
     task: Task
     assessmentForms: UntypedFormGroup[]

@@ -125,7 +125,8 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "Crowd_Frame:build"
+            "browserTarget": "Crowd_Frame:build",
+            "proxyConfig": "proxy.conf.json"
           },
           "configurations": {
             "production": {

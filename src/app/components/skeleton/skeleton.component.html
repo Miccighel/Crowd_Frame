@@ -5,7 +5,7 @@
         [pbColor]="'#3f51b5'"
         [fgsSize]="150"
         [bgsPosition]="'bottom-right'"
-        [bgsSize]="80"
+        [bgsSize]="150"
         [bgsType]="'ball-spin-clockwise'"
         [text]="'Loading task...'"
         [textColor]="'#FFFFFF'"
@@ -94,6 +94,7 @@
             </app-questionnaire>
             <app-document
                     *ngIf="this.task.getElementIndex(stepIndex)['elementType'] == 'S'"
+                    [worker]="this.worker"
                     [documentIndex]="this.task.getElementIndex(stepIndex)['elementIndex']"
                     (formEmitter)="this.storeDocumentForm($event, this.task.getElementIndex(stepIndex)['elementIndex'])"
             ></app-document>

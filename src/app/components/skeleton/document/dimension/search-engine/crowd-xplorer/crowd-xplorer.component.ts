@@ -1,40 +1,30 @@
 /* Core modules */
-import {
-    ChangeDetectorRef,
-    Component,
-    EventEmitter,
-    Input,
-    Output,
-    ViewChild,
-    OnInit,
-    OnDestroy,
-    HostListener,
-} from "@angular/core";
+import {ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, ViewChild,} from "@angular/core";
 /* Loading screen module */
-import { NgxUiLoaderService } from "ngx-ui-loader";
+import {NgxUiLoaderService} from "ngx-ui-loader";
 /* Material design modules */
-import { MatTableDataSource } from "@angular/material/table";
-import { MatPaginator } from "@angular/material/paginator";
+import {MatPaginator} from "@angular/material/paginator";
 /* Reactive forms modules */
-import {
-    UntypedFormBuilder,
-    UntypedFormControl,
-    UntypedFormGroup,
-    Validators,
-} from "@angular/forms";
+import {UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators,} from "@angular/forms";
 /* Services */
-import { BingService } from "../../../../../../services/search_engine/bing.service";
-import { BingWebSearchResponse } from "../../../../../../models/search_engine/bingWebSearchResponse";
-import { FakerService } from "../../../../../../services/search_engine/faker.service";
-import { FakerSearchResponse } from "../../../../../../models/search_engine/fakerSearchResponse";
-import { PubmedService } from "../../../../../../services/search_engine/pudmed.service";
-import { PubmedSearchResponse } from "../../../../../../models/search_engine/pubmedSearchResponse";
-import { PubmedSummaryResponse } from "../../../../../../models/search_engine/pubmedSummaryResponse";
-import { ConfigService } from "../../../../../../services/config.service";
-import { SearchEngineSettings } from "../../../../../../models/search_engine/searchEngineSettings";
+import {BingService} from "../../../../../../services/search_engine/bing.service";
+import {BingWebSearchResponse} from "../../../../../../models/search_engine/bingWebSearchResponse";
+import {FakerService} from "../../../../../../services/search_engine/faker.service";
+import {FakerSearchResponse} from "../../../../../../models/search_engine/fakerSearchResponse";
+import {PubmedService} from "../../../../../../services/search_engine/pudmed.service";
+import {PubmedSearchResponse} from "../../../../../../models/search_engine/pubmedSearchResponse";
+import {PubmedSummaryResponse} from "../../../../../../models/search_engine/pubmedSummaryResponse";
+import {ConfigService} from "../../../../../../services/config.service";
+import {SearchEngineSettings} from "../../../../../../models/search_engine/searchEngineSettings";
+import {CookieService} from 'ngx-cookie-service';
 /* Debug config import */
-import { S3Service } from "../../../../../../services/aws/s3.service";
-import { Task } from "../../../../../../models/skeleton/task";
+import {S3Service} from "../../../../../../services/aws/s3.service";
+import {Task} from "../../../../../../models/skeleton/task";
+
+import {BingDataSource} from '../../../../../../models/search_engine/bingDataSource';
+import {of} from "rxjs";
+import {catchError, map, tap} from "rxjs/operators";
+import {Worker} from "../../../../../../models/worker/worker";
 
 /* Component HTML Tag definition */
 @Component({
@@ -81,6 +71,7 @@ export class CrowdXplorer implements OnInit {
     S3Service: S3Service;
     /* Change detector to manually intercept changes on DOM */
     changeDetector: ChangeDetectorRef;
+    cookieService: CookieService
 
     /* Implementation to query Bing Web Search (Service + REST Interface)*/
     bingService: BingService;
@@ -106,6 +97,7 @@ export class CrowdXplorer implements OnInit {
     searchInProgress: boolean;
     query: UntypedFormControl;
     urls: UntypedFormControl;
+    @ViewChild(MatPaginator) paginator: MatPaginator;
 
     /* Boolean flag */
     searchPerformed: boolean;
@@ -121,6 +113,7 @@ export class CrowdXplorer implements OnInit {
     @Output() selectedRowEmitter = new EventEmitter<Object>();
 
     @Input() task: Task;
+    @Input() worker: Worker;
     @Input() documentIndex: number;
 
     @Input() resetEvent: EventEmitter<void>;
@@ -128,12 +121,12 @@ export class CrowdXplorer implements OnInit {
 
     /* Search results table UI variables and controls */
     resultsAmount = 0;
-    resultsFound = false;
-    resultPageSize = 10;
-    resultPageSizeOptions = [5, 10, 15, 20];
-    dataSource = new MatTableDataSource<any>();
+    resultsCurrentOffset = 0
+    bingDataSource: BingDataSource;
+    // TODO: We must implement a PubMed data source
     displayedColumns = ["name"];
-    paginator: MatPaginator;
+
+    resultsOffset = 0;
 
     /* Random digits to generate unique CSS ids when multiple instances of the search engine are used */
     digits: string;
@@ -151,7 +144,8 @@ export class CrowdXplorer implements OnInit {
         fakerService: FakerService,
         pubmedService: PubmedService,
         configService: ConfigService,
-        formBuilder: UntypedFormBuilder
+        formBuilder: UntypedFormBuilder,
+        cookieService: CookieService
     ) {
         /* |--------- SERVICES & CO. - INITIALIZATION ---------| */
 
@@ -164,6 +158,7 @@ export class CrowdXplorer implements OnInit {
         this.pubmedService = pubmedService;
         this.configService = configService;
         this.formBuilder = formBuilder;
+        this.cookieService = cookieService;
 
         /* |--------- CONTROL FLOW & UI ELEMENTS - INITIALIZATION ---------| */
 
@@ -188,6 +183,38 @@ export class CrowdXplorer implements OnInit {
             query: this.query,
             urls: this.urls,
         });
+
+        let msClientIdName = 'MSEdge-ClientID'
+        if (this.checkCookie(msClientIdName)) {
+            this.bingService.msEdgeClientID = this.loadCookie(msClientIdName)
+        }
+
+        this.bingDataSource = new BingDataSource((query = this.queryValue, resultsAmount, resultsToSkip) => {
+            this.ngxService.startBackgroundLoader('skeleton-inner');
+            let res = this.bingService.performWebSearch(this.bingApiKey, query, resultsAmount, resultsToSkip).pipe(
+                map((searchResponse) => {
+                    if (!this.checkCookie(msClientIdName)) {
+                        const expireDate = new Date();
+                        expireDate.setDate(expireDate.getDate() + 365); // Set the cookie to expire in 1 year
+                        this.storeCookie(msClientIdName, this.bingService.msEdgeClientID, expireDate)
+                    }
+                    this.resultsAmount = searchResponse.webPages.totalEstimatedMatches
+                    this.bingWebSearchResponse = this.bingService.filterResponse(searchResponse, this.domainsToFilter);
+                    let decodedResponse = this.bingService.decodeResponse(this.bingWebSearchResponse);
+                    /* EMITTER: The matching response is emitted to provide it to an eventual parent component*/
+                    this.resultEmitter.emit(decodedResponse);
+                    /* The results amount is saved*/
+                    return decodedResponse;
+                }),
+                catchError((error) => {
+                    this.resultsAmount = 0
+                    return of([]); /* Return an empty array in case of error */
+                })
+            )
+            this.ngxService.stopBackgroundLoader('skeleton-inner')
+            return res
+        });
+
     }
 
     ngOnInit() {
@@ -198,6 +225,28 @@ export class CrowdXplorer implements OnInit {
                 this.disableSearchEngine(disable)
             );
         }
+        if (this.worker.getIP()['ip'])
+            this.bingService.ipAddress = this.worker.getIP()['ip']
+        if (this.worker.latitude)
+            this.bingService.latitude = this.worker.latitude
+        if (this.worker.longitude)
+            this.bingService.longitude = this.worker.longitude
+        if (this.worker.accuracy)
+            this.bingService.accuracy = this.worker.accuracy
+        if (this.worker.altitude)
+            this.bingService.altitude = this.worker.altitude
+        if (this.worker.altitudeAccuracy)
+            this.bingService.altitude = this.worker.altitudeAccuracy
+    }
+
+    ngAfterViewInit() {
+        this.paginator.page
+            .pipe(
+                tap(pageEvent => {
+                    this.bingDataSource.loadData(this.queryValue, pageEvent.pageSize, pageEvent.pageIndex * pageEvent.pageSize)
+                })
+            )
+            .subscribe();
     }
 
     /*
@@ -218,6 +267,18 @@ export class CrowdXplorer implements OnInit {
         this.queryValue = query;
     }
 
+    public storeCookie(identifier: string, value: string, expireDate: Date) {
+        this.cookieService.set(identifier, value, expireDate, '/'); // Last parameter '/' is the path of the cookie
+    }
+
+    public checkCookie(identifier: string) {
+        return this.cookieService.check(identifier);
+    }
+
+    public loadCookie(identifier: string) {
+        return this.cookieService.get(identifier);
+    }
+
     /*
      * This function uses the text received as a parameter to perform a request using the chosen service.
      */
@@ -225,7 +286,6 @@ export class CrowdXplorer implements OnInit {
 
         if (this.queryValue.length > 0) {
             /* The loading screen is shown */
-            this.ngxService.startBackground();
 
             /* A search has been started */
             this.searchInProgress = true;
@@ -235,139 +295,13 @@ export class CrowdXplorer implements OnInit {
 
             switch (this.source) {
                 /* The search operation for Bing Web Search is performed */
-                /* This is done by subscribing to an Observable of <BingWebSearchResponse> items */
                 case "BingWebSearch": {
-                    this.bingService
-                        .performWebSearch(this.bingApiKey, this.queryValue)
-                        .subscribe((searchResponse) => {
-                            /* We are interested in parsing the webPages property of a <BingWebSearchResponse> */
-                            if (searchResponse.hasOwnProperty("webPages")) {
-                                /* Some results exist */
-                                this.resultsFound = true;
-                                /* The matching response is saved and filtered if the environment variable is not an empty array */
-                                this.bingWebSearchResponse =
-                                    this.bingService.filterResponse(
-                                        searchResponse,
-                                        this.domainsToFilter
-                                    );
-                                let decodedResponse =
-                                    this.bingService.decodeResponse(
-                                        this.bingWebSearchResponse
-                                    );
-                                /* EMITTER: The matching response is emitted to provide it to an eventual parent component*/
-                                this.resultEmitter.emit(decodedResponse);
-                                /* The results amount is saved*/
-                                this.resultsAmount = decodedResponse.length;
-                                /* Each <webPage> item is saved into results table */
-                                this.dataSource.data = decodedResponse;
-                            } else {
-                                /* There are not any result */
-                                this.resultEmitter.emit([]);
-                                this.resultsFound = false;
-                                this.resultsAmount = 0;
-                                this.dataSource.data = [];
-                            }
-                            this.searchInProgress = false;
-                            /* The loading screen is hidden */
-                            this.ngxService.stopBackground();
-                        });
-                    break;
-                }
-                case "FakerWebSearch": {
-                    this.fakerService
-                        .performWebSearch(this.fakeJSONToken, this.queryValue)
-                        .subscribe((searchResponse) => {
-                            /* We are interested in parsing the webPages property of a BingWebSearchResponse */
-                            if (searchResponse.length > 0) {
-                                /* Some results exist */
-                                this.resultsFound = true;
-                                /* The matching response is saved */
-                                this.fakerSearchResponse = searchResponse;
-                                let decodedResponse =
-                                    this.fakerService.decodeResponse(
-                                        searchResponse
-                                    );
-                                /* EMITTER: The matching response is emitted to provide it to an eventual parent component*/
-                                this.resultEmitter.emit(decodedResponse);
-                                /* The results amount is saved*/
-                                this.resultsAmount = decodedResponse.length;
-                                /* Each <webPage> item is saved into results table */
-                                this.dataSource.data = decodedResponse;
-                            } else {
-                                /* There are not any result */
-                                this.resultEmitter.emit([]);
-                                this.resultsFound = false;
-                                this.resultsAmount = 0;
-                                this.dataSource.data = [];
-                            }
-
-                            this.searchInProgress = false;
-                            /* The loading screen is hidden */
-                            this.ngxService.stopBackground();
-                        });
-                    break;
-                }
-                case "PubmedSearch": {
-                    this.pubmedService
-                        .performWebSearch(this.queryValue)
-                        .subscribe(async (searchResponse) => {
-                            /* We are interested in parsing the webPages property of a BingWebSearchResponse */
-                            if (
-                                searchResponse.esearchresult.idlist.length > 0
-                            ) {
-                                /* The matching response is saved */
-                                this.pubmedSearchResponse = searchResponse;
-                                /* EMITTER: The matching response is emitted to provide it to an eventual parent component*/
-                                //this.resultEmitter.emit(this.pubmedSearchResponse);
-                                let decodedResponses = [];
-                                for (let index in this.pubmedSearchResponse
-                                    .esearchresult.idlist) {
-                                    let articleId =
-                                        this.pubmedSearchResponse.esearchresult
-                                            .idlist[index];
-                                    this.pubmedService
-                                        .retrieveArticle(articleId)
-                                        .subscribe((summaryResponse) => {
-                                            this.pubmedSummaryResponse =
-                                                summaryResponse;
-                                            decodedResponses.push(
-                                                this.pubmedService.decodeResponse(
-                                                    summaryResponse
-                                                )
-                                            );
-                                        });
-                                    /* Some results exist */
-                                    this.resultsFound = true;
-                                    /* The results amount is saved*/
-                                    this.resultsAmount =
-                                        decodedResponses.length;
-                                    /* Each <webPage> item is saved into results table */
-                                    this.dataSource.data = decodedResponses;
-                                    await this.delay(750);
-                                }
-                                this.resultEmitter.emit(decodedResponses);
-                            } else {
-                                /* There are not any result */
-                                this.resultEmitter.emit([]);
-                                this.resultsFound = false;
-                                this.resultsAmount = 0;
-                                this.dataSource.data = [];
-                            }
-                            /* The search operation for Bing Web Search is completed */
-                            this.searchPerformed = true;
-                            /* The loading screen is hidden */
-                            this.searchInProgress = false;
-                            this.ngxService.stopBackground();
-                        });
+                    this.bingDataSource.loadData(this.queryValue, this.paginator.pageIndex, this.paginator.pageSize)
+                    this.searchInProgress = false;
                     break;
                 }
             }
         }
-    }
-
-    /* VIEWCHILD: A reference to a mat-paginator html element is created and bound with the result table */
-    @ViewChild(MatPaginator) set matPaginator(matPaginator: MatPaginator) {
-        this.dataSource.paginator = matPaginator;
     }
 
     /* This function trigger an emitter when the user selects one the result shown on the interface */
@@ -386,7 +320,7 @@ export class CrowdXplorer implements OnInit {
 
     /* Random digits generation */
     public randomDigits(): string {
-        let array = Array.from({ length: 10 }, () =>
+        let array = Array.from({length: 10}, () =>
             Math.floor(Math.random() * (1000 - 1 + 1) + 1)
         );
         return array.join("");
@@ -399,9 +333,6 @@ export class CrowdXplorer implements OnInit {
 
     private resetSearchEngineState() {
         this.searchForm.reset();
-        this.resultsFound = false;
-        this.dataSource = new MatTableDataSource<any>();
-        this.resultPageSize = 0;
         this.resultsAmount = 0;
     }
 

@@ -36,6 +36,7 @@
     "flat-angular": "^1.6.0",
     "material-icons": "^1.13.12",
     "ngx-color-picker": "^15.0.0",
+    "ngx-cookie-service": "^16.0.1",
     "ngx-countdown": "^16.0.0",
     "ngx-device-detector": "^6.0.2",
     "ngx-file-helpers": "^10.0.0",

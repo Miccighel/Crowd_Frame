@@ -1,0 +1,10 @@
+{
+  "/bing": {
+    "target": "https://api.bing.microsoft.com/v7.0/search",
+    "secure": false,
+    "pathRewrite": {
+      "^/bing": ""
+    },
+    "changeOrigin": true
+  }
+}

@@ -9,6 +9,7 @@ import {UtilsService} from "../../../../../services/utils.service";
 import {DeviceDetectorService} from "ngx-device-detector";
 /* Models */
 import {Task} from "../../../../../models/skeleton/task";
+import {Worker} from "../../../../../models/worker/worker";
 import {Dimension} from "../../../../../models/skeleton/dimension";
 import {Document} from "../../../../../../../data/build/skeleton/document";
 /* Components */
@@ -34,6 +35,7 @@ export class SearchEngineComponent implements OnInit {
     formBuilder: UntypedFormBuilder;
 
     @Input() task: Task
+    @Input() worker: Worker
     @Input() documentIndex: number
     @Input() dimensionIndex: number
 
@@ -74,8 +76,6 @@ export class SearchEngineComponent implements OnInit {
             this.formEmitter.emit(this.searchEngineForm)
         })
         this.formEmitter.emit(this.searchEngineForm)
-
-
     }
 
     /*

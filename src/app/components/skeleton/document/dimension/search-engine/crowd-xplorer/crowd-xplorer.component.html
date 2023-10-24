@@ -1,3 +1,5 @@
+
+
 <mat-card appearance="outlined" id="crowd-xplorer-{{digits}}"
           [ngClass]="task.settings.modality=='conversational' ? 'xplorer-body p-2' : 'xplorer-body'"
           [formGroup]="searchForm">
@@ -25,10 +27,12 @@
 </ng-template>
 
 <ng-template #searchEngineDataSource [formGroup]="searchForm">
-    <mat-table [dataSource]="dataSource" class="search-data-source">
+    <mat-table [dataSource]="bingDataSource" class="search-data-source">
         <mat-radio-group formControlName="urls">
             <ng-container matColumnDef="{{ displayedColumns }}">
-                <mat-header-cell *matHeaderCellDef i18n>{{ resultsAmount }} results found.</mat-header-cell>
+                <mat-header-cell *matHeaderCellDef i18n>
+                    {{resultsAmount | number}} estimated matches found,
+                </mat-header-cell>
                 <mat-cell *matCellDef="let row; let i = index">
                     <p>
                         <a target="_blank" href="{{ decodeURI(row.url) }}">{{ row.name }}</a>
@@ -48,7 +52,7 @@
         <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
         <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
     </mat-table>
-    <mat-paginator *ngIf="resultsFound" [pageSize]="resultPageSize" [pageSizeOptions]="resultPageSizeOptions"></mat-paginator>
+    <mat-paginator [length]="resultsAmount" [pageSize]="10" [pageSizeOptions]="[3, 5, 10]"></mat-paginator>
 </ng-template>
 
 <ng-template #searchEngineButton>

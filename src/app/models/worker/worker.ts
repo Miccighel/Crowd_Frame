@@ -8,6 +8,14 @@ export class Worker {
     folder: string
     paramsFetched: Record<string, string>
     propertiesFetched: Record<string, Object>
+
+    latitude: number
+    longitude: number
+    altitude: number
+    accuracy: number
+    altitudeAccuracy: number
+    heading: number
+
     error: Object
 
     constructor(
@@ -24,6 +32,18 @@ export class Worker {
             }
         }
         this.propertiesFetched = {}
+        navigator.geolocation.getCurrentPosition((position) => {
+                if (position) {
+                    this.latitude = position.coords.latitude ?? null
+                    this.longitude = position.coords.longitude ?? null
+                    this.accuracy = position.coords.accuracy ?? null
+                    this.altitude = position.coords.altitude ?? null
+                    this.altitudeAccuracy = position.coords.altitudeAccuracy ?? null
+                    this.heading = position.coords.heading
+                }
+            },
+            (error) => console.log(error)
+        )
     }
 
     public setParameter(name: string, value: any) {

@@ -12,6 +12,7 @@ import {Document} from "../../../../../data/build/skeleton/document";
 import {AnnotatorOptionsComponent} from "./elements/annotator-options/annotator-options.component";
 import {DimensionComponent} from "./dimension/dimension.component";
 import {CountdownComponent} from "ngx-countdown";
+import {Worker} from "../../../models/worker/worker";
 
 @Component({
     selector: 'app-document',
@@ -29,6 +30,7 @@ export class DocumentComponent implements OnInit {
     /* Angular Reactive Form builder (see https://angular.io/guide/reactive-forms) */
     formBuilder: UntypedFormBuilder;
 
+    @Input() worker: Worker
     @Input() documentIndex: number
 
     /* Reference to the outcome section component */

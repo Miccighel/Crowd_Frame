@@ -10,8 +10,13 @@
                 <div *ngIf="dimension.style.type=='list'" class="dimension">
 
                     <!-- Dimension search engine interface markup -->
-                    <app-search-engine [documentIndex]="documentIndex" [dimensionIndex]="dimension.index" [task]="this.task"
-                                       (formEmitter)="storeSearchEngineUrl($event, dimension.index)"></app-search-engine>
+                    <app-search-engine
+                            [documentIndex]="documentIndex"
+                            [dimensionIndex]="dimension.index"
+                            [task]="this.task"
+                            [worker]="this.worker"
+                            (formEmitter)="storeSearchEngineUrl($event, dimension.index)">
+                    </app-search-engine>
 
                     <ng-container *ngIf="verifyUrlSelection(position)">
 
@@ -171,8 +176,13 @@
                 <div *ngIf="dimension.style.type=='matrix'">
 
                     <!-- Dimension search engine interface markup -->
-                    <app-search-engine [documentIndex]="documentIndex" [dimensionIndex]="dimension.index" [task]="this.task"
-                                       (formEmitter)="storeSearchEngineUrl($event, dimension.index)"></app-search-engine>
+                    <app-search-engine
+                            [documentIndex]="documentIndex"
+                            [dimensionIndex]="dimension.index"
+                            [task]="this.task"
+                            [worker]="this.worker"
+                            (formEmitter)="storeSearchEngineUrl($event, dimension.index)">
+                    </app-search-engine>
 
                     <ng-container *ngIf="verifyUrlSelection(position)">
 
@@ -276,8 +286,13 @@
                             </div>
                         </div>
 
-                        <app-search-engine [documentIndex]="documentIndex" [dimensionIndex]="dimension.index" [task]="this.task"
-                                           (formEmitter)="storeSearchEngineUrl($event, dimension.index)"></app-search-engine>
+                        <app-search-engine
+                                [documentIndex]="documentIndex"
+                                [dimensionIndex]="dimension.index"
+                                [task]="this.task"
+                                [worker]="this.worker"
+                                (formEmitter)="storeSearchEngineUrl($event, dimension.index)">
+                        </app-search-engine>
 
                         <div *ngIf="dimension.scale" class="dimension-container dimension-scale">
                             <div class="dimension-content-split">

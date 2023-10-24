@@ -136,7 +136,8 @@ export class LoaderComponent implements OnInit {
     }
 
     public async ngOnInit() {
-        this.ngxService.stopLoader('main')
+        if (this.adminAccess)
+            this.ngxService.stopLoader('main')
     }
 
     /*

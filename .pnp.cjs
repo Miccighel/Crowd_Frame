@@ -53,6 +53,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["flat-angular", "npm:1.6.0"],\
             ["material-icons", "npm:1.13.12"],\
             ["ngx-color-picker", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:15.0.0"],\
+            ["ngx-cookie-service", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:16.0.1"],\
             ["ngx-countdown", "npm:16.0.0"],\
             ["ngx-device-detector", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:6.0.2"],\
             ["ngx-file-helpers", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:10.0.0"],\
@@ -6988,6 +6989,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["flat-angular", "npm:1.6.0"],\
             ["material-icons", "npm:1.13.12"],\
             ["ngx-color-picker", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:15.0.0"],\
+            ["ngx-cookie-service", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:16.0.1"],\
             ["ngx-countdown", "npm:16.0.0"],\
             ["ngx-device-detector", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:6.0.2"],\
             ["ngx-file-helpers", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:10.0.0"],\
@@ -9939,6 +9941,33 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             "@types/angular__common",\
             "@types/angular__core",\
             "@types/angular__forms"\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
+      ["ngx-cookie-service", [\
+        ["npm:16.0.1", {\
+          "packageLocation": "./.yarn/cache/ngx-cookie-service-npm-16.0.1-7662b728e4-3452592dcd.zip/node_modules/ngx-cookie-service/",\
+          "packageDependencies": [\
+            ["ngx-cookie-service", "npm:16.0.1"]\
+          ],\
+          "linkType": "SOFT"\
+        }],\
+        ["virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:16.0.1", {\
+          "packageLocation": "./.yarn/__virtual__/ngx-cookie-service-virtual-1d130b2b91/0/cache/ngx-cookie-service-npm-16.0.1-7662b728e4-3452592dcd.zip/node_modules/ngx-cookie-service/",\
+          "packageDependencies": [\
+            ["ngx-cookie-service", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:16.0.1"],\
+            ["@angular/common", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:16.2.9"],\
+            ["@angular/core", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:16.2.9"],\
+            ["@types/angular__common", null],\
+            ["@types/angular__core", null],\
+            ["tslib", "npm:2.5.0"]\
+          ],\
+          "packagePeers": [\
+            "@angular/common",\
+            "@angular/core",\
+            "@types/angular__common",\
+            "@types/angular__core"\
           ],\
           "linkType": "HARD"\
         }]\

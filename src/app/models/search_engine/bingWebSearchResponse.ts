@@ -11,6 +11,9 @@ export interface BingWebSearchResponse {
   rankingResponse: RankingResponse
   relatedSearches: RelatedSearches
   webPages: WebPages
+  clientId: string
+  apiMarket: string
+  traceId: string
 }
 
 export interface Entities {
