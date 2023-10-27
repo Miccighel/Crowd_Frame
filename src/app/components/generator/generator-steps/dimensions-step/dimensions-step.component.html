@@ -27,18 +27,18 @@
                                         <mat-form-field matLine class="width-100" appearance="fill">
                                             <mat-label><span i18n>Name</span></mat-label>
                                             <input matInput type="text" formControlName="name">
-                                            <mat-error>
+                                            
                                                 <app-error-message [formField]="dimension.get('name')"></app-error-message>
-                                            </mat-error>
+                                            
                                         </mat-form-field>
                                     </td>
                                     <td class="p-0">
                                         <mat-form-field matLine class="width-100" appearance="fill">
                                             <mat-label><span i18n>Name Pretty</span></mat-label>
                                             <input matInput type="text" formControlName="name_pretty">
-                                            <mat-error>
+                                            
                                                 <app-error-message [formField]="dimension.get('name_pretty')"></app-error-message>
-                                            </mat-error>
+                                            
                                         </mat-form-field>
                                     </td>
                                 </tr>
@@ -80,18 +80,18 @@
                                             <mat-form-field matLine class="width-100" appearance="fill">
                                                 <mat-label><span i18n>Text</span></mat-label>
                                                 <input matInput type="text" formControlName="text">
-                                                <mat-error>
+                                                
                                                     <app-error-message [formField]="dimension.get('justification').get('text')"></app-error-message>
-                                                </mat-error>
+                                                
                                             </mat-form-field>
                                         </td>
                                         <td class="p-0">
                                             <mat-form-field matLine class="width-100" appearance="fill">
                                                 <mat-label><span i18n>Minimum Words</span></mat-label>
                                                 <input matInput type="number" min="0" formControlName="min_words">
-                                                <mat-error>
+                                                
                                                     <app-error-message [formField]="dimension.get('justification').get('min_words')"></app-error-message>
-                                                </mat-error>
+                                                
                                             </mat-form-field>
                                         </td>
                                     </tr>
@@ -140,9 +140,9 @@
                                                 <mat-form-field matLine class="width-100" appearance="fill">
                                                     <mat-label><span i18n>Text</span></mat-label>
                                                     <input matInput type="text" formControlName="text">
-                                                    <mat-error>
+                                                    
                                                         <app-error-message [formField]="this.instructionsScale(dimensionIndex).get('text')"></app-error-message>
-                                                    </mat-error>
+                                                    
                                                 </mat-form-field>
                                             </td>
                                         </tr>
@@ -168,9 +168,9 @@
                                                         {{scaleType.viewValue}}
                                                     </mat-option>
                                                 </mat-select>
-                                                <mat-error>
+                                                
                                                     <app-error-message [formField]="dimension.get('scale').get('type')"></app-error-message>
-                                                </mat-error>
+                                                
                                             </mat-form-field>
                                         </td>
                                     </tr>
@@ -190,27 +190,27 @@
                                             <mat-form-field matLine class="width-100" appearance="fill">
                                                 <mat-label><span i18n>Minimum</span></mat-label>
                                                 <input matInput type="number" formControlName="min">
-                                                <mat-error>
+                                                
                                                     <app-error-message [formField]="dimension.get('scale').get('min')"></app-error-message>
-                                                </mat-error>
+                                                
                                             </mat-form-field>
                                         </td>
                                         <td class="p-0 pr-16px">
                                             <mat-form-field matLine class="width-100" appearance="fill">
                                                 <mat-label><span i18n>Maximum</span></mat-label>
                                                 <input matInput type="number" formControlName="max">
-                                                <mat-error>
+                                                
                                                     <app-error-message [formField]="dimension.get('scale').get('max')"></app-error-message>
-                                                </mat-error>
+                                                
                                             </mat-form-field>
                                         </td>
                                         <td class="p-0">
                                             <mat-form-field matLine class="width-100" appearance="fill">
                                                 <mat-label><span i18n>Step</span></mat-label>
                                                 <input matInput type="number" formControlName="step">
-                                                <mat-error>
+                                                
                                                     <app-error-message [formField]="dimension.get('scale').get('step')"></app-error-message>
-                                                </mat-error>
+                                                
                                             </mat-form-field>
                                         </td>
                                     </tr>
@@ -228,27 +228,27 @@
                                                     <mat-form-field matLine class="width-100" appearance="fill">
                                                         <mat-label><span i18n>Label</span></mat-label>
                                                         <input matInput type="text" formControlName="label">
-                                                        <mat-error>
+                                                        
                                                             <app-error-message [formField]="dimensionMap.get('label')"></app-error-message>
-                                                        </mat-error>
+                                                        
                                                     </mat-form-field>
                                                 </td>
                                                 <td class="p-0 pr-16px">
                                                     <mat-form-field matLine class="width-100" appearance="fill">
                                                         <mat-label><span i18n>Description</span></mat-label>
                                                         <input matInput type="text" formControlName="description">
-                                                        <mat-error>
+                                                        
                                                             <app-error-message [formField]="dimensionMap.get('description')"></app-error-message>
-                                                        </mat-error>
+                                                        
                                                     </mat-form-field>
                                                 </td>
                                                 <td class="p-0 pr-16px">
                                                     <mat-form-field matLine class="width-100" appearance="fill">
                                                         <mat-label><span i18n>Value</span></mat-label>
                                                         <input matInput type="text" formControlName="value">
-                                                        <mat-error>
+                                                        
                                                             <app-error-message [formField]="dimensionMap.get('value')"></app-error-message>
-                                                        </mat-error>
+                                                        
                                                     </mat-form-field>
                                                 </td>
                                                 <td class="p-0 center">
@@ -269,9 +269,9 @@
                                             <mat-form-field matLine class="width-100" appearance="fill">
                                                 <mat-label><span i18n>Minimum</span></mat-label>
                                                 <input matInput type="number" formControlName="min">
-                                                <mat-error>
+                                                
                                                     <app-error-message [formField]="dimension.get('scale').get('min')"></app-error-message>
-                                                </mat-error>
+                                                
                                             </mat-form-field>
                                         </td>
                                     </tr>
@@ -308,9 +308,9 @@
                                                 <mat-form-field matLine class="width-100" appearance="fill">
                                                     <mat-label><span i18n>Text</span></mat-label>
                                                     <input matInput type="text" formControlName="text">
-                                                    <mat-error>
+                                                    
                                                         <app-error-message [formField]="this.instructionsScale(dimensionIndex).get('text')"></app-error-message>
-                                                    </mat-error>
+                                                    
                                                 </mat-form-field>
                                             </td>
                                         </tr>
@@ -336,9 +336,9 @@
                                                         {{styleType.viewValue}}
                                                     </mat-option>
                                                 </mat-select>
-                                                <mat-error>
+                                                
                                                     <app-error-message [formField]="dimension.get('style').get('styleType')"></app-error-message>
-                                                </mat-error>
+                                                
                                             </mat-form-field>
                                         </td>
                                         <td class="p-0 pr-16px">
@@ -349,9 +349,9 @@
                                                         {{positionType.viewValue}}
                                                     </mat-option>
                                                 </mat-select>
-                                                <mat-error>
+                                                
                                                     <app-error-message [formField]="dimension.get('style').get('position')"></app-error-message>
-                                                </mat-error>
+                                                
                                             </mat-form-field>
                                         </td>
                                         <td class="p-0 pr-16px">
@@ -362,9 +362,9 @@
                                                         {{orientationType.viewValue}}
                                                     </mat-option>
                                                 </mat-select>
-                                                <mat-error>
+                                                
                                                     <app-error-message [formField]="dimension.get('style').get('orientation')"></app-error-message>
-                                                </mat-error>
+                                                
                                             </mat-form-field>
                                         </td>
                                         <td class="p-0">

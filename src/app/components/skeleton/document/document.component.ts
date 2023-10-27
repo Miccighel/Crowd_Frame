@@ -39,6 +39,8 @@ export class DocumentComponent implements OnInit {
     @Input() worker: Worker
     @Input() documentIndex: number
     @Input() documentsForm: UntypedFormGroup[]
+    @Input() searchForms: Array<Array<UntypedFormGroup>>;
+    @Input() searchFormsCrowdX: Array<Array<Object>>;
     @Input() stepper: MatStepper
 
     /* Reference to the outcome section component */
@@ -89,7 +91,12 @@ export class DocumentComponent implements OnInit {
         let documentIndex = data['index'] as number
         let form = data['form']
         if (!this.assessmentForm && this.documentIndex == documentIndex) {
-            this.assessmentForm = form
+            if(!this.documentsForm[this.documentIndex]){
+                this.assessmentForm = form
+            }
+            else{
+                this.assessmentForm = this.documentsForm[this.documentIndex]
+            }
         }
     }
 
@@ -114,7 +121,7 @@ export class DocumentComponent implements OnInit {
             docsForms.push(this.assessmentForm)
 
             let goldConfiguration = this.utilsService.generateGoldConfiguration(this.task.goldDocuments,this.task.goldDimensions, docsForms, this.task.notes);
-            let goldChecks = GoldChecker.performGoldCheck(goldConfiguration);
+            let goldChecks = GoldChecker.performGoldCheck(goldConfiguration, this.document.task_type);
 
             if(goldChecks.every(Boolean))
                 this.stepper.next();

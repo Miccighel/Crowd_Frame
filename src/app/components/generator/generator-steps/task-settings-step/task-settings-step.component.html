@@ -20,9 +20,9 @@
                                     {{modalityType.viewValue}}
                                 </mat-option>
                             </mat-select>
-                            <mat-error>
+                            
                                 <app-error-message [formField]="formStep.get('modality')"></app-error-message>
-                            </mat-error>
+                            
                         </mat-form-field>
                     </td>
                 </tr>
@@ -37,18 +37,18 @@
                         <mat-form-field matLine class="width-100" appearance="fill">
                             <mat-label><span i18n>Allowed Tries</span></mat-label>
                             <input matInput type="number" min="0" formControlName="allowed_tries">
-                            <mat-error>
+                            
                                 <app-error-message [formField]="formStep.get('allowed_tries')"></app-error-message>
-                            </mat-error>
+                            
                         </mat-form-field>
                     </td>
                     <td class="p-0">
                         <mat-form-field matLine class="width-100" appearance="fill">
                             <mat-label><span i18n>Time Check Amount</span></mat-label>
                             <input matInput type="number" min="0" formControlName="time_check_amount">
-                            <mat-error>
+                            
                                 <app-error-message [formField]="formStep.get('time_check_amount')"></app-error-message>
-                            </mat-error>
+                            
                         </mat-form-field>
                     </td>
                 </tr>
@@ -62,9 +62,9 @@
                         <mat-form-field matLine class="width-100" appearance="fill">
                             <mat-label><span i18n>Time Assessment</span></mat-label>
                             <input matInput type="number" min="0" formControlName="time_assessment">
-                            <mat-error>
+                            
                                 <app-error-message [formField]="formStep.get('time_assessment')"></app-error-message>
-                            </mat-error>
+                            
                         </mat-form-field>
                     </td>
                 </tr>
@@ -80,9 +80,9 @@
             <mat-form-field matLine class="width-100" appearance="fill" *ngIf="formStep.get('logger').value">
                 <mat-label><span i18n>Logging server URL</span></mat-label>
                 <input matInput type="text" formControlName="server_endpoint" (blur)="updateServerEndpoint()">
-                <mat-error>
+                
                     <app-error-message [formField]="formStep.get('server_endpoint')"></app-error-message>
-                </mat-error>
+                
             </mat-form-field>
 
             <div *ngIf="formStep.get('logger').value">
@@ -313,9 +313,9 @@
                                         {{annotatorType.viewValue}}
                                     </mat-option>
                                 </mat-select>
-                                <mat-error>
+                                
                                     <app-error-message [formField]="formStep.get('annotator').get('type')"></app-error-message>
-                                </mat-error>
+                                
                             </mat-form-field>
                         </td>
                     </tr>
@@ -334,18 +334,18 @@
                                 <mat-form-field class="width-100" matLine appearance="fill">
                                     <mat-label><span i18n>Label</span></mat-label>
                                     <input matInput type="text" formControlName="label">
-                                    <mat-error>
+                                    
                                         <app-error-message [formField]="formStep.get('annotator').get('values').get(valueIndex.toString()).get('label')"></app-error-message>
-                                    </mat-error>
+                                    
                                 </mat-form-field>
                             </td>
                             <td class="p-0 pr-16px" [formGroupName]="valueIndex">
                                 <mat-form-field class="width-100" matLine appearance="fill">
                                     <mat-label>HTML Color (#123456)</mat-label>                 <!-- dubbio -->
                                     <input matInput formControlName="color" [(colorPicker)]="this.annotatorOptionColors[valueIndex]" (colorPickerChange)="updateOptionColor($event, valueIndex)">
-                                    <mat-error>
+                                    
                                         <app-error-message [formField]="formStep.get('annotator').get('values').get(valueIndex.toString()).get('color')"></app-error-message>
-                                    </mat-error>
+                                    
                                 </mat-form-field>
                             </td>
                             <td class="p-0 center">
@@ -368,9 +368,9 @@
             <mat-form-field matLine class="width-100" appearance="fill" *ngIf="this.formStep.get('setCountdownTime').value">
                 <mat-label><span i18n>Time</span></mat-label>
                 <input matInput type="number" min="0" formControlName="countdown_time">
-                <mat-error>
+                
                     <app-error-message [formField]="formStep.get('countdown_time')"></app-error-message>
-                </mat-error>
+                
             </mat-form-field>
 
             <mat-form-field class="width-100" appearance="fill" *ngIf="this.formStep.get('setCountdownTime').value">
@@ -380,9 +380,9 @@
                         {{countdownBehavior.viewValue}}
                     </mat-option>
                 </mat-select>
-                <mat-error>
+                
                     <app-error-message [formField]="formStep.get('countdown_behavior')"></app-error-message>
-                </mat-error>
+                
             </mat-form-field>
 
 
@@ -397,9 +397,9 @@
                         {{additionalTimeModality.viewValue}}
                     </mat-option>
                 </mat-select>
-                <mat-error>
+                
                     <app-error-message [formField]="formStep.get('countdown_modality')"></app-error-message>
-                </mat-error>
+                
             </mat-form-field>
 
             <mat-form-field class="width-100" appearance="fill"
@@ -410,9 +410,9 @@
                         {{attribute}}
                     </mat-option>
                 </mat-select>
-                <mat-error>
+                
                     <app-error-message [formField]="formStep.get('countdown_attribute')"></app-error-message>
-                </mat-error>
+                
             </mat-form-field>
 
             <div formArrayName="countdown_attribute_values"
@@ -421,9 +421,9 @@
                                 [formGroupName]="countdownAttributeIndex">
                     <mat-label>{{this.hitsAttributesValues[(this.formStep.get('countdown_attribute').value)][countdownAttributeIndex]}}</mat-label>
                     <input matInput type="number" formControlName="time" min="0">
-                    <mat-error>
+                    
                         <app-error-message [formField]="this.formStep.get('countdown_attribute_values').get(countdownAttributeIndex.toString()).get('time')"></app-error-message>
-                    </mat-error>
+                    
                 </mat-form-field>
             </div>
 
@@ -432,9 +432,9 @@
                 <mat-form-field matLine class="indent p-2px" *ngFor="let countdownPositionControl of this.countdownPositionValues().controls; let countdownPositionIndex = index" [formGroupName]="countdownPositionIndex">
                     <mat-label>Position {{countdownPositionIndex}}</mat-label>
                     <input matInput type="number" formControlName="time" min="0">
-                    <mat-error>
+                    
                         <app-error-message [formField]="this.formStep.get('countdown_position_values').get(countdownPositionIndex.toString()).get('time')"></app-error-message>
-                    </mat-error>
+                    
                 </mat-form-field>
             </div>
 
@@ -452,9 +452,9 @@
                                 <mat-form-field matLine class="width-100" [hideRequiredMarker]="msg.get('message').valid" appearance="fill">
                                     <mat-label><span i18n>Message</span></mat-label>
                                     <input matInput type="text" formControlName="message">
-                                    <mat-error>
+                                    
                                         <app-error-message [formField]="msg.get('message')"></app-error-message>
-                                    </mat-error>
+                                    
                                 </mat-form-field>
                             </td>
                             <td class="p-0 center">

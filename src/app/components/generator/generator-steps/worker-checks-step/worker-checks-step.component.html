@@ -13,7 +13,7 @@
 
             <mat-divider [inset]="true"></mat-divider>
 
-            <p><span i18n>Select the IDs to consider by pressing</span> <i><span i18n>SPACE</span></i></p>
+            <p><span i18n>Select the IDs to consider by pressing</span> <i><span i18n> SPACE</span></i></p>
 
             <!-- Blacklist -->
 
@@ -58,7 +58,7 @@
                                     </mat-panel-description>
                                 </mat-expansion-panel-header>
                                 <div *ngFor="let batch of taskNode['batches']; let batchIndex = index" [formGroupName]="batch['counter']">
-                                    <mat-label>{{batch["batch"]}}</mat-label>
+                                    <mat-label>{{batch["batch"]}} </mat-label>
                                     <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="blacklist" (change)="resetBlacklist(batch['counter'])">Blacklist</mat-slide-toggle>
                                     <mat-slide-toggle color="primary" class="mt-16px mb-16px" formControlName="whitelist" (change)="resetWhitelist(batch['counter'])">Whitelist</mat-slide-toggle>
                                 </div>

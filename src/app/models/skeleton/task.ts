@@ -85,9 +85,14 @@ export class Task {
     /* Array of gold dimensions within a Hit */
     goldDimensions: Array<Dimension>;
 
+    searchSource: string;
+    searchDomains: Array<string>;
+
     constructor() {
         this.tryCurrent = 1;
         this.sequenceNumber = 0;
+        this.searchSource = null;
+        this.searchDomains = null;
     }
 
     public getElementIndex(stepIndex) {

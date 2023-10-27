@@ -38,6 +38,10 @@ export class SearchEngineComponent implements OnInit {
     @Input() worker: Worker
     @Input() documentIndex: number
     @Input() dimensionIndex: number
+    @Input() searchForms: Array<Array<UntypedFormGroup>>;
+    @Input() searchFormsCrowdX: Array<Array<Object>>;
+
+
 
     searchEngineForm: UntypedFormGroup
 
@@ -69,12 +73,17 @@ export class SearchEngineComponent implements OnInit {
 
     ngOnInit() {
         this.dimension = this.task.dimensions[this.dimensionIndex]
-        let controlsConfig = {};
-        if (this.dimension.url) controlsConfig[`${this.dimension.name}_url`] = new UntypedFormControl('', [Validators.required, this.validateSearchEngineUrl.bind(this)]);
-        this.searchEngineForm = this.formBuilder.group(controlsConfig)
-        this.searchEngineForm.valueChanges.subscribe(values => {
-            this.formEmitter.emit(this.searchEngineForm)
-        })
+        if(!this.searchForms[this.documentIndex] || !this.searchForms[this.documentIndex][this.dimensionIndex]){
+            let controlsConfig = {};
+            if (this.dimension.url) controlsConfig[`${this.dimension.name}_url`] = new UntypedFormControl('', [Validators.required, this.validateSearchEngineUrl.bind(this)]);
+            this.searchEngineForm = this.formBuilder.group(controlsConfig)
+            this.searchEngineForm.valueChanges.subscribe(values => {
+                this.formEmitter.emit(this.searchEngineForm)
+            })
+        }
+        else{
+            this.searchEngineForm=this.searchForms[this.documentIndex][this.dimensionIndex]
+        }
         this.formEmitter.emit(this.searchEngineForm)
     }
 

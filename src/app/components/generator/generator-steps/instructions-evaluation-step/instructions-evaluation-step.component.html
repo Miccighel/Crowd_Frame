@@ -41,9 +41,9 @@
                             <mat-form-field matLine class="width-100" appearance="fill">
                                 <mat-label><span i18n>Text</span></mat-label>
                                 <input matInput type="text" formControlName="text">
-                                <mat-error>
+                                
                                     <app-error-message [formField]="this.element().get('text')"></app-error-message>
-                                </mat-error>
+                                
                             </mat-form-field>
                         </td>
                     </tr>
@@ -76,9 +76,9 @@
 
                             <div>
                                 <angular-editor id="instruction-general-{{instructionIndex}}-text" formControlName="text" [config]="editorConfig"></angular-editor>
-                                <mat-error>
+                                
                                     <app-error-message [formField]="instruction.get('text')"></app-error-message>
-                                </mat-error>
+                                
                             </div>
 
                         </mat-card-content>

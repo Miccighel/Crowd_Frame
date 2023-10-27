@@ -22,7 +22,7 @@
 <ng-template #searchEngineTextArea [formGroup]="searchForm">
     <mat-form-field id="search-textarea" appearance="outline">
         <mat-label><span i18n>Insert your query</span></mat-label>
-        <input #searchInput matInput type="search" formControlName="query" (change)="this.saveQueryText(searchInput.value)" (keyup.enter)="this.performWebSearch()"/>
+        <input #searchInput matInput type="search" formControlName="query" (change)="this.saveQueryText(searchInput.value)" (keyup.enter)="this.performWebSearch(this.paginator.pageSize, this.paginator.pageIndex)"/>
     </mat-form-field>
 </ng-template>
 
@@ -59,7 +59,7 @@
     <button mat-flat-button color="primary"
             [ngClass]="task.settings.modality=='conversational' ? 'search-button-conversational' : 'search-button'"
             [disabled]="!query.valid || searchInProgress || (this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior =='disable_forms')"
-            (click)="this.performWebSearch()">
+            (click)="this.performWebSearch(this.paginator.pageSize, this.paginator.pageIndex)">
         <ng-container *ngIf="searchInProgress; else searchNotInProgress">
             <mat-icon fontIcon="hourglass_top"></mat-icon>
         </ng-container>

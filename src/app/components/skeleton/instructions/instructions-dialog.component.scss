@@ -1,26 +1,12 @@
 /* |--- DIALOG STYLES  --| */
 
-#task-instructions div {
-  font-size: 1.1em;
-}
-
 .mat-mdc-dialog-container {
   padding-top: 0 !important;
   padding-bottom: 0 !important;
 }
 
-p {
-  line-height: 150%;
-}
-
-li {
-  line-height: 200%;
-}
-
-h1 {
-  margin-bottom: 0.5em;
-  text-align: center;
-  font-weight: normal;
+.mat-mdc-dialog-container .mdc-dialog__content {
+    color: rgb(0, 0, 0);
 }
 
 .close-button {
@@ -31,18 +17,30 @@ h1 {
 
 button {
   text-transform: uppercase;
-  margin: auto;
 }
 
-p {
+#task-instructions div {
+  font-size: 1.1em;
+}
+
+
+#task-instructions p {
+  line-height: 150%;
   text-align: justify;
 }
 
-ul p {
+#task-instructions ul p {
   margin-bottom: 0.5%;
 }
 
-li {
+#task-instructions li {
+  line-height: 200%;
   margin-top: 5px;
   margin-bottom: 5px;
+}
+
+#task-instructions h1 {
+  margin-bottom: 0.5em;
+  text-align: center;
+  font-weight: normal;
 }

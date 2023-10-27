@@ -24,9 +24,9 @@
                             <mat-radio-group class="radio-button-group question" formControlName="{{question.nameFull}}_answer">
                                 <mat-radio-button *ngFor="let answer of question.answers; let k=index" class="radio-button" value="{{k}}"><span>{{answer}}</span></mat-radio-button>
                             </mat-radio-group>
-                            <mat-error *ngIf="this.questionnaireForm.get(question.nameFull.concat('_answer')).touched">
+                            <ng-container *ngIf="this.questionnaireForm.get(question.nameFull.concat('_answer')).touched">
                                 <app-error-message [formField]="this.questionnaireForm.get(question.nameFull.concat('_answer'))"></app-error-message>
-                            </mat-error>
+                            </ng-container>
                         </div>
 
                         <div *ngIf="question.type=='number'" class="question-box question-number">
@@ -34,9 +34,7 @@
                                 <input *ngIf="!this.question.repeat" matInput type="number" placeholder="Choose a number" min="0" formControlName="{{question.nameFull}}_answer">
                                 <input *ngIf="this.question.repeat" matInput type="number" placeholder="Choose a number" min="0" max="{{this.question.times}}" (change)="this.handleQuestionRepetition(question)"
                                        formControlName="{{question.nameFull}}_answer">
-                                <mat-error>
                                     <app-error-message [formField]="this.questionnaireForm.get(question.nameFull.concat('_answer'))"></app-error-message>
-                                </mat-error>
                             </mat-form-field>
                         </div>
 
@@ -50,9 +48,7 @@
                             </div>
                             <mat-form-field class="questionnaire-value question-checkbox-field">
                                 <input matInput formControlName="{{question.nameFull}}_answer">
-                                <mat-error>
                                     <app-error-message [formField]="this.questionnaireForm.get(question.nameFull.concat('_answer'))"></app-error-message>
-                                </mat-error>
                             </mat-form-field>
                         </ng-container>
 
@@ -64,9 +60,7 @@
                                         {{answer}}
                                     </mat-option>
                                 </mat-select>
-                                <mat-error>
                                     <app-error-message [formField]="this.questionnaireForm.get(question.nameFull.concat('_answer'))"></app-error-message>
-                                </mat-error>
                             </mat-form-field>
                         </div>
 
@@ -74,9 +68,7 @@
                             <mat-form-field appearance="fill" class="questionnaire-value width-100">
                                 <mat-label><span i18n>Answer</span></mat-label>
                                 <textarea matInput placeholder="Write your answer here" formControlName="{{question.nameFull}}_answer" rows="2"></textarea>
-                                <mat-error>
                                     <app-error-message [formField]="this.questionnaireForm.get(question.nameFull.concat('_answer'))"></app-error-message>
-                                </mat-error>
                             </mat-form-field>
                         </div>
 
@@ -84,9 +76,7 @@
                             <mat-form-field appearance="fill" class="questionnaire-value width-100">
                                 <mat-label><span i18n>Other</span></mat-label>
                                 <textarea matInput placeholder="Write any additional detail here" formControlName="{{question.nameFull}}_free_text" rows="2"></textarea>
-                                <mat-error>
                                     <app-error-message [formField]="this.questionnaireForm.get(question.nameFull.concat('_free_text'))"></app-error-message>
-                                </mat-error>
                             </mat-form-field>
                         </div>
 
@@ -147,9 +137,7 @@
                     <mat-form-field appearance="fill" class="questionnaire-value">
                         <mat-label><span i18n>Answer</span></mat-label>
                         <input matInput type="number" placeholder="0" min="0" max="100" formControlName="{{question.name}}_answer">
-                        <mat-error>
                             <app-error-message [formField]="this.questionnaireForm.get(question.nameFull.concat('_answer'))"></app-error-message>
-                        </mat-error>
                     </mat-form-field>
                 </div>
             </mat-card-content>

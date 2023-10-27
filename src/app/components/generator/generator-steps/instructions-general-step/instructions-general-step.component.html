@@ -32,9 +32,9 @@
 
                             <div>
                                 <angular-editor id="instruction-general-{{instructionIndex}}-text" formControlName="text" [config]="editorConfig"></angular-editor>
-                                <mat-error>
+                                
                                     <app-error-message [formField]="instruction.get('text')"></app-error-message>
-                                </mat-error>
+                               
                             </div>
 
                         </mat-card-content>

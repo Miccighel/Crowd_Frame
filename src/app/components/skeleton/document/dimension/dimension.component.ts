@@ -34,6 +34,11 @@ export class DimensionComponent implements OnInit {
 
     @Input() documentIndex: number
     @Input() worker: Worker
+    @Input() documentsForm: UntypedFormGroup[]
+    @Input() searchForms: Array<Array<UntypedFormGroup>>;
+    @Input() searchFormsCrowdX: Array<Array<Object>>;
+
+
 
     task: Task
     assessmentForm: UntypedFormGroup
@@ -61,53 +66,57 @@ export class DimensionComponent implements OnInit {
     ngOnInit() {
 
         this.task = this.sectionService.task
-
+        let assessForm = null
         /* A form for each the current HIT element is initialized */
-        
-        let controlsConfig = {};
-        for (let index_dimension = 0; index_dimension < this.task.dimensions.length; index_dimension++) {
-            let dimension = this.task.dimensions[index_dimension];
-            if (this.utilsService.isCurrentTaskType(this.task.documents[this.documentIndex].task_type, dimension.task_type)){
-                if (!dimension.pairwise) {
-                    if (dimension.scale) {
-
-
-                        if (dimension.scale.type == "categorical") {
-                            if ((<ScaleCategorical>dimension.scale).multipleSelection) {
-                                let answers = {}
-                                let scale = (<ScaleCategorical>dimension.scale)
-                                scale.mapping.forEach((value, index) => {
-                                    answers[index] = false
-                                });
-                                controlsConfig[`${dimension.name}_list`] = this.formBuilder.group(answers)
-                                controlsConfig[`${dimension.name}_value`] = new UntypedFormControl('', [Validators.required])
-                            } else {
-                                controlsConfig[`${dimension.name}_value`] = new UntypedFormControl('', [Validators.required]);
-                            }
-                        }
-
-
-                        if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value`] = new UntypedFormControl('', [Validators.required]);
-                        if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value`] = new UntypedFormControl('', [Validators.min((<ScaleInterval>dimension.scale).min), Validators.required])
-                        if (dimension.scale.type == "magnitude_estimation") controlsConfig[`${dimension.name}_value`] = new UntypedFormControl('', [CustomValidators.gt((<ScaleMagnitude>dimension.scale).min), Validators.required]);
-                    }
-                    if (dimension.justification) controlsConfig[`${dimension.name}_justification`] = new UntypedFormControl('', [Validators.required, this.validateJustification.bind(this)])
-                } else {
-                    for (let j = 0; j < this.task.documents[this.documentIndex]['pairwise'].length; j++) {
+        if(!this.documentsForm[this.documentIndex]){
+            let controlsConfig = {};
+            for (let index_dimension = 0; index_dimension < this.task.dimensions.length; index_dimension++) {
+                let dimension = this.task.dimensions[index_dimension];
+                if (this.utilsService.isCurrentTaskType(this.task.documents[this.documentIndex].task_type, dimension.task_type)){
+                    if (!dimension.pairwise) {
                         if (dimension.scale) {
-                            if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl('', [Validators.required]);
-                            if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl('', [Validators.min((<ScaleInterval>dimension.scale).min), Validators.required])
-                            if (dimension.scale.type == "magnitude_estimation") controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl('', [CustomValidators.gt((<ScaleMagnitude>dimension.scale).min), Validators.required]);
-                            
+
+
+                            if (dimension.scale.type == "categorical") {
+                                if ((<ScaleCategorical>dimension.scale).multipleSelection) {
+                                    let answers = {}
+                                    let scale = (<ScaleCategorical>dimension.scale)
+                                    scale.mapping.forEach((value, index) => {
+                                        answers[index] = false
+                                    });
+                                    controlsConfig[`${dimension.name}_list`] = this.formBuilder.group(answers)
+                                    controlsConfig[`${dimension.name}_value`] = new UntypedFormControl('', [Validators.required])
+                                } else {
+                                    controlsConfig[`${dimension.name}_value`] = new UntypedFormControl('', [Validators.required]);
+                                }
+                            }
+
+
+                            if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value`] = new UntypedFormControl('', [Validators.required]);
+                            if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value`] = new UntypedFormControl('', [Validators.min((<ScaleInterval>dimension.scale).min), Validators.required])
+                            if (dimension.scale.type == "magnitude_estimation") controlsConfig[`${dimension.name}_value`] = new UntypedFormControl('', [CustomValidators.gt((<ScaleMagnitude>dimension.scale).min), Validators.required]);
                         }
-                        if (dimension.justification) controlsConfig[`${dimension.name}_justification_element_${j}`] = new UntypedFormControl('', [Validators.required, this.validateJustification.bind(this)])
+                        if (dimension.justification) controlsConfig[`${dimension.name}_justification`] = new UntypedFormControl('', [Validators.required, this.validateJustification.bind(this)])
+                    } else {
+                        for (let j = 0; j < this.task.documents[this.documentIndex]['pairwise'].length; j++) {
+                            if (dimension.scale) {
+                                if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl('', [Validators.required]);
+                                if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl('', [Validators.min((<ScaleInterval>dimension.scale).min), Validators.required])
+                                if (dimension.scale.type == "magnitude_estimation") controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl('', [CustomValidators.gt((<ScaleMagnitude>dimension.scale).min), Validators.required]);
+                                
+                            }
+                            if (dimension.justification) controlsConfig[`${dimension.name}_justification_element_${j}`] = new UntypedFormControl('', [Validators.required, this.validateJustification.bind(this)])
+                        }
                     }
                 }
             }
+        
+            assessForm = this.formBuilder.group(controlsConfig)
         }
-
-
-        let assessForm = this.formBuilder.group(controlsConfig)
+        else{
+            assessForm = this.documentsForm[this.documentIndex]
+        }
+        
         this.assessmentForm = assessForm
         this.formEmitter.emit({
             "index": this.documentIndex,
@@ -160,6 +169,9 @@ export class DimensionComponent implements OnInit {
         for (const [key, value] of Object.entries(urlFormGroup.controls)) {
             if (!this.assessmentForm.get(key) && this.task.dimensions[dimensionIndex].url) {
                 this.assessmentForm.addControl(key, urlFormGroup.get(key))
+                
+                if(!this.searchForms[this.documentIndex]) this.searchForms[this.documentIndex]=[]
+                this.searchForms[this.documentIndex][dimensionIndex] = urlFormGroup
             }
         }
     }
