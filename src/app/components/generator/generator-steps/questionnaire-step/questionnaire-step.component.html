@@ -7,7 +7,7 @@
             <mat-card-subtitle><span i18n>First, define all Questionnaires here</span></mat-card-subtitle>
         </mat-card-header>
 
-        <mat-divider [inset]="true"></mat-divider>
+        <mat-divider></mat-divider>
 
         <mat-card-content>
 
@@ -33,9 +33,9 @@
                                                     {{questionnaireType.viewValue}}
                                                 </mat-option>
                                             </mat-select>
-                                            <mat-error>
+                                            
                                                 <app-error-message [formField]="questionnaire.get('type')"></app-error-message>
-                                            </mat-error>
+                                            
                                         </mat-form-field>
                                     </td>
                                 </tr>
@@ -68,9 +68,9 @@
                                                     {{questionnairePosition.viewValue}}
                                                 </mat-option>
                                             </mat-select>
-                                            <mat-error>
+                                            
                                                 <app-error-message [formField]="questionnaire.get('position')"></app-error-message>
-                                            </mat-error>
+                                            
                                         </mat-form-field>
                                     </td>
                                 </tr>
@@ -98,18 +98,18 @@
                                                 <mat-form-field matLine class="width-100" appearance="fill">
                                                     <mat-label><span i18n>Name</span></mat-label>
                                                     <input matInput type="text" formControlName="name">
-                                                    <mat-error>
+                                                    
                                                         <app-error-message [formField]="question.get('name')"></app-error-message>
-                                                    </mat-error>
+                                                    
                                                 </mat-form-field>
                                             </td>
                                             <td class="p-0 pr-16px">
                                                 <mat-form-field matLine class="width-100" appearance="fill">
                                                     <mat-label><span i18n>Text</span></mat-label>
                                                     <input matInput type="text" formControlName="text">
-                                                    <mat-error>
+                                                    
                                                         <app-error-message [formField]="question.get('text')"></app-error-message>
-                                                    </mat-error>
+                                                    
                                                 </mat-form-field>
                                             </td>
                                             <td class="p-0 center">
@@ -133,9 +133,9 @@
                                                         <mat-form-field matLine class="width-100" appearance="fill">
                                                             <mat-label><span i18n>Answer</span></mat-label>
                                                             <input matInput type="text" formControlName="answer">
-                                                            <mat-error>
+                                                            
                                                                 <app-error-message [formField]="answer.get('answer')"></app-error-message>
-                                                            </mat-error>
+                                                            
                                                         </mat-form-field>
                                                     </td>
                                                     <td class="p-0 center">
@@ -165,18 +165,18 @@
                                                 <mat-form-field matLine class="width-100" appearance="fill">
                                                     <mat-label><span i18n>Label</span></mat-label>
                                                     <input matInput type="text" formControlName="label">
-                                                    <mat-error>
+                                                    
                                                         <app-error-message [formField]="map.get('label')"></app-error-message>
-                                                    </mat-error>
+                                                    
                                                 </mat-form-field>
                                             </td>
                                             <td class="p-0 pr-16px">
                                                 <mat-form-field matLine class="width-100" appearance="fill">
                                                     <mat-label><span i18n>Value</span></mat-label>
                                                     <input matInput type="text" formControlName="value">
-                                                    <mat-error>
+                                                    
                                                         <app-error-message [formField]="map.get('value')"></app-error-message>
-                                                    </mat-error>
+                                                    
                                                 </mat-form-field>
                                             </td>
                                             <td class="p-0 center">

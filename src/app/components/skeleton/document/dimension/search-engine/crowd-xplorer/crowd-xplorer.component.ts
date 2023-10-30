@@ -115,6 +115,8 @@ export class CrowdXplorer implements OnInit {
     @Input() task: Task;
     @Input() worker: Worker;
     @Input() documentIndex: number;
+    @Input() dimensionIndex: number;
+    @Input() searchFormsCrowdX: Array<Array<Object>>;
 
     @Input() resetEvent: EventEmitter<void>;
     @Input() disableEvent: EventEmitter<boolean>;
@@ -173,24 +175,23 @@ export class CrowdXplorer implements OnInit {
 
         this.bingApiKey = this.configService.environment.bing_api_key;
         this.fakeJSONToken = this.configService.environment.fake_json_token;
-        this.loadSettings();
+    }
 
-        /* The form control for user query is initialized and bound with its synchronous validator(s) */
-        this.query = new UntypedFormControl("", [Validators.required]);
-        this.urls = new UntypedFormControl("", [Validators.required]);
-        /* The search form is initialized by adding each form control */
-        this.searchForm = formBuilder.group({
-            query: this.query,
-            urls: this.urls,
-        });
+    ngOnInit() {
+        if(!this.task.searchSource || !this.task.searchDomains)
+            this.loadSettings();
+
+        this.source=this.task.searchSource
+        this.domainsToFilter=this.task.searchDomains
 
         let msClientIdName = 'MSEdge-ClientID'
-        if (this.checkCookie(msClientIdName)) {
-            this.bingService.msEdgeClientID = this.loadCookie(msClientIdName)
-        }
+            if (this.checkCookie(msClientIdName)) {
+                this.bingService.msEdgeClientID = this.loadCookie(msClientIdName)
+            }
+
 
         this.bingDataSource = new BingDataSource((query = this.queryValue, resultsAmount, resultsToSkip) => {
-            this.ngxService.startBackgroundLoader('skeleton-inner');
+            this.ngxService.startBackgroundLoader('search-loader');
             let res = this.bingService.performWebSearch(this.bingApiKey, query, resultsAmount, resultsToSkip).pipe(
                 map((searchResponse) => {
                     if (!this.checkCookie(msClientIdName)) {
@@ -203,21 +204,52 @@ export class CrowdXplorer implements OnInit {
                     let decodedResponse = this.bingService.decodeResponse(this.bingWebSearchResponse);
                     /* EMITTER: The matching response is emitted to provide it to an eventual parent component*/
                     this.resultEmitter.emit(decodedResponse);
+                    this.searchInProgress = false;
                     /* The results amount is saved*/
                     return decodedResponse;
                 }),
                 catchError((error) => {
                     this.resultsAmount = 0
+                    this.searchInProgress = false;
                     return of([]); /* Return an empty array in case of error */
                 })
             )
-            this.ngxService.stopBackgroundLoader('skeleton-inner')
+            this.ngxService.stopBackgroundLoader('search-loader')
             return res
         });
 
-    }
 
-    ngOnInit() {
+        if(!this.searchFormsCrowdX[this.documentIndex] || !this.searchFormsCrowdX[this.documentIndex][this.dimensionIndex]){
+            /* The form control for user query is initialized and bound with its synchronous validator(s) */
+            this.query = new UntypedFormControl("", [Validators.required]);
+            this.urls = new UntypedFormControl("", [Validators.required]);
+            /* The search form is initialized by adding each form control */
+            this.searchForm = this.formBuilder.group({
+                query: this.query,
+                urls: this.urls,
+            });
+
+            if(!this.searchFormsCrowdX[this.documentIndex]) this.searchFormsCrowdX[this.documentIndex]=[]
+            if(!this.searchFormsCrowdX[this.documentIndex][this.dimensionIndex]) this.searchFormsCrowdX[this.documentIndex][this.dimensionIndex] = {}
+
+            this.searchFormsCrowdX[this.documentIndex][this.dimensionIndex]["form"] = this.searchForm
+            this.searchFormsCrowdX[this.documentIndex][this.dimensionIndex]["pageSize"] = 10
+            this.searchFormsCrowdX[this.documentIndex][this.dimensionIndex]["pageIndex"] = 0
+        }
+        else{
+            this.query = this.searchFormsCrowdX[this.documentIndex][this.dimensionIndex]["form"].controls["query"]
+            this.urls = this.searchFormsCrowdX[this.documentIndex][this.dimensionIndex]["form"].controls["urls"]
+
+            this.searchForm = this.searchFormsCrowdX[this.documentIndex][this.dimensionIndex]["form"]
+
+            this.queryValue = this.searchForm.value["query"]
+
+            let pageSize = this.searchFormsCrowdX[this.documentIndex][this.dimensionIndex]["pageSize"]
+            let pageIndex = this.searchFormsCrowdX[this.documentIndex][this.dimensionIndex]["pageIndex"]
+
+            this.performWebSearch(pageSize, pageIndex)
+        }
+
         if (this.task.settings.modality == "conversational") {
             this.resetEvent.subscribe(() => this.resetSearchEngineState());
             this.disableSearchEngine(true);
@@ -243,22 +275,33 @@ export class CrowdXplorer implements OnInit {
         this.paginator.page
             .pipe(
                 tap(pageEvent => {
-                    this.bingDataSource.loadData(this.queryValue, pageEvent.pageSize, (pageEvent.pageIndex+1) * pageEvent.pageSize)
+                    if(this.queryValue){
+                        this.bingDataSource.loadData(this.queryValue, pageEvent.pageSize, (pageEvent.pageIndex+1) * pageEvent.pageSize)
+                        this.searchFormsCrowdX[this.documentIndex][this.dimensionIndex]["pageSize"]= pageEvent.pageSize
+                        this.searchFormsCrowdX[this.documentIndex][this.dimensionIndex]["pageIndex"]= pageEvent.pageIndex
+                    }
                 })
             )
             .subscribe();
+        
+        if(this.searchFormsCrowdX[this.documentIndex] && this.searchFormsCrowdX[this.documentIndex][this.dimensionIndex]){
+            this.paginator.pageSize = this.searchFormsCrowdX[this.documentIndex][this.dimensionIndex]["pageSize"]
+            this.paginator.pageIndex = this.searchFormsCrowdX[this.documentIndex][this.dimensionIndex]["pageIndex"]
+        }
     }
 
     /*
      * This function interacts with an Amazon S3 bucket to retrieve and initialize the settings for the search engine.
      */
-    public async loadSettings() {
-        let rawSettings = await this.S3Service.downloadSearchEngineSettings(
+    public loadSettings() {
+        let rawSettings = this.S3Service.downloadSearchEngineSettings(
             this.configService.environment
         );
+
         this.settings = new SearchEngineSettings(rawSettings);
-        this.source = this.settings.source;
-        this.domainsToFilter = this.settings.domains_filter;
+
+        this.task.searchSource = this.settings.source;
+        this.task.searchDomains = this.settings.domains_filter;
     }
 
     /* |--------- WEB SEARCH ---------| */
@@ -282,7 +325,7 @@ export class CrowdXplorer implements OnInit {
     /*
      * This function uses the text received as a parameter to perform a request using the chosen service.
      */
-    public performWebSearch() {
+    public performWebSearch(pageSize, pageIndex) {
 
         if (this.queryValue.length > 0) {
             /* The loading screen is shown */
@@ -292,12 +335,11 @@ export class CrowdXplorer implements OnInit {
 
             /* EMITTER: The user query is emitted to provide it to an eventual parent component, only when the websearch is triggered */
             this.queryEmitter.emit(this.queryValue);
-
+            
             switch (this.source) {
                 /* The search operation for Bing Web Search is performed */
                 case "BingWebSearch": {
-                    this.bingDataSource.loadData(this.queryValue, this.paginator.pageIndex, this.paginator.pageSize)
-                    this.searchInProgress = false;
+                    this.bingDataSource.loadData(this.queryValue, pageSize, (pageIndex+1) * pageSize)
                     break;
                 }
             }

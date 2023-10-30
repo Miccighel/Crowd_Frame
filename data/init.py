@@ -1866,7 +1866,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             print("export class GoldChecker {", file=file)
             print("", file=file)
             wrapper = textwrap.TextWrapper(initial_indent='\t', subsequent_indent='\t')
-            print(wrapper.fill('static performGoldCheck(goldConfiguration : Array<Object>) {'), file=file)
+            print(wrapper.fill('static performGoldCheck(goldConfiguration : Array<Object>, task_type = null) {'), file=file)
             print("", file=file)
             wrapper = textwrap.TextWrapper(initial_indent='\t\t', subsequent_indent='\t\t')
             print(wrapper.fill('let goldChecks = new Array<boolean>()'), file=file)

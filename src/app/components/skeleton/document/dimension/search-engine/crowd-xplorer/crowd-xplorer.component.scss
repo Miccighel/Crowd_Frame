@@ -29,12 +29,14 @@ mat-card.xplorer-body {
   text-transform: uppercase;
   flex-grow: 1;
   margin: 3px 3px 1.4em;
+  height: 50px;
 }
 
 .search-button-conversational {
   text-transform: uppercase;
   flex-grow: 1;
   margin: 3px 3px 1.7em;
+  height: 50px;
 }
 
 /* |--- RESULT TABLE --| */
@@ -44,6 +46,7 @@ mat-table {
   border: 2px solid lightgrey;
   border-radius: 8px;
   padding: 5px 5px;
+  min-width: auto;
 }
 
 mat-header-cell {

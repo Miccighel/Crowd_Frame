@@ -113,6 +113,11 @@ export class SkeletonComponent implements OnInit {
     @ViewChildren(DocumentComponent)
     documentComponent: QueryList<DocumentComponent>;
 
+    /* Array of search form references, one for each document within a Hit */
+    searchForms: Array<Array<UntypedFormGroup>>;
+    searchFormsCrowdX: Array<Array<Object>>;
+    
+    
     /* Array of form references, one for each questionnaire within a Hit */
     questionnairesForm: UntypedFormGroup[];
 
@@ -976,6 +981,10 @@ export class SkeletonComponent implements OnInit {
 
             /* A form for each document is initialized */
             this.documentsForm = new Array<UntypedFormGroup>();
+
+            this.searchForms = new Array<Array<UntypedFormGroup>>();
+            this.searchFormsCrowdX = new Array<Array<Object>>();
+
 
             let questionnaires = await this.S3Service.downloadQuestionnaires(
                 this.configService.environment

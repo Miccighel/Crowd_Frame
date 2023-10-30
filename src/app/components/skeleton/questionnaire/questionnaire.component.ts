@@ -30,6 +30,7 @@ export class QuestionnaireComponent implements OnInit {
     formBuilder: UntypedFormBuilder;
 
     @Input() questionnaireIndex: number
+    @Input() questionnairesForm: UntypedFormGroup[]
 
     task: Task
     questionnaire: Questionnaire
@@ -55,36 +56,42 @@ export class QuestionnaireComponent implements OnInit {
 
     ngOnInit(): void {
         this.questionnaire = this.task.questionnaires[this.questionnaireIndex];
-        this.questionnaireForm = this.formBuilder.group({})
-        this.questionnaire.treeCut.walk(function (node) {
-            if (node) {
-                if (!node.isRoot()) {
-                    if (!('position' in node.model)) {
-                        if (node.hasChildren()) {
-                            for (let child of node.children) {
-                                this['nodes'].push(child)
-                                if (child.repeat)
+        if(!this.questionnairesForm[this.questionnaireIndex]){
+            this.questionnaireForm = this.formBuilder.group({})
+            this.questionnaire.treeCut.walk(function (node) {
+                if (node) {
+                    if (!node.isRoot()) {
+                        if (!('position' in node.model)) {
+                            if (node.hasChildren()) {
+                                for (let child of node.children) {
+                                    this['nodes'].push(child)
+                                    if (child.repeat)
+                                        return false
+                                }
+                            } else {
+                                this['nodes'].push(node)
+                                if (node.repeat)
                                     return false
                             }
-                        } else {
-                            this['nodes'].push(node)
-                            if (node.repeat)
-                                return false
+    
                         }
-
                     }
+                } else {
+                    return false
                 }
-            } else {
-                return false
-            }
-        }, this);
-        for (let node of this.nodes) {
-            for (let question of this.questionnaire.questions) {
-                if (node.model.nameFull == question.nameFull && !question.dropped) {
-                    this.initializeFormControl(question)
+            }, this);
+            for (let node of this.nodes) {
+                for (let question of this.questionnaire.questions) {
+                    if (node.model.nameFull == question.nameFull && !question.dropped) {
+                        this.initializeFormControl(question)
+                    }
                 }
             }
         }
+        else{
+            this.questionnaireForm = this.questionnairesForm[this.questionnaireIndex]
+        }
+        
         this.formEmitter.emit({
             "form": this.questionnaireForm,
             "action": null
