@@ -6,7 +6,7 @@ import {BaseResponse} from "./baseResponse";
 // Assume that your custom data source interacts with an API to fetch data.
 // Modify the fetchData method according to your API structure.
 
-export class BingDataSource implements DataSource<BaseResponse> {
+export class CustomDataSource implements DataSource<BaseResponse> {
 
     private dataSubject = new BehaviorSubject<BaseResponse[]>([]);
     private loadingSubject = new BehaviorSubject<boolean>(false);

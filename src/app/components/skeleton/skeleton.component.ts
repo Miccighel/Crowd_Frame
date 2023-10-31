@@ -44,6 +44,7 @@ import { OutcomeSectionComponent } from "./outcome/outcome-section.component";
 import { DocumentComponent } from "./document/document.component";
 import { LocalStorageService } from "../../services/localStorage.service";
 import { fadeIn } from "../chatbot/animations";
+import {SearchEngineSettings} from "../../models/search_engine/searchEngineSettings";
 
 /* Component HTML Tag definition */
 @Component({
@@ -197,6 +198,11 @@ export class SkeletonComponent implements OnInit {
         );
         this.task.initializeInstructionsGeneral(
             await this.S3Service.downloadGeneralInstructions(
+                this.configService.environment
+            )
+        );
+        this.task.searchEngineSettings = new SearchEngineSettings(
+            await this.S3Service.downloadSearchEngineSettings(
                 this.configService.environment
             )
         );

@@ -9,6 +9,7 @@ import { TaskSettings } from "./taskSettings";
 import { Hit } from "./hit";
 import { Object } from "aws-sdk/clients/customerprofiles";
 import { InstructionEvaluation } from "./instructionsEvaluation";
+import {SearchEngineSettings} from "../search_engine/searchEngineSettings";
 
 export class Task {
     /* Task settings and parameters */
@@ -30,6 +31,7 @@ export class Task {
     public documentsAmount: number;
     public dimensionsAmount: number;
     public sequenceNumber: number;
+    public searchEngineSettings: SearchEngineSettings;
 
     /* Array of documents */
     documents: Array<Document>;
@@ -85,14 +87,9 @@ export class Task {
     /* Array of gold dimensions within a Hit */
     goldDimensions: Array<Dimension>;
 
-    searchSource: string;
-    searchDomains: Array<string>;
-
     constructor() {
         this.tryCurrent = 1;
         this.sequenceNumber = 0;
-        this.searchSource = null;
-        this.searchDomains = null;
     }
 
     public getElementIndex(stepIndex) {
@@ -710,6 +707,7 @@ export class Task {
             documents_amount: this.documentsAmount,
             dimensions_amount: this.dimensionsAmount,
             settings: this.settings,
+            search_engine_settings: this.searchEngineSettings,
         };
         data["info"] = actionInfo;
         /* General info about task */
