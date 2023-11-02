@@ -36,7 +36,7 @@ import {Worker} from "../../../../../../models/worker/worker";
 /*
  * This class implements a custom search engine which can be used for Crowdsourcing tasks.
  */
-export class CrowdXplorer implements OnInit {
+export class SearchEngineBodyComponent implements OnInit {
     /* |--------- SEARCH ENGINE SETTINGS - DECLARATION ---------| */
 
     /* Microsoft Search API key */
@@ -239,36 +239,6 @@ export class CrowdXplorer implements OnInit {
                 break;
         }
 
-
-        this.bingDataSource = new BingDataSource((query = this.queryValue, resultsAmount, resultsToSkip) => {
-            this.ngxService.startBackgroundLoader('search-loader');
-            let res = this.bingService.performWebSearch(this.bingApiKey, query, resultsAmount, resultsToSkip).pipe(
-                map((searchResponse) => {
-                    if (!this.checkCookie(msClientIdName)) {
-                        const expireDate = new Date();
-                        expireDate.setDate(expireDate.getDate() + 365); // Set the cookie to expire in 1 year
-                        this.storeCookie(msClientIdName, this.bingService.msEdgeClientID, expireDate)
-                    }
-                    this.resultsAmount = searchResponse.webPages.totalEstimatedMatches
-                    this.bingWebSearchResponse = this.bingService.filterResponse(searchResponse, this.domainsToFilter);
-                    let decodedResponse = this.bingService.decodeResponse(this.bingWebSearchResponse);
-                    /* EMITTER: The matching response is emitted to provide it to an eventual parent component*/
-                    this.resultEmitter.emit(decodedResponse);
-                    this.searchInProgress = false;
-                    /* The results amount is saved*/
-                    return decodedResponse;
-                }),
-                catchError((error) => {
-                    this.resultsAmount = 0
-                    this.searchInProgress = false;
-                    return of([]); /* Return an empty array in case of error */
-                })
-            )
-            this.ngxService.stopBackgroundLoader('search-loader')
-            return res
-        });
-
-
         if(!this.resultsRetrievedForms[this.documentIndex] || !this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]){
             /* The form control for user query is initialized and bound with its synchronous validator(s) */
             this.query = new UntypedFormControl("", [Validators.required]);
@@ -326,7 +296,7 @@ export class CrowdXplorer implements OnInit {
             .pipe(
                 tap(pageEvent => {
                     if(this.queryValue){
-                        this.bingDataSource.loadData(this.queryValue, pageEvent.pageSize, (pageEvent.pageIndex+1) * pageEvent.pageSize)
+                        this.dataSource.loadData(this.queryValue, pageEvent.pageSize, (pageEvent.pageIndex+1) * pageEvent.pageSize)
                         this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["pageSize"]= pageEvent.pageSize
                         this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["pageIndex"]= pageEvent.pageIndex
                     }

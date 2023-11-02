@@ -13,7 +13,7 @@ import {Worker} from "../../../../../models/worker/worker";
 import {Dimension} from "../../../../../models/skeleton/dimension";
 import {Document} from "../../../../../../../data/build/skeleton/document";
 /* Components */
-import {CrowdXplorer} from "./search-engine-body/search-engine-body.component";
+import {SearchEngineBodyComponent} from "./search-engine-body/search-engine-body.component";
 import {ConfigService} from "../../../../../services/config.service";
 
 @Component({
@@ -52,7 +52,7 @@ export class SearchEngineComponent implements OnInit {
 
     /* References to task stepper and token forms */
     @ViewChild('stepper') stepper: MatStepper;
-    @ViewChild(CrowdXplorer) crowdXplorer: CrowdXplorer;
+    @ViewChild(SearchEngineBodyComponent) crowdXplorer: SearchEngineBodyComponent;
 
     constructor(
         changeDetector: ChangeDetectorRef,
@@ -128,7 +128,7 @@ export class SearchEngineComponent implements OnInit {
         return null
     }
 
-    /* |--------- SEARCH ENGINE INTEGRATION (see: search_engine.json | https://github.com/Miccighel/CrowdXplorer) ---------| */
+    /* |--------- SEARCH ENGINE INTEGRATION (see: search_engine.json | https://github.com/Miccighel/SearchEngineBodyComponent) ---------| */
 
     public handleSearchEngineRetrievedResponse(retrievedResponseData, documentCurrent: Document, dimension: Dimension) {
         this.task.storeSearchEngineRetrievedResponse(retrievedResponseData, documentCurrent, dimension)

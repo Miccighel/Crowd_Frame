@@ -36,7 +36,7 @@ import { MatSlideToggleModule } from "@angular/material/slide-toggle";
 import { NgbModule } from "@ng-bootstrap/ng-bootstrap";
 /* Components imports */
 import { SkeletonComponent } from "./components/skeleton/skeleton.component";
-import { CrowdXplorer } from "./components/skeleton/document/dimension/search-engine/search-engine-body/search-engine-body.component";
+import { SearchEngineBodyComponent } from "./components/skeleton/document/dimension/search-engine/search-engine-body/search-engine-body.component";
 import {
     InstructionsComponent,
     InstructionsDialog,
@@ -107,7 +107,7 @@ function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
 @NgModule({
     declarations: [
         SkeletonComponent,
-        CrowdXplorer,
+        SearchEngineBodyComponent,
         TruncatePipe,
         InstructionsComponent,
         InstructionsDialog,
