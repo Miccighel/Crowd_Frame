@@ -39,8 +39,8 @@ export class DocumentComponent implements OnInit {
     @Input() worker: Worker
     @Input() documentIndex: number
     @Input() documentsForm: UntypedFormGroup[]
-    @Input() searchForms: Array<Array<UntypedFormGroup>>;
-    @Input() searchFormsCrowdX: Array<Array<Object>>;
+    @Input() searchEngineForms: Array<Array<UntypedFormGroup>>;
+    @Input() resultsRetrievedForms: Array<Array<Object>>;
     @Input() stepper: MatStepper
 
     /* Reference to the outcome section component */
@@ -116,17 +116,19 @@ export class DocumentComponent implements OnInit {
 
     public handleDocumentCompletion(action: string) {
 
-        if((action=="Next" || action=="Finish") && typeof this.document["check_gold_with_msg"] === 'string'){
+        if((action=="Next" || action=="Finish") && typeof this.document.document_params["check_gold_with_msg"] === 'string'){
             let docsForms = this.documentsForm.slice()
             docsForms.push(this.assessmentForm)
 
             let goldConfiguration = this.utilsService.generateGoldConfiguration(this.task.goldDocuments,this.task.goldDimensions, docsForms, this.task.notes);
-            let goldChecks = GoldChecker.performGoldCheck(goldConfiguration, this.document.task_type);
+            let goldChecks = GoldChecker.performGoldCheck(goldConfiguration, this.document.document_params['task_type']);
 
             if(goldChecks.every(Boolean))
                 this.stepper.next();
-            else
-                this.snackBar.open(this.document["check_gold_with_msg"], "Dismiss", {duration: 10000});
+            else{
+                this.snackBar.open(this.document.document_params["check_gold_with_msg"], "Dismiss", {duration: 10000});
+                action=null
+            }
         }
         else{
             if(action=="Back")
@@ -156,10 +158,10 @@ export class DocumentComponent implements OnInit {
     public getDocTypeNumber() {
         let count=0
         for (let index = 0; index <= this.documentIndex; index++) {
-            if (this.document.task_type == this.task.documents[index].task_type) 
+            if (this.document.document_params['task_type'] == this.task.documents[index].document_params['task_type']) 
                 count++;
         }
         return count;
     }
 
-}
+    }

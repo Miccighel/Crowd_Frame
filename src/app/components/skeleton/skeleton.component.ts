@@ -114,8 +114,8 @@ export class SkeletonComponent implements OnInit {
     documentComponent: QueryList<DocumentComponent>;
 
     /* Array of search form references, one for each document within a Hit */
-    searchForms: Array<Array<UntypedFormGroup>>;
-    searchFormsCrowdX: Array<Array<Object>>;
+    searchEngineForms: Array<Array<UntypedFormGroup>>;
+    resultsRetrievedForms: Array<Array<Object>>;
     
     
     /* Array of form references, one for each questionnaire within a Hit */
@@ -969,7 +969,7 @@ export class SkeletonComponent implements OnInit {
                     this.task.documentsAmount = currentHit.documents.length;
                     this.task.hit = currentHit;
                     /* The array of documents is initialized */
-                    this.task.initializeDocuments(currentHit.documents);
+                    this.task.initializeDocuments(currentHit.documents, currentHit["documents_params"]);
                 }
             }
 
@@ -982,8 +982,8 @@ export class SkeletonComponent implements OnInit {
             /* A form for each document is initialized */
             this.documentsForm = new Array<UntypedFormGroup>();
 
-            this.searchForms = new Array<Array<UntypedFormGroup>>();
-            this.searchFormsCrowdX = new Array<Array<Object>>();
+            this.searchEngineForms = new Array<Array<UntypedFormGroup>>();
+            this.resultsRetrievedForms = new Array<Array<Object>>();
 
 
             let questionnaires = await this.S3Service.downloadQuestionnaires(

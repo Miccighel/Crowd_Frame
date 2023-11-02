@@ -1478,6 +1478,13 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 "token_input": "ABCDEFGHILM",
                 "token_output": "MNOPQRSTUVZ",
                 "documents_number": 1,
+                "documents_params": {
+                    "identifier_1" : {
+                        "task_type": "Example",
+                        "allow_back": True,
+                        "check_gold_with_msg": None
+                    }
+                },
                 "documents": [
                     {
                         "id": "identifier_1",
@@ -1703,7 +1710,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                         "general": False,
                         "change": False
                     },
-                    "crowd-xplorer": {
+                    "search-engine-body": {
                         "general": False,
                         "query": False,
                         "result": False
@@ -1750,7 +1757,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.print(f"Reading hits file")
     console.print(f"Path: [italic]{hits_file}[/italic]")
     hits = read_json(hits_file)
-    documents = hits.pop()['documents']
 
     # This class provides a representation of a single document stored in single hit stored in the Amazon S3 bucket.
     # The attribute <document_index> is additional and should not be touched and passed in the constructor.
@@ -1761,6 +1767,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         print("", file=file)
         wrapper = textwrap.TextWrapper(initial_indent='\t\t', subsequent_indent='\t\t', width=500, break_long_words=False)
         print(wrapper.fill("index: number;"), file=file)
+        print(wrapper.fill("document_params: { };"), file=file)
         contents=[]
         for unit in hits:
             if len(unit['documents']) > 0:
@@ -1804,12 +1811,17 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         print(wrapper.fill(f"constructor ("), file=file)
         wrapper = textwrap.TextWrapper(initial_indent='\t\t\t', subsequent_indent='\t\t\t', width=500, break_long_words=False)
         print(wrapper.fill("index: number,"), file=file)
-        print(wrapper.fill("data: JSON"), file=file)
+        print(wrapper.fill("data: JSON,"), file=file)
+        print(wrapper.fill("params: JSON"), file=file)
         wrapper = textwrap.TextWrapper(initial_indent='\t\t', subsequent_indent='\t\t', width=500, break_long_words=False)
         print(wrapper.fill(") {"), file=file)
         print("", file=file)
         wrapper = textwrap.TextWrapper(initial_indent='\t\t\t', width=500, break_long_words=False)
         print(wrapper.fill("this.index = index"), file=file)
+        print(wrapper.fill("this.document_params = { }"), file=file)
+        print(wrapper.fill("this.document_params[\"task_type\"] = params[\"task_type\"] || \"Main\" "), file=file)
+        print(wrapper.fill("this.document_params[\"allow_back\"] = params[\"allow_back\"]"), file=file)
+        print(wrapper.fill("this.document_params[\"check_gold_with_msg\"] = params[\"check_gold_with_msg\"]"), file=file)
         contents=[]
         for unit in hits:
             if len(unit['documents']) > 0:

@@ -2458,8 +2458,9 @@ def load_data_col_names(dimensions, documents):
     for document in documents:
         currentAttributes = document.keys()
         for currentAttribute in currentAttributes:
-            if f"doc_{currentAttribute}" not in columns:
+            if f"doc_{currentAttribute}" not in columns and currentAttribute!="document_params":
                 columns.append(f"doc_{currentAttribute}")
+    columns.append("doc_task_type")
 
     for dimension in dimensions:
         if f"doc_{dimension['name']}_value" not in columns:
@@ -2497,8 +2498,8 @@ def load_data_col_names(dimensions, documents):
 
 df_answ = pd.DataFrame()
 
-def check_task_type(typedoc, typeslist):
-    t= typedoc['task_type'] if 'task_type' in typedoc.keys() else None
+def check_task_type(doc, typeslist):
+    t= doc["document_params"]['task_type']
     if typeslist:
             if(typeslist==True or (t in typeslist)):
                 return True
@@ -2571,18 +2572,22 @@ if not os.path.exists(df_data_path):
 
                     current_attributes = documents[document_data['serialization']['info']['index']].keys()
                     current_answers = document_data['serialization']['answers']
-                    all_attrs=[]
+                    all_attrs=["task_type"]
                     for document in documents:
                         currentAttributes = document.keys()
                         for currentAttribute in currentAttributes:
-                            if currentAttribute not in all_attrs:
+                            if currentAttribute not in all_attrs and currentAttribute!="document_params":
                                 all_attrs += [currentAttribute]
                     for current_attribute in current_attributes:
+                        attribute_name=current_attribute
                         current_attribute_value = documents[document_data['serialization']['info']['index']][current_attribute]
+                        if current_attribute=="document_params":
+                            current_attribute_value=current_attribute_value["task_type"]
+                            attribute_name="task_type"
                         if type(current_attribute_value) == str:
                             current_attribute_value = re.sub('\n', '', current_attribute_value)
-                        row[f"doc_{current_attribute}"] = current_attribute_value
-                        all_attrs.remove(current_attribute)
+                        row[f"doc_{attribute_name}"] = current_attribute_value
+                        all_attrs.remove(attribute_name)
                     for attr in all_attrs:
                         row[f"doc_{attr}"] = np.nan
                     for dimension in dimensions:

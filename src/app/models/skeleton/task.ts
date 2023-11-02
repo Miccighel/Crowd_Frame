@@ -134,12 +134,15 @@ export class Task {
         };
     }
 
-    public initializeDocuments(rawDocuments) {
+    public initializeDocuments(rawDocuments, documentsParams) {
         this.documents = new Array<Document>();
         /*  Each document of the current hit is parsed using the Document interface.  */
         for (let index = 0; index < rawDocuments.length; index++) {
             let currentDocument = rawDocuments[index];
-            this.documents.push(new Document(index, currentDocument));
+            let currentParams = {} as JSON
+            if(documentsParams != undefined && documentsParams[currentDocument["id"]] != undefined)
+                currentParams = documentsParams[currentDocument["id"]]
+            this.documents.push(new Document(index, currentDocument, currentParams));
         }
         this.searchEngineQueries = new Array<object>(this.documentsAmount);
         for (let index = 0; index < this.searchEngineQueries.length; index++) {

@@ -8,18 +8,18 @@
             <!-- Dimension search engine interface markup -->
             <div>
                 <div>
-                    <app-crowd-xplorer
-                            id="app-crowd-xplorer-{{documentIndex}}-{{dimensionIndex}}"
+                    <app-search-engine-body
+                            id="app-search-engine-body-{{documentIndex}}-{{dimensionIndex}}"
                             (resultEmitter)="handleSearchEngineRetrievedResponse($event, this.task.documents[documentIndex], this.dimension)"
                             (queryEmitter)="this.task.storeSearchEngineUserQuery($event, this.task.documents[documentIndex], this.dimension)"
                             (selectedRowEmitter)="handleSearchEngineSelectedResponse($event, this.task.documents[documentIndex], this.dimension)"
                             [task]="this.task"
                             [worker]="this.worker"
-                            [searchFormsCrowdX]="this.searchFormsCrowdX"
+                            [resultsRetrievedForms]="this.resultsRetrievedForms"
                             [dimensionIndex]="dimensionIndex"
                             [documentIndex]="documentIndex"
                     >
-                    </app-crowd-xplorer>
+                    </app-search-engine-body>
                     <!-- Dimension search engine url field markup (hidden) -->
                     <mat-form-field class="url-field">
                         <input #urlField matInput type="text" formControlName="{{(this.dimension.name).concat('_url')}}">

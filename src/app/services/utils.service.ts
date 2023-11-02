@@ -126,13 +126,22 @@ export class UtilsService {
     }
 
     public isCurrentTaskType(typedoc, typeslist) {
+        let same_type
+        
         if(typeslist){
             if(typeslist==true || typeslist.includes(typedoc))
-                return true;
-        }else if(typedoc==typeslist){
-                return true;
+                same_type = true
+            else
+                same_type = false
         }
-        return false
+        else{
+            if(typeslist==false)
+                same_type = false
+            else
+                same_type = true
+        }
+        
+        return same_type
     }
 
 
