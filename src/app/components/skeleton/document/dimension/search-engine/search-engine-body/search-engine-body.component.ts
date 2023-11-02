@@ -28,15 +28,15 @@ import {Worker} from "../../../../../../models/worker/worker";
 
 /* Component HTML Tag definition */
 @Component({
-    selector: "app-crowd-xplorer",
-    templateUrl: "./crowd-xplorer.component.html",
-    styleUrls: ["./crowd-xplorer.component.scss"],
+    selector: "app-search-engine-body",
+    templateUrl: "./search-engine-body.component.html",
+    styleUrls: ["./search-engine-body.component.scss"],
 })
 
 /*
  * This class implements a custom search engine which can be used for Crowdsourcing tasks.
  */
-export class CrowdXplorer implements OnInit {
+export class SearchEngineBodyComponent implements OnInit {
     /* |--------- SEARCH ENGINE SETTINGS - DECLARATION ---------| */
 
     /* Microsoft Search API key */
@@ -108,7 +108,7 @@ export class CrowdXplorer implements OnInit {
     @Input() worker: Worker;
     @Input() documentIndex: number;
     @Input() dimensionIndex: number;
-    @Input() searchFormsCrowdX: Array<Array<Object>>;
+    @Input() resultsRetrievedForms: Array<Array<Object>>;
 
     @Input() resetEvent: EventEmitter<void>;
     @Input() disableEvent: EventEmitter<boolean>;
@@ -239,8 +239,7 @@ export class CrowdXplorer implements OnInit {
                 break;
         }
 
-
-        if (!this.searchFormsCrowdX[this.documentIndex] || !this.searchFormsCrowdX[this.documentIndex][this.dimensionIndex]) {
+        if(!this.resultsRetrievedForms[this.documentIndex] || !this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]){
             /* The form control for user query is initialized and bound with its synchronous validator(s) */
             this.query = new UntypedFormControl("", [Validators.required]);
             this.urls = new UntypedFormControl("", [Validators.required]);
@@ -250,22 +249,23 @@ export class CrowdXplorer implements OnInit {
                 urls: this.urls,
             });
 
-            if (!this.searchFormsCrowdX[this.documentIndex]) this.searchFormsCrowdX[this.documentIndex] = []
-            if (!this.searchFormsCrowdX[this.documentIndex][this.dimensionIndex]) this.searchFormsCrowdX[this.documentIndex][this.dimensionIndex] = {}
+            if(!this.resultsRetrievedForms[this.documentIndex]) this.resultsRetrievedForms[this.documentIndex]=[]
+            if(!this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]) this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex] = {}
 
-            this.searchFormsCrowdX[this.documentIndex][this.dimensionIndex]["form"] = this.searchForm
-            this.searchFormsCrowdX[this.documentIndex][this.dimensionIndex]["pageSize"] = 10
-            this.searchFormsCrowdX[this.documentIndex][this.dimensionIndex]["pageIndex"] = 0
-        } else {
-            this.query = this.searchFormsCrowdX[this.documentIndex][this.dimensionIndex]["form"].controls["query"]
-            this.urls = this.searchFormsCrowdX[this.documentIndex][this.dimensionIndex]["form"].controls["urls"]
+            this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["form"] = this.searchForm
+            this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["pageSize"] = 10
+            this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["pageIndex"] = 0
+        }
+        else{
+            this.query = this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["form"].controls["query"]
+            this.urls = this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["form"].controls["urls"]
 
-            this.searchForm = this.searchFormsCrowdX[this.documentIndex][this.dimensionIndex]["form"]
+            this.searchForm = this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["form"]
 
             this.queryValue = this.searchForm.value["query"]
 
-            let pageSize = this.searchFormsCrowdX[this.documentIndex][this.dimensionIndex]["pageSize"]
-            let pageIndex = this.searchFormsCrowdX[this.documentIndex][this.dimensionIndex]["pageIndex"]
+            let pageSize = this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["pageSize"]
+            let pageIndex = this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["pageIndex"]
 
             this.performWebSearch(pageSize, pageIndex)
         }
@@ -295,18 +295,18 @@ export class CrowdXplorer implements OnInit {
         this.paginator.page
             .pipe(
                 tap(pageEvent => {
-                    if (this.queryValue) {
-                        this.dataSource.loadData(this.queryValue, pageEvent.pageSize, (pageEvent.pageIndex + 1) * pageEvent.pageSize)
-                        this.searchFormsCrowdX[this.documentIndex][this.dimensionIndex]["pageSize"] = pageEvent.pageSize
-                        this.searchFormsCrowdX[this.documentIndex][this.dimensionIndex]["pageIndex"] = pageEvent.pageIndex
+                    if(this.queryValue){
+                        this.dataSource.loadData(this.queryValue, pageEvent.pageSize, (pageEvent.pageIndex+1) * pageEvent.pageSize)
+                        this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["pageSize"]= pageEvent.pageSize
+                        this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["pageIndex"]= pageEvent.pageIndex
                     }
                 })
             )
             .subscribe();
-
-        if (this.searchFormsCrowdX[this.documentIndex] && this.searchFormsCrowdX[this.documentIndex][this.dimensionIndex]) {
-            this.paginator.pageSize = this.searchFormsCrowdX[this.documentIndex][this.dimensionIndex]["pageSize"]
-            this.paginator.pageIndex = this.searchFormsCrowdX[this.documentIndex][this.dimensionIndex]["pageIndex"]
+        
+        if(this.resultsRetrievedForms[this.documentIndex] && this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]){
+            this.paginator.pageSize = this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["pageSize"]
+            this.paginator.pageIndex = this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["pageIndex"]
         }
     }
 

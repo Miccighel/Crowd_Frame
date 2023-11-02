@@ -90,7 +90,7 @@ export class TaskSettings {
                 "general": 'false',
                 "change": 'false'
             },
-            "crowd-xplorer": {
+            "search-engine-body": {
                 "general": 'false',
                 "query": 'false',
                 "result": 'false'

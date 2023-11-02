@@ -13,7 +13,7 @@ import {Worker} from "../../../../../models/worker/worker";
 import {Dimension} from "../../../../../models/skeleton/dimension";
 import {Document} from "../../../../../../../data/build/skeleton/document";
 /* Components */
-import {CrowdXplorer} from "./crowd-xplorer/crowd-xplorer.component";
+import {SearchEngineBodyComponent} from "./search-engine-body/search-engine-body.component";
 import {ConfigService} from "../../../../../services/config.service";
 
 @Component({
@@ -38,8 +38,8 @@ export class SearchEngineComponent implements OnInit {
     @Input() worker: Worker
     @Input() documentIndex: number
     @Input() dimensionIndex: number
-    @Input() searchForms: Array<Array<UntypedFormGroup>>;
-    @Input() searchFormsCrowdX: Array<Array<Object>>;
+    @Input() searchEngineForms: Array<Array<UntypedFormGroup>>;
+    @Input() resultsRetrievedForms: Array<Array<Object>>;
 
 
 
@@ -52,7 +52,7 @@ export class SearchEngineComponent implements OnInit {
 
     /* References to task stepper and token forms */
     @ViewChild('stepper') stepper: MatStepper;
-    @ViewChild(CrowdXplorer) crowdXplorer: CrowdXplorer;
+    @ViewChild(SearchEngineBodyComponent) crowdXplorer: SearchEngineBodyComponent;
 
     constructor(
         changeDetector: ChangeDetectorRef,
@@ -73,7 +73,7 @@ export class SearchEngineComponent implements OnInit {
 
     ngOnInit() {
         this.dimension = this.task.dimensions[this.dimensionIndex]
-        if(!this.searchForms[this.documentIndex] || !this.searchForms[this.documentIndex][this.dimensionIndex]){
+        if(!this.searchEngineForms[this.documentIndex] || !this.searchEngineForms[this.documentIndex][this.dimensionIndex]){
             let controlsConfig = {};
             if (this.dimension.url) controlsConfig[`${this.dimension.name}_url`] = new UntypedFormControl('', [Validators.required, this.validateSearchEngineUrl.bind(this)]);
             this.searchEngineForm = this.formBuilder.group(controlsConfig)
@@ -82,7 +82,7 @@ export class SearchEngineComponent implements OnInit {
             })
         }
         else{
-            this.searchEngineForm=this.searchForms[this.documentIndex][this.dimensionIndex]
+            this.searchEngineForm=this.searchEngineForms[this.documentIndex][this.dimensionIndex]
         }
         this.formEmitter.emit(this.searchEngineForm)
     }
@@ -128,7 +128,7 @@ export class SearchEngineComponent implements OnInit {
         return null
     }
 
-    /* |--------- SEARCH ENGINE INTEGRATION (see: search_engine.json | https://github.com/Miccighel/CrowdXplorer) ---------| */
+    /* |--------- SEARCH ENGINE INTEGRATION (see: search_engine.json | https://github.com/Miccighel/SearchEngineBodyComponent) ---------| */
 
     public handleSearchEngineRetrievedResponse(retrievedResponseData, documentCurrent: Document, dimension: Dimension) {
         this.task.storeSearchEngineRetrievedResponse(retrievedResponseData, documentCurrent, dimension)

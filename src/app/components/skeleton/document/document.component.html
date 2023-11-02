@@ -2,11 +2,11 @@
     <mat-card appearance="outlined">
 
         <mat-card-title>
-            <ng-container *ngIf="this.document.task_type==undefined">
+            <ng-container *ngIf="this.document.document_params['task_type']==undefined">
                 <span i18n>Element</span> {{this.getDocTypeNumber()}}
             </ng-container>
-            <ng-container *ngIf="!(this.document.task_type==undefined)">
-                {{this.document.task_type}} <span i18n>Element</span> {{this.getDocTypeNumber()}}
+            <ng-container *ngIf="!(this.document.document_params['task_type']==undefined)">
+                {{this.document.document_params['task_type']}} <span i18n>Element</span> {{this.getDocTypeNumber()}}
             </ng-container>
         </mat-card-title>
 
@@ -20,8 +20,8 @@
             </ng-container>
             <div *ngIf="this.task.instructionsEvaluation.instructions.length>0" class="evaluation-instructions">
                 <div *ngFor="let instruction of this.task.instructionsEvaluation.instructions">
-                    <h2 *ngIf="this.utilsService.isCurrentTaskType(this.document.task_type, instruction.task_type)">{{instruction.caption}}</h2>
-                    <div *ngIf="this.utilsService.isCurrentTaskType(this.document.task_type, instruction.task_type)"><p [innerHTML]="instruction.text"></p></div>
+                    <h2 *ngIf="this.utilsService.isCurrentTaskType(this.document.document_params['task_type'], instruction.task_type)">{{instruction.caption}}</h2>
+                    <div *ngIf="this.utilsService.isCurrentTaskType(this.document.document_params['task_type'], instruction.task_type)"><p [innerHTML]="instruction.text"></p></div>
                 </div>
             </div>
 
@@ -47,11 +47,11 @@
             <ng-container *ngIf="(this.task.settings.modality=='pairwise')">
                 <app-element-pairwise [documentIndex]="documentIndex" (formEmitter)="storeAssessmentForm($event)"></app-element-pairwise>
             </ng-container>
-            <app-dimension [worker]="this.worker" [documentIndex]="documentIndex" [documentsForm]="this.documentsForm"  [searchForms]="this.searchForms"  [searchFormsCrowdX]="this.searchFormsCrowdX" (formEmitter)="storeAssessmentForm($event)"></app-dimension>
+            <app-dimension [worker]="this.worker" [documentIndex]="documentIndex" [documentsForm]="this.documentsForm"  [searchEngineForms]="this.searchEngineForms"  [resultsRetrievedForms]="this.resultsRetrievedForms" (formEmitter)="storeAssessmentForm($event)"></app-dimension>
 
             <!-- "Back", "Next" and "Finish" actions markup -->
             <mat-card-actions *ngIf="this.assessmentForm">
-                <button mat-flat-button color="primary"  *ngIf="documentIndex>0 && !(this.document.allow_back==false)"
+                <button mat-flat-button color="primary"  *ngIf="documentIndex>0 && this.document.document_params['allow_back'] != false"
                         [disabled]="this.sectionService.taskCompleted"
                         (click)="handleDocumentCompletion('Back')">
                     <span i18n>Back</span>

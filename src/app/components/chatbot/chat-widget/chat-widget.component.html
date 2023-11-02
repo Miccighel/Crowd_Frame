@@ -150,8 +150,8 @@
     </div>
 
     <div class="search-engine">
-        <app-crowd-xplorer [task]="this.task" [resetEvent]="resetSearchEngine" [disableEvent]="disableSearchEngine"
+        <app-search-engine-body [task]="this.task" [resetEvent]="resetSearchEngine" [disableEvent]="disableSearchEngine"
             (selectedRowEmitter)="getUrl($event)" (resultEmitter)="storeSearchEngineRetrievedResponse($event)"
-            (queryEmitter)="storeSearchEngineUserQuery($event)"></app-crowd-xplorer>
+            (queryEmitter)="storeSearchEngineUserQuery($event)"></app-search-engine-body>
     </div>
 </div>

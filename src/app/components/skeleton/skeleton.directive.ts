@@ -363,20 +363,20 @@ export class RadioDirective implements AfterViewInit {
     }
 }
 
-@Directive({selector: "app-crowd-xplorer"})
+@Directive({selector: "app-search-engine-body"})
 export class CrowdXplorerDirective {
     constructor(private actionLogger: ActionLogger, private element: ElementRef) {
     }
 
     @HostListener('queryEmitter', ['$event'])
     onQuery(query) {
-        if (this.actionLogger.isActive && this.actionLogger.opt['crowd-xplorer']['query'])
+        if (this.actionLogger.isActive && this.actionLogger.opt['search-engine-body']['query'])
             this.actionLogger.onQuery(query)
     }
 
     @HostListener('resultEmitter', ['$event'])
     onResults(results) {
-        if (this.actionLogger.isActive && this.actionLogger.opt['crowd-xplorer']['result'])
+        if (this.actionLogger.isActive && this.actionLogger.opt['search-engine-body']['result'])
             this.actionLogger.onResult(results)
     }
 }

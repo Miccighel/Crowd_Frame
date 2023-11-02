@@ -102,8 +102,8 @@
                     [worker]="this.worker"
                     [documentIndex]="this.task.getElementIndex(stepIndex)['elementIndex']"
                     [documentsForm]="this.documentsForm"
-                    [searchForms]="this.searchForms"
-                    [searchFormsCrowdX]="this.searchFormsCrowdX"
+                    [searchEngineForms]="this.searchEngineForms"
+                    [resultsRetrievedForms]="this.resultsRetrievedForms"
                     [stepper]="this.stepper"
                     (formEmitter)="this.storeDocumentForm($event, this.task.getElementIndex(stepIndex)['elementIndex'])"
             ></app-document>
