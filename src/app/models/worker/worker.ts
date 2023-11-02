@@ -42,7 +42,7 @@ export class Worker {
                     this.heading = position.coords.heading
                 }
             },
-            (error) => console.log(error)
+            (error) => {}
         )
     }
 

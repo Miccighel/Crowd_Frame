@@ -21,7 +21,7 @@ import {CookieService} from 'ngx-cookie-service';
 import {S3Service} from "../../../../../../services/aws/s3.service";
 import {Task} from "../../../../../../models/skeleton/task";
 
-import {BingDataSource} from '../../../../../../models/search_engine/bingDataSource';
+import {CustomDataSource} from '../../../../../../models/search_engine/customDataSource';
 import {of} from "rxjs";
 import {catchError, map, tap} from "rxjs/operators";
 import {Worker} from "../../../../../../models/worker/worker";
@@ -42,22 +42,15 @@ export class CrowdXplorer implements OnInit {
     /* Microsoft Search API key */
     bingApiKey: string;
 
+    pubmedApiKey: string
+
     /* fakeJSON token */
     fakeJSONToken: string;
 
     /*
-     * Service to query:
-     * Possible values are "BingWebSearch", "PubmedSearch", "FakerSearch"
-     */
-    source: string;
-
-    /*
-     * Array of domains to filter out from search results
-     */
-    domainsToFilter: Array<string>;
-
-    /*
      * Object to wrap search engine settings
+     * source: possible values are "BingWebSearch", "PubmedSearch", "FakerSearch"
+     * domainsToFilter: array of domains to filter out from search results
      */
     settings: SearchEngineSettings;
 
@@ -84,7 +77,6 @@ export class CrowdXplorer implements OnInit {
     /* Implementation to query Pubmed (Service + REST Interface)*/
     pubmedService: PubmedService;
     pubmedSearchResponse: PubmedSearchResponse;
-    pubmedSummaryResponse: PubmedSummaryResponse;
 
     /* Angular Reactive Form builder (see https://angular.io/guide/reactive-forms) */
     formBuilder: UntypedFormBuilder;
@@ -124,7 +116,7 @@ export class CrowdXplorer implements OnInit {
     /* Search results table UI variables and controls */
     resultsAmount = 0;
     resultsCurrentOffset = 0
-    bingDataSource: BingDataSource;
+    dataSource: CustomDataSource;
     // TODO: We must implement a PubMed data source
     displayedColumns = ["name"];
 
@@ -174,20 +166,78 @@ export class CrowdXplorer implements OnInit {
         /* |--------- SEARCH ENGINE SETTINGS - INITIALIZATION ---------| */
 
         this.bingApiKey = this.configService.environment.bing_api_key;
+        this.pubmedApiKey = this.configService.environment.pubmed_api_key;
         this.fakeJSONToken = this.configService.environment.fake_json_token;
     }
 
     ngOnInit() {
-        if(!this.task.searchSource || !this.task.searchDomains)
-            this.loadSettings();
 
-        this.source=this.task.searchSource
-        this.domainsToFilter=this.task.searchDomains
+        this.settings = this.task.searchEngineSettings
 
         let msClientIdName = 'MSEdge-ClientID'
-            if (this.checkCookie(msClientIdName)) {
-                this.bingService.msEdgeClientID = this.loadCookie(msClientIdName)
-            }
+        if (this.checkCookie(msClientIdName))
+            this.bingService.msEdgeClientID = this.loadCookie(msClientIdName)
+
+        switch (this.settings.source) {
+            case 'BingWebSearch':
+                this.dataSource = new CustomDataSource((query = this.queryValue, resultsAmount, resultsToSkip) => {
+                    this.ngxService.startBackgroundLoader('search-loader');
+                    return this.bingService.performWebSearch(this.bingApiKey, query, resultsAmount, resultsToSkip).pipe(
+                        map((searchResponse) => {
+                            if (!this.checkCookie(msClientIdName)) {
+                                const expireDate = new Date();
+                                expireDate.setDate(expireDate.getDate() + 365); // Set the cookie to expire in 1 year
+                                this.storeCookie(msClientIdName, this.bingService.msEdgeClientID, expireDate)
+                            }
+                            /* The results amount is saved*/
+                            this.resultsAmount = searchResponse.webPages.totalEstimatedMatches
+                            /* We are interested in parsing the webPages property of a BingWebSearchResponse */
+                            this.bingWebSearchResponse = this.bingService.filterResponse(searchResponse, this.settings.domains_filter);
+                            let decodedResponses = this.bingService.decodeResponse(this.bingWebSearchResponse);
+                            /* EMITTER: The matching response is emitted to provide it to an eventual parent component*/
+                            this.resultEmitter.emit(decodedResponses);
+                            this.searchInProgress = false;
+                            this.ngxService.stopBackgroundLoader('search-loader')
+                            return decodedResponses;
+                        }),
+                        catchError((error) => {
+                            this.searchInProgress = false;
+                            this.resultsAmount = 0
+                            this.resultEmitter.emit([])
+                            this.ngxService.stopBackgroundLoader('search-loader')
+                            return of([]); /* Return an empty array in case of error */
+                        })
+                    )
+                });
+                break;
+
+            case 'PubmedSearch':
+                this.dataSource = new CustomDataSource((query = this.queryValue, resultsAmount, resultsToSkip) => {
+                    this.ngxService.startBackgroundLoader('search-loader');
+                    return this.pubmedService.performWebSearch(this.pubmedApiKey, query, resultsAmount, resultsToSkip).pipe(
+                        map((searchResponse) => {
+                            this.pubmedSearchResponse = searchResponse
+                            this.resultsAmount = searchResponse['firstRequestData']['esearchresult']['count']
+                            let decodedResponses = this.pubmedService.decodeResponse(searchResponse);
+                            this.ngxService.stopBackgroundLoader('search-loader')
+                            /* EMITTER: The matching response is emitted to provide it to an eventual parent component*/
+                            this.resultEmitter.emit(decodedResponses);
+                            this.searchInProgress = false;
+                            this.ngxService.stopBackgroundLoader('search-loader')
+                            return decodedResponses
+                        }),
+                        catchError((error) => {
+                            console.log(error)
+                            this.searchInProgress = false;
+                            this.resultsAmount = 0
+                            this.resultEmitter.emit([])
+                            this.ngxService.stopBackgroundLoader('search-loader')
+                            return of([]);
+                        })
+                    )
+                });
+                break;
+        }
 
 
         this.bingDataSource = new BingDataSource((query = this.queryValue, resultsAmount, resultsToSkip) => {
@@ -290,20 +340,6 @@ export class CrowdXplorer implements OnInit {
         }
     }
 
-    /*
-     * This function interacts with an Amazon S3 bucket to retrieve and initialize the settings for the search engine.
-     */
-    public loadSettings() {
-        let rawSettings = this.S3Service.downloadSearchEngineSettings(
-            this.configService.environment
-        );
-
-        this.settings = new SearchEngineSettings(rawSettings);
-
-        this.task.searchSource = this.settings.source;
-        this.task.searchDomains = this.settings.domains_filter;
-    }
-
     /* |--------- WEB SEARCH ---------| */
 
     public saveQueryText(query: string) {
@@ -326,23 +362,13 @@ export class CrowdXplorer implements OnInit {
      * This function uses the text received as a parameter to perform a request using the chosen service.
      */
     public performWebSearch(pageSize, pageIndex) {
-
+        console.log(pageSize, pageIndex)
         if (this.queryValue.length > 0) {
-            /* The loading screen is shown */
-
             /* A search has been started */
             this.searchInProgress = true;
-
             /* EMITTER: The user query is emitted to provide it to an eventual parent component, only when the websearch is triggered */
             this.queryEmitter.emit(this.queryValue);
-            
-            switch (this.source) {
-                /* The search operation for Bing Web Search is performed */
-                case "BingWebSearch": {
-                    this.bingDataSource.loadData(this.queryValue, pageSize, (pageIndex+1) * pageSize)
-                    break;
-                }
-            }
+            this.dataSource.loadData(this.queryValue, pageSize, pageIndex * pageSize)
         }
     }
 

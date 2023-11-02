@@ -27,7 +27,7 @@
 </ng-template>
 
 <ng-template #searchEngineDataSource [formGroup]="searchForm">
-    <mat-table [dataSource]="bingDataSource" class="search-data-source">
+    <mat-table [dataSource]="dataSource" class="search-data-source">
         <mat-radio-group formControlName="urls">
             <ng-container matColumnDef="{{ displayedColumns }}">
                 <mat-header-cell *matHeaderCellDef i18n>

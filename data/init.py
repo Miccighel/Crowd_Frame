@@ -101,6 +101,7 @@ prolific_completion_code = os.getenv('prolific_completion_code')
 prolific_api_token = os.getenv('prolific_api_token')
 budget_limit = os.getenv('budget_limit')
 bing_api_key = os.getenv('bing_api_key')
+pubmed_api_key = os.getenv('pubmed_api_key')
 ip_info_token = os.getenv('ip_info_token')
 ip_geolocation_api_key = os.getenv('ip_geolocation_api_key')
 ip_api_api_key = os.getenv('ip_api_api_key')
@@ -1268,6 +1269,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         "aws_secret_key": aws_worker_access_secret,
         "prolific_completion_code": prolific_completion_code if prolific_completion_code else 'false',
         "bing_api_key": bing_api_key,
+        "pubmed_api_key": pubmed_api_key,
         "fake_json_token": fake_json_token,
         "log_on_console": 'false',
         "log_server_config": f"{server_config}",
@@ -1315,6 +1317,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         "aws_secret_key": aws_worker_access_secret,
         "prolific_completion_code": prolific_completion_code if prolific_completion_code else 'false',
         "bing_api_key": bing_api_key,
+        "pubmed_api_key": pubmed_api_key,
         "fake_json_token": fake_json_token,
         "log_on_console": 'true',
         "log_server_config": f"{server_config}",
