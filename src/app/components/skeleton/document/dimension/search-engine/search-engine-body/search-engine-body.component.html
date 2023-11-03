@@ -1,6 +1,4 @@
-
-
-<mat-card appearance="outlined" id="search-engine-body-{{digits}}"
+<mat-card id="search-engine-body-{{digits}}"
           [ngClass]="task.settings.modality=='conversational' ? 'xplorer-body p-2' : 'xplorer-body'"
           [formGroup]="searchForm">
     <ng-container *ngIf="this.task.settings.modality=='conversational'">
@@ -31,7 +29,7 @@
         <mat-radio-group formControlName="urls">
             <ng-container matColumnDef="{{ displayedColumns }}">
                 <mat-header-cell *matHeaderCellDef i18n>
-                    {{resultsAmount | number}} estimated matches found,
+                    {{resultsAmount | number}} estimated matches found
                 </mat-header-cell>
                 <mat-cell *matCellDef="let row; let i = index">
                     <p>
