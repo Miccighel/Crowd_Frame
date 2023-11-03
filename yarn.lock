@@ -188,9 +188,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/cdk@npm:^16.2.10":
-  version: 16.2.10
-  resolution: "@angular/cdk@npm:16.2.10"
+"@angular/cdk@npm:^16.2.11":
+  version: 16.2.11
+  resolution: "@angular/cdk@npm:16.2.11"
   dependencies:
     parse5: "npm:^7.1.2"
     tslib: "npm:^2.3.0"
@@ -201,7 +201,7 @@ __metadata:
   dependenciesMeta:
     parse5:
       optional: true
-  checksum: bd9b77ee7e9a6cfbb5d72bff8ed8f1d92225b5c7ee480321f14112c75971f74b2e03fa7bb96bfd703af9865e10666e818c0ae6f057183629d0141f5d6470fb86
+  checksum: 5442f471195340a1e4fe3e73fbe36a5ec1c4d7ad060516990def3b97d920f2b52c519329b39775790e09011e87acecab322f8d27658f6b8ac4f641f42f4f26a6
   languageName: node
   linkType: hard
 
@@ -326,9 +326,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/material@npm:^16.2.10":
-  version: 16.2.10
-  resolution: "@angular/material@npm:16.2.10"
+"@angular/material@npm:^16.2.11":
+  version: 16.2.11
+  resolution: "@angular/material@npm:16.2.11"
   dependencies:
     "@material/animation": "npm:15.0.0-canary.bc9ae6c9c.0"
     "@material/auto-init": "npm:15.0.0-canary.bc9ae6c9c.0"
@@ -380,13 +380,13 @@ __metadata:
     tslib: "npm:^2.3.0"
   peerDependencies:
     "@angular/animations": ^16.0.0 || ^17.0.0
-    "@angular/cdk": 16.2.10
+    "@angular/cdk": 16.2.11
     "@angular/common": ^16.0.0 || ^17.0.0
     "@angular/core": ^16.0.0 || ^17.0.0
     "@angular/forms": ^16.0.0 || ^17.0.0
     "@angular/platform-browser": ^16.0.0 || ^17.0.0
     rxjs: ^6.5.3 || ^7.4.0
-  checksum: 2f0bb7b41255657deb8bf8b7778928c36ebaff99f0e86fda5141915ca6831ee606b32d0f691ab6bdccf340096910bfa7105f64ef6f0bc1f0d150449fdb6c27c4
+  checksum: 65340bd417cb2be28271a2b23ae61c2082bf351215858f088ce54a1a187e69a777b3b481ccc5de75d6fd8e2193dd4667f0ec4ee3f67878f4ab675efa45545d59
   languageName: node
   linkType: hard
 
@@ -5111,7 +5111,7 @@ __metadata:
   dependencies:
     "@angular-devkit/build-angular": "npm:^16.2.9"
     "@angular/animations": "npm:^16.2.12"
-    "@angular/cdk": "npm:^16.2.10"
+    "@angular/cdk": "npm:^16.2.11"
     "@angular/cli": "npm:^16.2.9"
     "@angular/common": "npm:^16.2.12"
     "@angular/compiler": "npm:^16.2.12"
@@ -5119,7 +5119,7 @@ __metadata:
     "@angular/core": "npm:^16.2.12"
     "@angular/forms": "npm:^16.2.12"
     "@angular/localize": "npm:^16.2.12"
-    "@angular/material": "npm:^16.2.10"
+    "@angular/material": "npm:^16.2.11"
     "@angular/platform-browser": "npm:^16.2.12"
     "@angular/platform-browser-dynamic": "npm:^16.2.12"
     "@angular/router": "npm:^16.2.12"
