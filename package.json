@@ -16,7 +16,7 @@
   "dependencies": {
     "@angular/animations": "^16.2.11",
     "@angular/cdk": "^16.2.10",
-    "@angular/cli": "^16.2.8",
+    "@angular/cli": "^16.2.9",
     "@angular/common": "^16.2.11",
     "@angular/compiler": "^16.2.11",
     "@angular/core": "^16.2.11",
@@ -50,7 +50,7 @@
     "zone.js": "~0.13.3"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "^16.2.8",
+    "@angular-devkit/build-angular": "^16.2.9",
     "@angular/compiler-cli": "^16.2.11",
     "@types/node": "^20.8.6",
     "typescript": ">=4.9.3 <5.2"
