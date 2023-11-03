@@ -336,6 +336,8 @@ export class SearchEngineBodyComponent implements OnInit {
             /* EMITTER: The user query is emitted to provide it to an eventual parent component, only when the websearch is triggered */
             this.queryEmitter.emit(this.queryValue);
             this.dataSource.loadData(this.queryValue, pageSize, pageIndex * pageSize)
+            this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["pageIndex"]= pageIndex
+            this.paginator.pageIndex = pageIndex
         }
     }
 

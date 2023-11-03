@@ -348,7 +348,7 @@ export class ActionLogger {
         this.log('keySequence', details)
     }
 
-    /* ----- CROWD XPLORER ----- */
+    /* ----- SEARCH ENGINE BODY ----- */
     onQuery(query) {
         let details = {
             section: this.findSection(),
