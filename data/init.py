@@ -176,6 +176,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                     "sqs:GetQueueAttributes",
                     "apigateway:GET",
                     "apigateway:POST",
+                    "apigateway:PATCH",
                     "dynamodb:CreateTable",
                     "lambda:CreateFunction",
                     "lambda:CreateEventSourceMapping",
@@ -824,15 +825,143 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     except dynamodb_client.exceptions.ResourceInUseException:
         console.print(f"Table [cyan underline]{table_acl_name}[/cyan underline] already created")
 
+    console.rule(f"{step_index} - API Gateway {api_gateway_name} setup")
+    step_index = step_index + 1
+
+    status.start()
+    status.update(f"Creating gateway")
+
+    api_gateway_available = api_gateway_client.get_apis()['Items']
+    if not any(api for api in api_gateway_available if api['Name'] == api_gateway_name):
+        response = api_gateway_client.create_api(
+            CorsConfiguration={
+                'AllowCredentials': False,
+                'AllowHeaders': [
+                    '*'
+                ],
+                'AllowMethods': [
+                    'GET',
+                    'POST',
+                    'OPTIONS'
+                ],
+                'AllowOrigins': [
+                    f"https://{aws_deploy_bucket}.s3.{aws_region}.amazonaws.com"
+                ],
+                'ExposeHeaders': [
+                    'x-msedge-clientid',
+                    'x-msedge-clientip',
+                    'x-search-location',
+                    'bingapis-market',
+                    'bingapis-traceid'
+                ],
+                'MaxAge': 300
+            },
+            Name=api_gateway_name,
+            ProtocolType='HTTP'
+        )
+        api_gateway = response
+        serialize_json(folder_aws_generated_path, f"api_gateway_{api_gateway_name}.json", response)
+        console.print(f"[green]API Gateway created, HTTP STATUS CODE: {response['ResponseMetadata']['HTTPStatusCode']}.")
+    else:
+        console.print(f"[yellow]API Gateway already created, HTTP STATUS CODE: {response['ResponseMetadata']['HTTPStatusCode']}.")
+        api_gateway = [api for api in api_gateway_available if api['Name'] == api_gateway_name][0]
+        origin_allowed = f"https://{aws_deploy_bucket}.s3.{aws_region}.amazonaws.com"
+        if origin_allowed not in api_gateway['CorsConfiguration']['AllowOrigins']:
+            cors_configuration = {
+                "AllowOrigins": api_gateway['CorsConfiguration']['AllowOrigins'].append(origin_allowed),
+                "AllowMethods": ["GET", "POST", "OPTIONS"]
+            }
+            response = api_gateway_client.update_api(ApiId=api_gateway['ApiId'], CorsConfiguration=cors_configuration)
+            console.print(f"CORS configuration updated")
+            console.print(f"Allowed origin: {origin_allowed}")
+        status.stop()
+    console.print(f"Identifier: [cyan]{api_gateway['ApiId']}[/cyan]")
+    console.print(f"Endpoint: [cyan]{api_gateway['ApiEndpoint']}[/cyan]")
+
+    status.update(f"Creating auto deployment stage")
+    try:
+        response = api_gateway_client.create_stage(
+            ApiId=api_gateway['ApiId'],
+            StageName="$default",
+            AutoDeploy=True
+        )
+        api_stage = response
+        console.print(f"[green]Deployment stage created, HTTP STATUS CODE: {response['ResponseMetadata']['HTTPStatusCode']}.")
+    except api_gateway_client.exceptions.ConflictException as error:
+        response = api_gateway_client.get_stage(
+            ApiId=api_gateway['ApiId'],
+            StageName="$default",
+        )
+        api_stage = response
+        console.print(f"[yellow]Deployment stage already created, HTTP STATUS CODE: {response['ResponseMetadata']['HTTPStatusCode']}.")
+    api_stage_endpoint = f"https://{api_gateway['ApiId']}.execute-api.{aws_region}.amazonaws.com"
+    console.print(f"Identifier: [cyan]{api_stage['DeploymentId']}[/cyan]")
+    console.print(f"Endpoint: [cyan]{api_stage_endpoint}[/cyan]")
+    serialize_json(folder_aws_generated_path, f"api_gateway_{api_gateway_name}_stage_{response['DeploymentId']}.json", response)
+
+    status.update(f"Fetching available integrations")
+    api_integrations = api_gateway_client.get_integrations(
+        ApiId=api_gateway['ApiId'],
+        MaxResults='5',
+    )['Items']
+
+    status.update(f"Creating HTTP proxy integration")
+    integration_uri = 'https://api.bing.microsoft.com/v7.0/search'
+    api_integration = None
+    for api_integration_current in api_integrations:
+        if api_integration_current['IntegrationType'] == 'HTTP_PROXY':
+            if api_integration_current['IntegrationUri'] == integration_uri:
+                api_integration = api_integration_current
+                console.print(f"[yellow]HTTP proxy integration already created")
+    if not api_integration:
+        api_integration = api_gateway_client.create_integration(
+            ApiId=api_gateway['ApiId'],
+            IntegrationType='HTTP_PROXY',
+            IntegrationMethod='GET',
+            PayloadFormatVersion='1.0',
+            IntegrationUri='https://api.bing.microsoft.com/v7.0/search'
+        )
+        console.print(f"[green]HTTP proxy integration created")
+    console.print(f"Identifier: [cyan underline]{api_integration['IntegrationId']}")
+    console.print(f"URI: [cyan underline]{api_integration['IntegrationUri']}")
+    serialize_json(folder_aws_generated_path, f"api_gateway_{api_gateway_name}_integration_{api_integration['IntegrationId']}.json", api_integration)
+
+    status.update(f"Fetching available API routes")
+    api_routes = api_gateway_client.get_routes(
+        ApiId=api_gateway['ApiId'],
+        MaxResults='5',
+    )['Items']
+
+    api_route_name = 'GET /bing'
+    status.update(f"Creating {api_route_name} api route")
+    try:
+        response = api_gateway_client.create_route(
+            ApiId=api_gateway['ApiId'],
+            RouteKey=api_route_name,
+            Target=f"integrations/{api_integration['IntegrationId']}",
+        )
+        api_route = response
+        console.print(f"[green]API route created[/green], HTTP STATUS CODE: {response['ResponseMetadata']['HTTPStatusCode']}.")
+    except api_gateway_client.exceptions.ConflictException as error:
+        for api_route in api_routes:
+            if api_route['RouteKey'] == api_route_name:
+                console.print(f"[yellow]API route [cyan]{api_route_name}[/cyan] already created, HTTP STATUS CODE: {response['ResponseMetadata']['HTTPStatusCode']}.")
+    console.print(f"Identifier: [cyan underline]{api_route['RouteId']}")
+    console.print(f"Key: [cyan underline]{api_route['RouteKey']}")
+    console.print(f"Target: [cyan underline]{api_route['Target']}")
+    serialize_json(folder_aws_generated_path, f"api_gateway_{api_gateway_name}_route_{api_route['RouteId']}.json", api_route)
+
+    status.stop()
+
     console.rule(f"{step_index} - Logging infrastructure setup")
     step_index = step_index + 1
 
     status.start()
-    status.update(f"Setting up policies")
-
     console.print(f"Modality chosen: [cyan on white]{server_config}")
 
     if server_config == "aws":
+
+        status.update(f"Setting up policies")
 
         policies = []
         roles = []
@@ -852,7 +981,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 serialize_json(folder_aws_generated_path, f"policy_{policy['PolicyName']}.json", policy)
             except iam_client.exceptions.EntityAlreadyExistsException:
                 policies.append(name)
-
+                
             with open(f"{folder_aws_path}policy/{name.split('To')[0]}.json") as f:
                 policy_document = json.dumps(json.load(f))
             try:
@@ -890,10 +1019,10 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             )
             serialize_json(folder_aws_generated_path, f"dynamodb_table_{table_name}.json", table)
             status.stop()
-            console.print(f"{table_logging_name} created")
+            console.print(f"[green] Table {table_logging_name} created")
         except dynamodb_client.exceptions.ResourceInUseException:
             status.stop()
-            console.print(f"Table {table_logging_name} already created")
+            console.print(f"[yellow] Table {table_logging_name} already created")
 
         status.start()
         status.update('Queue service setup')
@@ -950,55 +1079,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         status.stop()
 
         status.start()
-        status.update('Gateway setup')
-
-        if not any(api for api in api_gateway_client.get_apis()['Items'] if api['Name'] == api_gateway_name):
-            response = api_gateway_client.create_api(
-                CorsConfiguration={
-                    'AllowCredentials': False,
-                    'AllowHeaders': ['*'],
-                    'AllowMethods': ['POST'],
-                    'AllowOrigins': ['*'],
-                    'ExposeHeaders': ['*'],
-                    'MaxAge': 300
-                },
-                Name=api_gateway_name,
-                ProtocolType='HTTP'
-            )
-            serialize_json(folder_aws_generated_path, f"api_gateway_{api_gateway_name}.json", response)
-            api = dict((key, response[key]) for key in ['ApiEndpoint', 'ApiId'])
-            api['integration'] = api_gateway_client.create_integration(
-                ApiId=api['ApiId'],
-                IntegrationType='AWS_PROXY',
-                IntegrationSubtype='SQS-SendMessage',
-                PayloadFormatVersion='1.0',
-                CredentialsArn=f'arn:aws:iam::{aws_account_id}:role{iam_path}GatewayToSQS',
-                RequestParameters={
-                    'QueueUrl': f'https://sqs.{aws_region}.amazonaws.com/{aws_account_id}/{queue_name}',
-                    'MessageBody': '$request.body'
-                }
-            )
-            serialize_json(folder_aws_generated_path, f"api_gateway_integration_{api['integration']['IntegrationId']}.json", api['integration'])
-            response = api_gateway_client.create_route(
-                ApiId=api['ApiId'],
-                RouteKey='POST /log',
-                Target='integrations/' + api['integration']['IntegrationId']
-            )
-            serialize_json(folder_aws_generated_path, f"api_gateway_route_{response['RouteId']}.json", response)
-            response = api_gateway_client.create_stage(
-                ApiId=api['ApiId'],
-                StageName="$default",
-                AutoDeploy=True
-            )
-            serialize_json(folder_aws_generated_path, f"api_gateway_stage_{response['StageName']}.json", response)
-            console.print(f'[link={api["ApiEndpoint"]}/log]API endpoint[/link] created.')
-        else:
-            api = [api for api in api_gateway_client.get_apis()['Items'] if api['Name'] == api_gateway_name][0]
-            api = dict((key, api[key]) for key in ['ApiEndpoint', 'ApiId'])
-            status.stop()
-            console.print(f'[link={api["ApiEndpoint"]}/log]API endpoint[/link] already created')
-
-        status.start()
         status.update('Event source mapping between queue and lambda setup')
         source_mappings = lambda_client.list_event_source_mappings(EventSourceArn=queue['Attributes']['QueueArn'])
         if queue_new or function_new or len(source_mappings['EventSourceMappings']) <= 0:
@@ -1010,14 +1090,64 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 FunctionName=function_name,
                 Enabled=True,
             )
-            console.print(f"Event source mapping between {queue_name} and {function_name} created.")
+            console.print(f"[green]Event source mapping between {queue_name} and {function_name} created.")
             serialize_json(folder_aws_generated_path, f"lambda_event_source_mapping_{response['UUID']}.json", response)
         else:
             console.print(f"[yellow]Event source mapping already created.")
         status.stop()
 
+        status.start()
+        status.update(f"Fetching available integrations")
+        api_integrations = api_gateway_client.get_integrations(
+            ApiId=api_gateway['ApiId'],
+            MaxResults='5',
+        )['Items']
+
+        status.update(f"Creating gateway integration between queue and lambda")
+        integration_uri = 'https://api.bing.microsoft.com/v7.0/search'
+        api_integration = None
+        for api_integration_current in api_integrations:
+            if api_integration_current['IntegrationType'] == 'AWS_PROXY':
+                api_integration = api_integration_current
+                console.print(f"[yellow]AWS proxy integration with SQS already created.")
+        if not api_integration:
+            response = api_gateway_client.create_integration(
+                ApiId=api_gateway['ApiId'],
+                IntegrationType='AWS_PROXY',
+                IntegrationSubtype='SQS-SendMessage',
+                PayloadFormatVersion='1.0',
+                CredentialsArn=f'arn:aws:iam::{aws_account_id}:role{iam_path}GatewayToSQS',
+                RequestParameters={
+                    'QueueUrl': f'https://sqs.{aws_region}.amazonaws.com/{aws_account_id}/{queue_name}',
+                    'MessageBody': '$request.body'
+                }
+            )
+            api_integration = response
+            console.print(f"[green]AWS proxy integration with SQS created, HTTP STATUS CODE: {response['ResponseMetadata']['HTTPStatusCode']}")
+        console.print(f"Identifier: [cyan underline]{api_integration['IntegrationId']}")
+        console.print(f"Queue URL: [cyan underline]{api_integration['RequestParameters']['QueueUrl']}")
+        serialize_json(folder_aws_generated_path, f"api_gateway_{api_gateway_name}_integration_{api_integration['IntegrationId']}.json", api_integration)
+
+        api_route_name = 'POST /log'
+        status.update(f"Creating {api_route_name} api route")
+        try:
+            response = api_gateway_client.create_route(
+                ApiId=api_gateway['ApiId'],
+                RouteKey=api_route_name,
+                Target=f"integrations/{api_integration['IntegrationId']}",
+            )
+            api_route = response
+            console.print(f"[green]API route created[/green], HTTP STATUS CODE: {response['ResponseMetadata']['HTTPStatusCode']}.")
+        except api_gateway_client.exceptions.ConflictException as error:
+            for api_route in api_routes:
+                if api_route['RouteKey'] == api_route_name:
+                    console.print(f"[yellow]API route [cyan]{api_route_name}[/cyan] already created, HTTP STATUS CODE: {response['ResponseMetadata']['HTTPStatusCode']}.")
+        console.print(f"Identifier: [cyan underline]{api_route['RouteId']}")
+        console.print(f"Key: [cyan underline]{api_route['RouteKey']}")
+        console.print(f"Target: [cyan underline]{api_route['Target']}")
+        serialize_json(folder_aws_generated_path, f"api_gateway_{api_gateway_name}_route_{api_route['RouteId']}.json", api_route)
+
     elif server_config == "custom":
-        status.stop()
         console.print("Please insert your custom logging endpoint: ")
         endpoint = console.input()
     elif server_config == "none":
@@ -1025,6 +1155,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         endpoint = ""
     else:
         raise Exception("Your [italic]server_config[/italic] environment variable must be set to [white on black]aws[/white on black], [white on black]custom[/white on black] or [white on black]none[/white on black]")
+
+    status.stop()
 
     console.rule(f"{step_index} - HITs Solver setup")
     step_index = step_index + 1
@@ -1276,6 +1408,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         "table_acl_name": f"{table_acl_name}",
         "table_data_name": f"{table_data_name}",
         "table_log_name": f"{table_logging_name}",
+        "api_gateway_endpoint": f"{api_stage_endpoint}",
         "hit_solver_endpoint": f"{hit_solver_endpoint}"
     }
 
@@ -1324,6 +1457,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         "table_acl_name": f"{table_acl_name}",
         "table_data_name": f"{table_data_name}",
         "table_log_name": f"{table_logging_name}",
+        "api_gateway_endpoint": f"{api_stage_endpoint}",
         "hit_solver_endpoint": f"{hit_solver_endpoint}"
     }
 
@@ -1649,7 +1783,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     else:
         console.print(f"Config. file [italic white on yellow]{filename}[/italic white on yellow] not detected, generating a sample")
         try:
-            logging_endpoint = f'{api["ApiEndpoint"]}/log'
+            logging_endpoint = f'{api_stage_endpoint}/log'
         except NameError:
             logging_endpoint = endpoint
         with open(f"{folder_build_task_path}{filename}", 'w') as file:

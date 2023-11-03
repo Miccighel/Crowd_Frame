@@ -115,18 +115,13 @@ export class SearchEngineBodyComponent implements OnInit {
 
     /* Search results table UI variables and controls */
     resultsAmount = 0;
-    resultsCurrentOffset = 0
     dataSource: CustomDataSource;
-    // TODO: We must implement a PubMed data source
     displayedColumns = ["name"];
 
     resultsOffset = 0;
 
     /* Random digits to generate unique CSS ids when multiple instances of the search engine are used */
     digits: string;
-
-    //Screen dimension flag
-    isSmallScreen = false;
 
     /* |--------- CONSTRUCTOR IMPLEMENTATION ---------| */
 
@@ -168,6 +163,10 @@ export class SearchEngineBodyComponent implements OnInit {
         this.bingApiKey = this.configService.environment.bing_api_key;
         this.pubmedApiKey = this.configService.environment.pubmed_api_key;
         this.fakeJSONToken = this.configService.environment.fake_json_token;
+
+        if (this.configService.environment.production) {
+            this.bingService.endPoint = `${this.configService.environment.api_gateway_endpoint}/bing`
+        }
     }
 
     ngOnInit() {
@@ -255,8 +254,7 @@ export class SearchEngineBodyComponent implements OnInit {
             this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["form"] = this.searchForm
             this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["pageSize"] = 10
             this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["pageIndex"] = 0
-        }
-        else{
+        } else {
             this.query = this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["form"].controls["query"]
             this.urls = this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["form"].controls["urls"]
 
@@ -332,7 +330,6 @@ export class SearchEngineBodyComponent implements OnInit {
      * This function uses the text received as a parameter to perform a request using the chosen service.
      */
     public performWebSearch(pageSize, pageIndex) {
-        console.log(pageSize, pageIndex)
         if (this.queryValue.length > 0) {
             /* A search has been started */
             this.searchInProgress = true;

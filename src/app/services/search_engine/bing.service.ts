@@ -23,7 +23,10 @@ export class BingService {
     /* Microsoft Search API key */
     apiKey: string
     /* Microsoft Bing Web Search endpoint */
-    /* NOTE: This */
+    /* NOTE: In a development environment, the reverse proxy (see prox.conf.json) in the app's root rewrites the slug to point directly to Bing's endpoint.
+     * In a production environment, on the other hand, the endpoint must be extracted from the environment itself, since the request has to be sent to the API Gateway route,
+     * which then proxies the request to Bing's API.
+     */
     endPoint = "bing/";
 
     /* HTTP client and headers */
