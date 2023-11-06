@@ -52,7 +52,7 @@ export class SearchEngineComponent implements OnInit {
 
     /* References to task stepper and token forms */
     @ViewChild('stepper') stepper: MatStepper;
-    @ViewChild(SearchEngineBodyComponent) crowdXplorer: SearchEngineBodyComponent;
+    @ViewChild(SearchEngineBodyComponent) searchEngineBody: SearchEngineBodyComponent;
 
     constructor(
         changeDetector: ChangeDetectorRef,

@@ -364,7 +364,7 @@ export class RadioDirective implements AfterViewInit {
 }
 
 @Directive({selector: "app-search-engine-body"})
-export class CrowdXplorerDirective {
+export class SearchEngineBodyDirective {
     constructor(private actionLogger: ActionLogger, private element: ElementRef) {
     }
 

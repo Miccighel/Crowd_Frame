@@ -56,7 +56,7 @@ import { AngularEditorModule } from "@kolkov/angular-editor";
 import { ActionLogger } from "./services/userActionLogger.service";
 import {
     ButtonDirective,
-    CrowdXplorerDirective,
+    SearchEngineBodyDirective,
     InputDirective,
     RadioDirective,
     SkeletonDirective,
@@ -117,7 +117,7 @@ function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
         SkeletonDirective,
         InputDirective,
         RadioDirective,
-        CrowdXplorerDirective,
+        SearchEngineBodyDirective,
         QuestionnaireComponent,
         WorkerChecksStepComponent,
         QuestionnaireStepComponent,

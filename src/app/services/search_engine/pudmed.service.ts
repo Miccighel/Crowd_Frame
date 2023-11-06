@@ -62,7 +62,8 @@ export class PubmedService {
         this.apiKey = apiKey
         /* The user query is saved */
         this.query = query;
-        let endpointSearch = `${this.endPoint_eSearch}db=${this.db}&term=${this.query}&usehistory=${this.useHistory}&retmode=${this.retmode}&retmax=${count}&retstart=${offset}&api_key=${this.apiKey}`
+        let api_key= this.apiKey=="None" ? ""  : `&api_key=${this.apiKey}` 
+        let endpointSearch = `${this.endPoint_eSearch}db=${this.db}&term=${this.query}&usehistory=${this.useHistory}&retmode=${this.retmode}&retmax=${count}&retstart=${offset}${api_key}`
         return this.client.get<PubmedSearchResponse>(endpointSearch).pipe(
             concatMap((response: PubmedSearchResponse) => {
                 const articleIds = response.esearchresult.idlist;
@@ -75,7 +76,7 @@ export class PubmedService {
                 return from(articleIds).pipe(
                     /* For each article ID, execute the HTTP request in sequence */
                     concatMap(articleId => {
-                            let endpointSummary = `${this.endPoint_eSummary}db=${this.db}&id=${articleId}&retmode=${this.retmode}&api_key=${this.apiKey}`
+                            let endpointSummary = `${this.endPoint_eSummary}db=${this.db}&id=${articleId}&retmode=${this.retmode}${api_key}`
                             return this.client.get(endpointSummary).pipe(
                                 map(additionalResponse => {
                                     return ({articleId, additionalResponse});
@@ -101,8 +102,9 @@ export class PubmedService {
      * This function uses the result of a request to the eSearch API (which returns a list of article identifiers) to fetch the attributes of each article
      */
     public retrieveArticle(id: string): Observable<PubmedSummaryResponse> {
+        let api_key= this.apiKey=="None" ? `&api_key=${this.apiKey}` : ""
         /* A request to PubMed eSummary API is performed and an Observable of <PubmedSummaryResponse> items is returned */
-        return this.client.get<PubmedSummaryResponse>(`${this.endPoint_eSummary}db=${this.db}&id=${id}&retmode=${this.retmode}&api_key=${this.apiKey}`)
+        return this.client.get<PubmedSummaryResponse>(`${this.endPoint_eSummary}db=${this.db}&id=${id}&retmode=${this.retmode}${api_key}`)
     }
 
     /*
