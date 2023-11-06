@@ -20,7 +20,7 @@
 <ng-template #searchEngineTextArea [formGroup]="searchForm">
     <mat-form-field id="search-textarea" appearance="outline">
         <mat-label><span i18n>Insert your query</span></mat-label>
-        <input #searchInput matInput type="search" formControlName="query" (change)="this.saveQueryText(searchInput.value)" (keyup.enter)="this.performWebSearch(this.paginator.pageSize, 0)"/>
+        <input #searchInput matInput type="search" formControlName="query" (change)="this.saveQueryText(searchInput.value)"/>
     </mat-form-field>
 </ng-template>
 

@@ -294,7 +294,7 @@ export class SearchEngineBodyComponent implements OnInit {
             .pipe(
                 tap(pageEvent => {
                     if(this.queryValue){
-                        this.dataSource.loadData(this.queryValue, pageEvent.pageSize, (pageEvent.pageIndex+1) * pageEvent.pageSize)
+                        this.dataSource.loadData(this.queryValue, pageEvent.pageSize, pageEvent.pageIndex * pageEvent.pageSize)
                         this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["pageSize"]= pageEvent.pageSize
                         this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["pageIndex"]= pageEvent.pageIndex
                     }

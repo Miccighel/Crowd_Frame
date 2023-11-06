@@ -1617,7 +1617,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 "documents_number": 1,
                 "documents_params": {
                     "identifier_1" : {
-                        "task_type": "Example",
+                        "task_type": "Main",
                         "allow_back": True,
                         "check_gold_with_msg": None
                     }
