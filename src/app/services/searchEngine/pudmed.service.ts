@@ -1,13 +1,12 @@
 /* Core modules */
 import {Injectable} from '@angular/core';
-import {forkJoin, from, mergeMap, Observable, of, toArray} from "rxjs";
-/* HTTP handling modules */
-import {HttpClient, HttpHeaders} from '@angular/common/http';
-import {PubmedSearchResponse} from "../../models/search_engine/pubmedSearchResponse";
-import {BaseResponse} from "../../models/search_engine/baseResponse";
-import {PubmedSummaryResponse} from '../../models/search_engine/pubmedSummaryResponse';
-import {BingWebSearchResponse} from "../../models/search_engine/bingWebSearchResponse";
+import {from, Observable, of, toArray} from "rxjs";
 import {concatMap, map} from "rxjs/operators";
+/* HTTP handling modules */
+import {HttpClient} from '@angular/common/http';
+import {PubmedSearchResponse} from "../../models/searchEngine/pubmedSearchResponse";
+import {BaseResponse} from "../../models/searchEngine/baseResponse";
+import {PubmedSummaryResponse} from '../../models/searchEngine/pubmedSummaryResponse';
 
 @Injectable({
     providedIn: 'root'
@@ -58,12 +57,12 @@ export class PubmedService {
     /*
      * This function uses the text received as a parameter to perform a request to Pubmed eUtilities API
      */
-    public performWebSearch(apiKey: string, query: string, count: number = 10, offset: number = 0): Observable<any> {
+    public performWebSearch(apiKey: string, query: string, count: number = 100, offset: number = 0): Observable<any> {
         this.apiKey = apiKey
         /* The user query is saved */
         this.query = query;
-        let api_key= this.apiKey=="None" ? ""  : `&api_key=${this.apiKey}` 
-        let endpointSearch = `${this.endPoint_eSearch}db=${this.db}&term=${this.query}&usehistory=${this.useHistory}&retmode=${this.retmode}&retmax=${count}&retstart=${offset}${api_key}`
+        let apiKeyCurrent= this.apiKey=="None" ? ""  : `&api_key=${this.apiKey}`
+        let endpointSearch = `${this.endPoint_eSearch}db=${this.db}&term=${this.query}&usehistory=${this.useHistory}&retmode=${this.retmode}&retmax=${count}&retstart=${offset}${apiKeyCurrent}`
         return this.client.get<PubmedSearchResponse>(endpointSearch).pipe(
             concatMap((response: PubmedSearchResponse) => {
                 const articleIds = response.esearchresult.idlist;
@@ -76,7 +75,7 @@ export class PubmedService {
                 return from(articleIds).pipe(
                     /* For each article ID, execute the HTTP request in sequence */
                     concatMap(articleId => {
-                            let endpointSummary = `${this.endPoint_eSummary}db=${this.db}&id=${articleId}&retmode=${this.retmode}${api_key}`
+                            let endpointSummary = `${this.endPoint_eSummary}db=${this.db}&id=${articleId}&retmode=${this.retmode}${apiKeyCurrent}`
                             return this.client.get(endpointSummary).pipe(
                                 map(additionalResponse => {
                                     return ({articleId, additionalResponse});
@@ -118,9 +117,17 @@ export class PubmedService {
             let summaryObject = responseCurrent["additionalResponse"] as PubmedSummaryResponse;
             let data = summaryObject.result[articleId]
             /* Sometimes, this "data" might be undefined. */
-            /* TODO: The responses should be decoded more gracefully */
-            if(data)
-                baseResponses.push(new BaseResponse(`https://www.ncbi.nlm.nih.gov/pubmed/${articleId}`, data["title"], data["fulljournalname"]))
+            if(data) {
+                let baseResponse = new BaseResponse(
+                    `https://www.ncbi.nlm.nih.gov/pubmed/${articleId}`,
+                    data["title"],
+                    data["fulljournalname"]
+                )
+                baseResponse.setParameter('identifier', articleId)
+                baseResponse.setParameter('sort_title', data['sorttitle'])
+                baseResponses.push(baseResponse)
+            }
+
         }
         return baseResponses
     }

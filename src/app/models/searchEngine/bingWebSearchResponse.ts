@@ -39,18 +39,33 @@ export interface QueryContext {
 }
 
 export interface RankingResponse {
-  mainline: Object
+  mainline: Mainline
+  sidebar: Sidebar
 }
 
+export interface Mainline {
+  items: Array<Item>
+}
+
+export interface Sidebar {
+  items: Array<Item>
+}
 export interface RelatedSearches {
   id: string
-  value: Array<Object>
+  value: Array<Item>
+}
+
+export interface Item {
+  answerType: string,
+  resultIndex: number,
+  value: Object,
 }
 
 export interface WebPages {
   totalEstimatedMatches: number
   value: Array<WebPage>
   webSearchUrl: string
+  someResultsRemoved: string
 }
 
 export interface WebPage {

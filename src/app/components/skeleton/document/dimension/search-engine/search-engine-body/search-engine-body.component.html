@@ -1,36 +1,33 @@
-<mat-card id="search-engine-body-{{digits}}"
+<mat-card id="search-engine-body-{{documentIndex}}"
           [ngClass]="task.settings.modality=='conversational' ? 'search-engine-body p-2' : 'search-engine-body'"
           [formGroup]="searchForm">
     <ng-container *ngIf="this.task.settings.modality=='conversational'">
-        <ng-container *ngTemplateOutlet="searchEngineTitle"></ng-container>
+        <div>
+            <h3>Search Engine</h3>
+        </div>
     </ng-container>
     <div class="search-bar">
-        <ng-container *ngTemplateOutlet="searchEngineTextArea"></ng-container>
-        <ng-container *ngTemplateOutlet="searchEngineButton"></ng-container>
+        <mat-form-field id="search-textarea" appearance="outline">
+            <mat-label><span i18n>Insert your query</span></mat-label>
+            <input #searchInput matInput type="search" formControlName="query" (change)="this.saveQueryText(searchInput.value)"/>
+        </mat-form-field>
+        <button #queryButton mat-flat-button color="primary"
+                [ngClass]="task.settings.modality=='conversational' ? 'search-button-conversational' : 'search-button'"
+                [disabled]="!query.valid || searchInProgress || (this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior =='disable_forms')"
+                (click)="this.performWebSearch()"
+        >
+            <ng-container *ngIf="searchInProgress; else searchNotInProgress">
+                <mat-icon fontIcon="hourglass_top"></mat-icon>
+            </ng-container>
+            <ng-template #searchNotInProgress>
+                <span i18n>Search</span>
+            </ng-template>
+        </button>
     </div>
-    <ng-container *ngTemplateOutlet="searchEngineDataSource"></ng-container>
-</mat-card>
-
-<ng-template #searchEngineTitle>
-    <div>
-        <h3>Search Engine</h3>
-    </div>
-</ng-template>
-
-<ng-template #searchEngineTextArea [formGroup]="searchForm">
-    <mat-form-field id="search-textarea" appearance="outline">
-        <mat-label><span i18n>Insert your query</span></mat-label>
-        <input #searchInput matInput type="search" formControlName="query" (change)="this.saveQueryText(searchInput.value)" (keyup.enter)="this.performWebSearch(this.paginator.pageSize, 0)"/>
-    </mat-form-field>
-</ng-template>
-
-<ng-template #searchEngineDataSource [formGroup]="searchForm">
     <mat-table [dataSource]="dataSource" class="search-data-source">
         <mat-radio-group formControlName="urls">
             <ng-container matColumnDef="{{ displayedColumns }}">
-                <mat-header-cell *matHeaderCellDef i18n>
-                    {{resultsAmount | number}} estimated matches found
-                </mat-header-cell>
+                <mat-header-cell *matHeaderCellDef i18n>{{estimatedMatches | number}} estimated matches found</mat-header-cell>
                 <mat-cell *matCellDef="let row; let i = index">
                     <p>
                         <a target="_blank" href="{{ decodeURI(row.url) }}">{{ row.name }}</a>
@@ -50,21 +47,5 @@
         <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
         <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
     </mat-table>
-    <mat-paginator [length]="resultsAmount" [pageSize]="10" [pageSizeOptions]="[3, 5, 10]"></mat-paginator>
-</ng-template>
-
-<ng-template #searchEngineButton>
-    <button mat-flat-button color="primary"
-            [ngClass]="task.settings.modality=='conversational' ? 'search-button-conversational' : 'search-button'"
-            [disabled]="!query.valid || searchInProgress || (this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior =='disable_forms')"
-            (click)="this.performWebSearch(this.paginator.pageSize, 0)">
-        <ng-container *ngIf="searchInProgress; else searchNotInProgress">
-            <mat-icon fontIcon="hourglass_top"></mat-icon>
-        </ng-container>
-        <ng-template #searchNotInProgress>
-            <span i18n>Search</span>
-        </ng-template>
-    </button>
-</ng-template>
-
-
+    <mat-paginator [length]="estimatedMatches" [pageSize]="10" [pageSizeOptions]="[3, 5, 10]"></mat-paginator>
+</mat-card>

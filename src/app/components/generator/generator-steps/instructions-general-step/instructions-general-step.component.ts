@@ -6,7 +6,7 @@ import {ConfigService} from "../../../../services/config.service";
 import {S3Service} from "../../../../services/aws/s3.service";
 import {LocalStorageService} from "../../../../services/localStorage.service";
 /* Models */
-import {Instruction} from "../../../../models/skeleton/instructions";
+import {BaseInstruction} from "../../../../models/skeleton/instructions/baseInstruction";
 import {Questionnaire} from "../../../../models/skeleton/questionnaires/questionnaire";
 
 @Component({
@@ -24,7 +24,7 @@ export class InstructionsGeneralStep implements OnInit {
 
     @Input() editorConfig
 
-    dataStored: Array<Instruction>
+    dataStored: Array<BaseInstruction>
 
     formStep: UntypedFormGroup;
 
@@ -59,7 +59,7 @@ export class InstructionsGeneralStep implements OnInit {
             serializedInstructions.forEach(key => {
                 let index = key.split("-")[2]
                 let item = this.localStorageService.getItem(`instruction-general-${index}`)
-                this.dataStored.push(new Instruction(parseInt(index), JSON.parse(item)))
+                this.dataStored.push(new BaseInstruction(parseInt(index), JSON.parse(item)))
             })
             this.dataStored.sort((a, b) => (a.index > b.index) ? 1 : -1)
         } else {
@@ -67,7 +67,7 @@ export class InstructionsGeneralStep implements OnInit {
             let rawInstructions = null
             rawInstructions = await this.S3Service.downloadGeneralInstructions(this.configService.environment)
             rawInstructions.forEach((data, index) => {
-                let instruction = new Instruction(index, data)
+                let instruction = new BaseInstruction(index, data)
                 this.dataStored.push(instruction)
                 this.localStorageService.setItem(`instruction-general-${index}`, JSON.stringify(instruction))
             })
@@ -90,7 +90,7 @@ export class InstructionsGeneralStep implements OnInit {
         return this.formStep.get(`instructions`) as UntypedFormArray;
     }
 
-    addInstruction(instructionIndex = null, instruction = null as Instruction) {
+    addInstruction(instructionIndex = null, instruction = null as BaseInstruction) {
         this.instructions().push(this._formBuilder.group({
             caption: instruction ? instruction.caption ? instruction.caption : '' : '',
             text: [instruction ? instruction.text ? instruction.text : '' : '', [Validators.required]],

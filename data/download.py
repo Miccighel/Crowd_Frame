@@ -154,12 +154,22 @@ next_token = ''
 hit_counter = 0
 token_counter = 0
 
+dynamo_db_tables = []
+
+response = dynamo_db.list_tables()
+# DynamoDB client returns a paginated list of tables when they are more than 100
+while 'LastEvaluatedTableName' in response.keys():
+    for dynamo_db_table in response['TableNames']:
+        dynamo_db_tables.append(dynamo_db_table)
+    response = dynamo_db.list_tables(ExclusiveStartTableName=dynamo_db_tables[-1])
+for dynamo_db_table in response['TableNames']:
+    dynamo_db_tables.append(dynamo_db_table)
+
 task_data_tables = []
 task_log_tables = []
 task_acl_tables = []
 task_batch_names = []
 
-dynamo_db_tables = dynamo_db.list_tables()['TableNames']
 for table_name in dynamo_db_tables:
     if task_name in table_name and 'Data' in table_name and batch_prefix in table_name:
         task_data_tables.append(table_name)
@@ -1080,9 +1090,9 @@ if not os.path.exists(df_acl_path):
                                         row['time_expiration_parsed'] = find_date_string(row['time_expiration'])
                                     if 'time_expiration_nearest' in row:
                                         row['time_expiration_nearest_parsed'] = find_date_string(row['time_expiration_nearest'])
-                                    df_acl = df_acl.append(row, ignore_index=True)
+                                    df_acl = pd.concat([df_acl, pd.DataFrame([row])], ignore_index=True)
                         else:
-                            df_acl = df_acl.append(row, ignore_index=True)
+                            df_acl = pd.concat([df_acl, pd.DataFrame([row])], ignore_index=True)
 
     if len(df_acl) > 0:
         df_acl.sort_values(by='time_arrival_parsed', inplace=True)
@@ -1192,7 +1202,7 @@ if 'mturk' in platforms:
                                     for hit_assignment_attribute, hit_assignment_value in hit_assignment.items():
                                         row[hit_assignment_attribute] = hit_assignment_value
 
-                                    hit_df = hit_df.append(row, ignore_index=True)
+                                    hit_df = pd.concat([hit_df, pd.DataFrame([row])], ignore_index=True)
 
                             hit_counter = hit_counter + 1
 
@@ -1749,7 +1759,7 @@ if 'prolific' in platforms:
                                     'worker_student_status': row_raw['Student status'],
                                     'worker_employment_status': row_raw['Employment status'],
                                 }
-                                df_prolific_demo_data = df_prolific_demo_data.append(row, ignore_index=True)
+                                df_prolific_demo_data = pd.concat([df_prolific_demo_data, pd.DataFrame([row])], ignore_index=True)
 
         if df_prolific_demo_data.shape[0] > 0:
             df_prolific_demo_data.to_csv(df_prolific_demographic_data_path, index=False)
@@ -1808,7 +1818,7 @@ if not os.path.exists(df_ip_path):
                                     row[f"{lang_property}_{index_lang}"] = lang_value
                         else:
                             row[property] = value
-                    df_ip = df_ip.append(row, ignore_index=True)
+                    df_ip = pd.concat([df_ip, pd.DataFrame([row])])
 
     if len(df_ip) > 0:
         df_ip.sort_values(by=['worker_id', 'batch_name', 'time_submit_parsed'], inplace=True)
@@ -1861,7 +1871,7 @@ if not os.path.exists(df_uag_path):
                     ua_properties = ua_serialization[user_agent]
                     for property, value in ua_properties.items():
                         row[property] = value
-                    df_ua = df_ua.append(row, ignore_index=True)
+                    df_ua = pd.concat([df_ua, pd.DataFrame([row])], ignore_index=True)
 
     if len(df_ua) > 0:
         df_ua.sort_values(by=['worker_id', 'batch_name', 'time_submit_parsed'], inplace=True)
@@ -2173,7 +2183,7 @@ if not os.path.exists(df_comm_path):
                         row['time_submit_parsed'] = find_date_string(row['time_submit'])
                         row['sequence_number'] = int(comment['serialization']['info']['sequence'])
                         row['text'] = sanitize_string(comment['serialization']['comment'])
-                        df_comm = df_comm.append(row, ignore_index=True)
+                        df_comm = pd.concat([df_comm, pd.DataFrame([row])], ignore_index=True)
 
     if df_comm.shape[0] > 0:
         empty_cols = [col for col in df_comm.columns if df_comm[col].isnull().all()]
@@ -2403,10 +2413,10 @@ if not os.path.exists(df_quest_path):
                             if 'dropped' in question:
                                 if not question['dropped']:
                                     row = parse_answers(row, questionnaire, question, current_answers)
-                                    df_quest = df_quest.append(row, ignore_index=True)
+                                    df_quest = pd.concat([df_quest, pd.DataFrame([row])], ignore_index=True)
                             else:
                                 row = parse_answers(row, questionnaire, question, current_answers)
-                                df_quest = df_quest.append(row, ignore_index=True)
+                                df_quest = pd.concat([df_quest, pd.DataFrame([row])], ignore_index=True)
 
     if df_quest.shape[0] > 0:
         empty_cols = [col for col in df_quest.columns if df_quest[col].isnull().all()]
@@ -2647,8 +2657,8 @@ if not os.path.exists(df_data_path):
                         row["doc_time_elapsed"] = round(document_data['serialization']['timestamps_elapsed'], 2)
 
                     if ('time_submit') in row:
-                        df_answ = df_answ.append(row, ignore_index=True)
-    
+                        df_answ = pd.concat([df_answ, pd.DataFrame([row])], ignore_index=True)
+
     if df_answ.shape[0] > 0:
         empty_cols = [col for col in df_answ.columns if df_answ[col].isnull().all()]
         df_answ.drop(empty_cols, axis=1, inplace=True)
@@ -2785,7 +2795,7 @@ if not os.path.exists(df_notes_path):
                             row['note_text_right'] = note_current['text_right']
 
                         if 'time_submit' in row:
-                            df_notes = df_notes.append(row, ignore_index=True)
+                            df_notes = pd.concat([df_notes, pd.DataFrame([row])], ignore_index=True)
 
     if df_notes.shape[0] > 0:
         empty_cols = [col for col in df_notes.columns if df_notes[col].isnull().all()]
@@ -2866,7 +2876,7 @@ def parse_dimensions_selected(df, worker_id, worker_paid, task, info, documents,
             if time_elapsed < 0:
                 time_elapsed = (timestamp_parsed_previous - timestamp_selection_parsed).total_seconds()
             timestamps_found.append(timestamp_selection_parsed)
-            
+
             if 'value' not in dimension_current.keys():
                 dimension_current['value'] = np.nan
             row = {
@@ -2892,7 +2902,7 @@ def parse_dimensions_selected(df, worker_id, worker_paid, task, info, documents,
                 'timestamp_end': timestamp_end,
                 'timestamp_end_parsed': find_date_string(timestamp_end, seconds=True)
             }
-            df = df.append(row, ignore_index=True)
+            df = pd.concat([df, pd.DataFrame([row])], ignore_index=True)
 
     return df
 
@@ -2979,6 +2989,12 @@ df_urls = pd.DataFrame(columns=[
     "query_text",
     "query_timestamp",
     "query_timestamp_parsed",
+    "query_estimated_matches",
+    "results_retrieved",
+    "results_to_skip",
+    "results_amount",
+    "page_index",
+    "page_size",
     "response_index",
     "response_url",
     "response_name",
@@ -3003,7 +3019,13 @@ def parse_responses(df, worker_id, worker_paid, task, info, queries, responses_r
                 "document_id": documents[response_retrieved['document']]['id'],
                 "dimension_index": response_retrieved['dimension'],
                 "dimension_name": dimensions[response_retrieved['dimension']]['name'],
-                "query_index": response_retrieved['query']
+                "query_index": response_retrieved['query'],
+                "query_estimated_matches": response_retrieved['estimated_matches'],
+                "results_retrieved": response_retrieved['results_retrieved'],
+                "results_to_skip": response_retrieved['results_to_skip'],
+                "results_amount": response_retrieved['results_amount'],
+                "page_index": response_retrieved['page_index'],
+                "page_size": response_retrieved['page_size']
             }
             query_text = np.nan
 
@@ -3020,10 +3042,23 @@ def parse_responses(df, worker_id, worker_paid, task, info, queries, responses_r
             row['query_timestamp_parsed'] = find_date_string(response_retrieved['timestamp'])
             for response_index, response in enumerate(response_retrieved['response']):
 
-                row["response_index"] = response_index
+                response_index_full = response_index + response_retrieved['results_to_skip']
+
+                row["response_index"] = response_index_full
                 row["response_url"] = response["url"]
                 row["response_name"] = response["name"]
                 row["response_snippet"] = response["snippet"]
+
+                for parameter, value in response['parameters'].items():
+                    if f"param_{parameter}" not in df.columns:
+                        if "date_last_crawled" in parameter:
+                            df[f"param_{parameter}_parsed"] = np.nan
+                        df[f"param_{parameter}"] = np.nan
+                    row[f"param_{parameter}"] = value
+                    if "date_last_crawled" in parameter:
+                        date_parsed = ' '.join(find_date_string(value).split(' ')[:2])
+                        df[f"param_{parameter}_parsed"] = date_parsed
+
                 row["index_selected"] = -1
                 row_check = df.loc[
                     (df["worker_id"] == row["worker_id"]) &
@@ -3033,7 +3068,7 @@ def parse_responses(df, worker_id, worker_paid, task, info, queries, responses_r
                     (df["dimension_index"] == row["dimension_index"]) &
                     (df["query_index"] == row["query_index"]) &
                     (df["query_timestamp"] == row["query_timestamp"]) &
-                    (df["response_index"] == response_index)
+                    (df["response_index"] == response_index_full)
                     ]
                 if len(row_check) == 0:
                     df.loc[len(df)] = row

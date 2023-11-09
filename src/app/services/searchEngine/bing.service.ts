@@ -3,12 +3,12 @@ import {Injectable} from '@angular/core';
 import {Observable, map} from "rxjs";
 /* HTTP handling modules */
 import {HttpClient, HttpHeaders} from '@angular/common/http';
-import {BingWebSearchResponse} from '../../models/search_engine/bingWebSearchResponse';
-import {BaseResponse} from "../../models/search_engine/baseResponse";
+import {BingWebSearchResponse} from '../../models/searchEngine/bingWebSearchResponse';
+import {BaseResponse} from "../../models/searchEngine/baseResponse";
 import {tap} from "rxjs/operators";
 
 @Injectable({
-  providedIn: 'root'
+    providedIn: 'root'
 })
 
 /*
@@ -23,7 +23,7 @@ export class BingService {
     /* Microsoft Search API key */
     apiKey: string
     /* Microsoft Bing Web Search endpoint */
-    /* NOTE: In a development environment, the reverse proxy (see prox.conf.json) in the app's root rewrites the slug to point directly to Bing's endpoint.
+    /* NOTE: In a development environment, the reverse proxy (see proxy.conf.json) in the app's root rewrites the slug to point directly to Bing's endpoint.
      * In a production environment, on the other hand, the endpoint must be extracted from the environment itself, since the request has to be sent to the API Gateway route,
      * which then proxies the request to Bing's API.
      */
@@ -55,7 +55,7 @@ export class BingService {
     /*
      * This function uses the text received as a parameter to perform a request to Bing Web Search
      */
-    public performWebSearch(apiKey: string, query: string, count: number = 10, offset: number = 0): Observable<BingWebSearchResponse> {
+    public performWebSearch(apiKey: string, query: string, count: number = 50, offset: number = 0): Observable<BingWebSearchResponse> {
         this.apiKey = apiKey;
         /* The user query is saved */
         this.query = query;
@@ -75,8 +75,8 @@ export class BingService {
                 this.headers = this.headers.set('X-Search-Location', `lat:${this.latitude},long:${this.longitude},re:${this.accuracy}`)
         }
 
-        /* A request to BingWebSearch API is performed and an Observable of <BingWebSearchResponse> items is returned */
-        return this.client.get<BingWebSearchResponse>(`${this.endPoint}?q=${this.query}&count=${count}&offset=${offset}&mkt=en-us`, {headers: this.headers, observe: 'response'}).pipe(
+        let endpointWithParameters = `${this.endPoint}?q=${this.query}&count=${count}&offset=${offset}&mkt=en-us`
+        return this.client.get<BingWebSearchResponse>(endpointWithParameters, {headers: this.headers, observe: 'response'}).pipe(
             tap(response => {
                 let currentClientId = response.headers.get('X-MSEdge-ClientID')
                 if (currentClientId)
@@ -110,21 +110,29 @@ export class BingService {
      * This function parses the response retrieved by a request to Bing Web Search to create a standard <BaseResponse> object to return
      */
     public decodeResponse(response: BingWebSearchResponse): Array<BaseResponse> {
-        let baseResponse = [];
-        /* The JSON array of retrieved web pages is parsed to find for each result: */
-        if (response.webPages) {
+        let baseResponses = [];
+        for (let index = 0; index < response.rankingResponse.mainline.items.length; index++) {
+            let rankData = response.rankingResponse.mainline.items[index]
+            let responseId = rankData.value['id']
             for (let index = 0; index < response.webPages.value.length; index++) {
-                /* The web page url */
-                let url = response.webPages.value[index].url;
-                /* The web page name */
-                let name = response.webPages.value[index].name;
-                /* The web page snippet */
-                let snippet = response.webPages.value[index].snippet;
-                /* These three elements are used to init a standard base response */
-                baseResponse.push(new BaseResponse(url, name, snippet))
+                let responseCurrent = response.webPages.value[index]
+                if (responseCurrent.id == responseId) {
+                    let baseResponse = new BaseResponse(
+                        responseCurrent.url,
+                        responseCurrent.name,
+                        responseCurrent.snippet
+                    )
+                    baseResponse.setParameter('identifier', responseId)
+                    baseResponse.setParameter('date_last_crawled', responseCurrent.dateLastCrawled)
+                    baseResponse.setParameter('display_url', responseCurrent.displayUrl)
+                    baseResponse.setParameter('page_language', responseCurrent.language)
+                    baseResponse.setParameter('is_navigational', responseCurrent.isNavigational)
+                    baseResponse.setParameter('is_family_friendly', responseCurrent.isFamilyFriendly)
+                    baseResponses.push(baseResponse)
+                }
             }
         }
-        return baseResponse
+        return baseResponses
     }
 
 }

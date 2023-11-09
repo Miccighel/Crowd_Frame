@@ -6,7 +6,7 @@ import {ConfigService} from "../../services/config.service";
 import {NgxUiLoaderService} from "ngx-ui-loader";
 import {S3Service} from "../../services/aws/s3.service";
 /* Models */
-import {Instruction} from "../../models/skeleton/instructions";
+import {BaseInstruction} from "../../models/skeleton/instructions/baseInstruction";
 import {DebugService} from "../../services/debug.service";
 /* Material Design */
 import {MatSnackBar} from "@angular/material/snack-bar";
@@ -35,7 +35,7 @@ export class LoaderComponent implements OnInit {
     batchName: string;
 
     /* Instructions to perform the task */
-    instructions: Array<Instruction>;
+    instructions: Array<BaseInstruction>;
 
     /* Amount of instructions sentences */
     instructionsAmount: number;

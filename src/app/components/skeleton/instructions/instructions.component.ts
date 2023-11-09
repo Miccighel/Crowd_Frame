@@ -3,7 +3,7 @@ import {Component, Inject, Input, OnInit, ViewEncapsulation} from '@angular/core
 /* Material Design */
 import {MatDialog, MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
 /* Task models*/
-import {Instruction} from "../../../models/skeleton/instructions";
+import {BaseInstruction} from "../../../models/skeleton/instructions/baseInstruction";
 import {Task} from "../../../models/skeleton/task";
 import {Worker} from "../../../models/worker/worker";
 /* Services */
@@ -56,7 +56,7 @@ export class InstructionsComponent implements OnInit {
     /*
      * This function opens the modal and loads its look&feel and content.
      */
-    openDialog(instructions: Array<Instruction>): void {
+    openDialog(instructions: Array<BaseInstruction>): void {
         this.dialog.open(InstructionsDialog, {
             width: '60%',
             minHeight: '85%',
