@@ -1,5 +1,6 @@
 /* Core modules */
 import {ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild, QueryList, ViewChildren} from "@angular/core";
+import {fromEvent, of, takeUntil} from "rxjs";
 import {catchError, debounceTime, map, tap} from "rxjs/operators";
 /* Loading screen module */
 import {NgxUiLoaderService} from "ngx-ui-loader";
@@ -8,9 +9,6 @@ import {MatPaginator} from "@angular/material/paginator";
 /* Reactive forms modules */
 import {UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators,} from "@angular/forms";
 /* Services */
-import {BingService} from "../../../../../../services/search_engine/bing.service";
-import {BingWebSearchResponse} from "../../../../../../models/search_engine/bingWebSearchResponse";
-import {FakerService} from "../../../../../../services/search_engine/faker.service";
 import {ConfigService} from "../../../../../../services/config.service";
 import {CookieService} from 'ngx-cookie-service';
 import {S3Service} from "../../../../../../services/aws/s3.service";
