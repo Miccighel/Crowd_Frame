@@ -3039,7 +3039,7 @@ def parse_responses(df, worker_id, worker_paid, task, info, queries, responses_r
                         query_text = query["text"]
             row['query_text'] = query_text
             row['query_timestamp'] = response_retrieved['timestamp']
-            row['query_timestamp_parsed'] = find_date_string(response_retrieved['timestamp'])
+            row['query_timestamp_parsed'] = find_date_string(datetime.fromtimestamp(float(response_retrieved['timestamp']), timezone('GMT')).strftime('%c'))
             for response_index, response in enumerate(response_retrieved['response']):
 
                 response_index_full = response_index + response_retrieved['results_to_skip']
