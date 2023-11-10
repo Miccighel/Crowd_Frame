@@ -464,12 +464,13 @@ export class Task {
      * These information are parsed and stored in the corresponding data structure.
      */
     public storeSearchEngineUserQuery(
-        queryData: string,
+        queryData: Object,
         document: Document,
         dimension: Dimension
     ) {
         this.currentDimension = dimension.index;
-        let currentQueryText = queryData;
+        let currentQueryText = queryData["text"];
+        let currentQueryTextEncoded = queryData["encoded"];
         let timeInSeconds = Date.now() / 1000;
         /* If some data for the current document already exists*/
         if (this.searchEngineQueries[document.index]["amount"] > 0) {
@@ -483,6 +484,7 @@ export class Task {
                 index: storedQueries.length,
                 timestamp: timeInSeconds,
                 text: currentQueryText,
+                textEncoded: currentQueryTextEncoded,
             });
             this.currentQuery = storedQueries.length - 1;
             /* The data array within the data structure is updated */
@@ -501,6 +503,7 @@ export class Task {
                     index: 0,
                     timestamp: timeInSeconds,
                     text: currentQueryText,
+                    textEncoded: currentQueryTextEncoded,
                 },
             ];
             this.currentQuery = 0;

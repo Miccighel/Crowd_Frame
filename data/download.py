@@ -2987,6 +2987,7 @@ df_urls = pd.DataFrame(columns=[
     "dimension_name",
     "query_index",
     "query_text",
+    "query_text_encoded",
     "query_timestamp",
     "query_timestamp_parsed",
     "query_estimated_matches",
@@ -3028,16 +3029,20 @@ def parse_responses(df, worker_id, worker_paid, task, info, queries, responses_r
                 "page_size": response_retrieved['page_size']
             }
             query_text = np.nan
+            query_text_encoded = np.nan
 
             if type(queries) == list:
                 for query in queries[int(response_retrieved['document'])]["data"]:
                     if response_retrieved["query"] == query['index']:
                         query_text = query["text"]
+                        query_text_encoded = query["textEncoded"]
             else:
                 for query in queries["data"]:
                     if response_retrieved["query"] == query['index']:
                         query_text = query["text"]
+                        query_text_encoded = query["textEncoded"]
             row['query_text'] = query_text
+            row['query_text_encoded'] = query_text_encoded
             row['query_timestamp'] = response_retrieved['timestamp']
             row['query_timestamp_parsed'] = find_date_string(datetime.fromtimestamp(float(response_retrieved['timestamp']), timezone('GMT')).strftime('%c'))
             for response_index, response in enumerate(response_retrieved['response']):

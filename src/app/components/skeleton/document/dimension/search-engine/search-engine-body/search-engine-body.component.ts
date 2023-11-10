@@ -100,7 +100,7 @@ export class SearchEngineBodyComponent implements OnInit {
 
     /* Event emitters */
     /* EMITTER: Query inserted by user */
-    @Output() queryEmitter = new EventEmitter<string>();
+    @Output() queryEmitter = new EventEmitter<Object>();
     /* EMITTER: Responses retrieved by search engine */
     @Output() resultEmitter = new EventEmitter<Object>();
     /* EMITTER: Response selected by user */
@@ -115,10 +115,10 @@ export class SearchEngineBodyComponent implements OnInit {
     @Input() resetEvent: EventEmitter<void>;
     @Input() disableEvent: EventEmitter<boolean>;
 
-    /* Data about the responses retrieved */
+    /* Data and search parameters */
     estimatedMatches = 0;
     resultsAmount = 0;
-    resultsOffset = 0;
+    searchAmount = 0;
     baseResponses: Array<BaseResponse> = []
 
     /* |--------- CONSTRUCTOR IMPLEMENTATION ---------| */
@@ -165,18 +165,22 @@ export class SearchEngineBodyComponent implements OnInit {
 
         switch (this.settings.source) {
             case 'BingWebSearch':
+                this.searchAmount = this.bingService.SEARCH_AMOUNT
                 this.dataSource = new CustomDataSource((query = this.queryValue, resultsToSkip, querySentByUser = false) => {
                     let resultSliceStart = (this.paginator.pageIndex) * this.paginator.pageSize
                     let resultSliceEnd = resultSliceStart + this.paginator.pageSize
                     if (querySentByUser || resultSliceEnd > this.resultsAmount || this.resultsAmount == 0) {
                         if (querySentByUser) {
                             /* EMITTER: The user query is emitted to provide it to an eventual parent component, when the query is sent manually */
-                            this.queryEmitter.emit(this.queryValue);
+                            this.queryEmitter.emit({
+                                "text": this.queryValue,
+                                "encoded": encodeURIComponent(this.queryValue)
+                            });
                             this.baseResponses = []
                         }
                         this.ngxService.startBackgroundLoader('search-loader');
                         this.searchInProgress = true
-                        return this.bingService.performWebSearch(this.bingApiKey, query, 50, resultsToSkip).pipe(
+                        return this.bingService.performWebSearch(this.bingApiKey, encodeURIComponent(query), resultsToSkip).pipe(
                             map((searchResponse) => {
                                 if (!this.checkCookie(msClientIdName)) {
                                     const expireDate = new Date();
@@ -206,9 +210,18 @@ export class SearchEngineBodyComponent implements OnInit {
                                 return this.baseResponses.slice(resultSliceStart, resultSliceEnd);
                             }),
                             catchError((error) => {
+                                console.log(error)
                                 this.searchInProgress = false;
                                 this.estimatedMatches = 0
-                                this.resultEmitter.emit([])
+                                this.resultEmitter.emit({
+                                    "decodedResponses": [],
+                                    "estimatedMatches": this.estimatedMatches,
+                                    "resultsRetrieved": 0,
+                                    "resultsToSkip": resultsToSkip,
+                                    "resultsAmount": this.resultsAmount,
+                                    "pageIndex": this.paginator.pageIndex,
+                                    "pageSize": this.paginator.pageSize,
+                                })
                                 this.ngxService.stopBackgroundLoader('search-loader')
                                 /* Return an empty array in case of error */
                                 return of([]);
@@ -222,17 +235,21 @@ export class SearchEngineBodyComponent implements OnInit {
                 break;
 
             case 'PubmedSearch':
+                this.searchAmount = this.pubmedService.SEARCH_AMOUNT
                 this.dataSource = new CustomDataSource((query = this.queryValue, resultsToSkip, querySentByUser = false) => {
                     let resultSliceStart = (this.paginator.pageIndex) * this.paginator.pageSize
                     let resultSliceEnd = resultSliceStart + this.paginator.pageSize
                     if (querySentByUser || resultSliceEnd > this.resultsAmount || this.resultsAmount == 0) {
                         if (querySentByUser) {
-                            this.queryEmitter.emit(this.queryValue);
+                            this.queryEmitter.emit({
+                                "text": this.queryValue,
+                                "encoded": encodeURIComponent(this.queryValue)
+                            });
                             this.baseResponses = []
                         }
                         this.ngxService.startBackgroundLoader('search-loader');
                         this.searchInProgress = true
-                        return this.pubmedService.performWebSearch(this.pubmedApiKey, query, 20, resultsToSkip).pipe(
+                        return this.pubmedService.performWebSearch(this.pubmedApiKey, encodeURIComponent(query), resultsToSkip).pipe(
                             map((searchResponse) => {
                                 this.pubmedSearchResponse = searchResponse['firstRequestData']
                                 this.estimatedMatches = this.pubmedSearchResponse.esearchresult.count
@@ -253,9 +270,18 @@ export class SearchEngineBodyComponent implements OnInit {
                                 return this.baseResponses.slice(resultSliceStart, resultSliceEnd);
                             }),
                             catchError((error) => {
+                                console.log(error)
                                 this.searchInProgress = false;
                                 this.estimatedMatches = 0
-                                this.resultEmitter.emit([])
+                                this.resultEmitter.emit({
+                                    "decodedResponses": [],
+                                    "estimatedMatches": this.estimatedMatches,
+                                    "resultsRetrieved": 0,
+                                    "resultsToSkip": resultsToSkip,
+                                    "resultsAmount": this.resultsAmount,
+                                    "pageIndex": this.paginator.pageIndex,
+                                    "pageSize": this.paginator.pageSize,
+                                })
                                 this.ngxService.stopBackgroundLoader('search-loader')
                                 return of([]);
                             })
@@ -267,17 +293,21 @@ export class SearchEngineBodyComponent implements OnInit {
                 break;
 
             case 'FakerWebSearch':
+                this.searchAmount = this.fakerService.SEARCH_AMOUNT
                 this.dataSource = new CustomDataSource((query = this.queryValue, resultsToSkip, querySentByUser = false) => {
                     let resultSliceStart = (this.paginator.pageIndex) * this.paginator.pageSize
                     let resultSliceEnd = resultSliceStart + this.paginator.pageSize
                     if (querySentByUser || resultSliceEnd > this.resultsAmount || this.resultsAmount == 0) {
                         if (querySentByUser) {
-                            this.queryEmitter.emit(this.queryValue);
+                            this.queryEmitter.emit({
+                                "text": this.queryValue,
+                                "encoded": encodeURIComponent(this.queryValue)
+                            });
                             this.baseResponses = []
                         }
                         this.ngxService.startBackgroundLoader('search-loader');
                         this.searchInProgress = true
-                        return this.fakerService.performWebSearch(query).pipe(
+                        return this.fakerService.performWebSearch(encodeURIComponent(query)).pipe(
                             map((searchResponses) => {
                                 let decodedResponses = this.fakerService.decodeResponse(searchResponses)
                                 this.estimatedMatches = decodedResponses.length
@@ -297,9 +327,18 @@ export class SearchEngineBodyComponent implements OnInit {
                                 return this.baseResponses.slice(resultSliceStart, resultSliceEnd);
                             }),
                             catchError((error) => {
+                                console.log(error)
                                 this.estimatedMatches = 0
                                 this.searchInProgress = false;
-                                this.resultEmitter.emit([])
+                                this.resultEmitter.emit({
+                                    "decodedResponses": [],
+                                    "estimatedMatches": this.estimatedMatches,
+                                    "resultsRetrieved": 0,
+                                    "resultsToSkip": resultsToSkip,
+                                    "resultsAmount": this.resultsAmount,
+                                    "pageIndex": this.paginator.pageIndex,
+                                    "pageSize": this.paginator.pageSize,
+                                })
                                 this.ngxService.stopBackgroundLoader('search-loader')
                                 return of([]);
                             })
@@ -358,7 +397,7 @@ export class SearchEngineBodyComponent implements OnInit {
         this.paginator.page
             .pipe(
                 tap(pageEvent => {
-                    if (this.queryValue) {
+                    if (this.queryValue && this.estimatedMatches > this.searchAmount) {
                         this.dataSource.loadData(this.queryValue, this.resultsAmount, false)
                         this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["pageSize"] = pageEvent.pageSize
                         this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["pageIndex"] = pageEvent.pageIndex

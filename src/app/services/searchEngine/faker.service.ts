@@ -29,6 +29,8 @@ export class FakerService {
     /* User search engine query */
     query: string;
 
+    SEARCH_AMOUNT: number = 30;
+
     constructor(client: HttpClient) {
         this.client = client;
     }
@@ -44,7 +46,7 @@ export class FakerService {
         return this.client.get<FakeSearchResponse>(endpointCurrent).pipe(
             concatMap((response: FakeSearchResponse) => {
                 const firstRequestData = response; // Store the data from the first request
-                return from(this.generateRandomIDs(30)).pipe(
+                return from(this.generateRandomIDs(this.SEARCH_AMOUNT)).pipe(
                     /* Execute the HTTP requests in parallel */
                     mergeMap(id => {
                         let endpointCurrent = `${this.endPoint}${id}`;

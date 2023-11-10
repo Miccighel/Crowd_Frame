@@ -41,6 +41,7 @@ export class PubmedService {
     /* User search engine query */
     query: string;
 
+    SEARCH_AMOUNT: number = 20;
 
     constructor(client: HttpClient) {
         /* The HTTP client is initialized along with its headers */
@@ -57,12 +58,11 @@ export class PubmedService {
     /*
      * This function uses the text received as a parameter to perform a request to Pubmed eUtilities API
      */
-    public performWebSearch(apiKey: string, query: string, count: number = 100, offset: number = 0): Observable<any> {
+    public performWebSearch(apiKey: string, query: string, offset: number = 0, count: number = this.SEARCH_AMOUNT): Observable<any> {
         this.apiKey = apiKey
         /* The user query is saved */
         this.query = query;
-        let apiKeyCurrent= this.apiKey=="None" ? ""  : `&api_key=${this.apiKey}`
-        let endpointSearch = `${this.endPoint_eSearch}db=${this.db}&term=${this.query}&usehistory=${this.useHistory}&retmode=${this.retmode}&retmax=${count}&retstart=${offset}${apiKeyCurrent}`
+        let endpointSearch = `${this.endPoint_eSearch}db=${this.db}&term=${this.query}&usehistory=${this.useHistory}&retmode=${this.retmode}&retmax=${count}&retstart=${offset}&api_key=${this.apiKey}`
         return this.client.get<PubmedSearchResponse>(endpointSearch).pipe(
             concatMap((response: PubmedSearchResponse) => {
                 const articleIds = response.esearchresult.idlist;
@@ -75,7 +75,7 @@ export class PubmedService {
                 return from(articleIds).pipe(
                     /* For each article ID, execute the HTTP request in sequence */
                     concatMap(articleId => {
-                            let endpointSummary = `${this.endPoint_eSummary}db=${this.db}&id=${articleId}&retmode=${this.retmode}${apiKeyCurrent}`
+                            let endpointSummary = `${this.endPoint_eSummary}db=${this.db}&id=${articleId}&retmode=${this.retmode}&api_key=${this.apiKey}`
                             return this.client.get(endpointSummary).pipe(
                                 map(additionalResponse => {
                                     return ({articleId, additionalResponse});

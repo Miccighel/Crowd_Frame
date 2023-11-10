@@ -47,6 +47,8 @@ export class BingService {
     /* User search engine query */
     query: string;
 
+    SEARCH_AMOUNT: number = 50;
+
     constructor(client: HttpClient) {
         /* The HTTP client is initialized along with its headers */
         this.client = client;
@@ -55,7 +57,7 @@ export class BingService {
     /*
      * This function uses the text received as a parameter to perform a request to Bing Web Search
      */
-    public performWebSearch(apiKey: string, query: string, count: number = 50, offset: number = 0): Observable<BingWebSearchResponse> {
+    public performWebSearch(apiKey: string, query: string, offset: number = 0, count: number = this.SEARCH_AMOUNT): Observable<BingWebSearchResponse> {
         this.apiKey = apiKey;
         /* The user query is saved */
         this.query = query;
