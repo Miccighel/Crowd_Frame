@@ -172,6 +172,7 @@ export class SearchEngineBodyComponent implements OnInit {
                         if (querySentByUser) {
                             /* EMITTER: The user query is emitted to provide it to an eventual parent component, when the query is sent manually */
                             this.queryEmitter.emit(this.queryValue);
+                            this.baseResponses = []
                         }
                         this.ngxService.startBackgroundLoader('search-loader');
                         this.searchInProgress = true
@@ -186,7 +187,7 @@ export class SearchEngineBodyComponent implements OnInit {
                                 /* We are interested in parsing the webPages property of a BingWebSearchResponse */
                                 this.bingWebSearchResponse = this.bingService.filterResponse(searchResponse, this.settings.domains_filter);
                                 this.estimatedMatches = searchResponse.webPages.totalEstimatedMatches
-                                let decodedResponses = this.bingService.decodeResponse(searchResponse)
+                                let decodedResponses = this.bingService.decodeResponse(this.bingWebSearchResponse)
                                 this.baseResponses = this.baseResponses.concat(decodedResponses)
                                 this.resultsAmount = this.baseResponses.length
                                 /* EMITTER: The matching response is emitted to provide it to the parent component*/
@@ -225,15 +226,17 @@ export class SearchEngineBodyComponent implements OnInit {
                     let resultSliceStart = (this.paginator.pageIndex) * this.paginator.pageSize
                     let resultSliceEnd = resultSliceStart + this.paginator.pageSize
                     if (querySentByUser || resultSliceEnd > this.resultsAmount || this.resultsAmount == 0) {
-                        if (querySentByUser)
+                        if (querySentByUser) {
                             this.queryEmitter.emit(this.queryValue);
+                            this.baseResponses = []
+                        }
                         this.ngxService.startBackgroundLoader('search-loader');
                         this.searchInProgress = true
-                        return this.pubmedService.performWebSearch(this.pubmedApiKey, query, 100, resultsToSkip).pipe(
+                        return this.pubmedService.performWebSearch(this.pubmedApiKey, query, 20, resultsToSkip).pipe(
                             map((searchResponse) => {
-                                this.pubmedSearchResponse = searchResponse
-                                this.estimatedMatches = searchResponse.esearchresult.count
-                                let decodedResponses = this.pubmedService.decodeResponse(searchResponse)
+                                this.pubmedSearchResponse = searchResponse['firstRequestData']
+                                this.estimatedMatches = this.pubmedSearchResponse.esearchresult.count
+                                let decodedResponses = this.pubmedService.decodeResponse(searchResponse['additionalResponses'])
                                 this.baseResponses = this.baseResponses.concat(decodedResponses)
                                 this.resultsAmount = this.baseResponses.length
                                 this.resultEmitter.emit({
@@ -268,8 +271,10 @@ export class SearchEngineBodyComponent implements OnInit {
                     let resultSliceStart = (this.paginator.pageIndex) * this.paginator.pageSize
                     let resultSliceEnd = resultSliceStart + this.paginator.pageSize
                     if (querySentByUser || resultSliceEnd > this.resultsAmount || this.resultsAmount == 0) {
-                        if (querySentByUser)
+                        if (querySentByUser) {
                             this.queryEmitter.emit(this.queryValue);
+                            this.baseResponses = []
+                        }
                         this.ngxService.startBackgroundLoader('search-loader');
                         this.searchInProgress = true
                         return this.fakerService.performWebSearch(query).pipe(

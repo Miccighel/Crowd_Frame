@@ -101,7 +101,7 @@ export class PubmedService {
      * This function uses the result of a request to the eSearch API (which returns a list of article identifiers) to fetch the attributes of each article
      */
     public retrieveArticle(id: string): Observable<PubmedSummaryResponse> {
-        let api_key= this.apiKey=="None" ? `&api_key=${this.apiKey}` : ""
+        let api_key = this.apiKey == "None" ? `&api_key=${this.apiKey}` : ""
         /* A request to PubMed eSummary API is performed and an Observable of <PubmedSummaryResponse> items is returned */
         return this.client.get<PubmedSummaryResponse>(`${this.endPoint_eSummary}db=${this.db}&id=${id}&retmode=${this.retmode}${api_key}`)
     }
@@ -111,13 +111,13 @@ export class PubmedService {
      */
     public decodeResponse(responses: Object[]): Array<BaseResponse> {
         let baseResponses = [];
-        for (let index = 0; index < responses['additionalResponses'].length; index++) {
-            let responseCurrent = responses['additionalResponses'][index]
+        for (let index = 0; index < responses.length; index++) {
+            let responseCurrent = responses[index]
             let articleId = responseCurrent['articleId']
             let summaryObject = responseCurrent["additionalResponse"] as PubmedSummaryResponse;
             let data = summaryObject.result[articleId]
             /* Sometimes, this "data" might be undefined. */
-            if(data) {
+            if (data) {
                 let baseResponse = new BaseResponse(
                     `https://www.ncbi.nlm.nih.gov/pubmed/${articleId}`,
                     data["title"],
