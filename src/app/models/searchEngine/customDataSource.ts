@@ -14,7 +14,7 @@ export class CustomDataSource implements DataSource<BaseResponse> {
     public loading$ = this.loadingSubject.asObservable();
 
     constructor(
-        private fetchData: (queryValue : string, pageNumber: number, pageSize: number) => Observable<BaseResponse[]>
+        private fetchData: (queryValue : string, resultsToSkip: number, querySentByUser: boolean) => Observable<BaseResponse[]>
     ) {}
 
     connect(collectionViewer: CollectionViewer): Observable<BaseResponse[]> {
@@ -26,11 +26,9 @@ export class CustomDataSource implements DataSource<BaseResponse> {
         this.loadingSubject.complete();
     }
 
-    loadData(queryValue : string, resultsAmount: number, resultsToSkip: number): void {
-
+    loadData(queryValue : string, resultsToSkip: number, querySentByUser: boolean): void {
         this.loadingSubject.next(true);
-
-        this.fetchData(queryValue, resultsAmount, resultsToSkip)
+        this.fetchData(queryValue, resultsToSkip, querySentByUser)
             .pipe(
                 catchError(() => of([])), /* Return empty array on error */
                 finalize(() => this.loadingSubject.next(false))

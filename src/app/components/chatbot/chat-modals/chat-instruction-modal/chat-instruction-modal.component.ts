@@ -1,8 +1,8 @@
 import { Component, OnInit } from "@angular/core";
 
 import { NgbActiveModal } from "@ng-bootstrap/ng-bootstrap";
-import { Instruction } from "src/app/models/skeleton/instructions";
-import { InstructionEvaluation } from "src/app/models/skeleton/instructionsEvaluation";
+import { BaseInstruction } from "src/app/models/skeleton/instructions/baseInstruction";
+import { EvaluationInstruction } from "src/app/models/skeleton/instructions/evaluationInstruction";
 
 @Component({
     selector: "chat-instruction-modal",
@@ -11,8 +11,8 @@ import { InstructionEvaluation } from "src/app/models/skeleton/instructionsEvalu
     styleUrls: ["./chat-instruction-modal.component.css"],
 })
 export class ChatInstructionModalComponent {
-    public instructions: Instruction[];
-    public instructionsEvaluation: InstructionEvaluation;
+    public instructions: BaseInstruction[];
+    public instructionsEvaluation: EvaluationInstruction;
 
     constructor(public activeModal: NgbActiveModal) {}
 }

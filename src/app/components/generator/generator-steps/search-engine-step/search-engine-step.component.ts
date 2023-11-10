@@ -7,11 +7,10 @@ import {
     Validators,
 } from "@angular/forms";
 /* Services */
-
 import { ConfigService } from "../../../../services/config.service";
 import { LocalStorageService } from "../../../../services/localStorage.service";
 /* Models */
-import { SearchEngineSettings } from "../../../../models/search_engine/searchEngineSettings";
+import { SearchEngineSettings } from "../../../../models/searchEngine/searchEngineSettings";
 import { S3Service } from "../../../../services/aws/s3.service";
 
 interface SourceType {

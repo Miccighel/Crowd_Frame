@@ -878,27 +878,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.print(f"Identifier: [cyan]{api_gateway['ApiId']}[/cyan]")
     console.print(f"Endpoint: [cyan]{api_gateway['ApiEndpoint']}[/cyan]")
 
-    status.update(f"Creating auto deployment stage")
-    try:
-        response = api_gateway_client.create_stage(
-            ApiId=api_gateway['ApiId'],
-            StageName="$default",
-            AutoDeploy=True
-        )
-        api_stage = response
-        console.print(f"[green]Deployment stage created, HTTP STATUS CODE: {response['ResponseMetadata']['HTTPStatusCode']}.")
-    except api_gateway_client.exceptions.ConflictException as error:
-        response = api_gateway_client.get_stage(
-            ApiId=api_gateway['ApiId'],
-            StageName="$default",
-        )
-        api_stage = response
-        console.print(f"[yellow]Deployment stage already created, HTTP STATUS CODE: {response['ResponseMetadata']['HTTPStatusCode']}.")
-    api_stage_endpoint = f"https://{api_gateway['ApiId']}.execute-api.{aws_region}.amazonaws.com"
-    # console.print(f"Identifier: [cyan]{api_stage['DeploymentId']}[/cyan]")
-    console.print(f"Endpoint: [cyan]{api_stage_endpoint}[/cyan]")
-    # serialize_json(folder_aws_generated_path, f"api_gateway_{api_gateway_name}_stage_{response['DeploymentId']}.json", response)
-
     status.update(f"Fetching available integrations")
     api_integrations = api_gateway_client.get_integrations(
         ApiId=api_gateway['ApiId'],
@@ -951,7 +930,25 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.print(f"Target: [cyan underline]{api_route['Target']}")
     serialize_json(folder_aws_generated_path, f"api_gateway_{api_gateway_name}_route_{api_route['RouteId']}.json", api_route)
 
-    status.stop()
+    status.update(f"Creating auto deployment stage")
+    try:
+        response = api_gateway_client.create_stage(
+            ApiId=api_gateway['ApiId'],
+            StageName="$default",
+            AutoDeploy=True
+        )
+        console.print(f"[green]Deployment stage created, HTTP STATUS CODE: {response['ResponseMetadata']['HTTPStatusCode']}.")
+    except api_gateway_client.exceptions.ConflictException as error:
+        console.print(f"[yellow]Deployment stage already created, HTTP STATUS CODE: {response['ResponseMetadata']['HTTPStatusCode']}.")
+    response = api_gateway_client.get_stage(
+        ApiId=api_gateway['ApiId'],
+        StageName="$default",
+    )
+    api_stage = response
+    api_stage_endpoint = f"https://{api_gateway['ApiId']}.execute-api.{aws_region}.amazonaws.com"
+    console.print(f"Stage Name: [cyan]{api_stage['DeploymentId']}[/cyan]")
+    console.print(f"Endpoint: [cyan]{api_stage_endpoint}[/cyan]")
+    serialize_json(folder_aws_generated_path, f"api_gateway_{api_gateway_name}_stage_{api_stage['DeploymentId']}.json", response)
 
     console.rule(f"{step_index} - Logging infrastructure setup")
     step_index = step_index + 1

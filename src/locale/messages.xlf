@@ -1892,21 +1892,21 @@
         <source>Insert your query</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/search-engine/search-engine-body/search-engine-body.component.html</context>
-          <context context-type="linenumber">22</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="dc9903a679ec6c8ccc927f79e96f085b9ca51fda" datatype="html">
-        <source> <x id="INTERPOLATION" equiv-text="{{resultsAmount | number}}"/> estimated matches found </source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/document/dimension/search-engine/search-engine-body/search-engine-body.component.html</context>
-          <context context-type="linenumber">31,33</context>
+          <context context-type="linenumber">11</context>
         </context-group>
       </trans-unit>
       <trans-unit id="7e892ba15f2c6c17e83510e273b3e10fc32ea016" datatype="html">
         <source>Search</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/search-engine/search-engine-body/search-engine-body.component.html</context>
-          <context context-type="linenumber">65</context>
+          <context context-type="linenumber">23</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="bbae8f1c6a2db1c7267894210a4d8417e2c711f0" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="{{estimatedMatches | number}}"/> estimated matches found</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/dimension/search-engine/search-engine-body/search-engine-body.component.html</context>
+          <context context-type="linenumber">30</context>
         </context-group>
       </trans-unit>
       <trans-unit id="5f6d7b2ca44ed114925fef64c4de75be5da8ca3b" datatype="html">

@@ -1,15 +1,15 @@
-import { Document } from "../../../../data/build/skeleton/document";
-import { Instruction } from "./instructions";
-import { Questionnaire } from "./questionnaires/questionnaire";
-import { Dimension } from "./dimension";
-import { Note } from "./annotators/notes";
-import { NoteStandard } from "./annotators/notesStandard";
-import { NoteLaws } from "./annotators/notesLaws";
-import { TaskSettings } from "./taskSettings";
-import { Hit } from "./hit";
-import { Object } from "aws-sdk/clients/customerprofiles";
-import { InstructionEvaluation } from "./instructionsEvaluation";
-import {SearchEngineSettings} from "../search_engine/searchEngineSettings";
+import {Document} from "../../../../data/build/skeleton/document";
+import {BaseInstruction} from "./instructions/baseInstruction";
+import {Questionnaire} from "./questionnaires/questionnaire";
+import {Dimension} from "./dimension";
+import {Note} from "./annotators/notes";
+import {NoteStandard} from "./annotators/notesStandard";
+import {NoteLaws} from "./annotators/notesLaws";
+import {TaskSettings} from "./taskSettings";
+import {Hit} from "./hit";
+import {Object} from "aws-sdk/clients/customerprofiles";
+import {EvaluationInstruction} from "./instructions/evaluationInstruction";
+import {SearchEngineSettings} from "../searchEngine/searchEngineSettings";
 
 export class Task {
     /* Task settings and parameters */
@@ -38,10 +38,10 @@ export class Task {
     documentsPairwiseSelection: Array<Array<boolean>>;
 
     /* Array of task instructions. Each object represents a paragraph with an optional caption made of steps */
-    instructionsGeneral: Array<Instruction>;
+    instructionsGeneral: Array<BaseInstruction>;
 
     /* Array of evaluation instructions. Each object represents a paragraph with an optional caption made of steps */
-    instructionsEvaluation: InstructionEvaluation;
+    instructionsEvaluation: EvaluationInstruction;
 
     /* Reference to the current questionnaires */
     questionnaires: Array<Questionnaire>;
@@ -137,7 +137,7 @@ export class Task {
         for (let index = 0; index < rawDocuments.length; index++) {
             let currentDocument = rawDocuments[index];
             let currentParams = {} as JSON
-            if(documentsParams != undefined && documentsParams[currentDocument["id"]] != undefined)
+            if (documentsParams != undefined && documentsParams[currentDocument["id"]] != undefined)
                 currentParams = documentsParams[currentDocument["id"]]
             this.documents.push(new Document(index, currentDocument, currentParams));
         }
@@ -219,7 +219,7 @@ export class Task {
                             this.documentsCountdownTime[index] +
                             this.settings.countdown_attribute_values[index][
                                 "time"
-                            ];
+                                ];
                     }
                 }
             }
@@ -255,10 +255,10 @@ export class Task {
     public initializeInstructionsGeneral(rawGeneralInstructions) {
         this.instructionsGeneralAmount = rawGeneralInstructions.length;
         /* The instructions are parsed using the Instruction class */
-        this.instructionsGeneral = new Array<Instruction>();
+        this.instructionsGeneral = new Array<BaseInstruction>();
         for (let index = 0; index < this.instructionsGeneralAmount; index++) {
             this.instructionsGeneral.push(
-                new Instruction(index, rawGeneralInstructions[index])
+                new BaseInstruction(index, rawGeneralInstructions[index])
             );
         }
     }
@@ -288,12 +288,8 @@ export class Task {
     }
 
     public initializeInstructionsEvaluation(rawEvaluationInstructions) {
-        this.instructionsEvaluationGeneralAmount = !!rawEvaluationInstructions[
-            "instructions"
-        ]
-            ? rawEvaluationInstructions["instructions"].length
-            : 0;
-        this.instructionsEvaluation = new InstructionEvaluation(
+        this.instructionsEvaluationGeneralAmount = !!rawEvaluationInstructions["instructions"] ? rawEvaluationInstructions["instructions"].length : 0;
+        this.instructionsEvaluation = new EvaluationInstruction(
             rawEvaluationInstructions
         );
     }
@@ -468,12 +464,13 @@ export class Task {
      * These information are parsed and stored in the corresponding data structure.
      */
     public storeSearchEngineUserQuery(
-        queryData: string,
+        queryData: Object,
         document: Document,
         dimension: Dimension
     ) {
         this.currentDimension = dimension.index;
-        let currentQueryText = queryData;
+        let currentQueryText = queryData["text"];
+        let currentQueryTextEncoded = queryData["encoded"];
         let timeInSeconds = Date.now() / 1000;
         /* If some data for the current document already exists*/
         if (this.searchEngineQueries[document.index]["amount"] > 0) {
@@ -487,6 +484,7 @@ export class Task {
                 index: storedQueries.length,
                 timestamp: timeInSeconds,
                 text: currentQueryText,
+                textEncoded: currentQueryTextEncoded,
             });
             this.currentQuery = storedQueries.length - 1;
             /* The data array within the data structure is updated */
@@ -505,6 +503,7 @@ export class Task {
                     index: 0,
                     timestamp: timeInSeconds,
                     text: currentQueryText,
+                    textEncoded: currentQueryTextEncoded,
                 },
             ];
             this.currentQuery = 0;
@@ -512,6 +511,13 @@ export class Task {
             /* IMPORTANT: the document_index of the last query inserted for a document will be <amount -1> */
             this.searchEngineQueries[document.index]["amount"] = 1;
         }
+    }
+
+    public retrieveLatestQuery(documentIndex: number){
+        let queryAmount = this.searchEngineQueries[documentIndex]["amount"]
+        if (queryAmount > 0)
+            return this.searchEngineQueries[documentIndex]["data"][queryAmount - 1];
+        return null
     }
 
     /*
@@ -525,7 +531,7 @@ export class Task {
         document: Document,
         dimension: Dimension
     ) {
-        let currentRetrievedResponse = retrievedResponseData;
+        let currentRetrievedResponses = retrievedResponseData['decodedResponses'];
         let timeInSeconds = Date.now() / 1000;
         /* If some responses for the current document already exists*/
         if (this.searchEngineRetrievedResponses[document.index]["groups"] > 0) {
@@ -539,18 +545,20 @@ export class Task {
                 query: this.searchEngineQueries[document.index]["amount"] - 1,
                 index: storedResponses.length,
                 timestamp: timeInSeconds,
-                response: currentRetrievedResponse,
+                estimated_matches: retrievedResponseData['estimatedMatches'],
+                results_retrieved: retrievedResponseData['resultsRetrieved'],
+                results_to_skip: retrievedResponseData['resultsToSkip'],
+                results_amount: retrievedResponseData['resultsAmount'],
+                page_index: retrievedResponseData['pageIndex'],
+                page_size: retrievedResponseData['pageSize'],
+                response: currentRetrievedResponses
             });
             /* The data array within the data structure is updated */
-            this.searchEngineRetrievedResponses[document.index]["data"] =
-                storedResponses;
+            this.searchEngineRetrievedResponses[document.index]["data"] = storedResponses;
             /* The total amount retrieved responses for the current document is updated */
-            this.searchEngineRetrievedResponses[document.index]["amount"] =
-                this.searchEngineRetrievedResponses[document.index]["amount"] +
-                currentRetrievedResponse.length;
+            this.searchEngineRetrievedResponses[document.index]["amount"] = this.searchEngineRetrievedResponses[document.index]["amount"] + currentRetrievedResponses.length;
             /* The total amount of groups of retrieved responses for the current document is updated */
-            this.searchEngineRetrievedResponses[document.index]["groups"] =
-                storedResponses.length;
+            this.searchEngineRetrievedResponses[document.index]["groups"] = storedResponses.length;
         } else {
             /* The data slot for the current document is created */
             this.searchEngineRetrievedResponses[document.index] = {};
@@ -559,17 +567,21 @@ export class Task {
                 {
                     document: document.index,
                     dimension: dimension.index,
-                    query:
-                        this.searchEngineQueries[document.index]["amount"] - 1,
+                    query: this.searchEngineQueries[document.index]["amount"] - 1,
                     index: 0,
                     timestamp: timeInSeconds,
-                    response: currentRetrievedResponse,
+                    estimated_matches: retrievedResponseData['estimatedMatches'],
+                    results_retrieved: retrievedResponseData['resultsRetrieved'],
+                    results_to_skip: retrievedResponseData['resultsToSkip'],
+                    results_amount: retrievedResponseData['resultsAmount'],
+                    page_index: retrievedResponseData['pageIndex'],
+                    page_size: retrievedResponseData['pageSize'],
+                    response: currentRetrievedResponses
                 },
             ];
             /* The total amount of retrieved responses for the current document is set to the length of the first group */
             /* IMPORTANT: the document_index of the last retrieved response for a document will be <amount -1> */
-            this.searchEngineRetrievedResponses[document.index]["amount"] =
-                currentRetrievedResponse.length;
+            this.searchEngineRetrievedResponses[document.index]["amount"] = currentRetrievedResponses.length;
             /* The total amount of groups retrieved responses for the current document is set to 1 */
             this.searchEngineRetrievedResponses[document.index]["groups"] = 1;
         }
@@ -797,8 +809,7 @@ export class Task {
         let notes = this.settings.annotator ? this.notes[documentIndex] : [];
         data["notes"] = notes;
         /* Worker's dimensions selected values for the current document */
-        let dimensionsSelectedValues =
-            this.dimensionsSelectedValues[documentIndex];
+        let dimensionsSelectedValues = this.dimensionsSelectedValues[documentIndex];
         data["dimensions_selected"] = dimensionsSelectedValues;
         /* Worker's search engine queries for the current document */
         let searchEngineQueries = this.searchEngineQueries[documentIndex];
@@ -811,27 +822,19 @@ export class Task {
         let timestampsElapsed = this.timestampsElapsed[documentIndexExtendend];
         data["timestamps_elapsed"] = timestampsElapsed;
         /* Countdown time and corresponding flag */
-        let countdownTimeStart =
-            this.settings.countdown_time >= 0
-                ? this.documentsCountdownTime[documentIndex]
-                : [];
+        let countdownTimeStart = this.settings.countdown_time >= 0 ? this.documentsCountdownTime[documentIndex] : [];
         data["countdowns_times_start"] = countdownTimeStart;
         let countdownTime = this.settings.countdown_time >= 0 ? countdown : [];
         data["countdowns_times_left"] = countdownTime;
-        let countdown_expired =
-            this.settings.countdown_time >= 0
-                ? this.countdownsExpired[documentIndex]
-                : [];
+        let countdown_expired = this.settings.countdown_time >= 0 ? this.countdownsExpired[documentIndex] : [];
         data["countdowns_expired"] = countdown_expired;
         /* Number of accesses to the current document (currentDocument.e., how many times the worker reached the document with a "Back" or "Next" action */
         data["accesses"] = this.elementsAccesses[documentIndexExtendend];
         /* Responses retrieved by search engine for each worker's query for the current document */
-        let responsesRetrieved =
-            this.searchEngineRetrievedResponses[documentIndex];
+        let responsesRetrieved = this.searchEngineRetrievedResponses[documentIndex];
         data["responses_retrieved"] = responsesRetrieved;
         /* Responses by search engine ordered by worker's click for the current document */
-        let responsesSelected =
-            this.searchEngineSelectedResponses[documentIndex];
+        let responsesSelected = this.searchEngineSelectedResponses[documentIndex];
         data["responses_selected"] = responsesSelected;
 
         return data;

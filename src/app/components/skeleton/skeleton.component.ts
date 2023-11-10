@@ -44,7 +44,7 @@ import { OutcomeSectionComponent } from "./outcome/outcome-section.component";
 import { DocumentComponent } from "./document/document.component";
 import { LocalStorageService } from "../../services/localStorage.service";
 import { fadeIn } from "../chatbot/animations";
-import {SearchEngineSettings} from "../../models/search_engine/searchEngineSettings";
+import {SearchEngineSettings} from "../../models/searchEngine/searchEngineSettings";
 
 /* Component HTML Tag definition */
 @Component({

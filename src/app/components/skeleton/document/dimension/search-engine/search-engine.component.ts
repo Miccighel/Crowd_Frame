@@ -42,7 +42,6 @@ export class SearchEngineComponent implements OnInit {
     @Input() resultsRetrievedForms: Array<Array<Object>>;
 
 
-
     searchEngineForm: UntypedFormGroup
 
     dimension: Dimension
@@ -73,16 +72,15 @@ export class SearchEngineComponent implements OnInit {
 
     ngOnInit() {
         this.dimension = this.task.dimensions[this.dimensionIndex]
-        if(!this.searchEngineForms[this.documentIndex] || !this.searchEngineForms[this.documentIndex][this.dimensionIndex]){
+        if (!this.searchEngineForms[this.documentIndex] || !this.searchEngineForms[this.documentIndex][this.dimensionIndex]) {
             let controlsConfig = {};
             if (this.dimension.url) controlsConfig[`${this.dimension.name}_url`] = new UntypedFormControl('', [Validators.required, this.validateSearchEngineUrl.bind(this)]);
             this.searchEngineForm = this.formBuilder.group(controlsConfig)
             this.searchEngineForm.valueChanges.subscribe(values => {
                 this.formEmitter.emit(this.searchEngineForm)
             })
-        }
-        else{
-            this.searchEngineForm=this.searchEngineForms[this.documentIndex][this.dimensionIndex]
+        } else {
+            this.searchEngineForm = this.searchEngineForms[this.documentIndex][this.dimensionIndex]
         }
         this.formEmitter.emit(this.searchEngineForm)
     }
@@ -127,8 +125,6 @@ export class SearchEngineComponent implements OnInit {
         }
         return null
     }
-
-    /* |--------- SEARCH ENGINE INTEGRATION (see: search_engine.json | https://github.com/Miccighel/SearchEngineBodyComponent) ---------| */
 
     public handleSearchEngineRetrievedResponse(retrievedResponseData, documentCurrent: Document, dimension: Dimension) {
         this.task.storeSearchEngineRetrievedResponse(retrievedResponseData, documentCurrent, dimension)

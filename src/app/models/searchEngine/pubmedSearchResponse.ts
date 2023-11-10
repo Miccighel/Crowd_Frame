@@ -9,9 +9,9 @@ export interface PubmedSearchResponse {
 }
 
 export interface ESearchResult {
-    count: string;
-    retmax: string;
-    retstart: string;
+    count: number;
+    retmax: number;
+    retstart: number;
     querykey: string;
     webenv: string;
     idlist: Array<string>;

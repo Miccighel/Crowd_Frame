@@ -3,7 +3,7 @@
  * Each field of such dimensions must be mapped to an attribute of this class and set up in the constructor as it is shown.
  */
 
-import {Instruction} from "./instructions";
+import {BaseInstruction} from "./instructions/baseInstruction";
 
 export class Dimension {
 
@@ -81,13 +81,13 @@ export class Justification {
 export class Url {
 
     enable: boolean;
-    instructions: Instruction;
+    instructions: BaseInstruction;
 
     constructor(
         data: JSON
     ) {
         this.enable = !!data['enable']
-        data['instructions'] ? this.instructions = new Instruction(0, data['instructions']) : this.instructions = null
+        data['instructions'] ? this.instructions = new BaseInstruction(0, data['instructions']) : this.instructions = null
     }
 
 }
@@ -96,13 +96,13 @@ export class Url {
 export class Scale {
 
     type: string;
-    instructions: Instruction
+    instructions: BaseInstruction
 
     constructor(
         data: JSON
     ) {
         this.type = data["type"];
-        data['instructions'] ? this.instructions = new Instruction(0, data['instructions']) : this.instructions = null
+        data['instructions'] ? this.instructions = new BaseInstruction(0, data['instructions']) : this.instructions = null
     }
 
 }

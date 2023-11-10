@@ -6,9 +6,9 @@ import {ConfigService} from "../../../../services/config.service";
 import {S3Service} from "../../../../services/aws/s3.service";
 import {LocalStorageService} from "../../../../services/localStorage.service";
 /* Models */
-import {Instruction} from "../../../../models/skeleton/instructions";
-import {InstructionEvaluation} from "../../../../models/skeleton/instructionsEvaluation";
-import {SearchEngineSettings} from "../../../../models/search_engine/searchEngineSettings";
+import {BaseInstruction} from "../../../../models/skeleton/instructions/baseInstruction";
+import {EvaluationInstruction} from "../../../../models/skeleton/instructions/evaluationInstruction";
+import {SearchEngineSettings} from "../../../../models/searchEngine/searchEngineSettings";
 
 @Component({
     selector: 'app-instructions-evaluation-step',
@@ -26,7 +26,7 @@ export class InstructionsEvaluationStepComponent implements OnInit {
 
     @Input() editorConfig
 
-    dataStored: InstructionEvaluation
+    dataStored: EvaluationInstruction
 
     formStep: UntypedFormGroup;
 
@@ -47,7 +47,7 @@ export class InstructionsEvaluationStepComponent implements OnInit {
     }
 
     public initializeControls() {
-        this.dataStored = new InstructionEvaluation()
+        this.dataStored = new EvaluationInstruction()
         this.formStep = this._formBuilder.group({
             instructions: this._formBuilder.array([]),
             setElement: false,
@@ -64,12 +64,12 @@ export class InstructionsEvaluationStepComponent implements OnInit {
 
         let serializedInstructions = this.localStorageService.getItem("instructions-evaluation")
         if (serializedInstructions) {
-            this.dataStored = new InstructionEvaluation(JSON.parse(serializedInstructions))
+            this.dataStored = new EvaluationInstruction(JSON.parse(serializedInstructions))
             this.dataStored.instructions.sort((a, b) => (a.index > b.index) ? 1 : -1)
         } else {
             this.initializeControls()
             let rawInstructions = await this.S3Service.downloadEvaluationInstructions(this.configService.environment)
-            this.dataStored = new InstructionEvaluation(rawInstructions)
+            this.dataStored = new EvaluationInstruction(rawInstructions)
             this.localStorageService.setItem(`instructions-evaluation`, JSON.stringify(rawInstructions))
         }
         let elementConfig = this._formBuilder.group({
@@ -117,7 +117,7 @@ export class InstructionsEvaluationStepComponent implements OnInit {
         return this.formStep.get(`instructions`) as UntypedFormArray;
     }
 
-    addInstruction(instructionIndex = null, instruction = null as Instruction) {
+    addInstruction(instructionIndex = null, instruction = null as BaseInstruction) {
         this.instructions().push(this._formBuilder.group({
             caption: instruction ? instruction.caption ? instruction.caption : '' : '',
             text: instruction ? instruction.text ? instruction.text : '' : '',

@@ -2,9 +2,9 @@ import { HttpClient } from '@angular/common/http';
 import { HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { HitResponse } from '../models/hitResponse';
-import { HitRequest } from '../models/hitRequest';
-import { HitSolution } from '../models/hitSolution';
+import { HitResponse } from '../models/solver/hitResponse';
+import { HitRequest } from '../models/solver/hitRequest';
+import { HitSolution } from '../models/solver/hitSolution';
 
 @Injectable({
   providedIn: 'root'

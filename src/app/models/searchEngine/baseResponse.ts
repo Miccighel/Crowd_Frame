@@ -5,9 +5,13 @@
  */
 export class BaseResponse {
 
+    /* Core parameters */
     url: string;
     name: string;
     snippet: string;
+
+    /* Additional parameters*/
+    parameters: { [key: string]: any } = {};
 
     constructor(
         url: string,
@@ -17,6 +21,14 @@ export class BaseResponse {
         this.url = url;
         this.name = name;
         this.snippet = snippet;
+    }
+
+    public setParameter(parameter: string, value: any) {
+        this.parameters[parameter] = value
+    }
+
+    public getParameter(parameter: string) {
+        return this.parameters[parameter]
     }
 
 }
