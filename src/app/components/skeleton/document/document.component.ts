@@ -116,17 +116,17 @@ export class DocumentComponent implements OnInit {
 
     public handleDocumentCompletion(action: string) {
 
-        if((action=="Next" || action=="Finish") && typeof this.document.document_params["check_gold_with_msg"] === 'string'){
+        if((action=="Next" || action=="Finish") && typeof this.document.params["check_gold_with_msg"] === 'string'){
             let docsForms = this.documentsForm.slice()
             docsForms.push(this.assessmentForm)
 
             let goldConfiguration = this.utilsService.generateGoldConfiguration(this.task.goldDocuments,this.task.goldDimensions, docsForms, this.task.notes);
-            let goldChecks = GoldChecker.performGoldCheck(goldConfiguration, this.document.document_params['task_type']);
+            let goldChecks = GoldChecker.performGoldCheck(goldConfiguration, this.document.params['task_type']);
 
             if(goldChecks.every(Boolean))
                 this.stepper.next();
             else{
-                this.snackBar.open(this.document.document_params["check_gold_with_msg"], "Dismiss", {duration: 10000});
+                this.snackBar.open(this.document.params["check_gold_with_msg"], "Dismiss", {duration: 10000});
                 action=null
             }
         }
@@ -158,7 +158,7 @@ export class DocumentComponent implements OnInit {
     public getDocTypeNumber() {
         let count=0
         for (let index = 0; index <= this.documentIndex; index++) {
-            if (this.document.document_params['task_type'] == this.task.documents[index].document_params['task_type']) 
+            if (this.document.params['task_type'] == this.task.documents[index].params['task_type']) 
                 count++;
         }
         return count;
