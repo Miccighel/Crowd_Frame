@@ -94,6 +94,7 @@ df_prolific_demographic_data_path = f"{models_path}workers_prolific_demographic_
 df_acl_path = f"{models_path}workers_acl.csv"
 df_ip_path = f"{models_path}workers_ip_addresses.csv"
 df_uag_path = f"{models_path}workers_user_agents.csv"
+df_elem_path = f"{models_path}workers_elements.csv"
 df_log_path = f"{models_path}workers_logs.csv"
 df_quest_path = f"{models_path}workers_questionnaire.csv"
 df_comm_path = f"{models_path}workers_comments.csv"
@@ -345,7 +346,8 @@ def fetch_ip_data(worker_id, worker_ip, properties_fetched=None):
                         console.print(f"Bogon detected: {worker_ip}")
                     else:
                         if response.status_code != 200:
-                            raise ValueError(f"Request to IP Geolocation service (ipgeo endpoint) failed with error code {response.status_code} and reason: `{response.text}`. Remove of replace your `ip_geolocation_api_key`")
+                            raise ValueError(
+                                f"Request to IP Geolocation service (ipgeo endpoint) failed with error code {response.status_code} and reason: `{response.text}`. Remove of replace your `ip_geolocation_api_key`")
                         else:
                             for key, item in flatten(response.json()).items():
                                 if key.startswith('geo_'):
@@ -360,7 +362,8 @@ def fetch_ip_data(worker_id, worker_ip, properties_fetched=None):
                         pass
                     else:
                         if response.status_code != 200:
-                            raise ValueError(f"Request to IP Geolocation service (timezone endpoint) failed with error code {response.status_code} and reason: `{response.text}`. Remove of replace your `ip_geolocation_api_key`")
+                            raise ValueError(
+                                f"Request to IP Geolocation service (timezone endpoint) failed with error code {response.status_code} and reason: `{response.text}`. Remove of replace your `ip_geolocation_api_key`")
                         else:
                             for key, item in flatten(response.json()).items():
                                 if key.startswith('timezone_') or key.startswith('geo_'):
@@ -376,7 +379,8 @@ def fetch_ip_data(worker_id, worker_ip, properties_fetched=None):
                         pass
                     else:
                         if response.status_code != 200:
-                            raise ValueError(f"Request to IP Geolocation service (astronomy endpoint) failed with error code {response.status_code} and reason: `{response.text}`. Remove of replace your `ip_geolocation_api_key`")
+                            raise ValueError(
+                                f"Request to IP Geolocation service (astronomy endpoint) failed with error code {response.status_code} and reason: `{response.text}`. Remove of replace your `ip_geolocation_api_key`")
                         else:
                             for key, item in flatten(response.json()).items():
                                 if key.startswith('location_'):
@@ -596,11 +600,11 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
             for table_name in task_data_tables:
                 paginator = dynamo_db.get_paginator('query')
                 for page in paginator.paginate(
-                    TableName=table_name,
-                    KeyConditionExpression="identifier = :worker",
-                    ExpressionAttributeValues={
-                        ":worker": {'S': worker_id}
-                    }, Select='ALL_ATTRIBUTES'
+                        TableName=table_name,
+                        KeyConditionExpression="identifier = :worker",
+                        ExpressionAttributeValues={
+                            ":worker": {'S': worker_id}
+                        }, Select='ALL_ATTRIBUTES'
                 ):
                     for item in page['Items']:
                         worker_data[table_name].append(item)
@@ -668,7 +672,7 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
                     if data:
 
                         if data['info']['element'] == 'data':
-                            if len(data['task'].items())>0:
+                            if len(data['task'].items()) > 0:
                                 task_key_found = True
                             for attribute, value in data['task'].items():
                                 if attribute == 'task_id':
@@ -715,11 +719,11 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
 
                     paginator = dynamo_db.get_paginator('query')
                     for page in paginator.paginate(
-                        TableName=acl_data_source,
-                        KeyConditionExpression="identifier = :identifier",
-                        ExpressionAttributeValues={
-                            ":identifier": {'S': worker_id}
-                        }, Select='ALL_ATTRIBUTES'
+                            TableName=acl_data_source,
+                            KeyConditionExpression="identifier = :identifier",
+                            ExpressionAttributeValues={
+                                ":identifier": {'S': worker_id}
+                            }, Select='ALL_ATTRIBUTES'
                     ):
                         if len(page['Items']) > 0:
                             task_key_found = True
@@ -751,7 +755,7 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
                                 else:
                                     worker_ip_addresses[worker_id][ip_address]['batches'][batch_name] = {}
                                     worker_ip_addresses[worker_id][ip_address]['batches'][batch_name]['time_submit'] = time_arrival
-                                    worker_ip_addresses[worker_id][ip_address]['batches'][batch_name]['time_submit_parsed'] =  time_arrival_parsed
+                                    worker_ip_addresses[worker_id][ip_address]['batches'][batch_name]['time_submit_parsed'] = time_arrival_parsed
 
                                 if ip_address in worker_ip_batches[worker_id]:
                                     worker_ip_batches[worker_id][ip_address].append(batch_name)
@@ -862,11 +866,11 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
                 if log_data_source:
                     paginator = dynamo_db.get_paginator('query')
                     for page in paginator.paginate(
-                        TableName=log_data_source,
-                        KeyConditionExpression="worker = :worker",
-                        ExpressionAttributeValues={
-                            ":worker": {'S': worker_id}
-                        }, Select='ALL_ATTRIBUTES'
+                            TableName=log_data_source,
+                            KeyConditionExpression="worker = :worker",
+                            ExpressionAttributeValues={
+                                ":worker": {'S': worker_id}
+                            }, Select='ALL_ATTRIBUTES'
                     ):
                         for item in page['Items']:
                             data = {
@@ -905,16 +909,15 @@ with console.status(f"Checking worker snapshots download", spinner="aesthetic") 
         worker_snapshots = read_json(worker_snapshots_path)
         for worker_snapshot in worker_snapshots:
             if worker_snapshot['data_items'] > 0:
-                worker_snapshots_with_data_counter=worker_snapshots_with_data_counter+1
+                worker_snapshots_with_data_counter = worker_snapshots_with_data_counter + 1
             else:
-                worker_snapshots_without_data_counter=worker_snapshots_without_data_counter+1
-        status.update(f"Checked worker snapshots: {(worker_snapshots_with_data_counter+worker_snapshots_without_data_counter)}")
-
+                worker_snapshots_without_data_counter = worker_snapshots_without_data_counter + 1
+        status.update(f"Checked worker snapshots: {(worker_snapshots_with_data_counter + worker_snapshots_without_data_counter)}")
 
 console.print(f"Snapshots with data items fetched: {worker_snapshots_with_data_counter}")
 console.print(f"Snapshots without data items fetched: {worker_snapshots_without_data_counter}")
 console.print(f"Snapshots with data items fetched: {worker_snapshots_with_data_counter}")
-console.print(f"Snapshots fetched total amount: {(worker_snapshots_with_data_counter+worker_snapshots_without_data_counter)}")
+console.print(f"Snapshots fetched total amount: {(worker_snapshots_with_data_counter + worker_snapshots_without_data_counter)}")
 console.print(f"Workers Snapshots serialized at path: [cyan on white]{data_path}")
 
 
@@ -925,17 +928,17 @@ def find_snapshot_for_record(acl_record, include_empty=False):
         if not include_empty:
             if int(snapshot['data_items']) > 0:
                 if snapshot['worker']['identifier'] == acl_record['worker_id'] and \
-                    snapshot['task']['task_name'] == acl_record['task_name'] and \
-                    snapshot['task']['batch_name'] == acl_record['batch_name'] and \
-                    snapshot['task']['unit_id'] == acl_record['unit_id']:
+                        snapshot['task']['task_name'] == acl_record['task_name'] and \
+                        snapshot['task']['batch_name'] == acl_record['batch_name'] and \
+                        snapshot['task']['unit_id'] == acl_record['unit_id']:
                     return snapshot
 
         else:
             try:
                 if snapshot['worker']['identifier'] == acl_record['worker_id'] and \
-                    snapshot['task']['task_name'] == acl_record['task_name'] and \
-                    snapshot['task']['batch_name'] == acl_record['batch_name'] and \
-                    snapshot['task']['unit_id'] == acl_record['unit_id']:
+                        snapshot['task']['task_name'] == acl_record['task_name'] and \
+                        snapshot['task']['batch_name'] == acl_record['batch_name'] and \
+                        snapshot['task']['unit_id'] == acl_record['unit_id']:
                     return snapshot
             except KeyError:
                 pp.pprint(worker_id)
@@ -1034,11 +1037,11 @@ if not os.path.exists(df_acl_path):
 
             paginator = dynamo_db.get_paginator('query')
             for page in paginator.paginate(
-                TableName=table_acl,
-                KeyConditionExpression="identifier = :worker",
-                ExpressionAttributeValues={
-                    ":worker": {'S': worker_id},
-                }, Select='ALL_ATTRIBUTES'
+                    TableName=table_acl,
+                    KeyConditionExpression="identifier = :worker",
+                    ExpressionAttributeValues={
+                        ":worker": {'S': worker_id},
+                    }, Select='ALL_ATTRIBUTES'
             ):
                 if len(page['Items']) > 1:
                     pp.pprint(worker_id)
@@ -1064,7 +1067,7 @@ if not os.path.exists(df_acl_path):
 
                         worker_snapshot_path = f"result/{task_name}/Data/{worker_id}.json"
                         worker_snapshots = read_json(worker_snapshot_path)
-                        if len(worker_snapshots)>0:
+                        if len(worker_snapshots) > 0:
                             for worker_snapshot in worker_snapshots:
                                 task = worker_snapshot['task']
                                 task_name_snapshot = task['task_name'] if 'task_name' in task else task['task_id']
@@ -1412,11 +1415,11 @@ if 'toloka' in platforms:
                                         tokens_input_solution.append(solution.output_values['token_input'])
                                     if 'token_output' in solution.output_values:
                                         tokens_output_solution.append(solution.output_values['token_output'])
-                                if len(tokens_input_solution)>0:
+                                if len(tokens_input_solution) > 0:
                                     row['assignment_token_input_final'] = ':::'.join(tokens_input_solution)
                                 else:
                                     row['assignment_token_input_final'] = np.nan
-                                if len(tokens_output_solution)>0:
+                                if len(tokens_output_solution) > 0:
                                     row['assignment_token_output'] = ':::'.join(tokens_output_solution)
                                 else:
                                     row['assignment_token_output'] = np.nan
@@ -1446,9 +1449,9 @@ if 'toloka' in platforms:
                             if row['assignment_token_input_final'] is not np.nan:
                                 acl_rows = df_acl_copy.loc[df_acl_copy['token_input'] == row['assignment_token_input_final']]
                             if len(acl_rows) >= 0:
-                                 acl_rows = acl_rows.sort_values(by='time_arrival', ascending=False)
-                                 for index_acl, row_acl in acl_rows.iterrows():
-                                     if index_acl not in rows_assigned:
+                                acl_rows = acl_rows.sort_values(by='time_arrival', ascending=False)
+                                for index_acl, row_acl in acl_rows.iterrows():
+                                    if index_acl not in rows_assigned:
                                         row['worker_id'] = row_acl['worker_id']
                                         rows_assigned.append(index_acl)
                                         break
@@ -1571,7 +1574,8 @@ if 'prolific' in platforms:
                         submissions_list_response = None
                         while submissions_list_response is None or 'next' in submissions_list_response['_links']:
                             if not submissions_list_response:
-                                submissions_list_response = requests.get(f"https://api.prolific.co/api/v1/studies/{study_current['id']}/submissions/", headers={'Authorization': f"Token {prolific_api_token}"}).json()
+                                submissions_list_response = requests.get(f"https://api.prolific.co/api/v1/studies/{study_current['id']}/submissions/",
+                                                                         headers={'Authorization': f"Token {prolific_api_token}"}).json()
                                 for submission_current in submissions_list_response['results']:
                                     submissions_list.append(submission_current)
                             else:
@@ -1830,7 +1834,6 @@ else:
     console.print(f"Workers IP addresses dataframe [yellow]already detected[/yellow], skipping creation")
     console.print(f"Serialized at path: [cyan on white]{df_ip_path}")
 
-
 console.rule(f"{step_index} - Building [cyan on white]workers_user_agents[/cyan on white] Dataframe")
 step_index = step_index + 1
 
@@ -1883,7 +1886,6 @@ else:
     console.print(f"Workers user agents dataframe [yellow]already detected[/yellow], skipping creation")
     console.print(f"Serialized at path: [cyan on white]{df_ip_path}")
 
-
 console.rule(f"{step_index} - Building [cyan on white]workers_logs[/cyan on white] Dataframe")
 step_index = step_index + 1
 
@@ -1922,13 +1924,13 @@ if not os.path.exists(df_log_path):
                 df_logs_part = pd.read_csv(df_logs_part_path)
 
             existing_snapshot_records = df_logs_part.loc[
-                (df_logs_part['worker_id']==acl_record['worker_id']) &
-                (df_logs_part['task_name']==acl_record['task_name']) &
-                (df_logs_part['batch_name']==acl_record['batch_name']) &
-                (df_logs_part['unit_id']==acl_record['unit_id'])
-            ]
+                (df_logs_part['worker_id'] == acl_record['worker_id']) &
+                (df_logs_part['task_name'] == acl_record['task_name']) &
+                (df_logs_part['batch_name'] == acl_record['batch_name']) &
+                (df_logs_part['unit_id'] == acl_record['unit_id'])
+                ]
 
-            if len(logs) > 0 and existing_snapshot_records.shape[0]<=0:
+            if len(logs) > 0 and existing_snapshot_records.shape[0] <= 0:
 
                 task_started = True
 
@@ -2038,14 +2040,14 @@ if not os.path.exists(df_log_path):
                                 row[detail_kind_parsed] = detail_val
                             df_logs_part.loc[len(df_logs_part)] = row
                         elif data_log['type'] == 'init' or \
-                            data_log['type'] == 'window_blur' or \
-                            data_log['type'] == 'window_focus' or \
-                            data_log['type'] == 'resize' or \
-                            data_log['type'] == 'button' or \
-                            data_log['type'] == 'unload' or \
-                            data_log['type'] == 'shortcut' or \
-                            data_log['type'] == 'radioChange' or \
-                            data_log['type'] == 'scroll':
+                                data_log['type'] == 'window_blur' or \
+                                data_log['type'] == 'window_focus' or \
+                                data_log['type'] == 'resize' or \
+                                data_log['type'] == 'button' or \
+                                data_log['type'] == 'unload' or \
+                                data_log['type'] == 'shortcut' or \
+                                data_log['type'] == 'radioChange' or \
+                                data_log['type'] == 'scroll':
                             for attribute, value in log_details.items():
                                 attribute_parsed = f"log_{re.sub(r'(?<!^)(?=[A-Z])', '_', attribute).lower()}"
                                 if attribute_parsed not in df_logs_part.columns:
@@ -2125,9 +2127,9 @@ else:
     console.print(f"Logs dataframe [yellow]already detected[/yellow], skipping creation")
     console.print(f"Serialized at path: [cyan on white]{df_log_path}")
 
-
 console.rule(f"{step_index} - Building [cyan on white]workers_comments[/cyan on white] dataframe")
 step_index = step_index + 1
+
 
 def load_comment_col_names():
     columns = []
@@ -2144,6 +2146,7 @@ def load_comment_col_names():
     columns.append("text")
 
     return columns
+
 
 if not os.path.exists(df_comm_path):
 
@@ -2203,6 +2206,7 @@ else:
 
 console.rule(f"{step_index} - Building [cyan on white]workers_questionnaire[/cyan on white] dataframe")
 step_index = step_index + 1
+
 
 def load_quest_col_names(questionnaires):
     columns = []
@@ -2395,7 +2399,7 @@ if not os.path.exists(df_quest_path):
                         (df_quest['unit_id'] == row['unit_id']) &
                         (df_quest['try_current'] == row['try_current']) &
                         (df_quest['questionnaire_index'] == questionnaire_data['serialization']['info']['index'])
-                    ]
+                        ]
 
                     if data.shape[0] <= 0:
 
@@ -2447,6 +2451,63 @@ else:
     console.print(f"Workers questionnaire dataframe [yellow]already detected[/yellow], skipping creation")
     console.print(f"Serialized at path: [cyan on white]{df_quest_path}")
 
+console.rule(f"{step_index} - Building [cyan on white]workers_elements[/cyan on white] dataframe")
+step_index = step_index + 1
+
+df_elem = pd.DataFrame()
+
+
+def load_elem_col_names(documents):
+    columns = []
+
+    for document in documents:
+        currentAttributes = document.keys()
+        for currentAttribute in currentAttributes:
+            if f"{currentAttribute}" not in columns and currentAttribute != "index" and currentAttribute != "document_params":
+                columns.append(currentAttribute)
+
+    return columns
+
+
+if not os.path.exists(df_elem_path):
+
+    for index, acl_record in tqdm.tqdm(df_acl.iterrows(), total=df_acl.shape[0]):
+
+        worker_id = acl_record['worker_id']
+        worker_snapshot = find_snapshot_for_record(acl_record, include_empty=True)
+
+        if worker_snapshot is not None:
+
+            worker_paid = check_worker_paid(worker_snapshot)
+
+            task = worker_snapshot['task']
+            documents = worker_snapshot['documents']
+
+            column_names = load_elem_col_names(documents)
+
+            for column in column_names:
+                if column not in df_elem:
+                    df_elem[column] = np.nan
+
+    if df_elem.shape[0] > 0:
+        empty_cols = [col for col in df_elem.columns if df_elem[col].isnull().all()]
+        df_elem.drop(empty_cols, axis=1, inplace=True)
+        display(df_elem)
+        assert False
+        df_elem.to_csv(df_data_path, index=False)
+        console.print(f"Dataframe shape: {df_elem.shape}")
+        console.print(f"Workers data dataframe serialized at path: [cyan on white]{df_elem_path}")
+    else:
+        console.print(f"Dataframe shape: {df_elem.shape}")
+        console.print(f"Workers data dataframe [yellow]empty[/yellow], dataframe not serialized.")
+
+else:
+
+    console.print(f"Elements dataframe [yellow]already detected[/yellow], skipping creation")
+    console.print(f"Serialized at path: [cyan on white]{df_elem_path}")
+
+assert False
+
 console.rule(f"{step_index} - Building [cyan on white]workers_answers[/cyan on white] dataframe")
 step_index = step_index + 1
 
@@ -2468,7 +2529,7 @@ def load_data_col_names(dimensions, documents):
     for document in documents:
         currentAttributes = document.keys()
         for currentAttribute in currentAttributes:
-            if f"doc_{currentAttribute}" not in columns and currentAttribute!="document_params":
+            if f"doc_{currentAttribute}" not in columns and currentAttribute != "document_params":
                 columns.append(f"doc_{currentAttribute}")
     columns.append("doc_task_type")
 
@@ -2508,14 +2569,16 @@ def load_data_col_names(dimensions, documents):
 
 df_answ = pd.DataFrame()
 
+
 def check_task_type(doc, typeslist):
-    t= doc["document_params"]['task_type']
+    t = doc["document_params"]['task_type']
     if typeslist:
-            if(typeslist==True or (t in typeslist)):
-                return True
-    elif(t==typeslist):
-                return True
+        if (typeslist == True or (t in typeslist)):
+            return True
+    elif (t == typeslist):
+        return True
     return False
+
 
 if not os.path.exists(df_data_path):
 
@@ -2575,25 +2638,26 @@ if not os.path.exists(df_data_path):
                     countdowns_start = document_data['serialization']['countdowns_times_start']
                     countdowns_left = document_data['serialization']['countdowns_times_left']
                     countdowns_expired = document_data['serialization']['countdowns_expired']
-                    countdowns_expired_value = countdowns_expired[document_data['serialization']['info']['index']] if isinstance(countdowns_expired, list) and len(countdowns_expired)>0  else countdowns_expired if isinstance(countdowns_expired, bool) else np.nan
-                    row["doc_countdown_time_start"] = countdowns_start[0] if isinstance(countdowns_start, list) and len(countdowns_start)>0 and countdowns_start else np.nan
-                    row["doc_countdown_time_value"] = countdowns_left[0] if isinstance(countdowns_left, list) and len(countdowns_left)>0 and countdowns_left else np.nan
+                    countdowns_expired_value = countdowns_expired[document_data['serialization']['info']['index']] if isinstance(countdowns_expired, list) and len(
+                        countdowns_expired) > 0 else countdowns_expired if isinstance(countdowns_expired, bool) else np.nan
+                    row["doc_countdown_time_start"] = countdowns_start[0] if isinstance(countdowns_start, list) and len(countdowns_start) > 0 and countdowns_start else np.nan
+                    row["doc_countdown_time_value"] = countdowns_left[0] if isinstance(countdowns_left, list) and len(countdowns_left) > 0 and countdowns_left else np.nan
                     row["doc_countdown_time_expired"] = countdowns_expired_value
 
                     current_attributes = documents[document_data['serialization']['info']['index']].keys()
                     current_answers = document_data['serialization']['answers']
-                    all_attrs=["task_type"]
+                    all_attrs = ["task_type"]
                     for document in documents:
                         currentAttributes = document.keys()
                         for currentAttribute in currentAttributes:
-                            if currentAttribute not in all_attrs and currentAttribute!="document_params":
+                            if currentAttribute not in all_attrs and currentAttribute != "document_params":
                                 all_attrs += [currentAttribute]
                     for current_attribute in current_attributes:
-                        attribute_name=current_attribute
+                        attribute_name = current_attribute
                         current_attribute_value = documents[document_data['serialization']['info']['index']][current_attribute]
-                        if current_attribute=="document_params":
-                            current_attribute_value=current_attribute_value["task_type"]
-                            attribute_name="task_type"
+                        if current_attribute == "document_params":
+                            current_attribute_value = current_attribute_value["task_type"]
+                            attribute_name = "task_type"
                         if type(current_attribute_value) == str:
                             current_attribute_value = re.sub('\n', '', current_attribute_value)
                         row[f"doc_{attribute_name}"] = current_attribute_value
@@ -2601,7 +2665,7 @@ if not os.path.exists(df_data_path):
                     for attr in all_attrs:
                         row[f"doc_{attr}"] = np.nan
                     for dimension in dimensions:
-                        checktt= check_task_type(documents[document_data['serialization']['info']['index']], dimension['task_type'])
+                        checktt = check_task_type(documents[document_data['serialization']['info']['index']], dimension['task_type'])
                         if dimension['scale'] is not None and checktt:
                             value = current_answers[f"{dimension['name']}_value"]
                             if type(value) == str:
@@ -2625,7 +2689,7 @@ if not os.path.exists(df_data_path):
                             row[f"doc_{dimension['name']}_label"] = np.nan
                             row[f"doc_{dimension['name']}_index"] = np.nan
                             row[f"doc_{dimension['name']}_description"] = np.nan
-                        if dimension['justification']  and checktt:
+                        if dimension['justification'] and checktt:
                             justification = current_answers[f"{dimension['name']}_justification"].strip()
                             justification = re.sub('\n', '', justification)
                             row[f"doc_{dimension['name']}_justification"] = justification
@@ -2687,6 +2751,7 @@ else:
 
 console.rule(f"{step_index} - Building [cyan on white]workers_notes[/cyan on white] dataframe")
 step_index = step_index + 1
+
 
 def load_notes_col_names():
     columns = []
@@ -3186,6 +3251,7 @@ if enable_crawling:
     tasks = []
     errors = []
     results = []
+
 
     async def gather_with_concurrency(n):
         semaphore = asyncio.Semaphore(n)
