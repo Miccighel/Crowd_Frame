@@ -2705,6 +2705,8 @@ if not os.path.exists(df_data_path):
                     row["countdown_time_value"] = countdowns_left[0] if isinstance(countdowns_left, list) and len(countdowns_left) > 0 and countdowns_left else np.nan
                     row["countdown_time_expired"] = countdowns_expired_value
 
+                    current_attributes = documents[document_data['serialization']['info']['index']].keys()
+                    current_answers = document_data['serialization']['answers']
                     for dimension in dimensions:
                         task_type_check = check_task_type(documents[document_data['serialization']['info']['index']], dimension['task_type'])
                         if dimension['scale'] is not None and task_type_check:
