@@ -72,7 +72,7 @@ export class DimensionComponent implements OnInit {
             let controlsConfig = {};
             for (let index_dimension = 0; index_dimension < this.task.dimensions.length; index_dimension++) {
                 let dimension = this.task.dimensions[index_dimension];
-                if (this.utilsService.isCurrentTaskType(this.task.documents[this.documentIndex].document_params["task_type"], dimension.task_type)){
+                if (this.utilsService.isCurrentTaskType(this.task.documents[this.documentIndex].params["task_type"], dimension.task_type)){
                     if (!dimension.pairwise) {
                         if (dimension.scale) {
 
@@ -247,7 +247,7 @@ export class DimensionComponent implements OnInit {
     public filterDimensionsCurrent(dimensions) {
         let filteredDimensions = [];
         for (let dimension of dimensions) {
-            if (this.utilsService.isCurrentTaskType(this.task.documents[this.documentIndex].document_params['task_type'], dimension.task_type)) 
+            if (this.utilsService.isCurrentTaskType(this.task.documents[this.documentIndex].params['task_type'], dimension.task_type)) 
                 filteredDimensions.push(dimension);
         }
         return filteredDimensions;

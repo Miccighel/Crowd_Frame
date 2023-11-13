@@ -1614,7 +1614,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 "documents_number": 1,
                 "documents_params": {
                     "identifier_1" : {
-                        "task_type": "Example",
+                        "task_type": "Main",
                         "allow_back": True,
                         "check_gold_with_msg": None
                     }
@@ -1901,7 +1901,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         print("", file=file)
         wrapper = textwrap.TextWrapper(initial_indent='\t\t', subsequent_indent='\t\t', width=500, break_long_words=False)
         print(wrapper.fill("index: number;"), file=file)
-        print(wrapper.fill("document_params: { };"), file=file)
+        print(wrapper.fill("params: { };"), file=file)
         contents=[]
         for unit in hits:
             if len(unit['documents']) > 0:
@@ -1952,10 +1952,10 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         print("", file=file)
         wrapper = textwrap.TextWrapper(initial_indent='\t\t\t', width=500, break_long_words=False)
         print(wrapper.fill("this.index = index"), file=file)
-        print(wrapper.fill("this.document_params = { }"), file=file)
-        print(wrapper.fill("this.document_params[\"task_type\"] = params[\"task_type\"] || \"Main\" "), file=file)
-        print(wrapper.fill("this.document_params[\"allow_back\"] = params[\"allow_back\"]"), file=file)
-        print(wrapper.fill("this.document_params[\"check_gold_with_msg\"] = params[\"check_gold_with_msg\"]"), file=file)
+        print(wrapper.fill("this.params = { }"), file=file)
+        print(wrapper.fill("this.params[\"task_type\"] = params[\"task_type\"] || \"Main\" "), file=file)
+        print(wrapper.fill("this.params[\"allow_back\"] = params[\"allow_back\"]"), file=file)
+        print(wrapper.fill("this.params[\"check_gold_with_msg\"] = params[\"check_gold_with_msg\"]"), file=file)
         contents=[]
         for unit in hits:
             if len(unit['documents']) > 0:
