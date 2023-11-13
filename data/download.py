@@ -2621,15 +2621,23 @@ def load_data_col_names(dimensions, documents):
 
 df_answ = pd.DataFrame()
 
-def check_task_type(doc, types_list):
-    task_type = doc["params"]['task_type']
-    if types_list:
-        if types_list is True or (task_type in types_list):
-            return True
-    elif task_type == types_list:
-        return True
-    return False
 
+def check_task_type(doc, typeslist):
+    same_type = False
+    t= doc["params"]['task_type']
+    
+    if typeslist:
+            if(typeslist==True or (t in typeslist)):
+                same_type = True
+            else:
+                same_type = False
+    else:
+            if(typeslist==False):
+                same_type = False
+            else:
+                same_type = True
+        
+    return same_type
 
 if not os.path.exists(df_data_path):
 
