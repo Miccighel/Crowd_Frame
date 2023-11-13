@@ -94,7 +94,7 @@ df_prolific_demographic_data_path = f"{models_path}workers_prolific_demographic_
 df_acl_path = f"{models_path}workers_acl.csv"
 df_ip_path = f"{models_path}workers_ip_addresses.csv"
 df_uag_path = f"{models_path}workers_user_agents.csv"
-df_elem_path = f"{models_path}workers_elements.csv"
+df_docs_path = f"{models_path}workers_documents.csv"
 df_log_path = f"{models_path}workers_logs.csv"
 df_quest_path = f"{models_path}workers_questionnaire.csv"
 df_comm_path = f"{models_path}workers_comments.csv"
@@ -1307,7 +1307,6 @@ if 'toloka' in platforms:
         tokens_input = []
         tokens_output = []
         for batch_current in np.unique(df_acl_copy['batch_name'].values):
-            hits = read_json(f"{task_config_folder}{batch_current}/hits.json")
             for hit in hits:
                 tokens_input.append(hit['token_input'])
                 tokens_output.append(hit['token_output'])
@@ -2451,25 +2450,35 @@ else:
     console.print(f"Workers questionnaire dataframe [yellow]already detected[/yellow], skipping creation")
     console.print(f"Serialized at path: [cyan on white]{df_quest_path}")
 
-console.rule(f"{step_index} - Building [cyan on white]workers_elements[/cyan on white] dataframe")
+console.rule(f"{step_index} - Building [cyan on white]workers_documents[/cyan on white] dataframe")
 step_index = step_index + 1
 
-df_elem = pd.DataFrame()
+df_docs = pd.DataFrame()
 
 
 def load_elem_col_names(documents):
     columns = []
 
     for document in documents:
-        currentAttributes = document.keys()
-        for currentAttribute in currentAttributes:
-            if f"{currentAttribute}" not in columns and currentAttribute != "index" and currentAttribute != "document_params":
-                columns.append(currentAttribute)
+        current_attributes = document.keys()
+        for current_attribute in current_attributes:
+            if f"{current_attribute}" not in columns and current_attribute != "id" and current_attribute != "index" and current_attribute != "params":
+                columns.append(current_attribute)
+            if current_attribute == "id":
+                columns.append(f"document_{current_attribute}")
+        for current_attribute in current_attributes:
+            if current_attribute == "params":
+                for current_parameter in document[current_attribute].keys():
+                    if f"{current_parameter}" not in columns:
+                        columns.append(f"{current_parameter}")
+
+    columns.append("unit_ids")
+    columns.append("worker_ids")
 
     return columns
 
 
-if not os.path.exists(df_elem_path):
+if not os.path.exists(df_docs_path):
 
     for index, acl_record in tqdm.tqdm(df_acl.iterrows(), total=df_acl.shape[0]):
 
@@ -2486,27 +2495,73 @@ if not os.path.exists(df_elem_path):
             column_names = load_elem_col_names(documents)
 
             for column in column_names:
-                if column not in df_elem:
-                    df_elem[column] = np.nan
+                if column not in df_docs:
+                    df_docs[column] = np.nan
 
-    if df_elem.shape[0] > 0:
-        empty_cols = [col for col in df_elem.columns if df_elem[col].isnull().all()]
-        df_elem.drop(empty_cols, axis=1, inplace=True)
-        display(df_elem)
-        assert False
-        df_elem.to_csv(df_data_path, index=False)
-        console.print(f"Dataframe shape: {df_elem.shape}")
-        console.print(f"Workers data dataframe serialized at path: [cyan on white]{df_elem_path}")
+            if len(documents)>0:
+
+                for document in documents:
+
+                    row = df_docs.loc[df_docs['document_id'] == document['id']]
+
+                    if row.shape[0] <= 0:
+
+                        row = {
+                            'document_id': document['id']
+                        }
+
+                        for element_attribute, element_value in document.items():
+
+                            if element_attribute == 'index':
+                                pass
+                            elif element_attribute == 'id':
+                                row[f"document_{element_attribute}"] = element_value
+                            elif element_attribute == 'params':
+                                for parameter_name, parameter_value in element_value.items():
+                                    row[f"{parameter_name}"] = parameter_value
+                            else:
+                                row[element_attribute] = element_value
+
+                        unit_ids = []
+                        for hit in hits:
+                            unit_id = hit['unit_id']
+                            for element in hit['documents']:
+                                if row['document_id'] == element['id']:
+                                    unit_ids.append(unit_id)
+                        row['unit_ids'] = ':::'.join(unit_ids)
+
+                        worker_ids = []
+                        if acl_record['unit_id'] in unit_ids:
+                            worker_ids.append(worker_id)
+                        row['worker_ids'] = ':::'.join(worker_ids)
+
+                        df_docs.loc[len(df_docs)] = row
+
+                    else:
+
+                        unit_ids = row['unit_ids'].values[0].split(":::")
+                        worker_ids = row['worker_ids'].values[0].split(":::")
+                        if acl_record['unit_id'] in unit_ids:
+                            worker_ids.append(worker_id)
+                        row['worker_ids'] = ':::'.join(worker_ids)
+
+                        df_docs.loc[row.index] = row
+
+    if df_docs.shape[0] > 0:
+        empty_cols = [col for col in df_docs.columns if df_docs[col].isnull().all()]
+        df_docs.drop(empty_cols, axis=1, inplace=True)
+        df_docs.to_csv(df_docs_path, index=False)
+        console.print(f"Dataframe shape: {df_docs.shape}")
+        console.print(f"Documents dataframe serialized at path: [cyan on white]{df_docs_path}")
     else:
-        console.print(f"Dataframe shape: {df_elem.shape}")
-        console.print(f"Workers data dataframe [yellow]empty[/yellow], dataframe not serialized.")
+        console.print(f"Dataframe shape: {df_docs.shape}")
+        console.print(f"Documents dataframe [yellow]empty[/yellow], dataframe not serialized.")
 
 else:
 
-    console.print(f"Elements dataframe [yellow]already detected[/yellow], skipping creation")
-    console.print(f"Serialized at path: [cyan on white]{df_elem_path}")
+    console.print(f"Documents dataframe [yellow]already detected[/yellow], skipping creation")
+    console.print(f"Serialized at path: [cyan on white]{df_docs_path}")
 
-assert False
 
 console.rule(f"{step_index} - Building [cyan on white]workers_answers[/cyan on white] dataframe")
 step_index = step_index + 1
@@ -2517,7 +2572,7 @@ def load_data_col_names(dimensions, documents):
 
     columns.append("worker_id")
     columns.append("paid")
-    columns.append("task_id")
+    columns.append("task_name")
     columns.append("batch_name")
     columns.append("unit_id")
     columns.append("try_last")
@@ -2526,37 +2581,34 @@ def load_data_col_names(dimensions, documents):
     columns.append("time_submit")
     columns.append("time_submit_parsed")
 
-    for document in documents:
-        currentAttributes = document.keys()
-        for currentAttribute in currentAttributes:
-            if f"doc_{currentAttribute}" not in columns and currentAttribute!="params":
-                columns.append(f"doc_{currentAttribute}")
-    columns.append("doc_task_type")
+    columns.append("document_id")
+    columns.append("document_index")
 
     for dimension in dimensions:
-        if f"doc_{dimension['name']}_value" not in columns:
-            columns.append(f"doc_{dimension['name']}_value")
-        if f"doc_{dimension['name']}_label" not in columns:
-            columns.append(f"doc_{dimension['name']}_label")
-        if f"doc_{dimension['name']}_index" not in columns:
-            columns.append(f"doc_{dimension['name']}_index")
-        if f"doc_{dimension['name']}_description" not in columns:
-            columns.append(f"doc_{dimension['name']}_description")
-        if f"doc_{dimension['name']}_justification" not in columns:
-            columns.append(f"doc_{dimension['name']}_justification")
-        if f"doc_{dimension['name']}_url" not in columns:
-            columns.append(f"doc_{dimension['name']}_url")
+        if f"{dimension['name']}_value" not in columns:
+            columns.append(f"{dimension['name']}_value")
+        if f"{dimension['name']}_label" not in columns:
+            columns.append(f"{dimension['name']}_label")
+        if f"{dimension['name']}_index" not in columns:
+            columns.append(f"{dimension['name']}_index")
+        if f"{dimension['name']}_description" not in columns:
+            columns.append(f"{dimension['name']}_description")
+        if f"{dimension['name']}_justification" not in columns:
+            columns.append(f"{dimension['name']}_justification")
+        if f"{dimension['name']}_url" not in columns:
+            columns.append(f"{dimension['name']}_url")
 
-    columns.append("doc_countdown_time_start")
-    columns.append("doc_countdown_time_value")
-    columns.append("doc_countdown_time_text")
-    columns.append("doc_countdown_time_expired")
+    columns.append("time_start")
+    columns.append("time_end")
+    columns.append("time_elapsed")
+    columns.append("time_start_parsed")
+    columns.append("time_end_parsed")
+    columns.append("accesses")
 
-    columns.append("doc_accesses")
-
-    columns.append("doc_time_elapsed")
-    columns.append("doc_time_start")
-    columns.append("doc_time_end")
+    columns.append("countdown_time_start")
+    columns.append("countdown_time_value")
+    columns.append("countdown_time_text")
+    columns.append("countdown_time_expired")
 
     columns.append("global_outcome")
     columns.append("global_form_validity")
@@ -2569,13 +2621,12 @@ def load_data_col_names(dimensions, documents):
 
 df_answ = pd.DataFrame()
 
-
-def check_task_type(doc, typeslist):
-    t= doc["params"]['task_type']
-    if typeslist:
-        if (typeslist == True or (t in typeslist)):
+def check_task_type(doc, types_list):
+    task_type = doc["params"]['task_type']
+    if types_list:
+        if types_list is True or (task_type in types_list):
             return True
-    elif (t == typeslist):
+    elif task_type == types_list:
         return True
     return False
 
@@ -2611,8 +2662,11 @@ if not os.path.exists(df_data_path):
                 row['paid'] = worker_paid
 
                 for attribute, value in task.items():
+                    if attribute == 'task_id':
+                        row['task_name'] = value
                     if attribute in column_names:
                         row[attribute] = value
+
                 for document_data in documents_answers:
 
                     row['action'] = document_data['serialization']['info']['action']
@@ -2634,93 +2688,88 @@ if not os.path.exists(df_data_path):
                         row["gold_checks"] = False
                         row["time_check_amount"] = np.nan
                         row["time_spent_check"] = False
-                    row["doc_accesses"] = document_data['serialization']['accesses']
+                    row["accesses"] = document_data['serialization']['accesses']
                     countdowns_start = document_data['serialization']['countdowns_times_start']
                     countdowns_left = document_data['serialization']['countdowns_times_left']
                     countdowns_expired = document_data['serialization']['countdowns_expired']
-                    countdowns_expired_value = countdowns_expired[document_data['serialization']['info']['index']] if isinstance(countdowns_expired, list) and len(
-                        countdowns_expired) > 0 else countdowns_expired if isinstance(countdowns_expired, bool) else np.nan
-                    row["doc_countdown_time_start"] = countdowns_start[0] if isinstance(countdowns_start, list) and len(countdowns_start) > 0 and countdowns_start else np.nan
-                    row["doc_countdown_time_value"] = countdowns_left[0] if isinstance(countdowns_left, list) and len(countdowns_left) > 0 and countdowns_left else np.nan
-                    row["doc_countdown_time_expired"] = countdowns_expired_value
+                    countdowns_expired_value = countdowns_expired[document_data['serialization']['info']['index']] if isinstance(countdowns_expired, list) and len(countdowns_expired) > 0 else countdowns_expired if isinstance(countdowns_expired, bool) else np.nan
+                    row["countdown_time_start"] = countdowns_start[0] if isinstance(countdowns_start, list) and len(countdowns_start) > 0 and countdowns_start else np.nan
+                    row["countdown_time_value"] = countdowns_left[0] if isinstance(countdowns_left, list) and len(countdowns_left) > 0 and countdowns_left else np.nan
+                    row["countdown_time_expired"] = countdowns_expired_value
 
-                    current_attributes = documents[document_data['serialization']['info']['index']].keys()
-                    current_answers = document_data['serialization']['answers']
-                    all_attrs = ["task_type"]
-                    for document in documents:
-                        currentAttributes = document.keys()
-                        for currentAttribute in currentAttributes:
-                            if currentAttribute not in all_attrs and currentAttribute!="params":
-                                all_attrs += [currentAttribute]
-                    for current_attribute in current_attributes:
-                        attribute_name = current_attribute
-                        current_attribute_value = documents[document_data['serialization']['info']['index']][current_attribute]
-                        if current_attribute=="params":
-                            current_attribute_value=current_attribute_value["task_type"]
-                            attribute_name="task_type"
-                        if type(current_attribute_value) == str:
-                            current_attribute_value = re.sub('\n', '', current_attribute_value)
-                        row[f"doc_{attribute_name}"] = current_attribute_value
-                        all_attrs.remove(attribute_name)
-                    for attr in all_attrs:
-                        row[f"doc_{attr}"] = np.nan
                     for dimension in dimensions:
-                        checktt = check_task_type(documents[document_data['serialization']['info']['index']], dimension['task_type'])
-                        if dimension['scale'] is not None and checktt:
+                        task_type_check = check_task_type(documents[document_data['serialization']['info']['index']], dimension['task_type'])
+                        if dimension['scale'] is not None and task_type_check:
                             value = current_answers[f"{dimension['name']}_value"]
                             if type(value) == str:
                                 value = value.strip()
                                 value = re.sub('\n', '', value)
-                            row[f"doc_{dimension['name']}_value"] = value
+                            row[f"{dimension['name']}_value"] = value
                             if dimension["scale"]["type"] == "categorical":
                                 for mapping in dimension["scale"]['mapping']:
                                     label = mapping['label'].lower().split(" ")
                                     label = '-'.join([str(c) for c in label])
                                     if mapping['value'] == value:
-                                        row[f"doc_{dimension['name']}_label"] = label
-                                        row[f"doc_{dimension['name']}_index"] = mapping['index']
-                                        row[f"doc_{dimension['name']}_description"] = mapping['description']
+                                        row[f"{dimension['name']}_label"] = label
+                                        row[f"{dimension['name']}_index"] = mapping['index']
+                                        row[f"{dimension['name']}_description"] = mapping['description']
                             else:
-                                row[f"doc_{dimension['name']}_label"] = np.nan
-                                row[f"doc_{dimension['name']}_index"] = np.nan
-                                row[f"doc_{dimension['name']}_description"] = np.nan
+                                row[f"{dimension['name']}_label"] = np.nan
+                                row[f"{dimension['name']}_index"] = np.nan
+                                row[f"{dimension['name']}_description"] = np.nan
                         else:
-                            row[f"doc_{dimension['name']}_value"] = np.nan
-                            row[f"doc_{dimension['name']}_label"] = np.nan
-                            row[f"doc_{dimension['name']}_index"] = np.nan
-                            row[f"doc_{dimension['name']}_description"] = np.nan
-                        if dimension['justification'] and checktt:
+                            row[f"{dimension['name']}_value"] = np.nan
+                            row[f"{dimension['name']}_label"] = np.nan
+                            row[f"{dimension['name']}_index"] = np.nan
+                            row[f"{dimension['name']}_description"] = np.nan
+                        if dimension['justification'] and task_type_check:
                             justification = current_answers[f"{dimension['name']}_justification"].strip()
                             justification = re.sub('\n', '', justification)
-                            row[f"doc_{dimension['name']}_justification"] = justification
+                            row[f"{dimension['name']}_justification"] = justification
                         else:
-                            row[f"doc_{dimension['name']}_justification"] = np.nan
-                        if dimension['url'] and checktt:
+                            row[f"{dimension['name']}_justification"] = np.nan
+                        if dimension['url'] and task_type_check:
                             try:
-                                row[f"doc_{dimension['name']}_url"] = current_answers[f"{dimension['name']}_url"]
+                                row[f"{dimension['name']}_url"] = current_answers[f"{dimension['name']}_url"]
                             except KeyError:
                                 print(current_answers)
                         else:
-                            row[f"doc_{dimension['name']}_url"] = np.nan
+                            row[f"{dimension['name']}_url"] = np.nan
 
-                    row["doc_accesses"] = document_data['serialization']['accesses']
+                    current_attributes = documents[document_data['serialization']['info']['index']].keys()
+                    current_answers = document_data['serialization']['answers']
+                    attributes_allowed = ['id', 'index']
+                    for current_attribute in current_attributes:
+                        attribute_name = current_attribute
+                        current_attribute_value = documents[document_data['serialization']['info']['index']][current_attribute]
+                        if current_attribute in attributes_allowed:
+                            if current_attribute=='id':
+                                row[f"document_{current_attribute}"] = current_attribute_value
+                            elif current_attribute=='index':
+                                row[f"document_{attribute_name}"] = int(current_attribute_value)
+                            else:
+                                row[f"{attribute_name}"] = current_attribute_value
+
+                    row["accesses"] = document_data['serialization']['accesses']
 
                     if document_data['serialization']['timestamps_start'] is None:
-                        row["doc_time_start"] = np.nan
+                        row["time_start"] = np.nan
                     else:
-                        row["doc_time_start"] = round(document_data['serialization']['timestamps_start'][0], 2)
+                        row["time_start"] = round(document_data['serialization']['timestamps_start'][0], 2)
+                        row["time_start_parsed"] = find_date_string(datetime.fromtimestamp(float(row["time_start"]), timezone('GMT')).strftime('%c'))
 
                     if document_data['serialization']['timestamps_end'] is None:
-                        row["doc_time_end"] = np.nan
+                        row["time_end"] = np.nan
                     else:
-                        row["doc_time_end"] = round(document_data['serialization']['timestamps_end'][0], 2)
+                        row["time_end"] = round(document_data['serialization']['timestamps_end'][0], 2)
+                        row["time_end_parsed"] = find_date_string(datetime.fromtimestamp(float(row["time_end"]), timezone('GMT')).strftime('%c'))
 
                     if document_data['serialization']['timestamps_elapsed'] is None:
-                        row["doc_time_elapsed"] = np.nan
+                        row["time_elapsed"] = np.nan
                     else:
-                        row["doc_time_elapsed"] = round(document_data['serialization']['timestamps_elapsed'], 2)
+                        row["time_elapsed"] = round(document_data['serialization']['timestamps_elapsed'], 2)
 
-                    if ('time_submit') in row:
+                    if 'time_submit' in row:
                         df_answ = pd.concat([df_answ, pd.DataFrame([row])], ignore_index=True)
 
     if df_answ.shape[0] > 0:
@@ -2730,6 +2779,8 @@ if not os.path.exists(df_data_path):
         df_answ["paid"] = df_answ["paid"].astype(bool)
         df_answ["try_last"] = df_answ["try_last"].astype(int)
         df_answ["try_current"] = df_answ["try_current"].astype(int)
+        df_answ["document_index"] = df_answ["document_index"].astype(int)
+        df_answ["accesses"] = df_answ["accesses"].astype(int)
         df_answ["global_outcome"] = df_answ["gold_checks"].astype(bool)
         df_answ["global_form_validity"] = df_answ["gold_checks"].astype(bool)
         df_answ["time_spent_check"] = df_answ["gold_checks"].astype(bool)
@@ -2749,16 +2800,16 @@ else:
     console.print(f"Workers dataframe [yellow]already detected[/yellow], skipping creation")
     console.print(f"Serialized at path: [cyan on white]{df_data_path}")
 
+
 console.rule(f"{step_index} - Building [cyan on white]workers_notes[/cyan on white] dataframe")
 step_index = step_index + 1
-
 
 def load_notes_col_names():
     columns = []
 
     columns.append("worker_id")
     columns.append("paid")
-    columns.append("task_id")
+    columns.append("task_name")
     columns.append("batch_name")
     columns.append("unit_id")
     columns.append("try_last")
@@ -2898,7 +2949,7 @@ if os.path.exists(df_data_path):
 df_dim_sel = pd.DataFrame(columns=[
     "worker_id",
     "paid",
-    "task_id",
+    "task_name",
     "batch_name",
     "unit_id",
     'try_last',
@@ -2947,7 +2998,7 @@ def parse_dimensions_selected(df, worker_id, worker_paid, task, info, documents,
             row = {
                 'worker_id': worker_id,
                 'paid': worker_paid,
-                'task_id': task['task_name'],
+                'task_name': task['task_name'],
                 'batch_name': task['batch_name'],
                 'unit_id': task['unit_id'],
                 'try_last': task['try_last'],
@@ -2989,8 +3040,8 @@ if not os.path.exists(df_dim_path) and os.path.exists(df_data_path):
             documents_answers = worker_snapshot['documents_answers']
 
             worker_data = df_data.loc[df_data['worker_id'] == worker_id]
-            timestamp_start = worker_data['doc_time_start'].min()
-            timestamp_end = worker_data['doc_time_start'].max()
+            timestamp_start = worker_data['time_start'].min()
+            timestamp_end = worker_data['time_start'].max()
 
             if len(documents_answers) > 0:
 
