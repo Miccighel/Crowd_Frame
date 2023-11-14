@@ -94,6 +94,7 @@
                     *ngIf="this.task.getElementIndex(stepIndex)['elementType'] == 'Q'"
                     [questionnaireIndex]="this.task.getElementIndex(stepIndex)['elementIndex']"
                     [questionnairesForm]="this.questionnairesForm"
+                    [stepper]="this.stepper"
                     (formEmitter)="this.storeQuestionnaireForm($event,this.task.getElementIndex(stepIndex)['elementIndex'])"
             >
             </app-questionnaire>

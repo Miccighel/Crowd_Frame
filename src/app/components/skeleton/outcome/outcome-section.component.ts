@@ -64,6 +64,7 @@ export class OutcomeSectionComponent implements OnInit {
     }
 
     ngOnInit(): void {
+        this.sectionService.updateSection()
     }
 
     public completeTask() {

@@ -1122,11 +1122,6 @@ export class SkeletonComponent implements OnInit {
         /* Set stepper document_index to the first tab (currentDocument.e., bring the worker to the first document after the questionnaire) */
         this.stepper.selectedIndex = this.task.questionnaireAmountStart;
 
-        // this.colorStepper(
-        //     this.task.questionnaireAmount,
-        //     this.task.documentsAmount
-        // );
-
         /* The loading spinner is stopped */
         this.ngxService.stopLoader("skeleton-inner");
     }
@@ -1503,41 +1498,4 @@ export class SkeletonComponent implements OnInit {
         });
     }
 
-    public colorStepper(questionnaireAmount, elementsAmount) {
-        if (this.sectionService.task.settings.modality != "conversational") {
-            let questionnairePercentual =
-                (questionnaireAmount * 95) /
-                (questionnaireAmount + elementsAmount);
-            let elementPercentual =
-                (elementsAmount * 95) / (questionnaireAmount + elementsAmount);
-            let submitPercentual =
-                100.0 - elementPercentual - questionnairePercentual;
-            let stepper = document.getElementById("stepper");
-            let survey = document.createElement("div");
-            let statements = document.createElement("div");
-            let submit = document.createElement("div");
-            let bar = document.createElement("div");
-            survey.setAttribute(
-                "style",
-                `width: ${questionnairePercentual}%;background-color:#d171f5; text-align: center; float:left; color: white;line-height: 2em; margin: 0 0.2em; border-radius: 2em;`
-            );
-            survey.innerText = "Questionnaires";
-            statements.setAttribute(
-                "style",
-                `width: ${elementPercentual}%;background-color:#59acf5; text-align: center; float:left; color: white;line-height: 2em; margin: 0 0.2em; border-radius: 2em;`
-            );
-            statements.innerText = "Statements";
-            submit.setAttribute(
-                "style",
-                `width: ${submitPercentual}%;background-color:#2ca841; text-align: center; float:left; color: white;line-height: 2em; margin: 0 0.2em; border-radius: 2em;`
-            );
-            submit.innerText = "End";
-            bar.setAttribute("style", `width: 98%; display:flex; margin:auto`);
-            bar.setAttribute("class", "header-bar");
-            if (questionnairePercentual > 0) bar.append(survey);
-            if (elementPercentual > 0) bar.append(statements);
-            bar.append(submit);
-            stepper.prepend(bar);
-        }
-    }
 }

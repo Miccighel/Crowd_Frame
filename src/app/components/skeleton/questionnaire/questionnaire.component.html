@@ -168,13 +168,17 @@
             <!-- Next button markup -->
             <mat-card-actions>
                 <p class="form-note">
-                    <button mat-flat-button color="primary" matStepperPrevious
+                    <button
+                            id="questionnaire-{{this.questionnaire.index}}-button-previous"
+                            mat-flat-button color="primary" matStepperPrevious
                             *ngIf="this.questionnaire.index>0 && this.questionnaire.allow_back"
                             [disabled]="this.sectionService.taskCompleted"
                             (click)="handleQuestionnaireCompletion('Back')">
                         <span i18n>Back</span>
                     </button>
-                    <button mat-flat-button color="primary" matStepperNext
+                    <button
+                            id="questionnaire-{{this.questionnaire.index}}-button-next"
+                            mat-flat-button color="primary" matStepperNext
                             *ngIf="
                             ((this.questionnaire.index < this.task.questionnaireAmountStart - 1) && this.task.documentsAmount==0) ||
                             ((this.questionnaire.index <= this.task.questionnaireAmountStart - 1) && this.task.documentsAmount>0) ||
@@ -183,7 +187,9 @@
                             (click)="handleQuestionnaireCompletion('Next')">
                         <span i18n>Next</span>
                     </button>
-                    <button mat-stroked-button color="accent" matStepperNext
+                    <button
+                            id="questionnaire-{{this.questionnaire.index}}-button-finish"
+                            mat-stroked-button color="accent" matStepperNext
                             *ngIf="
                             ((this.questionnaire.index >= this.task.questionnaireAmountStart-1) && this.task.documentsAmount==0) ||
                             (this.questionnaire.index>=this.task.questionnaireAmount-1 && this.task.questionnaireAmountEnd>0)"

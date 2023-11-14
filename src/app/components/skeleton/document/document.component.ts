@@ -116,6 +116,8 @@ export class DocumentComponent implements OnInit {
 
     public handleDocumentCompletion(action: string) {
 
+        this.sectionService.stepIndex = this.stepper.selectedIndex
+
         if((action=="Next" || action=="Finish") && typeof this.document.params["check_gold_with_msg"] === 'string'){
             let docsForms = this.documentsForm.slice()
             docsForms.push(this.assessmentForm)
@@ -136,23 +138,10 @@ export class DocumentComponent implements OnInit {
             else
                 this.stepper.next();
         }
-
         this.formEmitter.emit({
             "form": this.assessmentForm,
             "action": action
         })
-    }
-
-    public nextStep() {
-        this.sectionService.stepIndex += -1
-        let stepper = document.getElementById('stepper');
-        stepper.scrollIntoView();
-    }
-
-    public previousStep() {
-        this.sectionService.stepIndex += -1
-        let stepper = document.getElementById('stepper');
-        stepper.scrollIntoView();
     }
 
     public getDocTypeNumber() {

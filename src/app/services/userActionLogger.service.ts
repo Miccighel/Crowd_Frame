@@ -359,7 +359,7 @@ export class ActionLogger {
 
     onResult(results) {
         let urlArray = [];
-        results.forEach((result) => {
+        results['decodedResponses'].forEach((result) => {
             urlArray.push(result['url'])
         })
         let details = {

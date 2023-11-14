@@ -1,6 +1,6 @@
 /* Core */
 import {ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {AbstractControl, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators} from "@angular/forms";
+import {UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators} from "@angular/forms";
 /* Services */
 import {SectionService} from "../../../services/section.service";
 import {UtilsService} from "../../../services/utils.service";
@@ -11,6 +11,8 @@ import {Task} from "../../../models/skeleton/task";
 import {Question} from "../../../models/skeleton/questionnaires/question";
 /* Other */
 import * as TreeModel from "tree-model";
+/* Material Design */
+import {MatStepper} from "@angular/material/stepper";
 
 @Component({
     selector: 'app-questionnaire',
@@ -31,6 +33,7 @@ export class QuestionnaireComponent implements OnInit {
 
     @Input() questionnaireIndex: number
     @Input() questionnairesForm: UntypedFormGroup[]
+    @Input() stepper: MatStepper
 
     task: Task
     questionnaire: Questionnaire
@@ -301,6 +304,7 @@ export class QuestionnaireComponent implements OnInit {
     }
 
     public handleQuestionnaireCompletion(action: string) {
+        this.sectionService.stepIndex = this.stepper.selectedIndex
         this.formEmitter.emit({
             "form": this.questionnaireForm,
             "action": action

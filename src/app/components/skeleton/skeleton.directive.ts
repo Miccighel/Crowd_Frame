@@ -8,8 +8,7 @@ import {buffer, concatMap, debounceTime, filter, map, tap, throttleTime, take} f
 
 @Directive({selector: "button"})
 export class ButtonDirective {
-    constructor(private actionLogger: ActionLogger, private element: ElementRef) {
-    }
+    constructor(private actionLogger: ActionLogger, private element: ElementRef) {}
 
     ngAfterViewInit() {
         if (this.actionLogger.isActive) {
@@ -53,15 +52,18 @@ export class SkeletonDirective implements AfterViewInit {
                 mouseMoveEvent
                     .pipe(
                         throttleTime(100),
-                        map((event: MouseEvent) => ({
-                            timeStamp: event.timeStamp,
-                            x: event.clientX,
-                            y: event.clientY,
-                            target: {
-                                elementName: event['target']['localName'],
-                                className: event['target']['className']
-                            }
-                        })),
+                        map((event: MouseEvent) => {
+                            return ({
+                                timeStamp: event.timeStamp,
+                                x: event.clientX,
+                                y: event.clientY,
+                                target: {
+                                    elementName: event['target']['localName'],
+                                    className: event['target']['className'],
+                                    id: event['target']['id']
+                                }
+                            });
+                        }),
                         buffer(mouseMoveEvent.pipe(debounceTime(500))),
                         filter(array => array.length > 1)
                     )
@@ -92,7 +94,8 @@ export class SkeletonDirective implements AfterViewInit {
                             y: event.clientY,
                             target: {
                                 elementName: event['target']['localName'],
-                                className: event['target']['className']
+                                className: event['target']['className'],
+                                id: event['target']['id']
                             },
                             mouseButton: 'left',
                             clicks: clicks
@@ -116,7 +119,8 @@ export class SkeletonDirective implements AfterViewInit {
                         y: event.clientY,
                         target: {
                             elementName: event['target']['localName'],
-                            className: event['target']['className']
+                            className: event['target']['className'],
+                            id: event['target']['id']
                         },
                         mouseButton: 'right',
                         clicks: 1
@@ -379,4 +383,5 @@ export class SearchEngineBodyDirective {
         if (this.actionLogger.isActive && this.actionLogger.opt['search-engine-body']['result'])
             this.actionLogger.onResult(results)
     }
+
 }
