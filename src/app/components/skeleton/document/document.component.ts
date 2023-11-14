@@ -123,36 +123,30 @@ export class DocumentComponent implements OnInit {
             let goldConfiguration = this.utilsService.generateGoldConfiguration(this.task.goldDocuments,this.task.goldDimensions, docsForms, this.task.notes);
             let goldChecks = GoldChecker.performGoldCheck(goldConfiguration, this.document.params['task_type']);
 
-            if(goldChecks.every(Boolean))
+            if(goldChecks.every(Boolean)){
                 this.stepper.next();
+                this.sectionService.stepIndex += 1
+            }
             else{
                 this.snackBar.open(this.document.params["check_gold_with_msg"], "Dismiss", {duration: 10000});
                 action=null
             }
         }
         else{
-            if(action=="Back")
+            if(action=="Back"){
                 this.stepper.previous();
-            else
+                this.sectionService.stepIndex -= 1
+            }
+            else{
                 this.stepper.next();
+                this.sectionService.stepIndex += 1
+            }
         }
 
         this.formEmitter.emit({
             "form": this.assessmentForm,
             "action": action
         })
-    }
-
-    public nextStep() {
-        this.sectionService.stepIndex += -1
-        let stepper = document.getElementById('stepper');
-        stepper.scrollIntoView();
-    }
-
-    public previousStep() {
-        this.sectionService.stepIndex += -1
-        let stepper = document.getElementById('stepper');
-        stepper.scrollIntoView();
     }
 
     public getDocTypeNumber() {

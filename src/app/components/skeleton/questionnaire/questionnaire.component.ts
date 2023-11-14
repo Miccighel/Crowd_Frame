@@ -301,6 +301,11 @@ export class QuestionnaireComponent implements OnInit {
     }
 
     public handleQuestionnaireCompletion(action: string) {
+        if(action=="Back")
+            this.sectionService.stepIndex -= 1
+        else
+            this.sectionService.stepIndex += 1
+        
         this.formEmitter.emit({
             "form": this.questionnaireForm,
             "action": action
