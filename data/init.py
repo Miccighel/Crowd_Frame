@@ -1688,6 +1688,9 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 "name": "sample-dimension",
                 "name_pretty": "Sample Dimension",
                 "description": "Lorem ipsum dolor sit amet",
+                "task_type": [
+                    "Main"
+                ],
                 "example": False,
                 "gold": False,
                 "pairwise": False,
@@ -1750,7 +1753,10 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 "instructions": [
                     {
                         "caption": "Evaluation Instructions",
-                        "text": "<p>Lorem ipsum <strong>dolor</strong> sit amet.</p>"
+                        "text": "<p>Lorem ipsum <strong>dolor</strong> sit amet.</p>",
+                        "task_type": [
+                            "Main"
+                        ]
                     }
                 ],
                 "element": {
