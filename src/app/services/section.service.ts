@@ -193,7 +193,15 @@ export class SectionService {
         } else if (this.taskStarted && this.stepIndex >= this.task.questionnaireAmountStart + this.task.documentsAmount) {
             this.currentSection = 'questionnaire-end-section-' + this.stepIndex
         } else if (this.taskStarted && this.stepIndex >= this.task.questionnaireAmountStart && this.stepIndex < this.task.questionnaireAmountStart + this.task.documentsAmount) {
-            this.currentSection = 'document-section-' + String(this.stepIndex - this.task.questionnaireAmountStart)
+            let currentDocument = this.stepIndex - this.task.questionnaireAmountStart
+            let currentTaskType = this.task.documents[currentDocument]["params"]["task_type"]
+
+            let countDifferentTaskType = 0
+            for (let i = 0; i < currentDocument; i++)
+                if(this.task.documents[i]["params"]["task_type"] != currentTaskType)
+                    countDifferentTaskType += 1
+            
+            this.currentSection = currentTaskType.toLowerCase() + '-section-' + String(currentDocument-countDifferentTaskType)
         } else if (this.taskCompleted && this.taskSuccessful) {
             this.currentSection = 'success-section'
         } else if (this.taskCompleted && !this.taskSuccessful && this.task.settings.allowed_tries > 0) {
