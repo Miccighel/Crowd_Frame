@@ -8,15 +8,15 @@ import {DeviceDetectorService} from "ngx-device-detector";
 /* Models */
 import {Task} from "../../../models/skeleton/task";
 import {Document} from "../../../../../data/build/skeleton/document";
-import { GoldChecker } from "../../../../../data/build/skeleton/goldChecker";
+import {GoldChecker} from "../../../../../data/build/skeleton/goldChecker";
 /* Components */
 import {AnnotatorOptionsComponent} from "./elements/annotator-options/annotator-options.component";
 import {DimensionComponent} from "./dimension/dimension.component";
 import {CountdownComponent} from "ngx-countdown";
 import {Worker} from "../../../models/worker/worker";
 /* Material Design */
-import { MatSnackBar } from "@angular/material/snack-bar";
-import { MatStepper } from "@angular/material/stepper";
+import {MatSnackBar} from "@angular/material/snack-bar";
+import {MatStepper} from "@angular/material/stepper";
 
 @Component({
     selector: 'app-document',
@@ -91,10 +91,9 @@ export class DocumentComponent implements OnInit {
         let documentIndex = data['index'] as number
         let form = data['form']
         if (!this.assessmentForm && this.documentIndex == documentIndex) {
-            if(!this.documentsForm[this.documentIndex]){
+            if (!this.documentsForm[this.documentIndex]) {
                 this.assessmentForm = form
-            }
-            else{
+            } else {
                 this.assessmentForm = this.documentsForm[this.documentIndex]
             }
         }
@@ -118,28 +117,25 @@ export class DocumentComponent implements OnInit {
 
         this.sectionService.stepIndex = this.stepper.selectedIndex
 
-        if((action=="Next" || action=="Finish") && typeof this.document.params["check_gold_with_msg"] === 'string'){
+        if ((action == "Next" || action == "Finish") && typeof this.document.params["check_gold_with_msg"] === 'string') {
             let docsForms = this.documentsForm.slice()
             docsForms.push(this.assessmentForm)
 
-            let goldConfiguration = this.utilsService.generateGoldConfiguration(this.task.goldDocuments,this.task.goldDimensions, docsForms, this.task.notes);
+            let goldConfiguration = this.utilsService.generateGoldConfiguration(this.task.goldDocuments, this.task.goldDimensions, docsForms, this.task.notes);
             let goldChecks = GoldChecker.performGoldCheck(goldConfiguration, this.document.params['task_type']);
 
-            if(goldChecks.every(Boolean)){
+            if (goldChecks.every(Boolean)) {
                 this.stepper.next();
                 this.sectionService.stepIndex += 1
-            }
-            else{
+            } else {
                 this.snackBar.open(this.document.params["check_gold_with_msg"], "Dismiss", {duration: 10000});
-                action=null
+                action = null
             }
-        }
-        else{
-            if(action=="Back"){
+        } else {
+            if (action == "Back") {
                 this.stepper.previous();
                 this.sectionService.stepIndex -= 1
-            }
-            else{
+            } else {
                 this.stepper.next();
                 this.sectionService.stepIndex += 1
             }
@@ -151,12 +147,12 @@ export class DocumentComponent implements OnInit {
     }
 
     public getDocTypeNumber() {
-        let count=0
+        let count = 0
         for (let index = 0; index <= this.documentIndex; index++) {
-            if (this.document.params['task_type'] == this.task.documents[index].params['task_type']) 
+            if (this.document.params['task_type'] == this.task.documents[index].params['task_type'])
                 count++;
         }
         return count;
     }
 
-    }
+}

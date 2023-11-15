@@ -70,6 +70,13 @@
                     <button mat-flat-button color="primary" class="button-completion" (click)="completeTask()"><span i18n>Complete</span></button>
                 </div>
             </ng-container>
+            <ng-container *ngIf="this.worker.getParameter('platform')=='custom'">
+                <mat-card-content class="description">
+                    <p><span i18n>This task was not published on a crowdsourcing platform. We kindly suggest you to copy and store your tokens (shown below).</span></p>
+                    <h1><span i18n>Token Input: </span>{{this.worker.getParameter('token_input')}}</h1>
+                    <h1><span i18n>Token Input: </span>{{this.worker.getParameter('token_output')}}</h1>
+                </mat-card-content>
+            </ng-container>
         </mat-card>
     </ng-container>
 
@@ -96,8 +103,8 @@
             </mat-card-content>
             <mat-card-content *ngIf="this.worker.getParameter('platform')=='toloka'" class="description">
                 <p><span i18n>Copy your tokens (shown below) and insert them on the platform’s page to complete your work.</span></p>
-                <h1>Token Input: {{this.worker.getParameter('token_input')}}</h1>
-                <h1>Token Output: {{this.worker.getParameter('token_output')}}</h1>
+                <h1><span i18n>Token Input: </span>{{this.worker.getParameter('token_input')}}</h1>
+                <h1><span i18n>Token Input: </span>{{this.worker.getParameter('token_output')}}</h1>
             </mat-card-content>
             <ng-container *ngIf="this.worker.getParameter('platform')=='prolific'">
                 <mat-card-content class="description">
@@ -110,8 +117,8 @@
             <ng-container *ngIf="this.worker.getParameter('platform')=='custom'">
                 <mat-card-content class="description">
                     <p><span i18n>This task was not published on a crowdsourcing platform. We kindly suggest you to copy and store your tokens (shown below).</span></p>
-                    <h1>Token Input: {{this.worker.getParameter('token_input')}}</h1>
-                    <h1>Token Output: {{this.worker.getParameter('token_output')}}</h1>
+                    <h1><span i18n>Token Input: </span>{{this.worker.getParameter('token_input')}}</h1>
+                    <h1><span i18n>Token Input: </span>{{this.worker.getParameter('token_output')}}</h1>
                 </mat-card-content>
             </ng-container>
         </mat-card>
