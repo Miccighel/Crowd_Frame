@@ -115,8 +115,10 @@ export class DocumentComponent implements OnInit {
     }
 
     public handleDocumentCompletion(action: string) {
-
-        if((action=="Next" || action=="Finish") && typeof this.document.params["check_gold_with_msg"] === 'string'){
+        let doc_check_gold = this.document.params["check_gold"]
+        let okMessage = doc_check_gold && typeof doc_check_gold["message"] === 'string'
+        let okJump = doc_check_gold && typeof doc_check_gold["jump"] === 'string'
+        if((action=="Next" || action=="Finish") && (okMessage || okJump)){
             let docsForms = this.documentsForm.slice()
             docsForms.push(this.assessmentForm)
 
@@ -128,7 +130,24 @@ export class DocumentComponent implements OnInit {
                 this.sectionService.stepIndex += 1
             }
             else{
-                this.snackBar.open(this.document.params["check_gold_with_msg"], "Dismiss", {duration: 10000});
+                if(okMessage)
+                    this.snackBar.open(doc_check_gold["message"], "Dismiss", {duration: 10000});
+
+                if(okJump){
+                    let jumpIndex = this.task.questionnaireAmountStart
+                    
+                    for (let i = 0; i < this.task.documents.length; i++) {
+                        const doc = this.task.documents[i];
+                        if(doc["id"]==doc_check_gold["jump"]){
+                            jumpIndex += doc["index"]
+                            break
+                        }
+                    }
+
+                    this.stepper.selectedIndex = jumpIndex
+                    this.sectionService.stepIndex = jumpIndex
+                }
+
                 action=null
             }
         }

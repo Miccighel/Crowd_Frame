@@ -1616,7 +1616,11 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                     "identifier_1" : {
                         "task_type": "Main",
                         "allow_back": True,
-                        "check_gold_with_msg": None
+                        "check_gold": {
+                            "message" : None,
+                            "jump" : None
+                        },
+                        "reset_jump" : False
                     }
                 },
                 "documents": [
@@ -1955,7 +1959,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         print(wrapper.fill("this.params = { }"), file=file)
         print(wrapper.fill("this.params[\"task_type\"] = params[\"task_type\"] || \"Main\" "), file=file)
         print(wrapper.fill("this.params[\"allow_back\"] = params[\"allow_back\"]"), file=file)
-        print(wrapper.fill("this.params[\"check_gold_with_msg\"] = params[\"check_gold_with_msg\"]"), file=file)
+        print(wrapper.fill("this.params[\"check_gold\"] = params[\"check_gold\"]"), file=file)
+        print(wrapper.fill("this.params[\"reset_jump\"] = params[\"reset_jump\"]"), file=file)
         contents=[]
         for unit in hits:
             if len(unit['documents']) > 0:
