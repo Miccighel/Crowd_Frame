@@ -191,21 +191,9 @@ export class SkeletonComponent implements OnInit {
 
         this.task.taskName = this.configService.environment.taskName;
         this.task.batchName = this.configService.environment.batchName;
-        this.task.settings = new TaskSettings(
-            await this.S3Service.downloadTaskSettings(
-                this.configService.environment
-            )
-        );
-        this.task.initializeInstructionsGeneral(
-            await this.S3Service.downloadGeneralInstructions(
-                this.configService.environment
-            )
-        );
-        this.task.searchEngineSettings = new SearchEngineSettings(
-            await this.S3Service.downloadSearchEngineSettings(
-                this.configService.environment
-            )
-        );
+        this.task.settings = new TaskSettings(await this.S3Service.downloadTaskSettings(this.configService.environment));
+        this.task.initializeInstructionsGeneral(await this.S3Service.downloadGeneralInstructions(this.configService.environment));
+        this.task.searchEngineSettings = new SearchEngineSettings(await this.S3Service.downloadSearchEngineSettings(this.configService.environment));
         this.sectionService.task = this.task;
 
         let url = new URL(window.location.href);
@@ -216,28 +204,19 @@ export class SkeletonComponent implements OnInit {
             if (param.toLowerCase().includes("workerid")) {
                 paramsFetched["identifier"] = value;
             } else {
-                param = param
-                    .replace(/(?:^|\.?)([A-Z])/g, function (x, y) {
-                        return "_" + y.toLowerCase();
-                    })
-                    .replace(/^_/, "");
+                param = param.replace(/(?:^|\.?)([A-Z])/g, function (x, y) {return "_" + y.toLowerCase();}).replace(/^_/, "");
                 paramsFetched[param] = value;
             }
         });
 
         this.worker = new Worker(paramsFetched);
         /* Some worker properties are loaded using ngxDeviceDetector npm package capabilities... */
-        this.worker.updateProperties(
-            "ngxdevicedetector",
-            this.deviceDetectorService.getDeviceInfo()
-        );
+        this.worker.updateProperties("ngxdevicedetector", this.deviceDetectorService.getDeviceInfo());
         /* ... or the simple Navigator DOM's object */
         this.worker.updateProperties("navigator", window.navigator);
 
         this.client
-            .get("https://www.cloudflare.com/cdn-cgi/trace", {
-                responseType: "text",
-            })
+            .get("https://www.cloudflare.com/cdn-cgi/trace", {responseType: "text"})
             .subscribe(
                 /* If we retrieve some data from Cloudflare we use them to populate worker's object */
                 (cloudflareData) => {
@@ -251,18 +230,12 @@ export class SkeletonComponent implements OnInit {
                         .subscribe(
                             /* If we retrieve some data from Cloudflare we use them to populate worker's object */
                             (ipifyData) => {
-                                this.worker.updateProperties(
-                                    "ipify",
-                                    ipifyData
-                                );
+                                this.worker.updateProperties("ipify", ipifyData);
                                 this.initializeWorker();
                             },
                             /* Otherwise, we won't have such information */
                             (error) => {
-                                this.worker.setParameter(
-                                    "status_code",
-                                    StatusCodes.IP_INFORMATION_MISSING
-                                );
+                                this.worker.setParameter("status_code", StatusCodes.IP_INFORMATION_MISSING);
                                 this.unlockTask(false);
                             }
                         );
@@ -274,114 +247,54 @@ export class SkeletonComponent implements OnInit {
         /* Flag to understand if there is a HIT assigned to the current worker */
         let hitAssigned = false;
 
-        let workerACLRecord = await this.dynamoDBService.getACLRecordIpAddress(
-            this.configService.environment,
-            this.worker.getIP()
-        );
+        let workerACLRecord = await this.dynamoDBService.getACLRecordIpAddress(this.configService.environment, this.worker.getIP());
         let workerIdGenerated = String(false);
         if (workerACLRecord["Items"].length <= 0) {
             if (this.worker.identifier == null) {
-                let identifierGenerated = this.utilsService
-                    .randomIdentifier(14)
-                    .toUpperCase();
+                let identifierGenerated = this.utilsService.randomIdentifier(14).toUpperCase();
                 this.worker.setParameter("identifier", identifierGenerated);
                 this.worker.identifier = identifierGenerated;
                 workerIdGenerated = String(true);
             }
-            this.worker.setParameter(
-                "task_name",
-                this.configService.environment.taskName
-            );
-            this.worker.setParameter(
-                "batch_name",
-                this.configService.environment.batchName
-            );
-            if (this.worker.getParameter("platform") == null)
-                this.worker.setParameter("platform", "custom");
-            this.worker.setParameter(
-                "batch_name",
-                this.configService.environment.batchName
-            );
-            this.worker.setParameter(
-                "folder",
-                this.S3Service.getWorkerFolder(
-                    this.configService.environment,
-                    this.worker
-                )
-            );
+            this.worker.setParameter("task_name", this.configService.environment.taskName);
+            this.worker.setParameter("batch_name", this.configService.environment.batchName);
+            if (this.worker.getParameter("platform") == null) this.worker.setParameter("platform", "custom");this.worker.setParameter("batch_name", this.configService.environment.batchName);
+            this.worker.setParameter("folder", this.S3Service.getWorkerFolder(this.configService.environment, this.worker));
             this.worker.setParameter("access_counter", String(1));
             this.worker.setParameter("paid", String(false));
             this.worker.setParameter("generated", workerIdGenerated);
             this.worker.setParameter("in_progress", String(true));
-            this.worker.setParameter(
-                "try_current",
-                String(this.task.tryCurrent)
-            );
-            this.worker.setParameter(
-                "try_left",
-                String(this.task.settings.allowed_tries)
-            );
+            this.worker.setParameter("try_current", String(this.task.tryCurrent));
+            this.worker.setParameter("try_left", String(this.task.settings.allowed_tries));
             let timeArrival = new Date();
             let timeExpiration = new Date(timeArrival.getTime());
-            timeExpiration.setTime(
-                timeExpiration.getTime() +
-                    this.task.settings.time_assessment * 60 * 60 * 1000
-            );
+            timeExpiration.setTime(timeExpiration.getTime() + this.task.settings.time_assessment * 60 * 60 * 1000);
             this.worker.setParameter("time_arrival", timeArrival.toUTCString());
-            this.worker.setParameter(
-                "time_expiration",
-                timeExpiration.toUTCString()
-            );
-            let timeExpirationNearest =
-                await this.retrieveMostRecentExpirationDate();
+            this.worker.setParameter("time_expiration", timeExpiration.toUTCString());
+            let timeExpirationNearest = await this.retrieveMostRecentExpirationDate();
             if (timeExpirationNearest)
-                this.worker.setParameter(
-                    "time_expiration_nearest",
-                    timeExpirationNearest
-                );
+                this.worker.setParameter("time_expiration_nearest", timeExpirationNearest);
             else
-                this.worker.setParameter(
-                    "time_expiration_nearest",
-                    timeExpiration.toUTCString()
-                );
+                this.worker.setParameter("time_expiration_nearest", timeExpiration.toUTCString());
             this.worker.setParameter("time_expired", String(false));
             this.worker.setParameter("ip_address", this.worker.getIP()["ip"]);
-            this.worker.setParameter(
-                "ip_source",
-                this.worker.getIP()["source"]
-            );
+            this.worker.setParameter("ip_source", this.worker.getIP()["source"]);
             this.worker.setParameter("user_agent", this.worker.getUAG()["uag"]);
-            this.worker.setParameter(
-                "user_agent_source",
-                this.worker.getUAG()["source"]
-            );
+            this.worker.setParameter("user_agent_source", this.worker.getUAG()["source"]);
         } else {
             let aclEntry = workerACLRecord["Items"][0];
-            let timeExpirationNearest =
-                await this.retrieveMostRecentExpirationDate();
+            let timeExpirationNearest = await this.retrieveMostRecentExpirationDate();
             if (timeExpirationNearest)
-                this.worker.setParameter(
-                    "time_expiration_nearest",
-                    timeExpirationNearest
-                );
+                this.worker.setParameter("time_expiration_nearest", timeExpirationNearest);
             else
-                this.worker.setParameter(
-                    "time_expiration_nearest",
-                    String(false)
-                );
+                this.worker.setParameter("time_expiration_nearest", String(false));
             if (/true/i.test(aclEntry["paid"]) == true) {
                 this.sectionService.taskAlreadyCompleted = true;
                 Object.entries(aclEntry).forEach(([key, value]) =>
                     this.worker.setParameter(key, value)
                 );
-                this.worker.setParameter(
-                    "status_code",
-                    StatusCodes.TASK_ALREADY_COMPLETED
-                );
-                await this.dynamoDBService.insertACLRecordWorkerID(
-                    this.configService.environment,
-                    this.worker
-                );
+                this.worker.setParameter("status_code", StatusCodes.TASK_ALREADY_COMPLETED);
+                await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker);
             } else {
                 Object.entries(aclEntry).forEach(([key, value]) =>
                     this.worker.setParameter(key, value)
@@ -392,80 +305,34 @@ export class SkeletonComponent implements OnInit {
                 let timeActual = new Date().getTime();
                 let hoursElapsed = Math.abs(timeActual - timeArrival) / 36e5;
                 if (
-                    (/true/i.test(aclEntry["paid"]) == false &&
-                        /true/i.test(aclEntry["in_progress"]) == true &&
-                        hoursElapsed > this.task.settings.time_assessment) ||
-                    (/true/i.test(aclEntry["paid"]) == false &&
-                        /true/i.test(aclEntry["in_progress"]) == true &&
-                        parseInt(aclEntry["try_left"]) <= 1) ||
-                    (/true/i.test(aclEntry["paid"]) == false &&
-                        /true/i.test(aclEntry["in_progress"]) == false)
+                    (/true/i.test(aclEntry["paid"]) == false && /true/i.test(aclEntry["in_progress"]) == true && hoursElapsed > this.task.settings.time_assessment) ||
+                    (/true/i.test(aclEntry["paid"]) == false && /true/i.test(aclEntry["in_progress"]) == true && parseInt(aclEntry["try_left"]) <= 1) ||
+                    (/true/i.test(aclEntry["paid"]) == false && /true/i.test(aclEntry["in_progress"]) == false)
                 ) {
                     // TODO: Implementare controlli per gli status codes nel caso di task overbooking
                     /* As of today, such a worker is not allowed to perform the task */
-                    if (
-                        /true/i.test(aclEntry["paid"]) == false &&
-                        /true/i.test(aclEntry["in_progress"]) == true &&
-                        hoursElapsed > this.task.settings.time_assessment
-                    )
-                        this.worker.setParameter(
-                            "status_code",
-                            StatusCodes.TASK_TIME_EXPIRED
-                        );
-                    if (
-                        /true/i.test(aclEntry["paid"]) == false &&
-                        /true/i.test(aclEntry["in_progress"]) == false &&
-                        parseInt(aclEntry["try_left"]) <= 1
-                    )
-                        this.worker.setParameter(
-                            "status_code",
-                            StatusCodes.TASK_FAILED_NO_TRIES
-                        );
+                    if (/true/i.test(aclEntry["paid"]) == false && /true/i.test(aclEntry["in_progress"]) == true && hoursElapsed > this.task.settings.time_assessment)
+                        this.worker.setParameter("status_code", StatusCodes.TASK_TIME_EXPIRED);
+                    if (/true/i.test(aclEntry["paid"]) == false && /true/i.test(aclEntry["in_progress"]) == false && parseInt(aclEntry["try_left"]) <= 1)
+                        this.worker.setParameter("status_code", StatusCodes.TASK_FAILED_NO_TRIES);
                     this.worker.setParameter("in_progress", String(false));
-                    this.worker.setParameter(
-                        "time_removal",
-                        new Date().toUTCString()
-                    );
+                    this.worker.setParameter("time_removal", new Date().toUTCString());
                     this.sectionService.taskFailed = true;
-                    await this.dynamoDBService.insertACLRecordWorkerID(
-                        this.configService.environment,
-                        this.worker
-                    );
+                    await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker);
                 } else {
-                    Object.entries(aclEntry).forEach(([key, value]) =>
-                        this.worker.setParameter(key, value)
-                    );
+                    Object.entries(aclEntry).forEach(([key, value]) => this.worker.setParameter(key, value));
                     this.tokenInput.setValue(aclEntry["token_input"]);
-                    this.worker.identifier =
-                        this.worker.getParameter("identifier");
-                    this.worker.setParameter(
-                        "access_counter",
-                        (
-                            parseInt(
-                                this.worker.getParameter("access_counter")
-                            ) + 1
-                        ).toString()
-                    );
+                    this.worker.identifier = this.worker.getParameter("identifier");
+                    this.worker.setParameter("access_counter", (parseInt(this.worker.getParameter("access_counter")) + 1).toString());
                     hitAssigned = true;
-                    this.worker.setParameter(
-                        "status_code",
-                        StatusCodes.TASK_HIT_ASSIGNED
-                    );
-                    await this.dynamoDBService.insertACLRecordWorkerID(
-                        this.configService.environment,
-                        this.worker
-                    );
+                    this.worker.setParameter("status_code", StatusCodes.TASK_HIT_ASSIGNED);
+                    await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker);
                 }
             }
         }
 
-        if (
-            !this.sectionService.taskAlreadyCompleted &&
-            !this.sectionService.taskFailed
-        ) {
-            this.worker.settings = new WorkerSettings(
-                this.S3Service.downloadWorkers(this.configService.environment)
-            );
+        if (!this.sectionService.taskAlreadyCompleted && !this.sectionService.taskFailed) {
+            this.worker.settings = new WorkerSettings(this.S3Service.downloadWorkers(this.configService.environment));
 
             /* The logging service is enabled if it is needed */
             if (this.task.settings.logger_enable)
@@ -486,44 +353,23 @@ export class SkeletonComponent implements OnInit {
                 if (taskAllowed) {
                     if (!hitAssigned) {
                         /* We fetch the task's HITs */
-                        let hits = await this.S3Service.downloadHits(
-                            this.configService.environment
-                        );
+                        let hits = await this.S3Service.downloadHits(this.configService.environment);
 
                         /* It there is not any record, an available HIT can be assigned to him */
                         if (workerACLRecord["Items"].length <= 0) {
                             for (let hit of hits) {
                                 /* The status of each HIT is checked */
                                 let unitACLRecord =
-                                    await this.dynamoDBService.getACLRecordUnitId(
-                                        this.configService.environment,
-                                        hit["unit_id"]
+                                    await this.dynamoDBService.getACLRecordUnitId(this.configService.environment, hit["unit_id"]
                                     );
-                                /* If is has not been assigned, the current worker can receive it */
+                                /* If it has not been assigned, the current worker can receive it */
                                 if (unitACLRecord["Items"].length <= 0) {
-                                    this.worker.setParameter(
-                                        "unit_id",
-                                        hit["unit_id"]
-                                    );
-                                    this.worker.setParameter(
-                                        "token_input",
-                                        hit["token_input"]
-                                    );
-                                    this.worker.setParameter(
-                                        "token_output",
-                                        hit["token_output"]
-                                    );
-                                    this.worker.setParameter(
-                                        "status_code",
-                                        StatusCodes.TASK_HIT_ASSIGNED
-                                    );
-                                    this.tokenInput.setValue(
-                                        hit["token_input"]
-                                    );
-                                    await this.dynamoDBService.insertACLRecordWorkerID(
-                                        this.configService.environment,
-                                        this.worker
-                                    );
+                                    this.worker.setParameter("unit_id", hit["unit_id"]);
+                                    this.worker.setParameter("token_input", hit["token_input"]);
+                                    this.worker.setParameter("token_output", hit["token_output"]);
+                                    this.worker.setParameter("status_code", StatusCodes.TASK_HIT_ASSIGNED);
+                                    this.tokenInput.setValue(hit["token_input"]);
+                                    await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker);
                                     /* As soon as a HIT is assigned to the current worker the search can be stopped */
                                     hitAssigned = true;
                                     break;
@@ -534,21 +380,12 @@ export class SkeletonComponent implements OnInit {
                                 ... however, a worker have probably abandoned the task if someone reaches this point of the code. */
 
                             if (!hitAssigned) {
-                                let wholeEntries =
-                                    await this.retrieveAllACLEntries();
+                                let wholeEntries = await this.retrieveAllACLEntries();
 
                                 for (let aclEntry of wholeEntries) {
-                                    if (
-                                        aclEntry["ip_address"] !=
-                                        this.worker.getIP()
-                                    ) {
-                                        if (
-                                            /true/i.test(aclEntry["paid"]) ==
-                                            true
-                                        )
-                                            hitCompletionStatus[
-                                                aclEntry["unit_id"]
-                                            ] = true;
+                                    if (aclEntry["ip_address"] != this.worker.getIP()) {
+                                        if (/true/i.test(aclEntry["paid"]) == true)
+                                            hitCompletionStatus[aclEntry["unit_id"]] = true;
 
                                         /*
                                         If the worker that received the current unit did not complete it he abandoned or returned the task.
@@ -556,38 +393,15 @@ export class SkeletonComponent implements OnInit {
                                         This happens also if the worker does not have any try left, and thus it's entry has a completion time but the two flags are set to false.
                                         */
 
-                                        let timeArrival = new Date(
-                                            aclEntry["time_arrival"]
-                                        ).getTime();
+                                        let timeArrival = new Date(aclEntry["time_arrival"]).getTime();
                                         let timeActual = new Date().getTime();
-                                        let hoursElapsed =
-                                            Math.abs(timeActual - timeArrival) /
-                                            36e5;
+                                        let hoursElapsed = Math.abs(timeActual - timeArrival) / 36e5;
 
-                                        if (
-                                            (/true/i.test(aclEntry["paid"]) ==
-                                                false &&
-                                                /true/i.test(
-                                                    aclEntry["in_progress"]
-                                                ) == true &&
-                                                hoursElapsed >=
-                                                    this.task.settings
-                                                        .time_assessment) ||
-                                            (/true/i.test(aclEntry["paid"]) ==
-                                                false &&
-                                                /true/i.test(
-                                                    aclEntry["in_progress"]
-                                                ) == true &&
-                                                parseInt(
-                                                    aclEntry["try_left"]
-                                                ) <= 1)
-                                        ) {
+                                        if ((/true/i.test(aclEntry["paid"]) == false && /true/i.test(aclEntry["in_progress"]) == true && hoursElapsed >= this.task.settings.time_assessment) ||
+                                            (/true/i.test(aclEntry["paid"]) == false && /true/i.test(aclEntry["in_progress"]) == true && parseInt(aclEntry["try_left"]) <= 1)) {
                                             let hitFound = null;
                                             for (let currentHit of hits) {
-                                                if (
-                                                    currentHit["unit_id"] ==
-                                                    aclEntry["unit_id"]
-                                                ) {
+                                                if (currentHit["unit_id"] == aclEntry["unit_id"]) {
                                                     hitFound = currentHit;
                                                     break;
                                                 }
@@ -595,47 +409,18 @@ export class SkeletonComponent implements OnInit {
 
                                             hitAssigned = true;
                                             /* The record for the worker that abandoned/returned the task is updated */
-                                            aclEntry["time_expired"] =
-                                                String(true);
-                                            aclEntry["in_progress"] =
-                                                String(false);
-                                            aclEntry["time_removal"] =
-                                                new Date().toUTCString();
-                                            await this.dynamoDBService.insertACLRecordUnitId(
-                                                this.configService.environment,
-                                                aclEntry,
-                                                this.task.tryCurrent,
-                                                false,
-                                                true
-                                            );
+                                            aclEntry["time_expired"] = String(true);
+                                            aclEntry["in_progress"] = String(false);
+                                            aclEntry["time_removal"] = new Date().toUTCString();
+                                            await this.dynamoDBService.insertACLRecordUnitId(this.configService.environment, aclEntry, this.task.tryCurrent, false, true);
                                             /* As soon a slot for the current HIT is freed and assigned to the current worker the search can be stopped */
-                                            this.worker.setParameter(
-                                                "token_input",
-                                                aclEntry["token_input"]
-                                            );
-                                            this.worker.setParameter(
-                                                "token_output",
-                                                aclEntry["token_output"]
-                                            );
-                                            this.worker.setParameter(
-                                                "unit_id",
-                                                aclEntry["unit_id"]
-                                            );
-                                            this.worker.setParameter(
-                                                "time_arrival",
-                                                new Date().toUTCString()
-                                            );
-                                            this.worker.setParameter(
-                                                "status_code",
-                                                StatusCodes.TASK_HIT_ASSIGNED
-                                            );
-                                            this.tokenInput.setValue(
-                                                aclEntry["token_input"]
-                                            );
-                                            await this.dynamoDBService.insertACLRecordWorkerID(
-                                                this.configService.environment,
-                                                this.worker
-                                            );
+                                            this.worker.setParameter("token_input", aclEntry["token_input"]);
+                                            this.worker.setParameter("token_output", aclEntry["token_output"]);
+                                            this.worker.setParameter("unit_id", aclEntry["unit_id"]);
+                                            this.worker.setParameter("time_arrival", new Date().toUTCString());
+                                            this.worker.setParameter("status_code", StatusCodes.TASK_HIT_ASSIGNED);
+                                            this.tokenInput.setValue(aclEntry["token_input"]);
+                                            await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker);
                                         }
                                     }
 
@@ -648,23 +433,13 @@ export class SkeletonComponent implements OnInit {
                         if (!hitAssigned) {
                             let hitsStillToComplete = false;
                             for (let hit of hits) {
-                                if (
-                                    !Object.keys(hitCompletionStatus).includes(
-                                        hit["unit_id"]
-                                    )
-                                )
+                                if (!Object.keys(hitCompletionStatus).includes(hit["unit_id"]))
                                     hitsStillToComplete = true;
                             }
                             if (hitsStillToComplete)
-                                this.worker.setParameter(
-                                    "status_code",
-                                    StatusCodes.TASK_OVERBOOKING
-                                );
+                                this.worker.setParameter("status_code", StatusCodes.TASK_OVERBOOKING);
                             else
-                                this.worker.setParameter(
-                                    "status_code",
-                                    StatusCodes.TASK_COMPLETED_BY_OTHERS
-                                );
+                                this.worker.setParameter("status_code", StatusCodes.TASK_COMPLETED_BY_OTHERS);
                         }
                     }
                     await this.performTaskSetup();
@@ -754,11 +529,7 @@ export class SkeletonComponent implements OnInit {
                 batchesStatus[batchName] = {};
                 batchesStatus[batchName]["blacklist"] = workers["blacklist"];
                 for (let tableName of tables["TableNames"]) {
-                    if (
-                        tableName.includes(
-                            `${previousTaskName}_${previousBatchName}_ACL`
-                        )
-                    ) {
+                    if (tableName.includes(`${previousTaskName}_${previousBatchName}_ACL`)) {
                         batchesStatus[batchName]["tableName"] = tableName;
                     }
                 }
@@ -777,11 +548,7 @@ export class SkeletonComponent implements OnInit {
                 batchesStatus[batchName] = {};
                 batchesStatus[batchName]["whitelist"] = workers["blacklist"];
                 for (let tableName of tables["TableNames"]) {
-                    if (
-                        tableName.includes(
-                            `${previousTaskName}_${previousBatchName}_ACL`
-                        )
-                    ) {
+                    if (tableName.includes(`${previousTaskName}_${previousBatchName}_ACL`)) {
                         batchesStatus[batchName]["tableName"] = tableName;
                     }
                 }
@@ -796,22 +563,12 @@ export class SkeletonComponent implements OnInit {
             if ("blacklist" in batchStatus) {
                 if ("tableName" in batchStatus) {
                     let rawWorker =
-                        await this.dynamoDBService.getACLRecordIpAddress(
-                            this.configService.environment,
-                            this.worker.getIP(),
-                            batchStatus["tableName"]
-                        );
+                        await this.dynamoDBService.getACLRecordIpAddress(this.configService.environment, this.worker.getIP(), batchStatus["tableName"]);
                     if ("Items" in rawWorker) {
                         for (let worker of rawWorker["Items"]) {
-                            if (
-                                this.worker.getIP()["ip"] ==
-                                worker["ip_address"]
-                            ) {
+                            if (this.worker.getIP()["ip"] == worker["ip_address"]) {
                                 taskAllowed = false;
-                                this.worker.setParameter(
-                                    "status_code",
-                                    StatusCodes.WORKER_BLACKLIST_PREVIOUS
-                                );
+                                this.worker.setParameter("status_code", StatusCodes.WORKER_BLACKLIST_PREVIOUS);
                             }
                         }
                     }
@@ -819,10 +576,7 @@ export class SkeletonComponent implements OnInit {
                     for (let workerIdentifier of batchStatus["blacklist"]) {
                         if (this.worker.identifier == workerIdentifier) {
                             taskAllowed = false;
-                            this.worker.setParameter(
-                                "status_code",
-                                StatusCodes.WORKER_BLACKLIST_PREVIOUS
-                            );
+                            this.worker.setParameter("status_code", StatusCodes.WORKER_BLACKLIST_PREVIOUS);
                         }
                     }
                 }
@@ -835,22 +589,13 @@ export class SkeletonComponent implements OnInit {
             if ("whitelist" in batchStatus) {
                 if ("tableName" in batchStatus) {
                     let rawWorker =
-                        await this.dynamoDBService.getACLRecordIpAddress(
-                            this.configService.environment,
-                            this.worker.getIP(),
-                            batchStatus["tableName"]
-                        );
+                        await this.dynamoDBService.getACLRecordIpAddress(this.configService.environment, this.worker.getIP(), batchStatus["tableName"]);
                     if ("Items" in rawWorker) {
                         for (let worker of rawWorker["Items"]) {
-                            if (
-                                this.worker.getIP()["ip"] ==
-                                worker["ip_address"]
+                            if (this.worker.getIP()["ip"] == worker["ip_address"]
                             ) {
                                 taskAllowed = true;
-                                this.worker.setParameter(
-                                    "status_code",
-                                    StatusCodes.WORKER_WHITELIST_PREVIOUS
-                                );
+                                this.worker.setParameter("status_code", StatusCodes.WORKER_WHITELIST_PREVIOUS);
                             }
                         }
                     }
@@ -858,10 +603,7 @@ export class SkeletonComponent implements OnInit {
                     for (let workerIdentifier of batchStatus["whitelist"]) {
                         if (this.worker.identifier == workerIdentifier) {
                             taskAllowed = true;
-                            this.worker.setParameter(
-                                "status_code",
-                                StatusCodes.WORKER_WHITELIST_PREVIOUS
-                            );
+                            this.worker.setParameter("status_code", StatusCodes.WORKER_WHITELIST_PREVIOUS);
                         }
                     }
                 }
@@ -874,10 +616,7 @@ export class SkeletonComponent implements OnInit {
                 for (let worker of workersACL["Items"]) {
                     if (this.worker.getIP()["ip"] == worker["ip_address"]) {
                         taskAllowed = false;
-                        this.worker.setParameter(
-                            "status_code",
-                            StatusCodes.WORKER_RETURNING_BLOCK
-                        );
+                        this.worker.setParameter("status_code", StatusCodes.WORKER_RETURNING_BLOCK);
                         return taskAllowed;
                     }
                 }
@@ -888,10 +627,7 @@ export class SkeletonComponent implements OnInit {
         for (let worker of workersManual["blacklist"]) {
             if (this.worker.identifier == worker) {
                 taskAllowed = false;
-                this.worker.setParameter(
-                    "status_code",
-                    StatusCodes.WORKER_BLACKLIST_CURRENT
-                );
+                this.worker.setParameter("status_code", StatusCodes.WORKER_BLACKLIST_CURRENT);
                 return taskAllowed;
             }
         }
@@ -901,10 +637,8 @@ export class SkeletonComponent implements OnInit {
         for (let worker of workersManual["whitelist"]) {
             if (this.worker.identifier == worker) {
                 taskAllowed = true;
-                this.worker.setParameter(
-                    "status_code",
-                    StatusCodes.WORKER_WHITELIST_CURRENT
-                );
+                this.worker.setParameter("status_code", StatusCodes.WORKER_WHITELIST_CURRENT
+               );
             }
         }
 
@@ -917,11 +651,7 @@ export class SkeletonComponent implements OnInit {
     public enableTask() {
         this.sectionService.taskInstructionsRead = true;
         // TODO: Set here the updated selectedIndex, if applicable
-        this.showSnackbar(
-            "If you have a very slow internet connection please wait a few seconds",
-            "Dismiss",
-            10000
-        );
+        this.showSnackbar("If you have a very slow internet connection please wait a few seconds", "Dismiss", 10000);
     }
 
     /* Anonymous  function that unlocks the task depending on performWorkerStatusCheck outcome */
@@ -992,9 +722,7 @@ export class SkeletonComponent implements OnInit {
             this.resultsRetrievedForms = new Array<Array<Object>>();
 
 
-            let questionnaires = await this.S3Service.downloadQuestionnaires(
-                this.configService.environment
-            );
+            let questionnaires = await this.S3Service.downloadQuestionnaires(this.configService.environment);
             this.task.initializeQuestionnaires(questionnaires);
 
             /* A form for each questionnaire is initialized */
@@ -1002,17 +730,13 @@ export class SkeletonComponent implements OnInit {
 
             /* The evaluation instructions stored on Amazon S3 are retrieved */
             this.task.initializeInstructionsEvaluation(
-                await this.S3Service.downloadEvaluationInstructions(
-                    this.configService.environment
-                )
+                await this.S3Service.downloadEvaluationInstructions(this.configService.environment)
             );
 
             /* |--------- DIMENSIONS ELEMENTS (see: dimensions.json) ---------| */
 
             this.task.initializeDimensions(
-                await this.S3Service.downloadDimensions(
-                    this.configService.environment
-                )
+                await this.S3Service.downloadDimensions(this.configService.environment)
             );
 
             this.task.loadAccessCounter();
@@ -1030,7 +754,6 @@ export class SkeletonComponent implements OnInit {
                 );
             }
 
-            //this.colorStepper(this.task.questionnaireAmount, this.task.documentsAmount)
         }
 
         this.changeDetector.detectChanges();
@@ -1039,21 +762,8 @@ export class SkeletonComponent implements OnInit {
     /* |--------- LOGGING SERVICE & SECTION SERVICE ---------| */
 
     /* Logging service initialization */
-    public logInit(
-        workerIdentifier,
-        taskName,
-        batchName,
-        http: HttpClient,
-        logOnConsole: boolean
-    ) {
-        this.actionLogger.logInit(
-            this.configService.environment.bucket,
-            workerIdentifier,
-            taskName,
-            batchName,
-            http,
-            logOnConsole
-        );
+    public logInit(workerIdentifier, taskName, batchName, http: HttpClient, logOnConsole: boolean) {
+        this.actionLogger.logInit(this.configService.environment.bucket, workerIdentifier, taskName, batchName, http, logOnConsole);
     }
 
     /* |--------- QUALITY CHECKS ---------| */
