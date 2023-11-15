@@ -15,35 +15,35 @@ import {
     UntypedFormGroup,
     Validators,
 } from "@angular/forms";
-import { MatFormField } from "@angular/material/form-field";
-import { MatStepper } from "@angular/material/stepper";
-import { HttpClient, HttpHeaders } from "@angular/common/http";
+import {MatFormField} from "@angular/material/form-field";
+import {MatStepper} from "@angular/material/stepper";
+import {HttpClient, HttpHeaders} from "@angular/common/http";
 /* Services */
-import { NgxUiLoaderService } from "ngx-ui-loader";
-import { ConfigService } from "../../services/config.service";
-import { S3Service } from "../../services/aws/s3.service";
-import { DeviceDetectorService } from "ngx-device-detector";
-import { ActionLogger } from "../../services/userActionLogger.service";
+import {NgxUiLoaderService} from "ngx-ui-loader";
+import {ConfigService} from "../../services/config.service";
+import {S3Service} from "../../services/aws/s3.service";
+import {DeviceDetectorService} from "ngx-device-detector";
+import {ActionLogger} from "../../services/userActionLogger.service";
 /* Models */
-import { Task } from "../../models/skeleton/task";
-import { Worker } from "../../models/worker/worker";
-import { TaskSettings } from "../../models/skeleton/taskSettings";
-import { GoldChecker } from "../../../../data/build/skeleton/goldChecker";
-import { WorkerSettings } from "../../models/worker/workerSettings";
-import { Hit } from "../../models/skeleton/hit";
+import {Task} from "../../models/skeleton/task";
+import {Worker} from "../../models/worker/worker";
+import {TaskSettings} from "../../models/skeleton/taskSettings";
+import {GoldChecker} from "../../../../data/build/skeleton/goldChecker";
+import {WorkerSettings} from "../../models/worker/workerSettings";
+import {Hit} from "../../models/skeleton/hit";
 /* Material Design */
-import { MatSnackBar } from "@angular/material/snack-bar";
+import {MatSnackBar} from "@angular/material/snack-bar";
 /* Services */
-import { SectionService } from "../../services/section.service";
-import { StatusCodes } from "../../services/section.service";
-import { DynamoDBService } from "../../services/aws/dynamoDB.service";
-import { UtilsService } from "../../services/utils.service";
-import { DebugService } from "../../services/debug.service";
+import {SectionService} from "../../services/section.service";
+import {StatusCodes} from "../../services/section.service";
+import {DynamoDBService} from "../../services/aws/dynamoDB.service";
+import {UtilsService} from "../../services/utils.service";
+import {DebugService} from "../../services/debug.service";
 /* Components */
-import { OutcomeSectionComponent } from "./outcome/outcome-section.component";
-import { DocumentComponent } from "./document/document.component";
-import { LocalStorageService } from "../../services/localStorage.service";
-import { fadeIn } from "../chatbot/animations";
+import {OutcomeSectionComponent} from "./outcome/outcome-section.component";
+import {DocumentComponent} from "./document/document.component";
+import {LocalStorageService} from "../../services/localStorage.service";
+import {fadeIn} from "../chatbot/animations";
 import {SearchEngineSettings} from "../../models/searchEngine/searchEngineSettings";
 
 /* Component HTML Tag definition */
@@ -92,7 +92,7 @@ export class SkeletonComponent implements OnInit {
     /* |--------- CONTROL FLOW & UI ELEMENTS - DECLARATION ---------| */
 
     /* References to task stepper and token forms */
-    @ViewChild("stepper", { static: false }) stepper: MatStepper;
+    @ViewChild("stepper", {static: false}) stepper: MatStepper;
     @ViewChild("urlField") urlField: MatFormField;
     tokenForm: UntypedFormGroup;
     tokenInput: UntypedFormControl;
@@ -117,8 +117,8 @@ export class SkeletonComponent implements OnInit {
     /* Array of search form references, one for each document within a Hit */
     searchEngineForms: Array<Array<UntypedFormGroup>>;
     resultsRetrievedForms: Array<Array<Object>>;
-    
-    
+
+
     /* Array of form references, one for each questionnaire within a Hit */
     questionnairesForm: UntypedFormGroup[];
 
@@ -204,7 +204,9 @@ export class SkeletonComponent implements OnInit {
             if (param.toLowerCase().includes("workerid")) {
                 paramsFetched["identifier"] = value;
             } else {
-                param = param.replace(/(?:^|\.?)([A-Z])/g, function (x, y) {return "_" + y.toLowerCase();}).replace(/^_/, "");
+                param = param.replace(/(?:^|\.?)([A-Z])/g, function (x, y) {
+                    return "_" + y.toLowerCase();
+                }).replace(/^_/, "");
                 paramsFetched[param] = value;
             }
         });
@@ -258,12 +260,14 @@ export class SkeletonComponent implements OnInit {
             }
             this.worker.setParameter("task_name", this.configService.environment.taskName);
             this.worker.setParameter("batch_name", this.configService.environment.batchName);
-            if (this.worker.getParameter("platform") == null) this.worker.setParameter("platform", "custom");this.worker.setParameter("batch_name", this.configService.environment.batchName);
+            if (this.worker.getParameter("platform") == null) this.worker.setParameter("platform", "custom");
+            this.worker.setParameter("batch_name", this.configService.environment.batchName);
             this.worker.setParameter("folder", this.S3Service.getWorkerFolder(this.configService.environment, this.worker));
             this.worker.setParameter("access_counter", String(1));
             this.worker.setParameter("paid", String(false));
             this.worker.setParameter("generated", workerIdGenerated);
             this.worker.setParameter("in_progress", String(true));
+            this.worker.setParameter("position_current", String(0));
             this.worker.setParameter("try_current", String(this.task.tryCurrent));
             this.worker.setParameter("try_left", String(this.task.settings.allowed_tries));
             let timeArrival = new Date();
@@ -399,14 +403,6 @@ export class SkeletonComponent implements OnInit {
 
                                         if ((/true/i.test(aclEntry["paid"]) == false && /true/i.test(aclEntry["in_progress"]) == true && hoursElapsed >= this.task.settings.time_assessment) ||
                                             (/true/i.test(aclEntry["paid"]) == false && /true/i.test(aclEntry["in_progress"]) == true && parseInt(aclEntry["try_left"]) <= 1)) {
-                                            let hitFound = null;
-                                            for (let currentHit of hits) {
-                                                if (currentHit["unit_id"] == aclEntry["unit_id"]) {
-                                                    hitFound = currentHit;
-                                                    break;
-                                                }
-                                            }
-
                                             hitAssigned = true;
                                             /* The record for the worker that abandoned/returned the task is updated */
                                             aclEntry["time_expired"] = String(true);
@@ -506,26 +502,16 @@ export class SkeletonComponent implements OnInit {
 
         let batchesStatus = {};
 
-        let tables = await this.dynamoDBService.listTables(
-            this.configService.environment
-        );
-        let workersManual = await this.S3Service.downloadWorkers(
-            this.configService.environment
-        );
-        let workersACL = await this.dynamoDBService.getACLRecordIpAddress(
-            this.configService.environment,
-            this.worker.getIP()
-        );
+        let tables = await this.dynamoDBService.listTables(this.configService.environment);
+        let workersManual = await this.S3Service.downloadWorkers(this.configService.environment);
+        let workersACL = await this.dynamoDBService.getACLRecordIpAddress(this.configService.environment, this.worker.getIP());
 
         /* To blacklist a previous batch its worker list is picked up */
         for (let batchName of this.worker.settings.blacklist_batches) {
             let previousTaskName = batchName.split("/")[0];
             let previousBatchName = batchName.split("/")[1];
             if (!(batchName in batchesStatus)) {
-                let workers = await this.S3Service.downloadWorkers(
-                    this.configService.environment,
-                    batchName
-                );
+                let workers = await this.S3Service.downloadWorkers(this.configService.environment, batchName);
                 batchesStatus[batchName] = {};
                 batchesStatus[batchName]["blacklist"] = workers["blacklist"];
                 for (let tableName of tables["TableNames"]) {
@@ -541,10 +527,7 @@ export class SkeletonComponent implements OnInit {
             let previousTaskName = batchName.split("/")[0];
             let previousBatchName = batchName.split("/")[1];
             if (!(batchName in batchesStatus)) {
-                let workers = await this.S3Service.downloadWorkers(
-                    this.configService.environment,
-                    batchName
-                );
+                let workers = await this.S3Service.downloadWorkers(this.configService.environment, batchName);
                 batchesStatus[batchName] = {};
                 batchesStatus[batchName]["whitelist"] = workers["blacklist"];
                 for (let tableName of tables["TableNames"]) {
@@ -592,8 +575,7 @@ export class SkeletonComponent implements OnInit {
                         await this.dynamoDBService.getACLRecordIpAddress(this.configService.environment, this.worker.getIP(), batchStatus["tableName"]);
                     if ("Items" in rawWorker) {
                         for (let worker of rawWorker["Items"]) {
-                            if (this.worker.getIP()["ip"] == worker["ip_address"]
-                            ) {
+                            if (this.worker.getIP()["ip"] == worker["ip_address"]) {
                                 taskAllowed = true;
                                 this.worker.setParameter("status_code", StatusCodes.WORKER_WHITELIST_PREVIOUS);
                             }
@@ -638,7 +620,7 @@ export class SkeletonComponent implements OnInit {
             if (this.worker.identifier == worker) {
                 taskAllowed = true;
                 this.worker.setParameter("status_code", StatusCodes.WORKER_WHITELIST_CURRENT
-               );
+                );
             }
         }
 
@@ -650,7 +632,6 @@ export class SkeletonComponent implements OnInit {
      */
     public enableTask() {
         this.sectionService.taskInstructionsRead = true;
-        // TODO: Set here the updated selectedIndex, if applicable
         this.showSnackbar("If you have a very slow internet connection please wait a few seconds", "Dismiss", 10000);
     }
 
@@ -675,7 +656,7 @@ export class SkeletonComponent implements OnInit {
         );
         for (let hit of hits)
             if (hit.token_input === control.value) return null;
-        return { invalid: "This token is not valid." };
+        return {invalid: "This token is not valid."};
     }
 
     /*
@@ -687,6 +668,9 @@ export class SkeletonComponent implements OnInit {
     public async performTaskSetup() {
         /* The token input has been already validated, this is just to be sure */
         if (this.tokenForm.valid) {
+
+            console.log(this.worker)
+
             this.sectionService.taskStarted = true;
 
             /* The hits stored on Amazon S3 are retrieved */
@@ -963,7 +947,7 @@ export class SkeletonComponent implements OnInit {
 
         /* 2) GOLD ELEMENTS CHECK performed here */
 
-        let goldConfiguration = this.utilsService.generateGoldConfiguration(this.task.goldDocuments,this.task.goldDimensions, this.documentsForm, this.task.notes);
+        let goldConfiguration = this.utilsService.generateGoldConfiguration(this.task.goldDocuments, this.task.goldDimensions, this.documentsForm, this.task.notes);
 
         /* The gold configuration is evaluated using the static method implemented within the GoldChecker class */
         let goldChecks = GoldChecker.performGoldCheck(goldConfiguration);
@@ -1068,26 +1052,16 @@ export class SkeletonComponent implements OnInit {
         this.task.elementsAccesses[completedElementBaseIndex] =
             this.task.elementsAccesses[completedElementBaseIndex] + 1;
 
-        this.computeTimestamps(
-            currentElementBaseIndex,
-            completedElementBaseIndex,
-            action
-        );
+        this.computeTimestamps(currentElementBaseIndex, completedElementBaseIndex, action);
         if (this.task.settings.countdown_time) {
             if (currentElementType == "S") {
-                this.handleCountdowns(
-                    currentElementIndex,
-                    completedElementIndex,
-                    action
-                );
+                this.handleCountdowns(currentElementIndex, completedElementIndex, action);
             }
         }
         if (this.task.settings.annotator) {
             if (this.task.settings.annotator.type == "options") {
                 if (completedElementType == "S") {
-                    this.documentComponent
-                        .get(completedElementIndex)
-                        .annotatorOptions.first.handleNotes();
+                    this.documentComponent.get(completedElementIndex).annotatorOptions.first.handleNotes();
                 }
             }
         }
@@ -1106,90 +1080,35 @@ export class SkeletonComponent implements OnInit {
             }
             /* Lastly, we update the ACL */
             if (!(this.worker.identifier == null)) {
-                this.worker.setParameter(
-                    "time_completion",
-                    new Date().toUTCString()
-                );
+                this.worker.setParameter("time_completion", new Date().toUTCString());
                 if (this.sectionService.taskSuccessful) {
                     this.worker.setParameter("in_progress", String(false));
                     this.worker.setParameter("paid", String(true));
-                    this.worker.setParameter(
-                        "status_code",
-                        StatusCodes.TASK_SUCCESSFUL
-                    );
+                    this.worker.setParameter("status_code", StatusCodes.TASK_SUCCESSFUL);
                 } else {
-                    this.worker.setParameter(
-                        "try_left",
-                        String(
-                            this.task.settings.allowed_tries -
-                                this.task.tryCurrent
-                        )
-                    );
+                    this.worker.setParameter("try_left", String(this.task.settings.allowed_tries - this.task.tryCurrent));
                     this.worker.setParameter("in_progress", String(true));
                     this.worker.setParameter("paid", String(false));
-                    this.worker.setParameter(
-                        "status_code",
-                        StatusCodes.TASK_FAILED_WITH_TRIES
-                    );
+                    this.worker.setParameter("status_code", StatusCodes.TASK_FAILED_WITH_TRIES);
                 }
-                await this.dynamoDBService.insertACLRecordWorkerID(
-                    this.configService.environment,
-                    this.worker
-                );
+                await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker);
             }
         }
 
         if (!(this.worker.identifier == null)) {
-            if (completedElementType == "Q") {
-                let questionnairePayload =
-                    this.task.buildTaskQuestionnairePayload(
-                        completedElementIndex,
-                        this.questionnairesForm[completedElementIndex].value,
-                        action
-                    );
-                await this.dynamoDBService.insertDataRecord(
-                    this.configService.environment,
-                    this.worker,
-                    this.task,
-                    questionnairePayload
-                );
-            }
+            if (completedElementType == "Q") {let questionnairePayload = this.task.buildTaskQuestionnairePayload(completedElementIndex, this.questionnairesForm[completedElementIndex].value, action);await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, questionnairePayload);}
 
             if (completedElementType == "S") {
                 let countdown = null;
                 if (this.task.settings.countdown_time)
-                    countdown = Number(
-                        this.documentComponent[completedElementIndex].countdown[
-                            "i"
-                        ]["text"]
-                    );
-                let documentPayload = this.task.buildTaskDocumentPayload(
-                    completedElementIndex,
-                    this.documentsForm[completedElementIndex].value,
-                    countdown,
-                    action
-                );
-                await this.dynamoDBService.insertDataRecord(
-                    this.configService.environment,
-                    this.worker,
-                    this.task,
-                    documentPayload
-                );
+                    countdown = Number(this.documentComponent[completedElementIndex].countdown["i"]["text"]);
+                let documentPayload = this.task.buildTaskDocumentPayload(completedElementIndex, this.documentsForm[completedElementIndex].value, countdown, action);
+                await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, documentPayload);
             }
 
-            if (
-                completedElementBaseIndex ==
-                    this.task.getElementsNumber() - 1 &&
-                action == "Finish"
-            ) {
-                qualityChecksPayload =
-                    this.task.buildQualityChecksPayload(qualityChecks);
-                await this.dynamoDBService.insertDataRecord(
-                    this.configService.environment,
-                    this.worker,
-                    this.task,
-                    qualityChecksPayload
-                );
+            if (completedElementBaseIndex == this.task.getElementsNumber() - 1 && action == "Finish") {
+                qualityChecksPayload = this.task.buildQualityChecksPayload(qualityChecks);
+                await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, qualityChecksPayload);
             }
         }
 

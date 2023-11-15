@@ -7,7 +7,6 @@ import {NoteStandard} from "./annotators/notesStandard";
 import {NoteLaws} from "./annotators/notesLaws";
 import {TaskSettings} from "./taskSettings";
 import {Hit} from "./hit";
-import {Object} from "aws-sdk/clients/customerprofiles";
 import {EvaluationInstruction} from "./instructions/evaluationInstruction";
 import {SearchEngineSettings} from "../searchEngine/searchEngineSettings";
 
