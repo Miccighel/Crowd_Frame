@@ -746,7 +746,6 @@ export class SkeletonComponent implements OnInit {
             }
 
         }
-
         this.changeDetector.detectChanges();
     }
 
@@ -821,9 +820,28 @@ export class SkeletonComponent implements OnInit {
 
         /* Trigger change detection to restore stepper reference */
         this.changeDetector.detectChanges();
+        /* Set stepper document_index to the first questionnarie if only questionnaires are present in the task*/
+        /* If there are documents too, then jump to the first one with parameter reset_jump equal to true, if it exists; otherwise jump to the first document*/
+        let jumpIndex = 0
+        if(this.task.documentsAmount!=0){
+            jumpIndex += this.task.questionnaireAmountStart
 
-        /* Set stepper document_index to the first tab (currentDocument.e., bring the worker to the first document after the questionnaire) */
-        this.stepper.selectedIndex = this.task.questionnaireAmountStart;
+            for (let i = 0; i < this.task.documents.length; i++) {
+                const doc = this.task.documents[i];
+                if(doc["params"]["reset_jump"]==true){
+                    jumpIndex += doc["index"]
+                    break
+                }
+            }
+        }
+
+        this.stepper.selectedIndex = 0
+        this.sectionService.stepIndex = 0
+
+        for (let i = 0; i < jumpIndex; i++) {
+            this.stepper.next()
+            this.sectionService.stepIndex += 1
+        }
 
         /* The loading spinner is stopped */
         this.ngxService.stopLoader("skeleton-inner");

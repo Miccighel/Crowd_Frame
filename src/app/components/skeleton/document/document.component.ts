@@ -75,7 +75,7 @@ export class DocumentComponent implements OnInit {
 
     ngOnInit(): void {
         this.document = this.task.documents[this.documentIndex];
-        this.stepper.selectedIndex =  this.worker.getPositionCurrent()
+        this.stepper.selectedIndex = this.worker.getPositionCurrent()
         this.mostRecentDataRecord = this.task.retrieveMostRecentDataRecord('document', this.documentIndex)
         /* If there are no questionnaires and the countdown time is set, enable the first countdown */
         if (this.task.settings.countdownTime >= 0 && this.task.questionnaireAmountStart == 0) {
@@ -115,10 +115,10 @@ export class DocumentComponent implements OnInit {
     }
 
     public handleDocumentCompletion(action: string) {
-
-        this.sectionService.stepIndex = this.stepper.selectedIndex
-
-        if ((action == "Next" || action == "Finish") && typeof this.document.params["check_gold_with_msg"] === 'string') {
+        let documentCheckGold = this.document.params["check_gold"]
+        let okMessage = documentCheckGold && typeof documentCheckGold["message"] === 'string'
+        let okJump = documentCheckGold && typeof documentCheckGold["jump"] === 'string'
+        if ((action == "Next" || action == "Finish") && (okMessage || okJump)) {
             let docsForms = this.documentsForm.slice()
             docsForms.push(this.assessmentForm)
 
@@ -127,9 +127,25 @@ export class DocumentComponent implements OnInit {
 
             if (goldChecks.every(Boolean)) {
                 this.stepper.next();
-                this.sectionService.stepIndex = this.stepper.selectedIndex
             } else {
-                this.snackBar.open(this.document.params["check_gold_with_msg"], "Dismiss", {duration: 10000});
+                if (okMessage)
+                    this.snackBar.open(documentCheckGold["message"], "Dismiss", {duration: 10000});
+
+                if (okJump) {
+                    let jumpIndex = this.task.questionnaireAmountStart
+
+                    for (let i = 0; i < this.task.documents.length; i++) {
+                        const doc = this.task.documents[i];
+                        if (doc["id"] == documentCheckGold["jump"]) {
+                            jumpIndex += doc["index"]
+                            break
+                        }
+                    }
+
+                    this.stepper.selectedIndex = jumpIndex
+                    this.sectionService.stepIndex = jumpIndex
+                }
+
                 action = null
             }
         } else {
