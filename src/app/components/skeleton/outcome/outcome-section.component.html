@@ -37,14 +37,14 @@
             <div class="comment-box">
                 <form [formGroup]="commentForm" class="comment-form">
                     <mat-form-field appearance="fill">
-                        <textarea matInput [disabled]="commentSent" placeholder="Your comment here" formControlName="comment" rows="5"></textarea>
+                        <textarea matInput [attr.disabled]="commentSent" placeholder="Your comment here" formControlName="comment" rows="5"></textarea>
                         <mat-error *ngIf="this.utilsService.hasError(commentForm,'comment', 'required')">
                             <span i18n>Please, write at least {{this.wordsRequired}} words to send your comment.</span>
                         </mat-error>
                     </mat-form-field>
                 </form>
                 <ng-container *ngIf="commentForm.get('comment')">
-                    <button class="comment-button" mat-flat-button color="primary" [disabled]="commentSent" (click)="performCommentSaving()"><span i18n>Send</span>
+                    <button class="comment-button" mat-flat-button color="primary" [attr.disabled]="commentSent" (click)="performCommentSaving()"><span i18n>Send</span>
                     </button>
                     <span class="comment-sent-label" *ngIf="commentSent"><span i18n>Thank you!</span></span>
                 </ng-container>
@@ -132,14 +132,14 @@
             <div class="comment-box">
                 <form [formGroup]="commentForm" class="comment-form">
                     <mat-form-field appearance="fill">
-                        <textarea matInput [disabled]="commentSent" placeholder="Your comment here" formControlName="comment" rows="5"></textarea>
+                        <textarea matInput [attr.disabled]="commentSent" placeholder="Your comment here" formControlName="comment" rows="5"></textarea>
                         <mat-error *ngIf="this.utilsService.hasError(commentForm,'comment', 'required')">
                             <span i18n>Please, write at least {{this.wordsRequired}} words to send your comment.</span>
                         </mat-error>
                     </mat-form-field>
                 </form>
                 <ng-container *ngIf="commentForm.get('comment')">
-                    <button class="comment-button" mat-flat-button color="primary" [disabled]="commentSent" (click)="performCommentSaving()"> Send
+                    <button class="comment-button" mat-flat-button color="primary" [attr.disabled]="commentSent" (click)="performCommentSaving()"> Send
                     </button>
                     <span class="comment-sent-label" *ngIf="commentSent"><span i18n>Thank you!</span></span>
                 </ng-container>

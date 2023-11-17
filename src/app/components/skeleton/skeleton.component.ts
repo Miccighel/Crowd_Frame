@@ -822,6 +822,21 @@ export class SkeletonComponent implements OnInit {
         this.changeDetector.detectChanges();
         /* Set stepper document_index to the first questionnarie if only questionnaires are present in the task*/
         /* If there are documents too, then jump to the first one with parameter reset_jump equal to true, if it exists; otherwise jump to the first document*/
+        let jumpIndex = this.computeJumpIndex()
+
+        this.stepper.selectedIndex = 0
+        this.sectionService.stepIndex = 0
+
+        for (let i = 0; i < jumpIndex; i++) {
+            this.stepper.next()
+            this.sectionService.stepIndex += 1
+        }
+
+        /* The loading spinner is stopped */
+        this.ngxService.stopLoader("skeleton-inner");
+    }
+
+    public computeJumpIndex() {
         let jumpIndex = 0
         if(this.task.documentsAmount!=0){
             jumpIndex += this.task.questionnaireAmountStart
@@ -834,17 +849,7 @@ export class SkeletonComponent implements OnInit {
                 }
             }
         }
-
-        this.stepper.selectedIndex = 0
-        this.sectionService.stepIndex = 0
-
-        for (let i = 0; i < jumpIndex; i++) {
-            this.stepper.next()
-            this.sectionService.stepIndex += 1
-        }
-
-        /* The loading spinner is stopped */
-        this.ngxService.stopLoader("skeleton-inner");
+        return jumpIndex
     }
 
     public handleCountdowns(
@@ -1112,6 +1117,8 @@ export class SkeletonComponent implements OnInit {
                     this.worker.setParameter("in_progress", String(true));
                     this.worker.setParameter("paid", String(false));
                     this.worker.setParameter("status_code", StatusCodes.TASK_FAILED_WITH_TRIES);
+                    this.worker.setParameter("status_code", StatusCodes.TASK_FAILED_WITH_TRIES);
+                    this.worker.setParameter('position_current', this.computeJumpIndex())
                 }
                 await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker);
             }

@@ -378,7 +378,6 @@ export class SearchEngineBodyComponent implements OnInit {
         if (!this.resultsRetrievedForms[this.documentIndex] || !this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]) {
             /* The form control for user query is initialized and bound with its synchronous validator(s) */
             let urlValue = ''
-            let baseResponses = []
             let pageSize = 10
             let pageIndex = 0
             if (this.previousDataRecord) {
@@ -393,7 +392,7 @@ export class SearchEngineBodyComponent implements OnInit {
                 let previousResponsesRetrieved = this.previousDataRecord.loadSearchEngineRetrievedResponses().data
                 if (previousResponsesRetrieved.length > 0) {
                     let previousResponseRetrieved = previousResponsesRetrieved.slice(-1)[0]
-                    baseResponses = previousResponseRetrieved['response']
+                    this.baseResponses = previousResponseRetrieved['response']
                     this.estimatedMatches = previousResponseRetrieved['estimated_matches']
                     this.resultsAmount = previousResponseRetrieved['results_amount']
                     pageSize = previousResponseRetrieved['page_size']
@@ -413,7 +412,7 @@ export class SearchEngineBodyComponent implements OnInit {
             this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["pageSize"] = pageSize
             this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["pageIndex"] = pageIndex
             this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["lastQueryValue"] = this.queryValue
-            this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["baseResponses"] = baseResponses
+            this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["baseResponses"] = this.baseResponses
             this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["resultsAmount"] = this.resultsAmount
             this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["estimatedMatches"] = this.estimatedMatches
         } else {
@@ -451,8 +450,6 @@ export class SearchEngineBodyComponent implements OnInit {
     }
 
     ngAfterViewInit() {
-        if(this.previousDataRecord && this.sectionService.stepIndex == this.documentIndex)
-            this.performWebSearch()
         this.paginator.page
             .pipe(
                 tap(pageEvent => {

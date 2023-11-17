@@ -69,13 +69,13 @@ export class SearchEngineComponent implements OnInit {
 
     ngOnInit() {
         this.dimension = this.task.dimensions[this.dimensionIndex]
-        let previousDataRecord = this.task.mostRecentDataRecordsForDocuments[this.documentIndex]
+        let mostRecentDataRecord = this.task.mostRecentDataRecordsForDocuments[this.documentIndex]
         if (!this.searchEngineForms[this.documentIndex] || !this.searchEngineForms[this.documentIndex][this.dimensionIndex]) {
             let controlsConfig = {};
             if (this.dimension.url) {
                 let urlValue = ''
-                if(previousDataRecord)
-                    urlValue = previousDataRecord.loadAnswers()[`${this.dimension.name}_url`]
+                if(mostRecentDataRecord)
+                    urlValue = mostRecentDataRecord.loadAnswers()[`${this.dimension.name}_url`]
                 controlsConfig[`${this.dimension.name}_url`] = new UntypedFormControl(urlValue, [Validators.required, this.validateSearchEngineUrl.bind(this)]);
             }
             this.searchEngineForm = this.formBuilder.group(controlsConfig)
