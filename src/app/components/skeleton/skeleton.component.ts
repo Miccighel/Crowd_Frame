@@ -650,7 +650,30 @@ export class SkeletonComponent implements OnInit {
         return {invalid: "This token is not valid."};
     }
 
+    public async retrieveDataRecords() {
+        let wholeEntries = [];
+        let dataEntries = await this.dynamoDBService.getDataRecord(this.configService.environment, this.worker.identifier);
+        for (let dataEntry of dataEntries.Items) wholeEntries.push(dataEntry);
+        let lastEvaluatedKey = dataEntries.LastEvaluatedKey;
+        while (typeof lastEvaluatedKey != "undefined") {
+            dataEntries = await this.dynamoDBService.getDataRecord(
+                this.configService.environment,
+                null,
+                lastEvaluatedKey
+            );
+            lastEvaluatedKey = dataEntries.LastEvaluatedKey;
+            for (let dataEntry of dataEntries.Items) wholeEntries.push(dataEntry);
+        }
+        let entriesParsed = []
+        for (let dataEntry of wholeEntries) {
+            if (this.worker.identifier == dataEntry.identifier && this.task.tryCurrent == parseInt(dataEntry.try)) {
+                dataEntry["data"] = JSON.parse(dataEntry["data"])
+                entriesParsed.push(dataEntry)
+            }
+        }
         return entriesParsed
+    }
+
     /*
      *  This function retrieves the hit identified by the validated token input inserted by the current worker and sets the task up accordingly.
      *  Such hit is represented by a Hit object. The task is set up by parsing the hit content as an Array of Document objects.
