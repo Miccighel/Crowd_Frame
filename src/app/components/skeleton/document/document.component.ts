@@ -1,10 +1,9 @@
 /* Core */
 import {ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, QueryList, ViewChildren, ViewChild} from '@angular/core';
-import {AbstractControl, UntypedFormBuilder, UntypedFormGroup} from "@angular/forms";
+import {UntypedFormBuilder, UntypedFormGroup} from "@angular/forms";
 /* Services */
 import {SectionService} from "../../../services/section.service";
 import {UtilsService} from "../../../services/utils.service";
-import {DeviceDetectorService} from "ngx-device-detector";
 /* Models */
 import {Task} from "../../../models/skeleton/task";
 import {Document} from "../../../../../data/build/skeleton/document";
@@ -17,6 +16,7 @@ import {Worker} from "../../../models/worker/worker";
 /* Material Design */
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {MatStepper} from "@angular/material/stepper";
+import {DataRecord} from "../../../models/skeleton/dataRecord";
 
 @Component({
     selector: 'app-document',
@@ -43,25 +43,22 @@ export class DocumentComponent implements OnInit {
     @Input() resultsRetrievedForms: Array<Array<Object>>;
     @Input() stepper: MatStepper
 
+    task: Task
+    document: Document
+    mostRecentDataRecord: DataRecord;
+    /* Available options to label an annotation */
+    annotationOptions: UntypedFormGroup;
+    assessmentForm: UntypedFormGroup
+
     /* Reference to the outcome section component */
     @ViewChildren(AnnotatorOptionsComponent) annotatorOptions: QueryList<AnnotatorOptionsComponent>;
     @ViewChildren(DimensionComponent) dimensionsPointwise: QueryList<DimensionComponent>;
     @ViewChildren('countdownElement') countdown: CountdownComponent;
 
-    /* |--------- COUNTDOWN HANDLING ---------| */
-
-    /* Available options to label an annotation */
-    annotationOptions: UntypedFormGroup;
-
-    task: Task
-    document: Document
-    assessmentForm: UntypedFormGroup
-
     @Output() formEmitter: EventEmitter<Object>;
 
     constructor(
         changeDetector: ChangeDetectorRef,
-        deviceDetectorService: DeviceDetectorService,
         sectionService: SectionService,
         utilsService: UtilsService,
         snackBar: MatSnackBar,
@@ -78,14 +75,15 @@ export class DocumentComponent implements OnInit {
 
     ngOnInit(): void {
         this.document = this.task.documents[this.documentIndex];
+        this.stepper.selectedIndex =  this.worker.getPositionCurrent()
+        this.mostRecentDataRecord = this.task.retrieveMostRecentDataRecord('document', this.documentIndex)
         /* If there are no questionnaires and the countdown time is set, enable the first countdown */
-        if (this.task.settings.countdown_time >= 0 && this.task.questionnaireAmountStart == 0) {
+        if (this.task.settings.countdownTime >= 0 && this.task.questionnaireAmountStart == 0) {
             this.countdown.begin();
         }
     }
 
     /* |--------- DIMENSIONS ---------| */
-
 
     public storeAssessmentForm(data) {
         let documentIndex = data['index'] as number
@@ -96,6 +94,9 @@ export class DocumentComponent implements OnInit {
             } else {
                 this.assessmentForm = this.documentsForm[this.documentIndex]
             }
+            this.formEmitter.emit({
+                "form": this.assessmentForm,
+            })
         }
     }
 
@@ -126,7 +127,7 @@ export class DocumentComponent implements OnInit {
 
             if (goldChecks.every(Boolean)) {
                 this.stepper.next();
-                this.sectionService.stepIndex += 1
+                this.sectionService.stepIndex = this.stepper.selectedIndex
             } else {
                 this.snackBar.open(this.document.params["check_gold_with_msg"], "Dismiss", {duration: 10000});
                 action = null
@@ -134,16 +135,17 @@ export class DocumentComponent implements OnInit {
         } else {
             if (action == "Back") {
                 this.stepper.previous();
-                this.sectionService.stepIndex -= 1
+                this.sectionService.stepIndex = this.stepper.selectedIndex
             } else {
                 this.stepper.next();
-                this.sectionService.stepIndex += 1
+                this.sectionService.stepIndex = this.stepper.selectedIndex
             }
         }
         this.formEmitter.emit({
             "form": this.assessmentForm,
             "action": action
         })
+
     }
 
     public getDocTypeNumber() {

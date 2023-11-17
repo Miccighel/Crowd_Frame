@@ -9,6 +9,8 @@ import {TaskSettings} from "./taskSettings";
 import {Hit} from "./hit";
 import {EvaluationInstruction} from "./instructions/evaluationInstruction";
 import {SearchEngineSettings} from "../searchEngine/searchEngineSettings";
+import {DataRecord} from "./dataRecord";
+import {Worker} from "../worker/worker";
 
 export class Task {
     /* Task settings and parameters */
@@ -31,6 +33,11 @@ export class Task {
     public dimensionsAmount: number;
     public sequenceNumber: number;
     public searchEngineSettings: SearchEngineSettings;
+    public worker: Worker;
+
+    dataRecords: Array<DataRecord>
+    mostRecentDataRecordsForDocuments: Array<DataRecord>
+    mostRecentDataRecordsForQuestionnaires: Array<DataRecord>
 
     /* Array of documents */
     documents: Array<Document>;
@@ -87,6 +94,7 @@ export class Task {
     goldDimensions: Array<Dimension>;
 
     constructor() {
+        this.dataRecords = new Array<DataRecord>()
         this.tryCurrent = 1;
         this.sequenceNumber = 0;
     }
@@ -94,15 +102,18 @@ export class Task {
     public getElementIndex(stepIndex) {
         let elementType = "";
         let elementIndex = 0;
+        let overallIndex = 0;
         if (
             stepIndex >= this.questionnaireAmountStart &&
             stepIndex < this.questionnaireAmountStart + this.documentsAmount
         ) {
             elementType = "S";
             elementIndex = stepIndex - this.questionnaireAmountStart;
+            overallIndex = stepIndex - this.questionnaireAmountStart;
         } else if (stepIndex < this.questionnaireAmountStart) {
             elementType = "Q";
             elementIndex = stepIndex;
+            overallIndex = stepIndex;
         } else if (
             stepIndex >= this.questionnaireAmountStart + this.documentsAmount &&
             stepIndex < this.getElementsNumber() &&
@@ -110,12 +121,14 @@ export class Task {
         ) {
             elementType = "Q";
             elementIndex = stepIndex - this.documentsAmount;
+            overallIndex = stepIndex - elementIndex + this.questionnaireAmountStart;
         } else if (
             stepIndex >= this.questionnaireAmountStart + this.documentsAmount &&
             this.questionnaireAmountEnd == 0
         ) {
             elementType = "Outcome";
             elementIndex = null;
+            overallIndex = null;
         } else if (
             stepIndex >= this.questionnaireAmountStart + this.documentsAmount &&
             stepIndex >= this.getElementsNumber() &&
@@ -123,11 +136,40 @@ export class Task {
         ) {
             elementType = "Outcome";
             elementIndex = null;
+            overallIndex = null;
         }
         return {
             elementType: elementType,
             elementIndex: elementIndex,
+            overallIndex: overallIndex,
         };
+    }
+
+    public storeDataRecords(previousRecords: JSON[]) {
+        for (let record of previousRecords) {
+            let recordCurrent = new DataRecord(record)
+            this.dataRecords.push(recordCurrent)
+            this.sequenceNumber = Math.max(this.sequenceNumber, recordCurrent.sequenceNumber)
+        }
+    }
+
+    public retrieveMostRecentDataRecord(elementType: string, index: number) {
+        let dataRecords = []
+        for (let dataRecord of this.dataRecords) {
+            if (
+                dataRecord.element == elementType &&
+                dataRecord.index == index &&
+                dataRecord.unitId == this.unitId
+            ) {
+                dataRecords.push(dataRecord)
+            }
+        }
+        dataRecords.sort((a, b) => a.time > b.time ? 1 : -1);
+        if (dataRecords.length > 0) {
+            return dataRecords.slice(-1)[0]
+        } else {
+            return null
+        }
     }
 
     public initializeDocuments(rawDocuments, documentsParams) {
@@ -140,55 +182,63 @@ export class Task {
                 currentParams = documentsParams[currentDocument["id"]]
             this.documents.push(new Document(index, currentDocument, currentParams));
         }
+        this.mostRecentDataRecordsForDocuments = new Array<DataRecord>(this.documentsAmount)
+        for (let index = 0; index < this.documentsAmount; index++)
+            this.mostRecentDataRecordsForDocuments[index] = this.retrieveMostRecentDataRecord('document', index)
+
         this.searchEngineQueries = new Array<object>(this.documentsAmount);
+        this.currentQuery = 0;
         for (let index = 0; index < this.searchEngineQueries.length; index++) {
             this.searchEngineQueries[index] = {};
             this.searchEngineQueries[index]["data"] = [];
             this.searchEngineQueries[index]["amount"] = 0;
+            if (this.mostRecentDataRecordsForDocuments[index]) {
+                let existingSearchEngineQueries = this.mostRecentDataRecordsForDocuments[index].loadSearchEngineQueries()
+                this.searchEngineQueries[index]["data"] = existingSearchEngineQueries.data
+                this.searchEngineQueries[index]["amount"] = existingSearchEngineQueries.amount
+                this.currentQuery = existingSearchEngineQueries.amount - 1
+            }
         }
-        this.currentQuery = 0;
         this.searchEngineRetrievedResponses = new Array<object>(
             this.documentsAmount
         );
-        for (
-            let index = 0;
-            index < this.searchEngineRetrievedResponses.length;
-            index++
-        ) {
+        for (let index = 0; index < this.searchEngineRetrievedResponses.length; index++) {
             this.searchEngineRetrievedResponses[index] = {};
             this.searchEngineRetrievedResponses[index]["data"] = [];
             this.searchEngineRetrievedResponses[index]["amount"] = 0;
+            if (this.mostRecentDataRecordsForDocuments[index]) {
+                let existingSearchEngineRetrievedResponse = this.mostRecentDataRecordsForDocuments[index].loadSearchEngineRetrievedResponses()
+                this.searchEngineRetrievedResponses[index]["data"] = existingSearchEngineRetrievedResponse.data
+                this.searchEngineRetrievedResponses[index]["amount"] = existingSearchEngineRetrievedResponse.amount
+            }
         }
         this.searchEngineSelectedResponses = new Array<object>(
             this.documentsAmount
         );
-        for (
-            let index = 0;
-            index < this.searchEngineSelectedResponses.length;
-            index++
-        ) {
+        for (let index = 0; index < this.searchEngineSelectedResponses.length; index++) {
             this.searchEngineSelectedResponses[index] = {};
             this.searchEngineSelectedResponses[index]["data"] = [];
             this.searchEngineSelectedResponses[index]["amount"] = 0;
+            if (this.mostRecentDataRecordsForDocuments[index]) {
+                let existingSearchEngineSelectedResponses = this.mostRecentDataRecordsForDocuments[index].loadSearchEngineSelectedResponses()
+                this.searchEngineSelectedResponses[index]["data"] = existingSearchEngineSelectedResponses.data
+                this.searchEngineSelectedResponses[index]["amount"] = existingSearchEngineSelectedResponses.amount
+            }
         }
-
+        // TODO: Add initialization from past payloads also for notes
         this.notesDone = new Array<boolean>();
         this.annotationsDisabled = new Array<boolean>();
         if (this.settings.annotator) {
             switch (this.settings.annotator.type) {
                 case "options":
-                    this.notes = new Array<Array<NoteStandard>>(
-                        this.documentsAmount
-                    );
+                    this.notes = new Array<Array<NoteStandard>>(this.documentsAmount);
                     for (let i = 0; i < this.notes.length; i++)
                         this.notes[i] = [];
                     for (let index = 0; index < this.notes.length; index++)
                         this.annotationsDisabled.push(true);
                     break;
                 case "laws":
-                    this.notes = new Array<Array<NoteLaws>>(
-                        this.documentsAmount
-                    );
+                    this.notes = new Array<Array<NoteLaws>>(this.documentsAmount);
                     this.notesDone = new Array<boolean>(this.documentsAmount);
                     for (let i = 0; i < this.notes.length; i++)
                         this.notes[i] = [];
@@ -202,30 +252,20 @@ export class Task {
             for (let index = 0; index < this.notes.length; index++)
                 this.annotationsDisabled.push(true);
         }
+        // TODO: Add initialization from past payloads also for countdowns
         this.documentsCountdownTime = new Array<number>(this.documentsAmount);
         this.countdownsExpired = new Array<boolean>(this.documentsAmount);
         for (let index = 0; index < this.documents.length; index++) {
-            this.documentsCountdownTime[index] = this.settings.countdown_time;
+            this.documentsCountdownTime[index] = this.settings.countdownTime;
             if (this.settings.countdown_attribute_values[index]) {
-                for (const attributeValue of Object.values(
-                    this.documents[index]
-                )) {
-                    if (
-                        attributeValue ==
-                        this.settings.countdown_attribute_values[index]["name"]
-                    ) {
-                        this.documentsCountdownTime[index] =
-                            this.documentsCountdownTime[index] +
-                            this.settings.countdown_attribute_values[index][
-                                "time"
-                                ];
+                for (const attributeValue of Object.values(this.documents[index])) {
+                    if (attributeValue == this.settings.countdown_attribute_values[index]["name"]) {
+                        this.documentsCountdownTime[index] = this.documentsCountdownTime[index] + this.settings.countdown_attribute_values[index]["time"];
                     }
                 }
             }
             if (this.settings.countdown_position_values[index])
-                this.documentsCountdownTime[index] =
-                    this.documentsCountdownTime[index] +
-                    this.settings.countdown_position_values[index]["time"];
+                this.documentsCountdownTime[index] = this.documentsCountdownTime[index] + this.settings.countdown_position_values[index]["time"];
             this.countdownsExpired[index] = false;
         }
         for (let index = 0; index < this.documents.length; index++) {
@@ -256,9 +296,7 @@ export class Task {
         /* The instructions are parsed using the Instruction class */
         this.instructionsGeneral = new Array<BaseInstruction>();
         for (let index = 0; index < this.instructionsGeneralAmount; index++) {
-            this.instructionsGeneral.push(
-                new BaseInstruction(index, rawGeneralInstructions[index])
-            );
+            this.instructionsGeneral.push(new BaseInstruction(index, rawGeneralInstructions[index]));
         }
     }
 
@@ -270,20 +308,16 @@ export class Task {
         this.questionnaireAmountEnd = 0;
         /* Each questionnaire is parsed using the Questionnaire class */
         for (let index = 0; index < this.questionnaireAmount; index++) {
-            let questionnaire = new Questionnaire(
-                index,
-                rawQuestionnaires[index]
-            );
+            let questionnaire = new Questionnaire(index, rawQuestionnaires[index]);
             this.questionnaires.push(questionnaire);
-            if (
-                questionnaire.position == "start" ||
-                questionnaire.position == null
-            )
-                this.questionnaireAmountStart =
-                    this.questionnaireAmountStart + 1;
+            if (questionnaire.position == "start" || questionnaire.position == null)
+                this.questionnaireAmountStart = this.questionnaireAmountStart + 1;
             if (questionnaire.position == "end")
                 this.questionnaireAmountEnd = this.questionnaireAmountEnd + 1;
         }
+        this.mostRecentDataRecordsForQuestionnaires = new Array<DataRecord>(this.questionnaireAmount)
+        for (let index = 0; index < this.questionnaireAmount; index++)
+            this.mostRecentDataRecordsForQuestionnaires[index] = this.retrieveMostRecentDataRecord('questionnaire', index)
     }
 
     public initializeInstructionsEvaluation(rawEvaluationInstructions) {
@@ -300,18 +334,21 @@ export class Task {
         /* Each dimension is parsed using the Dimension class */
         for (let index = 0; index < this.dimensionsAmount; index++)
             this.dimensions.push(new Dimension(index, rawDimensions[index]));
+
         this.dimensionsSelectedValues = new Array<object>(this.documentsAmount);
-        for (
-            let index = 0;
-            index < this.dimensionsSelectedValues.length;
-            index++
-        ) {
+        for (let index = 0; index < this.dimensionsSelectedValues.length; index++) {
             this.dimensionsSelectedValues[index] = {};
             this.dimensionsSelectedValues[index]["data"] = [];
             this.dimensionsSelectedValues[index]["amount"] = 0;
+            if (this.mostRecentDataRecordsForDocuments[index]) {
+                let existingDimensionsSelectedValues = this.mostRecentDataRecordsForDocuments[index].loadDimensionsSelected()
+                this.dimensionsSelectedValues[index]["data"] = existingDimensionsSelectedValues.data
+                this.dimensionsSelectedValues[index]["amount"] = existingDimensionsSelectedValues.amount
+            }
         }
         /* @Cristian Abbondo */
         /* Definizione array tridimensionale selezione elementi */
+        // TODO: Add initialization from past payloads also for dimensionsPairwiseSelection
         for (let i = 0; i < this.documentsAmount; i++) {
             this.dimensionsPairwiseSelection[i] = [];
             for (let j = 0; j < this.dimensionsAmount; j++) {
@@ -320,6 +357,7 @@ export class Task {
                 this.dimensionsPairwiseSelection[i][j][1] = false;
             }
         }
+
         this.goldDimensions = new Array<Dimension>();
         /* Indexes of the gold dimensions are retrieved */
         for (let index = 0; index < this.dimensionsAmount; index++) {
@@ -366,35 +404,74 @@ export class Task {
     }
 
     public getElementsNumber() {
-        return (
-            this.questionnaireAmountStart +
-            this.documentsAmount +
-            this.questionnaireAmountEnd
-        );
+        return (this.questionnaireAmountStart + this.documentsAmount + this.questionnaireAmountEnd);
     }
 
     public loadAccessCounter() {
         /* The array of accesses counter is initialized */
         let elementsAmount = this.getElementsNumber();
         this.elementsAccesses = new Array<number>(elementsAmount);
-        for (let index = 0; index < this.elementsAccesses.length; index++)
+        for (let index = 0; index < this.elementsAccesses.length; index++) {
             this.elementsAccesses[index] = 0;
+            if (this.getElementIndex(index)['elementType'] == 'Q') {
+                let mostRecentDataRecord = this.mostRecentDataRecordsForQuestionnaires[this.getElementIndex(index)['elementIndex']]
+                if (mostRecentDataRecord) {
+                    this.elementsAccesses[index] = mostRecentDataRecord.loadAccesses()
+                }
+            } else {
+                let mostRecentDataRecord = this.mostRecentDataRecordsForDocuments[this.getElementIndex(index)['elementIndex']]
+                if (mostRecentDataRecord)
+                    this.elementsAccesses[index] = mostRecentDataRecord.loadAccesses()
+            }
+        }
     }
 
-    public loadTimestamps() {
+    public loadTimestamps(positionCurrent = null) {
         /* Arrays of start, end and elapsed timestamps are initialized to track how much time the worker spends
          * on each document, including each questionnaire */
-        this.timestampsStart = new Array<Array<number>>(
-            this.getElementsNumber()
-        );
+        this.timestampsStart = new Array<Array<number>>(this.getElementsNumber());
         this.timestampsEnd = new Array<Array<number>>(this.getElementsNumber());
         this.timestampsElapsed = new Array<number>(this.getElementsNumber());
-        for (let i = 0; i < this.timestampsStart.length; i++)
+        for (let i = 0; i < this.timestampsStart.length; i++) {
             this.timestampsStart[i] = [];
-        for (let i = 0; i < this.timestampsEnd.length; i++)
+            if (this.getElementIndex(i)['elementType'] == 'Q') {
+                let mostRecentDataRecord = this.mostRecentDataRecordsForQuestionnaires[this.getElementIndex(i)['elementIndex']]
+                if (mostRecentDataRecord) {
+                    this.timestampsStart[i] = mostRecentDataRecord.loadTimestampsStart()
+                }
+            } else {
+                let mostRecentDataRecord = this.mostRecentDataRecordsForDocuments[this.getElementIndex(i)['elementIndex']]
+                if (mostRecentDataRecord)
+                    this.timestampsStart[i] = mostRecentDataRecord.loadTimestampsStart()
+            }
+        }
+        for (let i = 0; i < this.timestampsEnd.length; i++) {
             this.timestampsEnd[i] = [];
-        /* The task is now started and the worker is looking at the first questionnaire, so the first start timestamp is saved */
-        this.timestampsStart[0].push(Math.round(Date.now() / 1000));
+            if (this.getElementIndex(i)['elementType'] == 'Q') {
+                let mostRecentDataRecord = this.mostRecentDataRecordsForQuestionnaires[this.getElementIndex(i)['elementIndex']]
+                if (mostRecentDataRecord) {
+                    this.timestampsEnd[i] = mostRecentDataRecord.loadTimestampsEnd()
+                }
+            } else {
+                let mostRecentDataRecord = this.mostRecentDataRecordsForDocuments[this.getElementIndex(i)['elementIndex']]
+                if (mostRecentDataRecord)
+                    this.timestampsEnd[i] = mostRecentDataRecord.loadTimestampsEnd()
+            }
+        }
+        for (let i = 0; i < this.timestampsElapsed.length; i++) {
+            if (this.getElementIndex(i)['elementType'] == 'Q') {
+                let mostRecentDataRecord = this.mostRecentDataRecordsForQuestionnaires[this.getElementIndex(i)['elementIndex']]
+                if (mostRecentDataRecord)
+                    this.timestampsElapsed[i] = mostRecentDataRecord.loadTimestampsElapsed()
+            } else {
+                let mostRecentDataRecord = this.mostRecentDataRecordsForDocuments[this.getElementIndex(i)['elementIndex']]
+                if (mostRecentDataRecord)
+                    this.timestampsElapsed[i] = mostRecentDataRecord.loadTimestampsElapsed()
+            }
+        }
+
+        this.timestampsStart[positionCurrent].push(Math.round(Date.now() / 1000));
+
     }
 
     /*
@@ -512,7 +589,7 @@ export class Task {
         }
     }
 
-    public retrieveLatestQuery(documentIndex: number){
+    public retrieveLatestQuery(documentIndex: number) {
         let queryAmount = this.searchEngineQueries[documentIndex]["amount"]
         if (queryAmount > 0)
             return this.searchEngineQueries[documentIndex]["data"][queryAmount - 1];
@@ -741,24 +818,16 @@ export class Task {
         return data;
     }
 
-    public buildTaskQuestionnairePayload(questionnaireIndex, answers, action) {
+    public buildTaskQuestionnairePayload(elementData, answers, action) {
         /* If the worker has completed the first questionnaire
          * The partial data about the completed questionnaire are uploaded */
         let data = {};
-        let questionnaire = this.questionnaires[questionnaireIndex];
-        let questionnaireIndexExtended = questionnaireIndex;
-        if (
-            questionnaireIndex >= this.questionnaireAmountStart - 1 &&
-            questionnaireIndex < this.questionnaireAmount &&
-            this.questionnaireAmountEnd > 0
-        )
-            questionnaireIndexExtended =
-                questionnaireIndexExtended + this.documentsAmount;
+        let questionnaire = this.questionnaires[elementData['elementIndex']];
         let actionInfo = {
             action: action,
-            access: this.elementsAccesses[questionnaireIndexExtended],
+            access: this.elementsAccesses[elementData['overallIndex']],
             try: this.tryCurrent,
-            index: questionnaireIndex,
+            index: elementData['elementIndex'],
             sequence: this.sequenceNumber,
             element: "questionnaire",
         };
@@ -772,32 +841,28 @@ export class Task {
         data["questions"] = questionsFull;
         data["answers"] = answers;
         /* Start, end and elapsed timestamps for the current questionnaire */
-        let timestampsStart = this.timestampsStart[questionnaireIndexExtended];
+
+        let timestampsStart = this.timestampsStart[elementData['overallIndex']];
         data["timestamps_start"] = timestampsStart;
-        let timestampsEnd = this.timestampsEnd[questionnaireIndexExtended];
+        let timestampsEnd = this.timestampsEnd[elementData['overallIndex']];
         data["timestamps_end"] = timestampsEnd;
-        let timestampsElapsed =
-            this.timestampsElapsed[questionnaireIndexExtended];
+        let timestampsElapsed = this.timestampsElapsed[elementData['overallIndex']];
         data["timestamps_elapsed"] = timestampsElapsed;
         /* Number of accesses to the current questionnaire */
-        data["accesses"] = this.elementsAccesses[questionnaireIndexExtended];
+        data["accesses"] = this.elementsAccesses[elementData['overallIndex']];
 
         return data;
     }
 
-    public buildTaskDocumentPayload(documentIndex, answers, countdown, action) {
+    public buildTaskDocumentPayload(elementData, answers, countdown, action) {
         /* If the worker has completed the first questionnaire
          * The partial data about the completed questionnaire are uploaded */
         let data = {};
-        let documentIndexExtendend = documentIndex;
-        if (this.questionnaireAmountStart > 0)
-            documentIndexExtendend =
-                documentIndexExtendend + this.questionnaireAmountStart;
         let actionInfo = {
             action: action,
-            access: this.elementsAccesses[documentIndexExtendend],
+            access: this.elementsAccesses[elementData['overallIndex']],
             try: this.tryCurrent,
-            index: documentIndex,
+            index: elementData['elementIndex'],
             sequence: this.sequenceNumber,
             element: "document",
         };
@@ -805,35 +870,35 @@ export class Task {
         data["info"] = actionInfo;
         /* Worker's answers for the current document */
         data["answers"] = answers;
-        let notes = this.settings.annotator ? this.notes[documentIndex] : [];
+        let notes = this.settings.annotator ? this.notes[elementData['elementIndex']] : [];
         data["notes"] = notes;
         /* Worker's dimensions selected values for the current document */
-        let dimensionsSelectedValues = this.dimensionsSelectedValues[documentIndex];
+        let dimensionsSelectedValues = this.dimensionsSelectedValues[elementData['elementIndex']];
         data["dimensions_selected"] = dimensionsSelectedValues;
         /* Worker's search engine queries for the current document */
-        let searchEngineQueries = this.searchEngineQueries[documentIndex];
+        let searchEngineQueries = this.searchEngineQueries[elementData['elementIndex']];
         data["queries"] = searchEngineQueries;
         /* Start, end and elapsed timestamps for the current document */
-        let timestampsStart = this.timestampsStart[documentIndexExtendend];
+        let timestampsStart = this.timestampsStart[elementData['overallIndex']];
         data["timestamps_start"] = timestampsStart;
-        let timestampsEnd = this.timestampsEnd[documentIndexExtendend];
+        let timestampsEnd = this.timestampsEnd[elementData['overallIndex']];
         data["timestamps_end"] = timestampsEnd;
-        let timestampsElapsed = this.timestampsElapsed[documentIndexExtendend];
+        let timestampsElapsed = this.timestampsElapsed[elementData['overallIndex']];
         data["timestamps_elapsed"] = timestampsElapsed;
         /* Countdown time and corresponding flag */
-        let countdownTimeStart = this.settings.countdown_time >= 0 ? this.documentsCountdownTime[documentIndex] : [];
+        let countdownTimeStart = this.settings.countdownTime >= 0 ? this.documentsCountdownTime[elementData['elementIndex']] : [];
         data["countdowns_times_start"] = countdownTimeStart;
-        let countdownTime = this.settings.countdown_time >= 0 ? countdown : [];
+        let countdownTime = this.settings.countdownTime >= 0 ? countdown : [];
         data["countdowns_times_left"] = countdownTime;
-        let countdown_expired = this.settings.countdown_time >= 0 ? this.countdownsExpired[documentIndex] : [];
+        let countdown_expired = this.settings.countdownTime >= 0 ? this.countdownsExpired[elementData['elementIndex']] : [];
         data["countdowns_expired"] = countdown_expired;
         /* Number of accesses to the current document (currentDocument.e., how many times the worker reached the document with a "Back" or "Next" action */
-        data["accesses"] = this.elementsAccesses[documentIndexExtendend];
+        data["accesses"] = this.elementsAccesses[elementData['overallIndex']];
         /* Responses retrieved by search engine for each worker's query for the current document */
-        let responsesRetrieved = this.searchEngineRetrievedResponses[documentIndex];
+        let responsesRetrieved = this.searchEngineRetrievedResponses[elementData['elementIndex']];
         data["responses_retrieved"] = responsesRetrieved;
         /* Responses by search engine ordered by worker's click for the current document */
-        let responsesSelected = this.searchEngineSelectedResponses[documentIndex];
+        let responsesSelected = this.searchEngineSelectedResponses[elementData['elementIndex']];
         data["responses_selected"] = responsesSelected;
 
         return data;

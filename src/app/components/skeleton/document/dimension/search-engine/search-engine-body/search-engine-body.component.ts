@@ -25,6 +25,8 @@ import {Worker} from "../../../../../../models/worker/worker";
 import {SearchEngineSettings} from "../../../../../../models/searchEngine/searchEngineSettings";
 import {CustomDataSource} from '../../../../../../models/searchEngine/customDataSource';
 import {BaseResponse} from "../../../../../../models/searchEngine/baseResponse";
+import {DataRecord} from "../../../../../../models/skeleton/dataRecord";
+import {SectionService} from "../../../../../../services/section.service";
 
 /* Component HTML Tag definition */
 @Component({
@@ -60,6 +62,7 @@ export class SearchEngineBodyComponent implements OnInit {
     S3Service: S3Service;
     /* Cookie handling service */
     cookieService: CookieService
+    sectionService: SectionService
     /* Change detector to manually intercept changes on DOM */
     changeDetector: ChangeDetectorRef;
 
@@ -123,6 +126,8 @@ export class SearchEngineBodyComponent implements OnInit {
     searchAmount = 0;
     baseResponses: Array<BaseResponse> = []
 
+    previousDataRecord: DataRecord
+
     /* |--------- CONSTRUCTOR IMPLEMENTATION ---------| */
 
     constructor(
@@ -131,6 +136,7 @@ export class SearchEngineBodyComponent implements OnInit {
         S3Service: S3Service,
         bingService: BingService,
         fakerService: FakerService,
+        sectionService: SectionService,
         pubmedService: PubmedService,
         configService: ConfigService,
         formBuilder: UntypedFormBuilder,
@@ -143,6 +149,7 @@ export class SearchEngineBodyComponent implements OnInit {
         this.fakerService = fakerService;
         this.pubmedService = pubmedService;
         this.configService = configService;
+        this.sectionService = sectionService
         this.formBuilder = formBuilder;
         this.cookieService = cookieService;
 
@@ -159,6 +166,7 @@ export class SearchEngineBodyComponent implements OnInit {
     ngOnInit() {
 
         this.settings = this.task.searchEngineSettings
+        this.previousDataRecord = this.task.mostRecentDataRecordsForDocuments[this.documentIndex]
 
         /* This header must be restored from cookies and attached to each request sent to Bing API*/
         let msClientIdName = 'MSEdge-ClientID'
@@ -171,7 +179,7 @@ export class SearchEngineBodyComponent implements OnInit {
                 this.dataSource = new CustomDataSource((query = this.lastQueryValue, resultsToSkip, querySentByUser = false) => {
                     let resultSliceStart = (this.paginator.pageIndex) * this.paginator.pageSize
                     let resultSliceEnd = resultSliceStart + this.paginator.pageSize
-                    if (querySentByUser || (resultSliceEnd > this.resultsAmount && this.estimatedMatches>this.resultsAmount) || this.resultsAmount == 0) {
+                    if (querySentByUser || (resultSliceEnd > this.resultsAmount && this.estimatedMatches > this.resultsAmount) || this.resultsAmount == 0) {
                         if (querySentByUser) {
                             /* EMITTER: The user query is emitted to provide it to an eventual parent component, when the query is sent manually */
                             this.queryEmitter.emit({
@@ -246,7 +254,7 @@ export class SearchEngineBodyComponent implements OnInit {
                 this.dataSource = new CustomDataSource((query = this.lastQueryValue, resultsToSkip, querySentByUser = false) => {
                     let resultSliceStart = (this.paginator.pageIndex) * this.paginator.pageSize
                     let resultSliceEnd = resultSliceStart + this.paginator.pageSize
-                    if (querySentByUser || (resultSliceEnd > this.resultsAmount && this.estimatedMatches>this.resultsAmount) || this.resultsAmount == 0) {
+                    if (querySentByUser || (resultSliceEnd > this.resultsAmount && this.estimatedMatches > this.resultsAmount) || this.resultsAmount == 0) {
                         if (querySentByUser) {
                             this.queryEmitter.emit({
                                 "text": this.lastQueryValue,
@@ -309,7 +317,7 @@ export class SearchEngineBodyComponent implements OnInit {
                 this.dataSource = new CustomDataSource((query = this.lastQueryValue, resultsToSkip, querySentByUser = false) => {
                     let resultSliceStart = (this.paginator.pageIndex) * this.paginator.pageSize
                     let resultSliceEnd = resultSliceStart + this.paginator.pageSize
-                    if (querySentByUser || (resultSliceEnd > this.resultsAmount && this.estimatedMatches>this.resultsAmount) || this.resultsAmount == 0) {
+                    if (querySentByUser || (resultSliceEnd > this.resultsAmount && this.estimatedMatches > this.resultsAmount) || this.resultsAmount == 0) {
                         if (querySentByUser) {
                             this.queryEmitter.emit({
                                 "text": this.lastQueryValue,
@@ -369,8 +377,31 @@ export class SearchEngineBodyComponent implements OnInit {
 
         if (!this.resultsRetrievedForms[this.documentIndex] || !this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]) {
             /* The form control for user query is initialized and bound with its synchronous validator(s) */
-            this.query = new UntypedFormControl("", [Validators.required]);
-            this.urls = new UntypedFormControl("", [Validators.required]);
+            let urlValue = ''
+            let baseResponses = []
+            let pageSize = 10
+            let pageIndex = 0
+            if (this.previousDataRecord) {
+                let previousQueries = this.previousDataRecord.loadSearchEngineQueries().data
+                if (previousQueries.length > 0) {
+                    this.lastQueryValue = previousQueries.slice(-1)[0].text
+                    this.queryValue = previousQueries.slice(-1)[0].text
+                }
+                let previousResponsesSelected = this.previousDataRecord.loadSearchEngineSelectedResponses().data
+                if (previousResponsesSelected.length > 0)
+                    urlValue = previousResponsesSelected.slice(-1)[0].response.url
+                let previousResponsesRetrieved = this.previousDataRecord.loadSearchEngineRetrievedResponses().data
+                if (previousResponsesRetrieved.length > 0) {
+                    let previousResponseRetrieved = previousResponsesRetrieved.slice(-1)[0]
+                    baseResponses = previousResponseRetrieved['response']
+                    this.estimatedMatches = previousResponseRetrieved['estimated_matches']
+                    this.resultsAmount = previousResponseRetrieved['results_amount']
+                    pageSize = previousResponseRetrieved['page_size']
+                    pageIndex = previousResponseRetrieved['page_index']
+                }
+            }
+            this.query = new UntypedFormControl(this.queryValue, [Validators.required]);
+            this.urls = new UntypedFormControl(urlValue, [Validators.required]);
             /* The search form is initialized by adding each form control */
             this.searchForm = this.formBuilder.group({
                 query: this.query,
@@ -379,12 +410,12 @@ export class SearchEngineBodyComponent implements OnInit {
             if (!this.resultsRetrievedForms[this.documentIndex]) this.resultsRetrievedForms[this.documentIndex] = []
             if (!this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]) this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex] = {}
             this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["form"] = this.searchForm
-            this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["pageSize"] = 10
-            this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["pageIndex"] = 0
-            this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["lastQueryValue"] = ""
-            this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["baseResponses"] = []
-            this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["resultsAmount"] = 0
-            this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["estimatedMatches"] = 0
+            this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["pageSize"] = pageSize
+            this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["pageIndex"] = pageIndex
+            this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["lastQueryValue"] = this.queryValue
+            this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["baseResponses"] = baseResponses
+            this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["resultsAmount"] = this.resultsAmount
+            this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["estimatedMatches"] = this.estimatedMatches
         } else {
             this.query = this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["form"].controls["query"]
             this.urls = this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["form"].controls["urls"]
@@ -395,6 +426,7 @@ export class SearchEngineBodyComponent implements OnInit {
             this.resultsAmount = this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["resultsAmount"]
             this.estimatedMatches = this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["estimatedMatches"]
         }
+
         if (this.task.settings.modality == "conversational") {
             this.resetEvent.subscribe(() => this.resetSearchEngineState());
             this.disableSearchEngine(true);
@@ -402,6 +434,7 @@ export class SearchEngineBodyComponent implements OnInit {
                 this.disableSearchEngine(disable)
             );
         }
+
         /* Useful properties that can be sent to Bing API for improving the search experience */
         if (this.worker.getIP()['ip'])
             this.bingService.ipAddress = this.worker.getIP()['ip']
@@ -418,6 +451,8 @@ export class SearchEngineBodyComponent implements OnInit {
     }
 
     ngAfterViewInit() {
+        if(this.previousDataRecord && this.sectionService.stepIndex == this.documentIndex)
+            this.performWebSearch()
         this.paginator.page
             .pipe(
                 tap(pageEvent => {
@@ -433,8 +468,7 @@ export class SearchEngineBodyComponent implements OnInit {
             this.resultsRetrievedForms[this.documentIndex] &&
             this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex] &&
             this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["resultsAmount"] > 0
-            ) 
-        {
+        ) {
             this.paginator.pageSize = this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["pageSize"]
             this.paginator.pageIndex = this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["pageIndex"]
             this.dataSource.loadData(this.lastQueryValue, this.resultsAmount, false)
@@ -449,16 +483,18 @@ export class SearchEngineBodyComponent implements OnInit {
      * This function uses the text received as a parameter to perform a request using the chosen service.
      */
     public performWebSearch() {
-        if (this.queryValue.length > 0) {
-            this.lastQueryValue = this.queryValue
-            this.paginator.pageIndex = 0
-            this.resultsAmount = 0
+        if(this.queryValue) {
+            if (this.queryValue.length > 0) {
+                this.lastQueryValue = this.queryValue
+                this.paginator.pageIndex = 0
+                this.resultsAmount = 0
 
-            this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["lastQueryValue"] = this.lastQueryValue
-            this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["pageIndex"] = 0
-            this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["resultsAmount"] = 0
+                this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["lastQueryValue"] = this.lastQueryValue
+                this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["pageIndex"] = 0
+                this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["resultsAmount"] = 0
 
-            this.dataSource.loadData(this.lastQueryValue, 0, true)
+                this.dataSource.loadData(this.lastQueryValue, 0, true)
+            }
         }
     }
 
@@ -467,6 +503,7 @@ export class SearchEngineBodyComponent implements OnInit {
     }
 
     /* This function trigger an emitter when the user selects one the result shown on the interface */
+
     /* EMITTER: The response item clicked by user is emitted to provide it to an eventual parent component */
     public selectRow(response: BaseResponse) {
         this.selectedRowEmitter.emit(response);

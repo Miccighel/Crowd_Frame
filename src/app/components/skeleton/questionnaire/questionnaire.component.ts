@@ -8,11 +8,13 @@ import {DeviceDetectorService} from "ngx-device-detector";
 /* Models */
 import {Questionnaire} from "../../../models/skeleton/questionnaires/questionnaire";
 import {Task} from "../../../models/skeleton/task";
+import {Worker} from "../../../models/worker/worker";
 import {Question} from "../../../models/skeleton/questionnaires/question";
 /* Other */
 import * as TreeModel from "tree-model";
 /* Material Design */
 import {MatStepper} from "@angular/material/stepper";
+import {DataRecord} from "../../../models/skeleton/dataRecord";
 
 @Component({
     selector: 'app-questionnaire',
@@ -34,9 +36,11 @@ export class QuestionnaireComponent implements OnInit {
     @Input() questionnaireIndex: number
     @Input() questionnairesForm: UntypedFormGroup[]
     @Input() stepper: MatStepper
+    @Input() worker: Worker
 
     task: Task
     questionnaire: Questionnaire
+    mostRecentDataRecord: DataRecord;
     questionnaireForm: UntypedFormGroup
     nodes = []
 
@@ -44,7 +48,6 @@ export class QuestionnaireComponent implements OnInit {
 
     constructor(
         changeDetector: ChangeDetectorRef,
-        deviceDetectorService: DeviceDetectorService,
         sectionService: SectionService,
         utilsService: UtilsService,
         formBuilder: UntypedFormBuilder,
@@ -59,6 +62,8 @@ export class QuestionnaireComponent implements OnInit {
 
     ngOnInit(): void {
         this.questionnaire = this.task.questionnaires[this.questionnaireIndex];
+        this.stepper.selectedIndex =  this.worker.getPositionCurrent()
+        this.mostRecentDataRecord = this.task.retrieveMostRecentDataRecord('questionnaire', this.questionnaireIndex)
         if(!this.questionnairesForm[this.questionnaireIndex]){
             this.questionnaireForm = this.formBuilder.group({})
             this.questionnaire.treeCut.walk(function (node) {
@@ -90,8 +95,7 @@ export class QuestionnaireComponent implements OnInit {
                     }
                 }
             }
-        }
-        else{
+        } else{
             this.questionnaireForm = this.questionnairesForm[this.questionnaireIndex]
         }
         
@@ -123,17 +127,25 @@ export class QuestionnaireComponent implements OnInit {
                                         if (!this['questionnaire'].questionsToRepeat.includes(question))
                                             this['questionnaire'].questionsToRepeat.push(question)
                                     }
+                                    let answerValue :string = ''
+                                    if(this['questionnaire']['mostRecentDataRecord'])
+                                        answerValue = this['questionnaire']['mostRecentDataRecord'].loadAnswers()[`${controlName}_answer`]
                                     if (question.type == 'list') {
                                         let answers = {}
                                         question.answers.forEach((value, index) => {
                                             answers[index] = false
                                         });
                                         this['questionnaireForm'].addControl(`${controlName}_list`, this['formBuilder'].group(answers))
-                                        this['questionnaireForm'].addControl(`${controlName}_answer`, new UntypedFormControl('', [Validators.required]))
+                                        this['questionnaireForm'].addControl(`${controlName}_answer`, new UntypedFormControl(answerValue, [Validators.required]))
                                     } else {
-                                        this['questionnaireForm'].addControl(`${controlName}_answer`, new UntypedFormControl('', validators))
+                                        this['questionnaireForm'].addControl(`${controlName}_answer`, new UntypedFormControl(answerValue, validators))
                                     }
-                                    if (question.freeText) this['questionnaireForm'].addControl(`${controlName}_free_text`, new UntypedFormControl(''))
+                                    if (question.freeText) {
+                                        let freeTextValue:string = ''
+                                        if(this['questionnaire']['mostRecentDataRecord'])
+                                            freeTextValue = this['questionnaire']['mostRecentDataRecord'].loadAnswers()[`${controlName}_free_text`]
+                                        this['questionnaireForm'].addControl(`${controlName}_free_text`, new UntypedFormControl(freeTextValue))
+                                    }
                                     this.questionnaire.questionDependencies[question.nameFull] = true
                                 }
                             } else {
@@ -178,17 +190,28 @@ export class QuestionnaireComponent implements OnInit {
                 if (!this.questionnaire.questionsToRepeat.includes(question))
                     this.questionnaire.questionsToRepeat.push(question)
             }
+            let answerValue :string = ''
+            if(this.mostRecentDataRecord)
+                answerValue = this.mostRecentDataRecord.loadAnswers()[`${controlName}_answer`]
             if (question.type == 'list') {
                 let answers = {}
                 question.answers.forEach((value, index) => {
                     answers[index] = false
                 });
                 this.questionnaireForm.addControl(`${controlName}_list`, this.formBuilder.group(answers))
-                this.questionnaireForm.addControl(`${controlName}_answer`, new UntypedFormControl('', [Validators.required]))
+                this.questionnaireForm.addControl(`${controlName}_answer`, new UntypedFormControl(answerValue, [Validators.required]))
             } else {
-                this.questionnaireForm.addControl(`${controlName}_answer`, new UntypedFormControl('', validators))
+                let answerValue = ''
+                if(this.mostRecentDataRecord)
+                    answerValue = this.mostRecentDataRecord.loadAnswers()[`${controlName}_answer`]
+                this.questionnaireForm.addControl(`${controlName}_answer`, new UntypedFormControl(answerValue, validators))
             }
-            if (question.freeText) this.questionnaireForm.addControl(`${controlName}_free_text`, new UntypedFormControl(''))
+            if (question.freeText){
+                let freeTextValue = ''
+                if(this.mostRecentDataRecord)
+                    freeTextValue = this.mostRecentDataRecord.loadAnswers()[`${controlName}_free_text`]
+                this.questionnaireForm.addControl(`${controlName}_free_text`, new UntypedFormControl(freeTextValue))
+            }
         }
     }
 

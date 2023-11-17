@@ -438,6 +438,8 @@ export class SkeletonComponent implements OnInit {
                                 this.worker.setParameter("status_code", StatusCodes.TASK_COMPLETED_BY_OTHERS);
                         }
                     }
+
+                    this.task.storeDataRecords(await this.retrieveDataRecords())
                     await this.performTaskSetup();
                     this.unlockTask(hitAssigned);
                 } else {
@@ -455,21 +457,14 @@ export class SkeletonComponent implements OnInit {
     public async retrieveAllACLEntries() {
         /* The whole set of ACL records must be scanned to find the oldest worker that participated in the task but abandoned it */
         let wholeEntries = [];
-        let aclEntries = await this.dynamoDBService.scanACLRecordUnitId(
-            this.configService.environment
-        );
+        let aclEntries = await this.dynamoDBService.scanACLRecordUnitId(this.configService.environment);
         for (let aclEntry of aclEntries.Items) wholeEntries.push(aclEntry);
         let lastEvaluatedKey = aclEntries.LastEvaluatedKey;
         while (typeof lastEvaluatedKey != "undefined") {
-            aclEntries = await this.dynamoDBService.scanACLRecordUnitId(
-                this.configService.environment,
-                null,
-                lastEvaluatedKey
-            );
+            aclEntries = await this.dynamoDBService.scanACLRecordUnitId(this.configService.environment, null, lastEvaluatedKey);
             lastEvaluatedKey = aclEntries.LastEvaluatedKey;
             for (let aclEntry of aclEntries.Items) wholeEntries.push(aclEntry);
         }
-        /* Each ACL record is sorted considering the timestamp, in ascending order */
         /* Each ACL record is sorted considering the timestamp, in ascending order */
         wholeEntries.sort((a, b) => (a.time_arrival > b.time_arrival ? 1 : -1));
         return wholeEntries;
@@ -477,14 +472,11 @@ export class SkeletonComponent implements OnInit {
 
     public async retrieveMostRecentExpirationDate() {
         let wholeEntries = await this.retrieveAllACLEntries();
-        wholeEntries.sort((a, b) =>
-            a.time_expiration > b.time_expiration ? 1 : -1
-        );
+        wholeEntries.sort((a, b) => a.time_expiration > b.time_expiration ? 1 : -1);
         let entriesActive = [];
-        for (let entryActive of entriesActive) {
-            if (entryActive.in_progress && entryActive.paid == false) {
+        for (let entryActive of wholeEntries) {
+            if (entryActive.in_progress && entryActive.paid == false)
                 entriesActive.push(entryActive);
-            }
         }
         if (entriesActive.length > 0) {
             return entriesActive.pop()["time_expiration"];
@@ -619,8 +611,7 @@ export class SkeletonComponent implements OnInit {
         for (let worker of workersManual["whitelist"]) {
             if (this.worker.identifier == worker) {
                 taskAllowed = true;
-                this.worker.setParameter("status_code", StatusCodes.WORKER_WHITELIST_CURRENT
-                );
+                this.worker.setParameter("status_code", StatusCodes.WORKER_WHITELIST_CURRENT);
             }
         }
 
@@ -659,6 +650,7 @@ export class SkeletonComponent implements OnInit {
         return {invalid: "This token is not valid."};
     }
 
+        return entriesParsed
     /*
      *  This function retrieves the hit identified by the validated token input inserted by the current worker and sets the task up accordingly.
      *  Such hit is represented by a Hit object. The task is set up by parsing the hit content as an Array of Document objects.
@@ -668,8 +660,6 @@ export class SkeletonComponent implements OnInit {
     public async performTaskSetup() {
         /* The token input has been already validated, this is just to be sure */
         if (this.tokenForm.valid) {
-
-            console.log(this.worker)
 
             this.sectionService.taskStarted = true;
 
@@ -705,7 +695,6 @@ export class SkeletonComponent implements OnInit {
             this.searchEngineForms = new Array<Array<UntypedFormGroup>>();
             this.resultsRetrievedForms = new Array<Array<Object>>();
 
-
             let questionnaires = await this.S3Service.downloadQuestionnaires(this.configService.environment);
             this.task.initializeQuestionnaires(questionnaires);
 
@@ -724,23 +713,23 @@ export class SkeletonComponent implements OnInit {
             );
 
             this.task.loadAccessCounter();
-            this.task.loadTimestamps();
+            this.task.loadTimestamps(this.worker.getPositionCurrent());
 
             if (!(this.worker.identifier == null)) {
-                let taskInitialPayload = this.task.buildTaskInitialPayload(
-                    this.worker
-                );
-                await this.dynamoDBService.insertDataRecord(
-                    this.configService.environment,
-                    this.worker,
-                    this.task,
-                    taskInitialPayload
-                );
+                if (this.task.dataRecords.length <= 0) {
+                    let taskInitialPayload = this.task.buildTaskInitialPayload(this.worker);
+                    await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, taskInitialPayload);
+                }
             }
 
         }
 
         this.changeDetector.detectChanges();
+    }
+
+    public storePositionCurrent(data) {
+        this.worker.setParameter("position_current", String(data))
+        this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker);
     }
 
     /* |--------- LOGGING SERVICE & SECTION SERVICE ---------| */
@@ -761,12 +750,15 @@ export class SkeletonComponent implements OnInit {
         /* The "valid" flag of each questionnaire or document form must be true to pass this check. */
         let questionnaireFormValidity = true;
         let documentsFormValidity = true;
-        for (let index = 0; index < this.questionnairesForm.length; index++)
+        for (let index = 0; index < this.questionnairesForm.length; index++) {
             if (this.questionnairesForm[index].valid == false)
                 questionnaireFormValidity = false;
-        for (let index = 0; index < this.documentsForm.length; index++)
+        }
+        for (let index = 0; index < this.documentsForm.length; index++) {
             if (this.documentsForm[index].valid == false)
                 documentsFormValidity = false;
+        }
+
         return questionnaireFormValidity && documentsFormValidity;
     }
 
@@ -790,8 +782,7 @@ export class SkeletonComponent implements OnInit {
         this.task.tryCurrent = this.task.tryCurrent + 1;
 
         /* The countdowns are set back to 0 */
-
-        if (this.task.settings.countdown_time >= 0) {
+        if (this.task.settings.countdownTime >= 0) {
             if (this.documentComponent[0].countdown.left > 0) {
                 this.documentComponent[0].countdown.resume();
             }
@@ -799,16 +790,11 @@ export class SkeletonComponent implements OnInit {
 
         this.outcomeSection.commentSent = false;
 
-        this.worker.setParameter(
-            "try_left",
-            String(this.task.settings.allowed_tries - this.task.tryCurrent)
-        );
+        this.worker.setParameter("try_left", String(this.task.settings.allowed_tries - this.task.tryCurrent));
         this.worker.setParameter("try_current", String(this.task.tryCurrent));
+        this.worker.setParameter("position_current", String(this.task.questionnaireAmountStart))
 
-        this.dynamoDBService.insertACLRecordWorkerID(
-            this.configService.environment,
-            this.worker
-        );
+        this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker);
 
         /* Trigger change detection to restore stepper reference */
         this.changeDetector.detectChanges();
@@ -905,25 +891,19 @@ export class SkeletonComponent implements OnInit {
          */
 
         /* In the corresponding array the elapsed timestamps for each document are computed */
-        for (
-            let i = 0;
-            i < this.task.documentsAmount + this.task.questionnaireAmount;
-            i++
-        ) {
+        for (let i = 0; i < this.task.documentsAmount + this.task.questionnaireAmount; i++) {
             let totalSecondsElapsed = 0;
             for (let k = 0; k < this.task.timestampsEnd[i].length; k++) {
                 if (
                     this.task.timestampsStart[i][k] !== null &&
                     this.task.timestampsEnd[i][k] !== null
                 ) {
-                    totalSecondsElapsed =
-                        totalSecondsElapsed +
-                        (Number(this.task.timestampsEnd[i][k]) -
-                            Number(this.task.timestampsStart[i][k]));
+                    totalSecondsElapsed = totalSecondsElapsed + (Number(this.task.timestampsEnd[i][k]) - Number(this.task.timestampsStart[i][k]));
                 }
             }
             this.task.timestampsElapsed[i] = totalSecondsElapsed;
         }
+
     }
 
     public performQualityChecks() {
@@ -967,6 +947,7 @@ export class SkeletonComponent implements OnInit {
             goldConfiguration: goldConfiguration,
         };
 
+
         let checksOutcome = [];
         let checker = (array) => array.every(Boolean);
 
@@ -1009,8 +990,9 @@ export class SkeletonComponent implements OnInit {
     }
 
     public storeDocumentForm(data, documentIndex) {
-        if (!this.documentsForm[documentIndex])
+        if (!this.documentsForm[documentIndex]) {
             this.documentsForm[documentIndex] = data["form"];
+        }
         let action = data["action"];
         if (action) {
             this.produceData(action, documentIndex);
@@ -1049,11 +1031,10 @@ export class SkeletonComponent implements OnInit {
         let currentElementType = currentElementData["elementType"];
         let currentElementIndex = currentElementData["elementIndex"];
 
-        this.task.elementsAccesses[completedElementBaseIndex] =
-            this.task.elementsAccesses[completedElementBaseIndex] + 1;
+        this.task.elementsAccesses[completedElementBaseIndex] = this.task.elementsAccesses[completedElementBaseIndex] + 1;
 
         this.computeTimestamps(currentElementBaseIndex, completedElementBaseIndex, action);
-        if (this.task.settings.countdown_time) {
+        if (this.task.settings.countdownTime) {
             if (currentElementType == "S") {
                 this.handleCountdowns(currentElementIndex, completedElementIndex, action);
             }
@@ -1096,19 +1077,26 @@ export class SkeletonComponent implements OnInit {
         }
 
         if (!(this.worker.identifier == null)) {
-            if (completedElementType == "Q") {let questionnairePayload = this.task.buildTaskQuestionnairePayload(completedElementIndex, this.questionnairesForm[completedElementIndex].value, action);await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, questionnairePayload);}
+            if (completedElementType == "Q") {
+                let questionnairePayload = this.task.buildTaskQuestionnairePayload(completedElementData, this.questionnairesForm[completedElementIndex].value, action);
+                await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, questionnairePayload);
+                this.storePositionCurrent(String(currentElement))
+            }
 
             if (completedElementType == "S") {
                 let countdown = null;
-                if (this.task.settings.countdown_time)
+                if (this.task.settings.countdownTime)
                     countdown = Number(this.documentComponent[completedElementIndex].countdown["i"]["text"]);
-                let documentPayload = this.task.buildTaskDocumentPayload(completedElementIndex, this.documentsForm[completedElementIndex].value, countdown, action);
+                let documentPayload = this.task.buildTaskDocumentPayload(completedElementData, this.documentsForm[completedElementIndex].value, countdown, action);
                 await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, documentPayload);
+                this.storePositionCurrent(String(currentElement))
+
             }
 
             if (completedElementBaseIndex == this.task.getElementsNumber() - 1 && action == "Finish") {
                 qualityChecksPayload = this.task.buildQualityChecksPayload(qualityChecks);
                 await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, qualityChecksPayload);
+                this.storePositionCurrent(String(currentElement))
             }
         }
 

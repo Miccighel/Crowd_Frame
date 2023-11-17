@@ -11,7 +11,7 @@ export class TaskSettings {
     attributes: Array<Attribute>
     /* Object to encapsulate annotator's settings */
     annotator?: Annotator;
-    countdown_time?: number;
+    countdownTime?: number;
     countdown_behavior?: string;
     countdown_modality?: string;
     countdown_attribute?: string;
@@ -51,7 +51,7 @@ export class TaskSettings {
             }
         }
         this.annotator = data ? data['annotator'] ? new Annotator(data["annotator"]) : null : null;
-        this.countdown_time = data ? data["countdown_time"] >= 0 ? parseInt((data["countdown_time"])) : null : null;
+        this.countdownTime = data ? data["countdown_time"] >= 0 ? parseInt((data["countdown_time"])) : null : null;
         this.countdown_behavior = data ? 'countdown_behavior' in data ? data['countdown_behavior'] as string : null : null;
         this.countdown_modality = data ? 'countdown_modality' in data ? data['countdown_modality'] as string : null : null;
         this.countdown_attribute = data ? 'countdown_attribute' in data ? data['countdown_attribute'] as string : null : null;

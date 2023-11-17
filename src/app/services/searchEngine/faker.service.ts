@@ -60,7 +60,6 @@ export class FakerService {
                     toArray(),
                     /* Combine the responses with the first request data */
                     map(additionalResponses => {
-                        console.log(additionalResponses);
                         return {
                             firstRequestData,
                             additionalResponses,
@@ -75,7 +74,6 @@ export class FakerService {
      * This function parses the response retrieved by a request to JSON Placeholder to create a standard <BaseResponse> object to return
      */
     public decodeResponse(responses: Object[]): Array<BaseResponse> {
-        console.log(responses)
         let baseResponses = [];
         for (let index = 0; index < responses['additionalResponses'].length; index++) {
             let responseCurrent = responses['additionalResponses'][index]

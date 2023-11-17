@@ -41,10 +41,8 @@ export class SearchEngineComponent implements OnInit {
     @Input() searchEngineForms: Array<Array<UntypedFormGroup>>;
     @Input() resultsRetrievedForms: Array<Array<Object>>;
 
-
-    searchEngineForm: UntypedFormGroup
-
     dimension: Dimension
+    searchEngineForm: UntypedFormGroup
 
     @Output() formEmitter: EventEmitter<UntypedFormGroup>;
     @Output() urlSelectedEmitter: EventEmitter<boolean>;
@@ -55,7 +53,6 @@ export class SearchEngineComponent implements OnInit {
 
     constructor(
         changeDetector: ChangeDetectorRef,
-        deviceDetectorService: DeviceDetectorService,
         sectionService: SectionService,
         utilsService: UtilsService,
         configService: ConfigService,
@@ -72,9 +69,15 @@ export class SearchEngineComponent implements OnInit {
 
     ngOnInit() {
         this.dimension = this.task.dimensions[this.dimensionIndex]
+        let previousDataRecord = this.task.mostRecentDataRecordsForDocuments[this.documentIndex]
         if (!this.searchEngineForms[this.documentIndex] || !this.searchEngineForms[this.documentIndex][this.dimensionIndex]) {
             let controlsConfig = {};
-            if (this.dimension.url) controlsConfig[`${this.dimension.name}_url`] = new UntypedFormControl('', [Validators.required, this.validateSearchEngineUrl.bind(this)]);
+            if (this.dimension.url) {
+                let urlValue = ''
+                if(previousDataRecord)
+                    urlValue = previousDataRecord.loadAnswers()[`${this.dimension.name}_url`]
+                controlsConfig[`${this.dimension.name}_url`] = new UntypedFormControl(urlValue, [Validators.required, this.validateSearchEngineUrl.bind(this)]);
+            }
             this.searchEngineForm = this.formBuilder.group(controlsConfig)
             this.searchEngineForm.valueChanges.subscribe(values => {
                 this.formEmitter.emit(this.searchEngineForm)

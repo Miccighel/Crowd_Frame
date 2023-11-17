@@ -990,6 +990,7 @@ if not os.path.exists(df_acl_path):
         'unit_id',
         'token_input',
         'token_output',
+        'position_current',
         'try_current',
         'try_last',
         'try_left',
@@ -1081,7 +1082,7 @@ if not os.path.exists(df_acl_path):
                                     row['source_log'] = worker_snapshot['source_log'] if worker_snapshot['source_log'] is not None else np.nan
                                     row['source_path'] = worker_snapshot['source_path']
                                     for attribute, value in task.items():
-                                        if attribute != 'settings' and attribute != 'info' and attribute != 'task_id':
+                                        if attribute != 'settings' and attribute != 'info' and attribute != 'task_id' and attribute != 'search_engine_settings':
                                             row[attribute] = value
                                     if 'time_arrival' in row:
                                         row['time_arrival_parsed'] = find_date_string(row['time_arrival'])

@@ -165,9 +165,7 @@ export class UtilsService {
                     }
                 }
                 currentConfiguration["answers"] = answers;
-                currentConfiguration["notes"] = notes
-                    ? notes[goldDocument.index]
-                    : [];
+                currentConfiguration["notes"] = notes ? notes[goldDocument.index] : [];
                 goldConfiguration.push(currentConfiguration);
             }
         }

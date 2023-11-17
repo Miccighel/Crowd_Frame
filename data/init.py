@@ -759,8 +759,33 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         table_name = table_data_name
         table = dynamodb_client.create_table(
             TableName=table_name,
-            AttributeDefinitions=[{'AttributeName': 'identifier', 'AttributeType': 'S'}, {'AttributeName': 'sequence', 'AttributeType': 'S'}],
-            KeySchema=[{'AttributeName': 'identifier', 'KeyType': 'HASH'}, {'AttributeName': 'sequence', 'KeyType': 'RANGE'}],
+            AttributeDefinitions=[
+                {'AttributeName': 'identifier', 'AttributeType': 'S'},
+                {'AttributeName': 'sequence', 'AttributeType': 'S'},
+                {'AttributeName': 'sequence_number', 'AttributeType': 'S'},
+            ],
+            KeySchema=[
+                {'AttributeName': 'identifier', 'KeyType': 'HASH'},
+                {'AttributeName': 'sequence', 'KeyType': 'RANGE'}
+            ],
+            GlobalSecondaryIndexes=[
+                {
+                    'IndexName': 'identifier-sequence_number',
+                    'KeySchema': [
+                        {
+                            'AttributeName': 'identifier',
+                            'KeyType': 'HASH',
+                        },
+                        {
+                            'AttributeName': 'sequence_number',
+                            'KeyType': 'RANGE'
+                        }
+                    ],
+                    "Projection": {
+                        "ProjectionType": "ALL"
+                    },
+                }
+            ],
             BillingMode='PAY_PER_REQUEST'
         )
         serialize_json(folder_aws_generated_path, f"dynamodb_table_{table_name}.json", table)
@@ -783,7 +808,9 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 {'AttributeName': 'time_arrival', 'AttributeType': 'S'},
                 {'AttributeName': 'ip_address', 'AttributeType': 'S'},
             ],
-            KeySchema=[{'AttributeName': 'identifier', 'KeyType': 'HASH'}],
+            KeySchema=[
+                {'AttributeName': 'identifier', 'KeyType': 'HASH'}
+            ],
             GlobalSecondaryIndexes=[
                 {
                     'IndexName': 'unit_id-index',

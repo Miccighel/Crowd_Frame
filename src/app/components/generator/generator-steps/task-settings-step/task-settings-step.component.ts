@@ -304,10 +304,10 @@ export class TaskSettingsStepComponent implements OnInit {
                     : "",
                 values: this._formBuilder.array([]),
             }),
-            setCountdownTime: this.dataStored.countdown_time >= 0 ? true : "",
+            setCountdownTime: this.dataStored.countdownTime >= 0 ? true : "",
             countdown_time:
-                this.dataStored.countdown_time >= 0
-                    ? this.dataStored.countdown_time
+                this.dataStored.countdownTime >= 0
+                    ? this.dataStored.countdownTime
                     : "",
             countdown_behavior: this.dataStored.countdown_behavior
                 ? this.dataStored.countdown_behavior
@@ -347,7 +347,7 @@ export class TaskSettingsStepComponent implements OnInit {
                     (optionValue, optionValueIndex) =>
                         this.addOptionValue(optionValue)
                 );
-        if (this.dataStored.countdown_time >= 0) {
+        if (this.dataStored.countdownTime >= 0) {
             if (this.dataStored.countdown_modality == "attribute") {
                 if (this.dataStored.countdown_attribute_values) {
                     for (let countdownAttribute of this.dataStored
@@ -357,7 +357,7 @@ export class TaskSettingsStepComponent implements OnInit {
                 }
             }
         }
-        if (this.dataStored.countdown_time >= 0) {
+        if (this.dataStored.countdownTime >= 0) {
             if (this.dataStored.countdown_modality == "position") {
                 if (this.dataStored.countdown_position_values) {
                     for (let countdownPosition of this.dataStored

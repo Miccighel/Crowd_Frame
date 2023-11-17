@@ -299,10 +299,10 @@ export class ChatWidgetComponent implements OnInit {
 
     private initializeContainers() {
         const { documents, questionnaires, settings, dimensions } = this.task;
-        this.countdownTimeStartContainer = !!settings.countdown_time
-            ? Array(documents.length).fill(settings.countdown_time)
+        this.countdownTimeStartContainer = !!settings.countdownTime
+            ? Array(documents.length).fill(settings.countdownTime)
             : [];
-        this.countdownLeftTimeContainer = !!settings.countdown_time
+        this.countdownLeftTimeContainer = !!settings.countdownTime
             ? Array(documents.length).fill(0)
             : [];
 
@@ -694,10 +694,10 @@ export class ChatWidgetComponent implements OnInit {
             this.getAnswerValidity(this.dimensionIndex, message, this.urlValue)
         ) {
             //Stop del interval
-            if (!!settings.countdown_time) {
+            if (!!settings.countdownTime) {
                 this.storeCountdownData(
                     this.taskIndex,
-                    settings.countdown_time,
+                    settings.countdownTime,
                     this.countdownValueSubject.value
                 );
                 this.showCountdown = false;
@@ -771,8 +771,8 @@ export class ChatWidgetComponent implements OnInit {
         }
         //Visualizzazione della dimensione
         if (!!this.fixedMessage) {
-            if (!!settings.countdown_time && this.dimensionIndex == 0) {
-                this.setCountdown(settings.countdown_time);
+            if (!!settings.countdownTime && this.dimensionIndex == 0) {
+                this.setCountdown(settings.countdownTime);
             }
             if (isValid || message == "startTask") {
                 this.printDimension(this.taskIndex, this.dimensionIndex);
@@ -1014,15 +1014,15 @@ export class ChatWidgetComponent implements OnInit {
                     this.inputComponentToShow = InputType.Text;
                     this.canSend = true;
                     if (
-                        this.task.settings.countdown_time !== null &&
-                        this.task.settings.countdown_time !== undefined
+                        this.task.settings.countdownTime !== null &&
+                        this.task.settings.countdownTime !== undefined
                     ) {
                         const startTime =
                             this.action === "Back"
                                 ? this.countdownLeftTimeContainer[
                                 this.taskIndex
                                 ]
-                                : this.task.settings.countdown_time;
+                                : this.task.settings.countdownTime;
                         this.storeCountdownData(
                             this.taskIndex,
                             startTime,
@@ -1047,7 +1047,7 @@ export class ChatWidgetComponent implements OnInit {
                 this.printDimension(this.taskIndex, this.dimensionIndex);
                 this.dimensionReviewPrinted = true;
                 this.selectDimensionToGenerate(this.dimensionIndex);
-                if (!!this.task.settings.countdown_time) {
+                if (!!this.task.settings.countdownTime) {
                     this.setCountdown(
                         this.countdownLeftTimeContainer[this.taskIndex]
                     );
@@ -1153,7 +1153,7 @@ export class ChatWidgetComponent implements OnInit {
             this.dimensionIndex = 0;
             this.printStatement();
             this.conversationState = ConversationState.TaskReview;
-            if (this.task.settings.countdown_time) {
+            if (this.task.settings.countdownTime) {
                 this.resetCountdown();
             }
             this.reviewAnswersShown = false;
@@ -1476,7 +1476,7 @@ export class ChatWidgetComponent implements OnInit {
             } else {
                 progressBarEl.display = "block";
                 this.progress =
-                    100 - (countdownTime * 100) / settings.countdown_time;
+                    100 - (countdownTime * 100) / settings.countdownTime;
                 if (this.progress > 0 && this.progress < 100) {
                     progressBarEl.style.width = this.progress.toString() + "%";
                 }
@@ -2504,13 +2504,13 @@ export class ChatWidgetComponent implements OnInit {
                 this.timestampsElapsed[
                 this.task.questionnaires.length + documentIndex
                 ] ?? 0,
-            countdowns_times_start: this.task.settings.countdown_time
+            countdowns_times_start: this.task.settings.countdownTime
                 ? this.countdownTimeStartContainer[documentIndex] ?? null
                 : null,
-            countdowns_times_left: this.task.settings.countdown_time
+            countdowns_times_left: this.task.settings.countdownTime
                 ? this.countdownLeftTimeContainer[documentIndex] ?? null
                 : null,
-            countdowns_expired: this.task.settings.countdown_time
+            countdowns_expired: this.task.settings.countdownTime
                 ? this.task.countdownsExpired[documentIndex] ?? null
                 : null,
             accesses:

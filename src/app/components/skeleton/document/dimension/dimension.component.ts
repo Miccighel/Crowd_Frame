@@ -14,6 +14,7 @@ import {ScaleCategorical, ScaleInterval, ScaleMagnitude} from "../../../../model
 /* Components */
 import {SearchEngineComponent} from "./search-engine/search-engine.component";
 import {Worker} from "../../../../models/worker/worker";
+import {DataRecord} from "../../../../models/skeleton/dataRecord";
 
 @Component({
     selector: 'app-dimension',
@@ -24,23 +25,20 @@ export class DimensionComponent implements OnInit {
 
     /* Change detector to manually intercept changes on DOM */
     changeDetector: ChangeDetectorRef;
-
     /* Service to detect user's device */
     sectionService: SectionService;
     utilsService: UtilsService
     /* Angular Reactive Form builder (see https://angular.io/guide/reactive-forms) */
     formBuilder: UntypedFormBuilder;
 
-
-    @Input() documentIndex: number
+    @Input() task: Task
     @Input() worker: Worker
+    @Input() documentIndex: number
     @Input() documentsForm: UntypedFormGroup[]
     @Input() searchEngineForms: Array<Array<UntypedFormGroup>>;
     @Input() resultsRetrievedForms: Array<Array<Object>>;
 
-
-
-    task: Task
+    previousDataRecord: DataRecord
     assessmentForm: UntypedFormGroup
 
     @Output() formEmitter: EventEmitter<Object>;
@@ -51,7 +49,6 @@ export class DimensionComponent implements OnInit {
 
     constructor(
         changeDetector: ChangeDetectorRef,
-        deviceDetectorService: DeviceDetectorService,
         sectionService: SectionService,
         utilsService: UtilsService,
         formBuilder: UntypedFormBuilder,
@@ -64,8 +61,8 @@ export class DimensionComponent implements OnInit {
     }
 
     ngOnInit() {
-
         this.task = this.sectionService.task
+        this.previousDataRecord = this.task.mostRecentDataRecordsForDocuments[this.documentIndex]
         let assessForm = null
         /* A form for each the current HIT element is initialized */
         if(!this.documentsForm[this.documentIndex]){
@@ -75,8 +72,9 @@ export class DimensionComponent implements OnInit {
                 if (this.utilsService.isCurrentTaskType(this.task.documents[this.documentIndex].params["task_type"], dimension.task_type)){
                     if (!dimension.pairwise) {
                         if (dimension.scale) {
-
-
+                            let answerValue :string = ''
+                            if(this.previousDataRecord)
+                                answerValue = this.previousDataRecord.loadAnswers()[`${dimension.name}_value`]
                             if (dimension.scale.type == "categorical") {
                                 if ((<ScaleCategorical>dimension.scale).multipleSelection) {
                                     let answers = {}
@@ -85,43 +83,60 @@ export class DimensionComponent implements OnInit {
                                         answers[index] = false
                                     });
                                     controlsConfig[`${dimension.name}_list`] = this.formBuilder.group(answers)
-                                    controlsConfig[`${dimension.name}_value`] = new UntypedFormControl('', [Validators.required])
+                                    controlsConfig[`${dimension.name}_value`] = new UntypedFormControl(answerValue, [Validators.required])
                                 } else {
-                                    controlsConfig[`${dimension.name}_value`] = new UntypedFormControl('', [Validators.required]);
+                                    controlsConfig[`${dimension.name}_value`] = new UntypedFormControl(answerValue, [Validators.required]);
                                 }
                             }
 
-
-                            if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value`] = new UntypedFormControl('', [Validators.required]);
-                            if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value`] = new UntypedFormControl('', [Validators.min((<ScaleInterval>dimension.scale).min), Validators.required])
-                            if (dimension.scale.type == "magnitude_estimation") controlsConfig[`${dimension.name}_value`] = new UntypedFormControl('', [CustomValidators.gt((<ScaleMagnitude>dimension.scale).min), Validators.required]);
+                            if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value`] = new UntypedFormControl(answerValue, [Validators.required]);
+                            if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value`] = new UntypedFormControl(answerValue, [Validators.min((<ScaleInterval>dimension.scale).min), Validators.required])
+                            if (dimension.scale.type == "magnitude_estimation") controlsConfig[`${dimension.name}_value`] = new UntypedFormControl(answerValue, [CustomValidators.gt((<ScaleMagnitude>dimension.scale).min), Validators.required]);
                         }
-                        if (dimension.justification) controlsConfig[`${dimension.name}_justification`] = new UntypedFormControl('', [Validators.required, this.validateJustification.bind(this)])
+                        if (dimension.justification) {
+                            let answerJustification :string = ''
+                            if(this.previousDataRecord)
+                                answerJustification = this.previousDataRecord.loadAnswers()[`${dimension.name}_justification`]
+                            controlsConfig[`${dimension.name}_justification`] = new UntypedFormControl(answerJustification, [Validators.required, this.validateJustification.bind(this)])
+                        }
                     } else {
                         for (let j = 0; j < this.task.documents[this.documentIndex]['pairwise'].length; j++) {
                             if (dimension.scale) {
-                                if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl('', [Validators.required]);
-                                if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl('', [Validators.min((<ScaleInterval>dimension.scale).min), Validators.required])
-                                if (dimension.scale.type == "magnitude_estimation") controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl('', [CustomValidators.gt((<ScaleMagnitude>dimension.scale).min), Validators.required]);
-                                
+                                let answerValue :string = ''
+                                if(this.previousDataRecord)
+                                    answerValue = this.previousDataRecord.loadAnswers()[`${dimension.name}_value_element_${j}`]
+                                if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl(answerValue, [Validators.required]);
+                                if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl(answerValue, [Validators.min((<ScaleInterval>dimension.scale).min), Validators.required])
+                                if (dimension.scale.type == "magnitude_estimation") controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl(answerValue, [CustomValidators.gt((<ScaleMagnitude>dimension.scale).min), Validators.required]);
                             }
-                            if (dimension.justification) controlsConfig[`${dimension.name}_justification_element_${j}`] = new UntypedFormControl('', [Validators.required, this.validateJustification.bind(this)])
+                            if (dimension.justification) {
+                                let answerJustification :string = ''
+                                    if(this.previousDataRecord)
+                                        answerJustification = this.previousDataRecord.loadAnswers()[`${dimension.name}_justification_element_${j}`]
+                                controlsConfig[`${dimension.name}_justification_element_${j}`] = new UntypedFormControl(answerJustification, [Validators.required, this.validateJustification.bind(this)])
+                            }
                         }
                     }
                 }
             }
-        
             assessForm = this.formBuilder.group(controlsConfig)
-        }
-        else{
+        } else{
             assessForm = this.documentsForm[this.documentIndex]
         }
-        
         this.assessmentForm = assessForm
         this.formEmitter.emit({
             "index": this.documentIndex,
             "form": assessForm
         })
+    }
+
+    public filterDimensionsCurrent(dimensions) {
+        let filteredDimensions = [];
+        for (let dimension of dimensions) {
+            if (this.utilsService.isCurrentTaskType(this.task.documents[this.documentIndex].params['task_type'], dimension.task_type))
+                filteredDimensions.push(dimension);
+        }
+        return filteredDimensions;
     }
 
     /*
@@ -169,7 +184,7 @@ export class DimensionComponent implements OnInit {
         for (const [key, value] of Object.entries(urlFormGroup.controls)) {
             if (!this.assessmentForm.get(key) && this.task.dimensions[dimensionIndex].url) {
                 this.assessmentForm.addControl(key, urlFormGroup.get(key))
-                
+
                 if(!this.searchEngineForms[this.documentIndex]) this.searchEngineForms[this.documentIndex]=[]
                 this.searchEngineForms[this.documentIndex][dimensionIndex] = urlFormGroup
             }
@@ -241,15 +256,5 @@ export class DimensionComponent implements OnInit {
     public updateDimensionValueSelection(documentIndex: number, dimensionIndex: number, elementIndex: number) {
         if (dimensionIndex < this.task.dimensionsAmount)
             this.task.dimensionsPairwiseSelection[documentIndex][dimensionIndex][elementIndex] = true
-    }
-    
-
-    public filterDimensionsCurrent(dimensions) {
-        let filteredDimensions = [];
-        for (let dimension of dimensions) {
-            if (this.utilsService.isCurrentTaskType(this.task.documents[this.documentIndex].params['task_type'], dimension.task_type)) 
-                filteredDimensions.push(dimension);
-        }
-        return filteredDimensions;
     }
 }

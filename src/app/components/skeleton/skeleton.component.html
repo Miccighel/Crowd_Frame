@@ -88,10 +88,16 @@
     <!-- Chatbot -->
     <chat-widget *ngIf="this.task.settings.modality == 'conversational' && this.task.dimensions && !this.sectionService.taskCompleted" [worker]="worker"></chat-widget>
     <!-- Task body section -->
-    <mat-horizontal-stepper *ngIf="this.task.settings.modality != 'conversational' && !this.sectionService.taskCompleted" [linear]="true" labelPosition="bottom" id="stepper" #stepper>
+    <mat-horizontal-stepper
+            *ngIf="this.task.settings.modality != 'conversational' && !this.sectionService.taskCompleted" [linear]="false"
+            labelPosition="bottom"
+            id="stepper"
+            #stepper
+    >
         <mat-step *ngFor="let stepIndex of this.sectionService.stepIndexes()">
             <app-questionnaire
                     *ngIf="this.task.getElementIndex(stepIndex)['elementType'] == 'Q'"
+                    [worker]="this.worker"
                     [questionnaireIndex]="this.task.getElementIndex(stepIndex)['elementIndex']"
                     [questionnairesForm]="this.questionnairesForm"
                     [stepper]="this.stepper"

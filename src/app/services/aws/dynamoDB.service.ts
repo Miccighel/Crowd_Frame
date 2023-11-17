@@ -97,6 +97,25 @@ export class DynamoDBService {
         return await docClient.scan(params).promise()
     }
 
+    public async getDataRecord(config, identifier, table = null, lastEvaluatedKey = null) {
+        let docClient = this.loadDynamoDBDocumentClient(config)
+        /* Secondary index defined on unit_id attribute of ACL table */
+        let params = {
+            TableName: table ? table : config["table_data_name"],
+            KeyConditionExpression: "#identifier = :identifier",
+            ExpressionAttributeNames: {
+                "#identifier": "identifier"
+            },
+            ExpressionAttributeValues: {
+                ":identifier": identifier
+            }
+        };
+        if (lastEvaluatedKey)
+            params['ExclusiveStartKey'] = lastEvaluatedKey
+        return await docClient.query(params).promise()
+    }
+
+
     public async insertACLRecordWorkerID(config, worker) {
         let params = {
             TableName: config["table_acl_name"],
@@ -163,6 +182,7 @@ export class DynamoDBService {
         task.sequenceNumber = task.sequenceNumber + 1
         return await this.loadDynamoDB(config).putItem(params).promise();
     }
+
 
 
 }

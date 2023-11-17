@@ -179,6 +179,10 @@ export class Worker {
         return uagData
     }
 
+    getPositionCurrent(): number {
+        return parseInt(this.getParameter('position_current'))
+    }
+
     prettyTimeArrival(): string {
         return new Date(this.getParameter('time_arrival')).toLocaleString()
     }
