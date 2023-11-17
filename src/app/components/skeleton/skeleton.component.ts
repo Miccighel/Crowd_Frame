@@ -1117,8 +1117,7 @@ export class SkeletonComponent implements OnInit {
                     this.worker.setParameter("in_progress", String(true));
                     this.worker.setParameter("paid", String(false));
                     this.worker.setParameter("status_code", StatusCodes.TASK_FAILED_WITH_TRIES);
-                    this.worker.setParameter("status_code", StatusCodes.TASK_FAILED_WITH_TRIES);
-                    this.worker.setParameter('position_current', this.computeJumpIndex())
+                    this.worker.setParameter('position_current', String(this.computeJumpIndex()))
                 }
                 await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker);
             }

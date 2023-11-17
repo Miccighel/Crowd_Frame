@@ -1945,9 +1945,9 @@ if not os.path.exists(df_log_path):
                         'task_started': task_started,
                         'sequence': data_log['sequence'],
                         'time_server': data_log['time_server'],
-                        'time_server_parsed': find_date_string(data_log['time_server']),
+                        'time_server_parsed': find_date_string(datetime.fromtimestamp(float(data_log['time_server']), timezone('GMT')).strftime('%c')),
                         'time_client': data_log['time_client'],
-                        'time_client_parsed': find_date_string(data_log['time_client']),
+                        'time_client_parsed': find_date_string(datetime.fromtimestamp(float(data_log['time_client']), timezone('GMT')).strftime('%c')),
                         'type': data_log['type'],
                     }
 

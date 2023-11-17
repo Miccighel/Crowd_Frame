@@ -298,43 +298,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">10</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">24</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">88</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">179</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">195</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">225</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">239</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">252</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">266</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">280</context>
+          <context context-type="linenumber">43</context>
         </context-group>
       </trans-unit>
       <trans-unit id="6db909a826f1878ad78bf853a62b6cc5cbda3d3f" datatype="html">
@@ -2001,384 +1965,309 @@
         <source>Connection Issues</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">7</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="ef37d655134ccdea6c9fa786287f97ea889dde5c" datatype="html">
-        <source>There are some connection issues between the server and your device. Please, report this attaching the status code shown below and wait for an answer.</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">13</context>
+          <context context-type="linenumber">5</context>
         </context-group>
       </trans-unit>
       <trans-unit id="583cd4975e8704dc3f037633a964debd2a4c14e0" datatype="html">
         <source>Submission Successful</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">21</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="3ef558d1d95005e364439af2b69cc60f59353f80" datatype="html">
-        <source>You have completed successfully the task assigned.</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">27</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="5a5d7ee2acbfa9c91ab7f41d26bda9ff0cafe42f" datatype="html">
-        <source>Comment</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">31</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">126</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="52c3748c66464925c1599a7155b1f589a3c16a98" datatype="html">
-        <source>Feel free to leave any comment to help us improve our task.</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">34</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">129</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="e212dd90a40759f4204dc48ec420874775ed167d" datatype="html">
-        <source>You are allowed to send a single comment.</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">35</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">130</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="81e5c0b21f2026caad11a7f1ecd1a6c5fb5b00e1" datatype="html">
-        <source>Please, write at least <x id="INTERPOLATION" equiv-text="{{this.wordsRequired}}"/> words to send your comment.</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">42</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">137</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="2c5ff8fa9c9aaec93f97e37c9a0edcd797194573" datatype="html">
-        <source>Send</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">47</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="768fa94396eb6bb2834ec52fc1b5fad92273027d" datatype="html">
-        <source>Thank you!</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">49</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">144</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="a8b70c106447e8350267f4dcc07f24d13bbff8df" datatype="html">
-        <source>Submission Instructions</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">54</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">98</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="194fd53aae0baf8c045a6e4c5ca151f417997800" datatype="html">
-        <source>Copy your output token (shown below) and insert it on the platform’s page to complete your work.</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">57</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">101</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="0340927bc3e8471e45a4d285aaf2aca0f63c7708" datatype="html">
-        <source>Copy your tokens (shown below) and insert them on the platform’s page to complete your work.</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">61</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">105</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="1d4279157b6938a1737f627bee148672abf94f33" datatype="html">
-        <source>Token Input: </source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">62</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">76</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">77</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">106</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">107</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">120</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">121</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="03a7e1e5ece897f85e2b6adf3d1df272cd3614f9" datatype="html">
-        <source>Token Output: </source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">63</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="593a91f5ded3e8cecdc3c21361f7406906b4425a" datatype="html">
-        <source>Click the completion button (shown below) to be redirected to the platform and complete your work.</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">67</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">111</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="bf612b44e3ba6c05c219aceac6a6ed6c37df1dc4" datatype="html">
-        <source>Complete</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">70</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">114</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="7f4cf88d2fe553f182af3bad1885c47de9ee6f62" datatype="html">
-        <source>This task was not published on a crowdsourcing platform. We kindly suggest you to copy and store your tokens (shown below).</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">75</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">119</context>
+          <context context-type="linenumber">9</context>
         </context-group>
       </trans-unit>
       <trans-unit id="65fc3874311ed83b5bae3d17c946a55426aa6ca9" datatype="html">
         <source>Submission Already Completed</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">85</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="2be4905a85d53b9d29ca0d95ac2d0b180f1b9f98" datatype="html">
-        <source>The task started on</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">91</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="cad55973d341492a749846088afeb76a065aa256" datatype="html">
-        <source>has been successfully completed by yourself on</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">91</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="c03d724751a65de78577dd1d0502a5f36483f2c9" datatype="html">
-        <source>We allow only one submission per worker. Thank you for your effort. You will receive your payment soon. You can still complete your submission if you forgot doing that.</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">92,94</context>
+          <context context-type="linenumber">13</context>
         </context-group>
       </trans-unit>
       <trans-unit id="1257e29df9c8b0378e8ff0d79bde523a8562200e" datatype="html">
         <source>Submission Failed</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">152</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">176</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="607cfe0ec505105a3d1d43146ce078f710d4192b" datatype="html">
-        <source>Your work does not satisfy one or more quality checks, but you have </source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">158</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="22749d3b5ddf16b769b227edea1bf065e3b61ca4" datatype="html">
-        <source> tries left. We kindly encourage you to reset the task and proceed with a new try.</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">158</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="2ab29f3fd85b486d596247e7bda6833976dd30eb" datatype="html">
-        <source>Task Reset</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">163</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="a934c0c2bf12ad2df0fae4c9d40c20aff5ded1e1" datatype="html">
-        <source>Click the button to reset your current submission. You will not lose any input provided during the failed try.</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">166</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="1829e5446556db8a24cfc161d37f7300d83de2cc" datatype="html">
-        <source>The task has been assigned to yourself, but your work was not of quality. Please, return this assignment. We apologize for the inconvenience and we encourage you to participate in our future tasks.</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">182</context>
+          <context context-type="linenumber">17</context>
         </context-group>
       </trans-unit>
       <trans-unit id="e434dadb6faaa9aece10d41b21352f766f4356d7" datatype="html">
         <source>Task Overbooking</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">192</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="e36df79e5ef9f3ec0d2366174aea5016f67f7960" datatype="html">
-        <source>The whole set of available tasks has been assigned to other workers. Someone did not finish its task, but has some time left. Please, try to come back after the nearest expiration date</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">198</context>
+          <context context-type="linenumber">21</context>
         </context-group>
       </trans-unit>
       <trans-unit id="5a6d52342a43557d035cb482dc17be09872d01bd" datatype="html">
         <source>Time Expired</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">206</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="8921744915f0ee0e86d462acc66f8e96a85437bd" datatype="html">
-        <source>The task assigned to you has been given to another worker because the time available for performing it is expired on</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">213</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="a6bc26bb4e2f0f196fca2705e125222f16fdc41f" datatype="html">
-        <source>We kindly ask you to return the assignment on the platform of provenance.</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">214,215</context>
+          <context context-type="linenumber">25</context>
         </context-group>
       </trans-unit>
       <trans-unit id="2a7315f18f0098eabc21b40095558cc7fae94bce" datatype="html">
         <source>Task Completed</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">222</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="5ecb19175186c66cf8f337bb7ca726dff41c28d4" datatype="html">
-        <source>The whole set of available tasks has been completed by other workers. The crowdsourcing platform over-recruited you. We apologize for the inconvenience and we kindly ask you to return the task on the platform of provenance.</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">228,229</context>
+          <context context-type="linenumber">29</context>
         </context-group>
       </trans-unit>
       <trans-unit id="7abb1824604a51ca3cd3a78db58cd5c74c3e02af" datatype="html">
         <source>Unknown Issue</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">236</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="f1235162313cb1ead25942a7a6eafdd94c3b9a35" datatype="html">
-        <source>An unknown issue took place within the current task. Please, report this attaching the status code shown below and wait for an answer.</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">242</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="3a34fae9614fa5bc40d23dac08f8f3ca408a5d4d" datatype="html">
-        <source>This task allows executing it only once. It is not possible to open it a second time, even if you close your browser’s tab by mistake. We kindly ask you to return the assignment on the platform of provenance and we apologize for any inconvenience caused.</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">255,256</context>
+          <context context-type="linenumber">33</context>
         </context-group>
       </trans-unit>
       <trans-unit id="7f5d0c10614e8a34f0e2dad33a0568277c50cf69" datatype="html">
         <source>Block</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">263</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">277</context>
+          <context context-type="linenumber">37</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="8934a0716b2c631d797d72b0146d227ce81416a6" datatype="html">
-        <source>You are prevented from participating again in the current task. This can be due to several reasons. We kindly ask you to return the assignment on the platform of provenance and we apologize for any inconvenience caused.</source>
+      <trans-unit id="c0c9d3c130b754286c73a24767711af754482c4e" datatype="html">
+        <source>It seems there are some connection issues between the server and your device. Could you please report this by attaching the status code shown below and wait for an answer?</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">269,270</context>
+          <context context-type="linenumber">48</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="95aa58e09346ba86d523ebc0b7d4b2f17902a807" datatype="html">
-        <source>You are prevented from participating again in the current task because you already participated in the past. We need to recruit only novice workers. We kindly ask you to return the assignment on the platform of provenance and we apologize for any inconvenience caused.</source>
+      <trans-unit id="a77f89e1a110fd49fb5f4ae2009c7b199d3958b1" datatype="html">
+        <source>Congratulations! You have successfully completed the assigned task.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">283,284</context>
+          <context context-type="linenumber">51</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="0d2702817bc7bdf5f991583c75563c64ed431a04" datatype="html">
+        <source>The task, which commenced on</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">55</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="39f3bd531ad8030cb8cce2c5b0d3608b09cbca9d" datatype="html">
+        <source>has been successfully completed by you on</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">57</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="edfc9a0c79aacf0c5174dffc6c37b621158ce16d" datatype="html">
+        <source>We only allow one submission per worker. Thank you for your effort. Your payment will be processed soon. If you haven&apos;t already, you can still complete your submission.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">59</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="262debbf1b4c0b60eacc7e4d95dc66e76c850899" datatype="html">
+        <source>Your work did not meet one or more quality checks, but you still have </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">63</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="f32323a8e43d1b4b93d0f43a7cb3bf6cd66cb0d8" datatype="html">
+        <source> tries remaining. We encourage you to reset the task and make a new attempt.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">65</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="6f6739fd47f9c53c0279546408a331503d12c94c" datatype="html">
+        <source>The task has been assigned to you, but unfortunately, the quality of your work did not meet our expectations. We kindly request you to return this assignment. We apologize for any inconvenience caused and encourage you to participate in our future tasks.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">69</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="b5ae259b135995cd6d3d3127665da6fc26ad170a" datatype="html">
+        <source>The entire set of available tasks has been assigned to other workers. However, someone did not finish their task but still has some time left. Please try to return after the nearest expiration date</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">73</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="9bb40a6fc79b59c06f10b2ddf45b09670076ea3a" datatype="html">
+        <source>The task assigned to you has been reassigned to another worker because the allotted time for completion has expired on</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">78</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="0833b9eede8be546924a65169923be0fe04348ba" datatype="html">
+        <source>We kindly request you to return the assignment on the original platform.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">80</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="91eef245407be124a9c83dcab67bedf4cdd628c1" datatype="html">
+        <source>All available tasks have been completed by other workers, and the crowdsourcing platform inadvertently over-recruited you. We apologize for the inconvenience and kindly ask you to return the task to the platform of origin.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">84</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="a6bc00b16e99ed5380c6f10adf00a84cfd3416ed" datatype="html">
+        <source>An unknown issue occurred within the current task. Please report this by attaching the status code shown below and wait for a response. We appreciate your cooperation.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">88</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="dea873b2bfcad8e7d5898e24a06334919303f047" datatype="html">
+        <source>This task can only be executed once. It is not possible to reopen it, even if you accidentally close your browser tab. Kindly return the assignment to the platform of origin, and we apologize for any inconvenience caused.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">92</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="7eb9d99e58f1fb42bf26e8a87139497b9c971ef2" datatype="html">
+        <source>You are prevented from participating again in the current task for various reasons. Kindly return the assignment to the platform of origin, and we apologize for any inconvenience caused.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">96</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="fdaf2d842c51678318f9a1123e313aeb439d758d" datatype="html">
+        <source>You are prevented from participating again in the current task as you have already participated in the past. We are currently recruiting only novice workers. Kindly return the assignment to the platform of origin, and we apologize for any inconvenience caused.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">100</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="5a5d7ee2acbfa9c91ab7f41d26bda9ff0cafe42f" datatype="html">
+        <source>Comment</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">108</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="31d4e861e90b384bc0f018e02efb9f3eabb6ac08" datatype="html">
+        <source>Feel free to leave any comment to help us improve our task. You are allowed to send a single comment.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">111</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="81e5c0b21f2026caad11a7f1ecd1a6c5fb5b00e1" datatype="html">
+        <source>Please, write at least <x id="INTERPOLATION" equiv-text="{{this.wordsRequired}}"/> words to send your comment.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">118</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="2c5ff8fa9c9aaec93f97e37c9a0edcd797194573" datatype="html">
+        <source>Send</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">123</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="768fa94396eb6bb2834ec52fc1b5fad92273027d" datatype="html">
+        <source>Thank you!</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">125</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="a8b70c106447e8350267f4dcc07f24d13bbff8df" datatype="html">
+        <source>Submission Instructions</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">131</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="194fd53aae0baf8c045a6e4c5ca151f417997800" datatype="html">
+        <source>Copy your output token (shown below) and insert it on the platform’s page to complete your work.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">134</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="0340927bc3e8471e45a4d285aaf2aca0f63c7708" datatype="html">
+        <source>Copy your tokens (shown below) and insert them on the platform’s page to complete your work.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">138</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="1d4279157b6938a1737f627bee148672abf94f33" datatype="html">
+        <source>Token Input: </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">139</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">153</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">154</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="03a7e1e5ece897f85e2b6adf3d1df272cd3614f9" datatype="html">
+        <source>Token Output: </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">140</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="5581524ffd9cb02a0f068650468a53221b571447" datatype="html">
+        <source>Click the completion button below to be redirected to the platform and finish your work.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">144</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="bf612b44e3ba6c05c219aceac6a6ed6c37df1dc4" datatype="html">
+        <source>Complete</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">147</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="d134525a8ccea6b60c4e12f7f4388d45e3f8dead" datatype="html">
+        <source>This task was not published on a crowdsourcing platform. We kindly suggest that you copy and store your tokens (shown below).</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">152</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="2ab29f3fd85b486d596247e7bda6833976dd30eb" datatype="html">
+        <source>Task Reset</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">160</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="2314646825305d218111f3bf4f95e278798130c7" datatype="html">
+        <source>Click the button to reset your current submission. You won&apos;t lose any input from the failed attempt.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">163</context>
         </context-group>
       </trans-unit>
       <trans-unit id="76223b25763091bf6ad1119e4442c90a79d1c48e" datatype="html">
         <source>Additional Messages</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">292</context>
+          <context context-type="linenumber">172</context>
         </context-group>
       </trans-unit>
       <trans-unit id="e2c21f6b0046369ff29185485663712b739fe38c" datatype="html">
         <source>Status Code</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">301</context>
+          <context context-type="linenumber">181</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="1e6a6c799cf81c9a949764f7c0477d713db7818e" datatype="html">
-        <source>We kindly ask you to attach your status code if you have any further question:</source>
+      <trans-unit id="fb897813cafb4454aeefdff1f65a71635404d0ae" datatype="html">
+        <source>Please attach your status code if you have any further questions:</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">304</context>
+          <context context-type="linenumber">184</context>
         </context-group>
       </trans-unit>
       <trans-unit id="c2a9de3714f5767b174d0424bc8abe2dc37acc41" datatype="html">
