@@ -2615,7 +2615,6 @@ def load_data_col_names(dimensions, documents):
     columns.append("global_form_validity")
     columns.append("gold_checks")
     columns.append("time_spent_check")
-    columns.append("time_check_amount")
 
     return columns
 
@@ -2689,13 +2688,11 @@ if not os.path.exists(df_data_path):
                                 row["global_outcome"] = check_data['serialization']["checks"]["globalOutcome"]
                                 row["global_form_validity"] = check_data['serialization']["checks"]["globalFormValidity"]
                                 row["gold_checks"] = any(check_data['serialization']["checks"]["goldChecks"])
-                                row["time_check_amount"] = check_data['serialization']["checks"]["timeCheckAmount"]
                                 row["time_spent_check"] = check_data['serialization']["checks"]["timeSpentCheck"]
                     else:
                         row["global_outcome"] = False
                         row["global_form_validity"] = False
                         row["gold_checks"] = False
-                        row["time_check_amount"] = np.nan
                         row["time_spent_check"] = False
                     row["accesses"] = document_data['serialization']['accesses']
                     countdowns_start = document_data['serialization']['countdowns_times_start']
@@ -2792,10 +2789,9 @@ if not os.path.exists(df_data_path):
         df_answ["try_current"] = df_answ["try_current"].astype(int)
         df_answ["document_index"] = df_answ["document_index"].astype(int)
         df_answ["accesses"] = df_answ["accesses"].astype(int)
-        df_answ["global_outcome"] = df_answ["gold_checks"].astype(bool)
-        df_answ["global_form_validity"] = df_answ["gold_checks"].astype(bool)
-        df_answ["time_spent_check"] = df_answ["gold_checks"].astype(bool)
-        df_answ["time_check_amount"] = df_answ["gold_checks"].astype(bool)
+        df_answ["global_outcome"] = df_answ["global_outcome"].astype(bool)
+        df_answ["global_form_validity"] = df_answ["global_form_validity"].astype(bool)
+        df_answ["time_spent_check"] = df_answ["time_spent_check"].astype(bool)
         df_answ["gold_checks"] = df_answ["gold_checks"].astype(bool)
         df_answ.sort_values(by=['worker_id', 'time_submit_parsed'], inplace=True)
         df_answ.drop_duplicates(inplace=True)

@@ -426,7 +426,53 @@ export class Task {
         }
     }
 
-    public loadTimestamps(positionCurrent = null) {
+    public getTimesCheckAmount(){
+        let times = []
+        let timeCheckAmount = this.settings.time_check_amount;
+
+        for (let i = 0; i < this.questionnaireAmount + this.documentsAmount; i++) {
+            let currentTime
+
+            if(typeof timeCheckAmount === 'number')
+                currentTime = timeCheckAmount
+            else {
+                currentTime = timeCheckAmount["default"]
+                if (i >= this.questionnaireAmountStart && i < this.questionnaireAmountStart + this.documentsAmount){
+                    
+                    if(timeCheckAmount["D"])
+                        currentTime = timeCheckAmount["D"]
+
+                    let currentTaskType = this.documents[i - this.questionnaireAmountStart]["params"]["task_type"]
+                    if(timeCheckAmount["D_task_type"] && timeCheckAmount["D_task_type"][currentTaskType])
+                        currentTime = timeCheckAmount["D_task_type"][currentTaskType]
+
+                    let currentId = this.documents[i - this.questionnaireAmountStart]["id"]
+                    if(timeCheckAmount["D_id"] && timeCheckAmount["D_id"][currentId])
+                        currentTime = timeCheckAmount["D_id"][currentId]
+
+                } else {
+
+                    if(timeCheckAmount["Q"])
+                        currentTime = timeCheckAmount["Q"]
+
+                    let isStart = i < this.questionnaireAmountStart
+                    if(timeCheckAmount["Q_start"] && isStart)
+                        currentTime = timeCheckAmount["Q_start"]
+                    if(timeCheckAmount["Q_end"] && !isStart)
+                        currentTime = timeCheckAmount["Q_end"]
+
+                    let idx = isStart ? i : i - this.documentsAmount
+                    let currentName = this.questionnaires[idx]["name"]
+                    if(timeCheckAmount["Q_name"] && timeCheckAmount["Q_name"][currentName])
+                        currentTime = timeCheckAmount["Q_name"][currentName]
+                }
+            }
+            times.push(currentTime)
+        }
+        return times
+    }
+
+    public loadTimestamps() {
         /* Arrays of start, end and elapsed timestamps are initialized to track how much time the worker spends
          * on each document, including each questionnaire */
         this.timestampsStart = new Array<Array<number>>(this.getElementsNumber());
@@ -469,9 +515,6 @@ export class Task {
                     this.timestampsElapsed[i] = mostRecentDataRecord.loadTimestampsElapsed()
             }
         }
-
-        this.timestampsStart[positionCurrent].push(Math.round(Date.now() / 1000));
-
     }
 
     /*

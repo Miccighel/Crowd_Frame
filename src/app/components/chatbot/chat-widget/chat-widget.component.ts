@@ -1185,7 +1185,6 @@ export class ChatWidgetComponent implements OnInit {
                     globalOutcome: null,
                     globalFormValidity: globalValidityCheck,
                     timeSpentCheck: timeSpentCheck,
-                    timeCheckAmount: this.task.settings.time_check_amount,
                     goldChecks: this.goldChecks,
                     goldConfiguration: this.goldConfiguration,
                 };
@@ -2569,11 +2568,14 @@ export class ChatWidgetComponent implements OnInit {
     }
 
     public taskTimeCheck(): boolean {
+        let timeCheckAmount = this.task.getTimesCheckAmount();
         let timeSpentCheck = true;
-        let timeCheckAmount = this.task.settings.time_check_amount;
-        this.timestampsElapsed.forEach((item) => {
-            if (item < timeCheckAmount) timeSpentCheck = false;
-        });
+        for (let i = 0; i < this.timestampsElapsed.length; i++) {
+            if(this.timestampsElapsed[i] < timeCheckAmount[i]){
+                timeSpentCheck = false
+                break
+            }
+        }
         return timeSpentCheck;
     }
 
