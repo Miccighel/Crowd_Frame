@@ -1,3 +1,6 @@
+import {Note} from "./annotators/notes";
+import {NoteStandard} from "./annotators/notesStandard";
+
 export class DataRecord {
 
     identifier: string
@@ -11,6 +14,7 @@ export class DataRecord {
     element: string
     data: Object
     unitId: string
+
     constructor(rawRecord: JSON) {
         this.identifier = rawRecord['identifier']
         this.sequence = rawRecord['sequence']
@@ -63,6 +67,10 @@ export class DataRecord {
 
     public loadAccesses() {
         return this.data['accesses']
+    }
+
+    public loadNotes(): Note[] {
+        return this.data['notes']
     }
 
 }

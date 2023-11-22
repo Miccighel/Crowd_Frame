@@ -353,7 +353,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/elements/annotator-options/annotator-options.component.html</context>
-          <context context-type="linenumber">52</context>
+          <context context-type="linenumber">51</context>
         </context-group>
       </trans-unit>
       <trans-unit id="6330f9f241ded5d5c30cedeb2c64440c55c6726b" datatype="html">
@@ -1902,21 +1902,21 @@
         <source>Annotation</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/elements/annotator-options/annotator-options.component.html</context>
-          <context context-type="linenumber">53</context>
+          <context context-type="linenumber">52</context>
         </context-group>
       </trans-unit>
       <trans-unit id="030b4423b92167200e39519599f9b863b4f7c62c" datatype="html">
         <source>Actions</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/elements/annotator-options/annotator-options.component.html</context>
-          <context context-type="linenumber">54</context>
+          <context context-type="linenumber">53</context>
         </context-group>
       </trans-unit>
       <trans-unit id="826b25211922a1b46436589233cb6f1a163d89b7" datatype="html">
         <source>Delete</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/elements/annotator-options/annotator-options.component.html</context>
-          <context context-type="linenumber">63</context>
+          <context context-type="linenumber">61</context>
         </context-group>
       </trans-unit>
       <trans-unit id="141835ae8d11c204eb900df9f5bce9a23ba398c1" datatype="html">

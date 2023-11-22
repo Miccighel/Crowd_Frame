@@ -25,4 +25,14 @@ export class NoteLaws extends Note {
     this.innerAnnotations = [];
   }
 
+  public restoreData(previousData: Object) {
+    super.restoreData(previousData)
+    this.year = parseInt(previousData['year'])
+    this.number = parseInt(previousData['number'])
+    this.type = previousData['type']
+    this.withoutDetails = JSON.parse(previousData['withoutDetails'])
+    this.containsReferences = JSON.parse(previousData['containsReferences'])
+    this.innerAnnotations = previousData['innerAnnotations']
+  }
+
 }

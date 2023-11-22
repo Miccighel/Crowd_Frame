@@ -143,8 +143,6 @@ export class UtilsService {
         
         return same_type
     }
-
-
     public generateGoldConfiguration(goldDocuments, goldDimensions, documentsForm, notes) {
         let goldConfiguration = [];
 
@@ -171,6 +169,25 @@ export class UtilsService {
         }
 
         return goldConfiguration;
+    }
+
+    /* This function is used to wait for a full initialization of the body, before deserializing the previous highlights */
+    public waitForElementInitialization(selector: string) {
+        return new Promise(resolve => {
+            if (document.querySelector(selector)) {
+                return resolve(document.querySelector(selector));
+            }
+            const observer = new MutationObserver(mutations => {
+                if (document.querySelector(selector)) {
+                    observer.disconnect();
+                    resolve(document.querySelector(selector));
+                }
+            });
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true
+            });
+        });
     }
 
 }

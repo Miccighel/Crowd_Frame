@@ -7,9 +7,10 @@ export class NoteStandard extends Note {
     attribute_index: number,
     range: JSON,
     data: JSON,
-    color = "#ffffff"
+    serialization: string,
+    color = "#ffffff",
   ) {
-    super(document_index, attribute_index, range, data, color)
+    super(document_index, attribute_index, range, data, serialization, color)
   }
 
 }

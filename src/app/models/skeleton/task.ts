@@ -84,7 +84,7 @@ export class Task {
 
     /* Arrays to store user annotations, one for each document within a Hit */
     notes: Array<Array<Note>>;
-    notesDone: boolean[];
+    notesDone: Array<boolean>;
     /* Array of checks to understand if the annotation button should be disabled, one for each document */
     annotationsDisabled: Array<boolean>;
 

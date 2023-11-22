@@ -2831,6 +2831,7 @@ def load_notes_col_names():
     columns.append("document_index")
     columns.append("attribute_index")
 
+    columns.append("note_version")
     columns.append("note_deleted")
     columns.append("note_ignored")
     columns.append("note_option_color")
@@ -2847,6 +2848,11 @@ def load_notes_col_names():
     columns.append("note_text_raw")
     columns.append("note_text_left")
     columns.append("note_text_right")
+    columns.append("note_text_current_length")
+    columns.append("note_text_raw_length")
+    columns.append("note_text_left_length")
+    columns.append("note_text_right_length")
+    columns.append("note_offset")
     columns.append("note_existing_notes")
 
     return columns
@@ -2898,6 +2904,7 @@ if not os.path.exists(df_notes_path):
                         for note_current in current_notes:
                             row['document_index'] = note_current['document_index']
                             row['attribute_index'] = note_current['attribute_index']
+                            row['note_version'] = int(note_current['version'])
                             row['note_deleted'] = note_current['deleted'] == True
                             row['note_ignored'] = note_current['ignored'] == True
                             row['note_option_color'] = note_current['color']
@@ -2920,9 +2927,15 @@ if not os.path.exists(df_notes_path):
                             row['note_text_raw'] = note_current['raw_text']
                             row['note_text_left'] = note_current['text_left']
                             row['note_text_right'] = note_current['text_right']
+                            row['note_text_current_length'] = len(note_current['current_text'])
+                            row['note_text_raw_length'] = len(note_current['raw_text'])
+                            row['note_text_left_length'] = len(note_current['text_left'])
+                            row['note_text_right_length'] = len(note_current['text_right'])
+                            note_serialization = json.loads(note_current['serialization'])
+                            row['note_offset'] = int(note_serialization['offset'])
 
-                        if 'time_submit' in row:
-                            df_notes = pd.concat([df_notes, pd.DataFrame([row])], ignore_index=True)
+                            if 'time_submit' in row:
+                                df_notes = pd.concat([df_notes, pd.DataFrame([row])], ignore_index=True)
 
     if df_notes.shape[0] > 0:
         empty_cols = [col for col in df_notes.columns if df_notes[col].isnull().all()]
@@ -2937,6 +2950,10 @@ if not os.path.exists(df_notes_path):
         df_notes["note_ignored"] = df_notes["document_index"].astype(bool)
         df_notes["note_index_start"] = df_notes["note_index_start"].astype(int)
         df_notes["note_index_end"] = df_notes["note_index_end"].astype(int)
+        df_notes["note_text_current_length"] = df_notes["note_text_current_length"].astype(int)
+        df_notes["note_text_raw_length"] = df_notes["note_text_raw_length"].astype(int)
+        df_notes["note_text_left_length"] = df_notes["note_text_left_length"].astype(int)
+        df_notes["note_text_right_length"] = df_notes["note_text_right_length"].astype(int)
         df_notes.drop_duplicates(inplace=True)
         df_notes.sort_values(by=['worker_id', 'time_submit_parsed'], inplace=True)
         df_notes.to_csv(df_notes_path, index=False)
