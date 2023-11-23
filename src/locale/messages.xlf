@@ -2038,15 +2038,15 @@
           <context context-type="linenumber">51</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="0d2702817bc7bdf5f991583c75563c64ed431a04" datatype="html">
-        <source>The task, which commenced on</source>
+      <trans-unit id="fdc46ac993e40b248a627ac77750e5f0a3addb08" datatype="html">
+        <source>The task, which commenced on </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
           <context context-type="linenumber">55</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="39f3bd531ad8030cb8cce2c5b0d3608b09cbca9d" datatype="html">
-        <source>has been successfully completed by you on</source>
+      <trans-unit id="4023e18b1a275206d90fb2a83373fce19e641774" datatype="html">
+        <source>has been successfully completed by you on </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
           <context context-type="linenumber">57</context>
@@ -2202,16 +2202,16 @@
           <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
           <context context-type="linenumber">153</context>
         </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
-          <context context-type="linenumber">154</context>
-        </context-group>
       </trans-unit>
       <trans-unit id="03a7e1e5ece897f85e2b6adf3d1df272cd3614f9" datatype="html">
         <source>Token Output: </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
           <context context-type="linenumber">140</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/outcome/outcome-section.component.html</context>
+          <context context-type="linenumber">154</context>
         </context-group>
       </trans-unit>
       <trans-unit id="5581524ffd9cb02a0f068650468a53221b571447" datatype="html">

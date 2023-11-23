@@ -377,26 +377,49 @@ export class SearchEngineBodyComponent implements OnInit {
 
         if (!this.resultsRetrievedForms[this.documentIndex] || !this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]) {
             /* The form control for user query is initialized and bound with its synchronous validator(s) */
+            this.baseResponses = []
+            this.estimatedMatches = 0
+            this.resultsAmount = 0
             let urlValue = ''
             let pageSize = 10
             let pageIndex = 0
             if (this.previousDataRecord) {
                 let previousQueries = this.previousDataRecord.loadSearchEngineQueries().data
+                let previousQuery = null
+                /* Each query is scanned to identify the most recent one for the current document, now that they are sorted in ascending order. */
                 if (previousQueries.length > 0) {
-                    this.lastQueryValue = previousQueries.slice(-1)[0].text
-                    this.queryValue = previousQueries.slice(-1)[0].text
+                    /* The available previous queries are sorted by their timestamp. */
+                    previousQueries.sort((a, b) => a.timestamp - b.timestamp);
+                    for (let previousQueryCurrent of previousQueries) {
+                        if (previousQueryCurrent['document'] == this.documentIndex) {
+                            previousQuery = previousQueryCurrent
+                            this.lastQueryValue = previousQuery.text
+                            this.queryValue = previousQuery.text
+                        }
+                    }
                 }
+                /* Each set of retrieved responses is scanned. Multiple sets of responses for the same query can be present, as a payload is sent for each page of results. */
+                let previousResponsesRetrievedAll = this.previousDataRecord.loadSearchEngineRetrievedResponses().data
+                if (previousResponsesRetrievedAll.length > 0) {
+                    for (let previousResponsesRetrieved of previousResponsesRetrievedAll) {
+                        /* If the current result set belongs to the current document and the most recent query, the variables are then updated accordingly */
+                        if (previousResponsesRetrieved['document'] == this.documentIndex && previousResponsesRetrieved['query'] == previousQuery['index']) {
+                            this.baseResponses = this.baseResponses.concat(previousResponsesRetrieved['response'])
+                            this.estimatedMatches = this.estimatedMatches + parseInt(previousResponsesRetrieved['estimated_matches'])
+                            this.resultsAmount = this.resultsAmount + parseInt(previousResponsesRetrieved['results_amount'])
+                            pageSize = Math.max(pageSize, parseInt(previousResponsesRetrieved['page_size']))
+                            pageIndex = Math.max(pageIndex, parseInt(previousResponsesRetrieved['page_index'])) + 1
+                        }
+                    }
+                }
+                /* Something similar is performed also to restore the previous selected response. */
                 let previousResponsesSelected = this.previousDataRecord.loadSearchEngineSelectedResponses().data
-                if (previousResponsesSelected.length > 0)
-                    urlValue = previousResponsesSelected.slice(-1)[0].response.url
-                let previousResponsesRetrieved = this.previousDataRecord.loadSearchEngineRetrievedResponses().data
-                if (previousResponsesRetrieved.length > 0) {
-                    let previousResponseRetrieved = previousResponsesRetrieved.slice(-1)[0]
-                    this.baseResponses = previousResponseRetrieved['response']
-                    this.estimatedMatches = previousResponseRetrieved['estimated_matches']
-                    this.resultsAmount = previousResponseRetrieved['results_amount']
-                    pageSize = previousResponseRetrieved['page_size']
-                    pageIndex = previousResponseRetrieved['page_index']
+                if (previousResponsesSelected.length > 0) {
+                    previousResponsesSelected.sort((a, b) => a.timestamp - b.timestamp);
+                    for (let previousResponseSelected of previousResponsesSelected) {
+                        if (previousResponseSelected['document'] == this.documentIndex && previousResponseSelected['query'] == previousQuery['index'])
+                            urlValue = previousResponsesSelected.slice(-1)[0].response.url
+                    }
                 }
             }
             this.query = new UntypedFormControl(this.queryValue, [Validators.required]);
@@ -480,7 +503,7 @@ export class SearchEngineBodyComponent implements OnInit {
      * This function uses the text received as a parameter to perform a request using the chosen service.
      */
     public performWebSearch() {
-        if(this.queryValue) {
+        if (this.queryValue) {
             if (this.queryValue.length > 0) {
                 this.lastQueryValue = this.queryValue
                 this.paginator.pageIndex = 0
