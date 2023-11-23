@@ -1,7 +1,5 @@
 import {Injectable} from "@angular/core";
-import {AbstractControl, FormArray, UntypedFormControl, UntypedFormGroup} from "@angular/forms";
-import CryptoES from "crypto-es";
-import kdf = CryptoES.kdf;
+import {AbstractControl, UntypedFormControl, UntypedFormGroup} from "@angular/forms";
 
 @Injectable({
     providedIn: 'root',
@@ -55,10 +53,7 @@ export class UtilsService {
 
     public capitalize(word: string) {
         if (!word) return word;
-        let text = word.split("-")
-        let str = ""
-        for (word of text) str = str + " " + word[0].toUpperCase() + word.substr(1).toLowerCase();
-        return str.trim()
+        return word.split("-").map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()).join(" ");
     }
 
     public getSelectionCharacterOffsetWithin(element) {
@@ -99,50 +94,42 @@ export class UtilsService {
     }
 
     public positiveNumber(control: UntypedFormControl) {
-        if (Number(control.value) < 1) {
-            return {invalid: true};
-        } else {
-            return null;
-        }
+        const value = Number(control.value);
+
+        if (isNaN(value) || value < 1)
+            return { invalid: true };
+        return null;
     }
 
     public randomIdentifier(length) {
-        var result = '';
-        var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        var charactersLength = characters.length;
-        for (var i = 0; i < length; i++) {
+        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        const charactersLength = characters.length;
+        let result = '';
+        for (let i = 0; i < length; i++)
             result += characters.charAt(Math.floor(Math.random() * charactersLength));
-        }
         return result;
     }
     
     public isImage(attributeName: string, value: string): boolean {
-        // Check if the attribute name suggests it is an image
+        /* Check if the attribute name suggests it is an image */
         if (attributeName.toLowerCase().includes('image')) {
-          // Check if the value is a URL ending with an image extension
+          /* Check if the value is a URL ending with an image extension */
           return /\.(png|jpe?g|gif|svg)$/i.test(value);
         }
         return false;
     }
 
-    public isCurrentTaskType(typedoc, typeslist) {
-        let same_type
-        
-        if(typeslist){
-            if(typeslist==true || typeslist.includes(typedoc))
-                same_type = true
-            else
-                same_type = false
-        }
-        else{
-            if(typeslist==false)
-                same_type = false
-            else
-                same_type = true
-        }
-        
+    public isCurrentTaskType(typeDoc, typesList) {
+        let same_type: boolean
+
+        if (typesList)
+            same_type = typesList === true || typesList.includes(typeDoc);
+         else
+            same_type = typesList === true;
+
         return same_type
     }
+
     public generateGoldConfiguration(goldDocuments, goldDimensions, documentsForm, notes) {
         let goldConfiguration = [];
 

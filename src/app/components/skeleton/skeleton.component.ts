@@ -838,12 +838,12 @@ export class SkeletonComponent implements OnInit {
 
     public computeJumpIndex() {
         let jumpIndex = 0
-        if(this.task.documentsAmount!=0){
+        if (this.task.documentsAmount != 0) {
             jumpIndex += this.task.questionnaireAmountStart
 
             for (let i = 0; i < this.task.documents.length; i++) {
                 const doc = this.task.documents[i];
-                if(doc["params"]["reset_jump"]==true){
+                if (doc["params"]["reset_jump"] == true) {
                     jumpIndex += doc["index"]
                     break
                 }
@@ -863,16 +863,10 @@ export class SkeletonComponent implements OnInit {
         let countdown = this.documentComponent[currentIndex].countdown;
         switch (action) {
             case "Next":
-                if (
-                    currentIndex > 0 &&
-                    countdown.toArray()[currentIndex - 1].left > 0
-                ) {
+                if (currentIndex > 0 && countdown.toArray()[currentIndex - 1].left > 0) {
                     countdown.toArray()[currentIndex - 1].pause();
                 }
-                if (
-                    countdown.toArray()[currentIndex].left ==
-                    this.task.documentsCountdownTime[completedDocument]
-                ) {
+                if (countdown.toArray()[currentIndex].left == this.task.documentsCountdownTime[completedDocument]) {
                     countdown.toArray()[currentIndex].begin();
                 } else if (countdown.toArray()[currentIndex].left > 0) {
                     countdown.toArray()[currentIndex].resume();
@@ -882,10 +876,7 @@ export class SkeletonComponent implements OnInit {
                 if (countdown.toArray()[currentIndex + 1].left > 0) {
                     countdown.toArray()[currentIndex + 1].pause();
                 }
-                if (
-                    countdown.toArray()[currentIndex].left ==
-                    this.task.documentsCountdownTime[completedDocument]
-                ) {
+                if (countdown.toArray()[currentIndex].left == this.task.documentsCountdownTime[completedDocument]) {
                     countdown.toArray()[currentIndex].begin();
                 } else if (countdown.toArray()[currentIndex].left > 0) {
                     countdown.toArray()[currentIndex].resume();
@@ -940,10 +931,7 @@ export class SkeletonComponent implements OnInit {
         for (let i = 0; i < this.task.documentsAmount + this.task.questionnaireAmount; i++) {
             let totalSecondsElapsed = 0;
             for (let k = 0; k < this.task.timestampsEnd[i].length; k++) {
-                if (
-                    this.task.timestampsStart[i][k] !== null &&
-                    this.task.timestampsEnd[i][k] !== null
-                ) {
+                if (this.task.timestampsStart[i][k] !== null && this.task.timestampsEnd[i][k] !== null) {
                     totalSecondsElapsed = totalSecondsElapsed + (Number(this.task.timestampsEnd[i][k]) - Number(this.task.timestampsStart[i][k]));
                 }
             }
@@ -993,7 +981,6 @@ export class SkeletonComponent implements OnInit {
             goldConfiguration: goldConfiguration,
         };
 
-
         let checksOutcome = [];
         let checker = (array) => array.every(Boolean);
 
@@ -1012,17 +999,11 @@ export class SkeletonComponent implements OnInit {
      * This function gives the possibility to the worker to provide a comment when a try is finished, successfully or not.
      * The comment can be typed in a textarea and when the worker clicks the "Send" button such comment is uploaded to an Amazon S3 bucket.
      */
-
     public async performCommentSaving(data) {
         this.outcomeSection.commentSent = true;
         if (!(this.worker.identifier == null)) {
             let comment = this.task.buildCommentPayload(data);
-            await this.dynamoDBService.insertDataRecord(
-                this.configService.environment,
-                this.worker,
-                this.task,
-                comment
-            );
+            await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, comment);
         }
     }
 
@@ -1030,19 +1011,16 @@ export class SkeletonComponent implements OnInit {
         if (!this.questionnairesForm[questionnaireIndex])
             this.questionnairesForm[questionnaireIndex] = data["form"];
         let action = data["action"];
-        if (action) {
+        if (action)
             this.produceData(action, questionnaireIndex);
-        }
     }
 
     public storeDocumentForm(data, documentIndex) {
-        if (!this.documentsForm[documentIndex]) {
+        if (!this.documentsForm[documentIndex])
             this.documentsForm[documentIndex] = data["form"];
-        }
         let action = data["action"];
-        if (action) {
+        if (action)
             this.produceData(action, documentIndex);
-        }
     }
 
     /*
@@ -1081,15 +1059,13 @@ export class SkeletonComponent implements OnInit {
 
         this.computeTimestamps(currentElementBaseIndex, completedElementBaseIndex, action);
         if (this.task.settings.countdownTime) {
-            if (currentElementType == "S") {
+            if (currentElementType == "S")
                 this.handleCountdowns(currentElementIndex, completedElementIndex, action);
-            }
         }
         if (this.task.settings.annotator) {
             if (this.task.settings.annotator.type == "options") {
-                if (completedElementType == "S") {
+                if (completedElementType == "S")
                     this.documentComponent.get(completedElementIndex).annotatorOptions.first.handleNotes();
-                }
             }
         }
 
@@ -1153,8 +1129,6 @@ export class SkeletonComponent implements OnInit {
             this.changeDetector.detectChanges();
         }
     }
-
-    /* |--------- OTHER AMENITIES ---------| */
 
     public showSnackbar(message, action, duration) {
         this.snackBar.open(message, action, {
