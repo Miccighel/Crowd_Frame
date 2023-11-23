@@ -127,6 +127,7 @@ export class DocumentComponent implements OnInit {
 
             if (goldChecks.every(Boolean)) {
                 this.stepper.next();
+                this.sectionService.stepIndex = this.stepper.selectedIndex
             } else {
                 if (okMessage)
                     this.snackBar.open(documentCheckGold["message"], "Dismiss", {duration: 10000});

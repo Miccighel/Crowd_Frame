@@ -52,9 +52,9 @@
             </p>
 
             <p *ngIf="this.worker.getParameter('status_code')==this.statusCodes.TASK_ALREADY_COMPLETED">
-                <span i18n>The task, which commenced on</span>
+                <span i18n>The task, which commenced on </span>
                 <strong>{{this.worker.prettyTimeArrival()}}</strong>,
-                <span i18n>has been successfully completed by you on</span>
+                <span i18n>has been successfully completed by you on </span>
                 <strong>{{this.worker.prettyTimeCompletion()}}</strong>.
                 <span i18n>We only allow one submission per worker. Thank you for your effort. Your payment will be processed soon. If you haven't already, you can still complete your submission.</span>
             </p>
@@ -151,7 +151,7 @@
             <mat-card-content class="description">
                 <p><span i18n>This task was not published on a crowdsourcing platform. We kindly suggest that you copy and store your tokens (shown below).</span></p>
                 <h1><span i18n>Token Input: </span>{{this.worker.getParameter('token_input')}}</h1>
-                <h1><span i18n>Token Input: </span>{{this.worker.getParameter('token_output')}}</h1>
+                <h1><span i18n>Token Output: </span>{{this.worker.getParameter('token_output')}}</h1>
             </mat-card-content>
         </ng-container>
     </mat-card>

@@ -624,6 +624,7 @@ export class SkeletonComponent implements OnInit {
     public enableTask() {
         this.sectionService.taskInstructionsRead = true;
         this.showSnackbar("If you have a very slow internet connection please wait a few seconds", "Dismiss", 10000);
+        this.task.timestampsStart[this.worker.getPositionCurrent()].push(Math.round(Date.now() / 1000));
     }
 
     /* Anonymous  function that unlocks the task depending on performWorkerStatusCheck outcome */
@@ -736,7 +737,7 @@ export class SkeletonComponent implements OnInit {
             );
 
             this.task.loadAccessCounter();
-            this.task.loadTimestamps(this.worker.getPositionCurrent());
+            this.task.loadTimestamps();
 
             if (!(this.worker.identifier == null)) {
                 if (this.task.dataRecords.length <= 0) {
@@ -812,9 +813,11 @@ export class SkeletonComponent implements OnInit {
 
         this.outcomeSection.commentSent = false;
 
-        this.worker.setParameter("try_left", String(this.task.settings.allowed_tries - this.task.tryCurrent));
+        this.worker.setParameter("try_left", String(this.task.settings.allowed_tries));
         this.worker.setParameter("try_current", String(this.task.tryCurrent));
-        this.worker.setParameter("position_current", String(this.task.questionnaireAmountStart))
+
+        let jumpIndex = this.computeJumpIndex()
+        this.worker.setParameter('position_current', String(jumpIndex))
 
         this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker);
 
@@ -822,8 +825,6 @@ export class SkeletonComponent implements OnInit {
         this.changeDetector.detectChanges();
         /* Set stepper document_index to the first questionnarie if only questionnaires are present in the task*/
         /* If there are documents too, then jump to the first one with parameter reset_jump equal to true, if it exists; otherwise jump to the first document*/
-        let jumpIndex = this.computeJumpIndex()
-
         this.stepper.selectedIndex = 0
         this.sectionService.stepIndex = 0
 
@@ -834,6 +835,8 @@ export class SkeletonComponent implements OnInit {
 
         /* The loading spinner is stopped */
         this.ngxService.stopLoader("skeleton-inner");
+
+        this.task.timestampsStart[jumpIndex].push(Date.now() / 1000);
     }
 
     public computeJumpIndex() {
@@ -849,7 +852,39 @@ export class SkeletonComponent implements OnInit {
                 }
             }
         }
-        return jumpIndex
+
+        let lastAllowBackIdx = 0
+        let failChecksCurrent = false
+        let objAllowBack
+        let objFormValidity
+        let timeCheckAmount = this.task.getTimesCheckAmount();
+        for (let i = 0; i <= jumpIndex; i++) {
+            let idx = null
+            if (i >= this.task.questionnaireAmountStart && i < this.task.questionnaireAmountStart + this.task.documentsAmount){
+                objAllowBack = this.task.documents[i - this.task.questionnaireAmountStart]["params"]
+                objFormValidity = this.documentsForm[i - this.task.questionnaireAmountStart]
+            } else {
+                idx = i < this.task.questionnaireAmountStart ? i : i - this.task.documentsAmount
+                objAllowBack = this.task.questionnaires[idx]
+                objFormValidity = this.questionnairesForm[idx]
+            }
+
+            // if is questionnaire the chack has to be done before
+            if(idx!=null)
+                failChecksCurrent = failChecksCurrent || objFormValidity.valid == false || this.task.timestampsElapsed[i] < timeCheckAmount[i]
+
+            if(objAllowBack["allow_back"]==false){
+                if(failChecksCurrent)
+                    return Math.min(lastAllowBackIdx, this.task.questionnaireAmount + this.task.documentsAmount - 1)
+                
+                lastAllowBackIdx = idx==null ? i : i + 1
+            }
+
+            // if is document the chack has to be done after
+            if(idx==null)
+                failChecksCurrent = failChecksCurrent || objFormValidity.valid == false || this.task.timestampsElapsed[i] < timeCheckAmount[i]
+        }
+        return Math.min(jumpIndex, this.task.questionnaireAmount + this.task.documentsAmount - 1)
     }
 
     public handleCountdowns(
@@ -954,7 +989,7 @@ export class SkeletonComponent implements OnInit {
 
         let globalValidityCheck: boolean;
         let timeSpentCheck: boolean;
-        let timeCheckAmount = this.task.settings.time_check_amount;
+        let timeCheckAmount = this.task.getTimesCheckAmount();
 
         /* 1) GLOBAL VALIDITY CHECK performed here */
         globalValidityCheck = this.performGlobalValidityCheck();
@@ -968,15 +1003,18 @@ export class SkeletonComponent implements OnInit {
 
         /* 3) TIME SPENT CHECK performed here */
         timeSpentCheck = true;
-        this.task.timestampsElapsed.forEach((item) => {
-            if (item < timeCheckAmount) timeSpentCheck = false;
-        });
+        
+        for (let i = 0; i < this.task.timestampsElapsed.length; i++) {
+            if(this.task.timestampsElapsed[i] < timeCheckAmount[i]){
+                timeSpentCheck = false
+                break
+            }
+        }
 
         let qualityCheckData = {
             globalOutcome: null,
             globalFormValidity: globalValidityCheck,
             timeSpentCheck: timeSpentCheck,
-            timeCheckAmount: timeCheckAmount,
             goldChecks: goldChecks,
             goldConfiguration: goldConfiguration,
         };
@@ -1089,7 +1127,7 @@ export class SkeletonComponent implements OnInit {
                     this.worker.setParameter("paid", String(true));
                     this.worker.setParameter("status_code", StatusCodes.TASK_SUCCESSFUL);
                 } else {
-                    this.worker.setParameter("try_left", String(this.task.settings.allowed_tries - this.task.tryCurrent));
+                    this.worker.setParameter("try_left", String(this.task.settings.allowed_tries - 1));
                     this.worker.setParameter("in_progress", String(true));
                     this.worker.setParameter("paid", String(false));
                     this.worker.setParameter("status_code", StatusCodes.TASK_FAILED_WITH_TRIES);
