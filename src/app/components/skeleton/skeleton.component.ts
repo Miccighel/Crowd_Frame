@@ -287,6 +287,10 @@ export class SkeletonComponent implements OnInit {
             this.worker.setParameter("user_agent_source", this.worker.getUAG()["source"]);
         } else {
             let aclEntry = workerACLRecord["Items"][0];
+
+            this.task.settings.allowed_tries = aclEntry["try_left"]
+            this.task.tryCurrent = aclEntry["try_current"]
+
             let timeExpirationNearest = await this.retrieveMostRecentExpirationDate();
             if (timeExpirationNearest)
                 this.worker.setParameter("time_expiration_nearest", timeExpirationNearest);
@@ -659,6 +663,7 @@ export class SkeletonComponent implements OnInit {
         while (typeof lastEvaluatedKey != "undefined") {
             dataEntries = await this.dynamoDBService.getDataRecord(
                 this.configService.environment,
+                this.worker.identifier,
                 null,
                 lastEvaluatedKey
             );
@@ -667,7 +672,7 @@ export class SkeletonComponent implements OnInit {
         }
         let entriesParsed = []
         for (let dataEntry of wholeEntries) {
-            if (this.worker.identifier == dataEntry.identifier && this.task.tryCurrent == parseInt(dataEntry.try)) {
+            if (this.worker.identifier == dataEntry.identifier) {
                 dataEntry["data"] = JSON.parse(dataEntry["data"])
                 entriesParsed.push(dataEntry)
             }
