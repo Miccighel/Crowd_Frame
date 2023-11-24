@@ -125,7 +125,7 @@ export class UtilsService {
         if (typesList)
             same_type = typesList === true || typesList.includes(typeDoc);
          else
-            same_type = typesList === true;
+            same_type = typesList !== false;
 
         return same_type
     }

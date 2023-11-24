@@ -27,6 +27,7 @@ import {CustomDataSource} from '../../../../../../models/searchEngine/customData
 import {BaseResponse} from "../../../../../../models/searchEngine/baseResponse";
 import {DataRecord} from "../../../../../../models/skeleton/dataRecord";
 import {SectionService} from "../../../../../../services/section.service";
+import { Dimension } from "src/app/models/skeleton/dimension";
 
 /* Component HTML Tag definition */
 @Component({
@@ -114,7 +115,7 @@ export class SearchEngineBodyComponent implements OnInit {
     @Input() task: Task;
     @Input() worker: Worker;
     @Input() documentIndex: number;
-    @Input() dimensionIndex: number;
+    @Input() dimension: Dimension;
     @Input() resultsRetrievedForms: Array<Array<Object>>;
 
     @Input() resetEvent: EventEmitter<void>;
@@ -127,6 +128,8 @@ export class SearchEngineBodyComponent implements OnInit {
     baseResponses: Array<BaseResponse> = []
 
     previousDataRecord: DataRecord
+
+    dimensionIndex: number
 
     /* |--------- CONSTRUCTOR IMPLEMENTATION ---------| */
 
@@ -164,6 +167,7 @@ export class SearchEngineBodyComponent implements OnInit {
     }
 
     ngOnInit() {
+        this.dimensionIndex = this.dimension.index
 
         this.settings = this.task.searchEngineSettings
         this.previousDataRecord = this.task.mostRecentDataRecordsForDocuments[this.documentIndex]
@@ -177,7 +181,7 @@ export class SearchEngineBodyComponent implements OnInit {
             case 'BingWebSearch':
                 this.searchAmount = this.bingService.SEARCH_AMOUNT
                 this.dataSource = new CustomDataSource((query = this.lastQueryValue, resultsToSkip, querySentByUser = false) => {
-                    let resultSliceStart = (this.paginator.pageIndex) * this.paginator.pageSize
+                    let resultSliceStart = this.paginator.pageIndex * this.paginator.pageSize
                     let resultSliceEnd = resultSliceStart + this.paginator.pageSize
                     if (querySentByUser || (resultSliceEnd > this.resultsAmount && this.estimatedMatches > this.resultsAmount) || this.resultsAmount == 0) {
                         if (querySentByUser) {
@@ -211,7 +215,7 @@ export class SearchEngineBodyComponent implements OnInit {
                                 /* EMITTER: The matching response is emitted to provide it to the parent component*/
                                 /* Page index and size refer to the results available before the current query */
                                 this.resultEmitter.emit({
-                                    "decodedResponses": decodedResponses,
+                                    "decodedResponses": this.baseResponses,
                                     "estimatedMatches": this.estimatedMatches,
                                     "resultsRetrieved": decodedResponses.length,
                                     "resultsToSkip": resultsToSkip,
@@ -252,7 +256,7 @@ export class SearchEngineBodyComponent implements OnInit {
             case 'PubmedSearch':
                 this.searchAmount = this.pubmedService.SEARCH_AMOUNT
                 this.dataSource = new CustomDataSource((query = this.lastQueryValue, resultsToSkip, querySentByUser = false) => {
-                    let resultSliceStart = (this.paginator.pageIndex) * this.paginator.pageSize
+                    let resultSliceStart = this.paginator.pageIndex * this.paginator.pageSize
                     let resultSliceEnd = resultSliceStart + this.paginator.pageSize
                     if (querySentByUser || (resultSliceEnd > this.resultsAmount && this.estimatedMatches > this.resultsAmount) || this.resultsAmount == 0) {
                         if (querySentByUser) {
@@ -276,7 +280,7 @@ export class SearchEngineBodyComponent implements OnInit {
                                 this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["resultsAmount"] = this.resultsAmount
                                 this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["estimatedMatches"] = this.estimatedMatches
                                 this.resultEmitter.emit({
-                                    "decodedResponses": decodedResponses,
+                                    "decodedResponses": this.baseResponses,
                                     "estimatedMatches": this.estimatedMatches,
                                     "resultsRetrieved": decodedResponses.length,
                                     "resultsToSkip": resultsToSkip,
@@ -315,7 +319,7 @@ export class SearchEngineBodyComponent implements OnInit {
             case 'FakerWebSearch':
                 this.searchAmount = this.fakerService.SEARCH_AMOUNT
                 this.dataSource = new CustomDataSource((query = this.lastQueryValue, resultsToSkip, querySentByUser = false) => {
-                    let resultSliceStart = (this.paginator.pageIndex) * this.paginator.pageSize
+                    let resultSliceStart = this.paginator.pageIndex * this.paginator.pageSize
                     let resultSliceEnd = resultSliceStart + this.paginator.pageSize
                     if (querySentByUser || (resultSliceEnd > this.resultsAmount && this.estimatedMatches > this.resultsAmount) || this.resultsAmount == 0) {
                         if (querySentByUser) {
@@ -333,7 +337,7 @@ export class SearchEngineBodyComponent implements OnInit {
                                 let decodedResponses = this.fakerService.decodeResponse(searchResponses)
                                 this.estimatedMatches = decodedResponses.length
                                 this.resultEmitter.emit({
-                                    "decodedResponses": decodedResponses,
+                                    "decodedResponses": this.baseResponses,
                                     "estimatedMatches": this.estimatedMatches,
                                     "resultsRetrieved": decodedResponses.length,
                                     "resultsToSkip": resultsToSkip,
@@ -391,7 +395,7 @@ export class SearchEngineBodyComponent implements OnInit {
                     /* The available previous queries are sorted by their timestamp. */
                     previousQueries.sort((a, b) => a.timestamp - b.timestamp);
                     for (let previousQueryCurrent of previousQueries) {
-                        if (previousQueryCurrent['document'] == this.documentIndex) {
+                        if (previousQueryCurrent['document'] == this.documentIndex && previousQueryCurrent['dimension'] == this.dimensionIndex) {
                             previousQuery = previousQueryCurrent
                             this.lastQueryValue = previousQuery.text
                             this.queryValue = previousQuery.text
@@ -403,12 +407,17 @@ export class SearchEngineBodyComponent implements OnInit {
                 if (previousResponsesRetrievedAll.length > 0) {
                     for (let previousResponsesRetrieved of previousResponsesRetrievedAll) {
                         /* If the current result set belongs to the current document and the most recent query, the variables are then updated accordingly */
-                        if (previousResponsesRetrieved['document'] == this.documentIndex && previousResponsesRetrieved['query'] == previousQuery['index']) {
-                            this.baseResponses = this.baseResponses.concat(previousResponsesRetrieved['response'])
-                            this.estimatedMatches = this.estimatedMatches + parseInt(previousResponsesRetrieved['estimated_matches'])
-                            this.resultsAmount = this.resultsAmount + parseInt(previousResponsesRetrieved['results_amount'])
-                            pageSize = Math.max(pageSize, parseInt(previousResponsesRetrieved['page_size']))
-                            pageIndex = Math.max(pageIndex, parseInt(previousResponsesRetrieved['page_index'])) + 1
+                        if (
+                            previousResponsesRetrieved['document'] == this.documentIndex &&
+                            previousResponsesRetrieved['query'] == previousQuery['index'] &&
+                            previousResponsesRetrieved['dimension'] == this.dimensionIndex
+                            ) {
+
+                            this.baseResponses = previousResponsesRetrieved['response']
+                            this.estimatedMatches = parseInt(previousResponsesRetrieved['estimated_matches'])
+                            this.resultsAmount = parseInt(previousResponsesRetrieved['results_amount'])
+                            pageSize = parseInt(previousResponsesRetrieved['page_size'])
+                            pageIndex = parseInt(previousResponsesRetrieved['page_index'])
                         }
                     }
                 }
@@ -417,7 +426,11 @@ export class SearchEngineBodyComponent implements OnInit {
                 if (previousResponsesSelected.length > 0) {
                     previousResponsesSelected.sort((a, b) => a.timestamp - b.timestamp);
                     for (let previousResponseSelected of previousResponsesSelected) {
-                        if (previousResponseSelected['document'] == this.documentIndex && previousResponseSelected['query'] == previousQuery['index'])
+                        if (
+                            previousResponseSelected['document'] == this.documentIndex &&
+                            previousResponseSelected['query'] == previousQuery['index'] &&
+                            previousResponseSelected['dimension'] == this.dimensionIndex
+                            )
                             urlValue = previousResponsesSelected.slice(-1)[0].response.url
                     }
                 }
@@ -481,6 +494,17 @@ export class SearchEngineBodyComponent implements OnInit {
                         this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["pageSize"] = pageEvent.pageSize
                         this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["pageIndex"] = pageEvent.pageIndex
                     }
+
+                    let retrievedResponseData = {
+                        "decodedResponses": this.baseResponses,
+                        "estimatedMatches": this.estimatedMatches,
+                        "resultsRetrieved": 0,
+                        "resultsToSkip": 0,
+                        "resultsAmount": this.resultsAmount,
+                        "pageIndex": pageEvent.pageIndex,
+                        "pageSize": pageEvent.pageSize,
+                    };
+                    this.task.storeSearchEngineRetrievedResponse(retrievedResponseData, this.task.documents[this.documentIndex], this.dimension)
                 })
             )
             .subscribe();
