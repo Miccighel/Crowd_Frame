@@ -442,32 +442,32 @@ export class Task {
                 currentTime = timeCheckAmount["default"]
                 if (i >= this.questionnaireAmountStart && i < this.questionnaireAmountStart + this.documentsAmount){
                     
-                    if(timeCheckAmount["D"])
-                        currentTime = timeCheckAmount["D"]
+                    if(timeCheckAmount["document"])
+                        currentTime = timeCheckAmount["document"]
 
                     let currentTaskType = this.documents[i - this.questionnaireAmountStart]["params"]["task_type"]
-                    if(timeCheckAmount["D_task_type"] && timeCheckAmount["D_task_type"][currentTaskType])
-                        currentTime = timeCheckAmount["D_task_type"][currentTaskType]
+                    if(timeCheckAmount["document_task_type"] && timeCheckAmount["document_task_type"][currentTaskType])
+                        currentTime = timeCheckAmount["document_task_type"][currentTaskType]
 
                     let currentId = this.documents[i - this.questionnaireAmountStart]["id"]
-                    if(timeCheckAmount["D_id"] && timeCheckAmount["D_id"][currentId])
-                        currentTime = timeCheckAmount["D_id"][currentId]
+                    if(timeCheckAmount["document_id"] && timeCheckAmount["document_id"][currentId])
+                        currentTime = timeCheckAmount["document_id"][currentId]
 
                 } else {
 
-                    if(timeCheckAmount["Q"])
-                        currentTime = timeCheckAmount["Q"]
+                    if(timeCheckAmount["questionnaire"])
+                        currentTime = timeCheckAmount["questionnaire"]
 
                     let isStart = i < this.questionnaireAmountStart
-                    if(timeCheckAmount["Q_start"] && isStart)
-                        currentTime = timeCheckAmount["Q_start"]
-                    if(timeCheckAmount["Q_end"] && !isStart)
-                        currentTime = timeCheckAmount["Q_end"]
+                    if(timeCheckAmount["questionnaire_position_start"] && isStart)
+                        currentTime = timeCheckAmount["questionnaire_position_start"]
+                    if(timeCheckAmount["questionnaire_position_end"] && !isStart)
+                        currentTime = timeCheckAmount["questionnaire_position_end"]
 
                     let idx = isStart ? i : i - this.documentsAmount
                     let currentName = this.questionnaires[idx]["name"]
-                    if(timeCheckAmount["Q_name"] && timeCheckAmount["Q_name"][currentName])
-                        currentTime = timeCheckAmount["Q_name"][currentName]
+                    if(timeCheckAmount["questionnaire_name"] && timeCheckAmount["questionnaire_name"][currentName])
+                        currentTime = timeCheckAmount["questionnaire_name"][currentName]
                 }
             }
             times.push(currentTime)
