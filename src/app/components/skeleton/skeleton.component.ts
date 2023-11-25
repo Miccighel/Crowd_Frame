@@ -1133,6 +1133,7 @@ export class SkeletonComponent implements OnInit {
                     this.worker.setParameter("status_code", StatusCodes.TASK_SUCCESSFUL);
                 } else {
                     this.worker.setParameter("try_left", String(this.task.settings.allowed_tries - 1));
+                    this.worker.setParameter("try_current", String(this.task.tryCurrent + 1));
                     this.worker.setParameter("in_progress", String(true));
                     this.worker.setParameter("paid", String(false));
                     this.worker.setParameter("status_code", StatusCodes.TASK_FAILED_WITH_TRIES);

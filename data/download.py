@@ -2469,9 +2469,14 @@ def load_elem_col_names(documents):
                 columns.append(f"document_{current_attribute}")
         for current_attribute in current_attributes:
             if current_attribute == "params":
-                for current_parameter in document[current_attribute].keys():
-                    if f"{current_parameter}" not in columns:
-                        columns.append(f"{current_parameter}")
+                for current_parameter, current_parameter_value in document[current_attribute].items():
+                    if(current_parameter == "check_gold"):
+                        for check_gold_parameter in current_parameter_value.keys():
+                            if f"{current_parameter}_{check_gold_parameter}" not in columns:
+                                columns.append(f"{current_parameter}_{check_gold_parameter}")
+                    else:
+                        if f"{current_parameter}" not in columns:
+                            columns.append(f"{current_parameter}")
 
     columns.append("unit_ids")
     columns.append("worker_ids")
@@ -2519,7 +2524,11 @@ if not os.path.exists(df_docs_path):
                                 row[f"document_{element_attribute}"] = element_value
                             elif element_attribute == 'params':
                                 for parameter_name, parameter_value in element_value.items():
-                                    row[f"{parameter_name}"] = parameter_value
+                                    if(parameter_name == "check_gold"):
+                                        for check_gold_name, check_gold_value in parameter_value.items():
+                                            row[f"{parameter_name}_{check_gold_name}"] = check_gold_value
+                                    else:
+                                        row[f"{parameter_name}"] = parameter_value
                             else:
                                 row[element_attribute] = element_value
 
