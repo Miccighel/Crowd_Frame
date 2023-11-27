@@ -117,24 +117,23 @@ p {
     margin-bottom: 1%;
     max-width: 70%;
 }
-
-.task-check-fail-section {
-    margin: 1%;
-  }
   
+
+/* |--- task-check-fail-section ---| */
+
 .task-check-fail-section mat-card {
     margin: 1% auto;
-    padding: 16px;
 }
   
 .task-check-fail-section .main-title {
     text-align: center;
     text-transform: uppercase;
     margin: 0 auto 0;
+    display: flex;
+    height: 30px;
 }
   
 .task-check-fail-section .sub-title {
-    padding-top: 0 !important;
     text-transform: uppercase;
     font-size: 1.1em;
 }
@@ -158,7 +157,18 @@ p {
 }
   
 .red-title {
-    color: white;
+    width: 10px;
+    height: 100%;
     background-color: #ef5350;
 }
-  
+
+
+
+.white-title {
+    flex: 100;
+    height: 100%;
+    background-color: white;
+    display: flex;
+    align-items: left;
+    margin-left: 10px;
+}

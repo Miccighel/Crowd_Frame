@@ -1,24 +1,21 @@
-<ng-container *ngIf="this.task.showMessageFailGoldCheck[documentIndex]">
-    <div class="task-check-fail-section">
-        <mat-card appearance="outlined">
-            <mat-card-title class="red-title main-title"><span i18n>{{ this.task.documents[this.documentIndex].params['task_type'] }} Task Failed</span></mat-card-title>
-        </mat-card>
-    
-        <mat-card appearance="outlined">
-        <mat-card-title class="sub-title"><span i18n>Description</span></mat-card-title>
-        <mat-divider [inset]="true"></mat-divider>
-        <mat-card-content class="description">
-    
-            <p>
-                <span i18n>{{ this.task.showMessageFailGoldCheck[documentIndex] }}</span>
-            </p>
-            
-        </mat-card-content>
-        </mat-card>
-    </div>
-</ng-container>
-  
 <div class="container">
+    <ng-container *ngIf="this.task.showMessageFailGoldCheck[documentIndex]">
+        <div class="task-check-fail-section">
+            <mat-card appearance="outlined">
+                <mat-card-title class="main-title">
+                    <div class="red-title"></div>
+                    <div class="white-title">
+                        <span i18n>{{ this.task.documents[this.documentIndex].params['task_type'] }} Task Failed:</span>
+                    </div>
+                </mat-card-title>
+        
+                <mat-card-content class="description">
+                    <p><span i18n>{{ this.task.showMessageFailGoldCheck[documentIndex] }}</span></p>
+                </mat-card-content>
+            </mat-card>
+        </div>
+    </ng-container>
+
     <mat-card appearance="outlined">
         <mat-card-title>
             <ng-container *ngIf="this.task.settings.element_labels && this.task.getValueByKeyIgnoreCase(this.task.settings.element_labels, this.document.params['task_type'])">
