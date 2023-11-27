@@ -18,7 +18,7 @@
                 <h2 class="element-box-title"><span i18n>Element</span> {{j}}</h2>
                 <div class="element-box-values">
                     <ng-container *ngFor="let attribute of this.task.settings.attributes; let k=index">
-                            <span class="element-value-caption" *ngIf="attribute.show==true">
+                            <span class="element-value-caption" *ngIf="this.utilsService.isCurrentTaskType(this.task.documents[this.documentIndex].params['task_type'], attribute.show)">
                                 <label><strong>{{attribute.name_pretty}}</strong>:</label>
                                 {{this.task.documents[documentIndex]['pairwise'][j][attribute.name]}}
                             </span>

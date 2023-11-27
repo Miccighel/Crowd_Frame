@@ -123,7 +123,7 @@ export class UtilsService {
         let same_type: boolean
 
         if (typesList)
-            same_type = typesList === true || typesList.includes(typeDoc);
+            same_type = typesList === true || typesList.some(type => type.toLowerCase() === typeDoc.toLowerCase());
          else
             same_type = typesList !== false;
 

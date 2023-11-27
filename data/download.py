@@ -2633,18 +2633,12 @@ df_answ = pd.DataFrame()
 
 def check_task_type(doc, typeslist):
     same_type = False
-    t= doc["params"]['task_type']
+    t = doc["params"]['task_type']
     
     if typeslist:
-            if(typeslist==True or (t in typeslist)):
-                same_type = True
-            else:
-                same_type = False
+        same_type = typeslist == True or (t.lower() in [x.lower() for x in typeslist])
     else:
-            if(typeslist==False):
-                same_type = False
-            else:
-                same_type = True
+        same_type = typeslist != False
         
     return same_type
 

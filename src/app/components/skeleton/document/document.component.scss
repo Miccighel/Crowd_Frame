@@ -117,3 +117,48 @@ p {
     margin-bottom: 1%;
     max-width: 70%;
 }
+
+.task-check-fail-section {
+    margin: 1%;
+  }
+  
+.task-check-fail-section mat-card {
+    margin: 1% auto;
+    padding: 16px;
+}
+  
+.task-check-fail-section .main-title {
+    text-align: center;
+    text-transform: uppercase;
+    margin: 0 auto 0;
+}
+  
+.task-check-fail-section .sub-title {
+    padding-top: 0 !important;
+    text-transform: uppercase;
+    font-size: 1.1em;
+}
+  
+.task-check-fail-section .description {
+    margin-top: 10px !important;
+    margin-bottom: 10px !important;
+    font-size: 1.1em;
+  
+    h1 {
+      text-align: center;
+    }
+}
+  
+.task-check-fail-section div {
+    text-align: center;
+    button {
+      font-size: 1.1em;
+      padding: 10px 30px;
+    }
+}
+  
+.red-title {
+    color: white;
+    background-color: #ef5350;
+}
+  

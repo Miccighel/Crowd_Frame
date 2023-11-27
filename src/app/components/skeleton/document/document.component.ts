@@ -126,11 +126,12 @@ export class DocumentComponent implements OnInit {
             let goldChecks = GoldChecker.performGoldCheck(goldConfiguration, this.document.params['task_type']);
 
             if (goldChecks.every(Boolean)) {
+                for (let i = 0; i <= this.documentIndex; i++) {
+                    this.task.showMessageFailGoldCheck[i] = null
+                }
                 this.stepper.next();
                 this.sectionService.stepIndex = this.stepper.selectedIndex
             } else {
-                if (okMessage)
-                    this.snackBar.open(documentCheckGold["message"], "Dismiss", {duration: 10000});
 
                 if (okJump) {
                     let jumpIndex = this.task.questionnaireAmountStart
@@ -139,6 +140,8 @@ export class DocumentComponent implements OnInit {
                         const doc = this.task.documents[i];
                         if (doc["id"] == documentCheckGold["jump"]) {
                             jumpIndex += doc["index"]
+                            if (okMessage)
+                                this.task.showMessageFailGoldCheck[doc["index"]] = documentCheckGold["message"]
                             break
                         }
                     }
@@ -146,6 +149,11 @@ export class DocumentComponent implements OnInit {
                     this.stepper.selectedIndex = jumpIndex
                     this.sectionService.stepIndex = jumpIndex
                 }
+                else{
+                    if (okMessage)
+                        this.snackBar.open(documentCheckGold["message"], "Dismiss", {duration: 10000});
+                }
+
 
                 action = null
             }
@@ -168,7 +176,7 @@ export class DocumentComponent implements OnInit {
     public getDocTypeNumber() {
         let count = 0
         for (let index = 0; index <= this.documentIndex; index++) {
-            if (this.document.params['task_type'] == this.task.documents[index].params['task_type'])
+            if (this.document.params['task_type'].toLowerCase() == this.task.documents[index].params['task_type'].toLowerCase())
                 count++;
         }
         return count;

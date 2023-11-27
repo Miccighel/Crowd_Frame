@@ -1,6 +1,6 @@
 <div class="statement">
     <ng-container *ngFor="let attribute of this.task.settings.attributes; let k=index">
-        <div class="attribute" *ngIf="attribute.show">
+        <div class="attribute" *ngIf="this.utilsService.isCurrentTaskType(this.task.documents[this.documentIndex].params['task_type'], attribute.show)">
 
             <p class="attribute-label" *ngIf="!attribute.annotate">
                 <strong *ngIf="attribute.name_pretty">{{attribute.name_pretty}}: </strong>

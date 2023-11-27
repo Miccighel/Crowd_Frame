@@ -96,6 +96,9 @@ export class Task {
     /* Array of gold dimensions within a Hit */
     goldDimensions: Array<Dimension>;
 
+    /* Array of messages, one for each document, which indicate if the goldCheck fail message has to be shown*/
+    showMessageFailGoldCheck: Array<String>;
+
     constructor() {
         this.dataRecords = new Array<DataRecord>()
         this.tryCurrent = 1;
@@ -177,6 +180,7 @@ export class Task {
 
     public initializeDocuments(rawDocuments, documentsParams) {
         this.documents = new Array<Document>();
+        this.showMessageFailGoldCheck = new Array<String>();
         /*  Each document of the current hit is parsed using the Document interface.  */
         for (let index = 0; index < rawDocuments.length; index++) {
             let currentDocument = rawDocuments[index];
@@ -184,6 +188,7 @@ export class Task {
             if (documentsParams != undefined && documentsParams[currentDocument["id"]] != undefined)
                 currentParams = documentsParams[currentDocument["id"]]
             this.documents.push(new Document(index, currentDocument, currentParams));
+            this.showMessageFailGoldCheck.push(null);
         }
         this.mostRecentDataRecordsForDocuments = new Array<DataRecord>(this.documentsAmount)
         for (let index = 0; index < this.documentsAmount; index++)
@@ -429,6 +434,18 @@ export class Task {
         }
     }
 
+    public getValueByKeyIgnoreCase(obj, key) {
+        // Convert the given key and object keys to lowercase for case-insensitive comparison
+        const lowerCaseKey = key.toLowerCase();
+        const objectKeys = Object.keys(obj).map(k => k.toLowerCase());
+      
+        // Check if the lowercased key exists in the lowercased object keys
+        const index = objectKeys.indexOf(lowerCaseKey);
+      
+        // If the key is found, return the corresponding value; otherwise, return undefined
+        return index !== -1 ? obj[Object.keys(obj)[index]] : undefined;
+      }
+
     public getTimesCheckAmount(){
         let times = []
         let timeCheckAmount = this.settings.time_check_amount;
@@ -446,8 +463,12 @@ export class Task {
                         currentTime = timeCheckAmount["document"]
 
                     let currentTaskType = this.documents[i - this.questionnaireAmountStart]["params"]["task_type"]
-                    if(timeCheckAmount["document_task_type"] && timeCheckAmount["document_task_type"][currentTaskType])
-                        currentTime = timeCheckAmount["document_task_type"][currentTaskType]
+                    if( 
+                        timeCheckAmount["document_task_type"] &&
+                        this.getValueByKeyIgnoreCase(timeCheckAmount["document_task_type"], currentTaskType)
+                      )
+                        currentTime = this.getValueByKeyIgnoreCase(timeCheckAmount["document_task_type"], currentTaskType)
+                    
 
                     let currentId = this.documents[i - this.questionnaireAmountStart]["id"]
                     if(timeCheckAmount["document_id"] && timeCheckAmount["document_id"][currentId])
