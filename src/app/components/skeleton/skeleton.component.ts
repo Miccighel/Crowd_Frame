@@ -227,18 +227,15 @@ export class SkeletonComponent implements OnInit, OnDestroy {
             .get("https://www.cloudflare.com/cdn-cgi/trace", { responseType: "text" })
             .pipe(
                 tap((cloudflareData) => {
-                    console.log(cloudflareData)
                     /* If the Cloudflare request is successful, update the worker's properties */
                     this.worker.updateProperties("cloudflare", cloudflareData);
                 }),
                 catchError((cloudflareError) => {
                     /* Handle error from Cloudflare request */
-                    console.error("Error from Cloudflare:", cloudflareError);
                     return this.client.get("https://api64.ipify.org?format=json");
                 }),
                 catchError((ipifyError) => {
                     /* Handle error from ipify request */
-                    console.error("Error from ipify:", ipifyError);
                     /* Return an observable with null to proceed with the final error handling */
                     return of(null);
                 }),
