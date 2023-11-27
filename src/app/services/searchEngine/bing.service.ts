@@ -48,7 +48,6 @@ export class BingService {
     query: string;
 
     SEARCH_AMOUNT: number = 50;
-
     constructor(client: HttpClient) {
         /* The HTTP client is initialized along with its headers */
         this.client = client;
@@ -71,10 +70,10 @@ export class BingService {
         if (this.ipAddress)
             this.headers = this.headers.set('X-MSEdge-ClientIP', this.ipAddress)
         if (this.longitude && this.latitude && this.accuracy) {
+            let xSearchLocation = `lat:${this.latitude},long:${this.longitude},re:${this.accuracy}`
             if (this.altitude)
-                this.headers = this.headers.set('X-Search-Location', `lat:${this.latitude},long:${this.longitude},re:${this.accuracy},alt:${this.altitude},are:${this.altitudeAccuracy}`)
-            else
-                this.headers = this.headers.set('X-Search-Location', `lat:${this.latitude},long:${this.longitude},re:${this.accuracy}`)
+                xSearchLocation = `${xSearchLocation},alt:${this.altitude},are:${this.altitudeAccuracy}`
+            this.headers = this.headers.set('X-Search-Location', xSearchLocation)
         }
 
         let endpointWithParameters = `${this.endPoint}?q=${this.query}&count=${count}&offset=${offset}&mkt=en-us`

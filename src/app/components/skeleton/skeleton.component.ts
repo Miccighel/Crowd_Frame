@@ -2,7 +2,7 @@
 import {
     ChangeDetectionStrategy,
     ChangeDetectorRef,
-    Component,
+    Component, OnDestroy,
     OnInit,
     QueryList,
     ViewChild,
@@ -45,6 +45,8 @@ import {DocumentComponent} from "./document/document.component";
 import {LocalStorageService} from "../../services/localStorage.service";
 import {fadeIn} from "../chatbot/animations";
 import {SearchEngineSettings} from "../../models/searchEngine/searchEngineSettings";
+import {of, Subject, switchMap} from "rxjs";
+import {catchError, tap} from "rxjs/operators";
 
 /* Component HTML Tag definition */
 @Component({
@@ -59,7 +61,7 @@ import {SearchEngineSettings} from "../../models/searchEngine/searchEngineSettin
 /*
  * This class implements a skeleton for Crowdsourcing tasks.
  */
-export class SkeletonComponent implements OnInit {
+export class SkeletonComponent implements OnInit, OnDestroy {
     /* |--------- SERVICES & CO. - DECLARATION ---------| */
 
     /* Change detector to manually intercept changes on DOM */
@@ -129,6 +131,10 @@ export class SkeletonComponent implements OnInit {
 
     /* Check to understand if the generator or the skeleton should be loader */
     generator: boolean;
+
+    /* convention often used in Angular to manage the cleanup of subscriptions.  It's a Subject that emits a value when the component is
+     * about to be destroyed (in the ngOnDestroy lifecycle hook). */
+    private unsubscribe$ = new Subject<void>();
 
     constructor(
         changeDetector: ChangeDetectorRef,
@@ -218,31 +224,43 @@ export class SkeletonComponent implements OnInit {
         this.worker.updateProperties("navigator", window.navigator);
 
         this.client
-            .get("https://www.cloudflare.com/cdn-cgi/trace", {responseType: "text"})
-            .subscribe(
-                /* If we retrieve some data from Cloudflare we use them to populate worker's object */
-                (cloudflareData) => {
+            .get("https://www.cloudflare.com/cdn-cgi/trace", { responseType: "text" })
+            .pipe(
+                tap((cloudflareData) => {
+                    console.log(cloudflareData)
+                    /* If the Cloudflare request is successful, update the worker's properties */
                     this.worker.updateProperties("cloudflare", cloudflareData);
+                }),
+                catchError((cloudflareError) => {
+                    /* Handle error from Cloudflare request */
+                    console.error("Error from Cloudflare:", cloudflareError);
+                    return this.client.get("https://api64.ipify.org?format=json");
+                }),
+                catchError((ipifyError) => {
+                    /* Handle error from ipify request */
+                    console.error("Error from ipify:", ipifyError);
+                    /* Return an observable with null to proceed with the final error handling */
+                    return of(null);
+                }),
+                switchMap((ipifyData) => {
+                    if (ipifyData !== null) {
+                        /* If we retrieve some data from ipify, use them to populate the worker's object */
+                        this.worker.updateProperties("ipify", ipifyData);
+                    } else {
+                        /* Handle the case where both requests fail */
+                        this.worker.setParameter("status_code", StatusCodes.IP_INFORMATION_MISSING);
+                        this.unlockTask(false);
+                    }
+                    /* Return an observable with null to complete the observable chain */
+                    return of(null);
+                })
+            )
+            .subscribe({
+                complete: () => {
+                    /* Initialize the worker after the whole chain of calls */
                     this.initializeWorker();
-                },
-                /* Otherwise, we won't have such information */
-                (error) => {
-                    this.client
-                        .get("https://api64.ipify.org?format=json")
-                        .subscribe(
-                            /* If we retrieve some data from Cloudflare we use them to populate worker's object */
-                            (ipifyData) => {
-                                this.worker.updateProperties("ipify", ipifyData);
-                                this.initializeWorker();
-                            },
-                            /* Otherwise, we won't have such information */
-                            (error) => {
-                                this.worker.setParameter("status_code", StatusCodes.IP_INFORMATION_MISSING);
-                                this.unlockTask(false);
-                            }
-                        );
                 }
-            );
+            });
     }
 
     public async initializeWorker() {
@@ -452,6 +470,11 @@ export class SkeletonComponent implements OnInit {
         }
 
         this.changeDetector.detectChanges();
+    }
+
+    ngOnDestroy() {
+        this.unsubscribe$.next();
+        this.unsubscribe$.complete();
     }
 
     public async retrieveAllACLEntries() {
@@ -876,7 +899,7 @@ export class SkeletonComponent implements OnInit {
             if(objAllowBack["allow_back"]==false){
                 if(failChecksCurrent)
                     return Math.min(lastAllowBackIdx, this.task.questionnaireAmount + this.task.documentsAmount - 1)
-                
+
                 lastAllowBackIdx = idx==null ? i : i + 1
             }
 
@@ -1003,7 +1026,7 @@ export class SkeletonComponent implements OnInit {
 
         /* 3) TIME SPENT CHECK performed here */
         timeSpentCheck = true;
-        
+
         for (let i = 0; i < this.task.timestampsElapsed.length; i++) {
             if(this.task.timestampsElapsed[i] < timeCheckAmount[i]){
                 timeSpentCheck = false

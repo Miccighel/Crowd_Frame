@@ -18,32 +18,16 @@ export class Worker {
 
     error: Object
 
-    constructor(
-        paramsFetched: Record<string, string>,
-    ) {
-        if (paramsFetched) {
+    constructor(paramsFetched: Record<string, string>) {
+        if (paramsFetched)
             this.paramsFetched = paramsFetched
-        } else {
+        else
             this.paramsFetched = {}
-        }
         for (const [param, value] of Object.entries(this.paramsFetched)) {
-            if (param.toLowerCase().includes('identifier')) {
+            if (param.toLowerCase().includes('identifier'))
                 this.identifier = value
-            }
         }
         this.propertiesFetched = {}
-        navigator.geolocation.getCurrentPosition((position) => {
-                if (position) {
-                    this.latitude = position.coords.latitude ?? null
-                    this.longitude = position.coords.longitude ?? null
-                    this.accuracy = position.coords.accuracy ?? null
-                    this.altitude = position.coords.altitude ?? null
-                    this.altitudeAccuracy = position.coords.altitudeAccuracy ?? null
-                    this.heading = position.coords.heading
-                }
-            },
-            (error) => {}
-        )
     }
 
     public setParameter(name: string, value: any) {
@@ -145,7 +129,7 @@ export class Worker {
     }
 
     getIP(): Object {
-         let ipData = {
+        let ipData = {
             ip: null,
             source: null
         }
