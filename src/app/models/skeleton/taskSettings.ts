@@ -9,6 +9,7 @@ export class TaskSettings {
     /* Time allowed to be spent on each document */
     time_check_amount
     attributes: Array<Attribute>
+    element_labels?: Object;
     /* Object to encapsulate annotator's settings */
     annotator?: Annotator;
     countdownTime?: number;
@@ -52,6 +53,7 @@ export class TaskSettings {
                 }
             }
         }
+        this.element_labels = data ? 'element_labels' in data ? data['element_labels'] : null : null;
         this.annotator = data ? data['annotator'] ? new Annotator(data["annotator"]) : null : null;
         this.countdownTime = data ? data["countdown_time"] >= 0 ? parseInt((data["countdown_time"])) : null : null;
         this.countdown_behavior = data ? 'countdown_behavior' in data ? data['countdown_behavior'] as string : null : null;

@@ -198,7 +198,7 @@ export class SectionService {
 
             let countDifferentTaskType = 0
             for (let i = 0; i < currentDocument; i++)
-                if(this.task.documents[i]["params"]["task_type"] != currentTaskType)
+                if(this.task.documents[i]["params"]["task_type"].toLowerCase() != currentTaskType.toLowerCase())
                     countDifferentTaskType += 1
             
             this.currentSection = currentTaskType.toLowerCase() + '-section-' + String(currentDocument-countDifferentTaskType)
