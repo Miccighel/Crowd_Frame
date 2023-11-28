@@ -107,8 +107,6 @@ export class Task {
         let elementIndex = 0;
         let overallIndex = 0;
         let elementLabel = "";
-        let trainingElementsCounter = 0
-        let mainElementsCounter = 0
         if (
             stepIndex >= this.questionnaireAmountStart &&
             stepIndex < this.questionnaireAmountStart + this.documentsAmount
