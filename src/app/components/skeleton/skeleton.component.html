@@ -95,6 +95,7 @@
             #stepper
     >
         <mat-step *ngFor="let stepIndex of this.sectionService.stepIndexes()">
+            <ng-template matStepLabel>{{this.task.getElementIndex(stepIndex)['elementLabel']}}</ng-template>
             <app-questionnaire
                     *ngIf="this.task.getElementIndex(stepIndex)['elementType'] == 'Q'"
                     [worker]="this.worker"

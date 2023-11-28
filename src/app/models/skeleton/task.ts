@@ -106,6 +106,9 @@ export class Task {
         let elementType = "";
         let elementIndex = 0;
         let overallIndex = 0;
+        let elementLabel = "";
+        let trainingElementsCounter = 0
+        let mainElementsCounter = 0
         if (
             stepIndex >= this.questionnaireAmountStart &&
             stepIndex < this.questionnaireAmountStart + this.documentsAmount
@@ -113,10 +116,16 @@ export class Task {
             elementType = "S";
             elementIndex = stepIndex - this.questionnaireAmountStart;
             overallIndex = stepIndex - this.questionnaireAmountStart;
+            let documentCurrent = this.documents[stepIndex - this.questionnaireAmountStart];
+            if (documentCurrent && documentCurrent.params && 'task_type' in documentCurrent.params) {
+                const currentTaskType = (documentCurrent.params['task_type'] as string).toLowerCase();
+                elementLabel = currentTaskType === 'main' ? `S${elementIndex+1}` : `T${elementIndex+1}`;
+            }
         } else if (stepIndex < this.questionnaireAmountStart) {
             elementType = "Q";
             elementIndex = stepIndex;
             overallIndex = stepIndex;
+            elementLabel = `Q${elementIndex+1}`;
         } else if (
             stepIndex >= this.questionnaireAmountStart + this.documentsAmount &&
             stepIndex < this.getElementsNumber() &&
@@ -125,6 +134,7 @@ export class Task {
             elementType = "Q";
             elementIndex = stepIndex - this.documentsAmount;
             overallIndex = stepIndex - elementIndex + this.questionnaireAmountStart;
+            elementLabel = `Q${elementIndex+1}`;
         } else if (
             stepIndex >= this.questionnaireAmountStart + this.documentsAmount &&
             this.questionnaireAmountEnd == 0
@@ -132,6 +142,7 @@ export class Task {
             elementType = "Outcome";
             elementIndex = null;
             overallIndex = null;
+            elementLabel = null;
         } else if (
             stepIndex >= this.questionnaireAmountStart + this.documentsAmount &&
             stepIndex >= this.getElementsNumber() &&
@@ -140,11 +151,13 @@ export class Task {
             elementType = "Outcome";
             elementIndex = null;
             overallIndex = null;
+            elementLabel = null;
         }
         return {
             elementType: elementType,
             elementIndex: elementIndex,
             overallIndex: overallIndex,
+            elementLabel: elementLabel
         };
     }
 
