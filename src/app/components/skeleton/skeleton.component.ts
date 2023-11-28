@@ -302,6 +302,10 @@ export class SkeletonComponent implements OnInit, OnDestroy {
             this.worker.setParameter("user_agent_source", this.worker.getUAG()["source"]);
         } else {
             let aclEntry = workerACLRecord["Items"][0];
+
+            this.task.settings.allowed_tries = aclEntry["try_left"]
+            this.task.tryCurrent = aclEntry["try_current"]
+
             let timeExpirationNearest = await this.retrieveMostRecentExpirationDate();
             if (timeExpirationNearest)
                 this.worker.setParameter("time_expiration_nearest", timeExpirationNearest);
@@ -679,6 +683,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         while (typeof lastEvaluatedKey != "undefined") {
             dataEntries = await this.dynamoDBService.getDataRecord(
                 this.configService.environment,
+                this.worker.identifier,
                 null,
                 lastEvaluatedKey
             );
@@ -687,7 +692,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         }
         let entriesParsed = []
         for (let dataEntry of wholeEntries) {
-            if (this.worker.identifier == dataEntry.identifier && this.task.tryCurrent == parseInt(dataEntry.try)) {
+            if (this.worker.identifier == dataEntry.identifier) {
                 dataEntry["data"] = JSON.parse(dataEntry["data"])
                 entriesParsed.push(dataEntry)
             }
@@ -1148,6 +1153,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                     this.worker.setParameter("status_code", StatusCodes.TASK_SUCCESSFUL);
                 } else {
                     this.worker.setParameter("try_left", String(this.task.settings.allowed_tries - 1));
+                    this.worker.setParameter("try_current", String(this.task.tryCurrent + 1));
                     this.worker.setParameter("in_progress", String(true));
                     this.worker.setParameter("paid", String(false));
                     this.worker.setParameter("status_code", StatusCodes.TASK_FAILED_WITH_TRIES);
