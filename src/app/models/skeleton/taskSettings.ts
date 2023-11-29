@@ -159,6 +159,14 @@ export class Attribute {
         this.required = data["required"];
     }
 
+    public isImage(value: string): boolean {
+        /* Check if the attribute name suggests it is an image */
+        if (this.name.toLowerCase().includes('image')) {
+          /* Check if the value is a URL ending with an image extension */
+          return /\.(png|jpe?g|gif|svg)$/i.test(value);
+        }
+        return false;
+    }
 }
 
 export class Annotator {

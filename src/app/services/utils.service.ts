@@ -109,26 +109,6 @@ export class UtilsService {
             result += characters.charAt(Math.floor(Math.random() * charactersLength));
         return result;
     }
-    
-    public isImage(attributeName: string, value: string): boolean {
-        /* Check if the attribute name suggests it is an image */
-        if (attributeName.toLowerCase().includes('image')) {
-          /* Check if the value is a URL ending with an image extension */
-          return /\.(png|jpe?g|gif|svg)$/i.test(value);
-        }
-        return false;
-    }
-
-    public isCurrentTaskType(typeDoc, typesList) {
-        let same_type: boolean
-
-        if (typesList)
-            same_type = typesList === true || typesList.some(type => type.toLowerCase() === typeDoc.toLowerCase());
-         else
-            same_type = typesList !== false;
-
-        return same_type
-    }
 
     public generateGoldConfiguration(goldDocuments, goldDimensions, documentsForm, notes) {
         let goldConfiguration = [];

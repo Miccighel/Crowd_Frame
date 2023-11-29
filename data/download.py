@@ -2632,15 +2632,7 @@ df_answ = pd.DataFrame()
 
 
 def check_task_type(doc, typeslist):
-    same_type = False
-    t = doc["params"]['task_type']
-    
-    if typeslist:
-        same_type = typeslist == True or (t.lower() in [x.lower() for x in typeslist])
-    else:
-        same_type = typeslist != False
-        
-    return same_type
+    return typeslist != False if not typeslist else typeslist == True or (doc["params"]['task_type'].lower() in [x.lower() for x in typeslist])
 
 if not os.path.exists(df_data_path):
 

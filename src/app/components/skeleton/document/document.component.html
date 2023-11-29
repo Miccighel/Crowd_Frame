@@ -19,10 +19,10 @@
     <mat-card appearance="outlined">
         <mat-card-title>
             <ng-container *ngIf="this.task.settings.element_labels && this.task.getValueByKeyIgnoreCase(this.task.settings.element_labels, this.document.params['task_type'])">
-                {{ this.task.getValueByKeyIgnoreCase(this.task.settings.element_labels, this.document.params['task_type']) }} {{this.getDocTypeNumber()}}
+                {{ this.task.getValueByKeyIgnoreCase(this.task.settings.element_labels, this.document.params['task_type']) }} {{this.task.getDocTypeNumber(this.document) + 1}}
             </ng-container>
             <ng-container *ngIf="!(this.task.settings.element_labels && this.task.getValueByKeyIgnoreCase(this.task.settings.element_labels, this.document.params['task_type']))">
-                {{this.document.params['task_type']}} <span i18n>Element</span> {{this.getDocTypeNumber()}}
+                {{this.document.params['task_type']}} <span i18n>Element</span> {{this.task.getDocTypeNumber(this.document) + 1}}
             </ng-container>
         </mat-card-title>
 
@@ -36,8 +36,8 @@
             </ng-container>
             <div *ngIf="this.task.instructionsEvaluation.instructions.length>0" class="evaluation-instructions">
                 <div *ngFor="let instruction of this.task.instructionsEvaluation.instructions">
-                    <h2 *ngIf="this.utilsService.isCurrentTaskType(this.document.params['task_type'], instruction.task_type)">{{instruction.caption}}</h2>
-                    <div *ngIf="this.utilsService.isCurrentTaskType(this.document.params['task_type'], instruction.task_type)"><p [innerHTML]="instruction.text"></p></div>
+                    <h2 *ngIf="this.task.isCurrentTaskType(this.document, instruction.task_type)">{{instruction.caption}}</h2>
+                    <div *ngIf="this.task.isCurrentTaskType(this.document, instruction.task_type)"><p [innerHTML]="instruction.text"></p></div>
                 </div>
             </div>
 
