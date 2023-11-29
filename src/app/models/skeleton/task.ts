@@ -134,7 +134,20 @@ export class Task {
             if (documentCurrent && documentCurrent.params && 'task_type' in documentCurrent.params) {
                 const currentTaskType = (documentCurrent.params['task_type'] as string).toLowerCase();
                 let elementIndexPretty = this.getDocTypeNumber(documentCurrent)+1
-                elementLabel = currentTaskType === 'main' ? `S${elementIndexPretty}` : `T${elementIndexPretty}`;
+                if(currentTaskType == 'main') {
+                    if(this.settings.element_labels['main_short'])
+                        elementLabel = `${this.settings.element_labels['main_short']}`
+                    else
+                        elementLabel = `E`
+                } else {
+                    if(this.settings.element_labels['training_short'])
+                        elementLabel = `${this.settings.element_labels['training_short']}`
+                    else
+                        elementLabel = `T`
+                }
+                elementLabel = `${elementLabel}${elementIndexPretty}`;
+            } else {
+                elementLabel = `E${this.getDocTypeNumber(documentCurrent)+1}`
             }
         } else if (stepIndex < this.questionnaireAmountStart) {
             elementType = "Q";
