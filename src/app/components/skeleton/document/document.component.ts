@@ -76,6 +76,7 @@ export class DocumentComponent implements OnInit {
     ngOnInit(): void {
         this.document = this.task.documents[this.documentIndex];
         this.stepper.selectedIndex = this.worker.getPositionCurrent()
+        this.sectionService.stepIndex = this.worker.getPositionCurrent()
         this.mostRecentDataRecord = this.task.retrieveMostRecentDataRecord('document', this.documentIndex)
         /* If there are no questionnaires and the countdown time is set, enable the first countdown */
         if (this.task.settings.countdownTime >= 0 && this.task.questionnaireAmountStart == 0) {
@@ -171,15 +172,6 @@ export class DocumentComponent implements OnInit {
             "action": action
         })
 
-    }
-
-    public getDocTypeNumber() {
-        let count = 0
-        for (let index = 0; index <= this.documentIndex; index++) {
-            if (this.document.params['task_type'].toLowerCase() == this.task.documents[index].params['task_type'].toLowerCase())
-                count++;
-        }
-        return count;
     }
 
 }

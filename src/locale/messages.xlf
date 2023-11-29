@@ -624,11 +624,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/document.component.html</context>
-          <context context-type="linenumber">6</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/document/document.component.html</context>
-          <context context-type="linenumber">9</context>
+          <context context-type="linenumber">25</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/elements/element-pairwise/element-pairwise.component.html</context>
@@ -692,7 +688,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/document.component.html</context>
-          <context context-type="linenumber">65</context>
+          <context context-type="linenumber">81</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/questionnaire/questionnaire.component.html</context>
@@ -727,11 +723,11 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/document.component.html</context>
-          <context context-type="linenumber">70</context>
+          <context context-type="linenumber">86</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/document.component.html</context>
-          <context context-type="linenumber">81</context>
+          <context context-type="linenumber">97</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/questionnaire/questionnaire.component.html</context>
@@ -1880,18 +1876,32 @@
           <context context-type="linenumber">33</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="a5ad13a5775b82466cc8d982888b3da692da715b" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="{{ this.task.documents[this.documentIndex].params[&apos;task_type&apos;] }}"/> Task Failed:</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/document.component.html</context>
+          <context context-type="linenumber">8</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="48cf85c5d15f766650bd0f8a9a7e09cc0a6dbb9d" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="{{ this.task.showMessageFailGoldCheck[documentIndex] }}"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/document.component.html</context>
+          <context context-type="linenumber">13</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="d6076e464de0fb97d049a0df21451698d50d1923" datatype="html">
         <source>Time left:</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/document.component.html</context>
-          <context context-type="linenumber">32</context>
+          <context context-type="linenumber">48</context>
         </context-group>
       </trans-unit>
       <trans-unit id="3ea51cf415feffef55e82c7b60e9486055837661" datatype="html">
         <source>Finish</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/document.component.html</context>
-          <context context-type="linenumber">76</context>
+          <context context-type="linenumber">92</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/questionnaire/questionnaire.component.html</context>

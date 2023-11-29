@@ -105,6 +105,19 @@ export class Task {
         this.sequenceNumber = 0;
     }
 
+    public getDocTypeNumber(doc: Document) {
+        let count = -1
+        for (let index = 0; index <= doc.index; index++) {
+            if (doc.params['task_type'].toLowerCase() == this.documents[index].params['task_type'].toLowerCase())
+                count++;
+        }
+        return count;
+    }
+
+    public isCurrentTaskType(doc: Document, typesList) {
+        return !typesList ? typesList !== false : typesList === true || typesList.some(type => type.toLowerCase() === doc.params['task_type'].toLowerCase())
+    }
+
     public getElementIndex(stepIndex) {
         let elementType = "";
         let elementIndex = 0;

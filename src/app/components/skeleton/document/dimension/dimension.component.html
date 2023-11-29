@@ -104,7 +104,7 @@
                                     <ng-container *ngIf="dimension.scale.type=='magnitude_estimation'">
                                         <mat-form-field appearance="fill">
                                             <mat-label><span i18n>Value</span></mat-label>
-                                            <input matInput type="number" placeholder="" formControlName="{{(dimension.name).concat('_value')}}" step=".01" min="{{dimension.scale.min}}"
+                                            <input matInput placeholder="" formControlName="{{(dimension.name).concat('_value')}}"
                                                    (change)="this.task.storeDimensionValue($event, documentIndex, dimension.index)" class="magnitude_estimation"
                                                    [attr.disabled]="this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior=='disable_forms'">
                                             <mat-error *ngIf="this.utilsService.hasError(assessmentForm, (dimension.name).concat('_value'), 'required')">
@@ -334,8 +334,7 @@
                                             <p class="spanDocument"><span i18n>Answer for Element</span> {{k}}</p>
                                             <mat-form-field appearance="fill" style="margin-left: 10px;">
                                                 <mat-label><span i18n>Value</span></mat-label>
-                                                <input matInput type="number" placeholder="" formControlName="{{(dimension.name).concat('_value_element_').concat(k)}}"
-                                                       min="{{dimension.scale.min}}" step=".01"
+                                                <input matInput placeholder="" formControlName="{{(dimension.name).concat('_value_element_').concat(k)}}"
                                                        (change)="this.task.storeDimensionValue($event, documentIndex, dimension.index); updateDimensionValueSelection(documentIndex,dimension.index,k)" class="magnitude_estimation"
                                                        [attr.disabled]="this.task.countdownsExpired[documentIndex]">
                                                 <mat-error *ngIf="this.utilsService.hasError(assessmentForm, (dimension.name).concat('_value_element_').concat(k), 'required')">

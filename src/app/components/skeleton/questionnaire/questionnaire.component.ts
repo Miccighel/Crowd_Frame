@@ -63,6 +63,7 @@ export class QuestionnaireComponent implements OnInit {
     ngOnInit(): void {
         this.questionnaire = this.task.questionnaires[this.questionnaireIndex];
         this.stepper.selectedIndex =  this.worker.getPositionCurrent()
+        this.sectionService.stepIndex = this.worker.getPositionCurrent()
         this.mostRecentDataRecord = this.task.retrieveMostRecentDataRecord('questionnaire', this.questionnaireIndex)
         if(!this.questionnairesForm[this.questionnaireIndex]){
             this.questionnaireForm = this.formBuilder.group({})
