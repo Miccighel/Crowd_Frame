@@ -11,8 +11,25 @@ mat-horizontal-stepper mat-card-actions {
     margin: 1% auto 1em auto;
 }
 
-mat-horizontal-stepper mat-step-header {
-    font-size: large;
+.mat-step-icon {
+    background: transparent !important;
+    color: black !important;
+    font-size: small !important;
+}
+
+.mat-step-label-selected {
+    color: white !important;
+    background: #3f51b5 !important;
+    border-radius: 8px;
+}
+
+.mat-step-label {
+    padding: 6px !important;
+}
+
+.mat-step-text-label {
+    font-size: large !important;
+    text-align: center;
 }
 
 .header-bar {
