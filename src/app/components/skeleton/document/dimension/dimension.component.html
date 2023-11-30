@@ -110,11 +110,10 @@
                                             <mat-error *ngIf="this.utilsService.hasError(assessmentForm, (dimension.name).concat('_value'), 'required')">
                                                 <span i18n>This field is required</span>
                                             </mat-error>
-                                            <mat-error *ngIf="this.utilsService.hasError(assessmentForm, (dimension.name).concat('_value'), 'number')">
+                                            <mat-error *ngIf="this.utilsService.hasError(assessmentForm, (dimension.name).concat('_value'), 'numberFormat')">
                                                 <span i18n>Value has to be a number (whole or decimal)</span>
                                             </mat-error>
-                                            <mat-error *ngIf="!this.utilsService.hasError(assessmentForm, (dimension.name).concat('_value'), 'number') &&
-                                                              this.utilsService.hasError(assessmentForm, (dimension.name).concat('_value'), 'gt')">
+                                            <mat-error *ngIf="!this.utilsService.hasError(assessmentForm, (dimension.name).concat('_value'), 'numberGreaterThan')">
                                                 <span i18n>Value has to be greater than </span> {{dimension.scale.min}}
                                             </mat-error>
                                         </mat-form-field>

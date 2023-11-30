@@ -1,13 +1,11 @@
 /* Core */
 import {ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, QueryList, ViewChild, ViewChildren} from '@angular/core';
 import {UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators} from "@angular/forms";
-import { CustomValidators } from 'ng2-validation';
 /* Material Design */
 import {MatStepper} from "@angular/material/stepper";
 /* Services */
 import {SectionService} from "../../../../services/section.service";
 import {UtilsService} from "../../../../services/utils.service";
-import {DeviceDetectorService} from "ngx-device-detector";
 /* Models */
 import {Task} from "../../../../models/skeleton/task";
 import {ScaleCategorical, ScaleInterval, ScaleMagnitude} from "../../../../models/skeleton/dimension";
@@ -90,12 +88,12 @@ export class DimensionComponent implements OnInit {
                             }
 
                             if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value`] = new UntypedFormControl(answerValue, [Validators.required]);
-                            if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value`] = new UntypedFormControl(answerValue, [Validators.min((<ScaleInterval>dimension.scale).min), Validators.required])
-                            if (dimension.scale.type == "magnitude_estimation") controlsConfig[`${dimension.name}_value`] = new UntypedFormControl(answerValue, [CustomValidators.gt((<ScaleMagnitude>dimension.scale).min), CustomValidators.number, Validators.required]);
+                            if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value`] = new UntypedFormControl(answerValue, [Validators.required, this.utilsService.numberGreaterThanWithCommasAsDecimals(((<ScaleInterval>dimension.scale).min))])
+                            if (dimension.scale.type == "magnitude_estimation") controlsConfig[`${dimension.name}_value`] = new UntypedFormControl(answerValue, [Validators.required, this.utilsService.numberGreaterThanWithCommasAsDecimals(((<ScaleMagnitude>dimension.scale).min))]);
                         }
                         if (dimension.justification) {
-                            let answerJustification :string = ''
-                            if(this.previousDataRecord)
+                            let answerJustification: string = ''
+                            if (this.previousDataRecord)
                                 answerJustification = this.previousDataRecord.loadAnswers()[`${dimension.name}_justification`]
                             controlsConfig[`${dimension.name}_justification`] = new UntypedFormControl(answerJustification, [Validators.required, this.validateJustification.bind(this)])
                         }
@@ -106,13 +104,13 @@ export class DimensionComponent implements OnInit {
                                 if(this.previousDataRecord)
                                     answerValue = this.previousDataRecord.loadAnswers()[`${dimension.name}_value_element_${j}`]
                                 if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl(answerValue, [Validators.required]);
-                                if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl(answerValue, [Validators.min((<ScaleInterval>dimension.scale).min), Validators.required])
-                                if (dimension.scale.type == "magnitude_estimation") controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl(answerValue, [CustomValidators.gt((<ScaleMagnitude>dimension.scale).min), CustomValidators.number, Validators.required]);
+                                if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl(answerValue, [Validators.required, this.utilsService.numberGreaterThanWithCommasAsDecimals(((<ScaleInterval>dimension.scale).min))])
+                                if (dimension.scale.type == "magnitude_estimation") controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl(answerValue, [Validators.required, this.utilsService.numberGreaterThanWithCommasAsDecimals(((<ScaleMagnitude>dimension.scale).min))]);
                             }
                             if (dimension.justification) {
-                                let answerJustification :string = ''
-                                    if(this.previousDataRecord)
-                                        answerJustification = this.previousDataRecord.loadAnswers()[`${dimension.name}_justification_element_${j}`]
+                                let answerJustification: string = ''
+                                if (this.previousDataRecord)
+                                    answerJustification = this.previousDataRecord.loadAnswers()[`${dimension.name}_justification_element_${j}`]
                                 controlsConfig[`${dimension.name}_justification_element_${j}`] = new UntypedFormControl(answerJustification, [Validators.required, this.validateJustification.bind(this)])
                             }
                         }

@@ -1,5 +1,5 @@
 import {Injectable} from "@angular/core";
-import {AbstractControl, UntypedFormControl, UntypedFormGroup} from "@angular/forms";
+import {AbstractControl, UntypedFormControl, UntypedFormGroup, ValidationErrors, ValidatorFn} from "@angular/forms";
 
 @Injectable({
     providedIn: 'root',
@@ -91,6 +91,20 @@ export class UtilsService {
         } else {
             return null;
         }
+    }
+
+    public numberGreaterThanWithCommasAsDecimals(minValue: number): ValidatorFn {
+        return (control: AbstractControl): ValidationErrors | null => {
+            let pattern = /^[+-]?(\d{1,3}([.,]\d{3})*([.,]\d+)?|\d*[.,]\d+|\d+)$/;
+            const isValidFormat = pattern.test(control.value);
+            if (!isValidFormat)
+                return {numberFormat: true};
+            const numericValue = +control.value.replace(/[^\d.-]/g, ''); // Extract numeric value
+            if (numericValue > minValue)
+                return null
+            else
+                return {numberGreaterThan: true}
+        };
     }
 
     public positiveNumber(control: UntypedFormControl) {
