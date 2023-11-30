@@ -157,4 +157,8 @@ export class UtilsService {
         });
     }
 
+    public getValueByKeyIgnoreCase(obj: Object, key) {
+        const foundKey = Object.keys(obj).find((k) => k.toLowerCase() == key.toLowerCase())
+        return foundKey ? obj[foundKey] : undefined;
+    }
 }

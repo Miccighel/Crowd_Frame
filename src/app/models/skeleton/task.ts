@@ -106,7 +106,7 @@ export class Task {
     }
 
     public getDocTypeNumber(doc: Document) {
-        let count = -1
+        let count = 0
         for (let index = 0; index <= doc.index; index++) {
             if (doc.params['task_type'].toLowerCase() == this.documents[index].params['task_type'].toLowerCase())
                 count++;
@@ -133,21 +133,23 @@ export class Task {
             let documentCurrent = this.documents[stepIndex - this.questionnaireAmountStart];
             if (documentCurrent && documentCurrent.params && 'task_type' in documentCurrent.params) {
                 const currentTaskType = (documentCurrent.params['task_type'] as string).toLowerCase();
-                let elementIndexPretty = this.getDocTypeNumber(documentCurrent)+1
-                if(currentTaskType == 'main') {
-                    if(this.settings.element_labels['main_short'])
-                        elementLabel = `${this.settings.element_labels['main_short']}`
-                    else
-                        elementLabel = `E`
-                } else {
-                    if(this.settings.element_labels['training_short'])
-                        elementLabel = `${this.settings.element_labels['training_short']}`
-                    else
-                        elementLabel = `T`
+                
+                let elementIndexPretty = this.getDocTypeNumber(documentCurrent)
+                if(this.settings.element_labels){
+                    let label = Object.keys(this.settings.element_labels).find((label) => label.toLowerCase() == currentTaskType)
+                    let shortLabel = Object.keys(this.settings.element_labels).find((label) => label.toLowerCase() == (currentTaskType + '_short'))
+                    
+                    elementLabel = currentTaskType == "main" ? "E" : currentTaskType[0].toUpperCase()
+                        
+                    if(label)
+                        elementLabel = `${this.settings.element_labels[label][0].toUpperCase()}`
+
+                    if(shortLabel)
+                        elementLabel = `${this.settings.element_labels[shortLabel][0].toUpperCase()}`
                 }
                 elementLabel = `${elementLabel}${elementIndexPretty}`;
             } else {
-                elementLabel = `E${this.getDocTypeNumber(documentCurrent)+1}`
+                elementLabel = `E${this.getDocTypeNumber(documentCurrent)}`
             }
         } else if (stepIndex < this.questionnaireAmountStart) {
             elementType = "Q";
@@ -472,18 +474,6 @@ export class Task {
         }
     }
 
-    public getValueByKeyIgnoreCase(obj, key) {
-        // Convert the given key and object keys to lowercase for case-insensitive comparison
-        const lowerCaseKey = key.toLowerCase();
-        const objectKeys = Object.keys(obj).map(k => k.toLowerCase());
-      
-        // Check if the lowercased key exists in the lowercased object keys
-        const index = objectKeys.indexOf(lowerCaseKey);
-      
-        // If the key is found, return the corresponding value; otherwise, return undefined
-        return index !== -1 ? obj[Object.keys(obj)[index]] : undefined;
-      }
-
     public getTimesCheckAmount(){
         let times = []
         let timeCheckAmount = this.settings.time_check_amount;
@@ -501,12 +491,12 @@ export class Task {
                         currentTime = timeCheckAmount["document"]
 
                     let currentTaskType = this.documents[i - this.questionnaireAmountStart]["params"]["task_type"]
-                    if( 
-                        timeCheckAmount["document_task_type"] &&
-                        this.getValueByKeyIgnoreCase(timeCheckAmount["document_task_type"], currentTaskType)
-                      )
-                        currentTime = this.getValueByKeyIgnoreCase(timeCheckAmount["document_task_type"], currentTaskType)
-                    
+
+                    if(timeCheckAmount["document_task_type"]){
+                        let taskType = Object.keys(timeCheckAmount["document_task_type"]).find((t) => t.toLowerCase() == currentTaskType.toLowerCase())
+                        if(taskType)
+                            currentTime = timeCheckAmount["document_task_type"][taskType]
+                    }
 
                     let currentId = this.documents[i - this.questionnaireAmountStart]["id"]
                     if(timeCheckAmount["document_id"] && timeCheckAmount["document_id"][currentId])

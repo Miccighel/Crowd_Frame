@@ -91,7 +91,7 @@ export class DimensionComponent implements OnInit {
 
                             if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value`] = new UntypedFormControl(answerValue, [Validators.required]);
                             if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value`] = new UntypedFormControl(answerValue, [Validators.min((<ScaleInterval>dimension.scale).min), Validators.required])
-                            if (dimension.scale.type == "magnitude_estimation") controlsConfig[`${dimension.name}_value`] = new UntypedFormControl(answerValue, [CustomValidators.gt((<ScaleMagnitude>dimension.scale).min), Validators.required]);
+                            if (dimension.scale.type == "magnitude_estimation") controlsConfig[`${dimension.name}_value`] = new UntypedFormControl(answerValue, [CustomValidators.gt((<ScaleMagnitude>dimension.scale).min), CustomValidators.number, Validators.required]);
                         }
                         if (dimension.justification) {
                             let answerJustification :string = ''
@@ -107,7 +107,7 @@ export class DimensionComponent implements OnInit {
                                     answerValue = this.previousDataRecord.loadAnswers()[`${dimension.name}_value_element_${j}`]
                                 if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl(answerValue, [Validators.required]);
                                 if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl(answerValue, [Validators.min((<ScaleInterval>dimension.scale).min), Validators.required])
-                                if (dimension.scale.type == "magnitude_estimation") controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl(answerValue, [CustomValidators.gt((<ScaleMagnitude>dimension.scale).min), Validators.required]);
+                                if (dimension.scale.type == "magnitude_estimation") controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl(answerValue, [CustomValidators.gt((<ScaleMagnitude>dimension.scale).min), CustomValidators.number, Validators.required]);
                             }
                             if (dimension.justification) {
                                 let answerJustification :string = ''
