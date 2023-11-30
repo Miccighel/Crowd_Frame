@@ -63,15 +63,15 @@ export class DimensionComponent implements OnInit {
         this.previousDataRecord = this.task.mostRecentDataRecordsForDocuments[this.documentIndex]
         let assessForm = null
         /* A form for each the current HIT element is initialized */
-        if(!this.documentsForm[this.documentIndex]){
+        if (!this.documentsForm[this.documentIndex]) {
             let controlsConfig = {};
             for (let index_dimension = 0; index_dimension < this.task.dimensions.length; index_dimension++) {
                 let dimension = this.task.dimensions[index_dimension];
-                if (this.task.isCurrentTaskType(this.task.documents[this.documentIndex], dimension.task_type)){
+                if (this.task.isCurrentTaskType(this.task.documents[this.documentIndex], dimension.task_type)) {
                     if (!dimension.pairwise) {
                         if (dimension.scale) {
-                            let answerValue :string = ''
-                            if(this.previousDataRecord)
+                            let answerValue: string = ''
+                            if (this.previousDataRecord)
                                 answerValue = this.previousDataRecord.loadAnswers()[`${dimension.name}_value`]
                             if (dimension.scale.type == "categorical") {
                                 if ((<ScaleCategorical>dimension.scale).multipleSelection) {
@@ -100,8 +100,8 @@ export class DimensionComponent implements OnInit {
                     } else {
                         for (let j = 0; j < this.task.documents[this.documentIndex]['pairwise'].length; j++) {
                             if (dimension.scale) {
-                                let answerValue :string = ''
-                                if(this.previousDataRecord)
+                                let answerValue: string = ''
+                                if (this.previousDataRecord)
                                     answerValue = this.previousDataRecord.loadAnswers()[`${dimension.name}_value_element_${j}`]
                                 if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl(answerValue, [Validators.required]);
                                 if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl(answerValue, [Validators.required, this.utilsService.numberGreaterThanWithCommasAsDecimals(((<ScaleInterval>dimension.scale).min))])
@@ -118,7 +118,7 @@ export class DimensionComponent implements OnInit {
                 }
             }
             assessForm = this.formBuilder.group(controlsConfig)
-        } else{
+        } else {
             assessForm = this.documentsForm[this.documentIndex]
         }
         this.assessmentForm = assessForm
@@ -183,7 +183,7 @@ export class DimensionComponent implements OnInit {
             if (!this.assessmentForm.get(key) && this.task.dimensions[dimensionIndex].url) {
                 this.assessmentForm.addControl(key, urlFormGroup.get(key))
 
-                if(!this.searchEngineForms[this.documentIndex]) this.searchEngineForms[this.documentIndex]=[]
+                if (!this.searchEngineForms[this.documentIndex]) this.searchEngineForms[this.documentIndex] = []
                 this.searchEngineForms[this.documentIndex][dimensionIndex] = urlFormGroup
             }
         }
