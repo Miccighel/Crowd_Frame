@@ -1751,7 +1751,7 @@ if 'prolific' in platforms:
                                     'submission_date_reviewed_parsed': find_date_string(row_raw['Reviewed at'], seconds=True),
                                     'submission_date_archived': row_raw['Archived at'],
                                     'submission_date_archived_parsed': find_date_string(row_raw['Archived at'], seconds=True),
-                                    'submission_time_elapsed_seconds': int(row_raw['Time taken']),
+                                    'submission_time_elapsed_seconds': float(row_raw['Time taken']) if row_raw['Time taken'] != '' else np.nan,
                                     'worker_sex': row_raw['Sex'],
                                     'worker_languages_fluent': ":::".join(row_raw['Fluent languages'].split(", ")),
                                     'worker_age': row_raw['Age'],
@@ -2701,7 +2701,9 @@ if not os.path.exists(df_data_path):
                     current_attributes = documents[document_data['serialization']['info']['index']].keys()
                     current_answers = document_data['serialization']['answers']
                     for dimension in dimensions:
-                        task_type_check = check_task_type(documents[document_data['serialization']['info']['index']], dimension['task_type'])
+                        task_type_check = True
+                        if 'task_type' in dimension.keys():
+                            task_type_check = check_task_type(documents[document_data['serialization']['info']['index']], dimension['task_type'])
                         if dimension['scale'] is not None and task_type_check:
                             value = current_answers[f"{dimension['name']}_value"]
                             if type(value) == str:
@@ -3156,12 +3158,12 @@ def parse_responses(df, worker_id, worker_paid, task, info, queries, responses_r
                 "dimension_index": response_retrieved['dimension'],
                 "dimension_name": dimensions[response_retrieved['dimension']]['name'],
                 "query_index": response_retrieved['query'],
-                "query_estimated_matches": response_retrieved['estimated_matches'],
-                "results_retrieved": response_retrieved['results_retrieved'],
-                "results_to_skip": response_retrieved['results_to_skip'],
-                "results_amount": response_retrieved['results_amount'],
-                "page_index": response_retrieved['page_index'],
-                "page_size": response_retrieved['page_size']
+                "query_estimated_matches": response_retrieved['estimated_matches'] if 'estimated_matches' in response_retrieved.keys() else np.nan,
+                "results_retrieved": response_retrieved['results_retrieved'] if 'results_retrieved' in response_retrieved.keys() else np.nan,
+                "results_to_skip": response_retrieved['results_to_skip'] if 'results_to_skip' in response_retrieved.keys() else np.nan,
+                "results_amount": response_retrieved['results_amount'] if 'results_amount' in response_retrieved.keys() else np.nan,
+                "page_index": response_retrieved['page_index'] if 'page_index' in response_retrieved.keys() else np.nan,
+                "page_size": response_retrieved['page_size'] if 'page_size' in response_retrieved.keys() else np.nan
             }
             query_text = np.nan
             query_text_encoded = np.nan
@@ -3175,29 +3177,33 @@ def parse_responses(df, worker_id, worker_paid, task, info, queries, responses_r
                 for query in queries["data"]:
                     if response_retrieved["query"] == query['index']:
                         query_text = query["text"]
-                        query_text_encoded = query["textEncoded"]
+                        if 'textEncoded' in query.keys():
+                            query_text_encoded = query["textEncoded"]
             row['query_text'] = query_text
             row['query_text_encoded'] = query_text_encoded
             row['query_timestamp'] = response_retrieved['timestamp']
             row['query_timestamp_parsed'] = find_date_string(datetime.fromtimestamp(float(response_retrieved['timestamp']), timezone('GMT')).strftime('%c'))
             for response_index, response in enumerate(response_retrieved['response']):
 
-                response_index_full = response_index + response_retrieved['results_to_skip']
+                response_index_full = response_index
+                if 'results_to_skip' in response_retrieved.keys():
+                    response_index_full = response_index_full + response_retrieved['results_to_skip']
 
                 row["response_index"] = response_index_full
                 row["response_url"] = response["url"]
                 row["response_name"] = response["name"]
                 row["response_snippet"] = response["snippet"]
 
-                for parameter, value in response['parameters'].items():
-                    if f"param_{parameter}" not in df.columns:
+                if 'parameters' in response.keys():
+                    for parameter, value in response['parameters'].items():
+                        if f"param_{parameter}" not in df.columns:
+                            if "date_last_crawled" in parameter:
+                                df[f"param_{parameter}_parsed"] = np.nan
+                            df[f"param_{parameter}"] = np.nan
+                        row[f"param_{parameter}"] = value
                         if "date_last_crawled" in parameter:
-                            df[f"param_{parameter}_parsed"] = np.nan
-                        df[f"param_{parameter}"] = np.nan
-                    row[f"param_{parameter}"] = value
-                    if "date_last_crawled" in parameter:
-                        date_parsed = ' '.join(find_date_string(value).split(' ')[:2])
-                        df[f"param_{parameter}_parsed"] = date_parsed
+                            date_parsed = ' '.join(find_date_string(value).split(' ')[:2])
+                            df[f"param_{parameter}_parsed"] = date_parsed
 
                 row["index_selected"] = -1
                 row_check = df.loc[
