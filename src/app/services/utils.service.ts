@@ -18,7 +18,7 @@ export class UtilsService {
 
     public getErrorMessage(field: AbstractControl) {
         let messages = []
-        if(field.errors) {
+        if (field.errors) {
             for (let errorKey of Object.keys(field.errors)) {
                 let message = ''
                 switch (errorKey) {
@@ -95,15 +95,30 @@ export class UtilsService {
 
     public numberGreaterThanWithCommasAsDecimals(minValue: number): ValidatorFn {
         return (control: AbstractControl): ValidationErrors | null => {
-            let pattern = /^[+-]?(\d{1,3}([.,]\d{3})*([.,]\d+)?|\d*[.,]\d+|\d+)$/;
-            const isValidFormat = pattern.test(control.value);
-            if (!isValidFormat)
-                return {numberFormat: true};
-            const numericValue = +control.value.replace(/[^\d.-]/g, ''); // Extract numeric value
-            if (numericValue > minValue)
-                return null
-            else
-                return {numberGreaterThan: true}
+            if (control.value === null || control.value === undefined || control.value === '') {
+                return {required: true};
+            } else {
+                if (/^[0-9.,]+$/.test(control.value)) {
+                    let pattern = /^[+-]?([1-9]\d*([.,]\d{3})*([.,]\d+)?|0*[.,]\d*[1-9]\d*|0{0,2})$/;
+                    const isValidFormat = pattern.test(control.value);
+                    if (!isValidFormat)
+                        return {numberFormat: true};
+                    let value = control.value
+
+                    console.log(value)
+                    console.log(parseFloat(value))
+                    // TODO: WE NEED A PARSING FUNCTION TO NORMALIZE THE NUMBER HERE AND CHECK IF IT IS VALID
+                    // AFTER THE VALIDATION, SOMEHWERE ELSE, THE CONTROL VALUE MUST BE PATCHED...
+
+                    if (parseFloat(value) > minValue) {
+                        return null
+                    } else
+                        return {numberGreaterThan: true}
+                } else {
+                    return {numberFormat: true}
+                }
+
+            }
         };
     }
 
@@ -111,7 +126,7 @@ export class UtilsService {
         const value = Number(control.value);
 
         if (isNaN(value) || value < 1)
-            return { invalid: true };
+            return {invalid: true};
         return null;
     }
 
@@ -129,7 +144,7 @@ export class UtilsService {
 
         /* For each gold document its attribute, answers and notes are retrieved to build a gold configuration */
         for (let goldDocument of goldDocuments) {
-            if(goldDocument.index<documentsForm.length){
+            if (goldDocument.index < documentsForm.length) {
                 let currentConfiguration = {};
                 currentConfiguration["document"] = goldDocument;
                 let answers = {};
