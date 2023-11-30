@@ -145,7 +145,7 @@ export class Task {
                         elementLabel = `${this.settings.element_labels[label][0].toUpperCase()}`
 
                     if(shortLabel)
-                        elementLabel = `${this.settings.element_labels[shortLabel][0].toUpperCase()}`
+                        elementLabel = `${this.settings.element_labels[shortLabel].toUpperCase()}`
                 }
                 elementLabel = `${elementLabel}${elementIndexPretty}`;
             } else {
