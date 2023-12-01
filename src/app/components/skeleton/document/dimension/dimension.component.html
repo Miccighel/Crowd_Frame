@@ -86,19 +86,20 @@
                                     </ng-container>
                                     <ng-container *ngIf="dimension.scale.type=='interval'">
                                         <div class="scale-interval">
-                                            <mat-slider
-                                                    min="{{dimension.scale.min}}" max="{{dimension.scale.max}}"
-                                                    step="{{dimension.scale.step}}"
-                                                    formControlName="{{(dimension.name).concat('_value')}}"
+                                            <mat-slider min="{{dimension.scale.min}}" max="{{dimension.scale.max}}" step="{{dimension.scale.step}}" discrete>
+                                                    <input matSliderThumb formControlName="{{(dimension.name).concat('_value')}}"
                                                     (change)="this.task.storeDimensionValue($event, documentIndex,dimension.index);"
                                                     [attr.disabled]="this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior=='disable_forms'">
                                             </mat-slider>
-                                            <span *ngIf="assessmentForm.controls[(dimension.name).concat('_value')].value==''">
-                                                #
+                                            <span *ngIf="assessmentForm.controls[(dimension.name).concat('_value')].value==''" i18n>
+                                                Value: #
+                                            </span> 
+                                            <span *ngIf="assessmentForm.controls[(dimension.name).concat('_value')].value!=''" i18n>
+                                                Value: {{assessmentForm.controls[(dimension.name).concat('_value')].value}}
                                             </span>
-                                            <span *ngIf="assessmentForm.controls[(dimension.name).concat('_value')].value!=''">
-                                                {{assessmentForm.controls[(dimension.name).concat('_value')].value}}
-                                            </span>
+                                            <mat-error *ngIf="this.utilsService.hasError(assessmentForm, (dimension.name).concat('_value'), 'required')">
+                                                <span i18n>This field is required</span>
+                                            </mat-error>
                                         </div>
                                     </ng-container>
                                     <ng-container *ngIf="dimension.scale.type=='magnitude_estimation'">
@@ -322,13 +323,14 @@
                                         <div class="dimension-split-inside dimension-box" *ngFor="let pairwiseElement of this.task.documents[documentIndex]['pairwise']; let k=index">
                                             <p class="spanDocument"><span i18n>Answer for Element</span> {{k}}</p>
                                             <label style="margin-left:10px;"><span i18n> Selected value: </span>{{assessmentForm.controls[(dimension.name).concat('_value_element_').concat(k)].value}}</label>
-                                            <mat-slider
-                                                    min="{{dimension.scale.min}}" max="{{dimension.scale.max}}"
-                                                    step="{{dimension.scale.step}}"
-                                                    formControlName="{{(dimension.name).concat('_value_element_').concat(k)}}"
-                                                    (change)="this.task.storeDimensionValue($event, documentIndex,dimension.index); updateDimensionValueSelection(documentIndex,dimension.index,k)"
-                                                    [attr.disabled]="this.task.countdownsExpired[documentIndex]">
+                                            <mat-slider min="{{dimension.scale.min}}" max="{{dimension.scale.max}}" step="{{dimension.scale.step}}" discrete>
+                                                <input matSliderThumb formControlName="{{(dimension.name).concat('_value_element_').concat(k)}}"
+                                                (change)="this.task.storeDimensionValue($event, documentIndex,dimension.index); updateDimensionValueSelection(documentIndex,dimension.index,k)"
+                                                [attr.disabled]="this.task.countdownsExpired[documentIndex]">
                                             </mat-slider>
+                                            <mat-error *ngIf="this.utilsService.hasError(assessmentForm, (dimension.name).concat('_value_element_').concat(k), 'required')">
+                                                <span i18n>This field is required</span>
+                                            </mat-error>
                                         </div>
                                     </ng-container>
 
