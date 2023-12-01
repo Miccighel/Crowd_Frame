@@ -93,31 +93,19 @@ export class UtilsService {
         }
     }
 
-    public numberGreaterThanWithCommasAsDecimals(minValue: number): ValidatorFn {
+    public numberGreaterThanValidator(minValue: number): ValidatorFn {
         return (control: AbstractControl): ValidationErrors | null => {
             if (control.value === null || control.value === undefined || control.value === '') {
                 return {required: true};
             } else {
-                if (/^[0-9.,]+$/.test(control.value)) {
-                    let pattern = /^[+-]?([1-9]\d*([.,]\d{3})*([.,]\d+)?|0*[.,]\d*[1-9]\d*|0{0,2})$/;
-                    const isValidFormat = pattern.test(control.value);
-                    if (!isValidFormat)
-                        return {numberFormat: true};
-                    let value = control.value
+                let pattern = /^[+-]?(([1-9][0-9]{3,}|[1-9][0-9]{0,2}((\s[0-9]{3})*|('[0-9]{3})*))([\.,][0-9]+)?|[0]?([\.,][0-9]+)?)$/;
+                const isValidFormat = pattern.test(control.value);
+                if (!isValidFormat)
+                    return {numberFormat: true};
+                
+                const numericValue = +String(control.value).replace(/,/g, ".").replace(/'/g, "").replace(/ /g, ""); // Extract numeric value
 
-                    console.log(value)
-                    console.log(parseFloat(value))
-                    // TODO: WE NEED A PARSING FUNCTION TO NORMALIZE THE NUMBER HERE AND CHECK IF IT IS VALID
-                    // AFTER THE VALIDATION, SOMEHWERE ELSE, THE CONTROL VALUE MUST BE PATCHED...
-
-                    if (parseFloat(value) > minValue) {
-                        return null
-                    } else
-                        return {numberGreaterThan: true}
-                } else {
-                    return {numberFormat: true}
-                }
-
+                return numericValue > minValue ? null : {numberGreaterThan: true}
             }
         };
     }
