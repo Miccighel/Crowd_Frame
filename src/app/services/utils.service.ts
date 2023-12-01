@@ -93,17 +93,20 @@ export class UtilsService {
         }
     }
 
-    public numberGreaterThanWithCommasAsDecimals(minValue: number): ValidatorFn {
+    public numberGreaterThanValidator(minValue: number): ValidatorFn {
         return (control: AbstractControl): ValidationErrors | null => {
-            let pattern = /^[+-]?(\d{1,3}([.,]\d{3})*([.,]\d+)?|\d*[.,]\d+|\d+)$/;
-            const isValidFormat = pattern.test(control.value);
-            if (!isValidFormat)
-                return {numberFormat: true};
-            const numericValue = +control.value.replace(/[^\d.-]/g, ''); // Extract numeric value
-            if (numericValue > minValue)
-                return null
-            else
-                return {numberGreaterThan: true}
+            if (control.value === null || control.value === undefined || control.value === '') {
+                return {required: true};
+            } else {
+                let pattern = /^[+-]?(([1-9][0-9]{3,}|[1-9][0-9]{0,2}((\s[0-9]{3})*|('[0-9]{3})*))([\.,][0-9]+)?|[0]?([\.,][0-9]+)?)$/;
+                const isValidFormat = pattern.test(control.value);
+                if (!isValidFormat)
+                    return {numberFormat: true};
+                
+                const numericValue = +String(control.value).replace(/,/g, ".").replace(/'/g, "").replace(/ /g, ""); // Extract numeric value
+
+                return numericValue > minValue ? null : {numberGreaterThan: true}
+            }
         };
     }
 
@@ -122,34 +125,6 @@ export class UtilsService {
         for (let i = 0; i < length; i++)
             result += characters.charAt(Math.floor(Math.random() * charactersLength));
         return result;
-    }
-
-    public generateGoldConfiguration(goldDocuments, goldDimensions, documentsForm, notes) {
-        let goldConfiguration = [];
-
-        /* For each gold document its attribute, answers and notes are retrieved to build a gold configuration */
-        for (let goldDocument of goldDocuments) {
-            if(goldDocument.index<documentsForm.length){
-                let currentConfiguration = {};
-                currentConfiguration["document"] = goldDocument;
-                let answers = {};
-                for (let goldDimension of goldDimensions) {
-                    for (let [attribute, value] of Object.entries(
-                        documentsForm[goldDocument.index].value
-                    )) {
-                        let dimensionName = attribute.split("_")[0];
-                        if (dimensionName == goldDimension.name) {
-                            answers[attribute] = value;
-                        }
-                    }
-                }
-                currentConfiguration["answers"] = answers;
-                currentConfiguration["notes"] = notes ? notes[goldDocument.index] : [];
-                goldConfiguration.push(currentConfiguration);
-            }
-        }
-
-        return goldConfiguration;
     }
 
     /* This function is used to wait for a full initialization of the body, before deserializing the previous highlights */

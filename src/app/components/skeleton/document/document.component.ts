@@ -123,7 +123,7 @@ export class DocumentComponent implements OnInit {
             let docsForms = this.documentsForm.slice()
             docsForms.push(this.assessmentForm)
 
-            let goldConfiguration = this.utilsService.generateGoldConfiguration(this.task.goldDocuments, this.task.goldDimensions, docsForms, this.task.notes);
+            let goldConfiguration = this.task.generateGoldConfiguration(this.task.goldDocuments, this.task.goldDimensions, docsForms, this.task.notes);
             let goldChecks = GoldChecker.performGoldCheck(goldConfiguration, this.document.params['task_type']);
 
             if (goldChecks.every(Boolean)) {

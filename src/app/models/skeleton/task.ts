@@ -1,7 +1,7 @@
 import {Document} from "../../../../data/build/skeleton/document";
 import {BaseInstruction} from "./instructions/baseInstruction";
 import {Questionnaire} from "./questionnaires/questionnaire";
-import {Dimension} from "./dimension";
+import {Dimension, ScaleMagnitude} from "./dimension";
 import {Note} from "./annotators/notes";
 import {NoteStandard} from "./annotators/notesStandard";
 import {NoteLaws} from "./annotators/notesLaws";
@@ -415,6 +415,34 @@ export class Task {
         }
     }
 
+    public generateGoldConfiguration(goldDocuments, goldDimensions, documentsForm, notes) {
+        let goldConfiguration = [];
+
+        /* For each gold document its attribute, answers and notes are retrieved to build a gold configuration */
+        for (let goldDocument of goldDocuments) {
+            if(goldDocument.index<documentsForm.length){
+                let currentConfiguration = {};
+                currentConfiguration["document"] = goldDocument;
+                let answers = {};
+                for (let goldDimension of goldDimensions) {
+                    for (let [attribute, value] of Object.entries(
+                        documentsForm[goldDocument.index].value
+                    )) {
+                        let dimensionName = attribute.split("_")[0];
+                        if (dimensionName == goldDimension.name) {
+                            answers[attribute] = goldDimension.scale && goldDimension.scale instanceof ScaleMagnitude ? +String(value).replace(/,/g, ".").replace(/'/g, "").replace(/ /g, "") : value;
+                        }
+                    }
+                }
+                currentConfiguration["answers"] = answers;
+                currentConfiguration["notes"] = notes ? notes[goldDocument.index] : [];
+                goldConfiguration.push(currentConfiguration);
+            }
+        }
+
+        return goldConfiguration;
+    }
+
     /* This function is used to sort each dimension that a worker have to assess according the position specified */
     public filterDimensions(kind: string, position: string) {
         let filteredDimensions = [];
@@ -589,7 +617,7 @@ export class Task {
         let currentDimension = dimension;
         /* A reference to the current dimension is saved */
         this.currentDimension = currentDimension;
-        let currentValue = eventTarget.value;
+        let currentValue = +String(eventTarget.value).replace(/,/g, ".").replace(/'/g, "").replace(/ /g, "");
         let timeInSeconds = Date.now() / 1000;
         /* If some data for the current document already exists*/
         if (this.dimensionsSelectedValues[currentDocument]["amount"] > 0) {
@@ -964,6 +992,15 @@ export class Task {
         /* Info about the performed action ("Next"? "Back"? From where?) */
         data["info"] = actionInfo;
         /* Worker's answers for the current document */
+        for (let [attribute, value] of Object.entries(answers)) {
+            let answerDimensionName = attribute.split("_")[0];
+            for (let dimension of this.dimensions) {
+                if (answerDimensionName == dimension.name) {
+                    answers[attribute] = dimension.scale && dimension.scale instanceof ScaleMagnitude ? +String(value).replace(/,/g, ".").replace(/'/g, "").replace(/ /g, "") : value;
+                    break
+                }
+            }
+        }
         data["answers"] = answers;
         let notes = this.settings.annotator ? this.notes[elementData['elementIndex']] : [];
         data["notes"] = notes;

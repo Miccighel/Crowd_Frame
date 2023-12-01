@@ -88,8 +88,8 @@ export class DimensionComponent implements OnInit {
                             }
 
                             if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value`] = new UntypedFormControl(answerValue, [Validators.required]);
-                            if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value`] = new UntypedFormControl(answerValue, [Validators.required, this.utilsService.numberGreaterThanWithCommasAsDecimals(((<ScaleInterval>dimension.scale).min))])
-                            if (dimension.scale.type == "magnitude_estimation") controlsConfig[`${dimension.name}_value`] = new UntypedFormControl(answerValue, [Validators.required, this.utilsService.numberGreaterThanWithCommasAsDecimals(((<ScaleMagnitude>dimension.scale).min))]);
+                            if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value`] = new UntypedFormControl(answerValue, [this.utilsService.numberGreaterThanValidator(((<ScaleInterval>dimension.scale).min))])
+                            if (dimension.scale.type == "magnitude_estimation") controlsConfig[`${dimension.name}_value`] = new UntypedFormControl(answerValue, [this.utilsService.numberGreaterThanValidator(((<ScaleMagnitude>dimension.scale).min))]);
                         }
                         if (dimension.justification) {
                             let answerJustification: string = ''
@@ -104,8 +104,8 @@ export class DimensionComponent implements OnInit {
                                 if (this.previousDataRecord)
                                     answerValue = this.previousDataRecord.loadAnswers()[`${dimension.name}_value_element_${j}`]
                                 if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl(answerValue, [Validators.required]);
-                                if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl(answerValue, [Validators.required, this.utilsService.numberGreaterThanWithCommasAsDecimals(((<ScaleInterval>dimension.scale).min))])
-                                if (dimension.scale.type == "magnitude_estimation") controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl(answerValue, [Validators.required, this.utilsService.numberGreaterThanWithCommasAsDecimals(((<ScaleMagnitude>dimension.scale).min))]);
+                                if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl(answerValue, [this.utilsService.numberGreaterThanValidator(((<ScaleInterval>dimension.scale).min))])
+                                if (dimension.scale.type == "magnitude_estimation") controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl(answerValue, [this.utilsService.numberGreaterThanValidator(((<ScaleMagnitude>dimension.scale).min))]);
                             }
                             if (dimension.justification) {
                                 let answerJustification: string = ''

@@ -1021,7 +1021,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
 
         /* 2) GOLD ELEMENTS CHECK performed here */
 
-        let goldConfiguration = this.utilsService.generateGoldConfiguration(this.task.goldDocuments, this.task.goldDimensions, this.documentsForm, this.task.notes);
+        let goldConfiguration = this.task.generateGoldConfiguration(this.task.goldDocuments, this.task.goldDimensions, this.documentsForm, this.task.notes);
 
         /* The gold configuration is evaluated using the static method implemented within the GoldChecker class */
         let goldChecks = GoldChecker.performGoldCheck(goldConfiguration);
