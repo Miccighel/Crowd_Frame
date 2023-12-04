@@ -527,11 +527,11 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">106</context>
+          <context context-type="linenumber">107</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">339</context>
+          <context context-type="linenumber">341</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/questionnaire/questionnaire.component.html</context>
@@ -1704,23 +1704,31 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">111</context>
+          <context context-type="linenumber">101</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">155</context>
+          <context context-type="linenumber">112</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">242</context>
+          <context context-type="linenumber">156</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">344</context>
+          <context context-type="linenumber">243</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">381</context>
+          <context context-type="linenumber">332</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
+          <context context-type="linenumber">346</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
+          <context context-type="linenumber">383</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/search-engine/search-engine.component.html</context>
@@ -1748,115 +1756,129 @@
           <context context-type="linenumber">49</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="9681be162ad31ea068367b5b0c8573aa9068bf65" datatype="html">
+        <source> Value: # </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
+          <context context-type="linenumber">94,96</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="0ac20caf8023bb965084886a65697e56165301d9" datatype="html">
+        <source> Value: <x id="INTERPOLATION" equiv-text="{{assessmentForm.controls[(dimension.name).concat(&apos;_value&apos;)].value}}"/> </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
+          <context context-type="linenumber">97,99</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="e56e46598c0bd8e1614772903f5c76bf266d03d1" datatype="html">
         <source>Value has to be a number (whole or decimal)</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">114</context>
+          <context context-type="linenumber">115</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">347</context>
+          <context context-type="linenumber">349</context>
         </context-group>
       </trans-unit>
       <trans-unit id="a7bda639394b4f4f661248f959dcf977f0c2a781" datatype="html">
         <source>Value has to be greater than </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">117</context>
+          <context context-type="linenumber">118</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">350</context>
+          <context context-type="linenumber">352</context>
         </context-group>
       </trans-unit>
       <trans-unit id="ca875b5767a92f618bde57d20be0e0886c9b4a7d" datatype="html">
         <source>This justification must have at least</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">158</context>
+          <context context-type="linenumber">159</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">245</context>
+          <context context-type="linenumber">246</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">384</context>
+          <context context-type="linenumber">386</context>
         </context-group>
       </trans-unit>
       <trans-unit id="de7c896e341678db38b06140c7e490a925292b02" datatype="html">
         <source>words</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">158</context>
+          <context context-type="linenumber">159</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">245</context>
+          <context context-type="linenumber">246</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">384</context>
+          <context context-type="linenumber">386</context>
         </context-group>
       </trans-unit>
       <trans-unit id="584fa2cdd395f560b05e658e34c303cd0d688276" datatype="html">
         <source>You cannot use the selected search engine url as part of the justification.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">161</context>
+          <context context-type="linenumber">162</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">248</context>
+          <context context-type="linenumber">249</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">387</context>
+          <context context-type="linenumber">389</context>
         </context-group>
       </trans-unit>
       <trans-unit id="086437bf565043695b294fd10c8b39bbb4f6150b" datatype="html">
         <source>Answer for Element</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">306</context>
+          <context context-type="linenumber">307</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">323</context>
+          <context context-type="linenumber">324</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">337</context>
+          <context context-type="linenumber">339</context>
         </context-group>
       </trans-unit>
       <trans-unit id="e306be473ab320e5827eb58cac76918051022af0" datatype="html">
         <source> Selected value: </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">324</context>
+          <context context-type="linenumber">325</context>
         </context-group>
       </trans-unit>
       <trans-unit id="87c984fcd18d94db550b95be57ead0f489a0185f" datatype="html">
         <source>TO BE IMPLEMENTED</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">360</context>
+          <context context-type="linenumber">362</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">363</context>
+          <context context-type="linenumber">365</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">366</context>
+          <context context-type="linenumber">368</context>
         </context-group>
       </trans-unit>
       <trans-unit id="ba359bf9e071d1ddcafad117c5afd32cd568dc52" datatype="html">
         <source>Justification for Element</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
-          <context context-type="linenumber">375</context>
+          <context context-type="linenumber">377</context>
         </context-group>
       </trans-unit>
       <trans-unit id="36cbcf1f0f19bf4570d225661945b5a044904cd7" datatype="html">
