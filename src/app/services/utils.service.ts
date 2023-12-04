@@ -95,17 +95,22 @@ export class UtilsService {
 
     public numberGreaterThanValidator(minValue: number): ValidatorFn {
         return (control: AbstractControl): ValidationErrors | null => {
-            if (control.value === null || control.value === undefined || control.value === '') {
+            const value = control.value
+            if (value === null || value === undefined || value === '') {
                 return {required: true};
             } else {
-                let pattern = /^[+-]?(([1-9][0-9]{3,}|[1-9][0-9]{0,2}((\s[0-9]{3})*|('[0-9]{3})*))([\.,][0-9]+)?|[0]?([\.,][0-9]+)?)$/;
-                const isValidFormat = pattern.test(control.value);
-                if (!isValidFormat)
-                    return {numberFormat: true};
-                
-                const numericValue = +String(control.value).replace(/,/g, ".").replace(/'/g, "").replace(/ /g, ""); // Extract numeric value
+                if (/^[0-9\.,+-\s]+$/.test(value)) {
+                    let pattern = /^[+-]?(([1-9][0-9]{3,}|[1-9][0-9]{0,2}(,[0-9]{3})*)([\.][0-9]+)?|[0]?([\.][0-9]+)?)$/;
+                    const isValidFormat = pattern.test(value);
+                    if (!isValidFormat)
+                        return {numberFormat: true};
+                    
+                    const numericValue = +String(value).replace(/,/g, ""); // Extract numeric value
 
-                return numericValue > minValue ? null : {numberGreaterThan: true}
+                    return numericValue > minValue ? null : {numberGreaterThan: true}
+                } else {
+                    return {isNumber: true};
+                }
             }
         };
     }
