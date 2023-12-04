@@ -430,7 +430,7 @@ export class Task {
                     )) {
                         let dimensionName = attribute.split("_")[0];
                         if (dimensionName == goldDimension.name) {
-                            answers[attribute] = goldDimension.scale && goldDimension.scale instanceof ScaleMagnitude ? +String(value).replace(/,/g, ".").replace(/'/g, "").replace(/ /g, "") : value;
+                            answers[attribute] = goldDimension.scale && goldDimension.scale instanceof ScaleMagnitude ? +String(value).replace(/,/g, "") : value;
                         }
                     }
                 }
@@ -617,7 +617,7 @@ export class Task {
         let currentDimension = dimension;
         /* A reference to the current dimension is saved */
         this.currentDimension = currentDimension;
-        let currentValue = +String(eventTarget.value).replace(/,/g, ".").replace(/'/g, "").replace(/ /g, "");
+        let currentValue = +String(eventTarget.value).replace(/,/g, "");
         let timeInSeconds = Date.now() / 1000;
         /* If some data for the current document already exists*/
         if (this.dimensionsSelectedValues[currentDocument]["amount"] > 0) {
@@ -996,7 +996,7 @@ export class Task {
             let answerDimensionName = attribute.split("_")[0];
             for (let dimension of this.dimensions) {
                 if (answerDimensionName == dimension.name) {
-                    answers[attribute] = dimension.scale && dimension.scale instanceof ScaleMagnitude ? +String(value).replace(/,/g, ".").replace(/'/g, "").replace(/ /g, "") : value;
+                    answers[attribute] = dimension.scale && dimension.scale instanceof ScaleMagnitude ? +String(value).replace(/,/g, "") : value;
                     break
                 }
             }
