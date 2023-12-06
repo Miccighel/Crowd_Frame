@@ -352,7 +352,7 @@
                                                     <span i18n>Value has to be a number (whole or decimal)</span>
                                                 </mat-error>
                                                 <mat-error *ngIf="this.utilsService.hasError(assessmentForm, (dimension.name).concat('_value_element_').concat(k), 'numberFormat')">
-                                                    <span i18n>Numbers must be expressed in the international format, using a dot as the decimal separator and, optionally, comma as the thousands separator (e.g., 123,456.78)</span>
+                                                    <span i18n>Numbers must be expressed in the international format, using a dot as the decimal separator and, optionally, a comma as the thousands separator (e.g., 1,234.5)</span>
                                                 </mat-error>
                                                 <mat-error *ngIf="this.utilsService.hasError(assessmentForm, (dimension.name).concat('_value_element_').concat(k), 'numberGreaterThan')">
                                                     <span i18n>Value has to be greater than </span> {{dimension.scale.min}}
