@@ -224,7 +224,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         this.worker.updateProperties("navigator", window.navigator);
 
         this.client
-            .get("https://www.cloudflare.com/cdn-cgi/trace", { responseType: "text" })
+            .get("https://www.cloudflare.com/cdn-cgi/trace", {responseType: "text"})
             .pipe(
                 tap((cloudflareData) => {
                     /* If the Cloudflare request is successful, update the worker's properties */
@@ -357,16 +357,6 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         if (!this.sectionService.taskAlreadyCompleted && !this.sectionService.taskFailed) {
             this.worker.settings = new WorkerSettings(this.S3Service.downloadWorkers(this.configService.environment));
 
-            /* The logging service is enabled if it is needed */
-            if (this.task.settings.logger_enable)
-                this.logInit(
-                    this.worker.identifier,
-                    this.configService.environment.taskName,
-                    this.configService.environment.batchName,
-                    this.client,
-                    this.configService.environment.log_on_console
-                );
-            else this.actionLogger = null;
 
             this.performWorkerStatusCheck().then(async (taskAllowed) => {
                 this.sectionService.taskAllowed = taskAllowed;
@@ -381,10 +371,9 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                         /* It there is not any record, an available HIT can be assigned to him */
                         if (workerACLRecord["Items"].length <= 0) {
                             for (let hit of hits) {
+                                hitCompletionStatus[hit['unit_id']] = false
                                 /* The status of each HIT is checked */
-                                let unitACLRecord =
-                                    await this.dynamoDBService.getACLRecordUnitId(this.configService.environment, hit["unit_id"]
-                                    );
+                                let unitACLRecord = await this.dynamoDBService.getACLRecordUnitId(this.configService.environment, hit["unit_id"]);
                                 /* If it has not been assigned, the current worker can receive it */
                                 if (unitACLRecord["Items"].length <= 0) {
                                     this.worker.setParameter("unit_id", hit["unit_id"]);
@@ -440,15 +429,59 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                                     }
 
                                     /* As soon as a HIT is assigned to the current worker the search can be stopped */
-                                    if (hitAssigned) break;
+                                    if (hitAssigned)
+                                        break;
                                 }
+
+                                if (!hitAssigned) {
+                                    let inconsistentUnits = []
+                                    for (const [unitId, status] of Object.entries(hitCompletionStatus)) {
+                                        if (status == false)
+                                            if (!inconsistentUnits.includes(unitId))
+                                                inconsistentUnits.push(unitId)
+                                    }
+
+                                    if (inconsistentUnits.length > 0) {
+                                        wholeEntries = await this.retrieveAllACLEntries();
+                                        for (const inconsistentUnit of inconsistentUnits) {
+                                            let mostRecentAclEntry = null
+                                            for (let aclEntry of wholeEntries) {
+                                                if (aclEntry["ip_address"] != this.worker.getIP()) {
+                                                    if (
+                                                        (/true/i.test(aclEntry["paid"]) == false && /true/i.test(aclEntry["in_progress"]) == false) &&
+                                                        inconsistentUnit == aclEntry['unit_id']
+                                                    ) {
+                                                        mostRecentAclEntry = aclEntry
+
+                                                    }
+                                                }
+                                            }
+                                            if (mostRecentAclEntry) {
+                                                hitAssigned = true;
+                                                this.worker.setParameter("token_input", mostRecentAclEntry["token_input"]);
+                                                this.worker.setParameter("token_output", mostRecentAclEntry["token_output"]);
+                                                this.worker.setParameter("unit_id", mostRecentAclEntry["unit_id"]);
+                                                this.worker.setParameter("time_arrival", new Date().toUTCString());
+                                                this.worker.setParameter("status_code", StatusCodes.TASK_HIT_ASSIGNED_AFTER_INCONSISTENCY_CHECK);
+                                                this.tokenInput.setValue(mostRecentAclEntry["token_input"]);
+                                                await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker);
+                                            }
+                                            /* As soon as a HIT is assigned to the current worker the search can be stopped */
+                                            if (hitAssigned)
+                                                break;
+                                        }
+
+                                    }
+                                }
+
                             }
+
                         }
 
                         if (!hitAssigned) {
                             let hitsStillToComplete = false;
                             for (let hit of hits) {
-                                if (!Object.keys(hitCompletionStatus).includes(hit["unit_id"]))
+                                if (hitCompletionStatus[hit["unit_id"]] == false)
                                     hitsStillToComplete = true;
                             }
                             if (hitsStillToComplete)
@@ -885,7 +918,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         let timeCheckAmount = this.task.getTimesCheckAmount();
         for (let i = 0; i <= jumpIndex; i++) {
             let idx = null
-            if (i >= this.task.questionnaireAmountStart && i < this.task.questionnaireAmountStart + this.task.documentsAmount){
+            if (i >= this.task.questionnaireAmountStart && i < this.task.questionnaireAmountStart + this.task.documentsAmount) {
                 objAllowBack = this.task.documents[i - this.task.questionnaireAmountStart]["params"]
                 objFormValidity = this.documentsForm[i - this.task.questionnaireAmountStart]
             } else {
@@ -895,18 +928,18 @@ export class SkeletonComponent implements OnInit, OnDestroy {
             }
 
             // if is questionnaire the chack has to be done before
-            if(idx!=null)
+            if (idx != null)
                 failChecksCurrent = failChecksCurrent || objFormValidity.valid == false || this.task.timestampsElapsed[i] < timeCheckAmount[i]
 
-            if(objAllowBack["allow_back"]==false){
-                if(failChecksCurrent)
+            if (objAllowBack["allow_back"] == false) {
+                if (failChecksCurrent)
                     return Math.min(lastAllowBackIdx, this.task.questionnaireAmount + this.task.documentsAmount - 1)
 
-                lastAllowBackIdx = idx==null ? i : i + 1
+                lastAllowBackIdx = idx == null ? i : i + 1
             }
 
             // if is document the chack has to be done after
-            if(idx==null)
+            if (idx == null)
                 failChecksCurrent = failChecksCurrent || objFormValidity.valid == false || this.task.timestampsElapsed[i] < timeCheckAmount[i]
         }
         return Math.min(jumpIndex, this.task.questionnaireAmount + this.task.documentsAmount - 1)
@@ -1030,7 +1063,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         timeSpentCheck = true;
 
         for (let i = 0; i < this.task.timestampsElapsed.length; i++) {
-            if(this.task.timestampsElapsed[i] < timeCheckAmount[i]){
+            if (this.task.timestampsElapsed[i] < timeCheckAmount[i]) {
                 timeSpentCheck = false
                 break
             }
