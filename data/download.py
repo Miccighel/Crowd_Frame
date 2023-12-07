@@ -1736,7 +1736,6 @@ if 'prolific' in platforms:
                             for row in demo_list[1:]:
                                 df_demo_raw.loc[len(df_demo_raw)] = row
                             for index, row_raw in df_demo_raw.iterrows():
-                                fluent_languages = row_raw['Fluent languages'].split(",")
                                 row = {
                                     "worker_id": row_raw['Participant id'],
                                     "workspace_id": study_current_add['workspace'],
@@ -1753,13 +1752,13 @@ if 'prolific' in platforms:
                                     'submission_date_archived_parsed': find_date_string(row_raw['Archived at'], seconds=True),
                                     'submission_time_elapsed_seconds': float(row_raw['Time taken']) if row_raw['Time taken'] != '' else np.nan,
                                     'worker_sex': row_raw['Sex'],
-                                    'worker_languages_fluent': ":::".join(row_raw['Fluent languages'].split(", ")),
                                     'worker_age': row_raw['Age'],
                                     'worker_ethnicity_simplified': row_raw['Ethnicity simplified'],
                                     'worker_country_birth': row_raw['Country of birth'],
                                     'worker_country_residence': row_raw['Country of residence'],
                                     'worker_nationality': row_raw['Nationality'],
                                     'worker_language': row_raw['Language'],
+                                    'worker_languages_fluent': ":::".join(row_raw['Fluent languages'].split(", ")) if 'Fluent languages' in row_raw else np.nan,
                                     'worker_student_status': row_raw['Student status'],
                                     'worker_employment_status': row_raw['Employment status'],
                                 }
@@ -1945,9 +1944,9 @@ if not os.path.exists(df_log_path):
                         'task_started': task_started,
                         'sequence': data_log['sequence'],
                         'time_server': data_log['time_server'],
-                        'time_server_parsed': find_date_string(datetime.fromtimestamp(float(data_log['time_server']), timezone('GMT')).strftime('%c')),
+                        'time_server_parsed': find_date_string(datetime.fromtimestamp(float(data_log['time_server']) / 1000, timezone('GMT')).strftime('%c')),
                         'time_client': data_log['time_client'],
-                        'time_client_parsed': find_date_string(datetime.fromtimestamp(float(data_log['time_client']), timezone('GMT')).strftime('%c')),
+                        'time_client_parsed': find_date_string(datetime.fromtimestamp(float(data_log['time_client']) / 1000, timezone('GMT')).strftime('%c')),
                         'type': data_log['type'],
                     }
 
@@ -2076,7 +2075,8 @@ if not os.path.exists(df_log_path):
                             if 'log_query' not in df_logs_part.columns:
                                 df_logs_part['log_query'] = np.nan
                             row['log_section'] = log_details['section']
-                            row['log_query'] = log_details['query'].replace("\n", '')
+                            row['log_query_text'] = log_details['query']['text']
+                            row['log_query_text_encoded'] = log_details['query']['encoded']
                             df_logs_part.loc[len(df_logs_part)] = row
                         else:
                             print(data_log['type'])
@@ -2086,7 +2086,7 @@ if not os.path.exists(df_log_path):
 
             if len(df_logs_part) > 0:
                 os.makedirs(df_log_partial_folder_path, exist_ok=True)
-                dataframe.to_csv(df_logs_part_path, index=False)
+                df_logs_part.to_csv(df_logs_part_path, index=False)
 
     dataframes_partial = []
     df_partials_paths = glob(f"{df_log_partial_folder_path}/*")
@@ -2470,7 +2470,7 @@ def load_elem_col_names(documents):
         for current_attribute in current_attributes:
             if current_attribute == "params":
                 for current_parameter, current_parameter_value in document[current_attribute].items():
-                    if(current_parameter == "check_gold"):
+                    if (current_parameter == "check_gold"):
                         for check_gold_parameter in current_parameter_value.keys():
                             if f"{current_parameter}_{check_gold_parameter}" not in columns:
                                 columns.append(f"{current_parameter}_{check_gold_parameter}")
@@ -2504,7 +2504,7 @@ if not os.path.exists(df_docs_path):
                 if column not in df_docs:
                     df_docs[column] = np.nan
 
-            if len(documents)>0:
+            if len(documents) > 0:
 
                 for document in documents:
 
@@ -2524,7 +2524,7 @@ if not os.path.exists(df_docs_path):
                                 row[f"document_{element_attribute}"] = element_value
                             elif element_attribute == 'params':
                                 for parameter_name, parameter_value in element_value.items():
-                                    if(parameter_name == "check_gold"):
+                                    if (parameter_name == "check_gold"):
                                         for check_gold_name, check_gold_value in parameter_value.items():
                                             row[f"{parameter_name}_{check_gold_name}"] = check_gold_value
                                     else:
@@ -2571,7 +2571,6 @@ else:
 
     console.print(f"Documents dataframe [yellow]already detected[/yellow], skipping creation")
     console.print(f"Serialized at path: [cyan on white]{df_docs_path}")
-
 
 console.rule(f"{step_index} - Building [cyan on white]workers_answers[/cyan on white] dataframe")
 step_index = step_index + 1
@@ -2633,6 +2632,7 @@ df_answ = pd.DataFrame()
 
 def check_task_type(doc, typeslist):
     return typeslist != False if not typeslist else typeslist == True or (doc["params"]['task_type'].lower() in [x.lower() for x in typeslist])
+
 
 if not os.path.exists(df_data_path):
 
@@ -2748,9 +2748,9 @@ if not os.path.exists(df_data_path):
                         attribute_name = current_attribute
                         current_attribute_value = documents[document_data['serialization']['info']['index']][current_attribute]
                         if current_attribute in attributes_allowed:
-                            if current_attribute=='id':
+                            if current_attribute == 'id':
                                 row[f"document_{current_attribute}"] = current_attribute_value
-                            elif current_attribute=='index':
+                            elif current_attribute == 'index':
                                 row[f"document_{attribute_name}"] = int(current_attribute_value)
                             else:
                                 row[f"{attribute_name}"] = current_attribute_value
@@ -2804,9 +2804,9 @@ else:
     console.print(f"Workers dataframe [yellow]already detected[/yellow], skipping creation")
     console.print(f"Serialized at path: [cyan on white]{df_data_path}")
 
-
 console.rule(f"{step_index} - Building [cyan on white]workers_notes[/cyan on white] dataframe")
 step_index = step_index + 1
+
 
 def load_notes_col_names():
     columns = []
@@ -3408,7 +3408,7 @@ if enable_crawling:
                 'response_uuid': result_uuid,
                 'response_url': result_url,
                 'response_timestamp': timestamp_now,
-                'response_timestamp_parsed': find_date_string(timestamp_now),
+                'response_timestamp_parsed': find_date_string(datetime.fromtimestamp(timestamp_now).strftime('%c')),
                 "response_error_code": None,
                 'response_source_path': None,
                 'response_metadata_path': None,
