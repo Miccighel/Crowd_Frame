@@ -26,6 +26,10 @@
 			"required": false
 		}
 	],
+	"element_labels": {
+		"main": "Tweet",
+		"main_short": "T"
+	},
 	"annotator": {
 		"type": "options",
 		"values": [

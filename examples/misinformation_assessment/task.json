@@ -68,6 +68,10 @@
 			"annotate": false
 		}
 	],
+	"element_labels": {
+		"main": "Statement",
+		"main_short": "S"
+	},
 	"annotator": false,
 	"countdown_time": false,
     "countdown_behavior": false,
