@@ -52,7 +52,7 @@
     padding: 0;
     /*
   TODO(mdc-migration): The following rule targets internal classes of checkbox that may no longer apply for the MDC version.
-*/
+  */
     mat-checkbox {
         float: left;
         margin-right: 1%;
@@ -145,7 +145,7 @@
 }
 
 .dimension-matrix .matrix-value-control {
-     justify-content: center;
+    justify-content: center;
 }
 
 .dimension-matrix mat-radio-group .matrix-value-description {
@@ -209,8 +209,6 @@
 }
 
 .scale-interval {
-    margin-top: 1%;
-
     span {
         font-size: 1.1em;
     }

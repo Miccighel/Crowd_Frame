@@ -216,7 +216,7 @@
                             <div *ngIf="dimension.scale" class="{{dimension.style.separator ? ' dimension-separate' : ''}}">
                                 <mat-radio-group aria-labelledby="radio-button-label" formControlName="{{(dimension.name).concat('_value')}}">
                                     <div class="matrix-value name-pretty" *ngIf="dimension.name_pretty">
-                                        <p><strong><span *ngIf="!this.dimension.style.separator">{{i}} - </span>{{dimension.name_pretty}}</strong></p>
+                                        <p><strong><span *ngIf="!this.dimension.style.separator">{{i+1}} - </span>{{dimension.name_pretty}}</strong></p>
                                         <ng-container *ngIf="dimension.description">
                                             <div class="{{dimension.example ? '' : 'description-sub'}}" *ngIf="dimension.description.length>0">
                                                 <p>{{dimension.description}}</p>
