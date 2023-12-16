@@ -121,7 +121,6 @@ export class Task {
     public getElementIndex(stepIndex) {
         let elementType = "";
         let elementIndex = 0;
-        let overallIndex = 0;
         let elementLabel = "";
         if (
             stepIndex >= this.questionnaireAmountStart &&
@@ -129,7 +128,6 @@ export class Task {
         ) {
             elementType = "S";
             elementIndex = stepIndex - this.questionnaireAmountStart;
-            overallIndex = stepIndex - this.questionnaireAmountStart;
             let documentCurrent = this.documents[stepIndex - this.questionnaireAmountStart];
             if (documentCurrent && documentCurrent.params && 'task_type' in documentCurrent.params) {
                 const currentTaskType = (documentCurrent.params['task_type'] as string).toLowerCase();
@@ -154,7 +152,6 @@ export class Task {
         } else if (stepIndex < this.questionnaireAmountStart) {
             elementType = "Q";
             elementIndex = stepIndex;
-            overallIndex = stepIndex;
             elementLabel = `Q${elementIndex+1}`;
         } else if (
             stepIndex >= this.questionnaireAmountStart + this.documentsAmount &&
@@ -163,7 +160,6 @@ export class Task {
         ) {
             elementType = "Q";
             elementIndex = stepIndex - this.documentsAmount;
-            overallIndex = stepIndex - elementIndex + this.questionnaireAmountStart;
             elementLabel = `Q${elementIndex+1}`;
         } else if (
             stepIndex >= this.questionnaireAmountStart + this.documentsAmount &&
@@ -171,7 +167,6 @@ export class Task {
         ) {
             elementType = "Outcome";
             elementIndex = null;
-            overallIndex = null;
             elementLabel = null;
         } else if (
             stepIndex >= this.questionnaireAmountStart + this.documentsAmount &&
@@ -180,13 +175,12 @@ export class Task {
         ) {
             elementType = "Outcome";
             elementIndex = null;
-            overallIndex = null;
             elementLabel = null;
         }
         return {
             elementType: elementType,
             elementIndex: elementIndex,
-            overallIndex: overallIndex,
+            overallIndex: stepIndex,
             elementLabel: elementLabel
         };
     }

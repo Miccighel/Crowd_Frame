@@ -101,7 +101,8 @@ export class BingService {
     public filterResponse(response: BingWebSearchResponse, domains: Array<string>) {
         for (let domain of domains) {
             for (let i = 0; i < response.webPages.value.length; i++) {
-                if (response.webPages.value[i]['url'].indexOf(domain) > -1) response.webPages.value.splice(i--, 1);
+                if (response.webPages.value[i]['url'].indexOf(domain) > -1 || response.webPages.value[i]['snippet'].indexOf(domain) > -1)
+                    response.webPages.value.splice(i--, 1);
             }
         }
         return response
