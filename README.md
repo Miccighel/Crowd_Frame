@@ -805,6 +805,7 @@ The following table provides and overview of the whole set of dataframe produced
 |       `workers_ip_addresses.csv`        |                         Data concerning the IP addresses of the workers.                          |
 |        `workers_user_agents.csv`        |                      Data concerning the User Agent strings of the workers.                       |
 |          `workers_answers.csv`          |                    Answers provided for each evaluation dimension by workers.                     |
+|          `workers_documents.csv`          |                    Elements evaluated by workers during the crowdsourcing task.                 |
 |       `workers_questionnaire.csv`       |                        Answers provided for each questionnaire by workers                         |
 |   `workers_dimensions_selection.csv`    |       Temporal order along with each worker chooses a value for each evaluation dimension.        |
 |           `workers_notes.csv`           |                             Textual annotations provided by workers.                              |
