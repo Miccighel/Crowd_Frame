@@ -108,26 +108,26 @@ issues](https://badgen.net/github/issues/Miccighel/Crowd_Frame/)](https://GitHub
 
 12. Install python packages with `pip install -r your_repo_folder/requirements.txt`:
 
- ````
-aiohttp==3.9.0
-boto3==1.29.1
-botocore==1.32.1
-chardet==4.0.0
-datefinder==0.7.3
-ipinfo==4.4.2
-Mako==1.2.3
-numpy==1.26.2
-pandas==2.1.4
-pycountry==22.3.5
-python-dotenv==1.0.0
-python_dateutil==2.8.2
-python_on_whales==0.60.1
-pytz==2023.3.post1
-Requests==2.31.0
-rich==13.7.0
-setuptools==68.2.2
-tqdm==4.65.0
-````
+     ````
+    aiohttp==3.9.0
+    boto3==1.29.1
+    botocore==1.32.1
+    chardet==4.0.0
+    datefinder==0.7.3
+    ipinfo==4.4.2
+    Mako==1.2.3
+    numpy==1.26.2
+    pandas==2.1.4
+    pycountry==22.3.5
+    python-dotenv==1.0.0
+    python_dateutil==2.8.2
+    python_on_whales==0.60.1
+    pytz==2023.3.post1
+    Requests==2.31.0
+    rich==13.7.0
+    setuptools==68.2.2
+    tqdm==4.65.0
+    ````
 
 13. Run python script `init.py`
 
