@@ -30,7 +30,7 @@
                 <mat-header-cell *matHeaderCellDef i18n>{{estimatedMatches | number}} estimated matches found</mat-header-cell>
                 <mat-cell *matCellDef="let row; let i = index">
                     <p>
-                        <a target="_blank" href="{{ decodeURI(row.url) }}">{{ row.name }}</a>
+                        <a target="_blank" rel="noopener noreferrer" href="{{ decodeURI(row.url) }}">{{ row.name }}</a>
                         <br/>
                         <span>{{ decodeURI(row.url) }}</span>
                         <br/>
