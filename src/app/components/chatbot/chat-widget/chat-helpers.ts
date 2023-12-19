@@ -14,15 +14,13 @@ export default class ChatHelper {
 
     //Validazione dell'URL inserito
     static urlValid(msg): boolean {
-        let pattern = new RegExp(
-            "^(https?:\\/\\/)?" + // protocol
-            "((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|" + // domain name
-            "((\\d{1,3}\\.){3}\\d{1,3}))" + // OR ip (v4) address
-            "(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*" + // port and path
-            "(\\?[;&a-z\\d%_.~+=-]*)?" + // query string
-            "(\\#[-a-z\\d_]*)?$",
-            "i"
-        ); // fragment locator
+        let pattern = new RegExp("/^(https?:\/\/)?" + /* Protocol */
+            "(?:((\w(?:\w|-)*\.)+\w{2,})|" + /* Domain name */
+            "((\d{1,3}\.){3}\d{1,3}))" + /* Or, IP (v4) address */
+            "(?::\d+)?(\/[-\w\d%_.~+]*)*" + /* Port and path */
+            "(\?[;&\w%_.~+=-]*)?" + /* Query string */
+            "(#\w*)?$/i;"
+        ); /* Fragment locator */
         return !!pattern.test(msg);
     }
 
