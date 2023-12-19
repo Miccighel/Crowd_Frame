@@ -14,14 +14,9 @@ export default class ChatHelper {
 
     //Validazione dell'URL inserito
     static urlValid(msg): boolean {
-        let pattern = new RegExp("/^(https?:\/\/)?" + /* Protocol */
-            "(?:((\w(?:\w|-)*\.)+\w{2,})|" + /* Domain name */
-            "((\d{1,3}\.){3}\d{1,3}))" + /* Or, IP (v4) address */
-            "(?::\d+)?(\/[-\w\d%_.~+]*)*" + /* Port and path */
-            "(\?[;&\w%_.~+=-]*)?" + /* Query string */
-            "(#\w*)?$/i;"
-        ); /* Fragment locator */
-        return !!pattern.test(msg);
+        /* Using regular expression literal instead of a string to fix the RegExp creation */
+        let pattern = /^(https?:\/\/)?(?:(?:(\w(?:\w|-)*\.)+\w{2,})|((\d{1,3}\.){3}\d{1,3}))(?::\d+)?(\/[-\w\d%_.~+]*)*(\?[;&\w%_.~+=-]*)?(#\w*)?$/i;
+        return pattern.test(msg);
     }
 
     //Resistuiscono il valore minimo e massimo all'interno dell'array di oggetti passato
