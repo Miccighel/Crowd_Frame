@@ -269,7 +269,10 @@ Note that:
 
 ### Manual Allocation
 
-TO-DO
+The requester can build manually the set of HITs compliant with the format required by the system. Initially, the requester chooses an attribute whose values split the dataset into different classes. The core idea is to build pools of elements to allocate, one for each class. Four parameters are thus established. These parameters are the total number of elements to allocate in the whole set of HITs, the number of elements that each HIT must contain, the number of elements to allocate for each class, and the number of repetitions for each element. The pools of elements must thus be updated to include all the repetitions required. Each HIT is then built using a loop. It is useful to define a support function. The core idea is to sample the required number of elements for each class until a sample without duplicates is obtained. The elements are then removed from the pool of those still available if the condition is satisfied. The total number of HITs required depends on the parameters previously established. The lists of elements allocated in HITs can be serialized for later reference. Using such an allocation matrix, the requester can finally build the set of HITs in the format required. 
+
+The first figure shown below provides a pseudocode that further details the allocation procedure. Let us hypothesize a requester that wants to determine the number $m$ of HITs that they will publish on the crowdsourcing platform. The second figure shown below details the `singleHIT(...)` sub-procedure used by the main algorithm to sample a set of elements without duplicates. The sample obtained is used to build a single HIT of the whole set. Let us hypothesize a requester that wants to allocate $n$ elements in HITs made of $k$ positions. Each element is repeated in $p$ different HITs. The final number of HITs required is $m=(n*p)/k$.
+
 
 ### Automatic HITs creation
 
