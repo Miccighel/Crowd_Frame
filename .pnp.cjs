@@ -47,7 +47,7 @@ const RAW_RUNTIME_STATE =
           ["@types/node", "npm:20.8.6"],\
           ["aws-sdk", "npm:2.1473.0"],\
           ["bootstrap", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:5.3.2"],\
-          ["crypto-es", "npm:2.0.4"],\
+          ["crypto-es", "npm:2.1.0"],\
           ["flat-angular", "npm:1.6.0"],\
           ["material-icons", "npm:1.13.12"],\
           ["ngx-color-picker", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:15.0.0"],\
@@ -6990,7 +6990,7 @@ const RAW_RUNTIME_STATE =
           ["@types/node", "npm:20.8.6"],\
           ["aws-sdk", "npm:2.1473.0"],\
           ["bootstrap", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:5.3.2"],\
-          ["crypto-es", "npm:2.0.4"],\
+          ["crypto-es", "npm:2.1.0"],\
           ["flat-angular", "npm:1.6.0"],\
           ["material-icons", "npm:1.13.12"],\
           ["ngx-color-picker", "virtual:1b5b85ea424ba9407510585dc34e4058d1be416a4000ab4300645eb84c554a1e58cda7d64e77df95a066c56e7767dcbbef6f0753757b09ecfba9e7afd82f9e56#npm:15.0.0"],\
@@ -7011,10 +7011,10 @@ const RAW_RUNTIME_STATE =
       }]\
     ]],\
     ["crypto-es", [\
-      ["npm:2.0.4", {\
-        "packageLocation": "./.yarn/cache/crypto-es-npm-2.0.4-da1b979216-64e4580eab.zip/node_modules/crypto-es/",\
+      ["npm:2.1.0", {\
+        "packageLocation": "./.yarn/cache/crypto-es-npm-2.1.0-59bd95f2d5-3f636dd6d4.zip/node_modules/crypto-es/",\
         "packageDependencies": [\
-          ["crypto-es", "npm:2.0.4"]\
+          ["crypto-es", "npm:2.1.0"]\
         ],\
         "linkType": "HARD"\
       }]\

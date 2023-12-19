@@ -5106,7 +5106,7 @@ __metadata:
     "@types/node": "npm:^20.8.6"
     aws-sdk: "npm:^2.1473.0"
     bootstrap: "npm:^5.3.2"
-    crypto-es: "npm:^2.0.4"
+    crypto-es: "npm:^2.1.0"
     flat-angular: "npm:^1.6.0"
     material-icons: "npm:^1.13.12"
     ngx-color-picker: "npm:^15.0.0"
@@ -5125,10 +5125,10 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"crypto-es@npm:^2.0.4":
-  version: 2.0.4
-  resolution: "crypto-es@npm:2.0.4"
-  checksum: 64e4580eab1e8b442b997aafe2f703024eb5992b5115c29f1a64fd3a2a7d4beafe4740f6bc1a6d7e6f9ea758171ada3500fa43adc9dd0d74f9c851d55129d9f5
+"crypto-es@npm:^2.1.0":
+  version: 2.1.0
+  resolution: "crypto-es@npm:2.1.0"
+  checksum: 3f636dd6d40d3c88a207f4ef5a532aee1e080d7225b7cdee3c127e167ec24785d475cd55491a840eb129132276b3b51e025c4f454b4092494e2a43108332c7c9
   languageName: node
   linkType: hard
 
