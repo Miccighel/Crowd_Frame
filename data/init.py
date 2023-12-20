@@ -170,6 +170,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                     "s3:PutObjectAcl",
                     "s3:GetObject",
                     "s3:ListBucket",
+                    "s3:PutBucketOwnershipControls",
+                    "s3:PutBucketPublicAccessBlock",
                     "sqs:ListQueues",
                     "sqs:CreateQueue",
                     "sqs:GetQueueUrl",
@@ -694,9 +696,9 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
     try:
         if aws_region == 'us-east-1':
-            deploy_bucket = s3_client.create_bucket(Bucket=aws_deploy_bucket)
+            deploy_bucket = s3_client.create_bucket(Bucket=aws_deploy_bucket, ObjectOwnership='ObjectWriter')
         else:
-            deploy_bucket = s3_client.create_bucket(Bucket=aws_deploy_bucket, CreateBucketConfiguration={'LocationConstraint': aws_region})
+            deploy_bucket = s3_client.create_bucket(Bucket=aws_deploy_bucket, ObjectOwnership='ObjectWriter', CreateBucketConfiguration={'LocationConstraint': aws_region})
         serialize_json(folder_aws_generated_path, f"bucket_{aws_deploy_bucket}.json", deploy_bucket)
         console.print(f"[green]Bucket creation completed[/green], HTTP STATUS CODE: {deploy_bucket['ResponseMetadata']['HTTPStatusCode']}.")
     except s3_client.exceptions.BucketAlreadyOwnedByYou as error:
@@ -751,6 +753,21 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         policy = s3_client.get_bucket_policy(Bucket=aws_deploy_bucket)
         policy['Policy'] = json.loads(policy['Policy'])
     serialize_json(folder_aws_generated_path, f"bucket_{aws_deploy_bucket}_policy.json", policy)
+
+    response = s3_client.get_public_access_block(Bucket=aws_deploy_bucket)
+    public_access_configuration = response['PublicAccessBlockConfiguration']
+    serialize_json(folder_aws_generated_path, f"bucket_{aws_deploy_bucket}_public_access_configuration.json", response)
+
+    response = s3_client.put_public_access_block(
+        Bucket=aws_deploy_bucket,
+        PublicAccessBlockConfiguration={
+            'BlockPublicAcls': False,
+            'IgnorePublicAcls': False,
+            'BlockPublicPolicy': False,
+            'RestrictPublicBuckets': False
+        }
+    )
+    serialize_json(folder_aws_generated_path, f"bucket_{aws_deploy_bucket}_public_access_removal.json", response)
 
     console.rule(f"{step_index} - Table [cyan underline]{table_data_name}[/cyan underline] setup")
     step_index = step_index + 1
@@ -893,9 +910,12 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         console.print(f"[yellow]API Gateway already created, HTTP STATUS CODE: {response['ResponseMetadata']['HTTPStatusCode']}.")
         api_gateway = [api for api in api_gateway_available if api['Name'] == api_gateway_name][0]
         origin_allowed = f"https://{aws_deploy_bucket}.s3.{aws_region}.amazonaws.com"
-        if origin_allowed not in api_gateway['CorsConfiguration']['AllowOrigins']:
+        origins_already_allowed = api_gateway['CorsConfiguration'].get('AllowOrigins', [])
+        if origin_allowed not in origins_already_allowed:
+            origins_already_allowed.append(origin_allowed)
+            api_gateway['CorsConfiguration']['AllowOrigins'] = origins_already_allowed
             cors_configuration = {
-                "AllowOrigins": api_gateway['CorsConfiguration']['AllowOrigins'].append(origin_allowed),
+                "AllowOrigins": api_gateway['CorsConfiguration']['AllowOrigins'],
                 "AllowMethods": ["GET", "POST", "OPTIONS"]
             }
             response = api_gateway_client.update_api(ApiId=api_gateway['ApiId'], CorsConfiguration=cors_configuration)
