@@ -465,55 +465,58 @@ The steps #2 and #3 can be skipped because the task URL can be provided to a wor
 ### Amazon Mechanical Turk
 
 A task requester that aims to recruit each worker using Amazon Mechanical Turk must:
-1. Create the task and set its general parameters and criterion
-2. Move to the build output folder for the platform:
+1. Set the environment variable `platform` using the value `mturk`
+2. Create the task and set its general parameters and criterion
+3. Move to the build output folder for the platform:
    `data/build/mturk/`
-3. Copy the code of the wrapper:
+4. Copy the code of the wrapper:
    `data/build/mturk/index.html`
-4.  Paste everything into the `Design Layout` box
-5. Preview and save the task project.
-6. Publish the task and recruit a batch of workers by uploading the file containing the input/output tokens:
+5. Paste everything into the `Design Layout` box
+6. Preview and save the task project.
+7. Publish the task and recruit a batch of workers by uploading the file containing the input/output tokens:
    `data/build/mturk/tokens.csv`
-7. Review the status of each submission by using the `Manage` tab.
+8. Review the status of each submission by using the `Manage` tab.
 
 ### Prolific
 
 A task requester that aims to recruit each worker using Prolific must:
-1. Create the study and set its general parameters
-2. Set the data collection modality required
-   3. Choose `External study link` as the modality to collect data.
-   4. Provide the URL of the task deployed
-   5. Choose `URL parameters` as the modality to record Prolific IDs
-   6. Rename the `PROLIFIC_PID` parameter to `workerId`.
-   7. Choose to redirect the participants to confirm completion using a URL.
-   8. Copy the completion code from the URL shown (i.e., the `cc` parameter).
-   9. Set the `prolific_completion_code` environment variable using the completion code found as value.
-10. Configure the parameters and criterion of the audience of workers to recruit.
-11. Set the overall study cost.
-12. Review the status of each submission by using the study's page.
+1. Set the environment variable `platform` using the value `prolific`
+2. Create the study and set its general parameters
+3. Set the data collection modality required
+   a. Choose `External study link` as the modality to collect data.
+   b. Provide the URL of the task deployed
+   c. Choose `URL parameters` as the modality to record Prolific IDs
+   d. Rename the `PROLIFIC_PID` parameter to `workerId`.
+4. Choose to redirect the participants to confirm completion using a URL.
+   a. Copy the completion code from the URL shown (i.e., the `cc` parameter).
+   b. Set the `prolific_completion_code` environment variable using the completion code found as value.
+5. Configure the parameters and criterion of the audience of workers to recruit.
+6. Set the overall study cost.
+7. Review the status of each submission by using the study's page.
 
 ### Toloka
 
 A task requester that aims to recruit each worker using Toloka must:
-1. Create the project and set its general parameters.
-2. Move to the build output folder for the platform:
+1. Set the environment variable `platform` using the value `toloka`
+2. Create the project and set its general parameters.
+3. Move to the build output folder for the platform:
    `data/build/toloka/`
-3. Copy the markup, JavaScript code, and CSS styles of the wrapper:
+4. Copy the markup, JavaScript code, and CSS styles of the wrapper:
    `data/build/toloka/interface.html`
    `data/build/toloka/interface.js`
    `data/build/toloka/interface.css`
-4. Paste each source code into the `Task Interface` box, using the corresponding section of the `HTML/JS/ CSS` box.
-5. Copy the input and output data specification:
+5. Paste each source code into the `Task Interface` box, using the corresponding section of the `HTML/JS/ CSS` box.
+6. Copy the input and output data specification:
    `data/build/toloka/input_specification.json`
    `data/build/toloka/output_specification.json`
-6. Paste each data specification into the `Data Specification` box,
-7. Copy the text of the task general instructions:
+7. Paste each data specification into the `Data Specification` box,
+8. Copy the text of the task general instructions:
    `data/build/task/instructions_general.json`
-8. Paste the texts into the `Instructions for Tolokers` box, using the source code edit modality.
-9. Create a new pool of workers by defining the parameters of the audience and the reward
-10. Publish the task and recruit the audience of workers for each pool by uploading the file containing the input/output tokens
+9. Paste the texts into the `Instructions for Tolokers` box, using the source code edit modality.
+10. Create a new pool of workers by defining the parameters of the audience and the reward
+11. Publish the task and recruit the audience of workers for each pool by uploading the file containing the input/output tokens
     `data/build/mturk/tokens.tsv`
-11. Review the status of each submission by using the each pool's page.
+12. Review the status of each submission by using the each pool's page.
 
 ## Task Results
 
