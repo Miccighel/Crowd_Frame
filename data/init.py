@@ -993,7 +993,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     )
     api_stage = response
     api_stage_endpoint = f"https://{api_gateway['ApiId']}.execute-api.{aws_region}.amazonaws.com"
-    console.print(f"Stage Name: [cyan]{api_stage['DeploymentId']}[/cyan]")
     console.print(f"Endpoint: [cyan]{api_stage_endpoint}[/cyan]")
     serialize_json(folder_aws_generated_path, f"api_gateway_{api_gateway_name}_stage_{api_stage['DeploymentId']}.json", response)
 
