@@ -9,6 +9,7 @@ export class Questionnaire {
     name_pretty: string
     type: string
     description?: string
+    caption?: string
     allow_back?: boolean
     position?: string
     mappings: Array<Mapping>
@@ -28,6 +29,7 @@ export class Questionnaire {
         this.name = data['name'] ? data["name"] : null;
         this.name_pretty = data['name_pretty'] ? data["name_pretty"] : null;
         this.description = data['description'] ? data["description"] : null;
+        this.caption = data['caption'] ? data["caption"] : null;
         this.position = data['position'] ? data["position"] : null;
         this.allow_back = data['allow_back'] ? data["allow_back"] : false;
         this.type = data["type"];

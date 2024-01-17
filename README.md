@@ -175,7 +175,6 @@ The following table describes each environment variable that can be set in the e
 |      `ipapi_api_key`       |                                                                                                API Key to use `ipapi.com` tracking functionalities.                                                                                                |        :x:         | Valid IP Api key                            |
 |     `user_stack_token`     |                                                                                        API Key to use `userstack.com` user agent detection functionalities.                                                                                        |        :x:         | Valid Userstack key                         |
 |       `bing_api_key`       |                                                                                                  API Key to use `BingWebSearch` search provider.                                                                                                   |        :x:         | Valid  Bing API Web Search Key              |
-|     `fake_json_token`      |                                                                     API Key to use `FakerWebSearch` search provider. Returns dummy responses useful to test the search engine.                                                                     |        :x:         | Valid  fakeJSON.com API Key                 |
 
 ## Task Configuration
 
@@ -429,7 +428,6 @@ Crowd_Frame provides a way to manually edit and test the configuration locally, 
         aws_secret_key: "your_aws_key_secret",
         prolific_completion_code: false,
         bing_api_key: "your_bing_api_key",
-        fake_json_key: "your_fake_json_key",
         log_on_console: false,
         log_server_config: "none",
         table_acl_name: "Crowd_Frame-your_task_name_your_batch_name_ACL",

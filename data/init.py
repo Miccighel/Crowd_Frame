@@ -106,7 +106,6 @@ ip_info_token = os.getenv('ip_info_token')
 ip_geolocation_api_key = os.getenv('ip_geolocation_api_key')
 ip_api_api_key = os.getenv('ip_api_api_key')
 user_stack_token = os.getenv('user_stack_token')
-fake_json_token = os.getenv('fake_json_token')
 table_logging_name = f"Crowd_Frame-{task_name}_{batch_name}_Logger"
 table_data_name = f"Crowd_Frame-{task_name}_{batch_name}_Data"
 table_acl_name = f"Crowd_Frame-{task_name}_{batch_name}_ACL"
@@ -1445,7 +1444,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         "prolific_completion_code": prolific_completion_code if prolific_completion_code else 'false',
         "bing_api_key": bing_api_key,
         "pubmed_api_key": pubmed_api_key,
-        "fake_json_token": fake_json_token,
         "log_on_console": 'false',
         "log_server_config": f"{server_config}",
         "table_acl_name": f"{table_acl_name}",
@@ -1494,7 +1492,6 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         "prolific_completion_code": prolific_completion_code if prolific_completion_code else 'false',
         "bing_api_key": bing_api_key,
         "pubmed_api_key": pubmed_api_key,
-        "fake_json_token": fake_json_token,
         "log_on_console": 'true',
         "log_server_config": f"{server_config}",
         "table_acl_name": f"{table_acl_name}",
@@ -1687,7 +1684,9 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             sample_questionnaires = [
                 {
                     "type": "standard",
+                    "name": "questionnaire_1",
                     "description": "This is a standard questionnaire",
+                    "caption": False,
                     "position": "start",
                     "allow_back": False,
                     "questions": [
@@ -1713,7 +1712,9 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 },
                 {
                     "type": "crt",
+                    "name": "questionnaire_2",
                     "description": "This is a CRT questionnaire",
+                    "caption": False,
                     "position": "start",
                     "allow_back": False,
                     "questions": [
@@ -1861,6 +1862,10 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                         "annotate": False
                     }
                 ],
+                "element_labels": {
+                    "main": "Element",
+                    "main_short": "E"
+                },
                 "annotator": False,
                 "countdown_time": False,
                 "countdown_behavior": False,

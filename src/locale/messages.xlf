@@ -535,7 +535,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/questionnaire/questionnaire.component.html</context>
-          <context context-type="linenumber">59</context>
+          <context context-type="linenumber">71</context>
         </context-group>
       </trans-unit>
       <trans-unit id="8c860caaf24d2eed1ae8f4f89bdba7d6ec1ae28c" datatype="html">
@@ -692,7 +692,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/questionnaire/questionnaire.component.html</context>
-          <context context-type="linenumber">181</context>
+          <context context-type="linenumber">202</context>
         </context-group>
       </trans-unit>
       <trans-unit id="f732c304c7433e5a83ffcd862c3dce709a0f4982" datatype="html">
@@ -731,7 +731,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/questionnaire/questionnaire.component.html</context>
-          <context context-type="linenumber">192</context>
+          <context context-type="linenumber">213</context>
         </context-group>
       </trans-unit>
       <trans-unit id="eb1c93e7ac94e724e8fe55b7c64065b13554d89c" datatype="html">
@@ -809,11 +809,11 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/questionnaire/questionnaire.component.html</context>
-          <context context-type="linenumber">71</context>
+          <context context-type="linenumber">83</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/questionnaire/questionnaire.component.html</context>
-          <context context-type="linenumber">141</context>
+          <context context-type="linenumber">159</context>
         </context-group>
       </trans-unit>
       <trans-unit id="67ae3dff2dc3f59aa0875c2fece20679350d79f0" datatype="html">
@@ -1952,7 +1952,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/questionnaire/questionnaire.component.html</context>
-          <context context-type="linenumber">202</context>
+          <context context-type="linenumber">223</context>
         </context-group>
       </trans-unit>
       <trans-unit id="39ed8f3f975dbec1135313c8ebb261527d83430c" datatype="html">
@@ -2331,7 +2331,7 @@
         <source>Other</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/questionnaire/questionnaire.component.html</context>
-          <context context-type="linenumber">79</context>
+          <context context-type="linenumber">91</context>
         </context-group>
       </trans-unit>
       <trans-unit id="8434d4a28744d7df82cd39ef8da4266fcbc40064" datatype="html">

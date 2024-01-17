@@ -76,7 +76,6 @@ ip_info_token = os.getenv('ip_info_token')
 ip_geolocation_api_key = os.getenv('ip_geolocation_api_key')
 ip_api_api_key = os.getenv('ipapi_api_key')
 user_stack_token = os.getenv('user_stack_token')
-fake_json_token = os.getenv('fake_json_token')
 
 folder_result_path = f"result/{task_name}/"
 models_path = f"result/{task_name}/Dataframe/"
@@ -613,281 +612,289 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
 
             for data_source, worker_session in worker_data.items():
 
-                table_base_name = "_".join(data_source.split("_")[:-1])
+                if len(worker_session) > 0:
 
-                acl_data_source = None
-                for table_name in task_acl_tables:
-                    if table_base_name in table_name:
-                        acl_data_source = table_name
-                log_data_source = None
-                for table_name in task_log_tables:
-                    if table_base_name in table_name:
-                        log_data_source = table_name
 
-                task_key_found = False
+                    table_base_name = "_".join(data_source.split("_")[:-1])
 
-                snapshot = {
-                    "source_path": worker_snapshot_path,
-                    "source_data": data_source,
-                    "source_acl": acl_data_source,
-                    "source_log": log_data_source,
-                    "data_items": len(worker_session),
-                    "task": {},
-                    "worker": {
-                        "identifier": worker_id
-                    },
-                    "ip": {
-                        "info": {},
-                        "serialization": {}
-                    },
-                    "uag": {
-                        "info": {},
-                        "serialization": {}
-                    },
-                    "checks": [],
-                    "questionnaires_answers": [],
-                    "documents_answers": [],
-                    "comments": [],
-                    "logs": [],
-                    "questionnaires": {},
-                    "documents": {},
-                    "dimensions": {}
-                }
+                    acl_data_source = None
+                    for table_name in task_acl_tables:
+                        if table_base_name in table_name:
+                            acl_data_source = table_name
+                    log_data_source = None
+                    for table_name in task_log_tables:
+                        if table_base_name in table_name:
+                            log_data_source = table_name
 
-                for element in worker_session:
+                    task_key_found = False
 
-                    sequence = element['sequence']['S'].split("-")
-                    data = json.loads(element['data']['S'])
-                    time = element['time']['S']
+                    snapshot = {
+                        "source_path": worker_snapshot_path,
+                        "source_data": data_source,
+                        "source_acl": acl_data_source,
+                        "source_log": log_data_source,
+                        "data_items": len(worker_session),
+                        "task": {},
+                        "worker": {
+                            "identifier": worker_id
+                        },
+                        "ip": {
+                            "info": {},
+                            "serialization": {}
+                        },
+                        "uag": {
+                            "info": {},
+                            "serialization": {}
+                        },
+                        "checks": [],
+                        "questionnaires_answers": [],
+                        "documents_answers": [],
+                        "comments": [],
+                        "logs": [],
+                        "questionnaires": {},
+                        "documents": {},
+                        "dimensions": {}
+                    }
 
-                    worker_id = sequence[0]
-                    unit_id = sequence[1]
-                    current_try = sequence[2]
+                    for element in worker_session:
 
-                    if 'try_last' not in snapshot['task']:
-                        snapshot['task']['try_last'] = current_try
-                    else:
-                        snapshot['task']['try_last'] = max(int(snapshot['task']['try_last']), int(current_try))
+                        sequence = element['sequence']['S'].split("-")
+                        print(sequence)
+                        data = json.loads(element['data']['S'])
+                        time = element['time']['S']
 
-                    if data:
+                        worker_id = sequence[0]
+                        unit_id = sequence[1]
+                        current_try = sequence[2]
 
-                        if data['info']['element'] == 'data':
-                            if len(data['task'].items()) > 0:
-                                task_key_found = True
-                            for attribute, value in data['task'].items():
-                                if attribute == 'task_id':
-                                    snapshot['task']['task_name'] = value
-                                else:
-                                    snapshot['task'][attribute] = value
-                            snapshot['task']['time_submit'] = time
-                            snapshot['task']['time_submit_parsed'] = find_date_string(time)
-                            snapshot['task']['info'] = data['info']
-                            if 'settings' in snapshot['task']:
-                                settings = snapshot['task'].pop('settings')
-                                snapshot['task']['settings'] = settings
-                            snapshot['worker'] = data.pop('worker')
-                            snapshot['questionnaires'] = data.pop('questionnaires')
-                            snapshot['documents'] = data.pop('documents')
-                            snapshot['dimensions'] = data.pop('dimensions')
-                            if 'propertiesFetched' in snapshot['worker'].keys():
-                                snapshot['worker']['properties_fetched'] = snapshot['worker'].pop('propertiesFetched')
-                            if 'paramsFetched' in snapshot['worker'].keys():
-                                snapshot['worker']['params_fetched'] = snapshot['worker'].pop('paramsFetched')
-                            snapshot['worker'] = dict(sorted(snapshot['worker'].items()))
-                        elif data['info']['element'] == 'document':
-                            snapshot['documents_answers'].append({
-                                "time_submit": time,
-                                "serialization": data
-                            })
-                        elif data['info']['element'] == 'questionnaire':
-                            snapshot['questionnaires_answers'].append({
-                                "time_submit": time,
-                                "serialization": data
-                            })
-                        elif data['info']['element'] == 'checks':
-                            snapshot['checks'].append({
-                                "time_submit": time,
-                                "serialization": data
-                            })
-                        elif data['info']['element'] == 'comment':
-                            snapshot['comments'].append({
-                                "time_submit": time,
-                                "serialization": data
-                            })
-
-                if not task_key_found:
-
-                    paginator = dynamo_db.get_paginator('query')
-                    for page in paginator.paginate(
-                            TableName=acl_data_source,
-                            KeyConditionExpression="identifier = :identifier",
-                            ExpressionAttributeValues={
-                                ":identifier": {'S': worker_id}
-                            }, Select='ALL_ATTRIBUTES'
-                    ):
-                        if len(page['Items']) > 0:
-                            task_key_found = True
-
-                        for item in page['Items']:
-
-                            task_name = item['task_name']['S']
-                            batch_name = item['batch_name']['S']
-                            unit_id = item['unit_id']['S']
-                            ip_address = item['ip_address']['S']
-                            user_agent = item['user_agent']['S']
-                            time_arrival = item['time_arrival']['S']
-                            time_arrival_parsed = find_date_string(time_arrival)
-
-                            snapshot['task']['task_name'] = task_name
-                            snapshot['task']['batch_name'] = batch_name
-                            snapshot['task']['unit_id'] = unit_id
+                        if 'try_last' not in snapshot['task']:
                             snapshot['task']['try_last'] = current_try
-                            snapshot['task']['time_submit'] = time
-                            snapshot['task']['time_submit_parsed'] = find_date_string(time)
-
-                            if ip_address is not None:
-                                if ip_address not in worker_ip_addresses[worker_id]:
-                                    worker_ip_addresses[worker_id][ip_address] = {}
-                                    worker_ip_addresses[worker_id][ip_address]['fetched'] = False
-                                    worker_ip_addresses[worker_id][ip_address]['batches'] = {batch_name: {}}
-                                    worker_ip_addresses[worker_id][ip_address]['batches'][batch_name]['time_submit'] = time_arrival
-                                    worker_ip_addresses[worker_id][ip_address]['batches'][batch_name]['time_submit_parsed'] = time_arrival_parsed
-                                else:
-                                    worker_ip_addresses[worker_id][ip_address]['batches'][batch_name] = {}
-                                    worker_ip_addresses[worker_id][ip_address]['batches'][batch_name]['time_submit'] = time_arrival
-                                    worker_ip_addresses[worker_id][ip_address]['batches'][batch_name]['time_submit_parsed'] = time_arrival_parsed
-
-                                if ip_address in worker_ip_batches[worker_id]:
-                                    worker_ip_batches[worker_id][ip_address].append(batch_name)
-                                else:
-                                    worker_ip_batches[worker_id][ip_address] = [batch_name]
-                            for ip_address_current in worker_ip_addresses[worker_id]:
-                                if batch_name in worker_ip_batches[worker_id][ip_address_current]:
-                                    ip_data, properties_moved_ip = fetch_ip_data(worker_id, ip_address_current)
-                                    worker_ip_addresses[worker_id][ip_address_current]['fetched'] = True
-
-                            if user_agent is not None:
-                                if user_agent not in worker_user_agents[worker_id]:
-                                    worker_user_agents[worker_id][user_agent] = {}
-                                    worker_user_agents[worker_id][user_agent]['fetched'] = False
-                                    worker_user_agents[worker_id][user_agent]['batches'] = {batch_name: {}}
-                                    worker_user_agents[worker_id][user_agent]['batches'][batch_name]['time_submit'] = time_arrival
-                                    worker_user_agents[worker_id][user_agent]['batches'][batch_name]['time_submit_parsed'] = time_arrival_parsed
-                                else:
-                                    worker_user_agents[worker_id][user_agent]['batches'][batch_name] = {}
-                                    worker_user_agents[worker_id][user_agent]['batches'][batch_name]['time_submit'] = time_arrival
-                                    worker_user_agents[worker_id][user_agent]['batches'][batch_name]['time_submit_parsed'] = time_arrival_parsed
-                                if user_agent in worker_user_agents_batches[worker_id]:
-                                    worker_user_agents_batches[worker_id][user_agent].append(batch_name)
-                                else:
-                                    worker_user_agents_batches[worker_id][user_agent] = [batch_name]
-                            for user_agent_current in worker_user_agents[worker_id]:
-                                if batch_name in worker_user_agents_batches[worker_id][user_agent_current]:
-                                    ua_data, properties_moved_ua = fetch_uag_data(worker_id, user_agent_current)
-                                    worker_user_agents[worker_id][user_agent_current]['fetched'] = True
-                if 'params_fetched' in snapshot['worker'].keys():
-                    properties_fetched = snapshot['worker']['properties_fetched']
-                    properties_fetched_copy = snapshot['worker']['properties_fetched'].copy()
-                    ip_address = None
-                    user_agent = None
-                    if 'cf_ip' in properties_fetched:
-                        ip_address = properties_fetched['cf_ip']
-                    elif 'ipify_ip' in properties_fetched:
-                        ip_address = properties_fetched['ipify_ip']
-                    if 'cf_uag' in properties_fetched:
-                        user_agent = properties_fetched['cf_uag']
-                    elif 'ngx_user_agent' in properties_fetched:
-                        user_agent = properties_fetched['ngx_user_agent']
-                    else:
-                        user_agent = properties_fetched['nav_user_agent']
-                    if ip_address is not None:
-                        if ip_address not in worker_ip_addresses[worker_id]:
-                            worker_ip_addresses[worker_id][ip_address] = {}
-                            worker_ip_addresses[worker_id][ip_address]['fetched'] = False
-                            worker_ip_addresses[worker_id][ip_address]['batches'] = {snapshot['task']['batch_name']: {}}
-                            worker_ip_addresses[worker_id][ip_address]['batches'][snapshot['task']['batch_name']]['time_submit'] = snapshot['task']['time_submit']
-                            worker_ip_addresses[worker_id][ip_address]['batches'][snapshot['task']['batch_name']]['time_submit_parsed'] = snapshot['task']['time_submit_parsed']
                         else:
-                            worker_ip_addresses[worker_id][ip_address]['batches'][snapshot['task']['batch_name']] = {}
-                            worker_ip_addresses[worker_id][ip_address]['batches'][snapshot['task']['batch_name']]['time_submit'] = snapshot['task']['time_submit']
-                            worker_ip_addresses[worker_id][ip_address]['batches'][snapshot['task']['batch_name']]['time_submit_parsed'] = snapshot['task']['time_submit_parsed']
-                        if ip_address in worker_ip_batches[worker_id]:
-                            worker_ip_batches[worker_id][ip_address].append(snapshot['task']['batch_name'])
+                            snapshot['task']['try_last'] = max(int(snapshot['task']['try_last']), int(current_try))
+
+                        if data:
+
+                            if data['info']['element'] == 'data':
+                                if len(data['task'].items()) > 0:
+                                    task_key_found = True
+                                for attribute, value in data['task'].items():
+                                    if attribute == 'task_id':
+                                        snapshot['task']['task_name'] = value
+                                    else:
+                                        snapshot['task'][attribute] = value
+                                snapshot['task']['time_submit'] = time
+                                snapshot['task']['time_submit_parsed'] = find_date_string(time)
+                                snapshot['task']['info'] = data['info']
+                                if 'settings' in snapshot['task']:
+                                    settings = snapshot['task'].pop('settings')
+                                    snapshot['task']['settings'] = settings
+                                snapshot['worker'] = data.pop('worker')
+                                snapshot['questionnaires'] = data.pop('questionnaires')
+                                snapshot['documents'] = data.pop('documents')
+                                snapshot['dimensions'] = data.pop('dimensions')
+                                if 'propertiesFetched' in snapshot['worker'].keys():
+                                    snapshot['worker']['properties_fetched'] = snapshot['worker'].pop('propertiesFetched')
+                                if 'paramsFetched' in snapshot['worker'].keys():
+                                    snapshot['worker']['params_fetched'] = snapshot['worker'].pop('paramsFetched')
+                                snapshot['worker'] = dict(sorted(snapshot['worker'].items()))
+                            elif data['info']['element'] == 'document':
+                                snapshot['documents_answers'].append({
+                                    "time_submit": time,
+                                    "serialization": data
+                                })
+                            elif data['info']['element'] == 'questionnaire':
+                                snapshot['questionnaires_answers'].append({
+                                    "time_submit": time,
+                                    "serialization": data
+                                })
+                            elif data['info']['element'] == 'checks':
+                                snapshot['checks'].append({
+                                    "time_submit": time,
+                                    "serialization": data
+                                })
+                            elif data['info']['element'] == 'comment':
+                                snapshot['comments'].append({
+                                    "time_submit": time,
+                                    "serialization": data
+                                })
+
+                    if not task_key_found:
+
+                        paginator = dynamo_db.get_paginator('query')
+                        for page in paginator.paginate(
+                                TableName=acl_data_source,
+                                KeyConditionExpression="identifier = :identifier",
+                                ExpressionAttributeValues={
+                                    ":identifier": {'S': worker_id}
+                                }, Select='ALL_ATTRIBUTES'
+                        ):
+
+                            if len(page['Items']) > 0:
+                                task_key_found = True
+
+                            for item in page['Items']:
+
+                                print(item['identifier'])
+                                print(snapshot['task'])
+
+                                task_name = item['task_name']['S']
+                                batch_name = item['batch_name']['S']
+                                unit_id = item['unit_id']['S']
+                                ip_address = item['ip_address']['S']
+                                user_agent = item['user_agent']['S']
+                                time_arrival = item['time_arrival']['S']
+                                time_arrival_parsed = find_date_string(time_arrival)
+
+                                snapshot['task']['task_name'] = task_name
+                                snapshot['task']['batch_name'] = batch_name
+                                snapshot['task']['unit_id'] = unit_id
+                                snapshot['task']['try_last'] = current_try
+                                snapshot['task']['time_submit'] = time
+                                snapshot['task']['time_submit_parsed'] = find_date_string(time)
+
+                                if ip_address is not None:
+                                    if ip_address not in worker_ip_addresses[worker_id]:
+                                        worker_ip_addresses[worker_id][ip_address] = {}
+                                        worker_ip_addresses[worker_id][ip_address]['fetched'] = False
+                                        worker_ip_addresses[worker_id][ip_address]['batches'] = {batch_name: {}}
+                                        worker_ip_addresses[worker_id][ip_address]['batches'][batch_name]['time_submit'] = time_arrival
+                                        worker_ip_addresses[worker_id][ip_address]['batches'][batch_name]['time_submit_parsed'] = time_arrival_parsed
+                                    else:
+                                        worker_ip_addresses[worker_id][ip_address]['batches'][batch_name] = {}
+                                        worker_ip_addresses[worker_id][ip_address]['batches'][batch_name]['time_submit'] = time_arrival
+                                        worker_ip_addresses[worker_id][ip_address]['batches'][batch_name]['time_submit_parsed'] = time_arrival_parsed
+
+                                    if ip_address in worker_ip_batches[worker_id]:
+                                        worker_ip_batches[worker_id][ip_address].append(batch_name)
+                                    else:
+                                        worker_ip_batches[worker_id][ip_address] = [batch_name]
+                                for ip_address_current in worker_ip_addresses[worker_id]:
+                                    if batch_name in worker_ip_batches[worker_id][ip_address_current]:
+                                        ip_data, properties_moved_ip = fetch_ip_data(worker_id, ip_address_current)
+                                        worker_ip_addresses[worker_id][ip_address_current]['fetched'] = True
+
+                                if user_agent is not None:
+                                    if user_agent not in worker_user_agents[worker_id]:
+                                        worker_user_agents[worker_id][user_agent] = {}
+                                        worker_user_agents[worker_id][user_agent]['fetched'] = False
+                                        worker_user_agents[worker_id][user_agent]['batches'] = {batch_name: {}}
+                                        worker_user_agents[worker_id][user_agent]['batches'][batch_name]['time_submit'] = time_arrival
+                                        worker_user_agents[worker_id][user_agent]['batches'][batch_name]['time_submit_parsed'] = time_arrival_parsed
+                                    else:
+                                        worker_user_agents[worker_id][user_agent]['batches'][batch_name] = {}
+                                        worker_user_agents[worker_id][user_agent]['batches'][batch_name]['time_submit'] = time_arrival
+                                        worker_user_agents[worker_id][user_agent]['batches'][batch_name]['time_submit_parsed'] = time_arrival_parsed
+                                    if user_agent in worker_user_agents_batches[worker_id]:
+                                        worker_user_agents_batches[worker_id][user_agent].append(batch_name)
+                                    else:
+                                        worker_user_agents_batches[worker_id][user_agent] = [batch_name]
+                                for user_agent_current in worker_user_agents[worker_id]:
+                                    if batch_name in worker_user_agents_batches[worker_id][user_agent_current]:
+                                        ua_data, properties_moved_ua = fetch_uag_data(worker_id, user_agent_current)
+                                        worker_user_agents[worker_id][user_agent_current]['fetched'] = True
+                    if 'params_fetched' in snapshot['worker'].keys():
+                        properties_fetched = snapshot['worker']['properties_fetched']
+                        properties_fetched_copy = snapshot['worker']['properties_fetched'].copy()
+                        ip_address = None
+                        user_agent = None
+                        if 'cf_ip' in properties_fetched:
+                            ip_address = properties_fetched['cf_ip']
+                        elif 'ipify_ip' in properties_fetched:
+                            ip_address = properties_fetched['ipify_ip']
+                        if 'cf_uag' in properties_fetched:
+                            user_agent = properties_fetched['cf_uag']
+                        elif 'ngx_user_agent' in properties_fetched:
+                            user_agent = properties_fetched['ngx_user_agent']
                         else:
-                            worker_ip_batches[worker_id][ip_address] = [snapshot['task']['batch_name']]
-                    for ip_address_current in worker_ip_addresses[worker_id]:
-                        if not worker_ip_addresses[worker_id][ip_address_current]['fetched']:
-                            fetch_ip_data(worker_id, ip_address_current)
-                            worker_ip_addresses[worker_id][ip_address_current]['fetched'] = True
-                    if user_agent is not None:
-                        if user_agent not in worker_user_agents[worker_id]:
-                            worker_user_agents[worker_id][user_agent] = {}
-                            worker_user_agents[worker_id][user_agent]['fetched'] = False
-                            worker_user_agents[worker_id][user_agent]['batches'] = {snapshot['task']['batch_name']: {}}
-                            worker_user_agents[worker_id][user_agent]['batches'][snapshot['task']['batch_name']]['time_submit'] = snapshot['task']['time_submit']
-                            worker_user_agents[worker_id][user_agent]['batches'][snapshot['task']['batch_name']]['time_submit_parsed'] = snapshot['task']['time_submit_parsed']
-                        else:
-                            worker_user_agents[worker_id][user_agent]['batches'][snapshot['task']['batch_name']] = {}
-                            worker_user_agents[worker_id][user_agent]['batches'][snapshot['task']['batch_name']]['time_submit'] = snapshot['task']['time_submit']
-                            worker_user_agents[worker_id][user_agent]['batches'][snapshot['task']['batch_name']]['time_submit_parsed'] = snapshot['task']['time_submit_parsed']
+                            user_agent = properties_fetched['nav_user_agent']
+                        if ip_address is not None:
+                            if ip_address not in worker_ip_addresses[worker_id]:
+                                worker_ip_addresses[worker_id][ip_address] = {}
+                                worker_ip_addresses[worker_id][ip_address]['fetched'] = False
+                                worker_ip_addresses[worker_id][ip_address]['batches'] = {snapshot['task']['batch_name']: {}}
+                                worker_ip_addresses[worker_id][ip_address]['batches'][snapshot['task']['batch_name']]['time_submit'] = snapshot['task']['time_submit']
+                                worker_ip_addresses[worker_id][ip_address]['batches'][snapshot['task']['batch_name']]['time_submit_parsed'] = snapshot['task']['time_submit_parsed']
+                            else:
+                                worker_ip_addresses[worker_id][ip_address]['batches'][snapshot['task']['batch_name']] = {}
+                                worker_ip_addresses[worker_id][ip_address]['batches'][snapshot['task']['batch_name']]['time_submit'] = snapshot['task']['time_submit']
+                                worker_ip_addresses[worker_id][ip_address]['batches'][snapshot['task']['batch_name']]['time_submit_parsed'] = snapshot['task']['time_submit_parsed']
+                            if ip_address in worker_ip_batches[worker_id]:
+                                worker_ip_batches[worker_id][ip_address].append(snapshot['task']['batch_name'])
+                            else:
+                                worker_ip_batches[worker_id][ip_address] = [snapshot['task']['batch_name']]
+                        for ip_address_current in worker_ip_addresses[worker_id]:
+                            if not worker_ip_addresses[worker_id][ip_address_current]['fetched']:
+                                fetch_ip_data(worker_id, ip_address_current)
+                                worker_ip_addresses[worker_id][ip_address_current]['fetched'] = True
+                        if user_agent is not None:
+                            if user_agent not in worker_user_agents[worker_id]:
+                                worker_user_agents[worker_id][user_agent] = {}
+                                worker_user_agents[worker_id][user_agent]['fetched'] = False
+                                worker_user_agents[worker_id][user_agent]['batches'] = {snapshot['task']['batch_name']: {}}
+                                worker_user_agents[worker_id][user_agent]['batches'][snapshot['task']['batch_name']]['time_submit'] = snapshot['task']['time_submit']
+                                worker_user_agents[worker_id][user_agent]['batches'][snapshot['task']['batch_name']]['time_submit_parsed'] = snapshot['task']['time_submit_parsed']
+                            else:
+                                worker_user_agents[worker_id][user_agent]['batches'][snapshot['task']['batch_name']] = {}
+                                worker_user_agents[worker_id][user_agent]['batches'][snapshot['task']['batch_name']]['time_submit'] = snapshot['task']['time_submit']
+                                worker_user_agents[worker_id][user_agent]['batches'][snapshot['task']['batch_name']]['time_submit_parsed'] = snapshot['task']['time_submit_parsed']
 
-                        if user_agent in worker_user_agents_batches[worker_id]:
-                            worker_user_agents_batches[worker_id][user_agent].append(snapshot['task']['batch_name'])
-                        else:
-                            worker_user_agents_batches[worker_id][user_agent] = [snapshot['task']['batch_name']]
-                    for user_agent_current in worker_user_agents[worker_id]:
-                        if not worker_user_agents[worker_id][user_agent_current]['fetched']:
-                            fetch_uag_data(worker_id, user_agent_current)
-                            worker_user_agents[worker_id][user_agent_current]['fetched'] = True
+                            if user_agent in worker_user_agents_batches[worker_id]:
+                                worker_user_agents_batches[worker_id][user_agent].append(snapshot['task']['batch_name'])
+                            else:
+                                worker_user_agents_batches[worker_id][user_agent] = [snapshot['task']['batch_name']]
+                        for user_agent_current in worker_user_agents[worker_id]:
+                            if not worker_user_agents[worker_id][user_agent_current]['fetched']:
+                                fetch_uag_data(worker_id, user_agent_current)
+                                worker_user_agents[worker_id][user_agent_current]['fetched'] = True
 
-                    ip_data, properties_moved_ip = fetch_ip_data(worker_id, ip_address, properties_fetched)
-                    uag_data, properties_moved_uag = fetch_uag_data(worker_id, user_agent, properties_fetched)
-                    worker_ip_addresses[worker_id][ip_address]['fetched'] = True
-                    worker_user_agents[worker_id][user_agent]['fetched'] = True
-                    properties_unhandled = set(properties_fetched.keys()) - set(properties_moved_ip + properties_moved_uag)
-                    if len(properties_unhandled) > 0:
-                        for property_key in properties_unhandled:
-                            if property_key not in properties_unhandled:
-                                worker_properties_unhandled.append(property_key)
-                                console.print(f"Worker {worker_id} property unhandled: [orange]{property_key}")
-                    snapshot['worker']['properties_fetched'] = properties_fetched_copy
+                        ip_data, properties_moved_ip = fetch_ip_data(worker_id, ip_address, properties_fetched)
+                        uag_data, properties_moved_uag = fetch_uag_data(worker_id, user_agent, properties_fetched)
+                        worker_ip_addresses[worker_id][ip_address]['fetched'] = True
+                        worker_user_agents[worker_id][user_agent]['fetched'] = True
+                        properties_unhandled = set(properties_fetched.keys()) - set(properties_moved_ip + properties_moved_uag)
+                        if len(properties_unhandled) > 0:
+                            for property_key in properties_unhandled:
+                                if property_key not in properties_unhandled:
+                                    worker_properties_unhandled.append(property_key)
+                                    console.print(f"Worker {worker_id} property unhandled: [orange]{property_key}")
+                        snapshot['worker']['properties_fetched'] = properties_fetched_copy
 
-                    for ip_current, ip_data_current in worker_ip_addresses[worker_id].items():
-                        if snapshot['task']['batch_name'] in worker_ip_batches[worker_id][ip_current]:
-                            snapshot['ip']['info'][ip_current] = {}
-                            snapshot['ip']['info'][ip_current][snapshot['task']['batch_name']] = worker_ip_addresses[worker_id][ip_current]['batches'][snapshot['task']['batch_name']]
-                            snapshot['ip']['serialization'][ip_current] = ip_data[ip_current]
-                    for ua_current, ua_data_current in worker_user_agents[worker_id].items():
-                        if snapshot['task']['batch_name'] in worker_user_agents_batches[worker_id][ua_current]:
-                            snapshot['uag']['info'][ua_current] = {}
-                            snapshot['uag']['info'][ua_current][snapshot['task']['batch_name']] = worker_user_agents[worker_id][ua_current]['batches'][snapshot['task']['batch_name']]
-                            snapshot['uag']['serialization'][ua_current] = uag_data[ua_current]
+                        for ip_current, ip_data_current in worker_ip_addresses[worker_id].items():
+                            if snapshot['task']['batch_name'] in worker_ip_batches[worker_id][ip_current]:
+                                snapshot['ip']['info'][ip_current] = {}
+                                snapshot['ip']['info'][ip_current][snapshot['task']['batch_name']] = worker_ip_addresses[worker_id][ip_current]['batches'][snapshot['task']['batch_name']]
+                                snapshot['ip']['serialization'][ip_current] = ip_data[ip_current]
+                        for ua_current, ua_data_current in worker_user_agents[worker_id].items():
+                            if snapshot['task']['batch_name'] in worker_user_agents_batches[worker_id][ua_current]:
+                                snapshot['uag']['info'][ua_current] = {}
+                                snapshot['uag']['info'][ua_current][snapshot['task']['batch_name']] = worker_user_agents[worker_id][ua_current]['batches'][snapshot['task']['batch_name']]
+                                snapshot['uag']['serialization'][ua_current] = uag_data[ua_current]
 
-                if log_data_source:
-                    paginator = dynamo_db.get_paginator('query')
-                    for page in paginator.paginate(
-                            TableName=log_data_source,
-                            KeyConditionExpression="worker = :worker",
-                            ExpressionAttributeValues={
-                                ":worker": {'S': worker_id}
-                            }, Select='ALL_ATTRIBUTES'
-                    ):
-                        for item in page['Items']:
-                            data = {
-                                'worker': item['worker']['S'],
-                                'task': item['task']['S'],
-                                'batch': item['batch']['S'],
-                                'unit_id': item['unitId']['S'] if 'unitId' in item else None,
-                                'sequence': item['sequence']['S'].split("_")[1],
-                                'type': item['type']['S'],
-                                'time_server': item['server_time']['N'],
-                                'time_client': item['client_time']['N'],
-                                'details': json.loads(item['details']['S']) if 'S' in item['details'] else None
-                            }
-                            snapshot['logs'].append(data)
+                    if log_data_source:
+                        paginator = dynamo_db.get_paginator('query')
+                        for page in paginator.paginate(
+                                TableName=log_data_source,
+                                KeyConditionExpression="worker = :worker",
+                                ExpressionAttributeValues={
+                                    ":worker": {'S': worker_id}
+                                }, Select='ALL_ATTRIBUTES'
+                        ):
+                            for item in page['Items']:
+                                data = {
+                                    'worker': item['worker']['S'],
+                                    'task': item['task']['S'],
+                                    'batch': item['batch']['S'],
+                                    'unit_id': item['unitId']['S'] if 'unitId' in item else None,
+                                    'sequence': item['sequence']['S'].split("_")[1],
+                                    'type': item['type']['S'],
+                                    'time_server': item['server_time']['N'],
+                                    'time_client': item['client_time']['N'],
+                                    'details': json.loads(item['details']['S']) if 'S' in item['details'] else None
+                                }
+                                snapshot['logs'].append(data)
 
-                if task_key_found:
-                    worker_snapshot.append(snapshot)
+                    if task_key_found:
+                        worker_snapshot.append(snapshot)
 
             with open(worker_snapshot_path, 'w', encoding='utf-8') as f:
                 json.dump(worker_snapshot, f, ensure_ascii=False, indent=4, separators=(',', ':'))
@@ -2672,110 +2679,113 @@ if not os.path.exists(df_data_path):
 
                 for document_data in documents_answers:
 
-                    row['action'] = document_data['serialization']['info']['action']
-                    row['try_current'] = document_data['serialization']['info']['try']
-                    row['time_submit'] = document_data['time_submit']
-                    row['time_submit_parsed'] = find_date_string(row['time_submit'])
+                    if worker_id != 'LPWGOZZDFQ2URN':
 
-                    if len(checks) > 0:
-                        for check_data in checks:
-                            if check_data['serialization']["info"]['try'] == row['try_current']:
-                                row["global_outcome"] = check_data['serialization']["checks"]["globalOutcome"]
-                                row["global_form_validity"] = check_data['serialization']["checks"]["globalFormValidity"]
-                                row["gold_checks"] = any(check_data['serialization']["checks"]["goldChecks"])
-                                row["time_spent_check"] = check_data['serialization']["checks"]["timeSpentCheck"]
-                    else:
-                        row["global_outcome"] = False
-                        row["global_form_validity"] = False
-                        row["gold_checks"] = False
-                        row["time_spent_check"] = False
-                    row["accesses"] = document_data['serialization']['accesses']
-                    countdowns_start = document_data['serialization']['countdowns_times_start']
-                    countdowns_left = document_data['serialization']['countdowns_times_left']
-                    countdowns_expired = document_data['serialization']['countdowns_expired']
-                    countdowns_expired_value = countdowns_expired[document_data['serialization']['info']['index']] if isinstance(countdowns_expired, list) and len(countdowns_expired) > 0 else countdowns_expired if isinstance(countdowns_expired, bool) else np.nan
-                    row["countdown_time_start"] = countdowns_start[0] if isinstance(countdowns_start, list) and len(countdowns_start) > 0 and countdowns_start else np.nan
-                    row["countdown_time_value"] = countdowns_left[0] if isinstance(countdowns_left, list) and len(countdowns_left) > 0 and countdowns_left else np.nan
-                    row["countdown_time_expired"] = countdowns_expired_value
+                        row['action'] = document_data['serialization']['info']['action']
+                        row['try_current'] = document_data['serialization']['info']['try']
+                        row['time_submit'] = document_data['time_submit']
+                        row['time_submit_parsed'] = find_date_string(row['time_submit'])
 
-                    current_attributes = documents[document_data['serialization']['info']['index']].keys()
-                    current_answers = document_data['serialization']['answers']
-                    for dimension in dimensions:
-                        task_type_check = True
-                        if 'task_type' in dimension.keys():
-                            task_type_check = check_task_type(documents[document_data['serialization']['info']['index']], dimension['task_type'])
-                        if dimension['scale'] is not None and task_type_check:
-                            value = current_answers[f"{dimension['name']}_value"]
-                            if type(value) == str:
-                                value = value.strip()
-                                value = re.sub('\n', '', value)
-                            row[f"{dimension['name']}_value"] = value
-                            if dimension["scale"]["type"] == "categorical":
-                                for mapping in dimension["scale"]['mapping']:
-                                    label = mapping['label'].lower().split(" ")
-                                    label = '-'.join([str(c) for c in label])
-                                    if mapping['value'] == value:
-                                        row[f"{dimension['name']}_label"] = label
-                                        row[f"{dimension['name']}_index"] = mapping['index']
-                                        row[f"{dimension['name']}_description"] = mapping['description']
+                        if len(checks) > 0:
+                            for check_data in checks:
+                                if check_data['serialization']["info"]['try'] == row['try_current']:
+                                    row["global_outcome"] = check_data['serialization']["checks"]["globalOutcome"]
+                                    row["global_form_validity"] = check_data['serialization']["checks"]["globalFormValidity"]
+                                    row["gold_checks"] = any(check_data['serialization']["checks"]["goldChecks"])
+                                    row["time_spent_check"] = check_data['serialization']["checks"]["timeSpentCheck"]
+                        else:
+                            row["global_outcome"] = False
+                            row["global_form_validity"] = False
+                            row["gold_checks"] = False
+                            row["time_spent_check"] = False
+                        row["accesses"] = document_data['serialization']['accesses']
+                        countdowns_start = document_data['serialization']['countdowns_times_start']
+                        countdowns_left = document_data['serialization']['countdowns_times_left']
+                        countdowns_expired = document_data['serialization']['countdowns_expired']
+                        countdowns_expired_value = countdowns_expired[document_data['serialization']['info']['index']] if isinstance(countdowns_expired, list) and len(countdowns_expired) > 0 else countdowns_expired if isinstance(countdowns_expired, bool) else np.nan
+                        row["countdown_time_start"] = countdowns_start[0] if isinstance(countdowns_start, list) and len(countdowns_start) > 0 and countdowns_start else np.nan
+                        row["countdown_time_value"] = countdowns_left[0] if isinstance(countdowns_left, list) and len(countdowns_left) > 0 and countdowns_left else np.nan
+                        row["countdown_time_expired"] = countdowns_expired_value
+
+                        current_attributes = documents[document_data['serialization']['info']['index']].keys()
+                        current_answers = document_data['serialization']['answers']
+                        for dimension in dimensions:
+                            task_type_check = True
+                            if 'task_type' in dimension.keys():
+                                task_type_check = check_task_type(documents[document_data['serialization']['info']['index']], dimension['task_type'])
+                            if dimension['scale'] is not None and task_type_check:
+                                print(worker_id)
+                                value = current_answers[f"{dimension['name']}_value"]
+                                if type(value) == str:
+                                    value = value.strip()
+                                    value = re.sub('\n', '', value)
+                                row[f"{dimension['name']}_value"] = value
+                                if dimension["scale"]["type"] == "categorical":
+                                    for mapping in dimension["scale"]['mapping']:
+                                        label = mapping['label'].lower().split(" ")
+                                        label = '-'.join([str(c) for c in label])
+                                        if mapping['value'] == value:
+                                            row[f"{dimension['name']}_label"] = label
+                                            row[f"{dimension['name']}_index"] = mapping['index']
+                                            row[f"{dimension['name']}_description"] = mapping['description']
+                                else:
+                                    row[f"{dimension['name']}_label"] = np.nan
+                                    row[f"{dimension['name']}_index"] = np.nan
+                                    row[f"{dimension['name']}_description"] = np.nan
                             else:
+                                row[f"{dimension['name']}_value"] = np.nan
                                 row[f"{dimension['name']}_label"] = np.nan
                                 row[f"{dimension['name']}_index"] = np.nan
                                 row[f"{dimension['name']}_description"] = np.nan
-                        else:
-                            row[f"{dimension['name']}_value"] = np.nan
-                            row[f"{dimension['name']}_label"] = np.nan
-                            row[f"{dimension['name']}_index"] = np.nan
-                            row[f"{dimension['name']}_description"] = np.nan
-                        if dimension['justification'] and task_type_check:
-                            justification = current_answers[f"{dimension['name']}_justification"].strip()
-                            justification = re.sub('\n', '', justification)
-                            row[f"{dimension['name']}_justification"] = justification
-                        else:
-                            row[f"{dimension['name']}_justification"] = np.nan
-                        if dimension['url'] and task_type_check:
-                            try:
-                                row[f"{dimension['name']}_url"] = current_answers[f"{dimension['name']}_url"]
-                            except KeyError:
-                                print(current_answers)
-                        else:
-                            row[f"{dimension['name']}_url"] = np.nan
-
-                    current_attributes = documents[document_data['serialization']['info']['index']].keys()
-                    current_answers = document_data['serialization']['answers']
-                    attributes_allowed = ['id', 'index']
-                    for current_attribute in current_attributes:
-                        attribute_name = current_attribute
-                        current_attribute_value = documents[document_data['serialization']['info']['index']][current_attribute]
-                        if current_attribute in attributes_allowed:
-                            if current_attribute == 'id':
-                                row[f"document_{current_attribute}"] = current_attribute_value
-                            elif current_attribute == 'index':
-                                row[f"document_{attribute_name}"] = int(current_attribute_value)
+                            if dimension['justification'] and task_type_check:
+                                justification = current_answers[f"{dimension['name']}_justification"].strip()
+                                justification = re.sub('\n', '', justification)
+                                row[f"{dimension['name']}_justification"] = justification
                             else:
-                                row[f"{attribute_name}"] = current_attribute_value
+                                row[f"{dimension['name']}_justification"] = np.nan
+                            if dimension['url'] and task_type_check:
+                                try:
+                                    row[f"{dimension['name']}_url"] = current_answers[f"{dimension['name']}_url"]
+                                except KeyError:
+                                    print(current_answers)
+                            else:
+                                row[f"{dimension['name']}_url"] = np.nan
 
-                    row["accesses"] = document_data['serialization']['accesses']
+                        current_attributes = documents[document_data['serialization']['info']['index']].keys()
+                        current_answers = document_data['serialization']['answers']
+                        attributes_allowed = ['id', 'index']
+                        for current_attribute in current_attributes:
+                            attribute_name = current_attribute
+                            current_attribute_value = documents[document_data['serialization']['info']['index']][current_attribute]
+                            if current_attribute in attributes_allowed:
+                                if current_attribute == 'id':
+                                    row[f"document_{current_attribute}"] = current_attribute_value
+                                elif current_attribute == 'index':
+                                    row[f"document_{attribute_name}"] = int(current_attribute_value)
+                                else:
+                                    row[f"{attribute_name}"] = current_attribute_value
 
-                    if document_data['serialization']['timestamps_start'] is None:
-                        row["time_start"] = np.nan
-                    else:
-                        row["time_start"] = round(document_data['serialization']['timestamps_start'][0], 2)
-                        row["time_start_parsed"] = find_date_string(datetime.fromtimestamp(float(row["time_start"]), timezone('GMT')).strftime('%c'))
+                        row["accesses"] = document_data['serialization']['accesses']
 
-                    if document_data['serialization']['timestamps_end'] is None:
-                        row["time_end"] = np.nan
-                    else:
-                        row["time_end"] = round(document_data['serialization']['timestamps_end'][0], 2)
-                        row["time_end_parsed"] = find_date_string(datetime.fromtimestamp(float(row["time_end"]), timezone('GMT')).strftime('%c'))
+                        if document_data['serialization']['timestamps_start'] is None:
+                            row["time_start"] = np.nan
+                        else:
+                            row["time_start"] = round(document_data['serialization']['timestamps_start'][0], 2)
+                            row["time_start_parsed"] = find_date_string(datetime.fromtimestamp(float(row["time_start"]), timezone('GMT')).strftime('%c'))
 
-                    if document_data['serialization']['timestamps_elapsed'] is None:
-                        row["time_elapsed"] = np.nan
-                    else:
-                        row["time_elapsed"] = round(document_data['serialization']['timestamps_elapsed'], 2)
+                        if document_data['serialization']['timestamps_end'] is None:
+                            row["time_end"] = np.nan
+                        else:
+                            row["time_end"] = round(document_data['serialization']['timestamps_end'][0], 2)
+                            row["time_end_parsed"] = find_date_string(datetime.fromtimestamp(float(row["time_end"]), timezone('GMT')).strftime('%c'))
 
-                    if 'time_submit' in row:
-                        df_answ = pd.concat([df_answ, pd.DataFrame([row])], ignore_index=True)
+                        if document_data['serialization']['timestamps_elapsed'] is None:
+                            row["time_elapsed"] = np.nan
+                        else:
+                            row["time_elapsed"] = round(document_data['serialization']['timestamps_elapsed'], 2)
+
+                        if 'time_submit' in row:
+                            df_answ = pd.concat([df_answ, pd.DataFrame([row])], ignore_index=True)
 
     if df_answ.shape[0] > 0:
         empty_cols = [col for col in df_answ.columns if df_answ[col].isnull().all()]
@@ -3075,14 +3085,16 @@ if not os.path.exists(df_dim_path) and os.path.exists(df_data_path):
                     info = document_data['serialization']["info"]
 
                     timestamp_first = timestamp_start
-                    timestamp_first_parsed = datetime.fromtimestamp(timestamp_first)
-                    timestamps_found = [timestamp_first_parsed]
 
-                    counter = 0
+                    if worker_id != 'LPWGOZZDFQ2URN':
+                        timestamp_first_parsed = datetime.fromtimestamp(timestamp_first)
+                        timestamps_found = [timestamp_first_parsed]
 
-                    dimensions_selected_data = [document_data['serialization']["dimensions_selected"]]
+                        counter = 0
 
-                    df_dim_sel = parse_dimensions_selected(df_dim_sel, worker_id, worker_paid, task, info, documents, dimensions, dimensions_selected_data, timestamp_start, timestamp_end)
+                        dimensions_selected_data = [document_data['serialization']["dimensions_selected"]]
+
+                        df_dim_sel = parse_dimensions_selected(df_dim_sel, worker_id, worker_paid, task, info, documents, dimensions, dimensions_selected_data, timestamp_start, timestamp_end)
 
     df_dim_sel.drop_duplicates(inplace=True)
 
