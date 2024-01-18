@@ -46,9 +46,13 @@ export class DocumentComponent implements OnInit {
     task: Task
     document: Document
     mostRecentDataRecord: DataRecord;
+
     /* Available options to label an annotation */
     annotationOptions: UntypedFormGroup;
     assessmentForm: UntypedFormGroup
+
+    initialAssessmentFormValidity: boolean;
+    followingAssessmentAllowed: boolean;
 
     /* Reference to the outcome section component */
     @ViewChildren(AnnotatorOptionsComponent) annotatorOptions: QueryList<AnnotatorOptionsComponent>;
@@ -75,6 +79,8 @@ export class DocumentComponent implements OnInit {
 
     ngOnInit(): void {
         this.document = this.task.documents[this.documentIndex];
+        this.initialAssessmentFormValidity = false;
+        this.followingAssessmentAllowed = false;
         this.stepper.selectedIndex = this.worker.getPositionCurrent()
         this.sectionService.stepIndex = this.worker.getPositionCurrent()
         this.mostRecentDataRecord = this.task.retrieveMostRecentDataRecord('document', this.documentIndex)
@@ -99,6 +105,14 @@ export class DocumentComponent implements OnInit {
                 "form": this.assessmentForm,
             })
         }
+    }
+
+    public handleTopLevelFormValidityForRepetition(validity: boolean) {
+        this.initialAssessmentFormValidity = validity
+    }
+
+    public unlockNextRepetition(value: boolean) {
+        this.followingAssessmentAllowed = value
     }
 
     /* |--------- COUNTDOWN ---------| */

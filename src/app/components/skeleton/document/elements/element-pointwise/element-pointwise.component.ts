@@ -1,18 +1,19 @@
 /* Core */
-import {ChangeDetectorRef, Component, Input} from '@angular/core';
+import {ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges} from '@angular/core';
 /* Services */
 import {SectionService} from "../../../../../services/section.service";
 import {UtilsService} from "../../../../../services/utils.service";
 import {DeviceDetectorService} from "ngx-device-detector";
 /* Models */
 import {Task} from "../../../../../models/skeleton/task";
+import {AbstractControl, UntypedFormGroup} from "@angular/forms";
 
 @Component({
     selector: 'app-element-pointwise',
     templateUrl: './element-pointwise.component.html',
     styleUrls: ['./element-pointwise.component.scss', '../../document.component.scss']
 })
-export class ElementPointwiseComponent {
+export class ElementPointwiseComponent implements OnChanges {
 
     /* Change detector to manually intercept changes on DOM */
     changeDetector: ChangeDetectorRef;
@@ -23,6 +24,12 @@ export class ElementPointwiseComponent {
     utilsService: UtilsService
 
     @Input() documentIndex: number
+    /* Used to understand if the current element is being assessed again */
+    @Input() postAssessment: boolean
+    @Input() initialAssessmentFormValidity: boolean
+    @Input() documentForm: UntypedFormGroup
+
+    @Output() followingAssessmentAllowedEmitter: EventEmitter<boolean>;
 
     task: Task
 
@@ -37,7 +44,18 @@ export class ElementPointwiseComponent {
         this.sectionService = sectionService
         this.utilsService = utilsService
         this.task = sectionService.task
+        this.followingAssessmentAllowedEmitter = new EventEmitter<boolean>();
     }
 
+    ngOnChanges(changes: SimpleChanges) {
+        // Check if the 'inputProperty' changed
+        if (changes.topLevelFormValidity) {
+            let topLevelFormValidityChange = changes.topLevelFormValidity
+        }
+    }
+
+    public unlockNextRepetition(value: boolean) {
+        this.followingAssessmentAllowedEmitter.emit(value)
+    }
 
 }

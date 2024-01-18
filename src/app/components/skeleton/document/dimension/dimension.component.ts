@@ -1,5 +1,5 @@
 /* Core */
-import {ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, QueryList, ViewChild, ViewChildren} from '@angular/core';
+import {ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, OnInit, Output, QueryList, SimpleChanges, ViewChild, ViewChildren} from '@angular/core';
 import {UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators} from "@angular/forms";
 /* Material Design */
 import {MatStepper} from "@angular/material/stepper";
@@ -19,7 +19,7 @@ import {DataRecord} from "../../../../models/skeleton/dataRecord";
     templateUrl: './dimension.component.html',
     styleUrls: ['./dimension.component.scss', '../document.component.scss']
 })
-export class DimensionComponent implements OnInit {
+export class DimensionComponent implements OnInit, OnChanges {
 
     /* Change detector to manually intercept changes on DOM */
     changeDetector: ChangeDetectorRef;
@@ -35,11 +35,16 @@ export class DimensionComponent implements OnInit {
     @Input() documentsForm: UntypedFormGroup[]
     @Input() searchEngineForms: Array<Array<UntypedFormGroup>>;
     @Input() resultsRetrievedForms: Array<Array<Object>>;
+    /* Used to understand if the current element is being assessed for a second time */
+    @Input() postAssessment: boolean
+    @Input() initialAssessmentFormValidity: boolean
+    @Input() followingAssessmentAllowed: boolean
 
     previousDataRecord: DataRecord
     assessmentForm: UntypedFormGroup
 
     @Output() formEmitter: EventEmitter<Object>;
+    @Output() assessmentFormValidityEmitter: EventEmitter<boolean>;
 
     /* References to task stepper and token forms */
     @ViewChild('stepper') stepper: MatStepper;
@@ -56,6 +61,7 @@ export class DimensionComponent implements OnInit {
         this.utilsService = utilsService
         this.formBuilder = formBuilder
         this.formEmitter = new EventEmitter<Object>();
+        this.assessmentFormValidityEmitter = new EventEmitter<boolean>();
     }
 
     ngOnInit() {
@@ -118,6 +124,11 @@ export class DimensionComponent implements OnInit {
                 }
             }
             assessForm = this.formBuilder.group(controlsConfig)
+            if (this.task.settings.post_assessment) {
+                assessForm.valueChanges.subscribe(() => {
+                    this.assessmentFormValidityEmitter.emit(assessForm.valid);
+                });
+            }
         } else {
             assessForm = this.documentsForm[this.documentIndex]
         }
@@ -127,7 +138,11 @@ export class DimensionComponent implements OnInit {
             "form": assessForm
         })
     }
-
+    ngOnChanges(changes: SimpleChanges) {
+        if (changes.nextRepetitionAllowed) {
+            let nextRepetitionAllowedChange = changes.nextRepetitionAllowed
+        }
+    }
     public filterDimensionsCurrent(dimensions) {
         let filteredDimensions = [];
         for (let dimension of dimensions) {

@@ -1,22 +1,38 @@
-<div class="statement" *ngIf="(this.task.settings.modality=='pointwise')">
-    <ng-container *ngFor="let attribute of this.task.settings.attributes; let k=index">
-      <div *ngIf="this.task.isCurrentTaskType(this.task.documents[this.documentIndex], attribute.show)" class="attribute">
-        <p class="attribute-label">
-          <strong *ngIf="attribute.name_pretty">{{attribute.name_pretty}}: </strong>
-          <strong *ngIf="!attribute.name_pretty">{{attribute.name.split('_').join(' ') | titlecase}}: </strong>
-          <ng-container *ngIf="this.task.countdownsExpired[documentIndex]">
-            <span *ngIf="this.task.settings.countdown_behavior == 'hide_attributes'"><span i18n>'---------- text_hidden ----------'</span></span>
-          </ng-container>
-          <ng-container *ngIf="!this.task.countdownsExpired[documentIndex]">
-            <ng-container *ngIf="attribute.isImage(this.task.documents[this.documentIndex][attribute.name])">
-            <br>
-              <img [src]="this.task.documents[this.documentIndex][attribute.name]" alt="attribute.name">
-            </ng-container>
-            <span *ngIf="!attribute.isImage(this.task.documents[this.documentIndex][attribute.name])">
-              {{ this.task.documents[this.documentIndex][attribute.name] }}
-            </span>
-          </ng-container>
-        </p>
-      </div>
-    </ng-container>
-  </div>
+<div class="statement" *ngIf="(this.task.settings.modality=='pointwise' && this.postAssessment==false)">
+	<ng-container *ngFor="let attribute of this.task.settings.attributes; let k=index">
+		<div *ngIf="this.task.isCurrentTaskType(this.task.documents[this.documentIndex], attribute.show)" class="attribute">
+			<p class="attribute-label">
+				<strong *ngIf="attribute.name_pretty">{{ attribute.name_pretty }}: </strong>
+				<strong *ngIf="!attribute.name_pretty">{{ attribute.name.split('_').join(' ') | titlecase }}: </strong>
+				<ng-container *ngIf="this.task.countdownsExpired[documentIndex]">
+					<span *ngIf="this.task.settings.countdown_behavior == 'hide_attributes'"><span i18n>'---------- text_hidden ----------'</span></span>
+				</ng-container>
+				<ng-container *ngIf="!this.task.countdownsExpired[documentIndex]">
+					<ng-container *ngIf="attribute.isImage(this.task.documents[this.documentIndex][attribute.name])">
+						<br>
+						<img [src]="this.task.documents[this.documentIndex][attribute.name]" alt="attribute.name">
+					</ng-container>
+					<span *ngIf="!attribute.isImage(this.task.documents[this.documentIndex][attribute.name])">
+              			{{ this.task.documents[this.documentIndex][attribute.name] }}
+            		</span>
+				</ng-container>
+			</p>
+		</div>
+	</ng-container>
+</div>
+
+<ng-container *ngIf="this.postAssessment==true && this.initialAssessmentFormValidity">
+	<div class="statement" *ngIf="(this.task.settings.modality=='pointwise' && this.postAssessment==true)">
+		<ng-container *ngFor="let attribute of this.task.settings.attributes; let k=index">
+			<div *ngIf="this.postAssessment && attribute.name == this.task.settings.post_assessment['attribute']" class="attribute" style="white-space: pre-line;">
+				<p>
+					{{ this.task.documents[this.documentIndex][attribute.name] }}
+				</p>
+			</div>
+		</ng-container>
+	</div>
+
+	<button mat-stroked-button color="accent" class="button-continue" (click)="unlockNextRepetition(true)">
+		<span i18n>Continue Your Assessment</span>
+	</button>
+</ng-container>

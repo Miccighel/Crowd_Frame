@@ -594,24 +594,23 @@ export class Task {
     /*
      * This function intercepts a <changeEvent> triggered by the value controls of a dimension.
      * The parameters are:
-     * - a JSON object which holds the selected selected value.
+     * - a JSON object which holds the selected value.
      * - a reference to the current document
      * - a reference to the current dimension
      * This array CAN BE EMPTY, if the worker does not select any value and leaves the task or if a dimension does not require a value.
      * These information are parsed and stored in the corresponding data structure.
      */
     public storeDimensionValue(
-        eventData: Event,
+        eventData,
         document: number,
         dimension: number
     ) {
-        let eventTarget = eventData.target as HTMLInputElement
         /* The current document, dimension and user query are copied from parameters */
         let currentDocument = document;
         let currentDimension = dimension;
         /* A reference to the current dimension is saved */
         this.currentDimension = currentDimension;
-        let currentValue = +String(eventTarget.value).replace(/,/g, "");
+        let currentValue = +String(eventData.value).replace(/,/g, "");
         let timeInSeconds = Date.now() / 1000;
         /* If some data for the current document already exists*/
         if (this.dimensionsSelectedValues[currentDocument]["amount"] > 0) {

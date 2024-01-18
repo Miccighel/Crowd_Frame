@@ -6,8 +6,10 @@ export class BaseInstruction {
 
     /* DO NOT REMOVE THIS ATTRIBUTE */
     index: number;
-    caption?: string;
     label?: string;
+    caption?: string;
+    labelRepetition?: string;
+    captionRepetition?: string;
     text: string;
     task_type: Array<string>;
 
@@ -19,6 +21,8 @@ export class BaseInstruction {
         this.index = index;
         this.label = data['label'] ? data["label"] : null;
         this.caption = data['caption'] ? data["caption"] : null;
+        this.labelRepetition = data['label_repetition'] ? data["label_repetition"] : null;
+        this.captionRepetition = data['caption_repetition'] ? data["caption_repetition"] : null;
         if (data['steps']) {
             let stepText: Array<string> = data['steps']
             this.text = stepText.join("\r\n")

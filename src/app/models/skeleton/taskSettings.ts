@@ -10,6 +10,7 @@ export class TaskSettings {
     time_check_amount
     attributes: Array<Attribute>
     element_labels?: Object;
+    post_assessment: Object;
     /* Object to encapsulate annotator's settings */
     annotator?: Annotator;
     countdownTime?: number;
@@ -53,6 +54,7 @@ export class TaskSettings {
                 }
             }
         }
+        this.post_assessment = data ? 'post_assessment' in data ? data['post_assessment'] : null : null;
         this.element_labels = data ? 'element_labels' in data ? data['element_labels'] : null : null;
         this.annotator = data ? data['annotator'] ? new Annotator(data["annotator"]) : null : null;
         this.countdownTime = data ? data["countdown_time"] >= 0 ? parseInt((data["countdown_time"])) : null : null;

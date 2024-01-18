@@ -8,7 +8,7 @@
                         <span i18n>{{ this.task.documents[this.documentIndex].params['task_type'] }} Task Failed:</span>
                     </div>
                 </mat-card-title>
-        
+
                 <mat-card-content class="description">
                     <p><span i18n>{{ this.task.showMessageFailGoldCheck[documentIndex] }}</span></p>
                 </mat-card-content>
@@ -53,16 +53,21 @@
 
             <ng-container *ngIf="(this.task.settings.modality=='pointwise')">
                 <ng-container *ngIf="!(this.task.settings.annotator)">
-                    <app-element-pointwise [documentIndex]="documentIndex"></app-element-pointwise>
+                    <app-element-pointwise
+							[documentIndex]="documentIndex"
+							[postAssessment]="false"
+					></app-element-pointwise>
                 </ng-container>
                 <ng-container *ngIf="(this.task.settings.annotator)">
                     <app-annotator-laws *ngIf="(this.task.settings.annotator.type=='laws')" [documentIndex]="documentIndex"></app-annotator-laws>
                     <app-annotator-options *ngIf="(this.task.settings.annotator.type=='options')" [documentIndex]="documentIndex"></app-annotator-options>
                 </ng-container>
             </ng-container>
+
             <ng-container *ngIf="(this.task.settings.modality=='pairwise')">
                 <app-element-pairwise [documentIndex]="documentIndex" (formEmitter)="storeAssessmentForm($event)"></app-element-pairwise>
             </ng-container>
+
             <app-dimension
                     [worker]="this.worker"
                     [task]="this.task"
@@ -71,7 +76,37 @@
                     [searchEngineForms]="this.searchEngineForms"
                     [resultsRetrievedForms]="this.resultsRetrievedForms"
                     (formEmitter)="storeAssessmentForm($event)"
+					[postAssessment]="false"
+					(assessmentFormValidityEmitter)="handleTopLevelFormValidityForRepetition($event)"
             ></app-dimension>
+
+			<ng-container *ngIf="this.task.settings.post_assessment">
+				<ng-container *ngIf="(this.task.settings.modality=='pointwise')">
+
+					<app-element-pointwise
+							[documentForm]="this.documentsForm[documentIndex]"
+							[documentIndex]="documentIndex"
+							[postAssessment]="true"
+							[initialAssessmentFormValidity]="this.initialAssessmentFormValidity"
+							(followingAssessmentAllowedEmitter)="this.unlockNextRepetition($event)"
+					></app-element-pointwise>
+
+					<app-dimension
+							[worker]="this.worker"
+							[task]="this.task"
+							[documentIndex]="documentIndex"
+							[documentsForm]="this.documentsForm"
+							[searchEngineForms]="this.searchEngineForms"
+							[resultsRetrievedForms]="this.resultsRetrievedForms"
+							(formEmitter)="storeAssessmentForm($event)"
+							[postAssessment]="true"
+							[initialAssessmentFormValidity]="this.initialAssessmentFormValidity"
+							[followingAssessmentAllowed]="this.followingAssessmentAllowed"
+					></app-dimension>
+
+				</ng-container>
+			</ng-container>
+
 
             <!-- "Back", "Next" and "Finish" actions markup -->
             <mat-card-actions *ngIf="this.assessmentForm">
@@ -85,7 +120,7 @@
                         (click)="handleDocumentCompletion('Next')">
                     <span i18n>Next</span>
                 </button>
-                <button mat-stroked-button color="accent" 
+                <button mat-stroked-button color="accent"
                         *ngIf="documentIndex+1>=this.task.documentsAmount && this.task.questionnaireAmountEnd == 0"
                         [disabled]="(!assessmentForm.valid || assessmentForm.status == 'DISABLED'  || !this.task.searchEngineRetrievedResponses[documentIndex] || this.sectionService.taskCompleted || !this.task.checkAnnotationConsistency(documentIndex))"
                         (click)="handleDocumentCompletion('Finish')">
