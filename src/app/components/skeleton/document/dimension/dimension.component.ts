@@ -253,7 +253,7 @@ export class DimensionComponent implements OnInit, OnChanges {
             formControl.setValue(formGroup.value)
         }
         formControl.markAsTouched()
-        this.task.storeDimensionValue(Object({'value': formControl.value}), this.documentIndex, dimension.index)
+        this.task.storeDimensionValue(Object({'value': formControl.value}), this.documentIndex, dimension.index, this.postAssessment)
     }
 
     /* |--------- PAIRWISE ---------| */

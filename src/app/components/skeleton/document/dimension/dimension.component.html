@@ -62,7 +62,7 @@
 														<mat-divider *ngIf="mapping.separator" [inset]="true"></mat-divider>
 														<mat-radio-button
 																value="{{mapping.value}}"
-																(change)="this.task.storeDimensionValue($event, documentIndex, dimension.index)"
+																(change)="this.task.storeDimensionValue($event, documentIndex, dimension.index, this.postAssessment)"
 																[attr.disabled]="this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior=='disable_forms'"
 																[ngClass]="mapping.separator ? 'radio-button radio-button-separated' : 'radio-button'">
 															<span>{{ mapping.label }}</span>
@@ -93,7 +93,7 @@
 										<div class="scale-interval">
 											<mat-slider min="{{dimension.scale.min}}" max="{{dimension.scale.max}}" step="{{dimension.scale.step}}" discrete>
 												<input matSliderThumb formControlName="{{(dimension.name).concat('_value')}}"
-													   (change)="this.task.storeDimensionValue($event, documentIndex,dimension.index);"
+													   (change)="this.task.storeDimensionValue($event, documentIndex,dimension.index, this.postAssessment);"
 													   [attr.disabled]="this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior=='disable_forms'">
 											</mat-slider>
 											<span *ngIf="assessmentForm.controls[(dimension.name).concat('_value')].value==''" i18n>
@@ -111,7 +111,7 @@
 										<mat-form-field appearance="fill">
 											<mat-label><span i18n>Value</span></mat-label>
 											<input matInput placeholder="" formControlName="{{(dimension.name).concat('_value')}}"
-												   (change)="this.task.storeDimensionValue($event, documentIndex, dimension.index)" class="magnitude_estimation"
+												   (change)="this.task.storeDimensionValue($event, documentIndex, dimension.index, this.postAssessment)" class="magnitude_estimation"
 												   [attr.disabled]="this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior=='disable_forms'">
 											<mat-error *ngIf="this.utilsService.hasError(assessmentForm, (dimension.name).concat('_value'), 'required')">
 												<span i18n>This field is required</span>
@@ -135,7 +135,7 @@
 										<mat-radio-group aria-labelledby="radio-button-label" formControlName="{{(dimension.name).concat('_value')}}">
 											<mat-radio-button *ngFor="let mapping of dimension.scale.mapping let k=index"
 															  class="radio-button" value="{{mapping.value}}"
-															  (change)="this.task.storeDimensionValue($event, documentIndex,dimension.index)"
+															  (change)="this.task.storeDimensionValue($event, documentIndex,dimension.index, this.postAssessment)"
 															  [attr.disabled]="this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior=='disable_forms'">
 												<span>{{ mapping.label }}</span>
 												<span *ngIf="mapping.description.length>0">({{ mapping.description }})</span>
@@ -239,8 +239,7 @@
 										</ng-container>
 									</div>
 									<div class="matrix-value-control" *ngFor="let mapping of dimension.scale.mapping; let k=index">
-										<mat-radio-button class="radio-button" value="{{mapping.value}}"
-														  (change)="this.task.storeDimensionValue($event, documentIndex,dimension.index)"></mat-radio-button>
+										<mat-radio-button class="radio-button" value="{{mapping.value}}" (change)="this.task.storeDimensionValue($event, documentIndex, dimension.index, this.postAssessment)"></mat-radio-button>
 									</div>
 								</mat-radio-group>
 							</div>
@@ -321,7 +320,7 @@
 											<mat-radio-group style="margin-left: 10px;" aria-labelledby="radio-button-label" class="radio-button-group"
 															 formControlName="{{(dimension.name).concat('_value_element_').concat(k)}}">
 												<mat-radio-button *ngFor="let mapping of dimension.scale.mapping" class="radio-button" value="{{mapping.value}}"
-																  (change)="this.task.storeDimensionValue($event, documentIndex, dimension.index); updateDimensionValueSelection(documentIndex,dimension.index,k)"
+																  (change)="this.task.storeDimensionValue($event, documentIndex, dimension.index, this.postAssessment); updateDimensionValueSelection(documentIndex,dimension.index,k)"
 																  [attr.disabled]="this.task.countdownsExpired[documentIndex]">
 													<span>{{ mapping.label }}</span>
 													<span *ngIf="mapping.description.length>0">
@@ -339,7 +338,7 @@
 													i18n> Selected value: </span>{{ assessmentForm.controls[(dimension.name).concat('_value_element_').concat(k)].value }}</label>
 											<mat-slider min="{{dimension.scale.min}}" max="{{dimension.scale.max}}" step="{{dimension.scale.step}}" discrete>
 												<input matSliderThumb formControlName="{{(dimension.name).concat('_value_element_').concat(k)}}"
-													   (change)="this.task.storeDimensionValue($event, documentIndex,dimension.index); updateDimensionValueSelection(documentIndex,dimension.index,k)"
+													   (change)="this.task.storeDimensionValue($event, documentIndex,dimension.index, this.postAssessment); updateDimensionValueSelection(documentIndex,dimension.index,k)"
 													   [attr.disabled]="this.task.countdownsExpired[documentIndex]">
 											</mat-slider>
 											<mat-error *ngIf="this.utilsService.hasError(assessmentForm, (dimension.name).concat('_value_element_').concat(k), 'required')">
@@ -354,7 +353,7 @@
 											<mat-form-field appearance="fill" style="margin-left: 10px;">
 												<mat-label><span i18n>Value</span></mat-label>
 												<input matInput placeholder="" formControlName="{{(dimension.name).concat('_value_element_').concat(k)}}"
-													   (change)="this.task.storeDimensionValue($event, documentIndex, dimension.index); updateDimensionValueSelection(documentIndex,dimension.index,k)"
+													   (change)="this.task.storeDimensionValue($event, documentIndex, dimension.index, this.postAssessment); updateDimensionValueSelection(documentIndex,dimension.index,k)"
 													   class="magnitude_estimation"
 													   [attr.disabled]="this.task.countdownsExpired[documentIndex]">
 												<mat-error *ngIf="this.utilsService.hasError(assessmentForm, (dimension.name).concat('_value_element_').concat(k), 'required')">

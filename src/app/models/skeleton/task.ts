@@ -603,7 +603,8 @@ export class Task {
     public storeDimensionValue(
         eventData,
         document: number,
-        dimension: number
+        dimension: number,
+        postAssessment: boolean
     ) {
         /* The current document, dimension and user query are copied from parameters */
         let currentDocument = document;
@@ -624,6 +625,7 @@ export class Task {
                 index: selectedValues.length,
                 timestamp: timeInSeconds,
                 value: currentValue,
+                postAssessment: postAssessment
             });
             /* The data array within the data structure is updated */
             this.dimensionsSelectedValues[currentDocument]["data"] =
@@ -642,6 +644,7 @@ export class Task {
                     index: 0,
                     timestamp: timeInSeconds,
                     value: currentValue,
+                    postAssessment: postAssessment
                 },
             ];
             /* The total amount of selected values for the current document is set to 1 */
