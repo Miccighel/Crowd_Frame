@@ -37,14 +37,18 @@ export class DimensionComponent implements OnInit, OnChanges {
     @Input() resultsRetrievedForms: Array<Array<Object>>;
     /* Used to understand if the current element is being assessed for a second time */
     @Input() postAssessment: boolean
-    @Input() initialAssessmentFormValidity: boolean
+    @Input() initialAssessmentFormInteraction: boolean
     @Input() followingAssessmentAllowed: boolean
 
-    previousDataRecord: DataRecord
+    mostRecentDataRecord: DataRecord
     assessmentForm: UntypedFormGroup
+    assessmentFormAdditional: UntypedFormGroup
+    initialAnswers: Record<string, any>
+    postAssessmentAnswers: Record<string, any>
 
     @Output() formEmitter: EventEmitter<Object>;
     @Output() assessmentFormValidityEmitter: EventEmitter<boolean>;
+    @Output() followingAssessmentAllowedEmitter: EventEmitter<boolean>;
 
     /* References to task stepper and token forms */
     @ViewChild('stepper') stepper: MatStepper;
@@ -62,71 +66,77 @@ export class DimensionComponent implements OnInit, OnChanges {
         this.formBuilder = formBuilder
         this.formEmitter = new EventEmitter<Object>();
         this.assessmentFormValidityEmitter = new EventEmitter<boolean>();
+        this.followingAssessmentAllowedEmitter = new EventEmitter<boolean>();
     }
 
-    ngOnInit() {
-        this.task = this.sectionService.task
-        this.previousDataRecord = this.task.mostRecentDataRecordsForDocuments[this.documentIndex]
-        let assessForm = null
-        /* A form for each the current HIT element is initialized */
-        if (!this.documentsForm[this.documentIndex]) {
-            let controlsConfig = {};
-            for (let index_dimension = 0; index_dimension < this.task.dimensions.length; index_dimension++) {
-                let dimension = this.task.dimensions[index_dimension];
-                if (this.task.isCurrentTaskType(this.task.documents[this.documentIndex], dimension.task_type)) {
-                    if (!dimension.pairwise) {
+    public initializeControls(controlSuffix: string) {
+        let controlsConfig = {};
+        for (let index_dimension = 0; index_dimension < this.task.dimensions.length; index_dimension++) {
+            let dimension = this.task.dimensions[index_dimension];
+            if (this.task.isCurrentTaskType(this.task.documents[this.documentIndex], dimension.task_type)) {
+                if (!dimension.pairwise) {
+                    if (dimension.scale) {
+                        let answerValue: string = ''
+                        if (this.mostRecentDataRecord)
+                            answerValue = this.mostRecentDataRecord.loadAnswers()[`${dimension.name}_value${controlSuffix}`]
+                        if (dimension.scale.type == "categorical") {
+                            if ((<ScaleCategorical>dimension.scale).multipleSelection) {
+                                let answers = {}
+                                let scale = (<ScaleCategorical>dimension.scale)
+                                scale.mapping.forEach((value, index) => {
+                                    answers[index] = false
+                                });
+                                controlsConfig[`${dimension.name}_list${controlSuffix}`] = this.formBuilder.group(answers)
+                                controlsConfig[`${dimension.name}_value${controlSuffix}`] = new UntypedFormControl(answerValue, [Validators.required])
+                            } else {
+                                controlsConfig[`${dimension.name}_value${controlSuffix}`] = new UntypedFormControl(answerValue, [Validators.required]);
+                            }
+                        }
+
+                        if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value${controlSuffix}`] = new UntypedFormControl(answerValue, [Validators.required]);
+                        if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value${controlSuffix}`] = new UntypedFormControl(answerValue, [Validators.required])
+                        if (dimension.scale.type == "magnitude_estimation") controlsConfig[`${dimension.name}_value${controlSuffix}`] = new UntypedFormControl(answerValue, [this.utilsService.numberGreaterThanValidator(((<ScaleMagnitude>dimension.scale).min))]);
+                    }
+                    if (dimension.justification) {
+                        let answerJustification: string = ''
+                        if (this.mostRecentDataRecord)
+                            answerJustification = this.mostRecentDataRecord.loadAnswers()[`${dimension.name}_justification${controlSuffix}`]
+                        controlsConfig[`${dimension.name}_justification${controlSuffix}`] = new UntypedFormControl(answerJustification, [Validators.required, this.validateJustification.bind(this)])
+                    }
+                } else {
+                    for (let j = 0; j < this.task.documents[this.documentIndex]['pairwise'].length; j++) {
                         if (dimension.scale) {
                             let answerValue: string = ''
-                            if (this.previousDataRecord)
-                                answerValue = this.previousDataRecord.loadAnswers()[`${dimension.name}_value`]
-                            if (dimension.scale.type == "categorical") {
-                                if ((<ScaleCategorical>dimension.scale).multipleSelection) {
-                                    let answers = {}
-                                    let scale = (<ScaleCategorical>dimension.scale)
-                                    scale.mapping.forEach((value, index) => {
-                                        answers[index] = false
-                                    });
-                                    controlsConfig[`${dimension.name}_list`] = this.formBuilder.group(answers)
-                                    controlsConfig[`${dimension.name}_value`] = new UntypedFormControl(answerValue, [Validators.required])
-                                } else {
-                                    controlsConfig[`${dimension.name}_value`] = new UntypedFormControl(answerValue, [Validators.required]);
-                                }
-                            }
-
-                            if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value`] = new UntypedFormControl(answerValue, [Validators.required]);
-                            if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value`] = new UntypedFormControl(answerValue, [Validators.required])
-                            if (dimension.scale.type == "magnitude_estimation") controlsConfig[`${dimension.name}_value`] = new UntypedFormControl(answerValue, [this.utilsService.numberGreaterThanValidator(((<ScaleMagnitude>dimension.scale).min))]);
+                            if (this.mostRecentDataRecord)
+                                answerValue = this.mostRecentDataRecord.loadAnswers()[`${dimension.name}_value_element_${j}`]
+                            if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl(answerValue, [Validators.required]);
+                            if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl(answerValue, [Validators.required])
+                            if (dimension.scale.type == "magnitude_estimation") controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl(answerValue, [this.utilsService.numberGreaterThanValidator(((<ScaleMagnitude>dimension.scale).min))]);
                         }
                         if (dimension.justification) {
                             let answerJustification: string = ''
-                            if (this.previousDataRecord)
-                                answerJustification = this.previousDataRecord.loadAnswers()[`${dimension.name}_justification`]
-                            controlsConfig[`${dimension.name}_justification`] = new UntypedFormControl(answerJustification, [Validators.required, this.validateJustification.bind(this)])
-                        }
-                    } else {
-                        for (let j = 0; j < this.task.documents[this.documentIndex]['pairwise'].length; j++) {
-                            if (dimension.scale) {
-                                let answerValue: string = ''
-                                if (this.previousDataRecord)
-                                    answerValue = this.previousDataRecord.loadAnswers()[`${dimension.name}_value_element_${j}`]
-                                if (dimension.scale.type == "categorical") controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl(answerValue, [Validators.required]);
-                                if (dimension.scale.type == "interval") controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl(answerValue, [Validators.required])
-                                if (dimension.scale.type == "magnitude_estimation") controlsConfig[`${dimension.name}_value_element_${j}`] = new UntypedFormControl(answerValue, [this.utilsService.numberGreaterThanValidator(((<ScaleMagnitude>dimension.scale).min))]);
-                            }
-                            if (dimension.justification) {
-                                let answerJustification: string = ''
-                                if (this.previousDataRecord)
-                                    answerJustification = this.previousDataRecord.loadAnswers()[`${dimension.name}_justification_element_${j}`]
-                                controlsConfig[`${dimension.name}_justification_element_${j}`] = new UntypedFormControl(answerJustification, [Validators.required, this.validateJustification.bind(this)])
-                            }
+                            if (this.mostRecentDataRecord)
+                                answerJustification = this.mostRecentDataRecord.loadAnswers()[`${dimension.name}_justification_element_${j}`]
+                            controlsConfig[`${dimension.name}_justification_element_${j}`] = new UntypedFormControl(answerJustification, [Validators.required, this.validateJustification.bind(this)])
                         }
                     }
                 }
             }
-            assessForm = this.formBuilder.group(controlsConfig)
+        }
+        return controlsConfig
+    }
+
+    ngOnInit() {
+        this.task = this.sectionService.task
+        this.mostRecentDataRecord = this.task.mostRecentDataRecordsForDocuments[this.documentIndex]
+        let assessForm = null
+        /* A form for each the current HIT element is initialized */
+        if (!this.documentsForm[this.documentIndex]) {
+            assessForm = this.formBuilder.group(this.initializeControls(''))
             if (this.task.settings.post_assessment) {
-                assessForm.valueChanges.subscribe(() => {
-                    this.assessmentFormValidityEmitter.emit(assessForm.valid);
+                assessForm.valueChanges.subscribe(value => {
+                    const allValuesNotEmpty = Object.values(value).every(val => val !== '');
+                    this.assessmentFormValidityEmitter.emit(allValuesNotEmpty);
                 });
             }
         } else {
@@ -135,12 +145,56 @@ export class DimensionComponent implements OnInit, OnChanges {
         this.assessmentForm = assessForm
         this.formEmitter.emit({
             "index": this.documentIndex,
+            "type": "initial",
             "form": assessForm
         })
+        let postAssessmentAnswers = this.task.retrieveMostRecentSelectedValues(this.documentIndex, true);
+        const dimensions = this.task.dimensions;
+        const dimensionIndexes = dimensions.map(dimension => dimension.index);
+        if (Object.keys(postAssessmentAnswers).length > 0 && Object.keys(postAssessmentAnswers).every(dimensionIndex => dimensionIndexes.includes(Number(dimensionIndex)))) {
+            if(this.assessmentForm) {
+                let controlSuffix = '_post'
+                let controlsConfig = this.initializeControls(controlSuffix)
+                Object.keys(this.assessmentForm.controls).forEach(controlName => {
+                    controlsConfig[controlName.concat(controlSuffix)].setValue(this.assessmentForm.get(controlName).value)
+                });
+                this.assessmentForm.disable()
+                this.assessmentFormAdditional = this.formBuilder.group(controlsConfig)
+                this.formEmitter.emit({
+                    "index": this.documentIndex,
+                    "type": "post",
+                    "form": this.assessmentFormAdditional
+                })
+                this.followingAssessmentAllowed = true
+                this.followingAssessmentAllowedEmitter.emit(this.followingAssessmentAllowed);
+            }
+        }
     }
     ngOnChanges(changes: SimpleChanges) {
-        if (changes.nextRepetitionAllowed) {
-            let nextRepetitionAllowedChange = changes.nextRepetitionAllowed
+        if (changes.followingAssessmentAllowed) {
+            let followingAssessmentAllowedChange = changes.followingAssessmentAllowed
+            if (followingAssessmentAllowedChange.currentValue) {
+                let controlSuffix = "_post"
+                let controlsConfig = this.initializeControls(controlSuffix)
+                let postAssessmentAnswers = this.task.retrieveMostRecentSelectedValues(this.documentIndex, true);
+                const dimensionIndexes = this.task.dimensions.map(dimension => dimension.index);
+                if (Object.keys(postAssessmentAnswers).length > 0 && Object.keys(postAssessmentAnswers).every(dimensionIndex => dimensionIndexes.includes(Number(dimensionIndex)))) {
+                    Object.entries(this.assessmentForm.controls).forEach(([controlName, control], index) => {
+                        controlsConfig[controlName.concat(controlSuffix)].setValue(`${postAssessmentAnswers[index]}`);
+                    });
+                } else {
+                    Object.keys(this.assessmentForm.controls).forEach(controlName => {
+                        controlsConfig[controlName.concat(controlSuffix)].setValue(this.assessmentForm.get(controlName).value)
+                    });
+                }
+                this.assessmentForm.disable()
+                this.assessmentFormAdditional = this.formBuilder.group(controlsConfig)
+                this.formEmitter.emit({
+                    "index": this.documentIndex,
+                    "type": "post",
+                    "form": this.assessmentFormAdditional
+                })
+            }
         }
     }
     public filterDimensionsCurrent(dimensions) {
@@ -197,7 +251,6 @@ export class DimensionComponent implements OnInit, OnChanges {
         for (const [key, value] of Object.entries(urlFormGroup.controls)) {
             if (!this.assessmentForm.get(key) && this.task.dimensions[dimensionIndex].url) {
                 this.assessmentForm.addControl(key, urlFormGroup.get(key))
-
                 if (!this.searchEngineForms[this.documentIndex]) this.searchEngineForms[this.documentIndex] = []
                 this.searchEngineForms[this.documentIndex][dimensionIndex] = urlFormGroup
             }

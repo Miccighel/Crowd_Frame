@@ -50,8 +50,9 @@ export class DocumentComponent implements OnInit {
     /* Available options to label an annotation */
     annotationOptions: UntypedFormGroup;
     assessmentForm: UntypedFormGroup
+    assessmentFormAdditional: UntypedFormGroup
 
-    initialAssessmentFormValidity: boolean;
+    initialAssessmentFormInteraction: boolean;
     followingAssessmentAllowed: boolean;
 
     /* Reference to the outcome section component */
@@ -79,11 +80,16 @@ export class DocumentComponent implements OnInit {
 
     ngOnInit(): void {
         this.document = this.task.documents[this.documentIndex];
-        this.initialAssessmentFormValidity = false;
+        this.initialAssessmentFormInteraction = false;
         this.followingAssessmentAllowed = false;
         this.stepper.selectedIndex = this.worker.getPositionCurrent()
         this.sectionService.stepIndex = this.worker.getPositionCurrent()
-        this.mostRecentDataRecord = this.task.retrieveMostRecentDataRecord('document', this.documentIndex)
+        let initialAnswers = this.task.retrieveMostRecentSelectedValues(this.documentIndex, false);
+        const dimensions = this.task.dimensions;
+        const dimensionIndexes = dimensions.map(dimension => dimension.index);
+        if (Object.keys(initialAnswers).length > 0 && Object.keys(initialAnswers).every(dimensionIndex => dimensionIndexes.includes(Number(dimensionIndex)))) {
+            this.initialAssessmentFormInteraction = true;
+        }
         /* If there are no questionnaires and the countdown time is set, enable the first countdown */
         if (this.task.settings.countdownTime >= 0 && this.task.questionnaireAmountStart == 0) {
             this.countdown.begin();
@@ -95,23 +101,35 @@ export class DocumentComponent implements OnInit {
     public storeAssessmentForm(data) {
         let documentIndex = data['index'] as number
         let form = data['form']
-        if (!this.assessmentForm && this.documentIndex == documentIndex) {
-            if (!this.documentsForm[this.documentIndex]) {
-                this.assessmentForm = form
-            } else {
-                this.assessmentForm = this.documentsForm[this.documentIndex]
+        let type = data['type']
+        if (type == 'initial') {
+            if (!this.assessmentForm && this.documentIndex == documentIndex) {
+                if (!this.documentsForm[this.documentIndex]) {
+                    this.assessmentForm = form
+                } else {
+                    this.assessmentForm = this.documentsForm[this.documentIndex]
+                }
+                this.formEmitter.emit({
+                    "form": this.assessmentForm,
+                    "type": type
+                })
             }
-            this.formEmitter.emit({
-                "form": this.assessmentForm,
-            })
+        } else {
+            if (!this.assessmentFormAdditional && this.documentIndex == documentIndex) {
+                this.assessmentFormAdditional = form
+                this.formEmitter.emit({
+                    "form": this.assessmentFormAdditional,
+                    "type": type
+                })
+            }
         }
     }
 
-    public handleTopLevelFormValidityForRepetition(validity: boolean) {
-        this.initialAssessmentFormValidity = validity
+    public handleInitialAssessmentFormInteracted(validity: boolean) {
+        this.initialAssessmentFormInteraction = validity
     }
 
-    public unlockNextRepetition(value: boolean) {
+    public unlockNextAssessmentRepetition(value: boolean) {
         this.followingAssessmentAllowed = value
     }
 
@@ -163,8 +181,7 @@ export class DocumentComponent implements OnInit {
 
                     this.stepper.selectedIndex = jumpIndex
                     this.sectionService.stepIndex = jumpIndex
-                }
-                else{
+                } else {
                     if (okMessage)
                         this.snackBar.open(documentCheckGold["message"], "Dismiss", {duration: 10000});
                 }

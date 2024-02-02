@@ -1,6 +1,6 @@
-<ng-template #dimensionTemplate let-dimensions="dimensions" let-position="position">
+<ng-template #dimensionTemplate let-dimensions="dimensions" let-position="position" let-assessmentForm="assessmentForm" let-controlSuffix="controlSuffix">
 
-	<form [formGroup]="this.assessmentForm">
+	<form [formGroup]="assessmentForm">
 
 		<div *ngFor="let dimension of dimensions; let i=index" class="dimension'">
 
@@ -24,7 +24,7 @@
 
 						<ng-container *ngIf="this.dimension.scale">
 							<div *ngIf="this.dimension.scale.instructions" class="evaluation-instructions">
-								<ng-container *ngIf="this.postAssessment">
+								<ng-container *ngIf="!this.postAssessment">
 									<h2>{{ this.dimension.scale.instructions.label }} - {{ this.dimension.scale.instructions.caption }}</h2>
 								</ng-container>
 								<ng-container *ngIf="this.postAssessment">
@@ -56,7 +56,7 @@
 
 									<ng-container *ngIf="dimension.scale.type=='categorical'">
 										<div>
-											<mat-radio-group aria-labelledby="radio-button-label" class="radio-button-group" formControlName="{{(dimension.name).concat('_value')}}">
+											<mat-radio-group aria-labelledby="radio-button-label" class="radio-button-group" formControlName="{{(dimension.name).concat('_value').concat(controlSuffix)}}">
 												<ng-container *ngIf="!dimension.scale.multipleSelection">
 													<ng-container *ngFor="let mapping of dimension.scale.mapping let k=index">
 														<mat-divider *ngIf="mapping.separator" [inset]="true"></mat-divider>
@@ -81,7 +81,7 @@
 														</div>
 													</div>
 													<mat-form-field>
-														<input matInput formControlName="{{(dimension.name).concat('_value')}}">
+														<input matInput formControlName="{{(dimension.name).concat('_value').concat(controlSuffix)}}">
 													</mat-form-field>
 												</div>
 
@@ -92,17 +92,17 @@
 									<ng-container *ngIf="dimension.scale.type=='interval'">
 										<div class="scale-interval">
 											<mat-slider min="{{dimension.scale.min}}" max="{{dimension.scale.max}}" step="{{dimension.scale.step}}" discrete>
-												<input matSliderThumb formControlName="{{(dimension.name).concat('_value')}}"
+												<input matSliderThumb formControlName="{{(dimension.name).concat('_value').concat(controlSuffix)}}"
 													   (change)="this.task.storeDimensionValue($event, documentIndex,dimension.index, this.postAssessment);"
 													   [attr.disabled]="this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior=='disable_forms'">
 											</mat-slider>
-											<span *ngIf="assessmentForm.controls[(dimension.name).concat('_value')].value==''" i18n>
+											<span *ngIf="assessmentForm.controls[(dimension.name).concat('_value').concat(controlSuffix)].value==''" i18n>
                                                 Value: #
                                             </span>
-											<span *ngIf="assessmentForm.controls[(dimension.name).concat('_value')].value!=''" i18n>
-                                                Value: {{ assessmentForm.controls[(dimension.name).concat('_value')].value }}
+											<span *ngIf="assessmentForm.controls[(dimension.name).concat('_value').concat(controlSuffix)].value!=''" i18n>
+                                                Value: {{ assessmentForm.controls[(dimension.name).concat('_value').concat(controlSuffix)].value }}
                                             </span>
-											<mat-error *ngIf="this.utilsService.hasError(assessmentForm, (dimension.name).concat('_value'), 'required')">
+											<mat-error *ngIf="this.utilsService.hasError(assessmentForm, (dimension.name).concat('_value').concat(controlSuffix), 'required')">
 												<span i18n>This field is required</span>
 											</mat-error>
 										</div>
@@ -110,19 +110,19 @@
 									<ng-container *ngIf="dimension.scale.type=='magnitude_estimation'">
 										<mat-form-field appearance="fill">
 											<mat-label><span i18n>Value</span></mat-label>
-											<input matInput placeholder="" formControlName="{{(dimension.name).concat('_value')}}"
+											<input matInput placeholder="" formControlName="{{(dimension.name).concat('_value').concat(controlSuffix)}}"
 												   (change)="this.task.storeDimensionValue($event, documentIndex, dimension.index, this.postAssessment)" class="magnitude_estimation"
 												   [attr.disabled]="this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior=='disable_forms'">
-											<mat-error *ngIf="this.utilsService.hasError(assessmentForm, (dimension.name).concat('_value'), 'required')">
+											<mat-error *ngIf="this.utilsService.hasError(assessmentForm, (dimension.name).concat('_value').concat(controlSuffix), 'required')">
 												<span i18n>This field is required</span>
 											</mat-error>
-											<mat-error *ngIf="this.utilsService.hasError(assessmentForm, (dimension.name).concat('_value'), 'isNumber')">
+											<mat-error *ngIf="this.utilsService.hasError(assessmentForm, (dimension.name).concat('_value').concat(controlSuffix), 'isNumber')">
 												<span i18n>Value has to be a number (whole or decimal)</span>
 											</mat-error>
-											<mat-error *ngIf="this.utilsService.hasError(assessmentForm, (dimension.name).concat('_value'), 'numberFormat')">
+											<mat-error *ngIf="this.utilsService.hasError(assessmentForm, (dimension.name).concat('_value').concat(controlSuffix), 'numberFormat')">
 												<span i18n>Numbers must be expressed in the international format, using a dot as the decimal separator and, optionally, comma as the thousands separator (e.g., 123,456.78)</span>
 											</mat-error>
-											<mat-error *ngIf="this.utilsService.hasError(assessmentForm, (dimension.name).concat('_value'), 'numberGreaterThan')">
+											<mat-error *ngIf="this.utilsService.hasError(assessmentForm, (dimension.name).concat('_value').concat(controlSuffix), 'numberGreaterThan')">
 												<span i18n>Value has to be greater than </span> {{ dimension.scale.min }}
 											</mat-error>
 										</mat-form-field>
@@ -132,7 +132,7 @@
 								<ng-container *ngIf="dimension.style.orientation=='horizontal'">
 
 									<ng-container *ngIf="dimension.scale.type=='categorical'">
-										<mat-radio-group aria-labelledby="radio-button-label" formControlName="{{(dimension.name).concat('_value')}}">
+										<mat-radio-group aria-labelledby="radio-button-label" formControlName="{{(dimension.name).concat('_value').concat(controlSuffix)}}">
 											<mat-radio-button *ngFor="let mapping of dimension.scale.mapping let k=index"
 															  class="radio-button" value="{{mapping.value}}"
 															  (change)="this.task.storeDimensionValue($event, documentIndex,dimension.index, this.postAssessment)"
@@ -224,7 +224,7 @@
 
 							<!-- Dimension assessment fields markup -->
 							<div *ngIf="dimension.scale" class="{{dimension.style.separator ? ' dimension-separate' : ''}}">
-								<mat-radio-group aria-labelledby="radio-button-label" formControlName="{{(dimension.name).concat('_value')}}">
+								<mat-radio-group aria-labelledby="radio-button-label" formControlName="{{(dimension.name).concat('_value').concat(controlSuffix)}}">
 									<div class="matrix-value name-pretty" *ngIf="dimension.name_pretty">
 										<p><strong><span *ngIf="!this.dimension.style.separator">{{ i + 1 }} - </span>{{ dimension.name_pretty }}</strong></p>
 										<ng-container *ngIf="dimension.description">
@@ -425,19 +425,57 @@
 
 <!-- Dimensions are then shown and filtered according to each position -->
 
-<ng-container *ngIf="!postAssessment || (postAssessment && initialAssessmentFormValidity && this.followingAssessmentAllowed)">
-	<ng-template *ngIf="this.assessmentForm &&  this.filterDimensionsCurrent(this.task.filterDimensions('list', 'top')).length>0" [ngTemplateOutlet]="dimensionTemplate"
-				 [ngTemplateOutletContext]="{dimensions:  this.filterDimensionsCurrent(this.task.filterDimensions('list', 'top')), position:'top'}"></ng-template>
-	<ng-template *ngIf="this.assessmentForm &&  this.filterDimensionsCurrent(this.task.filterDimensions('matrix', 'top')).length>0" [ngTemplateOutlet]="dimensionTemplate"
-				 [ngTemplateOutletContext]="{dimensions:  this.filterDimensionsCurrent(this.task.filterDimensions('matrix', 'top')), position:'top'}"></ng-template>
-	<ng-template *ngIf="this.assessmentForm &&  this.filterDimensionsCurrent(this.task.filterDimensions('list', 'middle')).length>0" [ngTemplateOutlet]="dimensionTemplate"
-				 [ngTemplateOutletContext]="{dimensions:  this.filterDimensionsCurrent(this.task.filterDimensions('list', 'middle')), position:'middle'}"></ng-template>
-	<ng-template *ngIf="this.assessmentForm &&  this.filterDimensionsCurrent(this.task.filterDimensions('matrix', 'middle')).length>0" [ngTemplateOutlet]="dimensionTemplate"
-				 [ngTemplateOutletContext]="{dimensions:  this.filterDimensionsCurrent(this.task.filterDimensions('matrix', 'middle')), position:'middle'}"></ng-template>
-	<ng-template *ngIf="this.assessmentForm &&  this.filterDimensionsCurrent(this.task.filterDimensions('list', 'bottom')).length>0" [ngTemplateOutlet]="dimensionTemplate"
-				 [ngTemplateOutletContext]="{dimensions:  this.filterDimensionsCurrent(this.task.filterDimensions('list', 'bottom')), position:'bottom'}"></ng-template>
-	<ng-template *ngIf="this.assessmentForm &&  this.filterDimensionsCurrent(this.task.filterDimensions('matrix', 'bottom')).length>0" [ngTemplateOutlet]="dimensionTemplate"
-				 [ngTemplateOutletContext]="{dimensions:  this.filterDimensionsCurrent(this.task.filterDimensions('matrix', 'bottom')), position:'bottom'}"></ng-template>
+<ng-container *ngIf="!postAssessment">
+	<ng-template
+			*ngIf="this.assessmentForm &&  this.filterDimensionsCurrent(this.task.filterDimensions('list', 'top')).length>0"
+			[ngTemplateOutlet]="dimensionTemplate" [ngTemplateOutletContext]="{dimensions:  this.filterDimensionsCurrent(this.task.filterDimensions('list', 'top')), position:'top', assessmentForm: this.assessmentForm, controlSuffix: ''}">
+	</ng-template>
+	<ng-template
+			*ngIf="this.assessmentForm &&  this.filterDimensionsCurrent(this.task.filterDimensions('matrix', 'top')).length>0"
+			[ngTemplateOutlet]="dimensionTemplate"
+			[ngTemplateOutletContext]="{dimensions:  this.filterDimensionsCurrent(this.task.filterDimensions('matrix', 'top')), position:'top', assessmentForm: this.assessmentForm, controlSuffix: ''}">
+	</ng-template>
+	<ng-template
+			*ngIf="this.assessmentForm &&  this.filterDimensionsCurrent(this.task.filterDimensions('list', 'middle')).length>0"
+			[ngTemplateOutlet]="dimensionTemplate" [ngTemplateOutletContext]="{dimensions:  this.filterDimensionsCurrent(this.task.filterDimensions('list', 'middle')), position:'middle', assessmentForm: this.assessmentForm, controlSuffix: ''}">
+	</ng-template>
+	<ng-template
+			*ngIf="this.assessmentForm &&  this.filterDimensionsCurrent(this.task.filterDimensions('matrix', 'middle')).length>0"
+			[ngTemplateOutlet]="dimensionTemplate" [ngTemplateOutletContext]="{dimensions:  this.filterDimensionsCurrent(this.task.filterDimensions('matrix', 'middle')), position:'middle', assessmentForm: this.assessmentForm, controlSuffix: ''}">
+	</ng-template>
+	<ng-template
+			*ngIf="this.assessmentForm &&  this.filterDimensionsCurrent(this.task.filterDimensions('list', 'bottom')).length>0"
+			[ngTemplateOutlet]="dimensionTemplate" [ngTemplateOutletContext]="{dimensions:  this.filterDimensionsCurrent(this.task.filterDimensions('list', 'bottom')), position:'bottom', assessmentForm: this.assessmentForm, controlSuffix: ''}">
+	</ng-template>
+	<ng-template
+			*ngIf="this.assessmentForm &&  this.filterDimensionsCurrent(this.task.filterDimensions('matrix', 'bottom')).length>0"
+			[ngTemplateOutlet]="dimensionTemplate" [ngTemplateOutletContext]="{dimensions:  this.filterDimensionsCurrent(this.task.filterDimensions('matrix', 'bottom')), position:'bottom', assessmentForm: this.assessmentForm, controlSuffix: ''}">
+	</ng-template>
 </ng-container>
 
-
+<ng-container *ngIf="postAssessment && initialAssessmentFormInteraction && this.followingAssessmentAllowed">
+	<ng-template
+			*ngIf="this.assessmentFormAdditional &&  this.filterDimensionsCurrent(this.task.filterDimensions('list', 'top')).length>0"
+			[ngTemplateOutlet]="dimensionTemplate" [ngTemplateOutletContext]="{dimensions:  this.filterDimensionsCurrent(this.task.filterDimensions('list', 'top')), position:'top', assessmentForm: this.assessmentFormAdditional, controlSuffix: '_post'}">
+	</ng-template>
+	<ng-template
+			*ngIf="this.assessmentFormAdditional &&  this.filterDimensionsCurrent(this.task.filterDimensions('matrix', 'top')).length>0"
+			[ngTemplateOutlet]="dimensionTemplate" [ngTemplateOutletContext]="{dimensions:  this.filterDimensionsCurrent(this.task.filterDimensions('matrix', 'top')), position:'top', assessmentForm: this.assessmentFormAdditional, controlSuffix: '_post'}">
+	</ng-template>
+	<ng-template
+			*ngIf="this.assessmentFormAdditional &&  this.filterDimensionsCurrent(this.task.filterDimensions('list', 'middle')).length>0"
+			[ngTemplateOutlet]="dimensionTemplate" [ngTemplateOutletContext]="{dimensions:  this.filterDimensionsCurrent(this.task.filterDimensions('list', 'middle')), position:'middle', assessmentForm: this.assessmentFormAdditional, controlSuffix: '_post'}">
+	</ng-template>
+	<ng-template
+			*ngIf="this.assessmentFormAdditional &&  this.filterDimensionsCurrent(this.task.filterDimensions('matrix', 'middle')).length>0"
+			[ngTemplateOutlet]="dimensionTemplate" [ngTemplateOutletContext]="{dimensions:  this.filterDimensionsCurrent(this.task.filterDimensions('matrix', 'middle')), position:'middle', assessmentForm: this.assessmentFormAdditional, controlSuffix: '_post'}">
+	</ng-template>
+	<ng-template
+			*ngIf="this.assessmentFormAdditional &&  this.filterDimensionsCurrent(this.task.filterDimensions('list', 'bottom')).length>0"
+			[ngTemplateOutlet]="dimensionTemplate" [ngTemplateOutletContext]="{dimensions:  this.filterDimensionsCurrent(this.task.filterDimensions('list', 'bottom')), position:'bottom', assessmentForm: this.assessmentFormAdditional, controlSuffix: '_post'}">
+	</ng-template>
+	<ng-template
+			*ngIf="this.assessmentFormAdditional &&  this.filterDimensionsCurrent(this.task.filterDimensions('matrix', 'bottom')).length>0"
+			[ngTemplateOutlet]="dimensionTemplate" [ngTemplateOutletContext]="{dimensions:  this.filterDimensionsCurrent(this.task.filterDimensions('matrix', 'bottom')), position:'bottom', assessmentForm: this.assessmentFormAdditional, controlSuffix: '_post'}">
+	</ng-template>
+</ng-container>

@@ -21,7 +21,7 @@
 	</ng-container>
 </div>
 
-<ng-container *ngIf="this.postAssessment==true && this.initialAssessmentFormValidity">
+<ng-container *ngIf="this.postAssessment==true && this.initialAssessmentFormInteraction">
 	<div class="statement" *ngIf="(this.task.settings.modality=='pointwise' && this.postAssessment==true)">
 		<ng-container *ngFor="let attribute of this.task.settings.attributes; let k=index">
 			<div *ngIf="this.postAssessment && attribute.name == this.task.settings.post_assessment['attribute']" class="attribute" style="white-space: pre-line;">

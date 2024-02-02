@@ -13,7 +13,7 @@ import {AbstractControl, UntypedFormGroup} from "@angular/forms";
     templateUrl: './element-pointwise.component.html',
     styleUrls: ['./element-pointwise.component.scss', '../../document.component.scss']
 })
-export class ElementPointwiseComponent implements OnChanges {
+export class ElementPointwiseComponent {
 
     /* Change detector to manually intercept changes on DOM */
     changeDetector: ChangeDetectorRef;
@@ -26,7 +26,7 @@ export class ElementPointwiseComponent implements OnChanges {
     @Input() documentIndex: number
     /* Used to understand if the current element is being assessed again */
     @Input() postAssessment: boolean
-    @Input() initialAssessmentFormValidity: boolean
+    @Input() initialAssessmentFormInteraction: boolean
     @Input() documentForm: UntypedFormGroup
 
     @Output() followingAssessmentAllowedEmitter: EventEmitter<boolean>;
@@ -45,13 +45,6 @@ export class ElementPointwiseComponent implements OnChanges {
         this.utilsService = utilsService
         this.task = sectionService.task
         this.followingAssessmentAllowedEmitter = new EventEmitter<boolean>();
-    }
-
-    ngOnChanges(changes: SimpleChanges) {
-        // Check if the 'inputProperty' changed
-        if (changes.topLevelFormValidity) {
-            let topLevelFormValidityChange = changes.topLevelFormValidity
-        }
     }
 
     public unlockNextRepetition(value: boolean) {

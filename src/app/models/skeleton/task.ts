@@ -625,7 +625,7 @@ export class Task {
                 index: selectedValues.length,
                 timestamp: timeInSeconds,
                 value: currentValue,
-                postAssessment: postAssessment
+                post_assessment: postAssessment
             });
             /* The data array within the data structure is updated */
             this.dimensionsSelectedValues[currentDocument]["data"] =
@@ -644,13 +644,33 @@ export class Task {
                     index: 0,
                     timestamp: timeInSeconds,
                     value: currentValue,
-                    postAssessment: postAssessment
+                    post_assessment: postAssessment
                 },
             ];
             /* The total amount of selected values for the current document is set to 1 */
             /* IMPORTANT: the document_index of the last selected value for a document will be <amount -1> */
             this.dimensionsSelectedValues[currentDocument]["amount"] = 1;
         }
+    }
+
+    public retrieveMostRecentSelectedValues(documentIndex: number, postAssessment: boolean) {
+        const mostRecentDataRecordForDocument = this.mostRecentDataRecordsForDocuments[documentIndex];
+        const selectedValues: Record<string, any> = {};
+        if (mostRecentDataRecordForDocument) {
+            const dimensionsSelectedValues = mostRecentDataRecordForDocument.loadDimensionsSelected();
+            const sortedSelections = dimensionsSelectedValues['data'].sort((a, b) => b.timestamp - a.timestamp);
+            for (const selectedValue of sortedSelections) {
+                const dimension = selectedValue['dimension'];
+                const value = selectedValue['value'];
+                if (!value) {
+                    continue; // Skip if the value is empty
+                }
+                if (selectedValue['post_assessment'] === postAssessment && !(dimension in selectedValues)) {
+                    selectedValues[dimension] = value;
+                }
+            }
+        }
+        return selectedValues
     }
 
     /*
