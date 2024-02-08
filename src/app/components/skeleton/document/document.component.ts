@@ -16,7 +16,6 @@ import {Worker} from "../../../models/worker/worker";
 /* Material Design */
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {MatStepper} from "@angular/material/stepper";
-import {DataRecord} from "../../../models/skeleton/dataRecord";
 
 @Component({
     selector: 'app-document',

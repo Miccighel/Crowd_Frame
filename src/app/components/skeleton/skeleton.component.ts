@@ -810,24 +810,80 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         this.changeDetector.detectChanges();
     }
 
+
     public storePositionCurrent(data) {
         this.worker.setParameter("position_current", String(data))
         this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker);
     }
 
-    /* |--------- LOGGING SERVICE & SECTION SERVICE ---------| */
+    /* #################### LOGGER #################### */
 
     /* Logging service initialization */
-    public logInit(workerIdentifier, taskName, batchName, http: HttpClient, logOnConsole: boolean) {
+    public initializeLogger(workerIdentifier, taskName, batchName, http: HttpClient, logOnConsole: boolean) {
         this.actionLogger.logInit(this.configService.environment.bucket, workerIdentifier, taskName, batchName, http, logOnConsole);
     }
 
-    /* |--------- QUALITY CHECKS ---------| */
+    /* #################### QUALITY CHECKS #################### */
+
+    public performQualityChecks() {
+        /*
+         * This section performs the necessary checks to ensure the quality of the worker's output.
+         * Three checks are conducted:
+         * 1) GLOBAL VALIDITY CHECK (QUESTIONNAIRE + DOCUMENTS): Verifies that each field of every form contains valid values.
+         * 2) GOLD QUESTION CHECK: Implements a custom check on gold elements retrieved using their IDs. An element is considered gold if its ID contains the word "GOLD-".
+         * 3) TIME SPENT CHECK: Verifies if the time spent by the worker on each document and questionnaire exceeds <timeCheckAmount> seconds, using the <timestampsElapsed> array.
+         * If each check is successful, the task can conclude. If the worker has remaining attempts, the task is reset.
+         */
+
+        let globalValidityCheck: boolean;
+        let timeSpentCheck: boolean;
+        let timeCheckAmount = this.task.getTimesCheckAmount();
+
+        /* 1) GLOBAL VALIDITY CHECK performed here */
+        globalValidityCheck = this.performGlobalValidityCheck();
+
+        /* 2) GOLD ELEMENTS CHECK performed here */
+        let goldConfiguration = this.task.generateGoldConfiguration(this.task.goldDocuments, this.task.goldDimensions, this.documentsForm, this.task.notes);
+
+        /* The gold configuration is evaluated using the static method implemented within the GoldChecker class */
+        let goldChecks = GoldChecker.performGoldCheck(goldConfiguration);
+
+        /* 3) TIME SPENT CHECK performed here */
+        timeSpentCheck = true;
+
+        for (let i = 0; i < this.task.timestampsElapsed.length; i++) {
+            if (this.task.timestampsElapsed[i] < timeCheckAmount[i]) {
+                timeSpentCheck = false
+                break
+            }
+        }
+
+        let qualityCheckData = {
+            globalOutcome: null,
+            globalFormValidity: globalValidityCheck,
+            timeSpentCheck: timeSpentCheck,
+            goldChecks: goldChecks,
+            goldConfiguration: goldConfiguration,
+        };
+
+        let checksOutcome = [];
+        let checker = (array) => array.every(Boolean);
+
+        checksOutcome.push(qualityCheckData["globalFormValidity"]);
+        checksOutcome.push(qualityCheckData["timeSpentCheck"]);
+        checksOutcome.push(checker(qualityCheckData["goldChecks"]));
+
+        qualityCheckData["globalOutcome"] = checker(checksOutcome);
+
+        /* If each check is true, the task is successful; otherwise, the task fails (but is not terminated if there are more attempts available). */
+        return qualityCheckData;
+
+    }
 
     /*
-     * This function performs and scan of each form filled by the current worker (currentDocument.e., questionnaires + document answers)
-     * to ensure that each form posses the validation step (currentDocument.e., each field is filled, the url provided as a justification
-     * is an url retrieved by search engine, a truth level is selected, etc.)
+     * This function performs a scan of each form filled by the current worker (i.e., questionnaires + document answers)
+     * to ensure that each form undergoes the validation step (i.e., each field is filled, the URL provided as justification
+     * is retrieved from a search engine, a truth level is selected, etc.).
      */
     public performGlobalValidityCheck() {
         /* The "valid" flag of each questionnaire or document form must be true to pass this check. */
@@ -838,10 +894,25 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                 questionnaireFormValidity = false;
         }
         for (let index = 0; index < this.documentsForm.length; index++) {
-            if (this.documentsForm[index].valid == false)
-                documentsFormValidity = false;
+            let assessmentForm = this.documentsForm[index]
+            if (!this.task.settings.post_assessment) {
+                if (assessmentForm.valid == false)
+                    documentsFormValidity = false;
+            } else {
+                let documentFormsAdditional = this.documentsFormsAdditional[index];
+                /* Check validity of the last post assessment form */
+                let lastPostAssessmentFormValidity = documentFormsAdditional[documentFormsAdditional.length - 1].valid;
+                /* Check disabled status of the initial assessment form */
+                let isAssessmentFormDisabled = assessmentForm.status === "DISABLED";
+                /* Check validity or disabled status for previous post assessment forms */
+                let previousPostAssessmentFormsValidity = documentFormsAdditional.slice(0, -1).every(form => form.valid || form.status === "DISABLED");
+                /* Check the overall validity */
+                let overallValidity = (isAssessmentFormDisabled || assessmentForm.valid) && previousPostAssessmentFormsValidity && lastPostAssessmentFormValidity;
+                if (!overallValidity) {
+                    documentsFormValidity = false;
+                }
+            }
         }
-
         return questionnaireFormValidity && documentsFormValidity;
     }
 
@@ -850,6 +921,8 @@ export class SkeletonComponent implements OnInit, OnDestroy {
      * The worker can trigger this operation by clicking the "Reset" button when quality checks are completed and the outcome is shown.
      */
     public performReset() {
+
+
         /* The loading spinner is started */
         this.ngxService.startLoader("skeleton-inner");
 
@@ -881,10 +954,10 @@ export class SkeletonComponent implements OnInit, OnDestroy {
 
         this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker);
 
-        /* Trigger change detection to restore stepper reference */
+        /* Trigger change detection to restore the stepper reference. */
         this.changeDetector.detectChanges();
-        /* Set stepper document_index to the first questionnarie if only questionnaires are present in the task*/
-        /* If there are documents too, then jump to the first one with parameter reset_jump equal to true, if it exists; otherwise jump to the first document*/
+        /* Set the stepper document_index to the first questionnaire if only questionnaires are present in the task.
+           If there are documents too, jump to the first one with the parameter reset_jump set to true, if it exists; otherwise, jump to the first document. */
         this.stepper.selectedIndex = 0
         this.sectionService.stepIndex = 0
 
@@ -929,7 +1002,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                 objFormValidity = this.questionnairesForm[idx]
             }
 
-            // if is questionnaire the chack has to be done before
+            /* If it is a questionnaire, the check has to be done before. */
             if (idx != null)
                 failChecksCurrent = failChecksCurrent || objFormValidity.valid == false || this.task.timestampsElapsed[i] < timeCheckAmount[i]
 
@@ -940,169 +1013,11 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                 lastAllowBackIdx = idx == null ? i : i + 1
             }
 
-            // if is document the chack has to be done after
+            /* If it is a document, the check has to be done after. */
             if (idx == null)
                 failChecksCurrent = failChecksCurrent || objFormValidity.valid == false || this.task.timestampsElapsed[i] < timeCheckAmount[i]
         }
         return Math.min(jumpIndex, this.task.questionnaireAmount + this.task.documentsAmount - 1)
-    }
-
-    public handleCountdowns(
-        currentDocument: number,
-        completedDocument: number,
-        action: string
-    ) {
-        /* The countdowns are stopped and resumed to the left or to the right of the current document,
-         *  depending on the chosen action ("Back" or "Next") */
-        let currentIndex = currentDocument;
-        let countdown = this.documentComponent[currentIndex].countdown;
-        switch (action) {
-            case "Next":
-                if (currentIndex > 0 && countdown.toArray()[currentIndex - 1].left > 0) {
-                    countdown.toArray()[currentIndex - 1].pause();
-                }
-                if (countdown.toArray()[currentIndex].left == this.task.documentsCountdownTime[completedDocument]) {
-                    countdown.toArray()[currentIndex].begin();
-                } else if (countdown.toArray()[currentIndex].left > 0) {
-                    countdown.toArray()[currentIndex].resume();
-                }
-                break;
-            case "Back":
-                if (countdown.toArray()[currentIndex + 1].left > 0) {
-                    countdown.toArray()[currentIndex + 1].pause();
-                }
-                if (countdown.toArray()[currentIndex].left == this.task.documentsCountdownTime[completedDocument]) {
-                    countdown.toArray()[currentIndex].begin();
-                } else if (countdown.toArray()[currentIndex].left > 0) {
-                    countdown.toArray()[currentIndex].resume();
-                }
-                break;
-            case "Finish":
-                if (countdown.toArray()[currentIndex - 1].left > 0) {
-                    countdown.toArray()[currentIndex - 1].pause();
-                }
-                break;
-        }
-    }
-
-    public computeTimestamps(
-        currentElement: number,
-        completedElement: number,
-        action: string
-    ) {
-        let timeInSeconds = Date.now() / 1000;
-        switch (action) {
-            case "Next":
-                /*
-                 * If a transition to the following document is performed the current timestamp is:
-                 * the start timestamp for the document at <stepper.selectedIndex>
-                 * the end timestamps for the document at <stepper.selectedIndex - 1>
-                 */
-                this.task.timestampsStart[currentElement].push(timeInSeconds);
-                this.task.timestampsEnd[completedElement].push(timeInSeconds);
-                break;
-            case "Back":
-                /*
-                 * If a transition to the previous document is performed the current timestamp is:
-                 * the start timestamp for the document at <stepper.selectedIndex>
-                 * the end timestamps for the document at <stepper.selectedIndex + 1>
-                 */
-                this.task.timestampsStart[currentElement].push(timeInSeconds);
-                this.task.timestampsEnd[completedElement].push(timeInSeconds);
-                break;
-            case "Finish":
-                /* If the task finishes, the current timestamp is the end timestamp for the current document. */
-                this.task.timestampsEnd[currentElement].push(timeInSeconds);
-                break;
-        }
-
-        /*
-         * The general idea with start and end timestamps is that each time a worker goes to
-         * the next document, the current timestamp is the start timestamp for such document
-         * and the end timestamp for the previous and viceversa
-         */
-
-        /* In the corresponding array the elapsed timestamps for each document are computed */
-        for (let i = 0; i < this.task.documentsAmount + this.task.questionnaireAmount; i++) {
-            let totalSecondsElapsed = 0;
-            for (let k = 0; k < this.task.timestampsEnd[i].length; k++) {
-                if (this.task.timestampsStart[i][k] !== null && this.task.timestampsEnd[i][k] !== null) {
-                    totalSecondsElapsed = totalSecondsElapsed + (Number(this.task.timestampsEnd[i][k]) - Number(this.task.timestampsStart[i][k]));
-                }
-            }
-            this.task.timestampsElapsed[i] = totalSecondsElapsed;
-        }
-
-    }
-
-    public performQualityChecks() {
-        /*
-         * This section performs the checks needed to ensure that the worker has made a quality work.
-         * Three checks are performed:
-         * 1) GLOBAL VALIDITY CHECK (QUESTIONNAIRE + DOCUMENTS): Verifies that each field of each form has valid values
-         * 2) GOLD QUESTION CHECK:   Implements a custom check on gold elements retrieved using their ids.
-         *                           An element is gold if its id contains the word "GOLD-".
-         * 3) TIME SPENT CHECK:      Verifies if the time spent by worker on each document and questionnaire is higher than
-         *                           <timeCheckAmount> seconds, using the <timestampsElapsed> array
-         * If each check is successful, the task can end. If the worker has some tries left, the task is reset.
-         */
-
-        let globalValidityCheck: boolean;
-        let timeSpentCheck: boolean;
-        let timeCheckAmount = this.task.getTimesCheckAmount();
-
-        /* 1) GLOBAL VALIDITY CHECK performed here */
-        globalValidityCheck = this.performGlobalValidityCheck();
-
-        /* 2) GOLD ELEMENTS CHECK performed here */
-
-        let goldConfiguration = this.task.generateGoldConfiguration(this.task.goldDocuments, this.task.goldDimensions, this.documentsForm, this.task.notes);
-
-        /* The gold configuration is evaluated using the static method implemented within the GoldChecker class */
-        let goldChecks = GoldChecker.performGoldCheck(goldConfiguration);
-
-        /* 3) TIME SPENT CHECK performed here */
-        timeSpentCheck = true;
-
-        for (let i = 0; i < this.task.timestampsElapsed.length; i++) {
-            if (this.task.timestampsElapsed[i] < timeCheckAmount[i]) {
-                timeSpentCheck = false
-                break
-            }
-        }
-
-        let qualityCheckData = {
-            globalOutcome: null,
-            globalFormValidity: globalValidityCheck,
-            timeSpentCheck: timeSpentCheck,
-            goldChecks: goldChecks,
-            goldConfiguration: goldConfiguration,
-        };
-
-        let checksOutcome = [];
-        let checker = (array) => array.every(Boolean);
-
-        checksOutcome.push(qualityCheckData["globalFormValidity"]);
-        checksOutcome.push(qualityCheckData["timeSpentCheck"]);
-        checksOutcome.push(checker(qualityCheckData["goldChecks"]));
-
-        qualityCheckData["globalOutcome"] = checker(checksOutcome);
-
-        /* If each check is true, the task is successful, otherwise the task is failed (but not over if there are more tries) */
-
-        return qualityCheckData;
-    }
-
-    /*
-     * This function gives the possibility to the worker to provide a comment when a try is finished, successfully or not.
-     * The comment can be typed in a textarea and when the worker clicks the "Send" button such comment is uploaded to an Amazon S3 bucket.
-     */
-    public async performCommentSaving(data) {
-        this.outcomeSection.commentSent = true;
-        if (!(this.worker.identifier == null)) {
-            let comment = this.task.buildCommentPayload(data);
-            await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, comment);
-        }
     }
 
     public storeQuestionnaireForm(data, questionnaireIndex) {
@@ -1114,7 +1029,6 @@ export class SkeletonComponent implements OnInit, OnDestroy {
     }
 
     public storeDocumentForm(data, documentIndex) {
-
         let type = data['type']
         /* Added a check for null and undefined values in post-assessment cases, where the main form bounces when clicking on Next, Back, or Finish. */
         if (type == 'initial' || type === null || type === undefined) {
@@ -1129,6 +1043,18 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         let action = data["action"];
         if (action)
             this.produceData(action, documentIndex);
+    }
+
+    /*
+     * This function allows the worker to provide a comment when a try is finished, whether successful or not.
+     * The comment can be typed in a textarea, and when the worker clicks the "Send" button, such a comment is uploaded to an Amazon S3 bucket.
+     */
+    public async storeComment(data) {
+        this.outcomeSection.commentSent = true;
+        if (!(this.worker.identifier == null)) {
+            let comment = this.task.buildCommentPayload(data);
+            await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, comment);
+        }
     }
 
     /*
@@ -1242,6 +1168,96 @@ export class SkeletonComponent implements OnInit, OnDestroy {
             this.sectionService.taskCompleted = true;
             this.ngxService.stopLoader("skeleton-inner");
             this.changeDetector.detectChanges();
+        }
+    }
+
+    public computeTimestamps(
+        currentElement: number,
+        completedElement: number,
+        action: string
+    ) {
+        let timeInSeconds = Date.now() / 1000;
+        switch (action) {
+            case "Next":
+                /*
+                 * If a transition to the following document is performed the current timestamp is:
+                 * the start timestamp for the document at <stepper.selectedIndex>
+                 * the end timestamps for the document at <stepper.selectedIndex - 1>
+                 */
+                this.task.timestampsStart[currentElement].push(timeInSeconds);
+                this.task.timestampsEnd[completedElement].push(timeInSeconds);
+                break;
+            case "Back":
+                /*
+                 * If a transition to the previous document is performed the current timestamp is:
+                 * the start timestamp for the document at <stepper.selectedIndex>
+                 * the end timestamps for the document at <stepper.selectedIndex + 1>
+                 */
+                this.task.timestampsStart[currentElement].push(timeInSeconds);
+                this.task.timestampsEnd[completedElement].push(timeInSeconds);
+                break;
+            case "Finish":
+                /* If the task finishes, the current timestamp is the end timestamp for the current document. */
+                this.task.timestampsEnd[currentElement].push(timeInSeconds);
+                break;
+        }
+
+        /*
+         * The general idea with start and end timestamps is that each time a worker goes to
+         * the next document, the current timestamp is the start timestamp for such document
+         * and the end timestamp for the previous and viceversa
+         */
+
+        /* In the corresponding array the elapsed timestamps for each document are computed */
+        for (let i = 0; i < this.task.documentsAmount + this.task.questionnaireAmount; i++) {
+            let totalSecondsElapsed = 0;
+            for (let k = 0; k < this.task.timestampsEnd[i].length; k++) {
+                if (this.task.timestampsStart[i][k] !== null && this.task.timestampsEnd[i][k] !== null) {
+                    totalSecondsElapsed = totalSecondsElapsed + (Number(this.task.timestampsEnd[i][k]) - Number(this.task.timestampsStart[i][k]));
+                }
+            }
+            this.task.timestampsElapsed[i] = totalSecondsElapsed;
+        }
+
+    }
+
+    /* #################### COUNTDOWNS #################### */
+
+    public handleCountdowns(
+        currentDocument: number,
+        completedDocument: number,
+        action: string
+    ) {
+        /* The countdowns are stopped and resumed to the left or to the right of the current document,
+         *  depending on the chosen action ("Back" or "Next") */
+        let currentIndex = currentDocument;
+        let countdown = this.documentComponent[currentIndex].countdown;
+        switch (action) {
+            case "Next":
+                if (currentIndex > 0 && countdown.toArray()[currentIndex - 1].left > 0) {
+                    countdown.toArray()[currentIndex - 1].pause();
+                }
+                if (countdown.toArray()[currentIndex].left == this.task.documentsCountdownTime[completedDocument]) {
+                    countdown.toArray()[currentIndex].begin();
+                } else if (countdown.toArray()[currentIndex].left > 0) {
+                    countdown.toArray()[currentIndex].resume();
+                }
+                break;
+            case "Back":
+                if (countdown.toArray()[currentIndex + 1].left > 0) {
+                    countdown.toArray()[currentIndex + 1].pause();
+                }
+                if (countdown.toArray()[currentIndex].left == this.task.documentsCountdownTime[completedDocument]) {
+                    countdown.toArray()[currentIndex].begin();
+                } else if (countdown.toArray()[currentIndex].left > 0) {
+                    countdown.toArray()[currentIndex].resume();
+                }
+                break;
+            case "Finish":
+                if (countdown.toArray()[currentIndex - 1].left > 0) {
+                    countdown.toArray()[currentIndex - 1].pause();
+                }
+                break;
         }
     }
 
