@@ -23,6 +23,8 @@ import {ConfigService} from "../../../../../services/config.service";
 })
 export class SearchEngineComponent implements OnInit {
 
+    /* #################### SERVICES & CORE STUFF #################### */
+
     /* Change detector to manually intercept changes on DOM */
     changeDetector: ChangeDetectorRef;
 
@@ -34,22 +36,23 @@ export class SearchEngineComponent implements OnInit {
     /* Angular Reactive Form builder (see https://angular.io/guide/reactive-forms) */
     formBuilder: UntypedFormBuilder;
 
-    @Input() task: Task
     @Input() worker: Worker
     @Input() documentIndex: number
     @Input() dimensionIndex: number
     @Input() searchEngineForms: Array<Array<UntypedFormGroup>>;
     @Input() resultsRetrievedForms: Array<Array<Object>>;
 
+    /* #################### LOCAL ATTRIBUTES #################### */
+
+    task: Task
     dimension: Dimension
     searchEngineForm: UntypedFormGroup
+    @ViewChild('stepper') stepper: MatStepper;
+
+    /* #################### EMITTERS #################### */
 
     @Output() formEmitter: EventEmitter<UntypedFormGroup>;
     @Output() urlSelectedEmitter: EventEmitter<boolean>;
-
-    /* References to task stepper and token forms */
-    @ViewChild('stepper') stepper: MatStepper;
-    @ViewChild(SearchEngineBodyComponent) searchEngineBody: SearchEngineBodyComponent;
 
     constructor(
         changeDetector: ChangeDetectorRef,
@@ -63,6 +66,7 @@ export class SearchEngineComponent implements OnInit {
         this.utilsService = utilsService
         this.configService = configService
         this.formBuilder = formBuilder
+        this.task = this.sectionService.task
         this.urlSelectedEmitter = new EventEmitter<boolean>();
         this.formEmitter = new EventEmitter<UntypedFormGroup>();
     }

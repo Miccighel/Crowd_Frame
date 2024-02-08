@@ -1,19 +1,7 @@
 /* Core */
-import {
-    ChangeDetectorRef,
-    Component,
-    EventEmitter,
-    OnInit,
-    Output,
-} from "@angular/core";
-import {
-    UntypedFormArray,
-    UntypedFormBuilder,
-    UntypedFormGroup,
-    Validators,
-} from "@angular/forms";
+import {ChangeDetectorRef, Component, EventEmitter, OnInit, Output} from "@angular/core";
+import {UntypedFormArray, UntypedFormBuilder, UntypedFormGroup, Validators} from "@angular/forms";
 /* Services */
-
 import {ConfigService} from "../../../../services/config.service";
 import {LocalStorageService} from "../../../../services/localStorage.service";
 import {NgxUiLoaderService} from "ngx-ui-loader";
@@ -22,11 +10,7 @@ import {HitsSolverService} from "../../../../services/hitsSolver.service";
 import {ReadFile, ReadMode} from "ngx-file-helpers";
 /* Models */
 import {Hit} from "../../../../models/skeleton/hit";
-import {
-    Attribute,
-    DocCategory,
-    TaskSettings,
-} from "../../../../models/skeleton/taskSettings";
+import {AttributeMain, DocumentCategory, TaskSettings,} from "../../../../models/skeleton/taskSettings";
 import {S3Service} from "../../../../services/aws/s3.service";
 
 interface AnnotatorType {
@@ -50,6 +34,7 @@ interface BatchNode {
     styleUrls: ["../../generator.component.scss"],
 })
 export class TaskSettingsStepComponent implements OnInit {
+
     configService: ConfigService;
     /* Service which wraps the interaction with S3 */
     S3Service: S3Service;
@@ -508,10 +493,10 @@ export class TaskSettingsStepComponent implements OnInit {
         }
         this.hitAttributes().clear({emitEvent: true});
         for (let attributeIndex in this.hitsAttributes) {
-            if (attributeIndex in this.dataStored.attributes) {
+            if (attributeIndex in this.dataStored.attributesMain) {
                 this.addHitAttribute(
                     this.hitsAttributes[attributeIndex],
-                    this.dataStored.attributes[attributeIndex]
+                    this.dataStored.attributesMain[attributeIndex]
                 );
             } else {
                 this.addHitAttribute(this.hitsAttributes[attributeIndex]);
@@ -592,7 +577,7 @@ export class TaskSettingsStepComponent implements OnInit {
                 ) {
                     this.addDocCategory(
                         category,
-                        new DocCategory(
+                        new DocumentCategory(
                             category,
                             this.docsCategoriesValues[category].length,
                             0
@@ -630,26 +615,14 @@ export class TaskSettingsStepComponent implements OnInit {
         return this.formStep.get("attributes") as UntypedFormArray;
     }
 
-    addHitAttribute(name: string, attribute = null as Attribute) {
+    addHitAttribute(name: string, attribute : AttributeMain = null) {
         this.hitAttributes().push(
             this._formBuilder.group({
                 name: attribute ? attribute.name : name,
-                name_pretty: attribute
-                    ? attribute.name_pretty
-                        ? attribute.name_pretty
-                        : ""
-                    : "",
+                name_pretty: attribute ? attribute.name_pretty ? attribute.name_pretty : "" : "",
                 show: attribute ? attribute.show : true,
-                annotate: attribute
-                    ? this.formStep.get("setAnnotator").value
-                        ? attribute.annotate
-                        : false
-                    : false,
-                required: attribute
-                    ? this.formStep.get("setAnnotator").value
-                        ? attribute.required
-                        : false
-                    : false,
+                annotate: attribute ? this.formStep.get("setAnnotator").value ? attribute.annotate : false : false,
+                required: attribute ? this.formStep.get("setAnnotator").value ? attribute.required : false : false,
             })
         );
         this.resetHitAttributes();
@@ -753,7 +726,7 @@ export class TaskSettingsStepComponent implements OnInit {
 
     addDocCategory(
         name: string,
-        category = null as DocCategory,
+        category = null as DocumentCategory,
         balanced: boolean
     ) {
         this.docCategories().push(

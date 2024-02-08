@@ -1,6 +1,6 @@
 <div class="statement" *ngIf="(this.task.settings.modality=='pointwise' && this.postAssessment==false)">
-	<ng-container *ngFor="let attribute of this.task.settings.attributes; let k=index">
-		<div *ngIf="this.task.isCurrentTaskType(this.task.documents[this.documentIndex], attribute.show)" class="attribute">
+	<ng-container *ngFor="let attribute of this.task.settings.attributesMain; let k=index">
+		<div *ngIf="this.task.checkCurrentTaskType(this.task.documents[this.documentIndex], attribute.show)" class="attribute">
 			<p class="attribute-label">
 				<strong *ngIf="attribute.name_pretty">{{ attribute.name_pretty }}: </strong>
 				<strong *ngIf="!attribute.name_pretty">{{ attribute.name.split('_').join(' ') | titlecase }}: </strong>
@@ -22,17 +22,18 @@
 </div>
 
 <ng-container *ngIf="this.postAssessment==true && this.initialAssessmentFormInteraction">
-	<div class="statement" *ngIf="(this.task.settings.modality=='pointwise' && this.postAssessment==true)">
-		<ng-container *ngFor="let attribute of this.task.settings.attributes; let k=index">
-			<div *ngIf="this.postAssessment && attribute.name == this.task.settings.post_assessment['attribute']" class="attribute" style="white-space: pre-line;">
-				<p>
-					{{ this.task.documents[this.documentIndex][attribute.name] }}
-				</p>
-			</div>
-		</ng-container>
-	</div>
-
 	<button mat-stroked-button color="accent" class="button-continue" (click)="unlockNextRepetition(true)">
 		<span i18n>Continue Your Assessment</span>
 	</button>
+	<ng-container *ngIf="(this.task.settings.modality=='pointwise' && this.postAssessment==true && this.followingAssessmentAllowed)" class="evaluation-instructions">
+		<h2>{{ this.attributeForPostAssessment.text }}</h2>
+	</ng-container>
+	<div class="statement" *ngIf="(this.task.settings.modality=='pointwise' && this.postAssessment==true && this.followingAssessmentAllowed)">
+		<div *ngIf="this.attributeForPostAssessment" class="attribute" style="white-space: pre-line;">
+			<p class="attribute-label">
+				<span>{{ this.task.documents[this.documentIndex][this.attributeForPostAssessment.name] }}</span>
+			</p>
+		</div>
+	</div>
+
 </ng-container>

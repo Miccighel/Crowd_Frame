@@ -112,7 +112,6 @@ export class SearchEngineBodyComponent implements OnInit {
     /* EMITTER: Response selected by user */
     @Output() selectedRowEmitter = new EventEmitter<Object>();
 
-    @Input() task: Task;
     @Input() worker: Worker;
     @Input() documentIndex: number;
     @Input() dimension: Dimension;
@@ -120,6 +119,8 @@ export class SearchEngineBodyComponent implements OnInit {
 
     @Input() resetEvent: EventEmitter<void>;
     @Input() disableEvent: EventEmitter<boolean>;
+
+    task: Task
 
     /* Data and search parameters */
     estimatedMatches = 0;
@@ -156,6 +157,7 @@ export class SearchEngineBodyComponent implements OnInit {
         this.formBuilder = formBuilder;
         this.cookieService = cookieService;
 
+        this.task = this.sectionService.task
         this.searchStarted = true;
         this.searchInProgress = false;
 

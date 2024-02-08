@@ -19,10 +19,10 @@
 	<mat-card appearance="outlined">
 		<mat-card-title>
 			<ng-container *ngIf="this.task.settings.element_labels && this.utilsService.getValueByKeyIgnoreCase(this.task.settings.element_labels, this.document.params['task_type'])">
-				{{ this.utilsService.getValueByKeyIgnoreCase(this.task.settings.element_labels, this.document.params['task_type']) }} {{ this.task.getDocTypeNumber(this.document) }}
+				{{ this.utilsService.getValueByKeyIgnoreCase(this.task.settings.element_labels, this.document.params['task_type']) }} {{ this.task.getDocumentTypeNumberAccordingToTaskType(this.document) }}
 			</ng-container>
 			<ng-container *ngIf="!(this.task.settings.element_labels && this.utilsService.getValueByKeyIgnoreCase(this.task.settings.element_labels, this.document.params['task_type']))">
-				{{ this.document.params['task_type'] }} <span i18n>Element</span> {{ this.task.getDocTypeNumber(this.document) }}
+				{{ this.document.params['task_type'] }} <span i18n>Element</span> {{ this.task.getDocumentTypeNumberAccordingToTaskType(this.document) }}
 			</ng-container>
 		</mat-card-title>
 
@@ -36,8 +36,8 @@
 			</ng-container>
 			<div *ngIf="this.task.instructionsEvaluation.instructions.length>0" class="evaluation-instructions">
 				<div *ngFor="let instruction of this.task.instructionsEvaluation.instructions">
-					<h2 *ngIf="this.task.isCurrentTaskType(this.document, instruction.task_type)">{{ instruction.caption }}</h2>
-					<div *ngIf="this.task.isCurrentTaskType(this.document, instruction.task_type)"><p [innerHTML]="instruction.text"></p></div>
+					<h2 *ngIf="this.task.checkCurrentTaskType(this.document, instruction.task_type)">{{ instruction.caption }}</h2>
+					<div *ngIf="this.task.checkCurrentTaskType(this.document, instruction.task_type)"><p [innerHTML]="instruction.text"></p></div>
 				</div>
 			</div>
 
@@ -46,8 +46,7 @@
 				<div class="countdown sticky" *ngIf="this.task.settings.countdownTime>=0">
 					<h1 class="text-lighter m-0">
 						<span i18n>Time left:</span>
-						<countdown #countdownElement [config]="{ demand: true, leftTime: this.task.documentsCountdownTime[documentIndex], format: 'mm:ss' }"
-								   (event)="handleCountdown($event, documentIndex)"></countdown>
+						<countdown #countdownElement [config]="{ demand: true, leftTime: this.task.documentsCountdownTime[documentIndex], format: 'mm:ss' }" (event)="handleCountdown($event, documentIndex)"></countdown>
 					</h1>
 				</div>
 			</ng-container>
@@ -71,7 +70,6 @@
 
 			<app-dimension
 					[worker]="this.worker"
-					[task]="this.task"
 					[documentIndex]="documentIndex"
 					[documentsForm]="this.documentsForm"
 					[searchEngineForms]="this.searchEngineForms"
@@ -83,35 +81,35 @@
 
 			<ng-container *ngIf="this.task.settings.post_assessment">
 				<ng-container *ngIf="(this.task.settings.modality=='pointwise')">
-
-					<app-element-pointwise
-							[documentForm]="this.documentsForm[documentIndex]"
-							[documentIndex]="documentIndex"
-							[postAssessment]="true"
-							[initialAssessmentFormInteraction]="this.initialAssessmentFormInteraction"
-							(followingAssessmentAllowedEmitter)="this.unlockNextAssessmentRepetition($event)"
-					></app-element-pointwise>
-
-					<app-dimension
-							[worker]="this.worker"
-							[task]="this.task"
-							[documentIndex]="documentIndex"
-							[documentsForm]="this.documentsForm"
-							[searchEngineForms]="this.searchEngineForms"
-							[resultsRetrievedForms]="this.resultsRetrievedForms"
-							(formEmitter)="storeAssessmentForm($event)"
-							[postAssessment]="true"
-							[initialAssessmentFormInteraction]="this.initialAssessmentFormInteraction"
-							[followingAssessmentAllowed]="this.followingAssessmentAllowed"
-							(followingAssessmentAllowedEmitter)="this.unlockNextAssessmentRepetition($event)"
-					></app-dimension>
-
+					<ng-container *ngFor="let attributePost of this.task.settings.attributesPost; let k=index">
+						<app-element-pointwise
+								[documentIndex]="documentIndex"
+								[postAssessment]="true"
+								[postAssessmentIndex]="k+1"
+								[initialAssessmentFormInteraction]="this.initialAssessmentFormsInteraction[k]"
+								(followingAssessmentAllowedEmitter)="this.unlockNextAssessmentRepetition($event)"
+						></app-element-pointwise>
+						<app-dimension
+								[worker]="this.worker"
+								[documentIndex]="documentIndex"
+								[documentsForm]="this.documentsForm"
+								[documentsFormsAdditional]="this.documentsFormsAdditional"
+								[searchEngineForms]="this.searchEngineForms"
+								[resultsRetrievedForms]="this.resultsRetrievedForms"
+								(formEmitter)="storeAssessmentForm($event)"
+								[postAssessment]="true"
+								[postAssessmentIndex]="k+1"
+								[initialAssessmentFormInteraction]="this.initialAssessmentFormsInteraction[k]"
+								[followingAssessmentAllowed]="this.followingAssessmentsAllowed[k]"
+								(assessmentFormValidityEmitter)="handleInitialAssessmentFormInteracted($event)"
+						></app-dimension>
+					</ng-container>
 				</ng-container>
 			</ng-container>
 
 			<!-- STANDARD ASSESSMENT -->
 
-			<ng-container *ngIf="!this.task.settings.post_assessment">
+			<ng-container>
 
 				<!--
 				  BUTTONS ENABLED WITH CHECKS FOR DISABLE - Condition:
@@ -120,103 +118,18 @@
 				<mat-card-actions *ngIf="this.assessmentForm">
 					<button mat-flat-button color="primary"  *ngIf="documentIndex>0 && this.document.params['allow_back'] != false"
 							[disabled]="this.sectionService.taskCompleted"
-							(click)="handleDocumentCompletion('Back')">
+							(click)="handleAssessmentCompletion('Back')">
 						<span i18n>Back</span>
 					</button>
 					<button mat-flat-button color="primary"  *ngIf="documentIndex+1<this.task.documentsAmount || (documentIndex+1>=this.task.documentsAmount && this.task.questionnaireAmountEnd > 0)"
-							[disabled]="((!assessmentForm.valid || assessmentForm.status == 'DISABLED' ) || !this.task.searchEngineRetrievedResponses[documentIndex] || this.sectionService.taskCompleted || !this.task.checkAnnotationConsistency(documentIndex))"
-							(click)="handleDocumentCompletion('Next')">
+							[disabled]="(!this.checkAssessmentFormValidity() || !this.task.searchEngineRetrievedResponses[documentIndex] || this.sectionService.taskCompleted || !this.task.checkAnnotationConsistency(documentIndex)) || !this.checkAdditionalAssessmentFormsValidity()"
+							(click)="handleAssessmentCompletion('Next')">
 						<span i18n>Next</span>
 					</button>
 					<button mat-stroked-button color="accent"
 							*ngIf="documentIndex+1>=this.task.documentsAmount && this.task.questionnaireAmountEnd == 0"
-							[disabled]="(!assessmentForm.valid || assessmentForm.status == 'DISABLED'  || !this.task.searchEngineRetrievedResponses[documentIndex] || this.sectionService.taskCompleted || !this.task.checkAnnotationConsistency(documentIndex))"
-							(click)="handleDocumentCompletion('Finish')">
-						<span i18n>Finish</span>
-					</button>
-				</mat-card-actions>
-
-				<!--
-				  BUTTONS DISABLED - Condition:
-				  The assessment form has not been provided by the child component through emitter.
-				-->
-				<mat-card-actions *ngIf="!this.assessmentForm">
-					<button mat-flat-button color="primary" matStepperNext *ngIf="documentIndex+1<this.task.documentsAmount || (documentIndex+1>=this.task.documentsAmount && this.task.questionnaireAmountEnd > 0)" [disabled]="true">
-						<span i18n>Next</span>
-					</button>
-				</mat-card-actions>
-
-			</ng-container>
-
-			<!-- ASSESSMENT AND REASSESSMENT A POSTERIORI -->
-
-			<ng-container *ngIf="this.task.settings.post_assessment">
-
-				<!--
-				  BUTTONS ENABLED WITH CHECKS FOR DISABLE - Condition:
-				  The worker has not interacted with the initial assessment form yet.
-				-->
-				<mat-card-actions *ngIf="this.assessmentForm && !initialAssessmentFormInteraction">
-					<button mat-flat-button color="primary"  *ngIf="documentIndex>0 && this.document.params['allow_back'] != false"
-							[disabled]="this.sectionService.taskCompleted"
-							(click)="handleDocumentCompletion('Back')">
-						<span i18n>Back</span>
-					</button>
-					<button mat-flat-button color="primary"  *ngIf="documentIndex+1<this.task.documentsAmount || (documentIndex+1>=this.task.documentsAmount && this.task.questionnaireAmountEnd > 0)"
-							[disabled]="((!assessmentForm.valid || assessmentForm.status == 'DISABLED' ) || !this.task.searchEngineRetrievedResponses[documentIndex] || this.sectionService.taskCompleted || !this.task.checkAnnotationConsistency(documentIndex))"
-							(click)="handleDocumentCompletion('Next')">
-						<span i18n>Next</span>
-					</button>
-					<button mat-stroked-button color="accent"
-							*ngIf="documentIndex+1>=this.task.documentsAmount && this.task.questionnaireAmountEnd == 0"
-							[disabled]="(!assessmentForm.valid || assessmentForm.status == 'DISABLED'  || !this.task.searchEngineRetrievedResponses[documentIndex] || this.sectionService.taskCompleted || !this.task.checkAnnotationConsistency(documentIndex))"
-							(click)="handleDocumentCompletion('Finish')">
-						<span i18n>Finish</span>
-					</button>
-				</mat-card-actions>
-
-				<!--
-				  BUTTONS ENABLED AFTER TOP-LEVEL ASSESSMENT WITH CHECK FOR DISABLE - Conditions:
-				  1. The worker clicked the "Continue Your Assessment" button, rendering the top-level form disabled and invalid.
-				  2. The two boolean flags are true, indicating that the first interaction and the click on the "Continue Your Assessment" button have been completed successfully.
-				-->
-				<mat-card-actions *ngIf="(!assessmentForm.valid || assessmentForm.status == 'DISABLED') && assessmentFormAdditional && initialAssessmentFormInteraction && followingAssessmentAllowed">
-					<button mat-flat-button color="primary"  *ngIf="documentIndex>0 && this.document.params['allow_back'] != false"
-							[disabled]="this.sectionService.taskCompleted"
-							(click)="handleDocumentCompletion('Back')">
-						<span i18n>Back</span>
-					</button>
-					<button mat-flat-button color="primary"  *ngIf="documentIndex+1<this.task.documentsAmount || (documentIndex+1>=this.task.documentsAmount && this.task.questionnaireAmountEnd > 0)"
-							[disabled]="((!assessmentFormAdditional.valid || assessmentFormAdditional.status == 'DISABLED' ) || !this.task.searchEngineRetrievedResponses[documentIndex] || this.sectionService.taskCompleted || !this.task.checkAnnotationConsistency(documentIndex))"
-							(click)="handleDocumentCompletion('Next')">
-						<span i18n>Next</span>
-					</button>
-					<button mat-stroked-button color="accent"
-							*ngIf="documentIndex+1>=this.task.documentsAmount && this.task.questionnaireAmountEnd == 0"
-							[disabled]="(!assessmentFormAdditional.valid || assessmentFormAdditional.status == 'DISABLED'  || !this.task.searchEngineRetrievedResponses[documentIndex] || this.sectionService.taskCompleted || !this.task.checkAnnotationConsistency(documentIndex))"
-							(click)="handleDocumentCompletion('Finish')">
-						<span i18n>Finish</span>
-					</button>
-				</mat-card-actions>
-
-				<!--
-				  BUTTONS DISABLED - Conditions:
-				  1. The worker interacted with the top-level assessment form but hasn't clicked the "Continue Your Assessment" button yet.
-				  2. The worker clicked the "Continue Your Assessment" button, rendering the top-level form disabled and invalid. However, the additional assessment form (and the followingAssessmentAllowed flag) are not yet ready.
-				  3. Any other case where the worker interacted with the top-level form, clicked the "Continue Your Assessment" button, but the additional assessment form is not yet ready.
-				-->
-				<mat-card-actions *ngIf="(this.assessmentForm && initialAssessmentFormInteraction && !followingAssessmentAllowed) ||
-				(!assessmentForm.valid || assessmentForm.status == 'DISABLED') && !assessmentFormAdditional && initialAssessmentFormInteraction && !followingAssessmentAllowed ||
-				(!assessmentFormAdditional) && initialAssessmentFormInteraction && followingAssessmentAllowed">
-					<button mat-flat-button color="primary"  *ngIf="documentIndex>0 && this.document.params['allow_back'] != false"
-							[disabled]="this.sectionService.taskCompleted"
-							(click)="handleDocumentCompletion('Back')">
-						<span i18n>Back</span>
-					</button>
-					<button mat-flat-button color="primary" matStepperNext *ngIf="documentIndex+1<this.task.documentsAmount || (documentIndex+1>=this.task.documentsAmount && this.task.questionnaireAmountEnd > 0)" [disabled]="true">
-						<span i18n>Next</span>
-					</button>
-					<button mat-stroked-button color="accent" *ngIf="documentIndex+1>=this.task.documentsAmount && this.task.questionnaireAmountEnd == 0" [disabled]="true">
+							[disabled]="(!this.checkAssessmentFormValidity() || !this.task.searchEngineRetrievedResponses[documentIndex] || this.sectionService.taskCompleted || !this.task.checkAnnotationConsistency(documentIndex)) || !this.checkAdditionalAssessmentFormsValidity()"
+							(click)="handleAssessmentCompletion('Finish')">
 						<span i18n>Finish</span>
 					</button>
 				</mat-card-actions>

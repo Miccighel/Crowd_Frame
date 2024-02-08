@@ -1,5 +1,8 @@
-<ng-template #dimensionTemplate let-dimensions="dimensions" let-position="position" let-assessmentForm="assessmentForm" let-controlSuffix="controlSuffix">
-
+<ng-template #dimensionTemplate
+             let-dimensions="dimensions"
+             let-position="position"
+             let-assessmentForm="assessmentForm"
+             let-controlSuffix="controlSuffix">
 	<form [formGroup]="assessmentForm">
 
 		<div *ngFor="let dimension of dimensions; let i=index" class="dimension'">
@@ -13,24 +16,32 @@
 					<app-search-engine
 							[documentIndex]="documentIndex"
 							[dimensionIndex]="dimension.index"
-							[task]="this.task"
 							[worker]="this.worker"
 							[searchEngineForms]="this.searchEngineForms"
 							[resultsRetrievedForms]="this.resultsRetrievedForms"
 							(formEmitter)="storeSearchEngineUrl($event, dimension.index)">
 					</app-search-engine>
 
-					<ng-container *ngIf="verifyUrlSelection(position)">
+					<ng-container *ngIf="verifyUrlSelection(position) && checkIfDimensionIsEnabledForPostAssessment(dimension.name)">
 
 						<ng-container *ngIf="this.dimension.scale">
 							<div *ngIf="this.dimension.scale.instructions" class="evaluation-instructions">
 								<ng-container *ngIf="!this.postAssessment">
-									<h2>{{ this.dimension.scale.instructions.label }} - {{ this.dimension.scale.instructions.caption }}</h2>
+									<h2>
+										<span *ngIf="this.dimension.scale.instructions.label">
+											{{ this.dimension.scale.instructions.label }} -
+										</span>
+										{{ this.dimension.scale.instructions.caption }}
+									</h2>
 								</ng-container>
-								<ng-container *ngIf="this.postAssessment">
-									<h2>{{ this.dimension.scale.instructions.labelRepetition }} - {{ this.dimension.scale.instructions.captionRepetition }}</h2>
+								<ng-container *ngIf="this.postAssessment && this.dimension.scale.instructions.labelRepetition && this.dimension.scale.instructions.captionRepetition">
+									<h2>
+										<span *ngIf="this.dimension.scale.instructions.labelRepetition">
+											{{ this.dimension.scale.instructions.labelRepetition }} -
+										</span>
+										{{ this.dimension.scale.instructions.captionRepetition }}
+									</h2>
 								</ng-container>
-								<div><p>{{ this.dimension.scale.instructions.text }}</p></div>
 							</div>
 						</ng-container>
 
@@ -56,13 +67,14 @@
 
 									<ng-container *ngIf="dimension.scale.type=='categorical'">
 										<div>
-											<mat-radio-group aria-labelledby="radio-button-label" class="radio-button-group" formControlName="{{(dimension.name).concat('_value').concat(controlSuffix)}}">
+											<mat-radio-group aria-labelledby="radio-button-label" class="radio-button-group"
+															 formControlName="{{(dimension.name).concat('_value').concat(controlSuffix)}}">
 												<ng-container *ngIf="!dimension.scale.multipleSelection">
 													<ng-container *ngFor="let mapping of dimension.scale.mapping let k=index">
 														<mat-divider *ngIf="mapping.separator" [inset]="true"></mat-divider>
 														<mat-radio-button
 																value="{{mapping.value}}"
-																(change)="this.task.storeDimensionValue($event, documentIndex, dimension.index, this.postAssessment)"
+																(change)="this.task.storeDimensionValue($event, documentIndex, dimension.index, this.postAssessmentIndex)"
 																[attr.disabled]="this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior=='disable_forms'"
 																[ngClass]="mapping.separator ? 'radio-button radio-button-separated' : 'radio-button'">
 															<span>{{ mapping.label }}</span>
@@ -73,7 +85,7 @@
 
 
 												<div class="checkbox" *ngIf="dimension.scale.multipleSelection">
-													<div formGroupName="{{(dimension.name).concat('_list')}}">
+													<div formGroupName="{{(dimension.name).concat('_list').concat(controlSuffix)}}">
 														<div *ngFor="let mapping of dimension.scale.mapping; let k=index">
 															<mat-checkbox formControlName="{{k}}" (change)="handleCheckbox($event, dimension, k);">
 																{{ mapping.label }}
@@ -93,7 +105,7 @@
 										<div class="scale-interval">
 											<mat-slider min="{{dimension.scale.min}}" max="{{dimension.scale.max}}" step="{{dimension.scale.step}}" discrete>
 												<input matSliderThumb formControlName="{{(dimension.name).concat('_value').concat(controlSuffix)}}"
-													   (change)="this.task.storeDimensionValue($event, documentIndex,dimension.index, this.postAssessment);"
+													   (change)="this.task.storeDimensionValue($event, documentIndex,dimension.index, this.postAssessmentIndex);"
 													   [attr.disabled]="this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior=='disable_forms'">
 											</mat-slider>
 											<span *ngIf="assessmentForm.controls[(dimension.name).concat('_value').concat(controlSuffix)].value==''" i18n>
@@ -111,7 +123,7 @@
 										<mat-form-field appearance="fill">
 											<mat-label><span i18n>Value</span></mat-label>
 											<input matInput placeholder="" formControlName="{{(dimension.name).concat('_value').concat(controlSuffix)}}"
-												   (change)="this.task.storeDimensionValue($event, documentIndex, dimension.index, this.postAssessment)" class="magnitude_estimation"
+												   (change)="this.task.storeDimensionValue($event, documentIndex, dimension.index, this.postAssessmentIndex)" class="magnitude_estimation"
 												   [attr.disabled]="this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior=='disable_forms'">
 											<mat-error *ngIf="this.utilsService.hasError(assessmentForm, (dimension.name).concat('_value').concat(controlSuffix), 'required')">
 												<span i18n>This field is required</span>
@@ -135,7 +147,7 @@
 										<mat-radio-group aria-labelledby="radio-button-label" formControlName="{{(dimension.name).concat('_value').concat(controlSuffix)}}">
 											<mat-radio-button *ngFor="let mapping of dimension.scale.mapping let k=index"
 															  class="radio-button" value="{{mapping.value}}"
-															  (change)="this.task.storeDimensionValue($event, documentIndex,dimension.index, this.postAssessment)"
+															  (change)="this.task.storeDimensionValue($event, documentIndex,dimension.index, this.postAssessmentIndex)"
 															  [attr.disabled]="this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior=='disable_forms'">
 												<span>{{ mapping.label }}</span>
 												<span *ngIf="mapping.description.length>0">({{ mapping.description }})</span>
@@ -159,14 +171,14 @@
 								<div class="dimension-text-field">
 									<mat-form-field appearance="fill" class="width-100">
 										<mat-label>{{ dimension.justification.text }}</mat-label>
-										<textarea matInput formControlName="{{dimension.name}}_justification" rows="3"></textarea>
-										<mat-error *ngIf="this.utilsService.hasError(assessmentForm,(dimension.name).concat('_justification'), 'required')">
+										<textarea matInput formControlName="{{(dimension.name).concat('_justification').concat(controlSuffix)}}" rows="3"></textarea>
+										<mat-error *ngIf="this.utilsService.hasError(assessmentForm,(dimension.name).concat('_justification').concat(controlSuffix), 'required')">
 											<span i18n>This field is required</span>
 										</mat-error>
-										<mat-error *ngIf="this.utilsService.hasError(assessmentForm,(dimension.name).concat('_justification'), 'longer')">
+										<mat-error *ngIf="this.utilsService.hasError(assessmentForm,(dimension.name).concat('_justification').concat(controlSuffix), 'longer')">
 											<span i18n>This justification must have at least</span> {{ dimension.justification.min_words }} <span i18n>words</span>.
 										</mat-error>
-										<mat-error *ngIf="this.utilsService.hasError(assessmentForm,(dimension.name).concat('_justification'), 'invalid')">
+										<mat-error *ngIf="this.utilsService.hasError(assessmentForm,(dimension.name).concat('_justification').concat(controlSuffix), 'invalid')">
 											<span i18n>You cannot use the selected search engine url as part of the justification.</span>
 										</mat-error>
 									</mat-form-field>
@@ -186,31 +198,40 @@
 					<app-search-engine
 							[documentIndex]="documentIndex"
 							[dimensionIndex]="dimension.index"
-							[task]="this.task"
 							[worker]="this.worker"
 							[searchEngineForms]="this.searchEngineForms"
 							[resultsRetrievedForms]="this.resultsRetrievedForms"
 							(formEmitter)="storeSearchEngineUrl($event, dimension.index)">
 					</app-search-engine>
 
-					<ng-container *ngIf="verifyUrlSelection(position)">
+					<ng-container *ngIf="verifyUrlSelection(position) && checkIfDimensionIsEnabledForPostAssessment(dimension.name)">
 
 						<div class="{{this.task.verifyDimensionsQuantity(position)==1 ? 'dimension-matrix dimension-matrix-single' : 'dimension-matrix dimension-matrix-multiple'}}">
 
 							<ng-container *ngIf="dimension.scale">
 								<div *ngIf="dimension.scale.instructions" class="dimension-matrix-instructions evaluation-instructions">
 									<ng-container *ngIf="!this.postAssessment">
-										<h2>{{ this.dimension.scale.instructions.label }} - {{ this.dimension.scale.instructions.caption }}</h2>
+										<h2>
+											<span *ngIf="this.dimension.scale.instructions.label">
+												{{ this.dimension.scale.instructions.label }} -
+											</span>
+											{{ this.dimension.scale.instructions.caption }}
+										</h2>
 									</ng-container>
-									<ng-container *ngIf="this.postAssessment">
-										<h2>{{ this.dimension.scale.instructions.labelRepetition }} - {{ this.dimension.scale.instructions.captionRepetition }}</h2>
+									<ng-container *ngIf="this.postAssessment && this.dimension.scale.instructions.labelRepetition && this.dimension.scale.instructions.captionRepetition">
+										<h2>
+											<span *ngIf="this.dimension.scale.instructions.labelRepetition">
+												{{ this.dimension.scale.instructions.labelRepetition }} -
+											</span>
+											{{ this.dimension.scale.instructions.captionRepetition }}
+										</h2>
 									</ng-container>
 									<div><p>{{ this.dimension.scale.instructions.text }}</p></div>
 								</div>
 							</ng-container>
 
 							<!-- Dimension assessment matrix header markup -->
-							<mat-radio-group class="matrix-header" *ngIf="dimension.scale && this.task.getFirstDimension(position).index == dimension.index ">
+							<mat-radio-group class="matrix-header" *ngIf="dimension.scale && this.task.retrieveFirstDimension(position).index == dimension.index ">
 								<div class="{{dimension.description ? 'matrix-header-body-wide' : 'matrix-header-body'}}"></div>
 								<div class="{{dimension.description ? 'matrix-header-body-wide' : 'matrix-header-body'}}" *ngFor="let mapping of dimension.scale.mapping; let k=index">
 									<div *ngIf="mapping.label">
@@ -239,7 +260,8 @@
 										</ng-container>
 									</div>
 									<div class="matrix-value-control" *ngFor="let mapping of dimension.scale.mapping; let k=index">
-										<mat-radio-button class="radio-button" value="{{mapping.value}}" (change)="this.task.storeDimensionValue($event, documentIndex, dimension.index, this.postAssessment)"></mat-radio-button>
+										<mat-radio-button class="radio-button" value="{{mapping.value}}"
+														  (change)="this.task.storeDimensionValue($event, documentIndex, dimension.index, this.postAssessmentIndex)"></mat-radio-button>
 									</div>
 								</mat-radio-group>
 							</div>
@@ -250,14 +272,14 @@
 								<div class="dimension-text-field">
 									<mat-form-field appearance="fill" class="width-100">
 										<mat-label>{{ dimension.justification.text }}</mat-label>
-										<textarea matInput formControlName="{{dimension.name}}_justification" rows="5"></textarea>
-										<mat-error *ngIf="this.utilsService.hasError(assessmentForm,(dimension.name).concat('_justification'), 'required')">
+										<textarea matInput formControlName="{{(dimension.name).concat('_justification').concat(controlSuffix)}}" rows="5"></textarea>
+										<mat-error *ngIf="this.utilsService.hasError(assessmentForm,(dimension.name).concat('_justification').concat(controlSuffix), 'required')">
 											<span i18n>This field is required</span>
 										</mat-error>
-										<mat-error *ngIf="this.utilsService.hasError(assessmentForm,(dimension.name).concat('_justification'), 'longer')">
+										<mat-error *ngIf="this.utilsService.hasError(assessmentForm,(dimension.name).concat('_justification').concat(controlSuffix), 'longer')">
 											<span i18n>This justification must have at least</span> {{ dimension.justification.min_words }} <span i18n>words</span>.
 										</mat-error>
-										<mat-error *ngIf="this.utilsService.hasError(assessmentForm,(dimension.name).concat('_justification'), 'invalid')">
+										<mat-error *ngIf="this.utilsService.hasError(assessmentForm,(dimension.name).concat('_justification').concat(controlSuffix), 'invalid')">
 											<span i18n>You cannot use the selected search engine url as part of the justification.</span>
 										</mat-error>
 									</mat-form-field>
@@ -302,7 +324,6 @@
 						<app-search-engine
 								[documentIndex]="documentIndex"
 								[dimensionIndex]="dimension.index"
-								[task]="this.task"
 								[worker]="this.worker"
 								[searchEngineForms]="this.searchEngineForms"
 								[resultsRetrievedForms]="this.resultsRetrievedForms"
@@ -320,7 +341,7 @@
 											<mat-radio-group style="margin-left: 10px;" aria-labelledby="radio-button-label" class="radio-button-group"
 															 formControlName="{{(dimension.name).concat('_value_element_').concat(k)}}">
 												<mat-radio-button *ngFor="let mapping of dimension.scale.mapping" class="radio-button" value="{{mapping.value}}"
-																  (change)="this.task.storeDimensionValue($event, documentIndex, dimension.index, this.postAssessment); updateDimensionValueSelection(documentIndex,dimension.index,k)"
+																  (change)="this.task.storeDimensionValue($event, documentIndex, dimension.index, this.postAssessmentIndex); updateDimensionValueSelection(documentIndex,dimension.index,k)"
 																  [attr.disabled]="this.task.countdownsExpired[documentIndex]">
 													<span>{{ mapping.label }}</span>
 													<span *ngIf="mapping.description.length>0">
@@ -338,7 +359,7 @@
 													i18n> Selected value: </span>{{ assessmentForm.controls[(dimension.name).concat('_value_element_').concat(k)].value }}</label>
 											<mat-slider min="{{dimension.scale.min}}" max="{{dimension.scale.max}}" step="{{dimension.scale.step}}" discrete>
 												<input matSliderThumb formControlName="{{(dimension.name).concat('_value_element_').concat(k)}}"
-													   (change)="this.task.storeDimensionValue($event, documentIndex,dimension.index, this.postAssessment); updateDimensionValueSelection(documentIndex,dimension.index,k)"
+													   (change)="this.task.storeDimensionValue($event, documentIndex,dimension.index, this.postAssessmentIndex); updateDimensionValueSelection(documentIndex,dimension.index,k)"
 													   [attr.disabled]="this.task.countdownsExpired[documentIndex]">
 											</mat-slider>
 											<mat-error *ngIf="this.utilsService.hasError(assessmentForm, (dimension.name).concat('_value_element_').concat(k), 'required')">
@@ -353,7 +374,7 @@
 											<mat-form-field appearance="fill" style="margin-left: 10px;">
 												<mat-label><span i18n>Value</span></mat-label>
 												<input matInput placeholder="" formControlName="{{(dimension.name).concat('_value_element_').concat(k)}}"
-													   (change)="this.task.storeDimensionValue($event, documentIndex, dimension.index, this.postAssessment); updateDimensionValueSelection(documentIndex,dimension.index,k)"
+													   (change)="this.task.storeDimensionValue($event, documentIndex, dimension.index, this.postAssessmentIndex); updateDimensionValueSelection(documentIndex,dimension.index,k)"
 													   class="magnitude_estimation"
 													   [attr.disabled]="this.task.countdownsExpired[documentIndex]">
 												<mat-error *ngIf="this.utilsService.hasError(assessmentForm, (dimension.name).concat('_value_element_').concat(k), 'required')">
@@ -427,55 +448,66 @@
 
 <ng-container *ngIf="!postAssessment">
 	<ng-template
-			*ngIf="this.assessmentForm &&  this.filterDimensionsCurrent(this.task.filterDimensions('list', 'top')).length>0"
-			[ngTemplateOutlet]="dimensionTemplate" [ngTemplateOutletContext]="{dimensions:  this.filterDimensionsCurrent(this.task.filterDimensions('list', 'top')), position:'top', assessmentForm: this.assessmentForm, controlSuffix: ''}">
-	</ng-template>
-	<ng-template
-			*ngIf="this.assessmentForm &&  this.filterDimensionsCurrent(this.task.filterDimensions('matrix', 'top')).length>0"
+			*ngIf="this.assessmentForm &&  this.filterDimensionsAccordingToTaskType(this.task.filterDimensions('list', 'top')).length>0"
 			[ngTemplateOutlet]="dimensionTemplate"
-			[ngTemplateOutletContext]="{dimensions:  this.filterDimensionsCurrent(this.task.filterDimensions('matrix', 'top')), position:'top', assessmentForm: this.assessmentForm, controlSuffix: ''}">
+			[ngTemplateOutletContext]="{dimensions:  this.filterDimensionsAccordingToTaskType(this.task.filterDimensions('list', 'top')), position:'top', assessmentForm: this.assessmentForm, controlSuffix: ''}">
 	</ng-template>
 	<ng-template
-			*ngIf="this.assessmentForm &&  this.filterDimensionsCurrent(this.task.filterDimensions('list', 'middle')).length>0"
-			[ngTemplateOutlet]="dimensionTemplate" [ngTemplateOutletContext]="{dimensions:  this.filterDimensionsCurrent(this.task.filterDimensions('list', 'middle')), position:'middle', assessmentForm: this.assessmentForm, controlSuffix: ''}">
+			*ngIf="this.assessmentForm &&  this.filterDimensionsAccordingToTaskType(this.task.filterDimensions('matrix', 'top')).length>0"
+			[ngTemplateOutlet]="dimensionTemplate"
+			[ngTemplateOutletContext]="{dimensions:  this.filterDimensionsAccordingToTaskType(this.task.filterDimensions('matrix', 'top')), position:'top', assessmentForm: this.assessmentForm, controlSuffix: ''}">
 	</ng-template>
 	<ng-template
-			*ngIf="this.assessmentForm &&  this.filterDimensionsCurrent(this.task.filterDimensions('matrix', 'middle')).length>0"
-			[ngTemplateOutlet]="dimensionTemplate" [ngTemplateOutletContext]="{dimensions:  this.filterDimensionsCurrent(this.task.filterDimensions('matrix', 'middle')), position:'middle', assessmentForm: this.assessmentForm, controlSuffix: ''}">
+			*ngIf="this.assessmentForm &&  this.filterDimensionsAccordingToTaskType(this.task.filterDimensions('list', 'middle')).length>0"
+			[ngTemplateOutlet]="dimensionTemplate"
+			[ngTemplateOutletContext]="{dimensions:  this.filterDimensionsAccordingToTaskType(this.task.filterDimensions('list', 'middle')), position:'middle', assessmentForm: this.assessmentForm, controlSuffix: ''}">
 	</ng-template>
 	<ng-template
-			*ngIf="this.assessmentForm &&  this.filterDimensionsCurrent(this.task.filterDimensions('list', 'bottom')).length>0"
-			[ngTemplateOutlet]="dimensionTemplate" [ngTemplateOutletContext]="{dimensions:  this.filterDimensionsCurrent(this.task.filterDimensions('list', 'bottom')), position:'bottom', assessmentForm: this.assessmentForm, controlSuffix: ''}">
+			*ngIf="this.assessmentForm &&  this.filterDimensionsAccordingToTaskType(this.task.filterDimensions('matrix', 'middle')).length>0"
+			[ngTemplateOutlet]="dimensionTemplate"
+			[ngTemplateOutletContext]="{dimensions:  this.filterDimensionsAccordingToTaskType(this.task.filterDimensions('matrix', 'middle')), position:'middle', assessmentForm: this.assessmentForm, controlSuffix: ''}">
 	</ng-template>
 	<ng-template
-			*ngIf="this.assessmentForm &&  this.filterDimensionsCurrent(this.task.filterDimensions('matrix', 'bottom')).length>0"
-			[ngTemplateOutlet]="dimensionTemplate" [ngTemplateOutletContext]="{dimensions:  this.filterDimensionsCurrent(this.task.filterDimensions('matrix', 'bottom')), position:'bottom', assessmentForm: this.assessmentForm, controlSuffix: ''}">
+			*ngIf="this.assessmentForm &&  this.filterDimensionsAccordingToTaskType(this.task.filterDimensions('list', 'bottom')).length>0"
+			[ngTemplateOutlet]="dimensionTemplate"
+			[ngTemplateOutletContext]="{dimensions:  this.filterDimensionsAccordingToTaskType(this.task.filterDimensions('list', 'bottom')), position:'bottom', assessmentForm: this.assessmentForm, controlSuffix: ''}">
+	</ng-template>
+	<ng-template
+			*ngIf="this.assessmentForm &&  this.filterDimensionsAccordingToTaskType(this.task.filterDimensions('matrix', 'bottom')).length>0"
+			[ngTemplateOutlet]="dimensionTemplate"
+			[ngTemplateOutletContext]="{dimensions:  this.filterDimensionsAccordingToTaskType(this.task.filterDimensions('matrix', 'bottom')), position:'bottom', assessmentForm: this.assessmentForm, controlSuffix: ''}">
 	</ng-template>
 </ng-container>
 
-<ng-container *ngIf="postAssessment && initialAssessmentFormInteraction && this.followingAssessmentAllowed">
+<ng-container *ngIf="postAssessment && followingAssessmentAllowed">
 	<ng-template
-			*ngIf="this.assessmentFormAdditional &&  this.filterDimensionsCurrent(this.task.filterDimensions('list', 'top')).length>0"
-			[ngTemplateOutlet]="dimensionTemplate" [ngTemplateOutletContext]="{dimensions:  this.filterDimensionsCurrent(this.task.filterDimensions('list', 'top')), position:'top', assessmentForm: this.assessmentFormAdditional, controlSuffix: '_post'}">
+			*ngIf="this.assessmentFormAdditional &&  this.filterDimensionsAccordingToTaskType(this.task.filterDimensions('list', 'top')).length>0"
+			[ngTemplateOutlet]="dimensionTemplate"
+			[ngTemplateOutletContext]="{dimensions:  this.filterDimensionsAccordingToTaskType(this.task.filterDimensions('list', 'top')), position:'top', assessmentForm: this.assessmentFormAdditional, controlSuffix: '_post_'.concat(this.postAssessmentIndex.toString())}">
 	</ng-template>
 	<ng-template
-			*ngIf="this.assessmentFormAdditional &&  this.filterDimensionsCurrent(this.task.filterDimensions('matrix', 'top')).length>0"
-			[ngTemplateOutlet]="dimensionTemplate" [ngTemplateOutletContext]="{dimensions:  this.filterDimensionsCurrent(this.task.filterDimensions('matrix', 'top')), position:'top', assessmentForm: this.assessmentFormAdditional, controlSuffix: '_post'}">
+			*ngIf="this.assessmentFormAdditional &&  this.filterDimensionsAccordingToTaskType(this.task.filterDimensions('matrix', 'top')).length>0"
+			[ngTemplateOutlet]="dimensionTemplate"
+			[ngTemplateOutletContext]="{dimensions:  this.filterDimensionsAccordingToTaskType(this.task.filterDimensions('matrix', 'top')), position:'top', assessmentForm: this.assessmentFormAdditional, controlSuffix: '_post_'.concat(this.postAssessmentIndex.toString())}">
 	</ng-template>
 	<ng-template
-			*ngIf="this.assessmentFormAdditional &&  this.filterDimensionsCurrent(this.task.filterDimensions('list', 'middle')).length>0"
-			[ngTemplateOutlet]="dimensionTemplate" [ngTemplateOutletContext]="{dimensions:  this.filterDimensionsCurrent(this.task.filterDimensions('list', 'middle')), position:'middle', assessmentForm: this.assessmentFormAdditional, controlSuffix: '_post'}">
+			*ngIf="this.assessmentFormAdditional &&  this.filterDimensionsAccordingToTaskType(this.task.filterDimensions('list', 'middle')).length>0"
+			[ngTemplateOutlet]="dimensionTemplate"
+			[ngTemplateOutletContext]="{dimensions:  this.filterDimensionsAccordingToTaskType(this.task.filterDimensions('list', 'middle')), position:'middle', assessmentForm: this.assessmentFormAdditional, controlSuffix: '_post_'.concat(this.postAssessmentIndex.toString())}">
 	</ng-template>
 	<ng-template
-			*ngIf="this.assessmentFormAdditional &&  this.filterDimensionsCurrent(this.task.filterDimensions('matrix', 'middle')).length>0"
-			[ngTemplateOutlet]="dimensionTemplate" [ngTemplateOutletContext]="{dimensions:  this.filterDimensionsCurrent(this.task.filterDimensions('matrix', 'middle')), position:'middle', assessmentForm: this.assessmentFormAdditional, controlSuffix: '_post'}">
+			*ngIf="this.assessmentFormAdditional &&  this.filterDimensionsAccordingToTaskType(this.task.filterDimensions('matrix', 'middle')).length>0"
+			[ngTemplateOutlet]="dimensionTemplate"
+			[ngTemplateOutletContext]="{dimensions:  this.filterDimensionsAccordingToTaskType(this.task.filterDimensions('matrix', 'middle')), position:'middle', assessmentForm: this.assessmentFormAdditional, controlSuffix: '_post_'.concat(this.postAssessmentIndex.toString())}">
 	</ng-template>
 	<ng-template
-			*ngIf="this.assessmentFormAdditional &&  this.filterDimensionsCurrent(this.task.filterDimensions('list', 'bottom')).length>0"
-			[ngTemplateOutlet]="dimensionTemplate" [ngTemplateOutletContext]="{dimensions:  this.filterDimensionsCurrent(this.task.filterDimensions('list', 'bottom')), position:'bottom', assessmentForm: this.assessmentFormAdditional, controlSuffix: '_post'}">
+			*ngIf="this.assessmentFormAdditional &&  this.filterDimensionsAccordingToTaskType(this.task.filterDimensions('list', 'bottom')).length>0"
+			[ngTemplateOutlet]="dimensionTemplate"
+			[ngTemplateOutletContext]="{dimensions:  this.filterDimensionsAccordingToTaskType(this.task.filterDimensions('list', 'bottom')), position:'bottom', assessmentForm: this.assessmentFormAdditional, controlSuffix: '_post_'.concat(this.postAssessmentIndex.toString())}">
 	</ng-template>
 	<ng-template
-			*ngIf="this.assessmentFormAdditional &&  this.filterDimensionsCurrent(this.task.filterDimensions('matrix', 'bottom')).length>0"
-			[ngTemplateOutlet]="dimensionTemplate" [ngTemplateOutletContext]="{dimensions:  this.filterDimensionsCurrent(this.task.filterDimensions('matrix', 'bottom')), position:'bottom', assessmentForm: this.assessmentFormAdditional, controlSuffix: '_post'}">
+			*ngIf="this.assessmentFormAdditional &&  this.filterDimensionsAccordingToTaskType(this.task.filterDimensions('matrix', 'bottom')).length>0"
+			[ngTemplateOutlet]="dimensionTemplate"
+			[ngTemplateOutletContext]="{dimensions:  this.filterDimensionsAccordingToTaskType(this.task.filterDimensions('matrix', 'bottom')), position:'bottom', assessmentForm: this.assessmentFormAdditional, controlSuffix: '_post_'.concat(this.postAssessmentIndex.toString())}">
 	</ng-template>
 </ng-container>

@@ -13,7 +13,6 @@
                             (resultEmitter)="handleSearchEngineRetrievedResponse($event, this.task.documents[documentIndex], this.dimension)"
                             (queryEmitter)="this.task.storeSearchEngineUserQuery($event, this.task.documents[documentIndex], this.dimension)"
                             (selectedRowEmitter)="handleSearchEngineSelectedResponse($event, this.task.documents[documentIndex], this.dimension)"
-                            [task]="this.task"
                             [worker]="this.worker"
                             [resultsRetrievedForms]="this.resultsRetrievedForms"
                             [dimension]="this.dimension"

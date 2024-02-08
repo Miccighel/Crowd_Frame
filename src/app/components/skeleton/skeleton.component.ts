@@ -112,7 +112,8 @@ export class SkeletonComponent implements OnInit, OnDestroy {
     worker: Worker;
 
     /* Array of form references, one for each document within a Hit */
-    documentsForm: UntypedFormGroup[];
+    documentsForm: Array<UntypedFormGroup>;
+    documentsFormsAdditional: Array<Array<UntypedFormGroup>>;
     @ViewChildren(DocumentComponent)
     documentComponent: QueryList<DocumentComponent>;
 
@@ -773,6 +774,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
 
             /* A form for each document is initialized */
             this.documentsForm = new Array<UntypedFormGroup>();
+            this.documentsFormsAdditional = new Array<Array<UntypedFormGroup>>();
 
             this.searchEngineForms = new Array<Array<UntypedFormGroup>>();
             this.resultsRetrievedForms = new Array<Array<Object>>();
@@ -794,8 +796,8 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                 await this.S3Service.downloadDimensions(this.configService.environment)
             );
 
-            this.task.loadAccessCounter();
-            this.task.loadTimestamps();
+            this.task.initializeAccessCounter();
+            this.task.initializeTimestamps();
 
             if (!(this.worker.identifier == null)) {
                 if (this.task.dataRecords.length <= 0) {
@@ -1112,8 +1114,18 @@ export class SkeletonComponent implements OnInit, OnDestroy {
     }
 
     public storeDocumentForm(data, documentIndex) {
-        if (!this.documentsForm[documentIndex])
-            this.documentsForm[documentIndex] = data["form"];
+
+        let type = data['type']
+        /* Added a check for null and undefined values in post-assessment cases, where the main form bounces when clicking on Next, Back, or Finish. */
+        if (type == 'initial' || type === null || type === undefined) {
+            if (!this.documentsForm[documentIndex]) {
+                this.documentsForm[documentIndex] = data["form"];
+                this.documentsFormsAdditional[documentIndex] = []
+            }
+        } else {
+            this.documentsFormsAdditional[documentIndex].push(data["form"])
+        }
+
         let action = data["action"];
         if (action)
             this.produceData(action, documentIndex);
@@ -1207,7 +1219,13 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                 let countdown = null;
                 if (this.task.settings.countdownTime)
                     countdown = Number(this.documentComponent[completedElementIndex].countdown["i"]["text"]);
-                let documentPayload = this.task.buildTaskDocumentPayload(completedElementData, this.documentsForm[completedElementIndex].value, countdown, action);
+                let additionalAnswers = {}
+                for (let assessmentFormAdditional of this.documentsFormsAdditional[completedElementIndex]) {
+                    Object.keys(assessmentFormAdditional.controls).forEach(controlName => {
+                        additionalAnswers[controlName] = assessmentFormAdditional.get(controlName).value
+                    });
+                }
+                let documentPayload = this.task.buildTaskDocumentPayload(completedElementData, this.documentsForm[completedElementIndex].value, additionalAnswers, countdown, action);
                 await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, documentPayload);
                 this.storePositionCurrent(String(currentElement))
 

@@ -6,14 +6,16 @@ import {UtilsService} from "../../../../../services/utils.service";
 import {DeviceDetectorService} from "ngx-device-detector";
 /* Models */
 import {Task} from "../../../../../models/skeleton/task";
-import {AbstractControl, UntypedFormGroup} from "@angular/forms";
-
+import {AttributePost} from "../../../../../models/skeleton/taskSettings";
 @Component({
     selector: 'app-element-pointwise',
     templateUrl: './element-pointwise.component.html',
     styleUrls: ['./element-pointwise.component.scss', '../../document.component.scss']
 })
-export class ElementPointwiseComponent {
+
+export class ElementPointwiseComponent implements OnInit {
+
+    /* #################### SERVICES & CORE STUFF #################### */
 
     /* Change detector to manually intercept changes on DOM */
     changeDetector: ChangeDetectorRef;
@@ -23,15 +25,22 @@ export class ElementPointwiseComponent {
     sectionService: SectionService;
     utilsService: UtilsService
 
-    @Input() documentIndex: number
-    /* Used to understand if the current element is being assessed again */
-    @Input() postAssessment: boolean
-    @Input() initialAssessmentFormInteraction: boolean
-    @Input() documentForm: UntypedFormGroup
+    /* #################### INPUTS #################### */
 
-    @Output() followingAssessmentAllowedEmitter: EventEmitter<boolean>;
+    @Input() documentIndex: number
+    @Input() postAssessment: boolean
+    @Input() postAssessmentIndex: number
+    @Input() initialAssessmentFormInteraction: boolean
+
+    /* #################### LOCAL ATTRIBUTES #################### */
 
     task: Task
+    attributeForPostAssessment: AttributePost
+    followingAssessmentAllowed: boolean
+
+    /* #################### EMITTERS #################### */
+
+    @Output() followingAssessmentAllowedEmitter: EventEmitter<Object>;
 
     constructor(
         changeDetector: ChangeDetectorRef,
@@ -47,8 +56,25 @@ export class ElementPointwiseComponent {
         this.followingAssessmentAllowedEmitter = new EventEmitter<boolean>();
     }
 
+    ngOnInit() {
+        this.attributeForPostAssessment = this.task.getAttributeForPostAssessmentStep(this.postAssessmentIndex - 1)
+        let mostRecentAnswersForPostAssessment = this.task.retrieveMostRecentAnswersForPostAssessment(this.documentIndex, this.postAssessmentIndex - 1)
+        if (Object.keys(mostRecentAnswersForPostAssessment).length > 0) {
+            this.unlockNextRepetition(this.followingAssessmentAllowed)
+        }
+        if (this.postAssessmentIndex == 1) {
+            if (Object.keys(this.task.retrieveMostRecentAnswersForPostAssessment(this.documentIndex, 1)).length > 0) {
+                this.unlockNextRepetition(this.followingAssessmentAllowed)
+            }
+        }
+    }
+
     public unlockNextRepetition(value: boolean) {
-        this.followingAssessmentAllowedEmitter.emit(value)
+        this.followingAssessmentAllowed = true
+        this.followingAssessmentAllowedEmitter.emit({
+            "postAssessmentIndex": this.postAssessmentIndex - 1,
+            "followingAssessmentAllowed": this.followingAssessmentAllowed
+        });
     }
 
 }

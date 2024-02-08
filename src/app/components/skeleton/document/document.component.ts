@@ -1,5 +1,5 @@
 /* Core */
-import {ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, QueryList, ViewChildren, ViewChild} from '@angular/core';
+import {ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, QueryList, ViewChildren} from '@angular/core';
 import {UntypedFormBuilder, UntypedFormGroup} from "@angular/forms";
 /* Services */
 import {SectionService} from "../../../services/section.service";
@@ -23,7 +23,10 @@ import {DataRecord} from "../../../models/skeleton/dataRecord";
     templateUrl: './document.component.html',
     styleUrls: ['./document.component.scss']
 })
+
 export class DocumentComponent implements OnInit {
+
+    /* #################### SERVICES & CORE STUFF #################### */
 
     /* Change detector to manually intercept changes on DOM */
     changeDetector: ChangeDetectorRef;
@@ -36,30 +39,56 @@ export class DocumentComponent implements OnInit {
     /* Snackbar reference */
     snackBar: MatSnackBar;
 
-    @Input() worker: Worker
-    @Input() documentIndex: number
-    @Input() documentsForm: UntypedFormGroup[]
-    @Input() searchEngineForms: Array<Array<UntypedFormGroup>>;
-    @Input() resultsRetrievedForms: Array<Array<Object>>;
-    @Input() stepper: MatStepper
+    /* #################### INPUTS #################### */
 
-    task: Task
-    document: Document
-    mostRecentDataRecord: DataRecord;
+    /* Reference to the current worker performing the task */
+    @Input() worker: Worker;
+
+    /* Index of the current document */
+    @Input() documentIndex: number;
+    /* Array of assessment forms, one for each document */
+    @Input() documentsForm: Array<UntypedFormGroup>;
+    /* Array of additional assessment forms, one for each document.
+     * These forms are used when the configuration requires one or more post-assessment steps.
+     * Thus, if the post-assessment steps required are two, there will be two additional forms in addition to the base one. */
+    @Input() documentsFormsAdditional: Array<Array<UntypedFormGroup>>;
+
+    /* Array of search engine forms, one for each document */
+    @Input() searchEngineForms: Array<Array<UntypedFormGroup>>;
+    /* Array of forms for results retrieved, one for each document */
+    @Input() resultsRetrievedForms: Array<Array<Object>>;
+    /* MatStepper input for the component */
+    @Input() stepper: MatStepper;
+
+    /* #################### LOCAL ATTRIBUTES #################### */
+
+    /* Reference to the business logic of the entire task */
+    task: Task;
+    /* Reference to the document model */
+    document: Document;
+
+    /* Base assessment form of the document */
+    assessmentForm: UntypedFormGroup;
+    /* Additional assessment forms for the document, one for each post-assessment step */
+    assessmentFormsAdditional: Array<UntypedFormGroup>;
+    /* Array of boolean flags to understand if there is an interaction with one of the forms. The first position is reserved for the base one,
+     * and the following ones for the additional forms. So, the overall length will be "1 + post-assessment steps amount" */
+    initialAssessmentFormsInteraction: Array<Boolean>;
+    /* Array of boolean flags indicating whether following assessments are allowed for each post-assessment step */
+    followingAssessmentsAllowed: Array<Boolean>;
 
     /* Available options to label an annotation */
     annotationOptions: UntypedFormGroup;
-    assessmentForm: UntypedFormGroup
-    assessmentFormAdditional: UntypedFormGroup
-
-    initialAssessmentFormInteraction: boolean;
-    followingAssessmentAllowed: boolean;
-
-    /* Reference to the outcome section component */
     @ViewChildren(AnnotatorOptionsComponent) annotatorOptions: QueryList<AnnotatorOptionsComponent>;
+
+    /* Reference to the dimensions initialized for the current document. Used to handle countdown events. */
     @ViewChildren(DimensionComponent) dimensionsPointwise: QueryList<DimensionComponent>;
+    /* Reference to the countdown element itself for the current document */
     @ViewChildren('countdownElement') countdown: CountdownComponent;
 
+    /* #################### EMITTERS #################### */
+
+    /* Emitter used to bounce back the base assessment form or the additional ones to the parent component */
     @Output() formEmitter: EventEmitter<Object>;
 
     constructor(
@@ -80,28 +109,46 @@ export class DocumentComponent implements OnInit {
 
     ngOnInit(): void {
         this.document = this.task.documents[this.documentIndex];
-        this.initialAssessmentFormInteraction = false;
-        this.followingAssessmentAllowed = false;
+        /* The '+1' indicates that the count includes the base assessment form as well. */
+        this.initialAssessmentFormsInteraction = Array(this.task.settings.attributesPost.length + 1).fill(false);
+        /* The '+1' indicates that the count includes the base assessment form as well. */
+        this.followingAssessmentsAllowed = Array(this.task.settings.attributesPost.length + 1).fill(false);
+        /* Initialize an array for additional assessment forms with a length equal to the post attributes length. */
+        this.assessmentFormsAdditional = Array(this.task.settings.attributesPost.length).fill(null);
+        /* The index of the stepper component must be set to the position where the worker eventually left off in the past. */
         this.stepper.selectedIndex = this.worker.getPositionCurrent()
         this.sectionService.stepIndex = this.worker.getPositionCurrent()
-        let initialAnswers = this.task.retrieveMostRecentSelectedValues(this.documentIndex, false);
-        const dimensions = this.task.dimensions;
-        const dimensionIndexes = dimensions.map(dimension => dimension.index);
-        if (Object.keys(initialAnswers).length > 0 && Object.keys(initialAnswers).every(dimensionIndex => dimensionIndexes.includes(Number(dimensionIndex)))) {
-            this.initialAssessmentFormInteraction = true;
+        /* Since the worker might be coming back from a previous try, each post assessment configuration must be scanned to restore
+         * the boolean flags if there exist previous answers provided by the worker */
+        for (let attributePostAssessment of this.task.settings.attributesPost) {
+            let mostRecentAnswersForPostAssessment = this.task.retrieveMostRecentAnswersForPostAssessment(this.documentIndex, attributePostAssessment.index + 1)
+            if (Object.keys(mostRecentAnswersForPostAssessment).length > 0) {
+                if (attributePostAssessment.index == 0) {
+                    this.initialAssessmentFormsInteraction[0] = true
+                    this.followingAssessmentsAllowed[0] = true
+                }
+                this.initialAssessmentFormsInteraction[attributePostAssessment.index + 1] = true
+                this.followingAssessmentsAllowed[attributePostAssessment.index + 1] = true
+            }
         }
-        /* If there are no questionnaires and the countdown time is set, enable the first countdown */
+        /* Enable the first countdown if there are no questionnaires and the countdown time is set. */
         if (this.task.settings.countdownTime >= 0 && this.task.questionnaireAmountStart == 0) {
             this.countdown.begin();
         }
     }
 
-    /* |--------- DIMENSIONS ---------| */
+    /* #################### ANSWERS, ASSESSMENT FORMS, & POST ASSESSMENT #################### */
 
+    /* This function stores the last assessment form used by the worker. The payload can have four attributes:
+     * - index (of the document)
+     * - type (of the assessment form): initial, post
+     * - postAssessmentIndex: self-explanatory
+     * It is called when the underlying dimension component emits the answers provided for each instantiated dimension. */
     public storeAssessmentForm(data) {
         let documentIndex = data['index'] as number
         let form = data['form']
         let type = data['type']
+        /* The form received is the initial one, so it is stored in the base attribute */
         if (type == 'initial') {
             if (!this.assessmentForm && this.documentIndex == documentIndex) {
                 if (!this.documentsForm[this.documentIndex]) {
@@ -115,30 +162,90 @@ export class DocumentComponent implements OnInit {
                 })
             }
         } else {
-            if (!this.assessmentFormAdditional && this.documentIndex == documentIndex) {
-                this.assessmentFormAdditional = form
+            /* Store the received post-assessment form at the specified index position,
+             * adjusting for the fact that indexes in the markup start from 1. */
+            let postAssessmentIndex = data['postAssessmentIndex'] as number
+            if (!this.assessmentFormsAdditional[postAssessmentIndex - 1] && this.documentIndex == documentIndex) {
+                this.assessmentFormsAdditional[postAssessmentIndex - 1] = form
                 this.formEmitter.emit({
-                    "form": this.assessmentFormAdditional,
+                    "form": this.assessmentFormsAdditional[postAssessmentIndex - 1],
+                    "postAssessmentIndex": postAssessmentIndex,
                     "type": type
                 })
             }
         }
+        /* The forms for the current documents are emitted to the skeleton each time, so that they can be collected and their data uploaded to the database. */
     }
 
-    public handleInitialAssessmentFormInteracted(validity: boolean) {
-        this.initialAssessmentFormInteraction = validity
+    /* Mark interaction with the current assessment form when all values are valid and not empty, whether it's the initial or a post-assessment form. */
+    public handleInitialAssessmentFormInteracted(data: Object) {
+        let postAssessmentIndex = data['postAssessmentIndex'] as number
+        let allValuesNotEmpty = data['allValuesNotEmpty'] as boolean
+        if (allValuesNotEmpty)
+            this.initialAssessmentFormsInteraction[postAssessmentIndex] = allValuesNotEmpty
     }
 
-    public unlockNextAssessmentRepetition(value: boolean) {
-        this.followingAssessmentAllowed = value
+    /* Unlocks the following post assessment when the assessment form for the previous one is valid. */
+    public unlockNextAssessmentRepetition(data: Object) {
+        let postAssessmentIndex = data['postAssessmentIndex'] as number
+        this.followingAssessmentsAllowed[postAssessmentIndex] = data['followingAssessmentAllowed'] as boolean
+        if (postAssessmentIndex > 0) {
+            this.assessmentFormsAdditional[postAssessmentIndex - 1].disable()
+        }
     }
 
-    /* |--------- COUNTDOWN ---------| */
+    /* Checks for successful interaction with all assessment forms, including the initial one. */
+    public checkInitialAssessmentFormInteraction() {
+        return this.initialAssessmentFormsInteraction.every((element: boolean) => {
+            return element;
+        });
+    }
 
-    /*
-     * This function intercept the event triggered when the time left to evaluate a document reaches 0
-     * and it simply sets the corresponding flag to false
-     */
+    /* Checks if the initial assessment form is valid and not disabled. Skip this check when there are post-assessment steps. */
+    public checkAssessmentFormValidity(): boolean {
+        if (!this.assessmentForm) {
+            return false;
+        }
+        if (this.task.settings.post_assessment) {
+            return true;
+        }
+        return this.assessmentForm.valid && this.assessmentForm.status !== 'DISABLED';
+    }
+
+    /* Checks if every post-assessment form is valid and not disabled. Note: This function is called only when post-assessment is enabled. */
+    public checkAdditionalAssessmentFormsValidity() {
+        const arrayLength = this.assessmentFormsAdditional.length;
+
+        /* If post-assessment is not enabled, return true to avoid blocking the "Next" button */
+        if (!this.task.settings.post_assessment) {
+            return true;
+        }
+
+        /* If the post-assessment form array is not initialized instantly, consider it as invalid */
+        if (arrayLength === 0) {
+            return false;
+        }
+
+        /* Check the validity of each post-assessment form */
+        return this.assessmentFormsAdditional.every((assessmentFormAdditional, index) => {
+            /* Check if the last form is valid */
+            if (index === arrayLength - 1) {
+                return assessmentFormAdditional && assessmentFormAdditional.valid && assessmentFormAdditional.status === "VALID";
+            } else {
+                /* Check if previous forms are either valid or disabled */
+                return assessmentFormAdditional && (assessmentFormAdditional.valid || assessmentFormAdditional.status === "DISABLED");
+            }
+        });
+    }
+
+    /* Checks if post-assessments are allowed within every step. */
+    public checkFollowingAssessmentAllowed() {
+        return this.followingAssessmentsAllowed.every((followingAssessment) => followingAssessment);
+    }
+
+    /* #################### COUNTDOWNS #################### */
+
+    /* Intercept the event triggered when the time left to evaluate a document reaches 0, setting the corresponding flag to false. */
     public handleCountdown(event, i) {
         if (event['left'] == 0) {
             this.task.countdownsExpired[i] = true
@@ -147,15 +254,17 @@ export class DocumentComponent implements OnInit {
         }
     }
 
-    public handleDocumentCompletion(action: string) {
+    /* #################### DOCUMENT COMPLETION #################### */
+
+    public handleAssessmentCompletion(action: string) {
         let documentCheckGold = this.document.params["check_gold"]
         let okMessage = documentCheckGold && typeof documentCheckGold["message"] === 'string'
         let okJump = documentCheckGold && typeof documentCheckGold["jump"] === 'string'
         if ((action == "Next" || action == "Finish") && (okMessage || okJump)) {
-            let docsForms = this.documentsForm.slice()
-            docsForms.push(this.assessmentForm)
+            let documentsForm = this.documentsForm.slice()
+            documentsForm.push(this.assessmentForm)
 
-            let goldConfiguration = this.task.generateGoldConfiguration(this.task.goldDocuments, this.task.goldDimensions, docsForms, this.task.notes);
+            let goldConfiguration = this.task.generateGoldConfiguration(this.task.goldDocuments, this.task.goldDimensions, documentsForm, this.task.notes);
             let goldChecks = GoldChecker.performGoldCheck(goldConfiguration, this.document.params['task_type']);
 
             if (goldChecks.every(Boolean)) {
@@ -165,10 +274,8 @@ export class DocumentComponent implements OnInit {
                 this.stepper.next();
                 this.sectionService.stepIndex = this.stepper.selectedIndex
             } else {
-
                 if (okJump) {
                     let jumpIndex = this.task.questionnaireAmountStart
-
                     for (let i = 0; i < this.task.documents.length; i++) {
                         const doc = this.task.documents[i];
                         if (doc["id"] == documentCheckGold["jump"]) {
@@ -178,15 +285,12 @@ export class DocumentComponent implements OnInit {
                             break
                         }
                     }
-
                     this.stepper.selectedIndex = jumpIndex
                     this.sectionService.stepIndex = jumpIndex
                 } else {
                     if (okMessage)
                         this.snackBar.open(documentCheckGold["message"], "Dismiss", {duration: 10000});
                 }
-
-
                 action = null
             }
         } else {
@@ -202,7 +306,6 @@ export class DocumentComponent implements OnInit {
             "form": this.assessmentForm,
             "action": action
         })
-
     }
 
 }

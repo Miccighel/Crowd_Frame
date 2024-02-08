@@ -17,8 +17,8 @@
             <div id="element-{{documentIndex}}-{{j}}" class="element-box" (click)="selectElement(documentIndex, j);">
                 <h2 class="element-box-title"><span i18n>Element</span> {{j}}</h2>
                 <div class="element-box-values">
-                    <ng-container *ngFor="let attribute of this.task.settings.attributes; let k=index">
-                            <span class="element-value-caption" *ngIf="this.task.isCurrentTaskType(this.task.documents[this.documentIndex], attribute.show)">
+                    <ng-container *ngFor="let attribute of this.task.settings.attributesMain; let k=index">
+                            <span class="element-value-caption" *ngIf="this.task.checkCurrentTaskType(this.task.documents[this.documentIndex], attribute.show)">
                                 <label><strong>{{attribute.name_pretty}}</strong>:</label>
                                 {{this.task.documents[documentIndex]['pairwise'][j][attribute.name]}}
                             </span>
