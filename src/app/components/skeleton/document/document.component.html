@@ -29,7 +29,6 @@
 		<mat-card-content class="pt-16px">
 
 			<!-- Evaluation instructions markup -->
-
 			<ng-container *ngIf="this.task.instructionsEvaluation.element" class="evaluation-instructions">
 				<h2>{{ this.task.instructionsEvaluation.element.label }} - {{ this.task.instructionsEvaluation.element.caption }}</h2>
 				<div><p>{{ this.task.instructionsEvaluation.element.text }}</p></div>
@@ -86,7 +85,7 @@
 								[documentIndex]="documentIndex"
 								[postAssessment]="true"
 								[postAssessmentIndex]="k+1"
-								[initialAssessmentFormInteraction]="this.initialAssessmentFormsInteraction[k]"
+								[initialAssessmentFormInteraction]="this.task.initialAssessmentFormInteraction[documentIndex][k]"
 								(followingAssessmentAllowedEmitter)="this.unlockNextAssessmentRepetition($event)"
 						></app-element-pointwise>
 						<app-dimension
@@ -99,22 +98,15 @@
 								(formEmitter)="storeAssessmentForm($event)"
 								[postAssessment]="true"
 								[postAssessmentIndex]="k+1"
-								[initialAssessmentFormInteraction]="this.initialAssessmentFormsInteraction[k]"
-								[followingAssessmentAllowed]="this.followingAssessmentsAllowed[k]"
+								[initialAssessmentFormInteraction]="this.task.initialAssessmentFormInteraction[documentIndex][k]"
+								[followingAssessmentAllowed]="this.task.followingAssessmentAllowed[documentIndex][k]"
 								(assessmentFormValidityEmitter)="handleInitialAssessmentFormInteracted($event)"
 						></app-dimension>
 					</ng-container>
 				</ng-container>
 			</ng-container>
 
-			<!-- STANDARD ASSESSMENT -->
-
 			<ng-container>
-
-				<!--
-				  BUTTONS ENABLED WITH CHECKS FOR DISABLE - Condition:
-				  The worker has not interacted with the assessment form yet.
-				-->
 				<mat-card-actions *ngIf="this.assessmentForm">
 					<button mat-flat-button color="primary"  *ngIf="documentIndex>0 && this.document.params['allow_back'] != false"
 							[disabled]="this.sectionService.taskCompleted"

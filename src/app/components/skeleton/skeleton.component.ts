@@ -1,20 +1,6 @@
 /* Core */
-import {
-    ChangeDetectionStrategy,
-    ChangeDetectorRef,
-    Component, OnDestroy,
-    OnInit,
-    QueryList,
-    ViewChild,
-    ViewChildren,
-    ViewEncapsulation,
-} from "@angular/core";
-import {
-    UntypedFormBuilder,
-    UntypedFormControl,
-    UntypedFormGroup,
-    Validators,
-} from "@angular/forms";
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren, ViewEncapsulation} from "@angular/core";
+import {UntypedFormBuilder, UntypedFormGroup, UntypedFormControl, Validators} from "@angular/forms";
 import {MatFormField} from "@angular/material/form-field";
 import {MatStepper} from "@angular/material/stepper";
 import {HttpClient, HttpHeaders} from "@angular/common/http";
@@ -59,10 +45,11 @@ import {catchError, tap} from "rxjs/operators";
 })
 
 /*
- * This class implements a skeleton for Crowdsourcing tasks.
+ * This class implements the skeleton for Crowdsourcing tasks.
  */
 export class SkeletonComponent implements OnInit, OnDestroy {
-    /* |--------- SERVICES & CO. - DECLARATION ---------| */
+
+    /* #################### SERVICES & CORE STUFF #################### */
 
     /* Change detector to manually intercept changes on DOM */
     changeDetector: ChangeDetectorRef;
@@ -91,51 +78,46 @@ export class SkeletonComponent implements OnInit, OnDestroy {
     /* Angular Reactive Form builder (see https://angular.io/guide/reactive-forms) */
     formBuilder: UntypedFormBuilder;
 
-    /* |--------- CONTROL FLOW & UI ELEMENTS - DECLARATION ---------| */
+    /* Snackbar reference */
+    snackBar: MatSnackBar;
+
+    /* This is a convention often used in Angular to manage the cleanup of subscriptions. It involves a Subject that emits a value when the component is
+     * about to be destroyed, typically in the ngOnDestroy lifecycle hook. */
+    private unsubscribe$ = new Subject<void>();
+
+    /* #################### LOCAL ATTRIBUTES #################### */
 
     /* References to task stepper and token forms */
-    @ViewChild("stepper", {static: false}) stepper: MatStepper;
-    @ViewChild("urlField") urlField: MatFormField;
+
     tokenForm: UntypedFormGroup;
     tokenInput: UntypedFormControl;
     tokenInputValid: boolean;
 
-    /* Snackbar reference */
-    snackBar: MatSnackBar;
-
     /* Object to encapsulate all task-related information */
     task: Task;
-
-    platform: string;
-
     /* Object to encapsulate all worker-related information */
     worker: Worker;
+    platform: string;
+    /* Check to understand if the generator or the skeleton should be loader */
+    generator: boolean;
+
+    @ViewChild("stepper", {static: false}) stepper: MatStepper;
 
     /* Array of form references, one for each document within a Hit */
     documentsForm: Array<UntypedFormGroup>;
     documentsFormsAdditional: Array<Array<UntypedFormGroup>>;
-    @ViewChildren(DocumentComponent)
-    documentComponent: QueryList<DocumentComponent>;
-
-    /* Array of search form references, one for each document within a Hit */
-    searchEngineForms: Array<Array<UntypedFormGroup>>;
-    resultsRetrievedForms: Array<Array<Object>>;
-
+    @ViewChildren(DocumentComponent) documentComponent: QueryList<DocumentComponent>;
 
     /* Array of form references, one for each questionnaire within a Hit */
     questionnairesForm: UntypedFormGroup[];
 
-    /* |--------- OUTCOME SECTION ELEMENTS - DECLARATION ---------| */
+    /* Array of search form references, one for each document within a Hit */
+    searchEngineForms: Array<Array<UntypedFormGroup>>;
+    resultsRetrievedForms: Array<Array<Object>>;
+    @ViewChild("urlField") urlField: MatFormField;
 
     /* Reference to the outcome section component */
     @ViewChild(OutcomeSectionComponent) outcomeSection: OutcomeSectionComponent;
-
-    /* Check to understand if the generator or the skeleton should be loader */
-    generator: boolean;
-
-    /* convention often used in Angular to manage the cleanup of subscriptions.  It's a Subject that emits a value when the component is
-     * about to be destroyed (in the ngOnDestroy lifecycle hook). */
-    private unsubscribe$ = new Subject<void>();
 
     constructor(
         changeDetector: ChangeDetectorRef,
@@ -153,8 +135,6 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         utilsService: UtilsService,
         debugService: DebugService
     ) {
-        /* |--------- SERVICES & CO. - INITIALIZATION ---------| */
-
         this.changeDetector = changeDetector;
         this.ngxService = ngxService;
         this.configService = configService;
@@ -170,10 +150,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         this.client = client;
         this.formBuilder = formBuilder;
         this.snackBar = snackBar;
-
         this.ngxService.startLoader("skeleton-inner");
-
-        /* |--------- CONTROL FLOW & UI ELEMENTS - INITIALIZATION ---------| */
 
         this.tokenInput = new UntypedFormControl(
             "",
@@ -185,14 +162,10 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         });
         this.tokenInputValid = false;
 
-        /* |--------- CONFIGURATION GENERATOR INTEGRATION - INITIALIZATION ---------| */
-
         this.generator = false;
     }
 
-    /* |--------- MAIN FLOW IMPLEMENTATION ---------| */
-
-    /* To follow the execution flow of the skeleton the functions needs to be read somehow in order (i.e., from top to bottom) */
+    /* To follow the execution flow of the skeleton, the functions need to be read in order (i.e., from top to bottom). */
     public async ngOnInit() {
         this.task = new Task();
 
@@ -262,7 +235,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
     }
 
     public async initializeWorker() {
-        /* Flag to understand if there is a HIT assigned to the current worker */
+        /* Flag to indicate if a HIT is assigned to the current worker. */
         let hitAssigned = false;
 
         let workerACLRecord = await this.dynamoDBService.getACLRecordIpAddress(this.configService.environment, this.worker.getIP());
@@ -467,7 +440,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                                                 this.tokenInput.setValue(mostRecentAclEntry["token_input"]);
                                                 await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker);
                                             }
-                                            /* As soon as a HIT is assigned to the current worker the search can be stopped */
+                                            /* The search can be stopped as soon as a HIT is assigned to the current worker. */
                                             if (hitAssigned)
                                                 break;
                                         }
@@ -478,7 +451,6 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                             }
 
                         }
-
                         if (!hitAssigned) {
                             let hitsStillToComplete = false;
                             for (let hit of hits) {
@@ -491,19 +463,17 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                                 this.worker.setParameter("status_code", StatusCodes.TASK_COMPLETED_BY_OTHERS);
                         }
                     }
-
                     this.task.storeDataRecords(await this.retrieveDataRecords())
                     await this.performTaskSetup();
                     this.unlockTask(hitAssigned);
                 } else {
-                    /* If a check during the execution of performWorkerStatusCheck has not been satisfied */
+                    /* If a condition in the execution of performWorkerStatusCheck is not satisfied */
                     this.unlockTask(false);
                 }
             });
         } else {
             this.unlockTask(false);
         }
-
         this.changeDetector.detectChanges();
     }
 
@@ -775,6 +745,11 @@ export class SkeletonComponent implements OnInit, OnDestroy {
             /* A form for each document is initialized */
             this.documentsForm = new Array<UntypedFormGroup>();
             this.documentsFormsAdditional = new Array<Array<UntypedFormGroup>>();
+            /* Initialize an array for additional assessment forms with a length equal to the post attributes length. */
+            if(this.task.settings.post_assessment) {
+                for (let index = 0; index < this.task.documents.length; index++)
+                    this.documentsFormsAdditional[index] = Array(0);
+            }
 
             this.searchEngineForms = new Array<Array<UntypedFormGroup>>();
             this.resultsRetrievedForms = new Array<Array<Object>>();
@@ -790,14 +765,15 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                 await this.S3Service.downloadEvaluationInstructions(this.configService.environment)
             );
 
-            /* |--------- DIMENSIONS ELEMENTS (see: dimensions.json) ---------| */
-
             this.task.initializeDimensions(
                 await this.S3Service.downloadDimensions(this.configService.environment)
             );
 
             this.task.initializeAccessCounter();
+
             this.task.initializeTimestamps();
+
+            this.task.initializePostAssessment()
 
             if (!(this.worker.identifier == null)) {
                 if (this.task.dataRecords.length <= 0) {
@@ -1222,7 +1198,6 @@ export class SkeletonComponent implements OnInit, OnDestroy {
     }
 
     /* #################### COUNTDOWNS #################### */
-
     public handleCountdowns(
         currentDocument: number,
         completedDocument: number,

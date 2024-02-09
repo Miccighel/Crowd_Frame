@@ -70,11 +70,6 @@ export class DocumentComponent implements OnInit {
     assessmentForm: UntypedFormGroup;
     /* Additional assessment forms for the document, one for each post-assessment step */
     assessmentFormsAdditional: Array<UntypedFormGroup>;
-    /* Array of boolean flags to understand if there is an interaction with one of the forms. The first position is reserved for the base one,
-     * and the following ones for the additional forms. So, the overall length will be "1 + post-assessment steps amount" */
-    initialAssessmentFormsInteraction: Array<Boolean>;
-    /* Array of boolean flags indicating whether following assessments are allowed for each post-assessment step */
-    followingAssessmentsAllowed: Array<Boolean>;
 
     /* Available options to label an annotation */
     annotationOptions: UntypedFormGroup;
@@ -108,12 +103,7 @@ export class DocumentComponent implements OnInit {
 
     ngOnInit(): void {
         this.document = this.task.documents[this.documentIndex];
-        /* The '+1' indicates that the count includes the base assessment form as well. */
-        this.initialAssessmentFormsInteraction = Array(this.task.settings.attributesPost.length + 1).fill(false);
-        /* The '+1' indicates that the count includes the base assessment form as well. */
-        this.followingAssessmentsAllowed = Array(this.task.settings.attributesPost.length + 1).fill(false);
-        /* Initialize an array for additional assessment forms with a length equal to the post attributes length. */
-        this.assessmentFormsAdditional = Array(this.task.settings.attributesPost.length).fill(null);
+        this.assessmentFormsAdditional = this.documentsFormsAdditional[this.documentIndex]
         /* The index of the stepper component must be set to the position where the worker eventually left off in the past. */
         this.stepper.selectedIndex = this.worker.getPositionCurrent()
         this.sectionService.stepIndex = this.worker.getPositionCurrent()
@@ -123,11 +113,11 @@ export class DocumentComponent implements OnInit {
             let mostRecentAnswersForPostAssessment = this.task.retrieveMostRecentAnswersForPostAssessment(this.documentIndex, attributePostAssessment.index + 1)
             if (Object.keys(mostRecentAnswersForPostAssessment).length > 0) {
                 if (attributePostAssessment.index == 0) {
-                    this.initialAssessmentFormsInteraction[0] = true
-                    this.followingAssessmentsAllowed[0] = true
+                    this.task.initialAssessmentFormInteraction[this.documentIndex][0] = true
+                    this.task.followingAssessmentAllowed[this.documentIndex][0] = true
                 }
-                this.initialAssessmentFormsInteraction[attributePostAssessment.index + 1] = true
-                this.followingAssessmentsAllowed[attributePostAssessment.index + 1] = true
+                this.task.initialAssessmentFormInteraction[this.documentIndex][attributePostAssessment.index + 1] = true
+                this.task.followingAssessmentAllowed[this.documentIndex][attributePostAssessment.index + 1] = true
             }
         }
         /* Enable the first countdown if there are no questionnaires and the countdown time is set. */
@@ -181,13 +171,13 @@ export class DocumentComponent implements OnInit {
         let postAssessmentIndex = data['postAssessmentIndex'] as number
         let allValuesNotEmpty = data['allValuesNotEmpty'] as boolean
         if (allValuesNotEmpty)
-            this.initialAssessmentFormsInteraction[postAssessmentIndex] = allValuesNotEmpty
+            this.task.initialAssessmentFormInteraction[this.documentIndex][postAssessmentIndex] = allValuesNotEmpty
     }
 
     /* Unlocks the following post assessment when the assessment form for the previous one is valid. */
     public unlockNextAssessmentRepetition(data: Object) {
         let postAssessmentIndex = data['postAssessmentIndex'] as number
-        this.followingAssessmentsAllowed[postAssessmentIndex] = data['followingAssessmentAllowed'] as boolean
+        this.task.followingAssessmentAllowed[this.documentIndex][postAssessmentIndex] = data['followingAssessmentAllowed'] as boolean
         if (postAssessmentIndex > 0) {
             this.assessmentFormsAdditional[postAssessmentIndex - 1].disable()
         }
@@ -195,7 +185,7 @@ export class DocumentComponent implements OnInit {
 
     /* Checks for successful interaction with all assessment forms, including the initial one. */
     public checkInitialAssessmentFormInteraction() {
-        return this.initialAssessmentFormsInteraction.every((element: boolean) => {
+        return this.task.initialAssessmentFormInteraction[this.documentIndex].every((element: boolean) => {
             return element;
         });
     }
@@ -213,33 +203,37 @@ export class DocumentComponent implements OnInit {
 
     /* Checks if every post-assessment form is valid and not disabled. Note: This function is called only when post-assessment is enabled. */
     public checkAdditionalAssessmentFormsValidity() {
-        const arrayLength = this.assessmentFormsAdditional.length;
+        if(this.assessmentFormsAdditional) {
+            const arrayLength = this.assessmentFormsAdditional.length;
 
-        /* If post-assessment is not enabled, return true to avoid blocking the "Next" button */
-        if (!this.task.settings.post_assessment) {
-            return true;
-        }
-
-        /* If the post-assessment form array is not initialized instantly, consider it as invalid */
-        if (arrayLength === 0) {
-            return false;
-        }
-
-        /* Check the validity of each post-assessment form */
-        return this.assessmentFormsAdditional.every((assessmentFormAdditional, index) => {
-            /* Check if the last form is valid */
-            if (index === arrayLength - 1) {
-                return assessmentFormAdditional && assessmentFormAdditional.valid && assessmentFormAdditional.status === "VALID";
-            } else {
-                /* Check if previous forms are either valid or disabled */
-                return assessmentFormAdditional && (assessmentFormAdditional.valid || assessmentFormAdditional.status === "DISABLED");
+            /* If post-assessment is not enabled, return true to avoid blocking the "Next" button */
+            if (!this.task.settings.post_assessment) {
+                return true;
             }
-        });
+
+            /* If the post-assessment form array is not initialized instantly, consider it as invalid */
+            if (arrayLength === 0) {
+                return false;
+            }
+
+            /* Check the validity of each post-assessment form */
+            return this.assessmentFormsAdditional.every((assessmentFormAdditional, index) => {
+                /* Check if the last form is valid */
+                if (index === arrayLength - 1) {
+                    return assessmentFormAdditional && assessmentFormAdditional.valid && assessmentFormAdditional.status === "VALID";
+                } else {
+                    /* Check if previous forms are either valid or disabled */
+                    return assessmentFormAdditional && (assessmentFormAdditional.valid || assessmentFormAdditional.status === "DISABLED");
+                }
+            });
+        } else {
+            return true
+        }
     }
 
     /* Checks if post-assessments are allowed within every step. */
     public checkFollowingAssessmentAllowed() {
-        return this.followingAssessmentsAllowed.every((followingAssessment) => followingAssessment);
+        return this.task.followingAssessmentAllowed[this.documentIndex].every((followingAssessment) => followingAssessment);
     }
 
     /* #################### COUNTDOWNS #################### */

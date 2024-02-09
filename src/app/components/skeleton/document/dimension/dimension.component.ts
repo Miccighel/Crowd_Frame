@@ -160,6 +160,21 @@ export class DimensionComponent implements OnInit, OnChanges {
             "type": "initial",
             "form": assessForm
         })
+        if (this.documentsFormsAdditional) {
+            if (this.documentsFormsAdditional[this.documentIndex]) {
+                if (this.documentsFormsAdditional[this.documentIndex][this.postAssessmentIndex- 1]) {
+                    this.assessmentFormAdditional = this.documentsFormsAdditional[this.documentIndex][this.postAssessmentIndex - 1]
+                    this.formEmitter.emit({
+                        "index": this.documentIndex,
+                        "type": "post",
+                        "postAssessmentIndex": this.postAssessmentIndex,
+                        "form": this.assessmentFormAdditional
+                    })
+                }
+                this.followingAssessmentAllowed = true
+                this.followingAssessmentAllowedEmitter.emit(this.followingAssessmentAllowed);
+            }
+        }
         /* Restore past answers from post-assessment steps in the form controls if they exist. */
         let mostRecentAnswersForPostAssessment = this.task.retrieveMostRecentAnswersForPostAssessment(this.documentIndex, this.postAssessmentIndex)
         if (Object.keys(mostRecentAnswersForPostAssessment).length > 0) {
@@ -194,7 +209,7 @@ export class DimensionComponent implements OnInit, OnChanges {
                     this.assessmentForm.disable()
                     let currentForm = this.getCurrentAssessmentForm()
                     Object.entries(currentForm.controls).forEach(([controlName, control], index) => {
-                        if(controlName.concat(controlSuffix) in controlsConfig)
+                        if (controlName.concat(controlSuffix) in controlsConfig)
                             controlsConfig[controlName.concat(controlSuffix)].setValue(currentForm.get(controlName).value);
                     });
                     this.assessmentFormAdditional = this.formBuilder.group(controlsConfig)
@@ -264,12 +279,12 @@ export class DimensionComponent implements OnInit, OnChanges {
 
     /* #################### JUSTIFICATION #################### */
 
-     /*
-      * Validates the worker justification field each time the worker types or pastes inside it.
-      * - Raises an <invalid> error if the worker types the selected URL as part of the justification.
-      * - Raises a <longer> error if the justification has fewer than "min_words" words.
-      * IMPORTANT: The <return null> part indicates that the field is valid.
-      */
+    /*
+     * Validates the worker justification field each time the worker types or pastes inside it.
+     * - Raises an <invalid> error if the worker types the selected URL as part of the justification.
+     * - Raises a <longer> error if the justification has fewer than "min_words" words.
+     * IMPORTANT: The <return null> part indicates that the field is valid.
+     */
     public validateJustification(control: UntypedFormControl) {
         /* The justification is divided into words and cleaned */
         let minWords = 0

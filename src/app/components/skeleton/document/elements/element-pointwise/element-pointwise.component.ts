@@ -58,6 +58,9 @@ export class ElementPointwiseComponent implements OnInit {
 
     ngOnInit() {
         this.attributeForPostAssessment = this.task.getAttributeForPostAssessmentStep(this.postAssessmentIndex - 1)
+        if (this.postAssessment) {
+            this.followingAssessmentAllowed = this.task.followingAssessmentAllowed[this.documentIndex][this.postAssessmentIndex]
+        }
         let mostRecentAnswersForPostAssessment = this.task.retrieveMostRecentAnswersForPostAssessment(this.documentIndex, this.postAssessmentIndex - 1)
         if (Object.keys(mostRecentAnswersForPostAssessment).length > 0) {
             this.unlockNextRepetition(this.followingAssessmentAllowed)

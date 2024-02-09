@@ -55,12 +55,12 @@ export class Task {
     /* Reference to the current questionnaires */
     questionnaires: Array<Questionnaire>;
 
+    /* Reference to the current dimension */
+    currentDimension: number;
     /* Array of dimensions to be assessed */
     dimensions: Array<Dimension>;
     /* Selected values for each dimension. Used to reconstruct worker's behavior. */
     dimensionsSelectedValues: Array<object>;
-    /* Reference to the current dimension */
-    currentDimension: number;
     dimensionsPairwiseSelection = [];
 
     /* Array to store search engine queries and responses, one for each document within a Hit */
@@ -96,8 +96,14 @@ export class Task {
     /* Array of gold dimensions within a Hit */
     goldDimensions: Array<Dimension>;
 
-    /* Array of messages, one for each document, which indicate if the goldCheck fail message has to be shown*/
+    /* Array of messages, one for each document, which indicate if the goldCheck fail message has to be shown */
     showMessageFailGoldCheck: Array<String>;
+
+    /* Array of boolean flags to understand if there is an interaction with one of the forms. The first position is reserved for the base one,
+     * and the following ones for the additional forms. So, the overall length will be "1 + post-assessment steps amount" */
+    initialAssessmentFormInteraction: Array<Array<boolean>>
+    /* Array of boolean flags indicating whether following assessments are allowed for each post-assessment step */
+    followingAssessmentAllowed: Array<Array<boolean>>
 
     constructor() {
         this.dataRecords = new Array<DataRecord>()
@@ -466,6 +472,21 @@ export class Task {
         }
     }
 
+    public initializePostAssessment() {
+        this.initialAssessmentFormInteraction = Array(this.documents.length)
+        this.followingAssessmentAllowed = Array(this.documents.length)
+        for (let index = 0; index < this.documents.length; index++) {
+            if (this.settings.post_assessment) {
+                /* The '+1' indicates that the count includes the base assessment form as well. */
+                this.initialAssessmentFormInteraction[index] = Array(this.settings.attributesPost.length + 1).fill(false);
+                this.followingAssessmentAllowed[index] = Array(this.settings.attributesPost.length + 1).fill(false);
+            } else {
+                this.initialAssessmentFormInteraction[index] = Array(0)
+                this.followingAssessmentAllowed[index] = Array(0)
+            }
+        }
+    }
+
     /* #################### GOLD CHECKS #################### */
 
     public generateGoldConfiguration(goldDocuments, goldDimensions, documentsForm, notes) {
@@ -587,11 +608,11 @@ export class Task {
     /*
      * This function intercepts a <changeEvent> triggered by the value controls of a dimension.
      * The parameters are:
-     * - a JSON object which holds the selected value.
-     * - a reference to the current document
-     * - a reference to the current dimension
-     * This array CAN BE EMPTY, if the worker does not select any value and leaves the task or if a dimension does not require a value.
-     * These information are parsed and stored in the corresponding data structure.
+     * - A JSON object that holds the selected value.
+     * - A reference to the current document.
+     * - A reference to the current dimension.
+     * This array CAN BE EMPTY if the worker does not select any value and leaves the task or if a dimension does not require a value.
+     * This information is parsed and stored in the corresponding data structure.
      */
     public storeDimensionValue(
         eventData,
@@ -623,11 +644,9 @@ export class Task {
                 selectedValue['post_assessment'] = postAssessment
             selectedValues.push(selectedValue);
             /* The data array within the data structure is updated */
-            this.dimensionsSelectedValues[currentDocument]["data"] =
-                selectedValues;
+            this.dimensionsSelectedValues[currentDocument]["data"] = selectedValues;
             /* The total amount of selected values for the current document is updated */
-            this.dimensionsSelectedValues[currentDocument]["amount"] =
-                selectedValues.length;
+            this.dimensionsSelectedValues[currentDocument]["amount"] = selectedValues.length;
         } else {
             /* The data slot for the current document is created */
             this.dimensionsSelectedValues[currentDocument] = {};
@@ -642,7 +661,7 @@ export class Task {
             if (postAssessment)
                 selectedValue['post_assessment'] = postAssessment
             this.dimensionsSelectedValues[currentDocument]["data"] = [
-               selectedValue
+                selectedValue
             ];
             /* The total amount of selected values for the current document is set to 1 */
             /* IMPORTANT: the document_index of the last selected value for a document will be <amount -1> */
@@ -920,7 +939,7 @@ export class Task {
 
     public getFirstPostAssessmentStepInWhichDimensionAppears(dimensionName: string) {
         let firstOccurrence = 0
-        let dimension= null
+        let dimension = null
         for (let dimensionCurr of this.dimensions) {
             if (dimensionCurr.name == dimensionName)
                 dimension = dimensionCurr
@@ -936,7 +955,7 @@ export class Task {
     }
 
     public getAllPostAssessmentStepsInWhichDimensionAppears(dimensionName: string) {
-        let dimension= null
+        let dimension = null
         let indexes = []
         for (let dimensionCurr of this.dimensions) {
             if (dimensionCurr.name == dimensionName)
