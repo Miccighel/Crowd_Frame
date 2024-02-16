@@ -1106,7 +1106,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         try:
             response = lambda_client.create_function(
                 FunctionName=function_name,
-                Runtime='nodejs14.x',
+                Runtime='nodejs16.x',
                 Handler='index.handler',
                 Role=f'arn:aws:iam::{aws_account_id}:role{iam_path}LambdaToDynamoDBAndS3',
                 Code={'ZipFile': open(f"{folder_aws_path}index.zip", 'rb').read()},

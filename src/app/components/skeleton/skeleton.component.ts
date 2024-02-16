@@ -331,6 +331,17 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         if (!this.sectionService.taskAlreadyCompleted && !this.sectionService.taskFailed) {
             this.worker.settings = new WorkerSettings(this.S3Service.downloadWorkers(this.configService.environment));
 
+            /* The logging service is enabled if it is needed */
+            if (this.task.settings.logger_enable)
+                this.initializeLogger(
+                    this.worker.identifier,
+                    this.configService.environment.taskName,
+                    this.configService.environment.batchName,
+                    this.configService.environment.region,
+                    this.client,
+                    this.configService.environment.log_on_console
+                );
+            else this.actionLogger = null;
 
             this.performWorkerStatusCheck().then(async (taskAllowed) => {
                 this.sectionService.taskAllowed = taskAllowed;
@@ -795,8 +806,8 @@ export class SkeletonComponent implements OnInit, OnDestroy {
     /* #################### LOGGER #################### */
 
     /* Logging service initialization */
-    public initializeLogger(workerIdentifier, taskName, batchName, http: HttpClient, logOnConsole: boolean) {
-        this.actionLogger.logInit(this.configService.environment.bucket, workerIdentifier, taskName, batchName, http, logOnConsole);
+    public initializeLogger(workerIdentifier, taskName, batchName, regionName, http: HttpClient, logOnConsole: boolean) {
+        this.actionLogger.logInit(this.configService.environment.bucket, workerIdentifier, taskName, batchName, regionName, http, logOnConsole);
     }
 
     /* #################### QUALITY CHECKS #################### */

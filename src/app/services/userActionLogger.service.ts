@@ -23,6 +23,7 @@ export class ActionLogger {
     private workerID: string;
     private taskName: string;
     private batchName: string;
+    private regionName: string;
     private _endpoint: string;
     private logOnConsole: boolean;
     private http: HttpClient;
@@ -59,6 +60,7 @@ export class ActionLogger {
             worker: this.workerID,
             task: this.taskName,
             batch: this.batchName,
+            region: this.regionName,
             client_time: new Date().getTime(),
             sequence: this.sequenceNumber++,
             details: details
@@ -110,15 +112,17 @@ export class ActionLogger {
      * @param workerID
      * @param taskName
      * @param batchName
+     * @param regionName
      * @param http client initialized by the skeleton
      * @param logOnConsole true to log events only on console
      */
-    logInit(bucket: string, workerID: string, taskName: string, batchName: string, http: HttpClient, logOnConsole: boolean) {
+    logInit(bucket: string, workerID: string, taskName: string, batchName: string, regionName: string, http: HttpClient, logOnConsole: boolean) {
         this.http = http;
         this.workerID = workerID;
         this.bucket = bucket;
         this.taskName = taskName;
         this.batchName = batchName;
+        this.regionName = regionName;
         this.logOnConsole = logOnConsole;
 
         let details = this.getCurrentSize()

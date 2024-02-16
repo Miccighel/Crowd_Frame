@@ -5,6 +5,7 @@ let dynamodb = new AWS.DynamoDB.DocumentClient();
 let bucket = ''
 let task = '';
 let batch = '';
+let region = '';
 let worker = '';
 let unit_id = '';
 let try_current = '';
@@ -19,6 +20,7 @@ exports.handler = (event) => {
         worker = data['worker'];
         unit_id = data['unitId'];
         try_current = data['try_current'];
+        region = data['region'];
         data['server_time'] = Date.now();
         data['details'] = JSON.stringify(data['details'])
         writeToDB(data, seq, 1);
