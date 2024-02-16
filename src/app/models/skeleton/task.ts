@@ -611,21 +611,25 @@ export class Task {
      * - A JSON object that holds the selected value.
      * - A reference to the current document.
      * - A reference to the current dimension.
-     * This array CAN BE EMPTY if the worker does not select any value and leaves the task or if a dimension does not require a value.
+     * This array can be empty if the worker does not select any value and leaves the task or if a dimension does not require a value.
      * This information is parsed and stored in the corresponding data structure.
      */
     public storeDimensionValue(
         eventData,
         document: number,
         dimension: number,
-        postAssessment: number = null
+        postAssessment: number = null,
+        justification: boolean = false
     ) {
+        /* The event triggered by a MatRadioButton is an object with two keys: 'source' and 'value'. The latter contains the selected value. */
+        /* The event triggered by a MatInput, on the other hand, is a complex object stored with the 'source' key.
+         * This time, the value can be accessed by exploring the 'target' attribute within the 'source' object. */
+        let currentValue = String(Object.keys(eventData).includes('value') ? eventData.value : eventData.target.value)
         /* The current document, dimension and user query are copied from parameters */
         let currentDocument = document;
         let currentDimension = dimension;
         /* A reference to the current dimension is saved */
         this.currentDimension = currentDimension;
-        let currentValue = +String(eventData.value).replace(/,/g, "");
         let timeInSeconds = Date.now() / 1000;
         /* If some data for the current document already exists*/
         if (this.dimensionsSelectedValues[currentDocument]["amount"] > 0) {
@@ -642,6 +646,11 @@ export class Task {
             }
             if (postAssessment)
                 selectedValue['post_assessment'] = postAssessment
+            /* If the justification flag is true, the current value represents the justification required for the current dimension. Therefore, the payload is adjusted accordingly */
+            if (justification) {
+                delete selectedValue['value']
+                selectedValue['justification'] = currentValue
+            }
             selectedValues.push(selectedValue);
             /* The data array within the data structure is updated */
             this.dimensionsSelectedValues[currentDocument]["data"] = selectedValues;
@@ -660,19 +669,21 @@ export class Task {
             }
             if (postAssessment)
                 selectedValue['post_assessment'] = postAssessment
-            this.dimensionsSelectedValues[currentDocument]["data"] = [
-                selectedValue
-            ];
-            /* The total amount of selected values for the current document is set to 1 */
-            /* IMPORTANT: the document_index of the last selected value for a document will be <amount -1> */
+            if (justification) {
+                delete selectedValue['value']
+                selectedValue['justification'] = currentValue
+            }
+            this.dimensionsSelectedValues[currentDocument]["data"] = [selectedValue];
+            /* The total amount of selected values for the current document is set to 1. */
+            /* IMPORTANT: The document_index of the last selected value for a document will be <amount - 1>. */
             this.dimensionsSelectedValues[currentDocument]["amount"] = 1;
         }
     }
 
     /*
      * This function intercepts a <queryEmitter> triggered by an instance of the search engine.
-     * The parameter is a JSON object which holds the query typed by the worker within a given document.
-     * These information are parsed and stored in the corresponding data structure.
+     * The parameter is a JSON object that holds the query typed by the worker within a given document.
+     * This information is parsed and stored in the corresponding data structure.
      */
     public storeSearchEngineUserQuery(
         queryData: Object,

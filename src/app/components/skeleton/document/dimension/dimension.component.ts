@@ -19,6 +19,7 @@ import {DataRecord} from "../../../../models/skeleton/dataRecord";
     templateUrl: './dimension.component.html',
     styleUrls: ['./dimension.component.scss', '../document.component.scss']
 })
+
 export class DimensionComponent implements OnInit, OnChanges {
 
     /* #################### SERVICES & CORE STUFF #################### */
@@ -391,7 +392,7 @@ export class DimensionComponent implements OnInit, OnChanges {
             formControl.setValue(formGroup.value)
         }
         formControl.markAsTouched()
-        this.task.storeDimensionValue(Object({'value': formControl.value}), this.documentIndex, dimension.index, this.postAssessmentIndex)
+        this.task.storeDimensionValue(Object({'value': formControl.value}), this.documentIndex, dimension.index, this.postAssessmentIndex, false)
     }
 
     /* #################### PAIRWISE ASSESSMENT #################### */

@@ -81,20 +81,24 @@ def camel_to_snake(name):
 
 
 def find_date_string(date, seconds=False):
-    if type(date) == int or type(date) == float or type(date) == np.float64 or type(date) == np.float32:
+    if type(date) is int or type(date) is float or type(date) is np.float64 or type(date) is np.float32:
         if seconds:
             date_raw = str(datetime.fromtimestamp(date))
         else:
             date_raw = str(datetime.fromtimestamp(date // 1000))
     else:
         date_raw = date
-    date_parsed = datefinder.find_dates(date_raw)
+    dates_found = []
+    date_parsed = datefinder.find_dates(date_raw, strict=True)
     for date_current in date_parsed:
-        date_string = str(date_current)
-        if '+' in date_string:
-            date_parts = date_string.split("+")
-            date_string = ' '.join(date_parts)
-        return date_string
+        dates_found.append(str(date_current))
+    if len(dates_found) > 1:
+        console.print(f"[yellow] Multiple dates found for {' '.join(dates_found)}")
+    for date_current in dates_found:
+        if '+' in date_current:
+            date_parts = date_current.split("+")
+            date_current = ' '.join(date_parts)
+        return date_current
 
 
 def merge_dicts(dicts):

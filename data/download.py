@@ -614,7 +614,6 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
 
                 if len(worker_session) > 0:
 
-
                     table_base_name = "_".join(data_source.split("_")[:-1])
 
                     acl_data_source = None
@@ -659,7 +658,6 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
                     for element in worker_session:
 
                         sequence = element['sequence']['S'].split("-")
-                        print(sequence)
                         data = json.loads(element['data']['S'])
                         time = element['time']['S']
 
@@ -1103,6 +1101,9 @@ if not os.path.exists(df_acl_path):
                             df_acl = pd.concat([df_acl, pd.DataFrame([row])], ignore_index=True)
 
     if len(df_acl) > 0:
+        empty_cols = [col for col in df_acl.columns if df_acl[col].isnull().all()]
+        console.print(f"Dropping unused columns: [yellow]{', '.join(empty_cols)}")
+        df_acl.drop(empty_cols, axis=1, inplace=True)
         df_acl.sort_values(by='time_arrival_parsed', inplace=True)
         df_acl.to_csv(df_acl_path, index=False)
         console.print(f"Dataframe shape: {df_acl.shape}")
@@ -2104,6 +2105,7 @@ if not os.path.exists(df_log_path):
     if len(dataframes_partial) > 0:
         dataframe = pd.concat(dataframes_partial, ignore_index=True)
         empty_cols = [col for col in dataframe.columns if dataframe[col].isnull().all()]
+        console.print(f"Dropping unused columns: [yellow]{', '.join(empty_cols)}")
         dataframe.drop(empty_cols, axis=1, inplace=True)
         dataframe.sort_values(by=['worker_id', 'sequence'], ascending=True, inplace=True)
         dataframe.to_csv(df_log_path, index=False)
@@ -2194,6 +2196,7 @@ if not os.path.exists(df_comm_path):
 
     if df_comm.shape[0] > 0:
         empty_cols = [col for col in df_comm.columns if df_comm[col].isnull().all()]
+        console.print(f"Dropping unused columns: [yellow]{', '.join(empty_cols)}")
         df_comm.drop(empty_cols, axis=1, inplace=True)
         df_comm["paid"].replace({0.0: False, 1.0: True}, inplace=True)
         df_comm["paid"] = df_comm["paid"].astype(bool)
@@ -2295,14 +2298,11 @@ def parse_answers(row, questionnaire, question, answers):
                 labels.append(answer)
             row['question_answers_values'] = ':::'.join(values)
             row['question_answers_labels'] = ':::'.join(labels)
-        if type(value) != list:
+        if type(value) is not list:
             row[f"question_attribute_{attribute}"] = value
-    if questionnaire['type'] != 'crt':
-        if question['type'] != 'mcq' and question['type'] != 'list':
-            row['question_answers_values'] = None
-            row['question_answers_labels'] = None
-        row[f"question_answer_value"] = answer_value
-        row[f"question_answer_free_text"] = answer_free_text
+
+    row[f"question_answer_value"] = answer_value
+    row[f"question_answer_free_text"] = answer_free_text
 
     if questionnaire['type'] == 'standard':
         if question['type'] == 'mcq':
@@ -2570,9 +2570,7 @@ if not os.path.exists(df_docs_path):
     else:
         console.print(f"Dataframe shape: {df_docs.shape}")
         console.print(f"Documents dataframe [yellow]empty[/yellow], dataframe not serialized.")
-
 else:
-
     console.print(f"Documents dataframe [yellow]already detected[/yellow], skipping creation")
     console.print(f"Serialized at path: [cyan on white]{df_docs_path}")
 
@@ -2580,7 +2578,7 @@ console.rule(f"{step_index} - Building [cyan on white]workers_answers[/cyan on w
 step_index = step_index + 1
 
 
-def load_data_col_names(dimensions, documents):
+def load_data_col_names(dimensions, settings):
     columns = []
 
     columns.append("worker_id")
@@ -2600,16 +2598,35 @@ def load_data_col_names(dimensions, documents):
     for dimension in dimensions:
         if f"{dimension['name']}_value" not in columns:
             columns.append(f"{dimension['name']}_value")
+        if f"{dimension['name']}_description" not in columns:
+            columns.append(f"{dimension['name']}_description")
         if f"{dimension['name']}_label" not in columns:
             columns.append(f"{dimension['name']}_label")
         if f"{dimension['name']}_index" not in columns:
             columns.append(f"{dimension['name']}_index")
-        if f"{dimension['name']}_description" not in columns:
-            columns.append(f"{dimension['name']}_description")
         if f"{dimension['name']}_justification" not in columns:
-            columns.append(f"{dimension['name']}_justification")
+            if dimension['justification'] is not None:
+                columns.append(f"{dimension['name']}_justification")
         if f"{dimension['name']}_url" not in columns:
-            columns.append(f"{dimension['name']}_url")
+            if dimension['url'] is not None:
+                columns.append(f"{dimension['name']}_url")
+        if 'post_assessment' in settings.keys():
+            post_assessment_data = settings['post_assessment']
+            if post_assessment_data is not None:
+                post_assessment_attributes = settings['post_assessment']['attributes']
+                for assessment_data in post_assessment_attributes:
+                    post_assessment_index = assessment_data['index']
+                    if 'dimensions' in settings['post_assessment']:
+                        post_assessment_dimensions = settings['post_assessment']['dimensions']
+                        for dimension_data in post_assessment_dimensions:
+                            if dimension_data['name'] == dimension['name'] and post_assessment_index in dimension_data['indexes']:
+                                columns.append(f"{dimension['name']}_value_post_{post_assessment_index}")
+                                if 'justification' in dimension.keys():
+                                    if dimension['justification'] is not None:
+                                        columns.append(f"{dimension['name']}_justification_post_{post_assessment_index}")
+                                if 'url' in dimension.keys():
+                                    if dimension['url'] is not None:
+                                        columns.append(f"{dimension['name']}_url_post_{post_assessment_index}")
 
     columns.append("time_start")
     columns.append("time_end")
@@ -2655,8 +2672,9 @@ if not os.path.exists(df_data_path):
             documents_answers = worker_snapshot['documents_answers']
             dimensions = worker_snapshot['dimensions']
             documents = worker_snapshot['documents']
+            settings = task['settings']
 
-            column_names = load_data_col_names(dimensions, documents)
+            column_names = load_data_col_names(dimensions, settings)
 
             for column in column_names:
                 if column not in df_answ:
@@ -2704,28 +2722,52 @@ if not os.path.exists(df_data_path):
 
                     current_attributes = documents[document_data['serialization']['info']['index']].keys()
                     current_answers = document_data['serialization']['answers']
-                    dimensions_selected = document_data['serialization']['dimensions_selected']
-                    pprint.pprint(current_answers)
-                    pprint.pprint(dimensions_selected)
-                    assert False
                     for dimension in dimensions:
                         task_type_check = True
                         if 'task_type' in dimension.keys():
                             task_type_check = check_task_type(documents[document_data['serialization']['info']['index']], dimension['task_type'])
                         if dimension['scale'] is not None and task_type_check:
-                            value = current_answers[f"{dimension['name']}_value"]
-                            if type(value) == str:
-                                value = value.strip()
-                                value = re.sub('\n', '', value)
-                            row[f"{dimension['name']}_value"] = value
+                            if 'post_assessment' in settings.keys():
+                                if settings['post_assessment'] is not None:
+                                    if 'attributes' in settings['post_assessment']:
+                                        post_assessment_data = settings['post_assessment']['attributes']
+                                        post_assessment_dimensions = settings['post_assessment']['dimensions']
+                                        for assessment_data in post_assessment_data:
+                                            post_assessment_index = assessment_data['index']
+                                            for dimension_data in post_assessment_dimensions:
+                                                if dimension_data['name'] == dimension['name'] and post_assessment_index in dimension_data['indexes']:
+                                                    # If the dimension appears in the first post-assessment, also the initial values must be stored
+                                                    if post_assessment_index == 0:
+                                                        value = current_answers[f"{dimension['name']}_value"]
+                                                        if type(value) is str:
+                                                            value = value.strip()
+                                                            value = re.sub('\n', '', value)
+                                                        row[f"{dimension['name']}_value"] = value
+                                                    value_post = current_answers[f"{dimension['name']}_value_post_{post_assessment_index+1}"]
+                                                    if type(value_post) is str:
+                                                        value_post = value_post.strip()
+                                                        value_post = re.sub('\n', '', value_post)
+                                                    row[f"{dimension['name']}_value_post_{post_assessment_index}"] = value_post
+                                else:
+                                    value = current_answers[f"{dimension['name']}_value"]
+                                    if type(value) is str:
+                                        value = value.strip()
+                                        value = re.sub('\n', '', value)
+                                    row[f"{dimension['name']}_value"] = value
+                            else:
+                                value = current_answers[f"{dimension['name']}_value"]
+                                if type(value) is str:
+                                    value = value.strip()
+                                    value = re.sub('\n', '', value)
+                                row[f"{dimension['name']}_value"] = value
                             if dimension["scale"]["type"] == "categorical":
                                 for mapping in dimension["scale"]['mapping']:
                                     label = mapping['label'].lower().split(" ")
                                     label = '-'.join([str(c) for c in label])
-                                    if mapping['value'] == value:
+                                    if mapping['value'] == row[f"{dimension['name']}_value"]:
                                         row[f"{dimension['name']}_label"] = label
                                         row[f"{dimension['name']}_index"] = mapping['index']
-                                        row[f"{dimension['name']}_description"] = mapping['description']
+                                        row[f"{dimension['name']}_description"] = np.nan if len(mapping['description']) <= 0 else mapping['description']
                             else:
                                 row[f"{dimension['name']}_label"] = np.nan
                                 row[f"{dimension['name']}_index"] = np.nan
@@ -2736,16 +2778,64 @@ if not os.path.exists(df_data_path):
                             row[f"{dimension['name']}_index"] = np.nan
                             row[f"{dimension['name']}_description"] = np.nan
                         if dimension['justification'] and task_type_check:
-                            justification = current_answers[f"{dimension['name']}_justification"].strip()
-                            justification = re.sub('\n', '', justification)
-                            row[f"{dimension['name']}_justification"] = justification
+                            if 'post_assessment' in settings.keys():
+                                if settings['post_assessment'] is not None:
+                                    if 'attributes' in settings['post_assessment']:
+                                        post_assessment_data = settings['post_assessment']['attributes']
+                                        post_assessment_dimensions = settings['post_assessment']['dimensions']
+                                        for assessment_data in post_assessment_data:
+                                            post_assessment_index = assessment_data['index']
+                                            for dimension_data in post_assessment_dimensions:
+                                                if dimension_data['name'] == dimension['name'] and post_assessment_index in dimension_data['indexes']:
+                                                    # If the dimension appears in the first post-assessment, also the initial values must be stored
+                                                    if post_assessment_index == 0:
+                                                        justification = current_answers[f"{dimension['name']}_justification"].strip()
+                                                        justification = re.sub('\n', '', justification)
+                                                        row[f"{dimension['name']}_justification"] = justification
+                                                    justification_post = current_answers[f"{dimension['name']}_justification_post_{post_assessment_index+1}"].strip()
+                                                    justification_post = re.sub('\n', '', justification_post)
+                                                    row[f"{dimension['name']}_justification_post_{post_assessment_index}"] = justification_post
+                                else:
+                                    justification = current_answers[f"{dimension['name']}_justification"].strip()
+                                    justification = re.sub('\n', '', justification)
+                                    row[f"{dimension['name']}_justification"] = justification
+                            else:
+                                justification = current_answers[f"{dimension['name']}_justification"].strip()
+                                justification = re.sub('\n', '', justification)
+                                row[f"{dimension['name']}_justification"] = justification
                         else:
                             row[f"{dimension['name']}_justification"] = np.nan
                         if dimension['url'] and task_type_check:
                             try:
                                 row[f"{dimension['name']}_url"] = current_answers[f"{dimension['name']}_url"]
                             except KeyError:
-                                print(current_answers)
+                                console.print(f"[red]Key error while parsing values for: {dimension['name']}_url")
+                            if 'post_assessment' in settings.keys():
+                                if settings['post_assessment'] is not None:
+                                    if 'attributes' in settings['post_assessment']:
+                                        post_assessment_data = settings['post_assessment']['attributes']
+                                        post_assessment_dimensions = settings['post_assessment']['dimensions']
+                                        for assessment_data in post_assessment_data:
+                                            post_assessment_index = assessment_data['index']
+                                            for dimension_data in post_assessment_dimensions:
+                                                if dimension_data['name'] == dimension['name'] and post_assessment_index in dimension_data['indexes']:
+                                                    # If the dimension appears in the first post-assessment, also the initial values must be stored
+                                                    if post_assessment_index == 0:
+                                                        try:
+                                                            row[f"{dimension['name']}_url"] = current_answers[f"{dimension['name']}_url"]
+                                                        except KeyError:
+                                                            console.print(f"[red]Key error while parsing values for: {dimension['name']}_url")
+                                                    row[f"{dimension['name']}_url_post_{post_assessment_index}"] = current_answers[f"{dimension['name']}_url_post_{post_assessment_index+1}"]
+                                    else:
+                                        try:
+                                            row[f"{dimension['name']}_url"] = current_answers[f"{dimension['name']}_url"]
+                                        except KeyError:
+                                            console.print(f"[red]Key error while parsing values for: {dimension['name']}_url")
+                            else:
+                                try:
+                                    row[f"{dimension['name']}_url"] = current_answers[f"{dimension['name']}_url"]
+                                except KeyError:
+                                    console.print(f"[red]Key error while parsing values for: {dimension['name']}_url")
                         else:
                             row[f"{dimension['name']}_url"] = np.nan
 
@@ -2787,6 +2877,7 @@ if not os.path.exists(df_data_path):
 
     if df_answ.shape[0] > 0:
         empty_cols = [col for col in df_answ.columns if df_answ[col].isnull().all()]
+        console.print(f"Dropping unused columns: [yellow]{', '.join(empty_cols)}")
         df_answ.drop(empty_cols, axis=1, inplace=True)
         df_answ["paid"].replace({0.0: False, 1.0: True}, inplace=True)
         df_answ["paid"] = df_answ["paid"].astype(bool)
@@ -2940,6 +3031,7 @@ if not os.path.exists(df_notes_path):
 
     if df_notes.shape[0] > 0:
         empty_cols = [col for col in df_notes.columns if df_notes[col].isnull().all()]
+        console.print(f"Dropping unused columns: [yellow]{', '.join(empty_cols)}")
         df_notes.drop(empty_cols, axis=1, inplace=True)
         df_notes["paid"].replace({0.0: False, 1.0: True}, inplace=True)
         df_notes["paid"] = df_notes["paid"].astype(bool)
@@ -2983,20 +3075,22 @@ df_dim_sel = pd.DataFrame(columns=[
     "unit_id",
     'try_last',
     'try_current',
+    'document_id',
+    'document_index',
+    'post_assessment',
     'dimension_index',
     'dimension_name',
     'timestamp_start',
     'timestamp_start_parsed',
     'selection_index',
+    'selection_type',
     'selection_value',
     'selection_label',
     'selection_timestamp',
     'selection_timestamp_parsed',
     'selection_time_elapsed',
     'timestamp_end',
-    'timestamp_end_parsed',
-    'document_index',
-    'document_id'
+    'timestamp_end_parsed'
 ])
 df_dim_sel['try_last'] = df_dim_sel['try_last'].astype(int)
 df_dim_sel['try_current'] = df_dim_sel['try_current'].astype(int)
@@ -3007,12 +3101,6 @@ def parse_dimensions_selected(df, worker_id, worker_paid, task, info, documents,
 
         for dimension_current in dimensions_selected['data']:
             dimension_data = dimensions[dimension_current['dimension']]
-            label = np.nan
-            if dimension_data['scale']:
-                if dimension_data['scale']['type'] == 'categorical':
-                    for mapping in dimension_data['scale']['mapping']:
-                        if mapping['value'] == dimension_current['value']:
-                            label = mapping['label']
 
             timestamp_selection = float(dimension_current['timestamp'])
             timestamp_selection_parsed = datetime.fromtimestamp(timestamp_selection)
@@ -3022,8 +3110,21 @@ def parse_dimensions_selected(df, worker_id, worker_paid, task, info, documents,
                 time_elapsed = (timestamp_parsed_previous - timestamp_selection_parsed).total_seconds()
             timestamps_found.append(timestamp_selection_parsed)
 
-            if 'value' not in dimension_current.keys():
-                dimension_current['value'] = np.nan
+            selection_type = np.nan
+            selection_value = np.nan
+            selection_label = np.nan
+            if 'justification' in dimension_current.keys():
+                selection_type = 'justification'
+                selection_value = dimension_current['justification']
+            if 'value' in dimension_current.keys():
+                selection_value = dimension_current['value']
+                if dimension_data['scale']:
+                    selection_type = dimension_data['scale']['type']
+                    if dimension_data['scale']['type'] == 'categorical':
+                        for mapping in dimension_data['scale']['mapping']:
+                            if int(mapping['value']) == int(dimension_current['value']):
+                                selection_label = mapping['label']
+
             row = {
                 'worker_id': worker_id,
                 'paid': worker_paid,
@@ -3033,14 +3134,16 @@ def parse_dimensions_selected(df, worker_id, worker_paid, task, info, documents,
                 'try_last': task['try_last'],
                 'try_current': info['try'],
                 'document_index': dimension_current['document'],
+                'post_assessment': int(dimension_current['post_assessment']) if 'post_assessment' in dimension_current.keys() else np.nan,
                 'document_id': documents[dimension_current['document']]['id'],
                 'dimension_index': dimension_current['dimension'],
                 'dimension_name': dimension_data['name'],
                 'timestamp_start': timestamp_start,
                 'timestamp_start_parsed': find_date_string(timestamp_start, seconds=True),
                 'selection_index': dimension_current['index'],
-                'selection_value': dimension_current['value'],
-                'selection_label': label,
+                'selection_type': selection_type,
+                'selection_value': selection_value,
+                'selection_label': selection_label,
                 'selection_timestamp': dimension_current['timestamp'],
                 'selection_timestamp_parsed': find_date_string(dimension_current['timestamp'], seconds=True),
                 'selection_time_elapsed': time_elapsed,
@@ -3097,6 +3200,7 @@ if not os.path.exists(df_dim_path) and os.path.exists(df_data_path):
 
     if df_dim_sel.shape[0] > 0:
         empty_cols = [col for col in df_dim_sel.columns if df_dim_sel[col].isnull().all()]
+        console.print(f"Dropping unused columns: [yellow]{', '.join(empty_cols)}")
         df_dim_sel.drop(empty_cols, axis=1, inplace=True)
         df_dim_sel["paid"].replace({0.0: False, 1.0: True}, inplace=True)
         df_dim_sel["paid"] = df_dim_sel["paid"].astype(bool)
@@ -3110,9 +3214,7 @@ if not os.path.exists(df_dim_path) and os.path.exists(df_data_path):
     else:
         console.print(f"Dataframe shape: {df_dim_sel.shape}")
         console.print(f"Dimension analysis dataframe [yellow]empty[/yellow], dataframe not serialized.")
-
 else:
-
     console.print(f"Dimensions analysis dataframe [yellow]already detected[/yellow], skipping creation")
     console.print(f"Serialized at path: [cyan on white]{df_dim_path}")
 
@@ -3282,6 +3384,7 @@ if not os.path.exists(df_url_path):
 
     if df_urls.shape[0] > 0:
         empty_cols = [col for col in df_urls.columns if df_urls[col].isnull().all()]
+        console.print(f"Dropping unused columns: [yellow]{', '.join(empty_cols)}")
         df_urls.drop(empty_cols, axis=1, inplace=True)
         df_urls["paid"].replace({0.0: False, 1.0: True}, inplace=True)
         df_urls["paid"] = df_urls["paid"].astype(bool)
@@ -3516,6 +3619,7 @@ if enable_crawling:
             df_crawl_correct = df_crawl[df_crawl["response_error_code"].isnull()]
             df_crawl_incorrect = df_crawl[df_crawl["response_error_code"] != np.nan]
             empty_cols = [col for col in df_crawl.columns if df_crawl[col].isnull().all()]
+            console.print(f"Dropping unused columns: [yellow]{', '.join(empty_cols)}")
             df_crawl.drop(empty_cols, axis=1, inplace=True)
             df_crawl.drop_duplicates(inplace=True)
             df_crawl.to_csv(df_crawl_path, index=False)
