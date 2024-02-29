@@ -87,12 +87,6 @@ export class SkeletonComponent implements OnInit, OnDestroy {
 
     /* #################### LOCAL ATTRIBUTES #################### */
 
-    /* References to task stepper and token forms */
-
-    tokenForm: UntypedFormGroup;
-    tokenInput: UntypedFormControl;
-    tokenInputValid: boolean;
-
     /* Object to encapsulate all task-related information */
     task: Task;
     /* Object to encapsulate all worker-related information */
@@ -151,16 +145,6 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         this.formBuilder = formBuilder;
         this.snackBar = snackBar;
         this.ngxService.startLoader("skeleton-inner");
-
-        this.tokenInput = new UntypedFormControl(
-            "",
-            [Validators.required, Validators.maxLength(11)],
-            this.validateTokenInput.bind(this)
-        );
-        this.tokenForm = formBuilder.group({
-            tokenInput: this.tokenInput,
-        });
-        this.tokenInputValid = false;
 
         this.generator = false;
     }
@@ -318,7 +302,6 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                     await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker);
                 } else {
                     Object.entries(aclEntry).forEach(([key, value]) => this.worker.setParameter(key, value));
-                    this.tokenInput.setValue(aclEntry["token_input"]);
                     this.worker.identifier = this.worker.getParameter("identifier");
                     this.worker.setParameter("access_counter", (parseInt(this.worker.getParameter("access_counter")) + 1).toString());
                     hitAssigned = true;
@@ -346,7 +329,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
             this.performWorkerStatusCheck().then(async (taskAllowed) => {
                 this.sectionService.taskAllowed = taskAllowed;
 
-                let hitCompletionStatus = {};
+                let hitCompletedOrInProgress = {};
 
                 if (taskAllowed) {
                     if (!hitAssigned) {
@@ -356,7 +339,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                         /* It there is not any record, an available HIT can be assigned to him */
                         if (workerACLRecord["Items"].length <= 0) {
                             for (let hit of hits) {
-                                hitCompletionStatus[hit['unit_id']] = false
+                                hitCompletedOrInProgress[hit['unit_id']] = false
                                 /* The status of each HIT is checked */
                                 let unitACLRecord = await this.dynamoDBService.getACLRecordUnitId(this.configService.environment, hit["unit_id"]);
                                 /* If it has not been assigned, the current worker can receive it */
@@ -365,7 +348,6 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                                     this.worker.setParameter("token_input", hit["token_input"]);
                                     this.worker.setParameter("token_output", hit["token_output"]);
                                     this.worker.setParameter("status_code", StatusCodes.TASK_HIT_ASSIGNED);
-                                    this.tokenInput.setValue(hit["token_input"]);
                                     await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker);
                                     /* As soon as a HIT is assigned to the current worker the search can be stopped */
                                     hitAssigned = true;
@@ -379,15 +361,16 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                             if (!hitAssigned) {
                                 let wholeEntries = await this.retrieveAllACLEntries();
 
+
                                 for (let aclEntry of wholeEntries) {
                                     if (aclEntry["ip_address"] != this.worker.getIP()) {
-                                        if (/true/i.test(aclEntry["paid"]) == true)
-                                            hitCompletionStatus[aclEntry["unit_id"]] = true;
+                                        if (/true/i.test(aclEntry["paid"]) == true || ((/true/i.test(aclEntry["paid"]) == false) && (/true/i.test(aclEntry["in_progress"]) == true)))
+                                            hitCompletedOrInProgress[aclEntry["unit_id"]] = true;
 
                                         /*
-                                        If the worker that received the current unit did not complete it he abandoned or returned the task.
-                                        Thus, we free its slot, and we assign the HIT found to the current worker.
-                                        This happens also if the worker does not have any try left, and thus it's entry has a completion time but the two flags are set to false.
+                                           If the worker who received the current unit did not complete it, they either abandoned or returned the task.
+                                           In either case, we free up the slot and assign the HIT found to the current worker.
+                                           This also occurs when the worker has no tries left; in this case, the entry has a completion time, but the two flags are set to false.
                                         */
 
                                         let timeArrival = new Date(aclEntry["time_arrival"]).getTime();
@@ -408,7 +391,6 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                                             this.worker.setParameter("unit_id", aclEntry["unit_id"]);
                                             this.worker.setParameter("time_arrival", new Date().toUTCString());
                                             this.worker.setParameter("status_code", StatusCodes.TASK_HIT_ASSIGNED);
-                                            this.tokenInput.setValue(aclEntry["token_input"]);
                                             await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker);
                                         }
                                     }
@@ -418,9 +400,10 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                                         break;
                                 }
 
+
                                 if (!hitAssigned) {
                                     let inconsistentUnits = []
-                                    for (const [unitId, status] of Object.entries(hitCompletionStatus)) {
+                                    for (const [unitId, status] of Object.entries(hitCompletedOrInProgress)) {
                                         if (status == false)
                                             if (!inconsistentUnits.includes(unitId))
                                                 inconsistentUnits.push(unitId)
@@ -437,7 +420,6 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                                                         inconsistentUnit == aclEntry['unit_id']
                                                     ) {
                                                         mostRecentAclEntry = aclEntry
-
                                                     }
                                                 }
                                             }
@@ -448,7 +430,6 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                                                 this.worker.setParameter("unit_id", mostRecentAclEntry["unit_id"]);
                                                 this.worker.setParameter("time_arrival", new Date().toUTCString());
                                                 this.worker.setParameter("status_code", StatusCodes.TASK_HIT_ASSIGNED_AFTER_INCONSISTENCY_CHECK);
-                                                this.tokenInput.setValue(mostRecentAclEntry["token_input"]);
                                                 await this.dynamoDBService.insertACLRecordWorkerID(this.configService.environment, this.worker);
                                             }
                                             /* The search can be stopped as soon as a HIT is assigned to the current worker. */
@@ -465,7 +446,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                         if (!hitAssigned) {
                             let hitsStillToComplete = false;
                             for (let hit of hits) {
-                                if (hitCompletionStatus[hit["unit_id"]] == false)
+                                if (hitCompletedOrInProgress[hit["unit_id"]] == false)
                                     hitsStillToComplete = true;
                             }
                             if (hitsStillToComplete)
@@ -723,77 +704,73 @@ export class SkeletonComponent implements OnInit, OnDestroy {
      */
     public async performTaskSetup() {
         /* The token input has been already validated, this is just to be sure */
-        if (this.tokenForm.valid) {
 
-            this.sectionService.taskStarted = true;
+        this.sectionService.taskStarted = true;
 
-            /* The hits stored on Amazon S3 are retrieved */
-            let hits = await this.S3Service.downloadHits(
-                this.configService.environment
-            );
+        /* The hits stored on Amazon S3 are retrieved */
+        let hits = await this.S3Service.downloadHits(
+            this.configService.environment
+        );
 
-            /* Scan each entry for the token input */
-            for (let currentHit of hits) {
-                /* If the token input of the current hit matches with the one inserted by the worker the right hit has been found */
-                if (this.tokenInput.value === currentHit.token_input) {
-                    currentHit = currentHit as Hit;
-                    this.task.tokenInput = this.tokenInput.value;
-                    this.task.tokenOutput = currentHit.token_output;
-                    this.task.unitId = currentHit.unit_id;
-                    this.task.documentsAmount = currentHit.documents.length;
-                    this.task.hit = currentHit;
-                    /* The array of documents is initialized */
-                    this.task.initializeDocuments(currentHit.documents, currentHit["documents_params"]);
-                }
-            }
+        /* Scan each entry for the token input */
+         for (let currentHit of hits) {
+             /* If the token input of the current hit matches with the one inserted by the worker the right hit has been found */
+             if (this.worker.getParameter('token_input') === currentHit.token_input) {
+                 currentHit = currentHit as Hit;
+                 this.task.tokenInput = this.worker.getParameter('token_input') ;
+                 this.task.tokenOutput = currentHit.token_output;
+                 this.task.unitId = currentHit.unit_id;
+                 this.task.documentsAmount = currentHit.documents.length;
+                 this.task.hit = currentHit;
+                 /* The array of documents is initialized */
+                 this.task.initializeDocuments(currentHit.documents, currentHit["documents_params"]);
+             }
+         }
 
-            if (this.task.settings.logger_enable)
-                this.actionLogger.unitId = this.task.unitId;
+        if (this.task.settings.logger_enable)
+            this.actionLogger.unitId = this.task.unitId;
 
-            /* The token input field is disabled and the task interface can be shown */
-            this.tokenInput.disable();
-
-            /* A form for each document is initialized */
-            this.documentsForm = new Array<UntypedFormGroup>();
-            this.documentsFormsAdditional = new Array<Array<UntypedFormGroup>>();
-            /* Initialize an array for additional assessment forms with a length equal to the post attributes length. */
-            if(this.task.settings.post_assessment) {
-                for (let index = 0; index < this.task.documents.length; index++)
-                    this.documentsFormsAdditional[index] = Array(0);
-            }
-
-            this.searchEngineForms = new Array<Array<UntypedFormGroup>>();
-            this.resultsRetrievedForms = new Array<Array<Object>>();
-
-            let questionnaires = await this.S3Service.downloadQuestionnaires(this.configService.environment);
-            this.task.initializeQuestionnaires(questionnaires);
-
-            /* A form for each questionnaire is initialized */
-            this.questionnairesForm = new Array<UntypedFormGroup>();
-
-            /* The evaluation instructions stored on Amazon S3 are retrieved */
-            this.task.initializeInstructionsEvaluation(
-                await this.S3Service.downloadEvaluationInstructions(this.configService.environment)
-            );
-
-            this.task.initializeDimensions(
-                await this.S3Service.downloadDimensions(this.configService.environment)
-            );
-
-            this.task.initializeAccessCounter();
-
-            this.task.initializeTimestamps();
-
-            this.task.initializePostAssessment()
-
-            if (!(this.worker.identifier == null)) {
-                if (this.task.dataRecords.length <= 0) {
-                    let taskInitialPayload = this.task.buildTaskInitialPayload(this.worker);
-                    await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, taskInitialPayload);
-                }
-            }
-
+        /* A form for each document is initialized */
+        this.documentsForm = new Array<UntypedFormGroup>();
+        this.documentsFormsAdditional = new Array<Array<UntypedFormGroup>>();
+        /* Initialize an array for additional assessment forms with a length equal to the post attributes length. */
+        if (this.task.settings.post_assessment) {
+            for (let index = 0; index < this.task.documents.length; index++)
+                this.documentsFormsAdditional[index] = Array(0);
         }
+
+        this.searchEngineForms = new Array<Array<UntypedFormGroup>>();
+        this.resultsRetrievedForms = new Array<Array<Object>>();
+
+        let questionnaires = await this.S3Service.downloadQuestionnaires(this.configService.environment);
+        this.task.initializeQuestionnaires(questionnaires);
+
+        /* A form for each questionnaire is initialized */
+        this.questionnairesForm = new Array<UntypedFormGroup>();
+
+        /* The evaluation instructions stored on Amazon S3 are retrieved */
+        this.task.initializeInstructionsEvaluation(
+            await this.S3Service.downloadEvaluationInstructions(this.configService.environment)
+        );
+
+        this.task.initializeDimensions(
+            await this.S3Service.downloadDimensions(this.configService.environment)
+        );
+
+        this.task.initializeAccessCounter();
+
+        this.task.initializeTimestamps();
+
+        this.task.initializePostAssessment()
+
+        if (!(this.worker.identifier == null)) {
+            if (this.task.dataRecords.length <= 0) {
+                let taskInitialPayload = this.task.buildTaskInitialPayload(this.worker);
+                await this.dynamoDBService.insertDataRecord(this.configService.environment, this.worker, this.task, taskInitialPayload);
+            }
+        }
+
+
         this.changeDetector.detectChanges();
     }
 

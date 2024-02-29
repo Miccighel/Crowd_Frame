@@ -39,7 +39,7 @@ export class TaskSettings {
         }
         this.modality = data ? data['modality'] : null;
         this.allowed_tries = data ? parseInt((data["allowed_tries"])) : 0;
-        this.time_assessment = data ? parseInt((data["time_assessment"])) : 2;
+        this.time_assessment = data ? parseFloat((data["time_assessment"])) : 2;
         this.time_check_amount = data ? data["time_check_amount"] : 0;
         if (!(typeof this.time_check_amount === 'number') && !this.time_check_amount["default"])
             this.time_check_amount["default"] = 0;

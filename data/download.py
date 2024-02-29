@@ -3313,8 +3313,14 @@ def parse_responses(df, worker_id, worker_paid, task, info, queries, responses_r
                             df[f"param_{parameter}"] = np.nan
                         row[f"param_{parameter}"] = value
                         if "date_last_crawled" in parameter:
-                            date_parsed = ' '.join(find_date_string(value).split(' ')[:2])
-                            df[f"param_{parameter}_parsed"] = date_parsed
+                            try:
+                                date_parsed = ' '.join(find_date_string(datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%fZ")).split(' ')[:2])
+                                df[f"param_{parameter}_parsed"] = date_parsed
+                            except ValueError:
+                                # Result returned from Bing Web Search API
+                                truncated_date_string = value[:-4] + value[-1]  # Truncate the last three zeros
+                                date_parsed = ' '.join(find_date_string(str(datetime.strptime(truncated_date_string, "%Y-%m-%dT%H:%M:%S.%fZ"))).split(' ')[:2])
+                                df[f"param_{parameter}_parsed"] = date_parsed
 
                 row["index_selected"] = -1
                 row_check = df.loc[
@@ -3326,7 +3332,7 @@ def parse_responses(df, worker_id, worker_paid, task, info, queries, responses_r
                     (df["query_index"] == row["query_index"]) &
                     (df["query_timestamp"] == row["query_timestamp"]) &
                     (df["response_index"] == response_index_full)
-                    ]
+                ]
                 if len(row_check) == 0:
                     df.loc[len(df)] = row
 
