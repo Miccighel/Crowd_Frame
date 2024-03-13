@@ -28,6 +28,7 @@ import {BaseResponse} from "../../../../../../models/searchEngine/baseResponse";
 import {DataRecord} from "../../../../../../models/skeleton/dataRecord";
 import {SectionService} from "../../../../../../services/section.service";
 import { Dimension } from "src/app/models/skeleton/dimension";
+import {PreRetrievedResult} from "../../../../../../models/searchEngine/preRetrievedResult";
 
 /* Component HTML Tag definition */
 @Component({
@@ -104,18 +105,12 @@ export class SearchEngineBodyComponent implements OnInit {
     /* Last searched query text */
     lastQueryValue: string;
 
-    /* Event emitters */
-    /* EMITTER: Query inserted by user */
-    @Output() queryEmitter = new EventEmitter<Object>();
-    /* EMITTER: Responses retrieved by search engine */
-    @Output() resultEmitter = new EventEmitter<Object>();
-    /* EMITTER: Response selected by user */
-    @Output() selectedRowEmitter = new EventEmitter<Object>();
-
     @Input() worker: Worker;
     @Input() documentIndex: number;
     @Input() dimension: Dimension;
     @Input() resultsRetrievedForms: Array<Array<Object>>;
+
+    @Input() simulatedResultsRetrieved: Array<PreRetrievedResult>
 
     @Input() resetEvent: EventEmitter<void>;
     @Input() disableEvent: EventEmitter<boolean>;
@@ -129,8 +124,17 @@ export class SearchEngineBodyComponent implements OnInit {
     baseResponses: Array<BaseResponse> = []
 
     previousDataRecord: DataRecord
+    preRetrievedResults: Array<PreRetrievedResult>
 
     dimensionIndex: number
+
+    /* Event emitters */
+    /* EMITTER: Query inserted by user */
+    @Output() queryEmitter = new EventEmitter<Object>();
+    /* EMITTER: Responses retrieved by search engine */
+    @Output() resultEmitter = new EventEmitter<Object>();
+    /* EMITTER: Response selected by user */
+    @Output() selectedRowEmitter = new EventEmitter<Object>();
 
     /* |--------- CONSTRUCTOR IMPLEMENTATION ---------| */
 
@@ -173,6 +177,7 @@ export class SearchEngineBodyComponent implements OnInit {
 
         this.settings = this.task.searchEngineSettings
         this.previousDataRecord = this.task.mostRecentDataRecordsForDocuments[this.documentIndex]
+        this.preRetrievedResults = this.task.searchEnginePreRetrievedResults[this.documentIndex]
 
         /* This header must be restored from cookies and attached to each request sent to Bing API*/
         let msClientIdName = 'MSEdge-ClientID'

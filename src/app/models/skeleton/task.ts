@@ -11,6 +11,7 @@ import {EvaluationInstruction} from "./instructions/evaluationInstruction";
 import {SearchEngineSettings} from "../searchEngine/searchEngineSettings";
 import {DataRecord} from "./dataRecord";
 import {Worker} from "../worker/worker";
+import {PreRetrievedResult} from "../searchEngine/preRetrievedResult";
 
 export class Task {
 
@@ -71,6 +72,7 @@ export class Task {
     searchEngineRetrievedResponses: Array<object>;
     /* Array to store the responses selected by workers within search engine results */
     searchEngineSelectedResponses: Array<object>;
+    searchEnginePreRetrievedResults: Array<Array<PreRetrievedResult>>;
 
     /* Array of accesses counters, one for each element (questionnaire + documents) */
     elementsAccesses: Array<number>;
@@ -124,7 +126,6 @@ export class Task {
             let documentCurrent = this.documents[stepIndex - this.questionnaireAmountStart];
             if (documentCurrent && documentCurrent.params && 'task_type' in documentCurrent.params) {
                 const currentTaskType = (documentCurrent.params['task_type'] as string).toLowerCase();
-
                 let elementIndexPretty = this.getDocumentTypeNumberAccordingToTaskType(documentCurrent)
                 if (this.settings.element_labels) {
                     let label = Object.keys(this.settings.element_labels).find((label) => label.toLowerCase() == currentTaskType)
@@ -265,6 +266,12 @@ export class Task {
                 this.searchEngineSelectedResponses[index]["data"] = existingSearchEngineSelectedResponses.data
                 this.searchEngineSelectedResponses[index]["amount"] = existingSearchEngineSelectedResponses.amount
             }
+        }
+        this.searchEnginePreRetrievedResults = new Array<Array<PreRetrievedResult>>(
+            this.documentsAmount
+        );
+        for (let index = 0; index < this.searchEnginePreRetrievedResults.length; index++) {
+            this.searchEnginePreRetrievedResults[index] = this.retrieveSearchEnginePreRetrievedResults(index)
         }
         this.notesDone = new Array<boolean>();
         this.annotationsDisabled = new Array<boolean>();
@@ -863,6 +870,17 @@ export class Task {
         }
     }
 
+    public retrieveSearchEnginePreRetrievedResults(documentIndex: number) {
+        let documentCurrent = this.documents[documentIndex]
+        let preRetrievedResults : Array<PreRetrievedResult> = []
+        for (let resultPreRetrieved of this.searchEngineSettings.pre_retrieved_results) {
+            if(resultPreRetrieved.elementID == documentCurrent.id) {
+                preRetrievedResults.push(resultPreRetrieved)
+            }
+        }
+        return preRetrievedResults
+    }
+
     /*
      * This function checks if each undeleted note of a document has a corresponding
      * option; if this is true the worker can proceed to the following element
@@ -1036,9 +1054,20 @@ export class Task {
             dimensions_amount: this.dimensionsAmount,
             settings: this.settings,
             search_engine_settings: this.searchEngineSettings,
+            search_engine_results_retrieved: {},
         };
         data["info"] = actionInfo;
         /* General info about task */
+        /* Given that a scenario involves pre-retrieving a set of search results, the resulting payload can become too big for DynamoDB.
+        *  Therefore, the set of pre-retrieved results is simplified using their IDs only and stored under the search_engine_results_retrieved key. */
+        let preRetrievedResultsSimplified = {}
+        for (let preRetrievedResult of taskData['search_engine_settings'].pre_retrieved_results) {
+            if (!(preRetrievedResult.elementID in preRetrievedResultsSimplified))
+                preRetrievedResultsSimplified[preRetrievedResult.elementID] = []
+            preRetrievedResultsSimplified[preRetrievedResult.elementID].push(preRetrievedResult.resultUUID)
+        }
+        taskData['search_engine_settings'].pre_retrieved_results = []
+        taskData['search_engine_results_retrieved'] = preRetrievedResultsSimplified
         data["task"] = taskData;
         /* The answers of the current worker to the questionnaire */
         let questionnaires = [];

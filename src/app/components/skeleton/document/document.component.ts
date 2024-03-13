@@ -284,7 +284,7 @@ export class DocumentComponent implements OnInit {
                     if (okMessage)
                         this.snackBar.open(documentCheckGold["message"], "Dismiss", {duration: 10000});
                 }
-                action = null
+                action = "Jump"
             }
         } else {
             if (action == "Back") {

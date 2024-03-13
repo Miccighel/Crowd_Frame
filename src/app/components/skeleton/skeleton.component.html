@@ -78,7 +78,7 @@
                     [questionnaireIndex]="this.task.getElementIndex(stepIndex)['elementIndex']"
                     [questionnairesForm]="this.questionnairesForm"
                     [stepper]="this.stepper"
-                    (formEmitter)="this.storeQuestionnaireForm($event,this.task.getElementIndex(stepIndex)['elementIndex'])"
+                    (formEmitter)="this.storeQuestionnaireForm($event,stepIndex)"
             >
             </app-questionnaire>
             <app-document
@@ -90,7 +90,7 @@
                     [searchEngineForms]="this.searchEngineForms"
                     [resultsRetrievedForms]="this.resultsRetrievedForms"
                     [stepper]="this.stepper"
-                    (formEmitter)="this.storeDocumentForm($event, this.task.getElementIndex(stepIndex)['elementIndex'])"
+                    (formEmitter)="this.storeDocumentForm($event, stepIndex)"
             ></app-document>
         </mat-step>
     </mat-horizontal-stepper>

@@ -76,7 +76,14 @@ export class Worker {
         ]
 
         if (source.toLowerCase() == 'ipify') {
-            for (const [property, value] of Object.entries(propertiesData)) {
+            const keyValuePairs = propertiesData.split('\n');
+            const parsedData: Record<string, string> = {};
+            for (const pair of keyValuePairs) {
+                const [key, value] = pair.split('=');
+                if(value)
+                    parsedData[key] = value;
+            }
+            for (const [property, value] of Object.entries(parsedData)) {
                 if (!unwantedProperties.includes(property)) {
                     this.propertiesFetched[`ipify_${this.convertToSnakeCase(property)}`] = value
                 }

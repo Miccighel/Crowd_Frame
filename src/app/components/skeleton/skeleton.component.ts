@@ -1,6 +1,6 @@
 /* Core */
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren, ViewEncapsulation} from "@angular/core";
-import {UntypedFormBuilder, UntypedFormGroup, UntypedFormControl, Validators} from "@angular/forms";
+import {UntypedFormBuilder, UntypedFormGroup, UntypedFormControl} from "@angular/forms";
 import {MatFormField} from "@angular/material/form-field";
 import {MatStepper} from "@angular/material/stepper";
 import {HttpClient, HttpHeaders} from "@angular/common/http";
@@ -984,15 +984,17 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         return Math.min(jumpIndex, this.task.questionnaireAmount + this.task.documentsAmount - 1)
     }
 
-    public storeQuestionnaireForm(data, questionnaireIndex) {
+    public storeQuestionnaireForm(data, stepIndex) {
+        let questionnaireIndex = this.task.getElementIndex(stepIndex)['elementIndex']
         if (!this.questionnairesForm[questionnaireIndex])
             this.questionnairesForm[questionnaireIndex] = data["form"];
         let action = data["action"];
         if (action)
-            this.produceData(action, questionnaireIndex);
+            this.produceData(action, stepIndex);
     }
 
-    public storeDocumentForm(data, documentIndex) {
+    public storeDocumentForm(data, stepIndex) {
+        let documentIndex = this.task.getElementIndex(stepIndex)['elementIndex']
         let type = data['type']
         /* Added a check for null and undefined values in post-assessment cases, where the main form bounces when clicking on Next, Back, or Finish. */
         if (type == 'initial' || type === null || type === undefined) {
@@ -1003,10 +1005,9 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         } else {
             this.documentsFormsAdditional[documentIndex].push(data["form"])
         }
-
         let action = data["action"];
         if (action)
-            this.produceData(action, documentIndex);
+            this.produceData(action, stepIndex);
     }
 
     /*
@@ -1025,24 +1026,15 @@ export class SkeletonComponent implements OnInit, OnDestroy {
      * The data include questionnaire results, quality checks, worker hit, search engine results, etc.
      */
     public async produceData(action: string, completedElement) {
+
         if (action == "Finish") {
             /* The current try is completed and the final can shall begin */
             this.ngxService.startLoader("skeleton-inner");
         }
 
         let currentElement = this.stepper.selectedIndex;
-        switch (action) {
-            case "Next":
-                completedElement = currentElement - 1;
-                break;
-            case "Back":
-                completedElement = currentElement + 1;
-                break;
-            case "Finish":
-                completedElement = this.task.getElementsNumber() - 1;
-                currentElement = this.task.getElementsNumber() - 1;
-                break;
-        }
+        if (action == "Finish")
+            currentElement = this.task.getElementsNumber() - 1;
 
         let completedElementBaseIndex = completedElement;
         let currentElementBaseIndex = currentElement;
@@ -1141,29 +1133,23 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         action: string
     ) {
         let timeInSeconds = Date.now() / 1000;
-        switch (action) {
-            case "Next":
-                /*
-                 * If a transition to the following document is performed the current timestamp is:
-                 * the start timestamp for the document at <stepper.selectedIndex>
-                 * the end timestamps for the document at <stepper.selectedIndex - 1>
-                 */
-                this.task.timestampsStart[currentElement].push(timeInSeconds);
-                this.task.timestampsEnd[completedElement].push(timeInSeconds);
-                break;
-            case "Back":
-                /*
-                 * If a transition to the previous document is performed the current timestamp is:
-                 * the start timestamp for the document at <stepper.selectedIndex>
-                 * the end timestamps for the document at <stepper.selectedIndex + 1>
-                 */
-                this.task.timestampsStart[currentElement].push(timeInSeconds);
-                this.task.timestampsEnd[completedElement].push(timeInSeconds);
-                break;
-            case "Finish":
-                /* If the task finishes, the current timestamp is the end timestamp for the current document. */
-                this.task.timestampsEnd[currentElement].push(timeInSeconds);
-                break;
+
+        if (action == "Finish") {
+            /* If the task finishes, the current timestamp is the end timestamp for the current document. */
+            this.task.timestampsEnd[currentElement].push(timeInSeconds);
+        } else {
+            /*
+             * If a transition to the following document is performed (Next) the current timestamp is:
+             * the start timestamp for the document at <stepper.selectedIndex>
+             * the end timestamps for the document at <stepper.selectedIndex - 1>
+             */
+            /*
+             * If a transition to the previous document is performed (Back) the current timestamp is:
+             * the start timestamp for the document at <stepper.selectedIndex>
+             * the end timestamps for the document at <stepper.selectedIndex + 1>
+             */
+            this.task.timestampsStart[currentElement].push(timeInSeconds);
+            this.task.timestampsEnd[completedElement].push(timeInSeconds);
         }
 
         /*

@@ -2587,9 +2587,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
 
     def upload(path, bucket, key, title, content_type, acl=None):
-        panel = Panel(
-            f"Region: [italic white on black]{aws_region}[/italic white on black]\nBucket: [italic white on black]{bucket}[/italic white on black]\nFile: [italic white on black]{path}[/italic white on black]\nKey: [italic white on black]{key}[/italic white on black]\nPath: [italic white on black] s3://{aws_region}/{bucket}/{key}[/italic white on black]\nACL: {acl}",
-            title=title)
+        panel = Panel(f"Region: [italic white on black]{aws_region}[/italic white on black]\nBucket: [italic white on black]{bucket}[/italic white on black]\nFile: [italic white on black]{path}[/italic white on black]\nKey: [italic white on black]{key}[/italic white on black]\nPath: [italic white on black]s3://{aws_region}/{bucket}/{key}[/italic white on black]\nACL: {acl}",title=title)
         console.print(panel)
         if acl:
             response = s3_client.put_object(Body=open(path, 'rb'), Bucket=bucket, Key=key, ContentType=content_type, ACL=acl)
