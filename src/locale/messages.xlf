@@ -1895,21 +1895,39 @@
         <source>Insert your query</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/search-engine/search-engine-body/search-engine-body.component.html</context>
-          <context context-type="linenumber">12</context>
+          <context context-type="linenumber">11</context>
         </context-group>
       </trans-unit>
       <trans-unit id="7e892ba15f2c6c17e83510e273b3e10fc32ea016" datatype="html">
         <source>Search</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/search-engine/search-engine-body/search-engine-body.component.html</context>
-          <context context-type="linenumber">24</context>
+          <context context-type="linenumber">23</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="bbae8f1c6a2db1c7267894210a4d8417e2c711f0" datatype="html">
-        <source><x id="INTERPOLATION" equiv-text="{{estimatedMatches | number}}"/> estimated matches found</source>
+      <trans-unit id="91434307456285e360a649d62789defcc014c9cb" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="{{ estimatedMatches | number }}"/> estimated matches found</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/search-engine/search-engine-body/search-engine-body.component.html</context>
           <context context-type="linenumber">31</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="e8c063e27a78ccfca3bfe5a0072cf76909a62e69" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="{{ estimatedMatches | number }}"/> matches found</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/dimension/search-engine/search-engine-body/search-engine-body.component.html</context>
+          <context context-type="linenumber">56</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="f4e529ae5ffd73001d1ff4bbdeeb0a72e342e5c8" datatype="html">
+        <source>Close</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/document/dimension/search-engine/search-engine-body/summary-dialog.html</context>
+          <context context-type="linenumber">6</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/skeleton/instructions/instructions-dialog.component.html</context>
+          <context context-type="linenumber">8</context>
         </context-group>
       </trans-unit>
       <trans-unit id="5f6d7b2ca44ed114925fef64c4de75be5da8ca3b" datatype="html">
@@ -1998,13 +2016,6 @@
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/elements/element-pointwise/element-pointwise.component.html</context>
           <context context-type="linenumber">26</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="f4e529ae5ffd73001d1ff4bbdeeb0a72e342e5c8" datatype="html">
-        <source>Close</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/skeleton/instructions/instructions-dialog.component.html</context>
-          <context context-type="linenumber">8</context>
         </context-group>
       </trans-unit>
       <trans-unit id="fdc6a9a401c8a2f9dad7ca0489d98069fbf482cc" datatype="html">

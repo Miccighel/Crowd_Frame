@@ -1,17 +1,22 @@
-import {Document} from "../../../../data/build/skeleton/document";
+/* Settings */
+import {TaskSettings} from "./taskSettings";
+/* Models */
+import {Hit} from "./hit";
+import {DataRecord} from "./dataRecord";
 import {BaseInstruction} from "./instructions/baseInstruction";
+import {EvaluationInstruction} from "./instructions/evaluationInstruction";
+import {Document} from "../../../../data/build/skeleton/document";
 import {Questionnaire} from "./questionnaires/questionnaire";
 import {Dimension, ScaleMagnitude} from "./dimension";
+/* Annotator */
 import {Note} from "./annotators/notes";
 import {NoteStandard} from "./annotators/notesStandard";
 import {NoteLaws} from "./annotators/notesLaws";
-import {TaskSettings} from "./taskSettings";
-import {Hit} from "./hit";
-import {EvaluationInstruction} from "./instructions/evaluationInstruction";
-import {SearchEngineSettings} from "../searchEngine/searchEngineSettings";
-import {DataRecord} from "./dataRecord";
-import {Worker} from "../worker/worker";
+/* Search Engine */
+import {PreRetrievedResultsSettings, SearchEngineSettings} from "../searchEngine/searchEngineSettings";
 import {PreRetrievedResult} from "../searchEngine/preRetrievedResult";
+/* Worker */
+import {Worker} from "../worker/worker";
 
 export class Task {
 
@@ -73,6 +78,7 @@ export class Task {
     /* Array to store the responses selected by workers within search engine results */
     searchEngineSelectedResponses: Array<object>;
     searchEnginePreRetrievedResults: Array<Array<PreRetrievedResult>>;
+    searchEnginePreRetrievedResultsSettings: PreRetrievedResultsSettings;
 
     /* Array of accesses counters, one for each element (questionnaire + documents) */
     elementsAccesses: Array<number>;
@@ -273,6 +279,7 @@ export class Task {
         for (let index = 0; index < this.searchEnginePreRetrievedResults.length; index++) {
             this.searchEnginePreRetrievedResults[index] = this.retrieveSearchEnginePreRetrievedResults(index)
         }
+        this.searchEnginePreRetrievedResultsSettings = this.searchEngineSettings.pre_retrieved_results_settings
         this.notesDone = new Array<boolean>();
         this.annotationsDisabled = new Array<boolean>();
         if (this.settings.annotator) {
@@ -388,10 +395,12 @@ export class Task {
             this.dimensionsSelectedValues[index] = {};
             this.dimensionsSelectedValues[index]["data"] = [];
             this.dimensionsSelectedValues[index]["amount"] = 0;
-            if (this.mostRecentDataRecordsForDocuments[index]) {
-                let existingDimensionsSelectedValues = this.mostRecentDataRecordsForDocuments[index].loadDimensionsSelected()
-                this.dimensionsSelectedValues[index]["data"] = existingDimensionsSelectedValues.data
-                this.dimensionsSelectedValues[index]["amount"] = existingDimensionsSelectedValues.amount
+            if (this.mostRecentDataRecordsForDocuments) {
+                if (this.mostRecentDataRecordsForDocuments[index]) {
+                    let existingDimensionsSelectedValues = this.mostRecentDataRecordsForDocuments[index].loadDimensionsSelected()
+                    this.dimensionsSelectedValues[index]["data"] = existingDimensionsSelectedValues.data
+                    this.dimensionsSelectedValues[index]["amount"] = existingDimensionsSelectedValues.amount
+                }
             }
         }
 
@@ -872,13 +881,30 @@ export class Task {
 
     public retrieveSearchEnginePreRetrievedResults(documentIndex: number) {
         let documentCurrent = this.documents[documentIndex]
-        let preRetrievedResults : Array<PreRetrievedResult> = []
+        let preRetrievedResults: Array<PreRetrievedResult> = []
         for (let resultPreRetrieved of this.searchEngineSettings.pre_retrieved_results) {
-            if(resultPreRetrieved.elementID == documentCurrent.id) {
+            if (resultPreRetrieved.elementID == documentCurrent.id) {
                 preRetrievedResults.push(resultPreRetrieved)
             }
         }
         return preRetrievedResults
+    }
+
+    public retrieveSearchEnginePreRetrievedResult(documentIndex, resultUUID: string) {
+        let documentCurrent = this.documents[documentIndex]
+        for (let resultPreRetrieved of this.searchEngineSettings.pre_retrieved_results) {
+            if ((resultPreRetrieved.elementID == documentCurrent.id) && (resultPreRetrieved.resultUUID == resultUUID)) {
+                return resultPreRetrieved
+            }
+        }
+        return null
+    }
+
+    public isSearchEnginePreRetrievedResultVisited(documentIndex, resultUUID: string) {
+        let preRetrievedSearchResult = this.retrieveSearchEnginePreRetrievedResult(documentIndex, resultUUID)
+        if (preRetrievedSearchResult)
+            return preRetrievedSearchResult.visited
+        return false
     }
 
     /*
@@ -1055,18 +1081,21 @@ export class Task {
             settings: this.settings,
             search_engine_settings: this.searchEngineSettings,
             search_engine_results_retrieved: {},
+            search_engine_results_retrieved_settings: this.searchEnginePreRetrievedResultsSettings,
         };
         data["info"] = actionInfo;
         /* General info about task */
         /* Given that a scenario involves pre-retrieving a set of search results, the resulting payload can become too big for DynamoDB.
         *  Therefore, the set of pre-retrieved results is simplified using their IDs only and stored under the search_engine_results_retrieved key. */
+        let searchEngineSettingsCopy = { ...this.searchEngineSettings };
         let preRetrievedResultsSimplified = {}
-        for (let preRetrievedResult of taskData['search_engine_settings'].pre_retrieved_results) {
+        for (let preRetrievedResult of searchEngineSettingsCopy.pre_retrieved_results) {
             if (!(preRetrievedResult.elementID in preRetrievedResultsSimplified))
                 preRetrievedResultsSimplified[preRetrievedResult.elementID] = []
             preRetrievedResultsSimplified[preRetrievedResult.elementID].push(preRetrievedResult.resultUUID)
         }
-        taskData['search_engine_settings'].pre_retrieved_results = []
+        delete searchEngineSettingsCopy.pre_retrieved_results
+        taskData['search_engine_settings'] = searchEngineSettingsCopy
         taskData['search_engine_results_retrieved'] = preRetrievedResultsSimplified
         data["task"] = taskData;
         /* The answers of the current worker to the questionnaire */

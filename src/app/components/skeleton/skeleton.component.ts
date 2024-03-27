@@ -151,14 +151,15 @@ export class SkeletonComponent implements OnInit, OnDestroy {
 
     /* To follow the execution flow of the skeleton, the functions need to be read in order (i.e., from top to bottom). */
     public async ngOnInit() {
-        this.task = new Task();
+
+        this.sectionService.task = new Task();
+        this.task = this.sectionService.task
 
         this.task.taskName = this.configService.environment.taskName;
         this.task.batchName = this.configService.environment.batchName;
         this.task.settings = new TaskSettings(await this.S3Service.downloadTaskSettings(this.configService.environment));
         this.task.initializeInstructionsGeneral(await this.S3Service.downloadGeneralInstructions(this.configService.environment));
         this.task.searchEngineSettings = new SearchEngineSettings(await this.S3Service.downloadSearchEngineSettings(this.configService.environment));
-        this.sectionService.task = this.task;
 
         let url = new URL(window.location.href);
 
@@ -361,7 +362,6 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                             if (!hitAssigned) {
                                 let wholeEntries = await this.retrieveAllACLEntries();
 
-
                                 for (let aclEntry of wholeEntries) {
                                     if (aclEntry["ip_address"] != this.worker.getIP()) {
                                         if (/true/i.test(aclEntry["paid"]) == true || ((/true/i.test(aclEntry["paid"]) == false) && (/true/i.test(aclEntry["in_progress"]) == true)))
@@ -454,6 +454,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
                             else
                                 this.worker.setParameter("status_code", StatusCodes.TASK_COMPLETED_BY_OTHERS);
                         }
+                        this.worker.setParameter("status_code", StatusCodes.TASK_SUCCESSFUL);
                     }
                     this.task.storeDataRecords(await this.retrieveDataRecords())
                     await this.performTaskSetup();

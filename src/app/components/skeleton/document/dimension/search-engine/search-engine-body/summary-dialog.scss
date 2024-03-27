@@ -1,0 +1,20 @@
+/* |--- DIALOG STYLES  --| */
+
+.mat-mdc-dialog-container {
+	padding-top: 0 !important;
+	padding-bottom: 0 !important;
+}
+
+.mat-mdc-dialog-container .mdc-dialog__content {
+	color: rgb(0, 0, 0);
+}
+
+.close-button {
+	text-align: center;
+	margin-top: 1em;
+	margin-bottom: 1.5em;
+}
+
+button {
+	text-transform: uppercase;
+}

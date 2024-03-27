@@ -1,64 +1,77 @@
 /* |--- LOADING SCREEN SPINNER --| */
 
 mat-spinner {
-  margin: auto;
+	margin: auto;
 }
 
 /* |--- MAIN BODY ---| */
 
 /* TODO(mdc-migration): The following rule targets internal classes of card that may no longer apply for the MDC version. */
 mat-card {
-  box-shadow: 0 0 0 0;
-  padding: 0;
-  font-size: 0.9em;
+	box-shadow: 0 0 0 0;
+	padding: 0;
+	font-size: 0.9em;
 }
 
 /* |--- USER QUERY ---| */
 
 .search-bar {
-  display: flex;
-  flex-wrap: wrap;
+	display: flex;
+	flex-wrap: wrap;
 }
 
 #search-textarea {
-  flex-grow: 2;
-  margin-right: 1px;
+	flex-grow: 2;
+	margin-right: 1px;
 }
 
 .search-button {
-  text-transform: uppercase;
-  flex-grow: 1;
-  margin: 3px 3px 1.4em;
-  height: 50px;
+	text-transform: uppercase;
+	flex-grow: 1;
+	margin: 3px 3px 1.4em;
+	height: 50px;
 }
 
 .search-button-conversational {
-  text-transform: uppercase;
-  flex-grow: 1;
-  margin: 3px 3px 1.7em;
-  height: 50px;
+	text-transform: uppercase;
+	flex-grow: 1;
+	margin: 3px 3px 1.7em;
+	height: 50px;
 }
 
 /* |--- RESULT TABLE --| */
 
 /* TODO(mdc-migration): The following rule targets internal classes of tabs that may no longer apply for the MDC version. */
 mat-table {
-  border: 2px solid lightgrey;
-  border-radius: 8px;
-  padding: 5px 5px;
-  min-width: auto;
+	border: 2px solid lightgrey;
+	border-radius: 8px;
+	padding: 5px 5px;
+	min-width: auto;
 }
 
 mat-header-cell {
-  font-size: medium;
+	font-size: medium;
 }
 
 mat-cell {
-  font-size: medium;
-  padding: 5px;
+	font-size: medium;
+	padding: 5px;
 
-  p {
-    width: 99%;
-    padding-right: 1%;
-  }
+	p {
+		width: 99%;
+		padding-right: 1%;
+	}
+}
+
+mat-table#preRetrievedSearchResults {
+
+	span.result-name {
+		color: rgb(0, 0, 238);
+		text-decoration: underline;
+	}
+
+	span.result-name-visited {
+		color: rgb(85, 26, 139)
+	}
+
 }

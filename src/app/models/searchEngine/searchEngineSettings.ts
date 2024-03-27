@@ -5,6 +5,7 @@ export class SearchEngineSettings {
     source: string
     domains_filter?: Array<string>
     pre_retrieved_results?: Array<PreRetrievedResult>
+    pre_retrieved_results_settings?: PreRetrievedResultsSettings
 
     constructor(
         data = null as JSON
@@ -31,9 +32,47 @@ export class SearchEngineSettings {
                     }
                 }
             }
-        } else {
-            this.pre_retrieved_results = new Array<PreRetrievedResult>();
+        }
+        if (data) {
+            if (data['results_retrieved_settings']) {
+                this.pre_retrieved_results_settings = new PreRetrievedResultsSettings(data)
+            } else {
+                this.pre_retrieved_results_settings = null
+            }
         }
     }
 
+}
+
+export enum DisplayModality {
+    Link = 'link',
+    Summary = 'summary'
+}
+
+export class PreRetrievedResultsSettings {
+
+    displayModality: DisplayModality | null;
+
+    constructor(
+        data = null as JSON
+    ) {
+        if (data) {
+            if (data['results_retrieved_settings']) {
+                if (data['results_retrieved_settings']['display_modality']) {
+                    switch (data['results_retrieved_settings']['display_modality']) {
+                        case DisplayModality.Link:
+                            this.displayModality = DisplayModality.Link;
+                            break;
+                        case DisplayModality.Summary:
+                            this.displayModality = DisplayModality.Summary;
+                            break;
+                        default:
+                            this.displayModality = null;
+                    }
+                }
+            }
+        } else {
+            this.displayModality = null;
+        }
+    }
 }

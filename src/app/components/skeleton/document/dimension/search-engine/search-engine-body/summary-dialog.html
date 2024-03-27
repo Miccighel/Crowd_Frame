@@ -1,0 +1,7 @@
+<div mat-dialog-content>
+	<h1>Summary</h1>
+	<div [innerHTML]="this.prettyPrintPageSummary()"></div>
+</div>
+<div class="close-button">
+  <button mat-flat-button color="primary" (click)="closeSummary()"><span i18n>Close</span></button>
+</div>

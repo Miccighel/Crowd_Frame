@@ -1,34 +1,37 @@
 /* Core modules */
-import {ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild, QueryList, ViewChildren} from "@angular/core";
-import {fromEvent, of, takeUntil} from "rxjs";
-import {catchError, debounceTime, map, tap} from "rxjs/operators";
+import {ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, ViewChild, QueryList, ViewChildren, Inject, ViewEncapsulation} from "@angular/core";
+import {of} from "rxjs";
+import {catchError, map, tap} from "rxjs/operators";
+import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 /* Loading screen module */
 import {NgxUiLoaderService} from "ngx-ui-loader";
 /* Material design modules */
 import {MatPaginator} from "@angular/material/paginator";
 /* Reactive forms modules */
 import {UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators,} from "@angular/forms";
+/* Models */
+import {Task} from "../../../../../../models/skeleton/task";
+import {Worker} from "../../../../../../models/worker/worker";
+import {DisplayModality, PreRetrievedResultsSettings, SearchEngineSettings} from "../../../../../../models/searchEngine/searchEngineSettings";
+import {CustomDataSource} from '../../../../../../models/searchEngine/customDataSource';
+import {BaseResponse} from "../../../../../../models/searchEngine/baseResponse";
+import {DataRecord} from "../../../../../../models/skeleton/dataRecord";
+import {Dimension} from "src/app/models/skeleton/dimension";
+import {BingWebSearchResponse} from "../../../../../../models/searchEngine/bingWebSearchResponse";
+import {PubmedSearchResponse} from "../../../../../../models/searchEngine/pubmedSearchResponse";
+import {PubmedSummaryResponse} from "../../../../../../models/searchEngine/pubmedSummaryResponse";
+import {FakeSearchResponse} from "../../../../../../models/searchEngine/fakeSearchResponse";
+import {PreRetrievedResult} from "../../../../../../models/searchEngine/preRetrievedResult";
 /* Services */
+import {SectionService} from "../../../../../../services/section.service";
 import {ConfigService} from "../../../../../../services/config.service";
 import {CookieService} from 'ngx-cookie-service';
 import {S3Service} from "../../../../../../services/aws/s3.service";
 import {BingService} from "../../../../../../services/searchEngine/bing.service";
-import {BingWebSearchResponse} from "../../../../../../models/searchEngine/bingWebSearchResponse";
 import {PubmedService} from "../../../../../../services/searchEngine/pudmed.service";
-import {PubmedSearchResponse} from "../../../../../../models/searchEngine/pubmedSearchResponse";
-import {PubmedSummaryResponse} from "../../../../../../models/searchEngine/pubmedSummaryResponse";
 import {FakerService} from "../../../../../../services/searchEngine/faker.service";
-import {FakeSearchResponse} from "../../../../../../models/searchEngine/fakeSearchResponse";
-/* Models */
-import {Task} from "../../../../../../models/skeleton/task";
-import {Worker} from "../../../../../../models/worker/worker";
-import {SearchEngineSettings} from "../../../../../../models/searchEngine/searchEngineSettings";
-import {CustomDataSource} from '../../../../../../models/searchEngine/customDataSource';
-import {BaseResponse} from "../../../../../../models/searchEngine/baseResponse";
-import {DataRecord} from "../../../../../../models/skeleton/dataRecord";
-import {SectionService} from "../../../../../../services/section.service";
-import { Dimension } from "src/app/models/skeleton/dimension";
-import {PreRetrievedResult} from "../../../../../../models/searchEngine/preRetrievedResult";
+
+export interface DialogData {}
 
 /* Component HTML Tag definition */
 @Component({
@@ -83,50 +86,45 @@ export class SearchEngineBodyComponent implements OnInit {
     /* Angular Reactive Form builder (see https://angular.io/guide/reactive-forms) */
     formBuilder: UntypedFormBuilder;
 
-    /* |--------- CONTROL FLOW & UI ELEMENTS - DECLARATION ---------| */
+    @Input() worker: Worker;
+    @Input() documentIndex: number;
+    @Input() dimension: Dimension;
+    @Input() resultsRetrievedForms: Array<Array<Object>>;
+    @Input() resetEvent: EventEmitter<void>;
+    @Input() disableEvent: EventEmitter<boolean>;
+
+    task: Task
+    dimensionIndex: number
+
+    previousDataRecord: DataRecord
+    preRetrievedResultsSettings: PreRetrievedResultsSettings
+    preRetrievedResults: Array<PreRetrievedResult>
 
     /* Search form UI controls */
     searchForm: UntypedFormGroup;
     searchStarted: boolean;
     searchInProgress: boolean;
+    searchPerformed: boolean;
     query: UntypedFormControl;
+    searchButtonEnabled: boolean
     urls: UntypedFormControl;
     @ViewChild(MatPaginator) paginator: MatPaginator;
-
-    /* Data source */
-    dataSource: CustomDataSource;
-    displayedColumns = ["name"];
-
-    /* Boolean flag */
-    searchPerformed: boolean;
+    public summaryDialog: MatDialog
 
     /* Stored query text */
     queryValue: string;
     /* Last searched query text */
     lastQueryValue: string;
 
-    @Input() worker: Worker;
-    @Input() documentIndex: number;
-    @Input() dimension: Dimension;
-    @Input() resultsRetrievedForms: Array<Array<Object>>;
-
-    @Input() simulatedResultsRetrieved: Array<PreRetrievedResult>
-
-    @Input() resetEvent: EventEmitter<void>;
-    @Input() disableEvent: EventEmitter<boolean>;
-
-    task: Task
+    /* Data source */
+    dataSource: CustomDataSource;
+    displayedColumns = ["name"];
 
     /* Data and search parameters */
     estimatedMatches = 0;
     resultsAmount = 0;
     searchAmount = 0;
     baseResponses: Array<BaseResponse> = []
-
-    previousDataRecord: DataRecord
-    preRetrievedResults: Array<PreRetrievedResult>
-
-    dimensionIndex: number
 
     /* Event emitters */
     /* EMITTER: Query inserted by user */
@@ -148,7 +146,8 @@ export class SearchEngineBodyComponent implements OnInit {
         pubmedService: PubmedService,
         configService: ConfigService,
         formBuilder: UntypedFormBuilder,
-        cookieService: CookieService
+        cookieService: CookieService,
+        dialog: MatDialog,
     ) {
         this.changeDetector = changeDetector;
         this.ngxService = ngxService;
@@ -160,14 +159,13 @@ export class SearchEngineBodyComponent implements OnInit {
         this.sectionService = sectionService
         this.formBuilder = formBuilder;
         this.cookieService = cookieService;
-
+        this.summaryDialog = dialog
         this.task = this.sectionService.task
-        this.searchStarted = true;
-        this.searchInProgress = false;
-
+        this.searchStarted = true
+        this.searchInProgress = false
+        this.searchButtonEnabled = true
         this.bingApiKey = this.configService.environment.bing_api_key;
         this.pubmedApiKey = this.configService.environment.pubmed_api_key;
-
         if (this.configService.environment.production)
             this.bingService.endPoint = `${this.configService.environment.api_gateway_endpoint}/bing`
     }
@@ -178,212 +176,251 @@ export class SearchEngineBodyComponent implements OnInit {
         this.settings = this.task.searchEngineSettings
         this.previousDataRecord = this.task.mostRecentDataRecordsForDocuments[this.documentIndex]
         this.preRetrievedResults = this.task.searchEnginePreRetrievedResults[this.documentIndex]
+        this.preRetrievedResultsSettings = this.task.searchEnginePreRetrievedResultsSettings
 
         /* This header must be restored from cookies and attached to each request sent to Bing API*/
         let msClientIdName = 'MSEdge-ClientID'
         if (this.checkCookie(msClientIdName))
             this.bingService.msEdgeClientID = this.loadCookie(msClientIdName)
 
-        switch (this.settings.source) {
-            case 'BingWebSearch':
-                this.searchAmount = this.bingService.SEARCH_AMOUNT
-                this.dataSource = new CustomDataSource((query = this.lastQueryValue, resultsToSkip, querySentByUser = false) => {
-                    let resultSliceStart = this.paginator.pageIndex * this.paginator.pageSize
-                    let resultSliceEnd = resultSliceStart + this.paginator.pageSize
-                    if (querySentByUser || (resultSliceEnd > this.resultsAmount && this.estimatedMatches > this.resultsAmount) || this.resultsAmount == 0) {
-                        if (querySentByUser) {
-                            /* EMITTER: The user query is emitted to provide it to an eventual parent component, when the query is sent manually */
-                            this.queryEmitter.emit({
-                                "text": this.lastQueryValue,
-                                "encoded": encodeURIComponent(this.lastQueryValue)
-                            });
-                            this.baseResponses = []
-                            this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["baseResponses"] = this.baseResponses
-                        }
-                        this.ngxService.startBackgroundLoader('search-loader');
-                        this.searchInProgress = true
-                        return this.bingService.performWebSearch(this.bingApiKey, encodeURIComponent(query), resultsToSkip).pipe(
-                            map((searchResponse) => {
-                                if (!this.checkCookie(msClientIdName)) {
-                                    const expireDate = new Date();
-                                    /* Set the cookie to expire in 1 year */
-                                    expireDate.setDate(expireDate.getDate() + 365);
-                                    this.storeCookie(msClientIdName, this.bingService.msEdgeClientID, expireDate)
-                                }
-                                /* We are interested in parsing the webPages property of a BingWebSearchResponse */
-                                this.bingWebSearchResponse = this.bingService.filterResponse(searchResponse, this.settings.domains_filter);
-                                this.estimatedMatches = searchResponse.webPages.totalEstimatedMatches
-                                let decodedResponses = this.bingService.decodeResponse(this.bingWebSearchResponse)
-                                this.baseResponses = this.baseResponses.concat(decodedResponses)
-                                this.resultsAmount = this.baseResponses.length
-                                this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["baseResponses"] = this.baseResponses
-                                this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["resultsAmount"] = this.resultsAmount
-                                this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["estimatedMatches"] = this.estimatedMatches
-                                /* EMITTER: The matching response is emitted to provide it to the parent component*/
-                                /* Page index and size refer to the results available before the current query */
-                                this.resultEmitter.emit({
-                                    "decodedResponses": this.baseResponses,
-                                    "estimatedMatches": this.estimatedMatches,
-                                    "resultsRetrieved": decodedResponses.length,
-                                    "resultsToSkip": resultsToSkip,
-                                    "resultsAmount": this.resultsAmount,
-                                    "pageIndex": this.paginator.pageIndex,
-                                    "pageSize": this.paginator.pageSize,
+        if (this.preRetrievedResults.length <= 0) {
+            switch (this.settings.source) {
+                case 'BingWebSearch':
+                    this.searchAmount = this.bingService.SEARCH_AMOUNT
+                    this.dataSource = new CustomDataSource((query = this.lastQueryValue, resultsToSkip, querySentByUser = false) => {
+                        let resultSliceStart = this.paginator.pageIndex * this.paginator.pageSize
+                        let resultSliceEnd = resultSliceStart + this.paginator.pageSize
+                        if (querySentByUser || (resultSliceEnd > this.resultsAmount && this.estimatedMatches > this.resultsAmount) || this.resultsAmount == 0) {
+                            if (querySentByUser) {
+                                /* EMITTER: The user query is emitted to provide it to an eventual parent component, when the query is sent manually */
+                                this.queryEmitter.emit({
+                                    "text": this.lastQueryValue,
+                                    "encoded": encodeURIComponent(this.lastQueryValue)
                                 });
-                                this.searchInProgress = false;
-                                this.ngxService.stopBackgroundLoader('search-loader')
-                                return this.baseResponses.slice(resultSliceStart, resultSliceEnd);
-                            }),
-                            catchError((error) => {
-                                console.log(error)
-                                this.searchInProgress = false;
-                                this.estimatedMatches = 0
-                                this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["estimatedMatches"] = this.estimatedMatches
-                                this.resultEmitter.emit({
-                                    "decodedResponses": [],
-                                    "estimatedMatches": this.estimatedMatches,
-                                    "resultsRetrieved": 0,
-                                    "resultsToSkip": resultsToSkip,
-                                    "resultsAmount": this.resultsAmount,
-                                    "pageIndex": this.paginator.pageIndex,
-                                    "pageSize": this.paginator.pageSize,
+                                this.baseResponses = []
+                                this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["baseResponses"] = this.baseResponses
+                            }
+                            this.ngxService.startBackgroundLoader('search-loader');
+                            this.searchInProgress = true
+                            return this.bingService.performWebSearch(this.bingApiKey, encodeURIComponent(query), resultsToSkip).pipe(
+                                map((searchResponse) => {
+                                    if (!this.checkCookie(msClientIdName)) {
+                                        const expireDate = new Date();
+                                        /* Set the cookie to expire in 1 year */
+                                        expireDate.setDate(expireDate.getDate() + 365);
+                                        this.storeCookie(msClientIdName, this.bingService.msEdgeClientID, expireDate)
+                                    }
+                                    /* We are interested in parsing the webPages property of a BingWebSearchResponse */
+                                    this.bingWebSearchResponse = this.bingService.filterResponse(searchResponse, this.settings.domains_filter);
+                                    this.estimatedMatches = searchResponse.webPages.totalEstimatedMatches
+                                    let decodedResponses = this.bingService.decodeResponse(this.bingWebSearchResponse)
+                                    this.baseResponses = this.baseResponses.concat(decodedResponses)
+                                    this.resultsAmount = this.baseResponses.length
+                                    this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["baseResponses"] = this.baseResponses
+                                    this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["resultsAmount"] = this.resultsAmount
+                                    this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["estimatedMatches"] = this.estimatedMatches
+                                    /* EMITTER: The matching response is emitted to provide it to the parent component*/
+                                    /* Page index and size refer to the results available before the current query */
+                                    this.resultEmitter.emit({
+                                        "decodedResponses": this.baseResponses,
+                                        "estimatedMatches": this.estimatedMatches,
+                                        "resultsRetrieved": decodedResponses.length,
+                                        "resultsToSkip": resultsToSkip,
+                                        "resultsAmount": this.resultsAmount,
+                                        "pageIndex": this.paginator.pageIndex,
+                                        "pageSize": this.paginator.pageSize,
+                                    });
+                                    this.searchInProgress = false;
+                                    this.ngxService.stopBackgroundLoader('search-loader')
+                                    return this.baseResponses.slice(resultSliceStart, resultSliceEnd);
+                                }),
+                                catchError((error) => {
+                                    console.log(error)
+                                    this.searchInProgress = false;
+                                    this.estimatedMatches = 0
+                                    this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["estimatedMatches"] = this.estimatedMatches
+                                    this.resultEmitter.emit({
+                                        "decodedResponses": [],
+                                        "estimatedMatches": this.estimatedMatches,
+                                        "resultsRetrieved": 0,
+                                        "resultsToSkip": resultsToSkip,
+                                        "resultsAmount": this.resultsAmount,
+                                        "pageIndex": this.paginator.pageIndex,
+                                        "pageSize": this.paginator.pageSize,
+                                    })
+                                    this.ngxService.stopBackgroundLoader('search-loader')
+                                    /* Return an empty array in case of error */
+                                    return of([]);
                                 })
-                                this.ngxService.stopBackgroundLoader('search-loader')
-                                /* Return an empty array in case of error */
-                                return of([]);
-                            })
-                        )
-                    } else {
-                        /* Return the current "slice" of paginated results */
-                        return of(this.baseResponses.slice(resultSliceStart, resultSliceEnd));
-                    }
-                });
-                break;
+                            )
+                        } else {
+                            /* Return the current "slice" of paginated results */
+                            return of(this.baseResponses.slice(resultSliceStart, resultSliceEnd));
+                        }
+                    });
+                    break;
 
-            case 'PubmedSearch':
-                this.searchAmount = this.pubmedService.SEARCH_AMOUNT
-                this.dataSource = new CustomDataSource((query = this.lastQueryValue, resultsToSkip, querySentByUser = false) => {
-                    let resultSliceStart = this.paginator.pageIndex * this.paginator.pageSize
-                    let resultSliceEnd = resultSliceStart + this.paginator.pageSize
-                    if (querySentByUser || (resultSliceEnd > this.resultsAmount && this.estimatedMatches > this.resultsAmount) || this.resultsAmount == 0) {
-                        if (querySentByUser) {
-                            this.queryEmitter.emit({
-                                "text": this.lastQueryValue,
-                                "encoded": encodeURIComponent(this.lastQueryValue)
-                            });
-                            this.baseResponses = []
-                            this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["baseResponses"] = this.baseResponses
-                        }
-                        this.ngxService.startBackgroundLoader('search-loader');
-                        this.searchInProgress = true
-                        return this.pubmedService.performWebSearch(this.pubmedApiKey, encodeURIComponent(query), resultsToSkip).pipe(
-                            map((searchResponse) => {
-                                this.pubmedSearchResponse = searchResponse['firstRequestData']
-                                this.estimatedMatches = this.pubmedSearchResponse.esearchresult.count
-                                let decodedResponses = this.pubmedService.decodeResponse(searchResponse['additionalResponses'])
-                                this.baseResponses = this.baseResponses.concat(decodedResponses)
-                                this.resultsAmount = this.baseResponses.length
-                                this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["baseResponses"] = this.baseResponses
-                                this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["resultsAmount"] = this.resultsAmount
-                                this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["estimatedMatches"] = this.estimatedMatches
-                                this.resultEmitter.emit({
-                                    "decodedResponses": this.baseResponses,
-                                    "estimatedMatches": this.estimatedMatches,
-                                    "resultsRetrieved": decodedResponses.length,
-                                    "resultsToSkip": resultsToSkip,
-                                    "resultsAmount": this.resultsAmount,
-                                    "pageIndex": this.paginator.pageIndex,
-                                    "pageSize": this.paginator.pageSize,
+                case 'PubmedSearch':
+                    this.searchAmount = this.pubmedService.SEARCH_AMOUNT
+                    this.dataSource = new CustomDataSource((query = this.lastQueryValue, resultsToSkip, querySentByUser = false) => {
+                        let resultSliceStart = this.paginator.pageIndex * this.paginator.pageSize
+                        let resultSliceEnd = resultSliceStart + this.paginator.pageSize
+                        if (querySentByUser || (resultSliceEnd > this.resultsAmount && this.estimatedMatches > this.resultsAmount) || this.resultsAmount == 0) {
+                            if (querySentByUser) {
+                                this.queryEmitter.emit({
+                                    "text": this.lastQueryValue,
+                                    "encoded": encodeURIComponent(this.lastQueryValue)
                                 });
-                                this.searchInProgress = false;
-                                this.ngxService.stopBackgroundLoader('search-loader')
-                                return this.baseResponses.slice(resultSliceStart, resultSliceEnd);
-                            }),
-                            catchError((error) => {
-                                console.log(error)
-                                this.searchInProgress = false;
-                                this.estimatedMatches = 0
-                                this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["estimatedMatches"] = this.estimatedMatches
-                                this.resultEmitter.emit({
-                                    "decodedResponses": [],
-                                    "estimatedMatches": this.estimatedMatches,
-                                    "resultsRetrieved": 0,
-                                    "resultsToSkip": resultsToSkip,
-                                    "resultsAmount": this.resultsAmount,
-                                    "pageIndex": this.paginator.pageIndex,
-                                    "pageSize": this.paginator.pageSize,
+                                this.baseResponses = []
+                                this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["baseResponses"] = this.baseResponses
+                            }
+                            this.ngxService.startBackgroundLoader('search-loader');
+                            this.searchInProgress = true
+                            return this.pubmedService.performWebSearch(this.pubmedApiKey, encodeURIComponent(query), resultsToSkip).pipe(
+                                map((searchResponse) => {
+                                    this.pubmedSearchResponse = searchResponse['firstRequestData']
+                                    this.estimatedMatches = this.pubmedSearchResponse.esearchresult.count
+                                    let decodedResponses = this.pubmedService.decodeResponse(searchResponse['additionalResponses'])
+                                    this.baseResponses = this.baseResponses.concat(decodedResponses)
+                                    this.resultsAmount = this.baseResponses.length
+                                    this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["baseResponses"] = this.baseResponses
+                                    this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["resultsAmount"] = this.resultsAmount
+                                    this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["estimatedMatches"] = this.estimatedMatches
+                                    this.resultEmitter.emit({
+                                        "decodedResponses": this.baseResponses,
+                                        "estimatedMatches": this.estimatedMatches,
+                                        "resultsRetrieved": decodedResponses.length,
+                                        "resultsToSkip": resultsToSkip,
+                                        "resultsAmount": this.resultsAmount,
+                                        "pageIndex": this.paginator.pageIndex,
+                                        "pageSize": this.paginator.pageSize,
+                                    });
+                                    this.searchInProgress = false;
+                                    this.ngxService.stopBackgroundLoader('search-loader')
+                                    return this.baseResponses.slice(resultSliceStart, resultSliceEnd);
+                                }),
+                                catchError((error) => {
+                                    console.log(error)
+                                    this.searchInProgress = false;
+                                    this.estimatedMatches = 0
+                                    this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["estimatedMatches"] = this.estimatedMatches
+                                    this.resultEmitter.emit({
+                                        "decodedResponses": [],
+                                        "estimatedMatches": this.estimatedMatches,
+                                        "resultsRetrieved": 0,
+                                        "resultsToSkip": resultsToSkip,
+                                        "resultsAmount": this.resultsAmount,
+                                        "pageIndex": this.paginator.pageIndex,
+                                        "pageSize": this.paginator.pageSize,
+                                    })
+                                    this.ngxService.stopBackgroundLoader('search-loader')
+                                    return of([]);
                                 })
-                                this.ngxService.stopBackgroundLoader('search-loader')
-                                return of([]);
-                            })
-                        )
-                    } else {
-                        return of(this.baseResponses.slice(resultSliceStart, resultSliceEnd));
-                    }
-                });
-                break;
+                            )
+                        } else {
+                            return of(this.baseResponses.slice(resultSliceStart, resultSliceEnd));
+                        }
+                    });
+                    break;
 
-            case 'FakerWebSearch':
-                this.searchAmount = this.fakerService.SEARCH_AMOUNT
-                this.dataSource = new CustomDataSource((query = this.lastQueryValue, resultsToSkip, querySentByUser = false) => {
-                    let resultSliceStart = this.paginator.pageIndex * this.paginator.pageSize
-                    let resultSliceEnd = resultSliceStart + this.paginator.pageSize
-                    if (querySentByUser || (resultSliceEnd > this.resultsAmount && this.estimatedMatches > this.resultsAmount) || this.resultsAmount == 0) {
-                        if (querySentByUser) {
-                            this.queryEmitter.emit({
-                                "text": this.lastQueryValue,
-                                "encoded": encodeURIComponent(this.lastQueryValue)
-                            });
-                            this.baseResponses = []
-                            this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["baseResponses"] = this.baseResponses
-                        }
-                        this.ngxService.startBackgroundLoader('search-loader');
-                        this.searchInProgress = true
-                        return this.fakerService.performWebSearch(encodeURIComponent(query)).pipe(
-                            map((searchResponses) => {
-                                let decodedResponses = this.fakerService.decodeResponse(searchResponses)
-                                this.estimatedMatches = decodedResponses.length
-                                this.resultEmitter.emit({
-                                    "decodedResponses": this.baseResponses,
-                                    "estimatedMatches": this.estimatedMatches,
-                                    "resultsRetrieved": decodedResponses.length,
-                                    "resultsToSkip": resultsToSkip,
-                                    "resultsAmount": this.resultsAmount,
-                                    "pageIndex": this.paginator.pageIndex,
-                                    "pageSize": this.paginator.pageSize,
+                case 'FakerWebSearch':
+                    this.searchAmount = this.fakerService.SEARCH_AMOUNT
+                    this.dataSource = new CustomDataSource((query = this.lastQueryValue, resultsToSkip, querySentByUser = false) => {
+                        let resultSliceStart = this.paginator.pageIndex * this.paginator.pageSize
+                        let resultSliceEnd = resultSliceStart + this.paginator.pageSize
+                        if (querySentByUser || (resultSliceEnd > this.resultsAmount && this.estimatedMatches > this.resultsAmount) || this.resultsAmount == 0) {
+                            if (querySentByUser) {
+                                this.queryEmitter.emit({
+                                    "text": this.lastQueryValue,
+                                    "encoded": encodeURIComponent(this.lastQueryValue)
                                 });
-                                this.baseResponses = this.baseResponses.concat(decodedResponses)
-                                this.resultsAmount = this.baseResponses.length
+                                this.baseResponses = []
                                 this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["baseResponses"] = this.baseResponses
-                                this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["resultsAmount"] = this.resultsAmount
-                                this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["estimatedMatches"] = this.estimatedMatches
-                                this.searchInProgress = false;
-                                this.ngxService.stopBackgroundLoader('search-loader')
-                                return this.baseResponses.slice(resultSliceStart, resultSliceEnd);
-                            }),
-                            catchError((error) => {
-                                console.log(error)
-                                this.estimatedMatches = 0
-                                this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["estimatedMatches"] = this.estimatedMatches
-                                this.searchInProgress = false;
-                                this.resultEmitter.emit({
-                                    "decodedResponses": [],
-                                    "estimatedMatches": this.estimatedMatches,
-                                    "resultsRetrieved": 0,
-                                    "resultsToSkip": resultsToSkip,
-                                    "resultsAmount": this.resultsAmount,
-                                    "pageIndex": this.paginator.pageIndex,
-                                    "pageSize": this.paginator.pageSize,
+                            }
+                            this.ngxService.startBackgroundLoader('search-loader');
+                            this.searchInProgress = true
+                            return this.fakerService.performWebSearch(encodeURIComponent(query)).pipe(
+                                map((searchResponses) => {
+                                    let decodedResponses = this.fakerService.decodeResponse(searchResponses)
+                                    this.estimatedMatches = decodedResponses.length
+                                    this.resultEmitter.emit({
+                                        "decodedResponses": this.baseResponses,
+                                        "estimatedMatches": this.estimatedMatches,
+                                        "resultsRetrieved": decodedResponses.length,
+                                        "resultsToSkip": resultsToSkip,
+                                        "resultsAmount": this.resultsAmount,
+                                        "pageIndex": this.paginator.pageIndex,
+                                        "pageSize": this.paginator.pageSize,
+                                    });
+                                    this.baseResponses = this.baseResponses.concat(decodedResponses)
+                                    this.resultsAmount = this.baseResponses.length
+                                    this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["baseResponses"] = this.baseResponses
+                                    this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["resultsAmount"] = this.resultsAmount
+                                    this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["estimatedMatches"] = this.estimatedMatches
+                                    this.searchInProgress = false;
+                                    this.ngxService.stopBackgroundLoader('search-loader')
+                                    return this.baseResponses.slice(resultSliceStart, resultSliceEnd);
+                                }),
+                                catchError((error) => {
+                                    console.log(error)
+                                    this.estimatedMatches = 0
+                                    this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["estimatedMatches"] = this.estimatedMatches
+                                    this.searchInProgress = false;
+                                    this.resultEmitter.emit({
+                                        "decodedResponses": [],
+                                        "estimatedMatches": this.estimatedMatches,
+                                        "resultsRetrieved": 0,
+                                        "resultsToSkip": resultsToSkip,
+                                        "resultsAmount": this.resultsAmount,
+                                        "pageIndex": this.paginator.pageIndex,
+                                        "pageSize": this.paginator.pageSize,
+                                    })
+                                    this.ngxService.stopBackgroundLoader('search-loader')
+                                    return of([]);
                                 })
-                                this.ngxService.stopBackgroundLoader('search-loader')
-                                return of([]);
-                            })
-                        )
-                    } else {
-                        return of(this.baseResponses.slice(resultSliceStart, resultSliceEnd));
+                            )
+                        } else {
+                            return of(this.baseResponses.slice(resultSliceStart, resultSliceEnd));
+                        }
+                    });
+                    break;
+            }
+        } else {
+            this.queryValue = this.preRetrievedResults.at(0).queryText
+            this.lastQueryValue = this.preRetrievedResults.at(0).queryText
+            this.queryEmitter.emit({
+                "text": this.lastQueryValue,
+                "encoded": encodeURIComponent(this.lastQueryValue)
+            });
+            this.searchAmount = this.preRetrievedResults.length
+            this.dataSource = new CustomDataSource((query, resultsToSkip, querySentByUser) => {
+                let resultSliceStart = this.paginator.pageIndex * this.paginator.pageSize
+                let resultSliceEnd = resultSliceStart + this.paginator.pageSize
+                this.resultsAmount = this.preRetrievedResults.length
+                this.estimatedMatches = this.preRetrievedResults.length
+                this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["baseResponses"] = this.baseResponses
+                this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["resultsAmount"] = this.preRetrievedResults.length
+                this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["estimatedMatches"] = this.preRetrievedResults.length
+                this.searchInProgress = false;
+                if (!this.previousDataRecord) {
+                    for (let preRetrievedResult of this.preRetrievedResults) {
+                        let baseResponse = new BaseResponse(preRetrievedResult.pageUrl, preRetrievedResult.pageName, preRetrievedResult.pageSnippet)
+                        baseResponse.setParameter('resultUUID', preRetrievedResult.resultUUID)
+                        this.baseResponses.push(baseResponse)
                     }
-                });
-                break;
+                    this.resultEmitter.emit({
+                        "decodedResponses": this.baseResponses,
+                        "estimatedMatches": this.estimatedMatches,
+                        "resultsRetrieved": this.preRetrievedResults.length,
+                        "resultsToSkip": resultsToSkip,
+                        "resultsAmount": this.resultsAmount,
+                        "pageIndex": this.paginator.pageIndex,
+                        "pageSize": this.paginator.pageSize,
+                    });
+                }
+                return of(this.baseResponses.slice(resultSliceStart, resultSliceEnd));
+            });
+
         }
 
         if (!this.resultsRetrievedForms[this.documentIndex] || !this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]) {
@@ -418,9 +455,16 @@ export class SearchEngineBodyComponent implements OnInit {
                             previousResponsesRetrieved['document'] == this.documentIndex &&
                             previousResponsesRetrieved['query'] == previousQuery['index'] &&
                             previousResponsesRetrieved['dimension'] == this.dimensionIndex
-                            ) {
-
-                            this.baseResponses = previousResponsesRetrieved['response']
+                        ) {
+                            let baseResponses = []
+                            for (let previousResponseRetrieved of previousResponsesRetrieved['response']) {
+                                let baseResponseParsed = new BaseResponse(previousResponseRetrieved['url'], previousResponseRetrieved['name'], previousResponseRetrieved['snippet'])
+                                Object.entries(previousResponseRetrieved['parameters']).forEach(([parameterName, parameterValue]) => {
+                                    baseResponseParsed.setParameter(parameterName, parameterValue)
+                                });
+                                baseResponses.push(baseResponseParsed)
+                            }
+                            this.baseResponses = baseResponses
                             this.estimatedMatches = parseInt(previousResponsesRetrieved['estimated_matches'])
                             this.resultsAmount = parseInt(previousResponsesRetrieved['results_amount'])
                             pageSize = parseInt(previousResponsesRetrieved['page_size'])
@@ -437,7 +481,7 @@ export class SearchEngineBodyComponent implements OnInit {
                             previousResponseSelected['document'] == this.documentIndex &&
                             previousResponseSelected['query'] == previousQuery['index'] &&
                             previousResponseSelected['dimension'] == this.dimensionIndex
-                            )
+                        )
                             urlValue = previousResponsesSelected.slice(-1)[0].response.url
                     }
                 }
@@ -524,6 +568,11 @@ export class SearchEngineBodyComponent implements OnInit {
             this.paginator.pageIndex = this.resultsRetrievedForms[this.documentIndex][this.dimensionIndex]["pageIndex"]
             this.dataSource.loadData(this.lastQueryValue, this.resultsAmount, false)
         }
+        if (this.preRetrievedResults.length > 0) {
+            this.query.setValue(this.preRetrievedResults.at(0).queryText)
+            this.performWebSearch()
+            this.query.disable()
+        }
     }
 
     public saveQueryText(query: string) {
@@ -556,7 +605,7 @@ export class SearchEngineBodyComponent implements OnInit {
     /* This function trigger an emitter when the user selects one the result shown on the interface */
 
     /* EMITTER: The response item clicked by user is emitted to provide it to an eventual parent component */
-    public selectRow(response: BaseResponse) {
+    public selectBaseResponse(response: BaseResponse) {
         this.selectedRowEmitter.emit(response);
     }
 
@@ -588,4 +637,58 @@ export class SearchEngineBodyComponent implements OnInit {
         this.searchInProgress = false;
         disable ? this.searchForm.disable() : this.searchForm.enable();
     }
+
+    protected showSummary(documentIndex: number, resultUUID: string): void {
+
+        let preRetrievedSearchResult = this.task.retrieveSearchEnginePreRetrievedResult(documentIndex, resultUUID)
+        preRetrievedSearchResult.visited = true
+        this.summaryDialog.open(SummaryDialog, {
+            data: {
+                preRetrievedSearchResult: preRetrievedSearchResult
+            }
+        });
+    }
+
+    protected readonly DisplayModality = DisplayModality;
+}
+
+/* Component HTML Tag definition */
+@Component({
+    selector: 'app-summary-dialog',
+    styleUrls: ['summary-dialog.scss'],
+    templateUrl: 'summary-dialog.html',
+    encapsulation: ViewEncapsulation.None
+})
+
+
+export class SummaryDialog {
+
+    /* |--------- DIALOG ELEMENTS - DECLARATION ---------| */
+
+    preRetrievedSearchResult: PreRetrievedResult;
+
+    /* |--------- CONSTRUCTOR ---------| */
+
+    constructor(public dialogRef: MatDialogRef<SummaryDialog>, @Inject(MAT_DIALOG_DATA) public data: DialogData) {
+        this.preRetrievedSearchResult = data["preRetrievedSearchResult"];
+    }
+
+    protected prettyPrintPageSummary() {
+        if (!this.preRetrievedSearchResult || !this.preRetrievedSearchResult.pageSummary) {
+            return ''; // Return an empty string if no summary is provided or it's null/undefined
+        }
+        // Replace occurrences of two consecutive newlines at the beginning of the string with an empty string
+        let formattedSummary = this.preRetrievedSearchResult.pageSummary.replace(/^\n\n/, '');
+        // Replace remaining occurrences of single newline characters with <br> tags
+        formattedSummary = formattedSummary.replace(/\n/g, '<br>');
+        return formattedSummary
+    }
+
+    /*
+     * This function closes the modal previously opened.
+     */
+    closeSummary(): void {
+        this.dialogRef.close();
+    }
+
 }

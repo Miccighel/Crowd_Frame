@@ -8,6 +8,9 @@ export class PreRetrievedResult {
     pageUrl: string
     pageSummary: string
 
+    queryText: string
+
+    visited = false
     constructor(
         elementID: string,
         data: Object
@@ -18,6 +21,7 @@ export class PreRetrievedResult {
         this.pageSnippet = data ? data["page_snippet"] : null;
         this.pageUrl = data ? data["page_url"] : null;
         this.pageSummary = data ? data["page_summary"] : null;
+        this.queryText = data ? data["query_text"] : null;
     }
 
 }
