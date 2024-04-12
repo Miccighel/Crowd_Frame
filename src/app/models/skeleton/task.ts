@@ -883,7 +883,7 @@ export class Task {
         let documentCurrent = this.documents[documentIndex]
         let preRetrievedResults: Array<PreRetrievedResult> = []
         for (let resultPreRetrieved of this.searchEngineSettings.pre_retrieved_results) {
-            if (resultPreRetrieved.elementID == documentCurrent.id) {
+            if (resultPreRetrieved.elementID == documentCurrent['id']) {
                 preRetrievedResults.push(resultPreRetrieved)
             }
         }
@@ -893,7 +893,7 @@ export class Task {
     public retrieveSearchEnginePreRetrievedResult(documentIndex, resultUUID: string) {
         let documentCurrent = this.documents[documentIndex]
         for (let resultPreRetrieved of this.searchEngineSettings.pre_retrieved_results) {
-            if ((resultPreRetrieved.elementID == documentCurrent.id) && (resultPreRetrieved.resultUUID == resultUUID)) {
+            if ((resultPreRetrieved.elementID == documentCurrent['id']) && (resultPreRetrieved.resultUUID == resultUUID)) {
                 return resultPreRetrieved
             }
         }
