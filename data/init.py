@@ -1386,40 +1386,45 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
             )
     serialize_json(folder_aws_generated_path, f"budget_{budget_name}.json", response)
 
-    response = budget_client.describe_budget_actions_for_budget(
-        AccountId=aws_account_id,
-        BudgetName=budget_name,
-    )
-
-    if len(response['Actions']) > 0:
-        console.print("[yellow]Budgeting action already created")
-        response = response['Actions'][0]
-    else:
-        response = budget_client.create_budget_action(
+    try:
+        response = budget_client.describe_budget_actions_for_budget(
             AccountId=aws_account_id,
             BudgetName=budget_name,
-            NotificationType='ACTUAL',
-            ActionType='APPLY_IAM_POLICY',
-            ActionThreshold={
-                'ActionThresholdValue': 95.0,
-                'ActionThresholdType': 'PERCENTAGE'
-            },
-            Definition={
-                'IamActionDefinition': {
-                    'PolicyArn': 'arn:aws:iam::aws:policy/AWSDenyAll',
-                    'Users': ['crowd-worker', 'config-user', 'mturk-user']
-                }
-            },
-            ExecutionRoleArn=f"arn:aws:iam::{aws_account_id}:role{iam_path}{role_name}",
-            ApprovalModel='AUTOMATIC',
-            Subscribers=[
-                {
-                    'SubscriptionType': 'EMAIL',
-                    'Address': mail_contact
-                },
-            ]
         )
-    serialize_json(folder_aws_generated_path, f"budget_{budget_name}_action_{response['ActionId']}.json", response)
+        if len(response['Actions']) > 0:
+            console.print("[yellow]Budgeting action already created")
+            response = response['Actions'][0]
+        else:
+            response = budget_client.create_budget_action(
+                AccountId=aws_account_id,
+                BudgetName=budget_name,
+                NotificationType='ACTUAL',
+                ActionType='APPLY_IAM_POLICY',
+                ActionThreshold={
+                    'ActionThresholdValue': 95.0,
+                    'ActionThresholdType': 'PERCENTAGE'
+                },
+                Definition={
+                    'IamActionDefinition': {
+                        'PolicyArn': 'arn:aws:iam::aws:policy/AWSDenyAll',
+                        'Users': ['crowd-worker', 'config-user', 'mturk-user']
+                    }
+                },
+                ExecutionRoleArn=f"arn:aws:iam::{aws_account_id}:role{iam_path}{role_name}",
+                ApprovalModel='AUTOMATIC',
+                Subscribers=[
+                    {
+                        'SubscriptionType': 'EMAIL',
+                        'Address': mail_contact
+                    },
+                ]
+            )
+            serialize_json(folder_aws_generated_path, f"budget_{budget_name}_action_{response['ActionId']}.json", response)
+    except ClientError as e:
+        if e.response['Error']['Code'] == 'AccessDenied':
+            console.print(f"[yellow] Access denied to budget information for current user")
+        else:
+            print("An unexpected error occurred: ", {e})
 
     console.rule(f"{step_index} - Environment: [cyan underline]PRODUCTION[/cyan underline] creation")
     step_index = step_index + 1

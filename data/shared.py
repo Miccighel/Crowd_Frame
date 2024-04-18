@@ -60,6 +60,8 @@ def sanitize_string(x):
         return x
     except TypeError:
         return np.nan
+    except AttributeError:
+        return np.nan
 
 
 def flatten(d, parent_key='', sep='_'):
