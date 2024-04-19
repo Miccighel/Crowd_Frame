@@ -2046,13 +2046,13 @@ def parse_answers(row, questionnaire, question, answers):
                         selected_options = selected_options[:-1]
                     answer_value = selected_options
                 elif type(answer_current) == str:
-                    answer_value = sanitize_string(answer_current)
+                    answer_value = answer_current
                 else:
                     answer_value = answer_current
         if '_free_text' in control_name:
             question_name_parsed = control_name.replace("_free_text", "")
             if question_name_parsed == question["nameFull"]:
-                answer_free_text = sanitize_string(answer_current)
+                answer_free_text = answer_current
 
     for attribute, value in question.items():
         if attribute == 'answers':
@@ -2067,13 +2067,13 @@ def parse_answers(row, questionnaire, question, answers):
             row[f"question_attribute_{attribute}"] = value
 
     row[f"question_answer_value"] = answer_value
-    row[f"question_answer_free_text"] = sanitize_string(answer_free_text)
+    row[f"question_answer_free_text"] = answer_free_text
 
     if questionnaire['type'] == 'standard':
         if question['type'] == 'mcq':
             if answer_value is not None:
                 try:
-                    row[f"question_answer_text"] = sanitize_string(question['answers'][int(answer_value)])
+                    row[f"question_answer_text"] = question['answers'][int(answer_value)]
                 except ValueError:
                     row[f"question_answer_text"] = ''
         if question['type'] == 'list':
