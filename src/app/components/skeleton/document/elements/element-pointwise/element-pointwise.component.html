@@ -13,7 +13,16 @@
 						<img [src]="this.task.documents[this.documentIndex][attribute.name]" alt="attribute.name">
 					</ng-container>
 					<span *ngIf="!attribute.isImage(this.task.documents[this.documentIndex][attribute.name])">
-              			{{ this.task.documents[this.documentIndex][attribute.name] }}
+						<span *ngIf="!attribute.is_video">
+							{{ this.task.documents[this.documentIndex][attribute.name] }}
+						</span>
+              			<!-- Video player  -->
+						<ng-container *ngIf="attribute.is_video">
+							<video width="320" height="240" controls>
+								<source [src]="this.task.documents[this.documentIndex][attribute.name]" type="video/mp4">
+								<span i18n>Your browser does not support the video tag.</span>
+							</video>
+						</ng-container>
             		</span>
 				</ng-container>
 			</p>
