@@ -638,7 +638,7 @@ export class SearchEngineBodyComponent implements OnInit {
         disable ? this.searchForm.disable() : this.searchForm.enable();
     }
 
-    protected showSummary(documentIndex: number, resultUUID: string): void {
+    protected showPreRetrievedSearchResultSummaryDialog(documentIndex: number, resultUUID: string): void {
 
         let preRetrievedSearchResult = this.task.retrieveSearchEnginePreRetrievedResult(documentIndex, resultUUID)
         preRetrievedSearchResult.visited = true
@@ -647,6 +647,48 @@ export class SearchEngineBodyComponent implements OnInit {
                 preRetrievedSearchResult: preRetrievedSearchResult
             }
         });
+    }
+
+    protected showPreRetrievedSearchResultSummaryPage(documentIndex: number, resultUUID: string) {
+        let preRetrievedSearchResult = this.task.retrieveSearchEnginePreRetrievedResult(documentIndex, resultUUID)
+        let htmlContent = `
+            <html lang="en">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Summarized Page Content</title>
+                    <style>
+                        body { 
+                            font-family: 'Arial', sans-serif;
+                            background: #f4f4f9;
+                            color: #333;
+                            line-height: 1.6;
+                            font-size: 24px;
+                        } 
+                        p {
+                            margin: 30px;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <h1>
+                        <strong>Title</strong>
+                    </h1>
+                    <p>
+                        ${preRetrievedSearchResult.pageName}
+                    </p>
+                    <h1>
+                        <strong>Content</strong>
+                    </h1>
+                    <p>
+                       ${preRetrievedSearchResult.prettyPrintSummary()}
+                    </p>
+                </body>
+            </html>
+        `;
+        const blob = new Blob([htmlContent], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        return url
     }
 
     protected readonly DisplayModality = DisplayModality;
@@ -671,17 +713,6 @@ export class SummaryDialog {
 
     constructor(public dialogRef: MatDialogRef<SummaryDialog>, @Inject(MAT_DIALOG_DATA) public data: DialogData) {
         this.preRetrievedSearchResult = data["preRetrievedSearchResult"];
-    }
-
-    protected prettyPrintPageSummary() {
-        if (!this.preRetrievedSearchResult || !this.preRetrievedSearchResult.pageSummary) {
-            return ''; // Return an empty string if no summary is provided or it's null/undefined
-        }
-        // Replace occurrences of two consecutive newlines at the beginning of the string with an empty string
-        let formattedSummary = this.preRetrievedSearchResult.pageSummary.replace(/^\n\n/, '');
-        // Replace remaining occurrences of single newline characters with <br> tags
-        formattedSummary = formattedSummary.replace(/\n/g, '<br>');
-        return formattedSummary
     }
 
     /*

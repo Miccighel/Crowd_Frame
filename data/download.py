@@ -276,7 +276,6 @@ def fetch_uag_data(worker_id, worker_uag, properties_fetched=None):
                     properties_moved.append(move_dict_key(properties_fetched, ua_nav_data, 'nav_window_controls_overlay_visible', 'os_window_controls_overlay_visible'))
                     properties_moved.append(move_dict_key(properties_fetched, ua_nav_data, 'nav_window_controls_overlay_ongeometrychange', 'os_window_controls_on_geometry_change'))
                     properties_moved.append(move_dict_key(properties_fetched, ua_nav_data, 'nav_pdf_viewer_enabled', 'browser_pdf_viewer_enabled'))
-                    properties_moved.append(move_dict_key(properties_fetched, ua_nav_data, 'nav_pdf_viewer_enabled', 'browser_pdf_viewer_enabled'))
                     properties_moved.append(move_dict_key(properties_fetched, ua_nav_data, 'nav_product', 'browser_product'))
                     properties_moved.append(move_dict_key(properties_fetched, ua_nav_data, 'nav_product_sub', 'browser_product_sub'))
                     properties_moved.append(move_dict_key(properties_fetched, ua_nav_data, 'nav_vendor', 'browser_vendor'))
@@ -770,7 +769,7 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
                                         worker_ip_batches[worker_id][ip_address] = [batch_name]
                                 for ip_address_current in worker_ip_addresses[worker_id]:
                                     if batch_name in worker_ip_batches[worker_id][ip_address_current]:
-                                        ip_data, properties_moved_ip = fetch_ip_data(worker_id, ip_address_current)
+                                        ip_data, properties_moved_ip = fetch_ip_data(worker_id, ip_address_current, properties_fetched)
                                         worker_ip_addresses[worker_id][ip_address_current]['fetched'] = True
 
                                 if user_agent is not None:
@@ -790,7 +789,7 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
                                         worker_user_agents_batches[worker_id][user_agent] = [batch_name]
                                 for user_agent_current in worker_user_agents[worker_id]:
                                     if batch_name in worker_user_agents_batches[worker_id][user_agent_current]:
-                                        ua_data, properties_moved_ua = fetch_uag_data(worker_id, user_agent_current)
+                                        ua_data, properties_moved_ua = fetch_uag_data(worker_id, user_agent_current, properties_fetched)
                                         worker_user_agents[worker_id][user_agent_current]['fetched'] = True
                     if 'params_fetched' in snapshot['worker'].keys():
                         properties_fetched = snapshot['worker']['properties_fetched']
@@ -824,7 +823,7 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
                                 worker_ip_batches[worker_id][ip_address] = [snapshot['task']['batch_name']]
                         for ip_address_current in worker_ip_addresses[worker_id]:
                             if not worker_ip_addresses[worker_id][ip_address_current]['fetched']:
-                                fetch_ip_data(worker_id, ip_address_current)
+                                fetch_ip_data(worker_id, ip_address_current, properties_fetched)
                                 worker_ip_addresses[worker_id][ip_address_current]['fetched'] = True
                         if user_agent is not None:
                             if user_agent not in worker_user_agents[worker_id]:
@@ -844,7 +843,7 @@ with console.status(f"Workers Amount: {len(worker_identifiers)}", spinner="aesth
                                 worker_user_agents_batches[worker_id][user_agent] = [snapshot['task']['batch_name']]
                         for user_agent_current in worker_user_agents[worker_id]:
                             if not worker_user_agents[worker_id][user_agent_current]['fetched']:
-                                fetch_uag_data(worker_id, user_agent_current)
+                                fetch_uag_data(worker_id, user_agent_current, properties_fetched)
                                 worker_user_agents[worker_id][user_agent_current]['fetched'] = True
 
                         ip_data, properties_moved_ip = fetch_ip_data(worker_id, ip_address, properties_fetched)
@@ -1441,7 +1440,7 @@ if 'toloka' in platforms:
                             row['assignment_rejected'] = assignment.rejected
                             row['assignment_automerged'] = assignment.automerged
                             row['assignment_mixed'] = assignment.mixed
-                            user_metadata = requests.get(f"https://toloka.yandex.com/api/v1/user-metadata/{assignment.user_id}", headers={'Authorization': f"OAuth {toloka_oauth_token}"}).json()
+                            user_metadata = requests.get(f"https://toloka.dev/api/v1/user-metadata/{assignment.user_id}", headers={'Authorization': f"ApiKey {toloka_oauth_token}"}).json()
                             row['user_id'] = assignment.user_id
                             row['user_country'] = user_metadata['country']
                             row['user_languages'] = ':::'.join(user_metadata['languages'])
@@ -2046,6 +2045,8 @@ def parse_answers(row, questionnaire, question, answers):
                     if len(selected_options) > 0:
                         selected_options = selected_options[:-1]
                     answer_value = selected_options
+                elif type(answer_current) == str:
+                    answer_value = answer_current
                 else:
                     answer_value = answer_current
         if '_free_text' in control_name:
@@ -2342,7 +2343,7 @@ console.rule(f"{step_index} - Building [cyan on white]workers_answers[/cyan on w
 step_index = step_index + 1
 
 
-def load_data_col_names(dimensions, settings):
+def load_data_col_names(dimensions, settings=None):
     columns = []
 
     columns.append("worker_id")
@@ -2374,23 +2375,24 @@ def load_data_col_names(dimensions, settings):
         if f"{dimension['name']}_url" not in columns:
             if dimension['url'] is not None:
                 columns.append(f"{dimension['name']}_url")
-        if 'post_assessment' in settings.keys():
-            post_assessment_data = settings['post_assessment']
-            if post_assessment_data is not None:
-                post_assessment_attributes = settings['post_assessment']['attributes']
-                for assessment_data in post_assessment_attributes:
-                    post_assessment_index = assessment_data['index']
-                    if 'dimensions' in settings['post_assessment']:
-                        post_assessment_dimensions = settings['post_assessment']['dimensions']
-                        for dimension_data in post_assessment_dimensions:
-                            if dimension_data['name'] == dimension['name'] and post_assessment_index in dimension_data['indexes']:
-                                columns.append(f"{dimension['name']}_value_post_{post_assessment_index}")
-                                if 'justification' in dimension.keys():
-                                    if dimension['justification'] is not None:
-                                        columns.append(f"{dimension['name']}_justification_post_{post_assessment_index}")
-                                if 'url' in dimension.keys():
-                                    if dimension['url'] is not None:
-                                        columns.append(f"{dimension['name']}_url_post_{post_assessment_index}")
+        if settings is not None:
+            if 'post_assessment' in settings.keys():
+                post_assessment_data = settings['post_assessment']
+                if post_assessment_data is not None:
+                    post_assessment_attributes = settings['post_assessment']['attributes']
+                    for assessment_data in post_assessment_attributes:
+                        post_assessment_index = assessment_data['index']
+                        if 'dimensions' in settings['post_assessment']:
+                            post_assessment_dimensions = settings['post_assessment']['dimensions']
+                            for dimension_data in post_assessment_dimensions:
+                                if dimension_data['name'] == dimension['name'] and post_assessment_index in dimension_data['indexes']:
+                                    columns.append(f"{dimension['name']}_value_post_{post_assessment_index}")
+                                    if 'justification' in dimension.keys():
+                                        if dimension['justification'] is not None:
+                                            columns.append(f"{dimension['name']}_justification_post_{post_assessment_index}")
+                                    if 'url' in dimension.keys():
+                                        if dimension['url'] is not None:
+                                            columns.append(f"{dimension['name']}_url_post_{post_assessment_index}")
 
     columns.append("time_start")
     columns.append("time_end")
@@ -2436,7 +2438,9 @@ if not os.path.exists(df_data_path):
             documents_answers = worker_snapshot['documents_answers']
             dimensions = worker_snapshot['dimensions']
             documents = worker_snapshot['documents']
-            settings = task['settings']
+            settings = None
+            if 'settings' in task.keys():
+                settings = task['settings']
 
             column_names = load_data_col_names(dimensions, settings)
 
@@ -2491,39 +2495,40 @@ if not os.path.exists(df_data_path):
                         if 'task_type' in dimension.keys():
                             task_type_check = check_task_type(documents[document_data['serialization']['info']['index']], dimension['task_type'])
                         if dimension['scale'] is not None and task_type_check:
-                            if 'post_assessment' in settings.keys():
-                                if settings['post_assessment'] is not None:
-                                    if 'attributes' in settings['post_assessment']:
-                                        post_assessment_data = settings['post_assessment']['attributes']
-                                        post_assessment_dimensions = settings['post_assessment']['dimensions']
-                                        for assessment_data in post_assessment_data:
-                                            post_assessment_index = assessment_data['index']
-                                            for dimension_data in post_assessment_dimensions:
-                                                if dimension_data['name'] == dimension['name'] and post_assessment_index in dimension_data['indexes']:
-                                                    # If the dimension appears in the first post-assessment, also the initial values must be stored
-                                                    if post_assessment_index == 0:
-                                                        value = current_answers[f"{dimension['name']}_value"]
-                                                        if type(value) is str:
-                                                            value = value.strip()
-                                                            value = re.sub('\n', '', value)
-                                                        row[f"{dimension['name']}_value"] = value
-                                                    value_post = current_answers[f"{dimension['name']}_value_post_{post_assessment_index+1}"]
-                                                    if type(value_post) is str:
-                                                        value_post = value_post.strip()
-                                                        value_post = re.sub('\n', '', value_post)
-                                                    row[f"{dimension['name']}_value_post_{post_assessment_index}"] = value_post
+                            if settings is not None:
+                                if 'post_assessment' in settings.keys():
+                                    if settings['post_assessment'] is not None:
+                                        if 'attributes' in settings['post_assessment']:
+                                            post_assessment_data = settings['post_assessment']['attributes']
+                                            post_assessment_dimensions = settings['post_assessment']['dimensions']
+                                            for assessment_data in post_assessment_data:
+                                                post_assessment_index = assessment_data['index']
+                                                for dimension_data in post_assessment_dimensions:
+                                                    if dimension_data['name'] == dimension['name'] and post_assessment_index in dimension_data['indexes']:
+                                                        # If the dimension appears in the first post-assessment, also the initial values must be stored
+                                                        if post_assessment_index == 0:
+                                                            value = current_answers[f"{dimension['name']}_value"]
+                                                            if type(value) is str:
+                                                                value = value.strip()
+                                                                value = re.sub('\n', '', value)
+                                                            row[f"{dimension['name']}_value"] = value
+                                                        value_post = current_answers[f"{dimension['name']}_value_post_{post_assessment_index+1}"]
+                                                        if type(value_post) is str:
+                                                            value_post = value_post.strip()
+                                                            value_post = re.sub('\n', '', value_post)
+                                                        row[f"{dimension['name']}_value_post_{post_assessment_index}"] = value_post
+                                    else:
+                                        value = current_answers[f"{dimension['name']}_value"]
+                                        if type(value) is str:
+                                            value = value.strip()
+                                            value = re.sub('\n', '', value)
+                                        row[f"{dimension['name']}_value"] = value
                                 else:
                                     value = current_answers[f"{dimension['name']}_value"]
                                     if type(value) is str:
                                         value = value.strip()
                                         value = re.sub('\n', '', value)
                                     row[f"{dimension['name']}_value"] = value
-                            else:
-                                value = current_answers[f"{dimension['name']}_value"]
-                                if type(value) is str:
-                                    value = value.strip()
-                                    value = re.sub('\n', '', value)
-                                row[f"{dimension['name']}_value"] = value
                             if dimension["scale"]["type"] == "categorical":
                                 for mapping in dimension["scale"]['mapping']:
                                     label = mapping['label'].lower().split(" ")
@@ -2544,31 +2549,32 @@ if not os.path.exists(df_data_path):
                                 row[f"{dimension['name']}_index"] = np.nan
                                 row[f"{dimension['name']}_description"] = np.nan
                         if dimension['justification'] and task_type_check:
-                            if 'post_assessment' in settings.keys():
-                                if settings['post_assessment'] is not None:
-                                    if 'attributes' in settings['post_assessment']:
-                                        post_assessment_data = settings['post_assessment']['attributes']
-                                        post_assessment_dimensions = settings['post_assessment']['dimensions']
-                                        for assessment_data in post_assessment_data:
-                                            post_assessment_index = assessment_data['index']
-                                            for dimension_data in post_assessment_dimensions:
-                                                if dimension_data['name'] == dimension['name'] and post_assessment_index in dimension_data['indexes']:
-                                                    # If the dimension appears in the first post-assessment, also the initial values must be stored
-                                                    if post_assessment_index == 0:
-                                                        justification = current_answers[f"{dimension['name']}_justification"].strip()
-                                                        justification = re.sub('\n', '', justification)
-                                                        row[f"{dimension['name']}_justification"] = justification
-                                                    justification_post = current_answers[f"{dimension['name']}_justification_post_{post_assessment_index+1}"].strip()
-                                                    justification_post = re.sub('\n', '', justification_post)
-                                                    row[f"{dimension['name']}_justification_post_{post_assessment_index}"] = justification_post
+                            if settings is not None:
+                                if 'post_assessment' in settings.keys():
+                                    if settings['post_assessment'] is not None:
+                                        if 'attributes' in settings['post_assessment']:
+                                            post_assessment_data = settings['post_assessment']['attributes']
+                                            post_assessment_dimensions = settings['post_assessment']['dimensions']
+                                            for assessment_data in post_assessment_data:
+                                                post_assessment_index = assessment_data['index']
+                                                for dimension_data in post_assessment_dimensions:
+                                                    if dimension_data['name'] == dimension['name'] and post_assessment_index in dimension_data['indexes']:
+                                                        # If the dimension appears in the first post-assessment, also the initial values must be stored
+                                                        if post_assessment_index == 0:
+                                                            justification = current_answers[f"{dimension['name']}_justification"].strip()
+                                                            justification = re.sub('\n', '', justification)
+                                                            row[f"{dimension['name']}_justification"] = justification
+                                                        justification_post = current_answers[f"{dimension['name']}_justification_post_{post_assessment_index+1}"].strip()
+                                                        justification_post = re.sub('\n', '', justification_post)
+                                                        row[f"{dimension['name']}_justification_post_{post_assessment_index}"] = justification_post
+                                    else:
+                                        justification = current_answers[f"{dimension['name']}_justification"].strip()
+                                        justification = re.sub('\n', '', justification)
+                                        row[f"{dimension['name']}_justification"] = justification
                                 else:
                                     justification = current_answers[f"{dimension['name']}_justification"].strip()
                                     justification = re.sub('\n', '', justification)
                                     row[f"{dimension['name']}_justification"] = justification
-                            else:
-                                justification = current_answers[f"{dimension['name']}_justification"].strip()
-                                justification = re.sub('\n', '', justification)
-                                row[f"{dimension['name']}_justification"] = justification
                         else:
                             row[f"{dimension['name']}_justification"] = np.nan
                         if dimension['url'] and task_type_check:
@@ -2576,32 +2582,33 @@ if not os.path.exists(df_data_path):
                                 row[f"{dimension['name']}_url"] = current_answers[f"{dimension['name']}_url"]
                             except KeyError:
                                 console.print(f"[red]Key error while parsing values for: {dimension['name']}_url")
-                            if 'post_assessment' in settings.keys():
-                                if settings['post_assessment'] is not None:
-                                    if 'attributes' in settings['post_assessment']:
-                                        post_assessment_data = settings['post_assessment']['attributes']
-                                        post_assessment_dimensions = settings['post_assessment']['dimensions']
-                                        for assessment_data in post_assessment_data:
-                                            post_assessment_index = assessment_data['index']
-                                            for dimension_data in post_assessment_dimensions:
-                                                if dimension_data['name'] == dimension['name'] and post_assessment_index in dimension_data['indexes']:
-                                                    # If the dimension appears in the first post-assessment, also the initial values must be stored
-                                                    if post_assessment_index == 0:
-                                                        try:
-                                                            row[f"{dimension['name']}_url"] = current_answers[f"{dimension['name']}_url"]
-                                                        except KeyError:
-                                                            console.print(f"[red]Key error while parsing values for: {dimension['name']}_url")
-                                                    row[f"{dimension['name']}_url_post_{post_assessment_index}"] = current_answers[f"{dimension['name']}_url_post_{post_assessment_index+1}"]
-                                    else:
-                                        try:
-                                            row[f"{dimension['name']}_url"] = current_answers[f"{dimension['name']}_url"]
-                                        except KeyError:
-                                            console.print(f"[red]Key error while parsing values for: {dimension['name']}_url")
-                            else:
-                                try:
-                                    row[f"{dimension['name']}_url"] = current_answers[f"{dimension['name']}_url"]
-                                except KeyError:
-                                    console.print(f"[red]Key error while parsing values for: {dimension['name']}_url")
+                            if settings is not None:
+                                if 'post_assessment' in settings.keys():
+                                    if settings['post_assessment'] is not None:
+                                        if 'attributes' in settings['post_assessment']:
+                                            post_assessment_data = settings['post_assessment']['attributes']
+                                            post_assessment_dimensions = settings['post_assessment']['dimensions']
+                                            for assessment_data in post_assessment_data:
+                                                post_assessment_index = assessment_data['index']
+                                                for dimension_data in post_assessment_dimensions:
+                                                    if dimension_data['name'] == dimension['name'] and post_assessment_index in dimension_data['indexes']:
+                                                        # If the dimension appears in the first post-assessment, also the initial values must be stored
+                                                        if post_assessment_index == 0:
+                                                            try:
+                                                                row[f"{dimension['name']}_url"] = current_answers[f"{dimension['name']}_url"]
+                                                            except KeyError:
+                                                                console.print(f"[red]Key error while parsing values for: {dimension['name']}_url")
+                                                        row[f"{dimension['name']}_url_post_{post_assessment_index}"] = current_answers[f"{dimension['name']}_url_post_{post_assessment_index+1}"]
+                                        else:
+                                            try:
+                                                row[f"{dimension['name']}_url"] = current_answers[f"{dimension['name']}_url"]
+                                            except KeyError:
+                                                console.print(f"[red]Key error while parsing values for: {dimension['name']}_url")
+                                else:
+                                    try:
+                                        row[f"{dimension['name']}_url"] = current_answers[f"{dimension['name']}_url"]
+                                    except KeyError:
+                                        console.print(f"[red]Key error while parsing values for: {dimension['name']}_url")
                         else:
                             row[f"{dimension['name']}_url"] = np.nan
 

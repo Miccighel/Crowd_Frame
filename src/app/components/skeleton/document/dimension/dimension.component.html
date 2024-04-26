@@ -77,7 +77,7 @@
 																(change)="this.task.storeDimensionValue($event, documentIndex, dimension.index, this.postAssessmentIndex, false)"
 																[attr.disabled]="this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior=='disable_forms'"
 																[ngClass]="mapping.separator ? 'radio-button radio-button-separated' : 'radio-button'">
-															<span>{{ mapping.label }}</span>
+															<span class="mapping-label">{{ mapping.label }}</span>
 															<span *ngIf="mapping.description.length>0"> ({{ mapping.description }})</span>
 														</mat-radio-button>
 													</ng-container>
@@ -149,7 +149,7 @@
 															  class="radio-button" value="{{mapping.value}}"
 															  (change)="this.task.storeDimensionValue($event, documentIndex,dimension.index, this.postAssessmentIndex, false)"
 															  [attr.disabled]="this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior=='disable_forms'">
-												<span>{{ mapping.label }}</span>
+												<span class="mapping-label">{{ mapping.label }}</span>
 												<span *ngIf="mapping.description.length>0">({{ mapping.description }})</span>
 											</mat-radio-button>
 										</mat-radio-group>
@@ -236,7 +236,7 @@
 							<mat-radio-group class="matrix-header" *ngIf="dimension.scale && this.task.retrieveFirstDimension(position).index == dimension.index ">
 								<div class="{{dimension.description ? 'matrix-header-body-wide' : 'matrix-header-body'}}"></div>
 								<div class="{{dimension.description ? 'matrix-header-body-wide' : 'matrix-header-body'}}" *ngFor="let mapping of dimension.scale.mapping; let k=index">
-									<div *ngIf="mapping.label">
+									<div class="mapping-label" *ngIf="mapping.label">
 										<strong [innerHTML]="mapping.label"></strong>
 									</div>
 									<div *ngIf="mapping.description">
@@ -248,8 +248,8 @@
 							<!-- Dimension assessment fields markup -->
 							<div *ngIf="dimension.scale" class="{{dimension.style.separator ? ' dimension-separate' : ''}}">
 								<mat-radio-group aria-labelledby="radio-button-label" formControlName="{{(dimension.name).concat('_value').concat(controlSuffix)}}">
-									<div class="matrix-value name-pretty" *ngIf="dimension.name_pretty">
-										<p><strong><span *ngIf="!this.dimension.style.separator">{{ i + 1 }} - </span>{{ dimension.name_pretty }}</strong></p>
+									<div class="matrix-value name-pretty">
+										<p *ngIf="this.dimension.name_pretty"><strong><span *ngIf="!this.dimension.style.separator">{{ i + 1 }} - </span>{{ dimension.name_pretty }}</strong></p>
 										<ng-container *ngIf="dimension.description">
 											<div class="{{dimension.example ? '' : 'description-sub'}}" *ngIf="dimension.description.length>0">
 												<p>{{ dimension.description }}</p>
@@ -347,7 +347,7 @@
 												<mat-radio-button *ngFor="let mapping of dimension.scale.mapping" class="radio-button" value="{{mapping.value}}"
 																  (change)="this.task.storeDimensionValue($event, documentIndex, dimension.index, this.postAssessmentIndex, false); updateDimensionValueSelection(documentIndex,dimension.index,k)"
 																  [attr.disabled]="this.task.countdownsExpired[documentIndex]">
-													<span>{{ mapping.label }}</span>
+													<span class="mapping-label">{{ mapping.label }}</span>
 													<span *ngIf="mapping.description.length>0">
                                                     ({{ mapping.description }})
                                                 </span>

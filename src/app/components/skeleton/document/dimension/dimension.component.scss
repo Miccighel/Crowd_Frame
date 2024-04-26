@@ -16,6 +16,10 @@
     font-size: 1.1em;
 }
 
+.mapping-label {
+    font-size: 1.2em;
+}
+
 .dimension-name {
     margin-bottom: 1%;
 }
@@ -173,9 +177,11 @@
 }
 
 .dimension-matrix .name-pretty {
+
     p {
         margin-top: 0;
         text-align: left;
+        font-size: 1.3em;
     }
 
     strong {
