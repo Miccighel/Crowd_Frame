@@ -83,6 +83,7 @@ import {NgxFileHelpersModule} from "ngx-file-helpers";
 import {ColorPickerModule} from "ngx-color-picker";
 import {NgbModule} from "@ng-bootstrap/ng-bootstrap";
 import {AngularEditorModule} from "@kolkov/angular-editor";
+import { SafePipe } from './pipes/safe.pipe';
 
 function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
     return () =>
@@ -138,6 +139,7 @@ function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
         ChatCommentModalComponent,
         ChatInstructionModalComponent,
         ChatUrlInputComponent,
+        SafePipe,
     ],
     imports: [
         BrowserModule,
