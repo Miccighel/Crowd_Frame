@@ -13,13 +13,20 @@
 						<img [src]="this.task.documents[this.documentIndex][attribute.name]" alt="attribute.name">
 					</ng-container>
 					<span *ngIf="!attribute.isImage(this.task.documents[this.documentIndex][attribute.name])">
-						<span *ngIf="!attribute.is_video">
+						<span *ngIf="!attribute.is_video_url && !attribute.is_video_path">
 							{{ this.task.documents[this.documentIndex][attribute.name] }}
 						</span>
 						<br>
-              			<!-- Video player  -->
-						<ng-container *ngIf="attribute.is_video">
+              			<!-- Video player by url -->
+						<ng-container *ngIf="attribute.is_video_url">
 							<iframe width="560" height="315" [src]="this.task.documents[this.documentIndex][attribute.name] | safe" title="YouTube video player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+						</ng-container>
+						<!-- Video player by path -->
+						<ng-container *ngIf="attribute.is_video_path">
+							<video width="560" height="315" controls>
+								<source [src]="this.task.documents[this.documentIndex][attribute.name]" type="video/mp4">
+								Your browser does not support the video tag.
+							</video>
 						</ng-container>
             		</span>
 				</ng-container>

@@ -164,7 +164,8 @@ export class Attribute {
     index: number;
     name: string;
     name_pretty: string;
-    is_video: boolean;
+    is_video_url: boolean;
+    is_video_path: boolean;
 
     constructor(
         index: number,
@@ -173,7 +174,8 @@ export class Attribute {
         this.index = index
         this.name = data["name"]
         this.name_pretty = ("name_pretty" in data) ? data["name_pretty"] as string : titleize(data["name"].replace("_", " ")) as string
-        this.is_video = data["is_video"] || false;
+        this.is_video_url = data["is_video_url"] || false;
+        this.is_video_path = data["is_video_path"] || false;
     }
 
     public isImage(value: string): boolean {
