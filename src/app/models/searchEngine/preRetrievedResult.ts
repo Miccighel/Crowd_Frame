@@ -6,6 +6,7 @@ export class PreRetrievedResult {
     pageName: string
     pageSnippet: string
     pageUrl: string
+    pageTitle: string
     pageSummary: string
 
     queryText: string
@@ -21,6 +22,7 @@ export class PreRetrievedResult {
         this.pageSnippet = data ? data["page_snippet"] : null;
         this.pageUrl = data ? data["page_url"] : null;
         this.pageSummary = data ? data["page_summary"] : null;
+        this.pageTitle = data ? data["page_title"] : null;
         this.queryText = data ? data["query_text"] : null;
     }
 

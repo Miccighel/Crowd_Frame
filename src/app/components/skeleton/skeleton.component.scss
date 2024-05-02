@@ -32,42 +32,6 @@ mat-horizontal-stepper mat-card-actions {
     text-align: center;
 }
 
-/* |--- TOKEN INPUT SECTION --| */
-
-#token-section {
-    margin-bottom: 2%;
-
-    mat-form-field {
-        width: 100%;
-        text-align: center;
-    }
-    /* TODO(mdc-migration): The following rule targets internal classes of card that may no longer apply for the MDC version. */
-    mat-card-content {
-        margin-bottom: 1%;
-    }
-
-}
-
-#token-section form {
-    width: 96%;
-    margin: auto;
-}
-
-#token-section input {
-    font-size: 2em;
-    text-transform: uppercase;
-}
-
-#token-section form mat-card-content {
-    margin: auto;
-    max-width: 60%;
-}
-
-#token-section mat-card-actions {
-    align-self: center;
-}
-
-
 /* NOT ALLOWED SECTION */
 
 #already-started-section {

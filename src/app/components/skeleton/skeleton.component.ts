@@ -1,38 +1,48 @@
-/* Core */
+/* Angular Core Modules */
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren, ViewEncapsulation} from "@angular/core";
 import {UntypedFormBuilder, UntypedFormGroup, UntypedFormControl} from "@angular/forms";
+import {HttpClient, HttpHeaders} from "@angular/common/http";
+
+/* Angular Material Components */
 import {MatFormField} from "@angular/material/form-field";
 import {MatStepper} from "@angular/material/stepper";
-import {HttpClient, HttpHeaders} from "@angular/common/http";
+import {MatSnackBar} from "@angular/material/snack-bar";
+
+/* RxJS Modules */
+import {of, Subject} from "rxjs";
+import {catchError, tap} from "rxjs/operators";
+
 /* Services */
 import {NgxUiLoaderService} from "ngx-ui-loader";
 import {ConfigService} from "../../services/config.service";
 import {S3Service} from "../../services/aws/s3.service";
 import {DeviceDetectorService} from "ngx-device-detector";
 import {ActionLogger} from "../../services/userActionLogger.service";
-/* Models */
-import {Task} from "../../models/skeleton/task";
-import {Worker} from "../../models/worker/worker";
-import {TaskSettings} from "../../models/skeleton/taskSettings";
-import {GoldChecker} from "../../../../data/build/skeleton/goldChecker";
-import {WorkerSettings} from "../../models/worker/workerSettings";
-import {Hit} from "../../models/skeleton/hit";
-/* Material Design */
-import {MatSnackBar} from "@angular/material/snack-bar";
-/* Services */
 import {SectionService} from "../../services/section.service";
 import {StatusCodes} from "../../services/section.service";
 import {DynamoDBService} from "../../services/aws/dynamoDB.service";
 import {UtilsService} from "../../services/utils.service";
 import {DebugService} from "../../services/debug.service";
-/* Components */
+import {LocalStorageService} from "../../services/localStorage.service";
+
+/* Models */
+import {Task} from "../../models/skeleton/task";
+import {Worker} from "../../models/worker/worker";
+import {WorkerSettings} from "../../models/worker/workerSettings";
+import {Hit} from "../../models/skeleton/hit";
+import {GoldChecker} from "../../../../data/build/skeleton/goldChecker";
+
+/* Custom Components */
 import {OutcomeSectionComponent} from "./outcome/outcome-section.component";
 import {DocumentComponent} from "./document/document.component";
-import {LocalStorageService} from "../../services/localStorage.service";
+
+/* Base Component */
+import {BaseComponent} from "../base/base.component";
+
+/* Animations */
 import {fadeIn} from "../chatbot/animations";
-import {SearchEngineSettings} from "../../models/searchEngine/searchEngineSettings";
-import {of, Subject, switchMap} from "rxjs";
-import {catchError, tap} from "rxjs/operators";
+import {Title} from "@angular/platform-browser";
+
 
 /* Component HTML Tag definition */
 @Component({
@@ -63,6 +73,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
     dynamoDBService: DynamoDBService;
     /* Service to detect user's device */
     deviceDetectorService: DeviceDetectorService;
+    titleService: Title
     /* Service to log to the server */
     actionLogger: ActionLogger;
     /* Service to track current section */
@@ -114,12 +125,14 @@ export class SkeletonComponent implements OnInit, OnDestroy {
     @ViewChild(OutcomeSectionComponent) outcomeSection: OutcomeSectionComponent;
 
     constructor(
+        private baseComponent: BaseComponent,
         changeDetector: ChangeDetectorRef,
         ngxService: NgxUiLoaderService,
         configService: ConfigService,
         S3Service: S3Service,
         dynamoDBService: DynamoDBService,
         deviceDetectorService: DeviceDetectorService,
+        titleService: Title,
         client: HttpClient,
         formBuilder: UntypedFormBuilder,
         snackBar: MatSnackBar,
@@ -137,6 +150,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         this.actionLogger = actionLogger;
         this.sectionService = sectionService;
         this.deviceDetectorService = deviceDetectorService;
+        this.titleService = titleService;
         this.utilsService = utilsService;
         this.localStorageService = localStorageService;
         this.debugService = debugService;
@@ -150,76 +164,54 @@ export class SkeletonComponent implements OnInit, OnDestroy {
     }
 
     /* To follow the execution flow of the skeleton, the functions need to be read in order (i.e., from top to bottom). */
-    public async ngOnInit() {
-
-        this.sectionService.task = new Task();
-        this.task = this.sectionService.task
-
-        this.task.taskName = this.configService.environment.taskName;
-        this.task.batchName = this.configService.environment.batchName;
-        this.task.settings = new TaskSettings(await this.S3Service.downloadTaskSettings(this.configService.environment));
-        this.task.initializeInstructionsGeneral(await this.S3Service.downloadGeneralInstructions(this.configService.environment));
-        this.task.searchEngineSettings = new SearchEngineSettings(await this.S3Service.downloadSearchEngineSettings(this.configService.environment));
-
-        let url = new URL(window.location.href);
-
-        /* The GET URL parameters are parsed and used to init worker's instance */
-        let paramsFetched: Record<string, string> = {};
-        url.searchParams.forEach((value, param) => {
-            if (param.toLowerCase().includes("workerid")) {
-                paramsFetched["identifier"] = value;
-            } else {
-                param = param.replace(/(?:^|\.?)([A-Z])/g, function (x, y) {
-                    return "_" + y.toLowerCase();
-                }).replace(/^_/, "");
-                paramsFetched[param] = value;
-            }
+    ngOnInit() {
+        this.baseComponent.initializationCompleted.subscribe(params => {
+            this.task = this.sectionService.task;
+            const paramsFetched = this.parseURLParams(new URL(window.location.href));
+            this.startWorkerInitialization(paramsFetched);
         });
-
-        this.worker = new Worker(paramsFetched);
-        /* Some worker properties are loaded using ngxDeviceDetector npm package capabilities... */
-        this.worker.updateProperties("ngxdevicedetector", this.deviceDetectorService.getDeviceInfo());
-        /* ... or the simple Navigator DOM's object */
-        this.worker.updateProperties("navigator", window.navigator);
-
-        this.client
-            .get("https://www.cloudflare.com/cdn-cgi/trace", {responseType: "text"})
-            .pipe(
-                tap((cloudflareData) => {
-                    /* If the Cloudflare request is successful, update the worker's properties */
-                    this.worker.updateProperties("cloudflare", cloudflareData);
-                }),
-                catchError((cloudflareError) => {
-                    /* Handle error from Cloudflare request */
-                    return this.client.get("https://api64.ipify.org?format=json");
-                }),
-                catchError((ipifyError) => {
-                    /* Handle error from ipify request */
-                    /* Return an observable with null to proceed with the final error handling */
-                    return of(null);
-                }),
-                switchMap((ipifyData) => {
-                    if (ipifyData !== null) {
-                        /* If we retrieve some data from ipify, use them to populate the worker's object */
-                        this.worker.updateProperties("ipify", ipifyData);
-                    } else {
-                        /* Handle the case where both requests fail */
-                        this.worker.setParameter("status_code", StatusCodes.IP_INFORMATION_MISSING);
-                        this.unlockTask(false);
-                    }
-                    /* Return an observable with null to complete the observable chain */
-                    return of(null);
-                })
-            )
-            .subscribe({
-                complete: () => {
-                    /* Initialize the worker after the whole chain of calls */
-                    this.initializeWorker();
-                }
-            });
     }
 
-    public async initializeWorker() {
+    private parseURLParams(url: URL): Record<string, string> {
+        const paramsFetched: Record<string, string> = {};
+        url.searchParams.forEach((value, key) => {
+            if (key.toLowerCase().includes("workerid")) {
+                paramsFetched["identifier"] = value;
+            } else {
+                key = key.replace(/(?:^|\.?)([A-Z])/g, (x, y) => "_" + y.toLowerCase()).replace(/^_/, "");
+                paramsFetched[key] = value;
+            }
+        });
+        return paramsFetched;
+    }
+
+    private startWorkerInitialization(params: Record<string, string>) {
+        this.worker = new Worker(params);
+        this.worker.updateProperties('ngxdevicedetector', this.deviceDetectorService.getDeviceInfo());
+        this.worker.updateProperties('navigator', window.navigator);
+
+        this.fetchExternalData().subscribe({
+            complete: () => this.finalizeWorkerInitialization()
+        });
+    }
+
+    private fetchExternalData() {
+        return this.client.get("https://www.cloudflare.com/cdn-cgi/trace", {responseType: "text"}).pipe(
+            tap(cloudflareData => this.worker.updateProperties("cloudflare", cloudflareData)),
+            catchError(() => this.client.get("https://api64.ipify.org?format=json")),
+            catchError(() => of(null)),
+            tap(ipifyData => {
+                if (ipifyData) {
+                    this.worker.updateProperties("ipify", ipifyData);
+                } else {
+                    this.worker.setParameter("status_code", StatusCodes.IP_INFORMATION_MISSING);
+                    this.unlockTask(false);
+                }
+            })
+        );
+    }
+
+    public async finalizeWorkerInitialization() {
         /* Flag to indicate if a HIT is assigned to the current worker. */
         let hitAssigned = false;
 
@@ -639,17 +631,7 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         return taskAllowed;
     }
 
-    /*
-     * This function enables the task when the worker clicks on "Proceed" inside the main instructions page.
-     */
-    public enableTask() {
-        this.sectionService.taskInstructionsRead = true;
-        this.showSnackbar("If you have a very slow internet connection please wait a few seconds", "Dismiss", 10000);
-        this.task.timestampsStart[this.worker.getPositionCurrent()].push(Math.round(Date.now() / 1000));
-    }
-
-    /* Anonymous  function that unlocks the task depending on performWorkerStatusCheck outcome */
-
+    /* Unlocks the task depending on performWorkerStatusCheck outcome */
     public unlockTask(taskAllowed: boolean) {
         this.sectionService.taskAllowed = taskAllowed;
         this.sectionService.checkCompleted = true;
@@ -659,17 +641,13 @@ export class SkeletonComponent implements OnInit, OnDestroy {
     }
 
     /*
-     * This function interacts with an Amazon S3 bucket to search the token input
-     * typed by the user inside within the hits.json file stored in the bucket.
-     * If such token cannot be found, an error message is returned.
+     * This function enables the task when the worker clicks on "Proceed" inside the main instructions page.
      */
-    public async validateTokenInput(control: UntypedFormControl) {
-        let hits = await this.S3Service.downloadHits(
-            this.configService.environment
-        );
-        for (let hit of hits)
-            if (hit.token_input === control.value) return null;
-        return {invalid: "This token is not valid."};
+    public enableTask() {
+        this.sectionService.taskInstructionsRead = true;
+        this.titleService.setTitle(`${this.configService.environment.taskName}: ${this.task.getElementIndex(this.worker.getPositionCurrent())['elementType']}${this.worker.getPositionCurrent()}`);
+        this.showSnackbar("If you have a very slow internet connection, please wait a few seconds for the page to load.", "Dismiss", 8000);
+        this.task.timestampsStart[this.worker.getPositionCurrent()].push(Math.round(Date.now() / 1000));
     }
 
     public async retrieveDataRecords() {
@@ -714,19 +692,19 @@ export class SkeletonComponent implements OnInit, OnDestroy {
         );
 
         /* Scan each entry for the token input */
-         for (let currentHit of hits) {
-             /* If the token input of the current hit matches with the one inserted by the worker the right hit has been found */
-             if (this.worker.getParameter('token_input') === currentHit.token_input) {
-                 currentHit = currentHit as Hit;
-                 this.task.tokenInput = this.worker.getParameter('token_input') ;
-                 this.task.tokenOutput = currentHit.token_output;
-                 this.task.unitId = currentHit.unit_id;
-                 this.task.documentsAmount = currentHit.documents.length;
-                 this.task.hit = currentHit;
-                 /* The array of documents is initialized */
-                 this.task.initializeDocuments(currentHit.documents, currentHit["documents_params"]);
-             }
-         }
+        for (let currentHit of hits) {
+            /* If the token input of the current hit matches with the one inserted by the worker the right hit has been found */
+            if (this.worker.getParameter('token_input') === currentHit.token_input) {
+                currentHit = currentHit as Hit;
+                this.task.tokenInput = this.worker.getParameter('token_input');
+                this.task.tokenOutput = currentHit.token_output;
+                this.task.unitId = currentHit.unit_id;
+                this.task.documentsAmount = currentHit.documents.length;
+                this.task.hit = currentHit;
+                /* The array of documents is initialized */
+                this.task.initializeDocuments(currentHit.documents, currentHit["documents_params"]);
+            }
+        }
 
         if (this.task.settings.logger_enable)
             this.actionLogger.unitId = this.task.unitId;
@@ -771,10 +749,8 @@ export class SkeletonComponent implements OnInit, OnDestroy {
             }
         }
 
-
         this.changeDetector.detectChanges();
     }
-
 
     public storePositionCurrent(data) {
         this.worker.setParameter("position_current", String(data))

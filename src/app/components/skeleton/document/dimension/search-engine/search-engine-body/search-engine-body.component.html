@@ -60,7 +60,7 @@
 								<a target="_blank" rel="noopener noreferrer" href="{{ decodeURI(baseResponse.url) }}">{{ baseResponse.name }}</a>
 							</ng-container>
 							<ng-container *ngIf="this.preRetrievedResultsSettings.displayModality==DisplayModality.Summary">
-								<a target="_blank" rel="noopener noreferrer" href="{{this.showPreRetrievedSearchResultSummaryPage(this.documentIndex, baseResponse.getParameter('resultUUID'))}}">{{ baseResponse.name }}</a>
+								<a target="_blank" rel="noopener noreferrer" href="{{this.generatePreRetrievedResultSummaryUrl(baseResponse.getParameter('resultUUID'))}}">{{ baseResponse.name }}</a>
 							</ng-container>
 							<br/>
 							<span class="result-url">{{ decodeURI(baseResponse.url) }}</span>

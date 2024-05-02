@@ -1,0 +1,28 @@
+<ngx-ui-loader [loaderId]="'pre-retrieved-result'"
+			   [bgsColor]="'#3f51b5'"
+			   [fgsColor]="'#3f51b5'"
+			   [pbColor]="'#3f51b5'"
+			   [fgsSize]="150"
+			   [bgsPosition]="'bottom-right'"
+			   [bgsSize]="80"
+			   [bgsType]="'ball-spin-clockwise'"
+			   [text]="'Loading summary...'"
+			   [textColor]="'#FFFFFF'"
+			   [textPosition]="'bottom-center'"
+></ngx-ui-loader>
+
+<mat-card appearance="outlined">
+	<mat-card-title class="main-title">
+		<span i18n>This is a summary of the document: <strong>{{ this.preRetrievedResult.pageName }}</strong></span>
+	</mat-card-title>
+	<mat-card-content class="pt-16px">
+		<div>
+			<p [innerHTML]="this.preRetrievedResult.prettyPrintSummary()"></p>
+		</div>
+	</mat-card-content>
+	<mat-card-actions class="center">
+		<button mat-flat-button color="primary" (click)="this.closeTab()">
+			<span i18n>Close</span>
+		</button>
+	</mat-card-actions>
+</mat-card>

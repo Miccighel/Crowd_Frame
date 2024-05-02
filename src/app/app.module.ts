@@ -1,43 +1,27 @@
-/* Core imports */
-import {BrowserModule} from "@angular/platform-browser";
-import {APP_INITIALIZER, NgModule} from "@angular/core";
-import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
-import {HttpClientModule} from "@angular/common/http";
-import {from, Observable} from "rxjs";
-import {tap} from "rxjs/operators";
-/* Reactive forms imports */
-import {ReactiveFormsModule, FormsModule} from "@angular/forms";
-/* Angular Material imports */
-import {MatRadioModule} from "@angular/material/radio";
-import {MatCardModule} from "@angular/material/card";
-import {MatInputModule} from "@angular/material/input";
-import {MatFormFieldModule} from "@angular/material/form-field";
-import {MatSelectModule} from "@angular/material/select";
-import {MatButtonModule} from "@angular/material/button";
-import {MatStepperModule} from "@angular/material/stepper";
-import {MatDividerModule} from "@angular/material/divider";
-import {MatTabsModule} from "@angular/material/tabs";
-import {MatGridListModule} from "@angular/material/grid-list";
-import {MatListModule} from "@angular/material/list";
-import {MatSnackBarModule} from "@angular/material/snack-bar";
-import {MatBadgeModule} from "@angular/material/badge";
-import {MatPaginatorModule} from "@angular/material/paginator";
-import {MatTableModule} from "@angular/material/table";
-import {MatExpansionModule} from "@angular/material/expansion";
-import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
-import {MatIconModule} from "@angular/material/icon";
-import {MatTreeModule} from "@angular/material/tree";
-import {MatDialogModule} from "@angular/material/dialog";
-import {MatCheckboxModule} from "@angular/material/checkbox";
-import {MatSliderModule} from "@angular/material/slider";
-import {MatTooltipModule} from "@angular/material/tooltip";
-import {MatToolbarModule} from "@angular/material/toolbar";
-import {MatSlideToggleModule} from "@angular/material/slide-toggle";
-import {MatChipsModule} from "@angular/material/chips";
-import {MatProgressBarModule} from "@angular/material/progress-bar";
+/* Core Angular imports */
+import {NgModule, APP_INITIALIZER} from '@angular/core';
+import {BrowserModule} from '@angular/platform-browser';
+import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
+import {HttpClientModule} from '@angular/common/http';
+import {ReactiveFormsModule, FormsModule} from '@angular/forms';
+
+/* Third-party module imports */
+import {NgxUiLoaderModule} from 'ngx-ui-loader';
+import {CountdownModule} from 'ngx-countdown';
+import {NgxFileHelpersModule} from 'ngx-file-helpers';
+import {ColorPickerModule} from 'ngx-color-picker';
+import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
+import {AngularEditorModule} from '@kolkov/angular-editor';
+
+/* Custom module imports */
+import {MaterialModule} from './app-material.module'; // Ensure the path is correct
+import {AppRoutingModule} from './app-routing.module';
+
 /* Components imports */
+import {BaseComponent} from "./components/base/base.component";
 import {SkeletonComponent} from "./components/skeleton/skeleton.component";
-import {SearchEngineBodyComponent, SummaryDialog} from "./components/skeleton/document/dimension/search-engine/search-engine-body/search-engine-body.component";
+import {SearchEngineBodyComponent} from "./components/skeleton/document/dimension/search-engine/search-engine-body/search-engine-body.component";
+import {PreRetrievedResultSummaryComponent} from './components/skeleton/document/dimension/search-engine/pre-retrieved-result-summary/pre-retrieved-result-summary.component';
 import {InstructionsComponent, InstructionsDialog} from "./components/skeleton/instructions/instructions.component";
 import {GeneratorComponent} from "./components/generator/generator.component";
 import {LoaderComponent} from "./components/loader/loader.component";
@@ -69,21 +53,22 @@ import {ChatInputIntervalComponent} from "./components/chatbot/chat-inputs/chat-
 import {ChatInputSelectComponent} from "./components/chatbot/chat-inputs/chat-input-select/chat-input-select.component";
 import {ChatInputButtonComponent} from "./components/chatbot/chat-inputs/chat-input-button/chat-input-button.component";
 import {ChatUrlInputComponent} from "./components/chatbot/chat-inputs/chat-input-url/chat-input-url.component";
+
 /* Services imports */
 import {SectionService} from "./services/section.service";
 import {ActionLogger} from "./services/userActionLogger.service";
-/* Directives imports */
-import {ButtonDirective, SearchEngineBodyDirective, InputDirective, RadioDirective, SkeletonDirective,} from "./components/skeleton/skeleton.directive";
-/* Pipes import */
-import {TruncatePipe} from "./pipes/truncatePipe";
-/* Other imports */
-import {NgxUiLoaderModule} from "ngx-ui-loader";
-import {CountdownModule} from "ngx-countdown";
-import {NgxFileHelpersModule} from "ngx-file-helpers";
-import {ColorPickerModule} from "ngx-color-picker";
-import {NgbModule} from "@ng-bootstrap/ng-bootstrap";
-import {AngularEditorModule} from "@kolkov/angular-editor";
 
+/* Directives imports */
+import {ButtonDirective, SearchEngineBodyDirective, InputDirective, RadioDirective, SkeletonDirective} from "./components/skeleton/skeleton.directive";
+
+/* Pipes imports */
+import {TruncatePipe} from "./pipes/truncatePipe";
+
+/* RxJS imports */
+import {from, Observable} from "rxjs";
+import {tap} from "rxjs/operators";
+
+/* Initializer function to preload configurations */
 function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
     return () =>
         from(actionLogger.downloadOpt()).pipe(
@@ -97,9 +82,10 @@ function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
 
 @NgModule({
     declarations: [
+        BaseComponent,
         SkeletonComponent,
         SearchEngineBodyComponent,
-        SummaryDialog,
+        PreRetrievedResultSummaryComponent,
         TruncatePipe,
         InstructionsComponent,
         InstructionsDialog,
@@ -142,60 +128,28 @@ function initActionLogger(actionLogger: ActionLogger): () => Observable<any> {
     imports: [
         BrowserModule,
         BrowserAnimationsModule,
-        MatCardModule,
-        MatInputModule,
-        MatSelectModule,
-        MatButtonModule,
-        MatStepperModule,
-        MatRadioModule,
-        MatDividerModule,
-        MatTabsModule,
-        MatFormFieldModule,
-        MatGridListModule,
-        MatListModule,
-        MatToolbarModule,
+        HttpClientModule,
         ReactiveFormsModule,
         FormsModule,
-        NgxUiLoaderModule,
-        HttpClientModule,
-        BrowserModule,
-        MatButtonModule,
-        MatIconModule,
-        MatPaginatorModule,
-        MatTreeModule,
-        MatTableModule,
-        MatPaginatorModule,
-        MatExpansionModule,
-        MatSnackBarModule,
-        MatBadgeModule,
-        MatProgressSpinnerModule,
-        MatSliderModule,
-        MatDividerModule,
-        NgxUiLoaderModule,
-        ReactiveFormsModule,
-        MatDialogModule,
-        MatCheckboxModule,
-        MatTooltipModule,
+        AngularEditorModule,
+        MaterialModule,
+        NgbModule,
         CountdownModule,
-        MatSlideToggleModule,
         NgxFileHelpersModule,
         ColorPickerModule,
-        MatProgressBarModule,
-        MatChipsModule,
-        AngularEditorModule,
-        NgbModule,
+        NgxUiLoaderModule,
+        AppRoutingModule  // Always keep AppRoutingModule as the last import
     ],
-
     providers: [
+        SectionService,
         {
             provide: APP_INITIALIZER,
             useFactory: initActionLogger,
             deps: [ActionLogger],
             multi: true,
         },
-        SectionService,
     ],
-    bootstrap: [LoaderComponent],
+    bootstrap: [BaseComponent],  // Root component to bootstrap
 })
 
 export class AppModule {}

@@ -93,7 +93,11 @@
       </li>
     </ol>
     <hr class="my-4">
-    <p id="task-link-container" class="lead"><a target="_blank" id="task-link" href="https://${aws_deploy_bucket}.s3.${aws_region}.amazonaws.com/${task_name}/${batch_name}/index.html">https://${aws_deploy_bucket}.s3.${aws_region}.amazonaws.com/${task_name}/${batch_name}/index.html</a></p>
+	  % if cloudfront_endpoint:
+	  <p id="task-link-container" class="lead"><a target="_blank" id="task-link" href="${cloudfront_endpoint}/${task_name}/${batch_name}/">https://${cloudfront_endpoint}/${task_name}/${batch_name}/</a></p>
+	  % else:
+	  <p id="task-link-container" class="lead"><a target="_blank" id="task-link" href="https://${aws_deploy_bucket}.s3.${aws_region}.amazonaws.com/${task_name}/${batch_name}/index.html">https://${aws_deploy_bucket}.s3.${aws_region}.amazonaws.com/${task_name}/${batch_name}/index.html</a></p>
+	  % endif
     <div id="token-output-container" class="lead">
       <input type="text" id="token-output" name="token_output" class="form-control" placeholder="your_output_token_here">
     </div>

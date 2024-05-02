@@ -890,18 +890,17 @@ export class Task {
         return preRetrievedResults
     }
 
-    public retrieveSearchEnginePreRetrievedResult(documentIndex, resultUUID: string) {
-        let documentCurrent = this.documents[documentIndex]
+    public retrieveSearchEnginePreRetrievedResult(resultUUID: string) {
         for (let resultPreRetrieved of this.searchEngineSettings.pre_retrieved_results) {
-            if ((resultPreRetrieved.elementID == documentCurrent['id']) && (resultPreRetrieved.resultUUID == resultUUID)) {
+            if ((resultPreRetrieved.resultUUID == resultUUID)) {
                 return resultPreRetrieved
             }
         }
         return null
     }
 
-    public isSearchEnginePreRetrievedResultVisited(documentIndex, resultUUID: string) {
-        let preRetrievedSearchResult = this.retrieveSearchEnginePreRetrievedResult(documentIndex, resultUUID)
+    public isSearchEnginePreRetrievedResultVisited(resultUUID: string) {
+        let preRetrievedSearchResult = this.retrieveSearchEnginePreRetrievedResult(resultUUID)
         if (preRetrievedSearchResult)
             return preRetrievedSearchResult.visited
         return false
