@@ -134,10 +134,10 @@ issues](https://badgen.net/github/issues/Miccighel/Crowd_Frame/)](https://GitHub
     Path: `your_repo_folder/data/init.py`
 
     The script will:
-    	- read your env. variables;
-    	- setup the AWS infrastructure;
-    	- generate an empty task configuration;
-    	- deploy the task on the public bucket.
+    * read your env. variables;
+    * setup the AWS infrastructure;
+    * generate an empty task configuration;
+    * deploy the task on the public bucket.
 
 14. Open your task:
 
