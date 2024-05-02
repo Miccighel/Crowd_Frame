@@ -30,8 +30,6 @@ import {BingService} from "../../../../../../services/searchEngine/bing.service"
 import {PubmedService} from "../../../../../../services/searchEngine/pudmed.service";
 import {FakerService} from "../../../../../../services/searchEngine/faker.service";
 
-export interface DialogData {
-}
 
 /* Component HTML Tag definition */
 @Component({
@@ -639,48 +637,6 @@ export class SearchEngineBodyComponent implements OnInit {
             return `https://${this.configService.environment.cloudfrontEndpoint}/${this.configService.environment.taskName}/${this.configService.environment.batchName}/?result-summary=${resultUUID}`;
         else
             return `${window.location.origin}/?result-summary=${resultUUID}`;
-    }
-
-    protected showPreRetrievedSearchResultSummaryPage(documentIndex: number, resultUUID: string) {
-        let preRetrievedSearchResult = this.task.retrieveSearchEnginePreRetrievedResult(documentIndex, resultUUID)
-        let htmlContent = `
-            <html lang="en">
-                <head>
-                    <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>Summarized Page Content</title>
-                    <style>
-                        body { 
-                            font-family: 'Arial', sans-serif;
-                            background: #f4f4f9;
-                            color: #333;
-                            line-height: 1.6;
-                            font-size: 24px;
-                        } 
-                        p {
-                            margin: 30px;
-                        }
-                    </style>
-                </head>
-                <body>
-                    <h1>
-                        <strong>Title</strong>
-                    </h1>
-                    <p>
-                        ${preRetrievedSearchResult.pageName}
-                    </p>
-                    <h1>
-                        <strong>Content</strong>
-                    </h1>
-                    <p>
-                       ${preRetrievedSearchResult.prettyPrintSummary()}
-                    </p>
-                </body>
-            </html>
-        `;
-        const blob = new Blob([htmlContent], { type: 'text/html' });
-        const url = URL.createObjectURL(blob);
-        return url
     }
 
     protected readonly DisplayModality = DisplayModality;
