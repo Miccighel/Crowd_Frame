@@ -1,20 +1,22 @@
 <!doctype html>
-<html lang="en">
+<html lang="en-US" dir="ltr" data-critters-container>
 <head>
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <meta charset="utf-8">
     % if task_title:
     <title>${task_title}</title>
     % else:
-    <title>${task_name} | ${batch_name}</title>
+    <title>${task_name}/${batch_name}</title>
     % endif
+	<base href="/${task_name}/${batch_name}/">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+	<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<app-loader></app-loader>
+<app-base></app-base>
 <script src="./scripts.js"></script>
 </body>
 </html>

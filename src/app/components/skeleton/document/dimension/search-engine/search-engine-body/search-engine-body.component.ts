@@ -2,7 +2,6 @@
 import {ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, ViewChild, QueryList, ViewChildren, Inject, ViewEncapsulation} from "@angular/core";
 import {of} from "rxjs";
 import {catchError, map, tap} from "rxjs/operators";
-import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 /* Loading screen module */
 import {NgxUiLoaderService} from "ngx-ui-loader";
 /* Material design modules */
@@ -31,7 +30,8 @@ import {BingService} from "../../../../../../services/searchEngine/bing.service"
 import {PubmedService} from "../../../../../../services/searchEngine/pudmed.service";
 import {FakerService} from "../../../../../../services/searchEngine/faker.service";
 
-export interface DialogData {}
+export interface DialogData {
+}
 
 /* Component HTML Tag definition */
 @Component({
@@ -44,7 +44,6 @@ export interface DialogData {}
  * This class implements a custom search engine which can be used within crowdsourcing tasks.
  */
 export class SearchEngineBodyComponent implements OnInit {
-    /* |--------- SEARCH ENGINE SETTINGS - DECLARATION ---------| */
 
     /* Microsoft Search API key */
     bingApiKey: string;
@@ -109,7 +108,6 @@ export class SearchEngineBodyComponent implements OnInit {
     searchButtonEnabled: boolean
     urls: UntypedFormControl;
     @ViewChild(MatPaginator) paginator: MatPaginator;
-    public summaryDialog: MatDialog
 
     /* Stored query text */
     queryValue: string;
@@ -146,8 +144,7 @@ export class SearchEngineBodyComponent implements OnInit {
         pubmedService: PubmedService,
         configService: ConfigService,
         formBuilder: UntypedFormBuilder,
-        cookieService: CookieService,
-        dialog: MatDialog,
+        cookieService: CookieService
     ) {
         this.changeDetector = changeDetector;
         this.ngxService = ngxService;
@@ -159,7 +156,6 @@ export class SearchEngineBodyComponent implements OnInit {
         this.sectionService = sectionService
         this.formBuilder = formBuilder;
         this.cookieService = cookieService;
-        this.summaryDialog = dialog
         this.task = this.sectionService.task
         this.searchStarted = true
         this.searchInProgress = false
@@ -638,57 +634,13 @@ export class SearchEngineBodyComponent implements OnInit {
         disable ? this.searchForm.disable() : this.searchForm.enable();
     }
 
-    protected showSummary(documentIndex: number, resultUUID: string): void {
-
-        let preRetrievedSearchResult = this.task.retrieveSearchEnginePreRetrievedResult(documentIndex, resultUUID)
-        preRetrievedSearchResult.visited = true
-        this.summaryDialog.open(SummaryDialog, {
-            data: {
-                preRetrievedSearchResult: preRetrievedSearchResult
-            }
-        });
+    protected generatePreRetrievedResultSummaryUrl(resultUUID: string) {
+        if (this.configService.environment.production)
+            return `https://${this.configService.environment.cloudfrontEndpoint}/${this.configService.environment.taskName}/${this.configService.environment.batchName}/?result-summary=${resultUUID}`;
+        else
+            return `${window.location.origin}/?result-summary=${resultUUID}`;
     }
 
     protected readonly DisplayModality = DisplayModality;
-}
-
-/* Component HTML Tag definition */
-@Component({
-    selector: 'app-summary-dialog',
-    styleUrls: ['summary-dialog.scss'],
-    templateUrl: 'summary-dialog.html',
-    encapsulation: ViewEncapsulation.None
-})
-
-
-export class SummaryDialog {
-
-    /* |--------- DIALOG ELEMENTS - DECLARATION ---------| */
-
-    preRetrievedSearchResult: PreRetrievedResult;
-
-    /* |--------- CONSTRUCTOR ---------| */
-
-    constructor(public dialogRef: MatDialogRef<SummaryDialog>, @Inject(MAT_DIALOG_DATA) public data: DialogData) {
-        this.preRetrievedSearchResult = data["preRetrievedSearchResult"];
-    }
-
-    protected prettyPrintPageSummary() {
-        if (!this.preRetrievedSearchResult || !this.preRetrievedSearchResult.pageSummary) {
-            return ''; // Return an empty string if no summary is provided or it's null/undefined
-        }
-        // Replace occurrences of two consecutive newlines at the beginning of the string with an empty string
-        let formattedSummary = this.preRetrievedSearchResult.pageSummary.replace(/^\n\n/, '');
-        // Replace remaining occurrences of single newline characters with <br> tags
-        formattedSummary = formattedSummary.replace(/\n/g, '<br>');
-        return formattedSummary
-    }
-
-    /*
-     * This function closes the modal previously opened.
-     */
-    closeSummary(): void {
-        this.dialogRef.close();
-    }
 
 }

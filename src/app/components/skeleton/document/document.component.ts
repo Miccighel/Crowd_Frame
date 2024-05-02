@@ -16,6 +16,9 @@ import {Worker} from "../../../models/worker/worker";
 /* Material Design */
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {MatStepper} from "@angular/material/stepper";
+/* Browser */
+import {Title} from "@angular/platform-browser";
+import {ConfigService} from "../../../services/config.service";
 
 @Component({
     selector: 'app-document',
@@ -33,6 +36,8 @@ export class DocumentComponent implements OnInit {
     /* Service to detect user's device */
     sectionService: SectionService;
     utilsService: UtilsService
+    titleService: Title
+    configService: ConfigService
     /* Angular Reactive Form builder (see https://angular.io/guide/reactive-forms) */
     formBuilder: UntypedFormBuilder;
     /* Snackbar reference */
@@ -89,12 +94,16 @@ export class DocumentComponent implements OnInit {
         changeDetector: ChangeDetectorRef,
         sectionService: SectionService,
         utilsService: UtilsService,
+        titleService: Title,
+        configService: ConfigService,
         snackBar: MatSnackBar,
         formBuilder: UntypedFormBuilder
     ) {
         this.changeDetector = changeDetector
         this.sectionService = sectionService
         this.utilsService = utilsService
+        this.titleService = titleService
+        this.configService = configService
         this.formBuilder = formBuilder
         this.formEmitter = new EventEmitter<Object>();
         this.task = this.sectionService.task
@@ -286,6 +295,7 @@ export class DocumentComponent implements OnInit {
                 }
                 action = "Jump"
             }
+            this.titleService.setTitle(`${this.configService.environment.taskName}: ${this.task.getElementIndex(this.sectionService.stepIndex)['elementType']}${this.sectionService.stepIndex}`);
         } else {
             if (action == "Back") {
                 this.stepper.previous();
@@ -294,6 +304,7 @@ export class DocumentComponent implements OnInit {
                 this.stepper.next();
                 this.sectionService.stepIndex = this.stepper.selectedIndex
             }
+            this.titleService.setTitle(`${this.configService.environment.taskName}: ${this.task.getElementIndex(this.sectionService.stepIndex)['elementType']}${this.sectionService.stepIndex}`);
         }
         this.formEmitter.emit({
             "form": this.assessmentForm,

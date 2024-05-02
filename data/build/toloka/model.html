@@ -28,8 +28,12 @@
             </li>
         </ol>
         <hr class="my-4">
-        <p id="task-link-container" class="lead"><a target="_blank" id="task-link" href="https://${aws_deploy_bucket}.s3.${aws_region}.amazonaws.com/${task_name}/${batch_name}/index.html?platform=toloka">https://${aws_deploy_bucket}.s3.${aws_region}.amazonaws.com/${task_name}/${batch_name}/index.html</a></p>
-         <div id="token-output-container" class="lead">
+		% if cloudfront_endpoint:
+		<p id="task-link-container" class="lead"><a target="_blank" id="task-link" href="${cloudfront_endpoint}/${task_name}/${batch_name}/">https://${cloudfront_endpoint}/${task_name}/${batch_name}/?platform=toloka</a></p>
+		% else:
+		<p id="task-link-container" class="lead"><a target="_blank" id="task-link" href="https://${aws_deploy_bucket}.s3.${aws_region}.amazonaws.com/${task_name}/${batch_name}/index.html">https://${aws_deploy_bucket}.s3.${aws_region}.amazonaws.com/${task_name}/${batch_name}/index.html?platform=toloka</a></p>
+		% endif
+		<div id="token-output-container" class="lead">
             {{field type="input" name="token_input"  placeholder="Insert the input token"  validation-show="right-center" size="XL"}}
             {{field type="input" name="token_output" placeholder="Insert the output token" validation-show="right-center" size="XL"}}
         </div>

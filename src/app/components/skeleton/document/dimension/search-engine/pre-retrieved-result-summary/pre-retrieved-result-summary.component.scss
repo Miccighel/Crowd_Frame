@@ -1,0 +1,27 @@
+mat-card {
+	margin: 24px
+}
+
+mat-card-content, mat-card-title {
+	width: 85% !important;
+	margin: auto !important;
+}
+
+mat-card-title {
+	border-bottom: 1px solid rgba(0,0,0,.12);
+	font-size: 24px;
+}
+
+mat-card-actions {
+	align-self: center;
+}
+
+h2 {
+	font-weight: normal;
+	margin-top: 0;
+	font-size: 1.3em;
+}
+
+p {
+	font-size: 1.1em;
+}

@@ -6,14 +6,12 @@ import {MatStepper} from "@angular/material/stepper";
 /* Services */
 import {SectionService} from "../../../../../services/section.service";
 import {UtilsService} from "../../../../../services/utils.service";
-import {DeviceDetectorService} from "ngx-device-detector";
 /* Models */
 import {Task} from "../../../../../models/skeleton/task";
 import {Worker} from "../../../../../models/worker/worker";
 import {Dimension} from "../../../../../models/skeleton/dimension";
 import {Document} from "../../../../../../../data/build/skeleton/document";
 /* Components */
-import {SearchEngineBodyComponent} from "./search-engine-body/search-engine-body.component";
 import {ConfigService} from "../../../../../services/config.service";
 
 @Component({

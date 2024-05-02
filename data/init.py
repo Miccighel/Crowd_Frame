@@ -2,6 +2,8 @@
 # coding: utf-8
 
 import json
+import pprint
+
 import docker
 import os
 import pandas as pd
@@ -47,6 +49,7 @@ mturk_user_name = 'mturk-user'
 
 # Your working dir must be set to data/
 
+
 folder_aws_path = f"{os.getcwd()}/aws/"
 folder_aws_generated_path = f"{folder_aws_path}generated/"
 folder_build_path = f"{os.getcwd()}/build/"
@@ -58,6 +61,7 @@ folder_build_env_path = f"{folder_build_path}environments/"
 folder_build_deploy_path = f"{folder_build_path}deploy/"
 folder_build_skeleton_path = f"{folder_build_path}skeleton/"
 folder_tasks_path = f"{os.getcwd()}/tasks/"
+folder_locales_path = f"{Path.cwd().parent}/src/locale/"
 
 filename_hits_config = "hits.json"
 filename_dimensions_config = "dimensions.json"
@@ -67,6 +71,7 @@ filename_questionnaires_config = "questionnaires.json"
 filename_search_engine_config = "search_engine.json"
 filename_task_settings_config = "task.json"
 filename_workers_settings_config = "workers.json"
+
 
 def stop_sequence():
     console.print('\n\n')
@@ -110,7 +115,6 @@ table_logging_name = f"Crowd_Frame-{task_name}_{batch_name}_Logger"
 table_data_name = f"Crowd_Frame-{task_name}_{batch_name}_Data"
 table_acl_name = f"Crowd_Frame-{task_name}_{batch_name}_ACL"
 api_gateway_name = 'Crowd_Frame-API'
-link_public = f"https://{aws_deploy_bucket}.s3.{aws_region}.amazonaws.com/{task_name}/{batch_name}/index.html"
 
 if profile_name is None:
     profile_name = 'default'
@@ -124,7 +128,6 @@ step_index = step_index + 1
 
 console.print("[bold]Init.py[/bold] script launched")
 console.print(f"Working directory: [bold]{os.getcwd()}[/bold]")
-
 
 if batch_prefix is None:
     batch_prefix = ''
@@ -741,6 +744,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         ]
     }
 
+    status.update(f"Setting bucket policy")
+
     try:
         policy = s3_client.get_bucket_policy(Bucket=aws_deploy_bucket)
         policy['Policy'] = json.loads(policy['Policy'])
@@ -752,6 +757,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         policy = s3_client.get_bucket_policy(Bucket=aws_deploy_bucket)
         policy['Policy'] = json.loads(policy['Policy'])
     serialize_json(folder_aws_generated_path, f"bucket_{aws_deploy_bucket}_policy.json", policy)
+
+    status.update(f"Updating public access block configuration")
 
     response = s3_client.get_public_access_block(Bucket=aws_deploy_bucket)
     public_access_configuration = response['PublicAccessBlockConfiguration']
@@ -767,6 +774,104 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         }
     )
     serialize_json(folder_aws_generated_path, f"bucket_{aws_deploy_bucket}_public_access_removal.json", response)
+
+    status.update(f"Enabling static website hosting")
+
+    website_configuration = {
+        'IndexDocument': {'Suffix': 'index.html'},
+        'ErrorDocument': {'Key': 'index.html'}
+    }
+
+    response = s3_client.put_bucket_website(
+        Bucket=aws_deploy_bucket,
+        WebsiteConfiguration=website_configuration
+    )
+    serialize_json(folder_aws_generated_path, f"bucket_{aws_deploy_bucket}_static_website_hosting.json", response)
+
+    website_endpoint = f"http://{aws_deploy_bucket}.s3-website.{aws_region}.amazonaws.com"
+    console.print(f"[green]Static website hosting initialized[/green], HTTP STATUS CODE: {response['ResponseMetadata']['HTTPStatusCode']}.")
+    console.print(f"Website endpoint: [cyan]{website_endpoint}")
+
+    console.rule(f"{step_index} - Configuring Cloudfront distribution ")
+    step_index = step_index + 1
+
+    cloudfront_client = boto3.client('cloudfront')
+    paginator = cloudfront_client.get_paginator('list_distributions')
+
+    origin_domain = website_endpoint.replace("http://", '')
+
+    # CloudFront distribution configuration
+    distribution_config = {
+        'CallerReference': f"{aws_deploy_bucket}-distribution",  # A unique string that ensures idempotence
+        'Comment': f"Cloudfront distribution for {aws_deploy_bucket}",
+        'Enabled': True,
+        'Origins': {
+            'Quantity': 1,
+            'Items': [{
+                'Id': 'S3-' + aws_deploy_bucket,
+                'DomainName': origin_domain,
+                'CustomOriginConfig': {
+                    'HTTPPort': 80,
+                    'HTTPSPort': 443,
+                    'OriginProtocolPolicy': 'http-only',  # Can also be https-only or match-viewer
+                    'OriginSslProtocols': {
+                        'Quantity': 3,
+                        'Items': ['TLSv1.2', 'TLSv1.1', 'TLSv1']
+                    }
+                }
+            }]
+        },
+        'DefaultCacheBehavior': {
+            'TargetOriginId': 'S3-' + aws_deploy_bucket,
+            'ViewerProtocolPolicy': 'redirect-to-https',
+            'AllowedMethods': {
+                'Quantity': 2,
+                'Items': ['GET', 'HEAD'],
+                'CachedMethods': {
+                    'Quantity': 2,
+                    'Items': ['GET', 'HEAD']
+                }
+            },
+            'Compress': True,
+            'ForwardedValues': {
+                'QueryString': False,
+                'Cookies': {'Forward': 'none'}
+            },
+            'MinTTL': 86400
+        }
+    }
+
+    distribution_found = False
+    distribution = None
+    cloudfront_endpoint = None
+
+    # Iterate through all CloudFront distributions
+    try:
+        for page in paginator.paginate():
+            # Check each distribution for the specific S3 bucket as an origin
+            for distribution_current in page['DistributionList'].get('Items', []):
+                # Look at each origin within this distribution
+                for origin in distribution_current['Origins']['Items']:
+                    if origin['DomainName'] == origin_domain:
+                        distribution_found = True
+                        distribution = distribution_current
+                        break
+                if distribution_found:
+                    break
+            if distribution_found:
+                break
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+    if distribution:
+        console.print(f"[yellow]CloudFront distribution already created[/yellow], HTTP STATUS CODE: {response['ResponseMetadata']['HTTPStatusCode']}.")
+    else:
+        distribution = cloudfront_client.create_distribution(DistributionConfig=distribution_config)
+        console.print(f"[green]Cloudfront distribution initialized[/green], HTTP STATUS CODE: {response['ResponseMetadata']['HTTPStatusCode']}.")
+    console.print(f"Domain name: [cyan]{distribution['DomainName']}")
+    console.print(f"Comment: [cyan]{distribution['Comment']}")
+    cloudfront_endpoint = distribution['DomainName']
+    serialize_json(folder_aws_generated_path, f"cloudfront_distribution_{distribution['Id']}.json", distribution)
 
     console.rule(f"{step_index} - Table [cyan underline]{table_data_name}[/cyan underline] setup")
     step_index = step_index + 1
@@ -1023,7 +1128,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 serialize_json(folder_aws_generated_path, f"policy_{policy['PolicyName']}.json", policy)
             except iam_client.exceptions.EntityAlreadyExistsException:
                 policies.append(name)
-                
+
             with open(f"{folder_aws_path}policy/{name.split('To')[0]}.json") as f:
                 policy_document = json.dumps(json.load(f))
             try:
@@ -1196,7 +1301,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         console.print("Logging infrastructure not deployed")
         endpoint = ""
     else:
-        raise Exception("Your [italic]server_config[/italic] environment variable must be set to [white on black]aws[/white on black], [white on black]custom[/white on black] or [white on black]none[/white on black]")
+        raise Exception(
+            "Your [italic]server_config[/italic] environment variable must be set to [white on black]aws[/white on black], [white on black]custom[/white on black] or [white on black]none[/white on black]")
 
     status.stop()
 
@@ -1438,6 +1544,9 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         "batchName": batch_name,
         "region": aws_region,
         "bucket": aws_private_bucket,
+        "bucket_deploy": aws_deploy_bucket,
+        "websiteEndpoint": website_endpoint,
+        "cloudfrontEndpoint": cloudfront_endpoint,
         "languageCode": language_code,
         "aws_id_key": aws_worker_access_id,
         "aws_secret_key": aws_worker_access_secret,
@@ -1486,6 +1595,9 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         "batchName": batch_name,
         "region": aws_region,
         "bucket": aws_private_bucket,
+        "bucket_deploy": aws_deploy_bucket,
+        "websiteEndpoint": website_endpoint,
+        "cloudfrontEndpoint": cloudfront_endpoint,
         "languageCode": language_code,
         "aws_id_key": aws_worker_access_id,
         "aws_secret_key": aws_worker_access_secret,
@@ -1656,14 +1768,14 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
                 "token_output": "MNOPQRSTUVZ",
                 "documents_number": 1,
                 "documents_params": {
-                    "identifier_1" : {
+                    "identifier_1": {
                         "task_type": "Main",
                         "allow_back": True,
                         "check_gold": {
-                            "message" : None,
-                            "jump" : None
+                            "message": None,
+                            "jump": None
                         },
-                        "reset_jump" : False
+                        "reset_jump": False
                     }
                 },
                 "documents": [
@@ -1963,17 +2075,17 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         wrapper = textwrap.TextWrapper(initial_indent='\t\t', subsequent_indent='\t\t', width=500, break_long_words=False)
         print(wrapper.fill("index: number;"), file=file)
         print(wrapper.fill("params: { };"), file=file)
-        contents=[]
+        contents = []
         for unit in hits:
             if len(unit['documents']) > 0:
                 for idx_s_e, sample_element in enumerate(unit['documents']):
                     if not 'id' in sample_element.keys():
-                        raise Exception(f"In your {filename_hits_config} file, the document number {idx_s_e+1} in HIT {unit['unit_id']} does not contain the required attribute \"id\"!")
+                        raise Exception(f"In your {filename_hits_config} file, the document number {idx_s_e + 1} in HIT {unit['unit_id']} does not contain the required attribute \"id\"!")
                     for attribute, value in sample_element.items():
                         if attribute not in contents:
-                            contents+=[attribute]
+                            contents += [attribute]
                             try:
-                                element = value if(value == 'false' or value == 'true') else json.loads(value)
+                                element = value if (value == 'false' or value == 'true') else json.loads(value)
                                 if isinstance(element, bool):
                                     print(wrapper.fill(f"{attribute}: boolean;"), file=file)
                                 if isinstance(element, dict):
@@ -2018,17 +2130,17 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         print(wrapper.fill("this.params[\"allow_back\"] = params[\"allow_back\"]"), file=file)
         print(wrapper.fill("this.params[\"check_gold\"] = params[\"check_gold\"]"), file=file)
         print(wrapper.fill("this.params[\"reset_jump\"] = params[\"reset_jump\"]"), file=file)
-        contents=[]
+        contents = []
         for unit in hits:
             if len(unit['documents']) > 0:
                 for idx_s_e, sample_element in enumerate(unit['documents']):
                     if not 'id' in sample_element.keys():
-                        raise Exception(f"In your {filename_hits_config} file, the document number {idx_s_e+1} in HIT {unit['unit_id']} does not contain the required attribute \"id\"!")
+                        raise Exception(f"In your {filename_hits_config} file, the document number {idx_s_e + 1} in HIT {unit['unit_id']} does not contain the required attribute \"id\"!")
                     for attribute, value in sample_element.items():
                         if attribute not in contents:
-                            contents+=[attribute]
+                            contents += [attribute]
                             try:
-                                element = value if(value == 'false' or value == 'true') else json.loads(value)
+                                element = value if (value == 'false' or value == 'true') else json.loads(value)
                                 if isinstance(element, dict):
                                     print(wrapper.fill(f"this.{attribute} = new Array<JSON>()"), file=file)
                                     print(wrapper.fill(f"for (let index = 0; index < data[\"{attribute}\"].length; index++) this.{attribute}.push(data[\"{attribute}\"][index])"), file=file)
@@ -2129,14 +2241,15 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         step_index = step_index + 1
 
         status.start()
-        status.update(f"Istantiating Mako model")
+        status.update(f"Instantiating Mako model")
 
         model = Template(filename=f"{folder_build_mturk_path}model.html")
         mturk_page = model.render(
             aws_region=aws_region,
             aws_deploy_bucket=aws_deploy_bucket,
             task_name=task_name,
-            batch_name=batch_name
+            batch_name=batch_name,
+            cloudfront_endpoint=cloudfront_endpoint
         )
         mturk_page_file = f"{folder_build_mturk_path}index.html"
         with open(mturk_page_file, 'w') as file:
@@ -2212,14 +2325,15 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         step_index = step_index + 1
 
         status.start()
-        status.update(f"Istantiating Mako model")
+        status.update(f"Instantiating Mako model")
 
         model = Template(filename=f"{folder_build_toloka_path}model.html")
         toloka_page = model.render(
             aws_region=aws_region,
             aws_deploy_bucket=aws_deploy_bucket,
             task_name=task_name,
-            batch_name=batch_name
+            batch_name=batch_name,
+            cloudfront_endpoint=cloudfront_endpoint
         )
         toloka_page_file = f"{folder_build_toloka_path}interface.html"
         with open(toloka_page_file, 'w') as file:
@@ -2290,24 +2404,46 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     folder_build_result = f"{Path(os.getcwd()).parent.absolute()}/dist/Crowd_Frame/{language_code}/"
     console.print(f"Build output folder: [cyan underline]{folder_build_result}")
 
-    status.update(f"Extracting i18n translations, please wait")
-    command = "yarn run translate"
-    console.print(f"Command: [green on black]{command}")
-    process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
-    for line in process.stdout:
-        line_clean = line.decode().strip()
-        if "Initial Total" in line_clean:
-            line_clean = line_clean[2:]
-        if line_clean != "":
-            console.print(line_clean)
-    process.wait()
+    if language_code != 'en-US':
+
+        locale_file_existing_path = f"{folder_locales_path}messages.{language_code}.xlf"
+        locale_file_existing_temp_path = f"{folder_locales_path}messages.{language_code}-old.xlf"
+        if os.path.exists(locale_file_existing_path):
+            status.update(f"Copying previous translations, please wait")
+            shutil.copy(locale_file_existing_path, locale_file_existing_temp_path)
+
+        status.update(f"Extracting i18n translations, please wait")
+        command = "yarn run translate"
+        console.print(f"Command: [green on black]{command}")
+        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
+        for line in process.stdout:
+            line_clean = line.decode().strip()
+            if "Initial Total" in line_clean:
+                line_clean = line_clean[2:]
+            if line_clean != "":
+                console.print(line_clean)
+        process.wait()
+
+        status.update(f"Updating translation files, please wait")
+        if os.path.exists(locale_file_existing_temp_path):
+            command = f"xlf-merge merge {locale_file_existing_temp_path} {folder_locales_path}messages.xlf {locale_file_existing_path}"
+            console.print(f"Command: [green on black]{command}")
+            process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
+            for line in process.stdout:
+                line_clean = line.decode().strip()
+                if "Initial Total" in line_clean:
+                    line_clean = line_clean[2:]
+                if line_clean != "":
+                    console.print(line_clean)
+            process.wait()
+            os.remove(locale_file_existing_temp_path)
 
     status.update(f"Executing build command, please wait")
     command = None
     if language_code == 'en-US':
-        command = "yarn run build --configuration=\"production\" --output-hashing=none"
+        command = f"yarn run build --configuration=\"production\" --output-hashing=none --base-href /{task_name}/{batch_name}/"
     else:
-        command = f"yarn run build --configuration=\"production-{language_code}\" --output-hashing=none"
+        command = f"yarn run build --configuration=\"production-{language_code}\" --output-hashing=none --base-href /{task_name}/{batch_name}/"
     console.print(f"Command: [green on black]{command}")
     process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
     for line in process.stdout:
@@ -2337,7 +2473,8 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
         if os.path.basename(es_script_path) == 'main.js':
             es_script_paths[2] = es_script_path
     for es_script_path in es_script_paths_temp:
-        if os.path.basename(es_script_path) is not None and os.path.basename(es_script_path) != 'polyfills.js' and os.path.basename(es_script_path) != 'runtime.js' and os.path.basename(es_script_path) != 'main.js':
+        if os.path.basename(es_script_path) is not None and os.path.basename(es_script_path) != 'polyfills.js' and os.path.basename(es_script_path) != 'runtime.js' and os.path.basename(
+                es_script_path) != 'main.js':
             es_script_paths.append(es_script_path)
     with open(script_merged_file, 'a') as outfile:
         for script_current_file in es_script_paths:
@@ -2367,6 +2504,7 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     console.print(f"Path: [italic underline]{styles_merged_file}")
 
     console.print("Deleting build folder")
+    folder_build_result = folder_build_result.replace(f"/Crowd_Frame/{language_code}/", '')
     if os.path.exists(folder_build_result):
         console.print(f"Path: [italic underline]{folder_build_result}")
         shutil.rmtree(folder_build_result)
@@ -2587,7 +2725,9 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
 
 
     def upload(path, bucket, key, title, content_type, acl=None):
-        panel = Panel(f"Region: [italic white on black]{aws_region}[/italic white on black]\nBucket: [italic white on black]{bucket}[/italic white on black]\nFile: [italic white on black]{path}[/italic white on black]\nKey: [italic white on black]{key}[/italic white on black]\nPath: [italic white on black]s3://{aws_region}/{bucket}/{key}[/italic white on black]\nACL: {acl}",title=title)
+        panel = Panel(
+            f"Region: [italic white on black]{aws_region}[/italic white on black]\nBucket: [italic white on black]{bucket}[/italic white on black]\nFile: [italic white on black]{path}[/italic white on black]\nKey: [italic white on black]{key}[/italic white on black]\nPath: [italic white on black]s3://{aws_region}/{bucket}/{key}[/italic white on black]\nACL: {acl}",
+            title=title)
         console.print(panel)
         if acl:
             response = s3_client.put_object(Body=open(path, 'rb'), Bucket=bucket, Key=key, ContentType=content_type, ACL=acl)
@@ -2650,10 +2790,40 @@ with console.status("Generating configuration policy", spinner="aesthetic") as s
     key = f"{s3_deploy_path}index.html"
     upload(iam_path, aws_deploy_bucket, key, "Task Homepage", "text/html", "public-read")
 
-    console.rule(f"{step_index} - Public Link")
+    console.rule(f"{step_index} - Invalidating contents on Cloudfront distribution")
+    step_index = step_index + 1
+
+    # Specify the path to invalidate
+    # Adjust the path to target your specific subpath
+    paths = {
+        'Quantity': 3,
+        'Items': [
+            f"/{task_name}/{batch_name}/styles.css",
+            f"/{task_name}/{batch_name}/scripts.js",
+            f"/{task_name}/{batch_name}/index.html"
+        ]
+    }
+
+    # Create the invalidation
+    response = cloudfront_client.create_invalidation(
+        DistributionId=distribution['Id'],
+        InvalidationBatch={
+            'Paths': paths,
+            'CallerReference': str(time.time())  # Unique identifier for this invalidation
+        }
+    )
+
+    console.rule(f"{step_index} - Public Links")
     step_index = step_index + 1
 
     status.start()
     status.update(f"Writing")
 
-    console.print(f"[bold white on black]{link_public}")
+    console.print(f"Deploy Bucket Endpoint")
+    console.print(f"[bold white on black]https://{aws_deploy_bucket}.s3.{aws_region}.amazonaws.com/{task_name}/{batch_name}/index.html")
+
+    console.print(f"Static Website Endpoint")
+    console.print(f"[bold white on black]http://{aws_deploy_bucket}.s3-website.{aws_region}.amazonaws.com/{task_name}/{batch_name}/")
+
+    console.print(f"Cloudfront Endpoint")
+    console.print(f"[bold white on black]https://{cloudfront_endpoint}/{task_name}/{batch_name}/")
