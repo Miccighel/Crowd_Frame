@@ -103,7 +103,7 @@
 									</ng-container>
 									<ng-container *ngIf="dimension.scale.type=='interval'">
 										<div class="scale-interval">
-											<mat-slider min="{{dimension.scale.min}}" max="{{dimension.scale.max}}" step="{{dimension.scale.step}}" discrete>
+											<mat-slider min="{{this.documentIntervalMinValues[documentIndex]}}" max="{{this.documentIntervalMaxValues[documentIndex]}}" step="{{dimension.scale.step}}" discrete>
 												<input matSliderThumb formControlName="{{(dimension.name).concat('_value').concat(controlSuffix)}}"
 													   (change)="this.task.storeDimensionValue($event, documentIndex,dimension.index, this.postAssessmentIndex, false);"
 													   [attr.disabled]="this.task.countdownsExpired[documentIndex] && this.task.settings.countdown_behavior=='disable_forms'">
