@@ -1,5 +1,5 @@
 /* Settings */
-import {Attribute, TaskSettings} from "./taskSettings";
+import {TaskSettings} from "./taskSettings";
 /* Models */
 import {Hit} from "./hit";
 import {DataRecord} from "./dataRecord";
@@ -69,8 +69,8 @@ export class Task {
     dimensionsSelectedValues: Array<object>;
     dimensionsPairwiseSelection = [];
     /* Array of intervall minimum and maximum values for each document */
-    documentIntervalMinValues: Array<number>;
-    documentIntervalMaxValues: Array<number>;
+    dimensionIntervalMinValues: Array<number>;
+    dimensionIntervalMaxValues: Array<number>;
 
     /* Array to store search engine queries and responses, one for each document within a Hit */
     searchEngineQueries: Array<object>;
@@ -412,22 +412,22 @@ export class Task {
             let intervalDimesions = this.dimensions.find(dimension => dimension.scale instanceof ScaleInterval);
 
             /* Initialize the arrays of interval min and max values for each document */
-            this.documentIntervalMaxValues = new Array<number>(this.documentsAmount);
-            this.documentIntervalMinValues = new Array<number>(this.documentsAmount);
+            this.dimensionIntervalMinValues = new Array<number>(this.documentsAmount);
+            this.dimensionIntervalMaxValues = new Array<number>(this.documentsAmount);
 
             if (intervalDimesions.scale instanceof ScaleInterval) {
                 for (let index = 0; index < this.documentsAmount; index++) {
                     /* Check if there is a video attribute in the task attributes and a HITS element called "video_duration"*/
                     if(this.settings.attributesMain.some(attribute => attribute.is_video) && this.documents[index].video_duration) {
                         /* Set the max interval value to the duration of the video */
-                        this.documentIntervalMaxValues[index] = this.documents[index].video_duration;
+                        this.dimensionIntervalMaxValues[index] = this.documents[index].video_duration;
                     }
                     /* Otherwise create and array with the default value setted in the dimension.json file */
                     else {
-                        this.documentIntervalMaxValues[index] = intervalDimesions.scale.max;
+                        this.dimensionIntervalMaxValues[index] = intervalDimesions.scale.max;
                     }
                     /* Set the min interval value to the default value setted in the dimension.json file */
-                    this.documentIntervalMinValues[index] = intervalDimesions.scale.min;
+                    this.dimensionIntervalMinValues[index] = intervalDimesions.scale.min;
                 }
             }
         }

@@ -1752,14 +1752,14 @@
           <context context-type="linenumber">49</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="9681be162ad31ea068367b5b0c8573aa9068bf65" datatype="html">
+      <trans-unit id="ade71cd294d8692b7e57b606be23c849ff91eb0a" datatype="html">
         <source> Value: # </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
           <context context-type="linenumber">111,113</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="e03819c1548ac0037965616a696f9b6a506f5b4e" datatype="html">
+      <trans-unit id="769c8558198426d741fcb716134d9484db0e39d4" datatype="html">
         <source> Value: <x id="INTERPOLATION" equiv-text="{{ assessmentForm.controls[(dimension.name).concat(&apos;_value&apos;).concat(controlSuffix)].value }}"/> </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/skeleton/document/dimension/dimension.component.html</context>
